@@ -73,7 +73,7 @@ typedef struct dt_midi_knob_t
   gint channel;
   gint key;
 
-  dt_accel_dynamic_t *accelerator;
+  dt_accel_t *accelerator;
 
   gint encoding;
 #define MIDI_ABSOLUTE 0
@@ -202,7 +202,7 @@ void midi_config_save(MidiDevice *midi)
     g_free(spath);
 
     l = g_slist_next(l);
-  }  
+  }
 
   g_fprintf(f, "\ngroup,channel,key,path\n");
 
@@ -210,12 +210,12 @@ void midi_config_save(MidiDevice *midi)
   while (l)
   {
     dt_midi_note_t *n = (dt_midi_note_t *)l->data;
-    g_fprintf(f,"%d;%d;%d;%s\n", 
-                n->group, n->channel, n->key, 
+    g_fprintf(f,"%d;%d;%d;%s\n",
+                n->group, n->channel, n->key,
                 gtk_accelerator_name(n->accelerator_key,n->accelerator_mods));
 
     l = g_slist_next(l);
-  }  
+  }
 
   fclose(f);
 }
@@ -235,7 +235,7 @@ void midi_config_load(MidiDevice *midi)
   snprintf(midipath, sizeof(midipath), "%s/midirc-%s", datadir, midi->model_name);
 
   f = g_fopen(midipath, "rb");
-  
+
   dt_loc_get_datadir(datadir, sizeof(datadir));
   snprintf(midipath, sizeof(midipath), "%s/midi/midirc-%s", datadir, midi->model_name);
 
@@ -271,16 +271,16 @@ void midi_config_load(MidiDevice *midi)
     char accelpath[200];
     float acceleration;
 
-    read = sscanf(buffer, "%d;%d;%d;%[^;];%d;%f\n", 
+    read = sscanf(buffer, "%d;%d;%d;%[^;];%d;%f\n",
                   &group, &channel, &key, accelpath, &encoding, &acceleration);
     if(read == 6)
     {
       g_strlcat(accelpath,"/dynamic",200);
-      GSList *al = darktable.control->dynamic_accelerator_list;
-      dt_accel_dynamic_t *da;
+      GSList *al = darktable.control->accelerator_list;
+      dt_accel_t *da;
       while(al)
       {
-        da = (dt_accel_dynamic_t *)al->data;
+        da = (dt_accel_t *)al->data;
         if (!g_strcmp0(da->path, accelpath))
           break;
 
@@ -356,7 +356,7 @@ void midi_write(MidiDevice *midi, gint channel, gint type, gint key, gint veloci
       break;
     }
 
-    snd_seq_ev_set_subs(&event);  
+    snd_seq_ev_set_subs(&event);
     snd_seq_ev_set_direct(&event);
     snd_seq_ev_set_source(&event, midi->port);
 
@@ -414,13 +414,13 @@ void refresh_sliders_to_device(MidiDevice *midi)
           k->locked = FALSE;
         }
 
-        GtkWidget *w = k->accelerator->widget;
+        GtkWidget *w = GTK_WIDGET(k->accelerator->closure->data);
         if (k->group == midi->group && w)
         {
           float min = dt_bauhaus_slider_get_soft_min(w);
           float max = dt_bauhaus_slider_get_soft_max(w);
           float c   = dt_bauhaus_slider_get(w);
-          
+
           int velocity = round((c-min)/(max-min)*127);
 
           if (velocity != midi->last_known[k->key])
@@ -430,8 +430,8 @@ void refresh_sliders_to_device(MidiDevice *midi)
           }
 
           // For Behringer; set pattern of rotator lights
-          if (k->key >= midi->first_knob_key && 
-              k->key <= midi->num_rotators && 
+          if (k->key >= midi->first_knob_key &&
+              k->key <= midi->num_rotators &&
               midi->LED_ring_behavior_channel >= 0)
           {
             if (min == -max)
@@ -517,23 +517,37 @@ static void callback_image_changed(gpointer instance, gpointer data)
   refresh_all_devices(data);
 }
 
+static gpointer dynamic_callback = (void *)-1;
+
 static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_view_t *new_view, gpointer data)
 {
   if (new_view->view(new_view) == DT_VIEW_DARKROOM)
-  { 
-    GSList *l = darktable.control->dynamic_accelerator_list;
+  {
+    GSList *l = darktable.control->accelerator_list;
     while(l)
     {
-      dt_accel_dynamic_t *da = (dt_accel_dynamic_t *)l->data;
+      dt_accel_t *da = (dt_accel_t *)l->data;
 
-      if (da->widget)
+      if (da->closure && !strcmp(strrchr(da->path, '/'), "/dynamic"))
       {
-        g_signal_connect(G_OBJECT(da->widget), "value-changed", G_CALLBACK(callback_slider_changed), data);
+        dynamic_callback = ((struct _GCClosure*)da->closure)->callback;
+        break;
       }
 
       l = g_slist_next(l);
     }
-    
+    while(l)
+    {
+      dt_accel_t *da = (dt_accel_t *)l->data;
+
+      if (da->closure && ((struct _GCClosure*)da->closure)->callback == dynamic_callback)
+      {
+        g_signal_connect(G_OBJECT(da->closure->data), "value-changed", G_CALLBACK(callback_slider_changed), data);
+      }
+
+      l = g_slist_next(l);
+    }
+
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                               G_CALLBACK(callback_image_changed), data);
 
@@ -542,7 +556,7 @@ static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_vie
   }
   else
   {
-    dt_control_signal_disconnect(darktable.signals, 
+    dt_control_signal_disconnect(darktable.signals,
                                 G_CALLBACK(callback_image_changed), data);
   }
 
@@ -573,7 +587,7 @@ gint interpret_move(dt_midi_knob_t *k, gint velocity)
         case 15: // Offset 5 bit
           return velocity - 16;
           break;
-        case 65: // Sign 6 bit (x-touch mini in MC mode) 
+        case 65: // Sign 6 bit (x-touch mini in MC mode)
           if (velocity < 64)
             return velocity;
           else
@@ -590,13 +604,13 @@ gint interpret_move(dt_midi_knob_t *k, gint velocity)
     }
 }
 
-//  Currently just aggregates one channel/key combination 
+//  Currently just aggregates one channel/key combination
 //  and sends when changing to different key. This might still
 //  cause flooding if multiple knobs are turned simultaneously
 //  and alternating codes are received.
 //  To deal with this would require maintaining a list of currently
 //  changed keys and send all at end. Probably not worth extra complexity,
-//  Since it would still mean sending multiple updates in one iteration 
+//  Since it would still mean sending multiple updates in one iteration
 //  which could cause flooding anyway.
 void aggregate_and_set_slider(MidiDevice *midi,
                               gint channel, gint key, gint velocity)
@@ -617,7 +631,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
     {
       if (midi->stored_knob)
       {
-        GtkWidget *w = midi->stored_knob->accelerator->widget;
+        GtkWidget *w = midi->stored_knob->accelerator->closure->data;
 
         if (w)
         {
@@ -647,7 +661,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
 
               if (midi->syncing)
               {
-                dt_toast_log((">%s/%s<"), 
+                dt_toast_log((">%s/%s<"),
                               DT_BAUHAUS_WIDGET(w)->module->name(),
                               DT_BAUHAUS_WIDGET(w)->label);
 
@@ -660,11 +674,11 @@ void aggregate_and_set_slider(MidiDevice *midi,
               {
                 gchar *left_text  = g_strnfill(MAX(1, move)-1,'<');
                 gchar *right_text = g_strnfill(MAX(1, -move)-1,'>');
-                
-                dt_toast_log(("%s %s / %s %s"), 
+
+                dt_toast_log(("%s %s / %s %s"),
                               left_text, DT_BAUHAUS_WIDGET(w)->module->name(),
                               DT_BAUHAUS_WIDGET(w)->label, right_text);
-                
+
                 g_free(left_text);
                 g_free(right_text);
               }
@@ -732,18 +746,20 @@ void aggregate_and_set_slider(MidiDevice *midi,
           {
             // store new mapping in table, overriding existing
 
-            GSList *al = darktable.control->dynamic_accelerator_list;
-            dt_accel_dynamic_t *da = NULL ;
+            GSList *al = darktable.control->accelerator_list;
+            dt_accel_t *da = NULL ;
             while(al)
             {
-              da = (dt_accel_dynamic_t *)al->data;
-              if (da->widget == mapping_widget)
+              da = (dt_accel_t *)al->data;
+              if (da->closure
+                  && ((struct _GCClosure*)da->closure)->callback == dynamic_callback
+                  && da->closure->data == mapping_widget)
                 break;
 
               al = g_slist_next(al);
             }
 
-            dt_toast_log(_("mapped to %s/%s"), 
+            dt_toast_log(_("mapped to %s/%s"),
                            DT_BAUHAUS_WIDGET(mapping_widget)->module->name(),
                            DT_BAUHAUS_WIDGET(mapping_widget)->label);
 
@@ -754,12 +770,12 @@ void aggregate_and_set_slider(MidiDevice *midi,
             {
               dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
               if ((d->group > midi->group) |
-                  ((d->group == midi->group) && 
+                  ((d->group == midi->group) &&
                    ((d->channel > channel) |
                     ((d->channel == channel) && (d->key >= key)))))
               {
-                if ((d->group == midi->group) && 
-                    (d->channel == channel) && 
+                if ((d->group == midi->group) &&
+                    (d->channel == channel) &&
                     (d->key == key))
                 {
                   new_knob = d;
@@ -792,7 +808,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
             {
               new_knob->encoding = velocity | 1; // force last bit to 1
             }
-          
+
             midi_config_save(midi);
           }
 
@@ -801,7 +817,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
           midi->mapping_channel = -1;
           mapping_widget = NULL;
         }
-        
+
         channel = -1;
         key = -1;
       }
@@ -812,12 +828,12 @@ void aggregate_and_set_slider(MidiDevice *midi,
         {
           dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
           if ((d->group > midi->group) |
-              ((d->group == midi->group) && 
+              ((d->group == midi->group) &&
                 ((d->channel > channel) |
                 ((d->channel == channel) && (d->key >= key)))))
           {
             if ((d->group == midi->group) &&
-                (d->channel == channel) && 
+                (d->channel == channel) &&
                 (d->key == key))
             {
               midi->stored_knob = d;
@@ -829,7 +845,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
 
         if (midi->stored_knob == NULL)
         {
-          dt_toast_log(_("knob %d on channel %d not mapped in group %d"), 
+          dt_toast_log(_("knob %d on channel %d not mapped in group %d"),
                          key, channel, midi->group);
         }
         else if (midi->stored_knob->encoding == MIDI_ABSOLUTE)
@@ -840,7 +856,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
         {
           midi->accum = interpret_move(midi->stored_knob, velocity);
         }
-      }     
+      }
     }
 
     midi->stored_channel = channel;
@@ -855,7 +871,7 @@ void note_on(MidiDevice *midi, gint channel, gint note)
   if (midi->group_switch_key == -1 || knob_config_mode == TRUE)
   {
     midi->group_switch_key = note;
-    
+
     knob_config_mode = FALSE;
   }
 
@@ -875,11 +891,11 @@ void note_on(MidiDevice *midi, gint channel, gint note)
         midi_write(midi, midi->LED_ring_behavior_channel, 0xB, knob, midi->LED_ring_behavior_off); // set single pattern on x-touch mini
       }
       midi_write(midi, channel, 0xB, knob, 0);
-      midi->last_known[knob] = 0; 
+      midi->last_known[knob] = 0;
     }
 
     if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
-    {    
+    {
       refresh_sliders_to_device(midi);
 
       char *help_text = g_strdup_printf("MIDI key group %d:", midi->group);
@@ -899,7 +915,7 @@ void note_on(MidiDevice *midi, gint channel, gint note)
           break;
         }
 
-        if (d->group == midi->group && d->accelerator->widget != NULL)
+        if (d->group == midi->group && d->accelerator->closure != NULL)
         {
           if (d->channel != current_channel)
           {
@@ -918,7 +934,7 @@ void note_on(MidiDevice *midi, gint channel, gint note)
             remaining_line_items = midi->num_columns - 1;
           }
 
-          dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(d->accelerator->widget);
+          dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(d->accelerator->closure->data);
 
           if (w->module == previous_module || strstr(w->module->name(), w->label))
           {
@@ -936,12 +952,12 @@ void note_on(MidiDevice *midi, gint channel, gint note)
       }
 
       dt_control_hinter_message(darktable.control, help_text);
-      
+
       g_free(help_text);
     }
   }
   else if (cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM &&
-           midi->reset_knob_key != -1 && 
+           midi->reset_knob_key != -1 &&
            note >= midi->reset_knob_key && note < midi->reset_knob_key + midi->num_columns)
   {
     GSList *l = midi->mapping_list;
@@ -949,15 +965,15 @@ void note_on(MidiDevice *midi, gint channel, gint note)
     {
       dt_midi_knob_t *d = (dt_midi_knob_t *)l->data;
       if ((d->group > midi->group) |
-          ((d->group == midi->group) && 
+          ((d->group == midi->group) &&
             ((d->channel > channel) |
             ((d->channel == channel) && (d->key >= note - midi->reset_knob_key + midi->first_knob_key)))))
       {
         if ((d->group == midi->group) &&
-            (d->channel == channel) && 
+            (d->channel == channel) &&
             (d->key == note - midi->reset_knob_key + midi->first_knob_key))
         {
-          dt_bauhaus_slider_reset(d->accelerator->widget);
+          dt_bauhaus_slider_reset(d->accelerator->closure->data);
         }
         break;
       }
@@ -971,22 +987,22 @@ void note_on(MidiDevice *midi, gint channel, gint note)
     {
       dt_midi_note_t *n = (dt_midi_note_t *)l->data;
       if ((n->group > midi->group) |
-          ((n->group == midi->group) && 
+          ((n->group == midi->group) &&
             ((n->channel > channel) |
             ((n->channel == channel) && (n->key >= note)))))
       {
         if ((n->group == midi->group) &&
-            (n->channel == channel) && 
+            (n->channel == channel) &&
             (n->key == note))
         {
           gtk_accel_groups_activate(G_OBJECT(dt_ui_main_window(darktable.gui->ui)), n->accelerator_key, n->accelerator_mods);
-        } 
+        }
         break;
       }
       l = g_slist_next(l);
     }
   }
-  
+
 
 }
 
@@ -1050,8 +1066,8 @@ static gboolean midi_alsa_dispatch (GSource     *source,
         break;
 
       case SND_SEQ_EVENT_CONTROLLER:
-        aggregate_and_set_slider(midi, event->data.control.channel, 
-                                       event->data.control.param, 
+        aggregate_and_set_slider(midi, event->data.control.channel,
+                                       event->data.control.param,
                                        event->data.control.value);
         break;
 
@@ -1219,7 +1235,7 @@ gboolean midi_read_event (GIOChannel   *io,
 
   if (!midi->name_queried)
   {
-      // Send Universal Device Inquiry message 
+      // Send Universal Device Inquiry message
       char inquiry[6] = "\xF0\x7E\x7F\x06\x01\xF7";
       write(g_io_channel_unix_get_fd (midi->io), inquiry, 6);
 
@@ -1273,7 +1289,7 @@ gboolean midi_read_event (GIOChannel   *io,
                 //0E 00    QS Family ID, LSB first
                 //0x 00    QS Family Member, LSB first
                 //xx xx xx xx Software revision, ASCI (ex. 30 31 30 30 = '0100' = 1.00)
-                //F7 End-Of-Exclusive        
+                //F7 End-Of-Exclusive
                 //Arturia Beatstep responds with:
                 //7e 00 06 02 00 20 6b 02 00 06 00 03 00 02 01
                 //turn this into string 00206B_0002_0006
@@ -1504,7 +1520,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
     midi->LED_ring_behavior_off = 0;
     midi->LED_ring_behavior_pan = 0;
     midi->LED_ring_behavior_fan = 0;
-    midi->LED_ring_behavior_trim = 0; 
+    midi->LED_ring_behavior_trim = 0;
 
 #ifdef HAVE_ALSA
     if (! g_ascii_strcasecmp (midi->device, "alsa"))
@@ -1562,7 +1578,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
       if (portmidi_info == NULL) return FALSE;
 
       g_print("Portmidi device name: %s\n", (char *)portmidi_info->name);
-      
+
       PmError pmerror = Pm_OpenInput(&midi->portmidi, defaultPM, NULL, 1000, NULL, NULL);
       if (pmerror != pmNoError)
       {
@@ -1580,7 +1596,7 @@ gboolean midi_device_init(MidiDevice *midi, const gchar *device)
       g_print("Portmidi output device name: %s\n", (char *)portmidi_info->name);
       g_free(midi->model_name);
       midi->model_name = g_strdup(portmidi_info->name);
-      
+
       pmerror = Pm_OpenOutput(&midi->portmidi_out, defaultPM, NULL, 1000, NULL, NULL, 0);
       if (pmerror != pmNoError)
       {
@@ -1714,7 +1730,7 @@ void midi_open_devices(dt_lib_module_t *self)
 
 void midi_close_devices(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, 
+  dt_control_signal_disconnect(darktable.signals,
                                G_CALLBACK(callback_view_changed), self);
 
   g_slist_free_full (self->data, (void (*)(void *))midi_device_free);
