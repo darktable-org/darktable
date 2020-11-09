@@ -26,6 +26,53 @@
 #include <math.h>
 
 
+void dt_develop_blendif_process_parameters(float *const restrict parameters,
+                                           const dt_develop_blend_params_t *const params,
+                                           const dt_iop_colorspace_type_t cst)
+{
+  const uint32_t blendif = params->blendif;
+  const float *blendif_parameters = params->blendif_parameters;
+  for(size_t i = 0, j = 0; i < DEVELOP_BLENDIF_SIZE; i++, j += DEVELOP_BLENDIF_PARAMETER_ITEMS)
+  {
+    if(blendif & (1 << i))
+    {
+      float offset = 0.0f;
+      if(cst == iop_cs_Lab && (i == DEVELOP_BLENDIF_A_in || i == DEVELOP_BLENDIF_A_out
+          || i == DEVELOP_BLENDIF_B_in || i == DEVELOP_BLENDIF_B_out))
+      {
+        offset = 0.5f;
+      }
+      parameters[j + 0] = blendif_parameters[i * 4 + 0] - offset;
+      parameters[j + 1] = blendif_parameters[i * 4 + 1] - offset;
+      parameters[j + 2] = blendif_parameters[i * 4 + 2] - offset;
+      parameters[j + 3] = blendif_parameters[i * 4 + 3] - offset;
+      // pre-compute increasing slope and decreasing slope
+      parameters[j + 4] = 1.0f / fmaxf(0.001f, parameters[j + 1] - parameters[j + 0]);
+      parameters[j + 5] = 1.0f / fmaxf(0.001f, parameters[j + 3] - parameters[j + 2]);
+      // handle the case when one end is open to avoid clipping input/output values
+      if(blendif_parameters[i * 4 + 0] <= -offset && blendif_parameters[i * 4 + 1] <= -offset)
+      {
+        parameters[j + 0] = -INFINITY;
+        parameters[j + 1] = -INFINITY;
+      }
+      if(blendif_parameters[i * 4 + 2] >= 1.0f - offset && blendif_parameters[i * 4 + 3] >= 1.0f - offset)
+      {
+        parameters[j + 2] = INFINITY;
+        parameters[j + 3] = INFINITY;
+      }
+    }
+    else
+    {
+      parameters[j + 0] = -INFINITY;
+      parameters[j + 1] = -INFINITY;
+      parameters[j + 2] = INFINITY;
+      parameters[j + 3] = INFINITY;
+      parameters[j + 4] = 0.0f;
+      parameters[j + 5] = 0.0f;
+    }
+  }
+}
+
 void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                               const void *const ivoid, void *const ovoid, const struct dt_iop_roi_t *const roi_in,
                               const struct dt_iop_roi_t *const roi_out)
@@ -87,21 +134,21 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
 
   // allocate space for blend mask
-  float *_mask = dt_alloc_align(64, buffsize * sizeof(float));
+  float *const restrict _mask = dt_alloc_align(64, buffsize * sizeof(float));
   if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
     return;
   }
-  float *const mask = _mask;
+  float *const restrict mask = _mask;
 
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
   {
     // blend uniformly (no drawn or parametric mask)
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(buffsize, mask, opacity)
+#pragma omp parallel for simd default(none) aligned(mask:64)\
+    dt_omp_firstprivate(buffsize, mask, opacity) schedule(static)
 #endif
     for(size_t i = 0; i < buffsize; i++) mask[i] = opacity;
   }
@@ -117,16 +164,16 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // invert if required
       if(d->raster_mask_invert)
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-        dt_omp_firstprivate(buffsize, mask, opacity) \
-        shared(raster_mask)
+  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
+        dt_omp_firstprivate(buffsize, mask, opacity, raster_mask) \
+        schedule(static)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
       else
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-        dt_omp_firstprivate(buffsize, mask, opacity) \
-        shared(raster_mask)
+  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
+        dt_omp_firstprivate(buffsize, mask, opacity, raster_mask) \
+        schedule(static)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = raster_mask[i] * opacity;
       if(free_mask) dt_free_align(raster_mask);
@@ -136,8 +183,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // fallback for when the raster mask couldn't be applied
       const float value = d->raster_mask_invert ? 0.0 : 1.0;
 #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buffsize, mask, value)
+  #pragma omp parallel for simd default(none) aligned(mask:64)\
+      dt_omp_firstprivate(buffsize, mask, value) schedule(static)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = value;
     }
@@ -157,8 +204,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       {
         // if we have a mask and this flag is set -> invert the mask
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-        dt_omp_firstprivate(buffsize, mask)
+#pragma omp parallel for simd default(none) aligned(mask:64)\
+        dt_omp_firstprivate(buffsize, mask) schedule(static)
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0f - mask[i];
       }
@@ -169,8 +216,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buffsize, mask, fill)
+#pragma omp parallel for simd default(none) aligned(mask:64)\
+      dt_omp_firstprivate(buffsize, mask, fill) schedule(static)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
@@ -179,8 +226,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buffsize, mask, fill)
+#pragma omp parallel for simd default(none) aligned(mask:64)\
+      dt_omp_firstprivate(buffsize, mask, fill) schedule(static)
 #endif
       for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
     }
@@ -189,13 +236,16 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     switch(cst)
     {
       case iop_cs_Lab:
-        dt_develop_blendif_lab_make_mask(piece, (const float *)ivoid, (const float *)ovoid, roi_in, roi_out, mask);
+        dt_develop_blendif_lab_make_mask(piece, (const float *const restrict)ivoid,
+                                         (const float *const restrict)ovoid, roi_in, roi_out, mask);
         break;
       case iop_cs_rgb:
-        dt_develop_blendif_rgb_hsl_make_mask(piece, (const float *)ivoid, (const float *)ovoid, roi_in, roi_out, mask);
+        dt_develop_blendif_rgb_hsl_make_mask(piece, (const float *const restrict)ivoid,
+                                             (const float *const restrict)ovoid, roi_in, roi_out, mask);
         break;
       case iop_cs_RAW:
-        dt_develop_blendif_raw_make_mask(piece, (const float *)ivoid, (const float *)ovoid, roi_in, roi_out, mask);
+        dt_develop_blendif_raw_make_mask(piece, (const float *const restrict)ivoid,
+                                         (const float *const restrict)ovoid, roi_in, roi_out, mask);
         break;
       default:
         break;
@@ -265,8 +315,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       const float e = expf(3.f * d->contrast);
       const float brightness = d->brightness;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(brightness, buffsize, e, mask, mask_epsilon, opacity)
+#pragma omp parallel for simd default(none) aligned(mask:64)\
+      dt_omp_firstprivate(brightness, buffsize, e, mask, mask_epsilon, opacity) schedule(static)
 #endif
       for(size_t k = 0; k < buffsize; k++)
       {
@@ -297,16 +347,16 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   switch(cst)
   {
     case iop_cs_Lab:
-      dt_develop_blendif_lab_blend(piece, (const float *)ivoid, (float *)ovoid, roi_in, roi_out, mask,
-                                   request_mask_display);
+      dt_develop_blendif_lab_blend(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid,
+                                   roi_in, roi_out, mask, request_mask_display);
       break;
     case iop_cs_rgb:
-      dt_develop_blendif_rgb_hsl_blend(piece, (const float *)ivoid, (float *)ovoid, roi_in, roi_out, mask,
-                                       request_mask_display);
+      dt_develop_blendif_rgb_hsl_blend(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid,
+                                       roi_in, roi_out, mask, request_mask_display);
       break;
     case iop_cs_RAW:
-      dt_develop_blendif_raw_blend(piece, (const float *)ivoid, (float *)ovoid, roi_in, roi_out, mask,
-                                   request_mask_display);
+      dt_develop_blendif_raw_blend(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid,
+                                   roi_in, roi_out, mask, request_mask_display);
       break;
     default:
       break;
@@ -446,9 +496,12 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { owidth, oheight, 1 };
 
+  // parameters, for every channel the 4 limits + pre-computed increasing slope and decreasing slope
+  float parameters[DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE] DT_ALIGNED_ARRAY;
+  dt_develop_blendif_process_parameters(parameters, d, cst);
+
   // copy blend parameters to constant device memory
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE,
-                                                 d->blendif_parameters);
+  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE, parameters);
   if(dev_m == NULL) goto error;
 
   dev_mask_1 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));

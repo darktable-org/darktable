@@ -151,20 +151,21 @@ typedef enum dt_dev_pixelpipe_display_mask_t
 
 
 float
-blendif_factor_Lab(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters, const unsigned int mask_mode, const unsigned int mask_combine)
+blendif_factor_Lab(const float4 input, const float4 output,
+                   const unsigned int blendif, global const float *parameters,
+                   const unsigned int mask_mode, const unsigned int mask_combine)
 {
-  float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
   if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
-  scaled[DEVELOP_BLENDIF_L_in] = clamp(input.x / 100.0f, 0.0f, 1.0f);			// L scaled to 0..1
-  scaled[DEVELOP_BLENDIF_A_in] = clamp((input.y + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
-  scaled[DEVELOP_BLENDIF_B_in] = clamp((input.z + 128.0f)/256.0f, 0.0f, 1.0f);		// b scaled to 0..1
+  scaled[DEVELOP_BLENDIF_L_in] = input.x / 100.0f,			// L scaled to 0..1
+  scaled[DEVELOP_BLENDIF_A_in] = input.y / 128.0f;		// a scaled to -0.5..0.5
+  scaled[DEVELOP_BLENDIF_B_in] = input.z / 128.0f;		// b scaled to -0.5..0.5
 
-  scaled[DEVELOP_BLENDIF_L_out] = clamp(output.x / 100.0f, 0.0f, 1.0f);			// L scaled to 0..1
-  scaled[DEVELOP_BLENDIF_A_out] = clamp((output.y + 128.0f)/256.0f, 0.0f, 1.0f);		// a scaled to 0..1
-  scaled[DEVELOP_BLENDIF_B_out] = clamp((output.z + 128.0f)/256.0f, 0.0f, 1.0f);		// b scaled to 0..1
+  scaled[DEVELOP_BLENDIF_L_out] = output.x / 100.0f;			// L scaled to 0..1
+  scaled[DEVELOP_BLENDIF_A_out] = output.y / 128.0f;		// a scaled to -0.5..0.5
+  scaled[DEVELOP_BLENDIF_B_out] = output.z / 128.0f;		// b scaled to -0.5..0.5
 
 
   if((blendif & 0x7f00) != 0)  // do we need to consider LCh ?
@@ -172,45 +173,50 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
     float4 LCH_input = Lab_2_LCH(input);
     float4 LCH_output = Lab_2_LCH(output);
 
-    scaled[DEVELOP_BLENDIF_C_in] = clamp(LCH_input.y / (128.0f*sqrt(2.0f)), 0.0f, 1.0f);        // C scaled to 0..1
-    scaled[DEVELOP_BLENDIF_h_in] = clamp(LCH_input.z, 0.0f, 1.0f);		                // h scaled to 0..1
+    scaled[DEVELOP_BLENDIF_C_in] = LCH_input.y / (128.0f*sqrt(2.0f));        // C scaled to 0..1
+    scaled[DEVELOP_BLENDIF_h_in] = LCH_input.z;		                // h scaled to 0..1
 
-    scaled[DEVELOP_BLENDIF_C_out] = clamp(LCH_output.y / (128.0f*sqrt(2.0f)), 0.0f, 1.0f);       // C scaled to 0..1
-    scaled[DEVELOP_BLENDIF_h_out] = clamp(LCH_output.z, 0.0f, 1.0f);		                // h scaled to 0..1
+    scaled[DEVELOP_BLENDIF_C_out] = LCH_output.y / (128.0f*sqrt(2.0f));       // C scaled to 0..1
+    scaled[DEVELOP_BLENDIF_h_out] = LCH_output.z;		                // h scaled to 0..1
   }
 
+  const unsigned int invert_mask = (blendif >> 16) ^ ((mask_combine & DEVELOP_COMBINE_INCL) ? DEVELOP_BLENDIF_Lab_MASK : 0);
 
+  float result = 1.0f;
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
     if((DEVELOP_BLENDIF_Lab_MASK & (1<<ch)) == 0) continue;       // skip blendif channels not used in this color space
 
-    if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
-    {
-      result *= (!(blendif & (1<<(ch+16)))) == (!(mask_combine & DEVELOP_COMBINE_INCL)) ? 1.0f : 0.0f;
-      continue;
-    }
-
-    if(result <= 0.000001f) break;				// no need to continue if we are already close to or at zero
-
     float factor;
-
-    if      (scaled[ch] >= parameters[4*ch+1] && scaled[ch] <= parameters[4*ch+2])
+    if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
     {
       factor = 1.0f;
     }
-    else if (scaled[ch] >  parameters[4*ch+0] && scaled[ch] <  parameters[4*ch+1])
+    else if(result <= 0.000001f)
     {
-      factor = (scaled[ch] - parameters[4*ch+0])/fmax(0.01f, parameters[4*ch+1]-parameters[4*ch+0]);
+      break; // no need to continue if we are already close to or at zero
     }
-    else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
+    else if(scaled[ch] <= parameters[6 * ch + 0])
     {
-      factor = 1.0f - (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
+      factor = 0.0f;
     }
-    else factor = 0.0f;
-
-    if((blendif & (1<<(ch+16))) != 0) factor = 1.0f - factor;  // inverted channel
-
-    result *= ((mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - factor : factor);
+    else if(scaled[ch] < parameters[6 * ch + 1])
+    {
+      factor = (scaled[ch] - parameters[6 * ch + 0]) * parameters[6 * ch + 4];
+    }
+    else if(scaled[ch] <= parameters[6 * ch + 2])
+    {
+      factor = 1.0f;
+    }
+    else if(scaled[ch] < parameters[6 * ch + 3])
+    {
+      factor = 1.0f - (scaled[ch] - parameters[6 * ch + 2]) * parameters[6 * ch + 5];
+    }
+    else
+    {
+      factor = 0.0f;
+    }
+    result *= (invert_mask & (1 << ch)) ? 1.0f - factor : factor; // inverted channel?
   }
 
   return (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - result : result;
@@ -218,28 +224,34 @@ blendif_factor_Lab(const float4 input, const float4 output, const unsigned int b
 
 
 float
-blendif_factor_rgb(const float4 input, const float4 output, const unsigned int blendif, global const float *parameters, const unsigned int mask_mode, const unsigned int mask_combine,
-    constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
+blendif_factor_rgb(const float4 input, const float4 output,
+                   const unsigned int blendif, global const float *parameters,
+                   const unsigned int mask_mode, const unsigned int mask_combine,
+                   constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                   read_only image2d_t profile_lut, const int use_work_profile)
 {
-  float result = 1.0f;
   float scaled[DEVELOP_BLENDIF_SIZE];
 
   if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
   if(use_work_profile == 0)
-    scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(0.3f*input.x + 0.59f*input.y + 0.11f*input.z, 0.0f, 1.0f); // Gray scaled to 0..1
+  {
+    scaled[DEVELOP_BLENDIF_GRAY_in]  = 0.3f*input.x + 0.59f*input.y + 0.11f*input.z; // Gray scaled to 0..1
+    scaled[DEVELOP_BLENDIF_GRAY_out] = 0.3f*output.x + 0.59f*output.y + 0.11f*output.z; // Gray scaled to 0..1
+  }
   else
-    scaled[DEVELOP_BLENDIF_GRAY_in]  = clamp(get_rgb_matrix_luminance(input, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f); // Gray scaled to 0..1
-  scaled[DEVELOP_BLENDIF_RED_in]   = clamp(input.x, 0.0f, 1.0f);						// Red
-  scaled[DEVELOP_BLENDIF_GREEN_in] = clamp(input.y, 0.0f, 1.0f);						// Green
-  scaled[DEVELOP_BLENDIF_BLUE_in]  = clamp(input.z, 0.0f, 1.0f);						// Blue
-  if(use_work_profile == 0)
-    scaled[DEVELOP_BLENDIF_GRAY_out]  = clamp(0.3f*output.x + 0.59f*output.y + 0.11f*output.z, 0.0f, 1.0f); // Gray scaled to 0..1
-  else
-    scaled[DEVELOP_BLENDIF_GRAY_out]  = clamp(get_rgb_matrix_luminance(output, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f); // Gray scaled to 0..1
-  scaled[DEVELOP_BLENDIF_RED_out]   = clamp(output.x, 0.0f, 1.0f);						// Red
-  scaled[DEVELOP_BLENDIF_GREEN_out] = clamp(output.y, 0.0f, 1.0f);						// Green
-  scaled[DEVELOP_BLENDIF_BLUE_out]  = clamp(output.z, 0.0f, 1.0f);						// Blue
+  {
+    scaled[DEVELOP_BLENDIF_GRAY_in]  = get_rgb_matrix_luminance(input, profile_info, profile_info->matrix_in, profile_lut); // Gray scaled to 0..1
+    scaled[DEVELOP_BLENDIF_GRAY_out] = get_rgb_matrix_luminance(output, profile_info, profile_info->matrix_in, profile_lut); // Gray scaled to 0..1
+  }
+
+  scaled[DEVELOP_BLENDIF_RED_in]   = input.x;						// Red
+  scaled[DEVELOP_BLENDIF_GREEN_in] = input.y;						// Green
+  scaled[DEVELOP_BLENDIF_BLUE_in]  = input.z;						// Blue
+
+  scaled[DEVELOP_BLENDIF_RED_out]   = output.x;						// Red
+  scaled[DEVELOP_BLENDIF_GREEN_out] = output.y;						// Green
+  scaled[DEVELOP_BLENDIF_BLUE_out]  = output.z;						// Blue
 
   if((blendif & 0x7f00) != 0)  // do we need to consider HSL ?
   {
@@ -255,44 +267,50 @@ blendif_factor_rgb(const float4 input, const float4 output, const unsigned int b
     scaled[DEVELOP_BLENDIF_l_out] = clamp(HSL_output.z, 0.0f, 1.0f);		                // L scaled to 0..1
   }
 
+  const unsigned int invert_mask = (blendif >> 16) ^ ((mask_combine & DEVELOP_COMBINE_INCL) ? DEVELOP_BLENDIF_RGB_MASK : 0);
 
+  float result = 1.0f;
   for(int ch=0; ch<=DEVELOP_BLENDIF_MAX; ch++)
   {
     if((DEVELOP_BLENDIF_RGB_MASK & (1<<ch)) == 0) continue;       // skip blendif channels not used in this color space
 
-    if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
-    {
-      result *= (!(blendif & (1<<(ch+16)))) == (!(mask_combine & DEVELOP_COMBINE_INCL)) ? 1.0f : 0.0f;
-      continue;
-    }
-
-    if(result <= 0.000001f) break;				// no need to continue if we are already close to or at zero
-
     float factor;
-    if      (scaled[ch] >= parameters[4*ch+1] && scaled[ch] <= parameters[4*ch+2])
+    if((blendif & (1<<ch)) == 0)                                  // deal with channels where sliders span the whole range
     {
       factor = 1.0f;
     }
-    else if (scaled[ch] >  parameters[4*ch+0] && scaled[ch] <  parameters[4*ch+1])
+    else if(result <= 0.000001f)
     {
-      factor = (scaled[ch] - parameters[4*ch+0])/fmax(0.01f, parameters[4*ch+1]-parameters[4*ch+0]);
+      break; // no need to continue if we are already close to or at zero
     }
-    else if (scaled[ch] >  parameters[4*ch+2] && scaled[ch] <  parameters[4*ch+3])
+    else if(scaled[ch] <= parameters[6 * ch + 0])
     {
-      factor = 1.0f - (scaled[ch] - parameters[4*ch+2])/fmax(0.01f, parameters[4*ch+3]-parameters[4*ch+2]);
+      factor = 0.0f;
     }
-    else factor = 0.0f;
-
-    if((blendif & (1<<(ch+16))) != 0) factor = 1.0f - factor;  // inverted channel
-
-    result *= ((mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - factor : factor);
+    else if(scaled[ch] < parameters[6 * ch + 1])
+    {
+      factor = (scaled[ch] - parameters[6 * ch + 0]) * parameters[6 * ch + 4];
+    }
+    else if(scaled[ch] <= parameters[6 * ch + 2])
+    {
+      factor = 1.0f;
+    }
+    else if(scaled[ch] < parameters[6 * ch + 3])
+    {
+      factor = 1.0f - (scaled[ch] - parameters[6 * ch + 2]) * parameters[6 * ch + 5];
+    }
+    else
+    {
+      factor = 0.0f;
+    }
+    result *= (invert_mask & (1 << ch)) ? 1.0f - factor : factor; // inverted channel?
   }
 
   return (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - result : result;
 }
 
 __kernel void
-blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
+blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height,
              const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs,
              constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
@@ -306,7 +324,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
   float conditional = blendif_factor_Lab(a, b, blendif, blendif_parameters, mask_mode, mask_combine);
-  
+
   float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
   opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
 
@@ -314,7 +332,7 @@ blendop_mask_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
 }
 
 __kernel void
-blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
+blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height,
              const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs,
              constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
@@ -325,12 +343,12 @@ blendop_mask_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
   float opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - form : form;
-    
+
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 
 __kernel void
-blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height, 
+blendop_mask_rgb(__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask_in, __write_only image2d_t mask, const int width, const int height,
              const float gopacity, const int blendif, global const float *blendif_parameters, const unsigned int mask_mode, const unsigned int mask_combine, const int2 offs,
              constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
@@ -343,11 +361,13 @@ blendop_mask_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read
   float4 b = read_imagef(in_b, sampleri, (int2)(x, y));
   float form = read_imagef(mask_in, sampleri, (int2)(x, y)).x;
 
+  const unsigned int invert_mask = (blendif >> 16) ^ (mask_combine & DEVELOP_COMBINE_INCL ? 0 : DEVELOP_BLENDIF_RGB_MASK);
+
   float conditional = blendif_factor_rgb(a, b, blendif, blendif_parameters, mask_mode, mask_combine, profile_info, profile_lut, use_work_profile);
-  
+
   float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional) : form * conditional ;
   opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
-  
+
   write_imagef(mask, (int2)(x, y), gopacity*opacity);
 }
 
@@ -408,7 +428,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
         o.z = clamp(a.z * (1.0f - opacity) + (a.z + b.z) * o.x/a.x * opacity, min.z, max.z);
       }
       else
-      { 
+      {
         o.y = clamp(a.y * (1.0f - opacity) + (a.y + b.y) * o.x/0.01f * opacity, min.y, max.y);
         o.z = clamp(a.z * (1.0f - opacity) + (a.z + b.z) * o.x/0.01f * opacity, min.z, max.z);
       }
@@ -445,7 +465,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
         o.z = clamp(a.z * (1.0f - opacity) + 0.5f * (a.z + b.z) * o.x/a.x * opacity, min.z, max.z);
       }
       else
-      { 
+      {
         o.y = clamp(a.y * (1.0f - opacity) + 0.5f * (a.y + b.y) * o.x/0.01f * opacity, min.y, max.y);
         o.z = clamp(a.z * (1.0f - opacity) + 0.5f * (a.z + b.z) * o.x/0.01f * opacity, min.z, max.z);
       }
@@ -459,7 +479,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/a.x * opacity2, min.z, max.z);
       }
       else
-      { 
+      {
         o.y = clamp(a.y * (1.0f - opacity2) + (a.y + b.y) * o.x/0.01f * opacity2, min.y, max.y);
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/0.01f * opacity2, min.z, max.z);
       }
@@ -473,7 +493,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/a.x * opacity2, min.z, max.z);
       }
       else
-      { 
+      {
         o.y = clamp(a.y * (1.0f - opacity2) + (a.y + b.y) * o.x/0.01f * opacity2, min.y, max.y);
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/0.01f * opacity2, min.z, max.z);
       }
@@ -487,7 +507,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/a.x * opacity2, min.z, max.z);
       }
       else
-      { 
+      {
         o.y = clamp(a.y * (1.0f - opacity2) + (a.y + b.y) * o.x/0.01f * opacity2, min.y, max.y);
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/0.01f * opacity2, min.z, max.z);
       }
@@ -501,7 +521,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/a.x * opacity2, min.z, max.z);
       }
       else
-      { 
+      {
         o.y = clamp(a.y * (1.0f - opacity2) + (a.y + b.y) * o.x/0.01f * opacity2, min.y, max.y);
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/0.01f * opacity2, min.z, max.z);
       }
@@ -515,7 +535,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/a.x * opacity2, min.z, max.z);
       }
       else
-      { 
+      {
         o.y = clamp(a.y * (1.0f - opacity2) + (a.y + b.y) * o.x/0.01f * opacity2, min.y, max.y);
         o.z = clamp(a.z * (1.0f - opacity2) + (a.z + b.z) * o.x/0.01f * opacity2, min.z, max.z);
       }
@@ -609,7 +629,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o.y = (a.y * (1.0f - opacity)) + (b.y * opacity);
       o.z = (a.z * (1.0f - opacity)) + (b.z * opacity);
       break;
-      
+
     case DEVELOP_BLEND_HSV_LIGHTNESS:
     case DEVELOP_BLEND_HSV_COLOR:
     case DEVELOP_BLEND_RGB_R:
@@ -960,7 +980,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       to.z = ta.z;
       o = HSV_2_RGB(to);
       break;
-      
+
     case DEVELOP_BLEND_RGB_R:
       o.x = (a.x * (1.0f - opacity)) + (b.x * opacity);
       o.y = a.y;
@@ -1041,7 +1061,7 @@ blendop_set_mask (__write_only image2d_t mask, const int width, const int height
 
 
 __kernel void
-blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height, 
+blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only image2d_t mask, __write_only image2d_t out, const int width, const int height,
                          const int2 offs, const int mask_display,
                          constant dt_colorspaces_iccprofile_info_cl_t *profile_info, read_only image2d_t profile_lut, const int use_work_profile)
 {
@@ -1060,7 +1080,7 @@ blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b,
   int is_lab;
 
   dt_dev_pixelpipe_display_mask_t channel = (dt_dev_pixelpipe_display_mask_t)mask_display;
-  
+
   switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_L:
