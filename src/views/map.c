@@ -1184,8 +1184,8 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
           entry->imgid = p[i].imgid;
           entry->group = p[i].imgid;
           entry->group_count = 1;
-          entry->latitude = p[i].x * 180 / M_PI;
-          entry->longitude = p[i].y * 180 / M_PI;
+          entry->longitude = p[i].x * 180 / M_PI;
+          entry->latitude = p[i].y * 180 / M_PI;
           entry->group_same_loc = TRUE;
           if(sel_imgs)
             entry->selected_in_group = g_list_find((GList *)sel_imgs,
@@ -1201,15 +1201,15 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
           entry->group = p[i].imgid;
           entry->group_same_loc = TRUE;
           entry->selected_in_group = FALSE;
-          const double lat = p[i].x, lon = p[i].y;
+          const double lon = p[i].x, lat = p[i].y;
           for(int j = 0; j < img_count; j++)
           {
             if(p[j].cluster_id == group)
             {
               entry->group_count++;
-              entry->latitude += p[j].x;
-              entry->longitude += p[j].y;
-              if(entry->group_same_loc && (p[j].x != lat || p[j].y != lon))
+              entry->longitude += p[j].x;
+              entry->latitude += p[j].y;
+              if(entry->group_same_loc && (p[j].x != lon || p[j].y != lat))
               {
                 entry->group_same_loc = FALSE;
               }
@@ -2243,7 +2243,7 @@ static void _view_map_build_main_query(dt_map_t *lib)
   if(lib->max_images_drawn == 0) lib->max_images_drawn = 100;
   lib->filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
   geo_query = g_strdup_printf("SELECT * FROM"
-                              " (SELECT id, latitude, longitude "
+                              " (SELECT id, longitude, latitude "
                               "   FROM %s WHERE longitude >= ?1 AND longitude <= ?2"
                               "           AND latitude <= ?3 AND latitude >= ?4 "
                               "           AND longitude NOT NULL AND latitude NOT NULL)"
@@ -2311,11 +2311,11 @@ static void _get_epsilon_neighbours(epsilon_neighbours_t *en, unsigned int index
   // west
   for(int i = index; i < db.num_points; ++i)
   {
-    if(i == index)
+    if(i == index || db.points[i].cluster_id >= 0)
       continue;
-    if(((db.points[i].y - db.points[i-1].y) > db.epsilon))
+    if((db.points[i].x - db.points[index].x) > db.epsilon)
       break;
-    if((((db.points[i].x - db.points[i-1].x) > db.epsilon)))
+    if(fabs(db.points[i].y - db.points[index].y) > db.epsilon)
       continue;
     else
     {
@@ -2326,11 +2326,11 @@ static void _get_epsilon_neighbours(epsilon_neighbours_t *en, unsigned int index
   // east
   for(int i = index; i >= 0; --i)
   {
-    if(i == index)
+    if(i == (int)index || db.points[i].cluster_id >= 0)
       continue;
-    if(i < index && ((db.points[i+1].y - db.points[i].y) > db.epsilon))
+    if((db.points[index].x - db.points[i].x) > db.epsilon)
       break;
-    if((((db.points[i+1].x - db.points[i].x) > db.epsilon)))
+    if(fabs(db.points[index].y - db.points[i].y) > db.epsilon)
       continue;
     else
     {
@@ -2345,20 +2345,14 @@ static void _dbscan_spread(unsigned int index)
   db.spreads->num_members = 0;
   _get_epsilon_neighbours(db.spreads, index);
 
-  if(db.spreads->num_members >= db.minpts)
+  for(unsigned int i = 0; i < db.spreads->num_members; i++)
   {
-    for(int i = 0; i < db.spreads->num_members; i++)
+    geo_position_t *d = &db.points[db.spreads->index[i]];
+    if(d->cluster_id == NOISE || d->cluster_id == UNCLASSIFIED)
     {
-      geo_position_t *d = &db.points[db.spreads->index[i]];
-      if(d->cluster_id == NOISE || d->cluster_id == UNCLASSIFIED)
-      {
-        if(d->cluster_id == UNCLASSIFIED)
-        {
-          db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
-          db.seeds->num_members++;
-        }
-        d->cluster_id = db.cluster_id;
-      }
+      db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
+      db.seeds->num_members++;
+      d->cluster_id = db.cluster_id;
     }
   }
 }
