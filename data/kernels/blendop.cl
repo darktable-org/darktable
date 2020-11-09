@@ -28,7 +28,7 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_MULTIPLY = 0x04,
   DEVELOP_BLEND_AVERAGE = 0x05,
   DEVELOP_BLEND_ADD = 0x06,
-  DEVELOP_BLEND_SUBSTRACT = 0x07,
+  DEVELOP_BLEND_SUBTRACT = 0x07,
   DEVELOP_BLEND_DIFFERENCE = 0x08, /* deprecated */
   DEVELOP_BLEND_SCREEN = 0x09,
   DEVELOP_BLEND_OVERLAY = 0x0A,
@@ -422,7 +422,7 @@ blendop_Lab (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o =  clamp(a * (1.0f - opacity) +  (a + b) * opacity, min, max);
       break;
 
-    case DEVELOP_BLEND_SUBSTRACT:
+    case DEVELOP_BLEND_SUBTRACT:
       o =  clamp(a * (1.0f - opacity) +  (b + a - fabs(min + max)) * opacity, min, max);
       break;
 
@@ -688,7 +688,7 @@ blendop_RAW (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o =  clamp(a * (1.0f - opacity) +  (a + b) * opacity, min, max);
       break;
 
-    case DEVELOP_BLEND_SUBSTRACT:
+    case DEVELOP_BLEND_SUBTRACT:
       o =  clamp(a * (1.0f - opacity) +  (b + a - fabs(min + max)) * opacity, min, max);
       break;
 
@@ -835,7 +835,7 @@ blendop_rgb (__read_only image2d_t in_a, __read_only image2d_t in_b, __read_only
       o =  clamp(a * (1.0f - opacity) +  (a + b) * opacity, min, max);
       break;
 
-    case DEVELOP_BLEND_SUBSTRACT:
+    case DEVELOP_BLEND_SUBTRACT:
       o =  clamp(a * (1.0f - opacity) +  (b + a - fabs(min + max)) * opacity, min, max);
       break;
 

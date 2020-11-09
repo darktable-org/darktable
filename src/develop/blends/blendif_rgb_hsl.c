@@ -421,9 +421,9 @@ static void _blend_add(const float *const restrict a, float *const restrict b,
   }
 }
 
-/* substract */
-static void _blend_substract(const float *const restrict a, float *const restrict b,
-                             const float *const restrict mask, const size_t stride)
+/* subtract */
+static void _blend_subtract(const float *const restrict a, float *const restrict b,
+                            const float *const restrict mask, const size_t stride)
 {
   for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
@@ -879,8 +879,8 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
     case DEVELOP_BLEND_ADD:
       blend = _blend_add;
       break;
-    case DEVELOP_BLEND_SUBSTRACT:
-      blend = _blend_substract;
+    case DEVELOP_BLEND_SUBTRACT:
+      blend = _blend_subtract;
       break;
     case DEVELOP_BLEND_DIFFERENCE:
     case DEVELOP_BLEND_DIFFERENCE2:
