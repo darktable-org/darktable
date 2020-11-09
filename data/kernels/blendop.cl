@@ -1057,6 +1057,7 @@ blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b,
   float c;
   float4 LCH;
   float4 HSL;
+  int is_lab;
 
   dt_dev_pixelpipe_display_mask_t channel = (dt_dev_pixelpipe_display_mask_t)mask_display;
   
@@ -1064,98 +1065,131 @@ blendop_display_channel (__read_only image2d_t in_a, __read_only image2d_t in_b,
   {
     case DT_DEV_PIXELPIPE_DISPLAY_L:
       c = clamp(a.x / 100.0f, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       c = clamp(b.x / 100.0f, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_a:
       c = clamp((a.y + 128.0f) / 256.0f, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       c = clamp((b.y + 128.0f) / 256.0f, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_b:
       c = clamp((a.z + 128.0f) / 256.0f, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       c = clamp((b.z + 128.0f) / 256.0f, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_R:
       c = clamp(a.x, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       c = clamp(b.x, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_G:
       c = clamp(a.y, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       c = clamp(b.y, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_B:
       c = clamp(a.z, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       c = clamp(b.z, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
       if(use_work_profile == 0)
         c = clamp(0.3f * a.x + 0.59f * a.y + 0.11f * a.z, 0.0f, 1.0f);
       else
         c = clamp(get_rgb_matrix_luminance(a, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       if(use_work_profile == 0)
         c = clamp(0.3f * b.x + 0.59f * b.y + 0.11f * b.z, 0.0f, 1.0f);
       else
         c = clamp(get_rgb_matrix_luminance(b, profile_info, profile_info->matrix_in, profile_lut), 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
       LCH = Lab_2_LCH(a);
       c = clamp(LCH.y / (128.0f * sqrt(2.0f)), 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       LCH = Lab_2_LCH(b);
       c = clamp(LCH.y / (128.0f * sqrt(2.0f)), 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
       LCH = Lab_2_LCH(a);
       c = clamp(LCH.z, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       LCH = Lab_2_LCH(b);
       c = clamp(LCH.z, 0.0f, 1.0f);
+      is_lab = 1;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
       HSL = RGB_2_HSL(a);
       c = clamp(HSL.x, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       HSL = RGB_2_HSL(b);
       c = clamp(HSL.x, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
       HSL = RGB_2_HSL(a);
       c = clamp(HSL.y, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       HSL = RGB_2_HSL(b);
       c = clamp(HSL.y, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
       HSL = RGB_2_HSL(a);
       c = clamp(HSL.z, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       HSL = RGB_2_HSL(b);
       c = clamp(HSL.z, 0.0f, 1.0f);
+      is_lab = 0;
       break;
     default:
       c = 0.0f;
+      is_lab = 0;
       break;
   }
 
-  a.x = a.y = a.z = c;
+  if(is_lab)
+  {
+    a.x = c * 100.0f;
+    a.y = a.z = 0.0f;
+  }
+  else
+  {
+    a.x = a.y = a.z = c;
+  }
   a.w = opacity;
 
   write_imagef(out, (int2)(x, y), a);

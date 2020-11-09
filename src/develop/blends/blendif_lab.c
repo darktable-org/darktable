@@ -1166,6 +1166,15 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
 }
 
 
+static inline void _display_channel_value(float *const restrict out, const float value, const float mask)
+{
+  // We are in the lab color space, write only the luminance
+  out[0] = value * 100.0f;
+  out[1] = 0.0f;
+  out[2] = 0.0f;
+  out[3] = mask;
+}
+
 static void _display_channel(const float *const restrict a, float *const restrict b,
                              const float *const restrict mask, const size_t stride,
                              const dt_dev_pixelpipe_display_mask_t channel)
@@ -1176,48 +1185,42 @@ static void _display_channel(const float *const restrict a, float *const restric
       for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         const float c = clamp_range_f(a[j]/100.0f, 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         const float c = clamp_range_f(b[j]/100.0f, 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_a:
       for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         const float c = clamp_range_f((a[j+1]+128.0f)/256.0f, 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         const float c = clamp_range_f((b[j+1]+128.0f)/256.0f, 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_b:
       for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         const float c = clamp_range_f((a[j+2]+128.0f)/256.0f, 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
       for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         const float c = clamp_range_f((b[j+2]+128.0f)/256.0f, 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
@@ -1226,8 +1229,7 @@ static void _display_channel(const float *const restrict a, float *const restric
         float LCH[3];
         dt_Lab_2_LCH(a + j, LCH);
         const float c = clamp_range_f(LCH[1]/(128.0f*sqrtf(2.0f)), 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
@@ -1236,8 +1238,7 @@ static void _display_channel(const float *const restrict a, float *const restric
         float LCH[3];
         dt_Lab_2_LCH(b + j, LCH);
         const float c = clamp_range_f(LCH[1]/(128.0f*sqrtf(2.0f)), 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
@@ -1246,8 +1247,7 @@ static void _display_channel(const float *const restrict a, float *const restric
         float LCH[3];
         dt_Lab_2_LCH(a + j, LCH);
         const float c = clamp_range_f(LCH[2], 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
@@ -1256,15 +1256,13 @@ static void _display_channel(const float *const restrict a, float *const restric
         float LCH[3];
         dt_Lab_2_LCH(b + j, LCH);
         const float c = clamp_range_f(LCH[2], 0.0f, 1.0f);
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = c;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], c, mask[i]);
       }
       break;
     default:
       for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        for(int k = 0; k < DT_BLENDIF_LAB_BCH; k++) b[j + k] = 0.0f;
-        b[j + DT_BLENDIF_LAB_BCH] = mask[i];
+        _display_channel_value(&b[j], 0.0f, mask[i]);
       }
       break;
   }
