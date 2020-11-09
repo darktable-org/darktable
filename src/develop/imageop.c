@@ -823,19 +823,19 @@ static void dt_iop_gui_movedown_callback(GtkButton *button, dt_iop_module_t *mod
   dt_ioppr_check_iop_order(module->dev, 0, "dt_iop_gui_movedown_callback end");
 
   // we rebuild the pipe
-  prev->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
-  prev->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  prev->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
-  prev->dev->pipe->cache_obsolete = 1;
-  prev->dev->preview_pipe->cache_obsolete = 1;
-  prev->dev->preview2_pipe->cache_obsolete = 1;
+  module->dev->pipe->changed |= DT_DEV_PIPE_REMOVE;
+  module->dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  module->dev->preview2_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  module->dev->pipe->cache_obsolete = 1;
+  module->dev->preview_pipe->cache_obsolete = 1;
+  module->dev->preview2_pipe->cache_obsolete = 1;
 
   // rebuild the accelerators
   dt_iop_connect_accels_multi(module->so);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED);
 
   // invalidate buffers and force redraw of darkroom
-  dt_dev_invalidate_all(prev->dev);
+  dt_dev_invalidate_all(module->dev);
 }
 
 static void dt_iop_gui_moveup_callback(GtkButton *button, dt_iop_module_t *module)
