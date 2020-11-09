@@ -363,7 +363,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 static void set_outer_border_sse(float *buf, const float col[4], const int height, const int width,
                                  const int border_height, const int border_width)
 {
-  const __m128 color = _mm_load_ps(col);
+  const __m128 color = _mm_loadu_ps(col);  // use unalignd load since 'col' is not necessarily 16-byte aligned
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(buf, col, border_height, height, width, color)  \
