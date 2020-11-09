@@ -417,11 +417,13 @@ void refresh_sliders_to_device(MidiDevice *midi)
         GtkWidget *w = GTK_WIDGET(k->accelerator->closure->data);
         if (k->group == midi->group && w)
         {
-          float min = dt_bauhaus_slider_get_soft_min(w);
-          float max = dt_bauhaus_slider_get_soft_max(w);
-          float c   = dt_bauhaus_slider_get(w);
+          const gboolean is_slider = DT_BAUHAUS_WIDGET(w)->type == DT_BAUHAUS_SLIDER;
 
-          int velocity = round((c-min)/(max-min)*127);
+          float min = is_slider ? dt_bauhaus_slider_get_soft_min(w) : 0;
+          float max = is_slider ? dt_bauhaus_slider_get_soft_max(w) : dt_bauhaus_combobox_length(w);
+          float c   = is_slider ? dt_bauhaus_slider_get(w) : dt_bauhaus_combobox_get(w);
+
+          int velocity = is_slider ? round((c-min)/(max-min)*127) : (c>11?c+107:c*127./12.+1.25);
 
           if (velocity != midi->last_known[k->key])
           {
@@ -635,8 +637,10 @@ void aggregate_and_set_slider(MidiDevice *midi,
 
         if (w)
         {
-          float v = dt_bauhaus_slider_get(w);
-          float s = dt_bauhaus_slider_get_step(w);
+          const gboolean is_slider = DT_BAUHAUS_WIDGET(w)->type == DT_BAUHAUS_SLIDER;
+
+          float v = is_slider ? dt_bauhaus_slider_get(w) : dt_bauhaus_combobox_get(w);
+          float s = is_slider ? dt_bauhaus_slider_get_step(w) : 1;
 
           int move = midi->accum;
 
@@ -644,10 +648,10 @@ void aggregate_and_set_slider(MidiDevice *midi,
           {
             midi->last_known[midi->stored_key] = midi->accum;
 
-            float wmin = dt_bauhaus_slider_get_soft_min(w);
-            float wmax = dt_bauhaus_slider_get_soft_max(w);
+            float wmin = is_slider ? dt_bauhaus_slider_get_soft_min(w) : 0;
+            float wmax = is_slider ? dt_bauhaus_slider_get_soft_max(w) : dt_bauhaus_combobox_length(w);
 
-            int location = round((v-wmin)/(wmax-wmin)*127);
+            int location = is_slider ? round((v-wmin)/(wmax-wmin)*127) : (v>11?v+107:v*127./12.+1.25);
             move -= location;
 
             // attempt to limit number of steps if acceleration too high to avoid flipping back and forth between ends of range
@@ -714,7 +718,10 @@ void aggregate_and_set_slider(MidiDevice *midi,
             }
             else
             {
-              dt_bauhaus_slider_set(w, v + s * midi->stored_knob->acceleration * move);
+              if(is_slider)
+                dt_bauhaus_slider_set(w, v + s * midi->stored_knob->acceleration * move);
+              else
+                dt_bauhaus_combobox_set(w, MAX(0, v + s * move));
               dt_accel_widget_toast(w);
             }
           }
@@ -799,7 +806,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
             new_knob->key = key;
             new_knob->acceleration = 1;
             new_knob->accelerator = da;
-            if (midi->mapping_velocity - velocity == 1)
+            if (midi->mapping_velocity == 0 || midi->mapping_velocity - velocity == 1)
             {
               new_knob->encoding = MIDI_ABSOLUTE;
               new_knob->locked = FALSE;
