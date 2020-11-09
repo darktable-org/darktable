@@ -104,6 +104,7 @@ FILE(GLOB SOURCE_FILES
   "develop/blends/blendif_lab.c"
   "develop/blends/blendif_raw.c"
   "develop/blends/blendif_rgb_hsl.c"
+  "develop/blends/blendif_rgb_jzczhz.c"
   "develop/tiling.c"
   "common/dwt.c"
   "common/heal.c"

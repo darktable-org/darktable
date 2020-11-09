@@ -90,7 +90,9 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
 {
   dt_develop_blend_params_t default_blendop_params
       = { DEVELOP_MASK_DISABLED,
+          DEVELOP_BLEND_CS_NONE,
           DEVELOP_BLEND_NORMAL2,
+          0.0f,
           100.0f,
           DEVELOP_COMBINE_NORM_EXCL,
           0,
@@ -105,6 +107,7 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
             0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+          { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
           { 0 }, 0, 0, FALSE };
   dt_gui_presets_add_with_blendop(
       name, op, version, params, params_size,
