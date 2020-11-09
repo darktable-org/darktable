@@ -102,7 +102,6 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
   GtkWidget *color_picker;
-  gboolean auto_detect_illuminant;
   float xy[2];
   dt_ai_wb_model_t wb_model;
   float XYZ[4];
@@ -119,6 +118,7 @@ typedef struct dt_iop_channelmixer_rbg_data_t
   float p, gamut;
   int apply_grey;
   int clip;
+  gboolean run_detection;
   dt_adaptation_t adaptation;
 } dt_iop_channelmixer_rbg_data_t;
 
@@ -654,7 +654,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model
   for(size_t c = 0; c < 2; c++)
   {
     const float shift = (wb_model == DT_AI_SURFACES) ? XYZ_surface[c] : XYZ_edge[c];
-    illuminant[c] = (norm_D50 * shift / elements) + D50[c];
+    illuminant[c] = (shift / (elements * norm_D50)) + D50[c];
   }
 
   dt_free_align(temp);
@@ -781,7 +781,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // auto-detect WB upon request
   if(self->dev->gui_attached && g)
   {
-    if(g->auto_detect_illuminant && !darktable.gui->reset)
+    if(data->run_detection)
     {
       if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
       {
@@ -856,7 +856,8 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
 
   if(g == NULL) return;
-  if(!g->auto_detect_illuminant) return;
+  if(p->illuminant != DT_ILLUMINANT_DETECT_EDGES && p->illuminant != DT_ILLUMINANT_DETECT_SURFACES)
+    return;
 
   dt_pthread_mutex_lock(&g->lock);
   p->x = g->XYZ[0];
@@ -880,7 +881,6 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   update_illuminants(self);
   update_approx_cct(self);
   update_illuminant_color(self);
-  g->auto_detect_illuminant = FALSE;
 
   --darktable.gui->reset;
 
@@ -940,6 +940,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // if illuminant is set as camera, x and y are set on-the-fly at commit time, so we need to set adaptation too
   if(p->illuminant == DT_ILLUMINANT_CAMERA)
     check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
+
+  d->run_detection
+      = (p->illuminant == DT_ILLUMINANT_DETECT_EDGES || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES);
 
   // Convert illuminant from xyY to XYZ
   float XYZ[3];
@@ -1622,7 +1625,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   gui_changed(self, NULL, NULL);
 
-  g->auto_detect_illuminant = FALSE;
 }
 
 void init(dt_iop_module_t *module)
@@ -1712,14 +1714,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
               || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
       {
         // Get image WB
-        g->auto_detect_illuminant = TRUE;
         if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES) g->wb_model = DT_AI_EDGES;
         else if(p->illuminant == DT_ILLUMINANT_DETECT_SURFACES) g->wb_model = DT_AI_SURFACES;
 
         // We need to recompute only the thumbnail
         dt_control_log(_("auto-detection of white balance started…"));
-
-        return;
       }
     }
   }
@@ -1810,7 +1809,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = IOP_GUI_ALLOC(channelmixer_rgb);
 
-  g->auto_detect_illuminant = FALSE;
   g->XYZ[0] = NAN;
   dt_pthread_mutex_init(&g->lock, NULL);
 
