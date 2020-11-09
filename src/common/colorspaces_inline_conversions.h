@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/math.h"
+#include "common/darktable.h"
 
 #ifdef __SSE2__
 #include "common/sse.h" // also loads darkable.h
@@ -26,6 +27,15 @@
 #else
 #include "common/darktable.h"
 #endif
+
+
+// When included by a C++ file, restrict qualifiers are not allowed
+#ifdef __cplusplus
+#define DT_RESTRICT
+#else
+#define DT_RESTRICT restrict
+#endif
+
 
 #ifdef __SSE2__
 static inline __m128 lab_f_inv_m(const __m128 x)
@@ -502,56 +512,165 @@ static inline void dt_prophotorgb_to_Lab(const float *const rgb, float *const La
   dt_XYZ_to_Lab(XYZ, Lab);
 }
 
+
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void dt_RGB_2_HSL(const float *const RGB, float *const HSL)
+static inline float _dt_RGB_2_Hue(const float *const DT_RESTRICT RGB, const float max, const float delta)
 {
-  float H, S, L;
+  float hue;
+  if(RGB[0] == max)
+    hue = (RGB[1] - RGB[2]) / delta;
+  else if(RGB[1] == max)
+    hue = 2.0f + (RGB[2] - RGB[0]) / delta;
+  else
+    hue = 4.0f + (RGB[0] - RGB[1]) / delta;
 
-  float R = RGB[0];
-  float G = RGB[1];
-  float B = RGB[2];
+  hue /= 6.0f;
+  if(hue < 0.0f) hue += 1.0f;
+  if(hue > 1.0f) hue -= 1.0f;
+  return hue;
+}
 
-  float var_Min = fminf(R, fminf(G, B));
-  float var_Max = fmaxf(R, fmaxf(G, B));
-  float del_Max = var_Max - var_Min;
-
-  L = (var_Max + var_Min) / 2.0f;
-
-  if(del_Max == 0.0f)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(RGB: 16)
+#endif
+static inline void _dt_Hue_2_RGB(float *const DT_RESTRICT RGB, const float H, const float C, const float min)
+{
+  const float h = H * 6.0f;
+  const float i = floorf(h);
+  const float f = h - i;
+  const float fc = f * C;
+  const float top = C + min;
+  const float inc = fc + min;
+  const float dec = top - fc;
+  const size_t i_idx = (size_t)i;
+  if(i_idx == 0)
   {
-    H = 0.0f;
-    S = 0.0f;
+    RGB[0] = top;
+    RGB[1] = inc;
+    RGB[2] = min;
+  }
+  else if(i_idx == 1)
+  {
+    RGB[0] = dec;
+    RGB[1] = top;
+    RGB[2] = min;
+  }
+  else if(i_idx == 2)
+  {
+    RGB[0] = min;
+    RGB[1] = top;
+    RGB[2] = inc;
+  }
+  else if(i_idx == 3)
+  {
+    RGB[0] = min;
+    RGB[1] = dec;
+    RGB[2] = top;
+  }
+  else if(i_idx == 4)
+  {
+    RGB[0] = inc;
+    RGB[1] = min;
+    RGB[2] = top;
   }
   else
   {
+    RGB[0] = top;
+    RGB[1] = min;
+    RGB[2] = dec;
+  }
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(RGB, HSL: 16)
+#endif
+static inline void dt_RGB_2_HSL(const float *const DT_RESTRICT RGB, float *const DT_RESTRICT HSL)
+{
+  const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
+  const float max = fmaxf(RGB[0], fmaxf(RGB[1], RGB[2]));
+  const float delta = max - min;
+
+  const float L = (max + min) / 2.0f;
+  float H, S;
+
+  if(fabsf(max) > 1e-6f && fabsf(delta) > 1e-6f)
+  {
     if(L < 0.5f)
-      S = del_Max / (var_Max + var_Min);
+      S = delta / (max + min);
     else
-      S = del_Max / (2.0f - var_Max - var_Min);
-
-    float del_R = (((var_Max - R) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_G = (((var_Max - G) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-    float del_B = (((var_Max - B) / 6.0f) + (del_Max / 2.0f)) / del_Max;
-
-    if(R == var_Max)
-      H = del_B - del_G;
-    else if(G == var_Max)
-      H = (1.0f / 3.0f) + del_R - del_B;
-    else if(B == var_Max)
-      H = (2.0f / 3.0f) + del_G - del_R;
-    else
-      H = 0.0f; // make GCC happy
-
-    if(H < 0.0f) H += 1.0f;
-    if(H > 1.0f) H -= 1.0f;
+      S = delta / (2.0f - max - min);
+    H = _dt_RGB_2_Hue(RGB, max, delta);
+  }
+  else
+  {
+    H = 0.0f;
+    S = 0.0f;
   }
 
   HSL[0] = H;
   HSL[1] = S;
   HSL[2] = L;
 }
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(HSL, RGB: 16)
+#endif
+static inline void dt_HSL_2_RGB(const float *const DT_RESTRICT HSL, float *const DT_RESTRICT RGB)
+{
+  // almost straight from https://en.wikipedia.org/wiki/HSL_and_HSV
+  const float L = HSL[2];
+  float C;
+  if(L < 0.5f)
+    C = L * HSL[1];
+  else
+    C = (1.0f - L) * HSL[1];
+  const float m = L - C;
+  _dt_Hue_2_RGB(RGB, HSL[0], 2.0f * C, m);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(RGB, HSV: 16)
+#endif
+static inline void dt_RGB_2_HSV(const float *const DT_RESTRICT RGB, float *const DT_RESTRICT HSV)
+{
+  const float min = fminf(RGB[0], fminf(RGB[1], RGB[2]));
+  const float max = fmaxf(RGB[0], fmaxf(RGB[1], RGB[2]));
+  const float delta = max - min;
+
+  const float V = max;
+  float S, H;
+
+  if(fabsf(max) > 1e-6f && fabsf(delta) > 1e-6f)
+  {
+    S = delta / max;
+    H = _dt_RGB_2_Hue(RGB, max, delta);
+  }
+  else
+  {
+    S = 0.0f;
+    H = 0.0f;
+  }
+
+  HSV[0] = H;
+  HSV[1] = S;
+  HSV[2] = V;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(HSV, RGB: 16)
+#endif
+static inline void dt_HSV_2_RGB(const float *const DT_RESTRICT HSV, float *const DT_RESTRICT RGB)
+{
+  // almost straight from https://en.wikipedia.org/wiki/HSL_and_HSV
+  const float C = HSV[1] * HSV[2];
+  const float m = HSV[2] - C;
+  _dt_Hue_2_RGB(RGB, HSV[0], C, m);
+}
+
 
 #ifdef _OPENMP
 #pragma omp declare simd
@@ -563,10 +682,10 @@ static inline void dt_Lab_2_LCH(const float *const Lab, float *const LCH)
   if(var_H > 0.0f)
     var_H = var_H / (2.0f * DT_M_PI_F);
   else
-    var_H = 1.0f - fabs(var_H) / (2.0f * DT_M_PI_F);
+    var_H = 1.0f - fabsf(var_H) / (2.0f * DT_M_PI_F);
 
   LCH[0] = Lab[0];
-  LCH[1] = sqrtf(Lab[1] * Lab[1] + Lab[2] * Lab[2]);
+  LCH[1] = hypotf(Lab[1], Lab[2]);
   LCH[2] = var_H;
 }
 
@@ -585,6 +704,8 @@ static inline float dt_camera_rgb_luminance(const float *const rgb)
 {
   return (rgb[0] * 0.2225045f + rgb[1] * 0.7168786f + rgb[2] * 0.0606169f);
 }
+
+#undef DT_RESTRICT
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

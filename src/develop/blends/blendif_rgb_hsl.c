@@ -15,6 +15,16 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
+#if defined(__GNUC__)
+#pragma GCC optimize("unroll-loops", "tree-loop-if-convert", "tree-loop-distribution", "no-strict-aliasing",      \
+                     "loop-interchange", "loop-nest-optimize", "tree-loop-im", "unswitch-loops",                  \
+                     "tree-loop-ivcanon", "ira-loop-pressure", "split-ivs-in-unroller", "tree-loop-vectorize",    \
+                     "variable-expansion-in-unroller", "split-loops", "ivopts", "predictive-commoning",           \
+                     "tree-loop-linear", "loop-block", "loop-strip-mine", "finite-math-only", "fp-contract=fast", \
+                     "fast-math", "no-math-errno")
+#endif
+
 #include "common/colorspaces_inline_conversions.h"
 #include "common/math.h"
 #include "develop/blend.h"
@@ -24,255 +34,212 @@
 #define DT_BLENDIF_RGB_CH 4
 #define DT_BLENDIF_RGB_BCH 3
 
+
 typedef void(_blend_row_func)(const float *const restrict a, float *const restrict b,
                               const float *const restrict mask, const size_t stride);
 
-static inline float _Hue_2_RGB(float v1, float v2, float vH)
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float clamp_simd(const float x)
 {
-  if(vH < 0.0f) vH += 1.0f;
-  if(vH > 1.0f) vH -= 1.0f;
-  if((6.0f * vH) < 1.0f) return (v1 + (v2 - v1) * 6.0f * vH);
-  if((2.0f * vH) < 1.0f) return (v2);
-  if((3.0f * vH) < 2.0f) return (v1 + (v2 - v1) * ((2.0f / 3.0f) - vH) * 6.0f);
-  return (v1);
+  return fminf(fmaxf(x, 0.0f), 1.0f);
 }
 
-static inline void _HSL_2_RGB(const float *HSL, float *RGB)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ: 16)
+#endif
+static inline void _CLAMP_XYZ(float *const restrict XYZ)
 {
-  float H = HSL[0];
-  float S = HSL[1];
-  float L = HSL[2];
+  for(size_t i = 0; i < 3; i++) XYZ[i] = clamp_simd(XYZ[i]);
+}
 
-  float var_1, var_2;
+#ifdef _OPENMP
+#pragma omp declare simd aligned(src, dst: 16)
+#endif
+static inline void _PX_COPY(const float *const restrict src, float *const restrict dst)
+{
+  for(size_t i = 0; i < 3; i++) dst[i] = src[i];
+}
 
-  if(S < 1e-6f)
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(parameters, invert_mask)
+#endif
+static inline float _blendif_compute_factor(const float value, const unsigned int invert_mask,
+                                            const float *const restrict parameters)
+{
+  float factor = 0.0f;
+  if(value <= parameters[0])
   {
-    RGB[0] = RGB[1] = RGB[2] = L;
+   // we are below the keyframe
+   factor = 0.0f;
+  }
+  else if(value < parameters[1])
+  {
+   // we are on the bottom slope of the keyframe
+   factor = (value - parameters[0]) * parameters[4];
+  }
+  else if(value <= parameters[2])
+  {
+   // we are on the ramp - constant part - of the keyframe
+   factor = 1.0f;
+  }
+  else if(value < parameters[3])
+  {
+   // we are on the top slope of the keyframe
+   factor = 1.0f - (value - parameters[2]) * parameters[5];
   }
   else
   {
-    if(L < 0.5f)
-      var_2 = L * (1.0f + S);
-    else
-      var_2 = (L + S) - (S * L);
+   // we are above the keyframe
+   factor = 0.0f;
+  }
+  return invert_mask ? 1.0f - factor : factor; // inverted channel?
+}
 
-    var_1 = 2.0f * L - var_2;
-
-    RGB[0] = _Hue_2_RGB(var_1, var_2, H + (1.0f / 3.0f));
-    RGB[1] = _Hue_2_RGB(var_1, var_2, H);
-    RGB[2] = _Hue_2_RGB(var_1, var_2, H - (1.0f / 3.0f));
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels: 16) uniform(parameters, invert_mask, stride, profile)
+#endif
+static inline void _blendif_gray(const float *const restrict pixels, float *const restrict mask,
+                                 const size_t stride, const float *const restrict parameters,
+                                 const unsigned int invert_mask,
+                                 const dt_iop_order_iccprofile_info_t *const restrict profile)
+{
+  for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
+  {
+    const float value = dt_ioppr_get_rgb_matrix_luminance(pixels + j, profile->matrix_in, profile->lut_in,
+                                                          profile->unbounded_coeffs_in, profile->lutsize,
+                                                          profile->nonlinearlut);
+    mask[x] *= _blendif_compute_factor(value, invert_mask, parameters);
   }
 }
 
-static inline void _RGB_2_HSV(const float *RGB, float *HSV)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels: 16) uniform(parameters, invert_mask, stride)
+#endif
+static inline void _blendif_gray_fb(const float *const restrict pixels, float *const restrict mask,
+                                    const size_t stride, const float *const restrict parameters,
+                                    const unsigned int invert_mask)
 {
-  float r = RGB[0], g = RGB[1], b = RGB[2];
-  float *h = HSV, *s = HSV + 1, *v = HSV + 2;
-
-  float min = fminf(r, fminf(g, b));
-  float max = fmaxf(r, fmaxf(g, b));
-  float delta = max - min;
-
-  *v = max;
-
-  if(fabsf(max) > 1e-6f && fabsf(delta) > 1e-6f)
+  for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
   {
-    *s = delta / max;
-  }
-  else
-  {
-    *s = 0.0f;
-    *h = 0.0f;
-    return;
-  }
-
-  if(r == max)
-    *h = (g - b) / delta;
-  else if(g == max)
-    *h = 2.0f + (b - r) / delta;
-  else
-    *h = 4.0f + (r - g) / delta;
-
-  *h /= 6.0f;
-
-  if(*h < 0) *h += 1.0f;
-}
-
-static inline void _HSV_2_RGB(const float *HSV, float *RGB)
-{
-  float h = 6.0f * HSV[0], s = HSV[1], v = HSV[2];
-  float *r = RGB, *g = RGB + 1, *b = RGB + 2;
-
-  if(fabsf(s) < 1e-6f)
-  {
-    *r = *g = *b = v;
-    return;
-  }
-
-  float i = floorf(h);
-  float f = h - i;
-  float p = v * (1.0f - s);
-  float q = v * (1.0f - s * f);
-  float t = v * (1.0f - s * (1.0f - f));
-
-  switch((int)i)
-  {
-    case 0:
-      *r = v;
-      *g = t;
-      *b = p;
-      break;
-    case 1:
-      *r = q;
-      *g = v;
-      *b = p;
-      break;
-    case 2:
-      *r = p;
-      *g = v;
-      *b = t;
-      break;
-    case 3:
-      *r = p;
-      *g = q;
-      *b = v;
-      break;
-    case 4:
-      *r = t;
-      *g = p;
-      *b = v;
-      break;
-    case 5:
-    default:
-      *r = v;
-      *g = p;
-      *b = q;
-      break;
+    const float value = 0.3f * pixels[j + 0] + 0.59f * pixels[j + 1] + 0.11f * pixels[j + 2];
+    mask[x] *= _blendif_compute_factor(value, invert_mask, parameters);
   }
 }
 
-static inline void _CLAMP_XYZ(float *XYZ)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels: 16) uniform(parameters, invert_mask, stride)
+#endif
+static inline void _blendif_rgb_red(const float *const restrict pixels, float *const restrict mask,
+                                    const size_t stride, const float *const restrict parameters,
+                                    const unsigned int invert_mask)
 {
-  XYZ[0] = clamp_range_f(XYZ[0], 0.0f, 1.0f);
-  XYZ[1] = clamp_range_f(XYZ[1], 0.0f, 1.0f);
-  XYZ[2] = clamp_range_f(XYZ[2], 0.0f, 1.0f);
-}
-
-static inline void _PX_COPY(const float *src, float *dst)
-{
-  dst[0] = src[0];
-  dst[1] = src[1];
-  dst[2] = src[2];
-}
-
-static inline float _blendif_factor(const float *const restrict input, const float *const restrict output,
-                                    const unsigned int blendif, const float *const restrict parameters,
-                                    const unsigned int mask_mode, const unsigned int mask_combine,
-                                    const dt_iop_order_iccprofile_info_t *const work_profile)
-{
-  float result = 1.0f;
-  float scaled[DEVELOP_BLENDIF_SIZE] = { 0.5f };
-
-  if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-  if(work_profile == NULL)
-    scaled[DEVELOP_BLENDIF_GRAY_in] =clamp_range_f(0.3f*input[0]+0.59f*input[1]+0.11f*input[2], 0.0f,
-                                                   1.0f); // Gray scaled to 0..1
-  else
-    scaled[DEVELOP_BLENDIF_GRAY_in] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(input,
-                                                                                     work_profile->matrix_in,
-                                                                                     work_profile->lut_in,
-                                                                                     work_profile->unbounded_coeffs_in,
-                                                                                     work_profile->lutsize,
-                                                                                     work_profile->nonlinearlut), 0.0f,
-                                                   1.0f);                // Gray scaled to 0..1
-  scaled[DEVELOP_BLENDIF_RED_in] =clamp_range_f(input[0], 0.0f, 1.0f);   // Red
-  scaled[DEVELOP_BLENDIF_GREEN_in] =clamp_range_f(input[1], 0.0f, 1.0f); // Green
-  scaled[DEVELOP_BLENDIF_BLUE_in] =clamp_range_f(input[2], 0.0f, 1.0f);  // Blue
-  if(work_profile == NULL)
-    scaled[DEVELOP_BLENDIF_GRAY_out] =clamp_range_f(0.3f*output[0]+0.59f*output[1]+0.11f*output[2],
-                                                    0.0f, 1.0f); // Gray scaled to 0..1
-  else
-    scaled[DEVELOP_BLENDIF_GRAY_out] =clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(output,
-                                                                                      work_profile->matrix_in,
-                                                                                      work_profile->lut_in,
-                                                                                      work_profile->unbounded_coeffs_in,
-                                                                                      work_profile->lutsize,
-                                                                                      work_profile->nonlinearlut),
-                                                    0.0f, 1.0f);           // Gray scaled to 0..1
-  scaled[DEVELOP_BLENDIF_RED_out] =clamp_range_f(output[0], 0.0f, 1.0f);   // Red
-  scaled[DEVELOP_BLENDIF_GREEN_out] =clamp_range_f(output[1], 0.0f, 1.0f); // Green
-  scaled[DEVELOP_BLENDIF_BLUE_out] =clamp_range_f(output[2], 0.0f, 1.0f);  // Blue
-
-  if(blendif & 0x7f00) // do we need to consider HSL ?
+  for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
   {
-    float HSL_input[3];
-    float HSL_output[3];
-    dt_RGB_2_HSL(input, HSL_input);
-    dt_RGB_2_HSL(output, HSL_output);
-
-    scaled[DEVELOP_BLENDIF_H_in] =clamp_range_f(HSL_input[0], 0.0f, 1.0f); // H scaled to 0..1
-    scaled[DEVELOP_BLENDIF_S_in] =clamp_range_f(HSL_input[1], 0.0f, 1.0f); // S scaled to 0..1
-    scaled[DEVELOP_BLENDIF_l_in] =clamp_range_f(HSL_input[2], 0.0f, 1.0f); // L scaled to 0..1
-
-    scaled[DEVELOP_BLENDIF_H_out] =clamp_range_f(HSL_output[0], 0.0f, 1.0f); // H scaled to 0..1
-    scaled[DEVELOP_BLENDIF_S_out] =clamp_range_f(HSL_output[1], 0.0f, 1.0f); // S scaled to 0..1
-    scaled[DEVELOP_BLENDIF_l_out] =clamp_range_f(HSL_output[2], 0.0f, 1.0f); // L scaled to 0..1
+    mask[x] *= _blendif_compute_factor(pixels[j + 0], invert_mask, parameters);
   }
+}
 
-  for(int ch = 0; ch <= DEVELOP_BLENDIF_MAX; ch++)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels: 16) uniform(parameters, invert_mask, stride)
+#endif
+static inline void _blendif_rgb_green(const float *const restrict pixels, float *const restrict mask,
+                                      const size_t stride, const float *const restrict parameters,
+                                      const unsigned int invert_mask)
+{
+  for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
   {
-    if((DEVELOP_BLENDIF_RGB_MASK & (1 << ch)) == 0) continue; // skip blendif channels not used in this color space
+    mask[x] *= _blendif_compute_factor(pixels[j + 1], invert_mask, parameters);
+  }
+}
 
-    if((blendif & (1 << ch)) == 0) // deal with channels where sliders span the whole range
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels: 16) uniform(parameters, invert_mask, stride)
+#endif
+static inline void _blendif_rgb_blue(const float *const restrict pixels, float *const restrict mask,
+                                     const size_t stride, const float *const restrict parameters,
+                                     const unsigned int invert_mask)
+{
+  for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
+  {
+    mask[x] *= _blendif_compute_factor(pixels[j + 2], invert_mask, parameters);
+  }
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels, invert_mask: 16) uniform(parameters, invert_mask, stride)
+#endif
+static inline void _blendif_hsl(const float *const restrict pixels, float *const restrict mask,
+                                const size_t stride, const float *const restrict parameters,
+                                const unsigned int *const restrict invert_mask)
+{
+  for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_RGB_CH)
+  {
+    float HSL[3] DT_ALIGNED_PIXEL;
+    dt_RGB_2_HSL(pixels + j, HSL);
+    float factor = 1.0f;
+    for(size_t i = 0; i < 3; i++)
+      factor *= _blendif_compute_factor(HSL[i], invert_mask[i], parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * i);
+    mask[x] *= factor;
+  }
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(pixels: 16) uniform(stride, blendif, parameters, profile)
+#endif
+static void _blendif_combine_channels(const float *const restrict pixels, float *const restrict mask,
+                                      const size_t stride, const unsigned int blendif,
+                                      const float *const restrict parameters,
+                                      const dt_iop_order_iccprofile_info_t *const restrict profile)
+{
+  if(blendif & (1 << DEVELOP_BLENDIF_GRAY_in))
+  {
+    const unsigned int invert_mask = (blendif >> 16) & (1 << DEVELOP_BLENDIF_GRAY_in);
+    if(profile)
     {
-      result *= !(blendif & (1 << (ch + 16))) == !(mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f : 0.0f;
-      continue;
-    }
-
-    if(result <= 0.000001f) break; // no need to continue if we are already at or close to zero
-
-    float factor;
-    if(scaled[ch] >= parameters[4 * ch + 1] && scaled[ch] <= parameters[4 * ch + 2])
-    {
-      factor = 1.0f;
-    }
-    else if(scaled[ch] > parameters[4 * ch + 0] && scaled[ch] < parameters[4 * ch + 1])
-    {
-      factor
-          = (scaled[ch] - parameters[4 * ch + 0]) / fmaxf(0.01f, parameters[4 * ch + 1] - parameters[4 * ch + 0]);
-    }
-    else if(scaled[ch] > parameters[4 * ch + 2] && scaled[ch] < parameters[4 * ch + 3])
-    {
-      factor = 1.0f
-               - (scaled[ch] - parameters[4 * ch + 2])
-                     / fmaxf(0.01f, parameters[4 * ch + 3] - parameters[4 * ch + 2]);
+      _blendif_gray(pixels, mask, stride, parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_GRAY_in,
+                    invert_mask, profile);
     }
     else
-      factor = 0.0f;
-
-    if((blendif & (1 << (ch + 16))) != 0) factor = 1.0f - factor; // inverted channel?
-
-    result *= ((mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - factor : factor);
+    {
+      _blendif_gray_fb(pixels, mask, stride,
+                       parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_GRAY_in, invert_mask);
+    }
   }
 
-  return (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - result : result;
-}
-
-/* generate blend mask */
-static void _blend_make_mask(const unsigned int blendif, const float *blendif_parameters,
-                             const unsigned int mask_mode, const unsigned int mask_combine, const float gopacity,
-                             const float *const restrict a, const float *const restrict b, const size_t stride,
-                             float *const restrict mask, const dt_iop_order_iccprofile_info_t *const work_profile)
-{
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  if(blendif & (1 << DEVELOP_BLENDIF_RED_in))
   {
-    const float form = mask[i];
-    const float conditional = _blendif_factor(&a[j], &b[j], blendif, blendif_parameters, mask_mode,
-                                              mask_combine, work_profile);
-    float opacity = (mask_combine & DEVELOP_COMBINE_INCL) ? 1.0f - (1.0f - form) * (1.0f - conditional)
-                                                          : form * conditional;
-    opacity = (mask_combine & DEVELOP_COMBINE_INV) ? 1.0f - opacity : opacity;
-    mask[i] = opacity * gopacity;
+    const unsigned int invert_mask = (blendif >> 16) & (1 << DEVELOP_BLENDIF_RED_in);
+    _blendif_rgb_red(pixels, mask, stride, parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_RED_in,
+                     invert_mask);
+  }
+
+  if(blendif & (1 << DEVELOP_BLENDIF_GREEN_in))
+  {
+    const unsigned int invert_mask = (blendif >> 16) & (1 << DEVELOP_BLENDIF_GREEN_in);
+    _blendif_rgb_green(pixels, mask, stride,
+                       parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_GREEN_in, invert_mask);
+  }
+
+  if(blendif & (1 << DEVELOP_BLENDIF_BLUE_in))
+  {
+    const unsigned int invert_mask = (blendif >> 16) & (1 << DEVELOP_BLENDIF_BLUE_in);
+    _blendif_rgb_blue(pixels, mask, stride, parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_BLUE_in,
+                      invert_mask);
+  }
+
+  if(blendif & ((1 << DEVELOP_BLENDIF_H_in) | (1 << DEVELOP_BLENDIF_S_in) | (1 << DEVELOP_BLENDIF_l_in)))
+  {
+    const unsigned int invert_mask[3] DT_ALIGNED_PIXEL = {
+        (blendif >> 16) & (1 << DEVELOP_BLENDIF_H_in),
+        (blendif >> 16) & (1 << DEVELOP_BLENDIF_S_in),
+        (blendif >> 16) & (1 << DEVELOP_BLENDIF_l_in),
+    };
+    _blendif_hsl(pixels, mask, stride, parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_H_in,
+                 invert_mask);
   }
 }
 
@@ -289,53 +256,187 @@ void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, 
   const int iwidth = roi_in->width;
   const int owidth = roi_out->width;
   const int oheight = roi_out->height;
-  const unsigned int blendif = d->blendif;
-  const unsigned int mask_mode = d->mask_mode;
-  const unsigned int mask_combine = d-> mask_combine;
-  const float *const parameters = d->blendif_parameters;
+
+  const unsigned int any_channel_active = d->blendif & DEVELOP_BLENDIF_RGB_MASK;
+  const unsigned int mask_inclusive = d->mask_combine & DEVELOP_COMBINE_INCL;
+  const unsigned int mask_inversed = d->mask_combine & DEVELOP_COMBINE_INV;
+
+  // invert the individual channels if the combine mode is inclusive
+  const unsigned int blendif = d->blendif ^ (mask_inclusive ? DEVELOP_BLENDIF_RGB_MASK << 16 : 0);
+
+  // a channel cancels the mask if the whole span is selected and the channel is inverted
+  const unsigned int canceling_channel = (blendif >> 16) & ~blendif & DEVELOP_BLENDIF_RGB_MASK;
+
+  const size_t buffsize = (size_t)owidth * oheight;
 
   // get the clipped opacity value  0 - 1
-  const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
+  const float global_opacity = clamp_simd(d->opacity / 100.0f);
 
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-  const size_t stride = (size_t)owidth * DT_BLENDIF_RGB_CH;
-
-  // get parametric mask (if any) and apply global opacity
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(opacity, a, b, mask, iwidth, owidth, oheight, stride, xoffs, yoffs, work_profile, blendif, \
-                        parameters, mask_mode, mask_combine)
-#endif
-  for(size_t y = 0; y < oheight; y++)
+  if(!(d->mask_mode & DEVELOP_MASK_CONDITIONAL) || (!canceling_channel && !any_channel_active))
   {
-    const float *const restrict in = a + ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
-    const float *const restrict out = b + y * owidth * DT_BLENDIF_RGB_CH;
-    float *const restrict m = mask + y * owidth;
-    _blend_make_mask(blendif, parameters, mask_mode, mask_combine, opacity, in, out, stride, m, work_profile);
+    // mask is not conditional, invert the mask if required
+    if(mask_inversed)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
+#endif
+      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x]);
+    }
+    else
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
+#endif
+      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * mask[x];
+    }
+  }
+  else if(canceling_channel || !any_channel_active)
+  {
+    // one of the conditional channel selects nothing
+    // this means that the conditional opacity of all pixels is the same
+    // and depends on whether the mask combination is inclusive and whether the mask is inverted
+    if((mask_inversed == 0) ^ (mask_inclusive == 0))
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
+#endif
+      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity;
+    }
+    else
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize) schedule(static)
+#endif
+      for(size_t x = 0; x < buffsize; x++) mask[x] = 0.0f;
+    }
+  }
+  else
+  {
+    // we need to process all conditional channels
+
+    // parameters, for every channel the 4 limits + pre-computed increasing slope and decreasing slope
+    float parameters[DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE] DT_ALIGNED_ARRAY;
+    dt_develop_blendif_process_parameters(parameters, d, iop_cs_rgb);
+
+    const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
+    // allocate space for a temporary mask buffer to split the computation of every channel
+    float *const restrict temp_mask = dt_alloc_align(64, buffsize * sizeof(float));
+    if(!temp_mask)
+    {
+      return;
+    }
+
+#ifdef _OPENMP
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(temp_mask, mask, a, b, oheight, owidth, iwidth, yoffs, xoffs, buffsize, \
+                      blendif, profile, parameters, mask_inclusive, mask_inversed, global_opacity)
+#endif
+    {
+#ifdef __SSE2__
+      // flush denormals to zero to avoid performance penalty if there are a lot of zero values in the mask
+      const int oldMode = _MM_GET_FLUSH_ZERO_MODE();
+      _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+#endif
+
+      // initialize the parametric mask
+#ifdef _OPENMP
+#pragma omp for simd schedule(static) aligned(temp_mask:64)
+#endif
+      for(size_t x = 0; x < buffsize; x++) temp_mask[x] = 1.0f;
+
+      // combine channels
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(size_t y = 0; y < oheight; y++)
+      {
+        const size_t start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
+        _blendif_combine_channels(a + start, temp_mask + (y * owidth), owidth, blendif, parameters, profile);
+      }
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+      for(size_t y = 0; y < oheight; y++)
+      {
+        const size_t start = (y * owidth) * DT_BLENDIF_RGB_CH;
+        _blendif_combine_channels(b + start, temp_mask + (y * owidth), owidth, blendif >> DEVELOP_BLENDIF_GRAY_out,
+                                  parameters + DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_GRAY_out,
+                                  profile);
+      }
+
+      // apply global opacity
+      if(mask_inclusive)
+      {
+        if(mask_inversed)
+        {
+#ifdef _OPENMP
+#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
+#endif
+          for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x]) * temp_mask[x];
+        }
+        else
+        {
+#ifdef _OPENMP
+#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
+#endif
+          for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - (1.0f - mask[x]) * temp_mask[x]);
+        }
+      }
+      else
+      {
+        if(mask_inversed)
+        {
+#ifdef _OPENMP
+#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
+#endif
+          for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * (1.0f - mask[x] * temp_mask[x]);
+        }
+        else
+        {
+#ifdef _OPENMP
+#pragma omp for simd schedule(static) aligned(mask, temp_mask:64)
+#endif
+          for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * mask[x] * temp_mask[x];
+        }
+      }
+
+#ifdef __SSE2__
+      _MM_SET_FLUSH_ZERO_MODE(oldMode);
+#endif
+    }
+
+    dt_free_align(temp_mask);
   }
 }
 
 
 /* normal blend with clamping */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_normal_bounded(const float *const restrict a, float *const restrict b,
                                   const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j + k] * (1.0f - local_opacity) + b[j + k] * local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + b[j + k] * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* normal blend without any clamping */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_normal_unbounded(const float *const restrict a, float *const restrict b,
                                     const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
@@ -347,320 +448,381 @@ static void _blend_normal_unbounded(const float *const restrict a, float *const 
 }
 
 /* lighten */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_lighten(const float *const restrict a, float *const restrict b,
                            const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + fmaxf(a[j+k], b[j+k])*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + fmaxf(a[j + k], b[j + k]) * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* darken */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_darken(const float *const restrict a, float *const restrict b,
                           const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + fminf(a[j+k], b[j+k])*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + fminf(a[j + k], b[j + k]) * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* multiply */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_multiply(const float *const restrict a, float *const restrict b,
                             const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + (a[j+k]*b[j+k])*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + (a[j + k] * b[j + k]) * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* average */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_average(const float *const restrict a, float *const restrict b,
                            const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + (a[j+k] + b[j+k])/2.0f*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + (a[j + k] + b[j + k]) / 2.0f * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* add */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_add(const float *const restrict a, float *const restrict b,
                        const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + (a[j+k] + b[j+k])*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + (a[j + k] + b[j + k]) * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* subtract */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_subtract(const float *const restrict a, float *const restrict b,
                             const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + ((b[j+k] + a[j+k]) - 1.0f)*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + ((b[j + k] + a[j + k]) - 1.0f) * local_opacity);
     }
-    b[j + 3] = local_opacity;
+    b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* difference */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_difference(const float *const restrict a, float *const restrict b,
                               const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + fabsf(a[j+k] - b[j+k])*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + fabsf(a[j + k] - b[j + k]) * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* screen */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_screen(const float *const restrict a, float *const restrict b,
                           const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      const float la = clamp_range_f(a[j+k], 0.0f, 1.0f);
-      const float lb = clamp_range_f(b[j+k], 0.0f, 1.0f);
-      b[j + k] = clamp_range_f(la*(1.0f - local_opacity) + (1.0f-(1.0f-la)*(1.0f-lb))*local_opacity, 0.0f, 1.0f);
+      const float la = clamp_simd(a[j + k]);
+      const float lb = clamp_simd(b[j + k]);
+      b[j + k] = clamp_simd(la * (1.0f - local_opacity) + (1.0f - (1.0f - la) * (1.0f - lb)) * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* overlay */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_overlay(const float *const restrict a, float *const restrict b,
                            const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      const float la = clamp_range_f(a[j+k], 0.0f, 1.0f);
-      const float lb = clamp_range_f(b[j+k], 0.0f, 1.0f);
-      b[j + k] = clamp_range_f(
-          la*(1.0f - local_opacity2)
-          + (la > 0.5f ? 1.0f - (1.0f - 2.0f*(la - 0.5f))*(1.0f - lb) : 2.0f*la*lb)*local_opacity2,
-          0.0f, 1.0f);
+      const float la = clamp_simd(a[j + k]);
+      const float lb = clamp_simd(b[j + k]);
+      b[j + k] = clamp_simd(
+          la * (1.0f - local_opacity2)
+          + (la > 0.5f ? 1.0f - (1.0f - 2.0f * (la - 0.5f)) * (1.0f - lb)
+                       : 2.0f * la * lb)
+            * local_opacity2);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* softlight */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_softlight(const float *const restrict a, float *const restrict b,
                              const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      const float la = clamp_range_f(a[j+k], 0.0f, 1.0f);
-      const float lb = clamp_range_f(b[j+k], 0.0f, 1.0f);
-      b[j + k] = clamp_range_f(
-          la*(1.0f - local_opacity2)
-          + (lb > 0.5f ? 1.0f - (1.0f - la)*(1.0f - (lb - 0.5f)) : la*(lb + 0.5f))*local_opacity2,
-          0.0f, 1.0f);
+      const float la = clamp_simd(a[j + k]);
+      const float lb = clamp_simd(b[j + k]);
+      b[j + k] = clamp_simd(
+          la * (1.0f - local_opacity2)
+          + (lb > 0.5f ? 1.0f - (1.0f - la) * (1.0f - (lb - 0.5f))
+                       : la * (lb + 0.5f))
+            * local_opacity2);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* hardlight */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_hardlight(const float *const restrict a, float *const restrict b,
                              const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      const float la = clamp_range_f(a[j+k], 0.0f, 1.0f);
-      const float lb = clamp_range_f(b[j+k], 0.0f, 1.0f);
-      b[j + k] = clamp_range_f(
-          la*(1.0f-local_opacity2)
-          + (lb > 0.5f ? 1.0f - (1.0f - 2.0f*(la - 0.5f))*(1.0f - lb) : 2.0f*la*lb)*local_opacity2,
-          0.0f, 1.0f);
+      const float la = clamp_simd(a[j + k]);
+      const float lb = clamp_simd(b[j + k]);
+      b[j + k] = clamp_simd(
+          la * (1.0f - local_opacity2)
+          + (lb > 0.5f ? 1.0f - (1.0f - 2.0f * (la - 0.5f)) * (1.0f - lb)
+                       : 2.0f * la * lb)
+            * local_opacity2);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* vividlight */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_vividlight(const float *const restrict a, float *const restrict b,
                               const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     float local_opacity = mask[i];
     float local_opacity2 = local_opacity * local_opacity;
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      const float la = clamp_range_f(a[j+k], 0.0f, 1.0f);
-      const float lb = clamp_range_f(b[j+k], 0.0f, 1.0f);
-      b[j + k] = clamp_range_f(
-          la*(1.0f - local_opacity2)
-          + (lb > 0.5f ? (lb >= 1.0f ? 1.0f : la/(2.0f*(1.0f - lb)))
-                       : (lb <= 0.0f ? 0.0f : 1.0f - (1.0f - la)/(2.0f*lb)))
-            *local_opacity2,
-          0.0f, 1.0f);
+      const float la = clamp_simd(a[j + k]);
+      const float lb = clamp_simd(b[j + k]);
+      b[j + k] = clamp_simd(
+          la * (1.0f - local_opacity2)
+          + (lb > 0.5f ? (lb >= 1.0f ? 1.0f : la / (2.0f * (1.0f - lb)))
+                       : (lb <= 0.0f ? 0.0f : 1.0f - (1.0f - la) / (2.0f * lb)))
+            * local_opacity2);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* linearlight */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_linearlight(const float *const restrict a, float *const restrict b,
                                const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      const float la = clamp_range_f(a[j+k], 0.0f, 1.0f);
-      const float lb = clamp_range_f(b[j+k], 0.0f, 1.0f);
-      b[j + k] = clamp_range_f(la*(1.0f - local_opacity2) + (la + 2.0f*lb - 1.0f)*local_opacity2, 0.0f, 1.0f);
+      const float la = clamp_simd(a[j + k]);
+      const float lb = clamp_simd(b[j + k]);
+      b[j + k] = clamp_simd(la * (1.0f - local_opacity2) + (la + 2.0f * lb - 1.0f) * local_opacity2);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* pinlight */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_pinlight(const float *const restrict a, float *const restrict b,
                             const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     const float local_opacity2 = local_opacity * local_opacity;
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      const float la = clamp_range_f(a[j+k], 0.0f, 1.0f);
-      const float lb = clamp_range_f(b[j+k], 0.0f, 1.0f);
-      b[j + k] = clamp_range_f(
-          la*(1.0f - local_opacity2)
-          + (lb > 0.5f ? fmaxf(la, 2.0f*(lb - 0.5f)) : fminf(la, 2.0f*lb))*local_opacity2,
-          0.0f, 1.0f);
+      const float la = clamp_simd(a[j + k]);
+      const float lb = clamp_simd(b[j + k]);
+      b[j + k] = clamp_simd(
+          la * (1.0f - local_opacity2)
+          + (lb > 0.5f ? fmaxf(la, 2.0f * (lb - 0.5f))
+                       : fminf(la, 2.0f * lb))
+            * local_opacity2);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* lightness blend */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_lightness(const float *const restrict a, float *const restrict b,
                              const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tta[3], ttb[3];
-    _PX_COPY(&a[j], ta);
+    float ta[3] DT_ALIGNED_PIXEL;
+    float tta[3] DT_ALIGNED_PIXEL;
+    float ttb[3] DT_ALIGNED_PIXEL;
+
+    _PX_COPY(a + j, ta);
     _CLAMP_XYZ(ta);
-    _CLAMP_XYZ(&b[j]);
+    _CLAMP_XYZ(b + j);
 
     dt_RGB_2_HSL(ta, tta);
-    dt_RGB_2_HSL(&b[j], ttb);
+    dt_RGB_2_HSL(b + j, ttb);
 
     ttb[0] = tta[0];
     ttb[1] = tta[1];
     ttb[2] = (tta[2] * (1.0f - local_opacity)) + ttb[2] * local_opacity;
 
-    _HSL_2_RGB(ttb, &b[j]);
-    _CLAMP_XYZ(&b[j]);
+    dt_HSL_2_RGB(ttb, b + j);
+    _CLAMP_XYZ(b + j);
 
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* chroma blend */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_chroma(const float *const restrict a, float *const restrict b,
                           const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tta[3], ttb[3];
-    _PX_COPY(&a[j], ta);
+    float ta[3] DT_ALIGNED_PIXEL;
+    float tta[3] DT_ALIGNED_PIXEL;
+    float ttb[3] DT_ALIGNED_PIXEL;
 
+    _PX_COPY(a + j, ta);
     _CLAMP_XYZ(ta);
-    _CLAMP_XYZ(&b[j]);
+    _CLAMP_XYZ(b + j);
 
     dt_RGB_2_HSL(ta, tta);
-    dt_RGB_2_HSL(&b[j], ttb);
+    dt_RGB_2_HSL(b + j, ttb);
 
     ttb[0] = tta[0];
     ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
     ttb[2] = tta[2];
 
-    _HSL_2_RGB(ttb, &b[j]);
-    _CLAMP_XYZ(&b[j]);
+    dt_HSL_2_RGB(ttb, b + j);
+    _CLAMP_XYZ(b + j);
 
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* hue blend */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_hue(const float *const restrict a, float *const restrict b,
                        const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tta[3], ttb[3];
-    _PX_COPY(&a[j], ta);
+    float ta[3] DT_ALIGNED_PIXEL;
+    float tta[3] DT_ALIGNED_PIXEL;
+    float ttb[3] DT_ALIGNED_PIXEL;
 
+    _PX_COPY(a + j, ta);
     _CLAMP_XYZ(ta);
-    _CLAMP_XYZ(&b[j]);
+    _CLAMP_XYZ(b + j);
 
     dt_RGB_2_HSL(ta, tta);
-    dt_RGB_2_HSL(&b[j], ttb);
+    dt_RGB_2_HSL(b + j, ttb);
 
     /* blend hue along shortest distance on color circle */
     float d = fabsf(tta[0] - ttb[0]);
@@ -669,28 +831,33 @@ static void _blend_hue(const float *const restrict a, float *const restrict b,
     ttb[1] = tta[1];
     ttb[2] = tta[2];
 
-    _HSL_2_RGB(ttb, &b[j]);
-    _CLAMP_XYZ(&b[j]);
+    dt_HSL_2_RGB(ttb, b + j);
+    _CLAMP_XYZ(b + j);
 
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* color blend; blend hue and chroma, but not lightness */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_color(const float *const restrict a, float *const restrict b,
                          const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     float local_opacity = mask[i];
-    float ta[3], tta[3], ttb[3];
-    _PX_COPY(&a[j], ta);
+    float ta[3] DT_ALIGNED_PIXEL;
+    float tta[3] DT_ALIGNED_PIXEL;
+    float ttb[3] DT_ALIGNED_PIXEL;
 
+    _PX_COPY(a + j, ta);
     _CLAMP_XYZ(ta);
-    _CLAMP_XYZ(&b[j]);
+    _CLAMP_XYZ(b + j);
 
     dt_RGB_2_HSL(ta, tta);
-    dt_RGB_2_HSL(&b[j], ttb);
+    dt_RGB_2_HSL(b + j, ttb);
 
     /* blend hue along shortest distance on color circle */
     float d = fabsf(tta[0] - ttb[0]);
@@ -700,28 +867,33 @@ static void _blend_color(const float *const restrict a, float *const restrict b,
     ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
     ttb[2] = tta[2];
 
-    _HSL_2_RGB(ttb, &b[j]);
-    _CLAMP_XYZ(&b[j]);
+    dt_HSL_2_RGB(ttb, b + j);
+    _CLAMP_XYZ(b + j);
 
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* color adjustment; blend hue and chroma; take lightness from module output */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_coloradjust(const float *const restrict a, float *const restrict b,
                                const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tta[3], ttb[3];
-    _PX_COPY(&a[j], ta);
+    float ta[3] DT_ALIGNED_PIXEL;
+    float tta[3] DT_ALIGNED_PIXEL;
+    float ttb[3] DT_ALIGNED_PIXEL;
 
+    _PX_COPY(a + j, ta);
     _CLAMP_XYZ(ta);
-    _CLAMP_XYZ(&b[j]);
+    _CLAMP_XYZ(b + j);
 
     dt_RGB_2_HSL(ta, tta);
-    dt_RGB_2_HSL(&b[j], ttb);
+    dt_RGB_2_HSL(b + j, ttb);
 
     /* blend hue along shortest distance on color circle */
     const float d = fabsf(tta[0] - ttb[0]);
@@ -731,39 +903,46 @@ static void _blend_coloradjust(const float *const restrict a, float *const restr
     ttb[1] = (tta[1] * (1.0f - local_opacity)) + ttb[1] * local_opacity;
     // ttb[2] (output lightness) unchanged
 
-    _HSL_2_RGB(ttb, &b[j]);
-    _CLAMP_XYZ(&b[j]);
+    dt_HSL_2_RGB(ttb, b + j);
+    _CLAMP_XYZ(b + j);
 
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
 /* inverse blend */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_inverse(const float *const restrict a, float *const restrict b,
                            const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++)
     {
-      b[j + k] = clamp_range_f(a[j+k]*(1.0f - local_opacity) + b[j+k]*local_opacity, 0.0f, 1.0f);
+      b[j + k] = clamp_simd(a[j + k] * (1.0f - local_opacity) + b[j + k] * local_opacity);
     }
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
-/* blend only lightness in HSV color space without any clamping (a noop for
- * other color spaces) */
+/* blend only lightness in HSV color space without any clamping */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_HSV_lightness(const float *const restrict a, float *const restrict b,
                                  const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tb[3];
-    _RGB_2_HSV(&a[j], ta);
-    _RGB_2_HSV(&b[j], tb);
+    float ta[3] DT_ALIGNED_PIXEL;
+    float tb[3] DT_ALIGNED_PIXEL;
+
+    dt_RGB_2_HSV(a + j, ta);
+    dt_RGB_2_HSV(b + j, tb);
 
     // hue and saturation from input image
     tb[0] = ta[0];
@@ -772,22 +951,26 @@ static void _blend_HSV_lightness(const float *const restrict a, float *const res
     // blend lightness between input and output
     tb[2] = ta[2] * (1.0f - local_opacity) + tb[2] * local_opacity;
 
-    _HSV_2_RGB(tb, &b[j]);
+    dt_HSV_2_RGB(tb, b + j);
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
-/* blend only color in HSV color space without any clamping (a noop for other
- * color spaces) */
+/* blend only color in HSV color space without any clamping */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_HSV_color(const float *const restrict a, float *const restrict b,
                              const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
-    float ta[3], tb[3];
-    _RGB_2_HSV(&a[j], ta);
-    _RGB_2_HSV(&b[j], tb);
+    float ta[3] DT_ALIGNED_PIXEL;
+    float tb[3] DT_ALIGNED_PIXEL;
+
+    dt_RGB_2_HSV(a + j, ta);
+    dt_RGB_2_HSV(b + j, tb);
 
     // convert from polar to cartesian coordinates
     const float xa = ta[1] * cosf(2.0f * DT_M_PI_F * ta[0]);
@@ -806,17 +989,19 @@ static void _blend_HSV_color(const float *const restrict a, float *const restric
     // lightness from input image
     tb[2] = ta[2];
 
-    _HSV_2_RGB(tb, &b[j]);
+    dt_HSV_2_RGB(tb, b + j);
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
-/* blend only R-channel in RGB color space without any clamping (a noop for
- * other color spaces) */
+/* blend only R-channel in RGB color space without any clamping */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_RGB_R(const float *const restrict a, float *const restrict b,
                          const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     b[j + 0] = a[j + 0] * (1.0f - local_opacity) + b[j + 0] * local_opacity;
@@ -826,12 +1011,14 @@ static void _blend_RGB_R(const float *const restrict a, float *const restrict b,
   }
 }
 
-/* blend only R-channel in RGB color space without any clamping (a noop for
- * other color spaces) */
+/* blend only R-channel in RGB color space without any clamping */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_RGB_G(const float *const restrict a, float *const restrict b,
                          const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     b[j + 0] = a[j + 0];
@@ -841,12 +1028,14 @@ static void _blend_RGB_G(const float *const restrict a, float *const restrict b,
   }
 }
 
-/* blend only R-channel in RGB color space without any clamping (a noop for
- * other color spaces) */
+/* blend only R-channel in RGB color space without any clamping */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
 static void _blend_RGB_B(const float *const restrict a, float *const restrict b,
                          const float *const restrict mask, const size_t stride)
 {
-  for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+  for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
   {
     const float local_opacity = mask[i];
     b[j + 0] = a[j + 0];
@@ -957,153 +1146,157 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
 }
 
 
-static void _display_channel(const float *const restrict a, float *const restrict b,
-                             const float *const restrict mask, const size_t stride,
-                             const dt_dev_pixelpipe_display_mask_t channel,
-                             const dt_iop_order_iccprofile_info_t *const work_profile)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(rgb: 16) uniform(profile)
+#endif
+static inline float _rgb_luminance(const float *const restrict rgb,
+                                   const dt_iop_order_iccprofile_info_t *const restrict profile)
 {
-  switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+  float value = 0.0f;
+  if(profile)
+    value = dt_ioppr_get_rgb_matrix_luminance(rgb, profile->matrix_in, profile->lut_in,
+                                              profile->unbounded_coeffs_in, profile->lutsize,
+                                              profile->nonlinearlut);
+  else
+    value = 0.3f * rgb[0] + 0.59f * rgb[1] + 0.11f * rgb[2];
+  return value;
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(channel, profile, stride)
+#endif
+static void _display_channel(const float *const restrict a, float *const restrict b,
+                             const float *const restrict mask, const size_t stride, const int channel,
+                             const dt_iop_order_iccprofile_info_t *const profile)
+{
+  switch(channel)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_R:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_range_f(a[j], 0.0f, 1.0f);
+        const float c = clamp_simd(a[j + 0]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
-    case (DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+    case DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_range_f(b[j], 0.0f, 1.0f);
+        const float c = clamp_simd(b[j + 0]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_G:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_range_f(a[j+1], 0.0f, 1.0f);
+        const float c = clamp_simd(a[j + 1]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
-    case (DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+    case DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_range_f(b[j+1], 0.0f, 1.0f);
+        const float c = clamp_simd(b[j + 1]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_B:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_range_f(a[j+2], 0.0f, 1.0f);
+        const float c = clamp_simd(a[j + 2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
-    case (DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+    case DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_range_f(b[j+2], 0.0f, 1.0f);
+        const float c = clamp_simd(b[j + 2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = (work_profile == NULL)
-                            ? clamp_range_f(0.3f*a[j]+0.59f*a[j+1]+0.11f*a[j+2], 0.0f, 1.0f)
-                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(a+j,
-                                                                              work_profile->matrix_in,
-                                                                              work_profile->lut_in,
-                                                                              work_profile->unbounded_coeffs_in,
-                                                                              work_profile->lutsize,
-                                                                              work_profile->nonlinearlut), 0.0f, 1.0f);
+        const float c = clamp_simd(_rgb_luminance(a + j, profile));
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
-    case (DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+    case DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = (work_profile == NULL)
-                            ? clamp_range_f(0.3f*b[j]+0.59f*b[j+1]+0.11f*b[j+2], 0.0f, 1.0f)
-                            : clamp_range_f(dt_ioppr_get_rgb_matrix_luminance(b+j,
-                                                                              work_profile->matrix_in,
-                                                                              work_profile->lut_in,
-                                                                              work_profile->unbounded_coeffs_in,
-                                                                              work_profile->lutsize,
-                                                                              work_profile->nonlinearlut), 0.0f, 1.0f);
+        const float c = clamp_simd(_rgb_luminance(b + j, profile));
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3];
+        float HSL[3] DT_ALIGNED_PIXEL;
         dt_RGB_2_HSL(a + j, HSL);
-        const float c = clamp_range_f(HSL[0], 0.0f, 1.0f);
+        const float c = clamp_simd(HSL[0]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
-    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_H | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3];
+        float HSL[3] DT_ALIGNED_PIXEL;
         dt_RGB_2_HSL(b + j, HSL);
-        const float c = clamp_range_f(HSL[0], 0.0f, 1.0f);
+        const float c = clamp_simd(HSL[0]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_S:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3];
+        float HSL[3] DT_ALIGNED_PIXEL;
         dt_RGB_2_HSL(a + j, HSL);
-        const float c = clamp_range_f(HSL[1], 0.0f, 1.0f);
+        const float c = clamp_simd(HSL[1]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
-    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_S | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3];
+        float HSL[3] DT_ALIGNED_PIXEL;
         dt_RGB_2_HSL(b + j, HSL);
-        const float c = clamp_range_f(HSL[1], 0.0f, 1.0f);
+        const float c = clamp_simd(HSL[1]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_l:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3];
+        float HSL[3] DT_ALIGNED_PIXEL;
         dt_RGB_2_HSL(a + j, HSL);
-        const float c = clamp_range_f(HSL[2], 0.0f, 1.0f);
+        const float c = clamp_simd(HSL[2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
-    case (DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+    case DT_DEV_PIXELPIPE_DISPLAY_HSL_l | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        float HSL[3];
+        float HSL[3] DT_ALIGNED_PIXEL;
         dt_RGB_2_HSL(b + j, HSL);
-        const float c = clamp_range_f(HSL[2], 0.0f, 1.0f);
+        const float c = clamp_simd(HSL[2]);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
     default:
-      for(size_t i = 0, j = 0; j < stride; i++, j += DT_BLENDIF_RGB_CH)
+      for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = 0.0f;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
@@ -1112,6 +1305,17 @@ static void _display_channel(const float *const restrict a, float *const restric
   }
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(a, b:16) uniform(stride)
+#endif
+static inline void _copy_mask(const float *const restrict a, float *const restrict b, const size_t stride)
+{
+#ifdef _OPENMP
+#pragma omp simd aligned(a, b: 16)
+#endif
+  for(size_t x = DT_BLENDIF_RGB_BCH; x < stride; x += DT_BLENDIF_RGB_CH) b[x] = a[x];
+}
 
 void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece,
                                       const float *const restrict a, float *const restrict b,
@@ -1130,57 +1334,56 @@ void dt_develop_blendif_rgb_hsl_blend(struct dt_dev_pixelpipe_iop_t *piece,
   const int owidth = roi_out->width;
   const int oheight = roi_out->height;
 
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
-
   // only non-zero if mask_display was set by an _earlier_ module
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
 
-  _blend_row_func *const blend = _choose_blend_func(d->blend_mode);
+  // process the blending operator
+  if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
+  {
+    const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
+    const dt_dev_pixelpipe_display_mask_t channel = request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY;
+#ifdef _OPENMP
+#pragma omp parallel for schedule(static) default(none) \
+  dt_omp_firstprivate(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs, profile)
+#endif
+    for(size_t y = 0; y < oheight; y++)
+    {
+      const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
+      const size_t b_start = y * owidth * DT_BLENDIF_RGB_CH;
+      const size_t m_start = y * owidth;
+      _display_channel(a + a_start, b + b_start, mask + m_start, owidth, channel, profile);
+    }
+  }
+  else
+  {
+    _blend_row_func *const blend = _choose_blend_func(d->blend_mode);
 
 #ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(blend, a, b, mask, iwidth, owidth, oheight, work_profile, xoffs, yoffs, mask_display, \
-                      request_mask_display)
+#pragma omp parallel for schedule(static) default(none) \
+  dt_omp_firstprivate(a, b, mask, blend, oheight, owidth, iwidth, xoffs, yoffs)
 #endif
+    for(size_t y = 0; y < oheight; y++)
+    {
+      const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
+      const size_t b_start = y * owidth * DT_BLENDIF_RGB_CH;
+      const size_t m_start = y * owidth;
+      blend(a + a_start, b + b_start, mask + m_start, owidth);
+    }
+  }
+
+  if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
   {
-    const size_t stride = (size_t)owidth * DT_BLENDIF_RGB_CH;
-    if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
-    {
+    const size_t stride = owidth * DT_BLENDIF_RGB_CH;
 #ifdef _OPENMP
-#pragma omp for
+#pragma omp parallel for schedule(static) default(none) \
+  dt_omp_firstprivate(a, b, oheight, stride, iwidth, xoffs, yoffs)
 #endif
-      for(size_t y = 0; y < oheight; y++)
-      {
-        const float *const restrict in = a + ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
-        float *const restrict out = b + y * owidth * DT_BLENDIF_RGB_CH;
-        const float *const restrict m = mask + y * owidth;
-        _display_channel(in, out, m, stride, request_mask_display, work_profile);
-      }
-    }
-    else
+    for(size_t y = 0; y < oheight; y++)
     {
-#ifdef _OPENMP
-#pragma omp for
-#endif
-      for(size_t y = 0; y < oheight; y++)
-      {
-        const float *const restrict in = a + ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
-        float *const restrict out = b + y * owidth * DT_BLENDIF_RGB_CH;
-        const float *const restrict m = mask + y * owidth;
-        blend(in, out, m, stride);
-      }
-    }
-    if(mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
-    {
-#ifdef _OPENMP
-#pragma omp for
-#endif
-      for(size_t y = 0; y < oheight; y++)
-      {
-        const float *const restrict in = a + ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
-        float *const restrict out = b + y * owidth * DT_BLENDIF_RGB_CH;
-        for(size_t j = 0; j < stride; j += DT_BLENDIF_RGB_CH) out[j + DT_BLENDIF_RGB_BCH] = in[j + DT_BLENDIF_RGB_BCH];
-      }
+      const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
+      const size_t b_start = y * stride;
+      _copy_mask(a + a_start, b + b_start, stride);
     }
   }
 }

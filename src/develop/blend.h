@@ -479,7 +479,16 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const 
                                            const int old_version, void *new_params, const int new_version,
                                            const int length);
 
-/** color blending */
+/** color blending utility functions */
+
+#define DEVELOP_BLENDIF_PARAMETER_ITEMS 6
+
+/** initializes the parameter array (of size DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE) */
+void dt_develop_blendif_process_parameters(float *const parameters, const dt_develop_blend_params_t *const params,
+                                           const dt_iop_colorspace_type_t cst);
+
+/** color blending mask generation functions */
+
 void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const a,
                                       const float *const b, const struct dt_iop_roi_t *const roi_in,
                                       const struct dt_iop_roi_t *const roi_out, float *const mask);
@@ -489,6 +498,8 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
 void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const a,
                                           const float *const b, const struct dt_iop_roi_t *const roi_in,
                                           const struct dt_iop_roi_t *const roi_out, float *const mask);
+
+/** color blending operators */
 
 void dt_develop_blendif_raw_blend(struct dt_dev_pixelpipe_iop_t *piece, const float *const a, float *const b,
                                   const struct dt_iop_roi_t *const roi_in,
