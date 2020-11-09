@@ -453,7 +453,7 @@ static void histogram_collect(dt_dev_pixelpipe_iop_t *piece, const void *pixel, 
   const dt_iop_colorspace_type_t cst = piece->module->input_colorspace(piece->module, piece->pipe, piece);
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats, cst, piece->module->histogram_cst, pixel, histogram,
-      piece->module->histogram_middle_grey, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+      piece->module->histogram_middle_grey, dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
   dt_histogram_max_helper(&piece->histogram_stats, cst, piece->module->histogram_cst, histogram, histogram_max);
 }
 
@@ -501,7 +501,7 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
   const dt_iop_colorspace_type_t cst = piece->module->input_colorspace(piece->module, piece->pipe, piece);
 
   dt_histogram_helper(&histogram_params, &piece->histogram_stats, cst, piece->module->histogram_cst, pixel, histogram,
-      piece->module->histogram_middle_grey, dt_ioppr_get_pipe_work_profile_info(piece->pipe));
+      piece->module->histogram_middle_grey, dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
   dt_histogram_max_helper(&piece->histogram_stats, cst, piece->module->histogram_cst, histogram, histogram_max);
 
   if(tmpbuf) dt_free_align(tmpbuf);
@@ -988,7 +988,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   // transform to module input colorspace
   dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height, input_format->cst,
                                       module->input_colorspace(module, pipe, piece), &input_format->cst,
-                                      dt_ioppr_get_pipe_work_profile_info(pipe));
+                                      dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
 
   if(dt_atomic_get_int(&pipe->shutdown))
     return 1;
@@ -1050,11 +1050,11 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   {
     dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height, input_format->cst,
                                         module->blend_colorspace(module, pipe, piece), &input_format->cst,
-                                        dt_ioppr_get_pipe_work_profile_info(pipe));
+                                        dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
 
     dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
                                         pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
-                                        &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+                                        &pipe->dsc.cst, dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
   }
 
   if(dt_atomic_get_int(&pipe->shutdown))
@@ -1445,7 +1445,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             success_opencl = dt_ioppr_transform_image_colorspace_cl(
                 module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height, input_cst_cl,
                 module->input_colorspace(module, pipe, piece), &input_cst_cl,
-                dt_ioppr_get_pipe_work_profile_info(pipe));
+                dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
           }
 
           // histogram collection for module
@@ -1530,12 +1530,12 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
               success_opencl = dt_ioppr_transform_image_colorspace_cl(
                   module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height,
                   input_cst_cl, module->blend_colorspace(module, pipe, piece), &input_cst_cl,
-                  dt_ioppr_get_pipe_work_profile_info(pipe));
+                  dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
 
               success_opencl = dt_ioppr_transform_image_colorspace_cl(
                   module, piece->pipe->devid, *cl_mem_output, *cl_mem_output, roi_out->width, roi_out->height,
                   pipe->dsc.cst, module->blend_colorspace(module, pipe, piece), &pipe->dsc.cst,
-                  dt_ioppr_get_pipe_work_profile_info(pipe));
+                  dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
             }
           }
 
@@ -1605,7 +1605,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
                                                 input_format->cst, module->input_colorspace(module, pipe, piece),
-                                                &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+                                                &input_format->cst, dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
           }
 
           if(dt_atomic_get_int(&pipe->shutdown))
@@ -1668,11 +1668,11 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             {
               dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
                                                   input_format->cst, module->blend_colorspace(module, pipe, piece),
-                                                  &input_format->cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+                                                  &input_format->cst, dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
 
               dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
                                                   pipe->dsc.cst, module->blend_colorspace(module, pipe, piece),
-                                                  &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
+                                                  &pipe->dsc.cst, dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop));
             }
           }
 
