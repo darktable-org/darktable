@@ -176,7 +176,7 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
 
-  d->epsilon_factor = dt_bauhaus_slider_new_with_range(NULL, 10., 100., 5.,
+  d->epsilon_factor = dt_bauhaus_slider_new_with_range(NULL, 10.0, 100.0, 1.0,
                             dt_conf_get_int("plugins/map/epsilon_factor"), 0);
   gtk_widget_set_tooltip_text(d->epsilon_factor, _("modify the spatial size of an images group on the map"));
   dt_bauhaus_widget_set_label(d->epsilon_factor, NULL, N_("group size factor"));
