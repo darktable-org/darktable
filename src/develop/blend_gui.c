@@ -51,7 +51,7 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "multiply"), DEVELOP_BLEND_MULTIPLY },
         { NC_("blendmode", "average"), DEVELOP_BLEND_AVERAGE },
         { NC_("blendmode", "addition"), DEVELOP_BLEND_ADD },
-        { NC_("blendmode", "subtract"), DEVELOP_BLEND_SUBSTRACT },
+        { NC_("blendmode", "subtract"), DEVELOP_BLEND_SUBTRACT },
         { NC_("blendmode", "difference"), DEVELOP_BLEND_DIFFERENCE2 },
         { NC_("blendmode", "screen"), DEVELOP_BLEND_SCREEN },
         { NC_("blendmode", "overlay"), DEVELOP_BLEND_OVERLAY },
@@ -2269,7 +2269,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SCREEN);
       dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("darken modes"));
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DARKEN);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBSTRACT);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY);
       dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("contrast enhancing modes"));
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_OVERLAY);
