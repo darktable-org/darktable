@@ -9,6 +9,7 @@ build/lib/darktable/plugins/introspection_bloom.c
 build/lib/darktable/plugins/introspection_borders.c
 build/lib/darktable/plugins/introspection_cacorrect.c
 build/lib/darktable/plugins/introspection_channelmixer.c
+build/lib/darktable/plugins/introspection_channelmixerrgb.c
 build/lib/darktable/plugins/introspection_clahe.c
 build/lib/darktable/plugins/introspection_clipping.c
 build/lib/darktable/plugins/introspection_colisa.c
