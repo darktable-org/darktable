@@ -25,27 +25,123 @@
 #include "develop/tiling.h"
 #include <math.h>
 
+static dt_develop_blend_params_t _default_blendop_params
+    = { DEVELOP_MASK_DISABLED,
+        DEVELOP_BLEND_CS_NONE,
+        DEVELOP_BLEND_NORMAL2,
+        0.0f,
+        100.0f,
+        DEVELOP_COMBINE_NORM_EXCL,
+        0,
+        0,
+        0.0f,
+        DEVELOP_MASK_GUIDE_IN,
+        0.0f,
+        0.0f,
+        0.0f,
+        { 0, 0, 0, 0 },
+        { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+          0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
+        { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
+        { 0 }, 0, 0, FALSE };
+
+dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(dt_iop_module_t *module)
+{
+  switch(module->blend_colorspace(module, NULL, NULL))
+  {
+    case iop_cs_RAW:
+      return DEVELOP_BLEND_CS_RAW;
+    case iop_cs_Lab:
+    case iop_cs_LCh:
+      return DEVELOP_BLEND_CS_LAB;
+    case iop_cs_rgb:
+    case iop_cs_HSL:
+      return DEVELOP_BLEND_CS_RGB_DISPLAY;
+    case iop_cs_JzCzhz:
+      return DEVELOP_BLEND_CS_RGB_SCENE;
+    default:
+      return DEVELOP_BLEND_CS_NONE;
+  }
+}
+
+static void _blend_init_blendif_boost_parameters(dt_develop_blend_params_t *blend_params,
+                                                 dt_develop_blend_colorspace_t cst)
+{
+  if(cst == DEVELOP_BLEND_CS_RGB_SCENE)
+  {
+    // update the default boost parameters for Jz and Cz so that the sRGB white is represented by a value
+    // "close" to 1.0. sRGB white (R=1.0, G=1.0, B=1.0) after conversion becomes Jz=0.01758 and will be shown
+    // as 1.8. In order to allow enough sensitivity in the low values, the boost factor should be set to
+    // log2(0.001) = -6.64385619. To keep the minimum boost factor at zero an offset of that value is added in
+    // the GUI. To display the initial boost factor at zero, the default value will be set to that value also.
+    blend_params->blendif_boost_factors[DEVELOP_BLENDIF_Jz_in] = -6.64385619f;
+    blend_params->blendif_boost_factors[DEVELOP_BLENDIF_Cz_in] = -6.64385619f;
+    blend_params->blendif_boost_factors[DEVELOP_BLENDIF_Jz_out] = -6.64385619f;
+    blend_params->blendif_boost_factors[DEVELOP_BLENDIF_Cz_out] = -6.64385619f;
+  }
+}
+
+void dt_develop_blend_init_blend_parameters(dt_develop_blend_params_t *blend_params,
+                                            dt_develop_blend_colorspace_t cst)
+{
+  memcpy(blend_params, &_default_blendop_params, sizeof(dt_develop_blend_params_t));
+  blend_params->blend_cst = cst;
+  _blend_init_blendif_boost_parameters(blend_params, cst);
+}
+
+void dt_develop_blend_init_blendif_parameters(dt_develop_blend_params_t *blend_params,
+                                              dt_develop_blend_colorspace_t cst)
+{
+  blend_params->blend_cst = cst;
+  blend_params->blend_mode = _default_blendop_params.blend_mode;
+  blend_params->blend_parameter = _default_blendop_params.blend_parameter;
+  blend_params->blendif = _default_blendop_params.blendif;
+  memcpy(blend_params->blendif_parameters, _default_blendop_params.blendif_parameters,
+         sizeof(_default_blendop_params.blendif_parameters));
+  memcpy(blend_params->blendif_boost_factors, _default_blendop_params.blendif_boost_factors,
+         sizeof(_default_blendop_params.blendif_boost_factors));
+  _blend_init_blendif_boost_parameters(blend_params, cst);
+}
+
+dt_iop_colorspace_type_t dt_develop_blend_colorspace(dt_iop_module_t *module, dt_iop_colorspace_type_t cst)
+{
+  switch(module->blend_params->blend_cst)
+  {
+    case DEVELOP_BLEND_CS_RAW:
+      return iop_cs_RAW;
+    case DEVELOP_BLEND_CS_LAB:
+      return iop_cs_Lab;
+    case DEVELOP_BLEND_CS_RGB_DISPLAY:
+    case DEVELOP_BLEND_CS_RGB_SCENE:
+      return iop_cs_rgb;
+    default:
+      return cst;
+  }
+}
 
 void dt_develop_blendif_process_parameters(float *const restrict parameters,
-                                           const dt_develop_blend_params_t *const params,
-                                           const dt_iop_colorspace_type_t cst)
+                                           const dt_develop_blend_params_t *const params)
 {
+  const int32_t blend_csp = params->blend_cst;
   const uint32_t blendif = params->blendif;
   const float *blendif_parameters = params->blendif_parameters;
+  const float *boost_factors = params->blendif_boost_factors;
   for(size_t i = 0, j = 0; i < DEVELOP_BLENDIF_SIZE; i++, j += DEVELOP_BLENDIF_PARAMETER_ITEMS)
   {
     if(blendif & (1 << i))
     {
       float offset = 0.0f;
-      if(cst == iop_cs_Lab && (i == DEVELOP_BLENDIF_A_in || i == DEVELOP_BLENDIF_A_out
+      if(blend_csp == DEVELOP_BLEND_CS_LAB && (i == DEVELOP_BLENDIF_A_in || i == DEVELOP_BLENDIF_A_out
           || i == DEVELOP_BLENDIF_B_in || i == DEVELOP_BLENDIF_B_out))
       {
         offset = 0.5f;
       }
-      parameters[j + 0] = blendif_parameters[i * 4 + 0] - offset;
-      parameters[j + 1] = blendif_parameters[i * 4 + 1] - offset;
-      parameters[j + 2] = blendif_parameters[i * 4 + 2] - offset;
-      parameters[j + 3] = blendif_parameters[i * 4 + 3] - offset;
+      parameters[j + 0] = (blendif_parameters[i * 4 + 0] - offset) * exp2f(boost_factors[i]);
+      parameters[j + 1] = (blendif_parameters[i * 4 + 1] - offset) * exp2f(boost_factors[i]);
+      parameters[j + 2] = (blendif_parameters[i * 4 + 2] - offset) * exp2f(boost_factors[i]);
+      parameters[j + 3] = (blendif_parameters[i * 4 + 3] - offset) * exp2f(boost_factors[i]);
       // pre-compute increasing slope and decreasing slope
       parameters[j + 4] = 1.0f / fmaxf(0.001f, parameters[j + 1] - parameters[j + 0]);
       parameters[j + 5] = 1.0f / fmaxf(0.001f, parameters[j + 3] - parameters[j + 2]);
@@ -71,6 +167,37 @@ void dt_develop_blendif_process_parameters(float *const restrict parameters,
       parameters[j + 5] = 0.0f;
     }
   }
+}
+
+// See function definition in blend.h for important information
+int dt_develop_blendif_init_masking_profile(struct dt_dev_pixelpipe_iop_t *piece,
+                                            dt_iop_order_iccprofile_info_t *blending_profile,
+                                            dt_develop_blend_colorspace_t cst)
+{
+  // Bradford adaptation matrix from http://www.brucelindbloom.com/index.html?Eqn_ChromAdapt.html
+  const float M[3][4] DT_ALIGNED_ARRAY = {
+      {  0.9555766f, -0.0230393f,  0.0631636f, 0.0f },
+      { -0.0282895f,  1.0099416f,  0.0210077f, 0.0f },
+      {  0.0122982f, -0.0204830f,  1.3299098f, 0.0f },
+  };
+
+  const dt_iop_order_iccprofile_info_t *const profile = (cst == DEVELOP_BLEND_CS_RGB_SCENE)
+      ? dt_ioppr_get_pipe_current_profile_info(piece->module, piece->pipe)
+      : dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
+  if(!profile) return 0;
+
+  memcpy(blending_profile, profile, sizeof(dt_iop_order_iccprofile_info_t));
+  for(size_t y = 0; y < 3; y++)
+  {
+    for(size_t x = 0; x < 3; x++)
+    {
+      float sum = 0.0f;
+      for(size_t i = 0; i < 3; i++) sum += M[y][i] * profile->matrix_in[x + i * 3];
+      blending_profile->matrix_out[y * 3 + x] = sum;
+    }
+  }
+
+  return 1;
 }
 
 void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
@@ -120,7 +247,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // get channel max values depending on colorspace
-  const dt_iop_colorspace_type_t cst = self->blend_colorspace(self, piece->pipe, piece);
+  const dt_develop_blend_colorspace_t blend_csp = self->blend_params->blend_cst;
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(self, iop_cs_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
@@ -233,17 +361,21 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
     }
 
     // get parametric mask (if any) and apply global opacity
-    switch(cst)
+    switch(blend_csp)
     {
-      case iop_cs_Lab:
+      case DEVELOP_BLEND_CS_LAB:
         dt_develop_blendif_lab_make_mask(piece, (const float *const restrict)ivoid,
                                          (const float *const restrict)ovoid, roi_in, roi_out, mask);
         break;
-      case iop_cs_rgb:
+      case DEVELOP_BLEND_CS_RGB_DISPLAY:
         dt_develop_blendif_rgb_hsl_make_mask(piece, (const float *const restrict)ivoid,
                                              (const float *const restrict)ovoid, roi_in, roi_out, mask);
         break;
-      case iop_cs_RAW:
+      case DEVELOP_BLEND_CS_RGB_SCENE:
+        dt_develop_blendif_rgb_jzczhz_make_mask(piece, (const float *const restrict)ivoid,
+                                                (const float *const restrict)ovoid, roi_in, roi_out, mask);
+        break;
+      case DEVELOP_BLEND_CS_RAW:
         dt_develop_blendif_raw_make_mask(piece, (const float *const restrict)ivoid,
                                          (const float *const restrict)ovoid, roi_in, roi_out, mask);
         break;
@@ -344,17 +476,21 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 
   // now apply blending with per-pixel opacity value as defined in mask
   // select the blend operator
-  switch(cst)
+  switch(blend_csp)
   {
-    case iop_cs_Lab:
+    case DEVELOP_BLEND_CS_LAB:
       dt_develop_blendif_lab_blend(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid,
                                    roi_in, roi_out, mask, request_mask_display);
       break;
-    case iop_cs_rgb:
+    case DEVELOP_BLEND_CS_RGB_DISPLAY:
       dt_develop_blendif_rgb_hsl_blend(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid,
                                        roi_in, roi_out, mask, request_mask_display);
       break;
-    case iop_cs_RAW:
+    case DEVELOP_BLEND_CS_RGB_SCENE:
+      dt_develop_blendif_rgb_jzczhz_blend(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid,
+                                          roi_in, roi_out, mask, request_mask_display);
+      break;
+    case DEVELOP_BLEND_CS_RAW:
       dt_develop_blendif_raw_blend(piece, (const float *const restrict)ivoid, (float *const restrict)ovoid,
                                    roi_in, roi_out, mask, request_mask_display);
       break;
@@ -432,7 +568,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
             : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // get channel max values depending on colorspace
-  const dt_iop_colorspace_type_t cst = self->blend_colorspace(self, piece->pipe, piece);
+  const dt_develop_blend_colorspace_t blend_csp = self->blend_params->blend_cst;
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(self, iop_cs_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
@@ -457,19 +594,24 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   // setup some kernels
   int kernel_mask;
   int kernel;
-  switch(cst)
+  switch(blend_csp)
   {
-    case iop_cs_RAW:
+    case DEVELOP_BLEND_CS_RAW:
       kernel = darktable.opencl->blendop->kernel_blendop_RAW;
       kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_RAW;
       break;
 
-    case iop_cs_rgb:
-      kernel = darktable.opencl->blendop->kernel_blendop_rgb;
-      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_rgb;
+    case DEVELOP_BLEND_CS_RGB_DISPLAY:
+      kernel = darktable.opencl->blendop->kernel_blendop_rgb_hsl;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_rgb_hsl;
       break;
 
-    case iop_cs_Lab:
+    case DEVELOP_BLEND_CS_RGB_SCENE:
+      kernel = darktable.opencl->blendop->kernel_blendop_rgb_jzczhz;
+      kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_rgb_jzczhz;
+      break;
+
+    case DEVELOP_BLEND_CS_LAB:
     default:
       kernel = darktable.opencl->blendop->kernel_blendop_Lab;
       kernel_mask = darktable.opencl->blendop->kernel_blendop_mask_Lab;
@@ -498,7 +640,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   // parameters, for every channel the 4 limits + pre-computed increasing slope and decreasing slope
   float parameters[DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE] DT_ALIGNED_ARRAY;
-  dt_develop_blendif_process_parameters(parameters, d, cst);
+  dt_develop_blendif_process_parameters(parameters, d);
 
   // copy blend parameters to constant device memory
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE, parameters);
@@ -507,10 +649,11 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   dev_mask_1 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
   if(dev_mask_1 == NULL) goto error;
 
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  dt_iop_order_iccprofile_info_t profile;
+  const int use_work_profile = dt_develop_blendif_init_masking_profile(piece, &profile, blend_csp);
 
-  err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &profile_info_cl, &profile_lut_cl,
-                                            &dev_profile_info, &dev_profile_lut);
+  err = dt_ioppr_build_iccprofile_params_cl(use_work_profile ? &profile : NULL, devid, &profile_info_cl,
+                                            &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
@@ -625,7 +768,6 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     // get parametric mask (if any) and apply global opacity
     const unsigned blendif = d->blendif;
     const unsigned int mask_combine = d->mask_combine;
-    const int use_work_profile = (work_profile == NULL) ? 0 : 1;
     dt_opencl_set_kernel_arg(devid, kernel_mask, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 1, sizeof(cl_mem), (void *)&dev_out);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 2, sizeof(cl_mem), (void *)&dev_mask_1);
@@ -749,7 +891,6 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
     // let us display a specific channel
-    const int use_work_profile = (work_profile == NULL) ? 0 : 1;
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 2, sizeof(cl_mem), (void *)&dev_mask_1);
@@ -772,6 +913,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   {
     // apply blending with per-pixel opacity value as defined in dev_mask_1
     const unsigned int blend_mode = d->blend_mode;
+    const float blend_parameter = exp2f(d->blend_parameter);
     dt_opencl_set_kernel_arg(devid, kernel, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel, 1, sizeof(cl_mem), (void *)&dev_tmp);
     dt_opencl_set_kernel_arg(devid, kernel, 2, sizeof(cl_mem), (void *)&dev_mask_1);
@@ -779,8 +921,9 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel, 4, sizeof(int), (void *)&owidth);
     dt_opencl_set_kernel_arg(devid, kernel, 5, sizeof(int), (void *)&oheight);
     dt_opencl_set_kernel_arg(devid, kernel, 6, sizeof(unsigned), (void *)&blend_mode);
-    dt_opencl_set_kernel_arg(devid, kernel, 7, 2 * sizeof(int), (void *)&offs);
-    dt_opencl_set_kernel_arg(devid, kernel, 8, sizeof(int), (void *)&mask_display);
+    dt_opencl_set_kernel_arg(devid, kernel, 7, sizeof(float), (void *)&blend_parameter);
+    dt_opencl_set_kernel_arg(devid, kernel, 8, 2 * sizeof(int), (void *)&offs);
+    dt_opencl_set_kernel_arg(devid, kernel, 9, sizeof(int), (void *)&mask_display);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel, sizes);
     if(err != CL_SUCCESS) goto error;
   }
@@ -838,10 +981,12 @@ dt_blendop_cl_global_t *dt_develop_blend_init_cl_global(void)
   const int program = 3; // blendop.cl, from programs.conf
   b->kernel_blendop_mask_Lab = dt_opencl_create_kernel(program, "blendop_mask_Lab");
   b->kernel_blendop_mask_RAW = dt_opencl_create_kernel(program, "blendop_mask_RAW");
-  b->kernel_blendop_mask_rgb = dt_opencl_create_kernel(program, "blendop_mask_rgb");
+  b->kernel_blendop_mask_rgb_hsl = dt_opencl_create_kernel(program, "blendop_mask_rgb_hsl");
+  b->kernel_blendop_mask_rgb_jzczhz = dt_opencl_create_kernel(program, "blendop_mask_rgb_jzczhz");
   b->kernel_blendop_Lab = dt_opencl_create_kernel(program, "blendop_Lab");
   b->kernel_blendop_RAW = dt_opencl_create_kernel(program, "blendop_RAW");
-  b->kernel_blendop_rgb = dt_opencl_create_kernel(program, "blendop_rgb");
+  b->kernel_blendop_rgb_hsl = dt_opencl_create_kernel(program, "blendop_rgb_hsl");
+  b->kernel_blendop_rgb_jzczhz = dt_opencl_create_kernel(program, "blendop_rgb_jzczhz");
   b->kernel_blendop_mask_tone_curve = dt_opencl_create_kernel(program, "blendop_mask_tone_curve");
   b->kernel_blendop_set_mask = dt_opencl_create_kernel(program, "blendop_set_mask");
   b->kernel_blendop_display_channel = dt_opencl_create_kernel(program, "blendop_display_channel");
@@ -859,10 +1004,12 @@ void dt_develop_blend_free_cl_global(dt_blendop_cl_global_t *b)
 
   dt_opencl_free_kernel(b->kernel_blendop_mask_Lab);
   dt_opencl_free_kernel(b->kernel_blendop_mask_RAW);
-  dt_opencl_free_kernel(b->kernel_blendop_mask_rgb);
+  dt_opencl_free_kernel(b->kernel_blendop_mask_rgb_hsl);
+  dt_opencl_free_kernel(b->kernel_blendop_mask_rgb_jzczhz);
   dt_opencl_free_kernel(b->kernel_blendop_Lab);
   dt_opencl_free_kernel(b->kernel_blendop_RAW);
-  dt_opencl_free_kernel(b->kernel_blendop_rgb);
+  dt_opencl_free_kernel(b->kernel_blendop_rgb_hsl);
+  dt_opencl_free_kernel(b->kernel_blendop_rgb_jzczhz);
   dt_opencl_free_kernel(b->kernel_blendop_mask_tone_curve);
   dt_opencl_free_kernel(b->kernel_blendop_set_mask);
   dt_opencl_free_kernel(b->kernel_blendop_display_channel);
@@ -926,7 +1073,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 1 && new_version == 9)
+  if(old_version == 1 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
 
@@ -942,7 +1089,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 2 && new_version == 9)
+  if(old_version == 2 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params2_t)) return 1;
 
@@ -966,7 +1113,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 3 && new_version == 9)
+  if(old_version == 3 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params3_t)) return 1;
 
@@ -988,7 +1135,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 4 && new_version == 9)
+  if(old_version == 4 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params4_t)) return 1;
 
@@ -1011,7 +1158,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 5 && new_version == 9)
+  if(old_version == 5 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params5_t)) return 1;
 
@@ -1037,7 +1184,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 6 && new_version == 9)
+  if(old_version == 6 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params6_t)) return 1;
 
@@ -1057,7 +1204,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 7 && new_version == 9)
+  if(old_version == 7 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params7_t)) return 1;
 
@@ -1077,7 +1224,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     return 0;
   }
 
-  if(old_version == 8 && new_version == 9)
+  if(old_version == 8 && new_version == 10)
   {
     if(length != sizeof(dt_develop_blend_params8_t)) return 1;
 
@@ -1098,6 +1245,34 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->contrast = o->contrast;
     n->brightness = o->brightness;
     memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    return 0;
+  }
+
+  if(old_version == 9 && new_version == 10)
+  {
+    if(length != sizeof(dt_develop_blend_params9_t)) return 1;
+
+    dt_develop_blend_params9_t *o = (dt_develop_blend_params9_t *)old_params;
+    dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
+    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+    n->mask_mode = o->mask_mode;
+    n->blend_mode = o->blend_mode;
+    n->opacity = o->opacity;
+    n->mask_combine = o->mask_combine;
+    n->mask_id = o->mask_id;
+    n->blendif = o->blendif;
+    n->feathering_radius = o->feathering_radius;
+    n->feathering_guide = o->feathering_guide;
+    n->blur_radius = o->blur_radius;
+    n->contrast = o->contrast;
+    n->brightness = o->brightness;
+    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->raster_mask_source, o->raster_mask_source, sizeof(n->raster_mask_source));
+    n->raster_mask_instance = o->raster_mask_instance;
+    n->raster_mask_id = o->raster_mask_id;
+    n->raster_mask_invert = o->raster_mask_invert;
     return 0;
   }
 
