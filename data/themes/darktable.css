@@ -979,8 +979,14 @@ notebook tabs,
 #blending-tabs #dt-button
 {
 	font-size: 0.8em;
-	padding: 0.1em;
-	margin: 0 0.5em;
+	margin: 0;
+}
+
+#blending-tabs #dt-button,
+#modules-tabs #dt-button
+{
+	min-width: 1.25em;
+	padding: 0.25em 0.5em;
 }
 
 /* Do not apply border-radius to group modules icons and masks icons */
