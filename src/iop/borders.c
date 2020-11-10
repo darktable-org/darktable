@@ -375,8 +375,8 @@ static void set_outer_border_sse(float *buf, const float col[4], const int heigh
     float *const b_line = buf + 4 * (height - border_height + row) * width;
     for (size_t c = 0; c < width; c++)
     {
-      _mm_store_ps(t_line+4*c, color);
-      _mm_store_ps(b_line+4*c, color);
+      _mm_storeu_ps(t_line+4*c, color);
+      _mm_storeu_ps(b_line+4*c, color);
     }
   }
 #ifdef _OPENMP
@@ -390,8 +390,8 @@ static void set_outer_border_sse(float *buf, const float col[4], const int heigh
     float *const r_column = buf + 4 * (width - border_width + c);
     for (size_t row = border_height; row < height - border_height; row++)
     {
-      _mm_store_ps(l_column+4*row*width, color);
-      _mm_store_ps(r_column+4*row*width, color);
+      _mm_storeu_ps(l_column+4*row*width, color);
+      _mm_storeu_ps(r_column+4*row*width, color);
     }
   }
 }
