@@ -2534,7 +2534,8 @@ static void _dbscan(dt_geo_position_t *points, unsigned int num_points,
   db.points = points;
   db.num_points = num_points;
   db.epsilon = epsilon;
-  db.minpts = minpts;
+  // remove the pivot from target
+  db.minpts = minpts > 1 ? minpts - 1 : minpts;
   db.cluster_id = 0;
   db.seeds = (epsilon_neighbours_t *)malloc(sizeof(db.seeds->num_members)
       + num_points * sizeof(db.seeds->index[0]));
