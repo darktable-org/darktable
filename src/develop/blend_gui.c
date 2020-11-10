@@ -1910,7 +1910,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
 
     bd->channel_boost_factor_slider = dt_bauhaus_slider_new_with_range(module, 0.0f, 3.0f, .02f, 0.0f, 3);
     dt_bauhaus_slider_set_format(bd->channel_boost_factor_slider, _("%.2f EV"));
-    dt_bauhaus_widget_set_label(bd->channel_boost_factor_slider, NULL, _("boost factor"));
+    dt_bauhaus_widget_set_label(bd->channel_boost_factor_slider, N_("blend"), N_("boost factor"));
     dt_bauhaus_slider_enable_soft_boundaries(bd->channel_boost_factor_slider, 0.0, 18.0);
     gtk_widget_set_tooltip_text(bd->channel_boost_factor_slider, _("adjust the boost factor of the channel mask"));
     gtk_widget_set_sensitive(bd->channel_boost_factor_slider, FALSE);
@@ -2710,7 +2710,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 
     bd->blend_mode_parameter_slider = dt_bauhaus_slider_new_with_range(module, -3.0f, 3.0f, .02f, 0.0f, 3);
     dt_bauhaus_slider_set_format(bd->blend_mode_parameter_slider, _("%.2f EV"));
-    dt_bauhaus_widget_set_label(bd->blend_mode_parameter_slider, NULL, _("blend fulcrum"));
+    dt_bauhaus_widget_set_label(bd->blend_mode_parameter_slider, N_("blend"), N_("blend fulcrum"));
     dt_bauhaus_slider_enable_soft_boundaries(bd->blend_mode_parameter_slider, -18.0, 18.0);
     gtk_widget_set_tooltip_text(bd->blend_mode_parameter_slider, _("adjust the fulcrum used by some blending"
                                                                    " operations"));
