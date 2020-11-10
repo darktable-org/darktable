@@ -451,6 +451,7 @@ typedef struct dt_iop_blend_name_value_t
   int value;
 } dt_develop_name_value_t;
 
+extern const dt_develop_name_value_t dt_develop_blend_colorspace_names[];
 extern const dt_develop_name_value_t dt_develop_blend_mode_names[];
 extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
 extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
