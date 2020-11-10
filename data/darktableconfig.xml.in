@@ -2380,6 +2380,18 @@
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
     <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.</longdescription>
   </dtconfig>
+  <dtconfig prefs="processing">
+    <name>plugins/darkroom/chromatic-adaptation</name>
+    <type>
+      <enum>
+        <option>modern</option>
+        <option>legacy</option>
+      </enum>
+    </type>
+    <default>legacy</default>
+    <shortdescription>auto-apply chromatic adaptation defaults</shortdescription>
+    <longdescription>legacy performs a basic chromatic adaptation using only the white balance module\nmodern uses a combination of white balance module and color calibration module, with improved color science for chromatic adaptation.</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" restart="true">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
     <type>bool</type>
