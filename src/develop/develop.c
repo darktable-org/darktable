@@ -1377,6 +1377,10 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
+
+  workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
+  const gboolean is_modern_chroma = strcmp(workflow, "modern") == 0;
+
   g_free(workflow);
 
   //  Add scene-referred workflow
@@ -1387,16 +1391,18 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
 
   const gboolean auto_apply_filmic = has_matrix && is_scene_referred;
+  const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
   const gboolean auto_apply_sharpen = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
 
-  if(auto_apply_filmic || auto_apply_sharpen)
+  if(auto_apply_filmic || auto_apply_sharpen || auto_apply_cat)
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
       if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
-          || (auto_apply_sharpen && strcmp(module->op, "sharpen") == 0))
+          || (auto_apply_sharpen && strcmp(module->op, "sharpen") == 0)
+          || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
          && !dt_history_check_module_exists(imgid, module->op)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
