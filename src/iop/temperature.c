@@ -1287,7 +1287,7 @@ void gui_update(struct dt_iop_module_t *self)
   const gboolean is_modern = strcmp(workflow, "modern") == 0;
   g_free(workflow);
 
-  if(is_modern)
+  if(is_modern && tempK > 6500.f && tempK <= 6504.f)
   {
     // if we use modern chroma adatation, white balance is handled by channelmixerrgb
     // so we hide most of the controls here to not confuse users
