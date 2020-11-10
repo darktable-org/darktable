@@ -109,7 +109,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->iop_order_version = 0;
   dev->iop_order_list = NULL;
 
-  dev->proxy.exposure = NULL;
+  dev->proxy.exposure.module = NULL;
 
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode = dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
@@ -186,8 +186,6 @@ void dt_dev_cleanup(dt_develop_t *dev)
 
   g_list_free_full(dev->forms, (void (*)(void *))dt_masks_free_form);
   g_list_free_full(dev->allforms, (void (*)(void *))dt_masks_free_form);
-
-  g_list_free_full(dev->proxy.exposure, g_free);
 
   dt_conf_set_int("darkroom/ui/rawoverexposed/mode", dev->rawoverexposed.mode);
   dt_conf_set_int("darkroom/ui/rawoverexposed/colorscheme", dev->rawoverexposed.colorscheme);
@@ -2069,24 +2067,11 @@ int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid)
   return (dev->image_storage.id == imgid) ? 1 : 0;
 }
 
-gint dt_dev_exposure_hooks_sort(gconstpointer a, gconstpointer b)
-{
-  const dt_dev_proxy_exposure_t *ai = (const dt_dev_proxy_exposure_t *)a;
-  const dt_dev_proxy_exposure_t *bi = (const dt_dev_proxy_exposure_t *)b;
-  const dt_iop_module_t *am = (const dt_iop_module_t *)ai->module;
-  const dt_iop_module_t *bm = (const dt_iop_module_t *)bi->module;
-  // if(am->priority == bm->priority) return bm->multi_priority - am->multi_priority;
-  // return am->priority - bm->priority;
-  if(am->iop_order < bm->iop_order) return -1;
-  if(am->iop_order > bm->iop_order) return 1;
-  return 0;
-}
-
 static dt_dev_proxy_exposure_t *find_last_exposure_instance(dt_develop_t *dev)
 {
-  if(!dev->proxy.exposure) return NULL;
+  if(!dev->proxy.exposure.module) return NULL;
 
-  dt_dev_proxy_exposure_t *instance = (dt_dev_proxy_exposure_t *)(g_list_first(dev->proxy.exposure)->data);
+  dt_dev_proxy_exposure_t *instance = &dev->proxy.exposure;
 
   return instance;
 };
@@ -2105,8 +2090,6 @@ gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev)
 
 void dt_dev_exposure_reset_defaults(dt_develop_t *dev)
 {
-  if(!dev->proxy.exposure) return;
-
   dt_dev_proxy_exposure_t *instance = find_last_exposure_instance(dev);
 
   if(!(instance && instance->module)) return;
