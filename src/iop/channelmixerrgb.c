@@ -158,6 +158,123 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+void init_presets(dt_iop_module_so_t *self)
+{
+  dt_iop_channelmixer_rgb_params_t p;
+  memset(&p, 0, sizeof(p));
+
+  // bypass adaptation
+  p.illuminant = DT_ILLUMINANT_PIPE;
+  p.adaptation = DT_ADAPTATION_XYZ;
+
+  // set everything to no-op
+  p.gamut = 0.f;
+  p.clip = FALSE;
+  p.illum_fluo = DT_ILLUMINANT_FLUO_F3;
+  p.illum_led = DT_ILLUMINANT_LED_B5;
+  p.temperature = 5003.f;
+  illuminant_to_xy(DT_ILLUMINANT_PIPE, NULL, &p.x, &p.y, p.temperature, DT_ILLUMINANT_FLUO_LAST, DT_ILLUMINANT_LED_LAST);
+
+  p.red[0] = 1.f;
+  p.red[1] = 0.f;
+  p.red[2] = 0.f;
+  p.green[0] = 0.f;
+  p.green[1] = 1.f;
+  p.green[2] = 0.f;
+  p.blue[0] = 0.f;
+  p.blue[1] = 0.f;
+  p.blue[2] = 1.f;
+
+  p.saturation[0] = 0.f;
+  p.saturation[1] = 0.f;
+  p.saturation[2] = 0.f;
+  p.lightness[0] = 0.f;
+  p.lightness[1] = 0.f;
+  p.lightness[2] = 0.f;
+  p.grey[0] = 0.f;
+  p.grey[1] = 0.f;
+  p.grey[2] = 0.f;
+
+  p.normalize_R = FALSE;
+  p.normalize_G = FALSE;
+  p.normalize_B = FALSE;
+  p.normalize_sat = FALSE;
+  p.normalize_light = FALSE;
+  p.normalize_grey = TRUE;
+
+  // Create B&W presets
+  p.grey[0] = 0.f;
+  p.grey[1] = 1.f;
+  p.grey[2] = 0.f;
+
+  dt_gui_presets_add_generic(_("B&W : luminance-based"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // film emulations
+
+  /* These emulations are built using spectral sensitivies provided by film manufacturers for tungsten light,
+  * corrected in spectral domain for D50 illuminant, and integrated in spectral space against CIE 2° 1931 XYZ
+  * color matching functions in the Python lib Colour, with the following code :
+  *
+    import colour
+    import numpy as np
+
+    XYZ = np.zeros((3))
+
+    for l in range(360, 830):
+        XYZ += film_CMF[l] * colour.colorimetry.STANDARD_OBSERVERS_CMFS['CIE 1931 2 Degree Standard Observer'][l] / colour.ILLUMINANTS_SDS['A'][l] * colour.ILLUMINANTS_SDS['D50'][l]
+
+    XYZ / np.sum(XYZ)
+  *
+  * The film CMF is visually approximated from the graph. It is still more accurate than bullshit factors
+  * in legacy channel mixer that don't even say in which RGB space they are supposed to be applied.
+  */
+
+  // Ilford HP5 +
+  // https://www.ilfordphoto.com/amfile/file/download/file/1903/product/695/
+  p.grey[0] = 0.25304098f;
+  p.grey[1] = 0.25958747f;
+  p.grey[2] = 0.48737156f;
+
+  dt_gui_presets_add_generic(_("B&W : Ilford HP5+"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Ilford Delta 100
+  // https://www.ilfordphoto.com/amfile/file/download/file/3/product/681/
+  p.grey[0] = 0.24552374f;
+  p.grey[1] = 0.25366007f;
+  p.grey[2] = 0.50081619f;
+
+  dt_gui_presets_add_generic(_("B&W : Ilford Delta 100"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Ilford Delta 400 and 3200 - they have the same curve
+  // https://www.ilfordphoto.com/amfile/file/download/file/1915/product/685/
+  // https://www.ilfordphoto.com/amfile/file/download/file/1913/product/683/
+  p.grey[0] = 0.24376712f;
+  p.grey[1] = 0.23613559f;
+  p.grey[2] = 0.52009729f;
+
+  dt_gui_presets_add_generic(_("B&W : Ilford Delta 400 - 3200"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Ilford FP 2
+  // https://www.ilfordphoto.com/amfile/file/download/file/1919/product/690/
+  p.grey[0] = 0.24149085f;
+  p.grey[1] = 0.22149272f;
+  p.grey[2] = 0.53701643f;
+
+  dt_gui_presets_add_generic(_("B&W : Ilford FP2"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Fuji Across 100
+  // https://dacnard.wordpress.com/2013/02/15/the-real-shades-of-gray-bw-film-is-a-matter-of-heart-pt-1/
+  p.grey[0] = 0.333f;
+  p.grey[1] = 0.313f;
+  p.grey[2] = 0.353f;
+
+  dt_gui_presets_add_generic(_("B&W : Fuji Across 100"), self->op, self->version(), &p, sizeof(p), 1);
+
+  // Kodak ?
+  // can't find spectral sensivity curves and the illuminant under wich they are produced,
+  // so ¯\_(ツ)_/¯
+}
+
 
 #ifdef _OPENMP
 #pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
