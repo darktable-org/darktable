@@ -47,7 +47,8 @@ static dt_develop_blend_params_t _default_blendop_params
         { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
         { 0 }, 0, 0, FALSE };
 
-dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(dt_iop_module_t *module)
+static inline dt_develop_blend_colorspace_t _blend_default_module_blend_colorspace(dt_iop_module_t *module,
+                                                                                   gboolean is_scene_referred)
 {
   switch(module->blend_colorspace(module, NULL, NULL))
   {
@@ -57,6 +58,7 @@ dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(d
     case iop_cs_LCh:
       return DEVELOP_BLEND_CS_LAB;
     case iop_cs_rgb:
+      return is_scene_referred ? DEVELOP_BLEND_CS_RGB_SCENE : DEVELOP_BLEND_CS_RGB_DISPLAY;
     case iop_cs_HSL:
       return DEVELOP_BLEND_CS_RGB_DISPLAY;
     case iop_cs_JzCzhz:
@@ -64,6 +66,14 @@ dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(d
     default:
       return DEVELOP_BLEND_CS_NONE;
   }
+}
+
+dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(dt_iop_module_t *module)
+{
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
+  g_free(workflow);
+  return _blend_default_module_blend_colorspace(module, is_scene_referred);
 }
 
 static void _blend_init_blendif_boost_parameters(dt_develop_blend_params_t *blend_params,
@@ -1055,21 +1065,21 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
                                    const int old_version, void *new_params, const int new_version,
                                    const int length)
 {
-  // first deal with all-zero parmameter sets, regardless of version number.
-  // these occurred in previous
-  // darktable versions when modules
-  // without blend support stored zero-initialized data in history stack. that's
-  // no problem unless the module
-  // gets blend
-  // support later (e.g. module exposure). remedy: we simply initialize with the
-  // current default blend params
-  // in this case.
+  // edits before version 10 default to a display referred workflow
+  dt_develop_blend_colorspace_t cst = _blend_default_module_blend_colorspace(module, 0);
+
+  dt_develop_blend_params_t default_display_blend_params;
+  dt_develop_blend_init_blend_parameters(&default_display_blend_params, cst);
+
+  // first deal with all-zero parameter sets, regardless of version number.
+  // these occurred in previous darktable versions when modules without blend support stored zero-initialized data
+  // in history stack. that's no problem unless the module gets blend support later (e.g. module exposure).
+  // remedy: we simply initialize with the current default blend params in this case.
   if(dt_develop_blend_params_is_all_zero(old_params, length))
   {
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d;
+    *n = default_display_blend_params;
     return 0;
   }
 
@@ -1079,9 +1089,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params1_t *o = (dt_develop_blend_params1_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
     n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
     n->opacity = o->opacity;
@@ -1095,9 +1104,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params2_t *o = (dt_develop_blend_params2_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
     n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED))
                         ? DEVELOP_MASK_CONDITIONAL
@@ -1119,9 +1127,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params3_t *o = (dt_develop_blend_params3_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
     n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED))
                         ? DEVELOP_MASK_CONDITIONAL
@@ -1141,9 +1148,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params4_t *o = (dt_develop_blend_params4_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
     n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED))
                         ? DEVELOP_MASK_CONDITIONAL
@@ -1164,9 +1170,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params5_t *o = (dt_develop_blend_params5_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
@@ -1190,9 +1195,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params6_t *o = (dt_develop_blend_params6_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
@@ -1210,9 +1214,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params7_t *o = (dt_develop_blend_params7_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
@@ -1230,9 +1233,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params8_t *o = (dt_develop_blend_params8_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
@@ -1254,9 +1256,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     dt_develop_blend_params9_t *o = (dt_develop_blend_params9_t *)old_params;
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
-    dt_develop_blend_params_t *d = (dt_develop_blend_params_t *)module->default_blendop_params;
 
-    *n = *d; // start with a fresh copy of default parameters
+    *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
     n->blend_mode = o->blend_mode;
     n->opacity = o->opacity;
