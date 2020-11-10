@@ -137,7 +137,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
 {
   picker->module     = module;
   picker->kind       = kind;
-  picker->picker_cst = iop_cs_NONE;
+  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : iop_cs_NONE;
   picker->colorpick  = button;
 
   for(int j = 0; j<2; j++) picker->pick_pos[j] = NAN;
