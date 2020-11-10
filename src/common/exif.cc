@@ -449,6 +449,8 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       const int stars = pos->toLong();
       dt_image_set_xmp_rating(img, stars);
     }
+    else
+      dt_image_set_xmp_rating(img, -2);
 
     if(!exif_read) dt_colorlabels_remove_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
@@ -1088,6 +1090,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       const int stars = pos->toLong() * 5. / 100;
       dt_image_set_xmp_rating(img, stars);
     }
+    else
+      dt_image_set_xmp_rating(img, -2);
 
     // read embedded color matrix as used in DNGs
     {
