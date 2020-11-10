@@ -49,6 +49,11 @@ static dt_develop_blend_params_t _default_blendop_params
 
 dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(dt_iop_module_t *module)
 {
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
+  const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
+  const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
+  g_free(workflow);
+
   switch(module->blend_colorspace(module, NULL, NULL))
   {
     case iop_cs_RAW:
@@ -58,9 +63,9 @@ dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(d
       return DEVELOP_BLEND_CS_LAB;
     case iop_cs_rgb:
     case iop_cs_HSL:
-      return DEVELOP_BLEND_CS_RGB_DISPLAY;
+      return is_scene_referred ? DEVELOP_BLEND_CS_RGB_SCENE : DEVELOP_BLEND_CS_RGB_DISPLAY;
     case iop_cs_JzCzhz:
-      return DEVELOP_BLEND_CS_RGB_SCENE;
+      return is_display_referred ? DEVELOP_BLEND_CS_RGB_DISPLAY : DEVELOP_BLEND_CS_RGB_SCENE;
     default:
       return DEVELOP_BLEND_CS_NONE;
   }
