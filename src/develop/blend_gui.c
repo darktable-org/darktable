@@ -378,6 +378,52 @@ static void _blendif_scale_print_default(float value, float boost_factor, char *
   snprintf(string, n, "%-5.*f", _blendif_print_digits_default(scaled), scaled * 100.0f);
 }
 
+static gboolean _blendif_are_output_channels_used(const dt_develop_blend_params_t *const blend,
+                                                  const dt_develop_blend_colorspace_t cst)
+{
+  const gboolean mask_inclusive = blend->mask_combine & DEVELOP_COMBINE_INCL;
+  const uint32_t mask = cst == DEVELOP_BLEND_CS_LAB ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
+                                                    : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+  const uint32_t active_channels = blend->blendif & mask;
+  const uint32_t inverted_channels = (blend->blendif >> 16) ^ (mask_inclusive ? mask : 0);
+  const uint32_t cancel_channels = inverted_channels & ~blend->blendif & mask;
+  return active_channels || cancel_channels;
+}
+
+static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
+{
+  const dt_iop_gui_blend_data_t *const bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  if(!bd || !bd->blendif_support || !bd->blendif_inited) return 0;
+
+  gboolean changed = FALSE;
+  if(!bd->output_channels_shown)
+  {
+    const uint32_t mask = bd->csp == DEVELOP_BLEND_CS_LAB ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
+                                                          : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+    dt_develop_blend_params_t *const d = module->blend_params;
+    const uint32_t need_inversion = d->mask_combine & DEVELOP_COMBINE_INCL ? (mask << 16) : 0;
+    if((d->blendif & need_inversion) != need_inversion || (d->blendif & mask) != 0)
+    {
+      changed = TRUE;
+      d->blendif = (d->blendif & ~(mask | (mask << 16))) | need_inversion;
+    }
+    for (size_t ch = 0; ch < DEVELOP_BLENDIF_SIZE; ch++)
+    {
+      if ((DEVELOP_BLENDIF_OUTPUT_MASK & (1 << ch)) && (d->blendif_parameters[ch * 4 + 0] != 0.0f
+          || d->blendif_parameters[ch * 4 + 1] != 0.0f || d->blendif_parameters[ch * 4 + 2] != 1.0f
+          || d->blendif_parameters[ch * 4 + 3] != 1.0f))
+      {
+        changed = TRUE;
+        d->blendif_parameters[ch * 4 + 0] = 0.0f;
+        d->blendif_parameters[ch * 4 + 1] = 0.0f;
+        d->blendif_parameters[ch * 4 + 2] = 1.0f;
+        d->blendif_parameters[ch * 4 + 3] = 1.0f;
+      }
+    }
+  }
+  return changed;
+}
+
 static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gui_blend_data_t *data)
 {
   data->module->blend_params->mask_mode = mask_mode;
@@ -531,6 +577,7 @@ static void _blendop_masks_combine_callback(GtkWidget *combo, dt_iop_gui_blend_d
   const unsigned combine = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(data->masks_combine_combo));
   data->module->blend_params->mask_combine &= ~(DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL);
   data->module->blend_params->mask_combine |= combine;
+  _blendif_clean_output_channels(data->module);
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
@@ -542,6 +589,7 @@ static void _blendop_masks_invert_callback(GtkWidget *combo, dt_iop_gui_blend_da
     data->module->blend_params->mask_combine |= DEVELOP_COMBINE_INV;
   else
     data->module->blend_params->mask_combine &= ~DEVELOP_COMBINE_INV;
+  _blendif_clean_output_channels(data->module);
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
@@ -1240,7 +1288,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     float picker_mean[8], picker_min[8], picker_max[8];
     float picker_values[4];
 
-    int in_out = (dt_key_modifier_state() == GDK_CONTROL_MASK) ? 1 : 0;
+    int in_out = ((dt_key_modifier_state() == GDK_CONTROL_MASK) && data->output_channels_shown) ? 1 : 0;
 
     if(in_out)
     {
@@ -1405,9 +1453,37 @@ static void _blendif_select_colorspace(GtkMenuItem *menuitem, dt_iop_module_t *m
   }
 }
 
+static void _blendif_show_output_channels(GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  if(!bd || !bd->blendif_support || !bd->blendif_inited) return;
+  if(!bd->output_channels_shown)
+  {
+    bd->output_channels_shown = TRUE;
+    dt_iop_gui_update(module);
+  }
+}
+
+static void _blendif_hide_output_channels(GtkMenuItem *menuitem, dt_iop_module_t *module)
+{
+  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  if(!bd || !bd->blendif_support || !bd->blendif_inited) return;
+  if(bd->output_channels_shown)
+  {
+    bd->output_channels_shown = FALSE;
+    if(_blendif_clean_output_channels(module))
+    {
+      dt_dev_add_history_item(darktable.develop, module, TRUE);
+    }
+    dt_iop_gui_update(module);
+  }
+}
+
 static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, dt_iop_module_t *module)
 {
   if(event->button != 1 && event->button != 2) return;
+  const dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  if(!bd || !bd->blendif_support || !bd->blendif_inited) return;
 
   GtkWidget *mi;
   GtkMenu *menu = darktable.gui->presets_popup_menu;
@@ -1465,6 +1541,21 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+
+    if(bd->output_channels_shown)
+    {
+      mi = gtk_menu_item_new_with_label(_("reset and hide output channels"));
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_hide_output_channels), module);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    }
+    else
+    {
+      mi = gtk_menu_item_new_with_label(_("show output channels"));
+      g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_show_output_channels), module);
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    }
   }
 
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
@@ -1778,6 +1869,9 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
   }
   dt_pthread_mutex_unlock(&bd->lock);
 
+  /* update output channel mask visibility */
+  gtk_widget_set_visible(GTK_WIDGET(bd->filter[1].box), bd->output_channels_shown);
+
   /* update tabs */
   if(bd->channel_tabs_csp != bd->csp)
   {
@@ -1924,8 +2018,10 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       g_signal_connect(G_OBJECT(sl->slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
       g_signal_connect(G_OBJECT(sl->polarity), "toggled", G_CALLBACK(_blendop_blendif_polarity_callback), bd);
 
-      gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(label_box), TRUE, FALSE, 0);
-      gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(slider_box), TRUE, FALSE, 0);
+      sl->box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+      gtk_box_pack_start(GTK_BOX(sl->box), GTK_WIDGET(label_box), TRUE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(sl->box), GTK_WIDGET(slider_box), TRUE, FALSE, 0);
+      gtk_box_pack_start(GTK_BOX(bd->blendif_box), GTK_WIDGET(sl->box), TRUE, FALSE, 0);
     }
 
     bd->channel_boost_factor_slider = dt_bauhaus_slider_new_with_range(module, 0.0f, 3.0f, .02f, 0.0f, 3);
@@ -2473,6 +2569,11 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
 
   /* reset all alternative display modes for blendif */
   memset(bd->altmode, 0, sizeof(bd->altmode));
+
+  // force the visibility of output channels if they contain some setting
+  bd->output_channels_shown = bd->output_channels_shown
+      || _blendif_are_output_channels_used(module->blend_params, bd->csp);
+
   dt_iop_gui_update_blendif(module);
   dt_iop_gui_update_masks(module);
   dt_iop_gui_update_raster(module);
@@ -2619,6 +2720,13 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
   }
 }
 
+void dt_iop_gui_blending_reload_defaults(dt_iop_module_t *module)
+{
+  if(!module) return;
+  dt_iop_gui_blend_data_t *bd = module->blend_data;
+  if(!bd || !bd->blendif_support || !bd->blendif_inited) return;
+  bd->output_channels_shown = FALSE;
+}
 
 void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
 {
@@ -2633,6 +2741,7 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     bd->csp = DEVELOP_BLEND_CS_NONE;
     bd->blend_modes_csp = DEVELOP_BLEND_CS_NONE;
     bd->channel_tabs_csp = DEVELOP_BLEND_CS_NONE;
+    bd->output_channels_shown = FALSE;
     dt_iop_colorspace_type_t cst = module->blend_colorspace(module, NULL, NULL);
     bd->blendif_support = (cst == iop_cs_Lab || cst == iop_cs_rgb);
     bd->masks_support = !(module->flags() & IOP_FLAGS_NO_MASKS);
