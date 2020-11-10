@@ -102,6 +102,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
   GtkWidget *color_picker;
+  GtkWidget *warning_label;
   float xy[2];
   dt_ai_wb_model_t wb_model;
   float XYZ[4];
@@ -1698,6 +1699,34 @@ void gui_reset(dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
+static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
+{
+  if(!dt_image_is_raw(&module->dev->image_storage))
+  {
+    bwb[0] = 1.0;
+    bwb[2] = 1.0;
+    bwb[1] = 1.0;
+    bwb[3] = 1.0;
+
+    return 0;
+  }
+
+  double mul[4];
+  if (dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, mul))
+  {
+    // normalize green:
+    bwb[0] = mul[0] / mul[1];
+    bwb[2] = mul[2] / mul[1];
+    bwb[1] = 1.0;
+    bwb[3] = mul[3] / mul[1];
+
+    return 0;
+  }
+
+  return 1;
+}
+
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)self;
@@ -1876,7 +1905,29 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
   }
 
+  // Check that the white balance module has camera reference D65 set
+  // otherwise, this will cause trouble in CAT
+  double bwb[4] = { 0. };
+  calculate_bogus_daylight_wb(self, bwb);
+  gint is_reference_wb = TRUE;
+  for(int i = 0; i < 3; i++)
+    if(self->dev->pipe->dsc.temperature.coeffs[i] != (float)bwb[i]) is_reference_wb = FALSE;
+
   ++darktable.gui->reset;
+
+  if(!is_reference_wb && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
+  {
+    gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ white balance module error"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("the white balance module is not using the camera\n"
+                                                                "reference illuminant, which will cause issues here\n"
+                                                                "with chromatic adaptation. Either set it to reference\n"
+                                                                "or disable chromatic adaptation here."));
+  }
+  else
+  {
+    gtk_label_set_text(GTK_LABEL(g->warning_label), "");
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
+  }
 
   if(!w || w == g->illuminant || w == g->illum_fluo || w == g->illum_led || g->temperature)
   {
@@ -1973,6 +2024,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), _("chromatic adaptation transform"));
+
+  g->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->warning_label, FALSE, FALSE, 0);
 
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
