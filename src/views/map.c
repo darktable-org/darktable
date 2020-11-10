@@ -681,8 +681,8 @@ void init(dt_view_t *self)
     }
 
     /* allow drag&drop of images from filmstrip */
-    gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal,
-                      GDK_ACTION_COPY);
+    gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL,
+                      target_list_internal, n_targets_internal, GDK_ACTION_MOVE);
     g_signal_connect(GTK_WIDGET(lib->map), "scroll-event", G_CALLBACK(_view_map_scroll_event), self);
     g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
     g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
@@ -1476,7 +1476,8 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
       GdkDragContext *context =
         gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                        GDK_ACTION_COPY, 1, (GdkEvent *)e, -1, -1);
+                                        GDK_ACTION_MOVE, 1,
+                                        (GdkEvent *)e, -1, -1);
 
       GdkPixbuf *cross = _draw_cross();
       gtk_drag_set_icon_pixbuf(context, cross, DT_PIXEL_APPLY_DPI(cross_size),
@@ -1559,7 +1560,8 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
                            h - count_height + _thumb_border);
 
       GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                                                GDK_ACTION_COPY, 1, (GdkEvent *)e, -1, -1);
+                                                                GDK_ACTION_MOVE, 1,
+                                                                (GdkEvent *)e, -1, -1);
 
       gtk_drag_set_icon_pixbuf(context, thumb, 0, h + 2 * _thumb_border);
 
