@@ -218,7 +218,7 @@ typedef struct dt_develop_t
   {
     // list of exposure iop instances, with plugin hooks, used by histogram dragging functions
     // each element is dt_dev_proxy_exposure_t
-    GList *exposure;
+    dt_dev_proxy_exposure_t exposure;
 
     // modulegroups plugin hooks
     struct
@@ -388,8 +388,6 @@ void dt_dev_invalidate_from_gui(dt_develop_t *dev);
  * exposure plugin hook, set the exposure and the black level
  */
 
-/** a function used to sort the list */
-gint dt_dev_exposure_hooks_sort(gconstpointer a, gconstpointer b);
 /** check if exposure iop hooks are available */
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
 /** reset exposure to defaults */

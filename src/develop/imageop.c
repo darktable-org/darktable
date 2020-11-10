@@ -2893,7 +2893,13 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
     }
 
     // switch accelerators to new module
-    if(accel_mod_new) dt_accel_connect_instance_iop(accel_mod_new);
+    if(accel_mod_new)
+    {
+      dt_accel_connect_instance_iop(accel_mod_new);
+
+      if(!strcmp(accel_mod_new->op, "exposure"))
+        darktable.develop->proxy.exposure.module = accel_mod_new;
+    }
   }
 }
 
