@@ -1762,10 +1762,28 @@ void reload_defaults(dt_iop_module_t *module)
   d->illuminant = module->get_f("illuminant")->Enum.Default;
   d->adaptation = module->get_f("adaptation")->Enum.Default;
 
+  module->default_enabled = FALSE;
+
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
+  const gboolean is_modern = strcmp(workflow, "modern") == 0;
+  g_free(workflow);
+
   const dt_image_t *img = &module->dev->image_storage;
-  if(find_temperature_from_raw_coeffs(img, &(d->x), &(d->y)))
-    d->illuminant = DT_ILLUMINANT_CAMERA;
-  check_if_close_to_daylight(d->x, d->y, &(d->temperature), &(d->illuminant), &(d->adaptation));
+
+  if(is_modern)
+  {
+    // if workflow = modern, take care of white balance here
+    if(find_temperature_from_raw_coeffs(img, &(d->x), &(d->y)))
+      d->illuminant = DT_ILLUMINANT_CAMERA;
+
+    check_if_close_to_daylight(d->x, d->y, &(d->temperature), &(d->illuminant), &(d->adaptation));
+  }
+  else
+  {
+    // otherwise, simple channel mixer
+    d->illuminant = DT_ILLUMINANT_PIPE;
+    d->adaptation = DT_ADAPTATION_RGB;
+  }
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)module->gui_data;
   if(g)
