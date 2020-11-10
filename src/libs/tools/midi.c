@@ -386,7 +386,8 @@ void midi_write(MidiDevice *midi, gint channel, gint type, gint key, gint veloci
     buf[1] = key;
     buf[2] = velocity;
 
-    write(g_io_channel_unix_get_fd (midi->io), buf, 3);
+    if(write(g_io_channel_unix_get_fd (midi->io), buf, 3) <= 0)
+      fprintf(stderr, "write to midi channel failed\n");
   }
 }
 
@@ -1244,7 +1245,8 @@ gboolean midi_read_event (GIOChannel   *io,
   {
       // Send Universal Device Inquiry message
       char inquiry[6] = "\xF0\x7E\x7F\x06\x01\xF7";
-      write(g_io_channel_unix_get_fd (midi->io), inquiry, 6);
+      if(write(g_io_channel_unix_get_fd (midi->io), inquiry, 6) <= 0)
+        fprintf(stderr, "write to midi channel failed\n");
 
       midi->name_queried = TRUE;
       return TRUE; // ignore rest of input
