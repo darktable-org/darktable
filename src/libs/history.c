@@ -856,7 +856,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
 
   #define add_blend_history_change(field, format, label)                                       \
     if((hitem->blend_params->field) != (old_blend->field))                                     \
-      change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, _(label), \
+      change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, label,    \
                                   (old_blend->field), (hitem->blend_params->field));
 
   #define add_blend_history_change_enum(field, label, list)                                    \
@@ -870,27 +870,29 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
       }                                                                                        \
                                                                                                \
       change_parts[num_parts++] = (!old_str || !new_str)                                       \
-                                ? g_strdup_printf("%s\t%d\t\u2192\t%d", _(label),              \
+                                ? g_strdup_printf("%s\t%d\t\u2192\t%d", label,                 \
                                                   old_blend->field, hitem->blend_params->field)\
-                                : g_strdup_printf("%s\t%s\t\u2192\t%s", _(label),              \
+                                : g_strdup_printf("%s\t%s\t\u2192\t%s", label,                 \
                                                   _(g_dpgettext2(NULL, "blendmode", old_str)), \
                                                   _(g_dpgettext2(NULL, "blendmode", new_str)));\
     }
 
-  add_blend_history_change_enum(mask_mode, "mask mode", dt_develop_mask_mode_names);
-  add_blend_history_change_enum(blend_mode, "blend mode", dt_develop_blend_mode_names);
-  add_blend_history_change(opacity, "%.4f", "mask opacity");
-  add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), "combine masks", dt_develop_combine_masks_names);
-  add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
-  add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
-  add_blend_history_change(blur_radius, "%.4f", "mask blur");
-  add_blend_history_change(contrast, "%.4f", "mask contrast");
-  add_blend_history_change(brightness, "%.4f", "brightness");
-  add_blend_history_change(raster_mask_instance, "%d", "raster mask instance");
-  add_blend_history_change(raster_mask_id, "%d", "raster mask id");
-  add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
+  add_blend_history_change_enum(blend_cst, _("colorspace"), dt_develop_blend_colorspace_names);
+  add_blend_history_change_enum(mask_mode, _("mask mode"), dt_develop_mask_mode_names);
+  add_blend_history_change_enum(blend_mode, _("blend mode"), dt_develop_blend_mode_names);
+  add_blend_history_change(blend_parameter, "%.2f EV", _("blend fulcrum"));
+  add_blend_history_change(opacity, "%.4f", _("mask opacity"));
+  add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), _("combine masks"), dt_develop_combine_masks_names);
+  add_blend_history_change(feathering_radius, "%.4f", _("feathering radius"));
+  add_blend_history_change_enum(feathering_guide, _("feathering guide"), dt_develop_feathering_guide_names);
+  add_blend_history_change(blur_radius, "%.4f", _("mask blur"));
+  add_blend_history_change(contrast, "%.4f", _("mask contrast"));
+  add_blend_history_change(brightness, "%.4f", _("brightness"));
+  add_blend_history_change(raster_mask_instance, "%d", _("raster mask instance"));
+  add_blend_history_change(raster_mask_id, "%d", _("raster mask id"));
+  add_blend_history_change_enum(raster_mask_invert, _("invert mask"), dt_develop_invert_mask_names);
 
-  add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", "drawn mask polarity");
+  add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", _("drawn mask polarity"));
 
   if(hitem->blend_params->mask_id != old_blend->mask_id)
     change_parts[num_parts++] = old_blend->mask_id == 0
