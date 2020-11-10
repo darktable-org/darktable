@@ -946,18 +946,19 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view), self);
   g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(_mouse_scroll), self);
   gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(view));
-  gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("list of user locations,"
-                                                  "\nclick to show or hide a location on the map:"
-                                                  "\n - wheel scroll inside the shape to resize it"
-                                                  "\n - if a rectangle <shift> or <ctrl> scroll to modify the width or the height"
-                                                  "\n - click inside the shape and drag it to change its position"
-                                                  "\n - ctrl-click to move an image from inside the location"
-                                                  "\nctrl-click to edit a location name"
-                                                  "\n - a pipe \'|\' symbol breaks the name into several levels"
-                                                  "\n - to remove a group of locations clear its name"
-                                                  "\n - press enter to validate the new name, escape to cancel the edition"
-                                                  "\nright-click for other actions: delete location and go to collection,"
-                                                  "\nctrl-wheel scroll to resize the window"));
+  gtk_widget_set_tooltip_text(GTK_WIDGET(view),
+                              _("list of user locations,"
+                                "\nclick to show or hide a location on the map:"
+                                "\n - wheel scroll inside the shape to resize it"
+                                "\n - if a rectangle <shift> or <ctrl> scroll to modify the width or the height"
+                                "\n - click inside the shape and drag it to change its position"
+                                "\n - ctrl-click to move an image from inside the location"
+                                "\nctrl-click to edit a location name"
+                                "\n - a pipe \'|\' symbol breaks the name into several levels"
+                                "\n - to remove a group of locations clear its name"
+                                "\n - press enter to validate the new name, escape to cancel the edition"
+                                "\nright-click for other actions: delete location and go to collection,"
+                                "\nctrl-wheel scroll to resize the window"));
 
   // buttons
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -975,14 +976,16 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->shape_button ),
                               _("select the shape of the location\'s limits on the map, circle or rectangle"));
 
-  d->new_button = dt_ui_button_new(_("new location"), _("add a new location on the center of the visible map"), NULL);
+  d->new_button = dt_ui_button_new(_("new location"),
+                                   _("add a new location on the center of the visible map"), NULL);
   gtk_box_pack_start(hbox, d->new_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->new_button), "clicked", G_CALLBACK(_new_button_clicked), self);
 
   dt_conf_set_bool("plugins/map/showalllocations", FALSE);
   d->show_all_button = gtk_toggle_button_new_with_label(_("show all"));
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->show_all_button))), PANGO_ELLIPSIZE_END);
-  gtk_widget_set_tooltip_text(d->show_all_button, _("show all loations which are on the visible map"));
+  gtk_widget_set_tooltip_text(d->show_all_button,
+                              _("show all loations which are on the visible map"));
   gtk_box_pack_start(hbox, d->show_all_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->show_all_button), "clicked", G_CALLBACK(_show_all_button_clicked), self);
 
