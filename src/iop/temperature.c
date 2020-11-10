@@ -88,6 +88,8 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *btn_d65;
   GtkWidget *coeffs_expander;
   GtkWidget *coeffs_toggle;
+  GtkWidget *temp_label;
+  GtkWidget *balance_label;
   int preset_cnt;
   int preset_num[54];
   double daylight_wb[4];
@@ -1268,12 +1270,8 @@ void gui_update(struct dt_iop_module_t *self)
   }
 
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
-  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
                                CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
-
-  gtk_widget_set_visible(GTK_WIDGET(g->finetune), show_finetune);
-  gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
 
   const int preset = dt_bauhaus_combobox_get(g->presets);
 
@@ -1284,6 +1282,43 @@ void gui_update(struct dt_iop_module_t *self)
   color_temptint_sliders(self);
   color_rgb_sliders(self);
   color_finetuning_slider(self);
+
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
+  const gboolean is_modern = strcmp(workflow, "modern") == 0;
+  g_free(workflow);
+
+  if(is_modern)
+  {
+    // if we use modern chroma adatation, white balance is handled by channelmixerrgb
+    // so we hide most of the controls here to not confuse users
+    gtk_widget_set_visible(GTK_WIDGET(g->finetune), FALSE);
+    gtk_widget_set_visible(g->buttonbar, FALSE);
+    dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), FALSE);
+
+    gtk_widget_set_visible(g->btn_asshot, FALSE);
+    gtk_widget_set_visible(g->btn_user, FALSE);
+    gtk_widget_set_visible(g->btn_d65, FALSE);
+    gtk_widget_set_visible(g->scale_k, FALSE);
+    gtk_widget_set_visible(g->scale_tint, FALSE);
+    gtk_widget_set_visible(g->presets, FALSE);
+    gtk_widget_set_visible(g->temp_label, FALSE);
+    gtk_widget_set_visible(g->balance_label, FALSE);
+  }
+  else
+  {
+    gtk_widget_set_visible(GTK_WIDGET(g->finetune), show_finetune);
+    gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
+    dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
+
+    gtk_widget_set_visible(g->btn_asshot, TRUE);
+    gtk_widget_set_visible(g->btn_user, TRUE);
+    gtk_widget_set_visible(g->btn_d65, TRUE);
+    gtk_widget_set_visible(g->scale_k, TRUE);
+    gtk_widget_set_visible(g->scale_tint, TRUE);
+    gtk_widget_set_visible(g->presets, TRUE);
+    gtk_widget_set_visible(g->temp_label, TRUE);
+    gtk_widget_set_visible(g->balance_label, TRUE);
+  }
 
   gtk_widget_queue_draw(self->widget);
 }
@@ -1410,6 +1445,9 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev || module->dev->image_storage.id == -1) return;
 
   const int is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
+  gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
+  const gboolean is_modern = strcmp(workflow, "modern") == 0;
+  g_free(workflow);
 
   module->default_enabled = 0;
   module->hide_enable_button = 0;
@@ -1431,13 +1469,27 @@ void reload_defaults(dt_iop_module_t *module)
       // raw images need wb:
       module->default_enabled = 1;
 
-      // do best to find starting coeffs
-      float coeffs[4] = { 0 };
-      find_coeffs(module, coeffs);
-      d->red = coeffs[0]/coeffs[1];
-      d->blue = coeffs[2]/coeffs[1];
-      d->g2 = coeffs[3]/coeffs[1];
-      d->green = 1.0f;
+      // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
+      // full chromatic adaptation is deferred to channelmixerrgb
+      if(is_modern)
+      {
+        double coeffs[4] = { 0 };
+        calculate_bogus_daylight_wb(module, coeffs);
+        d->red = coeffs[0]/coeffs[1];
+        d->blue = coeffs[2]/coeffs[1];
+        d->g2 = coeffs[3]/coeffs[1];
+        d->green = 1.0f;
+      }
+      else
+      {
+        // do best to find starting coeffs
+        float coeffs[4] = { 0 };
+        find_coeffs(module, coeffs);
+        d->red = coeffs[0]/coeffs[1];
+        d->blue = coeffs[2]/coeffs[1];
+        d->g2 = coeffs[3]/coeffs[1];
+        d->green = 1.0f;
+      }
     }
   }
 
@@ -1485,15 +1537,19 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_slider_set_default(g->scale_tint, tint);
 
     dt_bauhaus_combobox_clear(g->presets);
-    dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-    dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
-    dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
-    dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference")); // old "camera neutral", reason: better matches intent
 
-    g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
-    memset(g->preset_num, 0, sizeof(g->preset_num));
+    if(!is_modern)
+    {
+      dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
+      dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
+      dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
+      dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference")); // old "camera neutral", reason: better matches intent
 
-    generate_preset_combo(module);
+      g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
+      memset(g->preset_num, 0, sizeof(g->preset_num));
+
+      generate_preset_combo(module);
+    }
 
     gui_sliders_update(module);
   }
@@ -1868,11 +1924,11 @@ void gui_init(struct dt_iop_module_t *self)
   for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
 
   GtkWidget *temp_label_box = gtk_event_box_new();
-  GtkWidget *temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
-  gtk_widget_set_tooltip_text(temp_label, _("click to cycle color mode on sliders"));
-  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(temp_label));
+  g->temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
+  gtk_widget_set_tooltip_text(g->temp_label, _("click to cycle color mode on sliders"));
+  GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(g->temp_label));
   gtk_style_context_add_class(context, "section_label_top");
-  gtk_container_add(GTK_CONTAINER(temp_label_box), temp_label);
+  gtk_container_add(GTK_CONTAINER(temp_label_box), g->temp_label);
 
   g_signal_connect(G_OBJECT(temp_label_box), "button-release-event", G_CALLBACK(temp_label_click), self);
 
@@ -1930,7 +1986,8 @@ void gui_init(struct dt_iop_module_t *self)
 
   gtk_widget_set_no_show_all(g->scale_g2, TRUE);
 
-  gtk_box_pack_start(box_enabled, dt_ui_section_label_new(_("white balance settings")), TRUE, TRUE, 0);
+  g->balance_label = dt_ui_section_label_new(_("white balance settings"));
+  gtk_box_pack_start(box_enabled, g->balance_label, TRUE, TRUE, 0);
 
   g->btn_asshot = dt_iop_togglebutton_new(self, N_("settings") "`" N_("as shot"), NULL,
                                           G_CALLBACK(btn_toggled), FALSE, 0, 0,
