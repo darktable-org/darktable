@@ -429,18 +429,18 @@ void dt_image_set_xmp_rating(dt_image_t *img, const int rating)
   // clean flags stars and rejected
   img->flags &= ~(DT_IMAGE_REJECTED | DT_VIEW_RATINGS_MASK);
 
-  if(rating == 0)
-    {
-      img->flags |= (DT_VIEW_RATINGS_MASK & dt_conf_get_int("ui_last/import_initial_rating"));
-    }
+  if(rating == -2) // assuming that value -2 cannot be found
+  {
+    img->flags |= (DT_VIEW_RATINGS_MASK & dt_conf_get_int("ui_last/import_initial_rating"));
+  }
   else if(rating == -1)
-    {
-      img->flags |= DT_IMAGE_REJECTED;
-    }
+  {
+    img->flags |= DT_IMAGE_REJECTED;
+  }
   else
-    {
-      img->flags |= (DT_VIEW_RATINGS_MASK & rating);
-    }
+  {
+    img->flags |= (DT_VIEW_RATINGS_MASK & rating);
+  }
 }
 
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc)
