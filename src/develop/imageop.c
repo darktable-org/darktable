@@ -73,6 +73,7 @@ void dt_iop_load_default_params(dt_iop_module_t *module)
   dt_develop_blend_colorspace_t cst = dt_develop_blend_default_module_blend_colorspace(module);
   dt_develop_blend_init_blend_parameters(module->default_blendop_params, cst);
   dt_iop_commit_blend_params(module, module->default_blendop_params);
+  dt_iop_gui_blending_reload_defaults(module);
 }
 
 static void dt_iop_modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,

@@ -161,7 +161,8 @@ typedef enum dt_develop_blendif_channels_t
   DEVELOP_BLENDIF_SIZE = 16,
 
   DEVELOP_BLENDIF_Lab_MASK = 0x3377,
-  DEVELOP_BLENDIF_RGB_MASK = 0x77FF
+  DEVELOP_BLENDIF_RGB_MASK = 0x77FF,
+  DEVELOP_BLENDIF_OUTPUT_MASK = 0xF0F0
 } dt_develop_blendif_channels_t;
 
 
@@ -443,6 +444,7 @@ typedef struct dt_iop_gui_blendif_filter_t
   GtkLabel *label[4];
   GtkLabel *picker_label;
   GtkWidget *polarity;
+  GtkBox *box;
 } dt_iop_gui_blendif_filter_t;
 
 typedef struct dt_iop_blend_name_value_t
@@ -509,6 +511,7 @@ typedef struct dt_iop_gui_blend_data_t
   dt_dev_pixelpipe_display_mask_t save_for_leave;
   int timeout_handle;
   GtkNotebook *channel_tabs;
+  gboolean output_channels_shown;
 
   GtkWidget *channel_boost_factor_slider;
 
@@ -632,6 +635,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module);
 void dt_iop_gui_update_masks(dt_iop_module_t *module);
 void dt_iop_gui_cleanup_blending(dt_iop_module_t *module);
 void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module);
+void dt_iop_gui_blending_reload_defaults(dt_iop_module_t *module);
 
 gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece);
 
