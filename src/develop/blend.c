@@ -50,22 +50,27 @@ static dt_develop_blend_params_t _default_blendop_params
 static inline dt_develop_blend_colorspace_t _blend_default_module_blend_colorspace(dt_iop_module_t *module,
                                                                                    gboolean is_scene_referred)
 {
-  switch(module->blend_colorspace(module, NULL, NULL))
+  if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
-    case iop_cs_RAW:
-      return DEVELOP_BLEND_CS_RAW;
-    case iop_cs_Lab:
-    case iop_cs_LCh:
-      return DEVELOP_BLEND_CS_LAB;
-    case iop_cs_rgb:
-      return is_scene_referred ? DEVELOP_BLEND_CS_RGB_SCENE : DEVELOP_BLEND_CS_RGB_DISPLAY;
-    case iop_cs_HSL:
-      return DEVELOP_BLEND_CS_RGB_DISPLAY;
-    case iop_cs_JzCzhz:
-      return DEVELOP_BLEND_CS_RGB_SCENE;
-    default:
-      return DEVELOP_BLEND_CS_NONE;
+    switch(module->blend_colorspace(module, NULL, NULL))
+    {
+      case iop_cs_RAW:
+        return DEVELOP_BLEND_CS_RAW;
+      case iop_cs_Lab:
+      case iop_cs_LCh:
+        return DEVELOP_BLEND_CS_LAB;
+      case iop_cs_rgb:
+        return is_scene_referred ? DEVELOP_BLEND_CS_RGB_SCENE : DEVELOP_BLEND_CS_RGB_DISPLAY;
+      case iop_cs_HSL:
+        return DEVELOP_BLEND_CS_RGB_DISPLAY;
+      case iop_cs_JzCzhz:
+        return DEVELOP_BLEND_CS_RGB_SCENE;
+      default:
+        return DEVELOP_BLEND_CS_NONE;
+    }
   }
+  else
+    return DEVELOP_BLEND_CS_NONE;
 }
 
 dt_develop_blend_colorspace_t dt_develop_blend_default_module_blend_colorspace(dt_iop_module_t *module)
