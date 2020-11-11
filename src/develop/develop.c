@@ -787,7 +787,8 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   return 0;
 }
 
-static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean no_image, gboolean include_masks)
+static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable,
+                                      gboolean new_item, gboolean no_image, gboolean include_masks)
 {
   int kept_module = 0;
   GList *history = g_list_nth(dev->history, dev->history_end);
@@ -817,6 +818,7 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
   history = g_list_nth(dev->history, dev->history_end - 1);
   dt_dev_history_item_t *hist = history ? (dt_dev_history_item_t *)(history->data) : 0;
   if(!history // if no history yet, push new item for sure.
+     || new_item                                               // a new item is requested
      || module != hist->module
      || module->instance != hist->module->instance             // add new item for different op
      || module->multi_priority != hist->module->multi_priority // or instance
@@ -916,10 +918,10 @@ static void _dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module
 
 void dt_dev_add_history_item_ext(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, const int no_image)
 {
-  _dev_add_history_item_ext(dev, module, enable, no_image, FALSE);
+  _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, FALSE);
 }
 
-void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable, gboolean new_item)
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
@@ -932,7 +934,7 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
 
   if(dev->gui_attached)
   {
-    _dev_add_history_item_ext(dev, module, enable, FALSE, FALSE);
+    _dev_add_history_item_ext(dev, module, enable, new_item, FALSE, FALSE);
   }
 #if 0
   {
@@ -974,6 +976,16 @@ void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolea
   }
 }
 
+void dt_dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+{
+  _dev_add_history_item(dev, module, enable, FALSE);
+}
+
+void dt_dev_add_new_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean enable)
+{
+  _dev_add_history_item(dev, module, enable, TRUE);
+}
+
 void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_module, gboolean _enable, gboolean no_image)
 {
   dt_iop_module_t *module = _module;
@@ -997,7 +1009,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
   }
   if(module)
   {
-    _dev_add_history_item_ext(dev, module, enable, no_image, TRUE);
+    _dev_add_history_item_ext(dev, module, enable, FALSE, no_image, TRUE);
   }
   else
     fprintf(stderr, "[dt_dev_add_masks_history_item_ext] can't find mask manager module\n");
