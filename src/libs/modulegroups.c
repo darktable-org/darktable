@@ -1008,7 +1008,7 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
                        "bloom|borders|colorize|colormapping|graduatednd|grain|highpass|lowlight"
                        "|lowpass|soften|splittoning|vignette|watermark");
-  dt_lib_presets_add(_("all modules"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  dt_lib_presets_add(_("modules: all"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // minimal / 3 tabs
@@ -1017,11 +1017,11 @@ void init_presets(dt_lib_module_t *self)
                        "basicadj|ashift|basecurve|clipping"
                        "|denoiseprofile|exposure|flip|lens|temperature");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
-                       "channelmixerrgb|colorbalance|colorzones|graduatednd|rgbcurve"
+                       "channelmixerrgb|colorzones|graduatednd|rgbcurve"
                        "|rgblevels|splittoning");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
-                       "bordersmonochrome|retouch|sharpen|vignette|watermark");
-  dt_lib_presets_add(_("minimal"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+                       "borders|monochrome|retouch|sharpen|vignette|watermark");
+  dt_lib_presets_add(_("workflow: beginner"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // display referred
@@ -1036,21 +1036,21 @@ void init_presets(dt_lib_module_t *self)
                        "|lens|retouch|liquify|sharpen|nlmeans");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
                        "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
-  dt_lib_presets_add(_("display referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  dt_lib_presets_add(_("workflow: display-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // scene referred
   tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
-                       "filmicrgb|toneequal|clipping|flip|exposure|temperature|rgbcurve|rgblevels|bilat");
+                       "filmicrgb|toneequal|clipping|flip|exposure|temperature|bilat");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixerrgb|colorbalance|colorzones|vibrance");
+                       "channelmixerrgb|colorbalance|colorzones");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
                        "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
                        "|lens|retouch|liquify|sharpen|nlmeans");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
-                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
-  dt_lib_presets_add(_("scene referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+                       "atrous|borders|graduatednd|grain|vignette|watermark");
+  dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // default / 3 tabs based on Aurélien's proposal
@@ -1060,18 +1060,18 @@ void init_presets(dt_lib_module_t *self)
                        "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
                        "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|invert|lens"
                        "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
-                       "|rawoverexposed|rotatepixels|scalepixels");
+                       "|rawoverexposed|rotatepixels||temperature|scalepixels");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
                        "basicadj|channelmixer|channelmixerrgb|colisa|colorbalance"
                        "|colorcontrast|colorcorrection|colorize|colorzones|globaltonemap"
                        "|graduatednd|levels|relight|rgbcurve|rgblevels|shadhi|splittoning"
-                       "|temperature|tonecurve|toneequal|tonemap"
+                       "|tonecurve|toneequal|tonemap"
                        "|velvia|vibrance|zonesystem");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
                        "atrous|bilat|bloom|borders|clahe|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
-  dt_lib_presets_add(_("default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  dt_lib_presets_add(_("modules: default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // if needed, we add a new preset, based on last user config
