@@ -93,13 +93,13 @@ const char *name()
   return _("local contrast");
 }
 
-const char *description()
+const char *description(struct dt_iop_module_t *self)
 {
-  return _("manipulate local and global contrast separately,\n"
-           "for corrective and creative purposes.\n"
-           "works in Lab,\n"
-           "takes any RGB input,\n"
-           "outputs non-linear RGB.");
+  return dt_iop_set_description(self, _("manipulate local and global contrast separately"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
 
 // some additional flags (self explanatory i think):

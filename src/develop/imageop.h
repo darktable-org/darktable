@@ -176,7 +176,7 @@ typedef struct dt_iop_module_so_t
   int (*default_group)(void);
   int (*flags)(void);
 
-  const char *(*description)(void);
+  const char *(*description)(struct dt_iop_module_t *self);
   /* should return a string with 5 lines:
      line 1 : summary of what it does
      line 2 : oriented creative or corrective ?
@@ -414,7 +414,7 @@ typedef struct dt_iop_module_t
   int (*flags)(void);
 
   /** get a descriptive text used for example in a tooltip in more modules */
-  const char *(*description)(void);
+  const char *(*description)(struct dt_iop_module_t *self);
 
   int (*operation_tags)(void);
 
@@ -696,6 +696,10 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
+
+// format modules description going in tooltips
+char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
+                             const char *output);
 
 #define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
 #define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL

@@ -112,6 +112,11 @@ static int default_operation_tags_filter(void)
   return 0;
 }
 
+static const char *default_description(struct dt_iop_module_t *self)
+{
+  return "";
+}
+
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
                                   dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -285,7 +290,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "default_group", (gpointer) & (module->default_group)))
     module->default_group = default_group;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
-  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = module->name;
+  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = default_description;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
@@ -1218,7 +1223,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "iop-panel-label");
   gchar *label = dt_history_item_get_name_html(module);
-  gchar *tooltip = g_strdup(module->description());
+  gchar *tooltip = g_strdup(module->description(module));
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
@@ -3043,6 +3048,50 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module)
     g_source_remove(module->timeout_handle);
     module->timeout_handle = 0;
   }
+}
+
+char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
+                             const char *output)
+{
+  char *str_purpose = g_strdup(_("purpose"));
+  char *str_input = g_strdup(_("input"));
+  char *str_process = g_strdup(_("process"));
+  char *str_output = g_strdup(_("output"));
+
+  char *icon_purpose = g_strdup("🖌");
+  char *icon_input = g_strdup("⇥");
+  char *icon_process = g_strdup("⟴");
+  char *icon_output = g_strdup("↦");
+
+
+  /* if the font can't display icons, default to nothing
+  * Unfortunately, getting the font from the font desc is another scavenger hunt
+  * into Gtk useless docs without examples. Good luck.
+  PangoFontDescription *desc = darktable.bauhaus->pango_font_desc;
+  if(!pango_font_has_char(desc->get_font(), g_utf8_to_ucs4(icon_purpose, 1)))
+    icon_purpose = icon_input = icon_process = icon_output = g_strdup("");
+  */
+
+  char *str_out = g_strdup_printf("%s.\n\n"
+                                  "%s\t%s\t:\t%s.\n"
+                                  "%s\t%s\t:\t%s.\n"
+                                  "%s\t%s\t:\t%s.\n"
+                                  "%s\t%s\t:\t%s.",
+                                  main_text,
+                                  icon_purpose, str_purpose, purpose,
+                                  icon_input, str_input, input,
+                                  icon_process, str_process, process,
+                                  icon_output, str_output, output);
+  g_free(str_purpose);
+  g_free(str_input);
+  g_free(str_process);
+  g_free(str_output);
+  g_free(icon_purpose);
+  g_free(icon_input);
+  g_free(icon_process);
+  g_free(icon_output);
+
+  return str_out;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

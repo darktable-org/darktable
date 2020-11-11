@@ -194,6 +194,15 @@ const char *name()
   return C_("modulename", "white balance");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("scale raw RGB channels to balance white and help demosaicing"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_BASIC | IOP_GROUP_GRADING;

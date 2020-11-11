@@ -94,6 +94,15 @@ const char *name()
   return _("unbreak input profile");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("correct input color profiles meant to be applied on non-linear RGB."),
+                                      _("corrective"),
+                                      _("linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;

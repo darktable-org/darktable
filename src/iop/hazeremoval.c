@@ -99,6 +99,14 @@ const char *name()
   return _("haze removal");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("remove fog and atmospheric hazing from pictures"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("frequential, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
 
 int flags()
 {
