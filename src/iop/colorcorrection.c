@@ -95,21 +95,24 @@ void init_presets(dt_iop_module_so_t *self)
   p.hia = 0.0f;
   p.hib = 3.0f;
   p.saturation = 1.0f;
-  dt_gui_presets_add_generic(_("warm tone"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("warm tone"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.loa = 3.55f;
   p.lob = 0.0f;
   p.hia = -0.95f;
   p.hib = 4.5f;
   p.saturation = 1.0f;
-  dt_gui_presets_add_generic(_("warming filter"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("warming filter"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.loa = -3.55f;
   p.lob = -0.0f;
   p.hia = 0.95f;
   p.hib = -4.5f;
   p.saturation = 1.0f;
-  dt_gui_presets_add_generic(_("cooling filter"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("cooling filter"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,

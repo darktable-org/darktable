@@ -297,63 +297,72 @@ void init_presets(dt_iop_module_so_t *self)
   p.latitude_stops = 2.25f;
   p.white_point_source = 1.95f;
   p.black_point_source = -7.05f;
-  dt_gui_presets_add_generic(_("09 EV (low-key)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("09 EV (low-key)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets indoors
   p.grey_point_source = 18.0f;
   p.latitude_stops = 2.75f;
   p.white_point_source = 2.45f;
   p.black_point_source = -7.55f;
-  dt_gui_presets_add_generic(_("10 EV (indoors)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("10 EV (indoors)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets dim-outdoors
   p.grey_point_source = 12.77f;
   p.latitude_stops = 3.0f;
   p.white_point_source = 2.95f;
   p.black_point_source = -8.05f;
-  dt_gui_presets_add_generic(_("11 EV (dim outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("11 EV (dim outdoors)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets outdoors
   p.grey_point_source = 9.0f;
   p.latitude_stops = 3.5f;
   p.white_point_source = 3.45f;
   p.black_point_source = -8.55f;
-  dt_gui_presets_add_generic(_("12 EV (outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("12 EV (outdoors)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets outdoors
   p.grey_point_source = 6.38f;
   p.latitude_stops = 3.75f;
   p.white_point_source = 3.95f;
   p.black_point_source = -9.05f;
-  dt_gui_presets_add_generic(_("13 EV (bright outdoors)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("13 EV (bright outdoors)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets backlighting
   p.grey_point_source = 4.5f;
   p.latitude_stops = 4.25f;
   p.white_point_source = 4.45f;
   p.black_point_source = -9.55f;
-  dt_gui_presets_add_generic(_("14 EV (backlighting)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("14 EV (backlighting)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets sunset
   p.grey_point_source = 3.19f;
   p.latitude_stops = 4.50f;
   p.white_point_source = 4.95f;
   p.black_point_source = -10.05f;
-  dt_gui_presets_add_generic(_("15 EV (sunset)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("15 EV (sunset)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets HDR
   p.grey_point_source = 2.25f;
   p.latitude_stops = 5.0f;
   p.white_point_source = 5.45f;
   p.black_point_source = -10.55f;
-  dt_gui_presets_add_generic(_("16 EV (HDR)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("16 EV (HDR)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Presets HDR+
   p.grey_point_source = 1.125f;
   p.latitude_stops = 6.0f;
   p.white_point_source = 6.45f;
   p.black_point_source = -11.55f;
-  dt_gui_presets_add_generic(_("18 EV (HDR++)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("18 EV (HDR++)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 static inline float Log2(float x)

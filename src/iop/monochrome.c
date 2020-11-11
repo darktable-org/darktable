@@ -115,7 +115,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.a = 32.0f;
   p.b = 64.0f;
   p.highlights = 0.0f;
-  dt_gui_presets_add_generic(_("red filter"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("red filter"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // p.a = 64.0f;
   // p.b = -32.0f;

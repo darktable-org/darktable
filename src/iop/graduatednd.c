@@ -71,43 +71,49 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("neutral gray ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND8 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND2 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("neutral gray ND4 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND8 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("orange ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.102439, 0.8 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("yellow ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.151220, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("purple ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.824390, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("green ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.302439, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("red ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("blue ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.663415, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("brown ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0.082927, 0.25 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }

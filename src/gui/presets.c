@@ -86,29 +86,12 @@ void dt_gui_presets_init()
 }
 
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
-                                const void *params, const int32_t params_size, const int32_t enabled)
+                                const void *params, const int32_t params_size,
+                                const int32_t enabled,
+                                const dt_develop_blend_colorspace_t blend_cst)
 {
-  dt_develop_blend_params_t default_blendop_params
-      = { DEVELOP_MASK_DISABLED,
-          DEVELOP_BLEND_CS_NONE,
-          DEVELOP_BLEND_NORMAL2,
-          0.0f,
-          100.0f,
-          DEVELOP_COMBINE_NORM_EXCL,
-          0,
-          0,
-          0.0f,
-          DEVELOP_MASK_GUIDE_IN,
-          0.0f,
-          0.0f,
-          0.0f,
-          { 0, 0, 0, 0 },
-          { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
-          { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-          { 0 }, 0, 0, FALSE };
+  dt_develop_blend_params_t default_blendop_params;
+  dt_develop_blend_init_blend_parameters(&default_blendop_params, blend_cst);
   dt_gui_presets_add_with_blendop(
       name, op, version, params, params_size,
       &default_blendop_params, enabled);
