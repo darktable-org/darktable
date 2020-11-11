@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-11 04:06-0300\n"
-"PO-Revision-Date: 2020-11-11 04:06-0300\n"
+"POT-Creation-Date: 2020-11-11 05:09-0300\n"
+"PO-Revision-Date: 2020-11-11 05:25-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -8097,7 +8097,7 @@ msgstr ""
 "foto : fotografia ao ar livre, com iluminação natural\n"
 "gráfico : image em tons discretos (gráfico, map-tile etc)"
 
-#: ../src/imageio/format/webp.c:352 ../src/libs/modulegroups.c:1074
+#: ../src/imageio/format/webp.c:352
 msgid "default"
 msgstr "padrão"
 
@@ -9332,8 +9332,8 @@ msgid "B&W : Ilford FP2"
 msgstr "P&B: Ilford FP2"
 
 #: ../src/iop/channelmixerrgb.c:271
-msgid "B&W : Fuji Across 100"
-msgstr "P&B : Fuji Across 100"
+msgid "B&W : Fuji Acros 100"
+msgstr "P&B : Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:286
 msgid "basic channel mixer"
@@ -16251,8 +16251,8 @@ msgid "effect"
 msgstr "efeito"
 
 #: ../src/libs/modulegroups.c:1011
-msgid "all modules"
-msgstr "todos os módulos"
+msgid "modules: all"
+msgstr "módulos: todos"
 
 #: ../src/libs/modulegroups.c:1019 ../src/libs/modulegroups.c:1064
 msgctxt "modulegroup"
@@ -16265,21 +16265,25 @@ msgid "effects"
 msgstr "efeitos"
 
 #: ../src/libs/modulegroups.c:1024
-msgid "minimal"
-msgstr "mínimo"
+msgid "workflow: beginner"
+msgstr "fluxo de trabalho: iniciante"
 
 #: ../src/libs/modulegroups.c:1039
-msgid "display referred"
-msgstr "relativo à exibição"
+msgid "workflow: display-referred"
+msgstr "fluxo de trabalho: relativo à exibição"
 
 #: ../src/libs/modulegroups.c:1053
-msgid "scene referred"
-msgstr "relativo à cena"
+msgid "workflow: scene-referred"
+msgstr "fluxo de trabalho: relativo à cena"
 
 #: ../src/libs/modulegroups.c:1058
 msgctxt "modulegroup"
 msgid "technical"
 msgstr "técnico"
+
+#: ../src/libs/modulegroups.c:1074
+msgid "modules: default"
+msgstr "módulos: default"
 
 #: ../src/libs/modulegroups.c:1081
 msgid "previous config"
@@ -18409,6 +18413,18 @@ msgstr "atalhos"
 msgid "Action"
 msgstr "Ação"
 
+#~ msgid "all modules"
+#~ msgstr "todos os módulos"
+
+#~ msgid "minimal"
+#~ msgstr "mínimo"
+
+#~ msgid "display referred"
+#~ msgstr "relativo à exibição"
+
+#~ msgid "scene referred"
+#~ msgstr "relativo à cena"
+
 #~ msgid "scattering (coarse-grain noise)"
 #~ msgstr "difusão (ruído grosseiro)"
 
@@ -18430,10 +18446,6 @@ msgstr "Ação"
 #~ msgctxt "accel"
 #~ msgid "image operations"
 #~ msgstr "operações de imagem"
-
-#~ msgctxt "accel"
-#~ msgid "modules"
-#~ msgstr "módulos"
 
 #~ msgctxt "accel"
 #~ msgid "rotation"
