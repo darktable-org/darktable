@@ -97,7 +97,6 @@ void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const i
       &default_blendop_params, enabled);
 }
 
-
 void dt_gui_presets_add_with_blendop(
     const char *name, dt_dev_operation_t op, const int32_t version,
     const void *params, const int32_t params_size,
@@ -1235,11 +1234,15 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
 
     if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0) found = TRUE;
 
-    if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size))
+    if(module
+       && !memcmp(module->default_params, op_params,
+                  MIN(op_params_size, module->params_size))
        && !memcmp(module->default_blendop_params, blendop_params,
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
       isdefault = TRUE;
-    if(module && !memcmp(params, op_params, MIN(op_params_size, params_size))
+
+    if(module
+       && !memcmp(params, op_params, MIN(op_params_size, params_size))
        && !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
        && module->enabled == enabled)
     {
