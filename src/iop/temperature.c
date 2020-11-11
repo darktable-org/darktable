@@ -1272,6 +1272,9 @@ void gui_update(struct dt_iop_module_t *self)
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
                                CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  gtk_widget_set_visible(GTK_WIDGET(g->finetune), show_finetune);
+  gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
 
   const int preset = dt_bauhaus_combobox_get(g->presets);
 
@@ -1282,44 +1285,6 @@ void gui_update(struct dt_iop_module_t *self)
   color_temptint_sliders(self);
   color_rgb_sliders(self);
   color_finetuning_slider(self);
-
-  gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
-  const gboolean is_modern = strcmp(workflow, "modern") == 0;
-  g_free(workflow);
-
-  if(is_modern && tempK > 6500.f && tempK <= 6504.f)
-  {
-    // if we use modern chroma adatation, white balance is handled by channelmixerrgb
-    // so we hide most of the controls here to not confuse users
-    gtk_widget_set_visible(GTK_WIDGET(g->finetune), FALSE);
-    gtk_widget_set_visible(g->buttonbar, FALSE);
-    dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), FALSE);
-
-    gtk_widget_set_visible(g->btn_asshot, FALSE);
-    gtk_widget_set_visible(g->btn_user, FALSE);
-    gtk_widget_set_visible(g->btn_d65, FALSE);
-    gtk_widget_set_visible(g->scale_k, FALSE);
-    gtk_widget_set_visible(g->scale_tint, FALSE);
-    gtk_widget_set_visible(g->presets, FALSE);
-    gtk_widget_set_visible(g->temp_label, FALSE);
-    gtk_widget_set_visible(g->balance_label, FALSE);
-  }
-  else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->finetune), show_finetune);
-    gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
-    dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
-
-    gtk_widget_set_visible(g->btn_asshot, TRUE);
-    gtk_widget_set_visible(g->btn_user, TRUE);
-    gtk_widget_set_visible(g->btn_d65, TRUE);
-    gtk_widget_set_visible(g->scale_k, TRUE);
-    gtk_widget_set_visible(g->scale_tint, TRUE);
-    gtk_widget_set_visible(g->presets, TRUE);
-    gtk_widget_set_visible(g->temp_label, TRUE);
-    gtk_widget_set_visible(g->balance_label, TRUE);
-  }
-
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1537,18 +1502,15 @@ void reload_defaults(dt_iop_module_t *module)
 
     dt_bauhaus_combobox_clear(g->presets);
 
-    if(!is_modern)
-    {
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference")); // old "camera neutral", reason: better matches intent
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference")); // old "camera neutral", reason: better matches intent
 
-      g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
-      memset(g->preset_num, 0, sizeof(g->preset_num));
+    g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
+    memset(g->preset_num, 0, sizeof(g->preset_num));
 
-      generate_preset_combo(module);
-    }
+    generate_preset_combo(module);
 
     gui_sliders_update(module);
   }
