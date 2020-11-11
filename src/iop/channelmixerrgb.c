@@ -1853,6 +1853,8 @@ void reload_defaults(dt_iop_module_t *module)
     }
     else
       dt_bauhaus_combobox_remove_at(g->illuminant, DT_ILLUMINANT_CAMERA);
+
+    gui_changed(module, NULL, NULL);
   }
 }
 

@@ -438,6 +438,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->header = NULL;
   module->off = NULL;
   module->hide_enable_button = 0;
+  module->has_trouble = FALSE;
   module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
   module->histogram_stats.bins_count = 0;
@@ -1149,6 +1150,7 @@ static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpo
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+
   if(!darktable.gui->reset)
   {
     if(gtk_toggle_button_get_active(togglebutton))
@@ -1160,6 +1162,8 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+
+      module->gui_update(module);
     }
     else
     {
@@ -1167,9 +1171,12 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
+
+      dt_iop_set_module_in_trouble(module, FALSE);
     }
     dt_dev_add_history_item(module->dev, module, FALSE);
   }
+
   char tooltip[512];
   gchar *module_label = dt_history_item_get_name(module);
   snprintf(tooltip, sizeof(tooltip), module->enabled ? _("%s is switched on") : _("%s is switched off"),
@@ -1218,7 +1225,7 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "iop-panel-label");
-  gchar *label = g_strdup_printf("%s%s", (module->has_trouble) ? "⚠ " : "",
+  gchar *label = g_strdup_printf("%s%s", (module->has_trouble && module->enabled) ? "⚠ " : "",
                                          dt_history_item_get_name_html(module));
   gchar *tooltip = g_strdup(module->description());
   gtk_label_set_markup(GTK_LABEL(lab), label);
@@ -1287,8 +1294,16 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
 
 void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
 {
-  module->has_trouble = state;
-  _iop_gui_update_header(module);
+  gboolean previous_state = module->has_trouble;
+
+  // we don't set disabled modules in trouble, that would be annoying
+  if(module->enabled)
+    module->has_trouble = state;
+  else
+    module->has_trouble = FALSE;
+
+  if(module->has_trouble != previous_state)
+    _iop_gui_update_header(module);
 }
 
 static void _iop_gui_update_label(dt_iop_module_t *module)
