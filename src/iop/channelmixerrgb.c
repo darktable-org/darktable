@@ -1817,9 +1817,10 @@ void reload_defaults(dt_iop_module_t *module)
 
   const dt_image_t *img = &module->dev->image_storage;
 
-  if(is_modern)
+  double bwb[4] = { 0. };
+  if(is_modern && !(calculate_bogus_daylight_wb(module, bwb)))
   {
-    // if workflow = modern, take care of white balance here
+    // if workflow = modern and we find WB coeffs, take care of white balance here
     if(find_temperature_from_raw_coeffs(img, &(d->x), &(d->y)))
       d->illuminant = DT_ILLUMINANT_CAMERA;
 
