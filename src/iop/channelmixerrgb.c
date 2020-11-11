@@ -273,6 +273,17 @@ void init_presets(dt_iop_module_so_t *self)
   // Kodak ?
   // can't find spectral sensivity curves and the illuminant under wich they are produced,
   // so ¯\_(ツ)_/¯
+
+  // basic channel-mixer
+  p.adaptation = DT_ADAPTATION_RGB; // bypass adaptation
+  p.grey[0] = 0.f;
+  p.grey[1] = 0.f;
+  p.grey[2] = 0.f;
+  p.normalize_R = TRUE;
+  p.normalize_G = TRUE;
+  p.normalize_B = TRUE;
+  p.normalize_grey = FALSE;
+  dt_gui_presets_add_generic(_("basic channel mixer"), self->op, self->version(), &p, sizeof(p), 1);
 }
 
 
