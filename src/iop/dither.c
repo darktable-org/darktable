@@ -139,10 +139,10 @@ static void _find_nearest_color_n_levels_gray(float *val, float *err, const floa
 {
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
-  float tmp = in * f;
-  int itmp = floorf(tmp);
+  const float tmp = in * f;
+  const int itmp = floorf(tmp);
 
-  float new = (tmp - itmp > 0.5f ? (float)(itmp + 1) : (float)itmp) * rf;
+  const float new = (tmp - itmp > 0.5f ? (float)(itmp + 1) : (float)itmp) * rf;
 
   for(int c = 0; c < 4; c++)
   {
@@ -160,8 +160,8 @@ static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, c
 
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
-  float tmp = in * f;
-  int itmp = floorf(tmp);
+  const float tmp = in * f;
+  const int itmp = floorf(tmp);
 
   new = _mm_set1_ps(tmp - itmp > 0.5f ? (float)(itmp + 1) * rf : (float)itmp * rf);
   err = _mm_sub_ps(_mm_load_ps(val), new);
