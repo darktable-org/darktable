@@ -165,7 +165,7 @@ int dt_film_open_recent(const int num)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, num);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
+    const int id = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
     if(dt_film_open(id)) return 1;
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -320,7 +320,7 @@ static gboolean ask_and_delete(gpointer user_data)
 
   gtk_widget_show_all(dialog); // needed for the content area!
 
-  gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+  const gint res = gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
   if(res == GTK_RESPONSE_YES)
     for(GList *iter = empty_dirs; iter; iter = g_list_next(iter))
@@ -373,15 +373,15 @@ void dt_film_remove_empty()
     g_idle_add(ask_and_delete, empty_dirs);
 }
 
-int dt_film_is_empty(const int id)
+gboolean dt_film_is_empty(const int id)
 {
-  int empty = 0;
+  gboolean empty = FALSE;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.images WHERE film_id = ?1", -1,
                               &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  if(sqlite3_step(stmt) != SQLITE_ROW) empty = 1;
+  if(sqlite3_step(stmt) != SQLITE_ROW) empty = TRUE;
   sqlite3_finalize(stmt);
   return empty;
 }
@@ -402,7 +402,7 @@ void dt_film_remove(const int id)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int32_t imgid = sqlite3_column_int(stmt, 0);
+    const int32_t imgid = sqlite3_column_int(stmt, 0);
     if(!dt_image_safe_remove(imgid))
     {
       remove_ok = FALSE;
@@ -502,7 +502,7 @@ GList *dt_film_get_image_ids(const int filmid)
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, filmid);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
+    const int id = sqlite3_column_int(stmt, 0);
     result = g_list_append(result, GINT_TO_POINTER(id));
   }
   sqlite3_finalize(stmt);
