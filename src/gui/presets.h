@@ -1,4 +1,24 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2010-2020 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
+
+#include "develop/blend.h"
 
 // format flags stored into the presets database; the FOR_NOT_ variants are negated to keep existing presets
 typedef enum dt_gui_presets_format_flag_t
@@ -17,7 +37,9 @@ void dt_gui_presets_init();
 
 /** add or replace a generic (i.e. non-exif specific) preset for this operation. */
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
-                                const void *params, const int32_t params_size, const int32_t enabled);
+                                const void *params, const int32_t params_size,
+                                const int32_t enabled,
+                                const dt_develop_blend_colorspace_t blend_cst);
 
 /** same as add_generic but also supply blendop parameters for the presets. */
 void dt_gui_presets_add_with_blendop(

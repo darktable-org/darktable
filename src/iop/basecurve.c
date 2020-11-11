@@ -375,7 +375,8 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
     }
     // add the preset.
     dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
-                               &tmp, sizeof(dt_iop_basecurve_params_t), 1);
+                               &tmp, sizeof(dt_iop_basecurve_params_t), 1,
+                               DEVELOP_BLEND_CS_RGB_DISPLAY);
     // and restrict it to model, maker, iso, and raw images
     dt_gui_presets_update_mml(_(presets[k].name), self->op, self->version(),
                               presets[k].maker, presets[k].model, "");
