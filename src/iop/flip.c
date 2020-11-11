@@ -69,7 +69,6 @@ static void adjust_aabb(const int32_t *p, int32_t *aabb)
   aabb[3] = MAX(aabb[3], p[1]);
 }
 
-
 const char *name()
 {
   return _("orientation");
@@ -395,22 +394,33 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   p.orientation = ORIENTATION_NULL;
-  dt_gui_presets_add_generic(_("autodetect"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("autodetect"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
   dt_gui_presets_update_autoapply(_("autodetect"), self->op, self->version(), 1);
 
   p.orientation = ORIENTATION_NONE;
-  dt_gui_presets_add_generic(_("no rotation"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("no rotation"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 
   p.orientation = ORIENTATION_FLIP_HORIZONTALLY;
-  dt_gui_presets_add_generic(_("flip horizontally"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("flip horizontally"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_FLIP_VERTICALLY;
-  dt_gui_presets_add_generic(_("flip vertically"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("flip vertically"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_ROTATE_CW_90_DEG;
-  dt_gui_presets_add_generic(_("rotate by -90 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by -90 degrees"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
-  dt_gui_presets_add_generic(_("rotate by  90 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by  90 degrees"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_ROTATE_180_DEG;
-  dt_gui_presets_add_generic(_("rotate by 180 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by 180 degrees"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }

@@ -246,14 +246,15 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 void init_presets (dt_iop_module_so_t *self)
 {
-  dt_gui_presets_add_generic(_("magic lantern defaults"), self->op, self->version(),
+  dt_gui_presets_add_generic(_("magic lantern defaults"), self->op,
+                             self->version(),
                              &(dt_iop_exposure_params_t){.mode = EXPOSURE_MODE_DEFLICKER,
                                                          .black = 0.0f,
                                                          .exposure = 0.0f,
                                                          .deflicker_percentile = 50.0f,
                                                          .deflicker_target_level = -4.0f,
                                                          .compensate_exposure_bias = FALSE},
-                             sizeof(dt_iop_exposure_params_t), 1);
+                             sizeof(dt_iop_exposure_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
 
   // For scene-referred workflow, since filmic doesn't brighten as base curve does,
@@ -266,9 +267,10 @@ void init_presets (dt_iop_module_so_t *self)
                                                          .deflicker_percentile = 50.0f,
                                                          .deflicker_target_level = -4.0f,
                                                          .compensate_exposure_bias = TRUE},
-                             sizeof(dt_iop_exposure_params_t), 1);
+                             sizeof(dt_iop_exposure_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  dt_gui_presets_update_ldr(_("scene-referred default"), self->op, self->version(), FOR_RAW);
+  dt_gui_presets_update_ldr(_("scene-referred default"), self->op,
+                            self->version(), FOR_RAW);
 }
 
 static void deflicker_prepare_histogram(dt_iop_module_t *self, uint32_t **histogram,

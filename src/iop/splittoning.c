@@ -108,7 +108,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic sepia"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 26.0 / 360.0, 92.0 / 100.0, 40.0 / 360.0, 92.0 / 100.0, 0.63, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows: #446CBB
   // highlights: #446CBB
@@ -117,7 +117,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic cyanotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 220.0 / 360.0, 64.0 / 100.0, 220.0 / 360.0, 64.0 / 100.0, 0.0, 5.22 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows : #A16C5E
   // highlights : #A16C5E
@@ -126,7 +126,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic platinotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 13.0 / 360.0, 42.0 / 100.0, 13.0 / 360.0, 42.0 / 100.0, 100.0, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows: #211A14
   // highlights: #D9D0C7
@@ -135,7 +135,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("chocolate brown"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 28.0 / 360.0, 39.0 / 100.0, 28.0 / 360.0, 8.0 / 100.0, 0.60, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }

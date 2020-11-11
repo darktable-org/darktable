@@ -86,34 +86,16 @@ void dt_gui_presets_init()
 }
 
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
-                                const void *params, const int32_t params_size, const int32_t enabled)
+                                const void *params, const int32_t params_size,
+                                const int32_t enabled,
+                                const dt_develop_blend_colorspace_t blend_cst)
 {
-  dt_develop_blend_params_t default_blendop_params
-      = { DEVELOP_MASK_DISABLED,
-          DEVELOP_BLEND_CS_NONE,
-          DEVELOP_BLEND_NORMAL2,
-          0.0f,
-          100.0f,
-          DEVELOP_COMBINE_NORM_EXCL,
-          0,
-          0,
-          0.0f,
-          DEVELOP_MASK_GUIDE_IN,
-          0.0f,
-          0.0f,
-          0.0f,
-          { 0, 0, 0, 0 },
-          { 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
-            0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f },
-          { 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f },
-          { 0 }, 0, 0, FALSE };
+  dt_develop_blend_params_t default_blendop_params;
+  dt_develop_blend_init_blend_parameters(&default_blendop_params, blend_cst);
   dt_gui_presets_add_with_blendop(
       name, op, version, params, params_size,
       &default_blendop_params, enabled);
 }
-
 
 void dt_gui_presets_add_with_blendop(
     const char *name, dt_dev_operation_t op, const int32_t version,
@@ -1221,7 +1203,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   }
   g_free(query);
   // collect all presets for op from db
-  int found = 0;
+  gboolean found = 0;
   int last_wp = -1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1248,15 +1230,19 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     const int32_t enabled = sqlite3_column_int(stmt, 6);
     const int32_t isdisabled = (preset_version == version ? 0 : 1);
     const char *name = (char *)sqlite3_column_text(stmt, 0);
-    int32_t isdefault = 0;
+    gboolean isdefault = FALSE;
 
-    if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0) found = 1;
+    if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0) found = TRUE;
 
-    if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size))
+    if(module
+       && !memcmp(module->default_params, op_params,
+                  MIN(op_params_size, module->params_size))
        && !memcmp(module->default_blendop_params, blendop_params,
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
-      isdefault = 1;
-    if(module && !memcmp(params, op_params, MIN(op_params_size, params_size))
+      isdefault = TRUE;
+
+    if(module
+       && !memcmp(params, op_params, MIN(op_params_size, params_size))
        && !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
        && module->enabled == enabled)
     {

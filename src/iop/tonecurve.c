@@ -544,7 +544,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][3].y = 0.290352;
   p.tonecurve[ch_L][4].y = 0.773852;
   p.tonecurve[ch_L][5].y = 1.000000;
-  dt_gui_presets_add_generic(_("contrast compression"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast compression"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.tonecurve_nodes[ch_L] = 7;
   float linear_L[7] = { 0.0, 0.08, 0.17, 0.50, 0.83, 0.92, 1.0 };
@@ -552,7 +553,8 @@ void init_presets(dt_iop_module_so_t *self)
   // Linear - no contrast
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
-  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Linear contrast
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
@@ -561,7 +563,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][2].y -= 0.030;
   p.tonecurve[ch_L][4].y += 0.030;
   p.tonecurve[ch_L][5].y += 0.020;
-  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
@@ -569,7 +572,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][2].y -= 0.060;
   p.tonecurve[ch_L][4].y += 0.060;
   p.tonecurve[ch_L][5].y += 0.040;
-  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma contrast
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
@@ -580,7 +584,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][5].y += 0.020;
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
@@ -590,7 +595,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][5].y += 0.040;
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   /** for pure power-like functions, we need more nodes close to the bounds**/
 
@@ -601,25 +607,29 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Gamma 2.0 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 2.0f);
-  dt_gui_presets_add_generic(_("gamma 2.0"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 0.5f);
-  dt_gui_presets_add_generic(_("gamma 0.5"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Log2 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = logf(linear_L[k] + 1.0f) / logf(2.0f);
-  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Exp2 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(2.0f, linear_L[k]) - 1.0f;
-  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for (int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
   {
     // insert the preset
     dt_gui_presets_add_generic(preset_camera_curves[k].name, self->op, self->version(),
-                               &preset_camera_curves[k].preset, sizeof(p), 1);
+                               &preset_camera_curves[k].preset, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
     // restrict it to model, maker
     dt_gui_presets_update_mml(preset_camera_curves[k].name, self->op, self->version(),

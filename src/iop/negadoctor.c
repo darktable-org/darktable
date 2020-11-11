@@ -415,7 +415,8 @@ void init_presets(dt_iop_module_so_t *self)
                                                                  .black = 0.0755f };
 
 
-  dt_gui_presets_add_generic(_("color film"), self->op, self->version(), &tmp, sizeof(tmp), 1);
+  dt_gui_presets_add_generic(_("color film"), self->op,
+                             self->version(), &tmp, sizeof(tmp), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   dt_iop_negadoctor_params_t tmq = (dt_iop_negadoctor_params_t){ .film_stock = DT_FILMSTOCK_NB,
                                                                  .Dmin = { 1.0f, 1.0f, 1.0f, 0.0f},
@@ -429,7 +430,8 @@ void init_presets(dt_iop_module_so_t *self)
                                                                  .black = 0.0755f };
 
 
-  dt_gui_presets_add_generic(_("black and white film"), self->op, self->version(), &tmq, sizeof(tmq), 1);
+  dt_gui_presets_add_generic(_("black and white film"), self->op,
+                             self->version(), &tmq, sizeof(tmq), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 void init_global(dt_iop_module_so_t *module)
