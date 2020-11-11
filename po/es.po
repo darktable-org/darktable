@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-10 11:21-0600\n"
-"PO-Revision-Date: 2020-11-10 15:34-0600\n"
+"POT-Creation-Date: 2020-11-10 21:13-0600\n"
+"PO-Revision-Date: 2020-11-10 20:55-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -287,9 +287,8 @@ msgstr "desplazamiento de enmarcado"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:431
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:435
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:439
-#, fuzzy
 msgid "normalize channels"
-msgstr "canales enlazados Lab"
+msgstr "canales normalizados"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:286
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:447
@@ -304,9 +303,8 @@ msgstr "fuente de luz LED"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:322
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:471
-#, fuzzy
 msgid "gamut compression"
-msgstr "compresión"
+msgstr "compresión de gama"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:328
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:475
@@ -315,7 +313,7 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "same as pipeline (D50)"
-msgstr ""
+msgstr "D50 (igual que el procesado)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:490
 msgid "A (incandescent)"
@@ -348,17 +346,16 @@ msgstr "personalizado"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:497
 msgid "(AI) detect from image surfaces..."
-msgstr ""
+msgstr "(IA) Detectar desde la superficie de imagen..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:498
 msgid "(AI) detect from image edges..."
-msgstr ""
+msgstr "(IA) Detectar desde los bordes de imagen..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
 #: ../src/iop/channelmixerrgb.c:1804
-#, fuzzy
 msgid "as shot in camera"
-msgstr "Buscar cámara"
+msgstr "según la toma original"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:504
 msgid "F1 (Daylight 6430 K) – medium CRI"
@@ -783,7 +780,6 @@ msgstr "corrección de sesgo"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:155
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:320
-#, fuzzy
 msgid "scattering"
 msgstr "diseminar"
 
@@ -1754,9 +1750,8 @@ msgstr "Colaboradores de RawSpeed"
 #: ../build/bin/preferences_gen.h:6999 ../build/bin/preferences_gen.h:7037
 #: ../build/bin/preferences_gen.h:7090 ../build/bin/preferences_gen.h:7129
 #: ../build/bin/preferences_gen.h:7168 ../build/bin/preferences_gen.h:7203
-#, fuzzy
 msgid "this setting has been modified"
-msgstr "configuración/ajuste manual"
+msgstr "Este ajuste se ha modificado"
 
 #: ../build/bin/preferences_gen.h:2804 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:88
@@ -2438,10 +2433,9 @@ msgid "show right-side buttons in darkroom module headers"
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4424
-#, fuzzy
 msgctxt "preferences"
 msgid "active"
-msgstr "activar"
+msgstr "activo"
 
 #: ../build/bin/preferences_gen.h:4429
 #, fuzzy
@@ -2468,7 +2462,6 @@ msgid "fit"
 msgstr "normal"
 
 #: ../build/bin/preferences_gen.h:4449
-#, fuzzy
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suavizado"
@@ -2636,13 +2629,11 @@ msgid "auto-apply chromatic adaptation defaults"
 msgstr "aberración cromática"
 
 #: ../build/bin/preferences_gen.h:4898
-#, fuzzy
 msgctxt "preferences"
 msgid "modern"
-msgstr "modo"
+msgstr "moderno"
 
 #: ../build/bin/preferences_gen.h:4903 ../build/bin/preferences_gen.h:4922
-#, fuzzy
 msgctxt "preferences"
 msgid "legacy"
 msgstr "heredado"
@@ -3768,9 +3759,8 @@ msgid "tagged"
 msgstr "etiquetado"
 
 #: ../src/common/collection.c:1511
-#, fuzzy
 msgid "tagged%"
-msgstr "etiquetado"
+msgstr "etiquetado%"
 
 #: ../src/common/collection.c:1533 ../src/libs/collect.c:1569
 msgid "not copied locally"
@@ -5570,9 +5560,8 @@ msgid "blend"
 msgstr "fusión"
 
 #: ../src/develop/blend_gui.c:1913
-#, fuzzy
 msgid "boost factor"
-msgstr "factor de seguridad"
+msgstr "factor de intensidad"
 
 #: ../src/develop/blend_gui.c:1915
 #, fuzzy
@@ -5665,9 +5654,8 @@ msgid "color channel modes"
 msgstr "modos de canal de color"
 
 #: ../src/develop/blend_gui.c:2398
-#, fuzzy
 msgid "normal & arithmetic modes"
-msgstr "modos de diferencia y normal"
+msgstr "modos aritméticos y normales"
 
 #: ../src/develop/blend_gui.c:2415
 msgid "chrominance & luminance modes"
@@ -5675,9 +5663,8 @@ msgstr "modos de crominancia y luminancia"
 
 #. add deprecated blend mode
 #: ../src/develop/blend_gui.c:2425
-#, fuzzy
 msgid "deprecated modes"
-msgstr "Módulo sin soporte"
+msgstr "modos obsoletos"
 
 #: ../src/develop/blend_gui.c:2688
 #, fuzzy
@@ -7335,7 +7322,7 @@ msgstr "Establezca el tema de la interfaz de usuario"
 
 #: ../src/gui/preferences.c:396
 msgid "prefer performance over quality"
-msgstr ""
+msgstr "Priorizar el desempeño sobre la calidad"
 
 #: ../src/gui/preferences.c:404
 msgid ""
@@ -14620,7 +14607,7 @@ msgstr "copiar"
 #, fuzzy
 msgctxt "accel"
 msgid "copy parts"
-msgstr "Copiar imágenes"
+msgstr "copiar i"
 
 #: ../src/libs/copy_history.c:412
 msgctxt "accel"
@@ -16335,16 +16322,14 @@ msgstr "Borrar texto"
 
 #: ../src/libs/modulegroups.c:993 ../src/libs/modulegroups.c:1016
 #: ../src/libs/modulegroups.c:1029 ../src/libs/modulegroups.c:1044
-#, fuzzy
 msgctxt "modulegroup"
 msgid "base"
-msgstr "base de datos"
+msgstr "básico"
 
 #: ../src/libs/modulegroups.c:997
-#, fuzzy
 msgctxt "modulegroup"
 msgid "tone"
-msgstr "perspectiva"
+msgstr "tono"
 
 #: ../src/libs/modulegroups.c:1000 ../src/libs/modulegroups.c:1032
 #: ../src/libs/modulegroups.c:1046
@@ -16370,16 +16355,14 @@ msgid "all modules"
 msgstr "módulos"
 
 #: ../src/libs/modulegroups.c:1019 ../src/libs/modulegroups.c:1064
-#, fuzzy
 msgctxt "modulegroup"
 msgid "grading"
-msgstr "Cargando imagen"
+msgstr "calibración de color"
 
 #: ../src/libs/modulegroups.c:1022 ../src/libs/modulegroups.c:1070
-#, fuzzy
 msgctxt "modulegroup"
 msgid "effects"
-msgstr "efecto"
+msgstr "efectos"
 
 #: ../src/libs/modulegroups.c:1024
 msgid "minimal"
@@ -17746,10 +17729,10 @@ msgid ""
 msgstr ""
 
 #: ../src/views/darkroom.c:455
-#, fuzzy, c-format
+#, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
-msgstr "Error al cargar el archivo '%s'"
+msgstr "Cargando '%s' ..."
 
 #: ../src/views/darkroom.c:685
 msgid "gamut check"
