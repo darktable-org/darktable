@@ -89,6 +89,14 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "unbounded (deprecated)"), DEVELOP_BLEND_UNBOUNDED },
         { "", 0 } };
 
+const dt_develop_name_value_t dt_develop_blend_colorspace_names[]
+    = { { N_("default"), DEVELOP_BLEND_CS_NONE },
+        { N_("RAW"), DEVELOP_BLEND_CS_RAW },
+        { N_("Lab"), DEVELOP_BLEND_CS_LAB },
+        { N_("RGB (display)"), DEVELOP_BLEND_CS_RGB_DISPLAY },
+        { N_("RGB (scene)"), DEVELOP_BLEND_CS_RGB_SCENE },
+        { "", 0 } };
+
 const dt_develop_name_value_t dt_develop_mask_mode_names[]
     = { { N_("off"), DEVELOP_MASK_DISABLED },
         { N_("uniformly"), DEVELOP_MASK_ENABLED },
