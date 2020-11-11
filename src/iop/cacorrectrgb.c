@@ -25,35 +25,14 @@
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
+#include "common/gaussian.h"
+#include "common/fast_guided_filter.h"
 
 #include <gtk/gtk.h>
 #include <stdlib.h>
 
-// This is an example implementation of an image operation module that does nothing useful.
-// It demonstrates how the different functions work together. To build your own module,
-// take all of the functions that are mandatory, stripping them of comments.
-// Then add only the optional functions that are required to implement the functionality
-// you need. Don't copy default implementations (hint: if you don't need to change or add
-// anything, you probably don't need the copy). Make sure you choose descriptive names
-// for your fields and variables. The ones given here are just examples; rename them.
-//
-// To have your module compile and appear in darkroom, add it to CMakeLists.txt, with
-//  add_iop(useless "useless.c")
-// and to iop_order.c, in the initialisation of legacy_order & v30_order with:
-//  { {XX.0f }, "useless", 0},
-
-// This is the version of the module's parameters,
-// and includes version information about compile-time dt.
-// The first released version should be 1.
 DT_MODULE_INTROSPECTION(1, dt_iop_cacorrectrgb_params_t)
 
-// TODO: some build system to support dt-less compilation and translation!
-
-// Enums used in params_t can have $DESCRIPTIONs that will be used to
-// automatically populate a combobox with dt_bauhaus_combobox_from_params.
-// They are also used in the history changes tooltip.
-// Combobox options will be presented in the same order as defined here.
-// These numbers must not be changed when a new version is introduced.
 typedef enum dt_iop_cacorrectrgb_guide_channel_t
 {
   DT_CACORRECT_RGB_R = 0,    // $DESCRIPTION: "red"
@@ -64,7 +43,7 @@ typedef enum dt_iop_cacorrectrgb_guide_channel_t
 typedef struct dt_iop_cacorrectrgb_params_t
 {
   dt_iop_cacorrectrgb_guide_channel_t guide_channel; // $DEFAULT: DT_CACORRECT_RGB_G $DESCRIPTION: "guide"
-  int radius; // $MIN: 1 $MAX: 20 $DEFAULT: 1 $DESCRIPTION: "radius"
+  float radius; // $MIN: 1 $MAX: 400 $DEFAULT: 1 $DESCRIPTION: "radius"
 } dt_iop_cacorrectrgb_params_t;
 
 typedef struct dt_iop_cacorrectrgb_gui_data_t
@@ -101,20 +80,249 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   memcpy(piece->data, p1, self->params_size);
 }
 
-/** process, all real work is done here. */
+static void ca_correct_rgb(const float* const restrict in, const size_t width, const size_t height,
+                          const size_t ch, const float sigma,
+                          const dt_iop_cacorrectrgb_guide_channel_t guide,
+                          float* const restrict out)
+{
+  float *const restrict blurred_in = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict blurred_manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+  float *const restrict blurred_manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
+
+  float minr = 10000000.0f;
+  float maxr = 0.0f;
+  float ming = 10000000.0f;
+  float maxg = 0.0f;
+  float minb = 10000000.0f;
+  float maxb = 0.0f;
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(in, width, height) \
+  schedule(simd:static) aligned(in:64) \
+  reduction(max:maxr, maxg, maxb)\
+  reduction(min:minr, ming, minb)
+#endif
+  for(size_t k = 0; k < width * height; k++)
+  {
+    const float pixelr = in[k * 4];
+    if(pixelr < minr) minr = pixelr;
+    if(pixelr > maxr) maxr = pixelr;
+    const float pixelg = in[k * 4 + 1];
+    if(pixelg < ming) ming = pixelg;
+    if(pixelg > maxg) maxg = pixelg;
+    const float pixelb = in[k * 4 + 2];
+    if(pixelb < minb) minb = pixelb;
+    if(pixelb > maxb) maxb = pixelb;
+  }
+
+  float max[4] = {maxr, maxg, maxb, 1.0f};
+  float min[4] = {fminf(minr, 0.0f), fminf(ming, 0.0f), fminf(minb, 0.0f), 0.0f};
+  dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
+  if(!g) return;
+  dt_gaussian_blur_4c(g, in, blurred_in);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, height, guide) \
+  schedule(simd:static) aligned(in, blurred_in, manifold_lower, manifold_higher:64)
+#endif
+  for(size_t k = 0; k < width * height; k++)
+  {
+    const float pixelg = in[k * 4 + guide];
+    const float avg = blurred_in[k * 4 + guide];
+    const float weighth = pixelg >= avg;
+    const float weightl = pixelg <= avg;
+    for(size_t c = 0; c < 3; c++)
+    {
+      const float pixel = in[k * 4 + c];
+      manifold_higher[k * 4 + c] = pixel * weighth;
+      manifold_lower[k * 4 + c] = pixel * weightl;
+    }
+    manifold_higher[k * 4 + 3] = weighth;
+    manifold_lower[k * 4 + 3] = weightl;
+  }
+
+  dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
+  dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
+  schedule(simd:static) aligned(blurred_in, blurred_manifold_lower, blurred_manifold_higher:64)
+#endif
+  for(size_t k = 0; k < width * height; k++)
+  {
+    // normalize
+    const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-6);
+    const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-6);
+    for(size_t c = 0; c < 3; c++)
+    {
+      blurred_manifold_higher[k * 4 + c] /= weighth;
+      blurred_manifold_lower[k * 4 + c] /= weightl;
+    }
+    // replace by average if weight is too small
+    if(weighth < 0.05f)
+    {
+      for(size_t c = 0; c < 3; c++)
+      {
+        blurred_manifold_higher[k * 4 + c] = blurred_in[k * 4 + c];
+      }
+    }
+    if(weightl < 0.05f)
+    {
+      for(size_t c = 0; c < 3; c++)
+      {
+        blurred_manifold_lower[k * 4 + c] = blurred_in[k * 4 + c];
+      }
+    }
+  }
+
+  // refine the manifolds
+  // improve result especially on very degraded images
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
+  schedule(simd:static) aligned(in, blurred_in, manifold_lower, manifold_higher, blurred_manifold_lower, blurred_manifold_higher:64)
+#endif
+  for(size_t k = 0; k < width * height; k++)
+  {
+    const float pixelg = in[k * 4 + guide];
+    const float avgg = blurred_in[k * 4 + guide];
+    float weighth = (pixelg >= avgg);
+    float weightl = (pixelg <= avgg);
+
+    for(size_t c = 0; c < 3; c++)
+    {
+      const float pixel = in[k * 4 + c];
+      float high = blurred_manifold_higher[k * 4 + c];
+      float low = blurred_manifold_lower[k * 4 + c];
+      float highc = fmaxf(high, low);
+      float lowc = fminf(high, low);
+      float log_diff_low = (pixel < lowc) ? 1.0f : fminf(fmaxf(pixel, 1E-6) / fmaxf(lowc, 1E-6), 2.0f);
+      float log_diff_high = (pixel > highc) ? 1.0f : fminf(fmaxf(highc, 1E-6) / fmaxf(pixel, 1E-6), 2.0f);
+      log_diff_low *= log_diff_low;
+      log_diff_high *= log_diff_high;
+      if(high > low)
+      {
+        weighth /= log_diff_high;
+        weightl /= log_diff_low;
+      }
+      else
+      {
+        weighth /= log_diff_low;
+        weightl /= log_diff_high;
+      }
+    }
+    for(size_t c = 0; c < 3; c++)
+    {
+      const float pixel = in[k * 4 + c];
+      manifold_higher[k * 4 + c] = pixel * weighth;
+      manifold_lower[k * 4 + c] = pixel * weightl;
+    }
+    manifold_higher[k * 4 + 3] = weighth;
+    manifold_lower[k * 4 + 3] = weightl;
+  }
+
+  dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
+  dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
+  schedule(simd:static) aligned(blurred_in, blurred_manifold_lower, blurred_manifold_higher:64)
+#endif
+  for(size_t k = 0; k < width * height; k++)
+  {
+    // normalize
+    const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-6);
+    const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-6);
+    for(size_t c = 0; c < 3; c++)
+    {
+      blurred_manifold_higher[k * 4 + c] /= weighth;
+      blurred_manifold_lower[k * 4 + c] /= weightl;
+    }
+    // replace by average if weight is too small
+    if(weighth < 0.05f)
+    {
+      for(size_t c = 0; c < 3; c++)
+      {
+        blurred_manifold_higher[k * 4 + c] = blurred_in[k * 4 + c];
+      }
+    }
+    if(weightl < 0.05f)
+    {
+      for(size_t c = 0; c < 3; c++)
+      {
+        blurred_manifold_lower[k * 4 + c] = blurred_in[k * 4 + c];
+      }
+    }
+  }
+
+  dt_gaussian_free(g);
+
+  dt_free_align(manifold_lower);
+  dt_free_align(manifold_higher);
+
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(in, width, height, guide, blurred_in, blurred_manifold_higher, blurred_manifold_lower, out, sigma) \
+  schedule(simd:static) aligned(in, blurred_in, blurred_manifold_higher, blurred_manifold_lower, out)
+#endif
+  for(size_t i = 0; i < height; i++)
+  {
+    for(size_t j = 0; j < width; j++)
+    {
+      const float high_guide = fmaxf(blurred_manifold_higher[(i * width + j) * 4 + guide], 1E-6);
+      const float low_guide = fmaxf(blurred_manifold_lower[(i * width + j) * 4 + guide], 1E-6);
+      const float log_high = logf(high_guide);
+      const float log_low = logf(low_guide);
+      for(size_t kc = 1; kc <= 2; kc++)
+      {
+        size_t c = (guide + kc) % 3;
+        const float pixelg = in[(i * width + j) * 4 + guide];
+
+        const float log_pixg = logf(fminf(fmaxf(pixelg, low_guide), high_guide));
+        float ratio_high_manifolds = blurred_manifold_higher[(i * width + j) * 4 + c] / high_guide;
+        float ratio_low_manifolds = blurred_manifold_lower[(i * width + j) * 4 + c] / low_guide;
+
+        float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
+        dist = fminf(dist, 1.0f);
+
+        float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, 1.0f - dist);
+        out[(i * width + j) * 4 + c] =  in[(i * width + j) * 4 + guide] * ratio;
+      }
+      out[(i * width + j) * 4 + guide] = in[(i * width + j) * 4 + guide];
+      out[(i * width + j) * 4 + 3] = in[(i * width + j) * 4 + 3];
+    }
+  }
+
+  dt_free_align(blurred_in);
+  dt_free_align(blurred_manifold_lower);
+  dt_free_align(blurred_manifold_higher);
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  // this is called for preview and full pipe separately, each with its own pixelpipe piece.
-  // get our data struct:
-  //dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
-  // the total scale is composed of scale before input to the pipeline (iscale),
-  // and the scale of the roi.
-  //const float scale = piece->iscale / roi_in->scale;
-  // how many colors in our buffer?
+  dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)piece->data;
+  const float scale = piece->iscale / roi_in->scale;
   const int ch = piece->colors;
+  const size_t width = roi_out->width;
+  const size_t height = roi_out->height;
+  const float* in = (float*)ivoid;
+  float* out = (float*)ovoid;
+  const float sigma = MAX(d->radius / scale, 1);
 
-  memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->height * roi_in->width);
+  if(ch != 4 || sigma < 0.5f)
+  {
+    memcpy(out, in, width * height * ch * sizeof(float));
+    return;
+  }
+
+  const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
+  ca_correct_rgb(in, width, height, ch, sigma, guide, out);
 }
 
 /** gui setup and update, these are needed. */
@@ -134,13 +342,14 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)module->default_params;
 
   d->guide_channel = DT_CACORRECT_RGB_G;
-  d->radius = 1;
+  d->radius = 1.0f;
 
   dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)module->gui_data;
   if(g)
   {
     dt_bauhaus_combobox_set_default(g->guide_channel, d->guide_channel);
     dt_bauhaus_slider_set_default(g->radius, d->radius);
+    dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 20.0);
   }
 }
 
@@ -149,5 +358,12 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_cacorrectrgb_gui_data_t *g = IOP_GUI_ALLOC(cacorrectrgb);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->guide_channel = dt_bauhaus_combobox_from_params(self, "guide_channel");
+  gtk_widget_set_tooltip_text(g->guide_channel, _("channel used as a reference to\n"
+                                           "correct the other channels.\n"
+                                           "use sharpest channel if some\n"
+                                           "channels are blurry.\n"
+                                           "try changing guide channel if you\n"
+                                           "have artefacts."));
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
+  gtk_widget_set_tooltip_text(g->radius, _("increase for stronger correction\n"));
 }
