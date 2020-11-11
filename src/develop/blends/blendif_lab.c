@@ -1367,10 +1367,9 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
 #endif
 static inline void _display_channel_value(float *const restrict out, const float value, const float mask)
 {
-  // We are in the lab color space, write only the luminance
-  out[0] = value * 100.0f;
-  out[1] = 0.0f;
-  out[2] = 0.0f;
+  out[0] = value;
+  out[1] = value;
+  out[2] = value;
   out[3] = mask;
 }
 
@@ -1378,77 +1377,97 @@ static inline void _display_channel_value(float *const restrict out, const float
 #pragma omp declare simd aligned(a, b:16) uniform(channel, stride)
 #endif
 static void _display_channel(const float *const restrict a, float *const restrict b,
-                             const float *const restrict mask, const size_t stride, const int channel)
+                             const float *const restrict mask, const size_t stride, const int channel,
+                             const float *const restrict boost_factors)
 {
   switch(channel)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_L:
+    {
+      const float factor = 1.0f / (100.0f * exp2f(boost_factors[DEVELOP_BLENDIF_L_in]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        const float c = clamp_simd(a[j + 0] / 100.0f);
+        const float c = clamp_simd(a[j + 0] * factor);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
+    }
     case (DT_DEV_PIXELPIPE_DISPLAY_L | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+    {
+      const float factor = 1.0f / (100.0f * exp2f(boost_factors[DEVELOP_BLENDIF_L_out]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        const float c = clamp_simd(b[j + 0] / 100.0f);
+        const float c = clamp_simd(b[j + 0] * factor);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_a:
+    {
+      const float factor = 1.0f / (256.0f * exp2f(boost_factors[DEVELOP_BLENDIF_A_in]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        const float c = clamp_simd((a[j + 1] + 128.0f) / 256.0f);
+        const float c = clamp_simd(a[j + 1] * factor + 0.5f);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
+    }
     case (DT_DEV_PIXELPIPE_DISPLAY_a | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+    {
+      const float factor = 1.0f / (256.0f * exp2f(boost_factors[DEVELOP_BLENDIF_A_out]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        const float c = clamp_simd((b[j + 1] + 128.0f) / 256.0f);
+        const float c = clamp_simd(b[j + 1] * factor + 0.5f);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_b:
+    {
+      const float factor = 1.0f / (256.0f * exp2f(boost_factors[DEVELOP_BLENDIF_B_in]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        const float c = clamp_simd((a[j + 2] + 128.0f) / 256.0f);
+        const float c = clamp_simd(a[j + 2] * factor + 0.5f);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
+    }
     case (DT_DEV_PIXELPIPE_DISPLAY_b | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+    {
+      const float factor = 1.0f / (256.0f * exp2f(boost_factors[DEVELOP_BLENDIF_B_out]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
-        const float c = clamp_simd((b[j + 2] + 128.0f) / 256.0f);
+        const float c = clamp_simd(b[j + 2] * factor + 0.5f);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_C:
     {
-      const float scale = 128.0f * sqrtf(2.0f);
+      const float factor = 1.0f / (128.0f * sqrtf(2.0f) * exp2f(boost_factors[DEVELOP_BLENDIF_C_in]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         float LCH[3] DT_ALIGNED_PIXEL;
         dt_Lab_2_LCH(a + j, LCH);
-        const float c = clamp_simd(LCH[1] / scale);
+        const float c = clamp_simd(LCH[1] * factor);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
     }
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_C | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
     {
-      const float scale = 128.0f * sqrtf(2.0f);
+      const float factor = 1.0f / (128.0f * sqrtf(2.0f) * exp2f(boost_factors[DEVELOP_BLENDIF_C_out]));
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         float LCH[3] DT_ALIGNED_PIXEL;
         dt_Lab_2_LCH(b + j, LCH);
-        const float c = clamp_simd(LCH[1] / scale);
+        const float c = clamp_simd(LCH[1] * factor);
         _display_channel_value(b + j, c, mask[i]);
       }
       break;
     }
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
+      // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         float LCH[3] DT_ALIGNED_PIXEL;
@@ -1458,6 +1477,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       }
       break;
     case (DT_DEV_PIXELPIPE_DISPLAY_LCH_h | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT):
+      // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_LAB_CH)
       {
         float LCH[3] DT_ALIGNED_PIXEL;
@@ -1510,17 +1530,55 @@ void dt_develop_blendif_lab_blend(struct dt_dev_pixelpipe_iop_t *piece,
   // process the blending operator
   if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
+    const float *const restrict boost_factors = d->blendif_boost_factors;
     const dt_dev_pixelpipe_display_mask_t channel = request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY;
+    const dt_iop_order_iccprofile_info_t *const profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs)
+  dt_omp_firstprivate(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs, boost_factors)
 #endif
     for(size_t y = 0; y < oheight; y++)
     {
       const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_LAB_CH;
       const size_t b_start = y * owidth * DT_BLENDIF_LAB_CH;
       const size_t m_start = y * owidth;
-      _display_channel(a + a_start, b + b_start, mask + m_start, owidth, channel);
+      _display_channel(a + a_start, b + b_start, mask + m_start, owidth, channel, boost_factors);
+    }
+
+    // the generated output of the channel masks is expressed in RGB but this blending needs to output pixels in
+    // the Lab color space. A conversion needs thus to be performed. As the pipe is using the work profile to
+    // convert between Lab and the gamma module (which works in RGB), we need to use use that profile for the
+    // conversion.
+    const size_t buffsize = (size_t)owidth * oheight * DT_BLENDIF_LAB_CH;
+    if(profile)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd schedule(static) default(none) aligned(b:64) \
+  dt_omp_firstprivate(b, buffsize, profile)
+#endif
+      for(size_t j = 0; j < buffsize; j += DT_BLENDIF_LAB_CH)
+      {
+        float pixel[3] DT_ALIGNED_PIXEL;
+        pixel[0] = b[j + 0];
+        pixel[1] = b[j + 1];
+        pixel[2] = b[j + 2];
+        dt_ioppr_rgb_matrix_to_lab(pixel, b + j, profile->matrix_in, profile->lut_in, profile->unbounded_coeffs_in,
+                                   profile->lutsize, profile->nonlinearlut);
+      }
+    }
+    else
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd schedule(static) default(none) aligned(b:64) \
+  dt_omp_firstprivate(b, buffsize, profile)
+#endif
+      for(size_t j = 0; j < buffsize; j += DT_BLENDIF_LAB_CH)
+      {
+        float XYZ[3] DT_ALIGNED_PIXEL;
+        dt_Rec709_to_XYZ_D50(b + j, XYZ);
+        dt_XYZ_to_Lab(XYZ, b + j);
+      }
     }
   }
   else
