@@ -50,6 +50,7 @@ void dt_accel_path_iop(char *s, size_t n, char *module, const char *path)
   {
 
     gchar **split_paths = g_strsplit(path, "`", 4);
+    gchar **used_paths = split_paths;
     // transitionally keep "preset" translated in keyboardrc to avoid breakage for now
     // this also needs to be amended in preferences
     if(!strcmp(split_paths[0], "preset"))
@@ -57,12 +58,18 @@ void dt_accel_path_iop(char *s, size_t n, char *module, const char *path)
       g_free(split_paths[0]);
       split_paths[0] = g_strdup(_("preset"));
     }
-    for(gchar **cur_path = split_paths; *cur_path; cur_path++)
+    else if(!strcmp(split_paths[0], "blend"))
+    {
+      module = "blending";
+      used_paths++;
+    }
+
+    for(gchar **cur_path = used_paths; *cur_path; cur_path++)
     {
       gchar *after_context = strchr(*cur_path,'|');
       if(after_context) memmove(*cur_path, after_context + 1, strlen(after_context));
     }
-    gchar *joined_paths = g_strjoinv("/", split_paths);
+    gchar *joined_paths = g_strjoinv("/", used_paths);
     snprintf(s, n, "<Darktable>/%s/%s/%s", "image operations", module, joined_paths);
     g_free(joined_paths);
     g_strfreev(split_paths);
@@ -104,13 +111,20 @@ static void dt_accel_path_iop_translated(char *s, size_t n, dt_iop_module_so_t *
   if(path)
   {
     gchar **split_paths = g_strsplit(path, "`", 4);
-    for(gchar **cur_path = split_paths; *cur_path; cur_path++)
+    gchar **used_paths = split_paths;
+    if(!strcmp(split_paths[0], "blend"))
+    {
+      g_free(module_clean);
+      module_clean = g_strconcat(_("blending"), " ", NULL);
+      used_paths++;
+    }
+    for(gchar **cur_path = used_paths; *cur_path; cur_path++)
     {
       gchar *saved_path = *cur_path;
       *cur_path = g_strdelimit(g_strconcat(Q_(*cur_path), (strcmp(*cur_path, "preset") ? NULL : " "), NULL), "/", '`');
       g_free(saved_path);
     }
-    gchar *joined_paths = g_strjoinv("/", split_paths);
+    gchar *joined_paths = g_strjoinv("/", used_paths);
     snprintf(s, n, "<Darktable>/%s/%s/%s", C_("accel", "processing modules"), module_clean, joined_paths);
     g_free(joined_paths);
     g_strfreev(split_paths);

@@ -873,7 +873,7 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, co
 
   if(w->module)
   {
-    if(!darktable.bauhaus->skip_accel && (!section_orig || strcmp("blend", section_orig)))
+    if(!darktable.bauhaus->skip_accel)
     {
       gchar *combined_label = section_orig
                             ? g_strdup_printf("%s`%s", section_orig, label_orig)
