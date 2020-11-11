@@ -168,7 +168,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][3].y = 0.290352;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y = 0.773852;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y = 1.000000;
-  dt_gui_presets_add_generic(_("contrast compression"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast compression"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.curve_num_nodes[DT_IOP_RGBCURVE_R] = 7;
   float linear_L[7] = { 0.0, 0.08, 0.17, 0.50, 0.83, 0.92, 1.0 };
@@ -176,7 +177,8 @@ void init_presets(dt_iop_module_so_t *self)
   // Linear - no contrast
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
-  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Linear contrast
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
@@ -185,7 +187,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][2].y -= 0.030;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y += 0.030;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y += 0.020;
-  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
@@ -193,7 +196,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.curve_nodes[DT_IOP_RGBCURVE_R][2].y -= 0.060;
   p.curve_nodes[DT_IOP_RGBCURVE_R][4].y += 0.060;
   p.curve_nodes[DT_IOP_RGBCURVE_R][5].y += 0.040;
-  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma contrast
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
@@ -206,7 +210,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].x, 2.2f);
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = linear_L[k];
@@ -218,7 +223,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].x = powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].x, 2.2f);
   for(int k = 1; k < 6; k++)
     p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(p.curve_nodes[DT_IOP_RGBCURVE_R][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   /** for pure power-like functions, we need more nodes close to the bounds**/
 
@@ -229,19 +235,23 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Gamma 2.0 - no contrast
   for(int k = 1; k < 6; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(linear_L[k], 2.0f);
-  dt_gui_presets_add_generic(_("gamma 2.0"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
   for(int k = 1; k < 6; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(linear_L[k], 0.5f);
-  dt_gui_presets_add_generic(_("gamma 0.5"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Log2 - no contrast
   for(int k = 1; k < 6; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = logf(linear_L[k] + 1.0f) / logf(2.0f);
-  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Exp2 - no contrast
   for(int k = 1; k < 6; k++) p.curve_nodes[DT_IOP_RGBCURVE_R][k].y = powf(2.0f, linear_L[k]) - 1.0f;
-  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 static float _curve_to_mouse(const float x, const float zoom_factor, const float offset)
