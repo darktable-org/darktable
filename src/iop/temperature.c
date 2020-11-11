@@ -93,6 +93,7 @@ typedef struct dt_iop_temperature_gui_data_t
   int preset_cnt;
   int preset_num[54];
   double daylight_wb[4];
+  double as_shot_wb[4];
   double mod_coeff[4];
   float mod_temp, mod_tint;
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
@@ -1123,7 +1124,6 @@ void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
 
   if(self->hide_enable_button) return;
 
@@ -1145,8 +1145,9 @@ void gui_update(struct dt_iop_module_t *self)
   gboolean show_finetune = FALSE;
 
   gboolean found = FALSE;
+
   // is this a "as shot" white balance?
-  if(p->red == fp->red && p->green == fp->green && p->blue == fp->blue)
+  if(p->red == g->as_shot_wb[0] && p->green == g->as_shot_wb[1] && p->blue == g->as_shot_wb[2])
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     found = TRUE;
@@ -1347,7 +1348,7 @@ static void prepare_matrices(dt_iop_module_t *module)
   }
 }
 
-static void find_coeffs(dt_iop_module_t *module, float coeffs[4])
+static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
 {
   const dt_image_t *img = &module->dev->image_storage;
 
@@ -1395,10 +1396,10 @@ static void find_coeffs(dt_iop_module_t *module, float coeffs[4])
 
   // did not find preset either?
   // final security net: hardcoded default that fits most cams.
-  coeffs[0] = 2.0f;
-  coeffs[1] = 1.0f;
-  coeffs[2] = 1.5f;
-  coeffs[3] = 1.0f;
+  coeffs[0] = 2.0;
+  coeffs[1] = 1.0;
+  coeffs[2] = 1.5;
+  coeffs[3] = 1.0;
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -1447,11 +1448,10 @@ void reload_defaults(dt_iop_module_t *module)
       else
       {
         // do best to find starting coeffs
-        float bwb[4] = { 0 };
-        find_coeffs(module, bwb);
-        d->red = bwb[0]/bwb[1];
-        d->blue = bwb[2]/bwb[1];
-        d->g2 = bwb[3]/bwb[1];
+        find_coeffs(module, coeffs);
+        d->red = coeffs[0]/coeffs[1];
+        d->blue = coeffs[2]/coeffs[1];
+        d->g2 = coeffs[3]/coeffs[1];
         d->green = 1.0f;
       }
     }
@@ -1493,6 +1493,13 @@ void reload_defaults(dt_iop_module_t *module)
         }
       }
     }
+
+    // Store EXIF WB coeffs
+    find_coeffs(module, g->as_shot_wb);
+    g->as_shot_wb[0] /= g->as_shot_wb[1];
+    g->as_shot_wb[2] /= g->as_shot_wb[1];
+    g->as_shot_wb[3] /= g->as_shot_wb[1];
+    g->as_shot_wb[1] = 1.0;
 
     float TempK, tint;
     mul2temp(module, d, &TempK, &tint);
@@ -1600,7 +1607,6 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
 
   const int pos = dt_bauhaus_combobox_get(g->presets);
   const int tune = dt_bauhaus_slider_get(g->finetune);
@@ -1617,7 +1623,7 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
     case -1: // just un-setting.
       return;
     case DT_IOP_TEMP_AS_SHOT: // as shot wb
-      *p = *fp;
+      _temp_params_from_array(p, g->as_shot_wb);
       break;
     case DT_IOP_TEMP_SPOT: // from image area wb, expose callback will set p->rgbg2.
       if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->colorpicker)))
@@ -1882,7 +1888,11 @@ void gui_init(struct dt_iop_module_t *self)
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   g->mod_temp = NAN;
-  for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
+  for(int k = 0; k < 4; k++)
+  {
+    g->daylight_wb[k] = 1.0;
+    g->as_shot_wb[k] = 1.f;
+  }
 
   GtkWidget *temp_label_box = gtk_event_box_new();
   g->temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
