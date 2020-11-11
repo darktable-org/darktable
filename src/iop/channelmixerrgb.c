@@ -262,13 +262,13 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("B&W : Ilford FP2"), self->op, self->version(), &p, sizeof(p), 1);
 
-  // Fuji Across 100
+  // Fuji Acros 100
   // https://dacnard.wordpress.com/2013/02/15/the-real-shades-of-gray-bw-film-is-a-matter-of-heart-pt-1/
   p.grey[0] = 0.333f;
   p.grey[1] = 0.313f;
   p.grey[2] = 0.353f;
 
-  dt_gui_presets_add_generic(_("B&W : Fuji Across 100"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("B&W : Fuji Acros 100"), self->op, self->version(), &p, sizeof(p), 1);
 
   // Kodak ?
   // can't find spectral sensivity curves and the illuminant under wich they are produced,
