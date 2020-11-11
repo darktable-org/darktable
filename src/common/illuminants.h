@@ -49,7 +49,7 @@ typedef enum dt_illuminant_fluo_t
   DT_ILLUMINANT_FLUO_F3  = 2,  // $DESCRIPTION: "F3 (White 3450 K) – medium CRI"
   DT_ILLUMINANT_FLUO_F4  = 3,  // $DESCRIPTION: "F4 (Warm White 2940 K) – medium CRI"
   DT_ILLUMINANT_FLUO_F5  = 4,  // $DESCRIPTION: "F5 (Daylight 6350 K) – medium CRI"
-  DT_ILLUMINANT_FLUO_F6  = 5,  // $DESCRIPTION: "F6 (Lite White 4150 K) – medium CR"
+  DT_ILLUMINANT_FLUO_F6  = 5,  // $DESCRIPTION: "F6 (Lite White 4150 K) – medium CRI"
   DT_ILLUMINANT_FLUO_F7  = 6,  // $DESCRIPTION: "F7 (D65 simulator 6500 K) – high CRI"
   DT_ILLUMINANT_FLUO_F8  = 7,  // $DESCRIPTION: "F8 (D50 simulator 5000 K) – high CRI"
   DT_ILLUMINANT_FLUO_F9  = 8,  // $DESCRIPTION: "F9 (Cool White Deluxe 4150 K) – high CRI"
