@@ -1357,9 +1357,29 @@ static gboolean _blendif_change_blend_colorspace(dt_iop_module_t *module, dt_dev
   {
     dt_develop_blend_init_blendif_parameters(module->blend_params, cst);
 
+    // look for last history item for this module with the selected blending mode to copy parametric mask settings
+    GList *history = g_list_last(darktable.develop->history);
+    while(history)
+    {
+      const dt_dev_history_item_t *data = (dt_dev_history_item_t *)(history->data);
+      if(data->module == module && data->blend_params->blend_cst == cst)
+      {
+        const dt_develop_blend_params_t *hp = data->blend_params;
+        dt_develop_blend_params_t *np = module->blend_params;
+
+        np->blend_mode = hp->blend_mode;
+        np->blend_parameter = hp->blend_parameter;
+        np->blendif = hp->blendif;
+        memcpy(np->blendif_parameters, hp->blendif_parameters, sizeof(hp->blendif_parameters));
+        memcpy(np->blendif_boost_factors, hp->blendif_boost_factors, sizeof(hp->blendif_boost_factors));
+        break;
+      }
+      history = g_list_previous(history);
+    }
+
     dt_iop_gui_blend_data_t *bd = module->blend_data;
     const int cst_old = _blendop_blendif_get_picker_colorspace(bd);
-    dt_dev_add_history_item(darktable.develop, module, FALSE);
+    dt_dev_add_new_history_item(darktable.develop, module, FALSE);
     dt_iop_gui_update(module);
 
     if(cst_old != _blendop_blendif_get_picker_colorspace(bd) &&
