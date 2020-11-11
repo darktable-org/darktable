@@ -1471,10 +1471,9 @@ void reload_defaults(dt_iop_module_t *module)
 
       // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
       // full chromatic adaptation is deferred to channelmixerrgb
-      if(is_modern)
+      double coeffs[4] = { 0 };
+      if(is_modern && !calculate_bogus_daylight_wb(module, coeffs))
       {
-        double coeffs[4] = { 0 };
-        calculate_bogus_daylight_wb(module, coeffs);
         d->red = coeffs[0]/coeffs[1];
         d->blue = coeffs[2]/coeffs[1];
         d->g2 = coeffs[3]/coeffs[1];
@@ -1483,11 +1482,11 @@ void reload_defaults(dt_iop_module_t *module)
       else
       {
         // do best to find starting coeffs
-        float coeffs[4] = { 0 };
-        find_coeffs(module, coeffs);
-        d->red = coeffs[0]/coeffs[1];
-        d->blue = coeffs[2]/coeffs[1];
-        d->g2 = coeffs[3]/coeffs[1];
+        float bwb[4] = { 0 };
+        find_coeffs(module, bwb);
+        d->red = bwb[0]/bwb[1];
+        d->blue = bwb[2]/bwb[1];
+        d->g2 = bwb[3]/bwb[1];
         d->green = 1.0f;
       }
     }
