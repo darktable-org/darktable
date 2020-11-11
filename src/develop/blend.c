@@ -1306,9 +1306,9 @@ int dt_develop_blend_legacy_params_from_so(dt_iop_module_so_t *module_so, const 
   }
 
   // convert the old blend params to new
-  int res = dt_develop_blend_legacy_params(module, old_params, old_version,
-                                           new_params, dt_develop_blend_version(),
-                                           length);
+  const int res = dt_develop_blend_legacy_params(module, old_params, old_version,
+                                                 new_params, dt_develop_blend_version(),
+                                                 length);
   dt_iop_cleanup_module(module);
   free(module);
   return res;
