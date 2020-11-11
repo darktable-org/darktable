@@ -38,6 +38,13 @@
 
 DT_MODULE(1)
 
+typedef struct dt_geo_position_t
+{
+  double x, y;
+  int cluster_id;
+  int imgid;
+} dt_geo_position_t;
+
 typedef struct dt_map_t
 {
   gboolean entering;
@@ -45,6 +52,8 @@ typedef struct dt_map_t
   OsmGpsMapSource_t map_source;
   OsmGpsMapLayer *osd;
   GSList *images;
+  dt_geo_position_t *points;
+  int nb_points;
   GdkPixbuf *image_pin, *place_pin;
   GList *selected_images;
   gboolean start_drag;
@@ -62,6 +71,7 @@ typedef struct dt_map_t
     gboolean drag;
     int time_out;
     GList *others;
+    GtkWidget *drag_icon;
   } loc;
 } dt_map_t;
 
@@ -83,13 +93,6 @@ typedef struct dt_map_image_t
 
 #define CORE_POINT 1
 #define NOT_CORE_POINT 0
-
-typedef struct geo_position_t
-{
-  double x, y;
-  int cluster_id;
-  int imgid;
-} geo_position_t;
 
 static const int thumb_size = 128, thumb_border = 2, image_pin_size = 13, place_pin_size = 72;
 static const int cross_size = 16, max_size = 1024;
@@ -151,8 +154,8 @@ static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *con
                                           GtkSelectionData *selection_data, guint target_type, guint time,
                                           gpointer data);
 // find the images clusters on the map
-static void _dbscan(geo_position_t *points, unsigned int num_points, double epsilon,
-             unsigned int minpts);
+static void _dbscan(dt_geo_position_t *points, unsigned int num_points, double epsilon,
+                    unsigned int minpts);
 static gboolean _view_map_prefs_changed(dt_map_t *lib);
 static void _view_map_build_main_query(dt_map_t *lib);
 
@@ -566,41 +569,6 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude,
   return pixbuf;
 }
 
-static GdkPixbuf *_draw_cross()
-{
-  const int cross = DT_PIXEL_APPLY_DPI(cross_size);
-  const int w = 2.0 * cross;
-  const int h = w;
-  const int d = DT_PIXEL_APPLY_DPI(1);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-  cairo_t *cr = cairo_create(cst);
-
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH);
-  cairo_move_to(cr, 0.5 * w, 0.5 * h - cross);
-  cairo_line_to(cr, 0.5 * w, 0.5 * h + cross);
-  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h );
-  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h );
-  cairo_stroke(cr);
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_LOW);
-  cairo_move_to(cr, 0.5 * w + d, 0.5 * h - cross);
-  cairo_line_to(cr, 0.5 * w + d, 0.5 * h + cross);
-  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h - d);
-  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h - d);
-  cairo_stroke(cr);
-
-  cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
-  cairo_surface_destroy(cst);
-  return pixbuf;
-}
-
 void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
@@ -637,7 +605,7 @@ void init(dt_view_t *self)
     lib->thumb_lat_angle = 0.01, lib->thumb_lon_angle = 0.01;
     lib->time_out = 0, lib->timeout_event_source = 0;
     lib->loc.main.id = 0, lib->loc.main.location = NULL, lib->loc.time_out = 0;
-    lib->loc.others = NULL;
+    lib->loc.others = NULL, lib->loc.drag_icon = NULL;
 
     OsmGpsMapSource_t map_source
         = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
@@ -679,8 +647,8 @@ void init(dt_view_t *self)
     }
 
     /* allow drag&drop of images from filmstrip */
-    gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL, target_list_internal, n_targets_internal,
-                      GDK_ACTION_COPY);
+    gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL,
+                      target_list_internal, n_targets_internal, GDK_ACTION_MOVE);
     g_signal_connect(GTK_WIDGET(lib->map), "scroll-event", G_CALLBACK(_view_map_scroll_event), self);
     g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
     g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
@@ -741,6 +709,11 @@ void cleanup(dt_view_t *self)
     g_object_unref(G_OBJECT(lib->place_pin));
     g_object_unref(G_OBJECT(lib->osd));
     osm_gps_map_image_remove_all(lib->map);
+    if(lib->points)
+    {
+      g_free(lib->points);
+      lib->points = NULL;
+    }
     if(lib->images)
     {
       g_slist_free_full(lib->images, g_free);
@@ -991,6 +964,78 @@ static void _view_map_update_location_geotag(dt_view_t *self)
   }
 }
 
+static gboolean _view_map_draw_image(dt_map_image_t *entry, const gboolean blocking, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  const int _thumb_size = DT_PIXEL_APPLY_DPI(thumb_size);
+  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, _thumb_size, _thumb_size);
+  gboolean needs_redraw = FALSE;
+  if(!entry->image)
+  {
+    const int imgid = entry->imgid;
+    dt_mipmap_buffer_t buf;
+    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip,
+                        blocking ? DT_MIPMAP_BLOCKING : DT_MIPMAP_BEST_EFFORT, 'r');
+
+    if(buf.buf && buf.width > 0)
+    {
+      GdkPixbuf *source = NULL, *thumb = NULL, *count = NULL;
+
+      for(int i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
+
+      int w = _thumb_size, h = _thumb_size;
+      const float _thumb_border = DT_PIXEL_APPLY_DPI(thumb_border);
+      const float _pin_size = DT_PIXEL_APPLY_DPI(image_pin_size);
+      if(buf.width < buf.height)
+        w = (buf.width * _thumb_size) / buf.height; // portrait
+      else
+        h = (buf.height * _thumb_size) / buf.width; // landscape
+
+      // next we get a pixbuf for the image
+      source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE,
+                                        8, buf.width, buf.height,
+                                        buf.width * 4, NULL, NULL);
+      if(!source) goto map_changed_failure;
+      // now we want a slightly larger pixbuf that we can put the image on
+      thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * _thumb_border,
+                             h + 2 * _thumb_border + _pin_size);
+      if(!thumb) goto map_changed_failure;
+      gdk_pixbuf_fill(thumb, entry->selected_in_group ? thumb_frame_sel_color
+                                                      : thumb_frame_color);
+      // put the image onto the frame
+      gdk_pixbuf_scale(source, thumb, _thumb_border, _thumb_border, w, h,
+                       _thumb_border, _thumb_border, (1.0 * w) / buf.width,
+                       (1.0 * h) / buf.height, GDK_INTERP_HYPER);
+      // add the pin
+      gdk_pixbuf_copy_area(lib->image_pin, 0, 0, w + 2 * _thumb_border,
+                           _pin_size, thumb, 0, h + 2 * _thumb_border);
+      // add the count
+      double count_height, count_width;
+      count = _view_map_images_count(entry->group_count, entry->group_same_loc,
+                                &count_width, &count_height);
+      gdk_pixbuf_copy_area(count, 0, 0, count_width, count_height, thumb,
+                          _thumb_border, h - count_height + _thumb_border);
+
+      entry->image = osm_gps_map_image_add_with_alignment(lib->map,
+                                        entry->latitude,
+                                        entry->longitude,
+                                        thumb, 0, 1);
+      entry->width = w;
+      entry->height = h;
+
+    map_changed_failure:
+      if(source) g_object_unref(source);
+      if(thumb) g_object_unref(thumb);
+      if(count) g_object_unref(count);
+    }
+    else
+      needs_redraw = TRUE;
+    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+  }
+
+  return needs_redraw;
+}
+
 // scan the images list and draw the missing ones
 // if launched to be executed repeatedly, return FALSE when it is done
 static gboolean _view_map_draw_images(gpointer user_data)
@@ -998,78 +1043,11 @@ static gboolean _view_map_draw_images(gpointer user_data)
   dt_view_t *self = (dt_view_t *)user_data;
   dt_map_t *lib = (dt_map_t *)self->data;
   gboolean needs_redraw = FALSE;
-  const int _thumb_size = DT_PIXEL_APPLY_DPI(thumb_size);
-  dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, _thumb_size, _thumb_size);
   int img_drawn = 0;
   for(GSList *iter = lib->images; iter; iter = g_slist_next(iter))
   {
-    dt_map_image_t *entry = (dt_map_image_t *)iter->data;
-    if(!entry->image)
-    {
-      const int imgid = entry->imgid;
-      dt_mipmap_buffer_t buf;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
-
-      if(buf.buf && buf.width > 0)
-      {
-        GdkPixbuf *source = NULL, *thumb = NULL, *count = NULL;
-
-        for(int i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
-
-        int w = _thumb_size, h = _thumb_size;
-        const float _thumb_border = DT_PIXEL_APPLY_DPI(thumb_border);
-        const float _pin_size = DT_PIXEL_APPLY_DPI(image_pin_size);
-        if(buf.width < buf.height)
-          w = (buf.width * _thumb_size) / buf.height; // portrait
-        else
-          h = (buf.height * _thumb_size) / buf.width; // landscape
-
-        // next we get a pixbuf for the image
-        source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE,
-                                          8, buf.width, buf.height,
-                                          buf.width * 4, NULL, NULL);
-        if(!source) goto map_changed_failure;
-
-        // now we want a slightly larger pixbuf that we can put the image on
-        thumb = gdk_pixbuf_new(GDK_COLORSPACE_RGB, TRUE, 8, w + 2 * _thumb_border,
-                               h + 2 * _thumb_border + _pin_size);
-        if(!thumb) goto map_changed_failure;
-        gdk_pixbuf_fill(thumb, entry->selected_in_group ? thumb_frame_sel_color
-                                                        : thumb_frame_color);
-
-        // put the image onto the frame
-        gdk_pixbuf_scale(source, thumb, _thumb_border, _thumb_border, w, h,
-                         _thumb_border, _thumb_border, (1.0 * w) / buf.width,
-                         (1.0 * h) / buf.height, GDK_INTERP_HYPER);
-
-        // add the pin
-        gdk_pixbuf_copy_area(lib->image_pin, 0, 0, w + 2 * _thumb_border,
-                             _pin_size, thumb, 0, h + 2 * _thumb_border);
-
-        // add the count
-        double count_height, count_width;
-        count = _view_map_images_count(entry->group_count, entry->group_same_loc,
-                                  &count_width, &count_height);
-        gdk_pixbuf_copy_area(count, 0, 0, count_width, count_height, thumb,
-                            _thumb_border, h - count_height + _thumb_border);
-
-        entry->image = osm_gps_map_image_add_with_alignment(lib->map,
-                                          entry->latitude,
-                                          entry->longitude,
-                                          thumb, 0, 1);
-        entry->width = w;
-        entry->height = h;
-        img_drawn++;
-
-      map_changed_failure:
-        if(source) g_object_unref(source);
-        if(thumb) g_object_unref(thumb);
-        if(count) g_object_unref(count);
-      }
-      else
-        needs_redraw = TRUE;
-      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    }
+    needs_redraw = _view_map_draw_image((dt_map_image_t *)iter->data, FALSE, self);
+    img_drawn++;
     // we limit the number of displayed images as required
     if(img_drawn >= lib->max_images_drawn)
       break;
@@ -1130,7 +1108,8 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
       for(GSList *iter = lib->images; iter; iter = g_slist_next(iter))
       {
         dt_map_image_t *image = (dt_map_image_t *)iter->data;
-        if(image->image) osm_gps_map_image_remove(lib->map, image->image);
+        if(image->image)
+          osm_gps_map_image_remove(lib->map, image->image);
       }
       g_slist_free_full(lib->images, g_free);
       lib->images = NULL;
@@ -1143,7 +1122,11 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
       img_count++;
     }
 
-    geo_position_t *p = (geo_position_t *)calloc(img_count, sizeof(geo_position_t));
+    if(lib->points)
+      g_free(lib->points);
+    lib->points = (dt_geo_position_t *)calloc(img_count, sizeof(dt_geo_position_t));
+    lib->nb_points = img_count;
+    dt_geo_position_t *p = lib->points;
     if(p)
     {
       DT_DEBUG_SQLITE3_RESET(lib->main_query);
@@ -1182,7 +1165,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
         {
           dt_map_image_t *entry = (dt_map_image_t *)calloc(1, sizeof(dt_map_image_t));
           entry->imgid = p[i].imgid;
-          entry->group = p[i].imgid;
+          entry->group = p[i].cluster_id;
           entry->group_count = 1;
           entry->longitude = p[i].x * 180 / M_PI;
           entry->latitude = p[i].y * 180 / M_PI;
@@ -1198,7 +1181,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
           group = p[i].cluster_id;
           dt_map_image_t *entry = (dt_map_image_t *)calloc(1, sizeof(dt_map_image_t));
           entry->imgid = p[i].imgid;
-          entry->group = p[i].imgid;
+          entry->group = p[i].cluster_id;
           entry->group_same_loc = TRUE;
           entry->selected_in_group = FALSE;
           const double lon = p[i].x, lat = p[i].y;
@@ -1226,7 +1209,6 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
           lib->images = g_slist_prepend(lib->images, entry);
         }
       }
-      g_free(p);
     }
 
     needs_redraw = _view_map_draw_images(self);
@@ -1286,14 +1268,12 @@ static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self)
   }
 }
 
-static GList *_view_map_get_imgs_at_pos(dt_view_t *self, const double x,
-                                        const double y, const gboolean first_on)
+static dt_map_image_t *_view_map_get_entry_at_pos(dt_view_t *self, const double x,
+                                                  const double y)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
-  GList *imgs = NULL;
-  GSList *iter_imgs = NULL;
 
-  for(GSList *iter = lib->images; iter != NULL; iter = iter->next)
+  for(GSList *iter = lib->images; iter; iter = iter->next)
   {
     dt_map_image_t *entry = (dt_map_image_t *)iter->data;
     OsmGpsMapImage *image = entry->image;
@@ -1305,32 +1285,146 @@ static GList *_view_map_get_imgs_at_pos(dt_view_t *self, const double x,
       img_y -= DT_PIXEL_APPLY_DPI(image_pin_size);
       if(x >= img_x && x <= img_x + entry->width && y <= img_y && y >= img_y - entry->height)
       {
-        imgs = g_list_append(imgs,GINT_TO_POINTER(entry->imgid));
-        iter_imgs = iter;
+        return entry;
+      }
+    }
+  }
+  return NULL;
+}
+
+static GList *_view_map_get_imgs_at_pos(dt_view_t *self, const double x,
+                                        const double y, const gboolean first_on)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  GList *imgs = NULL;
+  int imgid = -1;
+  dt_map_image_t *entry = NULL;
+
+  for(GSList *iter = lib->images; iter; iter = iter->next)
+  {
+    entry = (dt_map_image_t *)iter->data;
+    OsmGpsMapImage *image = entry->image;
+    if(image)
+    {
+      OsmGpsMapPoint *pt = (OsmGpsMapPoint *)osm_gps_map_image_get_point(image);
+      gint img_x = 0, img_y = 0;
+      osm_gps_map_convert_geographic_to_screen(lib->map, pt, &img_x, &img_y);
+      img_y -= DT_PIXEL_APPLY_DPI(image_pin_size);
+      if(x >= img_x && x <= img_x + entry->width && y <= img_y && y >= img_y - entry->height)
+      {
+        imgid = entry->imgid;
         break;
       }
     }
   }
 
-  if(iter_imgs && !first_on)
+  if(imgid != -1 && !first_on && entry->group_count > 1 && lib->points)
   {
-    dt_map_image_t *entry = (dt_map_image_t *)iter_imgs->data;
-    const int imgid = GPOINTER_TO_INT(imgs->data);
-    if(entry->group_count > 1)
+    dt_geo_position_t *p = lib->points;
+    int count = 1;
+    for(int i = 0; i < lib->nb_points; i++)
     {
-      for(GSList *iter = iter_imgs->next; iter != NULL; iter = iter->next)
+      if(p[i].cluster_id == entry->group && p[i].imgid != imgid)
       {
-        entry = (dt_map_image_t *)iter->data;
-        if(entry->group == imgid)
+        imgs = g_list_prepend(imgs, GINT_TO_POINTER(p[i].imgid));
+        count++;
+        if(count >= entry->group_count)
         {
-          // prepend is faster but we need the visible image at first place
-          imgs = g_list_append(imgs,GINT_TO_POINTER(entry->imgid));
+          break;
         }
       }
     }
   }
-
+  if(imgid != -1)
+    // it's necessary to have the visible image as the first one of the list
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
   return imgs;
+}
+
+gint _find_image_in_images(gconstpointer a, gconstpointer b)
+{
+  dt_map_image_t *entry = (dt_map_image_t *)a;
+  return entry->imgid == GPOINTER_TO_INT(b) ? 0 : 1;
+}
+
+static gboolean _display_next_image(dt_view_t *self, dt_map_image_t *entry, const gboolean next)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  if(!entry) return FALSE;
+
+  if(entry->group_count == 1)
+  {
+    if(entry->image)
+    {
+      osm_gps_map_image_remove(lib->map, entry->image);
+      entry->image = NULL;
+    }
+    _view_map_draw_image(entry, TRUE, self);
+    return TRUE;
+  }
+
+  dt_geo_position_t *p = lib->points;
+  int index = -1;
+  for(int i = 0; i < lib->nb_points; i++)
+  {
+    if(p[i].imgid == GPOINTER_TO_INT(entry->imgid))
+    {
+      if(next)
+      {
+        for(int j = i + 1; j < lib->nb_points; j++)
+        {
+          if(p[j].cluster_id == entry->group)
+          {
+            index = j;
+            break;
+          }
+        }
+        if(index == -1)
+        {
+          for(int j = 0; j < i; j++)
+          {
+            if(p[j].cluster_id == entry->group)
+            {
+              index = j;
+              break;
+            }
+          }
+        }
+      }
+      else
+      {
+        for(int j = i - 1; j >= 0; j--)
+        {
+          if(p[j].cluster_id == entry->group)
+          {
+            index = j;
+            break;
+          }
+        }
+        if(index == -1)
+        {
+          for(int j = lib->nb_points - 1; j > i; j--)
+          {
+            if(p[j].cluster_id == entry->group)
+            {
+              index = j;
+              break;
+            }
+          }
+        }
+      }
+      break;
+    }
+  }
+  if(index == -1) return FALSE;
+  entry->imgid = p[index].imgid;
+  if(entry->image)
+  {
+    osm_gps_map_image_remove(lib->map, entry->image);
+    entry->image = NULL;
+  }
+  _view_map_draw_image(entry, TRUE, self);
+  return TRUE;
 }
 
 static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMotion *e, dt_view_t *self)
@@ -1348,12 +1442,30 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
       GdkDragContext *context =
         gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                        GDK_ACTION_COPY, 1, (GdkEvent *)e, -1, -1);
+                                        GDK_ACTION_MOVE, 1,
+                                        (GdkEvent *)e, -1, -1);
 
-      GdkPixbuf *cross = _draw_cross();
-      gtk_drag_set_icon_pixbuf(context, cross, DT_PIXEL_APPLY_DPI(cross_size),
-                               DT_PIXEL_APPLY_DPI(cross_size));
-      g_object_unref(cross);
+      float pixel_lon = _view_map_angles_to_pixels(lib, lib->loc.main.data.lat,
+                                                   lib->loc.main.data.lon,
+                                                   lib->loc.main.data.delta1);
+      float pixel_lat = pixel_lon * lib->loc.main.data.delta2 * lib->loc.main.data.ratio
+                                  / lib->loc.main.data.delta1;
+      GdkPixbuf *location = NULL;
+      if(lib->loc.main.data.shape == MAP_LOCATION_SHAPE_ELLIPSE)
+      {
+        location = _draw_ellipse(pixel_lon, pixel_lat, TRUE);
+        if(pixel_lon > pixel_lat) pixel_lat = pixel_lon;
+        else pixel_lon = pixel_lat;
+      }
+      else
+        location = _draw_rectangle(pixel_lon, pixel_lat, TRUE);
+      GtkWidget *image = gtk_image_new_from_pixbuf(location);
+      gtk_widget_set_name(image, "map_location_drag_icon");
+      gtk_widget_show(image);
+      gtk_drag_set_icon_widget(context, image,
+                               DT_PIXEL_APPLY_DPI(pixel_lon),
+                               DT_PIXEL_APPLY_DPI(pixel_lat));
+      g_object_unref(location);
       gtk_target_list_unref(targets);
       return TRUE;
     }
@@ -1361,19 +1473,23 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
   if(lib->start_drag && lib->selected_images)
   {
-    for(GSList *iter = lib->images; iter != NULL; iter = iter->next)
+    const int nb = g_list_length(lib->selected_images);
+    for(GSList *iter = lib->images; iter; iter = iter->next)
     {
       dt_map_image_t *entry = (dt_map_image_t *)iter->data;
-      OsmGpsMapImage *image = entry->image;
-      if(image)
+      if(entry->image)
       {
         GList *sel_img = lib->selected_images;
-        if(entry->imgid == GPOINTER_TO_INT(sel_img->data) &&
-           (sel_img->next || (!sel_img->next && entry->group_count == 1)))
+        if(entry->imgid == GPOINTER_TO_INT(sel_img->data))
         {
-          // keep the image on map if only the first of a group is moved
-          // TODO display instead the thumb of the next remaining image if any
-          osm_gps_map_image_remove(lib->map, image);
+          if(entry->group_count == nb)
+          {
+            osm_gps_map_image_remove(lib->map, entry->image);
+            entry->image = NULL;
+          }
+          else
+            _display_next_image(self, entry, TRUE);
+          break;
         }
       }
     }
@@ -1427,7 +1543,8 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
                            h - count_height + _thumb_border);
 
       GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                                                GDK_ACTION_COPY, 1, (GdkEvent *)e, -1, -1);
+                                                                GDK_ACTION_MOVE, 1,
+                                                                (GdkEvent *)e, -1, -1);
 
       gtk_drag_set_icon_pixbuf(context, thumb, 0, h + 2 * _thumb_border);
 
@@ -1447,6 +1564,15 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 static gboolean _view_map_scroll_event(GtkWidget *w, GdkEventScroll *event, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
+
+  // check if the click was on image(s) or just some random position
+  dt_map_image_t *entry = _view_map_get_entry_at_pos(self, event->x, event->y);
+  if(entry)
+  {
+    if(_display_next_image(self, entry, event->direction == GDK_SCROLL_DOWN))
+      return TRUE;
+  }
+
   if(lib->loc.main.id > 0)
   {
     OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, (GdkEventButton *)event);
@@ -1694,7 +1820,11 @@ void leave(dt_view_t *self)
     g_list_free(lib->selected_images);
     lib->selected_images = NULL;
   }
-
+  if(lib->loc.drag_icon)
+  {
+    gtk_widget_destroy(lib->loc.drag_icon);
+    lib->loc.drag_icon = NULL;
+  }
   gtk_widget_hide(GTK_WIDGET(lib->map));
   gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
 
@@ -2095,6 +2225,7 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
                                    lib->loc.main.data.lon, lib->loc.main.data.delta1);
         osm_gps_map_point_free(pt);
         _view_map_update_location_geotag(self);
+        _view_map_draw_location(self);
         _view_map_signal_change_wait(self, 1);
         success = TRUE;
       }
@@ -2110,17 +2241,19 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         osm_gps_map_convert_screen_to_geographic(lib->map, x, y, pt);
         osm_gps_map_point_get_degrees(pt, &latitude, &longitude);
         osm_gps_map_point_free(pt);
+        // TODO redraw the image group
+        // it seems that at this time osm_gps_map doesn't answer before dt_image_set_locations(). Locked in some way ?
         const dt_image_geoloc_t geoloc = { longitude, latitude, NAN };
         dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
         dt_image_set_locations(imgs, &geoloc, TRUE);
         dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(_view_map_collection_changed), self);
         g_list_free(imgs);
+        g_signal_emit_by_name(lib->map, "changed");
         success = TRUE;
       }
     }
   }
   gtk_drag_finish(context, success, FALSE, time);
-  if(success) g_signal_emit_by_name(lib->map, "changed");
 }
 
 static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *context,
@@ -2159,6 +2292,11 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
           gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
                                  _DWORD, (guchar *)imgs, sizeof(uint32_t));
           free(imgs);
+          if(lib->loc.drag_icon)
+          {
+            gtk_widget_destroy(lib->loc.drag_icon);
+            lib->loc.drag_icon = NULL;
+          }
         }
       }
       break;
@@ -2292,7 +2430,7 @@ typedef struct epsilon_neighbours_t
 
 typedef struct dt_dbscan_t
 {
-  geo_position_t *points;
+  dt_geo_position_t *points;
   unsigned int num_points;
   double epsilon;
   unsigned int minpts;
@@ -2347,7 +2485,7 @@ static void _dbscan_spread(unsigned int index)
 
   for(unsigned int i = 0; i < db.spreads->num_members; i++)
   {
-    geo_position_t *d = &db.points[db.spreads->index[i]];
+    dt_geo_position_t *d = &db.points[db.spreads->index[i]];
     if(d->cluster_id == NOISE || d->cluster_id == UNCLASSIFIED)
     {
       db.seeds->index[db.seeds->num_members] = db.spreads->index[i];
@@ -2382,13 +2520,14 @@ static int _dbscan_expand(unsigned int index)
   return return_value;
 }
 
-static void _dbscan(geo_position_t *points, unsigned int num_points,
+static void _dbscan(dt_geo_position_t *points, unsigned int num_points,
                     double epsilon, unsigned int minpts)
 {
   db.points = points;
   db.num_points = num_points;
   db.epsilon = epsilon;
-  db.minpts = minpts;
+  // remove the pivot from target
+  db.minpts = minpts > 1 ? minpts - 1 : minpts;
   db.cluster_id = 0;
   db.seeds = (epsilon_neighbours_t *)malloc(sizeof(db.seeds->num_members)
       + num_points * sizeof(db.seeds->index[0]));
