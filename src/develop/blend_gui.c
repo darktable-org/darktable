@@ -2760,6 +2760,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
   /* create and add blend mode if module supports it */
   if(module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
+    --darktable.bauhaus->skip_accel;
+
     module->blend_data = g_malloc0(sizeof(dt_iop_gui_blend_data_t));
     dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
 
@@ -2986,6 +2988,8 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     gtk_widget_set_name(GTK_WIDGET(iopw), "blending-wrapper");
 
     bd->blend_inited = 1;
+
+    ++darktable.bauhaus->skip_accel;
   }
 }
 

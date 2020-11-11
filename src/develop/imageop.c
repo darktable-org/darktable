@@ -1231,11 +1231,8 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
   gtk_widget_set_tooltip_text(GTK_WIDGET(togglebutton), tooltip);
   gtk_widget_queue_draw(GTK_WIDGET(togglebutton));
 
-  if(dt_conf_get_bool("accel/prefer_enabled"))
-  {
-    // rebuild the accelerators
-    dt_iop_connect_accels_multi(module->so);
-  }
+  // rebuild the accelerators
+  dt_iop_connect_accels_multi(module->so);
 
   if(module->enabled && !gtk_widget_is_visible(module->header))
     dt_dev_modulegroups_update_visibility(darktable.develop);
@@ -1728,6 +1725,25 @@ static void dt_iop_init_module_so(void *m)
     {
       darktable.control->accel_initialising = TRUE;
       dt_iop_gui_init(module_instance);
+
+      static gboolean blending_accels_initialized = FALSE;
+      if(!blending_accels_initialized)
+      {
+        dt_iop_colorspace_type_t cst = module->blend_colorspace(module_instance, NULL, NULL);
+
+        if((module->flags() & IOP_FLAGS_SUPPORTS_BLENDING) &&
+           !(module->flags() & IOP_FLAGS_NO_MASKS) &&
+           (cst == iop_cs_Lab || cst == iop_cs_rgb))
+        {
+          GtkWidget *iopw = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+          dt_iop_gui_init_blending(iopw, module_instance);
+          dt_iop_gui_cleanup_blending(module_instance);
+          gtk_widget_destroy(iopw);
+
+          blending_accels_initialized = TRUE;
+        }
+      }
+
       module->gui_cleanup(module_instance);
       darktable.control->accel_initialising = FALSE;
 
@@ -2107,11 +2123,8 @@ static void dt_iop_gui_reset_callback(GtkButton *button, GdkEventButton *event, 
     dt_dev_add_history_item(module->dev, module, TRUE);
   }
 
-  if(dt_conf_get_bool("accel/prefer_expanded") || dt_conf_get_bool("accel/prefer_enabled") || dt_conf_get_bool("accel/prefer_unmasked"))
-  {
-    // rebuild the accelerators
-    dt_iop_connect_accels_multi(module->so);
-  }
+  // rebuild the accelerators
+  dt_iop_connect_accels_multi(module->so);
 }
 
 #if !GTK_CHECK_VERSION(3, 22, 0)
@@ -2352,11 +2365,8 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != !(e->state & GDK_SHIFT_MASK);
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 
-      if (dt_conf_get_bool("accel/prefer_expanded"))
-      {
-        // rebuild the accelerators
-        dt_iop_connect_accels_multi(module->so);
-      }
+      // rebuild the accelerators
+      dt_iop_connect_accels_multi(module->so);
 
       //used to take focus away from module search text input box when module selected
       gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
@@ -2780,11 +2790,7 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
     dt_iop_request_focus(module);
   }
 
-  if(dt_conf_get_bool("accel/prefer_expanded"))
-  {
-    // rebuild the accelerators
-    dt_iop_connect_accels_multi(module->so);
-  }
+  dt_iop_connect_accels_multi(module->so);
 
   return TRUE;
 }
@@ -2818,11 +2824,8 @@ static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acce
 
   dt_iop_request_focus(module);
 
-  if(dt_conf_get_bool("accel/prefer_enabled"))
-  {
-    // rebuild the accelerators
-    dt_iop_connect_accels_multi(module->so);
-  }
+  // rebuild the accelerators
+  dt_iop_connect_accels_multi(module->so);
 
   return TRUE;
 }
