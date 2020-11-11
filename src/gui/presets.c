@@ -1221,7 +1221,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   }
   g_free(query);
   // collect all presets for op from db
-  int found = 0;
+  gboolean found = 0;
   int last_wp = -1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1248,14 +1248,14 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     const int32_t enabled = sqlite3_column_int(stmt, 6);
     const int32_t isdisabled = (preset_version == version ? 0 : 1);
     const char *name = (char *)sqlite3_column_text(stmt, 0);
-    int32_t isdefault = 0;
+    gboolean isdefault = FALSE;
 
-    if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0) found = 1;
+    if(darktable.gui->last_preset && strcmp(darktable.gui->last_preset, name) == 0) found = TRUE;
 
     if(module && !memcmp(module->default_params, op_params, MIN(op_params_size, module->params_size))
        && !memcmp(module->default_blendop_params, blendop_params,
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
-      isdefault = 1;
+      isdefault = TRUE;
     if(module && !memcmp(params, op_params, MIN(op_params_size, params_size))
        && !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
        && module->enabled == enabled)
