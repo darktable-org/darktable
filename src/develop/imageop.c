@@ -197,6 +197,7 @@ void dt_iop_default_init(dt_iop_module_t *module)
   module->default_params = (dt_iop_params_t *)malloc(param_size);
 
   module->default_enabled = 0;
+  module->has_trouble = FALSE;
   module->gui_data = NULL;
 
   dt_introspection_field_t *i = module->so->get_introspection_linear();
@@ -1217,7 +1218,8 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "iop-panel-label");
-  gchar *label = dt_history_item_get_name_html(module);
+  gchar *label = g_strdup_printf("%s%s", (module->has_trouble) ? "⚠ " : "",
+                                         dt_history_item_get_name_html(module));
   gchar *tooltip = g_strdup(module->description());
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
@@ -1280,6 +1282,12 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
 {
+  _iop_gui_update_header(module);
+}
+
+void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
+{
+  module->has_trouble = state;
   _iop_gui_update_header(module);
 }
 

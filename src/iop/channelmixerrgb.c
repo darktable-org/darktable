@@ -1918,6 +1918,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   if(!is_reference_wb && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
   {
+    dt_iop_set_module_in_trouble(self, TRUE);
     gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ white balance module error"));
     gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("the white balance module is not using the camera\n"
                                                                 "reference illuminant, which will cause issues here\n"
@@ -1926,6 +1927,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
   else
   {
+    dt_iop_set_module_in_trouble(self, FALSE);
     gtk_label_set_text(GTK_LABEL(g->warning_label), "");
     gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
   }
