@@ -618,7 +618,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.x[DT_DENOISE_PROFILE_Y0][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
     p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, self->version(), &p, sizeof(p), 10);
+  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, self->version(), &p,
+                             sizeof(p), 10, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 const char *name()

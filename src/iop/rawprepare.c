@@ -120,7 +120,7 @@ void init_presets(dt_iop_module_so_t *self)
                                                            .raw_black_level_separate[2] = 0,
                                                            .raw_black_level_separate[3] = 0,
                                                            .raw_white_point = UINT16_MAX },
-                             sizeof(dt_iop_rawprepare_params_t), 1);
+                             sizeof(dt_iop_rawprepare_params_t), 1, DEVELOP_BLEND_CS_NONE);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }

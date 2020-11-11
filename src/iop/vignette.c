@@ -960,7 +960,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.shape = 1.0f;
   p.dithering = 0;
   p.unbound = TRUE;
-  dt_gui_presets_add_generic(_("lomo"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("lomo"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
