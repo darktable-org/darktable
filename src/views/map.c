@@ -71,6 +71,7 @@ typedef struct dt_map_t
     gboolean drag;
     int time_out;
     GList *others;
+    GtkWidget *drag_icon;
   } loc;
 } dt_map_t;
 
@@ -568,41 +569,6 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude,
   return pixbuf;
 }
 
-static GdkPixbuf *_draw_cross()
-{
-  const int cross = DT_PIXEL_APPLY_DPI(cross_size);
-  const int w = 2.0 * cross;
-  const int h = w;
-  const int d = DT_PIXEL_APPLY_DPI(1);
-  cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
-  cairo_t *cr = cairo_create(cst);
-
-  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1));
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH);
-  cairo_move_to(cr, 0.5 * w, 0.5 * h - cross);
-  cairo_line_to(cr, 0.5 * w, 0.5 * h + cross);
-  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h );
-  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h );
-  cairo_stroke(cr);
-  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_MAP_LOC_SHAPE_LOW);
-  cairo_move_to(cr, 0.5 * w + d, 0.5 * h - cross);
-  cairo_line_to(cr, 0.5 * w + d, 0.5 * h + cross);
-  cairo_move_to(cr, 0.5 * w - cross, 0.5 * h - d);
-  cairo_line_to(cr, 0.5 * w + cross, 0.5 * h - d);
-  cairo_stroke(cr);
-
-  cairo_destroy(cr);
-  uint8_t *data = cairo_image_surface_get_data(cst);
-  dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
-  uint8_t *buf = (uint8_t *)malloc(size);
-  memcpy(buf, data, size);
-  GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
-                                               (GdkPixbufDestroyNotify)free, NULL);
-  cairo_surface_destroy(cst);
-  return pixbuf;
-}
-
 void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
@@ -639,7 +605,7 @@ void init(dt_view_t *self)
     lib->thumb_lat_angle = 0.01, lib->thumb_lon_angle = 0.01;
     lib->time_out = 0, lib->timeout_event_source = 0;
     lib->loc.main.id = 0, lib->loc.main.location = NULL, lib->loc.time_out = 0;
-    lib->loc.others = NULL;
+    lib->loc.others = NULL, lib->loc.drag_icon = NULL;
 
     OsmGpsMapSource_t map_source
         = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
@@ -1479,10 +1445,27 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
                                         GDK_ACTION_MOVE, 1,
                                         (GdkEvent *)e, -1, -1);
 
-      GdkPixbuf *cross = _draw_cross();
-      gtk_drag_set_icon_pixbuf(context, cross, DT_PIXEL_APPLY_DPI(cross_size),
-                               DT_PIXEL_APPLY_DPI(cross_size));
-      g_object_unref(cross);
+      float pixel_lon = _view_map_angles_to_pixels(lib, lib->loc.main.data.lat,
+                                                   lib->loc.main.data.lon,
+                                                   lib->loc.main.data.delta1);
+      float pixel_lat = pixel_lon * lib->loc.main.data.delta2 * lib->loc.main.data.ratio
+                                  / lib->loc.main.data.delta1;
+      GdkPixbuf *location = NULL;
+      if(lib->loc.main.data.shape == MAP_LOCATION_SHAPE_ELLIPSE)
+      {
+        location = _draw_ellipse(pixel_lon, pixel_lat, TRUE);
+        if(pixel_lon > pixel_lat) pixel_lat = pixel_lon;
+        else pixel_lon = pixel_lat;
+      }
+      else
+        location = _draw_rectangle(pixel_lon, pixel_lat, TRUE);
+      GtkWidget *image = gtk_image_new_from_pixbuf(location);
+      gtk_widget_set_name(image, "map_location_drag_icon");
+      gtk_widget_show(image);
+      gtk_drag_set_icon_widget(context, image,
+                               DT_PIXEL_APPLY_DPI(pixel_lon),
+                               DT_PIXEL_APPLY_DPI(pixel_lat));
+      g_object_unref(location);
       gtk_target_list_unref(targets);
       return TRUE;
     }
@@ -1837,7 +1820,11 @@ void leave(dt_view_t *self)
     g_list_free(lib->selected_images);
     lib->selected_images = NULL;
   }
-
+  if(lib->loc.drag_icon)
+  {
+    gtk_widget_destroy(lib->loc.drag_icon);
+    lib->loc.drag_icon = NULL;
+  }
   gtk_widget_hide(GTK_WIDGET(lib->map));
   gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
 
@@ -2305,6 +2292,11 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
           gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
                                  _DWORD, (guchar *)imgs, sizeof(uint32_t));
           free(imgs);
+          if(lib->loc.drag_icon)
+          {
+            gtk_widget_destroy(lib->loc.drag_icon);
+            lib->loc.drag_icon = NULL;
+          }
         }
       }
       break;
