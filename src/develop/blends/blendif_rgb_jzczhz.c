@@ -840,120 +840,159 @@ static inline void _rgb_to_JzCzhz(const float *const restrict rgb, float *const 
   dt_JzAzBz_2_JzCzhz(JzAzBz, JzCzhz);
 }
 
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, b:16) uniform(channel, profile, stride)
 #endif
 static void _display_channel(const float *const restrict a, float *const restrict b,
-                             const float* const restrict mask, const size_t stride, const int channel,
+                             const float *const restrict mask, const size_t stride, const int channel,
+                             const float *const restrict boost_factors,
                              const dt_iop_order_iccprofile_info_t *const profile)
 {
   switch(channel)
   {
     case DT_DEV_PIXELPIPE_DISPLAY_R:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_RED_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(a[j + 0]);
+        const float c = clamp_simd(a[j + 0] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_R | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_RED_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(b[j + 0]);
+        const float c = clamp_simd(b[j + 0] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_G:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_GREEN_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(a[j + 1]);
+        const float c = clamp_simd(a[j + 1] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_G | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_GREEN_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(b[j + 1]);
+        const float c = clamp_simd(b[j + 1] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_B:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_BLUE_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(a[j + 2]);
+        const float c = clamp_simd(a[j + 2] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_B | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_BLUE_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(b[j + 2]);
+        const float c = clamp_simd(b[j + 2] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_GRAY_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(_rgb_luminance(a + j, profile));
+        const float c = clamp_simd(_rgb_luminance(a + j, profile) * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_GRAY | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_GRAY_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
-        const float c = clamp_simd(_rgb_luminance(b + j, profile));
+        const float c = clamp_simd(_rgb_luminance(b + j, profile) * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Jz_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
         float JzCzhz[3] DT_ALIGNED_PIXEL;
         _rgb_to_JzCzhz(a + j, JzCzhz, profile);
-        const float c = clamp_simd(JzCzhz[0]);
+        const float c = clamp_simd(JzCzhz[0] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Jz_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
         float JzCzhz[3] DT_ALIGNED_PIXEL;
         _rgb_to_JzCzhz(b + j, JzCzhz, profile);
-        const float c = clamp_simd(JzCzhz[0]);
+        const float c = clamp_simd(JzCzhz[0] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Cz_in]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
         float JzCzhz[3] DT_ALIGNED_PIXEL;
         _rgb_to_JzCzhz(a + j, JzCzhz, profile);
-        const float c = clamp_simd(JzCzhz[1]);
+        const float c = clamp_simd(JzCzhz[1] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+    {
+      const float factor = 1.0f / exp2f(boost_factors[DEVELOP_BLENDIF_Cz_out]);
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
         float JzCzhz[3] DT_ALIGNED_PIXEL;
         _rgb_to_JzCzhz(b + j, JzCzhz, profile);
-        const float c = clamp_simd(JzCzhz[1]);
+        const float c = clamp_simd(JzCzhz[1] * factor);
         for(int k = 0; k < DT_BLENDIF_RGB_BCH; k++) b[j + k] = c;
         b[j + DT_BLENDIF_RGB_BCH] = mask[i];
       }
       break;
+    }
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz:
+      // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
         float JzCzhz[3] DT_ALIGNED_PIXEL;
@@ -964,6 +1003,7 @@ static void _display_channel(const float *const restrict a, float *const restric
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz | DT_DEV_PIXELPIPE_DISPLAY_OUTPUT:
+      // no boost factor for hues
       for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
       {
         float JzCzhz[3] DT_ALIGNED_PIXEL;
@@ -1020,18 +1060,19 @@ void dt_develop_blendif_rgb_jzczhz_blend(struct dt_dev_pixelpipe_iop_t *piece, c
     const int use_profile = dt_develop_blendif_init_masking_profile(piece, &blend_profile,
                                                                     DEVELOP_BLEND_CS_RGB_SCENE);
     const dt_iop_order_iccprofile_info_t *profile = use_profile ? &blend_profile : NULL;
-
+    const float *const restrict boost_factors = d->blendif_boost_factors;
     const dt_dev_pixelpipe_display_mask_t channel = request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY;
+
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) \
-  dt_omp_firstprivate(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs, profile)
+  dt_omp_firstprivate(a, b, mask, channel, oheight, owidth, iwidth, xoffs, yoffs, boost_factors, profile)
 #endif
     for(size_t y = 0; y < oheight; y++)
     {
       const size_t a_start = ((y + yoffs) * iwidth + xoffs) * DT_BLENDIF_RGB_CH;
       const size_t b_start = y * owidth * DT_BLENDIF_RGB_CH;
       const size_t m_start = y * owidth;
-      _display_channel(a + a_start, b + b_start, mask + m_start, owidth, channel, profile);
+      _display_channel(a + a_start, b + b_start, mask + m_start, owidth, channel, boost_factors, profile);
     }
   }
   else

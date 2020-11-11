@@ -641,15 +641,23 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const size_t sizes[] = { ROUNDUPWD(owidth), ROUNDUPHT(oheight), 1 };
 
   cl_int err = -999;
-  cl_mem dev_m = NULL;
+  cl_mem dev_blendif_params = NULL;
+  cl_mem dev_boost_factors = NULL;
   cl_mem dev_mask_1 = NULL;
   cl_mem dev_mask_2 = NULL;
   cl_mem dev_tmp = NULL;
   cl_mem dev_guide = NULL;
+
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;
-  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl;
+  dt_colorspaces_iccprofile_info_cl_t *profile_info_cl = NULL;
   cl_float *profile_lut_cl = NULL;
+
+  cl_mem dev_work_profile_info = NULL;
+  cl_mem dev_work_profile_lut = NULL;
+  dt_colorspaces_iccprofile_info_cl_t *work_profile_info_cl = NULL;
+  cl_float *work_profile_lut_cl = NULL;
+
   size_t origin[] = { 0, 0, 0 };
   size_t region[] = { owidth, oheight, 1 };
 
@@ -658,16 +666,16 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   dt_develop_blendif_process_parameters(parameters, d);
 
   // copy blend parameters to constant device memory
-  dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * DEVELOP_BLENDIF_PARAMETER_ITEMS * DEVELOP_BLENDIF_SIZE, parameters);
-  if(dev_m == NULL) goto error;
+  dev_blendif_params = dt_opencl_copy_host_to_device_constant(devid, sizeof(parameters), parameters);
+  if(dev_blendif_params == NULL) goto error;
 
   dev_mask_1 = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float));
   if(dev_mask_1 == NULL) goto error;
 
   dt_iop_order_iccprofile_info_t profile;
-  const int use_work_profile = dt_develop_blendif_init_masking_profile(piece, &profile, blend_csp);
+  const int use_profile = dt_develop_blendif_init_masking_profile(piece, &profile, blend_csp);
 
-  err = dt_ioppr_build_iccprofile_params_cl(use_work_profile ? &profile : NULL, devid, &profile_info_cl,
+  err = dt_ioppr_build_iccprofile_params_cl(use_profile ? &profile : NULL, devid, &profile_info_cl,
                                             &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
   if(err != CL_SUCCESS) goto error;
 
@@ -791,13 +799,13 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_mask, 5, sizeof(int), (void *)&oheight);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 6, sizeof(float), (void *)&opacity);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 7, sizeof(unsigned), (void *)&blendif);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 8, sizeof(cl_mem), (void *)&dev_m);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 8, sizeof(cl_mem), (void *)&dev_blendif_params);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 9, sizeof(unsigned), (void *)&mask_mode);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 10, sizeof(unsigned), (void *)&mask_combine);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 11, 2 * sizeof(int), (void *)&offs);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 12, sizeof(cl_mem), (void *)&dev_profile_info);
     dt_opencl_set_kernel_arg(devid, kernel_mask, 13, sizeof(cl_mem), (void *)&dev_profile_lut);
-    dt_opencl_set_kernel_arg(devid, kernel_mask, 14, sizeof(int), (void *)&use_work_profile);
+    dt_opencl_set_kernel_arg(devid, kernel_mask, 14, sizeof(int), (void *)&use_profile);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_mask, sizes);
     if(err != CL_SUCCESS)
     {
@@ -905,6 +913,20 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 
   if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
+    // load the boost factors in the device memory
+    dev_boost_factors = dt_opencl_copy_host_to_device_constant(devid, sizeof(d->blendif_boost_factors),
+                                                               d->blendif_boost_factors);
+    if(dev_blendif_params == NULL) goto error;
+
+    // the display channel of Lab blending is generated in RGB and should be transformed to Lab
+    // the transformation in the pipeline is currently always using the work profile
+    dt_iop_order_iccprofile_info_t *work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    const int use_work_profile = work_profile != NULL;
+
+    err = dt_ioppr_build_iccprofile_params_cl(work_profile, devid, &work_profile_info_cl, &work_profile_lut_cl,
+                                              &dev_work_profile_info, &dev_work_profile_lut);
+    if(err != CL_SUCCESS) goto error;
+
     // let us display a specific channel
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 0, sizeof(cl_mem), (void *)&dev_in);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 1, sizeof(cl_mem), (void *)&dev_tmp);
@@ -914,9 +936,13 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 5, sizeof(int), (void *)&oheight);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 6, 2 * sizeof(int), (void *)&offs);
     dt_opencl_set_kernel_arg(devid, kernel_display_channel, 7, sizeof(int), (void *)&request_mask_display);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 8, sizeof(cl_mem), (void *)&dev_profile_info);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 9, sizeof(cl_mem), (void *)&dev_profile_lut);
-    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 10, sizeof(int), (void *)&use_work_profile);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 8, sizeof(cl_mem), (void*)&dev_boost_factors);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 9, sizeof(cl_mem), (void *)&dev_profile_info);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 10, sizeof(cl_mem), (void *)&dev_profile_lut);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 11, sizeof(int), (void *)&use_profile);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 12, sizeof(cl_mem), (void *)&dev_work_profile_info);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 13, sizeof(cl_mem), (void *)&dev_work_profile_lut);
+    dt_opencl_set_kernel_arg(devid, kernel_display_channel, 14, sizeof(int), (void *)&use_work_profile);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_display_channel, sizes);
     if(err != CL_SUCCESS)
     {
@@ -968,20 +994,26 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
     dt_free_align(_mask);
   }
 
-  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_blendif_params);
+  dt_opencl_release_mem_object(dev_boost_factors);
   dt_opencl_release_mem_object(dev_mask_1);
   dt_opencl_release_mem_object(dev_tmp);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+  dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl, &dev_work_profile_info,
+                                     &dev_work_profile_lut);
   return TRUE;
 
 error:
   dt_free_align(_mask);
-  dt_opencl_release_mem_object(dev_m);
+  dt_opencl_release_mem_object(dev_blendif_params);
+  dt_opencl_release_mem_object(dev_boost_factors);
   dt_opencl_release_mem_object(dev_mask_1);
   dt_opencl_release_mem_object(dev_mask_2);
   dt_opencl_release_mem_object(dev_tmp);
   dt_opencl_release_mem_object(dev_guide);
   dt_ioppr_free_iccprofile_params_cl(&profile_info_cl, &profile_lut_cl, &dev_profile_info, &dev_profile_lut);
+  dt_ioppr_free_iccprofile_params_cl(&work_profile_info_cl, &work_profile_lut_cl, &dev_work_profile_info,
+                                     &dev_work_profile_lut);
   dt_print(DT_DEBUG_OPENCL, "[opencl_blendop] couldn't enqueue kernel! %d\n", err);
   return FALSE;
 }

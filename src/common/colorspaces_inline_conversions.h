@@ -440,6 +440,25 @@ static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const s
 #undef CLIP
 }
 
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(sRGB, XYZ_D50: 16)
+#endif
+static inline void dt_Rec709_to_XYZ_D50(const float *const DT_RESTRICT sRGB, float *const DT_RESTRICT XYZ_D50)
+{
+  // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
+  const float M[3][4] DT_ALIGNED_PIXEL = {
+      { 0.4360747f, 0.3850649f, 0.1430804f, 0.0f },
+      { 0.2225045f, 0.7168786f, 0.0606169f, 0.0f },
+      { 0.0139322f, 0.0971045f, 0.7141733f, 0.0f },
+  };
+
+  // sRGB -> XYZ
+  for(size_t x = 0; x < 3; x++)
+      XYZ_D50[x] = M[x][0] * sRGB[0] + M[x][1] * sRGB[1] + M[x][2] * sRGB[2];
+}
+
+
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
