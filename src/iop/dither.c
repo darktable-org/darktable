@@ -126,7 +126,9 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_dither_params_t tmp
       = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
   // add the preset.
-  dt_gui_presets_add_generic(_("dither"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
+  dt_gui_presets_add_generic(_("dither"), self->op,
+                             self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1,
+                             DEVELOP_BLEND_CS_NONE);
   // make it auto-apply for all images:
   // dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
 
@@ -139,10 +141,10 @@ static void _find_nearest_color_n_levels_gray(float *val, float *err, const floa
 {
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
-  float tmp = in * f;
-  int itmp = floorf(tmp);
+  const float tmp = in * f;
+  const int itmp = floorf(tmp);
 
-  float new = (tmp - itmp > 0.5f ? (float)(itmp + 1) : (float)itmp) * rf;
+  const float new = (tmp - itmp > 0.5f ? (float)(itmp + 1) : (float)itmp) * rf;
 
   for(int c = 0; c < 4; c++)
   {
@@ -160,8 +162,8 @@ static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, c
 
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
-  float tmp = in * f;
-  int itmp = floorf(tmp);
+  const float tmp = in * f;
+  const int itmp = floorf(tmp);
 
   new = _mm_set1_ps(tmp - itmp > 0.5f ? (float)(itmp + 1) * rf : (float)itmp * rf);
   err = _mm_sub_ps(_mm_load_ps(val), new);

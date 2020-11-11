@@ -267,7 +267,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_b[21] = p.source_b[21] = 33.434604644775391;
   p.target_b[22] = p.source_b[22] = 9.5750093460083008;
   p.target_b[23] = p.source_b[23] = 41.285167694091797;
-  dt_gui_presets_add_generic(_("it8 skin tones"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("it8 skin tones"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // helmholtz/kohlrausch effect applied to black and white conversion.
   // implemented by wmader as an iop and matched as a clut for increased
@@ -280,7 +281,8 @@ void init_presets(dt_iop_module_so_t *self)
       hk_params_input, strlen(hk_params_input), &params_len);
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(hk_params);
-  dt_gui_presets_add_generic(_("helmholtz/kohlrausch monochrome"), self->op, self->version(), hk_params, params_len, 1);
+  dt_gui_presets_add_generic(_("helmholtz/kohlrausch monochrome"), self->op,
+                             self->version(), hk_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(hk_params);
 
   /** The following are based on Jo's Fuji film emulations, without tonecurve which is let to user choice
@@ -295,7 +297,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(astia_params);
-  dt_gui_presets_add_generic(_("Fuji Astia emulation"), self->op, self->version(), astia_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Astia emulation"), self->op,
+                             self->version(), astia_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(astia_params);
 
 
@@ -307,7 +310,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(chrome_params);
-  dt_gui_presets_add_generic(_("Fuji Classic Chrome emulation"), self->op, self->version(), chrome_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Classic Chrome emulation"), self->op,
+                             self->version(), chrome_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(chrome_params);
 
 
@@ -319,7 +323,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(mchrome_params);
-  dt_gui_presets_add_generic(_("Fuji Monochrome emulation"), self->op, self->version(), mchrome_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Monochrome emulation"), self->op,
+                             self->version(), mchrome_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(mchrome_params);
 
 
@@ -331,7 +336,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(provia_params);
-  dt_gui_presets_add_generic(_("Fuji Provia emulation"), self->op, self->version(), provia_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Provia emulation"), self->op,
+                             self->version(), provia_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(provia_params);
 
 
@@ -343,9 +349,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(velvia_params);
-  dt_gui_presets_add_generic(_("Fuji Velvia emulation"), self->op, self->version(), velvia_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Velvia emulation"), self->op,
+                             self->version(), velvia_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(velvia_params);
-
 }
 
 // fast logarithms stolen from paul mineiro http://fastapprox.googlecode.com/svn/trunk/fastapprox/src/fastonebigheader.h
