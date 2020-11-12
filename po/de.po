@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-11 21:27+0100\n"
-"PO-Revision-Date: 2020-11-11 22:19+0100\n"
+"POT-Creation-Date: 2020-11-12 17:15+0100\n"
+"PO-Revision-Date: 2020-11-13 00:33+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -14,7 +14,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
 "X-Generator: Poedit 2.3\n"
-"X-Poedit-Bookmarks: 1709,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
+"X-Poedit-Bookmarks: 3066,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -152,7 +152,7 @@ msgstr "erhalte Farben"
 #: ../src/iop/clipping.c:2143 ../src/iop/clipping.c:2159
 #: ../src/iop/clipping.c:2294 ../src/iop/clipping.c:2321
 #: ../src/iop/lens.cc:2214 ../src/iop/retouch.c:344 ../src/libs/collect.c:1696
-#: ../src/libs/colorpicker.c:568 ../src/libs/export.c:1069
+#: ../src/libs/colorpicker.c:568 ../src/libs/export.c:1070
 #: ../src/libs/live_view.c:345 ../src/libs/live_view.c:370
 #: ../src/libs/live_view.c:379 ../src/libs/print_settings.c:1475
 msgid "none"
@@ -1031,8 +1031,8 @@ msgstr "Version des Spline-Generators"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:913 ../src/common/variables.c:520
 #: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/libs/export.c:1249 ../src/libs/export.c:1255
-#: ../src/libs/export.c:1262 ../src/libs/metadata_view.c:308
+#: ../src/libs/export.c:1250 ../src/libs/export.c:1256
+#: ../src/libs/export.c:1263 ../src/libs/metadata_view.c:308
 msgid "no"
 msgstr "nein"
 
@@ -1163,7 +1163,7 @@ msgstr "durch 3 Nachbarpixel erkennen"
 #: ../src/iop/bilat.c:401 ../src/iop/colorbalance.c:1879
 #: ../src/iop/denoiseprofile.c:3947 ../src/iop/exposure.c:897
 #: ../src/iop/levels.c:691 ../src/iop/profile_gamma.c:721
-#: ../src/libs/copy_history.c:359 ../src/libs/export.c:1316
+#: ../src/libs/copy_history.c:359 ../src/libs/export.c:1317
 #: ../src/libs/image.c:558 ../src/libs/print_settings.c:1516
 #: ../src/libs/styles.c:673 ../src/views/darkroom.c:2200
 msgid "mode"
@@ -4034,8 +4034,8 @@ msgstr ""
 
 #: ../src/common/darktable.c:913 ../src/common/database.c:3247
 #: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
-#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:1250
-#: ../src/libs/export.c:1256 ../src/libs/export.c:1263
+#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:1251
+#: ../src/libs/export.c:1257 ../src/libs/export.c:1264
 #: ../src/libs/metadata_view.c:308
 msgid "yes"
 msgstr "ja"
@@ -4525,7 +4525,7 @@ msgstr "OpenCL-Scheduler-Profil wurde auf den Standardwert gesetzt."
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:538 ../src/libs/export.c:1202
+#: ../src/common/pdf.h:89 ../src/libs/export.c:539 ../src/libs/export.c:1203
 #: ../src/libs/print_settings.c:1293
 msgid "cm"
 msgstr "cm"
@@ -8025,7 +8025,7 @@ msgstr ""
 "Beispiele: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:654 ../src/libs/export.c:1205
+#: ../src/imageio/format/pdf.c:654 ../src/libs/export.c:1206
 msgid "dpi"
 msgstr "DPI"
 
@@ -8221,7 +8221,7 @@ msgstr "Foto"
 msgid "graphic"
 msgstr "Grafik"
 
-#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:1086
+#: ../src/imageio/storage/disk.c:70 ../src/libs/export.c:1087
 msgid "file on disk"
 msgstr "Datei auf Festplatte"
 
@@ -10332,21 +10332,21 @@ msgstr "nicht unterstütztes Ausgabeprofil wurde durch sRGB ersetzt!"
 msgid "output intent"
 msgstr "Ausgabevorsatz"
 
-#: ../src/iop/colorout.c:858 ../src/libs/export.c:1299
+#: ../src/iop/colorout.c:858 ../src/libs/export.c:1300
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2367 ../src/views/darkroom.c:2375
 #: ../src/views/lighttable.c:1402 ../src/views/lighttable.c:1410
 msgid "perceptual"
 msgstr "Wahrnehmung"
 
-#: ../src/iop/colorout.c:859 ../src/libs/export.c:1300
+#: ../src/iop/colorout.c:859 ../src/libs/export.c:1301
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2368 ../src/views/darkroom.c:2376
 #: ../src/views/lighttable.c:1403 ../src/views/lighttable.c:1411
 msgid "relative colorimetric"
 msgstr "Kolorimetrisch (relativ)"
 
-#: ../src/iop/colorout.c:860 ../src/libs/export.c:1301
+#: ../src/iop/colorout.c:860 ../src/libs/export.c:1302
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2369 ../src/views/darkroom.c:2377
 #: ../src/views/lighttable.c:1404 ../src/views/lighttable.c:1412
@@ -10354,7 +10354,7 @@ msgctxt "rendering intent"
 msgid "saturation"
 msgstr "Sättigung"
 
-#: ../src/iop/colorout.c:861 ../src/libs/export.c:1302
+#: ../src/iop/colorout.c:861 ../src/libs/export.c:1303
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2370 ../src/views/darkroom.c:2378
 #: ../src/views/lighttable.c:1405 ../src/views/lighttable.c:1413
@@ -10710,7 +10710,7 @@ msgstr "Varianz blau: "
 msgid "variance computed on the blue channel"
 msgstr "berechnete Varianz des Blau-Kanal"
 
-#: ../src/iop/denoiseprofile.c:3940 ../src/libs/export.c:1275
+#: ../src/iop/denoiseprofile.c:3940 ../src/libs/export.c:1276
 #: ../src/libs/print_settings.c:1189 ../src/libs/print_settings.c:1409
 msgid "profile"
 msgstr "Profil"
@@ -11175,7 +11175,7 @@ msgstr ""
 "Entsättigt die Ausgabe des Moduls in Bereichen mit extremer Leuchtkraft.\n"
 "Verringern wenn Schatten/Spitzlichter übersättigt sind."
 
-#: ../src/iop/filmic.c:1739 ../src/libs/export.c:1297
+#: ../src/iop/filmic.c:1739 ../src/libs/export.c:1298
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1457
 msgid "intent"
 msgstr "Vorsatz"
@@ -14727,83 +14727,88 @@ msgstr "ausgewählte exportieren"
 msgid "export to disk"
 msgstr "Exportieren"
 
+#: ../src/libs/export.c:491
+#, c-format
+msgid "which is equal to %s × %s px"
+msgstr "entspricht %s Pixel × %s Pixel"
+
 #. DT_DIMENSIONS_INCH
-#: ../src/libs/export.c:540
+#: ../src/libs/export.c:541
 msgctxt "unit"
 msgid "in"
 msgstr "Zoll"
 
-#: ../src/libs/export.c:1098
+#: ../src/libs/export.c:1099
 msgid "storage options"
 msgstr "Speicher-Optionen"
 
-#: ../src/libs/export.c:1105
+#: ../src/libs/export.c:1106
 msgid "target storage"
 msgstr "Speicherziel"
 
-#: ../src/libs/export.c:1128
+#: ../src/libs/export.c:1129
 msgid "format options"
 msgstr "Format-Optionen"
 
-#: ../src/libs/export.c:1133
+#: ../src/libs/export.c:1134
 msgid "file format"
 msgstr "Dateiformat"
 
-#: ../src/libs/export.c:1151
+#: ../src/libs/export.c:1152
 msgid "global options"
 msgstr "globale Optionen"
 
-#: ../src/libs/export.c:1156
+#: ../src/libs/export.c:1157
 msgid "set size"
 msgstr "Größe"
 
-#: ../src/libs/export.c:1157
+#: ../src/libs/export.c:1158
 msgid "choose a method for setting the output size"
 msgstr "Methode, die Ausgabegröße festzulegen"
 
-#: ../src/libs/export.c:1158
+#: ../src/libs/export.c:1159
 msgid "in pixels (for file)"
 msgstr "in Pixel (für Datei)"
 
-#: ../src/libs/export.c:1159
+#: ../src/libs/export.c:1160
 msgid "in cm (for print)"
 msgstr "in cm (für Druck)"
 
-#: ../src/libs/export.c:1160
+#: ../src/libs/export.c:1161
 msgid "in inch (for print)"
 msgstr "in Zoll (für Druck)"
 
-#: ../src/libs/export.c:1161
+#: ../src/libs/export.c:1162
 msgid "by scale (for file)"
 msgstr "Skalierung (für Datei)"
 
-#: ../src/libs/export.c:1165 ../src/libs/export.c:1184
+#: ../src/libs/export.c:1166 ../src/libs/export.c:1185
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
 msgstr ""
 "Maximale Ausgabebreite. Mittlere Maustaste drücken, um auf 0 zurückzusetzen."
 
-#: ../src/libs/export.c:1169 ../src/libs/export.c:1188
+#: ../src/libs/export.c:1170 ../src/libs/export.c:1189
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
 msgstr ""
 "Maximale Ausgabehöhe. Mittlere Maustaste drücken, um auf 0 zurückzusetzen."
 
-#: ../src/libs/export.c:1173
+#: ../src/libs/export.c:1174
 msgid "resolution in dot per inch"
 msgstr "Auflösung in Punkte pro Zoll"
 
-#: ../src/libs/export.c:1200 ../src/libs/export.c:1209
+#: ../src/libs/export.c:1201 ../src/libs/export.c:1210
 msgid "x"
 msgstr "×"
 
-#: ../src/libs/export.c:1211 ../src/libs/tools/global_toolbox.c:223
+#: ../src/libs/export.c:1212 ../src/libs/tools/global_toolbox.c:223
 msgid "px"
 msgstr "Pixel"
 
-#: ../src/libs/export.c:1215
+#: ../src/libs/export.c:1216
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -14812,75 +14817,75 @@ msgstr ""
 "Aus Eingabe werden Ganzzahlen, eine Dezimalzahlen oder einfache Brüche "
 "akzeptiert."
 
-#: ../src/libs/export.c:1248
+#: ../src/libs/export.c:1249
 msgid "allow upscaling"
 msgstr "Vergrößern erlauben"
 
-#: ../src/libs/export.c:1254
+#: ../src/libs/export.c:1255
 msgid "high quality resampling"
 msgstr "hochqualitatives Resampling"
 
-#: ../src/libs/export.c:1257
+#: ../src/libs/export.c:1258
 msgid "do high quality resampling during export"
 msgstr "Hochqualitatives Resampling beim Export"
 
-#: ../src/libs/export.c:1261
+#: ../src/libs/export.c:1262
 msgid "store masks"
 msgstr "Raster-Maske speichern"
 
-#: ../src/libs/export.c:1264
+#: ../src/libs/export.c:1265
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "Speichere Masken als Ebenen in exportierten Bildern. Dies wird nur von "
 "bestimmten Ausgabeformaten unterstützt."
 
-#: ../src/libs/export.c:1277 ../src/libs/export.c:1298
+#: ../src/libs/export.c:1278 ../src/libs/export.c:1299
 #: ../src/libs/print_settings.c:1412 ../src/libs/print_settings.c:1459
 msgid "image settings"
 msgstr "Bildeinstellungen"
 
-#: ../src/libs/export.c:1288 ../src/libs/print_settings.c:1448
+#: ../src/libs/export.c:1289 ../src/libs/print_settings.c:1448
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "Ausgabe-ICC-Profile in %s oder %s"
 
-#: ../src/libs/export.c:1308 ../src/libs/print_settings.c:1473
+#: ../src/libs/export.c:1309 ../src/libs/print_settings.c:1473
 msgid "style"
 msgstr "Stil"
 
-#: ../src/libs/export.c:1311
+#: ../src/libs/export.c:1312
 msgid "temporary style to use while exporting"
 msgstr "Stil, der beim Export vorübergehend angewandt werden soll"
 
-#: ../src/libs/export.c:1320 ../src/libs/print_settings.c:1518
+#: ../src/libs/export.c:1321 ../src/libs/print_settings.c:1518
 msgid "replace history"
 msgstr "Verlauf ersetzen"
 
-#: ../src/libs/export.c:1321 ../src/libs/print_settings.c:1519
+#: ../src/libs/export.c:1322 ../src/libs/print_settings.c:1519
 msgid "append history"
 msgstr "Verlauf hinzufügen"
 
-#: ../src/libs/export.c:1326 ../src/libs/print_settings.c:1526
+#: ../src/libs/export.c:1327 ../src/libs/print_settings.c:1526
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
 "sollen Stil-Module an den Verlauf angehängt werden, oder diesen ersetzen"
 
 #. Export button
-#: ../src/libs/export.c:1349
+#: ../src/libs/export.c:1350
 msgid "export"
 msgstr "exportieren"
 
-#: ../src/libs/export.c:1349
+#: ../src/libs/export.c:1350
 msgid "export with current settings"
 msgstr "mit aktuellen Einstellungen exportieren"
 
-#: ../src/libs/export.c:1355
+#: ../src/libs/export.c:1356
 msgid "edit metadata exportation details"
 msgstr "Metadaten-Exporteinstellungen bearbeiten"
 
 #. enable shortcut to export with current export settings:
-#: ../src/libs/export.c:2022 ../src/libs/styles.c:73
+#: ../src/libs/export.c:2023 ../src/libs/styles.c:73
 #: ../src/views/darkroom.c:3799
 msgctxt "accel"
 msgid "export"
@@ -15933,7 +15938,10 @@ msgstr "gehe zur Sammlung (Leuchttisch)"
 msgid ""
 "terminate edition (press enter or escape) before selecting another location"
 msgstr ""
+"Bearbeitung abbrechen (Eingabe oder Escape drücken), bevor eine andere "
+"Position ausgewählt werden kann"
 
+# "to remove a group of locations clear its name" is apperantly not correct
 #: ../src/libs/map_locations.c:950
 msgid ""
 "list of user locations,\n"
@@ -15950,15 +15958,33 @@ msgid ""
 "right-click for other actions: delete location and go to collection,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"Nutzerdefinierte Orte.\n"
+"Mit der Maus festlegen, für welche Orte Bilder angezeigt werden.\n"
+"• Innerhalb des Umrisses mit dem Mausrad scrollen ändert die dessen Größe.\n"
+"• Innerhalb des Umrisses mit dem Mausrad scrollen ändert den Kartenmaßstab.\n"
+"• Bei gedrückter Umschalt- oder Strg-Taste Innerhalb des Umrisses mit dem "
+"Mausrad scrollen ändert die dessen Breite bzw. Höhe.\n"
+"• In den Umriss klicken und verschieben, um dessen Position zu ändern.\n"
+"• Mit Strg+Klick ein Bild von innerhalb der Form auswählen, um es zu "
+"verschieben.\n"
+"\n"
+"• Strg+Klick auf den Namen des Orts, um ihn zu ändern.\n"
+"• Das Trennzeichen „|” bei der Nameseingabe erzeugt einen Ort mit "
+"Unterorten.\n"
+"• Eingabetaste bestätigt Namensänderung, Escape bricht Änderung ab.\n"
+"• Rechtsklick öffnet das Kontextmenü."
 
 #: ../src/libs/map_locations.c:977
 msgid ""
 "select the shape of the location's limits on the map, circle or rectangle"
 msgstr ""
+"Schaltet die Form des Umrisses, der die Bildauswahl bestimmt, zwischen "
+"Ellipse und Rechteck um."
 
 #: ../src/libs/map_locations.c:980
 msgid "add a new location on the center of the visible map"
 msgstr ""
+"Fügt einen neuen Ort in der Mitte des sichtbaren Kartenausschnitts hinzu."
 
 #: ../src/libs/map_locations.c:985
 msgid "show all"
@@ -15966,7 +15992,7 @@ msgstr "zeige alles"
 
 #: ../src/libs/map_locations.c:988
 msgid "show all loations which are on the visible map"
-msgstr ""
+msgstr "zeige alle Orte, die sich auf dem sichtbaren Kartenausschnitt befinden"
 
 #: ../src/libs/map_settings.c:38
 msgid "map settings"
@@ -15987,6 +16013,8 @@ msgstr "nur aktuelle Sammlung"
 #: ../src/libs/map_settings.c:138
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr ""
+"Zeige nur Bilder auf der Karte an, die Bestandteil der aktuellen Sammlung "
+"sind."
 
 #: ../src/libs/map_settings.c:148
 msgid "map source"
@@ -16000,6 +16028,8 @@ msgstr ""
 #: ../src/libs/map_settings.c:181
 msgid "modify the spatial size of an images group on the map"
 msgstr ""
+"Bestimmt die räumliche Ausdehnung, über die sich eine Bildgruppen auf der "
+"Karte erstreckt."
 
 #: ../src/libs/map_settings.c:182
 msgid "group size factor"
@@ -16084,6 +16114,7 @@ msgstr "Metadaten-Einstellungen"
 msgid "hidden"
 msgstr "verborgen"
 
+# "neither will it be exported" is no longer correct
 #: ../src/libs/metadata.c:426
 msgid ""
 "tick if the corresponding metadata is of no interest for you\n"
@@ -16091,6 +16122,9 @@ msgid ""
 "import module\n"
 "neither will it be exported"
 msgstr ""
+"Auswählen, wenn die entsprechenden Metadaten nicht von Interesse sind. Diese "
+"Metadaten werden dann in den Modulen „Metadaten-Editor”, „Importieren”,"
+"„Bilder sammeln” und „Bildinformationen” verborgen."
 
 #: ../src/libs/metadata.c:429 ../src/libs/tagging.c:1527
 #: ../src/libs/tagging.c:1666
@@ -16101,6 +16135,8 @@ msgstr "privat"
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
+"Auswählen, wenn diese Informationen vertraulich gehalten und nicht beim "
+"Export in die exportierten Bilder geschrieben werden sollen."
 
 #: ../src/libs/metadata.c:506
 msgctxt "accel"
@@ -16120,6 +16156,12 @@ msgid ""
 "in that case, right-click gives the possibility to choose one of them.\n"
 "press escape to exit the popup window"
 msgstr ""
+"Metadaten-Text. Strg+scrollen passt die Größe der Textbox an. Strg+Eingabe "
+"fügt einen Zeilenumbruch ein. (Vorsicht, dies kann unter Umständen zu "
+"Inkompatibilitäten führen.) Einträge mit „<nicht ändern>” zeigen an, dass "
+"die ausgewählten Bilder verschiedene Metadaten besitzen. In diesem Fall, "
+"kann mit Rechtsklick kann einer der verschiedenen Werte ausgewählt werden. "
+"Mit Escape die Auswahl abbrechen."
 
 #: ../src/libs/metadata.c:717
 msgid "remove metadata from selected images"
@@ -16251,7 +16293,7 @@ msgstr "Kategorien"
 
 #: ../src/libs/metadata_view.c:160
 msgid "image information"
-msgstr "Bildinformation"
+msgstr "Bildinformationen"
 
 #: ../src/libs/metadata_view.c:290
 #, c-format
@@ -17327,7 +17369,7 @@ msgstr ""
 "Tag-Verzeichnis,\n"
 "Duppelklick für hinzufügen,\n"
 "Rechtsklick für andere Aktionen des ausgewählten Tag,\n"
-"Strg-Mausrad, um die Größe des Fensters zu ändern."
+"Strg+Mausrad, um die Größe des Fensters zu ändern."
 
 #: ../src/libs/tagging.c:2796
 msgid ""
@@ -17500,11 +17542,13 @@ msgid ""
 "image\n"
 "set -1 to never hide the overlay"
 msgstr ""
+"Dauer für die Bildinfos angezeigt werden, wenn das Bild mit der Maus "
+"überfahren wird. Auf -1 setzen, um Bildinfos komplett zu verbergen."
 
 #: ../src/libs/tools/global_toolbox.c:260
 #: ../src/libs/tools/global_toolbox.c:323
 msgid "timeout only available for block overlay"
-msgstr ""
+msgstr "Anzeigedauer nur für überlagerte Bildinfos verfügbar."
 
 #: ../src/libs/tools/global_toolbox.c:283
 msgid "culling overlays"
@@ -17905,6 +17949,8 @@ msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes\n"
 msgstr ""
+"Legt die angezeigte Metrik fest. „voller Gamut” ist eine Kombination aller "
+"anderen Metriken.\n"
 
 #: ../src/views/darkroom.c:2280
 msgid "red & blue"
@@ -17934,17 +17980,28 @@ msgid ""
 "typical color glossy prints produce black at -8.00 EV,\n"
 "typical B&W glossy prints produce black at -9.00 EV."
 msgstr ""
+"Abschneidewert für den Schwarzpunkt in Blendenstufen (EV) relativ zu weiß (0 "
+"EV).\n"
+"8-Bit sRGB schneidet bei -12,69 EV ab.\n"
+"8-Bits Adobe RGB schneidet bei -19,79 EV ab.\n"
+"16-Bit sRGB schneidet bei -20,69 EV ab.\n"
+"Typische mattierte Fine-Art-Drucke erzeugen Schwarz bei -5,30 EV.\n"
+"Typische Farbglanzdrucke erzeugen Schwarz bei -8,00 EV.\n"
+"Typische Hochglanz-Schwarz-Weiß- Drucke erzeugen Schwarz bei -9,00 EV."
 
 #: ../src/views/darkroom.c:2309
 msgid "upper threshold"
 msgstr "oberer Schwellwert"
 
+# wft: peak medium luminance
 #: ../src/views/darkroom.c:2311
 #, no-c-format
 msgid ""
 "clipping threshold for the white point.\n"
 "100% is peak medium luminance."
 msgstr ""
+"Abschneidewert für den Weißpunkt. 100% entspricht der maximalen mittleren "
+"Luminanz."
 
 #: ../src/views/darkroom.c:2323
 msgid ""
@@ -18020,15 +18077,15 @@ msgstr "Überlagerungsfarbe wählen"
 
 #: ../src/views/darkroom.c:3749
 msgid "keyboard shortcut slider precision: fine"
-msgstr ""
+msgstr "Tastaturkombinationen Regler Schrittgröße: fein"
 
 #: ../src/views/darkroom.c:3751
 msgid "keyboard shortcut slider precision: normal"
-msgstr ""
+msgstr "Tastaturkombinationen Regler Schrittgröße: normal"
 
 #: ../src/views/darkroom.c:3753
 msgid "keyboard shortcut slider precision: coarse"
-msgstr ""
+msgstr "Tastaturkombinationen Regler Schrittgröße: grob"
 
 #. Zoom shortcuts
 #: ../src/views/darkroom.c:3790
@@ -18152,13 +18209,13 @@ msgstr "Vollbildvorschau"
 
 #. undo/redo
 #: ../src/views/darkroom.c:3842 ../src/views/lighttable.c:875
-#: ../src/views/map.c:1707
+#: ../src/views/map.c:1837
 msgctxt "accel"
 msgid "undo"
 msgstr "rückgängig"
 
 #: ../src/views/darkroom.c:3843 ../src/views/lighttable.c:876
-#: ../src/views/map.c:1708
+#: ../src/views/map.c:1838
 msgctxt "accel"
 msgid "redo"
 msgstr "wiederherstellen"
@@ -18437,19 +18494,19 @@ msgstr "Innerhalb der Hauptansicht verschieben"
 msgid "set display profile"
 msgstr "Anzeigeprofil setzen"
 
-#: ../src/views/map.c:166
+#: ../src/views/map.c:169
 msgid "map"
 msgstr "Karte"
 
-#: ../src/views/map.c:2268
+#: ../src/views/map.c:2406
 msgid "[on image] open in darkroom"
 msgstr "in der Dunkelkammer öffnen"
 
-#: ../src/views/map.c:2273
+#: ../src/views/map.c:2411
 msgid "[on map] zoom map"
 msgstr "Karte skalieren"
 
-#: ../src/views/map.c:2278
+#: ../src/views/map.c:2416
 msgid "move image location"
 msgstr "Bild verschieben"
 
