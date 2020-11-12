@@ -266,6 +266,9 @@ typedef struct dt_develop_t
     // only used to display warnings in GUI of modules that should probably not be doing white balance
     dt_iop_order_entry_t *chroma_adaptation;
 
+    // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
+    gboolean wb_is_D65;
+
   } proxy;
 
   // for the overexposure indicator
