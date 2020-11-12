@@ -323,6 +323,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
   }
   else if(gui->creation)
   {
+    const float pr_d = darktable.develop->preview_downsampling;
     const float wd = darktable.develop->preview_pipe->backbuf_width;
     const float ht = darktable.develop->preview_pipe->backbuf_height;
 
@@ -330,24 +331,32 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
-    const float diff = 5.0f * zoom_scale;
+    const float diff = 3.0f * zoom_scale * (pr_d / 2.0);
     float x0 = 0.0f, y0 = 0.0f;
-    float rotation = 0.0f;
+
+    float dx = 0.0f, dy = 0.0f;
+
     if(!gui->form_dragging
        || (gui->posx_source - gui->posx > -diff
            && gui->posx_source - gui->posx < diff
            && gui->posy_source - gui->posy > -diff
            && gui->posy_source - gui->posy < diff))
     {
-      rotation = -1.0f;
       x0 = pzx * wd;
       y0 = pzy * ht;
+      // rotation not updated and not yet dragged, in this case let's
+      // pretend that we are using a neutral dx, dy (where the rotation will
+      // still be unchanged). We do that as we don't know the actual rotation
+      // because those points must go through the backtransform.
+      dx = x0 + 100.0f;
+      dy = y0;
     }
     else
     {
-      rotation = 99.0f; // dummy value, we need to recompute after distort_backtransform
       x0 = gui->posx_source;
       y0 = gui->posy_source;
+      dx = pzx * wd;
+      dy = pzy * ht;
     }
 
     gui->form_dragging = FALSE;
@@ -356,12 +365,12 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
-    float pts[8] = { x0, y0, pzx * wd, pzy * ht, x0 - 100, y0 -100, x0 + 100, y0 + 100 };
-    dt_dev_distort_backtransform(darktable.develop, pts, 4);
+    float pts[8] = { x0, y0, dx, dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 2);
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
-    rotation = atan2(pts[7] - pts[5], pts[6] - pts[4]) - atan2(200, 200);
+    const float rotation = atan2(pts[3] - pts[1], pts[2] - pts[0]);
 
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
 
@@ -522,7 +531,7 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     }
 
     // get the rotation angle only if we are not too close from starting point
-    const float diff = 5.0f * zoom_scale;
+    const float diff = 3.0f * zoom_scale * (pr_d / 2.0);
     float rotation = 0.0f;
     if(!gui->form_dragging
        || (gui->posx_source - gui->posx > -diff
