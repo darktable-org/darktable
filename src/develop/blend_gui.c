@@ -130,23 +130,29 @@ const dt_iop_gui_blendif_colorstop_t _gradient_L[]
         { 0.5f,   { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
         { 1.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
 
-const dt_iop_gui_blendif_colorstop_t _gradient_a[]
-    = { { 0.0f,   { 0, 0.34 * NEUTRAL_GRAY * 2, 0.27 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.25f,  { 0.25 * NEUTRAL_GRAY * 2, 0.34 * NEUTRAL_GRAY * 2, 0.39 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.375f, { 0.375 * NEUTRAL_GRAY * 2, 0.46 * NEUTRAL_GRAY * 2, 0.45 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.5f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
-        { 0.625f, { 0.51 * NEUTRAL_GRAY * 2, 0.4 * NEUTRAL_GRAY * 2, 0.45 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.75f,  { 0.52 * NEUTRAL_GRAY * 2, 0.29 * NEUTRAL_GRAY * 2, 0.39 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 1.0f,   { 0.53 * NEUTRAL_GRAY * 2, 0.08 * NEUTRAL_GRAY * 2, 0.28 * NEUTRAL_GRAY * 2, 1.0 } } };
+// The values for "a" are generated in the following way:
+//   Lab (with L=[90 to 68], b=0, and a=[-56 to 56] -> sRGB (D65 linear) -> normalize with MAX(R,G,B) = 0.75
+const dt_iop_gui_blendif_colorstop_t _gradient_a[] = {
+    { 0.000f, { 0.0112790f, 0.7500000f, 0.5609999f, 1.0f } },
+    { 0.250f, { 0.2888855f, 0.7500000f, 0.6318934f, 1.0f } },
+    { 0.375f, { 0.4872486f, 0.7500000f, 0.6825501f, 1.0f } },
+    { 0.500f, { 0.7500000f, 0.7499399f, 0.7496052f, 1.0f } },
+    { 0.625f, { 0.7500000f, 0.5054633f, 0.5676756f, 1.0f } },
+    { 0.750f, { 0.7500000f, 0.3423850f, 0.4463195f, 1.0f } },
+    { 1.000f, { 0.7500000f, 0.1399815f, 0.2956989f, 1.0f } },
+};
 
-const dt_iop_gui_blendif_colorstop_t _gradient_b[]
-    = { { 0.0f,   { 0, 0.27 * NEUTRAL_GRAY * 2, 0.58 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.25f,  { 0.25 * NEUTRAL_GRAY * 2, 0.39 * NEUTRAL_GRAY * 2, 0.54 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.375f, { 0.38 * NEUTRAL_GRAY * 2, 0.45 * NEUTRAL_GRAY * 2, 0.52 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.5f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
-        { 0.625f, { 0.58 * NEUTRAL_GRAY * 2, 0.55 * NEUTRAL_GRAY * 2, 0.38 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 0.75f,  { 0.66 * NEUTRAL_GRAY * 2, 0.59 * NEUTRAL_GRAY * 2, 0.25 * NEUTRAL_GRAY * 2, 1.0 } },
-        { 1.0f,   { 0.81 * NEUTRAL_GRAY * 2, 0.66 * NEUTRAL_GRAY * 2, 0, 1.0 } } };
+// The values for "b" are generated in the following way:
+//   Lab (with L=[58 to 62], a=0, and b=[-65 to 65] -> sRGB (D65 linear) -> normalize with MAX(R,G,B) = 0.75
+const dt_iop_gui_blendif_colorstop_t _gradient_b[] = {
+    { 0.000f, { 0.0162050f, 0.1968228f, 0.7500000f, 1.0f } },
+    { 0.250f, { 0.2027354f, 0.3168822f, 0.7500000f, 1.0f } },
+    { 0.375f, { 0.3645722f, 0.4210476f, 0.7500000f, 1.0f } },
+    { 0.500f, { 0.6167146f, 0.5833379f, 0.7500000f, 1.0f } },
+    { 0.625f, { 0.7500000f, 0.6172369f, 0.5412091f, 1.0f } },
+    { 0.750f, { 0.7500000f, 0.5590797f, 0.3071980f, 1.0f } },
+    { 1.000f, { 0.7500000f, 0.4963975f, 0.0549797f, 1.0f } },
+};
 
 const dt_iop_gui_blendif_colorstop_t _gradient_gray[]
     = { { 0.0f,   { 0, 0, 0, 1.0 } },
@@ -155,60 +161,83 @@ const dt_iop_gui_blendif_colorstop_t _gradient_gray[]
         { 0.5f,   { NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, NEUTRAL_GRAY / 2, 1.0 } },
         { 1.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } } };
 
-const dt_iop_gui_blendif_colorstop_t _gradient_red[]
-    = { { 0.0f,   { 0, 0, 0, 1.0 } },
-        { 0.125f, { NEUTRAL_GRAY / 8, 0, 0, 1.0 } },
-        { 0.25f,  { NEUTRAL_GRAY / 4, 0, 0, 1.0 } },
-        { 0.5f,   { NEUTRAL_GRAY / 2, 0, 0, 1.0 } },
-        { 1.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } } };
+const dt_iop_gui_blendif_colorstop_t _gradient_red[] = {
+    { 0.000f, { 0.0000000f, 0.0000000f, 0.0000000f, 1.0f } },
+    { 0.125f, { 0.0937500f, 0.0000000f, 0.0000000f, 1.0f } },
+    { 0.250f, { 0.1875000f, 0.0000000f, 0.0000000f, 1.0f } },
+    { 0.500f, { 0.3750000f, 0.0000000f, 0.0000000f, 1.0f } },
+    { 1.000f, { 0.7500000f, 0.0000000f, 0.0000000f, 1.0f } }
+};
 
-const dt_iop_gui_blendif_colorstop_t _gradient_green[]
-    = { { 0.0f,   { 0, 0, 0, 1.0 } },
-        { 0.125f, { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
-        { 0.25f,  { 0, NEUTRAL_GRAY / 8, 0, 1.0 } },
-        { 0.5f,   { 0, NEUTRAL_GRAY / 2, 0, 1.0 } },
-        { 1.0f,   { 0, NEUTRAL_GRAY, 0, 1.0 } } };
+const dt_iop_gui_blendif_colorstop_t _gradient_green[] = {
+    { 0.000f, { 0.0000000f, 0.0000000f, 0.0000000f, 1.0f } },
+    { 0.125f, { 0.0000000f, 0.0937500f, 0.0000000f, 1.0f } },
+    { 0.250f, { 0.0000000f, 0.1875000f, 0.0000000f, 1.0f } },
+    { 0.500f, { 0.0000000f, 0.3750000f, 0.0000000f, 1.0f } },
+    { 1.000f, { 0.0000000f, 0.7500000f, 0.0000000f, 1.0f } }
+};
 
-const dt_iop_gui_blendif_colorstop_t _gradient_blue[]
-    = { { 0.0f,   { 0, 0, 0, 1.0 } },
-        { 0.125f, { 0, 0, NEUTRAL_GRAY / 8, 1.0 } },
-        { 0.25f,  { 0, 0, NEUTRAL_GRAY / 4, 1.0 } },
-        { 0.5f,   { 0, 0, NEUTRAL_GRAY / 2, 1.0 } },
-        { 1.0f,   { 0, 0, NEUTRAL_GRAY, 1.0 } } };
+const dt_iop_gui_blendif_colorstop_t _gradient_blue[] = {
+    { 0.000f, { 0.0000000f, 0.0000000f, 0.0000000f, 1.0f } },
+    { 0.125f, { 0.0000000f, 0.0000000f, 0.0937500f, 1.0f } },
+    { 0.250f, { 0.0000000f, 0.0000000f, 0.1875000f, 1.0f } },
+    { 0.500f, { 0.0000000f, 0.0000000f, 0.3750000f, 1.0f } },
+    { 1.000f, { 0.0000000f, 0.0000000f, 0.7500000f, 1.0f } }
+};
 
-const dt_iop_gui_blendif_colorstop_t _gradient_chroma[]
-    = { { 0.0f,   { NEUTRAL_GRAY, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
-        { 0.125f, { NEUTRAL_GRAY, NEUTRAL_GRAY * 0.875, NEUTRAL_GRAY, 1.0 } },
-        { 0.25f,  { NEUTRAL_GRAY, NEUTRAL_GRAY * 0.75, NEUTRAL_GRAY, 1.0 } },
-        { 0.5f,   { NEUTRAL_GRAY, NEUTRAL_GRAY * 0.5, NEUTRAL_GRAY, 1.0 } },
-        { 1.0f,   { NEUTRAL_GRAY, 0, NEUTRAL_GRAY, 1.0 } } };
+// The chroma values are displayed in a gradient from {0.5,0.5,0.5} to {0.5,0.0,0.5} (pink)
+const dt_iop_gui_blendif_colorstop_t _gradient_chroma[] = {
+    { 0.000f, { 0.5000000f, 0.5000000f, 0.5000000f, 1.0f } },
+    { 0.125f, { 0.5000000f, 0.4375000f, 0.5000000f, 1.0f } },
+    { 0.250f, { 0.5000000f, 0.3750000f, 0.5000000f, 1.0f } },
+    { 0.500f, { 0.5000000f, 0.2500000f, 0.5000000f, 1.0f } },
+    { 1.000f, { 0.5000000f, 0.0000000f, 0.5000000f, 1.0f } }
+};
 
-const dt_iop_gui_blendif_colorstop_t _gradient_hue[]
-    = { { 0.0f,   { 1.00f * 1.5f * NEUTRAL_GRAY, 0.68f * 1.5f * NEUTRAL_GRAY, 0.78f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-        { 0.166f, { 0.95f * 1.5f * NEUTRAL_GRAY, 0.73f * 1.5f * NEUTRAL_GRAY, 0.56f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-        { 0.333f, { 0.71f * 1.5f * NEUTRAL_GRAY, 0.81f * 1.5f * NEUTRAL_GRAY, 0.55f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-        { 0.500f, { 0.45f * 1.5f * NEUTRAL_GRAY, 0.85f * 1.5f * NEUTRAL_GRAY, 0.77f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-        { 0.666f, { 0.49f * 1.5f * NEUTRAL_GRAY, 0.82f * 1.5f * NEUTRAL_GRAY, 1.00f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-        { 0.833f, { 0.82f * 1.5f * NEUTRAL_GRAY, 0.74f * 1.5f * NEUTRAL_GRAY, 1.00f * 1.5f * NEUTRAL_GRAY, 1.0 } },
-        { 1.0f,   { 1.00f * 1.5f * NEUTRAL_GRAY, 0.68f * 1.5f * NEUTRAL_GRAY, 0.78f * 1.5f * NEUTRAL_GRAY, 1.0 } } };
+// The hue values for LCh are generated in the following way:
+//   LCh (with L=65 and C=37) -> sRGB (D65 linear) -> normalize with MAX(R,G,B) = 0.75
+// Please keep in sync with the display in the gamma module
+const dt_iop_gui_blendif_colorstop_t _gradient_LCh_hue[] = {
+    { 0.000f, { 0.7500000f, 0.2200405f, 0.4480174f, 1.0f } },
+    { 0.104f, { 0.7500000f, 0.2475123f, 0.2488547f, 1.0f } },
+    { 0.200f, { 0.7500000f, 0.3921083f, 0.2017670f, 1.0f } },
+    { 0.295f, { 0.7500000f, 0.7440329f, 0.3011876f, 1.0f } },
+    { 0.377f, { 0.3813996f, 0.7500000f, 0.3799668f, 1.0f } },
+    { 0.503f, { 0.0747526f, 0.7500000f, 0.7489037f, 1.0f } },
+    { 0.650f, { 0.0282981f, 0.3736209f, 0.7500000f, 1.0f } },
+    { 0.803f, { 0.2583821f, 0.2591069f, 0.7500000f, 1.0f } },
+    { 0.928f, { 0.7500000f, 0.2788102f, 0.7492077f, 1.0f } },
+    { 1.000f, { 0.7500000f, 0.2200405f, 0.4480174f, 1.0f } },
+};
 
-const dt_iop_gui_blendif_colorstop_t _gradient_HUE[]
-    = { { 0.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } },
-        { 0.166f, { NEUTRAL_GRAY, NEUTRAL_GRAY, 0, 1.0 } },
-        { 0.332f, { 0, NEUTRAL_GRAY, 0, 1.0 } },
-        { 0.498f, { 0, NEUTRAL_GRAY, NEUTRAL_GRAY, 1.0 } },
-        { 0.664f, { 0, 0, NEUTRAL_GRAY, 1.0 } },
-        { 0.830f, { NEUTRAL_GRAY, 0, NEUTRAL_GRAY, 1.0 } },
-        { 1.0f,   { NEUTRAL_GRAY, 0, 0, 1.0 } } };
+// The hue values for HSL are generated in the following way:
+//   HSL (with S=0.5 and L=0.5) -> any RGB(linear) -> (normalize with MAX(R,G,B) = 0.75)
+// Please keep in sync with the display in the gamma module
+const dt_iop_gui_blendif_colorstop_t _gradient_HSL_hue[] = {
+    { 0.000f, { 0.7500000f, 0.2500000f, 0.2500000f, 1.0f } },
+    { 0.167f, { 0.7500000f, 0.7500000f, 0.2500000f, 1.0f } },
+    { 0.333f, { 0.2500000f, 0.7500000f, 0.2500000f, 1.0f } },
+    { 0.500f, { 0.2500000f, 0.7500000f, 0.7500000f, 1.0f } },
+    { 0.667f, { 0.2500000f, 0.2500000f, 0.7500000f, 1.0f } },
+    { 0.833f, { 0.7500000f, 0.2500000f, 0.7500000f, 1.0f } },
+    { 1.000f, { 0.7500000f, 0.2500000f, 0.2500000f, 1.0f } },
+};
 
-const dt_iop_gui_blendif_colorstop_t _gradient_jhue[]
-    = { { 0.0f,   { 0.7500000f, 0.3884988f, 0.5190513f, 1.0f } },
-        { 0.166f, { 0.7500000f, 0.5681609f, 0.0076022f, 1.0f } },
-        { 0.333f, { 0.4671101f, 0.7500000f, 0.0513506f, 1.0f } },
-        { 0.500f, { 0.3124952f, 0.7500000f, 0.7078146f, 1.0f } },
-        { 0.666f, { 0.2260024f, 0.2816575f, 0.7500000f, 1.0f } },
-        { 0.833f, { 0.3612153f, 0.2183850f, 0.7500000f, 1.0f } },
-        { 1.0f,   { 0.7500000f, 0.3884988f, 0.5190513f, 1.0f } } };
+// The hue values for JzCzhz are generated in the following way:
+//   JzCzhz (with Jz=0.011 and Cz=0.01) -> sRGB(D65 linear) -> normalize with MAX(R,G,B) = 0.75
+// Please keep in sync with the display in the gamma module
+const dt_iop_gui_blendif_colorstop_t _gradient_JzCzhz_hue[] = {
+    { 0.000f, { 0.7500000f, 0.1946971f, 0.3697612f, 1.0f } },
+    { 0.082f, { 0.7500000f, 0.2278141f, 0.2291548f, 1.0f } },
+    { 0.150f, { 0.7500000f, 0.3132381f, 0.1653960f, 1.0f } },
+    { 0.275f, { 0.7483232f, 0.7500000f, 0.1939316f, 1.0f } },
+    { 0.378f, { 0.2642865f, 0.7500000f, 0.2642768f, 1.0f } },
+    { 0.570f, { 0.0233180f, 0.7493543f, 0.7500000f, 1.0f } },
+    { 0.650f, { 0.1119025f, 0.5116763f, 0.7500000f, 1.0f } },
+    { 0.762f, { 0.3331225f, 0.3337235f, 0.7500000f, 1.0f } },
+    { 0.883f, { 0.7464700f, 0.2754816f, 0.7500000f, 1.0f } },
+    { 1.000f, { 0.7500000f, 0.1946971f, 0.3697612f, 1.0f } },
+};
 
 
 static inline dt_iop_colorspace_type_t _blendif_colorpicker_cst(dt_iop_gui_blend_data_t *data)
@@ -1789,7 +1818,7 @@ const dt_iop_gui_blendif_channel_t Lab_channels[]
           TRUE, 0.0f,
           { DEVELOP_BLENDIF_C_in, DEVELOP_BLENDIF_C_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_C,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("saturation") },
-        { N_("h"), N_("sliders for hue channel (of LCh)"), 1.0f / 360.0f, COLORSTOPS(_gradient_hue),
+        { N_("h"), N_("sliders for hue channel (of LCh)"), 1.0f / 360.0f, COLORSTOPS(_gradient_LCh_hue),
           FALSE, 0.0f,
           { DEVELOP_BLENDIF_h_in, DEVELOP_BLENDIF_h_out }, DT_DEV_PIXELPIPE_DISPLAY_LCH_h,
           _blendif_scale_print_hue, NULL, N_("hue") },
@@ -1808,7 +1837,7 @@ const dt_iop_gui_blendif_channel_t rgb_channels[]
         { N_("B"), N_("sliders for blue channel"), 1.0f / 255.0f, COLORSTOPS(_gradient_blue), TRUE, 0.0f,
           { DEVELOP_BLENDIF_BLUE_in, DEVELOP_BLENDIF_BLUE_out }, DT_DEV_PIXELPIPE_DISPLAY_B,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("blue") },
-        { N_("H"), N_("sliders for hue channel (of HSL)"), 1.0f / 360.0f, COLORSTOPS(_gradient_HUE),
+        { N_("H"), N_("sliders for hue channel (of HSL)"), 1.0f / 360.0f, COLORSTOPS(_gradient_HSL_hue),
           FALSE, 0.0f,
           { DEVELOP_BLENDIF_H_in, DEVELOP_BLENDIF_H_out }, DT_DEV_PIXELPIPE_DISPLAY_HSL_H,
           _blendif_scale_print_hue, NULL, N_("hue") },
@@ -1843,7 +1872,7 @@ const dt_iop_gui_blendif_channel_t rgbj_channels[]
           TRUE, -6.64385619f, // cf. _blend_init_blendif_boost_parameters
           { DEVELOP_BLENDIF_Cz_in, DEVELOP_BLENDIF_Cz_out }, DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz,
           _blendif_scale_print_default, _blendop_blendif_disp_alternative_log, N_("chroma") },
-        { N_("hz"), N_("sliders for hue channel (of JzCzhz)"), 1.0f / 360.0f, COLORSTOPS(_gradient_jhue),
+        { N_("hz"), N_("sliders for hue channel (of JzCzhz)"), 1.0f / 360.0f, COLORSTOPS(_gradient_JzCzhz_hue),
           FALSE, 0.0f,
           { DEVELOP_BLENDIF_hz_in, DEVELOP_BLENDIF_hz_out }, DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz,
           _blendif_scale_print_hue, NULL, N_("hue") },
