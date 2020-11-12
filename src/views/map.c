@@ -65,7 +65,6 @@ typedef struct dt_map_t
   float lat0, lat1, lon0, lon1;
   int time_out;
   int timeout_event_source;
-  GtkWidget *drag_icon;
   struct
   {
     dt_location_draw_t main;
@@ -122,6 +121,9 @@ static gboolean _view_map_remove_marker(const dt_view_t *view, dt_geo_map_displa
 static void _view_map_add_location(const dt_view_t *view, dt_map_location_data_t *g, const guint locid);
 /* proxy function to remove a location from the map */
 static void _view_map_location_action(const dt_view_t *view, const int action);
+/* proxy function to provide a drag context icon */
+static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *context,
+                             const int imgid, const int count);
 
 /* callback when the collection changes */
 static void _view_map_collection_changed(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
@@ -605,7 +607,7 @@ void init(dt_view_t *self)
     lib->thumb_lat_angle = 0.01, lib->thumb_lon_angle = 0.01;
     lib->time_out = 0, lib->timeout_event_source = 0;
     lib->loc.main.id = 0, lib->loc.main.location = NULL, lib->loc.time_out = 0;
-    lib->loc.others = NULL, lib->drag_icon = NULL;
+    lib->loc.others = NULL;
 
     OsmGpsMapSource_t map_source
         = OSM_GPS_MAP_SOURCE_OPENSTREETMAP; // open street map should be a nice default ...
@@ -646,20 +648,18 @@ void init(dt_view_t *self)
       osm_gps_map_layer_add(OSM_GPS_MAP(lib->map), lib->osd);
     }
 
-    /* allow drag&drop of images from filmstrip */
     gtk_drag_dest_set(GTK_WIDGET(lib->map), GTK_DEST_DEFAULT_ALL,
                       target_list_internal, n_targets_internal, GDK_ACTION_MOVE);
     g_signal_connect(GTK_WIDGET(lib->map), "scroll-event", G_CALLBACK(_view_map_scroll_event), self);
     g_signal_connect(GTK_WIDGET(lib->map), "drag-data-received", G_CALLBACK(_drag_and_drop_received), self);
+    g_signal_connect(GTK_WIDGET(lib->map), "drag-data-get", G_CALLBACK(_view_map_dnd_get_callback), self);
+    g_signal_connect(GTK_WIDGET(lib->map), "drag-failed", G_CALLBACK(_view_map_dnd_failed_callback), self);
+
     g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
     g_signal_connect_after(G_OBJECT(lib->map), "button-press-event",
                            G_CALLBACK(_view_map_button_press_callback), self);
     g_signal_connect(G_OBJECT(lib->map), "motion-notify-event", G_CALLBACK(_view_map_motion_notify_callback),
                      self);
-
-    /* allow drag&drop of images from the map, too */
-    g_signal_connect(GTK_WIDGET(lib->map), "drag-data-get", G_CALLBACK(_view_map_dnd_get_callback), self);
-    g_signal_connect(GTK_WIDGET(lib->map), "drag-failed", G_CALLBACK(_view_map_dnd_failed_callback), self);
   }
 
   /* build the query string */
@@ -1456,6 +1456,22 @@ static gboolean _display_next_image(dt_view_t *self, dt_map_image_t *entry, cons
   return TRUE;
 }
 
+static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *context,
+                                    const int imgid, const int count)
+{
+  int height;
+  GdkPixbuf *thumb = _draw_image(imgid, NULL, &height, count, TRUE, TRUE, TRUE, (dt_view_t *)self);
+  if(thumb)
+  {
+    GtkWidget *image = gtk_image_new_from_pixbuf(thumb);
+    gtk_widget_set_name((image), "map_drag_icon");
+    gtk_widget_show(image);
+    gtk_drag_set_icon_widget(context, image, 0,
+                             DT_PIXEL_APPLY_DPI(height + image_pin_size + 2 * thumb_border));
+    g_object_unref(thumb);
+  }
+}
+
 static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMotion *e, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
@@ -1482,12 +1498,10 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
                                            lib->loc.main.data.delta2, TRUE);
       if(location)
       {
-        if(lib->drag_icon)
-          gtk_widget_destroy(lib->drag_icon);
-        lib->drag_icon = gtk_image_new_from_pixbuf(location);
-        gtk_widget_set_name(lib->drag_icon, "map_drag_icon");
-        gtk_widget_show(lib->drag_icon);
-        gtk_drag_set_icon_widget(context, lib->drag_icon,
+        GtkWidget *image = gtk_image_new_from_pixbuf(location);
+        gtk_widget_set_name(image, "map_drag_icon");
+        gtk_widget_show(image);
+        gtk_drag_set_icon_widget(context, image,
                                  DT_PIXEL_APPLY_DPI(width),
                                  DT_PIXEL_APPLY_DPI(height));
         g_object_unref(location);
@@ -1528,24 +1542,11 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
     lib->start_drag = FALSE;
     GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
-    int height;
-    GdkPixbuf *thumb = _draw_image(GPOINTER_TO_INT(lib->selected_images->data),
-                                   NULL, &height, group_count, TRUE, TRUE, TRUE, self);
-    if(thumb)
-    {
-      GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                                                GDK_ACTION_MOVE, 1,
-                                                                (GdkEvent *)e, -1, -1);
-      if(lib->drag_icon)
-        gtk_widget_destroy(lib->drag_icon);
-      lib->drag_icon = gtk_image_new_from_pixbuf(thumb);
-      gtk_widget_set_name(lib->drag_icon, "map_drag_icon");
-      gtk_widget_show(lib->drag_icon);
-      gtk_drag_set_icon_widget(context, lib->drag_icon, 0,
-                               DT_PIXEL_APPLY_DPI(height + image_pin_size + 2 * thumb_border));
-      g_object_unref(thumb);
-    }
-
+    GdkDragContext *context = gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
+                                                              GDK_ACTION_MOVE, 1,
+                                                              (GdkEvent *)e, -1, -1);
+    _view_map_drag_set_icon(self, context, GPOINTER_TO_INT(lib->selected_images->data),
+                            group_count);
     gtk_target_list_unref(targets);
     return TRUE;
   }
@@ -1784,6 +1785,7 @@ void enter(dt_view_t *self)
   darktable.view_manager->proxy.map.remove_marker = _view_map_remove_marker;
   darktable.view_manager->proxy.map.add_location = _view_map_add_location;
   darktable.view_manager->proxy.map.location_action = _view_map_location_action;
+  darktable.view_manager->proxy.map.drag_set_icon = _view_map_drag_set_icon;
   darktable.view_manager->proxy.map.redraw = _view_map_redraw;
   darktable.view_manager->proxy.map.display_selected = _view_map_display_selected;
 
@@ -1810,11 +1812,6 @@ void leave(dt_view_t *self)
   {
     g_list_free(lib->selected_images);
     lib->selected_images = NULL;
-  }
-  if(lib->drag_icon)
-  {
-    gtk_widget_destroy(lib->drag_icon);
-    lib->drag_icon = NULL;
   }
   gtk_widget_hide(GTK_WIDGET(lib->map));
   gtk_container_remove(GTK_CONTAINER(dt_ui_center_base(darktable.gui->ui)), GTK_WIDGET(lib->map));
@@ -2284,11 +2281,6 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
                                  _DWORD, (guchar *)imgs, sizeof(uint32_t));
           free(imgs);
         }
-        if(lib->drag_icon)
-        {
-          gtk_widget_destroy(lib->drag_icon);
-          lib->drag_icon = NULL;
-        }
       }
       break;
     default: // return the location of the file as a last resort
@@ -2345,11 +2337,6 @@ static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext 
                                               GtkDragResult result, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
-  if(lib->drag_icon)
-  {
-    gtk_widget_destroy(lib->drag_icon);
-    lib->drag_icon = NULL;
-  }
   g_signal_emit_by_name(lib->map, "changed");
 
   return TRUE;
