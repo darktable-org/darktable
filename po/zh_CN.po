@@ -222,43 +222,47 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2382
 msgid "enable extended thumb overlay"
-msgstr ""
+msgstr "开启扩展缩略图叠加"
 
 #: ../build/src/preferences_gen.h:2394
 msgid "if set to true, thumb overlay shows filename and some exif data."
-msgstr ""
+msgstr "如设置为是，缩略图叠加显示文件名及exif信息"
 
 #: ../build/src/preferences_gen.h:2402
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "在收藏面板中使用单击"
 
 #: ../build/src/preferences_gen.h:2414
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
+"启用此选项在收藏面板中使用单击选择项目。"
+"这将允许你对日期-时间和数值进行范围选择。"
 
 #: ../build/src/preferences_gen.h:2422
 msgid "expand a single lighttable module at a time"
-msgstr ""
+msgstr "一次只需展开一个光台"
 
 #: ../build/src/preferences_gen.h:2434
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
-msgstr ""
+msgstr "这个选项可以改变在lighttable模式下shift的点击行为"
 
 #: ../build/src/preferences_gen.h:2442
 msgid "scroll to lighttable modules when expanded/collapsed"
-msgstr ""
+msgstr "展开/折叠时滚动到lighttable模块"
 
 #: ../build/src/preferences_gen.h:2454 ../build/src/preferences_gen.h:2820
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
+"当启用该选项时，darktable将尝试将模块滚动到"
+"可见列表的顶部"
 
 #: ../build/src/preferences_gen.h:2462
 msgid "rating an image one star twice will not zero out the rating"
-msgstr ""
+msgstr "一张图片被评为一星两次不会清空评分"
 
 #: ../build/src/preferences_gen.h:2474
 msgid ""
