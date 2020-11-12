@@ -1211,7 +1211,9 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
           entry->imgid = p[i].imgid;
           entry->group = p[i].cluster_id;
           entry->group_same_loc = TRUE;
-          entry->selected_in_group = FALSE;
+          entry->selected_in_group = (sel_imgs && g_list_find((GList *)sel_imgs,
+                                                               GINT_TO_POINTER(p[i].imgid)))
+                                     ? TRUE : FALSE;
           const double lon = p[i].x, lat = p[i].y;
           for(int j = 0; j < img_count; j++)
           {
@@ -1226,9 +1228,8 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
               }
               if(sel_imgs && !entry->selected_in_group)
               {
-                entry->selected_in_group = g_list_find((GList *)sel_imgs,
-                                                       GINT_TO_POINTER(p[i].imgid))
-                                           ? TRUE : FALSE;
+                if(g_list_find((GList *)sel_imgs, GINT_TO_POINTER(p[j].imgid)))
+                  entry->selected_in_group = TRUE;
               }
             }
           }
