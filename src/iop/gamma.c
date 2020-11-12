@@ -144,8 +144,10 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
         float lab[3] DT_ALIGNED_PIXEL;
         float xyz[3] DT_ALIGNED_PIXEL;
         float pixel[3] DT_ALIGNED_PIXEL;
-        lab[0] = 80.0f;
-        lab[1] = in[j + 1] * 256.0f - 128.0f;
+        // colors with "a" exceeding the range [-56,56] range will yield colors not representable in sRGB
+        const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -56.0f), 56.0f);
+        lab[0] = 79.0f - value * (11.0f / 56.0f);
+        lab[1] = value;
         lab[2] = 0.0f;
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
@@ -162,9 +164,11 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
         float lab[3] DT_ALIGNED_PIXEL;
         float xyz[3] DT_ALIGNED_PIXEL;
         float pixel[3] DT_ALIGNED_PIXEL;
-        lab[0] = 80.0f;
+        // colors with "b" exceeding the range [-65,65] range will yield colors not representable in sRGB
+        const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -65.0f), 65.0f);
+        lab[0] = 60.0f + value * (2.0f / 65.0f);
         lab[1] = 0.0f;
-        lab[2] = in[j + 1] * 256.0f - 128.0f;
+        lab[2] = value;
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -223,17 +227,15 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
       {
         float pixel[3] DT_ALIGNED_PIXEL;
         pixel[0] = 0.50f;
-        pixel[1] = 0.50 * (1.0f - in[j + 1]);
+        pixel[1] = 0.50f * (1.0f - in[j + 1]);
         pixel[2] = 0.50f;
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
     case DT_DEV_PIXELPIPE_DISPLAY_LCH_h:
-    {
-      const float chroma = 0.25f * 128.0f * sqrtf(2.0f);
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static) aligned(in, out: 64) aligned(mask_color: 16) \
-    dt_omp_firstprivate(in, out, buffsize, alpha, mask_color, chroma)
+    dt_omp_firstprivate(in, out, buffsize, alpha, mask_color)
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
@@ -241,8 +243,8 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
         float lab[3] DT_ALIGNED_PIXEL;
         float xyz[3] DT_ALIGNED_PIXEL;
         float pixel[3] DT_ALIGNED_PIXEL;
-        lch[0] = 50.0f;
-        lch[1] = chroma;
+        lch[0] = 65.0f;
+        lch[1] = 37.0f;
         lch[2] = in[j + 1];
         dt_LCH_2_Lab(lch, lab);
         dt_Lab_to_XYZ(lab, xyz);
@@ -250,7 +252,6 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
-    }
     case DT_DEV_PIXELPIPE_DISPLAY_HSL_H:
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static) aligned(in, out: 64) aligned(mask_color: 16) \
@@ -261,7 +262,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
         float hsl[3] DT_ALIGNED_PIXEL;
         float pixel[3] DT_ALIGNED_PIXEL;
         hsl[0] = in[j + 1];
-        hsl[1] = 0.75f;
+        hsl[1] = 0.5f;
         hsl[2] = 0.5f;
         dt_HSL_2_RGB(hsl, pixel);
         _normalize_color(pixel, 0.75f);
@@ -279,8 +280,8 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
         float JzAzBz[3] DT_ALIGNED_PIXEL;
         float xyz[3] DT_ALIGNED_PIXEL;
         float pixel[3] DT_ALIGNED_PIXEL;
-        JzCzhz[0] = 0.01f;
-        JzCzhz[1] = 0.015f;
+        JzCzhz[0] = 0.011f;
+        JzCzhz[1] = 0.01f;
         JzCzhz[2] = in[j + 1];
         dt_JzCzhz_2_JzAzBz(JzCzhz, JzAzBz);
         dt_JzAzBz_2_XYZ(JzAzBz, xyz);
