@@ -1546,7 +1546,7 @@ border-bottom: 1px solid @button_border;
   color: @field_hover_fg;
 }
 
-#map_location_drag_icon
+#map_drag_icon
 {
   background: transparent;
 }
