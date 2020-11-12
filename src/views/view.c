@@ -1368,6 +1368,11 @@ void dt_view_map_location_action(const dt_view_manager_t *vm, const int action)
   if(vm->proxy.map.view) return vm->proxy.map.location_action(vm->proxy.map.view, action);
 }
 
+void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const int imgid, const int count)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.drag_set_icon(vm->proxy.map.view, context, imgid, count);
+}
+
 #endif
 
 #ifdef HAVE_PRINT
