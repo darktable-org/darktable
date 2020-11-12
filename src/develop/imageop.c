@@ -1162,8 +1162,6 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
-
-      module->gui_update(module);
     }
     else
     {
@@ -1171,6 +1169,12 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
+
+      //if current module is set as the CAT instance, remove that setting
+      dt_iop_order_entry_t *CAT_instance = module->dev->proxy.chroma_adaptation;
+
+      if(CAT_instance != NULL && CAT_instance->o.iop_order == module->iop_order)
+        module->dev->proxy.chroma_adaptation = NULL;
 
       dt_iop_set_module_in_trouble(module, FALSE);
     }
@@ -1294,16 +1298,13 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
 
 void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
 {
-  gboolean previous_state = module->has_trouble;
-
   // we don't set disabled modules in trouble, that would be annoying
   if(module->enabled)
     module->has_trouble = state;
   else
     module->has_trouble = FALSE;
 
-  if(module->has_trouble != previous_state)
-    _iop_gui_update_header(module);
+  _iop_gui_update_header(module);
 }
 
 static void _iop_gui_update_label(dt_iop_module_t *module)

@@ -1032,7 +1032,10 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
   if(g == NULL) return;
   if(p->illuminant != DT_ILLUMINANT_DETECT_EDGES && p->illuminant != DT_ILLUMINANT_DETECT_SURFACES)
+  {
+    gui_changed(self, NULL, NULL);
     return;
+  }
 
   dt_pthread_mutex_lock(&g->lock);
   p->x = g->XYZ[0];
@@ -1741,6 +1744,7 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_reset(dt_iop_module_t *self)
 {
   dt_iop_color_picker_reset(self, TRUE);
+  gui_changed(self, NULL, NULL);
 }
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
@@ -1982,7 +1986,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_iop_order_entry_t *current_instance
         = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
 
-    if(CAT_instance != current_instance)
+    if(CAT_instance && CAT_instance->o.iop_order != current_instance->o.iop_order)
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
       dt_iop_set_module_in_trouble(self, TRUE);
