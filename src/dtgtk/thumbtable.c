@@ -1481,38 +1481,51 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
 
   table->drag_list = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE));
 
-  // if we are dragging a single image -> use the thumbnail of that image
-  // otherwise use the generic d&d icon
-  // TODO: have something pretty in the 2nd case, too.
-  if(g_list_length(table->drag_list) == 1)
+#ifdef HAVE_MAP
+  dt_view_manager_t *vm = darktable.view_manager;
+  dt_view_t *view = vm->current_view;
+  if(!strcmp(view->module_name, "map"))
   {
-    const int id = GPOINTER_TO_INT(g_list_nth_data(table->drag_list, 0));
-    dt_mipmap_buffer_t buf;
-    dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
-    dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, mip, DT_MIPMAP_BLOCKING, 'r');
-
-    if(buf.buf)
-    {
-      for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
-
-      int w = ts, h = ts;
-      if(buf.width < buf.height)
-        w = (buf.width * ts) / buf.height; // portrait
-      else
-        h = (buf.height * ts) / buf.width; // landscape
-
-      GdkPixbuf *source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
-                                                   buf.width * 4, NULL, NULL);
-      GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
-      gtk_drag_set_icon_pixbuf(context, scaled, 0, h);
-
-      if(source) g_object_unref(source);
-      if(scaled) g_object_unref(scaled);
-    }
-
-    dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    if(table->drag_list)
+      dt_view_map_drag_set_icon(darktable.view_manager, context,
+                                GPOINTER_TO_INT(table->drag_list->data),
+                                g_list_length(table->drag_list));
   }
+  else
+#endif
+  {
+    // if we are dragging a single image -> use the thumbnail of that image
+    // otherwise use the generic d&d icon
+    // TODO: have something pretty in the 2nd case, too.
+    if(g_list_length(table->drag_list) == 1)
+    {
+      const int id = GPOINTER_TO_INT(g_list_nth_data(table->drag_list, 0));
+      dt_mipmap_buffer_t buf;
+      dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
+      dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, mip, DT_MIPMAP_BLOCKING, 'r');
 
+      if(buf.buf)
+      {
+        for(size_t i = 3; i < (size_t)4 * buf.width * buf.height; i += 4) buf.buf[i] = UINT8_MAX;
+
+        int w = ts, h = ts;
+        if(buf.width < buf.height)
+          w = (buf.width * ts) / buf.height; // portrait
+        else
+          h = (buf.height * ts) / buf.width; // landscape
+
+        GdkPixbuf *source = gdk_pixbuf_new_from_data(buf.buf, GDK_COLORSPACE_RGB, TRUE, 8, buf.width, buf.height,
+                                                     buf.width * 4, NULL, NULL);
+        GdkPixbuf *scaled = gdk_pixbuf_scale_simple(source, w, h, GDK_INTERP_HYPER);
+        gtk_drag_set_icon_pixbuf(context, scaled, 0, h);
+
+        if(source) g_object_unref(source);
+        if(scaled) g_object_unref(scaled);
+      }
+
+      dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
+    }
+  }
   // if we can reorder, let's update the thumbtable class acoordingly
   // this will show up vertical bar for the image destination point
   if(darktable.collection->params.sort == DT_COLLECTION_SORT_CUSTOM_ORDER && table->mode != DT_THUMBTABLE_MODE_ZOOM)
