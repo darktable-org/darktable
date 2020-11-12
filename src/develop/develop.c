@@ -110,6 +110,7 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
   dev->iop_order_list = NULL;
 
   dev->proxy.exposure.module = NULL;
+  dev->proxy.chroma_adaptation = NULL;
 
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode = dt_conf_get_int("darkroom/ui/rawoverexposed/mode");

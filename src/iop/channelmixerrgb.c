@@ -1023,6 +1023,43 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void declare_cat_on_pipe(struct dt_iop_module_t *self)
+{
+  // Advertise to the pipeline that we are doing chromatic adaptation here
+  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  dt_iop_order_entry_t *this
+      = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
+
+  if(this == NULL) return; // there is no point then
+
+  if(self->enabled && !(p->adaptation == DT_ADAPTATION_RGB || p->illuminant == DT_ILLUMINANT_PIPE))
+  {
+    // We do CAT here so we need to register this instance as CAT-handler.
+    if(self->dev->proxy.chroma_adaptation == NULL)
+    {
+      // We are the first to try to register, let's go !
+      self->dev->proxy.chroma_adaptation = this;
+    }
+    else
+    {
+      // Another instance already registered.
+      // If we are lower in the pipe than it, register in its place.
+      if(this->o.iop_order < self->dev->proxy.chroma_adaptation->o.iop_order)
+        self->dev->proxy.chroma_adaptation = this;
+    }
+  }
+  else
+  {
+    if(self->dev->proxy.chroma_adaptation != NULL)
+    {
+      // We do NOT do CAT here.
+      // Deregister this instance as CAT-handler if it previously registered
+      if(self->dev->proxy.chroma_adaptation == this)
+        self->dev->proxy.chroma_adaptation = NULL;
+    }
+  }
+}
+
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -1097,6 +1134,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // reference illuminant is hard-set D50 for darktable's pipeline
   // test illuminant is user params
   d->p = powf(0.818155f / d->illuminant[2], 0.0834f);
+
+  declare_cat_on_pipe(self);
 }
 
 
@@ -1908,31 +1947,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     }
   }
 
-  // Check that the white balance module has camera reference D65 set
-  // otherwise, this will cause trouble in CAT
-  double bwb[4] = { 0. };
-  calculate_bogus_daylight_wb(self, bwb);
-  gint is_reference_wb = TRUE;
-  for(int i = 0; i < 3; i++)
-    if(self->dev->pipe->dsc.temperature.coeffs[i] != (float)bwb[i]) is_reference_wb = FALSE;
-
   ++darktable.gui->reset;
-
-  if(!is_reference_wb && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
-  {
-    dt_iop_set_module_in_trouble(self, TRUE);
-    gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ white balance module error"));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("the white balance module is not using the camera\n"
-                                                                "reference illuminant, which will cause issues here\n"
-                                                                "with chromatic adaptation. Either set it to reference\n"
-                                                                "or disable chromatic adaptation here."));
-  }
-  else
-  {
-    dt_iop_set_module_in_trouble(self, FALSE);
-    gtk_label_set_text(GTK_LABEL(g->warning_label), "");
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
-  }
 
   if(!w || w == g->illuminant || w == g->illum_fluo || w == g->illum_led || g->temperature)
   {
@@ -1956,6 +1971,71 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 
   --darktable.gui->reset;
+
+  // Check that the white balance module has camera reference D65 set
+  // otherwise, this will cause trouble in CAT
+  double bwb[4] = { 0. };
+  gint is_reference_wb = TRUE;
+
+  if(!calculate_bogus_daylight_wb(self, bwb))
+  {
+    for(int i = 0; i < 3; i++)
+      if(self->dev->pipe->dsc.temperature.coeffs[i] != (float)bwb[i])
+        is_reference_wb = FALSE;
+  }
+  else
+  {
+    is_reference_wb = FALSE;
+  }
+
+  declare_cat_on_pipe(self);
+
+  if(self->enabled && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
+  {
+    // this module instance is doing chromatic adaptation
+    dt_iop_order_entry_t *CAT_instance = self->dev->proxy.chroma_adaptation;
+    dt_iop_order_entry_t *current_instance
+        = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
+
+    if(CAT_instance != current_instance)
+    {
+      // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
+      dt_iop_set_module_in_trouble(self, TRUE);
+      gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ double CAT applied"));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("you have 2 instances or more of color calibration,\n"
+                                                                  "all performing chromatic adaptation.\n"
+                                                                  "this can lead to inconsistencies, unless you\n"
+                                                                  "use them with masks or know what you are doing."));
+    }
+    else if(!is_reference_wb)
+    {
+      // our first and biggest problem : white balance is being clever with WB coeffs
+      dt_iop_set_module_in_trouble(self, TRUE);
+      gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ white balance module error"));
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("the white balance module is not using the camera\n"
+                                                                  "reference illuminant, which will cause issues here\n"
+                                                                  "with chromatic adaptation. Either set it to reference\n"
+                                                                  "or disable chromatic adaptation here."));
+    }
+    else
+    {
+      dt_iop_set_module_in_trouble(self, FALSE);
+      gtk_label_set_text(GTK_LABEL(g->warning_label), "");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
+    }
+  }
+  else
+  {
+    dt_iop_set_module_in_trouble(self, FALSE);
+    gtk_label_set_text(GTK_LABEL(g->warning_label), "");
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
+  }
+}
+
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  gui_changed(self, NULL, NULL);
 }
 
 
