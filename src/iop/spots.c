@@ -802,17 +802,17 @@ void gui_init(dt_iop_module_t *self)
                                              G_CALLBACK(_edit_masks), TRUE, 0, 0,
                                              dtgtk_cairo_paint_masks_eye, hbox);
 
-  g->bt_path = dt_iop_togglebutton_new(self, NULL, N_("add path"), N_("add multiple paths"),
+  g->bt_path = dt_iop_togglebutton_new(self, N_("shapes"), N_("add path"), N_("add multiple paths"),
                                        G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
                                        dtgtk_cairo_paint_masks_path, hbox);
 
-  g->bt_ellipse = dt_iop_togglebutton_new(self, NULL, N_("add ellipse"), N_("add multiple ellipses"),
-                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
-                                       dtgtk_cairo_paint_masks_ellipse, hbox);
+  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("shapes"), N_("add ellipse"), N_("add multiple ellipses"),
+                                          G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                          dtgtk_cairo_paint_masks_ellipse, hbox);
 
-  g->bt_circle = dt_iop_togglebutton_new(self, NULL, N_("add circle"), N_("add multiple circles"),
-                                       G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
-                                       dtgtk_cairo_paint_masks_circle, hbox);
+  g->bt_circle = dt_iop_togglebutton_new(self, N_("shapes"), N_("add circle"), N_("add multiple circles"),
+                                         G_CALLBACK(_add_shape_callback), TRUE, 0, 0,
+                                         dtgtk_cairo_paint_masks_circle, hbox);
 
   gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(g->label), FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);

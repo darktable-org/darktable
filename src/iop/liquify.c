@@ -3615,15 +3615,15 @@ void gui_init(dt_iop_module_t *self)
                                        G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                        _liquify_cairo_paint_node_tool, hbox));
 
-  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, NULL, N_("draw curves"), N_("draw multiple curves"),
+  g->btn_curve_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("shapes"), N_("draw curves"), N_("draw multiple curves"),
                                         G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                         _liquify_cairo_paint_curve_tool, hbox));
 
-  g->btn_line_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, NULL, N_("draw lines"), N_("draw multiple lines"),
+  g->btn_line_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("shapes"), N_("draw lines"), N_("draw multiple lines"),
                                        G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                        _liquify_cairo_paint_line_tool, hbox));
 
-  g->btn_point_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, NULL, N_("draw points"), N_("draw multiple points"),
+  g->btn_point_tool = GTK_TOGGLE_BUTTON(dt_iop_togglebutton_new(self, N_("shapes"), N_("draw points"), N_("draw multiple points"),
                                          G_CALLBACK(btn_make_radio_callback), TRUE, 0, 0,
                                          _liquify_cairo_paint_point_tool, hbox));
 
