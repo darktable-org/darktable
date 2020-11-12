@@ -993,12 +993,13 @@ static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module, float p
   }
   else if(!gui->creation)
   {
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
-    float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
-    float x = pzx * darktable.develop->preview_pipe->backbuf_width;
-    float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
+    const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
+    const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+
     int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
     dt_ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
                             pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, &in, &inb,
