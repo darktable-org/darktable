@@ -3053,15 +3053,15 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module)
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
                              const char *output)
 {
-  char *str_purpose = g_strdup(_("purpose"));
-  char *str_input = g_strdup(_("input"));
-  char *str_process = g_strdup(_("process"));
-  char *str_output = g_strdup(_("output"));
+  char *str_purpose = _("purpose");
+  char *str_input = _("input");
+  char *str_process = _("process");
+  char *str_output = _("output");
 
-  char *icon_purpose = g_strdup("🖌");
-  char *icon_input = g_strdup("⇥");
-  char *icon_process = g_strdup("⟴");
-  char *icon_output = g_strdup("↦");
+  char *icon_purpose = "🖌";
+  char *icon_input = "⇥";
+  char *icon_process = "⟴";
+  char *icon_output = "↦";
 
 
   /* if the font can't display icons, default to nothing
@@ -3069,7 +3069,7 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, con
   * into Gtk useless docs without examples. Good luck.
   PangoFontDescription *desc = darktable.bauhaus->pango_font_desc;
   if(!pango_font_has_char(desc->get_font(), g_utf8_to_ucs4(icon_purpose, 1)))
-    icon_purpose = icon_input = icon_process = icon_output = g_strdup("");
+    icon_purpose = icon_input = icon_process = icon_output = "";
   */
 
   char *str_out = g_strdup_printf("%s.\n\n"
@@ -3082,14 +3082,6 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, con
                                   icon_input, str_input, input,
                                   icon_process, str_process, process,
                                   icon_output, str_output, output);
-  g_free(str_purpose);
-  g_free(str_input);
-  g_free(str_process);
-  g_free(str_output);
-  g_free(icon_purpose);
-  g_free(icon_input);
-  g_free(icon_process);
-  g_free(icon_output);
 
   return str_out;
 }
