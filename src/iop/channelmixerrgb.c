@@ -129,6 +129,12 @@ const char *name()
   return _("color calibration");
 }
 
+const char *aliases()
+{
+  return _("channel mixer|white balance|monochrome");
+}
+
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections\n"
