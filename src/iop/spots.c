@@ -56,6 +56,15 @@ const char *name()
   return _("spot removal");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("remove sensor dust spots"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("geometric, raw"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;

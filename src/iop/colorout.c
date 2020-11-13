@@ -81,6 +81,18 @@ const char *name()
   return _("output color profile");
 }
 
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("convert pipeline reference RGB to any display RGB\n"
+                                        "using color profiles to remap RGB values"),
+                                      _("mandatory"),
+                                      _("linear or non-linear, RGB or Lab, display-referred"),
+                                      _("defined by profile"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
+
 int default_group()
 {
   return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;

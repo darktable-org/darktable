@@ -292,6 +292,16 @@ const char *name()
   return _("liquify");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("distort parts of the image"),
+                                      _("creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("geometric, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
+
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;

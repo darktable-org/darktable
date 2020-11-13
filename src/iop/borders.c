@@ -180,6 +180,16 @@ const char *name()
   return _("framing");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("add solid borders or margins around the picture"),
+                                      _("creative"),
+                                      _("linear or non-linear, RGB, display-referred"),
+                                      _("geometric, RGB"),
+                                      _("linear or non-linear, RGB, display-referred"));
+}
+
+
 int default_group()
 {
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;

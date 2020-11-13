@@ -90,6 +90,15 @@ const char *name()
   return _("highpass");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("isolate high frequencies in the image"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, scene-referred"),
+                                      _("frequential, Lab"),
+                                      _("special, Lab, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -453,7 +462,7 @@ static void blur_vertical_4ch(float *buf, const int height, const int width, con
     scanline[4*y+2] = L[2] / hits;
     scanline[4*y+3] = L[3] / hits;
   }
-  
+
   // copy blurred values back to original location in buffer
   for (size_t y = 0; y < height; y++)
   {

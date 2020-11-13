@@ -66,6 +66,16 @@ const char *name()
   return _("hot pixels");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("remove abnormally bright pixels by dampening them with neighbours"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("reconstruction, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;

@@ -112,6 +112,11 @@ static int default_operation_tags_filter(void)
   return 0;
 }
 
+static const char *default_description(struct dt_iop_module_t *self)
+{
+  return "";
+}
+
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
                                   dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -286,7 +291,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   if(!g_module_symbol(module->module, "default_group", (gpointer) & (module->default_group)))
     module->default_group = default_group;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
-  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = module->name;
+  if(!g_module_symbol(module->module, "description", (gpointer) & (module->description))) module->description = default_description;
   if(!g_module_symbol(module->module, "operation_tags", (gpointer) & (module->operation_tags)))
     module->operation_tags = default_operation_tags;
   if(!g_module_symbol(module->module, "operation_tags_filter", (gpointer) & (module->operation_tags_filter)))
@@ -3077,6 +3082,41 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module)
 char *dt_iop_warning_message(char *message)
 {
   return g_strdup_printf("⚠ %s", message);
+}
+
+char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
+                             const char *output)
+{
+  char *str_purpose = _("purpose");
+  char *str_input = _("input");
+  char *str_process = _("process");
+  char *str_output = _("output");
+
+  char *icon_purpose = "🖌";
+  char *icon_input = "⇥";
+  char *icon_process = "⟴";
+  char *icon_output = "↦";
+
+  /* if the font can't display icons, default to nothing
+  * Unfortunately, getting the font from the font desc is another scavenger hunt
+  * into Gtk useless docs without examples. Good luck.
+  PangoFontDescription *desc = darktable.bauhaus->pango_font_desc;
+  if(!pango_font_has_char(desc->get_font(), g_utf8_to_ucs4(icon_purpose, 1)))
+    icon_purpose = icon_input = icon_process = icon_output = "";
+  */
+
+  char *str_out = g_strdup_printf("%s.\n\n"
+                                  "%s\t%s\t:\t%s.\n"
+                                  "%s\t%s\t:\t%s.\n"
+                                  "%s\t%s\t:\t%s.\n"
+                                  "%s\t%s\t:\t%s.",
+                                  main_text,
+                                  icon_purpose, str_purpose, purpose,
+                                  icon_input, str_input, input,
+                                  icon_process, str_process, process,
+                                  icon_output, str_output, output);
+
+  return str_out;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

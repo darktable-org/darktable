@@ -76,14 +76,15 @@ const char *name()
   return _("bloom");
 }
 
-const char *description()
+const char *description(struct dt_iop_module_t *self)
 {
-  return _("apply Orton effect for a dreamy aetherical look,\n"
-           "for creative purposes.\n"
-           "works in Lab,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs non-linear RGB.");
+  return dt_iop_set_description(self, _("apply Orton effect for a dreamy aetherical look"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
+
 
 int flags()
 {

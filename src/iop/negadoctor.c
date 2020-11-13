@@ -201,6 +201,14 @@ const char *name()
   return _("negadoctor");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("invert film negative scans and simulate printing on paper"),
+                                      _("corrective and creative"),
+                                      _("linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
 
 int flags()
 {

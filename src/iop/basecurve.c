@@ -332,13 +332,14 @@ const char *name()
   return _("base curve");
 }
 
-const char *description()
+const char *description(struct dt_iop_module_t *self)
 {
-  return _("apply a view transform based on personal or camera manufacturer look,\n"
-           "for corrective purposes, to prepare images for display.\n"
-           "works in RGB,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs non-linear RGB.");
+  return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look,\n"
+                                        "for corrective purposes, to prepare images for display"),
+                                      _("corrective"),
+                                      _("linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
 }
 
 int default_group()

@@ -135,13 +135,13 @@ const char *name()
   return _("basic adjustments");
 }
 
-const char *description()
+const char *description(struct dt_iop_module_t *self)
 {
-  return _("apply usual adjustments,\n"
-           "for corrective and creative purposes.\n"
-           "works in RGB,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs non-linear RGB.");
+  return dt_iop_set_description(self, _("apply usual image adjustments"),
+                                      _("creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, scene-referred"));
 }
 
 int default_group()
