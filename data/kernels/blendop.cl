@@ -177,12 +177,12 @@ blendif_factor_Lab(const float4 input, const float4 output,
   if(!(mask_mode & DEVELOP_MASK_CONDITIONAL)) return (mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
 
   scaled[DEVELOP_BLENDIF_L_in] = input.x / 100.0f,			// L scaled to 0..1
-  scaled[DEVELOP_BLENDIF_A_in] = input.y / 128.0f;		// a scaled to -0.5..0.5
-  scaled[DEVELOP_BLENDIF_B_in] = input.z / 128.0f;		// b scaled to -0.5..0.5
+  scaled[DEVELOP_BLENDIF_A_in] = input.y / 256.0f;		// a scaled to -0.5..0.5
+  scaled[DEVELOP_BLENDIF_B_in] = input.z / 256.0f;		// b scaled to -0.5..0.5
 
   scaled[DEVELOP_BLENDIF_L_out] = output.x / 100.0f;			// L scaled to 0..1
-  scaled[DEVELOP_BLENDIF_A_out] = output.y / 128.0f;		// a scaled to -0.5..0.5
-  scaled[DEVELOP_BLENDIF_B_out] = output.z / 128.0f;		// b scaled to -0.5..0.5
+  scaled[DEVELOP_BLENDIF_A_out] = output.y / 256.0f;		// a scaled to -0.5..0.5
+  scaled[DEVELOP_BLENDIF_B_out] = output.z / 256.0f;		// b scaled to -0.5..0.5
 
 
   if((blendif & 0x7f00) != 0)  // do we need to consider LCh ?
