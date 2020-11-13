@@ -72,6 +72,11 @@ const char *name()
   return _("denoise (bilateral filter)");
 }
 
+const char *aliases()
+{
+  return _("denoise (bilateral filter)");
+}
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
