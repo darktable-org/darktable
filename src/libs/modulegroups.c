@@ -220,6 +220,9 @@ void view_enter(dt_lib_module_t *self, dt_view_t *old_view, dt_view_t *new_view)
     if(!dt_lib_presets_apply(preset, self->plugin_name, self->version()))
       dt_lib_presets_apply(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version());
     g_free(preset);
+
+    //and set the current group
+    d->current = dt_conf_get_int("plugins/darkroom/groups");
   }
 }
 
