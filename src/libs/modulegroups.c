@@ -342,6 +342,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
+  d->current = dt_conf_get_int("plugins/darkroom/groups");
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
   gtk_widget_show_all(self->widget);
   gtk_widget_show_all(d->hbox_buttons);
