@@ -388,6 +388,8 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+  /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
+  gboolean has_trouble;
   /** the corresponding SO object */
   dt_iop_module_so_t *so;
 
@@ -696,6 +698,9 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
+
+/** show in iop module header that the module is in trouble */
+void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
 
 #define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
 #define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL

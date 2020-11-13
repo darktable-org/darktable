@@ -1122,6 +1122,7 @@ static void _lib_history_truncate(gboolean compress)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  darktable.develop->proxy.chroma_adaptation = NULL;
   dt_dev_reload_history_items(darktable.develop);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));

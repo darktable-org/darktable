@@ -90,9 +90,11 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *coeffs_toggle;
   GtkWidget *temp_label;
   GtkWidget *balance_label;
+  GtkWidget *warning_label;
   int preset_cnt;
   int preset_num[54];
   double daylight_wb[4];
+  double as_shot_wb[4];
   double mod_coeff[4];
   float mod_temp, mod_tint;
   double XYZ_to_CAM[4][3], CAM_to_XYZ[3][4];
@@ -734,6 +736,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 {
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)p1;
   dt_iop_temperature_data_t *d = (dt_iop_temperature_data_t *)piece->data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
 
   if(self->hide_enable_button)
   {
@@ -748,6 +751,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
   // 4Bayer images not implemented in OpenCL yet
   if(self->dev->image_storage.flags & DT_IMAGE_4BAYER) piece->process_cl_ready = 0;
+
+  if(g)
+  {
+    // advertise on the pipe if coeffs are D65 for validity check
+    gboolean is_D65 = TRUE;
+    for(int c = 0; c < 3; c++)
+      if(d->coeffs[c] != (float)g->daylight_wb[c]) is_D65 = FALSE;
+
+    self->dev->proxy.wb_is_D65 = is_D65;
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1119,11 +1132,47 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
   }
 }
 
+static void display_wb_error(struct dt_iop_module_t *self)
+{
+  // this module instance is doing chromatic adaptation
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
+  if(g == NULL) return;
+
+  ++darktable.gui->reset;
+
+  if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65)
+  {
+    // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
+    dt_iop_set_module_in_trouble(self, TRUE);
+    gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ white balance applied twice"));
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("the color calibration module is enabled,\n"
+                                                                "and performing chromatic adaptation.\n"
+                                                                "set the white balance here to camera reference (D65)\n"
+                                                                "or disable chromatic adaptation in color calibration."));
+    gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
+  }
+  else
+  {
+    dt_iop_set_module_in_trouble(self, FALSE);
+    gtk_label_set_text(GTK_LABEL(g->warning_label), "");
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
+    gtk_widget_set_visible(GTK_WIDGET(g->warning_label), FALSE);
+  }
+
+  --darktable.gui->reset;
+}
+
+
+void gui_focus(struct dt_iop_module_t *self, gboolean in)
+{
+  display_wb_error(self);
+}
+
+
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
 
   if(self->hide_enable_button) return;
 
@@ -1145,8 +1194,9 @@ void gui_update(struct dt_iop_module_t *self)
   gboolean show_finetune = FALSE;
 
   gboolean found = FALSE;
+
   // is this a "as shot" white balance?
-  if(p->red == fp->red && p->green == fp->green && p->blue == fp->blue)
+  if(p->red == g->as_shot_wb[0] && p->green == g->as_shot_wb[1] && p->blue == g->as_shot_wb[2])
   {
     dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_AS_SHOT);
     found = TRUE;
@@ -1272,6 +1322,9 @@ void gui_update(struct dt_iop_module_t *self)
   const gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->coeffs_toggle));
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->coeffs_toggle), dtgtk_cairo_paint_solid_arrow,
                                CPF_STYLE_BOX | (active?CPF_DIRECTION_DOWN:CPF_DIRECTION_LEFT), NULL);
+  gtk_widget_set_visible(GTK_WIDGET(g->finetune), show_finetune);
+  gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
+  dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
 
   const int preset = dt_bauhaus_combobox_get(g->presets);
 
@@ -1283,42 +1336,7 @@ void gui_update(struct dt_iop_module_t *self)
   color_rgb_sliders(self);
   color_finetuning_slider(self);
 
-  gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
-  const gboolean is_modern = strcmp(workflow, "modern") == 0;
-  g_free(workflow);
-
-  if(is_modern && tempK > 6500.f && tempK <= 6504.f)
-  {
-    // if we use modern chroma adatation, white balance is handled by channelmixerrgb
-    // so we hide most of the controls here to not confuse users
-    gtk_widget_set_visible(GTK_WIDGET(g->finetune), FALSE);
-    gtk_widget_set_visible(g->buttonbar, FALSE);
-    dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), FALSE);
-
-    gtk_widget_set_visible(g->btn_asshot, FALSE);
-    gtk_widget_set_visible(g->btn_user, FALSE);
-    gtk_widget_set_visible(g->btn_d65, FALSE);
-    gtk_widget_set_visible(g->scale_k, FALSE);
-    gtk_widget_set_visible(g->scale_tint, FALSE);
-    gtk_widget_set_visible(g->presets, FALSE);
-    gtk_widget_set_visible(g->temp_label, FALSE);
-    gtk_widget_set_visible(g->balance_label, FALSE);
-  }
-  else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->finetune), show_finetune);
-    gtk_widget_set_visible(g->buttonbar, g->button_bar_visible);
-    dtgtk_expander_set_expanded(DTGTK_EXPANDER(g->coeffs_expander), active);
-
-    gtk_widget_set_visible(g->btn_asshot, TRUE);
-    gtk_widget_set_visible(g->btn_user, TRUE);
-    gtk_widget_set_visible(g->btn_d65, TRUE);
-    gtk_widget_set_visible(g->scale_k, TRUE);
-    gtk_widget_set_visible(g->scale_tint, TRUE);
-    gtk_widget_set_visible(g->presets, TRUE);
-    gtk_widget_set_visible(g->temp_label, TRUE);
-    gtk_widget_set_visible(g->balance_label, TRUE);
-  }
+  display_wb_error(self);
 
   gtk_widget_queue_draw(self->widget);
 }
@@ -1382,7 +1400,7 @@ static void prepare_matrices(dt_iop_module_t *module)
   }
 }
 
-static void find_coeffs(dt_iop_module_t *module, float coeffs[4])
+static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
 {
   const dt_image_t *img = &module->dev->image_storage;
 
@@ -1430,10 +1448,10 @@ static void find_coeffs(dt_iop_module_t *module, float coeffs[4])
 
   // did not find preset either?
   // final security net: hardcoded default that fits most cams.
-  coeffs[0] = 2.0f;
-  coeffs[1] = 1.0f;
-  coeffs[2] = 1.5f;
-  coeffs[3] = 1.0f;
+  coeffs[0] = 2.0;
+  coeffs[1] = 1.0;
+  coeffs[2] = 1.5;
+  coeffs[3] = 1.0;
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -1471,10 +1489,9 @@ void reload_defaults(dt_iop_module_t *module)
 
       // if workflow = modern, only set WB coeffs equivalent to D65 illuminant
       // full chromatic adaptation is deferred to channelmixerrgb
-      if(is_modern)
+      double coeffs[4] = { 0 };
+      if(is_modern && !calculate_bogus_daylight_wb(module, coeffs))
       {
-        double coeffs[4] = { 0 };
-        calculate_bogus_daylight_wb(module, coeffs);
         d->red = coeffs[0]/coeffs[1];
         d->blue = coeffs[2]/coeffs[1];
         d->g2 = coeffs[3]/coeffs[1];
@@ -1483,7 +1500,6 @@ void reload_defaults(dt_iop_module_t *module)
       else
       {
         // do best to find starting coeffs
-        float coeffs[4] = { 0 };
         find_coeffs(module, coeffs);
         d->red = coeffs[0]/coeffs[1];
         d->blue = coeffs[2]/coeffs[1];
@@ -1530,6 +1546,13 @@ void reload_defaults(dt_iop_module_t *module)
       }
     }
 
+    // Store EXIF WB coeffs
+    find_coeffs(module, g->as_shot_wb);
+    g->as_shot_wb[0] /= g->as_shot_wb[1];
+    g->as_shot_wb[2] /= g->as_shot_wb[1];
+    g->as_shot_wb[3] /= g->as_shot_wb[1];
+    g->as_shot_wb[1] = 1.0;
+
     float TempK, tint;
     mul2temp(module, d, &TempK, &tint);
 
@@ -1538,18 +1561,15 @@ void reload_defaults(dt_iop_module_t *module)
 
     dt_bauhaus_combobox_clear(g->presets);
 
-    if(!is_modern)
-    {
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
-      dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference")); // old "camera neutral", reason: better matches intent
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "as shot")); // old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "from image area")); // old "spot", reason: describes exactly what'll happen
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "user modified"));
+    dt_bauhaus_combobox_add(g->presets, C_("white balance", "camera reference")); // old "camera neutral", reason: better matches intent
 
-      g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
-      memset(g->preset_num, 0, sizeof(g->preset_num));
+    g->preset_cnt = DT_IOP_NUM_OF_STD_TEMP_PRESETS;
+    memset(g->preset_num, 0, sizeof(g->preset_num));
 
-      generate_preset_combo(module);
-    }
+    generate_preset_combo(module);
 
     gui_sliders_update(module);
   }
@@ -1608,6 +1628,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   mul2temp(self, p, &g->mod_temp, &g->mod_tint);
 
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
+
+  display_wb_error(self);
 }
 
 static gboolean btn_toggled(GtkWidget *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
@@ -1639,7 +1661,6 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
 
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   dt_iop_temperature_params_t *p = (dt_iop_temperature_params_t *)self->params;
-  dt_iop_temperature_params_t *fp = (dt_iop_temperature_params_t *)self->default_params;
 
   const int pos = dt_bauhaus_combobox_get(g->presets);
   const int tune = dt_bauhaus_slider_get(g->finetune);
@@ -1656,7 +1677,7 @@ static void preset_tune_callback(GtkWidget *widget, dt_iop_module_t *self)
     case -1: // just un-setting.
       return;
     case DT_IOP_TEMP_AS_SHOT: // as shot wb
-      *p = *fp;
+      _temp_params_from_array(p, g->as_shot_wb);
       break;
     case DT_IOP_TEMP_SPOT: // from image area wb, expose callback will set p->rgbg2.
       if(!gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->colorpicker)))
@@ -1905,9 +1926,19 @@ static void _preference_changed(gpointer instance, gpointer user_data)
   color_finetuning_slider(self);
 }
 
+static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  display_wb_error(self);
+}
+
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_temperature_gui_data_t *g = IOP_GUI_ALLOC(temperature);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+                            G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   gchar *config = dt_conf_get_string("plugins/darkroom/temperature/colored_sliders");
   g->colored_sliders = g_strcmp0(config, "no color"); // true if config != "no color"
@@ -1920,8 +1951,16 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
+  g->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(box_enabled), g->warning_label, FALSE, FALSE, 4);
+
   g->mod_temp = NAN;
-  for(int k = 0; k < 4; k++) g->daylight_wb[k] = 1.0;
+  for(int k = 0; k < 4; k++)
+  {
+    g->daylight_wb[k] = 1.0;
+    g->as_shot_wb[k] = 1.f;
+  }
 
   GtkWidget *temp_label_box = gtk_event_box_new();
   g->temp_label = dt_ui_section_label_new(_("scene illuminant temp"));
@@ -2052,7 +2091,10 @@ void gui_init(struct dt_iop_module_t *self)
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
+  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_develop_ui_pipe_finished_callback), self);
 
   IOP_GUI_FREE;
 }
@@ -2076,6 +2118,7 @@ void gui_reset(struct dt_iop_module_t *self)
   color_finetuning_slider(self);
   color_rgb_sliders(self);
   color_temptint_sliders(self);
+  display_wb_error(self);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
