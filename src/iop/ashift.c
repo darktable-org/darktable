@@ -113,6 +113,11 @@ const char *name()
   return _("perspective correction");
 }
 
+const char *aliases()
+{
+  return _("keyframe|distortion");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("distort perspective automatically"),
