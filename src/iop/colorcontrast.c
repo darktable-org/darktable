@@ -88,6 +88,11 @@ const char *name()
   return _("color contrast");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("increase saturation and separation between\n"
