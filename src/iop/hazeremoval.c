@@ -99,6 +99,12 @@ const char *name()
   return _("haze removal");
 }
 
+
+const char *aliases()
+{
+  return _("dehaze|defog|smoke|smog");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("remove fog and atmospheric hazing from pictures"),
