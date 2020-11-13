@@ -2010,7 +2010,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
                                   _("the white balance module is not using the camera\n"
                                     "reference illuminant, which will cause issues here\n"
-                                    "with chromatic adaptation. Either set it to reference\n"
+                                    "with chromatic adaptation. either set it to reference\n"
                                     "or disable chromatic adaptation here."));
       gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
     }
