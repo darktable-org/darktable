@@ -114,6 +114,11 @@ const char *name()
   return _("color look up table");
 }
 
+const char *aliases()
+{
+  return _("profile|lut|color grading");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections\n"
