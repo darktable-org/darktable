@@ -560,7 +560,6 @@ static gboolean bauhaus_slider_edit_callback(GtkAccelGroup *accel_group, GObject
 {
   GtkWidget *slider = GTK_WIDGET(data);
 
-  // FIXME: crashes when slider hidden
   dt_bauhaus_show_popup(DT_BAUHAUS_WIDGET(slider));
 
   return TRUE;

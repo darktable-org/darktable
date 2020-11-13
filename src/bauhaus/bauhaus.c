@@ -88,7 +88,6 @@ static inline float inner_height(GtkAllocation allocation)
   return allocation.height - 2.0f * darktable.bauhaus->widget_space;
 }
 
-
 static GdkRGBA * default_color_assign()
 {
   // helper to initialize a color pointer with red color as a default
@@ -99,7 +98,6 @@ static GdkRGBA * default_color_assign()
   color.alpha = 1.0f;
   return gdk_rgba_copy(&color);
 }
-
 
 static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cairo_t *cr,
                            char *text, float x_pos, float y_pos, float max_width,
@@ -2047,6 +2045,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   int offset = 0;
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+  if(tmp.width == 1) return;
 
   gtk_widget_realize(darktable.bauhaus->popup_window);
   switch(darktable.bauhaus->current->type)
