@@ -161,12 +161,12 @@ void dt_develop_blendif_process_parameters(float *const restrict parameters,
       parameters[j + 4] = 1.0f / fmaxf(0.001f, parameters[j + 1] - parameters[j + 0]);
       parameters[j + 5] = 1.0f / fmaxf(0.001f, parameters[j + 3] - parameters[j + 2]);
       // handle the case when one end is open to avoid clipping input/output values
-      if(blendif_parameters[i * 4 + 0] <= -offset && blendif_parameters[i * 4 + 1] <= -offset)
+      if(blendif_parameters[i * 4 + 0] <= 0.0f && blendif_parameters[i * 4 + 1] <= 0.0f)
       {
         parameters[j + 0] = -INFINITY;
         parameters[j + 1] = -INFINITY;
       }
-      if(blendif_parameters[i * 4 + 2] >= 1.0f - offset && blendif_parameters[i * 4 + 3] >= 1.0f - offset)
+      if(blendif_parameters[i * 4 + 2] >= 1.0f && blendif_parameters[i * 4 + 3] >= 1.0f)
       {
         parameters[j + 2] = INFINITY;
         parameters[j + 3] = INFINITY;
