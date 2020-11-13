@@ -1229,8 +1229,13 @@ gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group)
 static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "iop-panel-label");
-  gchar *label = g_strdup_printf("%s%s", (module->has_trouble && module->enabled) ? "⚠ " : "",
-                                         dt_history_item_get_name_html(module));
+  char *module_name = dt_history_item_get_name_html(module);
+  gchar *label = g_strdup_printf("%s",
+                                 (module->has_trouble && module->enabled)
+                                 ? dt_iop_warning_message(module_name)
+                                 : module_name);
+  g_free(module_name);
+
   gchar *tooltip = g_strdup(module->description());
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);

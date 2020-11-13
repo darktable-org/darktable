@@ -1990,22 +1990,28 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
       dt_iop_set_module_in_trouble(self, TRUE);
-      gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ double CAT applied"));
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("you have 2 instances or more of color calibration,\n"
-                                                                  "all performing chromatic adaptation.\n"
-                                                                  "this can lead to inconsistencies, unless you\n"
-                                                                  "use them with masks or know what you are doing."));
+      char *wmes = dt_iop_warning_message(_("double CAT applied"));
+      gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
+      g_free(wmes);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
+                                  _("you have 2 instances or more of color calibration,\n"
+                                    "all performing chromatic adaptation.\n"
+                                    "this can lead to inconsistencies, unless you\n"
+                                    "use them with masks or know what you are doing."));
       gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
     }
     else if(!self->dev->proxy.wb_is_D65)
     {
       // our first and biggest problem : white balance module is being clever with WB coeffs
       dt_iop_set_module_in_trouble(self, TRUE);
-      gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ white balance module error"));
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("the white balance module is not using the camera\n"
-                                                                  "reference illuminant, which will cause issues here\n"
-                                                                  "with chromatic adaptation. Either set it to reference\n"
-                                                                  "or disable chromatic adaptation here."));
+      char *wmes = dt_iop_warning_message(_("white balance module error"));
+      gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
+      g_free(wmes);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
+                                  _("the white balance module is not using the camera\n"
+                                    "reference illuminant, which will cause issues here\n"
+                                    "with chromatic adaptation. Either set it to reference\n"
+                                    "or disable chromatic adaptation here."));
       gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
     }
     else
