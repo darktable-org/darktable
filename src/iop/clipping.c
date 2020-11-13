@@ -316,6 +316,11 @@ const char *name()
   return _("crop and rotate");
 }
 
+const char *aliases()
+{
+  return _("reframe|perspective|keyframe|distortion");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("change the framing and correct the perspective"),
