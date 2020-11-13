@@ -318,7 +318,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("reframe|perspective|keyframe|distortion");
+  return _("reframe|perspective|keystone|distortion");
 }
 
 const char *description(struct dt_iop_module_t *self)
