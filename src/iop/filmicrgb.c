@@ -307,6 +307,17 @@ const char *name()
   return _("filmic rgb");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("apply a view transform to prepare the scene-referred pipeline\n"
+                                        "for display on SDR screens and paper prints\n"
+                                        "while preventing clipping in non-destructive ways"),
+                                      _("corrective and creative"),
+                                      _("linear or non-linear, RGB, scene-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_TONE | IOP_GROUP_TECHNICAL;

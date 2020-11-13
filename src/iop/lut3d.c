@@ -132,6 +132,15 @@ const char *name()
   return _("lut 3D");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("perform color space corrections and apply look"),
+                                      _("corrective or creative"),
+                                      _("linear, RGB, display-referred"),
+                                      _("defined by profile, RGB"),
+                                      _("linear or non-linear, RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;

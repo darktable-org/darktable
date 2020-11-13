@@ -126,6 +126,16 @@ const char *name()
   return _("input color profile");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("convert any RGB input to pipeline reference RGB\n"
+                                        "using color profiles to remap RGB values"),
+                                      _("mandatory"),
+                                      _("linear or non-linear, RGB, scene-referred"),
+                                      _("defined by profile"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
