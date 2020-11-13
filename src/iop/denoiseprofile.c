@@ -627,6 +627,15 @@ const char *name()
   return _("denoise (profiled)");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("denoise using noise statistics profiled on sensors"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;

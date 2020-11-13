@@ -308,6 +308,15 @@ const char *name()
   return _("tone equalizer");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("relight the scene as if the lighting was done directly on the scene"),
+                                      _("corrective and creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("quasi-linear, RGB"),
+                                      _("quasi-linear, RGB, scene-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_BASIC | IOP_GROUP_GRADING;

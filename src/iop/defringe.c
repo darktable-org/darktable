@@ -69,6 +69,15 @@ const char *name()
   return _("defringe");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("attenuate chromatic aberration by desaturating edges"),
+                                      _("corrective"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;

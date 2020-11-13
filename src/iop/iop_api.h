@@ -74,7 +74,7 @@ int default_group(void);
 int flags(void);
 
 /** get a descriptive text used for example in a tooltip in more modules */
-const char *description(void);
+const char *description(struct dt_iop_module_t *self);
 
 int operation_tags(void);
 int operation_tags_filter(void);

@@ -129,6 +129,15 @@ const char *name()
   return _("color reconstruction");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("recover clipped highlights by propagating surrounding colors"),
+                                      _("corrective"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int flags()
 {
   // we do not allow tiling. reason: this module needs to see the full surrounding of highlights.

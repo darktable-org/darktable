@@ -104,6 +104,15 @@ const char *name()
   return _("dithering");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("reduce banding and posterization effects in output JPEGs by adding random noise"),
+                                      _("corrective"),
+                                      _("non-linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
