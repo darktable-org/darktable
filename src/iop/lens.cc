@@ -147,6 +147,11 @@ const char *name()
 {
   return _("lens correction");
 }
+    
+const char *aliases()
+{
+  return _("vignette|chromatic aberrations|distortion");
+}
 
 const char *description(struct dt_iop_module_t *self)
 {
