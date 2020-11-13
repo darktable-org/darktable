@@ -3117,17 +3117,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->speculars, .05);
   dt_bauhaus_slider_set_format(g->speculars, _("%+.2f EV"));
 
-  ++darktable.bauhaus->skip_accel;
-  dt_bauhaus_widget_set_label(g->noise, NULL, N_("-8 EV"));
-  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, NULL, N_("-7 EV"));
-  dt_bauhaus_widget_set_label(g->deep_blacks, NULL, N_("-6 EV"));
-  dt_bauhaus_widget_set_label(g->blacks, NULL, N_("-5 EV"));
-  dt_bauhaus_widget_set_label(g->shadows, NULL, N_("-4 EV"));
-  dt_bauhaus_widget_set_label(g->midtones, NULL, N_("-3 EV"));
-  dt_bauhaus_widget_set_label(g->highlights, NULL, N_("-2 EV"));
-  dt_bauhaus_widget_set_label(g->whites, NULL, N_("-1 EV"));
-  dt_bauhaus_widget_set_label(g->speculars, NULL, N_("+0 EV"));
-  --darktable.bauhaus->skip_accel;
+  dt_bauhaus_widget_set_label(g->noise, N_("simple"), N_("-8 EV"));
+  dt_bauhaus_widget_set_label(g->ultra_deep_blacks, N_("simple"), N_("-7 EV"));
+  dt_bauhaus_widget_set_label(g->deep_blacks, N_("simple"), N_("-6 EV"));
+  dt_bauhaus_widget_set_label(g->blacks, N_("simple"), N_("-5 EV"));
+  dt_bauhaus_widget_set_label(g->shadows, N_("simple"), N_("-4 EV"));
+  dt_bauhaus_widget_set_label(g->midtones, N_("simple"), N_("-3 EV"));
+  dt_bauhaus_widget_set_label(g->highlights, N_("simple"), N_("-2 EV"));
+  dt_bauhaus_widget_set_label(g->whites, N_("simple"), N_("-1 EV"));
+  dt_bauhaus_widget_set_label(g->speculars, N_("simple"), N_("+0 EV"));
 
   // Advanced view
 
