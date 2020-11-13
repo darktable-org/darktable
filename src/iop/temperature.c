@@ -1144,11 +1144,14 @@ static void display_wb_error(struct dt_iop_module_t *self)
   {
     // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
     dt_iop_set_module_in_trouble(self, TRUE);
-    gtk_label_set_text(GTK_LABEL(g->warning_label), _("⚠ white balance applied twice"));
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), _("the color calibration module is enabled,\n"
-                                                                "and performing chromatic adaptation.\n"
-                                                                "set the white balance here to camera reference (D65)\n"
-                                                                "or disable chromatic adaptation in color calibration."));
+    char *wmes = dt_iop_warning_message(_("white balance applied twice"));
+    gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
+    g_free(wmes);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
+                                _("the color calibration module is enabled,\n"
+                                  "and performing chromatic adaptation.\n"
+                                  "set the white balance here to camera reference (D65)\n"
+                                  "or disable chromatic adaptation in color calibration."));
     gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
   }
   else
