@@ -122,7 +122,7 @@ static inline void _blendif_lab_a(const float *const restrict pixels, float *con
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_LAB_CH)
   {
-    mask[x] *= _blendif_compute_factor(pixels[j + 1] / 128.0f, invert_mask, parameters);
+    mask[x] *= _blendif_compute_factor(pixels[j + 1] / 256.0f, invert_mask, parameters);
   }
 }
 
@@ -135,7 +135,7 @@ static inline void _blendif_lab_b(const float *const restrict pixels, float *con
 {
   for(size_t x = 0, j = 0; x < stride; x++, j += DT_BLENDIF_LAB_CH)
   {
-    mask[x] *= _blendif_compute_factor(pixels[j + 2] / 128.0f, invert_mask, parameters);
+    mask[x] *= _blendif_compute_factor(pixels[j + 2] / 256.0f, invert_mask, parameters);
   }
 }
 
