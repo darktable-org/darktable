@@ -115,7 +115,7 @@ const char *name()
 
 const char *aliases()
 {
-  return _("keyframe|distortion");
+  return _("keystone|distortion");
 }
 
 const char *description(struct dt_iop_module_t *self)
