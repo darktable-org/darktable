@@ -112,9 +112,9 @@ static int default_operation_tags_filter(void)
   return 0;
 }
 
-static const char *default_description(struct dt_iop_module_t *self)
+static char *default_description(struct dt_iop_module_t *self)
 {
-  return "";
+  return g_strdup("");
 }
 
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
@@ -1241,7 +1241,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
                                  : module_name);
   g_free(module_name);
 
-  gchar *tooltip = g_strdup(module->description());
+  gchar *tooltip = module->description(module);
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);

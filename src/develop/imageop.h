@@ -176,13 +176,14 @@ typedef struct dt_iop_module_so_t
   int (*default_group)(void);
   int (*flags)(void);
 
-  const char *(*description)(struct dt_iop_module_t *self);
+  char *(*description)(struct dt_iop_module_t *self);
   /* should return a string with 5 lines:
      line 1 : summary of what it does
      line 2 : oriented creative or corrective ?
      line 3 : working space
      line 4 : input space
      line 5 : output space
+     => see helper routine dt_iop_set_description()
   */
 
   int (*operation_tags)(void);
@@ -416,7 +417,7 @@ typedef struct dt_iop_module_t
   int (*flags)(void);
 
   /** get a descriptive text used for example in a tooltip in more modules */
-  const char *(*description)(struct dt_iop_module_t *self);
+  char *(*description)(struct dt_iop_module_t *self);
 
   int (*operation_tags)(void);
 
