@@ -261,6 +261,14 @@ typedef struct dt_develop_t
       void (*selection_change)(struct dt_lib_module_t *self, int selectid, int throw_event);
     } masks;
 
+    // what is the ID of the module currently doing pipeline chromatic adaptation ?
+    // this is to prevent multiple modules/instances from doing white balance globally.
+    // only used to display warnings in GUI of modules that should probably not be doing white balance
+    dt_iop_order_entry_t *chroma_adaptation;
+
+    // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
+    gboolean wb_is_D65;
+
   } proxy;
 
   // for the overexposure indicator
