@@ -3087,15 +3087,15 @@ char *dt_iop_warning_message(char *message)
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
                              const char *output)
 {
-  char *str_purpose = _("purpose");
-  char *str_input = _("input");
-  char *str_process = _("process");
-  char *str_output = _("output");
+  const char *str_purpose = _("purpose");
+  const char *str_input = _("input");
+  const char *str_process = _("process");
+  const char *str_output = _("output");
 
-  char *icon_purpose = "🖌";
-  char *icon_input = "⇥";
-  char *icon_process = "⟴";
-  char *icon_output = "↦";
+  const char *icon_purpose = "🖌";
+  const char *icon_input = "⇥";
+  const char *icon_process = "⟴";
+  const char *icon_output = "↦";
 
   /* if the font can't display icons, default to nothing
   * Unfortunately, getting the font from the font desc is another scavenger hunt
