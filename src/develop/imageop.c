@@ -3069,6 +3069,11 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module)
   }
 }
 
+char *dt_iop_warning_message(char *message)
+{
+  return g_strdup_printf("⚠ %s", message);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
