@@ -65,6 +65,11 @@ const char *name()
   return _("vibrance");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
