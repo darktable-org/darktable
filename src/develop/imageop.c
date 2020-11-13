@@ -117,6 +117,11 @@ static char *default_description(struct dt_iop_module_t *self)
   return g_strdup("");
 }
 
+static const char *default_aliases(void)
+{
+  return g_strdup("");
+}
+
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
                                   dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
@@ -288,6 +293,7 @@ int dt_iop_load_module_so(void *m, const char *libname, const char *op)
   }
   if(!g_module_symbol(module->module, "dt_module_mod_version", (gpointer) & (module->version))) goto error;
   if(!g_module_symbol(module->module, "name", (gpointer) & (module->name))) goto error;
+  if(!g_module_symbol(module->module, "aliases", (gpointer) & (module->aliases))) module->aliases = default_aliases;
   if(!g_module_symbol(module->module, "default_group", (gpointer) & (module->default_group)))
     module->default_group = default_group;
   if(!g_module_symbol(module->module, "flags", (gpointer) & (module->flags))) module->flags = default_flags;
@@ -480,6 +486,7 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
 
   module->version = so->version;
   module->name = so->name;
+  module->aliases = so->aliases;
   module->default_group = so->default_group;
   module->flags = so->flags;
   module->description = so->description;
@@ -2747,6 +2754,32 @@ gchar *dt_iop_get_localized_name(const gchar *op)
   if(op != NULL)
   {
     return (gchar *)g_hash_table_lookup(module_names, op);
+  }
+  else {
+    return _("ERROR");
+  }
+}
+
+gchar *dt_iop_get_localized_aliases(const gchar *op)
+{
+  // Prepare mapping op -> localized name
+  static GHashTable *module_aliases = NULL;
+  if(module_aliases == NULL)
+  {
+    module_aliases = g_hash_table_new(g_str_hash, g_str_equal);
+    GList *iop = g_list_first(darktable.iop);
+    if(iop != NULL)
+    {
+      do
+      {
+        dt_iop_module_so_t *module = (dt_iop_module_so_t *)iop->data;
+        g_hash_table_insert(module_aliases, module->op, g_strdup(module->aliases()));
+      } while((iop = g_list_next(iop)) != NULL);
+    }
+  }
+  if(op != NULL)
+  {
+    return (gchar *)g_hash_table_lookup(module_aliases, op);
   }
   else {
     return _("ERROR");

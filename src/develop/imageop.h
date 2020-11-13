@@ -173,6 +173,7 @@ typedef struct dt_iop_module_so_t
   /** callbacks, loaded once, referenced by the instances. */
   int (*version)(void);
   const char *(*name)(void);
+  const char *(*aliases)(void);
   int (*default_group)(void);
   int (*flags)(void);
 
@@ -411,6 +412,8 @@ typedef struct dt_iop_module_t
   int (*version)(void);
   /** get name of the module, to be translated. */
   const char *(*name)(void);
+  /** get aliases names of the module, to be translated. */
+  const char *(*aliases)(void);
   /** get the default group this module belongs to. */
   int (*default_group)(void);
   /** get the iop module flags. */
@@ -655,6 +658,7 @@ int get_module_flags(const char *op);
 
 /** returns the localized plugin name for a given op name. must not be freed. */
 gchar *dt_iop_get_localized_name(const gchar *op);
+gchar *dt_iop_get_localized_aliases(const gchar *op);
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
