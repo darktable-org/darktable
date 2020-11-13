@@ -119,7 +119,7 @@ static char *default_description(struct dt_iop_module_t *self)
 
 static const char *default_aliases(void)
 {
-  return g_strdup("");
+  return "";
 }
 
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
