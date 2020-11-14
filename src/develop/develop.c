@@ -1402,8 +1402,9 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   //  (see reload_default routine in filmicrgb.c)
 
   const gboolean has_matrix = dt_image_is_matrix_correction_supported(image);
+  const gboolean is_raw = dt_image_is_raw(image);
 
-  const gboolean auto_apply_filmic = has_matrix && is_scene_referred;
+  const gboolean auto_apply_filmic = is_raw && is_scene_referred;
   const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
   const gboolean auto_apply_sharpen = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
 
