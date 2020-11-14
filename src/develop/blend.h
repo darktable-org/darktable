@@ -557,7 +557,8 @@ void dt_develop_blend_init_blendif_parameters(dt_develop_blend_params_t *blend_p
                                               dt_develop_blend_colorspace_t cst);
 
 /** returns the color space for the given module */
-dt_iop_colorspace_type_t dt_develop_blend_colorspace(dt_iop_module_t *module, dt_iop_colorspace_type_t cst);
+dt_iop_colorspace_type_t dt_develop_blend_colorspace(const dt_dev_pixelpipe_iop_t *const piece,
+                                                     dt_iop_colorspace_type_t cst);
 
 /** check if content of params is all zero, indicating a non-initialized set of blend parameters which needs
  * special care. */
