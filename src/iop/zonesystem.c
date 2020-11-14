@@ -123,6 +123,11 @@ int flags()
          | IOP_FLAGS_PREVIEW_NON_OPENCL | IOP_FLAGS_DEPRECATED;
 }
 
+const char *deprecated_msg()
+{
+  return _("This module is deprecated. Better use tone equalizer module instead...");
+}
+
 int default_group()
 {
   return IOP_GROUP_TONE | IOP_GROUP_GRADING;

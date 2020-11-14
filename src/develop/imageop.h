@@ -176,6 +176,7 @@ typedef struct dt_iop_module_so_t
   const char *(*aliases)(void);
   int (*default_group)(void);
   int (*flags)(void);
+  const char *(*deprecated_msg)(void);
 
   char *(*description)(struct dt_iop_module_t *self);
   /* should return a string with 5 lines:
@@ -418,6 +419,8 @@ typedef struct dt_iop_module_t
   int (*default_group)(void);
   /** get the iop module flags. */
   int (*flags)(void);
+  /** get deprecated message if needed */
+  const char *(*deprecated_msg)(void);
 
   /** get a descriptive text used for example in a tooltip in more modules */
   char *(*description)(struct dt_iop_module_t *self);
