@@ -498,7 +498,6 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      // FIXME: these colors don't match the histogram colors in iops -- this should be fixed in rgblevels and rgbcurve -- maybe make primaries colors available via proxy in dt_lib_t?
       set_color(cr, d->primaries_display[k]);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
@@ -1191,6 +1190,8 @@ static void _lib_histogram_update_color(dt_lib_histogram_t *d)
       d->primaries_display[k].alpha = 0.5;
       memcpy(&d->primaries_overlay[k], out[k], 3 * sizeof(double));
       d->primaries_overlay[k].alpha = 0.33;
+      memcpy(&darktable.lib->proxy.histogram.primaries_display[k], out[k], 3 * sizeof(double));
+      darktable.lib->proxy.histogram.primaries_display[k].alpha = 0.2;
     }
     cmsDeleteTransform(xform_Lab_to_display);
   }

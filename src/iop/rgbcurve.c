@@ -846,26 +846,26 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       {
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
-        cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_R, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    is_linear);
 
-        cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_G, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    is_linear);
 
-        cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_B, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    is_linear);
         }
         else if(autoscale == DT_S_SCALE_MANUAL_RGB)
         {
           if(ch == DT_IOP_RGBCURVE_R)
-            cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
+            set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
           else if(ch == DT_IOP_RGBCURVE_G)
-            cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
+            set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
           else
-            cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
+            set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
           dt_draw_histogram_8_zoomed(cr, hist, 4, ch, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                      is_linear);
         }
