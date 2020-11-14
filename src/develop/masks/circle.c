@@ -499,7 +499,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  int len = sizeof(dashed) / sizeof(dashed[0]);
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
   // add a preview when creating a circle
@@ -507,8 +507,8 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   if(gui->creation)
   {
     const float pr_d = darktable.develop->preview_downsampling;
-    float iwd = darktable.develop->preview_pipe->iwidth;
-    float iht = darktable.develop->preview_pipe->iheight;
+    const float iwd = darktable.develop->preview_pipe->iwidth;
+    const float iht = darktable.develop->preview_pipe->iheight;
     const float min_iwd_iht = pr_d * MIN(iwd,iht);
     if(gui->guipoints_count == 0)
     {
@@ -651,11 +651,12 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   // draw the source if any
   if(gpt->source_count > 6)
   {
+    const float pr_d = darktable.develop->preview_downsampling;
     const float radius = fabs(gpt->points[2] - gpt->points[0]);
 
     // compute the dest inner circle intersection with the line from source center to dest center.
-    float cdx = gpt->source[0] + dxs - gpt->points[0] - dx;
-    float cdy = gpt->source[1] + dys - gpt->points[1] - dy;
+    const float cdx = gpt->source[0] + dxs - gpt->points[0] - dx;
+    const float cdy = gpt->source[1] + dys - gpt->points[1] - dy;
 
     // we don't draw the line if source==point
     if(cdx != 0.0 && cdy != 0.0)
@@ -670,13 +671,13 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
 
       // (arrowx,arrowy) is the point of intersection, we move it (factor 1.11) a bit farther than the
       // inner circle to avoid superposition.
-      float arrowx = gpt->points[0] + 1.11 * radius * cos(cangle) + dx;
-      float arrowy = gpt->points[1] + 1.11 * radius * sin(cangle) + dy;
+      const float arrowx = gpt->points[0] + 1.11 * radius * cos(cangle) + dx;
+      const float arrowy = gpt->points[1] + 1.11 * radius * sin(cangle) + dy;
 
       cairo_move_to(cr, gpt->source[0] + dxs, gpt->source[1] + dys); // source center
       cairo_line_to(cr, arrowx, arrowy);                             // dest border
       // then draw to line for the arrow itself
-      const float arrow_scale = 8.0;
+      const float arrow_scale = 6.0 * pr_d;
       cairo_move_to(cr, arrowx + arrow_scale * cos(cangle + (0.4)),
                     arrowy + arrow_scale * sin(cangle + (0.4)));
       cairo_line_to(cr, arrowx, arrowy);
