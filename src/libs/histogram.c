@@ -223,7 +223,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(input, width, height, wf_width, bin_width, _height, scale) \
-  shared(wf_linear) aligned(input, wf_linear:64) \
+  aligned(input, wf_linear:64) \
   schedule(simd:static, bin_width)
 #endif
   for(int x = 0; x < width; x++)
@@ -513,7 +513,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_width, wf_height, wf_linear, primaries_linear, ch) \
-  shared(wf_display) aligned(wf_linear, wf_display, primaries_linear:64) \
+  aligned(wf_linear, wf_display, primaries_linear:64) \
   schedule(simd:static)
 #endif
   for(int p = 0; p < wf_height * wf_width * 4; p += 4)
@@ -532,7 +532,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
-  shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
+  aligned(wf_8bit, wf_display:64) \
   schedule(simd:static) collapse(2)
 #endif
   // FIXME: we could do this in place in wf_display, but it'd require care w/OpenMP
