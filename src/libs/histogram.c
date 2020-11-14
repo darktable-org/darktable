@@ -1163,10 +1163,7 @@ static void _lib_histogram_update_color(dt_lib_histogram_t *d)
     d->profile_display =
       dt_ioppr_add_profile_info_to_list(darktable.develop,
                                         d_profile->type, d_profile->filename, DT_INTENT_PERCEPTUAL);
-    cmsCIEXYZ *wtpt = cmsReadTag(display_profile, cmsSigMediaWhitePointTag);
-    cmsCIExyY display_wtpt;
-    cmsXYZ2xyY(&display_wtpt, wtpt);
-    Lab_profile = cmsCreateLab2Profile(&display_wtpt);
+    Lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   }
 
   if(display_profile && Lab_profile)
@@ -1178,9 +1175,10 @@ static void _lib_histogram_update_color(dt_lib_histogram_t *d)
 
   // red, green, blue in Lab
   const double Lab_primaries[3][3] = {
-    {40.0, 45.0, 35.0},
-    {45.0, -45.0, 35.0},
-    {45.0, 5.0, -62.0}
+    // a and b channels should to add up to 0 to produce neutral overlay
+    {45.0, 70.0, 60.0},
+    {55.0, -80.0, 50.0},
+    {30.0, 10.0, -110.0}
   };
 
   if(xform_Lab_to_display)
@@ -1212,8 +1210,6 @@ static void _lib_histogram_update_color(dt_lib_histogram_t *d)
         d->primaries_linear[2-k][2-ch] = out[k][ch];
     cmsDeleteTransform(xform_Lab_to_linear);
   }
-  if(Lab_profile)
-    cmsCloseProfile(Lab_profile);
 }
 
 static void _lib_histogram_display_profile_changed(gpointer instance, dt_lib_module_t *self)
