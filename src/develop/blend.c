@@ -120,9 +120,12 @@ void dt_develop_blend_init_blendif_parameters(dt_develop_blend_params_t *blend_p
   _blend_init_blendif_boost_parameters(blend_params, cst);
 }
 
-dt_iop_colorspace_type_t dt_develop_blend_colorspace(dt_iop_module_t *module, dt_iop_colorspace_type_t cst)
+dt_iop_colorspace_type_t dt_develop_blend_colorspace(const dt_dev_pixelpipe_iop_t *const piece,
+                                                     dt_iop_colorspace_type_t cst)
 {
-  switch(module->blend_params->blend_cst)
+  const dt_develop_blend_params_t *const bp = (const dt_develop_blend_params_t *)piece->blendop_data;
+  if(!bp) return cst;
+  switch(bp->blend_cst)
   {
     case DEVELOP_BLEND_CS_RAW:
       return iop_cs_RAW;
@@ -262,8 +265,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // get channel max values depending on colorspace
-  const dt_develop_blend_colorspace_t blend_csp = self->blend_params->blend_cst;
-  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(self, iop_cs_NONE);
+  const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, iop_cs_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)
@@ -583,8 +586,8 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
             : DT_DEV_PIXELPIPE_DISPLAY_NONE;
 
   // get channel max values depending on colorspace
-  const dt_develop_blend_colorspace_t blend_csp = self->blend_params->blend_cst;
-  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(self, iop_cs_NONE);
+  const dt_develop_blend_colorspace_t blend_csp = d->blend_cst;
+  const dt_iop_colorspace_type_t cst = dt_develop_blend_colorspace(piece, iop_cs_NONE);
 
   // check if mask should be suppressed temporarily (i.e. just set to global
   // opacity value)

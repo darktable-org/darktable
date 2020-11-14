@@ -939,20 +939,18 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
 }
 
 // returns 1 if blend process need the module default colorspace
-static int _transform_for_blend(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const int cst_in, const int cst_out)
+static gboolean _transform_for_blend(const dt_iop_module_t *const self, const dt_dev_pixelpipe_iop_t *const piece)
 {
-  int ret = 0;
-  const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *const)piece->blendop_data;
+  const dt_develop_blend_params_t *const d = (const dt_develop_blend_params_t *)piece->blendop_data;
   if(d)
   {
     // check only if blend is active
     if((self->flags() & IOP_FLAGS_SUPPORTS_BLENDING) && (d->mask_mode != DEVELOP_MASK_DISABLED))
     {
-      ret = 1;
+      return TRUE;
     }
   }
-
-  return ret;
+  return FALSE;
 }
 
 static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self)
@@ -1087,9 +1085,9 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   }
 
   // blend needs input/output images with default colorspace
-  if(_transform_for_blend(module, piece, input_format->cst, pipe->dsc.cst))
+  if(_transform_for_blend(module, piece))
   {
-    dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(module, pipe->dsc.cst);
+    dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
     dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height,
                                         input_format->cst, blend_cst, &input_format->cst,
                                         dt_ioppr_get_pipe_work_profile_info(pipe));
@@ -1571,18 +1569,15 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           }
 
           // blend needs input/output images with default colorspace
-          if(success_opencl)
+          if(success_opencl && _transform_for_blend(module, piece))
           {
-            if(_transform_for_blend(module, piece, input_cst_cl, pipe->dsc.cst))
-            {
-              dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(module, pipe->dsc.cst);
-              success_opencl = dt_ioppr_transform_image_colorspace_cl(
-                  module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height,
-                  input_cst_cl, blend_cst, &input_cst_cl, dt_ioppr_get_pipe_work_profile_info(pipe));
-              success_opencl &= dt_ioppr_transform_image_colorspace_cl(
-                  module, piece->pipe->devid, *cl_mem_output, *cl_mem_output, roi_out->width, roi_out->height,
-                  pipe->dsc.cst, blend_cst, &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
-            }
+            dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
+            success_opencl = dt_ioppr_transform_image_colorspace_cl(
+                module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height,
+                input_cst_cl, blend_cst, &input_cst_cl, dt_ioppr_get_pipe_work_profile_info(pipe));
+            success_opencl &= dt_ioppr_transform_image_colorspace_cl(
+                module, piece->pipe->devid, *cl_mem_output, *cl_mem_output, roi_out->width, roi_out->height,
+                pipe->dsc.cst, blend_cst, &pipe->dsc.cst, dt_ioppr_get_pipe_work_profile_info(pipe));
           }
 
           /* process blending */
@@ -1715,18 +1710,15 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           }
 
           // blend needs input/output images with default colorspace
-          if(success_opencl)
+          if(success_opencl && _transform_for_blend(module, piece))
           {
-            if(_transform_for_blend(module, piece, input_format->cst, pipe->dsc.cst))
-            {
-              dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(module, pipe->dsc.cst);
-              dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
-                                                  input_format->cst, blend_cst, &input_format->cst,
-                                                  dt_ioppr_get_pipe_work_profile_info(pipe));
-              dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
-                                                  pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
-                                                  dt_ioppr_get_pipe_work_profile_info(pipe));
-            }
+            dt_iop_colorspace_type_t blend_cst = dt_develop_blend_colorspace(piece, pipe->dsc.cst);
+            dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
+                                                input_format->cst, blend_cst, &input_format->cst,
+                                                dt_ioppr_get_pipe_work_profile_info(pipe));
+            dt_ioppr_transform_image_colorspace(module, *output, *output, roi_out->width, roi_out->height,
+                                                pipe->dsc.cst, blend_cst, &pipe->dsc.cst,
+                                                dt_ioppr_get_pipe_work_profile_info(pipe));
           }
 
           if(dt_atomic_get_int(&pipe->shutdown))
