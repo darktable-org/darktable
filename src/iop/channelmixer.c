@@ -125,6 +125,11 @@ const char *name()
   return _("channel mixer");
 }
 
+const char *deprecated_msg()
+{
+  return _("This module is deprecated. Better use color calibration module instead...");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("perform color space corrections\n"
