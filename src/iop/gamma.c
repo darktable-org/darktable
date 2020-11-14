@@ -278,14 +278,15 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
       {
         float JzCzhz[3] DT_ALIGNED_PIXEL;
         float JzAzBz[3] DT_ALIGNED_PIXEL;
-        float xyz[3] DT_ALIGNED_PIXEL;
+        float XYZ_D65[3] DT_ALIGNED_PIXEL;
         float pixel[3] DT_ALIGNED_PIXEL;
         JzCzhz[0] = 0.011f;
         JzCzhz[1] = 0.01f;
         JzCzhz[2] = in[j + 1];
         dt_JzCzhz_2_JzAzBz(JzCzhz, JzAzBz);
-        dt_JzAzBz_2_XYZ(JzAzBz, xyz);
-        _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
+        dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
+        dt_XYZ_to_Rec709_D65(XYZ_D65, pixel);
+        _normalize_color(pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
