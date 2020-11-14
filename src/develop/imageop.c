@@ -3125,10 +3125,18 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, con
   const char *str_process = _("process");
   const char *str_output = _("output");
 
-  const char *icon_purpose = "🖌";
-  const char *icon_input = "⇥";
+#ifdef _WIN32
+  // TODO: a windows dev is needed to find 4 icons properly rendered
+  const char *icon_purpose = "•";
+  const char *icon_input   = "•";
+  const char *icon_process = "•";
+  const char *icon_output  = "•";
+#else
+  const char *icon_purpose = "⟳";
+  const char *icon_input   = "⇥";
   const char *icon_process = "⟴";
-  const char *icon_output = "↦";
+  const char *icon_output  = "↦";
+#endif
 
   /* if the font can't display icons, default to nothing
   * Unfortunately, getting the font from the font desc is another scavenger hunt
