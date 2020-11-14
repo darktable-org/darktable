@@ -83,11 +83,6 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
 } dt_iop_channelmixer_rgb_params_t;
 
-typedef enum dt_ai_wb_model_t
-{
-  DT_AI_SURFACES = 0,
-  DT_AI_EDGES = 1
-} dt_ai_wb_model_t;
 
 typedef struct dt_iop_channelmixer_rgb_gui_data_t
 {
@@ -104,7 +99,6 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *color_picker;
   GtkWidget *warning_label;
   float xy[2];
-  dt_ai_wb_model_t wb_model;
   float XYZ[4];
   dt_pthread_mutex_t lock;
 } dt_iop_channelmixer_rgb_gui_data_t;
@@ -119,8 +113,8 @@ typedef struct dt_iop_channelmixer_rbg_data_t
   float p, gamut;
   int apply_grey;
   int clip;
-  gboolean run_detection;
   dt_adaptation_t adaptation;
+  dt_illuminant_t illuminant_type;
 } dt_iop_channelmixer_rbg_data_t;
 
 
@@ -133,7 +127,6 @@ const char *aliases()
 {
   return _("channel mixer|white balance|monochrome");
 }
-
 
 const char *description(struct dt_iop_module_t *self)
 {
@@ -678,9 +671,9 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 #define SHF(ii, jj, c) ((i + ii) * width + j + jj) * ch + c
 #define OFF 4
 
-static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model_t wb_model,
+static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_t illuminant,
                                   const size_t width, const size_t height, const size_t ch,
-                                  const float RGB_to_XYZ[3][4], float illuminant[4])
+                                  const float RGB_to_XYZ[3][4], float xyz[4])
 {
   /**
    * Detect the chromaticity of the illuminant based on the grey edges hypothesis.
@@ -733,13 +726,12 @@ static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model
     }
 
   float elements = 0.f;
-  float XYZ_edge[4] = { 0.f };
-  float XYZ_surface[4] = { 0.f };
+  float xyY[4] = { 0.f };
 
-  if(wb_model == DT_AI_SURFACES)
+  if(illuminant == DT_ILLUMINANT_DETECT_SURFACES)
   {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) reduction(+:XYZ_edge, XYZ_surface, elements) \
+#pragma omp parallel for simd default(none) reduction(+:xyY, elements) \
   dt_omp_firstprivate(width, height, ch, temp) \
   aligned(temp:64) \
   schedule(simd:static)
@@ -800,14 +792,14 @@ static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model
         const float weight = var[0] * var[1] * var[2];
 
         #pragma unroll
-        for(size_t c = 0; c < 2; c++) XYZ_surface[c] += central_average[c] * weight / p_norm;
+        for(size_t c = 0; c < 2; c++) xyY[c] += central_average[c] * weight / p_norm;
         elements += weight / p_norm;
       }
   }
-  else if(wb_model == DT_AI_EDGES)
+  else if(illuminant == DT_ILLUMINANT_DETECT_EDGES)
   {
     #ifdef _OPENMP
-#pragma omp parallel for simd default(none) reduction(+:XYZ_edge, XYZ_surface, elements) \
+#pragma omp parallel for simd default(none) reduction(+:xyY, elements) \
   dt_omp_firstprivate(width, height, ch, temp) \
   aligned(temp:64) \
   schedule(simd:static)
@@ -835,7 +827,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model
         const float p_norm = powf(powf(fabsf(dd[0]), p) + powf(fabsf(dd[1]), p), 1.f / p) + 1e-6f;
 
         #pragma unroll
-        for(size_t c = 0; c < 2; c++) XYZ_edge[c] -= dd[c] / p_norm;
+        for(size_t c = 0; c < 2; c++) xyY[c] -= dd[c] / p_norm;
         elements += 1.f;
       }
   }
@@ -844,10 +836,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_ai_wb_model
   const float norm_D50 = hypotf(D50[0], D50[1]);
 
   for(size_t c = 0; c < 2; c++)
-  {
-    const float shift = (wb_model == DT_AI_SURFACES) ? XYZ_surface[c] : XYZ_edge[c];
-    illuminant[c] = (shift / (elements * norm_D50)) + D50[c];
-  }
+    xyz[c] = norm_D50 * (xyY[c] / elements) + D50[c];
 
   dt_free_align(temp);
 }
@@ -1011,13 +1000,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // auto-detect WB upon request
   if(self->dev->gui_attached && g)
   {
-    if(data->run_detection)
+    if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
     {
       if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
       {
         // detection on full image only
         dt_pthread_mutex_lock(&g->lock);
-        auto_detect_WB(in, g->wb_model, roi_in->width, roi_in->height, ch, RGB_to_XYZ, g->XYZ);
+        auto_detect_WB(in, data->illuminant_type, roi_in->width, roi_in->height, ch, RGB_to_XYZ, g->XYZ);
         dt_pthread_mutex_unlock(&g->lock);
       }
 
@@ -1177,8 +1166,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(p->illuminant == DT_ILLUMINANT_CAMERA)
     check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
 
-  d->run_detection
-      = (p->illuminant == DT_ILLUMINANT_DETECT_EDGES || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES);
+  d->illuminant_type = p->illuminant;
 
   // Convert illuminant from xyY to XYZ
   float XYZ[3];
@@ -1981,11 +1969,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
               || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
       {
-        // Get image WB
-        if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES) g->wb_model = DT_AI_EDGES;
-        else if(p->illuminant == DT_ILLUMINANT_DETECT_SURFACES) g->wb_model = DT_AI_SURFACES;
-
-        // We need to recompute only the thumbnail
+        // We need to recompute only the full preview
         dt_control_log(_("auto-detection of white balance started…"));
       }
     }
