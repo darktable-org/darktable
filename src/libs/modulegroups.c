@@ -60,6 +60,7 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *active_btn;
   GtkWidget *hbox_groups;
   GtkWidget *hbox_search_box;
+  GtkWidget *deprecated;
 
   GList *groups;
 
@@ -341,6 +342,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);
 
+  // deprecated message
+  d->deprecated = gtk_label_new(
+      _("Following modules are deprecated because they have internal design mistakes that can't be solved AND "
+        "alternatives that solve them.\nThey will be removed for new edits in next release."));
+  gtk_widget_set_name(d->deprecated, "modulegroups-deprecated-msg");
+  gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
   d->current = dt_conf_get_int("plugins/darkroom/groups");
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
@@ -573,8 +582,15 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         default:
         {
+          // show deprecated module in specific group deprecated
+          dt_lib_modulegroups_group_t *gr =
+            (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, d->current - 1);
+          gtk_widget_set_visible(d->deprecated, !strcmp(gr->name, _("deprecated")));
+
           if(_lib_modulegroups_test_internal(self, d->current, module)
-             && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
+            && (!(module->flags() & IOP_FLAGS_DEPRECATED)
+                || module->enabled
+                || !strcmp(gr->name, _("deprecated"))))
           {
             if(w) gtk_widget_show(w);
           }
@@ -1004,7 +1020,7 @@ void init_presets(dt_lib_module_t *self)
                        "|shadhi|temperature|toneequal");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"),
                        "tone", "bilat|filmicrgb|globaltonemap|levels"
-                       "|relight|rgbcurve|rgblevels|tonecurve|tonemap|zonesystem");
+                       "|rgbcurve|rgblevels|tonecurve|tonemap");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
                        "channelmixer|channelmixerrgb|colorbalance|colorchecker|colorcontrast"
                        "|colorcorrection|colorin|colorout|colorzones|lut3d|monochrome"
@@ -1072,14 +1088,23 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
                        "basicadj|channelmixer|channelmixerrgb|colisa|colorbalance"
                        "|colorcontrast|colorcorrection|colorize|colorzones|globaltonemap"
-                       "|graduatednd|levels|relight|rgbcurve|rgblevels|shadhi|splittoning"
+                       "|graduatednd|levels|rgbcurve|rgblevels|shadhi|splittoning"
                        "|tonecurve|toneequal|tonemap"
-                       "|velvia|vibrance|zonesystem");
+                       "|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
                        "atrous|bilat|bloom|borders|clahe|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
   dt_lib_presets_add(_("modules: default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  // this is a special preset for all newly deprecated modules
+  // so users still have a chance to access them until next release (with warning messages)
+  // this modules are deprecated in 3.4 and should be removed from this group in 3.6
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "deprecated"), "basic",
+                       "zonesystem|invert|channelmixer|globaltonemap|relight|tonemap");
+  dt_lib_presets_add(_("modules: deprecated"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // if needed, we add a new preset, based on last user config
@@ -2006,12 +2031,16 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
     gtk_container_add(GTK_CONTAINER(evt), lbl);
     gtk_box_pack_start(GTK_BOX(hb), evt, TRUE, TRUE, 0);
 
-    // duplicate button
-    GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
-    g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
-    g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_preset_duplicate), self);
-    gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
+    // duplicate button (not for deprecate preset)
+    GtkWidget *btn;
+    if(g_strcmp0(name, _("modules: deprecated")))
+    {
+      btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
+      gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
+      g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
+      g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_preset_duplicate), self);
+      gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
+    }
 
     // remove button (not for read-lony presets)
     if(!ro)

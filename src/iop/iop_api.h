@@ -74,6 +74,8 @@ const char *aliases(void);
 int default_group(void);
 /** get the iop module flags. */
 int flags(void);
+/** get the deprecated message if needed, to be translated. */
+const char *deprecated_msg(void);
 
 /** get a descriptive text used for example in a tooltip in more modules */
 const char *description(struct dt_iop_module_t *self);
