@@ -1147,9 +1147,11 @@ static void display_wb_error(struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
+  const gboolean is_raw = dt_image_is_raw(&(self->dev->image_storage));
+
   ++darktable.gui->reset;
 
-  if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65)
+  if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65 && is_raw)
   {
     // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
     dt_iop_set_module_in_trouble(self, TRUE);
@@ -1161,6 +1163,20 @@ static void display_wb_error(struct dt_iop_module_t *self)
                                   "and performing chromatic adaptation.\n"
                                   "set the white balance here to camera reference (D65)\n"
                                   "or disable chromatic adaptation in color calibration."));
+    gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
+  }
+  else if(!is_raw && self->enabled)
+  {
+    // if image is not raw, it is almost guaranteed to be gamma-encoded because we are before colorin in the pipe
+    // it means RGB coeffs will have weird effects and temperature <-> RGB coeffs conversions are completely wrong
+    dt_iop_set_module_in_trouble(self, TRUE);
+    char *wmes = dt_iop_warning_message(_("white balance applied on non-raw image"));
+    gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
+    g_free(wmes);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
+                                _("the white balance module is designed to work on raw images.\n"
+                                  "using it on non-raw images may have unexpected effects.\n"
+                                  "use chromatic adaptation in color calibration instead."));
     gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
   }
   else
@@ -1430,7 +1446,7 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
     return;
   }
 
-  if(!ignore_missing_wb(&(module->dev->image_storage)))
+  if(!ignore_missing_wb(&(module->dev->image_storage)) && dt_image_is_raw(&(module->dev->image_storage)))
   {
     dt_control_log(_("failed to read camera white balance information from `%s'!"),
                    img->filename);
@@ -1474,7 +1490,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id == -1) return;
 
-  const int is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
+  const int is_raw = dt_image_is_raw(&(module->dev->image_storage)) && dt_image_is_matrix_correction_supported(&module->dev->image_storage);
   gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
   const gboolean is_modern = strcmp(workflow, "modern") == 0;
   g_free(workflow);
@@ -1485,6 +1501,8 @@ void reload_defaults(dt_iop_module_t *module)
   // White balance module doesn't need to be enabled for monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
   // isn't a color matrix, so we can skip that as well.
+  // On non-raw images, the module is not necessary but also the temperature to RGB coeffs
+  // is completely wrong since 8 and 16 bits integer RGB is encoded with a gamma before colorin
   if(dt_image_is_monochrome(&(module->dev->image_storage)))
   {
     module->hide_enable_button = 1;
@@ -1556,14 +1574,14 @@ void reload_defaults(dt_iop_module_t *module)
           break;
         }
       }
-    }
 
-    // Store EXIF WB coeffs
-    find_coeffs(module, g->as_shot_wb);
-    g->as_shot_wb[0] /= g->as_shot_wb[1];
-    g->as_shot_wb[2] /= g->as_shot_wb[1];
-    g->as_shot_wb[3] /= g->as_shot_wb[1];
-    g->as_shot_wb[1] = 1.0;
+      // Store EXIF WB coeffs
+      find_coeffs(module, g->as_shot_wb);
+      g->as_shot_wb[0] /= g->as_shot_wb[1];
+      g->as_shot_wb[2] /= g->as_shot_wb[1];
+      g->as_shot_wb[3] /= g->as_shot_wb[1];
+      g->as_shot_wb[1] = 1.0;
+    }
 
     float TempK, tint;
     mul2temp(module, d, &TempK, &tint);
