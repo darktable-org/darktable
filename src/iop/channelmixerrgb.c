@@ -1408,12 +1408,43 @@ static void update_xy_color(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
+static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
+                                const struct dt_iop_order_iccprofile_info_t *const work_profile, const float LMS[4], float RGB[4])
+{
+  if(p->adaptation != DT_ADAPTATION_RGB)
+  {
+    convert_any_LMS_to_RGB(LMS, RGB, p->adaptation);
+    // RGB vector is normalized with max(RGB)
+  }
+  else
+  {
+    float XYZ[4];
+    if(work_profile)
+    {
+      dt_ioppr_rgb_matrix_to_xyz(LMS, XYZ, work_profile->matrix_in, work_profile->lut_in,
+                                  work_profile->unbounded_coeffs_in, work_profile->lutsize,
+                                  work_profile->nonlinearlut);
+      dt_XYZ_to_Rec709_D65(XYZ, RGB);
+
+      // normalize with hue-preserving method (sort-of) to prevent gamut-clipping in sRGB
+      const float max_RGB = fmaxf(fmaxf(RGB[0], RGB[1]), RGB[2]);
+      for(size_t c = 0; c < 3; c++) RGB[c] = fmaxf(RGB[c] / max_RGB, 0.f);
+    }
+    else
+    {
+      // work profile not available yet - default to grey
+      for(size_t c = 0; c < 3; c++) RGB[c] = 0.5f;
+    }
+  }
+}
+
 
 static void update_R_colors(dt_iop_module_t *self)
 {
   // update the fill background color of x, y sliders
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
 
   // scale params if needed
   float RGB[3] = { p->red[0], p->red[1], p->red[2] };
@@ -1435,14 +1466,8 @@ static void update_R_colors(dt_iop_module_t *self)
     const float RR = RR_min + stop * RR_range;
     const float stop_R = RR + RGB[1] + RGB[2];
     const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_red_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1456,14 +1481,8 @@ static void update_R_colors(dt_iop_module_t *self)
     const float RG = RG_min + stop * RG_range;
     const float stop_R = RGB[0] + RG + RGB[2];
     const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_red_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1477,14 +1496,8 @@ static void update_R_colors(dt_iop_module_t *self)
     const float RB = RB_min + stop * RB_range;
     const float stop_R = RGB[0] + RGB[1] + RB;
     const float LMS[4] = { 0.5f * stop_R, 0.5f, 0.5f };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_red_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1497,6 +1510,7 @@ static void update_B_colors(dt_iop_module_t *self)
   // update the fill background color of x, y sliders
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
 
   // scale params if needed
   float RGB[3] = { p->blue[0], p->blue[1], p->blue[2] };
@@ -1518,14 +1532,8 @@ static void update_B_colors(dt_iop_module_t *self)
     const float BR = BR_min + stop * BR_range;
     const float stop_B = BR + RGB[1] + RGB[2];
     const float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_blue_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1539,14 +1547,8 @@ static void update_B_colors(dt_iop_module_t *self)
     const float BG = BG_min + stop * BG_range;
     const float stop_B = RGB[0] + BG + RGB[2];
     const float LMS[4] = { 0.5f , 0.5f, 0.5f * stop_B };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_blue_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1559,15 +1561,9 @@ static void update_B_colors(dt_iop_module_t *self)
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float BB = BB_min + stop * BB_range;
     const float stop_B = RGB[0] + RGB[1] + BB;
-    const float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    const float LMS[4] = { 0.5f, 0.5f, 0.5f * stop_B , 0.f};
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_blue_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1579,6 +1575,7 @@ static void update_G_colors(dt_iop_module_t *self)
   // update the fill background color of x, y sliders
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, self->dev->pipe);
 
   // scale params if needed
   float RGB[3] = { p->green[0], p->green[1], p->green[2] };
@@ -1600,14 +1597,8 @@ static void update_G_colors(dt_iop_module_t *self)
     const float GR = GR_min + stop * GR_range;
     const float stop_G = GR + RGB[1] + RGB[2];
     const float LMS[4] = { 0.5f , 0.5f * stop_G, 0.5f };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_green_R, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1621,14 +1612,8 @@ static void update_G_colors(dt_iop_module_t *self)
     const float GG = GG_min + stop * GG_range;
     const float stop_G = RGB[0] + GG + RGB[2];
     const float LMS[4] = { 0.5f, 0.5f * stop_G, 0.5f };
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_green_G, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
@@ -1642,14 +1627,8 @@ static void update_G_colors(dt_iop_module_t *self)
     const float GB = GB_min + stop * GB_range;
     const float stop_G = RGB[0] + RGB[1] + GB;
     const float LMS[4] = { 0.5f, 0.5f * stop_G , 0.5f};
-    float RGB_t[4] = { 0 };
-
-    if(p->adaptation != DT_ADAPTATION_RGB)
-      convert_any_LMS_to_RGB(LMS, RGB_t, p->adaptation);
-    else
-      // TODO: convert from actual pipeline working profile to actual display profile
-      dt_simd_memcpy(LMS, RGB_t, 4);
-
+    float RGB_t[4] = { 0.5f };
+    _convert_GUI_colors(p, work_profile, LMS, RGB_t);
     dt_bauhaus_slider_set_stop(g->scale_green_B, stop, RGB_t[0], RGB_t[1], RGB_t[2]);
   }
 
