@@ -573,8 +573,14 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
 
         default:
         {
+          // show deprecated module in specific group deprecated
+          dt_lib_modulegroups_group_t *gr =
+            (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, d->current - 1);
+
           if(_lib_modulegroups_test_internal(self, d->current, module)
-             && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled))
+            && (!(module->flags() & IOP_FLAGS_DEPRECATED)
+                || module->enabled
+                || !strcmp(gr->name, _("deprecated"))))
           {
             if(w) gtk_widget_show(w);
           }
@@ -1080,6 +1086,12 @@ void init_presets(dt_lib_module_t *self)
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
   dt_lib_presets_add(_("modules: default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  g_free(tx);
+
+  tx = NULL;
+  tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "deprecated"), "basic",
+                       "zonesystem|invert");
+  dt_lib_presets_add(_("modules: deprecated"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // if needed, we add a new preset, based on last user config
