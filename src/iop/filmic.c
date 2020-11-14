@@ -175,7 +175,7 @@ int flags()
 
 const char *deprecated_msg()
 {
-  return _("This module is deprecated. Better use filmic rgb module instead...");
+  return _("this module is deprecated. better use filmic rgb module instead.");
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
