@@ -117,7 +117,7 @@ static void _lib_modulegroups_viewchanged_callback(gpointer instance, dt_view_t 
                                                    dt_view_t *new_view, gpointer data);
 
 static void _manage_preset_update_list(dt_lib_module_t *self);
-static void _manage_editor_load(char *preset, dt_lib_module_t *self);
+static void _manage_editor_load(const char *preset, dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -1185,7 +1185,7 @@ static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *even
   GList *l = gr->modules;
   while(l)
   {
-    char *tx = (char *)l->data;
+    const char *tx = (char *)l->data;
     if(g_strcmp0(tx, module) == 0)
     {
       g_free(l->data);
@@ -1689,7 +1689,7 @@ static void _manage_editor_group_add(GtkWidget *widget, GdkEventButton *event, d
   _manage_editor_group_update_arrows(d->preset_groups_box);
 }
 
-static void _manage_editor_load(char *preset, dt_lib_module_t *self)
+static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
@@ -1826,7 +1826,7 @@ static void _manage_editor_load(char *preset, dt_lib_module_t *self)
 
 static void _manage_preset_change(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  char *preset = g_strdup((char *)g_object_get_data(G_OBJECT(widget), "preset_name"));
+  const char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
   _manage_editor_load(preset, self);
 }
 
@@ -1866,7 +1866,7 @@ static void _manage_preset_add(GtkWidget *widget, GdkEventButton *event, dt_lib_
 
 static void _manage_preset_duplicate(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
+  const char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
   gchar *nname = dt_lib_presets_duplicate(preset, self->plugin_name, self->version());
 
   // reload the window
@@ -1911,7 +1911,7 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
     while(l)
     {
       GtkWidget *ww = (GtkWidget *)l->data;
-      char *tx = g_strdup((char *)g_object_get_data(G_OBJECT(ww), "preset_name"));
+      const char *tx = (char *)g_object_get_data(G_OBJECT(ww), "preset_name");
       if(g_strcmp0(tx, gtk_entry_get_text(GTK_ENTRY(d->preset_name))) == 0)
       {
         _manage_editor_load(tx, self);
@@ -1926,7 +1926,7 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
       GtkWidget *ww = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(d->presets_list)), 0);
       if(ww)
       {
-        char *firstn = g_strdup((char *)g_object_get_data(G_OBJECT(ww), "preset_name"));
+        const char *firstn = (char *)g_object_get_data(G_OBJECT(ww), "preset_name");
         _manage_editor_load(firstn, self);
       }
     }
@@ -2100,7 +2100,7 @@ static void _manage_show_window(dt_lib_module_t *self)
     while(l)
     {
       GtkWidget *w = (GtkWidget *)l->data;
-      char *tx = g_strdup((char *)g_object_get_data(G_OBJECT(w), "preset_name"));
+      const char *tx = (char *)g_object_get_data(G_OBJECT(w), "preset_name");
       if(g_strcmp0(tx, preset) == 0)
       {
         _manage_editor_load(preset, self);
@@ -2117,7 +2117,7 @@ static void _manage_show_window(dt_lib_module_t *self)
     GtkWidget *w = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(d->presets_list)), 0);
     if(w)
     {
-      char *firstn = g_strdup((char *)g_object_get_data(G_OBJECT(w), "preset_name"));
+      const char *firstn = (char *)g_object_get_data(G_OBJECT(w), "preset_name");
       _manage_editor_load(firstn, self);
     }
   }
