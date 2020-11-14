@@ -71,6 +71,11 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
+const char *deprecated_msg()
+{
+  return _("This module is deprecated. Better use new local contrast module instead...");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
