@@ -425,6 +425,7 @@ void refresh_sliders_to_device(MidiDevice *midi)
           float c   = is_slider ? dt_bauhaus_slider_get(w) : dt_bauhaus_combobox_get(w);
 
           int velocity = is_slider ? round((c-min)/(max-min)*127) : (c>11?c+107:c*127./12.+1.25);
+          if(is_slider && DT_BAUHAUS_WIDGET(w)->data.slider.factor < 0) velocity = 127 - velocity;
 
           if (velocity != midi->last_known[k->key])
           {
@@ -653,6 +654,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
             float wmax = is_slider ? dt_bauhaus_slider_get_soft_max(w) : dt_bauhaus_combobox_length(w);
 
             int location = is_slider ? round((v-wmin)/(wmax-wmin)*127) : (v>11?v+107:v*127./12.+1.25);
+            if(is_slider && DT_BAUHAUS_WIDGET(w)->data.slider.factor < 0) location = 127 - location;
             move -= location;
 
             // attempt to limit number of steps if acceleration too high to avoid flipping back and forth between ends of range
