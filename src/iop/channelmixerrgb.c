@@ -70,8 +70,8 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   float green[CHANNEL_SIZE];       // $MIN: -2.0 $MAX: 2.0
   float blue[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
   float saturation[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0
-  float lightness[CHANNEL_SIZE];   // $MIN: -2.0 $MAX: 2.0
-  float grey[CHANNEL_SIZE];        // $MIN: -1.0 $MAX: 1.0
+  float lightness[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0
+  float grey[CHANNEL_SIZE];        // $MIN: 0.0 $MAX: 1.0
   gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
   dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
   dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
@@ -1110,7 +1110,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   float Lch[3];
   dt_xyY_to_Lch(xyY, Lch);
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-  dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+  dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
 
   update_illuminants(self);
   update_approx_cct(self);
@@ -1146,8 +1146,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(p->normalize_light) norm_light = (p->lightness[0] + p->lightness[1] + p->lightness[2]) / 3.f;
 
   float norm_grey = p->grey[0] + p->grey[1] + p->grey[2];
-  d->apply_grey = (norm_grey != 0.0f);
-  if(!p->normalize_grey) norm_grey = 1.f;
+  d->apply_grey = (p->grey[0] != 0.f) || (p->grey[1] != 0.f) || (p->grey[2] != 0.f);
+  if(!p->normalize_grey || norm_grey == 0.f) norm_grey = 1.f;
 
   for(int i = 0; i < 3; i++)
   {
@@ -1250,7 +1250,7 @@ static void update_illuminants(dt_iop_module_t *self)
     float Lch[3];
     dt_xyY_to_Lch(xyY, Lch);
     dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-    dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+    dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
   }
 
   // Display only the relevant sliders
@@ -1452,7 +1452,7 @@ static void update_R_colors(dt_iop_module_t *self)
   if(p->normalize_R)
   {
     const float sum = RGB[0] + RGB[1] + RGB[2];
-    for(int c = 0; c < 3; c++) RGB[c] /= sum;
+    if(sum != 0.f) for(int c = 0; c < 3; c++) RGB[c] /= sum;
   }
 
   // Get the current values bound of the slider, taking into account the possible soft rescaling
@@ -1518,7 +1518,7 @@ static void update_B_colors(dt_iop_module_t *self)
   if(p->normalize_B)
   {
     const float sum = RGB[0] + RGB[1] + RGB[2];
-    for(int c = 0; c < 3; c++) RGB[c] /= sum;
+    if(sum != 0.f) for(int c = 0; c < 3; c++) RGB[c] /= sum;
   }
 
   // Get the current values bound of the slider, taking into account the possible soft rescaling
@@ -1583,7 +1583,7 @@ static void update_G_colors(dt_iop_module_t *self)
   if(p->normalize_G)
   {
     float sum = RGB[0] + RGB[1] + RGB[2];
-    for(int c = 0; c < 3; c++) RGB[c] /= sum;
+    if(sum != 0.f) for(int c = 0; c < 3; c++) RGB[c] /= sum;
   }
 
   // Get the current values bound of the slider, taking into account the possible soft rescaling
@@ -1822,7 +1822,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->illum_fluo, p->illum_fluo);
   dt_bauhaus_combobox_set(g->illum_led, p->illum_led);
   dt_bauhaus_slider_set(g->temperature, p->temperature);
-  dt_bauhaus_slider_set(g->gamut, p->gamut);
+  dt_bauhaus_slider_set_soft(g->gamut, p->gamut);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->clip), p->clip);
 
   float xyY[3] = { p->x, p->y, 1.f };
@@ -1830,43 +1830,43 @@ void gui_update(struct dt_iop_module_t *self)
   dt_xyY_to_Lch(xyY, Lch);
 
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-  dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+  dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
 
   dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
 
-  dt_bauhaus_slider_set(g->scale_red_R, p->red[0]);
-  dt_bauhaus_slider_set(g->scale_red_G, p->red[1]);
-  dt_bauhaus_slider_set(g->scale_red_B, p->red[2]);
+  dt_bauhaus_slider_set_soft(g->scale_red_R, p->red[0]);
+  dt_bauhaus_slider_set_soft(g->scale_red_G, p->red[1]);
+  dt_bauhaus_slider_set_soft(g->scale_red_B, p->red[2]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_R), p->normalize_R);
 
-  dt_bauhaus_slider_set(g->scale_green_R, p->green[0]);
-  dt_bauhaus_slider_set(g->scale_green_G, p->green[1]);
-  dt_bauhaus_slider_set(g->scale_green_B, p->green[2]);
+  dt_bauhaus_slider_set_soft(g->scale_green_R, p->green[0]);
+  dt_bauhaus_slider_set_soft(g->scale_green_G, p->green[1]);
+  dt_bauhaus_slider_set_soft(g->scale_green_B, p->green[2]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_G), p->normalize_G);
 
-  dt_bauhaus_slider_set(g->scale_blue_R, p->blue[0]);
-  dt_bauhaus_slider_set(g->scale_blue_G, p->blue[1]);
-  dt_bauhaus_slider_set(g->scale_blue_B, p->blue[2]);
+  dt_bauhaus_slider_set_soft(g->scale_blue_R, p->blue[0]);
+  dt_bauhaus_slider_set_soft(g->scale_blue_G, p->blue[1]);
+  dt_bauhaus_slider_set_soft(g->scale_blue_B, p->blue[2]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_B), p->normalize_B);
 
-  dt_bauhaus_slider_set(g->scale_saturation_R, p->saturation[0]);
-  dt_bauhaus_slider_set(g->scale_saturation_G, p->saturation[1]);
-  dt_bauhaus_slider_set(g->scale_saturation_B, p->saturation[2]);
+  dt_bauhaus_slider_set_soft(g->scale_saturation_R, p->saturation[0]);
+  dt_bauhaus_slider_set_soft(g->scale_saturation_G, p->saturation[1]);
+  dt_bauhaus_slider_set_soft(g->scale_saturation_B, p->saturation[2]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
 
-  dt_bauhaus_slider_set(g->scale_lightness_R, p->lightness[0]);
-  dt_bauhaus_slider_set(g->scale_lightness_G, p->lightness[1]);
-  dt_bauhaus_slider_set(g->scale_lightness_B, p->lightness[2]);
+  dt_bauhaus_slider_set_soft(g->scale_lightness_R, p->lightness[0]);
+  dt_bauhaus_slider_set_soft(g->scale_lightness_G, p->lightness[1]);
+  dt_bauhaus_slider_set_soft(g->scale_lightness_B, p->lightness[2]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_light), p->normalize_light);
 
-  dt_bauhaus_slider_set(g->scale_grey_R, p->grey[0]);
-  dt_bauhaus_slider_set(g->scale_grey_G, p->grey[1]);
-  dt_bauhaus_slider_set(g->scale_grey_B, p->grey[2]);
+  dt_bauhaus_slider_set_soft(g->scale_grey_R, p->grey[0]);
+  dt_bauhaus_slider_set_soft(g->scale_grey_G, p->grey[1]);
+  dt_bauhaus_slider_set_soft(g->scale_grey_B, p->grey[2]);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
 
@@ -1974,7 +1974,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
           dt_bauhaus_slider_set(g->temperature, p->temperature);
           dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
           dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-          dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+          dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
           --darktable.gui->reset;
         }
       }
@@ -2005,6 +2005,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     update_G_colors(self);
   if(!w || w == g->scale_blue_R  || w == g->scale_blue_G  || w == g->scale_blue_B  || w == g->normalize_B)
     update_B_colors(self);
+
+  if((p->grey[0] + p->grey[1] + p->grey[2] == 0.f) && p->normalize_grey)
+    dt_control_log(_("color calibration: the sum of the grey channel parameters is zero, normalization will be disabled."));
 
   if(w == g->adaptation)
   {
@@ -2119,7 +2122,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   float Lch[3] = { 0 };
   dt_xyY_to_Lch(xyY, Lch);
   dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-  dt_bauhaus_slider_set(g->illum_y, Lch[1]);
+  dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
 
   update_illuminants(self);
   update_approx_cct(self);
@@ -2212,13 +2215,15 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->illum_x), "value-changed", G_CALLBACK(illum_xy_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_x), FALSE, FALSE, 0);
 
-  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 180., 0.5, 0, 1);
+  g->illum_y = dt_bauhaus_slider_new_with_range(self, 0., 100., 0.5, 0, 1);
   dt_bauhaus_widget_set_label(g->illum_y, NULL, _("chroma"));
   dt_bauhaus_slider_set_format(g->illum_y, "%.1f %%");
+  dt_bauhaus_slider_set_hard_max(g->illum_y, 300.f);
   g_signal_connect(G_OBJECT(g->illum_y), "value-changed", G_CALLBACK(illum_xy_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->illum_y), FALSE, FALSE, 0);
 
   g->gamut = dt_bauhaus_slider_from_params(self, "gamut");
+  dt_bauhaus_slider_set_hard_max(g->gamut, 12.f);
 
   g->clip = dt_bauhaus_toggle_from_params(self, "clip");
 
@@ -2229,16 +2234,22 @@ void gui_init(struct dt_iop_module_t *self)
   first = dt_bauhaus_slider_from_params(self, swap ? #var "[2]" : #var "[0]");\
   dt_bauhaus_slider_set_step(first, 0.005);                                   \
   dt_bauhaus_slider_set_digits(first, 3);                                     \
+  dt_bauhaus_slider_set_hard_min(first, -2.f);                                \
+  dt_bauhaus_slider_set_hard_max(first, 2.f);                                 \
   dt_bauhaus_widget_set_label(first, section, _("input red"));                \
                                                                               \
   second = dt_bauhaus_slider_from_params(self, #var "[1]");                   \
   dt_bauhaus_slider_set_step(second, 0.005);                                  \
   dt_bauhaus_slider_set_digits(second, 3);                                    \
+  dt_bauhaus_slider_set_hard_min(second, -2.f);                               \
+  dt_bauhaus_slider_set_hard_max(second, 2.f);                                \
   dt_bauhaus_widget_set_label(second, section, _("input green"));             \
                                                                               \
   third = dt_bauhaus_slider_from_params(self, swap ? #var "[0]" : #var "[2]");\
   dt_bauhaus_slider_set_step(third, 0.005);                                   \
   dt_bauhaus_slider_set_digits(third, 3);                                     \
+  dt_bauhaus_slider_set_hard_min(third, -2.f);                                \
+  dt_bauhaus_slider_set_hard_max(third, 2.f);                                 \
   dt_bauhaus_widget_set_label(third, section, _("input blue"));               \
                                                                               \
   g->scale_##var##_R = swap ? third : first;                                  \
