@@ -133,6 +133,17 @@ making a backup is strongly advised.
 - Guard against overwriting styles when exporting them by using
   a dialog to let the user to confirm or abort the action.
 
+- Output channel sliders for parametric masking are hidden by default.
+
+- Add a “boost” slider to the parametric mask channels to extend their
+  range and allow selection of highlights in scene referred editing.
+
+- Allow selection of the color space in which the blending will be
+  performed. An additional implementation is provided for the RGB color
+  space that may be used in scene referred editing and provides
+  unbounded blending modes and a more accurate color selection with
+  JzCzhz.
+
 ## Bug fixes
 
 - Fix orientation in the clipping module after having selected the freehand aspect ratio.
