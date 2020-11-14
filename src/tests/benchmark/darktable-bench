@@ -1,0 +1,219 @@
+#!/bin/env python3
+
+import os
+import sys
+import subprocess
+import argparse
+from shutil import which
+
+def whereami():
+   '''whereami: retrieve the path for this script
+
+   args: none
+   returns: str(path)
+   '''
+   path, _, exe = sys.argv[0].rpartition('/')
+   if exe == '':
+      ## invoked without a pathname, so assume running from current directory
+      return os.getcwd()
+   path = path + '/'
+   if path[0] == '/' or path[0] == '\\':
+      return path
+   else:
+      return os.getcwd() + '/' + path
+
+def locate_program(program):
+   '''locate executable in standard locations if specified without a path
+
+   args: program = the name of the program to locate
+   returns: full pathname of program
+   '''
+   if '/' in program or '\\' in program:
+      # is this a relative or absolute path?
+      if program[0] == '/' or program[0] == '\\':
+         return program
+      # relative path, so prepend current working directory
+      return os.getcwd() + '/' + program
+   else:
+      # no path given, so check the standard locations
+      loc = whereami()
+      # are we in the source tree?
+      if 'src/tests/benchmark' in loc:
+         # check if available in the build directory
+         build, _, __ = loc.partition('src/tests/benchmark')
+         build += 'build/bin/'
+         if os.path.exists(build+program):
+            return build+program
+      # last location: check if on search path
+      onpath = which(program)
+      if onpath:
+         return onpath
+   # finally: give up
+   print(f'Unable to locate {program}')
+   exit(1)
+
+def locate_image(image):
+   '''locate benchmark image in standard locations if specified without a path
+
+   args: image = the name of the image file to locate
+   returns: full pathname of image
+   '''
+   if '/' in image or '\\' in image:
+      # is this a relative or absolute path?
+      if image[0] == '/' or image[0] == '\\':
+         return image
+      # relative path, so prepend current working directory
+      return os.getcwd() + '/' + image
+   else:
+      # check standard locations if no path given
+      # first: current directory
+      if os.path.exists(image):
+         return os.getcwd()+ '/' + image
+      # second: same directory as this script
+      loc = whereami()
+      if os.path.exists(loc+image):
+         return loc+image
+      # third: script is in source dir, so look in integration tests
+      if 'src/tests/benchmark' in loc:
+         integ, _, __ = loc.partition('benchmark')
+         integ += 'integration/images/'
+         if os.path.exists(integ+image):
+            return integ+image
+
+   # finally: give up
+   print(f'Unable to locate {image}')
+   exit(1)
+
+def locate_xmp(xmp,version):
+   '''locate sidecar file in standard locations if specified without a path
+
+   args: image = the name of the sidecar file to locate
+   returns: full pathname of sidecar
+   '''
+   if xmp.endswith('.xmp'):
+      xmp = xmp[:-4]
+   if version:
+      xmp = xmp + '-' + version + '.xmp'
+   if '/' in xmp or '\\' in xmp:
+      # is this a relative or absolute path?
+      if xmp[0] == '/' or xmp[0] == '\\':
+         return xmp
+      # relative path, so prepend current working directory
+      return os.getcwd() + '/' + xmp
+   else:
+      # check standard locations if no path given
+      # first: current directory
+      if os.path.exists(xmp):
+         return os.getcwd() + '/' + xmp
+      # second: same directory as this script
+      loc = whereami()
+      if os.path.exists(loc+xmp):
+         return loc+xmp
+      # third: TODO
+
+   # finally: give up
+   print(f'Unable to locate sidecar {xmp}')
+   exit(1)
+
+
+def parse_commandline():
+   parser = argparse.ArgumentParser(description="Darktable performance benchmarking")
+   parser.add_argument("-i","--image",metavar="FILE",help="the name of the image to use",default="mire1.cr2")
+   parser.add_argument("-v","--version",metavar="V",help="look for darktable version V sidecar",default="3.4")
+   parser.add_argument("-x","--xmp",metavar="FILE",help="the root name of the .xmp sidecar file to use",default="darktable-bench")
+   parser.add_argument("-t","--threads",metavar="N",help="tell darktable-cli to use N threads",default=None)
+   parser.add_argument("-p","--program",metavar="EXE",help="full path to darktable-cli executable",default="darktable-cli")
+   parser.add_argument("-r","--reps",metavar="N",help="run N times and report average time",type=int,choices=range(1,10),default=3)
+
+   if len(sys.argv) < 1:
+      parser.print_usage()
+      parser.exit()
+   args, remargs = parser.parse_known_args()
+   args.program = locate_program(args.program)
+   args.image = locate_image(args.image)
+   args.xmp0 = args.xmp
+   args.xmp = locate_xmp(args.xmp,args.version)
+   if remargs:
+      parser.print_usage()
+      parser.exit()
+   return args, remargs
+
+def extract_seconds(line):
+   pos = line.find('took')
+   if pos > 0:
+      line = line[pos+4:]
+   else:
+      return 0.0
+   pos = line.find('sec')
+   if pos > 0:
+      line = line[:pos]
+   else:
+      return 0.0
+   return float(line.strip())
+   
+def run_benchmark(program,image,xmp,args):
+   outimage='/tmp/darktable-bench.png'
+   if os.path.exists(outimage):
+      os.remove(outimage)
+   confdir="/tmp"
+   arglist = ["--hq","1",image,xmp,outimage,"--core","--library",":memory:","--configdir",confdir,"-d","perf"]
+   if args.threads:
+      arglist = arglist + ["-t",args.threads]
+   trace = subprocess.check_output([program]+arglist,stdin=None,stderr=subprocess.PIPE)
+   if trace:
+      trace = trace.decode('utf-8').split('\n')
+   loadtime = 0.0
+   pixpipe = 0.0
+   for t in trace:
+      if 'to load the image' in t:
+         loadtime = extract_seconds(t)
+      elif 'pipeline processing took' in t:
+         pixpipe = extract_seconds(t)
+   return pixpipe, loadtime+pixpipe
+
+def warm_up_caches(program,image,xmp,args):
+   xmp = locate_xmp(xmp,'null')
+   if xmp:
+      run_benchmark(program,image,xmp,args)
+
+def get_version(program):
+   output = subprocess.check_output([program,"--version"],stdin=None,stderr=subprocess.PIPE)
+   if output:
+      output = output.decode('utf-8').split('\n')
+   if 'this is ' in output[0]:
+      return output[0][8:]
+   else:
+      return "(Undetermined darktable version)"
+
+def print_performance(pixpipe,total,dtversion,xmpversion,threads):
+   print('')
+   print(f'{dtversion} ::: benchmark v{xmpversion}')
+   if threads:
+      print(f'Number of threads used:               {threads:>7}')
+   print(f'Average pixelpipe processing time:    {pixpipe:7.3f} seconds')
+   print(f'Average overall processing time:      {total:7.3f} seconds')
+   thruput = 3600 / total
+   print(f'Throughput rating (higher is better): {thruput:7.1f}')
+   return
+
+def main():
+   args, remargs = parse_commandline()
+
+   warm_up_caches(args.program,args.image,args.xmp0,args)
+   total = 0.0
+   pixpipe = 0.0
+   for rep in range(args.reps):
+      if args.reps > 1:
+         print('     run #',rep+1,end='')
+      p, t = run_benchmark(args.program,args.image,args.xmp,args)
+      pixpipe += p
+      total += t
+      if args.reps > 1:
+         print(f': {p:7.3f} pixpipe,  {t:7.3f} total')
+   total = total / args.reps
+   pixpipe = pixpipe / args.reps
+   print_performance(pixpipe,total,get_version(args.program),args.version,args.threads)
+   return
+
+if __name__ == '__main__':
+   main()
