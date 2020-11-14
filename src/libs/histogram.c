@@ -1172,12 +1172,12 @@ static void _lib_histogram_update_color(dt_lib_histogram_t *d)
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  // red, green, blue in Lab
+  // red, green, blue in Lab selected for visual legibility and to
+  // combine to reasonable-looking secondaries and a neutral "white"
   const double Lab_primaries[3][3] = {
-    // a and b channels should to add up to 0 to produce neutral overlay
-    {45.0, 70.0, 60.0},
-    {55.0, -80.0, 50.0},
-    {30.0, 10.0, -110.0}
+    {50.0, 70.0, 55.0},
+    {45.0, -64.0, 45.0},
+    {35.0, 8.0, -73.0}
   };
 
   if(xform_Lab_to_display)
