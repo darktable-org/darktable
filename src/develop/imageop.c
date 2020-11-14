@@ -124,7 +124,7 @@ static const char *default_aliases(void)
 
 static const char *default_deprecated_msg(void)
 {
-  return NULL;
+  return "";
 }
 
 static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params,
