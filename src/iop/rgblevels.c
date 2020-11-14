@@ -470,23 +470,23 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       {
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
-        cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
         dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_R, is_linear);
 
-        cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
         dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_G, is_linear);
 
-        cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
         dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_B, is_linear);
       }
       else if(p->autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS)
       {
         if(ch == DT_IOP_RGBLEVELS_R)
-          cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
         else if(ch == DT_IOP_RGBLEVELS_G)
-          cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
         else
-          cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
         dt_draw_histogram_8(cr, hist, 4, ch, is_linear);
       }
 
