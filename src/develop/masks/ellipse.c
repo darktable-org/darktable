@@ -1065,7 +1065,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  int len = sizeof(dashed) / sizeof(dashed[0]);
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
   float dx = 0.0f, dy = 0.0f, xref = 0.0f, yref = 0.0f;
@@ -1168,7 +1168,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       if(border) dt_free_align(border);
     }
     return;
-  }
+  } // gui->creation
 
   if(!gpt) return;
 
