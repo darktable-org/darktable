@@ -60,6 +60,7 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *active_btn;
   GtkWidget *hbox_groups;
   GtkWidget *hbox_search_box;
+  GtkWidget *deprecated;
 
   GList *groups;
 
@@ -341,6 +342,14 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_buttons, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->hbox_search_box, TRUE, TRUE, 0);
 
+  // deprecated message
+  d->deprecated = gtk_label_new(
+      _("Following modules are deprecated because they have internal design mistakes that can't be solved AND "
+        "alternatives that solve them.\nThey will be removed for new edits in next release."));
+  gtk_widget_set_name(d->deprecated, "modulegroups-deprecated-msg");
+  gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
+
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
   d->current = dt_conf_get_int("plugins/darkroom/groups");
   if(d->current == DT_MODULEGROUP_NONE) _lib_modulegroups_update_iop_visibility(self);
@@ -576,6 +585,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
           // show deprecated module in specific group deprecated
           dt_lib_modulegroups_group_t *gr =
             (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, d->current - 1);
+          gtk_widget_set_visible(d->deprecated, !strcmp(gr->name, _("deprecated")));
 
           if(_lib_modulegroups_test_internal(self, d->current, module)
             && (!(module->flags() & IOP_FLAGS_DEPRECATED)
