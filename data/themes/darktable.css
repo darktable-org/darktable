@@ -1403,7 +1403,8 @@ margin: 0 2px;
   color: @button_hover_fg;
 }
 
-#modulegroups-deprecated-msg
+#modulegroups-deprecated-msg,
+#iop-plugin-deprecated
 {
   background-color: @grey_10;
   padding-top: 0.45em;
