@@ -73,7 +73,7 @@ int default_group()
 
 const char *deprecated_msg()
 {
-  return _("This module is deprecated. Better use new local contrast module instead...");
+  return _("this module is deprecated. better use new local contrast module instead.");
 }
 
 int flags()
