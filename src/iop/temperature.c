@@ -1107,8 +1107,8 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
       float sRGB_temp[3], XYZ_temp[3] = {cmsXYZ_temp.X, cmsXYZ_temp.Y, cmsXYZ_temp.Z};
       float sRGB_tint[3], XYZ_tint[3] = {cmsXYZ_tint.X, cmsXYZ_tint.Y, cmsXYZ_tint.Z};
 
-      dt_XYZ_to_sRGB(XYZ_temp, sRGB_temp);
-      dt_XYZ_to_sRGB(XYZ_tint, sRGB_tint);
+      dt_XYZ_to_Rec709_D65(XYZ_temp, sRGB_temp);
+      dt_XYZ_to_Rec709_D65(XYZ_tint, sRGB_tint);
 
       const float maxsRGB_temp = fmaxf(fmaxf(sRGB_temp[0], sRGB_temp[1]), sRGB_temp[2]);
       const float maxsRGB_tint = fmaxf(fmaxf(sRGB_tint[0], sRGB_tint[1]), sRGB_tint[2]);
