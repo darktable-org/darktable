@@ -2028,12 +2028,16 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
     gtk_container_add(GTK_CONTAINER(evt), lbl);
     gtk_box_pack_start(GTK_BOX(hb), evt, TRUE, TRUE, 0);
 
-    // duplicate button
-    GtkWidget *btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
-    gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
-    g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
-    g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_preset_duplicate), self);
-    gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
+    // duplicate button (not for deprecate preset)
+    GtkWidget *btn;
+    if(g_strcmp0(name, _("modules: deprecated")))
+    {
+      btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
+      gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
+      g_object_set_data(G_OBJECT(btn), "preset_name", g_strdup(name));
+      g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_preset_duplicate), self);
+      gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, FALSE, 0);
+    }
 
     // remove button (not for read-lony presets)
     if(!ro)
