@@ -1098,9 +1098,12 @@ void init_presets(dt_lib_module_t *self)
   dt_lib_presets_add(_("modules: default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
+  // this is a special preset for all newly deprecated modules
+  // so users still have a chance to access them until next release (with warning messages)
+  // this modules are deprecated in 3.4 and should be removed from this group in 3.6
   tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "deprecated"), "basic",
-                       "zonesystem|invert");
+                       "zonesystem|invert|channelmixer|globaltonemap|relight|tonemap");
   dt_lib_presets_add(_("modules: deprecated"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
