@@ -1004,7 +1004,7 @@ void init_presets(dt_lib_module_t *self)
                        "|shadhi|temperature|toneequal");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"),
                        "tone", "bilat|filmicrgb|globaltonemap|levels"
-                       "|relight|rgbcurve|rgblevels|tonecurve|tonemap|zonesystem");
+                       "|rgbcurve|rgblevels|tonecurve|tonemap");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
                        "channelmixer|channelmixerrgb|colorbalance|colorchecker|colorcontrast"
                        "|colorcorrection|colorin|colorout|colorzones|lut3d|monochrome"
@@ -1072,9 +1072,9 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
                        "basicadj|channelmixer|channelmixerrgb|colisa|colorbalance"
                        "|colorcontrast|colorcorrection|colorize|colorzones|globaltonemap"
-                       "|graduatednd|levels|relight|rgbcurve|rgblevels|shadhi|splittoning"
+                       "|graduatednd|levels|rgbcurve|rgblevels|shadhi|splittoning"
                        "|tonecurve|toneequal|tonemap"
-                       "|velvia|vibrance|zonesystem");
+                       "|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
                        "atrous|bilat|bloom|borders|clahe|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
