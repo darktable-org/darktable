@@ -1509,7 +1509,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       {
         const gboolean not_tagged = strcmp(escaped_text, _("not tagged")) == 0;
         const gboolean no_location = strcmp(escaped_text, _("tagged")) == 0;
-        const gboolean all_tagged = strcmp(escaped_text, _("tagged%")) == 0;
+        const gboolean all_tagged = strcmp(escaped_text, _("tagged*")) == 0;
         char *escaped_text2 = g_strstr_len(escaped_text, -1, "|");
         if(not_tagged || all_tagged)
           query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images "
