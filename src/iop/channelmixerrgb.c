@@ -1990,8 +1990,11 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(!w || w == g->scale_blue_R  || w == g->scale_blue_G  || w == g->scale_blue_B  || w == g->normalize_B)
     update_B_colors(self);
 
-  if((p->grey[0] + p->grey[1] + p->grey[2] == 0.f) && p->normalize_grey)
-    dt_control_log(_("color calibration: the sum of the grey channel parameters is zero, normalization will be disabled."));
+  // if grey channel is used and norm = 0 and normalization = ON, we are going to have a division by zero
+  // in commit_param, we avoid dividing by zero automatically, but user needs a notification
+  if((p->grey[0] != 0.f) || (p->grey[1] != 0.f) || (p->grey[2] != 0.f))
+    if((p->grey[0] + p->grey[1] + p->grey[2] == 0.f) && p->normalize_grey)
+      dt_control_log(_("color calibration: the sum of the grey channel parameters is zero, normalization will be disabled."));
 
   if(w == g->adaptation)
   {
