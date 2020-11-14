@@ -803,7 +803,7 @@ static inline void dt_XYZ_2_JzAzBz(const float *const DT_RESTRICT XYZ_D65, float
   for(int i = 0; i < 3; i++)
   {
     LMS[i] = M[i][0] * XYZ[0] + M[i][1] * XYZ[1] + M[i][2] * XYZ[2];
-    LMS[i] = powf(fmax(LMS[i] / 10000.f, 0.0f), n);
+    LMS[i] = powf(fmaxf(LMS[i] / 10000.f, 0.0f), n);
     LMS[i] = powf((c1 + c2 * LMS[i]) / (1.0f + c3 * LMS[i]), p);
   }
 
@@ -852,9 +852,9 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
   const float d = -0.56f;
   const float d0 = 1.6295499532821566e-11f;
   const float MI[3][4] DT_ALIGNED_ARRAY = {
-      {  1.9242264357876067, -1.0047923125953657,  0.0376514040306180f, 0.0f },
-      {  0.3503167620949991,  0.7264811939316552, -0.0653844229480850f, 0.0f },
-      { -0.0909828109828475, -0.3127282905230739,  1.5227665613052603f, 0.0f },
+      {  1.9242264357876067f, -1.0047923125953657f,  0.0376514040306180f, 0.0f },
+      {  0.3503167620949991f,  0.7264811939316552f, -0.0653844229480850f, 0.0f },
+      { -0.0909828109828475f, -0.3127282905230739f,  1.5227665613052603f, 0.0f },
   };
   const float AI[3][4] DT_ALIGNED_ARRAY = {
       {  1.0f,  0.1386050432715393f,  0.0580473161561189f, 0.0f },
@@ -878,7 +878,7 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
   for(int i = 0; i < 3; i++)
   {
     LMS[i] = AI[i][0] * IzAzBz[0] + AI[i][1] * IzAzBz[1] + AI[i][2] * IzAzBz[2];
-    LMS[i] = powf(fmax(LMS[i], 0.0f), p_inv);
+    LMS[i] = powf(fmaxf(LMS[i], 0.0f), p_inv);
     LMS[i] = 10000.f * powf(fmaxf((c1 - LMS[i]) / (c3 * LMS[i] - c2), 0.0f), n_inv);
   }
 
@@ -890,7 +890,7 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
 
   // X'Y'Z -> XYZ_D65
   XYZ_D65[0] = (XYZ[0] + (b - 1.0f) * XYZ[2]) / b;
-  XYZ_D65[1] = (XYZ[1] + (g - 1.0f) * XYZ[0]) / g;
+  XYZ_D65[1] = (XYZ[1] + (g - 1.0f) * XYZ_D65[0]) / g;
   XYZ_D65[2] = XYZ[2];
 }
 
