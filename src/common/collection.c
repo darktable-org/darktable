@@ -1441,6 +1441,7 @@ gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_mod
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
 {
   char *escaped_text = sqlite3_mprintf("%q", text);
+  unsigned int escaped_length = strlen(escaped_text);
   gchar *query = NULL;
 
   switch(property)
@@ -1582,9 +1583,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     case DT_COLLECTION_PROP_TAG: // tag
     
       /* shift-click adds an asterix * to include items in and under this hierarchy without using a wildcard % which also would include similar named items */
-      if (!strcmp(strrchr(escaped_text, '\0') - 1, "*"))
+      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*')) 
       {
-        escaped_text[strlen(escaped_text)-1] = 0;        
+        escaped_text[escaped_length-1] = '\0';
         query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                      "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
                               escaped_text, escaped_text);
