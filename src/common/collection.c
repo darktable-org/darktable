@@ -1580,9 +1580,22 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, ")");
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+    
+      /* shift-click adds an asterix * to include items in and under this hierarchy without using a wildcard % which also would include similar named items */
+      if (!strcmp(strrchr(escaped_text, '\0') - 1, "*"))
+      {
+        escaped_text[strlen(escaped_text)-1] = 0;        
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
+                              escaped_text, escaped_text);
+      /* default */
+      } else
+      {
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                      "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
                               escaped_text);
+      }
+
       break;
 
     case DT_COLLECTION_PROP_LENS: // lens

@@ -2106,7 +2106,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
          * hierarchy. */
         else if(event->state & GDK_SHIFT_MASK)
         {
-          gchar *n_text = g_strconcat(text, "%", NULL);
+          gchar *n_text = g_strconcat(text, "*", NULL);
           g_free(text);
           text = n_text;
         }
