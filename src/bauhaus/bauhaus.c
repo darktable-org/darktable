@@ -534,6 +534,7 @@ void dt_bauhaus_load_theme()
   gtk_style_context_lookup_color(ctx, "graph_grid", &darktable.bauhaus->graph_grid);
   gtk_style_context_lookup_color(ctx, "graph_fg", &darktable.bauhaus->graph_fg);
   gtk_style_context_lookup_color(ctx, "graph_fg_active", &darktable.bauhaus->graph_fg_active);
+  gtk_style_context_lookup_color(ctx, "graph_overlay", &darktable.bauhaus->graph_overlay);
   gtk_style_context_lookup_color(ctx, "inset_histogram", &darktable.bauhaus->inset_histogram);
 
   PangoFontDescription *pfont = 0;

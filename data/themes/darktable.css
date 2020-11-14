@@ -154,6 +154,7 @@
 @define-color graph_fg @grey_75;
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_05;
+@define-color graph_overlay @grey_50;
 @define-color inset_histogram alpha(@grey_65, 0.50);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
