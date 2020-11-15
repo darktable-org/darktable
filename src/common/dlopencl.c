@@ -31,7 +31,7 @@
 #if defined(WIN32)
 static const char *ocllib[] = { "OpenCL.dll", NULL };
 #elif defined(__APPLE__)
-static const char *ocllib[] = { "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL", "/System/Library/Frameworks/OpenCL.framework/Versions/Current/Libraries/libcldcpuengine.dylib", "/System/Library/Frameworks/OpenCL.framework/Versions/Current/Libraries/libcl2module.dylib", NULL };
+static const char *ocllib[] = { "/System/Library/Frameworks/OpenCL.framework/Versions/Current/OpenCL", "/System/Library/Frameworks/OpenCL.framework/Versions/Current/Libraries/libcldcpuengine.dylib", NULL };
 #else
 static const char *ocllib[] = { "libOpenCL", "libOpenCL.so", "libOpenCL.so.1", NULL };
 #endif
