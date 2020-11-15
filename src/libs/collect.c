@@ -1999,24 +1999,28 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {
-    /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
                                 _("use `%' as wildcard and `,' to separate values"));
   }
   else if(property == DT_COLLECTION_PROP_TAG)
   {
-    /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
                                   "use `|%' to include all sub-hierarchies (ctrl-click)\n"
+    /* xgettext:no-c-format */
                                   "use `*' to include hierarchy and sub-hierarchies (shift-click)"));
   }
   else if(property == DT_COLLECTION_PROP_GEOTAGGING)
   {
-    /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
                                 _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
                                   "use `|%' to include all sub-locations (ctrl-click)\n"
+    /* xgettext:no-c-format */
                                   "use `*' to include locations and sub-locations (shift-click)"));
   }
   else
