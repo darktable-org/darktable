@@ -2006,12 +2006,20 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
   else if(property == DT_COLLECTION_PROP_TAG)
   {
     /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard\nShift-Click on the tag / add *: include sub-hierarchy, Ctrl-Click: only show sub-hierarchy"));
+    gtk_widget_set_tooltip_text(d->text,
+                                _("type your query\n"
+                                  "use `%' as wildcard\n"
+                                  "use `|%' to include all sub-hierarchies (ctrl-click)\n"
+                                  "use `*' to include hierarchy and sub-hierarchies (shift-click)"));
   }
   else if(property == DT_COLLECTION_PROP_GEOTAGGING)
   {
     /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard\nShift-Click on tagged / add *: include locations, Ctrl-Click: only show locations"));
+    gtk_widget_set_tooltip_text(d->text,
+                                _("type your query\n"
+                                  "use `%' as wildcard\n"
+                                  "use `|%' to include all sub-locations (ctrl-click)\n"
+                                  "use `*' to include locations and sub-locations (shift-click)"));
   }
   else
   {
