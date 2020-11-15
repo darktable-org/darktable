@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2020 - Aurélien Pierre.
+   Copyright (C) 2020 - darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -152,4 +152,3 @@ inline float4 dt_noise_generator_simd(const dt_noise_distribution_t distribution
     }
   }
 }
-
