@@ -35,6 +35,7 @@
 DT_MODULE(1)
 
 #define FALLBACK_PRESET_NAME "default"
+#define DEPRECATED_PRESET_NAME "modules: deprecated"
 // if a preset cannot be loaded or the current preset deleted, this is the fallabck preset
 
 #define PADDING 2
@@ -550,6 +551,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
       /* lets show/hide modules dependent on current group*/
+      gtk_widget_set_visible(d->deprecated, FALSE);
       switch(d->current)
       {
         case DT_MODULEGROUP_ACTIVE_PIPE:
@@ -584,19 +586,12 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           // show deprecated module in specific group deprecated
-          dt_lib_modulegroups_group_t *gr =
-            (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, d->current - 1);
-
-          gboolean is_deprecated_group = FALSE;
-
-          if(gr) is_deprecated_group = !strcmp(gr->name, _("deprecated"));
-
-          gtk_widget_set_visible(d->deprecated, is_deprecated_group);
+          gboolean show_deprecated
+              = !strcmp(dt_conf_get_string("plugins/darkroom/modulegroups_preset"), _(DEPRECATED_PRESET_NAME));
+          gtk_widget_set_visible(d->deprecated, show_deprecated);
 
           if(_lib_modulegroups_test_internal(self, d->current, module)
-            && (!(module->flags() & IOP_FLAGS_DEPRECATED)
-                || module->enabled
-                || (is_deprecated_group)))
+             && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled || show_deprecated))
           {
             if(w) gtk_widget_show(w);
           }
@@ -1110,7 +1105,7 @@ void init_presets(dt_lib_module_t *self)
   tx = NULL;
   tx = dt_util_dstrcat(tx, "ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "deprecated"), "basic",
                        "zonesystem|invert|channelmixer|globaltonemap|relight|tonemap");
-  dt_lib_presets_add(_("modules: deprecated"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // if needed, we add a new preset, based on last user config
@@ -2039,7 +2034,7 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
 
     // duplicate button (not for deprecate preset)
     GtkWidget *btn;
-    if(g_strcmp0(name, _("modules: deprecated")))
+    if(g_strcmp0(name, _(DEPRECATED_PRESET_NAME)))
     {
       btn = dtgtk_button_new(dtgtk_cairo_paint_multiinstance, CPF_STYLE_FLAT, NULL);
       gtk_widget_set_tooltip_text(btn, _("duplicate this preset"));
