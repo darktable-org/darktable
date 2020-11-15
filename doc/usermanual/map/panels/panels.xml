@@ -19,6 +19,8 @@
 
   <xi:include href="find_location.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="locations.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="map_settings.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="tagging.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

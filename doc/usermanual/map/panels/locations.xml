@@ -1,0 +1,147 @@
+<!DOCTYPE sect2 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+                <!ENTITY % darktable_dtd SYSTEM "../../dtd/darktable.dtd">
+                %darktable_dtd;
+                ]>
+<sect2 status="final" id="locations">
+
+  <title>Locations</title>
+
+  <indexterm>
+    <primary>map view</primary>
+    <secondary>locations</secondary>
+  </indexterm>
+
+  <informaltable frame="none">
+    <tgroup cols="2" colsep="0" rowsep="0">
+      <colspec colwidth="6*"/>
+      <colspec colwidth="4*"/>
+      <tbody>
+        <row>
+          <entry>
+            <para>
+              In the <emphasis>locations</emphasis> panel you can create areas or locations
+              and organize them as hierarchical tags. The pipe <quote>|</quote> character
+              can be used to insert a new level, i.e. a group of locations.
+            </para>
+            <para>
+              A location is shown on the map when selected.
+              A location can have the shape of circle, ellipse, square or rectangle.
+              Each location is an entry of <emphasis>geotagging</emphasis> collection
+              under <emphasis>tagged</emphasis>.
+            </para>
+          </entry>
+          <entry>
+            <graphic fileref="map/images/map_locations.png" scalefit="1" width="80%" align="center" />
+          </entry>
+        </row>
+      </tbody>
+    </tgroup>
+  </informaltable>
+
+  <sect3 id="map_locations_usage">
+
+    <title>Usage</title>
+
+    <sect4 id="map_locations_shape">
+
+      <title>shape</title>
+
+      <para>
+        The circle or rectangle symbol selects the shape to be used for the new locations.
+      </para>
+
+    </sect4>
+
+    <sect4 id="map_locations_new">
+
+      <title>new location / new sub-location</title>
+
+      <para>
+        When no location is selected the button <emphasis>new location</emphasis>
+        lets you create a location at root level.
+      </para>
+
+      <para>
+        When a location is selected the button <emphasis>new sub-location</emphasis>
+        lets you create a location below the selected one.
+      </para>
+
+    </sect4>
+
+    <sect4 id="map_locations_show_all">
+
+      <title>show all</title>
+
+      <para>
+        When selected, all locations whose the centre is on the visible map are shown.
+      </para>
+
+    </sect4>
+
+    <sect4 id="map_locations_list_actions">
+
+      <title>Actions on locations list</title>
+
+      <para>
+        <emphasis>Left-Click</emphasis> selects / unselects the location. If the location
+        is not visible on the map the map is centred on it.
+      </para>
+
+      <para>
+        <emphasis>Ctrl-Left-Click</emphasis> enters edition of location name.
+        Press <emphasis>Escape</emphasis> to terminate without change.
+        Press <emphasis>Enter</emphasis> to save changes.
+      </para>
+
+      <para>
+        <emphasis>Right-Click</emphasis> shows the submenu:
+      </para>
+
+      <itemizedlist>
+
+        <listitem><para>
+          Edit location.
+        </para></listitem>
+
+        <listitem><para>
+          Delete location.
+        </para></listitem>
+
+        <listitem><para>
+          Update filmstrip. Filmstrip is populated with the location's images.
+        </para></listitem>
+
+        <listitem><para>
+          Go to collection (lighttable). Moves to lighttable and opens the corresponding collection.
+        </para></listitem>
+
+      </itemizedlist>
+
+    </sect4>
+    <sect4 id="map_locations_map_actions">
+
+      <title>Actions on locations on the map</title>
+
+      <para>
+        <emphasis>Left-Click</emphasis> and drag the location shape to adjust its place.
+        <emphasis>Ctrl-Click</emphasis> or <emphasis>Ctrl-Shift-Left-Click</emphasis> to move
+        an image or a group of images inside a location shape.
+      </para>
+
+      <para>
+        Inside the shape (but not over an image),
+        <emphasis>Scroll-Up</emphasis> or <emphasis>Scroll-Down</emphasis>to decrease or
+        increase its size. <emphasis>Shift-Scroll-Up</emphasis> or <emphasis>Shift-Scroll-Down</emphasis>
+        to decrease or increase its width. <emphasis>Ctrl-Scroll-Up</emphasis> or <emphasis>Ctrl-Scroll-Down</emphasis>
+        to decrease or increase its height.
+      </para>
+
+      <para>
+        <emphasis>Left-Click</emphasis> on location different of the selected one (with show all) selects this location.
+      </para>
+
+    </sect4>
+
+  </sect3>
+</sect2>
