@@ -2232,8 +2232,11 @@ static void _ui_panel_size_changed(GtkAdjustment *adjustment, GParamSpec *pspec,
 
   if(!darktable.gui->scroll_to[side]) return;
 
-  gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
-  gtk_adjustment_set_value(adjustment, allocation.y);
+  if(GTK_IS_WIDGET(darktable.gui->scroll_to[side]))
+  {
+    gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
+    gtk_adjustment_set_value(adjustment, allocation.y);
+  }
 
   darktable.gui->scroll_to[side] = NULL;
 }
