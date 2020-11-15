@@ -479,6 +479,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     }
   }
 
+  // hide deprectade message. it will be shown after if needed
+  gtk_widget_set_visible(d->deprecated, FALSE);
+
   GList *modules = darktable.develop->iop;
   if(modules)
   {
@@ -551,7 +554,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
       /* lets show/hide modules dependent on current group*/
-      gtk_widget_set_visible(d->deprecated, FALSE);
       switch(d->current)
       {
         case DT_MODULEGROUP_ACTIVE_PIPE:
