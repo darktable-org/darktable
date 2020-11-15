@@ -545,10 +545,12 @@ static inline float CCT_reverse_lookup(const float x, const float y)
 
   struct pair min_radius = { FLT_MAX, 0.0f };
 
+#ifndef __APPLE__ //makes Xcode 11.3.1 compiler crash
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(x, y, T_min, T_range, LUT_samples) reduction(pairmin:min_radius)\
   schedule(simd:static)
+#endif
 #endif
   for(size_t i = 0; i < LUT_samples; i++)
   {
