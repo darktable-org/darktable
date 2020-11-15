@@ -25,6 +25,12 @@
     </para>
 
     <para>
+      Multiple versions of the blending operators exist and are specific to demosaiced or non
+      demosaiced images or the color spaces in which they are supposed to work. Depending on
+      the module one or multiple versions will be available in the blending menu.
+    </para>
+
+    <para>
       Each blend mode is further controlled by a parameter called opacity, which can have a
       value between 0% and 100% and defines how input and output image contribute to the final
       result. Typically an opacity value of 0% gives as a result an image that is identical to
@@ -134,6 +140,14 @@
           this option reuse a mask created in another module using a
           parametric mask possibly combined with a drawn mask.  See
           <xref linkend="raster_mask"/> for further details.
+        </para>
+      </sect5>
+
+      <sect5 id="blending_usage_menu">
+        <title>blending menu</title>
+        <para>
+          this item provides access to the available blending versions for the module and
+          additional options specific to the blending operation.
         </para>
       </sect5>
     </sect4>

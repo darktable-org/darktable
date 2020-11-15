@@ -140,4 +140,16 @@
 
   </sect4>
 
+  <sect4 id="blending_operators_fulcrum">
+
+    <title>blend fulcrum</title>
+
+    <para>
+      This additional parameter is available for some of the blending operators in the RGB
+      scene referred version of the blending. It allows to adapt the effect of the applied
+      operator. The effect depends on the operator.
+    </para>
+
+  </sect4>
+
 </sect3>
