@@ -36,6 +36,19 @@
 
 #define HISTOGRAM_BINS 256
 
+#ifndef dt_omp_shared
+#ifdef _OPENMP
+#if defined(__clang__) || __GNUC__ > 8
+# define dt_omp_shared(...)  shared(__VA_ARGS__)
+#else
+  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
+  //  'const' variables as shared
+# define dt_omp_shared(var, ...)
+#endif
+#endif /* _OPENMP */
+#endif /* dt_omp_shared */
+
+
 DT_MODULE(1)
 
 typedef enum dt_lib_histogram_highlight_t
@@ -221,21 +234,11 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   // FIXME: instead outer loop could be by bin
   // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
 #ifdef _OPENMP
-#ifdef __GNUCC__
-#include <features.h>
-#if __GNUC_PREREQ(9,0)
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(input, width, height, wf_width, bin_width, _height, scale) \
-  shared(wf_linear) \
+  dt_omp_shared(wf_linear) \
   aligned(input, wf_linear:64) \
   schedule(simd:static, bin_width)
-#else
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(input, width, height, wf_width, bin_width, _height, scale) \
-  aligned(input, wf_linear:64) \
-  schedule(simd:static, bin_width)
-#endif
-#endif
 #endif
   for(int x = 0; x < width; x++)
   {
@@ -522,19 +525,10 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
 
   // map linear waveform data to a display colorspace
 #ifdef _OPENMP
-#ifdef __GNUCC__
-#if __GNUC_PREREQ(9,0)
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_width, wf_height, wf_linear, primaries_linear, ch) \
-  shared(wf_linear) aligned(wf_linear, wf_display, primaries_linear:64) \
+  dt_omp_shared(wf_linear) aligned(wf_linear, wf_display, primaries_linear:64) \
   schedule(simd:static)
-#else
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(wf_width, wf_height, wf_linear, primaries_linear, ch) \
-  aligned(wf_linear, wf_display, primaries_linear:64) \
-  schedule(simd:static)
-#endif
-#endif
 #endif
   for(int p = 0; p < wf_height * wf_width * 4; p += 4)
   {
@@ -550,19 +544,10 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
                                           d->profile_linear, d->profile_display, "waveform linear to display");
 
 #ifdef _OPENMP
-#ifdef __GNUCC__
-#if __GNUC_PREREQ(9,0)
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
-  shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
+  dt_omp_shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
   schedule(simd:static) collapse(2)
-#else
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
-  aligned(wf_8bit, wf_display:64) \
-  schedule(simd:static) collapse(2)
-#endif
-#endif
 #endif
   // FIXME: we could do this in place in wf_display, but it'd require care w/OpenMP
   for(int y = 0; y < wf_height; y++)
