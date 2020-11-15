@@ -778,8 +778,8 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     dt_collection_split_operator_number(needle, &number, &number2, &operator);
     if(number)
     {
-      float nb1 = g_strtod(number, NULL);
-      float nb2 = g_strtod(haystack, NULL);
+      const float nb1 = g_strtod(number, NULL);
+      const float nb2 = g_strtod(haystack, NULL);
       if(operator&& strcmp(operator, ">") == 0)
       {
         visible = (nb2 > nb1);
@@ -1042,7 +1042,7 @@ static char **split_path(const char *path)
 #else
 
   // there are size + 1 elements in tokens -- the final NULL! we want to ignore it.
-  unsigned int size = g_strv_length(tokens);
+  const unsigned int size = g_strv_length(tokens);
 
   result = malloc(size * sizeof(char *));
   for(unsigned int i = 0; i < size; i++)
@@ -1835,11 +1835,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
     // test selection range [xxx;xxx]
     GRegex *regex;
     GMatchInfo *match_info;
-    int match_count;
 
     regex = g_regex_new("^\\s*\\[\\s*(.*)\\s*;\\s*(.*)\\s*\\]\\s*$", 0, 0, NULL);
     g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->text)), -1, 0, 0, &match_info, NULL);
-    match_count = g_match_info_get_match_count(match_info);
+    const int match_count = g_match_info_get_match_count(match_info);
 
     if(match_count == 3)
     {
@@ -1934,7 +1933,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     else if(i == active)
     {
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
-      gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
+      const gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
       dtgtk_button_set_paint(button, dtgtk_cairo_paint_solid_arrow, flags, NULL);
     }
     else
