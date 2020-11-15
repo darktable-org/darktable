@@ -4,7 +4,7 @@
 #pragma once
 
 
-#if defined(_OPENMP) && !defined(_WIN32)
+#if defined(_OPENMP) && !defined(_WIN32) && !defined(__GNUC__)
 
 #pragma omp declare simd
 extern float fmaxf(const float x, const float y);
