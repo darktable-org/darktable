@@ -586,7 +586,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           // show deprecated module in specific group deprecated
-          gboolean show_deprecated
+          const gboolean show_deprecated
               = !strcmp(dt_conf_get_string("plugins/darkroom/modulegroups_preset"), _(DEPRECATED_PRESET_NAME));
           gtk_widget_set_visible(d->deprecated, show_deprecated);
 
