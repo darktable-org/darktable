@@ -40,6 +40,11 @@ typedef enum dt_iop_filmicrgb_colorscience_type_t
   DT_FILMIC_COLORSCIENCE_V2 = 1,
 } dt_iop_filmicrgb_colorscience_type_t;
 
+typedef enum dt_iop_filmicrgb_reconstruction_type_t
+{
+  DT_FILMIC_RECONSTRUCT_RGB = 0,
+  DT_FILMIC_RECONSTRUCT_RATIOS = 1,
+} dt_iop_filmicrgb_reconstruction_type_t;
 
 kernel void
 filmic (read_only image2d_t in, write_only image2d_t out, int width, int height,
@@ -156,7 +161,8 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
       return fmax(fmax(pixel.x, pixel.y), pixel.z);
 
     case DT_FILMIC_METHOD_LUMINANCE:
-      return (use_work_profile) ? dt_camera_rgb_luminance(pixel): get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
+      return (use_work_profile) ? get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut)
+                                : dt_camera_rgb_luminance(pixel);
 
     case DT_FILMIC_METHOD_POWER_NORM:
       return pixel_rgb_norm_power(pixel);
@@ -307,7 +313,7 @@ inline float4 filmic_split_v2(const float4 i,
 
 kernel void
 filmicrgb_split (read_only image2d_t in, write_only image2d_t out,
-                 int width, int height,
+                 const int width, const int height,
                  const float dynamic_range, const float black_exposure, const float grey_value,
                  constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
                  read_only image2d_t lut, const int use_work_profile,
@@ -439,7 +445,7 @@ inline float4 filmic_chroma_v2(const float4 i,
 
 kernel void
 filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
-                 int width, int height,
+                 const int width, const int height,
                  const float dynamic_range, const float black_exposure, const float grey_value,
                  constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
                  read_only image2d_t lut, const int use_work_profile,
@@ -485,26 +491,28 @@ filmicrgb_chroma (read_only image2d_t in, write_only image2d_t out,
 kernel void
 filmic_mask_clipped_pixels(read_only image2d_t in, write_only image2d_t out,
                            int width, int height,
-                           const float normalize, const float feathering)
+                           const float normalize, const float feathering, write_only image2d_t is_clipped)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
 
-  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  float4 i = read_imagef(in, sampleri, (int2)(x, y));
   const float4 i2 = i * i;
 
-  const float pix_max = native_sqrt(i2.x + i2.y + i2.z);
+  const float pix_max = fmax(native_sqrt(i2.x + i2.y + i2.z), 0.f);
   const float argument = -pix_max * normalize + feathering;
-  const float weight = 1.0f / ( 1.0f + native_exp2(argument));
+  const float weight = clamp(1.0f / ( 1.0f + native_exp2(argument)), 0.f, 1.f);
+
+  if(4.f > argument) write_imageui(is_clipped, (int2)(0, 0), 1);
 
   write_imagef(out, (int2)(x, y), weight);
 }
 
 kernel void
 filmic_show_mask(read_only image2d_t in, write_only image2d_t out,
-                 int width, int height)
+                 const int width, const int height)
 {
   const unsigned int x = get_global_id(0);
   const unsigned int y = get_global_id(1);
@@ -518,7 +526,7 @@ filmic_show_mask(read_only image2d_t in, write_only image2d_t out,
 
 kernel void
 filmic_inpaint_noise(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out,
-                     int width, int height, const float noise_level, const float threshold,
+                     const int width, const int height, const float noise_level, const float threshold,
                      const dt_noise_distribution_t noise_distribution)
 {
   const unsigned int x = get_global_id(0);
@@ -539,5 +547,196 @@ filmic_inpaint_noise(read_only image2d_t in, read_only image2d_t mask, write_onl
   const float4 noise = dt_noise_generator_simd(noise_distribution, i, sigma, state);
   const float weight = (read_imagef(mask, sampleri, (int2)(x, y))).x;
   const float4 o = i * (1.0f - weight) + weight * noise;
+  write_imagef(out, (int2)(x, y), o);
+}
+
+kernel void init_reconstruct(read_only image2d_t in, read_only image2d_t mask, write_only image2d_t out,
+                             const int width, const int height)
+{
+  // init the reconstructed buffer with non-clipped and partially clipped pixels
+  // Note : it's a simple multiplied alpha blending where mask = alpha weight
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float4 weight = 1.f - (read_imagef(mask, sampleri, (int2)(x, y))).x;
+  float4 o = i * weight;
+
+  // copy masks and alpha
+  o.w = i.w;
+  write_imagef(out, (int2)(x, y), o);
+}
+
+
+// B spline filter
+#define FSIZE 5
+#define FSTART (FSIZE - 1) / 2
+
+kernel void blur_2D_Bspline_vertical(read_only image2d_t in, write_only image2d_t out,
+                                     const int width, const int height, const int mult)
+{
+  // À-trous B-spline interpolation/blur shifted by mult
+  // Convolve B-spline filter over lines
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 filter[FSIZE] = { (float4)1.0f / 16.0f,
+                                 (float4)4.0f / 16.0f,
+                                 (float4)6.0f / 16.0f,
+                                 (float4)4.0f / 16.0f,
+                                 (float4)1.0f / 16.0f };
+
+  float4 accumulator = (float4)0.f;
+  for(int jj = 0; jj < FSIZE; ++jj)
+  {
+    const int yy = mad24(mult, (jj - FSTART), y);
+    accumulator += filter[jj] * read_imagef(in, sampleri, (int2)(x, clamp(yy, 0, height - 1)));
+  }
+
+  write_imagef(out, (int2)(x, y), accumulator);
+}
+
+kernel void blur_2D_Bspline_horizontal(read_only image2d_t in, write_only image2d_t out,
+                                       const int width, const int height, const int mult)
+{
+  // À-trous B-spline interpolation/blur shifted by mult
+  // Convolve B-spline filter over columns
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 filter[FSIZE] = { (float4)1.0f / 16.0f,
+                                 (float4)4.0f / 16.0f,
+                                 (float4)6.0f / 16.0f,
+                                 (float4)4.0f / 16.0f,
+                                 (float4)1.0f / 16.0f };
+
+  float4 accumulator = (float4)0.f;
+  for(int ii = 0; ii < FSIZE; ++ii)
+  {
+    const int xx = mad24(mult, (ii - FSTART), x);
+    accumulator += filter[ii] * read_imagef(in, sampleri, (int2)(clamp(xx, 0, width - 1), y));
+  }
+
+  write_imagef(out, (int2)(x, y), accumulator);
+}
+
+inline float fmaxabsf(const float a, const float b)
+{
+  // Find the max in absolute value and return it with its sign
+  return (fabs(a) > fabs(b) && !isnan(a)) ? a :
+                                          (isnan(b)) ? 0.f : b;
+}
+
+inline float fminabsf(const float a, const float b)
+{
+  // Find the min in absolute value and return it with its sign
+  return (fabs(a) < fabs(b) && !isnan(a)) ? a :
+                                          (isnan(b)) ? 0.f : b;
+}
+
+kernel void wavelets_detail_level(read_only image2d_t detail, read_only image2d_t LF,
+                                      write_only image2d_t HF, write_only image2d_t texture,
+                                      const int width, const int height, dt_iop_filmicrgb_reconstruction_type_t variant)
+{
+  /*
+  * we pack the ratios and RGB methods in the same kernels since they differ by 1 line
+  * and avoiding kernels proliferation is a good thing since each kernel creates overhead
+  * when initialized
+  */
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 d = read_imagef(detail, sampleri, (int2)(x, y));
+  const float4 lf = read_imagef(LF, sampleri, (int2)(x, y));
+  const float4 hf = d - lf;
+  const float t = fminabsf(fminabsf(hf.x, hf.y), hf.z);
+
+  write_imagef(HF, (int2)(x, y), hf);
+  write_imagef(texture, (int2)(x, y), t);
+}
+
+kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF, read_only image2d_t texture, read_only image2d_t mask,
+                                 read_only image2d_t reconstructed_read, write_only image2d_t reconstructed_write,
+                                 const int width, const int height,
+                                 const float gamma, const float gamma_comp, const float beta, const float beta_comp, const float delta,
+                                 const int s, const int scales, const dt_iop_filmicrgb_reconstruction_type_t variant)
+{
+  /*
+  * we pack the ratios and RGB methods in the same kernels since they differ by 2 lines
+  * and avoiding kernels proliferation is a good thing since each kernel creates overhead
+  * when initialized
+  */
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float alpha = read_imagef(mask, sampleri, (int2)(x, y)).x;
+  const float4 HF_c = read_imagef(HF, sampleri, (int2)(x, y));
+  const float4 LF_c = read_imagef(LF, sampleri, (int2)(x, y));
+
+  const float grey_texture = gamma * read_imagef(texture, sampleri, (int2)(x, y)).x;
+  const float grey_details = fmaxabsf(fmaxabsf(HF_c.x, HF_c.y), HF_c.z);
+  const float grey_HF = beta_comp * (gamma_comp * grey_details + grey_texture);
+
+  const float4 color_residual = LF_c * beta;
+  float grey_residual;
+  float4 color_details;
+
+  switch(variant)
+  {
+    case(DT_FILMIC_RECONSTRUCT_RGB):
+    {
+      grey_residual = beta_comp * fmin(fmin(LF_c.x, LF_c.y), LF_c.z);
+      color_details = (HF_c * gamma_comp + fmin(fabs(HF_c / grey_details), (float4)1.f) * grey_texture) * beta;
+      break;
+    }
+    case(DT_FILMIC_RECONSTRUCT_RATIOS):
+    {
+      grey_residual = beta_comp * fmax(fmax(LF_c.x, LF_c.y), LF_c.z);
+      color_details = (HF_c * gamma_comp - 0.5f * fmin(fabs(HF_c / grey_details), (float4)1.f) * grey_texture) * beta;
+      break;
+    }
+  }
+
+  const float4 i = read_imagef(reconstructed_read, sampleri, (int2)(x, y));
+  const float4 o = i + alpha * (delta * (grey_HF + color_details) + (grey_residual + color_residual) / (float)scales);
+  write_imagef(reconstructed_write, (int2)(x, y), fmax(o, 0.f));
+}
+
+
+kernel void compute_ratios(read_only image2d_t in, write_only image2d_t norms,
+                           write_only image2d_t ratios,
+                           read_only image2d_t lut,
+                           constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
+                           const dt_iop_filmicrgb_methods_type_t variant,
+                           const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 i = read_imagef(in, sampleri, (int2)(x, y));
+  const float norm = fmax(get_pixel_norm(i, variant, profile_info, lut, 1), NORM_MIN);
+  const float4 ratio = i / norm;
+  write_imagef(norms, (int2)(x, y), norm);
+  write_imagef(ratios, (int2)(x, y), ratio);
+}
+
+
+kernel void restore_ratios(read_only image2d_t ratios, read_only image2d_t norms,
+                           write_only image2d_t out,
+                           const int width, const int height)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+  if(x >= width || y >= height) return;
+
+  const float4 ratio = read_imagef(ratios, sampleri, (int2)(x, y));
+  const float norm = read_imagef(norms, sampleri, (int2)(x, y)).x;
+  const float4 o = clamp(ratio, 0.f, 1.f) * norm;
   write_imagef(out, (int2)(x, y), o);
 }
