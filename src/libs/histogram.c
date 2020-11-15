@@ -527,7 +527,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_width, wf_height, wf_linear, primaries_linear, ch) \
-  dt_omp_shared(wf_linear) aligned(wf_linear, wf_display, primaries_linear:64) \
+  dt_omp_shared(wf_display) aligned(wf_linear, wf_display, primaries_linear:64) \
   schedule(simd:static)
 #endif
   for(int p = 0; p < wf_height * wf_width * 4; p += 4)
