@@ -910,11 +910,9 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
                                             const float delta, const size_t s, const size_t scales)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none)                                                                       \
+#pragma omp parallel for default(none)                                                                       \
     dt_omp_firstprivate(width, height, ch, HF, LF, texture, mask, reconstructed, gamma, gamma_comp, beta,         \
-                        beta_comp, delta, s, scales) schedule(simd                                                \
-                                                              : static)                                           \
-        aligned(HF, LF, texture, mask, reconstructed : 64)
+                        beta_comp, delta, s, scales) schedule(simd : static)
 #endif
   for(size_t k = 0; k < height * width * ch; k += ch)
   {
