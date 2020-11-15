@@ -1990,25 +1990,25 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
      || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_ASPECT_RATIO
      || property == DT_COLLECTION_PROP_EXPOSURE)
   {
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
+    gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
   }
   else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
     gtk_widget_set_tooltip_text(d->text,
-                                _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
-                                  "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
+                                _("use <, <=, >, >=, <>, =, [;] as operators\n"
+                                  "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {
     /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard and `,' to separate values"));
+    gtk_widget_set_tooltip_text(d->text,
+                                _("use `%' as wildcard and `,' to separate values"));
   }
   else if(property == DT_COLLECTION_PROP_TAG)
   {
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text,
-                                _("type your query\n"
-                                  "use `%' as wildcard\n"
+                                _("use `%' as wildcard\n"
                                   "use `|%' to include all sub-hierarchies (ctrl-click)\n"
                                   "use `*' to include hierarchy and sub-hierarchies (shift-click)"));
   }
@@ -2016,15 +2016,14 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
   {
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text,
-                                _("type your query\n"
-                                  "use `%' as wildcard\n"
+                                _("use `%' as wildcard\n"
                                   "use `|%' to include all sub-locations (ctrl-click)\n"
                                   "use `*' to include locations and sub-locations (shift-click)"));
   }
   else
   {
     /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard"));
+    gtk_widget_set_tooltip_text(d->text, _("use `%' as wildcard"));
   }
 
   gboolean order_request = FALSE;
