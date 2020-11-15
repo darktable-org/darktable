@@ -586,12 +586,17 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
           // show deprecated module in specific group deprecated
           dt_lib_modulegroups_group_t *gr =
             (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, d->current - 1);
-          gtk_widget_set_visible(d->deprecated, !strcmp(gr->name, _("deprecated")));
+
+          gboolean is_deprecated_group = FALSE;
+
+          if(gr) is_deprecated_group = !strcmp(gr->name, _("deprecated"));
+
+          gtk_widget_set_visible(d->deprecated, is_deprecated_group);
 
           if(_lib_modulegroups_test_internal(self, d->current, module)
             && (!(module->flags() & IOP_FLAGS_DEPRECATED)
                 || module->enabled
-                || !strcmp(gr->name, _("deprecated"))))
+                || (is_deprecated_group)))
           {
             if(w) gtk_widget_show(w);
           }
