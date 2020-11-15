@@ -18,17 +18,19 @@
 
 #ifdef HAVE_OPENCL
 
-#include <stdio.h>
 #include <stdlib.h>
+#ifndef __APPLE__
+#include <stdio.h>
 #include <string.h>
-
-#ifdef __APPLE__
-#include <sys/malloc.h>
-#endif
+#else //!__APPLE__
+#include <dlfcn.h>
+#include <glib.h>
+#endif //!__APPLE__
 
 #include "common/dynload.h"
 
 
+#ifndef __APPLE__
 /* check if gmodules is supported on this platform */
 int dt_gmodule_supported(void)
 {
@@ -76,11 +78,39 @@ int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(v
 
   return success;
 }
+#else //!__APPLE__
+/* check if gmodules is supported on this platform */
+int dt_gmodule_supported(void)
+{
+  return TRUE;
+}
 
+/* dynamically load library */
+dt_gmodule_t *dt_gmodule_open(const char *library)
+{
+  // logic here is simplified since it's used only specifically for OpenCL
+  dt_gmodule_t *module = NULL;
+  void *gmodule = dlopen(library, RTLD_LAZY | RTLD_LOCAL);
 
+  if(gmodule != NULL)
+  {
+    module = (dt_gmodule_t *)malloc(sizeof(dt_gmodule_t));
+    module->gmodule = gmodule;
+    module->library = g_strdup(library);
+  }
 
-#endif
+  return module;
+}
 
+/* get pointer to symbol */
+int dt_gmodule_symbol(dt_gmodule_t *module, const char *name, void (**pointer)(void))
+{
+  *pointer = dlsym(module->gmodule, name);
+
+  return *pointer != NULL ? TRUE : FALSE;
+}
+#endif //!__APPLE__
+#endif //HAVE_OPENCL
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
