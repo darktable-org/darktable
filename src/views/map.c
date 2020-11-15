@@ -1495,7 +1495,8 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       GdkPixbuf *location = _draw_location(lib, &width, &height,
                                            lib->loc.main.data.shape, lib->loc.main.data.lat,
                                            lib->loc.main.data.lon, lib->loc.main.data.delta1,
-                                           lib->loc.main.data.delta2, TRUE);
+                                           lib->loc.main.data.delta2 * lib->loc.main.data.ratio,
+                                           TRUE);
       if(location)
       {
         GtkWidget *image = gtk_image_new_from_pixbuf(location);
