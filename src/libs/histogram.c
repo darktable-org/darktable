@@ -1185,9 +1185,9 @@ static void _lib_histogram_update_color(dt_lib_histogram_t *d)
   // red, green, blue in Lab selected for visual legibility and to
   // combine to reasonable-looking secondaries and a neutral "white"
   const double Lab_primaries[3][3] = {
-    {50.0, 70.0, 55.0},
-    {45.0, -64.0, 45.0},
-    {35.0, 8.0, -73.0}
+    {56.0, 85.0, 74.0},
+    {70.0, -100.0, 62.0},
+    {30.0, 42.0, -99.0}
   };
 
   if(xform_Lab_to_display)
