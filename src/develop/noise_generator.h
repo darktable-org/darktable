@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   Copyright (C) 2020 - Aurélien Pierre.
+   Copyright (C) 2020 - darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -166,7 +166,7 @@ static inline void gaussian_noise_simd(const float mu[3], const float sigma[3], 
     u1[c] = fmaxf(xoshiro128plus(state), FLT_MIN);
 
   #pragma unroll
-  for(size_t c = 0; c < 3; c++)  
+  for(size_t c = 0; c < 3; c++)
     u2[c] = xoshiro128plus(state);
 
   float DT_ALIGNED_ARRAY noise[3] = { 0.f };
