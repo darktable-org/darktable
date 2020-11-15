@@ -60,5 +60,25 @@
       </para>
 
     </sect4>
+
+    <sect4 id="map_settings_group_size_factor">
+
+      <title>group size factor</title>
+
+      <para>
+        Increases or decreases the area of influence of the images grouping.
+      </para>
+
+    </sect4>
+    <sect4 id="map_settings_min_images_per_group">
+
+      <title>min images per group</title>
+
+      <para>
+        Sets the minimum of images to create a group of images.
+      </para>
+
+    </sect4>
+
   </sect3>
 </sect2>
