@@ -2003,6 +2003,16 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard and `,' to separate values"));
   }
+  else if(property == DT_COLLECTION_PROP_TAG)
+  {
+    /* xgettext:no-c-format */
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard\nShift-Click on the tag / add *: include sub-hierarchy, Ctrl-Click: only show sub-hierarchy"));
+  }
+  else if(property == DT_COLLECTION_PROP_GEOTAGGING)
+  {
+    /* xgettext:no-c-format */
+    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard\nShift-Click on tagged / add *: include locations, Ctrl-Click: only show locations"));
+  }
   else
   {
     /* xgettext:no-c-format */
@@ -2106,7 +2116,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
          * hierarchy. */
         else if(event->state & GDK_SHIFT_MASK)
         {
-          gchar *n_text = g_strconcat(text, "%", NULL);
+          gchar *n_text = g_strconcat(text, "*", NULL);
           g_free(text);
           text = n_text;
         }
