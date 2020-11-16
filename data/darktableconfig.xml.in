@@ -986,19 +986,6 @@
     <shortdescription>position of the image information line</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="darkroom" restart="true">
-    <name>plugins/darkroom/search_iop_by_text</name>
-    <type>
-      <enum>
-        <option>show search text</option>
-        <option>show groups</option>
-        <option>show both</option>
-      </enum>
-    </type>
-    <default>show both</default>
-    <shortdescription>show module groups and/or search text entry</shortdescription>
-    <longdescription>show module groups and/or search text entry. (needs a restart)</longdescription>
-  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>
