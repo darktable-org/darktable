@@ -34,7 +34,7 @@
 
 DT_MODULE(1)
 
-#define FALLBACK_PRESET_NAME "default"
+#define FALLBACK_PRESET_NAME "modules: default"
 #define DEPRECATED_PRESET_NAME "modules: deprecated"
 // if a preset cannot be loaded or the current preset deleted, this is the fallabck preset
 
@@ -1144,7 +1144,7 @@ void init_presets(dt_lib_module_t *self)
                        "atrous|bilat|bloom|borders|clahe|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
-  dt_lib_presets_add(_("modules: default"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+  dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
   // search only (only active modules visibles)
