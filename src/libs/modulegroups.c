@@ -1679,6 +1679,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), CPF_DO_NOT_USE_BORDER, NULL);
   gtk_widget_set_name(btn, "modulegroups-group-icon");
   gtk_widget_set_tooltip_text(btn, _("group icon"));
+  if(ro) gtk_widget_set_sensitive(btn, FALSE);
   g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_group_icon_popup), self);
   g_object_set_data(G_OBJECT(btn), "group", gr);
   gtk_box_pack_start(GTK_BOX(hb3), btn, FALSE, TRUE, 0);
@@ -1686,6 +1687,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   GtkWidget *tb = gtk_entry_new();
   gtk_widget_set_tooltip_text(tb, _("group name"));
   g_object_set_data(G_OBJECT(tb), "group", gr);
+  if(ro) gtk_widget_set_sensitive(tb, FALSE);
   g_signal_connect(G_OBJECT(tb), "changed", G_CALLBACK(_manage_editor_group_name_changed), self);
   gtk_entry_set_text(GTK_ENTRY(tb), gr->name);
   gtk_box_pack_start(GTK_BOX(hb3), tb, TRUE, TRUE, 0);
