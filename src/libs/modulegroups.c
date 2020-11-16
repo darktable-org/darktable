@@ -265,6 +265,7 @@ static void _buttons_update(dt_lib_module_t *self)
     }
     gtk_widget_hide(d->hbox_buttons);
     d->current = DT_MODULEGROUP_ACTIVE_PIPE;
+    _lib_modulegroups_update_iop_visibility(self);
     return;
   }
   else
