@@ -5,8 +5,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
-"POT-Creation-Date: 2020-11-16 08:27-0300\n"
-"PO-Revision-Date: 2020-11-16 08:47-0300\n"
+"POT-Creation-Date: 2020-11-17 03:42-0300\n"
+"PO-Revision-Date: 2020-11-17 05:58-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -8660,7 +8660,11 @@ msgid ""
 "demosaiced or non demosaiced images or the color spaces in which they are "
 "supposed to work. Depending on the module one or multiple versions will be "
 "available in the blending menu."
-msgstr "Múltiplas versões dos operadores de mescalgem existem e são específicas para imagens com ou sem interpolação cromática ou espaços de cor em que trabalham. Dependendo do módulo um ou múltiplas versões estarão disponíveis no menu de mesclagem."
+msgstr ""
+"Múltiplas versões dos operadores de mescalgem existem e são específicas para "
+"imagens com ou sem interpolação cromática ou espaços de cor em que "
+"trabalham. Dependendo do módulo um ou múltiplas versões estarão disponíveis "
+"no menu de mesclagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7028(para)
 msgid ""
@@ -8832,7 +8836,9 @@ msgstr "menu mesclagem"
 msgid ""
 "this item provides access to the available blending versions for the module "
 "and additional options specific to the blending operation."
-msgstr "este item provê acesso às versões de mesclagem para o módulo e opções adicionais específicas para a operação de mesclagem."
+msgstr ""
+"este item provê acesso às versões de mesclagem para o módulo e opções "
+"adicionais específicas para a operação de mesclagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7154(title)
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8468(title)
@@ -9162,7 +9168,10 @@ msgid ""
 "This additional parameter is available for some of the blending operators in "
 "the RGB scene referred version of the blending. It allows to adapt the "
 "effect of the applied operator. The effect depends on the operator."
-msgstr "Este parâmetro adicional está disponível para alguns operadores de mesclagem na versão de mesclagem RGB relativa à cena. Ele permite adaptar o efeito do operador aplicado. O efeito depende do operador."
+msgstr ""
+"Este parâmetro adicional está disponível para alguns operadores de mesclagem "
+"na versão de mesclagem RGB relativa à cena. Ele permite adaptar o efeito do "
+"operador aplicado. O efeito depende do operador."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7390(title)
 msgid "Drawn mask"
@@ -9802,7 +9811,6 @@ msgid "Channel tabs"
 msgstr "Abas de canal"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7885(para)
-#, fuzzy
 msgid ""
 "Each tab selects a data channel – real or virtual. Blending performed in Lab "
 "color space have data channels for L, a, b, C (chroma of LCh) and h (hue of "
@@ -9814,16 +9822,18 @@ msgid ""
 "JzCzhz). Consult for example <ulink url=\"http://en.wikipedia.org/wiki/"
 "Color_space\"> Wikipedia's article on color spaces</ulink> for a deeper look."
 msgstr ""
-"Cada aba seleciona um canal de dados - real ou virtual. Módulos agindo no "
-"espaço de cores Lab tem canais L, a, b, C (croma de LCh) e h (matiz de LCh). "
-"Módulos agindo no espaço de cores RGB tem canais para g (cinza), R, G, B, H "
-"(matiz de HSL), S (saturação de HSL), e L (luminosidade de HSL). Consulte, "
-"por exemplo, <ulink url=\"https://pt.wikipedia.org/wiki/Espaço_de_cores\"> o "
-"artigo da Wikipedia sobre espaços de cores</ulink> para uma visão mais "
-"aprofundada."
+"Cada aba seleciona um canal de dados - real ou virtual. A mesclagem "
+"realizada no no espaço de cores Lab tem canais L, a, b, C (croma de LCh) e h "
+"(matiz de LCh). A mesclagem realizada no espaço de cores RGB (relativo à "
+"exibição) tem canais para g (cinza), R, G, B, H (matiz de HSL), S (saturação "
+"de HSL), e L (luminosidade de HSL). A mesclagem realizada no espaço de cores "
+"RGB (relativo à cena)  tem canais para g (cinza), R, G, B, Jz (componente de "
+"luminância de JzCzhz), Cz (componente de crominancia de JzCzhz) and hz "
+"(componente de matiz de JzCzhz). Consulte, por exemplo, <ulink url=\"https://"
+"pt.wikipedia.org/wiki/Espaço_de_cores\"> o artigo da Wikipedia sobre espaços "
+"de cores</ulink> para uma visão mais aprofundada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7895(para)
-#, fuzzy
 msgid ""
 "Each tab may provide two sliders for its data channels: one for the input "
 "data that the module receives and one for the output data that the module "
@@ -9831,9 +9841,11 @@ msgid ""
 "default and can be shown using the <quote>show output channels</quote> menu "
 "item in the blending menu."
 msgstr ""
-"Cada aba provê dois deslizadores para seus canais de dados: um para dados de "
-"entrada do módulo e um para dados de saída que o módulo produz antes da "
-"mesclagem."
+"Cada aba pode provê dois deslizadores para seus canais de dados: um para "
+"dados de entrada do módulo e um para dados de saída que o módulo produz "
+"antes da mesclagem. O deslizador para os dados de saída fica oculto por "
+"default e pode ser mostrado usando o item de menu <quote>mostrar canais de "
+"saída</quote> no menu de mesclagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7901(para)
 msgid ""
@@ -24574,23 +24586,25 @@ msgstr ""
 msgid ""
 "Mouse <emphasis>Scroll</emphasis> over a group of images scrolls through "
 "these images."
-msgstr "Usar o <emphasis>scroll</emphasis> sobre um grupo de imagens rola por essas imagens."
+msgstr ""
+"Usar o <emphasis>scroll</emphasis> sobre um grupo de imagens rola por essas "
+"imagens."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22201(para)
 msgid ""
 "Normally images have a black border. The border is white when at least one "
 "image of the group is selected."
-msgstr "Normalmente as imagens tem uma borda preta. Essa borda é branca quando pelo menos uma imagem do grupo está selecionada."
+msgstr ""
+"Normalmente as imagens tem uma borda preta. Essa borda é branca quando pelo "
+"menos uma imagem do grupo está selecionada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22206(para)
-#, fuzzy
 msgid ""
 "<emphasis>Click</emphasis> and drag an image to adjust its position. "
 "<emphasis>Ctrl-click</emphasis> to move the complete group."
 msgstr ""
-"<emphasis>Ctrl-scroll</emphasis> para aumentar e diminuir zoom em imagens. "
-"<emphasis>clique esquerdo + arrastar<emphasis> para arrastar dentro de "
-"imagens em zoom."
+"<emphasis>Clique</emphasis> e arraste uma imagem para ajustar sua posição. "
+"<emphasis>Ctrl-clique<emphasis> para mover todo o grupo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22211(para)
 msgid ""
@@ -24665,10 +24679,7 @@ msgstr "encontrar localização"
 msgid ""
 "The <emphasis>find location</emphasis> module is used to search for a place "
 "on map. You need to be connected to the internet to use this feature."
-msgstr ""
-"O módulo <emphasis>encontrar localização</emphasis> é usado para procurar um "
-"lugar no mapa. Você precisa estar conectado à internet para usar esta "
-"funcionalidade."
+msgstr "O módulo <emphasis>encontrar local</emphasis> é usado para procurar um lugar no mapa. Você precisa estar conectado à internet para usar esta funcionalidade."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22326(para)
 msgid ""
@@ -24687,21 +24698,19 @@ msgstr ""
 "localização delas no mapa. A localização GPS será embutida na imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22348(title)
-#, fuzzy
 msgid "Locations"
-msgstr "Locais"
+msgstr "Localizações"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22352(secondary)
-#, fuzzy
 msgid "locations"
-msgstr "locais"
+msgstr "localizações"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22362(para)
 msgid ""
 "In the <emphasis>locations</emphasis> panel you can create areas or "
 "locations and organize them as hierarchical tags. The pipe <quote>|</quote> "
 "character can be used to insert a new level, i.e. a group of locations."
-msgstr ""
+msgstr "No painel <emphasis>localizações</emphasis> você pode criar áreas ou localizações e organizá-las como etiquetas hierárquicas. O caracter pipi <quote>|</quote> pode ser usado para inserir um novo nível (um grupo de localizações)."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22367(para)
 msgid ""
@@ -24714,44 +24723,43 @@ msgstr ""
 msgid ""
 "The circle or rectangle symbol selects the shape to be used for the new "
 "locations."
-msgstr ""
+msgstr "O símbolo de círculo ou retângulo seleciona a forma a ser usada para novas localizações."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22398(title)
 msgid "new location / new sub-location"
-msgstr ""
+msgstr "nova localização / nova sub-localização"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22400(para)
 msgid ""
 "When no location is selected the button <emphasis>new location</emphasis> "
 "lets you create a location at root level."
-msgstr ""
+msgstr "Quando nenhuma localização estiver selecionada o botão <emphasis>nova localização</emphasis> permite criar uma nova localização no nível raiz."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22405(para)
 msgid ""
 "When a location is selected the button <emphasis>new sub-location</emphasis> "
 "lets you create a location below the selected one."
-msgstr ""
+msgstr "Quando uma localização estiver selecionada o botão <emphasis>nova localização</emphasis> permite criar uma nova localização abaixo da localização selecionada."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22414(title)
-#, fuzzy
 msgid "show all"
-msgstr "mostrar OSD"
+msgstr "mostrar todas"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22416(para)
 msgid ""
 "When selected, all locations whose the centre is on the visible map are "
 "shown."
-msgstr ""
+msgstr "Quando selecionado, todas as localizações cujo centro está no mapa visível são mostradas."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22424(title)
 msgid "Actions on locations list"
-msgstr ""
+msgstr "Ações em listas de localizações"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22426(para)
 msgid ""
 "<emphasis>Left-Click</emphasis> selects / unselects the location. If the "
 "location is not visible on the map the map is centred on it."
-msgstr ""
+msgstr "<emphasis>Clique-esquerdo</emphasis> seleciona / deseleciona a localização. Se a localização não está visível no mapa, então o mapa será centralizado nela."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22431(para)
 msgid ""
@@ -24761,34 +24769,32 @@ msgid ""
 msgstr ""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22437(para)
-#, fuzzy
 msgid "<emphasis>Right-Click</emphasis> shows the submenu:"
-msgstr "<emphasis>Ctrl-Z</emphasis> : desfazer o último movimento"
+msgstr "<emphasis>Clique-direito</emphasis> : mostra o submenu:"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22443(para)
-#, fuzzy
 msgid "Edit location."
-msgstr "Encontrar localização"
+msgstr "Enditar localização"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22447(para)
-#, fuzzy
 msgid "Delete location."
-msgstr "selecionar ação"
+msgstr "Remover localização"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22451(para)
 msgid "Update filmstrip. Filmstrip is populated with the location's images."
-msgstr ""
+msgstr "Atualizar tira de filme. A tira de filme é populada com as imagens da localização."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22455(para)
 msgid ""
 "Go to collection (lighttable). Moves to lighttable and opens the "
 "corresponding collection."
 msgstr ""
+"Vai à coleção (mesa de luz). Vai à mesa de luz e abre a coleção "
+"correspondente."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22464(title)
-#, fuzzy
 msgid "Actions on locations on the map"
-msgstr "a geolocalização da imagem"
+msgstr "Ações em localizações no mapa"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22466(para)
 msgid ""
