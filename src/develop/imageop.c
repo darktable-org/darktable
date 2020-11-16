@@ -1182,13 +1182,12 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && !module->expanded)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
+
+      dt_dev_add_history_item(module->dev, module, FALSE);
     }
     else
     {
       module->enabled = 0;
-
-      if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
-        dt_iop_gui_set_expanded(module, FALSE, FALSE);
 
       //if current module is set as the CAT instance, remove that setting
       dt_iop_order_entry_t *CAT_instance = module->dev->proxy.chroma_adaptation;
@@ -1197,8 +1196,13 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
         module->dev->proxy.chroma_adaptation = NULL;
 
       dt_iop_set_module_in_trouble(module, FALSE);
+
+      dt_dev_add_history_item(module->dev, module, FALSE);
+
+      if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
+        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+
     }
-    dt_dev_add_history_item(module->dev, module, FALSE);
   }
 
   char tooltip[512];
