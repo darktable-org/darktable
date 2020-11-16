@@ -1880,6 +1880,28 @@ void reload_defaults(dt_iop_module_t *module)
   d->illuminant = module->get_f("illuminant")->Enum.Default;
   d->adaptation = module->get_f("adaptation")->Enum.Default;
 
+  // note that if there is already an instance of this module with an
+  // adaptation set we default to RGB (none) in this instance.
+
+  gboolean CAT_already_applied = FALSE;
+
+  GList *iop = darktable.develop->iop;
+  while(iop)
+  {
+    const dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+    if(module != m && m->enabled && !strcmp(m->op, "channelmixerrgb"))
+    {
+      const dt_iop_channelmixer_rgb_params_t *mp =
+        (dt_iop_channelmixer_rgb_params_t *)m->params;
+      if(!(mp->adaptation == DT_ADAPTATION_RGB || mp->illuminant == DT_ILLUMINANT_PIPE))
+      {
+        // CAT already applied, default to none (bypass)
+        CAT_already_applied = TRUE;
+        break;
+      }
+    }
+    iop = g_list_next(iop);
+  }
   module->default_enabled = FALSE;
 
   gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
@@ -1889,7 +1911,9 @@ void reload_defaults(dt_iop_module_t *module)
   const dt_image_t *img = &module->dev->image_storage;
 
   double bwb[4] = { 0. };
-  if(is_modern && !(calculate_bogus_daylight_wb(module, bwb)))
+  if(!CAT_already_applied
+     && is_modern
+     && !(calculate_bogus_daylight_wb(module, bwb)))
   {
     // if workflow = modern and we find WB coeffs, take care of white balance here
     if(find_temperature_from_raw_coeffs(img, &(d->x), &(d->y)))
