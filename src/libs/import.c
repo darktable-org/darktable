@@ -190,6 +190,11 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
 
   if((citem = g_list_first(camctl->cameras)) != NULL)
   {
+    // The label for the section below could be "Mass Storage Camera" from gphoto2
+    // let's add a translatable string for it.
+    #pragma GCC diagnostic ignored "-Wunused-variable"
+    const char *MSC = N_("Mass Storage Camera");
+
     // Add detected supported devices
     char buffer[512] = { 0 };
     do
@@ -197,7 +202,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
       dt_camera_t *camera = (dt_camera_t *)citem->data;
 
       /* add camera label */
-      GtkWidget *label = dt_ui_section_label_new(camera->model);
+      GtkWidget *label = dt_ui_section_label_new(_(camera->model));
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
 
       /* set camera summary if available */
