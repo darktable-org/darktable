@@ -37,9 +37,13 @@ FC(const int row, const int col, const unsigned int filters)
 }
 
 
-int 
+int
 FCxtrans(const int row, const int col, global const unsigned char (*const xtrans)[6])
 {
   return xtrans[row % 6][col % 6];
 }
 
+
+// Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
+// on compatible platforms
+#pragma OPENCL FP_CONTRACT ON
