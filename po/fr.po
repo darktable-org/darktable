@@ -14184,7 +14184,7 @@ msgstr "égaliseur de ton"
 #: ../src/iop/toneequal.c:313
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
 msgstr ""
-"courbe de tonalités| mappage des tonalités|rallumer|lumière d'arrière-plan|"
+"courbe de tonalités| mappage des tonalités|rééclairer|rallumer|lumière d'arrière-plan|"
 "ombres et hautes lumières"
 
 #: ../src/iop/toneequal.c:319
@@ -14246,7 +14246,7 @@ msgstr "compresser ombres/hautes-lumières (gf) : léger"
 
 #: ../src/iop/toneequal.c:519
 msgid "relight : fill-in"
-msgstr "rallumer : fill-in"
+msgstr "rééclairer : fill-in"
 
 #: ../src/iop/toneequal.c:570
 msgid ""
