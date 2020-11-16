@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-16 08:36+0100\n"
-"PO-Revision-Date: 2020-11-16 08:37+0100\n"
+"POT-Creation-Date: 2020-11-16 22:32+0100\n"
+"PO-Revision-Date: 2020-11-16 22:33+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -351,7 +351,7 @@ msgid "(AI) detect from image edges..."
 msgstr "(IA) détecter depuis les bords de l'image..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
-#: ../src/iop/channelmixerrgb.c:1923
+#: ../src/iop/channelmixerrgb.c:1947
 msgid "as shot in camera"
 msgstr "tel que pris par le boitier"
 
@@ -590,7 +590,7 @@ msgstr "couleurs saturées"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1824 ../src/develop/blend_gui.c:1843
 #: ../src/develop/blend_gui.c:1878 ../src/iop/channelmixer.c:630
-#: ../src/iop/channelmixerrgb.c:2200 ../src/iop/colorbalance.c:2026
+#: ../src/iop/channelmixerrgb.c:2224 ../src/iop/colorbalance.c:2026
 #: ../src/iop/colorize.c:339 ../src/iop/colorreconstruction.c:1290
 #: ../src/iop/colorzones.c:2362 ../src/iop/splittoning.c:466
 msgid "hue"
@@ -1376,7 +1376,7 @@ msgstr "mode de remplissage"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:268
 #: ../build/lib/darktable/plugins/introspection_retouch.c:399
-#: ../src/iop/basicadj.c:623 ../src/iop/channelmixerrgb.c:2252
+#: ../src/iop/basicadj.c:623 ../src/iop/channelmixerrgb.c:2276
 #: ../src/iop/colisa.c:317 ../src/iop/lowpass.c:591 ../src/iop/soften.c:661
 #: ../src/iop/vignette.c:1012 ../src/libs/history.c:892
 msgid "brightness"
@@ -3456,7 +3456,7 @@ msgstr "Imprimer vos images"
 #: ../src/imageio/storage/gallery.c:108 ../src/imageio/storage/latex.c:107
 #: ../src/iop/lut3d.c:1563 ../src/libs/collect.c:366
 #: ../src/libs/copy_history.c:100 ../src/libs/geotagging.c:474
-#: ../src/libs/import.c:550 ../src/libs/import.c:656 ../src/libs/lib.c:233
+#: ../src/libs/import.c:566 ../src/libs/import.c:672 ../src/libs/lib.c:233
 #: ../src/libs/styles.c:370 ../src/libs/styles.c:502 ../src/libs/tagging.c:2234
 #: ../src/libs/tagging.c:2275
 msgid "_cancel"
@@ -3713,7 +3713,7 @@ msgstr "ordre des modules"
 #: ../src/common/collection.c:1472 ../src/develop/blend_gui.c:1833
 #: ../src/develop/blend_gui.c:1860 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:307 ../src/iop/channelmixer.c:633
-#: ../src/iop/channelmixer.c:643 ../src/iop/channelmixerrgb.c:2248
+#: ../src/iop/channelmixer.c:643 ../src/iop/channelmixerrgb.c:2272
 #: ../src/iop/temperature.c:1890 ../src/iop/temperature.c:2043
 #: ../src/libs/collect.c:1597 ../src/views/darkroom.c:2516
 msgid "red"
@@ -3728,7 +3728,7 @@ msgstr "jaune"
 #: ../src/common/collection.c:1476 ../src/develop/blend_gui.c:1836
 #: ../src/develop/blend_gui.c:1863 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:312 ../src/iop/channelmixer.c:634
-#: ../src/iop/channelmixer.c:649 ../src/iop/channelmixerrgb.c:2249
+#: ../src/iop/channelmixer.c:649 ../src/iop/channelmixerrgb.c:2273
 #: ../src/iop/temperature.c:1874 ../src/iop/temperature.c:1892
 #: ../src/iop/temperature.c:2044 ../src/libs/collect.c:1597
 #: ../src/views/darkroom.c:2517
@@ -3738,7 +3738,7 @@ msgstr "vert"
 #: ../src/common/collection.c:1478 ../src/develop/blend_gui.c:1839
 #: ../src/develop/blend_gui.c:1866 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:635
-#: ../src/iop/channelmixer.c:655 ../src/iop/channelmixerrgb.c:2250
+#: ../src/iop/channelmixer.c:655 ../src/iop/channelmixerrgb.c:2274
 #: ../src/iop/temperature.c:1894 ../src/iop/temperature.c:2045
 #: ../src/libs/collect.c:1597
 msgid "blue"
@@ -3962,7 +3962,7 @@ msgstr "erreur de chargement du dossier « %s »"
 msgid "file `%s' has unknown format!"
 msgstr "le fichier « %s » possède un format inconnu !"
 
-#: ../src/common/darktable.c:294 ../src/libs/import.c:616
+#: ../src/common/darktable.c:294 ../src/libs/import.c:632
 #, c-format
 msgid "error loading file `%s'"
 msgstr "erreur de chargement du fichier « %s »"
@@ -5049,7 +5049,7 @@ msgstr[1] "importation de %d images"
 msgid "importing image %s"
 msgstr "importation de l'image %s"
 
-#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:550
+#: ../src/control/jobs/image_jobs.c:110 ../src/libs/import.c:566
 msgid "import image"
 msgstr "importer une image"
 
@@ -5335,12 +5335,12 @@ msgid "input image"
 msgstr "image en entrée"
 
 #: ../src/develop/blend_gui.c:764 ../src/develop/blend_gui.c:2028
-#: ../src/develop/imageop.c:3142
+#: ../src/develop/imageop.c:3146
 msgid "input"
 msgstr "entrée"
 
 #: ../src/develop/blend_gui.c:764 ../src/develop/blend_gui.c:2028
-#: ../src/develop/imageop.c:3144
+#: ../src/develop/imageop.c:3148
 msgid "output"
 msgstr "sortie"
 
@@ -5427,7 +5427,7 @@ msgid "gray"
 msgstr "gris"
 
 #: ../src/develop/blend_gui.c:1831 ../src/develop/blend_gui.c:1858
-#: ../src/iop/channelmixerrgb.c:2248 ../src/iop/denoiseprofile.c:3875
+#: ../src/iop/channelmixerrgb.c:2272 ../src/iop/denoiseprofile.c:3875
 #: ../src/iop/rawdenoise.c:932 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:946
 msgid "R"
@@ -5438,7 +5438,7 @@ msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
 #: ../src/develop/blend_gui.c:1834 ../src/develop/blend_gui.c:1861
-#: ../src/iop/channelmixerrgb.c:2249 ../src/iop/denoiseprofile.c:3876
+#: ../src/iop/channelmixerrgb.c:2273 ../src/iop/denoiseprofile.c:3876
 #: ../src/iop/rawdenoise.c:933 ../src/iop/rgbcurve.c:1385
 #: ../src/iop/rgblevels.c:947
 msgid "G"
@@ -5449,7 +5449,7 @@ msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
 #: ../src/develop/blend_gui.c:1837 ../src/develop/blend_gui.c:1864
-#: ../src/iop/channelmixerrgb.c:2250 ../src/iop/denoiseprofile.c:3877
+#: ../src/iop/channelmixerrgb.c:2274 ../src/iop/denoiseprofile.c:3877
 #: ../src/iop/rawdenoise.c:934 ../src/iop/rgbcurve.c:1386
 #: ../src/iop/rgblevels.c:948
 msgid "B"
@@ -5476,7 +5476,7 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "conditions de fusion sur le canal de saturation (de TSL)"
 
 #: ../src/develop/blend_gui.c:1847 ../src/develop/blend_gui.c:1874
-#: ../src/iop/atrous.c:1857 ../src/iop/channelmixerrgb.c:2206
+#: ../src/iop/atrous.c:1857 ../src/iop/channelmixerrgb.c:2230
 #: ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:530
 msgid "chroma"
 msgstr "chroma"
@@ -5863,17 +5863,17 @@ msgstr "supprimer"
 msgid "rename"
 msgstr "renommer"
 
-#: ../src/develop/imageop.c:1206 ../src/develop/imageop.c:2494
+#: ../src/develop/imageop.c:1210 ../src/develop/imageop.c:2498
 #, c-format
 msgid "%s is switched on"
 msgstr "%s est activé"
 
-#: ../src/develop/imageop.c:1206 ../src/develop/imageop.c:2494
+#: ../src/develop/imageop.c:1210 ../src/develop/imageop.c:2498
 #, c-format
 msgid "%s is switched off"
 msgstr "%s est désactivé"
 
-#: ../src/develop/imageop.c:1582 ../src/gui/accelerators.c:58
+#: ../src/develop/imageop.c:1586 ../src/gui/accelerators.c:58
 #: ../src/gui/accelerators.c:941 ../src/gui/accelerators.c:1025
 #: ../src/gui/accelerators.c:1212 ../src/gui/accelerators.c:1229
 #: ../src/gui/accelerators.c:1266 ../src/gui/import_metadata.c:163
@@ -5883,12 +5883,12 @@ msgstr "%s est désactivé"
 msgid "preset"
 msgstr "préréglage"
 
-#: ../src/develop/imageop.c:1617
+#: ../src/develop/imageop.c:1621
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusion"
 
-#: ../src/develop/imageop.c:2463
+#: ../src/develop/imageop.c:2467
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5896,7 +5896,7 @@ msgstr ""
 "actions instances multiples\n"
 "clic-milieu pour créer une nouvelle instance"
 
-#: ../src/develop/imageop.c:2474
+#: ../src/develop/imageop.c:2478
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -5905,12 +5905,12 @@ msgstr ""
 "ctrl+clic pour réappliquer les préréglages automatique"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2482 ../src/gui/preferences.c:791
+#: ../src/develop/imageop.c:2486 ../src/gui/preferences.c:791
 #: ../src/libs/lib.c:1216 ../src/libs/modulegroups.c:321
 msgid "presets"
 msgstr "préréglages"
 
-#: ../src/develop/imageop.c:2484
+#: ../src/develop/imageop.c:2488
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5918,15 +5918,15 @@ msgstr ""
 "préréglages\n"
 "clic-milieu pour appliquer sur une nouvelle instance"
 
-#: ../src/develop/imageop.c:2777 ../src/develop/imageop.c:2803
+#: ../src/develop/imageop.c:2781 ../src/develop/imageop.c:2807
 msgid "ERROR"
 msgstr "ERREUR"
 
-#: ../src/develop/imageop.c:3141
+#: ../src/develop/imageop.c:3145
 msgid "purpose"
 msgstr "objectif"
 
-#: ../src/develop/imageop.c:3143
+#: ../src/develop/imageop.c:3147
 msgid "process"
 msgstr "traitement"
 
@@ -6746,11 +6746,11 @@ msgid "storage file"
 msgstr "fichier de stockage"
 
 #. ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:383
+#: ../src/gui/camera_import_dialog.c:278 ../src/libs/import.c:399
 msgid "ignore JPEG files"
 msgstr "ignorer les fichiers JPEG"
 
-#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:384
+#: ../src/gui/camera_import_dialog.c:280 ../src/libs/import.c:400
 msgid ""
 "do not load files with an extension of .jpg or .jpeg. this can be useful "
 "when there are raw+JPEG in a directory."
@@ -7540,8 +7540,8 @@ msgstr "sélectionne le fichier à importer"
 
 #: ../src/gui/preferences.c:1613 ../src/gui/preferences.c:1696
 #: ../src/libs/collect.c:367 ../src/libs/copy_history.c:101
-#: ../src/libs/geotagging.c:475 ../src/libs/import.c:551
-#: ../src/libs/import.c:657 ../src/libs/styles.c:503
+#: ../src/libs/geotagging.c:475 ../src/libs/import.c:567
+#: ../src/libs/import.c:673 ../src/libs/styles.c:503
 msgid "_open"
 msgstr "_ouvrir"
 
@@ -9612,16 +9612,16 @@ msgstr ""
 "ne peut être définie donc vous devez utiliser un illuminant personnalisé."
 
 #. Parameters did not change, assume user wants to edit auto-set params and display controls
-#: ../src/iop/channelmixerrgb.c:1953
+#: ../src/iop/channelmixerrgb.c:1977
 msgid "white balance successfuly extracted from raw image"
 msgstr "la balance des blancs a été extraite de l'image raw avec succès"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:1973
+#: ../src/iop/channelmixerrgb.c:1997
 msgid "auto-detection of white balance started…"
 msgstr "l'auto-détection de la balance des blancs a démarrée..."
 
-#: ../src/iop/channelmixerrgb.c:1997
+#: ../src/iop/channelmixerrgb.c:2021
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
@@ -9629,11 +9629,11 @@ msgstr ""
 "calibration des couleurs : la somme des paramètres du canal gris est à zéro, "
 "la normalisation va être désactivée."
 
-#: ../src/iop/channelmixerrgb.c:2018
+#: ../src/iop/channelmixerrgb.c:2042
 msgid "double CAT applied"
 msgstr "CAT appliquée deux foix"
 
-#: ../src/iop/channelmixerrgb.c:2022
+#: ../src/iop/channelmixerrgb.c:2046
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -9645,11 +9645,11 @@ msgstr ""
 "cela entraînes des incohérences, sauf utilisées\n"
 "avec des masques en connaissance de cause."
 
-#: ../src/iop/channelmixerrgb.c:2032
+#: ../src/iop/channelmixerrgb.c:2056
 msgid "white balance module error"
 msgstr "erreur module balance des blancs"
 
-#: ../src/iop/channelmixerrgb.c:2036
+#: ../src/iop/channelmixerrgb.c:2060
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -9662,19 +9662,19 @@ msgstr ""
 "est utilisée soit l'adaptation chromatiques est désactivée."
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:2138
+#: ../src/iop/channelmixerrgb.c:2162
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:2138
+#: ../src/iop/channelmixerrgb.c:2162
 msgid "chromatic adaptation transform"
 msgstr "transformation d'adaptation chromatique"
 
-#: ../src/iop/channelmixerrgb.c:2144
+#: ../src/iop/channelmixerrgb.c:2168
 msgid "adaptation"
 msgstr "adaptation"
 
-#: ../src/iop/channelmixerrgb.c:2146
+#: ../src/iop/channelmixerrgb.c:2170
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -9702,7 +9702,7 @@ msgstr ""
 "• aucun désactive toute adaptation et utilise l'espace RVB de travail du "
 "pipeline."
 
-#: ../src/iop/channelmixerrgb.c:2165
+#: ../src/iop/channelmixerrgb.c:2189
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -9710,35 +9710,35 @@ msgstr ""
 "ceci est la couleur de l'illuminant de scène avant l'adaptation chromatique\n"
 "cette couleur sera transformée en blanc pur par l'adaptation."
 
-#: ../src/iop/channelmixerrgb.c:2172 ../src/iop/temperature.c:2069
+#: ../src/iop/channelmixerrgb.c:2196 ../src/iop/temperature.c:2069
 msgid "set white balance to detected from area"
 msgstr "choisir la balance des blancs depuis une zone"
 
-#: ../src/iop/channelmixerrgb.c:2176
+#: ../src/iop/channelmixerrgb.c:2200
 msgid "illuminant"
 msgstr "illuminant"
 
-#: ../src/iop/channelmixerrgb.c:2182 ../src/iop/temperature.c:2010
+#: ../src/iop/channelmixerrgb.c:2206 ../src/iop/temperature.c:2010
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/channelmixerrgb.c:2226
+#: ../src/iop/channelmixerrgb.c:2250
 msgid "input red"
 msgstr "rouge (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:2233
+#: ../src/iop/channelmixerrgb.c:2257
 msgid "input green"
 msgstr "vert (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:2240
+#: ../src/iop/channelmixerrgb.c:2264
 msgid "input blue"
 msgstr "bleu (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:2251
+#: ../src/iop/channelmixerrgb.c:2275
 msgid "colorfulness"
 msgstr "saturation"
 
-#: ../src/iop/channelmixerrgb.c:2253
+#: ../src/iop/channelmixerrgb.c:2277
 msgid "grey"
 msgstr "gris"
 
@@ -10722,7 +10722,7 @@ msgid "HSL base setting"
 msgstr "TSL neutre"
 
 #: ../src/iop/colorzones.c:2206 ../src/iop/retouch.c:1721
-#: ../src/iop/toneequal.c:1818
+#: ../src/iop/toneequal.c:1837
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "impossible d'afficher les masques lorsque les masques de fusion sont affichés"
@@ -11679,11 +11679,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3635 ../src/iop/filmicrgb.c:3645
 #: ../src/iop/filmicrgb.c:3678 ../src/iop/filmicrgb.c:3688
-#: ../src/iop/toneequal.c:3061 ../src/iop/toneequal.c:3065
-#: ../src/iop/toneequal.c:3069 ../src/iop/toneequal.c:3073
-#: ../src/iop/toneequal.c:3077 ../src/iop/toneequal.c:3081
-#: ../src/iop/toneequal.c:3085 ../src/iop/toneequal.c:3089
-#: ../src/iop/toneequal.c:3093 ../src/libs/metadata_view.c:509
+#: ../src/iop/toneequal.c:3080 ../src/iop/toneequal.c:3084
+#: ../src/iop/toneequal.c:3088 ../src/iop/toneequal.c:3092
+#: ../src/iop/toneequal.c:3096 ../src/iop/toneequal.c:3100
+#: ../src/iop/toneequal.c:3104 ../src/iop/toneequal.c:3108
+#: ../src/iop/toneequal.c:3112 ../src/libs/metadata_view.c:509
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f IL"
@@ -12937,7 +12937,7 @@ msgid "hald cluts (png) or 3D lut (cube or 3dl)"
 msgstr "hald cluts (png) ou 3D lut (cube ou 3dl)"
 
 #: ../src/iop/lut3d.c:1595 ../src/libs/copy_history.c:115
-#: ../src/libs/geotagging.c:496 ../src/libs/import.c:581
+#: ../src/libs/geotagging.c:496 ../src/libs/import.c:597
 #: ../src/libs/styles.c:520
 msgid "all files"
 msgstr "tous les fichiers"
@@ -14184,8 +14184,8 @@ msgstr "égaliseur de ton"
 #: ../src/iop/toneequal.c:313
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
 msgstr ""
-"courbe de tonalités| mappage des tonalités|rééclairer|rallumer|lumière d'arrière-plan|"
-"ombres et hautes lumières"
+"courbe de tonalités| mappage des tonalités|rééclairer|rallumer|lumière "
+"d'arrière-plan|ombres et hautes lumières"
 
 #: ../src/iop/toneequal.c:319
 msgid "relight the scene as if the lighting was done directly on the scene"
@@ -14200,55 +14200,59 @@ msgid "quasi-linear, RGB, scene-referred"
 msgstr "relatif à la scène, quasi-linéaire, RVB"
 
 #. No blending
-#: ../src/iop/toneequal.c:423
-msgid "mask blending : none"
-msgstr "fusion masque : non"
+#: ../src/iop/toneequal.c:439
+msgid "simple tone curve"
+msgstr "simple courbe des tonalités"
 
-#: ../src/iop/toneequal.c:436
+#: ../src/iop/toneequal.c:452
 msgid "mask blending : all purposes"
 msgstr "fusion masque : tout usages"
 
-#: ../src/iop/toneequal.c:442
+#: ../src/iop/toneequal.c:458
 msgid "mask blending : people with backlight"
 msgstr "fusion masque : sujets en contre-jour"
 
-#: ../src/iop/toneequal.c:459
-msgid "compress shadows/highlights (eigf) : very strong"
-msgstr "compresser ombres/hautes-lumières 'eigf) : très fort"
-
-#: ../src/iop/toneequal.c:463
-msgid "compress shadows/highlights (gf) : very strong"
-msgstr "compresser ombres/hautes-lumières (gf) : très fort"
-
-#: ../src/iop/toneequal.c:469
+#: ../src/iop/toneequal.c:474
 msgid "compress shadows/highlights (eigf) : strong"
 msgstr "compresser ombres/hautes-lumières (eigf) : fort"
 
-#: ../src/iop/toneequal.c:473
+#: ../src/iop/toneequal.c:478
 msgid "compress shadows/highlights (gf) : strong"
 msgstr "compresser ombres/hautes-lumières (gf) : fort"
 
-#: ../src/iop/toneequal.c:481
+#: ../src/iop/toneequal.c:486
 msgid "compress shadows/highlights (eigf) : medium"
 msgstr "compresser ombres/hautes-lumières (eigf) : moyen"
 
-#: ../src/iop/toneequal.c:485
+#: ../src/iop/toneequal.c:490
 msgid "compress shadows/highlights (gf) : medium"
 msgstr "compresser ombres/hautes-lumières (gf) : moyen"
 
-#: ../src/iop/toneequal.c:493
+#: ../src/iop/toneequal.c:498
 msgid "compress shadows/highlights (eigf) : soft"
 msgstr "compresser ombres/hautes-lumières (eigf) : léger"
 
-#: ../src/iop/toneequal.c:497
+#: ../src/iop/toneequal.c:502
 msgid "compress shadows/highlights (gf) : soft"
 msgstr "compresser ombres/hautes-lumières (gf) : léger"
 
-#: ../src/iop/toneequal.c:519
+#: ../src/iop/toneequal.c:508
+msgid "contrast tone curve: soft"
+msgstr "courbe des tonalités contraste : soft"
+
+#: ../src/iop/toneequal.c:512
+msgid "contrast tone curve: medium"
+msgstr "courbe des tonalités contraste : moyen"
+
+#: ../src/iop/toneequal.c:516
+msgid "contrast tone curve: strong"
+msgstr "courbe des tonalités contraste : fort"
+
+#: ../src/iop/toneequal.c:538
 msgid "relight : fill-in"
 msgstr "rééclairer : fill-in"
 
-#: ../src/iop/toneequal.c:570
+#: ../src/iop/toneequal.c:589
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
@@ -14256,7 +14260,7 @@ msgstr ""
 "l'égaliseur de ton doit être après les modules de distorsion - désactivé"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
-#: ../src/iop/toneequal.c:891
+#: ../src/iop/toneequal.c:910
 msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
@@ -14264,19 +14268,19 @@ msgstr ""
 "les données entrée/sortie de l'égaliseur de don ne sont pas correctement "
 "alignées, reporter le bug aux développeurs"
 
-#: ../src/iop/toneequal.c:990
+#: ../src/iop/toneequal.c:1009
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr "l'égaliseur de ton n'a pas assez de mémoire, vérifier votre RAM"
 
-#: ../src/iop/toneequal.c:1670 ../src/iop/toneequal.c:2030
+#: ../src/iop/toneequal.c:1689 ../src/iop/toneequal.c:2049
 msgid "the interpolation is unstable, decrease the curve smoothing"
 msgstr "l'interpolation est instable, diminuer le lissage de la courbe"
 
-#: ../src/iop/toneequal.c:1714 ../src/iop/toneequal.c:1776
+#: ../src/iop/toneequal.c:1733 ../src/iop/toneequal.c:1795
 msgid "wait for the preview to finish recomputing"
 msgstr "attendez que la pré-visualisation soit mise à jour"
 
-#: ../src/iop/toneequal.c:1886 ../src/iop/toneequal.c:2352
+#: ../src/iop/toneequal.c:1905 ../src/iop/toneequal.c:2371
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -14285,86 +14289,86 @@ msgstr ""
 "shift+défiler pour un changement grossier ; ctrl+défiler pour un changement "
 "précis"
 
-#: ../src/iop/toneequal.c:2035
+#: ../src/iop/toneequal.c:2054
 msgid "some parameters are out-of-bounds"
 msgstr "certains paramètres sont hors bornes"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2309
+#: ../src/iop/toneequal.c:2328
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f IL"
 
-#: ../src/iop/toneequal.c:2968
+#: ../src/iop/toneequal.c:2987
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sur l'image] changer exposition tonalité"
 
-#: ../src/iop/toneequal.c:2974
+#: ../src/iop/toneequal.c:2993
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sur l'image] changer exposition tonalité (grossièrement)"
 
-#: ../src/iop/toneequal.c:2980
+#: ../src/iop/toneequal.c:2999
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sur l'image] changer exposition tonalité (finement)"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3057
+#: ../src/iop/toneequal.c:3076
 msgid "simple"
 msgstr "simple"
 
-#: ../src/iop/toneequal.c:3096
+#: ../src/iop/toneequal.c:3115
 msgid "-8 EV"
 msgstr "-8 IL"
 
-#: ../src/iop/toneequal.c:3097
+#: ../src/iop/toneequal.c:3116
 msgid "-7 EV"
 msgstr "-7 IL"
 
-#: ../src/iop/toneequal.c:3098
+#: ../src/iop/toneequal.c:3117
 msgid "-6 EV"
 msgstr "-6 IL"
 
-#: ../src/iop/toneequal.c:3099
+#: ../src/iop/toneequal.c:3118
 msgid "-5 EV"
 msgstr "-5 IL"
 
-#: ../src/iop/toneequal.c:3100
+#: ../src/iop/toneequal.c:3119
 msgid "-4 EV"
 msgstr "-4 IL"
 
-#: ../src/iop/toneequal.c:3101
+#: ../src/iop/toneequal.c:3120
 msgid "-3 EV"
 msgstr "-3 IL"
 
-#: ../src/iop/toneequal.c:3102
+#: ../src/iop/toneequal.c:3121
 msgid "-2 EV"
 msgstr "-2 IL"
 
-#: ../src/iop/toneequal.c:3103
+#: ../src/iop/toneequal.c:3122
 msgid "-1 EV"
 msgstr "-1 IL"
 
-#: ../src/iop/toneequal.c:3104
+#: ../src/iop/toneequal.c:3123
 msgid "+0 EV"
 msgstr "+0 IL"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3109
+#: ../src/iop/toneequal.c:3128
 msgid "advanced"
 msgstr "avancé"
 
-#: ../src/iop/toneequal.c:3124
+#: ../src/iop/toneequal.c:3143
 msgid "double-click to reset the curve"
 msgstr "double-cliquer pour réinitialiser la courbe"
 
-#: ../src/iop/toneequal.c:3131
+#: ../src/iop/toneequal.c:3150
 msgid "curve smoothing"
 msgstr "lissage de la courbe"
 
-#: ../src/iop/toneequal.c:3132
+#: ../src/iop/toneequal.c:3151
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -14379,11 +14383,11 @@ msgstr ""
 "endommagé."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3141
+#: ../src/iop/toneequal.c:3160
 msgid "masking"
 msgstr "masque"
 
-#: ../src/iop/toneequal.c:3145
+#: ../src/iop/toneequal.c:3164
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -14392,15 +14396,15 @@ msgstr ""
 "contraste le plus important entre les zones à éclaircir et les zones à "
 "assombrir"
 
-#: ../src/iop/toneequal.c:3148
+#: ../src/iop/toneequal.c:3167
 msgid "details"
 msgstr "détail"
 
-#: ../src/iop/toneequal.c:3149
+#: ../src/iop/toneequal.c:3168
 msgid "preserve details"
 msgstr "préserver détails"
 
-#: ../src/iop/toneequal.c:3150
+#: ../src/iop/toneequal.c:3169
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -14425,7 +14429,7 @@ msgstr ""
 "lumières)\n"
 "« moyenne eigf » est une moyenne géométrique des méthodes « non » et « eigf »"
 
-#: ../src/iop/toneequal.c:3158
+#: ../src/iop/toneequal.c:3177
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -14433,7 +14437,7 @@ msgstr ""
 "nombre de passe du filtre guidé à appliquer\n"
 "aide à diffuser les bords du filtre mais dégrade les performances"
 
-#: ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3183
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -14443,7 +14447,7 @@ msgstr ""
 "attention : une grande valeur peut ralentir conséquemment la\n"
 "prévisualisation si le module de réduction du bruit par profil est utilisé."
 
-#: ../src/iop/toneequal.c:3171
+#: ../src/iop/toneequal.c:3190
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -14458,11 +14462,11 @@ msgstr ""
 "adoucissement\n"
 "mais peut alors créer des bords peu précis et des halos"
 
-#: ../src/iop/toneequal.c:3177
+#: ../src/iop/toneequal.c:3196
 msgid "mask post-processing"
 msgstr "post-traitement masque"
 
-#: ../src/iop/toneequal.c:3184
+#: ../src/iop/toneequal.c:3203
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -14472,7 +14476,7 @@ msgstr ""
 "la ligne centrale montre la moyenne. des bars oranges apparaissent aux "
 "extrémités si troncatures."
 
-#: ../src/iop/toneequal.c:3191
+#: ../src/iop/toneequal.c:3210
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -14483,7 +14487,7 @@ msgstr ""
 " à produire des zones plus lisse lors de l'utilisation de grandes valeurs "
 "d'adoucissement"
 
-#: ../src/iop/toneequal.c:3198
+#: ../src/iop/toneequal.c:3217
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -14494,7 +14498,7 @@ msgstr ""
 "pour un meilleur contrôle de la correction d'exposition.\n"
 "la pipette ajustera automatiquement l'exposition moyenne à -4 IL."
 
-#: ../src/iop/toneequal.c:3208
+#: ../src/iop/toneequal.c:3227
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -14506,7 +14510,7 @@ msgstr ""
 "ceci permet d'étaler l'histogramme d'exposition à travers plus de canaux\n"
 "pour un meilleur contrôle de la correction d'exposition."
 
-#: ../src/iop/toneequal.c:3227 ../src/iop/toneequal.c:3231
+#: ../src/iop/toneequal.c:3246 ../src/iop/toneequal.c:3250
 msgid "display exposure mask"
 msgstr "affiche le masque d'exposition"
 
@@ -16238,62 +16242,66 @@ msgctxt "accel"
 msgid "import folder"
 msgstr "importer un dossier"
 
-#: ../src/libs/import.c:206
+#: ../src/libs/import.c:196
+msgid "Mass Storage Camera"
+msgstr "espace stockage appareil"
+
+#: ../src/libs/import.c:215
 #, c-format
 msgid "device \"%s\" connected on port \"%s\"."
 msgstr "appareil « %s » connecté sur le port « %s »."
 
-#: ../src/libs/import.c:216
+#: ../src/libs/import.c:225
 msgid "import from camera"
 msgstr "importer depuis le boîtier"
 
-#: ../src/libs/import.c:222
+#: ../src/libs/import.c:231
 msgid "tethered shoot"
 msgstr "commander le boîtier"
 
 #. add extra lines to 'extra'. don't forget to destroy the widgets later.
-#: ../src/libs/import.c:354
+#: ../src/libs/import.c:370
 msgid "import options"
 msgstr "options d'importation"
 
 #. recursive opening.
-#: ../src/libs/import.c:376
+#: ../src/libs/import.c:392
 msgid "import folders recursively"
 msgstr "importer les dossiers récursivement"
 
-#: ../src/libs/import.c:378
+#: ../src/libs/import.c:394
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
 "importe les dossiers de manière récursive. chaque dossier est placé dans une "
 "nouvelle pellicule."
 
-#: ../src/libs/import.c:576
+#: ../src/libs/import.c:592
 msgid "supported images"
 msgstr "images supportées"
 
-#: ../src/libs/import.c:632
+#: ../src/libs/import.c:648
 msgid "file has unknown format!"
 msgstr "le fichier possède un format inconnu !"
 
-#: ../src/libs/import.c:656
+#: ../src/libs/import.c:672
 msgid "import folder"
 msgstr "importer un dossier"
 
 #. add import single image buttons
-#: ../src/libs/import.c:771
+#: ../src/libs/import.c:787
 msgid "image..."
 msgstr "image..."
 
-#: ../src/libs/import.c:771
+#: ../src/libs/import.c:787
 msgid "select one or more images to import"
 msgstr "sélectionner une ou plusieurs images à importer"
 
 #. adding the import folder button
-#: ../src/libs/import.c:779
+#: ../src/libs/import.c:795
 msgid "folder..."
 msgstr "dossier..."
 
-#: ../src/libs/import.c:779
+#: ../src/libs/import.c:795
 msgid "select a folder to import as film roll"
 msgstr "sélectionner un dossier à importer"
 
@@ -19278,6 +19286,15 @@ msgstr "raccourci"
 #: ../src/views/view.c:1666
 msgid "Action"
 msgstr "action"
+
+#~ msgid "mask blending : none"
+#~ msgstr "fusion masque : non"
+
+#~ msgid "compress shadows/highlights (eigf) : very strong"
+#~ msgstr "compresser ombres/hautes-lumières 'eigf) : très fort"
+
+#~ msgid "compress shadows/highlights (gf) : very strong"
+#~ msgstr "compresser ombres/hautes-lumières (gf) : très fort"
 
 #~ msgid "tagged%"
 #~ msgstr "positionnée%"
@@ -23131,9 +23148,6 @@ msgstr "action"
 #~ msgid "Number of curve sampling points.  0 for exact calculation."
 #~ msgstr ""
 #~ "Nombre de points d’échantillonnage de la courbe. 0 pour un calcul exact"
-
-#~ msgid "The contrast curve."
-#~ msgstr "courbe de contraste"
 
 #~ msgid ""
 #~ "Adjusts the contrast of the image according to a curve, for each RGB "
