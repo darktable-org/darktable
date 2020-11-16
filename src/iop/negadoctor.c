@@ -27,6 +27,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/openmp_maths.h"
 #include "dtgtk/button.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
@@ -67,63 +68,6 @@
  **/
 
  #define THRESHOLD 2.3283064365386963e-10f // -32 EV
-
-
-/* Declare external functions for vectorization. Doing so, OpenMP is supposed to inline them in loops. */
-#if defined(_OPENMP) && !defined(_WIN32)
-
-#pragma omp declare simd
-extern float fmaxf(const float x, const float y);
-
-#pragma omp declare simd
-extern float exp2f(const float x);
-
-#pragma omp declare simd
-extern float powf(const float x, const float y);
-
-#pragma omp declare simd
-extern float log2f(const float x);
-
-#pragma omp declare simd
-extern float log10f(const float x);
-
-#endif
-
-/* Bring our own optimized maths functions because Clang makes dumb shit */
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float fast_exp10f(const float x)
-{
-  // we use the property : 10^x = exp(log(10) * x) = 2^(log(10) * x / log(2))
-  // max relative error over x = [0; 4] is 1.5617955706227326e-15
-  return exp2f(3.3219280948873626f * x);
-}
-
-// Since we are at it, write an optimized expf
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float fast_expf(const float x)
-{
-  // we use the property : exp(x) = 2^(x / log(2))
-  // max relative error over x = [0; 4] is 5.246203046472202e-16
-  return exp2f(1.4426950408889634f * x);
-}
-
-
-static inline float v_maxf(const float vector[3])
-{
-  // Find the max over an RGB vector
-  return fmaxf(fmaxf(vector[0], vector[1]), vector[2]);
-}
-
-static inline float v_minf(const float vector[3])
-{
-  // Find the min over an RGB vector
-  return fminf(fminf(vector[0], vector[1]), vector[2]);
-}
 
 
 DT_MODULE_INTROSPECTION(2, dt_iop_negadoctor_params_t)
