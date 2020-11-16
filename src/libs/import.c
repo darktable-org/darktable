@@ -192,8 +192,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   {
     // The label for the section below could be "Mass Storage Camera" from gphoto2
     // let's add a translatable string for it.
-    #pragma GCC diagnostic ignored "-Wunused-variable"
-    const char *MSC = N_("Mass Storage Camera");
+    #define FOR_TRANSLATION_MSC N_("Mass Storage Camera")
 
     // Add detected supported devices
     char buffer[512] = { 0 };
