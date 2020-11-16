@@ -34,8 +34,13 @@
 
 DT_MODULE(1)
 
-#define FALLBACK_PRESET_NAME "modules: default"
-#define DEPRECATED_PRESET_NAME "modules: deprecated"
+// the T_ macros are for the translation engine to take them into account
+#define FALLBACK_PRESET_NAME     "modules: default"
+#define T_FALLBACK_PRESET_NAME _("modules: default")
+
+#define DEPRECATED_PRESET_NAME     "modules: deprecated"
+#define T_DEPRECATED_PRESET_NAME _("modules: deprecated")
+
 // if a preset cannot be loaded or the current preset deleted, this is the fallabck preset
 
 #define PADDING 2
