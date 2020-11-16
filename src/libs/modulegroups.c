@@ -77,6 +77,13 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *edit_search_cb;
 } dt_lib_modulegroups_t;
 
+typedef enum dt_lib_modulegroup_iop_visibility_type_t
+{
+  DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE,
+  DT_MODULEGROUP_SEARCH_IOP_GROUPS_VISIBLE,
+  DT_MODULEGROUP_SEARCH_IOP_TEXT_GROUPS_VISIBLE
+} dt_lib_modulegroup_iop_visibility_type_t;
+
 /* toggle button callback */
 static void _lib_modulegroups_toggle(GtkWidget *button, gpointer data);
 /* helper function to update iop module view depending on group */
@@ -738,6 +745,34 @@ static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
   return d->current;
 }
 
+static dt_lib_modulegroup_iop_visibility_type_t _preset_retrieve_old_search_pref(gchar **ret)
+{
+  // show the search box ?
+  gchar *show_text_entry = dt_conf_get_string("plugins/darkroom/search_iop_by_text");
+  dt_lib_modulegroup_iop_visibility_type_t val = DT_MODULEGROUP_SEARCH_IOP_TEXT_GROUPS_VISIBLE;
+
+  if(strcmp(show_text_entry, "show search text") == 0)
+  {
+    // we only show the search box. no groups
+    *ret = dt_util_dstrcat(*ret, "1ꬹ1");
+    val = DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE;
+  }
+  else if(strcmp(show_text_entry, "show groups") == 0)
+  {
+    // we don't show the search box
+    *ret = dt_util_dstrcat(*ret, "0");
+    val = DT_MODULEGROUP_SEARCH_IOP_GROUPS_VISIBLE;
+  }
+  else
+  {
+    // we show both
+    *ret = dt_util_dstrcat(*ret, "1");
+    val = DT_MODULEGROUP_SEARCH_IOP_TEXT_GROUPS_VISIBLE;
+  }
+  g_free(show_text_entry);
+  return val;
+}
+
 /* presets syntax :
   Layout presets are saved as string consisting of blocs separated by ꬹ
   OPTIONSꬹBLOC_0ꬹBLOC_1ꬹBLOC_2....
@@ -752,23 +787,7 @@ static gchar *_preset_retrieve_old_layout_updated()
   gchar *ret = NULL;
 
   // show the search box ?
-  const gchar *show_text_entry = dt_conf_get_string("plugins/darkroom/search_iop_by_text");
-  if(strcmp(show_text_entry, "show search text") == 0)
-  {
-    // we only show the search box. no groups
-    ret = dt_util_dstrcat(ret, "1ꬹ1");
-    return ret;
-  }
-  else if(strcmp(show_text_entry, "show groups") == 0)
-  {
-    // we don't show the search box
-    ret = dt_util_dstrcat(ret, "0");
-  }
-  else
-  {
-    // we show both
-    ret = dt_util_dstrcat(ret, "1");
-  }
+  if(_preset_retrieve_old_search_pref(&ret) == DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE) return ret;
 
   // layout with "new" 3 groups
   for(int i = 0; i < 4; i++)
@@ -817,23 +836,7 @@ static gchar *_preset_retrieve_old_layout(char *list, char *list_fav)
   gchar *ret = NULL;
 
   // show the search box ?
-  const gchar *show_text_entry = dt_conf_get_string("plugins/darkroom/search_iop_by_text");
-  if(strcmp(show_text_entry, "show search text") == 0)
-  {
-    // we only show the search box. no groups
-    ret = dt_util_dstrcat(ret, "1ꬹ1");
-    return ret;
-  }
-  else if(strcmp(show_text_entry, "show groups") == 0)
-  {
-    // we don't show the search box
-    ret = dt_util_dstrcat(ret, "0");
-  }
-  else
-  {
-    // we show both
-    ret = dt_util_dstrcat(ret, "1");
-  }
+  if(_preset_retrieve_old_search_pref(&ret) == DT_MODULEGROUP_SEARCH_IOP_TEXT_VISIBLE) return ret;
 
   // layout with "old" 5 groups
   for(int i = 0; i < 6; i++)
