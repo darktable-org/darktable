@@ -74,6 +74,7 @@ typedef struct dt_lib_modulegroups_t
   GtkWidget *dialog;
   GtkWidget *presets_list, *preset_box;
   GtkWidget *preset_name, *preset_groups_box;
+  GtkWidget *edit_search_cb;
 } dt_lib_modulegroups_t;
 
 /* toggle button callback */
@@ -1231,6 +1232,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
   if(!d->edit_groups || !d->edit_preset) return;
 
   // get all the values
+  d->edit_show_search = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->edit_search_cb));
   gchar *params = _preset_to_string(self, TRUE);
   gchar *newname = g_strdup(gtk_entry_get_text(GTK_ENTRY(d->preset_name)));
 
@@ -1843,6 +1845,12 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   if(ro) gtk_widget_set_sensitive(d->preset_name, FALSE);
   gtk_box_pack_start(GTK_BOX(hb1), d->preset_name, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
+
+  // show search checkbox
+  d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->edit_search_cb), d->edit_show_search);
+  if(ro) gtk_widget_set_sensitive(d->edit_search_cb, FALSE);
+  gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
 
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->preset_groups_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
