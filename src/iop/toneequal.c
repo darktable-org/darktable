@@ -391,15 +391,31 @@ static void compress_shadows_highlight_preset_set_exposure_params(dt_iop_toneequ
   // this function is used to set the exposure params for the 4 "compress shadows
   // highlights" presets, which use basically the same curve, centered around
   // -4EV with an exposure compensation that puts middle-grey at -4EV.
-  p->noise = 1.47f * step;
-  p->ultra_deep_blacks = 2.0f * step;
-  p->deep_blacks = 2.0f * step;
-  p->blacks = 1.47f * step;
+  p->noise = step;
+  p->ultra_deep_blacks = 5.f / 3.f * step;
+  p->deep_blacks = 5.f / 3.f * step;
+  p->blacks = step;
   p->shadows = 0.0f;
   p->midtones = -step;
-  p->highlights = -2.0f * step;
-  p->whites = -2.53f * step;
-  p->speculars = -2.13f * step;
+  p->highlights = -5.f / 3.f * step;
+  p->whites = -5.f / 3.f * step;
+  p->speculars = -step;
+}
+
+
+static void dilate_shadows_highlight_preset_set_exposure_params(dt_iop_toneequalizer_params_t* p, const float step)
+{
+  // create a tone curve meant to be used without filter (as a flat, non-local, 1D tone curve) that reverts
+  // the local settings above.
+  p->noise = -15.f / 9.f * step;
+  p->ultra_deep_blacks = -14.f / 9.f * step;
+  p->deep_blacks = -12.f / 9.f * step;
+  p->blacks = -8.f / 9.f * step;
+  p->shadows = 0.f;
+  p->midtones = 8.f / 9.f * step;
+  p->highlights = 12.f / 9.f * step;
+  p->whites = 14.f / 9.f * step;
+  p->speculars = 15.f / 9.f * step;
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -410,7 +426,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.method = DT_TONEEQ_NORM_POWER;
   p.contrast_boost = 0.0f;
   p.details = DT_TONEEQ_NONE;
-  p.exposure_boost = 0.0f;
+  p.exposure_boost = -0.5f;
   p.feathering = 1.0f;
   p.iterations = 1;
   p.smoothing = sqrtf(2.0f);
@@ -420,7 +436,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.noise = p.ultra_deep_blacks = p.deep_blacks = p.blacks = p.shadows = p.midtones = p.highlights = p.whites = p. speculars = 0.0f;
 
   // No blending
-  dt_gui_presets_add_generic(_("mask blending : none"), self->op,
+  dt_gui_presets_add_generic(_("simple tone curve"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Simple utils blendings
@@ -444,28 +460,17 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Shadows/highlights presets
   // move middle-grey to the center of the range
-  // helps to have a monotonous curve
   p.exposure_boost = -1.57f;
   p.contrast_boost = 0.0f;
-
   p.blending = 2.0f;
   p.feathering = 50.0f;
   p.iterations = 5;
   p.quantization = 0.0f;
 
-  compress_shadows_highlight_preset_set_exposure_params(&p, 0.7f);
   // slight modification to give higher compression
-  p.speculars = -2.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : very strong"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-  p.details = DT_TONEEQ_GUIDED;
-  p.feathering = 1000.0f;
-  dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : very strong"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-
   p.details = DT_TONEEQ_EIGF;
   p.feathering = 20.0f;
-  compress_shadows_highlight_preset_set_exposure_params(&p, 0.60f);
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
   dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : strong"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   p.details = DT_TONEEQ_GUIDED;
@@ -489,7 +494,7 @@ void init_presets(dt_iop_module_so_t *self)
   p.blending = 5.0f;
   p.feathering = 1.0f;
   p.iterations = 1;
-  compress_shadows_highlight_preset_set_exposure_params(&p, 0.30f);
+  compress_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
   dt_gui_presets_add_generic(_("compress shadows/highlights (eigf) : soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   p.details = DT_TONEEQ_GUIDED;
@@ -497,13 +502,27 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("compress shadows/highlights (gf) : soft"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
+  // build the 1D contrast curves that revert the local compression of contrast above
+  p.details = DT_TONEEQ_NONE;
+  dilate_shadows_highlight_preset_set_exposure_params(&p, 0.25f);
+  dt_gui_presets_add_generic(_("contrast tone curve: soft"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  dilate_shadows_highlight_preset_set_exposure_params(&p, 0.45f);
+  dt_gui_presets_add_generic(_("contrast tone curve: medium"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  dilate_shadows_highlight_preset_set_exposure_params(&p, 0.65f);
+  dt_gui_presets_add_generic(_("contrast tone curve: strong"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  // relight
   p.details = DT_TONEEQ_EIGF;
   p.blending = 5.0f;
   p.feathering = 1.0f;
   p.iterations = 1;
-
   p.quantization = 0.0f;
-  p.exposure_boost = 0.0f;
+  p.exposure_boost = -0.5f;
   p.contrast_boost = 0.0f;
 
   p.noise = 0.0f;
