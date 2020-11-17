@@ -541,6 +541,10 @@ void dt_bauhaus_load_theme()
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
   gtk_widget_path_free(path);
 
+  // make sure we release previously loaded font
+  if(darktable.bauhaus->pango_font_desc)
+    pango_font_description_free(darktable.bauhaus->pango_font_desc);
+
   darktable.bauhaus->pango_font_desc = pfont;
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
@@ -572,6 +576,7 @@ void dt_bauhaus_init()
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
   gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
+  darktable.bauhaus->pango_font_desc = NULL;
 
   dt_bauhaus_load_theme();
 
