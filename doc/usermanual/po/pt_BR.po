@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-11-17 03:42-0300\n"
-"PO-Revision-Date: 2020-11-17 05:58-0300\n"
+"PO-Revision-Date: 2020-11-17 09:19-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -9159,9 +9159,8 @@ msgstr ""
 "módulo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7374(title)
-#, fuzzy
 msgid "blend fulcrum"
-msgstr "pivô de mesclagem"
+msgstr "pivô de mesclagem (blend fulcrum)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7376(para)
 msgid ""
@@ -9854,7 +9853,7 @@ msgid ""
 "scene referred editing where luminance values may go beyond 100% to target "
 "highlights. This slider is only available for channels where it is "
 "meaningful."
-msgstr ""
+msgstr "O deslizador <quote>fator de ganho</quote> permite extender a faixa de valores que pode ser usada em deslizadores de máscaras paramétricas. Ele pdoe ser usado em edição reltiva à cena onde os valores de luminância podem ir além de 100% para realces. Este deslizador só está disponível para canais onde ele faz sentido."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:7907(para)
 msgid ""
@@ -24580,7 +24579,7 @@ msgid ""
 "bottom left of the thumb gives the number of images inside the group. A "
 "white number means that all images of the group are exactly at the same "
 "location. Otherwise the number is yellow."
-msgstr ""
+msgstr "Imagens próximas umas das outras são agrupadas sob uma única imagem. Veja as configurações do mapa para controlar os agrupamentos conforme sua necessidade. O número mostrado no canto inferior esquerdo da miniatura é o número de imagens dentro do grupo. Um número branco significa que todas as imagenes do grupo estão exatamente na mesma localização. De outra forma, o número é amarelo."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22197(para)
 msgid ""
@@ -24717,7 +24716,7 @@ msgid ""
 "A location is shown on the map when selected. A location can have the shape "
 "of circle, ellipse, square or rectangle. Each location is an entry of "
 "<emphasis>geotagging</emphasis> collection under <emphasis>tagged</emphasis>."
-msgstr ""
+msgstr "Uma localização é mostrada no mapa quando selecionada. Uma localização pode ter forma de círculo, elipse, quadrado ou retângulo. Cada localização é uma entrada de coleção de <emphasis>geoetiquetamento</emphasis> sob <emphasis>etiquetado</emphasis>."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22390(para)
 msgid ""
@@ -24766,7 +24765,7 @@ msgid ""
 "<emphasis>Ctrl-Left-Click</emphasis> enters edition of location name. Press "
 "<emphasis>Escape</emphasis> to terminate without change. Press "
 "<emphasis>Enter</emphasis> to save changes."
-msgstr ""
+msgstr "<emphasis>Ctrl-Clique-Esquerdo</emphasis> edita o nome da localização. Prassione <emphasis>Escape</emphasis> para terminar sem mudar. <emphasis>Enter</emphasis> para gravar as mudanças."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22437(para)
 msgid "<emphasis>Right-Click</emphasis> shows the submenu:"
@@ -24801,7 +24800,7 @@ msgid ""
 "<emphasis>Left-Click</emphasis> and drag the location shape to adjust its "
 "place. <emphasis>Ctrl-Click</emphasis> or <emphasis>Ctrl-Shift-Left-Click</"
 "emphasis> to move an image or a group of images inside a location shape."
-msgstr ""
+msgstr "<emphasis>Clique-esquerdo</emphasis> e arraste a forma da localização para ajustar seu lugar. <emphasis>Ctrl-Clique</emphasis> ou <emphasis>Ctrl-Shift-Clique-Esquerdo</emphasis> para mover umaimagem ou grupo de imagens para dentro de uma forma de localização."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22472(para)
 msgid ""
@@ -24811,13 +24810,13 @@ msgid ""
 "emphasis> to decrease or increase its width. <emphasis>Ctrl-Scroll-Up</"
 "emphasis> or <emphasis>Ctrl-Scroll-Down</emphasis> to decrease or increase "
 "its height."
-msgstr ""
+msgstr "Dentro da forma (mas não sobre uma imagem), <emphasis>Scroll-para-cima</emphasis> ou <emphasis>Scroll-para-baixo</emphasis> para diminuir ou aumentar seu tamanho. <emphasis>Shift-Scroll-para-cima</emphasis> ou <emphasis>Shift-Scroll-para-baixo</emphasis> para diminuirou aumentar sua largura. <emphasis>Ctrl-Scroll-para-cima</emphasis> ou <emphasis>Ctrl-Scroll-para-baixo</emphasis> para diminuir ou aumentar sua altura. "
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22480(para)
 msgid ""
 "<emphasis>Left-Click</emphasis> on location different of the selected one "
 "(with show all) selects this location."
-msgstr ""
+msgstr "<emphasis>Clique-Esquerdo</emphasis> em uma localização diferente da atualmente selecionada (com mostrar todas) seleciona a localização."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22491(title)
 msgid "Map settings"
