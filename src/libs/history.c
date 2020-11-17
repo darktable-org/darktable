@@ -756,7 +756,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    if(*(float*)o != *(float*)p)
+    if(*(float*)o != *(float*)p && (isfinite(*(float*)o) || isfinite(*(float*)p)))
       return g_strdup_printf("%s\t%.4f\t\u2192\t%.4f", d, *(float*)o, *(float*)p);
     break;
   case DT_INTROSPECTION_TYPE_INT:
@@ -858,8 +858,12 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
   {
     #define add_blend_history_change(field, format, label)                                       \
       if((hitem->blend_params->field) != (old_blend->field))                                     \
-        change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, label,    \
-                                    (old_blend->field), (hitem->blend_params->field));
+      {                                                                                          \
+        gchar *full_format = g_strconcat("%s\t", format, "\t\u2192\t", format, NULL);            \
+        change_parts[num_parts++] = g_strdup_printf(full_format, label,                          \
+                                    (old_blend->field), (hitem->blend_params->field));           \
+        g_free(full_format);                                                                     \
+      }
 
     #define add_blend_history_change_enum(field, label, list)                                    \
       if((hitem->blend_params->field) != (old_blend->field))                                     \
@@ -870,7 +874,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
           if(i->value == (old_blend->field)) old_str = i->name;                                  \
           if(i->value == (hitem->blend_params->field)) new_str = i->name;                        \
         }                                                                                        \
-                                                                                                \
+                                                                                                 \
         change_parts[num_parts++] = (!old_str || !new_str)                                       \
                                   ? g_strdup_printf("%s\t%d\t\u2192\t%d", label,                 \
                                                     old_blend->field, hitem->blend_params->field)\
@@ -882,7 +886,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
     add_blend_history_change_enum(blend_cst, _("colorspace"), dt_develop_blend_colorspace_names);
     add_blend_history_change_enum(mask_mode, _("mask mode"), dt_develop_mask_mode_names);
     add_blend_history_change_enum(blend_mode, _("blend mode"), dt_develop_blend_mode_names);
-    add_blend_history_change(blend_parameter, "%.2f EV", _("blend fulcrum"));
+    add_blend_history_change(blend_parameter, _("%.2f EV"), _("blend fulcrum"));
     add_blend_history_change(opacity, "%.4f", _("mask opacity"));
     add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), _("combine masks"), dt_develop_combine_masks_names);
     add_blend_history_change(feathering_radius, "%.4f", _("feathering radius"));
