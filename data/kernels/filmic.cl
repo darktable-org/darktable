@@ -710,8 +710,6 @@ kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF,
 
 kernel void compute_ratios(read_only image2d_t in, write_only image2d_t norms,
                            write_only image2d_t ratios,
-                           read_only image2d_t lut,
-                           constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
                            const dt_iop_filmicrgb_methods_type_t variant,
                            const int width, const int height)
 {
@@ -720,7 +718,7 @@ kernel void compute_ratios(read_only image2d_t in, write_only image2d_t norms,
   if(x >= width || y >= height) return;
 
   const float4 i = read_imagef(in, sampleri, (int2)(x, y));
-  const float norm = fmax(get_pixel_norm(i, variant, profile_info, lut, 1), NORM_MIN);
+  const float norm = fmax(pixel_rgb_norm_euclidean(i), NORM_MIN);
   const float4 ratio = i / norm;
   write_imagef(norms, (int2)(x, y), norm);
   write_imagef(ratios, (int2)(x, y), ratio);
