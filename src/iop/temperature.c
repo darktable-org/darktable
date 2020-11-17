@@ -1151,9 +1151,12 @@ static void display_wb_error(struct dt_iop_module_t *self)
 
   ++darktable.gui->reset;
 
-  if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65 && is_raw)
+  if(self->dev->proxy.chroma_adaptation != NULL
+     && !self->dev->proxy.wb_is_D65
+     && is_raw)
   {
-    // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
+    // our second biggest problem : another channelmixerrgb instance is doing CAT
+    // earlier in the pipe
     dt_iop_set_module_in_trouble(self, TRUE);
     char *wmes = dt_iop_warning_message(_("white balance applied twice"));
     gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
@@ -1490,7 +1493,8 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id == -1) return;
 
-  const int is_raw = dt_image_is_raw(&(module->dev->image_storage)) && dt_image_is_matrix_correction_supported(&module->dev->image_storage);
+  const gboolean is_raw = dt_image_is_raw(&(module->dev->image_storage))
+    && dt_image_is_matrix_correction_supported(&module->dev->image_storage);
   gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
   const gboolean is_modern = strcmp(workflow, "modern") == 0;
   g_free(workflow);
