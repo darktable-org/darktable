@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-10-31 16:36+0100\n"
-"PO-Revision-Date: 2020-10-31 18:32+0100\n"
+"PO-Revision-Date: 2020-11-06 17:45+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -7409,6 +7409,11 @@ msgid ""
 "option leads to smaller files but at least some windows printer drivers "
 "don't like them."
 msgstr ""
+"Les images TIFF exportées en niveaux de gris - soit provenant d'un boîtier "
+"monochrome soit après conversion - peuvent contenir tous les canaux RGB "
+"valides (par défaut) ou un seul canal d'intensité, vous pouvez sélectionner "
+"ceci dans le menu. La seconde option conduit à des fichiers plus petits mais "
+"cetains pilotes d'imprimante Windows ne les aiment pas."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5897(title)
 #, fuzzy
@@ -7420,6 +7425,8 @@ msgid ""
 "The exported size can be a size expressed in pixels, a print size in cm or "
 "inch, or a scaling factor."
 msgstr ""
+"La taille d'exportation peut être une taille exprimée en pixels, une taille "
+"d'impression en cm ou en pouces, ou un facteur d'échelle."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5904(para)
 #, fuzzy
@@ -7443,6 +7450,10 @@ msgid ""
 "print in cm or inch and the DPI needed. The corresponding size in pixels is "
 "still displayed but not editable in this mode."
 msgstr ""
+"Lorsqu'une unité d'impression est sélectionnée, définissez la largeur et la "
+"hauteur maximales de l'impression finale en cm ou en pouces et le DPI "
+"requis. La taille correspondante en pixels est toujours affichée mais n'est "
+"pas modifiable dans ce mode."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5921(para)
 msgid ""
