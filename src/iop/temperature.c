@@ -1579,13 +1579,14 @@ void reload_defaults(dt_iop_module_t *module)
         }
       }
 
-      // Store EXIF WB coeffs
-      find_coeffs(module, g->as_shot_wb);
-      g->as_shot_wb[0] /= g->as_shot_wb[1];
-      g->as_shot_wb[2] /= g->as_shot_wb[1];
-      g->as_shot_wb[3] /= g->as_shot_wb[1];
-      g->as_shot_wb[1] = 1.0;
     }
+
+    // Store EXIF WB coeffs
+    find_coeffs(module, g->as_shot_wb);
+    g->as_shot_wb[0] /= g->as_shot_wb[1];
+    g->as_shot_wb[2] /= g->as_shot_wb[1];
+    g->as_shot_wb[3] /= g->as_shot_wb[1];
+    g->as_shot_wb[1] = 1.0;
 
     float TempK, tint;
     mul2temp(module, d, &TempK, &tint);
