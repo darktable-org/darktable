@@ -132,6 +132,15 @@ const char *name()
   return _("lut 3D");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("perform color space corrections and apply look"),
+                                      _("corrective or creative"),
+                                      _("linear, RGB, display-referred"),
+                                      _("defined by profile, RGB"),
+                                      _("linear or non-linear, RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -145,20 +154,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "application color space"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_combobox_iop(self, "application color space", GTK_WIDGET(g->colorspace));
-  dt_accel_connect_combobox_iop(self, "interpolation ", GTK_WIDGET(g->interpolation ));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -999,7 +994,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const dt_iop_order_iccprofile_info_t *const lut_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
-    = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
   cl_mem clut_cl = NULL;
   const int devid = piece->pipe->devid;
@@ -1078,7 +1073,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_order_iccprofile_info_t *const lut_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
-    = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   const gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
   if (clut)
   {
@@ -1691,7 +1686,7 @@ void gui_init(dt_iop_module_t *self)
 #else
   gtk_widget_set_tooltip_text(button, _("select a png (haldclut)"
       ", a cube or a 3dl file "
-      "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
+      "CAUTION: 3D lut folder must be set in preferences/processing before choosing the lut file"));
 #endif // HAVE_GMIC
   gtk_box_pack_start(GTK_BOX(g->hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), self);

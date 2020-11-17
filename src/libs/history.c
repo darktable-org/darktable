@@ -419,9 +419,8 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
       dt_undo_iterate_internal(darktable.undo, DT_UNDO_HISTORY, mod, &_history_invalidate_cb);
 
       // we cleanup the module
-      dt_accel_disconnect_list(&mod->accel_closures);
-      dt_accel_cleanup_locals_iop(mod);
-      mod->accel_closures = NULL;
+      dt_accel_cleanup_closures_iop(mod);
+
       // don't delete the module, a pipe may still need it
       dev->alliop = g_list_append(dev->alliop, mod);
 
@@ -757,7 +756,7 @@ static gchar *_lib_history_change_text(dt_introspection_field_t *field, const ch
     }
     break;
   case DT_INTROSPECTION_TYPE_FLOAT:
-    if(*(float*)o != *(float*)p)
+    if(*(float*)o != *(float*)p && (isfinite(*(float*)o) || isfinite(*(float*)p)))
       return g_strdup_printf("%s\t%.4f\t\u2192\t%.4f", d, *(float*)o, *(float*)p);
     break;
   case DT_INTROSPECTION_TYPE_INT:
@@ -850,97 +849,109 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
 
   gchar **change_parts = g_malloc0_n(sizeof(dt_develop_blend_params_t) / (sizeof(float)) + 10, sizeof(char*));
 
-  if(hitem->module->so->get_introspection())
-    change_parts[0] = _lib_history_change_text(hitem->module->so->get_introspection()->field, NULL,
+  if(hitem->module->have_introspection)
+    change_parts[0] = _lib_history_change_text(hitem->module->get_introspection()->field, NULL,
                                                 hitem->params, old_params);
   int num_parts = change_parts[0] ? 1 : 0;
 
-  #define add_blend_history_change(field, format, label)                                       \
-    if((hitem->blend_params->field) != (old_blend->field))                                     \
-      change_parts[num_parts++] = g_strdup_printf("%s\t" format "\t\u2192\t" format, _(label), \
-                                  (old_blend->field), (hitem->blend_params->field));
-
-  #define add_blend_history_change_enum(field, label, list)                                    \
-    if((hitem->blend_params->field) != (old_blend->field))                                     \
-    {                                                                                          \
-      const char *old_str = NULL, *new_str = NULL;                                             \
-      for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
-      {                                                                                        \
-        if(i->value == (old_blend->field)) old_str = i->name;                                  \
-        if(i->value == (hitem->blend_params->field)) new_str = i->name;                        \
-      }                                                                                        \
-                                                                                               \
-      change_parts[num_parts++] = (!old_str || !new_str)                                       \
-                                ? g_strdup_printf("%s\t%d\t\u2192\t%d", _(label),              \
-                                                  old_blend->field, hitem->blend_params->field)\
-                                : g_strdup_printf("%s\t%s\t\u2192\t%s", _(label),              \
-                                                  _(g_dpgettext2(NULL, "blendmode", old_str)), \
-                                                  _(g_dpgettext2(NULL, "blendmode", new_str)));\
-    }
-
-  add_blend_history_change_enum(mask_mode, "mask mode", dt_develop_mask_mode_names);
-  add_blend_history_change_enum(blend_mode, "blend mode", dt_develop_blend_mode_names);
-  add_blend_history_change(opacity, "%.4f", "mask opacity");
-  add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), "combine masks", dt_develop_combine_masks_names);
-  add_blend_history_change(feathering_radius, "%.4f", "feathering radius");
-  add_blend_history_change_enum(feathering_guide, "feathering guide", dt_develop_feathering_guide_names);
-  add_blend_history_change(blur_radius, "%.4f", "mask blur");
-  add_blend_history_change(contrast, "%.4f", "mask contrast");
-  add_blend_history_change(brightness, "%.4f", "brightness");
-  add_blend_history_change(raster_mask_instance, "%d", "raster mask instance");
-  add_blend_history_change(raster_mask_id, "%d", "raster mask id");
-  add_blend_history_change_enum(raster_mask_invert, "invert mask", dt_develop_invert_mask_names);
-
-  add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", "drawn mask polarity");
-
-  if(hitem->blend_params->mask_id != old_blend->mask_id)
-    change_parts[num_parts++] = old_blend->mask_id == 0
-                              ? g_strdup_printf(_("a drawn mask was added"))
-                              : hitem->blend_params->mask_id == 0
-                              ? g_strdup_printf(_("the drawn mask was removed"))
-                              : g_strdup_printf(_("the drawn mask was changed"));
-
-  dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
-
-  for(int in_out = 1; in_out >= 0; in_out--)
+  if(hitem->module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
   {
-    gboolean first = TRUE;
+    #define add_blend_history_change(field, format, label)                                       \
+      if((hitem->blend_params->field) != (old_blend->field))                                     \
+      {                                                                                          \
+        gchar *full_format = g_strconcat("%s\t", format, "\t\u2192\t", format, NULL);            \
+        change_parts[num_parts++] = g_strdup_printf(full_format, label,                          \
+                                    (old_blend->field), (hitem->blend_params->field));           \
+        g_free(full_format);                                                                     \
+      }
 
-    for(const dt_iop_gui_blendif_channel_t *b = bd ? bd->channel : NULL;
-        b && b->label != NULL;
-        b++)
+    #define add_blend_history_change_enum(field, label, list)                                    \
+      if((hitem->blend_params->field) != (old_blend->field))                                     \
+      {                                                                                          \
+        const char *old_str = NULL, *new_str = NULL;                                             \
+        for(const dt_develop_name_value_t *i = list; *i->name; i++)                              \
+        {                                                                                        \
+          if(i->value == (old_blend->field)) old_str = i->name;                                  \
+          if(i->value == (hitem->blend_params->field)) new_str = i->name;                        \
+        }                                                                                        \
+                                                                                                 \
+        change_parts[num_parts++] = (!old_str || !new_str)                                       \
+                                  ? g_strdup_printf("%s\t%d\t\u2192\t%d", label,                 \
+                                                    old_blend->field, hitem->blend_params->field)\
+                                  : g_strdup_printf("%s\t%s\t\u2192\t%s", label,                 \
+                                                    _(g_dpgettext2(NULL, "blendmode", old_str)), \
+                                                    _(g_dpgettext2(NULL, "blendmode", new_str)));\
+      }
+
+    add_blend_history_change_enum(blend_cst, _("colorspace"), dt_develop_blend_colorspace_names);
+    add_blend_history_change_enum(mask_mode, _("mask mode"), dt_develop_mask_mode_names);
+    add_blend_history_change_enum(blend_mode, _("blend mode"), dt_develop_blend_mode_names);
+    add_blend_history_change(blend_parameter, _("%.2f EV"), _("blend fulcrum"));
+    add_blend_history_change(opacity, "%.4f", _("mask opacity"));
+    add_blend_history_change_enum(mask_combine & (DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL), _("combine masks"), dt_develop_combine_masks_names);
+    add_blend_history_change(feathering_radius, "%.4f", _("feathering radius"));
+    add_blend_history_change_enum(feathering_guide, _("feathering guide"), dt_develop_feathering_guide_names);
+    add_blend_history_change(blur_radius, "%.4f", _("mask blur"));
+    add_blend_history_change(contrast, "%.4f", _("mask contrast"));
+    add_blend_history_change(brightness, "%.4f", _("brightness"));
+    add_blend_history_change(raster_mask_instance, "%d", _("raster mask instance"));
+    add_blend_history_change(raster_mask_id, "%d", _("raster mask id"));
+    add_blend_history_change_enum(raster_mask_invert, _("invert mask"), dt_develop_invert_mask_names);
+
+    add_blend_history_change(mask_combine & DEVELOP_COMBINE_MASKS_POS ? '-' : '+', "%c", _("drawn mask polarity"));
+
+    if(hitem->blend_params->mask_id != old_blend->mask_id)
+      change_parts[num_parts++] = old_blend->mask_id == 0
+                                ? g_strdup_printf(_("a drawn mask was added"))
+                                : hitem->blend_params->mask_id == 0
+                                ? g_strdup_printf(_("the drawn mask was removed"))
+                                : g_strdup_printf(_("the drawn mask was changed"));
+
+    dt_iop_gui_blend_data_t *bd = hitem->module->blend_data;
+
+    for(int in_out = 1; in_out >= 0; in_out--)
     {
-      const dt_develop_blendif_channels_t ch = b->param_channels[in_out];
+      gboolean first = TRUE;
 
-      const int oactive = old_blend->blendif & (1 << ch);
-      const int nactive = hitem->blend_params->blendif & (1 << ch);
-
-      const int opolarity = old_blend->blendif & (1 << (ch + 16));
-      const int npolarity = hitem->blend_params->blendif & (1 << (ch + 16));
-
-      float *of = &old_blend->blendif_parameters[4 * ch];
-      float *nf = &hitem->blend_params->blendif_parameters[4 * ch];
-
-      if((oactive || nactive) && (memcmp(of, nf, 4 * sizeof(float)) || opolarity != npolarity))
+      for(const dt_iop_gui_blendif_channel_t *b = bd ? bd->channel : NULL;
+          b && b->label != NULL;
+          b++)
       {
-        if(first)
-        {
-          change_parts[num_parts++] = g_strdup(in_out ? _("parametric output mask:") : _("parametric input mask:"));
-          first = FALSE;
-        }
-        char s[4][2][25];
-        for(int k = 0; k < 4; k++)
-        {
-          b->scale_print(of[k], s[k][0], sizeof(s[k][0]));
-          b->scale_print(nf[k], s[k][1], sizeof(s[k][1]));
-        }
+        const dt_develop_blendif_channels_t ch = b->param_channels[in_out];
 
-        char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");
-        char *npol = !nactive ? "" : (npolarity ? "(-)" : "(+)");
+        const int oactive = old_blend->blendif & (1 << ch);
+        const int nactive = hitem->blend_params->blendif & (1 << ch);
 
-        change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s%s\t\u2192\t%s| %s- %s| %s%s", _(b->name),
-                                                    s[0][0], s[1][0], s[2][0], s[3][0], opol,
-                                                    s[0][1], s[1][1], s[2][1], s[3][1], npol);
+        const int opolarity = old_blend->blendif & (1 << (ch + 16));
+        const int npolarity = hitem->blend_params->blendif & (1 << (ch + 16));
+
+        float *of = &old_blend->blendif_parameters[4 * ch];
+        float *nf = &hitem->blend_params->blendif_parameters[4 * ch];
+
+        const float oboost = exp2f(old_blend->blendif_boost_factors[ch]);
+        const float nboost = exp2f(hitem->blend_params->blendif_boost_factors[ch]);
+
+        if((oactive || nactive) && (memcmp(of, nf, 4 * sizeof(float)) || opolarity != npolarity))
+        {
+          if(first)
+          {
+            change_parts[num_parts++] = g_strdup(in_out ? _("parametric output mask:") : _("parametric input mask:"));
+            first = FALSE;
+          }
+          char s[4][2][25];
+          for(int k = 0; k < 4; k++)
+          {
+            b->scale_print(of[k], oboost, s[k][0], sizeof(s[k][0]));
+            b->scale_print(nf[k], nboost, s[k][1], sizeof(s[k][1]));
+          }
+
+          char *opol = !oactive ? "" : (opolarity ? "(-)" : "(+)");
+          char *npol = !nactive ? "" : (npolarity ? "(-)" : "(+)");
+
+          change_parts[num_parts++] = g_strdup_printf("%s\t%s| %s- %s| %s%s\t\u2192\t%s| %s- %s| %s%s", _(b->name),
+                                                      s[0][0], s[1][0], s[2][0], s[3][0], opol,
+                                                      s[0][1], s[1][1], s[2][1], s[3][1], npol);
+        }
       }
     }
   }
@@ -1115,6 +1126,7 @@ static void _lib_history_truncate(gboolean compress)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
+  darktable.develop->proxy.chroma_adaptation = NULL;
   dt_dev_reload_history_items(darktable.develop);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
   dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));

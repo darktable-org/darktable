@@ -361,6 +361,10 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 
   if(style_names == NULL) return;
 
+  /* variables for overwrite dialog */
+  gint overwrite_check_button = 0;
+  gint overwrite = 0;
+
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
@@ -370,13 +374,120 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 #endif
   gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+
     for (GList *style = style_names; style != NULL; style = style->next)
     {
-      dt_styles_save_to_file((char*)style->data, filedir, FALSE);
-      dt_control_log(_("style %s was successfully saved"), (char*)style->data);
+      char stylename[520];
+
+      /* check if file exists before overwriting */
+      snprintf(stylename, sizeof(stylename), "%s/%s.dtstyle", filedir, (char*)style->data);
+
+      if(g_file_test(stylename, G_FILE_TEST_EXISTS) == TRUE)
+      {
+        /* do not run overwrite dialog */
+        if(overwrite_check_button == 1)
+        {
+          if(overwrite == 1)
+          {
+            // save style with overwrite
+            dt_styles_save_to_file((char*)style->data, filedir, TRUE);
+          }
+          else if(overwrite == 2)
+          {
+            continue;
+          }
+          else
+          {
+            break;
+          }
+        }
+        else
+        {
+          /* create and run dialog */
+          char overwrite_str[256];
+
+          gint overwrite_dialog_res = GTK_RESPONSE_ACCEPT;
+          gint overwrite_dialog_check_button_res = TRUE;
+
+          if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
+          {
+            GtkWidget *dialog_overwrite_export = gtk_dialog_new_with_buttons(_("overwrite style?"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+                _("cancel"), GTK_RESPONSE_CANCEL,
+                _("skip"), GTK_RESPONSE_NONE,
+                _("overwrite"), GTK_RESPONSE_ACCEPT, NULL);
+
+            // contents for dialog
+            GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog_overwrite_export));
+            sprintf(overwrite_str, _("style `%s' already exists.\ndo you want to overwrite existing style?\n"), (char*)style->data);
+            GtkWidget *label = gtk_label_new(overwrite_str);
+            GtkWidget *overwrite_dialog_check_button = gtk_check_button_new_with_label(_("apply this option to all existing styles"));
+
+            gtk_container_add(GTK_CONTAINER(content_area), label);
+            gtk_container_add(GTK_CONTAINER(content_area), overwrite_dialog_check_button);
+            gtk_widget_show_all(dialog_overwrite_export);
+
+            // disable check button and skip button when only one style is selected
+            if(g_list_length(style_names) == 1)
+            {
+              gtk_widget_set_sensitive(overwrite_dialog_check_button, FALSE);
+              gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_overwrite_export), GTK_RESPONSE_NONE, FALSE);
+            }
+
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(dialog_overwrite_export);
+#endif
+
+            overwrite_dialog_res = gtk_dialog_run(GTK_DIALOG(dialog_overwrite_export));
+            overwrite_dialog_check_button_res = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(overwrite_dialog_check_button));
+            gtk_widget_destroy(dialog_overwrite_export);
+          }
+
+          if(overwrite_dialog_res == GTK_RESPONSE_ACCEPT)
+          {
+            overwrite = 1;
+
+            /* do not run dialog on the next conflict when set to 1 */
+            if(overwrite_dialog_check_button_res == TRUE)
+            {
+              overwrite_check_button = 1;
+            }
+            else
+            {
+              overwrite_check_button = 0;
+            }
+          }
+          else if(overwrite_dialog_res == GTK_RESPONSE_NONE)
+          {
+            overwrite = 2;
+
+            /* do not run dialog on the next conflict when set to 1 */
+            if(overwrite_dialog_check_button_res == TRUE)
+            {
+              overwrite_check_button = 1;
+            }
+            else
+            {
+              overwrite_check_button = 0;
+            }
+            continue;
+          }
+          else
+          {
+            break;
+          }
+
+          dt_styles_save_to_file((char*)style->data, filedir, TRUE);
+        }
+      }
+      else
+      {
+        dt_styles_save_to_file((char*)style->data, filedir, FALSE);
+      }
+      dt_control_log(_("style %s was successfully exported"), (char*)style->data);
     }
     g_free(filedir);
   }
@@ -559,7 +670,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->applymode = dt_bauhaus_combobox_new(NULL);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->applymode), TRUE, FALSE, 0);
-  dt_bauhaus_widget_set_label(d->applymode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(d->applymode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(d->applymode, _("append"));
   dt_bauhaus_combobox_add(d->applymode, _("overwrite"));
   gtk_widget_set_tooltip_text(d->applymode, _("how to handle existing history"));

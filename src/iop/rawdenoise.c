@@ -121,6 +121,15 @@ const char *name()
   return _("raw denoise");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("denoise the raw picture early in the pipeline"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING;
@@ -134,18 +143,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_RAW;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "noise threshold"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_rawdenoise_gui_data_t *g = (dt_iop_rawdenoise_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "noise threshold", GTK_WIDGET(g->threshold));
 }
 
 // transposes image, it is faster to read columns than to write them.
@@ -538,10 +535,12 @@ void init(dt_iop_module_t *module)
 void reload_defaults(dt_iop_module_t *module)
 {
   // can't be switched on for non-raw images:
-  if(dt_image_is_raw(&module->dev->image_storage))
-    module->hide_enable_button = 0;
-  else
-    module->hide_enable_button = 1;
+  module->hide_enable_button = !dt_image_is_raw(&module->dev->image_storage);
+
+  if(module->widget)
+  {
+    gtk_stack_set_visible_child_name(GTK_STACK(module->widget), module->hide_enable_button ? "non_raw" : "raw");
+  }
 
   module->default_enabled = 0;
 }
@@ -597,7 +596,6 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_rawdenoise_params_t *p = (dt_iop_rawdenoise_params_t *)self->params;
   dt_iop_cancel_history_update(self);
   dt_bauhaus_slider_set_soft(g->threshold, p->threshold);
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->hide_enable_button ? "non_raw" : "raw");
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -935,7 +933,7 @@ void gui_init(dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("G"), NULL);
   dt_ui_notebook_page(c->channel_tabs, _("B"), NULL);
 
-  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
+  gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
   gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(rawdenoise_tab_switch), self);
 

@@ -27051,7 +27051,6 @@ msgstr "Ajustement des valeurs tonales"
 #, fuzzy
 msgid "Add/Amend Shortcut"
 msgstr "Ajout d'un raccourci simple"
-
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23747(para)
 msgid ""
 "In order to add or amend shortcut, first navigate to the action you want to "

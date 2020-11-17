@@ -120,51 +120,9 @@ void init_presets(dt_iop_module_so_t *self)
                                                            .raw_black_level_separate[2] = 0,
                                                            .raw_black_level_separate[3] = 0,
                                                            .raw_white_point = UINT16_MAX },
-                             sizeof(dt_iop_rawprepare_params_t), 1);
+                             sizeof(dt_iop_rawprepare_params_t), 1, DEVELOP_BLEND_CS_NONE);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", label));
-    g_free(label);
-  }
-
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point"));
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop x"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop y"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop width"));
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop height"));
-  }
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
-
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_connect_slider_iop(self, label, g->black_level_separate[i]);
-    g_free(label);
-  }
-
-  dt_accel_connect_slider_iop(self, "white point", g->white_point);
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    dt_accel_connect_slider_iop(self, "crop x", g->x);
-    dt_accel_connect_slider_iop(self, "crop y", g->y);
-    dt_accel_connect_slider_iop(self, "crop width", g->width);
-    dt_accel_connect_slider_iop(self, "crop height", g->height);
-  }
 }
 
 // value to round,   reference on how to round:
@@ -731,6 +689,9 @@ void reload_defaults(dt_iop_module_t *self)
 
   self->hide_enable_button = 1;
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
+
+  if(self->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -773,9 +734,13 @@ void gui_update(dt_iop_module_t *self)
     dt_bauhaus_slider_set_soft(g->width, p->width);
     dt_bauhaus_slider_set_soft(g->height, p->height);
   }
-
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
+
+const gchar *black_label[]
+  =  { N_("black level 0"),
+       N_("black level 1"),
+       N_("black level 2"),
+       N_("black level 3") };
 
 void gui_init(dt_iop_module_t *self)
 {
@@ -786,14 +751,12 @@ void gui_init(dt_iop_module_t *self)
   for(int i = 0; i < 4; i++)
   {
     gchar *par = g_strdup_printf("raw_black_level_separate[%i]", i);
-    gchar *label = g_strdup_printf(_("black level %i"), i);
 
     g->black_level_separate[i] = dt_bauhaus_slider_from_params(self, par);
-    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
-    gtk_widget_set_tooltip_text(g->black_level_separate[i], label);
+    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, black_label[i]);
+    gtk_widget_set_tooltip_text(g->black_level_separate[i], _(black_label[i]));
     dt_bauhaus_slider_set_soft_max(g->black_level_separate[i], 16384);
 
-    g_free(label);
     g_free(par);
   }
 

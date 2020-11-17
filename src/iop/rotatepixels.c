@@ -341,18 +341,16 @@ void reload_defaults(dt_iop_module_t *self)
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
+
+  if(self->widget)
+    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
+                       ? _("automatic pixel rotation")
+                       : _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(!self->widget) return;
-  if(self->default_enabled)
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
-
 void gui_init(dt_iop_module_t *self)
 {
   IOP_GUI_ALLOC(rotatepixels);

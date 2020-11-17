@@ -94,6 +94,15 @@ const char *name()
   return _("unbreak input profile");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("correct input color profiles meant to be applied on non-linear RGB."),
+                                      _("corrective"),
+                                      _("linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
@@ -110,30 +119,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "linear"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gamma"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "dynamic range"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "middle grey luma"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black relative exposure"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "safety factor"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "linear", GTK_WIDGET(g->linear));
-  dt_accel_connect_slider_iop(self, "gamma", GTK_WIDGET(g->gamma));
-  dt_accel_connect_slider_iop(self, "dynamic range", GTK_WIDGET(g->dynamic_range));
-  dt_accel_connect_slider_iop(self, "middle grey luma", GTK_WIDGET(g->grey_point));
-  dt_accel_connect_slider_iop(self, "black relative exposure", GTK_WIDGET(g->shadows_range));
-  dt_accel_connect_slider_iop(self, "safety factor", GTK_WIDGET(g->security_factor));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
-}
-
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_profilegamma_params_t p;
@@ -146,28 +131,32 @@ void init_presets(dt_iop_module_so_t *self)
   // 16 EV preset
   p.dynamic_range = 16.0f;
   p.shadows_range = -12.0f;
-  dt_gui_presets_add_generic(_("16 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("16 EV dynamic range (generic)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 14 EV preset
   p.dynamic_range = 14.0f;
   p.shadows_range = -10.50f;
-  dt_gui_presets_add_generic(_("14 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("14 EV dynamic range (generic)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 12 EV preset
   p.dynamic_range = 12.0f;
   p.shadows_range = -9.0f;
-  dt_gui_presets_add_generic(_("12 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("12 EV dynamic range (generic)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 10 EV preset
   p.dynamic_range = 10.0f;
   p.shadows_range = -7.50f;
-  dt_gui_presets_add_generic(_("10 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("10 EV dynamic range (generic)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // 08 EV preset
   p.dynamic_range = 8.0f;
   p.shadows_range = -6.0f;
-  dt_gui_presets_add_generic(_("08 EV dynamic range (generic)"), self->op, self->version(), &p, sizeof(p), 1);
-
+  dt_gui_presets_add_generic(_("08 EV dynamic range (generic)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 
@@ -636,9 +625,8 @@ void gui_reset(dt_iop_module_t *self)
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_profilegamma_gui_data_t *g = (dt_iop_profilegamma_gui_data_t *)self->gui_data;
-  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)module->params;
+  dt_iop_profilegamma_params_t *p = (dt_iop_profilegamma_params_t *)self->params;
 
   self->color_picker_box[0] = self->color_picker_box[1] = .25f;
   self->color_picker_box[2] = self->color_picker_box[3] = .75f;
@@ -698,7 +686,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->gamma, 4);
   gtk_widget_set_tooltip_text(g->gamma, _("gamma exponential factor"));
 
-  gtk_widget_show_all(vbox_gamma);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_gamma, "gamma");
 
   /**** LOG MODE ****/
@@ -731,11 +718,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->security_factor, _("enlarge or shrink the computed dynamic range\nthis is useful when noise perturbates the measurements"));
 
   g->auto_button = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_combobox_new(self));
-  dt_bauhaus_widget_set_label(g->auto_button, NULL, _("auto tune levels"));
+  dt_bauhaus_widget_set_label(g->auto_button, NULL, N_("auto tune levels"));
   gtk_widget_set_tooltip_text(g->auto_button, _("make an optimization with some guessing"));
   gtk_box_pack_start(GTK_BOX(vbox_log), g->auto_button, TRUE, TRUE, 0);
 
-  gtk_widget_show_all(vbox_log);
   gtk_stack_add_named(GTK_STACK(g->mode_stack), vbox_log, "log");
 
   // start building top level widget

@@ -104,6 +104,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {25.0f }, "profile_gamma", 0},
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
+  { {27.5f }, "channelmixerrgb", 0},
   { {27.5f }, "negadoctor", 0},
   { {27.5f }, "basicadj", 0},
   { {28.0f }, "colorreconstruct", 0},
@@ -186,6 +187,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {26.0f }, "profile_gamma", 0},
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
+  { {28.5f }, "channelmixerrgb", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
   { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
                                   //    -> needs a signal as scene-referred as possible (even if it works in Lab)
@@ -346,6 +348,7 @@ GList *dt_ioppr_get_iop_order_rules()
     { .op_prev = "colorout",    .op_next = "gamma"       },
     { .op_prev = "flip",        .op_next = "clipping"    }, // clipping GUI broken if flip is done on top
     { .op_prev = "ashift",      .op_next = "clipping"    }, // clipping GUI broken if ashift is done on top
+    { .op_prev = "colorin",     .op_next = "channelmixerrgb"},
     { "\0", "\0" } };
 
   int i = 0;
@@ -632,6 +635,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           // @@_NEW_MOUDLE: For new module it is required to insert the new module name in the iop-order list here.
           //                The insertion can be done depending on the current iop-order list kind.
           _insert_before(iop_order_list, "nlmeans", "negadoctor");
+          _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)

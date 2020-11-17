@@ -88,6 +88,21 @@ const char *name()
   return _("color contrast");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("increase saturation and separation between\n"
+                                        "opposite colors"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -119,23 +134,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
   return 1;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green-magenta contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue-yellow contrast"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorcontrast_gui_data_t *g =
-    (dt_iop_colorcontrast_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "green-magenta contrast",
-                              GTK_WIDGET(g->a_scale));
-  dt_accel_connect_slider_iop(self, "blue-yellow contrast",
-                              GTK_WIDGET(g->b_scale));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,

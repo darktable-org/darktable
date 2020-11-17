@@ -116,18 +116,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
-}
-
 static void _turn_select_region_off(struct dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
@@ -482,23 +470,23 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
       {
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
-        cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
         dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_R, is_linear);
 
-        cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
         dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_G, is_linear);
 
-        cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
+        set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
         dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_B, is_linear);
       }
       else if(p->autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS)
       {
         if(ch == DT_IOP_RGBLEVELS_R)
-          cairo_set_source_rgba(cr, 1., 0., 0., 0.2);
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
         else if(ch == DT_IOP_RGBLEVELS_G)
-          cairo_set_source_rgba(cr, 0., 1., 0., 0.2);
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
         else
-          cairo_set_source_rgba(cr, 0., 0., 1., 0.2);
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
         dt_draw_histogram_8(cr, hist, 4, ch, is_linear);
       }
 

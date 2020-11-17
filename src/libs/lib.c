@@ -185,9 +185,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
 
 
     // commit all the user input fields
-    char path[1024];
-    snprintf(path, sizeof(path), "preset/%s", g->original_name);
-    dt_accel_rename_preset_lib(g->module, path, name);
+    dt_accel_rename_preset_lib(g->module, g->original_name, name);
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
        "INSERT INTO data.presets (name, description, operation, op_version, op_params,"
@@ -408,7 +406,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   g_free(name);
 }
 
-gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_version)
+gchar *dt_lib_presets_duplicate(const gchar *preset, gchar *module_name, int module_version)
 {
   sqlite3_stmt *stmt;
 
@@ -460,7 +458,7 @@ gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_ve
   return nname;
 }
 
-void dt_lib_presets_remove(gchar *preset, gchar *module_name, int module_version)
+void dt_lib_presets_remove(const gchar *preset, gchar *module_name, int module_version)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -475,7 +473,7 @@ void dt_lib_presets_remove(gchar *preset, gchar *module_name, int module_version
   sqlite3_finalize(stmt);
 }
 
-gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_version)
+gboolean dt_lib_presets_apply(const gchar *preset, gchar *module_name, int module_version)
 {
   gboolean ret = TRUE;
   sqlite3_stmt *stmt;
@@ -534,7 +532,7 @@ gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_vers
   return ret;
 }
 
-void dt_lib_presets_update(gchar *preset, gchar *module_name, int module_version, const gchar *newname,
+void dt_lib_presets_update(const gchar *preset, gchar *module_name, int module_version, const gchar *newname,
                            const gchar *desc, const void *params, const int32_t params_size)
 {
   sqlite3_stmt *stmt;
@@ -556,7 +554,7 @@ void dt_lib_presets_update(gchar *preset, gchar *module_name, int module_version
 static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
   // apply preset via set_params
-  char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+  const char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
   dt_lib_presets_apply(pn, minfo->plugin_name, minfo->version);
 }
 

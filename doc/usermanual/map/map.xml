@@ -111,6 +111,27 @@
       </para>
 
       <para>
+        Images closed to each others are grouped under a single one. See map settings to
+        control the grouping as needed. The number displayed on the bottom left of the thumb
+        gives the number of images inside the group. A white number means that all images of the
+        group are exactly at the same location. Otherwise the number is yellow.
+      </para>
+
+      <para>
+        Mouse <emphasis>Scroll</emphasis> over a group of images scrolls through these images.
+      </para>
+
+      <para>
+        Normally images have a black border. The border is white when at least one image
+        of the group is selected.
+      </para>
+
+      <para>
+        <emphasis>Click</emphasis> and drag an image to adjust its position.
+        <emphasis>Ctrl-click</emphasis> to move the complete group.
+      </para>
+
+      <para>
         Left and right to the central map there are panels for additional control.
       </para>
 

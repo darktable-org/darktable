@@ -118,13 +118,18 @@ const char *name()
   return _("contrast equalizer");
 }
 
-const char *description()
+const char *aliases()
 {
-  return _("add or remove local contrast,\n"
-           "for corrective and creative purposes.\n"
-           "works in Lab,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs almost linear RGB.");
+  return _("sharpness|acutance|local contrast");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("add or remove local contrast, sharpness, acutance"),
+                                      _("corrective and creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("frequential, RGB"),
+                                      _("linear, Lab, scene-referred"));
 }
 
 int default_group()
@@ -141,17 +146,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 {
   return iop_cs_Lab;
 }
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_accel_connect_slider_iop(self, "mix", ((dt_iop_atrous_gui_data_t *)self->gui_data)->mix);
-}
-
 
 #if defined(__SSE2__)
 
@@ -1065,7 +1059,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("eq_preset", "coarse"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
     p.x[atrous_L][k] = k / (BANDS - 1.0);
@@ -1079,7 +1074,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f * k / (float)BANDS;
     p.y[atrous_ct][k] = .3f * k / (float)BANDS;
   }
-  dt_gui_presets_add_generic(_("denoise & sharpen"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise & sharpen"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
     p.x[atrous_L][k] = k / (BANDS - 1.0);
@@ -1093,7 +1089,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(C_("atrous", "sharpen"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
     p.x[atrous_L][k] = k / (BANDS - 1.0);
@@ -1107,7 +1104,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .0f;
     p.y[atrous_ct][k] = fmaxf(0.0f, (.60f * k / (float)BANDS) - 0.30f);
   }
-  dt_gui_presets_add_generic(_("denoise chroma"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise chroma"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
     p.x[atrous_L][k] = k / (BANDS - 1.0);
@@ -1121,7 +1119,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = .2f * k / (float)BANDS;
     p.y[atrous_ct][k] = .3f * k / (float)BANDS;
   }
-  dt_gui_presets_add_generic(_("denoise"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("denoise"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
     p.x[atrous_L][k] = k / (BANDS - 1.0);
@@ -1136,7 +1135,8 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_ct][k] = 0.0f;
   }
   p.y[atrous_L][0] = .5f;
-  dt_gui_presets_add_generic(_("bloom"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("bloom"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   for(int k = 0; k < BANDS; k++)
   {
     p.x[atrous_L][k] = k / (BANDS - 1.0);
@@ -1150,156 +1150,163 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[atrous_Lt][k] = 0.0f;
     p.y[atrous_ct][k] = 0.0f;
   }
-  dt_gui_presets_add_generic(_("clarity"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("clarity"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  float sigma = 1 / (BANDS - 1.0);
-
-  for(int k = 0; k < BANDS; k++)
-  {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coarse = GAUSS(x, 2 * sigma);
-    float coeff = 0.5f + (coarse + medium + fine) / 18.0f;
-    float noise = (coarse + medium + fine) / 810;
-
-    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
-    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
-    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
-  }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 4"), self->op, self->version(), &p, sizeof(p), 1);
+  float sigma = 3.f / (float)(BANDS - 1);
 
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coarse = GAUSS(x, 2 * sigma);
-    float coeff = 0.5f + (coarse + medium + fine) / 24.0f;
-    float noise = (coarse + medium + fine) / 1080;
+    const float x = k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float medium = GAUSS(x, sigma);
+    const float coarse = GAUSS(x, 2 * sigma);
+    const float coeff = 0.5f + (coarse + medium + fine) / 16.0f;
+    const float noise = (coarse + medium + fine) / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k = 0; k < BANDS; k++)
-  {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coeff = 0.5f + (medium + fine) / 21.0f;
-    float noise = (medium + fine) / 720;
-
-    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
-    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
-    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
-  }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k = 0; k < BANDS; k++)
-  {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float coeff = 0.5f + fine / 14.25f;
-    float noise = fine / 360;
-
-    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
-    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
-    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
-  }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 3"), self->op, self->version(), &p, sizeof(p), 1);
-
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 3"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coarse = GAUSS(x, 2 * sigma);
-    float coeff = 0.5f + (coarse + medium + fine) / 32.0f;
-    float noise = (coarse + medium + fine) / 1440;
+    const float x = k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float medium = GAUSS(x, sigma);
+    const float coeff = 0.5f + (medium + fine) / 16.0f;
+    const float noise = (medium + fine) / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k = 0; k < BANDS; k++)
-  {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coeff = 0.5f + (medium + fine) / 28.0f;
-    float noise = (medium + fine) / 960;
-
-    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
-    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
-    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
-  }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
-  for(int k = 0; k < BANDS; k++)
-  {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float coeff = 0.5f + fine / 19.0f;
-    float noise = fine / 480;
-
-    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
-    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
-    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
-  }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 2"), self->op, self->version(), &p, sizeof(p), 1);
-
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 3"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coarse = GAUSS(x, 2 * sigma);
-    float coeff = 0.5f + (coarse + medium + fine) / 48.0f;
-    float noise = (coarse + medium + fine) / 2160;
+    const float x =  k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float coeff = 0.5f + fine / 16.f;
+    const float noise = fine / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 3"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coeff = 0.5f + (medium + fine) / 42.0f;
-    float noise = (medium + fine) / 1440;
+    const float x =  k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float medium = GAUSS(x, sigma);
+    const float coarse = GAUSS(x, 2 * sigma);
+    const float coeff = 0.5f + (coarse + medium + fine) / 24.0f;
+    const float noise = (coarse + medium + fine) / 192.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: medium blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 2"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float coeff = 0.5f + fine / 28.5f;
-    float noise = fine / 720;
+    const float x =  k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float medium = GAUSS(x, sigma);
+    const float coeff = 0.5f + (medium + fine) / 24.0f;
+    const float noise = (medium + fine) / 192.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
-  dt_gui_presets_add_generic(_("deblur: fine blur, strength 1"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 2"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    const float x =  k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float coeff = 0.5f + fine / 24.0f;
+    const float noise = fine / 192.f;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 2"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    const float x =  k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float medium = GAUSS(x, sigma);
+    const float coarse = GAUSS(x, 2 * sigma);
+    const float coeff = 0.5f + (coarse + medium + fine) / 32.0f;
+    const float noise = (coarse + medium + fine) / 128.f;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: large blur, strength 1"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    const float x =  k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float medium = GAUSS(x, sigma);
+    const float coeff = 0.5f + (medium + fine) / 32.0f;
+    const float noise = (medium + fine) / 128.f;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: medium blur, strength 1"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
+  for(int k = 0; k < BANDS; k++)
+  {
+    const float x =  k / (float)(BANDS - 1);
+    const float fine = GAUSS(x, 0.5 * sigma);
+    const float coeff = 0.5f + fine / 32.f;
+    const float noise = fine / 128.f;
+
+    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
+    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
+    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
+  }
+  dt_gui_presets_add_generic(_("deblur: fine blur, strength 1"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
@@ -1841,7 +1848,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_ui_notebook_page(c->channel_tabs, _("luma"), _("change lightness at each feature size"));
   dt_ui_notebook_page(c->channel_tabs, _("chroma"), _("change color saturation at each feature size"));
   dt_ui_notebook_page(c->channel_tabs, _("edges"), _("change edge halos at each feature size\nonly changes results of luma and chroma tabs"));
-  gtk_widget_show_all(GTK_WIDGET(c->channel_tabs));
+  gtk_widget_show(gtk_notebook_get_nth_page(c->channel_tabs, c->channel));
   gtk_notebook_set_current_page(c->channel_tabs, c->channel);
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
@@ -1863,7 +1870,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   // mix slider
   c->mix = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.1f, 1.0f, 3);
-  dt_bauhaus_widget_set_label(c->mix, NULL, _("mix"));
+  dt_bauhaus_widget_set_label(c->mix, NULL, N_("mix"));
   gtk_widget_set_tooltip_text(c->mix, _("make effect stronger or weaker"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->mix, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->mix), "value-changed", G_CALLBACK(mix_callback), self);

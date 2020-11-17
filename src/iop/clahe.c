@@ -71,6 +71,11 @@ int default_group()
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use new local contrast module instead.");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_DEPRECATED;
@@ -294,9 +299,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_rlce_gui_data_t *g = (dt_iop_rlce_gui_data_t *)self->gui_data;
-  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)module->params;
+  dt_iop_rlce_params_t *p = (dt_iop_rlce_params_t *)self->params;
   dt_bauhaus_slider_set(g->scale1, p->radius);
   dt_bauhaus_slider_set(g->scale2, p->slope);
 }

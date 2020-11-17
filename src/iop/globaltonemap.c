@@ -103,9 +103,14 @@ const char *name()
   return _("global tonemap");
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use filmic rgb module instead.");
+}
+
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_DEPRECATED;
 }
 
 int default_group()
@@ -117,24 +122,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 {
   return iop_cs_Lab;
 }
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bias"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "detail"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "operator"));
- }
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "bias", GTK_WIDGET(g->drago.bias));
-  dt_accel_connect_slider_iop(self, "target", GTK_WIDGET(g->drago.max_light));
-  dt_accel_connect_slider_iop(self, "detail", GTK_WIDGET(g->detail));
-  dt_accel_connect_combobox_iop(self, "operator", GTK_WIDGET(g->operator));
- }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -217,9 +204,14 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   if(isnan(tmp_lwmax))
   {
     lwmax = eps;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out, in, ch) reduction(max : lwmax)      \
+  schedule(static)
+#endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
-      float *inp = in + ch * k;
+      const float *inp = in + ch * k;
       lwmax = fmaxf(lwmax, (inp[0] * 0.01f));
     }
   }
@@ -629,9 +621,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)module->params;
+  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
+
   dt_bauhaus_combobox_set(g->operator, p->operator);
   dt_bauhaus_slider_set(g->drago.bias, p->drago.bias);
   dt_bauhaus_slider_set(g->drago.max_light, p->drago.max_light);

@@ -993,12 +993,13 @@ static int dt_ellipse_events_mouse_moved(struct dt_iop_module_t *module, float p
   }
   else if(!gui->creation)
   {
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-    int closeup = dt_control_get_dev_closeup();
-    float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
-    float x = pzx * darktable.develop->preview_pipe->backbuf_width;
-    float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const int closeup = dt_control_get_dev_closeup();
+    const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
+    const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;  // transformed to backbuf dimensions
+    const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
+    const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+
     int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
     dt_ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
                             pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, &in, &inb,
@@ -1064,7 +1065,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
-  int len = sizeof(dashed) / sizeof(dashed[0]);
+  const int len = sizeof(dashed) / sizeof(dashed[0]);
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
   float dx = 0.0f, dy = 0.0f, xref = 0.0f, yref = 0.0f;
@@ -1167,7 +1168,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       if(border) dt_free_align(border);
     }
     return;
-  }
+  } // gui->creation
 
   if(!gpt) return;
 
@@ -1274,6 +1275,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
   // draw the source if any
   if(gpt->source_count > 10)
   {
+    const float pr_d = darktable.develop->preview_downsampling;
     // compute the dest inner ellipse intersection with the line from source center to dest center.
     const float cdx = gpt->source[0] + dxs - gpt->points[0] - dx;
     const float cdy = gpt->source[1] + dys - gpt->points[1] - dy;
@@ -1289,13 +1291,69 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       else
         cangle = -(M_PI / 2) - cangle;
 
-      const float arrowx = gpt->points[0] + dx;
-      const float arrowy = gpt->points[1] + dy;
+      // compute raidus a & radius b. at this stage this must be computed from the list
+      // of transformed point for drawing the ellipse.
+
+      const float bot_x = gpt->points[2];
+      const float bot_y = gpt->points[3];
+      const float rgt_x = gpt->points[6];
+      const float rgt_y = gpt->points[7];
+      const float cnt_x = gpt->points[0];
+      const float cnt_y = gpt->points[1];
+
+      const float adx = cnt_x - bot_x;
+      const float ady = cnt_y - bot_y;
+      const float a = sqrtf(adx * adx + ady * ady);
+
+      const float bdx = cnt_x - rgt_x;
+      const float bdy = cnt_y - rgt_y;
+      const float b = sqrtf(bdx * bdx + bdy * bdy);
+
+      // takes the biggest radius, should always been a as the points are arranged
+      const float r = MAX(a, b);
+
+      // the top/left/bottom/right controls of the ellipse are not always at the
+      // same place in g->points[], it depends on the rotation of the ellipse which
+      // is not recorded anywhere. Let's use a stupid search to find the closest
+      // point on the border where to attach the arrow.
+
+      const float cosc = cos(cangle);
+      const float sinc = sin(cangle);
+      const float step = r / 259.f;
+
+      float dist = FLT_MAX;
+      float arrowx = 0.0f;
+      float arrowy = 0.0f;
+
+      for(int k=1; k<gpt->source_count; k+=2)
+      {
+        const float px = gpt->points[k*2];
+        const float py = gpt->points[k*2 + 1];
+
+        float rr = 0.01f;
+        while(rr < r)
+        {
+          const float epx = cnt_x + rr * cosc;
+          const float epy = cnt_y + rr * sinc;
+          const float dx = epx - px;
+          const float dy = epy - py;
+          const float edist = dx*dx + dy*dy;
+
+          if(edist < dist)
+          {
+            dist = edist;
+            arrowx = cnt_x + (rr + 1.11) * cosc;
+            arrowy = cnt_y + (rr + 1.11) * sinc;
+          }
+          rr += step;
+        }
+      }
 
       cairo_move_to(cr, gpt->source[0] + dxs, gpt->source[1] + dys); // source center
       cairo_line_to(cr, arrowx, arrowy);                             // dest border
       // then draw to line for the arrow itself
-      const float arrow_scale = 8.0;
+      const float arrow_scale = 6.0 * pr_d;
+
       cairo_move_to(cr, arrowx + arrow_scale * cos(cangle + (0.4)),
                     arrowy + arrow_scale * sin(cangle + (0.4)));
       cairo_line_to(cr, arrowx, arrowy);

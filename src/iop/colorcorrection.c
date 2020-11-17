@@ -71,6 +71,15 @@ const char *name()
   return _("color correction");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("correct white balance selectively for blacks and whites"),
+                                      _("corrective or creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -95,49 +104,44 @@ void init_presets(dt_iop_module_so_t *self)
   p.hia = 0.0f;
   p.hib = 3.0f;
   p.saturation = 1.0f;
-  dt_gui_presets_add_generic(_("warm tone"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("warm tone"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.loa = 3.55f;
   p.lob = 0.0f;
   p.hia = -0.95f;
   p.hib = 4.5f;
   p.saturation = 1.0f;
-  dt_gui_presets_add_generic(_("warming filter"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("warming filter"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.loa = -3.55f;
   p.lob = -0.0f;
   p.hia = 0.95f;
   p.hib = -4.5f;
   p.saturation = 1.0f;
-  dt_gui_presets_add_generic(_("cooling filter"), self->op, self->version(), &p, sizeof(p), 1);
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->slider));
+  dt_gui_presets_add_generic(_("cooling filter"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_colorcorrection_data_t *d = (dt_iop_colorcorrection_data_t *)piece->data;
-  float *in = (float *)i;
+  const dt_iop_colorcorrection_data_t *const d = (dt_iop_colorcorrection_data_t *)piece->data;
+  const float *const in = (float *)i;
   float *out = (float *)o;
   const int ch = piece->colors;
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out, d, in, out, ch) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * ch; k += ch)
   {
-    out[0] = in[0];
-    out[1] = d->saturation * (in[1] + in[0] * d->a_scale + d->a_base);
-    out[2] = d->saturation * (in[2] + in[0] * d->b_scale + d->b_base);
-    out[3] = in[3];
-    out += ch;
-    in += ch;
+    out[k] = in[k];
+    out[k+1] = d->saturation * (in[k+1] + in[k+0] * d->a_scale + d->a_base);
+    out[k+2] = d->saturation * (in[k+2] + in[k+0] * d->b_scale + d->b_base);
+    out[k+3] = in[k+3];
   }
 }
 
@@ -221,9 +225,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorcorrection_gui_data_t *g = (dt_iop_colorcorrection_gui_data_t *)self->gui_data;
-  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)module->params;
+  dt_iop_colorcorrection_params_t *p = (dt_iop_colorcorrection_params_t *)self->params;
   dt_bauhaus_slider_set(g->slider, p->saturation);
   gtk_widget_queue_draw(self->widget);
 }

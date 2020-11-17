@@ -42,6 +42,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 
 DT_MODULE_INTROSPECTION(3, dt_iop_borders_params_t)
 
@@ -177,6 +180,16 @@ const char *name()
   return _("framing");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("add solid borders or margins around the picture"),
+                                      _("creative"),
+                                      _("linear or non-linear, RGB, display-referred"),
+                                      _("geometric, RGB"),
+                                      _("linear or non-linear, RGB, display-referred"));
+}
+
+
 int default_group()
 {
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
@@ -197,33 +210,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "border size"));
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick border color from image"), 0, 0);
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "frame line size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "frame line offset"));
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick frame line color from image"), 0, 0);
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "aspect"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "orientation"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "horizontal position"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "vertical position"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_borders_gui_data_t *g = (dt_iop_borders_gui_data_t *)self->gui_data;
-  dt_accel_connect_button_iop(self, "pick border color from image", GTK_WIDGET(g->colorpick));
-  dt_accel_connect_slider_iop(self, "border size", GTK_WIDGET(g->size));
-  dt_accel_connect_button_iop(self, "pick frame line color from image", GTK_WIDGET(g->frame_colorpick));
-  dt_accel_connect_slider_iop(self, "frame line size", GTK_WIDGET(g->frame_size));
-  dt_accel_connect_slider_iop(self, "frame line offset", GTK_WIDGET(g->frame_offset));
-  dt_accel_connect_combobox_iop(self, "aspect", GTK_WIDGET(g->aspect));
-  dt_accel_connect_combobox_iop(self, "orientation", GTK_WIDGET(g->aspect_orient));
-  dt_accel_connect_combobox_iop(self, "horizontal position", GTK_WIDGET(g->pos_h));
-  dt_accel_connect_combobox_iop(self, "vertical position", GTK_WIDGET(g->pos_v));
-}
-
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
@@ -233,6 +219,11 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
   const int border_size_t = border_tot_height * d->pos_v;
   const int border_size_l = border_tot_width * d->pos_h;
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
+  schedule(static)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] += border_size_l;
@@ -251,6 +242,11 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
   const int border_size_t = border_tot_height * d->pos_v;
   const int border_size_l = border_tot_width * d->pos_h;
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(points, points_count, border_size_l, border_size_t)  \
+  schedule(static)
+#endif
   for(size_t i = 0; i < points_count * 2; i += 2)
   {
     points[i] -= border_size_l;
@@ -276,6 +272,11 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
 
   // blit image inside border and fill the output with previous processed out
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_in, roi_out, border_in_x, border_in_y, in, out)   \
+  schedule(static)
+#endif
   for(int j = 0; j < roi_in->height; j++)
   {
     float *outb = out + (size_t)(j + border_in_y) * roi_out->width + border_in_x;
@@ -368,6 +369,86 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->height = MIN(roi_out->scale * piece->buf_in.height, MAX(1, roi_in->height));
 }
 
+#ifdef __SSE2__
+static void set_outer_border_sse(float *buf, const float col[4], const int height, const int width,
+                                 const int border_height, const int border_width)
+{
+  const __m128 color = _mm_loadu_ps(col);  // use unalignd load since 'col' is not necessarily 16-byte aligned
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, col, border_height, height, width, color)  \
+  schedule(static)
+#endif
+  for (size_t row = 0; row < border_height; row++)
+  {
+    float *const t_line = buf + 4 * row * width;
+    float *const b_line = buf + 4 * (height - border_height + row) * width;
+    for (size_t c = 0; c < width; c++)
+    {
+      _mm_store_ps(t_line+4*c, color);
+      _mm_store_ps(b_line+4*c, color);
+    }
+  }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, col, border_width, border_height, height, width, color)    \
+  schedule(static)
+#endif
+  for (size_t c = 0; c < border_width; c++)
+  {
+    float *const l_column = buf + 4 * c;
+    float *const r_column = buf + 4 * (width - border_width + c);
+    for (size_t row = border_height; row < height - border_height; row++)
+    {
+      _mm_store_ps(l_column+4*row*width, color);
+      _mm_store_ps(r_column+4*row*width, color);
+    }
+  }
+}
+#endif /* __SSE2__ */
+
+static void set_outer_border(float *buf, const float col[4], const int height, const int width,
+                             const int border_height, const int border_width)
+{
+#ifdef __SSE2__
+  if (darktable.codepath.SSE2)
+  {
+    set_outer_border_sse(buf,col,height,width,border_height,border_width);
+    return;
+  }
+#endif /* __SSE2__ */
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, col, border_height, height, width)  \
+  schedule(static)
+#endif
+  for (size_t row = 0; row < border_height; row++)
+  {
+    float *const t_line = buf + 4 * row * width;
+    float *const b_line = buf + 4 * (height - border_height + row) * width;
+    for (size_t c = 0; c < width; c++)
+    {
+      memcpy(t_line+4*c, col, 4*sizeof(float));
+      memcpy(b_line+4*c, col, 4*sizeof(float));
+    }
+  }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(buf, col, border_width, border_height, height, width) \
+  schedule(static)
+#endif
+  for (size_t c = 0; c < border_width; c++)
+  {
+    float *const l_column = buf + 4 * c;
+    float *const r_column = buf + 4 * (width - border_width + c);
+    for (size_t row = border_height; row < height - border_height; row++)
+    {
+      memcpy(l_column + 4*row*width, col, 4*sizeof(float));
+      memcpy(r_column + 4*row*width, col, 4*sizeof(float));
+    }
+  }
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -387,12 +468,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int border_in_x = MAX(border_size_l - roi_out->x, 0);
   const int border_in_y = MAX(border_size_t - roi_out->y, 0);
 
-  // Fill the out image with border color
-  // sse-friendly color copy (stupidly copy whole buffer, /me lazy ass)
+  // Fill the out image's border with border color
   const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
-  float *buf = (float *)ovoid;
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++, buf += 4)
-    memcpy(buf, col, sizeof(float) * 4);
+  set_outer_border(ovoid, col, roi_out->height, roi_out->width, border_tot_height, border_tot_width);
 
   // Frame line draw
   const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
@@ -424,20 +502,37 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               ? (roi_out->height)
               : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height);
 
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ovoid, col_frame, frame_tl_out_y, frame_br_out_y, frame_tl_out_x, frame_br_out_x, out_stride) \
+  schedule(static)
+#endif
+    //FIXME: don't fill the entire rectangle, only the actual frame line; that will eliminate need for following loop
     for(int r = frame_tl_out_y; r <= frame_br_out_y; r++)
     {
-      buf = (float *)ovoid + ((size_t)r * out_stride + frame_tl_out_x * ch);
-      for(int c = frame_tl_out_x; c <= frame_br_out_x; c++, buf += 4)
-        memcpy(buf, col_frame, sizeof(float) * 4);
+      float *const buf = (float *)ovoid + ((size_t)r * out_stride);
+      for(int c = frame_tl_out_x; c <= frame_br_out_x; c++)
+        memcpy(buf + 4 * c, col_frame, sizeof(float) * 4);
     }
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ovoid, col, frame_tl_in_y, frame_br_in_y, frame_tl_in_x, frame_br_in_x, out_stride) \
+  schedule(static)
+#endif
     for(int r = frame_tl_in_y; r <= frame_br_in_y; r++)
     {
-      buf = (float *)ovoid + ((size_t)r * out_stride + frame_tl_in_x * ch);
-      for(int c = frame_tl_in_x; c <= frame_br_in_x; c++, buf += 4) memcpy(buf, col, sizeof(float) * 4);
+      float *const buf = (float *)ovoid + ((size_t)r * out_stride);
+      for(int c = frame_tl_in_x; c <= frame_br_in_x; c++)
+        memcpy(buf + 4*c, col, sizeof(float) * 4);
     }
   }
 
   // blit image inside border and fill the output with previous processed out
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(ivoid, ovoid, roi_in, ch, border_in_x, border_in_y, in_stride, out_stride, cp_stride) \
+  schedule(static)
+#endif
   for(int j = 0; j < roi_in->height; j++)
   {
     float *out = ((float *)ovoid) + (size_t)(j + border_in_y) * out_stride + ch * border_in_x;
@@ -606,10 +701,13 @@ void init_presets(dt_iop_module_so_t *self)
                                                          0.5f,
                                                          { 0.0f, 0.0f, 0.0f },
                                                          TRUE };
-  dt_gui_presets_add_generic(_("15:10 postcard white"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("15:10 postcard white"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.color[0] = p.color[1] = p.color[2] = 0.0f;
   p.frame_color[0] = p.frame_color[1] = p.frame_color[2] = 1.0f;
-  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("15:10 postcard black"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 }
 
 void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
@@ -920,7 +1018,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->aspect = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->aspect, 1);
-  dt_bauhaus_widget_set_label(g->aspect, NULL, _("aspect"));
+  dt_bauhaus_widget_set_label(g->aspect, NULL, N_("aspect"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->aspect, TRUE, TRUE, 0);
   gui_init_aspect(self);
   g_signal_connect(G_OBJECT(g->aspect), "value-changed", G_CALLBACK(aspect_changed), self);
@@ -936,7 +1034,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->pos_h = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_h, 1);
-  dt_bauhaus_widget_set_label(g->pos_h, NULL, _("horizontal position"));
+  dt_bauhaus_widget_set_label(g->pos_h, NULL, N_("horizontal position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_h, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->pos_h), "value-changed", G_CALLBACK(position_h_changed), self);
   gtk_widget_set_tooltip_text(g->pos_h, _("select the horizontal position ratio relative to top "
@@ -947,7 +1045,7 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->pos_v = dt_bauhaus_combobox_new(self);
   dt_bauhaus_combobox_set_editable(g->pos_v, 1);
-  dt_bauhaus_widget_set_label(g->pos_v, NULL, _("vertical position"));
+  dt_bauhaus_widget_set_label(g->pos_v, NULL, N_("vertical position"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->pos_v, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->pos_v), "value-changed", G_CALLBACK(position_v_changed), self);
   gtk_widget_set_tooltip_text(g->pos_v, _("select the vertical position ratio relative to left "

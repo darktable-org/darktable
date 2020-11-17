@@ -136,7 +136,8 @@ typedef enum dt_iop_colorspace_type_t
   iop_cs_Lab = 1,
   iop_cs_rgb = 2,
   iop_cs_LCh = 3,
-  iop_cs_HSL = 4
+  iop_cs_HSL = 4,
+  iop_cs_JzCzhz = 5,
 } dt_iop_colorspace_type_t;
 
 /** part of the module which only contains the cached dlopen stuff. */
@@ -172,16 +173,19 @@ typedef struct dt_iop_module_so_t
   /** callbacks, loaded once, referenced by the instances. */
   int (*version)(void);
   const char *(*name)(void);
+  const char *(*aliases)(void);
   int (*default_group)(void);
   int (*flags)(void);
+  const char *(*deprecated_msg)(void);
 
-  const char *(*description)(void);
+  char *(*description)(struct dt_iop_module_t *self);
   /* should return a string with 5 lines:
      line 1 : summary of what it does
      line 2 : oriented creative or corrective ?
      line 3 : working space
      line 4 : input space
      line 5 : output space
+     => see helper routine dt_iop_set_description()
   */
 
   int (*operation_tags)(void);
@@ -387,6 +391,8 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+  /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
+  gboolean has_trouble;
   /** the corresponding SO object */
   dt_iop_module_so_t *so;
 
@@ -407,13 +413,17 @@ typedef struct dt_iop_module_t
   int (*version)(void);
   /** get name of the module, to be translated. */
   const char *(*name)(void);
+  /** get aliases names of the module, to be translated. */
+  const char *(*aliases)(void);
   /** get the default group this module belongs to. */
   int (*default_group)(void);
   /** get the iop module flags. */
   int (*flags)(void);
+  /** get deprecated message if needed */
+  const char *(*deprecated_msg)(void);
 
   /** get a descriptive text used for example in a tooltip in more modules */
-  const char *(*description)(void);
+  char *(*description)(struct dt_iop_module_t *self);
 
   int (*operation_tags)(void);
 
@@ -616,6 +626,8 @@ void dt_iop_request_focus(dt_iop_module_t *module);
 void dt_iop_default_init(dt_iop_module_t *module);
 /** loads default settings from database. */
 void dt_iop_load_default_params(dt_iop_module_t *module);
+/** creates the module's gui widget */
+void dt_iop_gui_init(dt_iop_module_t *module);
 /** reloads certain gui/param defaults when the image was switched. */
 void dt_iop_reload_defaults(dt_iop_module_t *module);
 
@@ -649,6 +661,7 @@ int get_module_flags(const char *op);
 
 /** returns the localized plugin name for a given op name. must not be freed. */
 gchar *dt_iop_get_localized_name(const gchar *op);
+gchar *dt_iop_get_localized_aliases(const gchar *op);
 
 /** Connects common accelerators to an iop module */
 void dt_iop_connect_common_accels(dt_iop_module_t *module);
@@ -694,8 +707,19 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
 
+/** show in iop module header that the module is in trouble */
+void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
+
+// format modules description going in tooltips
+char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
+                             const char *purpose, const char *input,
+                             const char *process, const char *output);
+
 #define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
 #define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL
+
+/* return a warning message, prefixed by the special character ⚠ */
+char *dt_iop_warning_message(char *message);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

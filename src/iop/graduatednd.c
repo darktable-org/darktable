@@ -71,43 +71,49 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("neutral gray ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND8 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 0, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND2 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("neutral gray ND4 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("neutral gray ND8 (hard)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 3, 75, 0, 50, 0, 0 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("orange ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.102439, 0.8 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("yellow ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.151220, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("purple ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.824390, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("green ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.302439, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("red ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   dt_gui_presets_add_generic(_("blue ND2 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 1, 0, 0, 50, 0.663415, 0.5 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+
   dt_gui_presets_add_generic(_("brown ND4 (soft)"), self->op, self->version(),
                              &(dt_iop_graduatednd_params_t){ 2, 0, 0, 50, 0.082927, 0.25 },
-                             sizeof(dt_iop_graduatednd_params_t), 1);
+                             sizeof(dt_iop_graduatednd_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
@@ -141,6 +147,15 @@ const char *name()
   return _("graduated density");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("simulate an optical graduated neutral density filter"),
+                                      _("corrective and creative"),
+                                      _("linear or non-linear, RGB, scene-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING
@@ -155,26 +170,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "density"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hardness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "density", GTK_WIDGET(g->density));
-  dt_accel_connect_slider_iop(self, "hardness", GTK_WIDGET(g->hardness));
-  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotation));
-  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->hue));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
 }
 
 static inline float f(const float t, const float c, const float x)
@@ -1132,9 +1127,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)module->params;
+  dt_iop_graduatednd_params_t *p = (dt_iop_graduatednd_params_t *)self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 

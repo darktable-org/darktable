@@ -53,11 +53,13 @@ void dt_presets_save_to_file(const int rowid, const char *preset_name, const cha
   g_free(filename);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT op_params, blendop_params, name, description, operation, autoapply,"
-                              "model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, "
-                              "aperture_min, aperture_max, focal_length_min, focal_length_max, "
-                              "op_version, blendop_version, enabled, multi_priority, multi_name, filter, def, format "
-                              "FROM data.presets WHERE rowid = ?1",
+                              "SELECT op_params, blendop_params, name, description, operation,"
+                              "   autoapply, model, maker, lens, iso_min, iso_max, exposure_min,"
+                              "   exposure_max, aperture_min, aperture_max, focal_length_min,"
+                              "   focal_length_max, op_version, blendop_version, enabled,"
+                              "   multi_priority, multi_name, filter, def, format "
+                              " FROM data.presets"
+                              " WHERE rowid = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, rowid);
 
@@ -231,13 +233,15 @@ int dt_presets_import_from_file(const char *preset_path)
   int result = 0;
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-     "INSERT OR REPLACE INTO data.presets (name, description, operation, autoapply,"
-     "model, maker, lens, iso_min, iso_max, exposure_min, exposure_max, "
-     "aperture_min, aperture_max, focal_length_min, focal_length_max, "
-     "op_params, op_version, blendop_params, blendop_version, enabled, "
-     "multi_priority, multi_name, filter, def, format, writeprotect) "
-     "VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, "
-             "?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, 0)",
+     "INSERT OR REPLACE"
+     "  INTO data.presets"
+     "    (name, description, operation, autoapply,"
+     "     model, maker, lens, iso_min, iso_max, exposure_min, exposure_max,"
+     "     aperture_min, aperture_max, focal_length_min, focal_length_max,"
+     "     op_params, op_version, blendop_params, blendop_version, enabled,"
+     "     multi_priority, multi_name, filter, def, format, writeprotect)"
+     "  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, "
+     "          ?15, ?16, ?17, ?18, ?19, ?20, ?21, ?22, ?23, ?24, ?25, 0)",
      -1, &stmt, NULL);
 
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, strlen(name), SQLITE_TRANSIENT);

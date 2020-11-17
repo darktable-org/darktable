@@ -85,7 +85,21 @@ typedef struct dt_iop_nlmeans_global_data_t
 
 const char *name()
 {
+  return _("astrophoto denoise");
+}
+
+const char *aliases()
+{
   return _("denoise (non-local means)");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("apply a poisson noise removal best suited for astrophotography"),
+                                      _("corrective"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -117,24 +131,6 @@ int default_group()
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "patch size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "luma"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "chroma"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_nlmeans_gui_data_t *g = (dt_iop_nlmeans_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "patch size", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
-  dt_accel_connect_slider_iop(self, "luma", GTK_WIDGET(g->luma));
-  dt_accel_connect_slider_iop(self, "chroma", GTK_WIDGET(g->chroma));
 }
 
 #if defined(HAVE_OPENCL) && !USE_NEW_IMPL_CL

@@ -229,6 +229,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_global(path, sizeof(path), "toggle side borders");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_sideborders);
 
+  dt_accel_path_global(path, sizeof(path), "toggle panels collapsing controls");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_collapsing_controls);
+
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
 
@@ -2229,8 +2232,11 @@ static void _ui_panel_size_changed(GtkAdjustment *adjustment, GParamSpec *pspec,
 
   if(!darktable.gui->scroll_to[side]) return;
 
-  gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
-  gtk_adjustment_set_value(adjustment, allocation.y);
+  if(GTK_IS_WIDGET(darktable.gui->scroll_to[side]))
+  {
+    gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
+    gtk_adjustment_set_value(adjustment, allocation.y);
+  }
 
   darktable.gui->scroll_to[side] = NULL;
 }
@@ -2978,6 +2984,9 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_MAP_COUNT_SAME_LOC] = { "map_count_same_loc_color", { 1.0, 1.0, 1.0, 1.0 } },
     [DT_GUI_COLOR_MAP_COUNT_DIFF_LOC] = { "map_count_diff_loc_color", { 1.0, 0.85, 0.0, 1.0 } },
     [DT_GUI_COLOR_MAP_COUNT_BG] = { "map_count_bg_color", { 0.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH] = { "map_count_circle_color_h", { 1.0, 1.0, 0.8, 1.0 } },
+    [DT_GUI_COLOR_MAP_LOC_SHAPE_LOW] = { "map_count_circle_color_l", { 0.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_MAP_LOC_SHAPE_DEF] = { "map_count_circle_color_d", { 1.0, 0.0, 0.0, 1.0 } },
   };
 
   // starting from 1 as DT_GUI_COLOR_BG is not part of this table
@@ -3041,11 +3050,23 @@ static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocati
   g_free(sizes);
 }
 
+void dt_ui_notebook_clear(GtkNotebook *notebook)
+{
+  gint notebook_pages = gtk_notebook_get_n_pages(notebook);
+  if(notebook_pages >= 2)
+    g_signal_handlers_disconnect_by_func(G_OBJECT(notebook), G_CALLBACK(notebook_size_callback), NULL);
+  for(gint tabs = notebook_pages; tabs > 0; --tabs)
+  {
+    gtk_notebook_remove_page(notebook, tabs - 1);
+  }
+}
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
 {
   GtkWidget *label = gtk_label_new(text);
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  if(strlen(text) > 2)
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   if(tooltip || strlen(text) > 1)
     gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
   gtk_notebook_append_page(notebook, page, label);

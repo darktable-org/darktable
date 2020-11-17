@@ -1535,9 +1535,9 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
                                       int which, dt_masks_form_t *form, int parentid,
                                       dt_masks_form_gui_t *gui, int index)
 {
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
   // centre view will have zoom_scale * backbuf_width pixels, we want the handle offset to scale with DPI:
   const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;  // transformed to backbuf dimensions
   if(!gui) return 0;
@@ -1546,8 +1546,8 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
 
   if(gui->point_dragging >= 0)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     if(gui->creation && g_list_length(form->points) > 3)
     {
@@ -1583,15 +1583,15 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   else if(gui->seg_dragging >= 0)
   {
     // we get point0 new values
-    int pos2 = (gui->seg_dragging + 1) % g_list_length(form->points);
+    const int pos2 = (gui->seg_dragging + 1) % g_list_length(form->points);
     dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->seg_dragging);
     dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points, pos2);
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
-    float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    const float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
+    const float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
 
     // we move all points
     point->corner[0] += dx;
@@ -1620,8 +1620,8 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   }
   else if(gui->feather_dragging >= 0)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_path_t *point
@@ -1646,25 +1646,25 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   }
   else if(gui->point_border_dragging >= 0)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
 
-    int k = gui->point_border_dragging;
+    const int k = gui->point_border_dragging;
 
     // now we want to know the position reflected on actual corner/border segment
-    float a = (gpt->border[k * 6 + 1] - gpt->points[k * 6 + 3])
-              / (float)(gpt->border[k * 6] - gpt->points[k * 6 + 2]);
-    float b = gpt->points[k * 6 + 3] - a * gpt->points[k * 6 + 2];
+    const float a = (gpt->border[k * 6 + 1] - gpt->points[k * 6 + 3])
+                    / (float)(gpt->border[k * 6] - gpt->points[k * 6 + 2]);
+    const float b = gpt->points[k * 6 + 3] - a * gpt->points[k * 6 + 2];
 
     float pts[2] = { (a * pzy * ht + pzx * wd - b * a) / (a * a + 1.0), a * pts[0] + b };
 
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points, k);
-    float nx = point->corner[0] * darktable.develop->preview_pipe->iwidth;
-    float ny = point->corner[1] * darktable.develop->preview_pipe->iheight;
-    float nr = sqrtf((pts[0] - nx) * (pts[0] - nx) + (pts[1] - ny) * (pts[1] - ny));
-    float bdr = nr / fminf(darktable.develop->preview_pipe->iwidth, darktable.develop->preview_pipe->iheight);
+    const float nx = point->corner[0] * darktable.develop->preview_pipe->iwidth;
+    const float ny = point->corner[1] * darktable.develop->preview_pipe->iheight;
+    const float nr = sqrtf((pts[0] - nx) * (pts[0] - nx) + (pts[1] - ny) * (pts[1] - ny));
+    const float bdr = nr / fminf(darktable.develop->preview_pipe->iwidth, darktable.develop->preview_pipe->iheight);
 
     point->border[0] = point->border[1] = bdr;
 
@@ -1688,14 +1688,14 @@ static int dt_path_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   // are we near a point or feather ?
-  guint nb = g_list_length(form->points);
+  const guint nb = g_list_length(form->points);
 
   pzx *= darktable.develop->preview_pipe->backbuf_width,
       pzy *= darktable.develop->preview_pipe->backbuf_height;
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
-    int k = gui->point_edited;
+    const int k = gui->point_edited;
     // we only select feather if the point is not "sharp"
     if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4] && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
     {

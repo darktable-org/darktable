@@ -129,6 +129,15 @@ const char *name()
   return _("lowpass");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("isolate low frequencies in the image"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, scene-referred"),
+                                      _("frequential, Lab"),
+                                      _("special, Lab, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -190,24 +199,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
   return 1;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->brightness));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
 }
 
 
@@ -551,9 +542,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
   dt_bauhaus_slider_set(g->radius, p->radius);
   dt_bauhaus_combobox_set(g->lowpass_algo, p->lowpass_algo);
   dt_bauhaus_slider_set(g->contrast, p->contrast);
@@ -577,7 +567,7 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("local contrast mask"), self->op, self->version(),
                              &(dt_iop_lowpass_params_t){ 0, 50.0f, -1.0f, 0.0f, 0.0f, LOWPASS_ALGO_GAUSSIAN, 1 },
-                             sizeof(dt_iop_lowpass_params_t), 1);
+                             sizeof(dt_iop_lowpass_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
@@ -601,7 +591,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
 
-  dt_bauhaus_widget_set_label(g->brightness, NULL, C_("lowpass", "brightness"));
+  dt_bauhaus_widget_set_label(g->brightness, NULL, NC_("lowpass", "brightness"));
 
   gtk_widget_set_tooltip_text(g->radius, _("radius of gaussian/bilateral blur"));
   gtk_widget_set_tooltip_text(g->contrast, _("contrast of lowpass filter"));

@@ -207,7 +207,7 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   sqlite3_finalize(stmt);
 
   // this is a little slow, might be worth to do an option:
-  const gboolean high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
+  const gboolean high_quality = !dt_conf_get_bool("ui/performance");
 
   if(id)
   {
@@ -562,11 +562,6 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
 int key_released(dt_view_t *self, guint key, guint state)
 {
-  return 0;
-}
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   dt_control_accels_t *accels = &darktable.control->accels;
 
@@ -582,6 +577,12 @@ int key_pressed(dt_view_t *self, guint key, guint state)
       d->auto_advance = FALSE;
       dt_control_log(_("slideshow paused"));
     }
+    return 0;
+  }
+  else if(key == accels->global_collapsing_controls.accel_key
+          || (state && accels->global_collapsing_controls.accel_mods))
+  {
+    // do nothing for any combination of accel for showing the border controls
     return 0;
   }
   else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
@@ -613,6 +614,11 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     dt_ctl_switch_mode_to("lighttable");
   }
 
+  return 0;
+}
+
+int key_pressed(dt_view_t *self, guint key, guint state)
+{
   return 0;
 }
 

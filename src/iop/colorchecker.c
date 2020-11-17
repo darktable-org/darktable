@@ -114,6 +114,22 @@ const char *name()
   return _("color look up table");
 }
 
+const char *aliases()
+{
+  return _("profile|lut|color grading");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("perform color space corrections\n"
+                                        "and apply looks"),
+                                      _("corrective or creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("defined by profile, Lab"),
+                                      _("linear or non-linear, Lab, display-referred"));
+}
+
+
 int default_group()
 {
   return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
@@ -128,27 +144,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 {
   return iop_cs_Lab;
 }
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green-red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue-yellow"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "target color"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->scale_L));
-  dt_accel_connect_slider_iop(self, "green-red", GTK_WIDGET(g->scale_a));
-  dt_accel_connect_slider_iop(self, "blue-yellow", GTK_WIDGET(g->scale_b));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->scale_C));
-  dt_accel_connect_combobox_iop(self, "target color", GTK_WIDGET(g->combobox_target));
-}
-
 
 int legacy_params(
     dt_iop_module_t  *self,
@@ -288,7 +283,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.target_b[21] = p.source_b[21] = 33.434604644775391;
   p.target_b[22] = p.source_b[22] = 9.5750093460083008;
   p.target_b[23] = p.source_b[23] = 41.285167694091797;
-  dt_gui_presets_add_generic(_("it8 skin tones"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("it8 skin tones"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // helmholtz/kohlrausch effect applied to black and white conversion.
   // implemented by wmader as an iop and matched as a clut for increased
@@ -301,7 +297,8 @@ void init_presets(dt_iop_module_so_t *self)
       hk_params_input, strlen(hk_params_input), &params_len);
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(hk_params);
-  dt_gui_presets_add_generic(_("helmholtz/kohlrausch monochrome"), self->op, self->version(), hk_params, params_len, 1);
+  dt_gui_presets_add_generic(_("helmholtz/kohlrausch monochrome"), self->op,
+                             self->version(), hk_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(hk_params);
 
   /** The following are based on Jo's Fuji film emulations, without tonecurve which is let to user choice
@@ -316,7 +313,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(astia_params);
-  dt_gui_presets_add_generic(_("Fuji Astia emulation"), self->op, self->version(), astia_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Astia emulation"), self->op,
+                             self->version(), astia_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(astia_params);
 
 
@@ -328,7 +326,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(chrome_params);
-  dt_gui_presets_add_generic(_("Fuji Classic Chrome emulation"), self->op, self->version(), chrome_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Classic Chrome emulation"), self->op,
+                             self->version(), chrome_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(chrome_params);
 
 
@@ -340,7 +339,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(mchrome_params);
-  dt_gui_presets_add_generic(_("Fuji Monochrome emulation"), self->op, self->version(), mchrome_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Monochrome emulation"), self->op,
+                             self->version(), mchrome_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(mchrome_params);
 
 
@@ -352,7 +352,8 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(provia_params);
-  dt_gui_presets_add_generic(_("Fuji Provia emulation"), self->op, self->version(), provia_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Provia emulation"), self->op,
+                             self->version(), provia_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(provia_params);
 
 
@@ -364,9 +365,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   assert(params_len == sizeof(dt_iop_colorchecker_params_t));
   assert(velvia_params);
-  dt_gui_presets_add_generic(_("Fuji Velvia emulation"), self->op, self->version(), velvia_params, params_len, 1);
+  dt_gui_presets_add_generic(_("Fuji Velvia emulation"), self->op,
+                             self->version(), velvia_params, params_len, 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   free(velvia_params);
-
 }
 
 // fast logarithms stolen from paul mineiro http://fastapprox.googlecode.com/svn/trunk/fastapprox/src/fastonebigheader.h
@@ -852,9 +853,8 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)module->params;
+  dt_iop_colorchecker_params_t *p = (dt_iop_colorchecker_params_t *)self->params;
   if(g->patch >= p->num_patches || g->patch < 0) return;
   if(dt_bauhaus_combobox_length(g->combobox_patch) != p->num_patches)
   {
@@ -1356,7 +1356,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->patch = 0;
   g->drawn_patch = -1;
   g->combobox_patch = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combobox_patch, NULL, _("patch"));
+  dt_bauhaus_widget_set_label(g->combobox_patch, NULL, N_("patch"));
   gtk_widget_set_tooltip_text(g->combobox_patch, _("color checker patch"));
   char cboxentry[1024];
   for(int k=0;k<p->num_patches;k++)
@@ -1369,29 +1369,29 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("lightness offset"));
-  dt_bauhaus_widget_set_label(g->scale_L, NULL, _("lightness"));
+  dt_bauhaus_widget_set_label(g->scale_L, NULL, N_("lightness"));
 
   g->scale_a = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_a, _("chroma offset green/red"));
-  dt_bauhaus_widget_set_label(g->scale_a, NULL, _("green/red"));
+  dt_bauhaus_widget_set_label(g->scale_a, NULL, N_("green/red"));
   dt_bauhaus_slider_set_stop(g->scale_a, 0.0, 0.0, 1.0, 0.2);
   dt_bauhaus_slider_set_stop(g->scale_a, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_a, 1.0, 1.0, 0.0, 0.2);
 
   g->scale_b = dt_bauhaus_slider_new_with_range(self, -256.0, 256.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_b, _("chroma offset blue/yellow"));
-  dt_bauhaus_widget_set_label(g->scale_b, NULL, _("blue/yellow"));
+  dt_bauhaus_widget_set_label(g->scale_b, NULL, N_("blue/yellow"));
   dt_bauhaus_slider_set_stop(g->scale_b, 0.0, 0.0, 0.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 0.5, 1.0, 1.0, 1.0);
   dt_bauhaus_slider_set_stop(g->scale_b, 1.0, 1.0, 1.0, 0.0);
 
   g->scale_C = dt_bauhaus_slider_new_with_range(self, -128.0, 128.0, 1.0f, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_C, _("saturation offset"));
-  dt_bauhaus_widget_set_label(g->scale_C, NULL, _("saturation"));
+  dt_bauhaus_widget_set_label(g->scale_C, NULL, N_("saturation"));
 
   g->absolute_target = 0;
   g->combobox_target = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->combobox_target, 0, _("target color"));
+  dt_bauhaus_widget_set_label(g->combobox_target, 0, N_("target color"));
   gtk_widget_set_tooltip_text(g->combobox_target, _("control target color of the patches via relative offsets or via absolute Lab values"));
   dt_bauhaus_combobox_add(g->combobox_target, _("relative"));
   dt_bauhaus_combobox_add(g->combobox_target, _("absolute"));

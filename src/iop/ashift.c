@@ -113,13 +113,18 @@ const char *name()
   return _("perspective correction");
 }
 
-const char *description()
+const char *aliases()
 {
-  return _("distort perspective automatically,\n"
-           "for corrective and creative purposes.\n"
-           "works in RGB,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs linear RGB.");
+  return _("keystone|distortion");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("distort perspective automatically"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("geometric, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 int flags()
@@ -527,36 +532,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
 
   return 1;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "rotation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (v)"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lens shift (h)"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shear"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "focal length"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "crop factor"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "aspect adjust"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "guides"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "automatic cropping"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "lens model"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "rotation", GTK_WIDGET(g->rotation));
-  dt_accel_connect_slider_iop(self, "lens shift (v)", GTK_WIDGET(g->lensshift_v));
-  dt_accel_connect_slider_iop(self, "lens shift (h)", GTK_WIDGET(g->lensshift_h));
-  dt_accel_connect_slider_iop(self, "shear", GTK_WIDGET(g->shear));
-  dt_accel_connect_slider_iop(self, "focal length", GTK_WIDGET(g->f_length));
-  dt_accel_connect_slider_iop(self, "crop factor", GTK_WIDGET(g->crop_factor));
-  dt_accel_connect_slider_iop(self, "aspect adjust", GTK_WIDGET(g->aspect));
-  dt_accel_connect_combobox_iop(self, "guides", GTK_WIDGET(g->guide_lines));
-  dt_accel_connect_combobox_iop(self, "automatic cropping", GTK_WIDGET(g->cropmode));
-  dt_accel_connect_combobox_iop(self, "lens model", GTK_WIDGET(g->mode));
 }
 
 // multiply 3x3 matrix with 3x1 vector
@@ -4493,9 +4468,9 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
-  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)module->params;
+  dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
+
   dt_bauhaus_slider_set_soft(g->rotation, p->rotation);
   dt_bauhaus_slider_set_soft(g->lensshift_v, p->lensshift_v);
   dt_bauhaus_slider_set_soft(g->lensshift_h, p->lensshift_h);
@@ -4771,7 +4746,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft_range(g->shear, -SHEAR_RANGE, SHEAR_RANGE);
 
   g->guide_lines = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->guide_lines, NULL, _("guides"));
+  dt_bauhaus_widget_set_label(g->guide_lines, NULL, N_("guides"));
   dt_bauhaus_combobox_add(g->guide_lines, _("off"));
   dt_bauhaus_combobox_add(g->guide_lines, _("on"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->guide_lines, TRUE, TRUE, 0);

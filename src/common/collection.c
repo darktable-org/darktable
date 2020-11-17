@@ -22,6 +22,7 @@
 #include "common/imageio_rawspeed.h"
 #include "common/metadata.h"
 #include "common/utility.h"
+#include "common/map_locations.h"
 #include "control/conf.h"
 #include "control/control.h"
 
@@ -1440,6 +1441,7 @@ gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_mod
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
 {
   char *escaped_text = sqlite3_mprintf("%q", text);
+  unsigned int escaped_length = strlen(escaped_text);
   gchar *query = NULL;
 
   switch(property)
@@ -1504,9 +1506,26 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_GEOTAGGING: // geotagging
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
-                                     "(longitude IS NOT NULL AND latitude IS NOT NULL))) ",
-                              (strcmp(escaped_text, _("tagged")) == 0) ? "" : "not");
+      {
+        const gboolean not_tagged = strcmp(escaped_text, _("not tagged")) == 0;
+        const gboolean no_location = strcmp(escaped_text, _("tagged")) == 0;
+        const gboolean all_tagged = strcmp(escaped_text, _("tagged*")) == 0;
+        char *escaped_text2 = g_strstr_len(escaped_text, -1, "|");
+        if(not_tagged || all_tagged)
+          query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images "
+                                         "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
+                                  all_tagged ? "" : "not");
+        else
+          query = dt_util_dstrcat(query, "(id IN (SELECT id AS imgid FROM main.images "
+                                         "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))"
+                                         "AND id %s IN (SELECT imgid FROM main.tagged_images AS ti"
+                                         "  JOIN data.tags AS t"
+                                         "  ON t.id = ti.tagid"
+                                         "     AND t.name LIKE \'%s\' || \'%s\')) ",
+                                  no_location ? "not" : "",
+                                  dt_map_location_data_tag_root(),
+                                  escaped_text2 ? escaped_text2 : "%");
+      }
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
@@ -1562,9 +1581,22 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, ")");
       break;
     case DT_COLLECTION_PROP_TAG: // tag
-      query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+    
+      /* shift-click adds an asterix * to include items in and under this hierarchy without using a wildcard % which also would include similar named items */
+      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*')) 
+      {
+        escaped_text[escaped_length-1] = '\0';
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
+                              escaped_text, escaped_text);
+      /* default */
+      } else
+      {
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                      "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
                               escaped_text);
+      }
+
       break;
 
     case DT_COLLECTION_PROP_LENS: // lens

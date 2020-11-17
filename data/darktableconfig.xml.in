@@ -986,19 +986,6 @@
     <shortdescription>position of the image information line</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="darkroom" restart="true">
-    <name>plugins/darkroom/search_iop_by_text</name>
-    <type>
-      <enum>
-        <option>show search text</option>
-        <option>show groups</option>
-        <option>show both</option>
-      </enum>
-    </type>
-    <default>show both</default>
-    <shortdescription>show module groups and/or search text entry</shortdescription>
-    <longdescription>show module groups and/or search text entry. (needs a restart)</longdescription>
-  </dtconfig>
   <dtconfig>
     <name>database_cache_quality</name>
     <type>int</type>
@@ -1508,6 +1495,20 @@
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
   </dtconfig>
+  <dtconfig prefs="otherviews">
+    <name>plugins/map/epsilon_factor</name>
+    <type min="10" max="100">int</type>
+    <default>25</default>
+    <shortdescription>modify the spatial size of an images group on the map</shortdescription>
+    <longdescription>increase or decrease the spatial size of images groups on the map. can influence the calculation time</longdescription>
+  </dtconfig>
+  <dtconfig prefs="otherviews">
+    <name>plugins/map/min_images_per_group</name>
+    <type min="1" max="10">int</type>
+    <default>1</default>
+    <shortdescription>minimum number of images to set up an images group</shortdescription>
+    <longdescription>the minimum number of images to set up an images group. can influence the calculation time.</longdescription>
+  </dtconfig>
   <dtconfig prefs="lighttable">
     <name>plugins/lighttable/draw_custom_metadata</name>
     <type>bool</type>
@@ -1690,13 +1691,6 @@
     <shortdescription>always use LittleCMS 2 to apply output color profile</shortdescription>
     <longdescription>this is slower than the default.</longdescription>
   </dtconfig>
-  <dtconfig prefs="otherviews" section="slideshow">
-    <name>plugins/slideshow/high_quality</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>do high quality processing for slideshow</shortdescription>
-    <longdescription>same option as for export, but applies to slideshow.</longdescription>
-  </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/high_quality_processing</name>
     <type>bool</type>
@@ -1759,6 +1753,12 @@
     <default>99.99</default>
     <shortdescription/>
     <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/channelmixerrgb/gui_page</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>last page selected in channel mixer rgb notebook</shortdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/darkroom/demosaic/fdc_xover_iso</name>
@@ -2367,6 +2367,18 @@
     <shortdescription>auto-apply pixel workflow defaults</shortdescription>
     <longdescription>scene-referred workflow is based on linear modules and will auto-apply filmic and exposure,\ndisplay-referred workflow is based on Lab modules and will auto-apply base curve and the legacy module pipe order.</longdescription>
   </dtconfig>
+  <dtconfig prefs="processing">
+    <name>plugins/darkroom/chromatic-adaptation</name>
+    <type>
+      <enum>
+        <option>modern</option>
+        <option>legacy</option>
+      </enum>
+    </type>
+    <default>legacy</default>
+    <shortdescription>auto-apply chromatic adaptation defaults</shortdescription>
+    <longdescription>legacy performs a basic chromatic adaptation using only the white balance module\nmodern uses a combination of white balance module and color calibration module, with improved color science for chromatic adaptation.</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing" restart="true">
     <name>plugins/darkroom/basecurve/auto_apply_percamera_presets</name>
     <type>bool</type>
@@ -2587,5 +2599,12 @@
     <default>400</default>
     <shortdescription>height of the styles list</shortdescription>
     <longdescription>maximum height the styles list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/toneequal/gui_page</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription>active tab in tone equaliser module</shortdescription>
+    <longdescription>which of simple, advanced or masking tabs will show at startup</longdescription>
   </dtconfig>
 </dtconfiglist>

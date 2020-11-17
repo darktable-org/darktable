@@ -104,6 +104,15 @@ const char *name()
   return _("dithering");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("reduce banding and posterization effects in output JPEGs by adding random noise"),
+                                      _("corrective"),
+                                      _("non-linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
@@ -119,18 +128,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "method"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_combobox_iop(self, "method", GTK_WIDGET(g->dither_type));
-}
-
 void init_presets(dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
@@ -138,7 +135,9 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_dither_params_t tmp
       = (dt_iop_dither_params_t){ DITHER_FSAUTO, 0, { 0.0f, { 0.0f, 0.0f, 1.0f, 1.0f }, -200.0f } };
   // add the preset.
-  dt_gui_presets_add_generic(_("dither"), self->op, self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1);
+  dt_gui_presets_add_generic(_("dither"), self->op,
+                             self->version(), &tmp, sizeof(dt_iop_dither_params_t), 1,
+                             DEVELOP_BLEND_CS_NONE);
   // make it auto-apply for all images:
   // dt_gui_presets_update_autoapply(_("dither"), self->op, self->version(), 1);
 
@@ -151,10 +150,10 @@ static void _find_nearest_color_n_levels_gray(float *val, float *err, const floa
 {
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
-  float tmp = in * f;
-  int itmp = floorf(tmp);
+  const float tmp = in * f;
+  const int itmp = floorf(tmp);
 
-  float new = (tmp - itmp > 0.5f ? (float)(itmp + 1) : (float)itmp) * rf;
+  const float new = (tmp - itmp > 0.5f ? (float)(itmp + 1) : (float)itmp) * rf;
 
   for(int c = 0; c < 4; c++)
   {
@@ -172,8 +171,8 @@ static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, c
 
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
-  float tmp = in * f;
-  int itmp = floorf(tmp);
+  const float tmp = in * f;
+  const int itmp = floorf(tmp);
 
   new = _mm_set1_ps(tmp - itmp > 0.5f ? (float)(itmp + 1) * rf : (float)itmp * rf);
   err = _mm_sub_ps(_mm_load_ps(val), new);
@@ -740,9 +739,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_dither_gui_data_t *g = (dt_iop_dither_gui_data_t *)self->gui_data;
-  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)module->params;
+  dt_iop_dither_params_t *p = (dt_iop_dither_params_t *)self->params;
   dt_bauhaus_combobox_set(g->dither_type, p->dither_type);
 #if 0
   dt_bauhaus_slider_set(g->radius, p->random.radius);
@@ -767,7 +765,7 @@ void gui_init(struct dt_iop_module_t *self)
 #if 0
   g->radius = dt_bauhaus_slider_new_with_range(self, 0.0, 200.0, 0.1, p->random.radius, 2);
   gtk_widget_set_tooltip_text(g->radius, _("radius for blurring step"));
-  dt_bauhaus_widget_set_label(g->radius, NULL, _("radius"));
+  dt_bauhaus_widget_set_label(g->radius, NULL, N_("radius"));
 
   g->range = dtgtk_gradient_slider_multivalue_new(4);
   dtgtk_gradient_slider_multivalue_set_marker(DTGTK_GRADIENT_SLIDER(g->range), GRADIENT_SLIDER_MARKER_LOWER_OPEN_BIG, 0);

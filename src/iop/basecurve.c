@@ -198,22 +198,6 @@ typedef struct dt_iop_basecurve_gui_data_t
   GtkWidget *logbase;
 } dt_iop_basecurve_gui_data_t;
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "graph scale"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "exposure fusion"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "graph scale", GTK_WIDGET(g->logbase));
-  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
-  dt_accel_connect_combobox_iop(self, "exposure fusion", GTK_WIDGET(g->fusion));
-}
-
 static const char neutral[] = N_("neutral");
 static const char canon_eos[] = N_("canon eos like");
 static const char canon_eos_alt[] = N_("canon eos like alternate");
@@ -348,13 +332,14 @@ const char *name()
   return _("base curve");
 }
 
-const char *description()
+const char *description(struct dt_iop_module_t *self)
 {
-  return _("apply a view transform based on personal or camera manufacturer look,\n"
-           "for corrective purposes, to prepare images for display.\n"
-           "works in RGB,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs non-linear RGB.");
+  return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look,\n"
+                                        "for corrective purposes, to prepare images for display"),
+                                      _("corrective"),
+                                      _("linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
 }
 
 int default_group()
@@ -391,7 +376,8 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
     }
     // add the preset.
     dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
-                               &tmp, sizeof(dt_iop_basecurve_params_t), 1);
+                               &tmp, sizeof(dt_iop_basecurve_params_t), 1,
+                               DEVELOP_BLEND_CS_RGB_DISPLAY);
     // and restrict it to model, maker, iso, and raw images
     dt_gui_presets_update_mml(_(presets[k].name), self->op, self->version(),
                               presets[k].maker, presets[k].model, "");
@@ -529,7 +515,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   cl_int err = -999;
 
@@ -835,7 +821,7 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
@@ -1169,7 +1155,7 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
@@ -1348,7 +1334,7 @@ void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
   //however the for loops only handled RGBA - FIXME, determine what possible data formats and channel
   //configurations we might encounter here and handle those too
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   const int wd = roi_in->width, ht = roi_in->height;
 
@@ -2130,7 +2116,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
   c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, _("scale for graph"));
+  dt_bauhaus_widget_set_label(c->logbase, NULL, N_("scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK

@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -87,7 +88,6 @@ static inline float inner_height(GtkAllocation allocation)
   return allocation.height - 2.0f * darktable.bauhaus->widget_space;
 }
 
-
 static GdkRGBA * default_color_assign()
 {
   // helper to initialize a color pointer with red color as a default
@@ -98,7 +98,6 @@ static GdkRGBA * default_color_assign()
   color.alpha = 1.0f;
   return gdk_rgba_copy(&color);
 }
-
 
 static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cairo_t *cr,
                            char *text, float x_pos, float y_pos, float max_width,
@@ -535,18 +534,22 @@ void dt_bauhaus_load_theme()
   gtk_style_context_lookup_color(ctx, "graph_grid", &darktable.bauhaus->graph_grid);
   gtk_style_context_lookup_color(ctx, "graph_fg", &darktable.bauhaus->graph_fg);
   gtk_style_context_lookup_color(ctx, "graph_fg_active", &darktable.bauhaus->graph_fg_active);
+  gtk_style_context_lookup_color(ctx, "graph_overlay", &darktable.bauhaus->graph_overlay);
   gtk_style_context_lookup_color(ctx, "inset_histogram", &darktable.bauhaus->inset_histogram);
 
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
   gtk_widget_path_free(path);
 
+  // make sure we release previously loaded font
+  if(darktable.bauhaus->pango_font_desc)
+    pango_font_description_free(darktable.bauhaus->pango_font_desc);
+
   darktable.bauhaus->pango_font_desc = pfont;
 
-  PangoLayout *layout;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);
-  layout = pango_cairo_create_layout(cr);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
   pango_layout_set_text(layout, "m", -1);
   pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
@@ -573,6 +576,7 @@ void dt_bauhaus_init()
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
   gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
+  darktable.bauhaus->pango_font_desc = NULL;
 
   dt_bauhaus_load_theme();
 
@@ -581,6 +585,8 @@ void dt_bauhaus_init()
   darktable.bauhaus->key_mod = NULL;
   darktable.bauhaus->key_val = NULL;
   memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
+
+  darktable.bauhaus->skip_accel = 1;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -841,14 +847,46 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
   d->hard_max = hard_max;
 }
 
-void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
 {
+  const char *section = _(section_orig);
+  const char *label = _(label_orig);
+
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
   g_strlcpy(w->label, label, sizeof(w->label));
 
   if(w->module)
   {
+    if(!darktable.bauhaus->skip_accel && (!section_orig || strcmp("blend", section_orig)))
+    {
+      gchar *combined_label = section_orig
+                            ? g_strdup_printf("%s`%s", section_orig, label_orig)
+                            : g_strdup(label_orig);
+      if(darktable.control->accel_initialising)
+      {
+        if(w->type == DT_BAUHAUS_SLIDER)
+        {
+          dt_accel_register_slider_iop(w->module->so, FALSE, combined_label);
+        }
+        else if(w->type == DT_BAUHAUS_COMBOBOX)
+        {
+          dt_accel_register_combobox_iop(w->module->so, FALSE, combined_label);
+        }
+      }
+      else
+      {
+        if(w->type == DT_BAUHAUS_SLIDER)
+        {
+          dt_accel_connect_slider_iop(w->module, combined_label, widget);
+        }
+        else if(w->type == DT_BAUHAUS_COMBOBOX)
+        {
+          dt_accel_connect_combobox_iop(w->module, combined_label, widget);
+        }
+      }
+    }
+
     // construct control path name and insert into keymap:
     gchar *path;
     if(section && section[0] != '\0')
@@ -1807,9 +1845,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   if(darktable.bauhaus->keys_cnt)
   {
     cairo_save(cr);
-    PangoLayout *layout;
+    PangoLayout *layout = pango_cairo_create_layout(cr);
     PangoRectangle ink;
-    layout = pango_cairo_create_layout(cr);
     pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
     set_color(cr, text_color);
 
@@ -2012,6 +2049,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   int offset = 0;
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+  if(tmp.width == 1) return;
 
   gtk_widget_realize(darktable.bauhaus->popup_window);
   switch(darktable.bauhaus->current->type)

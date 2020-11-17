@@ -90,6 +90,9 @@ typedef enum dt_gui_color_t
   DT_GUI_COLOR_MAP_COUNT_SAME_LOC,
   DT_GUI_COLOR_MAP_COUNT_DIFF_LOC,
   DT_GUI_COLOR_MAP_COUNT_BG,
+  DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH,
+  DT_GUI_COLOR_MAP_LOC_SHAPE_LOW,
+  DT_GUI_COLOR_MAP_LOC_SHAPE_DEF,
   DT_GUI_COLOR_LAST
 } dt_gui_color_t;
 
@@ -365,6 +368,9 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   return label;
 };
+
+// clears all the pages of the notebook
+void dt_ui_notebook_clear(GtkNotebook *notebook);
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip);
 

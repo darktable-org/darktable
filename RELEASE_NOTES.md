@@ -130,6 +130,20 @@ making a backup is strongly advised.
 
 - Support for AVIF >= 0.8.2 (no support for older versions).
 
+- Guard against overwriting styles when exporting them by using
+  a dialog to let the user to confirm or abort the action.
+
+- Output channel sliders for parametric masking are hidden by default.
+
+- Add a “boost” slider to the parametric mask channels to extend their
+  range and allow selection of highlights in scene referred editing.
+
+- Allow selection of the color space in which the blending will be
+  performed. An additional implementation is provided for the RGB color
+  space that may be used in scene referred editing and provides
+  unbounded blending modes and a more accurate color selection with
+  JzCzhz.
+
 ## Bug fixes
 
 - Fix orientation in the clipping module after having selected the freehand aspect ratio.
@@ -160,6 +174,24 @@ making a backup is strongly advised.
 
 ## Lua
 
+- API changed to 6.1.0
+
+- Button labels can now be ellipsized
+
+- Stack widgets can now shrink and grow as panel width changes.
+
+- A Lua Scripts Installer module now runs at startup offering to 
+  install the lua scripts unless they are already installed or the
+  module has been disabled by the user.  The module uses the git
+  executable to install the scripts so it must be present on the
+  user\'s system in order for this to work.
+
+- darktble uses Lua 5.3.  Lua 5.4 has been released and is now the
+  default Lua for some distributions.  Please install the Lua 5.3
+  library package if your distribution is using Lua 5.4 as the
+  default.  If you compile darktable, then you may also set the
+  DONT_USE_INTERNAL_LUA to OFF in the DefineOptions.cmake file
+  to use the internal Lua.
 
 ## Changed Dependencies
 

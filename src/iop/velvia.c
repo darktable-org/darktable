@@ -84,6 +84,11 @@ const char *name()
   return _("velvia");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -97,22 +102,6 @@ int default_group()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mid-tones bias"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "strength",
-                              GTK_WIDGET(g->strength_scale));
-  dt_accel_connect_slider_iop(self, "mid-tones bias",
-                              GTK_WIDGET(g->bias_scale));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -329,9 +318,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_velvia_gui_data_t *g = (dt_iop_velvia_gui_data_t *)self->gui_data;
-  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)module->params;
+  dt_iop_velvia_params_t *p = (dt_iop_velvia_params_t *)self->params;
   dt_bauhaus_slider_set(g->strength_scale, p->strength);
   dt_bauhaus_slider_set(g->bias_scale, p->bias);
 }

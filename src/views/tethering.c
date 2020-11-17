@@ -33,10 +33,10 @@
 #include "common/collection.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
-#include "common/iop_profile.h"
 #include "common/image_cache.h"
 #include "common/imageio.h"
 #include "common/import_session.h"
+#include "common/iop_profile.h"
 #include "common/selection.h"
 #include "common/utility.h"
 #include "common/variables.h"
@@ -45,6 +45,7 @@
 #include "control/jobs.h"
 #include "control/settings.h"
 #include "develop/imageop_math.h"
+#include "develop/noise_generator.h"
 #include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
@@ -128,9 +129,9 @@ void init(dt_view_t *self)
   self->data = calloc(1, sizeof(dt_capture_t));
 
   /* setup the tethering view proxy */
-  darktable.view_manager->proxy.tethering.view               = self;
-  darktable.view_manager->proxy.tethering.get_job_code       = _capture_view_get_jobcode;
-  darktable.view_manager->proxy.tethering.set_job_code       = _capture_view_set_jobcode;
+  darktable.view_manager->proxy.tethering.view = self;
+  darktable.view_manager->proxy.tethering.get_job_code = _capture_view_get_jobcode;
+  darktable.view_manager->proxy.tethering.set_job_code = _capture_view_set_jobcode;
   darktable.view_manager->proxy.tethering.get_selected_imgid = _capture_view_get_selected_imgid;
 }
 
@@ -191,8 +192,8 @@ static int _tethering_bpp(dt_imageio_module_data_t *data)
 
 static int _tethering_write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                                   dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                                  void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
-                                  const gboolean export_masks)
+                                  void *exif, int exif_len, int imgid, int num, int total,
+                                  dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
 {
   _tethering_format_t *d = (_tethering_format_t *)data;
   d->buf = (float *)malloc(sizeof(float) * 4 * d->head.width * d->head.height);
@@ -218,8 +219,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
 
   lib->image_over = DT_VIEW_DESERT;
   GSList *l = dt_view_active_images_get();
-  if(g_slist_length(l) > 0)
-    lib->image_id = GPOINTER_TO_INT(g_slist_nth_data(l, 0));
+  if(g_slist_length(l) > 0) lib->image_id = GPOINTER_TO_INT(g_slist_nth_data(l, 0));
 
   lib->image_over = lib->image_id;
 
@@ -239,12 +239,12 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
         pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
         // FIXME: if liveview image is tagged and we can read its colorspace, use that
-        cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display,
-                                 p_buf, tmp_i, pw, ph, pw * 4, stride, 0, 0);
+        cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display, p_buf, tmp_i, pw, ph, pw * 4,
+                                 stride, 0, 0);
         pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
         cairo_surface_t *source
-          = dt_cairo_image_surface_create_for_data(tmp_i, CAIRO_FORMAT_RGB24, pw, ph, stride);
+            = dt_cairo_image_surface_create_for_data(tmp_i, CAIRO_FORMAT_RGB24, pw, ph, stride);
         if(cairo_surface_status(source) == CAIRO_STATUS_SUCCESS)
         {
           const float w = width - (MARGIN * 2.0f);
@@ -257,11 +257,11 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
           scale = fminf(1.0, scale);
 
           // FIXME: use cairo_pattern_set_filter()?
-          cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);                    // origin to middle of canvas
-          if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);                       // mirror image
-          if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);  // rotate around middle
-          if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                   // scale to fit canvas
-          cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                        // origin back to corner
+          cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5); // origin to middle of canvas
+          if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);    // mirror image
+          if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation); // rotate around middle
+          if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                  // scale to fit canvas
+          cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                       // origin back to corner
           cairo_scale(cr, darktable.gui->ppd, darktable.gui->ppd);
           cairo_set_source_surface(cr, source, 0.0, 0.0);
           cairo_paint(cr);
@@ -275,12 +275,19 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       if(tmp_f)
       {
         dt_develop_t *dev = darktable.develop;
-        uint64_t DT_ALIGNED_ARRAY state[4] = { 0 };
-        xoshiro256_init(1, state);
         // FIXME: add OpenMP
-        for(size_t p = 0; p < (size_t) 4 * pw * ph; p += 4)
+        for(size_t p = 0; p < (size_t)4 * pw * ph; p += 4)
+        {
+          uint32_t DT_ALIGNED_ARRAY state[4]
+              = { splitmix32(p + 1), splitmix32((p + 1) * (p + 3)), splitmix32(1337), splitmix32(666) };
+          xoshiro128plus(state);
+          xoshiro128plus(state);
+          xoshiro128plus(state);
+          xoshiro128plus(state);
+
           for(int k = 0; k < 3; k++)
             tmp_f[p + k] = dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
+        }
 
         // Do colorspace conversion here rather than having histogram
         // process do it. We need to do special cases for work/export
@@ -294,10 +301,9 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
           // the histogram will have some relationship to a captured
           // image's profile, go with the standard work profile.
           // FIXME: can figure out the current default work colorspace via checking presets?
-          profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "",
-                                                         DT_INTENT_PERCEPTUAL);
+          profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
         }
-        else if (darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+        else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
         {
           // don't touch the image
           profile_to = NULL;
@@ -311,9 +317,9 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         {
           // FIXME: if liveview image is tagged and we can read its colorspace, use that
           const dt_iop_order_iccprofile_info_t *const profile_from
-            = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
-          dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph, profile_from,
-                                                  profile_to, "live view histogram");
+              = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
+          dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph, profile_from, profile_to,
+                                                  "live view histogram");
         }
 
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
@@ -328,8 +334,8 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   {
     // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
     cairo_surface_t *surf = NULL;
-    const int res
-        = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f), &surf, FALSE);
+    const int res = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f),
+                                              &surf, FALSE);
     if(res)
     {
       // if the image is missing, we reload it again
@@ -369,9 +375,9 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       icc_type = work_profile->type;
       icc_filename = work_profile->filename;
     }
-    else if (darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+    else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
     {
-      icc_type = DT_COLORSPACE_NONE;  // use the colorout profile
+      icc_type = DT_COLORSPACE_NONE; // use the colorout profile
       icc_filename = _icc_filename;
     }
     else
@@ -383,12 +389,12 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
     // as we're not competing with the full pixelpipe, it's a
     // reasonable trade-off for a histogram which matches that in
     // darkroom view
-    if (!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
-                                      FALSE, FALSE, NULL, FALSE, FALSE, icc_type, icc_filename, DT_INTENT_PERCEPTUAL, NULL,
-                                      NULL, 1, 1, NULL))
+    if(!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE,
+                                     FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, icc_type, icc_filename,
+                                     DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL))
     {
-      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width, dat.head.height,
-                                             DT_COLORSPACE_NONE, "");
+      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width,
+                                             dat.head.height, DT_COLORSPACE_NONE, "");
       dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
       free(dat.buf);
     }
@@ -396,15 +402,14 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   else // not in live view, no image selected
   {
     // if we just left live view, blank out its histogram
-    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, NULL, 0, 0,
-                                           DT_COLORSPACE_NONE, "");
+    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, NULL, 0, 0, DT_COLORSPACE_NONE,
+                                           "");
     dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
   }
 }
 
 
-void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx,
-            int32_t pointery)
+void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_rectangle(cri, 0, 0, width, height);
@@ -511,12 +516,12 @@ void enter(dt_view_t *self)
 
   /* connect signal for mipmap update for a redraw */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_capture_mipmaps_updated_signal_callback), (gpointer)self);
+                                  G_CALLBACK(_capture_mipmaps_updated_signal_callback), (gpointer)self);
 
 
   /* connect signal for fimlstrip image activate */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
-                            G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
+                                  G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
 
   // register listener
   lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));
@@ -540,11 +545,11 @@ void leave(dt_view_t *self)
 
   /* disconnect from mipmap updated signal */
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_capture_mipmaps_updated_signal_callback),
-                               (gpointer)self);
+                                     (gpointer)self);
 
   /* disconnect from filmstrip image activate */
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_capture_filmstrip_activate_callback),
-                               (gpointer)self);
+                                     (gpointer)self);
 }
 
 void reset(dt_view_t *self)

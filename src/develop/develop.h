@@ -111,7 +111,10 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 13 << 3,  //show module's output without processing by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3,  //show module's output without processing by later iops
   DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
   DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
@@ -215,7 +218,7 @@ typedef struct dt_develop_t
   {
     // list of exposure iop instances, with plugin hooks, used by histogram dragging functions
     // each element is dt_dev_proxy_exposure_t
-    GList *exposure;
+    dt_dev_proxy_exposure_t exposure;
 
     // modulegroups plugin hooks
     struct
@@ -257,6 +260,14 @@ typedef struct dt_develop_t
       /* selected forms change */
       void (*selection_change)(struct dt_lib_module_t *self, int selectid, int throw_event);
     } masks;
+
+    // what is the ID of the module currently doing pipeline chromatic adaptation ?
+    // this is to prevent multiple modules/instances from doing white balance globally.
+    // only used to display warnings in GUI of modules that should probably not be doing white balance
+    dt_iop_order_entry_t *chroma_adaptation;
+
+    // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
+    gboolean wb_is_D65;
 
   } proxy;
 
@@ -350,6 +361,7 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
 int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
 void dt_dev_add_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable, gboolean no_image);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
+void dt_dev_add_new_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
 void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *_module, gboolean _enable, gboolean no_image);
 void dt_dev_add_masks_history_item(dt_develop_t *dev, struct dt_iop_module_t *_module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
@@ -385,8 +397,6 @@ void dt_dev_invalidate_from_gui(dt_develop_t *dev);
  * exposure plugin hook, set the exposure and the black level
  */
 
-/** a function used to sort the list */
-gint dt_dev_exposure_hooks_sort(gconstpointer a, gconstpointer b);
 /** check if exposure iop hooks are available */
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
 /** reset exposure to defaults */
@@ -459,8 +469,16 @@ int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points
 /** same fct, but we can specify iop with priority between pmin and pmax */
 int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                   float *points, size_t points_count);
+/** same fct, but can only be called from a distort_transform function called by dt_dev_distort_transform_plus */
+int dt_dev_distort_transform_locked(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                    const int transf_direction, float *points, size_t points_count);
+/** same fct as dt_dev_distort_backtransform, but we can specify iop with priority between pmin and pmax */
 int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count);
+/** same fct, but can only be called from a distort_backtransform function called by dt_dev_distort_backtransform_plus */
+int dt_dev_distort_backtransform_locked(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                    const int transf_direction, float *points, size_t points_count);
+
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
 struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
                                                            struct dt_iop_module_t *module);

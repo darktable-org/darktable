@@ -191,6 +191,14 @@ static inline int dt_version()
 
 #define DT_IMAGE_DBLOCKS 64
 
+// If platform supports hardware-accelerated fused-multiply-add
+// This is not only faster but more accurate because rounding happens at the right place
+#ifdef FP_FAST_FMAF
+  #define DT_FMA(x, y, z) fmaf(x, y, z)
+#else
+  #define DT_FMA(x, y, z) ((x) * (y) + (z))
+#endif
+
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;

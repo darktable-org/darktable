@@ -206,9 +206,9 @@ typedef struct dt_iop_denoiseprofile_params_t
   float bias;       /* allows to reduce backtransform bias
                        $MIN: -1000.0 $MAX: 100.0 $DEFAULT: 0.0 $DESCRIPTION: "bias correction" */
   float scattering; /* spread the patch search zone without increasing number of patches
-                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering (coarse-grain noise)" */
+                       $MIN: 0.0 $MAX: 20.0 $DEFAULT: 0.0 $DESCRIPTION: "scattering" */
   float central_pixel_weight; /* increase central pixel's weight in patch comparison
-                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight (details)" */
+                       $MIN: 0.0 $MAX: 10.0 $DEFAULT: 0.1 $DESCRIPTION: "central pixel weight" */
   float overshooting; /* adjusts the way parameters are autoset
                          $MIN: 0.001 $MAX: 1000.0 $DEFAULT: 1.0 $DESCRIPTION: "adjust autoset parameters" */
   float a[3], b[3]; // fit for poissonian-gaussian noise per color channel.
@@ -589,10 +589,51 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+void init_presets(dt_iop_module_so_t *self)
+{
+  dt_iop_denoiseprofile_params_t p;
+  memset(&p, 0, sizeof(p));
+
+  p.mode = MODE_WAVELETS;
+  p.wavelet_color_mode = MODE_Y0U0V0;
+  p.strength = 3.0f;
+  p.use_new_vst = TRUE;
+  // disable variance stabilization transform to avoid any bias
+  // (wavelets perform well even without the VST):
+  p.shadows = 0.0f;
+  p.bias = 0.0f;
+  // this influences as well the way Y0U0V0 is computed:
+  p.wb_adaptive_anscombe = TRUE;
+  p.a[0] = -1.0f; // autodetect profile
+  p.central_pixel_weight = 0.1f;
+  p.overshooting = 1.0f;
+  p.fix_anscombe_and_nlmeans_norm = TRUE;
+  for(int b = 0; b < DT_IOP_DENOISE_PROFILE_BANDS; b++)
+  {
+    for(int c = 0; c < DT_DENOISE_PROFILE_NONE; c++)
+    {
+      p.x[c][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
+      p.y[c][b] = 0.5f;
+    }
+    p.x[DT_DENOISE_PROFILE_Y0][b] = b / (DT_IOP_DENOISE_PROFILE_BANDS - 1.0f);
+    p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
+  }
+  dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, self->version(), &p,
+                             sizeof(p), 10, DEVELOP_BLEND_CS_RGB_DISPLAY);
+}
 
 const char *name()
 {
   return _("denoise (profiled)");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("denoise using noise statistics profiled on sensors"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 int default_group()
@@ -608,34 +649,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "adjust autoset parameters"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "preserve shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bias correction"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "patch size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "search radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "scattering"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "central pixel weight"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->strength));
-  dt_accel_connect_slider_iop(self, "adjust autoset parameters", GTK_WIDGET(g->overshooting));
-  dt_accel_connect_slider_iop(self, "preserve shadows", GTK_WIDGET(g->shadows));
-  dt_accel_connect_slider_iop(self, "bias correction", GTK_WIDGET(g->bias));
-  dt_accel_connect_slider_iop(self, "patch size", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "search radius", GTK_WIDGET(g->nbhood));
-  dt_accel_connect_slider_iop(self, "scattering", GTK_WIDGET(g->scattering));
-  dt_accel_connect_slider_iop(self, "central pixel weight", GTK_WIDGET(g->central_pixel_weight));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
 }
 
 typedef union floatint_t
@@ -3315,9 +3328,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(dt_iop_module_t *self)
 {
-  // let gui slider match current parameters:
   dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t *)self->gui_data;
   dt_iop_denoiseprofile_params_t *p = (dt_iop_denoiseprofile_params_t *)self->params;
+
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set_soft(g->nbhood, p->nbhood);
   dt_bauhaus_slider_set_soft(g->strength, p->strength);
@@ -3933,14 +3946,14 @@ void gui_init(dt_iop_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->profile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(g->profile, NULL, N_("profile"));
   g_signal_connect(G_OBJECT(g->profile), "value-changed", G_CALLBACK(profile_callback), self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->profile, TRUE, TRUE, 0);
 
   g->wb_adaptive_anscombe = dt_bauhaus_toggle_from_params(self, "wb_adaptive_anscombe");
 
   g->mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->mode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(g->mode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means"));
   dt_bauhaus_combobox_add(g->mode, _("non-local means auto"));
   dt_bauhaus_combobox_add(g->mode, _("wavelets"));
@@ -3970,10 +3983,6 @@ void gui_init(dt_iop_module_t *self)
   g->fix_anscombe_and_nlmeans_norm = dt_bauhaus_toggle_from_params(self, "fix_anscombe_and_nlmeans_norm");
 
   g->use_new_vst = dt_bauhaus_toggle_from_params(self, "use_new_vst");
-
-  gtk_widget_show_all(g->box_nlm);
-  gtk_widget_show_all(g->box_wavelets);
-  gtk_widget_show_all(g->box_variance);
 
   gtk_widget_set_tooltip_text(g->wb_adaptive_anscombe, _("adapt denoising according to the\n"
                                                          "white balance coefficients.\n"

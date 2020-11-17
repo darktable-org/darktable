@@ -68,13 +68,17 @@ void cleanup_global(struct dt_iop_module_so_t *self);
 int version(void);
 /** get name of the module, to be translated. */
 const char *name(void);
+/** get the alternative names or keywords of the module, to be translated. Separate variants by a pipe | */
+const char *aliases(void);
 /** get the default group this module belongs to. */
 int default_group(void);
 /** get the iop module flags. */
 int flags(void);
+/** get the deprecated message if needed, to be translated. */
+const char *deprecated_msg(void);
 
 /** get a descriptive text used for example in a tooltip in more modules */
-const char *description(void);
+const char *description(struct dt_iop_module_t *self);
 
 int operation_tags(void);
 int operation_tags_filter(void);

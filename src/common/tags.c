@@ -1001,7 +1001,28 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid)
   return ret;
 }
 
-GList *dt_tag_get_images_from_list(const GList *img, gint tagid)
+GList *dt_tag_get_images(const gint tagid)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT imgid FROM main.tagged_images"
+                              " WHERE tagid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, GINT_TO_POINTER(id));
+  }
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
+GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
 {
   GList *result = NULL;
   char *images = NULL;
@@ -1664,7 +1685,16 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
     {
       gchar **pch = g_strsplit(tag, "|", -1);
       char *subtag = pch[rootnb + level];
-      tags = dt_util_dstrcat(tags, "%s,", subtag);
+      gboolean valid = TRUE;
+      // check we have not yet this subtag in the list
+      if(tags && strlen(tags) >= strlen(subtag) + 1)
+      {
+        char *found = g_strstr_len(tags, strlen(tags), subtag);
+        if(found[strlen(subtag)] == ',')
+          valid = FALSE;
+      }
+      if(valid)
+        tags = dt_util_dstrcat(tags, "%s,", subtag);
       g_strfreev(pch);
     }
   }
