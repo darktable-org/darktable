@@ -85,6 +85,11 @@ typedef struct dt_iop_nlmeans_global_data_t
 
 const char *name()
 {
+  return _("astrophoto denoise");
+}
+
+const char *aliases()
+{
   return _("denoise (non-local means)");
 }
 
