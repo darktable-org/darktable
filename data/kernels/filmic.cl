@@ -172,8 +172,8 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
 
     case DT_FILMIC_METHOD_NONE:
     default:
-      // path cannot be taken
-      return 0.0f;
+      return (use_work_profile) ? get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut)
+                                : dt_camera_rgb_luminance(pixel);
   }
 }
 

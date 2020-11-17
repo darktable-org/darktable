@@ -1836,7 +1836,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
           dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_compute_ratios, 2, sizeof(cl_mem), (void *)&ratios);
           dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_compute_ratios, 3, sizeof(cl_mem), (void *)&dev_profile_lut);
           dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_compute_ratios, 4, sizeof(cl_mem), (void *)&dev_profile_info);
-          dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_compute_ratios, 5, sizeof(int), (void *)&d->version);
+          dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_compute_ratios, 5, sizeof(int), (void *)&d->preserve_color);
           dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_compute_ratios, 6, sizeof(int), (void *)&width);
           dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_compute_ratios, 7, sizeof(int), (void *)&height);
           err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_compute_ratios, sizes);
