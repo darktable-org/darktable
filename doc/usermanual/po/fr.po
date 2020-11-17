@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-10-31 16:36+0100\n"
-"PO-Revision-Date: 2020-11-06 17:45+0100\n"
+"PO-Revision-Date: 2020-11-17 22:43+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
-"X-Generator: Poedit 2.4.1\n"
+"X-Generator: Poedit 2.4.2\n"
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
@@ -2347,7 +2347,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1721(keyword)
 msgid "lighttable"
-msgstr "Table lumineuse"
+msgstr "table lumineuse"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:1722(keyword)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6138(keyword)
@@ -3172,7 +3172,7 @@ msgstr "évaluation par étoiles"
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2319(primary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2705(para)
 msgid "color labels"
-msgstr "labels de couleur ;"
+msgstr "labels de couleur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2322(para)
 msgid ""
@@ -3685,15 +3685,15 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2701(para)
 msgid "tags and hierarchical tags"
-msgstr "mots-clés et mots-clés hiérarchiques ;"
+msgstr "mots-clés et mots-clés hiérarchiques"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2709(para)
 msgid "ratings"
-msgstr "évaluations ;"
+msgstr "évaluations"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2713(para)
 msgid "GPS information"
-msgstr "informations GPS."
+msgstr "informations GPS"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2696(para)
 msgid ""
@@ -3739,39 +3739,39 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2741(para)
 msgid "crop and rotate <emphasis>(crop and rotate)</emphasis>"
-msgstr "recadrer et pivoter <emphasis>(recadrer et pivoter)</emphasis>  ;"
+msgstr "recadrer et pivoter <emphasis>(recadrer et pivoter)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2745(para)
 msgid "black level <emphasis>(exposure)</emphasis>"
-msgstr "niveau de noir <emphasis>(exposition)</emphasis> ;"
+msgstr "niveau de noir <emphasis>(exposition)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2749(para)
 msgid "exposure <emphasis>(exposure)</emphasis>"
-msgstr "exposition <emphasis>(exposition)</emphasis> ;"
+msgstr "exposition <emphasis>(exposition)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2753(para)
 msgid "vignette <emphasis>(vignette)</emphasis>"
-msgstr "vignettage <emphasis>(vignettage)</emphasis> ;"
+msgstr "vignettage <emphasis>(vignettage)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2757(para)
 msgid "clarity <emphasis>(local contrast)</emphasis>"
-msgstr "clarté <emphasis>(contraste local)</emphasis> ;"
+msgstr "clarté <emphasis>(contraste local)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2761(para)
 msgid "tone curve <emphasis>(tone curve)</emphasis>"
-msgstr "courbe des tonalités <emphasis>(courbe des tonalités)</emphasis> ;"
+msgstr "courbe des tonalités <emphasis>(courbe des tonalités)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2765(para)
 msgid "HSL <emphasis>(color zones)</emphasis>"
-msgstr "HSL <emphasis>(zones de couleur)</emphasis> ;"
+msgstr "HSL <emphasis>(zones de couleur)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2769(para)
 msgid "split-toning <emphasis>(split-toning)</emphasis>"
-msgstr "Virage partiel <emphasis>(virage partiel)</emphasis>"
+msgstr "virage partiel <emphasis>(virage partiel)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2773(para)
 msgid "grain <emphasis>(grain)</emphasis>"
-msgstr "grain <emphasis>(grain)</emphasis> ;"
+msgstr "grain <emphasis>(grain)</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:2777(para)
 msgid "spot removal <emphasis>(spot removal)</emphasis>"
@@ -4464,19 +4464,19 @@ msgstr "Utilisation"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3245(title)
 msgid "image attributes"
-msgstr "Attributs de l’image"
+msgstr "attributs de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3259(para)
 msgid "the film roll to which the image belongs"
-msgstr "pellicule à laquelle appartient l’image ;"
+msgstr "pellicule à laquelle appartient l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3269(para)
 msgid "the disk folder where the input image file is located"
-msgstr "dossier disque où se trouve le fichier de l’image d’entrée ;"
+msgstr "dossier disque où se trouve le fichier de l’image d’entrée"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3279(para)
 msgid "the Exif data entry describing the camera make and model"
-msgstr "les données EXIF décrivant la marque et le modèle de l’appareil photo "
+msgstr "les données EXIF décrivant la marque et le modèle de l’appareil photo"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3289(para)
 #, fuzzy
@@ -4493,7 +4493,7 @@ msgid ""
 "emphasis>"
 msgstr ""
 "date à laquelle la photo a été prise, dans le format <emphasis>AAAA:MM:JJ</"
-"emphasis> ;"
+"emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3311(para)
 msgid ""
@@ -4501,12 +4501,12 @@ msgid ""
 "taken, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>"
 msgstr ""
 "heure (date <emphasis>et</emphasis> heure du jour) où la photo a été prise, "
-"dans le format <emphasis>AAAA:MM:JJ hh:mm:ss</emphasis> ;"
+"dans le format <emphasis>AAAA:MM:JJ hh:mm:ss</emphasis>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3322(para)
 msgid "choose images whose history stacks have been altered or not altered"
 msgstr ""
-"choisir les images dont l'historique de développement a été ou non modifié ;"
+"choisir les images dont l'historique de développement a été ou non modifié"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3332(para)
 msgid ""
@@ -4516,13 +4516,13 @@ msgid ""
 msgstr ""
 "tout label de couleur attaché à l’image : <quote>rouge</quote>, "
 "<quote>jaune</quote>, <quote>vert</quote>, <quote>bleu</quote>, "
-"<quote>violet</quote> ;"
+"<quote>violet</quote>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3344(para)
 msgid "the title, as listed in the image's metadata <quote>title</quote> field"
 msgstr ""
 "titre tel que défini dans le champ <quote>titre</quote> des métadonnées de "
-"l’image ;"
+"l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3354(para)
 msgid ""
@@ -4530,14 +4530,14 @@ msgid ""
 "quote> field"
 msgstr ""
 "description de l’image telle que définie dans le champ <quote>description</"
-"quote> des métadonnées de l’image ;"
+"quote> des métadonnées de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3365(para)
 msgid ""
 "the creator, as listed in the image's metadata <quote>creator</quote> field"
 msgstr ""
 "créateur tel que défini dans le champ <quote>créateur</quote> des "
-"métadonnées de l’image ;"
+"métadonnées de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3375(para)
 msgid ""
@@ -4545,7 +4545,7 @@ msgid ""
 "field"
 msgstr ""
 "diffuseur tel que défini dans  le champ <quote>diffuseur</quote> des "
-"métadonnées de l’image ;"
+"métadonnées de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3386(para)
 msgid ""
@@ -4553,11 +4553,11 @@ msgid ""
 "quote> field"
 msgstr ""
 "copyrights tel que défini dans  le champ <quote>droits</quote> des "
-"métadonnées de l’image ;"
+"métadonnées de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3397(para)
 msgid "the Exif data entry describing the lens"
-msgstr "l'entrée des données EXIF décrivant l’objectif "
+msgstr "l'entrée des données EXIF décrivant l’objectif"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3407(para)
 msgid "the focal length value, as derived from Exif data"
@@ -4565,15 +4565,15 @@ msgstr "la valeur de la distance focale déduite des données EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3417(para)
 msgid "the ISO value, as derived from Exif data"
-msgstr "la valeur de la sensibilité ISO déduite des données EXIF "
+msgstr "la valeur de la sensibilité ISO déduite des données EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3427(para)
 msgid "the aperture value, as derived from Exif data"
-msgstr "la valeur de l’ouverture déduite des données EXIF "
+msgstr "la valeur de l’ouverture déduite des données EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3437(para)
 msgid "the filename of the physical input image"
-msgstr "nom de fichier de l’image physique en entrée."
+msgstr "nom de fichier de l’image physique en entrée"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3447(para)
 msgid "the geo location of the image"
@@ -4621,7 +4621,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3461(title)
 msgid "search rules"
-msgstr "Règles de recherche"
+msgstr "règles de recherche"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3463(para)
 msgid ""
@@ -4915,7 +4915,7 @@ msgstr "sélectionner une action"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3733(para)
 msgid "Select an action from the list of actions."
-msgstr "Sélectionner une action dans la liste des actions"
+msgstr "Sélectionner une action dans la liste des actions."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3739(title)
 msgid "install scripts"
@@ -5235,7 +5235,7 @@ msgstr ""
 "rotation à la valeur des données EXIF. Cette fonctionnalité est directement "
 "liée au module orientation (voir <xref linkend=\"orientation\"/>) – les "
 "ajustements sont convertis en éléments de la pile de l'historique de ce "
-"module. "
+"module."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4055(title)
 msgid "copy locally"
@@ -5927,7 +5927,7 @@ msgid ""
 msgstr ""
 "Ce panneau permet de gérer les mots-clés des images. Les mots-clés sont "
 "stockés, à la fois, dans des fichiers liés XMP et dans la base de données de "
-"darktable. "
+"darktable."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4661(para)
 msgid ""
@@ -6338,7 +6338,7 @@ msgstr ""
 "<quote>darktable|exported</quote> ou <quote>darktable|styles|your style</"
 "quote>, qui gardent trace de vos actions et vous laissent aisément retrouver "
 "des images déjà exportées ou des images auxquelles des styles spécifiques "
-"ont été appliqués. "
+"ont été appliqués."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4982(title)
 msgid "edit, rename"
@@ -6400,7 +6400,7 @@ msgid ""
 "Selected tags are attached to selected images with the following actions."
 msgstr ""
 "Les mots-clés sélectionnés sont attachés aux images sélectionnées par les "
-"actions suivantes :"
+"actions suivantes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5025(para)
 msgid ""
@@ -6416,7 +6416,7 @@ msgid ""
 "quote>"
 msgstr ""
 "Cliquer-droit sur un mot-clé de la vue dictionnaire et du sous-menu "
-"<quote>attacher un mot-clé</quote>."
+"<quote>attacher un mot-clé</quote>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5033(para)
 msgid "Double-click on a tag of dictionary view."
@@ -6428,14 +6428,14 @@ msgid ""
 "quote>"
 msgstr ""
 "Cliquer-droit sur un mot-clé de la vue attachée et du sous-menu "
-"<quote>attacher le mot-clé à toutes les images sélectionnées</quote>."
+"<quote>attacher le mot-clé à toutes les images sélectionnées</quote>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5041(para)
 msgid ""
 "by typing into the text box and pressing the <quote>new</quote> button or "
 "enter. Note that the tag is also created if doesn't exist already."
 msgstr ""
-"En tapant le mot-clé dans la zone de texte et en pressant le bouton "
+"en tapant le mot-clé dans la zone de texte et en pressant le bouton "
 "<quote>nouveau</quote> ou la touche Entrée. Notez que ce mot-clé est créé "
 "s'il n’existait pas."
 
@@ -6463,7 +6463,7 @@ msgstr "détacher"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5062(para)
 msgid "An attached tag can be detached in the following ways."
-msgstr "Un mot-clé attaché peut être détaché par les actions suivantes :"
+msgstr "Un mot-clé attaché peut être détaché par les actions suivantes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5066(para)
 msgid ""
@@ -6482,7 +6482,7 @@ msgid ""
 "Click-right on a tag of attached view and sub-menu <quote>detach</quote>"
 msgstr ""
 "Double-cliquer sur un mot-clé de la vue attachée et du sous-menu "
-"<quote>détacher</quote>."
+"<quote>détacher</quote>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5084(para)
 msgid ""
@@ -6496,7 +6496,7 @@ msgstr ""
 "cet avertissement au sérieux car il n'y a aucun moyen de récupération, et "
 "par la suite, aucun moyen de retrouver les images concernées (excepté dans "
 "la sauvegarde). Un mot-clé de la vue dictionnaire peut être supprimé en "
-"utilisant les actions suivantes :"
+"utilisant les actions suivantes."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5091(para)
 msgid "Click on button <quote>delete</quote> delete the selected one."
@@ -6701,7 +6701,7 @@ msgstr "$(VERSION_IF_MULTI)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5272(entry)
 msgid "same as $(VERSION) but null string if only one version exists"
-msgstr "identique à $(VERSION) mais chaîne vide si une seule version existe."
+msgstr "identique à $(VERSION) mais chaîne vide si une seule version existe"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5278(code)
 msgid "$(VERSION_NAME)"
@@ -6802,7 +6802,7 @@ msgstr "$(EXIF_YEAR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5360(entry)
 msgid "Exif year"
-msgstr "année EXIF "
+msgstr "année EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5366(code)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22851(entry)
@@ -6811,7 +6811,7 @@ msgstr "$(EXIF_MONTH)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5368(entry)
 msgid "Exif month"
-msgstr "mois EXIF "
+msgstr "mois EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5374(code)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22859(entry)
@@ -6820,7 +6820,7 @@ msgstr "$(EXIF_DAY)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5376(entry)
 msgid "Exif day"
-msgstr "jour EXIF "
+msgstr "jour EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5382(code)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22867(entry)
@@ -6829,7 +6829,7 @@ msgstr "$(EXIF_HOUR)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5384(entry)
 msgid "Exif hour"
-msgstr "heure EXIF "
+msgstr "heure EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:5390(code)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:22875(entry)
@@ -8268,7 +8268,7 @@ msgstr ""
 "Vous pouvez maintenir pressée la touche <emphasis>Maj</emphasis> pour "
 "multiplier le pas d'un facteur 10. Vous pouvez changer ce multiplicateur : "
 "<programlisting format=\"linespecific\">darkroom/ui/"
-"scale_rough_step_multiplier=10.0 </programlisting>."
+"scale_rough_step_multiplier=10.0 </programlisting>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6479(para)
 msgid ""
@@ -8280,7 +8280,7 @@ msgstr ""
 "Vous pouvez maintenir pressée la touche <emphasis>Ctrl</emphasis> pour "
 "diviser le pas d'un facteur 10. Vous pouvez changer ce multiplicateur : "
 "<programlisting format=\"linespecific\">darkroom/ui/"
-"scale_precise_step_multiplier=0.1 </programlisting>."
+"scale_precise_step_multiplier=0.1 </programlisting>"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6468(para)
 msgid ""
@@ -8524,7 +8524,7 @@ msgid ""
 "than once in the pixelpipe. Here are a few use cases."
 msgstr ""
 "Il y a de nombreuses occasions où il est utile qu’une opération agisse plus "
-"d’une fois au cours du pipeline graphique. Voici quelques cas d’utilisation :"
+"d’une fois au cours du pipeline graphique. Voici quelques cas d’utilisation."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6689(para)
 msgid ""
@@ -8734,7 +8734,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6835(quote)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7023(title)
 msgid "blend modes"
-msgstr "Modes de fusion"
+msgstr "modes de fusion"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6833(entry)
 #, fuzzy
@@ -8770,7 +8770,7 @@ msgid ""
 "module's output is passed to the next module in pixelpipe without additional "
 "reprocessing. No further controls are displayed."
 msgstr ""
-"La sortie du module est passée, sans traitement supplémentaire, au module "
+"la sortie du module est passée, sans traitement supplémentaire, au module "
 "suivant dans le pipeline graphique. Aucun autre contrôle n’est affiché."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6864(title)
@@ -8784,7 +8784,7 @@ msgid ""
 "value are displayed. The default blend mode is <quote>normal</quote> with an "
 "opacity of 100%."
 msgstr ""
-"Un retraitement a lieu avec le mode de fusion et la valeur de l’opacité "
+"un retraitement a lieu avec le mode de fusion et la valeur de l’opacité "
 "choisis – identiques pour tous les pixels. Des contrôles supplémentaires "
 "permettant de sélectionner le mode de fusion et la valeur de l’opacité sont "
 "affichés. Le mode de fusion par défaut est <quote>normal</quote> avec une "
@@ -8808,7 +8808,7 @@ msgid ""
 "Different graphical shapes can be used. See <xref linkend=\"drawn_mask\"/> "
 "for further details."
 msgstr ""
-"Un retraitement a lieu avec le mode de fusion et l’opacité choisis. Des "
+"un retraitement a lieu avec le mode de fusion et l’opacité choisis. Des "
 "contrôles supplémentaires sont affichés pour vous permettre de dessiner un "
 "masque. Si aucun élément de masque n’est dessiné, tous les pixels auront la "
 "même opacité : celle qui est définie par le curseur d’opacité. Si vous "
@@ -8832,7 +8832,7 @@ msgid ""
 "called <quote>conditional blending</quote>. See <xref linkend="
 "\"parametric_mask\"/> for further details."
 msgstr ""
-"Un retraitement a lieu avec le mode de fusion et l’opacité choisis. Des "
+"un retraitement a lieu avec le mode de fusion et l’opacité choisis. Des "
 "contrôles supplémentaires sont affichés qui vous permettent d’ajuster "
 "l’opacité pixel par pixel suivant les valeurs des pixels. Dans des "
 "précédentes versions de darktable ceci s’appelait <quote>fusion "
@@ -8849,7 +8849,7 @@ msgid ""
 "both controls. See <xref linkend=\"combined_masks\"/> to learn how to best "
 "use this combination."
 msgstr ""
-"Cette option combine les masques dessiné et paramétrique et affiche le jeu "
+"cette option combine les masques dessiné et paramétrique et affiche le jeu "
 "complet des contrôles des deux modes. Voyez la <xref linkend=\"combined_masks"
 "\"/> afin d’apprendre comment utiliser au mieux cette combinaison."
 
@@ -10213,7 +10213,7 @@ msgstr ""
 "alpha maximale. Si la valeur d'un pixel est égale à zéro, l'entrée du module "
 "reste inchangée. Si la valeur a l'intensité maximale, le module produit son "
 "effet maximal. Pour chaque valeur alpha comprise entre le minimum et le "
-"maximum, l'effet est appliqué proportionnellement à cet emplacement. "
+"maximum, l'effet est appliqué proportionnellement à cet emplacement."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:7912(para)
 msgid ""
@@ -11126,7 +11126,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8589(title)
 msgid "Possible color artifacts"
-msgstr "Possibles artefacts de couleur "
+msgstr "Possibles artefacts de couleur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8593(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12100(secondary)
@@ -12124,7 +12124,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9550(title)
 msgid "Modules order"
-msgstr "ordre des modules"
+msgstr "Ordre des modules"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9554(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9558(primary)
@@ -12153,7 +12153,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9599(entry)
 msgid "v3.0 (default)"
-msgstr "V3.0 (par défaut)"
+msgstr "v3.0 (par défaut)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:9602(entry)
 msgid ""
@@ -12611,7 +12611,7 @@ msgstr ""
 "filename> est utilisé ici pour représenter le répertoire d'installation que "
 "vous avez choisi pour darktable et <filename moreinfo=\"none\">$HOME</"
 "filename> votre répertoire personnel. Généralement ces profils sont fournis "
-"par votre imprimante ou générés lors du profilage de l'imprimante. "
+"par votre imprimante ou générés lors du profilage de l'imprimante."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10052(para)
 #, fuzzy
@@ -13024,7 +13024,7 @@ msgid ""
 msgstr ""
 "Artefact d'effet de bandes causé par le vignettage (recadrage à 100% d'une "
 "image PNG en 8 bits ; effet très exagéré par une forte augmentation du "
-"contraste). "
+"contraste)."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10388(entry)
 msgid ""
@@ -13572,7 +13572,7 @@ msgstr ""
 msgid ""
 "Middle-grey luminance (<guilabel moreinfo=\"none\">Scene</guilabel> tab)"
 msgstr ""
-"luminance du gris-moyen (onglet <guilabel moreinfo=\"none\">scène</guilabel>)"
+"Luminance du gris-moyen (onglet <guilabel moreinfo=\"none\">scène</guilabel>)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10837(para)
 msgid ""
@@ -15660,7 +15660,7 @@ msgstr "vertical"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12528(entry)
 msgid "if you want to limit the correction to vertical lines"
-msgstr "si vous désirez limiter la correction aux lignes verticales ;"
+msgstr "si vous désirez limiter la correction aux lignes verticales"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12534(emphasis)
 msgid "horizontal"
@@ -15668,7 +15668,7 @@ msgstr "horizontal"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12536(entry)
 msgid "limit the correction to horizontal lines"
-msgstr "si vous désirez limiter la correction aux lignes horizontales ;"
+msgstr "si vous désirez limiter la correction aux lignes horizontales"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12542(emphasis)
 msgid "full"
@@ -15677,7 +15677,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12544(entry)
 msgid "if you want to correct horizontal and vertical lines"
 msgstr ""
-"si vous désirez corriger à la fois les lignes horizontales et verticales."
+"si vous désirez corriger à la fois les lignes horizontales et verticales"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12561(para)
 msgid ""
@@ -15749,7 +15749,7 @@ msgstr "libre"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12618(entry)
 msgid "free forming the rectangle without any ratio restrictions"
-msgstr "créer un rectangle de manière libre sans le contraindre à un rapport ;"
+msgstr "créer un rectangle de manière libre sans le contraindre à un rapport"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12624(emphasis)
 msgid "original image"
@@ -15757,7 +15757,7 @@ msgstr "image originale"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12626(entry)
 msgid "this option constrains the ratio to be equal to image ratio"
-msgstr "cette option contraint le rapport d’aspect à celui de l’image ;"
+msgstr "cette option contraint le rapport d’aspect à celui de l’image"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12632(emphasis)
 msgid "square"
@@ -15765,7 +15765,7 @@ msgstr "carré"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12634(entry)
 msgid "this option constrains the ratio to be 1"
-msgstr "cette option contraint le rapport d’aspect à 1."
+msgstr "cette option contraint le rapport d’aspect à 1"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12640(emphasis)
 msgid "golden cut"
@@ -15773,7 +15773,7 @@ msgstr "rapport d’or"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12642(entry)
 msgid "this option constrains the ratio to be equal the golden number"
-msgstr "cette option contraint le rapport d’aspect au nombre d’or ;"
+msgstr "cette option contraint le rapport d’aspect au nombre d’or"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12650(para)
 msgid ""
@@ -15784,7 +15784,7 @@ msgstr ""
 "Après avoir ouvert la zone de liste déroulante vous pouvez aussi "
 "sélectionner un autre ratio  en le tapant sous la forme <quote>x:y</quote>. "
 "Si vous souhaitez qu'un certain ratio d'aspect soit ajouté aux ratios "
-"prédéfinis vous pouvez le faire en incluant une ligne de la forme "
+"prédéfinis vous pouvez le faire en incluant une ligne de la forme"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12656(programlisting)
 msgid "plugins/darkroom/clipping/extra_aspect_ratios/foo=x:y"
@@ -28192,7 +28192,7 @@ msgid ""
 msgstr ""
 "Nous utilisons les préférences pour configurer le chemin cible. Il serait "
 "plus agréable d'ajouter un élément à l'interface d'exportation de darktable. "
-"Dans la prochaine section nous expliquerons en détail comment faire cela."
+"Dans la prochaine section nous expliquerons en détail comment faire cela"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24665(para)
 msgid ""
@@ -28209,8 +28209,8 @@ msgid ""
 "way"
 msgstr ""
 "Ce script ne peut pas lire une entrée de l'utilisateur. Le scp distant doit "
-"utiliser un mode de copie sans mot de passe. Scp ne peut pas fournir "
-"aisément un mot de passe,"
+"utiliser un mode de copie sans mot de passe. Scp ne peut pas recevoir "
+"aisément un mot de passe, nous allons donc le laisser ainsi"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24675(para)
 msgid ""
@@ -28805,7 +28805,7 @@ msgstr "Systèmes 32 bits"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:25128(primary)
 msgid "tiling"
-msgstr "Tuilage"
+msgstr "tuilage"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:25131(para)
 msgid ""
@@ -29012,7 +29012,7 @@ msgstr ""
 "miniatures par rapport à l'utilisation d'un seul thread. La raison n'est pas "
 "tant de profiter au maximum de tous les cœurs de votre CPU – de toute façon, "
 "le pipeline graphique de darktable les utilise tous ensemble en parallèle – "
-"que de cacher la latence des entrées/sorties. "
+"que de cacher la latence des entrées/sorties."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:25268(primary)
 msgid "panoramas"
@@ -29020,7 +29020,7 @@ msgstr "panoramas"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:25272(primary)
 msgid "stitched panoramas"
-msgstr "Vue panoramique par assemblage"
+msgstr "vue panoramique par assemblage"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:25275(para)
 msgid ""
