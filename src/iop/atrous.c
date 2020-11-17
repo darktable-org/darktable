@@ -1153,36 +1153,20 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(_("clarity"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
-  float sigma = 1 / (BANDS - 1.0);
+  float sigma = 3.f / (float)(BANDS - 1);
 
   for(int k = 0; k < BANDS; k++)
   {
-    float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
-    float fine = GAUSS(x, 0.5 * sigma);
-    float medium = GAUSS(x, sigma);
-    float coarse = GAUSS(x, 2 * sigma);
-    float coeff = 0.5f + (coarse + medium + fine) / 18.0f;
-    float noise = (coarse + medium + fine) / 810;
-
-    p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
-    p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
-    p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
-  }
-  dt_gui_presets_add_generic(_("deblur: large blur, strength 4"), self->op,
-                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-
-  for(int k = 0; k < BANDS; k++)
-  {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x = k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
     const float medium = GAUSS(x, sigma);
     const float coarse = GAUSS(x, 2 * sigma);
-    const float coeff = 0.5f + (coarse + medium + fine) / 24.0f;
-    const float noise = (coarse + medium + fine) / 1080;
+    const float coeff = 0.5f + (coarse + medium + fine) / 16.0f;
+    const float noise = (coarse + medium + fine) / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1191,14 +1175,15 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x = k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
     const float medium = GAUSS(x, sigma);
-    const float coeff = 0.5f + (medium + fine) / 21.0f;
-    const float noise = (medium + fine) / 720;
+    const float coeff = 0.5f + (medium + fine) / 16.0f;
+    const float noise = (medium + fine) / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1207,13 +1192,14 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x =  k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
-    const float coeff = 0.5f + fine / 14.25f;
-    const float noise = fine / 360;
+    const float coeff = 0.5f + fine / 16.f;
+    const float noise = fine / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1222,15 +1208,16 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x =  k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
     const float medium = GAUSS(x, sigma);
     const float coarse = GAUSS(x, 2 * sigma);
-    const float coeff = 0.5f + (coarse + medium + fine) / 32.0f;
-    const float noise = (coarse + medium + fine) / 1440;
+    const float coeff = 0.5f + (coarse + medium + fine) / 24.0f;
+    const float noise = (coarse + medium + fine) / 192.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1239,14 +1226,15 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x =  k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
     const float medium = GAUSS(x, sigma);
-    const float coeff = 0.5f + (medium + fine) / 28.0f;
-    const float noise = (medium + fine) / 960;
+    const float coeff = 0.5f + (medium + fine) / 24.0f;
+    const float noise = (medium + fine) / 192.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1255,13 +1243,14 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x =  k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
-    const float coeff = 0.5f + fine / 19.0f;
-    const float noise = fine / 480;
+    const float coeff = 0.5f + fine / 24.0f;
+    const float noise = fine / 192.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1270,15 +1259,16 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x =  k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
     const float medium = GAUSS(x, sigma);
     const float coarse = GAUSS(x, 2 * sigma);
-    const float coeff = 0.5f + (coarse + medium + fine) / 48.0f;
-    const float noise = (coarse + medium + fine) / 2160;
+    const float coeff = 0.5f + (coarse + medium + fine) / 32.0f;
+    const float noise = (coarse + medium + fine) / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1287,14 +1277,15 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x =  k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
     const float medium = GAUSS(x, sigma);
-    const float coeff = 0.5f + (medium + fine) / 42.0f;
-    const float noise = (medium + fine) / 1440;
+    const float coeff = 0.5f + (medium + fine) / 32.0f;
+    const float noise = (medium + fine) / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
@@ -1303,13 +1294,14 @@ void init_presets(dt_iop_module_so_t *self)
 
   for(int k = 0; k < BANDS; k++)
   {
-    const float x = log2f(128.0 * k / (BANDS - 1.0) + 1.0) / log2f(129.0);
+    const float x =  k / (float)(BANDS - 1);
     const float fine = GAUSS(x, 0.5 * sigma);
-    const float coeff = 0.5f + fine / 28.5f;
-    const float noise = fine / 720;
+    const float coeff = 0.5f + fine / 32.f;
+    const float noise = fine / 128.f;
 
     p.x[atrous_L][k] = p.x[atrous_c][k] = p.x[atrous_s][k] = x;
-    p.y[atrous_L][k] = p.y[atrous_c][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_L][k] = p.y[atrous_s][k] = coeff;
+    p.y[atrous_c][k] = 0.5f;
     p.x[atrous_Lt][k] = p.x[atrous_ct][k] = x;
     p.y[atrous_Lt][k] = p.y[atrous_ct][k] = noise;
   }
