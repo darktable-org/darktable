@@ -426,7 +426,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   dt_xyY_to_uvY(xyY, uvY);
 
   // Get the chromaticity difference with white point uv
-  static const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
+  const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
   const float delta[2] DT_ALIGNED_PIXEL = { D50[0] - uvY[0], D50[1] - uvY[1] };
   const float DT_ALIGNED_PIXEL LOG_XYZ[4] = { logf(input[0] + Y), logf(input[1] + Y), logf(input[2] + Y), 0.f };
   const float Delta = Y * hypotf(delta[0], delta[1]) / (Y + hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2])));
@@ -719,7 +719,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
       XYZ[1] /= sum;   // y
 
       // Shift the chromaticity plane so the D50 point (target) becomes the origin
-      static const float D50[2] = { 0.34567f, 0.35850f };
+      const float D50[2] = { 0.34567f, 0.35850f };
       const float norm = hypotf(D50[0], D50[1]);
 
       temp[index    ] = (XYZ[0] - D50[0]) / norm;
@@ -1646,7 +1646,7 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_t *cr = cairo_create(cst);
 
   // Margins
-  static const double INNER_PADDING = 4.0;
+  const double INNER_PADDING = 4.0;
   const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
