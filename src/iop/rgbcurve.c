@@ -833,7 +833,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
     if(hist && hist_max > 0.0f)
     {
-      cairo_save(cr);
+      cairo_push_group(cr);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
 
       if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
@@ -851,20 +851,35 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
         dt_draw_histogram_8_zoomed(cr, hist, 4, DT_IOP_RGBCURVE_B, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
                                    is_linear);
-        }
-        else if(autoscale == DT_S_SCALE_MANUAL_RGB)
-        {
-          if(ch == DT_IOP_RGBCURVE_R)
-            set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
-          else if(ch == DT_IOP_RGBCURVE_G)
-            set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
-          else
-            set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
-          dt_draw_histogram_8_zoomed(cr, hist, 4, ch, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
-                                     is_linear);
-        }
+      }
+      else if(autoscale == DT_S_SCALE_MANUAL_RGB)
+      {
+        if(ch == DT_IOP_RGBCURVE_R)
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
+        else if(ch == DT_IOP_RGBCURVE_G)
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
+        else
+          set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
+        dt_draw_histogram_8_zoomed(cr, hist, 4, ch, g->zoom_factor, g->offset_x * 255.0, g->offset_y * hist_max,
+                                   is_linear);
+      }
 
-      cairo_restore(cr);
+      // histogram colors are in Adobe RGB, convert to display space
+      cairo_surface_flush(cst);
+      unsigned char *pixels = cairo_image_surface_get_data(cst);
+      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+      cmsHTRANSFORM transform = darktable.color_profiles->transform_adobe_rgb_to_display;
+      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+      const int cst_width = cairo_image_surface_get_width(cst);
+      const int cst_height = cairo_image_surface_get_height(cst);
+      const int cst_stride = cairo_image_surface_get_stride(cst);
+      cmsDoTransformLineStride(transform, pixels, pixels, cst_width, cst_height, cst_stride, cst_stride, 0, 0);
+      cairo_surface_mark_dirty(cst);
+      cairo_pop_group_to_source(cr);
+      if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
+        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+      cairo_paint(cr);
+      cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
     }
 
     if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)

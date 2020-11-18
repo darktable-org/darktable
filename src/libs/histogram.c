@@ -100,9 +100,10 @@ typedef struct dt_lib_histogram_t
   uint32_t waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
   // for colorspace work
-  const dt_iop_order_iccprofile_info_t *profile_linear, *profile_display;
+  const dt_iop_order_iccprofile_info_t *profile_linear, *profile_work;
   float DT_ALIGNED_ARRAY primaries_linear[3][4];
-  GdkRGBA primaries_display[3], primaries_overlay[3];
+  GdkRGBA primaries_overlay[3], primaries_histogram[3];
+  cmsHTRANSFORM transform_work_to_display;
   // exposure params on mouse down
   float exposure, black;
   // mouse state
@@ -508,7 +509,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      set_color(cr, d->primaries_display[k]);
+      set_color(cr, d->primaries_histogram[k]);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
 }
@@ -541,7 +542,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   // in place transform will preserve alpha
   // dt's transform is approx. 2x faster than LCMS here
   dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
-                                          d->profile_linear, d->profile_display, "waveform linear to display");
+                                          d->profile_linear, d->profile_work, "waveform linear to work");
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -653,8 +654,9 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv->view(cv) == DT_VIEW_TETHERING || dev->image_storage.id == dev->preview_pipe->output_imgid)
   {
-    uint8_t mask[3] = { d->red, d->green, d->blue };
-    cairo_save(cr);
+    const uint8_t mask[3] = { d->red, d->green, d->blue };
+    cairo_save(cr); // FIXME: note cairo_push_group() does a cairo_save() as well
+    cairo_push_group(cr);
     switch(d->scope_type)
     {
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
@@ -670,6 +672,25 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
     }
+
+    // convert to display colorspace -- this lets us blend colors
+    // specified in a working space, and know that the results
+    // (including neutrals) will come out as expected
+    cairo_surface_t *const grp_cst = cairo_get_group_target(cr);
+    cairo_surface_flush(grp_cst);
+    pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+    const cmsHTRANSFORM transform = d->transform_work_to_display;
+    pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
+    // these may not match allocation width, due to hidpi
+    const int grp_cst_w = cairo_image_surface_get_width(grp_cst);
+    const int grp_cst_h = cairo_image_surface_get_height(grp_cst);
+    const int grp_cst_s = cairo_image_surface_get_stride(grp_cst);
+    unsigned char *const pixels = cairo_image_surface_get_data(grp_cst);
+    cmsDoTransformLineStride(transform, pixels, pixels, grp_cst_w, grp_cst_h, grp_cst_s, grp_cst_s, 0, 0);
+    cairo_surface_mark_dirty(grp_cst);
+    cairo_pop_group_to_source(cr);
+    cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
+    cairo_paint_with_alpha(cr, 0.6);
     cairo_restore(cr);
   }
   dt_pthread_mutex_unlock(&d->lock);
@@ -684,6 +705,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
         _draw_histogram_scale_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->histogram_scale);
         break;
+        // FIXME: these should be in display colorspace
       case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
         _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type,
                                    d->primaries_overlay);
@@ -691,6 +713,7 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
       case DT_LIB_HISTOGRAM_SCOPE_N:
         g_assert_not_reached();
     }
+    // FIXME: these should be in display colorspace
     set_color(cr, d->primaries_overlay[0]);
     _draw_color_toggle(cr, d->red_x, d->button_y, d->button_w, d->button_h, d->red);
     set_color(cr, d->primaries_overlay[1]);
@@ -1148,79 +1171,27 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
 
 static void _lib_histogram_update_color(dt_lib_histogram_t *d)
 {
-  dt_develop_t *dev = darktable.develop;
-
-  cmsHPROFILE Lab_profile = NULL;
-  cmsHPROFILE display_profile = NULL;
-  cmsHTRANSFORM xform_Lab_to_display = NULL;
-  cmsHTRANSFORM xform_Lab_to_linear = NULL;
-
-  // doesn't depend on display profile, only done on gui_init()
-  if(!d->profile_linear)
-    // FIXME: this is a bit arbitrary input, and we might need an intermediary profile for gamma mapping?
-    d->profile_linear = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
-  const dt_colorspaces_color_profile_t *d_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
-                                                       darktable.color_profiles->display_filename,
-                                                       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY);
-  if(d_profile)
-  {
-    display_profile = d_profile->profile;
-    d->profile_display =
-      dt_ioppr_add_profile_info_to_list(darktable.develop,
-                                        d_profile->type, d_profile->filename, DT_INTENT_PERCEPTUAL);
-    Lab_profile = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
-  }
-
-  if(display_profile && Lab_profile)
-    xform_Lab_to_display =
-      cmsCreateTransform(Lab_profile, TYPE_Lab_DBL, display_profile, TYPE_RGB_DBL, DT_INTENT_PERCEPTUAL, 0);
+  const cmsHPROFILE display_profile = dt_colorspaces_get_profile(darktable.color_profiles->display_type,
+                                                                 darktable.color_profiles->display_filename,
+                                                                 DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  printf("display profile type %d filename %s\n", darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
+  // FIXME: use something else for work profile like linear Rec.2020?
+  cmsHPROFILE work_profile = dt_colorspaces_get_profile(DT_COLORSPACE_ADOBERGB, "",
+                                                        DT_PROFILE_DIRECTION_DISPLAY)->profile;
+  // it would be nice to just use transform_adobe_rgb_to_display, but that also converts from RGBA_8 to BGRA_8
+  d->transform_work_to_display =
+    cmsCreateTransform(work_profile, TYPE_RGBA_8, display_profile, TYPE_RGBA_8,
+                       // FIXME: use saturation intent?
+                       DT_INTENT_RELATIVE_COLORIMETRIC, 0);
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  // red, green, blue in Lab selected for visual legibility and to
-  // combine to reasonable-looking secondaries and a neutral "white"
-  const double Lab_primaries[3][3] = {
-    {56.0, 85.0, 74.0},
-    {70.0, -100.0, 62.0},
-    {30.0, 42.0, -99.0}
-  };
-
-  if(xform_Lab_to_display)
-  {
-    double out[3][3];
-    cmsDoTransform(xform_Lab_to_display, Lab_primaries[0], out[0], 3);
-    for(int k=0; k<3; k++)
-    {
-      memcpy(&d->primaries_display[k], out[k], 3 * sizeof(double));
-      d->primaries_display[k].alpha = 0.5;
-      memcpy(&d->primaries_overlay[k], out[k], 3 * sizeof(double));
-      d->primaries_overlay[k].alpha = 0.33;
-      memcpy(&darktable.lib->proxy.histogram.primaries_display[k], out[k], 3 * sizeof(double));
-      darktable.lib->proxy.histogram.primaries_display[k].alpha = 0.2;
-    }
-    cmsDeleteTransform(xform_Lab_to_display);
-  }
-
-  // for converting waveform in linear to logarithmic space with appropriate primaries
-  cmsHPROFILE linear_profile = dt_colorspaces_get_profile(d->profile_linear->type, d->profile_linear->filename,
-                                                          DT_PROFILE_DIRECTION_ANY)->profile;
-  if(display_profile && linear_profile)
-    xform_Lab_to_linear =
-      cmsCreateTransform(Lab_profile, TYPE_Lab_DBL, linear_profile, TYPE_RGB_FLT, DT_INTENT_PERCEPTUAL, 0);
-  if(xform_Lab_to_linear)
-  {
-    float out[3][3];
-    cmsDoTransform(xform_Lab_to_linear, Lab_primaries[0], out[0], 3);
-    for(int k=0; k<3; k++)
-      for(int ch=0; ch<3; ch++)
-        d->primaries_linear[2-k][2-ch] = out[k][ch];
-    cmsDeleteTransform(xform_Lab_to_linear);
-  }
+  // FIXME: can determine display space primaries here for overlays
+  // FIXME: go back to just creating primaries to draw in work profile and doing adaptation based on display profile whitepoint?
 }
 
 static void _lib_histogram_display_profile_changed(gpointer instance, dt_lib_module_t *self)
@@ -1321,8 +1292,50 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_display = dt_alloc_align(64, sizeof(float) * d->waveform_height * d->waveform_max_width * 4);
   d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height * d->waveform_max_width * 4);
 
-  // for linear->logarithmic transform and displaying primaries in display colorspace
+  // colorspace conversions which depend on current display profile
   _lib_histogram_update_color(d);
+
+  // red, green, blue selected for visual legibility and to combine to
+  // pleasing secondaries
+  const double adobergb_primaries[3][3] = {
+    {0.95, 0.10, 0.10},
+    {0.10, 0.95, 0.10},
+    {0.15, 0.15, 1.00}
+  };
+  for(int k=0; k<3; k++)
+  {
+    memcpy(&d->primaries_histogram[k], adobergb_primaries[k], 3 * sizeof(double));
+    d->primaries_histogram[k].alpha = 1.0;
+    // FIXME: if only difference is alpha, why store in different places?
+    memcpy(&d->primaries_overlay[k], adobergb_primaries[k], 3 * sizeof(double));
+    d->primaries_overlay[k].alpha = 0.33;
+    memcpy(&darktable.lib->proxy.histogram.primaries_display[k], adobergb_primaries[k], 3 * sizeof(double));
+    darktable.lib->proxy.histogram.primaries_display[k].alpha = 0.2;
+  }
+
+  // for converting waveform in linear to logarithmic space with appropriate primaries
+  cmsHTRANSFORM xform_work_to_linear = NULL;
+
+  // FIXME: this is a bit arbitrary input, and we might need an intermediary profile for gamma mapping?
+  d->profile_linear = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+  d->profile_work = dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_ADOBERGB, "", DT_INTENT_PERCEPTUAL);
+
+  cmsHPROFILE linear_profile = dt_colorspaces_get_profile(d->profile_linear->type, d->profile_linear->filename,
+                                                          DT_PROFILE_DIRECTION_ANY)->profile;
+  cmsHPROFILE work_profile = dt_colorspaces_get_profile(d->profile_work->type, d->profile_work->filename,
+                                                        DT_PROFILE_DIRECTION_ANY)->profile;
+  if(work_profile && linear_profile)
+    xform_work_to_linear =
+      cmsCreateTransform(work_profile, TYPE_RGB_DBL, linear_profile, TYPE_RGB_FLT, DT_INTENT_PERCEPTUAL, 0);
+  if(xform_work_to_linear)
+  {
+    float out[3][3];
+    cmsDoTransform(xform_work_to_linear, adobergb_primaries[0], out[0], 3);
+    for(int k=0; k<3; k++)
+      for(int ch=0; ch<3; ch++)
+        d->primaries_linear[2-k][2-ch] = out[k][ch];
+    cmsDeleteTransform(xform_work_to_linear);
+  }
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
@@ -1361,7 +1374,7 @@ void gui_init(dt_lib_module_t *self)
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
 
-  // recreate primaries when the display profile changed
+  // graph is color profiled
   dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
                             G_CALLBACK(_lib_histogram_display_profile_changed), self);
 }
