@@ -1380,6 +1380,7 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
   GtkWidget *lb = NULL;
 
   int rec_nb = 0;
+  int other_nb = 0;
 
   GList *m2 = g_list_copy(g_list_first(darktable.iop));
   GList *modules = g_list_sort(m2, _manage_editor_module_add_sort);
@@ -1415,6 +1416,8 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
           vbc = vb1;
           rec_nb++;
         }
+        else
+          other_nb++;
         // gtk_container_add(GTK_CONTAINER(ev), lb);
         gtk_box_pack_start(GTK_BOX(vbc), bt, FALSE, TRUE, 0);
       }
@@ -1426,13 +1429,13 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
   if(rec_nb > 0)
   {
     // we show the list of recommended modules
-    lb = gtk_label_new(_("recommended"));
+    lb = gtk_label_new(ngettext("recommended module", "recommended modules", rec_nb));
     gtk_label_set_xalign(GTK_LABEL(lb), 0);
     gtk_widget_set_name(lb, "modulegroups_iop_title");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vb), vb1, FALSE, TRUE, 0);
     // and the title for the other modules
-    lb = gtk_label_new(_("other"));
+    lb = gtk_label_new(ngettext("other", "others", rec_nb));
     gtk_label_set_xalign(GTK_LABEL(lb), 0);
     gtk_widget_set_name(lb, "modulegroups_iop_title");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
