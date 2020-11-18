@@ -459,7 +459,7 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
   // RGB -> XYZ -> RGB are 2 matrices products, they can be premultiplied globally ahead
   // and put in a new matrix. then we spare one matrix product per pixel.
   float matrix[9] DT_ALIGNED_ARRAY;
-  mat3mul(matrix, profile_info_from->matrix_in, profile_info_to->matrix_out);
+  mat3mul(matrix, profile_info_from->matrix_out, profile_info_to->matrix_in);
 
   if(profile_info_from->nonlinearlut || profile_info_to->nonlinearlut)
   {
@@ -1494,6 +1494,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   dt_colorspaces_iccprofile_info_cl_t profile_info_to_cl;
   cl_float *lut_to_cl = NULL;
 
+  cl_mem matrix_cl = NULL;
+
   // if we have a matrix use opencl
   if(!isnan(profile_info_from->matrix_in[0]) && !isnan(profile_info_from->matrix_out[0])
      && !isnan(profile_info_to->matrix_in[0]) && !isnan(profile_info_to->matrix_out[0]))
@@ -1511,6 +1513,9 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
 
     dt_ioppr_get_profile_info_cl(profile_info_to, &profile_info_to_cl);
     lut_to_cl = dt_ioppr_get_trc_cl(profile_info_to);
+
+    float matrix[9] DT_ALIGNED_PIXEL;
+    mat3mul(matrix, profile_info_from->matrix_out, profile_info_to->matrix_in);
 
     if(in_place)
     {
@@ -1572,6 +1577,15 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
       err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
       goto cleanup;
     }
+    matrix_cl
+        = dt_opencl_copy_host_to_device_constant(devid, sizeof(matrix), &matrix);
+    if(matrix_cl == NULL)
+    {
+      fprintf(stderr,
+              "[dt_ioppr_transform_image_colorspace_rgb_cl] error allocating memory for color transformation 7\n");
+      err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
+      goto cleanup;
+    }
 
     size_t sizes[] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
 
@@ -1583,6 +1597,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
     dt_opencl_set_kernel_arg(devid, kernel_transform, 5, sizeof(cl_mem), (void *)&dev_lut_from);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 6, sizeof(cl_mem), (void *)&dev_profile_info_to);
     dt_opencl_set_kernel_arg(devid, kernel_transform, 7, sizeof(cl_mem), (void *)&dev_lut_to);
+    dt_opencl_set_kernel_arg(devid, kernel_transform, 8, sizeof(cl_mem), (void *)&matrix_cl);
     err = dt_opencl_enqueue_kernel_2d(devid, kernel_transform, sizes);
     if(err != CL_SUCCESS)
     {
@@ -1645,6 +1660,8 @@ cleanup:
   if(dev_profile_info_to) dt_opencl_release_mem_object(dev_profile_info_to);
   if(dev_lut_to) dt_opencl_release_mem_object(dev_lut_to);
   if(lut_to_cl) free(lut_to_cl);
+
+  dt_opencl_release_mem_object(matrix_cl);
 
   return (err == CL_SUCCESS) ? TRUE : FALSE;
 }
