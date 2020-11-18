@@ -48,6 +48,20 @@
                       "tree-vectorize")
 #endif
 
+
+static inline void mat3mul(float *const restrict dst, const float *const restrict m1, const float *const restrict m2)
+{
+  for(int k = 0; k < 3; k++)
+  {
+    for(int i = 0; i < 3; i++)
+    {
+      float x = 0.0f;
+      for(int j = 0; j < 3; j++) x += m1[3 * k + j] * m2[3 * j + i];
+      dst[3 * k + i] = x;
+    }
+  }
+}
+
 static void _transform_from_to_rgb_lab_lcms2(const float *const image_in, float *const image_out, const int width,
                                              const int height, const dt_colorspaces_color_profile_type_t type,
                                              const char *filename, const int intent, const int direction)
@@ -360,6 +374,7 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
 
   if(profile_info->nonlinearlut)
   {
+    // TODO : maybe optimize that path like _transform_matrix_rgb
     _apply_tonecurves(image_in, image_out, width, height, profile_info->lut_in[0], profile_info->lut_in[1],
                       profile_info->lut_in[2], profile_info->unbounded_coeffs_in[0],
                       profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2],
@@ -372,8 +387,8 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
-      float *const in = image_out + y;
-      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+      float *const restrict in = __builtin_assume_aligned(image_out + y, 16);
+      float xyz[3] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
       _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
       dt_XYZ_to_Lab(xyz, in);
     }
@@ -387,11 +402,10 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
-      const float *const in = image_in + y ;
-      float *const out = image_out + y;
+      const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
+      float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-
+      float xyz[3] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
       _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
       dt_XYZ_to_Lab(xyz, out);
     }
@@ -414,17 +428,17 @@ static inline void _transform_lab_to_rgb_matrix(const float *const restrict imag
 #endif
   for(size_t y = 0; y < stride; y += ch)
   {
-    const float *const in = image_in + y;
-    float *const out = image_out + y;
+    const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
+    float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-    float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-
+    float xyz[3] DT_ALIGNED_PIXEL;
     dt_Lab_to_XYZ(in, xyz);
     _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix);
   }
 
   if(profile_info->nonlinearlut)
   {
+    // TODO : maybe optimize that path like _transform_matrix_rgb
     _apply_tonecurves(image_out, image_out, width, height, profile_info->lut_out[0], profile_info->lut_out[1],
                       profile_info->lut_out[2], profile_info->unbounded_coeffs_out[0],
                       profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2],
@@ -441,56 +455,74 @@ static inline void _transform_matrix_rgb(const float *const restrict image_in,
 {
   const int ch = 4;
   const size_t stride = (size_t)width * height * ch;
-  const float *const restrict matrix_in = profile_info_from->matrix_in;
-  const float *const restrict matrix_out = profile_info_to->matrix_out;
 
-  if(profile_info_from->nonlinearlut)
+  // RGB -> XYZ -> RGB are 2 matrices products, they can be premultiplied globally ahead
+  // and put in a new matrix. then we spare one matrix product per pixel.
+  float matrix[9] DT_ALIGNED_ARRAY;
+  mat3mul(matrix, profile_info_from->matrix_in, profile_info_to->matrix_out);
+
+  if(profile_info_from->nonlinearlut || profile_info_to->nonlinearlut)
   {
-    _apply_tonecurves(image_in, image_out, width, height, profile_info_from->lut_in[0],
-                      profile_info_from->lut_in[1], profile_info_from->lut_in[2],
-                      profile_info_from->unbounded_coeffs_in[0], profile_info_from->unbounded_coeffs_in[1],
-                      profile_info_from->unbounded_coeffs_in[2], profile_info_from->lutsize);
+    const int run_lut_in[3] DT_ALIGNED_PIXEL= { (profile_info_from->lut_in[0][0] >= 0.0f),
+                                                (profile_info_from->lut_in[1][0] >= 0.0f),
+                                                (profile_info_from->lut_in[2][0] >= 0.0f) };
+
+    const int run_lut_out[3] DT_ALIGNED_PIXEL = { (profile_info_to->lut_out[0][0] >= 0.0f),
+                                                  (profile_info_to->lut_out[1][0] >= 0.0f),
+                                                  (profile_info_to->lut_out[2][0] >= 0.0f) };
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(stride, image_out, profile_info_from, profile_info_to, ch, matrix_in, matrix_out) \
-    schedule(static) aligned(image_out:64) aligned(matrix_in, matrix_out:16)
+    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch, matrix, run_lut_in, run_lut_out) \
+    schedule(static) aligned(image_out, matrix:64) aligned(run_lut_in, run_lut_out:16)
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
-      float *const in = image_out + y;
+      const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
+      float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
+      float rgb[3] DT_ALIGNED_PIXEL;
+      float temp[3] DT_ALIGNED_PIXEL = { 0.f };
 
-      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+      // linearize if non-linear input
+      for(size_t c = 0; c < 3; c++)
+      {
+        rgb[c] = (run_lut_in[c]) ? (in[c] < 1.0f) ? extrapolate_lut(profile_info_from->lut_in[c], in[c], profile_info_from->lutsize)
+                                                  : eval_exp(profile_info_from->unbounded_coeffs_in[c], in[c])
+                                 : in[c];
+      }
 
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix_in);
-      _ioppr_xyz_to_linear_rgb_matrix(xyz, in, matrix_out);
+      // convert color space
+      for(size_t c = 0; c < 3; c++)
+        for(size_t i = 0; i < 3; i++)
+          temp[c] += matrix[3 * c + i] * rgb[i];
+
+      // de-linearize if non-linear output
+      for(size_t c = 0; c < 3; c++)
+      {
+        out[c] = (run_lut_out[c]) ? (temp[c] < 1.0f) ? extrapolate_lut(profile_info_to->lut_out[c], temp[c], profile_info_to->lutsize)
+                                                     : eval_exp(profile_info_to->unbounded_coeffs_out[c], temp[c])
+                                  : temp[c];
+      }
     }
   }
   else
   {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch, matrix_in, matrix_out) \
-    schedule(static) aligned(image_in, image_out:64) aligned(matrix_in, matrix_out:16)
+    dt_omp_firstprivate(stride, image_in, image_out, profile_info_from, profile_info_to, ch, matrix) \
+    schedule(static) aligned(image_in, image_out, matrix:64)
 #endif
     for(size_t y = 0; y < stride; y += ch)
     {
-      const float *const in = image_in + y;
-      float *const out = image_out + y;
+      const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
+      float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-      float xyz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+      for(size_t c = 0; c < 3; c++) out[c] = 0.f;
 
-      _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix_in);
-      _ioppr_xyz_to_linear_rgb_matrix(xyz, out, matrix_out);
+      for(size_t c = 0; c < 3; c++)
+        for(size_t i = 0; i < 3; i++)
+          out[c] += matrix[3 * c + i] * in[i];
     }
-  }
-
-  if(profile_info_to->nonlinearlut)
-  {
-    _apply_tonecurves(image_out, image_out, width, height, profile_info_to->lut_out[0], profile_info_to->lut_out[1],
-                      profile_info_to->lut_out[2], profile_info_to->unbounded_coeffs_out[0],
-                      profile_info_to->unbounded_coeffs_out[1], profile_info_to->unbounded_coeffs_out[2],
-                      profile_info_to->lutsize);
   }
 }
 
@@ -1005,171 +1037,7 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
 }
 
 
-#if defined(__SSE2__x) // FIXME: this is slower than the C version
-static __m128 _ioppr_linear_rgb_matrix_to_xyz_sse(const __m128 rgb, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-/*  for(int c = 0; c < 3; c++)
-  {
-    xyz[c] = 0.0f;
-    for(int i = 0; i < 3; i++)
-    {
-      xyz[c] += profile_info->matrix_in[3 * c + i] * rgb[i];
-    }
-  }*/
-  const __m128 m0 = _mm_set_ps(0.0f, profile_info->matrix_in[6], profile_info->matrix_in[3], profile_info->matrix_in[0]);
-  const __m128 m1 = _mm_set_ps(0.0f, profile_info->matrix_in[7], profile_info->matrix_in[4], profile_info->matrix_in[1]);
-  const __m128 m2 = _mm_set_ps(0.0f, profile_info->matrix_in[8], profile_info->matrix_in[5], profile_info->matrix_in[2]);
-
-  __m128 xyz
-      = _mm_add_ps(_mm_mul_ps(m0, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(0, 0, 0, 0))),
-                   _mm_add_ps(_mm_mul_ps(m1, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(1, 1, 1, 1))),
-                              _mm_mul_ps(m2, _mm_shuffle_ps(rgb, rgb, _MM_SHUFFLE(2, 2, 2, 2)))));
-  return xyz;
-}
-
-static __m128 _ioppr_xyz_to_linear_rgb_matrix_sse(const __m128 xyz, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-/*  for(int c = 0; c < 3; c++)
-  {
-    rgb[c] = 0.0f;
-    for(int i = 0; i < 3; i++)
-    {
-      rgb[c] += profile_info->matrix_out[3 * c + i] * xyz[i];
-    }
-  }*/
-  const __m128 m0 = _mm_set_ps(0.0f, profile_info->matrix_out[6], profile_info->matrix_out[3], profile_info->matrix_out[0]);
-  const __m128 m1 = _mm_set_ps(0.0f, profile_info->matrix_out[7], profile_info->matrix_out[4], profile_info->matrix_out[1]);
-  const __m128 m2 = _mm_set_ps(0.0f, profile_info->matrix_out[8], profile_info->matrix_out[5], profile_info->matrix_out[2]);
-
-  __m128 rgb
-      = _mm_add_ps(_mm_mul_ps(m0, _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(0, 0, 0, 0))),
-                   _mm_add_ps(_mm_mul_ps(m1, _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(1, 1, 1, 1))),
-                              _mm_mul_ps(m2, _mm_shuffle_ps(xyz, xyz, _MM_SHUFFLE(2, 2, 2, 2)))));
-  return rgb;
-}
-
-static void _transform_rgb_to_lab_matrix_sse(float *const image, const int width, const int height, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)width * height;
-
-  _apply_tonecurves(image, width, height, profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
-      profile_info->unbounded_coeffs_in[0], profile_info->unbounded_coeffs_in[1], profile_info->unbounded_coeffs_in[2], profile_info->lutsize);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-  for(size_t y = 0; y < stride; y++)
-  {
-    float *const in = image + y * ch;
-
-    __m128 xyz = { 0.0f };
-    __m128 rgb = _mm_load_ps(in);
-
-    xyz = _ioppr_linear_rgb_matrix_to_xyz_sse(rgb, profile_info);
-
-    rgb = dt_XYZ_to_Lab_sse2(xyz);
-    const float a = in[3];
-    _mm_stream_ps(in, rgb);
-    in[3] = a;
-  }
-}
-
-static void _transform_lab_to_rgb_matrix_sse(float *const image, const int width, const int height, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)width * height;
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-  for(size_t y = 0; y < stride; y++)
-  {
-    float *const in = image + y * ch;
-
-    __m128 xyz = { 0.0f };
-    __m128 lab = _mm_load_ps(in);
-
-    xyz = dt_Lab_to_XYZ_sse2(lab);
-    lab = _ioppr_xyz_to_linear_rgb_matrix_sse(xyz, profile_info);
-    const float a = in[3];
-    _mm_stream_ps(in, lab);
-    in[3] = a;
-  }
-
-  _apply_tonecurves(image, width, height, profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2],
-      profile_info->unbounded_coeffs_out[0], profile_info->unbounded_coeffs_out[1], profile_info->unbounded_coeffs_out[2], profile_info->lutsize);
-}
-
-// FIXME: this is slower than the C version
-static void _transform_matrix_sse(struct dt_iop_module_t *self, float *const image,
-                                  const int width, const int height,
-                                  const dt_iop_colorspace_type_t cst_from,
-                                  const dt_iop_colorspace_type_t cst_to,
-                                  dt_iop_colorspace_type_t *converted_cst,
-                                  const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  if(cst_from == cst_to)
-  {
-    *converted_cst = cst_to;
-    return;
-  }
-
-  *converted_cst = cst_to;
-
-  if(cst_from == iop_cs_rgb && cst_to == iop_cs_Lab)
-  {
-    _transform_rgb_to_lab_matrix_sse(image, width, height, profile_info);
-  }
-  else if(cst_from == iop_cs_Lab && cst_to == iop_cs_rgb)
-  {
-    _transform_lab_to_rgb_matrix_sse(image, width, height, profile_info);
-  }
-  else
-  {
-    *converted_cst = cst_from;
-    fprintf(stderr, "[_transform_matrix_sse] invalid conversion from %i to %i\n", cst_from, cst_to);
-  }
-}
-
-static void _transform_matrix_rgb_sse(float *const image,
-                                      const int width, const int height,
-                                      const dt_iop_order_iccprofile_info_t *const profile_info_from,
-                                      const dt_iop_order_iccprofile_info_t *const profile_info_to)
-{
-  const int ch = 4;
-  const size_t stride = (size_t)width * height;
-
-  _apply_tonecurves(image, width, height, profile_info_from->lut_in[0], profile_info_from->lut_in[1],
-                    profile_info_from->lut_in[2], profile_info_from->unbounded_coeffs_in[0],
-                    profile_info_from->unbounded_coeffs_in[1], profile_info_from->unbounded_coeffs_in[2],
-                    profile_info_from->lutsize);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) schedule(static)
-#endif
-  for(size_t y = 0; y < stride; y++)
-  {
-    float *const in = image + y * ch;
-
-    __m128 xyz = { 0.0f };
-    __m128 rgb = _mm_load_ps(in);
-
-    xyz = _ioppr_linear_rgb_matrix_to_xyz_sse(rgb, profile_info_from);
-    rgb = _ioppr_xyz_to_linear_rgb_matrix_sse(xyz, profile_info_to);
-
-    const float a = in[3];
-    _mm_stream_ps(in, rgb);
-    in[3] = a;
-  }
-
-  _apply_tonecurves(image, width, height, profile_info_to->lut_out[0], profile_info_to->lut_out[1],
-                    profile_info_to->lut_out[2], profile_info_to->unbounded_coeffs_out[0],
-                    profile_info_to->unbounded_coeffs_out[1], profile_info_to->unbounded_coeffs_out[2],
-                    profile_info_to->lutsize);
-}
-#endif
-
+__DT_CLONE_TARGETS__
 void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
                                          float *const image_out, const int width, const int height,
                                          const int cst_from, const int cst_to, int *converted_cst,
@@ -1197,17 +1065,8 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
   // matrix should be never NAN, this is only to test it against lcms2!
   if(!isnan(profile_info->matrix_in[0]) && !isnan(profile_info->matrix_out[0]))
   {
-    // FIXME: sse is slower than the C version
-    // if(darktable.codepath.OPENMP_SIMD)
     _transform_matrix(self, image_in, image_out, width, height, cst_from, cst_to, converted_cst, profile_info);
-    /*
-    #if defined(__SSE2__)
-        else if(darktable.codepath.SSE2)
-          _transform_matrix_sse(self, image, width, height, cst_from, cst_to, converted_cst, profile_info);
-    #endif
-        else
-          dt_unreachable_codepath();
-    */
+
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
@@ -1233,6 +1092,8 @@ void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const flo
     fprintf(stderr, "[dt_ioppr_transform_image_colorspace] invalid conversion from %i to %i\n", cst_from, cst_to);
 }
 
+
+__DT_CLONE_TARGETS__
 void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_in, float *const restrict image_out, const int width,
                                              const int height,
                                              const dt_iop_order_iccprofile_info_t *const profile_info_from,
@@ -1258,17 +1119,8 @@ void dt_ioppr_transform_image_colorspace_rgb(const float *const restrict image_i
   if(!isnan(profile_info_from->matrix_in[0]) && !isnan(profile_info_from->matrix_out[0])
      && !isnan(profile_info_to->matrix_in[0]) && !isnan(profile_info_to->matrix_out[0]))
   {
-    // FIXME: sse is slower than the C version
-    // if(darktable.codepath.OPENMP_SIMD)
     _transform_matrix_rgb(image_in, image_out, width, height, profile_info_from, profile_info_to);
-    /*
-    #if defined(__SSE2__)
-        else if(darktable.codepath.SSE2)
-          _transform_matrix_rgb_sse(self, image, width, height, profile_info_from, profile_info_to);
-    #endif
-        else
-          dt_unreachable_codepath();
-    */
+
     if(darktable.unmuted & DT_DEBUG_PERF)
     {
       dt_get_times(&end_time);
