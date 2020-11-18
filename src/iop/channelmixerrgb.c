@@ -428,6 +428,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   // Get the chromaticity difference with white point uv
   const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
   const float delta[2] DT_ALIGNED_PIXEL = { D50[0] - uvY[0], D50[1] - uvY[1] };
+  Y += NORM_MIN;
   const float DT_ALIGNED_PIXEL LOG_XYZ[4] = { logf(input[0] + Y), logf(input[1] + Y), logf(input[2] + Y), 0.f };
   const float Delta = Y * hypotf(delta[0], delta[1]) / (Y + hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2])));
   // the log part comes from the saturation in https://infoscience.epfl.ch/record/34026
