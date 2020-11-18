@@ -72,13 +72,11 @@ inline float4 lab_f_inv(float4 x)
 inline float4 Lab_to_XYZ(float4 Lab)
 {
   const float4 d50 = (float4)(0.9642f, 1.0f, 0.8249f, 0.0f);
-  float4 f, XYZ;
+  float4 f;
   f.y = (Lab.x + 16.0f)/116.0f;
   f.x = Lab.y/500.0f + f.y;
   f.z = f.y - Lab.z/200.0f;
-  XYZ = d50 * lab_f_inv(f);
-
-  return XYZ;
+  return d50 * lab_f_inv(f);
 }
 
 inline float4 prophotorgb_to_XYZ(float4 rgb)
