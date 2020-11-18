@@ -63,6 +63,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_channelmixer_rgb_params_t)
 
 
 #define CHANNEL_SIZE 4
+#define NORM_MIN 1e-6f
 
 typedef struct dt_iop_channelmixer_rgb_params_t
 {
@@ -391,10 +392,8 @@ static inline float euclidean_norm(const float vector[4])
 static inline void downscale_vector(float vector[4], const float scaling)
 {
   // check zero or NaN
-  static const float eps = 1e-6f;
-  const int valid = (scaling < eps) && !isnan(scaling);
-
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + eps) : vector[c] / eps;
+  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
 }
 
 
@@ -403,10 +402,8 @@ static inline void downscale_vector(float vector[4], const float scaling)
 #endif
 static inline void upscale_vector(float vector[4], const float scaling)
 {
-  static const float eps = 1e-6f;
-  const int valid = (scaling < eps) && !isnan(scaling);
-
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + eps) : vector[c] * eps;
+  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
 }
 
 
@@ -418,10 +415,11 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   // Get the sum XYZ
   float sum = 0.f;
   for(size_t c = 0; c < 3; c++) sum += fabsf(input[c]);
+  sum = fmaxf(sum, NORM_MIN);
 
   // Convert to xyY
-  const float Y = fmaxf(input[1] + 1e-6f, 1e-6f);
-  float xyY[4] DT_ALIGNED_PIXEL = { input[0] / sum, input[1] / sum , input[1], 0.0f };
+  float Y = fmaxf(input[1], 0.f);
+  float xyY[4] DT_ALIGNED_PIXEL = { input[0] / sum, input[1] / sum , Y, 0.0f };
 
   // Convert to uvY
   float uvY[4] DT_ALIGNED_PIXEL;
@@ -450,11 +448,15 @@ static inline void gamut_mapping(const float input[4], const float compression, 
 
   // Clip upon request
   if(clip) for(size_t c = 0; c < 2; c++) xyY[c] = fmaxf(xyY[c], 0.0f);
+  
+  // Check sanity of y
+  // since we later divide by y, it can't be zero
+  xyY[1] = fmaxf(xyY[1], NORM_MIN);
 
   // Check sanity of x and y :
   // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
-  const float scale = xyY[0] + xyY[1] + 1e-6f;
-  const int sanitize = (scale > 1.f);
+  const float scale = xyY[0] + xyY[1];
+  const int sanitize = (scale >= 1.f);
   for(size_t c = 0; c < 2; c++) xyY[c] = (sanitize) ? xyY[c] / scale : xyY[c];
 
   // Convert back to XYZ
