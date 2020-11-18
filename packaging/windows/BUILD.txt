@@ -19,6 +19,9 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
     Install optional libraries and dependencies:
   $ pacman -S mingw-w64-x86_64-gmic
 
+    Note: GMIC. Waiting for GMIC 9.3 you may need to rename libopencv_code4xx and libopencv_videoio4xx
+  to libopencv_code440 and libopencv_videoio440 in the bin folder of darktable to get lut3d available.
+
     For gphoto2:
     You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available. Also make sure they aren't pointing into your normal windows installation in case you already have darktable installed. You can check them with:
 	$ echo $CAMLIBS
