@@ -1175,13 +1175,13 @@ void init_presets(dt_lib_module_t *self)
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
     tx = _preset_retrieve_old_layout(NULL, NULL);
-    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx, strlen(tx), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
     g_free(tx);
 
     tx = _preset_retrieve_old_layout_updated();
     dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx,
-                       strlen(tx), TRUE);
+                       strlen(tx), FALSE);
     g_free(tx);
   }
   // if they exists, we retrieve old user presets from old modulelist lib
