@@ -29,12 +29,11 @@ colorspaces_transform_lab_to_rgb_matrix(read_only image2d_t in, write_only image
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  pixel.xyz = Lab_to_XYZ(pixel).xyz;
+  pixel = matrix_product(pixel, profile_info->matrix_out);
 
-  float4 xyz, RGB;
-
-  xyz = Lab_to_XYZ(pixel);
-  RGB = matrix_product(xyz, profile_info->matrix_out);
-  pixel.xyz = apply_trc_out(RGB, profile_info, lut).xyz;
+  if(profile_info->nonlinearlut)
+    pixel = apply_trc_out(pixel, profile_info, lut);
 
   write_imagef(out, (int2)(x, y), pixel);
 }
@@ -50,11 +49,11 @@ colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in, write_only image
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  float4 xyz, RGB;
+  if(profile_info->nonlinearlut)
+    pixel = apply_trc_in(pixel, profile_info, lut);
 
-  RGB = apply_trc_in(pixel, profile_info, lut);
-  xyz = matrix_product(RGB, profile_info->matrix_in);
-  pixel.xyz = XYZ_to_Lab(xyz).xyz;
+  pixel = matrix_product(pixel, profile_info->matrix_in);
+  pixel.xyz = XYZ_to_Lab(pixel).xyz;
 
   write_imagef(out, (int2)(x, y), pixel);
 }
@@ -62,7 +61,7 @@ colorspaces_transform_rgb_matrix_to_lab(read_only image2d_t in, write_only image
 kernel void
 colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image2d_t out, const int width, const int height,
     constant dt_colorspaces_iccprofile_info_cl_t *profile_info_from, read_only image2d_t lut_from,
-    constant dt_colorspaces_iccprofile_info_cl_t *profile_info_to, read_only image2d_t lut_to)
+    constant dt_colorspaces_iccprofile_info_cl_t *profile_info_to, read_only image2d_t lut_to, constant float *matrix)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -71,12 +70,13 @@ colorspaces_transform_rgb_matrix_to_rgb(read_only image2d_t in, write_only image
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
 
-  float4 xyz, linear_rgb;
+  if(profile_info_from->nonlinearlut)
+    pixel = apply_trc_in(pixel, profile_info_from, lut_from);
 
-  linear_rgb = apply_trc_in(pixel, profile_info_from, lut_from);
-  xyz = matrix_product(linear_rgb, profile_info_from->matrix_in);
-  linear_rgb = matrix_product(xyz, profile_info_to->matrix_out);
-  pixel.xyz = apply_trc_out(linear_rgb, profile_info_to, lut_to).xyz;
+  pixel = matrix_product(pixel, matrix);
+
+  if(profile_info_to->nonlinearlut)
+    pixel = apply_trc_out(pixel, profile_info_to, lut_to);
 
   write_imagef(out, (int2)(x, y), pixel);
 }
