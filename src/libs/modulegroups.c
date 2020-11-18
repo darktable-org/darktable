@@ -1459,6 +1459,7 @@ static gboolean _manage_direct_popup(GtkWidget *widget, GdkEventButton *event, d
   if(event->type == GDK_BUTTON_PRESS && event->button == 3)
   {
     dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+    if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return FALSE;
     _manage_module_add_popup(widget, gr, G_CALLBACK(_manage_direct_module_add), self);
     return TRUE;
   }
