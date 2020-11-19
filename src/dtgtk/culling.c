@@ -1535,23 +1535,26 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   _thumbs_prefetch(table);
 
   // ensure one of the shown image as the focus (to avoid to keep focus to hidden image)
-  gboolean in_list = FALSE;
   const int selid = dt_control_get_mouse_over_id();
-  l = table->list;
-  while(l)
+  if(selid >= 0)
   {
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-    if(thumb->imgid == selid)
+    gboolean in_list = FALSE;
+    l = table->list;
+    while(l)
     {
-      in_list = TRUE;
-      break;
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+      if(thumb->imgid == selid)
+      {
+        in_list = TRUE;
+        break;
+      }
+      l = g_list_next(l);
     }
-    l = g_list_next(l);
-  }
-  if(!in_list)
-  {
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-    dt_control_set_mouse_over_id(thumb->imgid);
+    if(!in_list)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+      dt_control_set_mouse_over_id(thumb->imgid);
+    }
   }
 
   // be sure the focus is in the right widget (needed for accels)
