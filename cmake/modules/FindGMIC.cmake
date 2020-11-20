@@ -48,7 +48,7 @@ if(GMIC_LIBRARY AND GMIC_INCLUDE_DIR)
       else()
         list(APPEND GMIC_LIBRARY ${FFTW_LIBRARY})
       endif(NOT FFTW_LIBRARY)
-      # workaround for msys2 gmic 9.0-3. Should be reviewed when gmic 9.3 is available
+      # workaround for msys2 gmic 2.9.0-3. Should be reviewed when gmic 2.9.3 is available
       find_library(OPENCV_CORE_LIBRARY NAMES libopencv_core)
       find_library(OPENCV_VIDEOIO_LIBRARY NAMES libopencv_videoio)
       if(NOT OPENCV_CORE_LIBRARY OR NOT OPENCV_VIDEOIO_LIBRARY)
@@ -60,7 +60,7 @@ if(GMIC_LIBRARY AND GMIC_INCLUDE_DIR)
       endif(NOT OPENCV_CORE_LIBRARY OR NOT OPENCV_VIDEOIO_LIBRARY)
     endif(WIN32)
 
-    # workaround for msys2 gmic 9.0-3. Should be reviewed when gmic 9.3 is available
+    # workaround for msys2 gmic 2.9.0-3. Should be reviewed when gmic 2.9.3 is available
     if(GMIC_DEPENDENCIES_FOUND)
 
       # Set the include dir variables and the libraries and let libfind_process do the rest.
