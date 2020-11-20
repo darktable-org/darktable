@@ -1723,7 +1723,8 @@ static void dt_interpolation_resample_sse(const struct dt_interpolation *itor, f
           const size_t baseidx = (size_t)hindex[hiidx++] * 4;
           const float htap = hkernel[hkidx++];
           const __m128 vhtap = _mm_set_ps1(htap);
-          vhs = _mm_add_ps(vhs, _mm_mul_ps(*(__m128 *)&i[baseidx], vhtap));
+          const __m128 ival = _mm_loadu_ps(&i[baseidx]);
+          vhs = _mm_add_ps(vhs, _mm_mul_ps(ival, vhtap));
         }
 
         // Accumulate contribution from this line
