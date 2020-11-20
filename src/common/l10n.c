@@ -332,6 +332,9 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
 
     const gchar * const * default_languages = g_get_language_names();
 
+    // For some directories will g_get_language_names retrieve a sorted list of lanquages
+    int current_sys_default_index = INT_MAX;
+
     char localedir[PATH_MAX] = { 0 };
     dt_loc_get_localedir(localedir, sizeof(localedir));
     GDir *dir = g_dir_open(localedir, 0, NULL);
@@ -361,16 +364,18 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
           }
 
           // check if this is the system default
-          if(sys_default == NULL)
+          int index_default_languages = 0;
+          for(const gchar * const * iter = default_languages; *iter; iter++, index_default_languages++)
           {
-            for(const gchar * const * iter = default_languages; *iter; iter++)
+            if (index_default_languages >= current_sys_default_index)
+              break;
+
+            if(g_strcmp0(*iter, locale) == 0)
             {
-              if(g_strcmp0(*iter, locale) == 0)
-              {
-                language->is_default = TRUE;
-                sys_default = language;
-                break;
-              }
+              language->is_default = TRUE;
+              sys_default = language;
+              current_sys_default_index = index_default_languages;
+              break;
             }
           }
 
