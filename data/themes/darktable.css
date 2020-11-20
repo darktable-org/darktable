@@ -867,7 +867,8 @@ tooltip,
 popover,
 combobox window,
 dialog combobox window,
-#modulegroups-iop-popup
+#modulegroups-iop-popup,
+#modulegroups-iop-popup viewport
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
