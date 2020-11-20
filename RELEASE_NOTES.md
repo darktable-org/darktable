@@ -44,45 +44,45 @@ making a backup is strongly advised.
   sets of modules are proposed (default, minimal, scene-referred, display-referred,
   all modules) as well as a new modules tab layout (technical / grading / effects),
   introduced as an option to better state the purpose of the modules.
-  
+
 - Module masking is now 100% scene-referred-able. A new masking implementation
   has been added, with fully unbouded blending modes, that allows parametric masking
   either in linear RGB or in JzCzHz for scene-referred imagery. A boost factor is
-  introduced in masking GUI to let users set thresholding parameters above 100% 
+  introduced in masking GUI to let users set thresholding parameters above 100%
   to mask pixels in HDR images.
-  
-  JzCzHz derivates from JzAzBz, which is a perceptual color space developed 
+
+  JzCzHz derivates from JzAzBz, which is a perceptual color space developed
   for HDR and published in 2017, with better properties than CIE Lab from 1976,
-  allowing near-perfect hue linearity, for a robust hue/saturation masking. 
+  allowing near-perfect hue linearity, for a robust hue/saturation masking.
   A JzCzHz hue mask will produce the same output whether it is used
   before input color profile, after output color profile, or in-between,
   which is a big consistency improvement over the HSL masking.
-  
-- A new color calibration module has been added as a full-featured hub for color correction. 
-  It was first intended as a scene-referred (unbounded) rewrite of the old channel mixer, 
-  allowing corrections of the color space, both for creative and corrective purposes. 
-  
-  Because channel mixing is also what white balancing and chromatic adaptation 
-  do internally, color calibration introduces robust chromatic adaptation transforms, 
+
+- A new color calibration module has been added as a full-featured hub for color correction.
+  It was first intended as a scene-referred (unbounded) rewrite of the old channel mixer,
+  allowing corrections of the color space, both for creative and corrective purposes.
+
+  Because channel mixing is also what white balancing and chromatic adaptation
+  do internally, color calibration introduces robust chromatic adaptation transforms,
   Bradford (from ICC v4) and CAT16 (from CIECAM 2016), improving the color rendition
   of the white-balanced final image. The module provides a library of all standard
   CIE illuminants and two machine-learning illuminant detection algorithms, using
-  different assumptions for when no neutral colors can be sampled from the image, 
+  different assumptions for when no neutral colors can be sampled from the image,
   along with the traditional color-picker for manual sampling of neutral colors.
-  
+
   Color calibration implements internally a gamut-mapping and gamut-clipping
-  method, which tries to preserve the hue and luminance of pixels while avoiding imaginary and 
+  method, which tries to preserve the hue and luminance of pixels while avoiding imaginary and
   out-of-gamut colors at the beginning of the pipeline, to improve the robustness of
   color-grading modules inside the pipeline. This is made necessary because
   white balancing will only push input out-of-gamut colors farther away,
   and will noticeably help dealing with artifical colored lights (LED, stage lighting, etc.).
-  
-  A new workflow, "chromatic adaptation defaults", in processing preferences, 
+
+  A new workflow, "chromatic adaptation defaults", in processing preferences,
   will let users choose if they want to keep using the white balance module
   as a default to perform the chromatic adaptation ("legacy" worflow, set by default)
-  or use the new color calibration instead ("modern" workflow). 
+  or use the new color calibration instead ("modern" workflow).
   The modern workflow still uses the usual white balance module, although
-  with different default settings, because input color profiles and 
+  with different default settings, because input color profiles and
   demosaicing need at least a rough white balancing early in the pipe.
 
   Map view has evolved. Images close to each other are now grouped and a count of
@@ -91,8 +91,8 @@ making a backup is strongly advised.
   the images of the group. Groups containing selected images are highlighted (white border).
   The count number is white if all images of the group are exactly at the same place,
   yellow otherwise.
-  Dragging of images has also been improved. Left-click to drag the visible image, 
-  shit-left-click to drag the full group.
+  Dragging of images has also been improved. <kbd>Click</kbd> to drag the visible image,
+  <kbd>Shift-Click</kbd> to drag the full group.
   A new module "locations" allows to define location areas (elliptic or rectangular shapes).
   These locations are collections visible under geotagging in collect module.
 
@@ -112,15 +112,15 @@ making a backup is strongly advised.
   many tabs, such as filmic rgb or the parametric blending
   settings. This feature was based on the under-the-hood introspection
   enhancements in 3.2.
-  
+
 - Modules get a new tooltip, accessible over their header, containing
-  a summary of what they do, how they work, in which color space, 
+  a summary of what they do, how they work, in which color space,
   if they expect linear, non-linear, display-referred, or scene-referred
-  input and what kind of output they produce. This will help users 
+  input and what kind of output they produce. This will help users
   build consistent pipelines when reordering modules, by exposing the
   assumptions upon which each module is built, and provides in-app
   documentation summary accessible offline.
-  
+
 - Modules get alias names and keywords that are used in the module group
   search. As a result, a module search can be done using the exact names,
   synonyms (e.g. "dehaze" for "haze removal") or features (e.g "saturation"
@@ -145,8 +145,8 @@ making a backup is strongly advised.
   These views include a defaut base curve view in linear and logarithmic scales,
   consistent with the base curve module to help comparing them, and
   a zone-system view that shows the dynamic range mapping between scene
-  and display grey scales. All the views get optional legends, that can be 
-  toggled on for new users, and off for experienced users seeking to spare 
+  and display grey scales. All the views get optional legends, that can be
+  toggled on for new users, and off for experienced users seeking to spare
   GUI real-estate.
 
 - Changing the workflow in preference (none, display-referred,
@@ -185,10 +185,10 @@ making a backup is strongly advised.
   are not selected by default in the dialog.
 
 - A new exposure independent guided filter has been introduced in the
-  tone equalizer module. This solves the algorithmic drawback of the 
+  tone equalizer module. This solves the algorithmic drawback of the
   regular guided filter (edge-aware surface blurring), that tends to
-  over-smooth low-lights and under-smooth highlights. These filters 
-  are used by the tone equalizer to apply contrast compression globally 
+  over-smooth low-lights and under-smooth highlights. These filters
+  are used by the tone equalizer to apply contrast compression globally
   on the image while not reducing the percieved acutance for local details.
 
 - Add greyscale support for AVIF format.
@@ -213,13 +213,13 @@ making a backup is strongly advised.
 
 - Add a “boost” slider to the parametric mask channels to extend their
   range and allow selection of highlights in scene referred editing.
-  
+
 - The over-exposure warning display has been improved. As of darktable 3.2.1,
   it showed pixels which any RGB channel value was below 0.1% or above 98%, assuming they
-  would clip in the final export, which is wrong. This mode triggered a lot of 
+  would clip in the final export, which is wrong. This mode triggered a lot of
   false-positives that needlessly alarmed users who took them very seriously, but also
   showed over-saturation and over-exposure issues altogether. This old mode
-  is still available as the "any RGB channel" mode. It comes now along with 2 other modes for 
+  is still available as the "any RGB channel" mode. It comes now along with 2 other modes for
   more accurate diagnostic:
   "luminance only", showing by default pixels darker than -12.67 EV (sRGB black point
   in 8 bits integers encoding) or brighter than 99%, and "saturation only" which shows
@@ -256,7 +256,7 @@ making a backup is strongly advised.
 
 - The code base has received lot of refactoring and
   simplification. This will help maintenance in the long run.
-  
+
 - Many more tests have been added to track regressions in image filters
   output and ensure backwards compatibility of edits.
 
@@ -268,7 +268,7 @@ making a backup is strongly advised.
 
 - Stack widgets can now shrink and grow as panel width changes.
 
-- A Lua Scripts Installer module now runs at startup offering to 
+- A Lua Scripts Installer module now runs at startup offering to
   install the lua scripts unless they are already installed or the
   module has been disabled by the user.  The module uses the git
   executable to install the scripts so it must be present on the
