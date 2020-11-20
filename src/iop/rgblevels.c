@@ -490,22 +490,8 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         dt_draw_histogram_8(cr, hist, 4, ch, is_linear);
       }
 
-      // histogram colors are in Adobe RGB, convert to display space
-      cairo_surface_flush(cst);
-      unsigned char *pixels = cairo_image_surface_get_data(cst);
-      pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
-      cmsHTRANSFORM transform = darktable.color_profiles->transform_adobe_rgb_to_display;
-      pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-      const int cst_width = cairo_image_surface_get_width(cst);
-      const int cst_height = cairo_image_surface_get_height(cst);
-      const int cst_stride = cairo_image_surface_get_stride(cst);
-      cmsDoTransformLineStride(transform, pixels, pixels, cst_width, cst_height, cst_stride, cst_stride, 0, 0);
-      cairo_surface_mark_dirty(cst);
       cairo_pop_group_to_source(cr);
-      if(p->autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
-        cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-      cairo_paint(cr);
-      cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+      cairo_paint_with_alpha(cr, 0.4);
     }
   }
 
