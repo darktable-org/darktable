@@ -449,7 +449,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
 
   // Clip upon request
   if(clip) for(size_t c = 0; c < 2; c++) xyY[c] = fmaxf(xyY[c], 0.0f);
-  
+
   // Check sanity of y
   // since we later divide by y, it can't be zero
   xyY[1] = fmaxf(xyY[1], NORM_MIN);
@@ -2122,9 +2122,10 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   XYZ[2] = XYZ[1]; // Y
   XYZ[1] /= sum;   // y
 
-  ++darktable.gui->reset;
   p->x = XYZ[0];
   p->y = XYZ[1];
+
+  ++darktable.gui->reset;
 
   check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
 
