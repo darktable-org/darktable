@@ -85,6 +85,17 @@ making a backup is strongly advised.
   with different default settings, because input color profiles and 
   demosaicing need at least a rough white balancing early in the pipe.
 
+  Map view has evolved. Images close to each other are now grouped and a count of
+  grouped images is displayed on the bottom-left corner. This provides better performances
+  when the map covers thousands of images. Scrolling over a group's thumb scrolls through
+  the images of the group. Groups containing selected images are highlighted (white border).
+  The count number is white if all images of the group are exactly at the same place,
+  yellow otherwise.
+  Dragging of images has also been improved. Left-click to drag the visible image, 
+  shit-left-click to drag the full group.
+  A new module "locations" allows to define location areas (elliptic or rectangular shapes).
+  These locations are collections visible under geotagging in collect module.
+
 ## New Features And Changes
 
 - Add a focus-peaking button in lighttable and darkroom which
@@ -272,6 +283,9 @@ making a backup is strongly advised.
 
 ## Changed Dependencies
 
+- Due to the current GMIC version windows users may have to rename two libraries
+  in darktable bin folder to get lut3d module working: libopencv_code4xx and libopencv_videoio4xx
+  to libopencv_code440 and libopencv_videoio440.
 
 ## RawSpeed changes
 
