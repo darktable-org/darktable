@@ -1997,8 +1997,8 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 
@@ -2025,8 +2025,8 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->output_power, p->output_power);
   --darktable.gui->reset;
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(self->widget);
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void apply_autotune(dt_iop_module_t *self)
@@ -2379,12 +2379,14 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
   if(!in)
   {
     // lost focus - hide the mask
+    gint mask_was_shown = g->show_mask;
     g->show_mask = FALSE;
     dt_bauhaus_widget_set_quad_toggle(g->show_highlight_mask, FALSE);
     dt_bauhaus_widget_set_quad_active(g->show_highlight_mask, FALSE);
-    dt_dev_reprocess_center(self->dev);
+    if(mask_was_shown) dt_dev_reprocess_center(self->dev);
   }
 }
+
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_filmicrgb_data_t));
@@ -3953,7 +3955,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     gtk_widget_set_visible(g->grey_point_target, p->custom_grey);
   }
 
-  gtk_widget_queue_draw(self->widget);
+  if(w) gtk_widget_queue_draw(self->widget);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
