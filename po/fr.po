@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-19 08:22+0100\n"
-"PO-Revision-Date: 2020-11-19 08:23+0100\n"
+"POT-Creation-Date: 2020-11-20 08:16+0100\n"
+"PO-Revision-Date: 2020-11-20 08:17+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -16591,9 +16591,9 @@ msgstr "ajouter une nouvelle localisation au centre de la carte"
 
 #: ../src/libs/map_locations.c:985
 msgid "show all"
-msgstr "tous les modules"
+msgstr "tout montrer"
 
-#: ../src/libs/map_locations.c:988
+#: ../src/libs/map_locations.c:987
 msgid "show all loations which are on the visible map"
 msgstr "montrer toutes les localisations sur la carte"
 
