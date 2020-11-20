@@ -286,7 +286,7 @@ static inline void dt_xyY_to_Luv(const float xyY[3], float Luv[3])
   const float threshold = cbf(6.0f / 29.0f);
   Luv[0] = (uvY[2] <= threshold) ? cbf(29.0f / 3.0f) * uvY[2] : 116.0f * cbrtf(uvY[2]) - 16.f;
 
-  static const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
+  const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
   Luv[1] = 13.f * Luv[0] * (uvY[0] - D50[0]); // u*
   Luv[2] = 13.f * Luv[0] * (uvY[1] - D50[1]); // v*
 
@@ -299,6 +299,7 @@ static inline void dt_Luv_to_Lch(const float Luv[3], float Lch[3])
   Lch[0] = Luv[0];                 // L stays L
   Lch[1] = hypotf(Luv[2], Luv[1]); // chroma radius
   Lch[2] = atan2f(Luv[2], Luv[1]); // hue angle
+  Lch[2] = (Lch[2] < 0.f) ? 2.f * M_PI + Lch[2] : Lch[2]; // ensure angle is positive modulo 2 pi
 }
 
 
