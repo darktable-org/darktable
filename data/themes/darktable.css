@@ -826,6 +826,28 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
     padding: 2px;
 }
 
+/*--------------------------------------------------------
+  - Bauhaus controls (sliders and comboboxes in modules) -
+  --------------------------------------------------------*/
+
+#bauhaus-popup
+{
+  color: @bauhaus_fg;
+}
+
+#bauhaus-popup:selected
+{
+  color: @bauhaus_fg_selected;
+}
+
+#bauhaus-combobox,
+#bauhaus-slider
+{
+  min-height: 1em;
+  background-color: transparent;
+  color: @bauhaus_fg;
+}
+
 /*----------------------------------------
   - Context menu & tooltips & comboboxes -
   ----------------------------------------*/
@@ -867,8 +889,8 @@ tooltip,
 popover,
 combobox window,
 dialog combobox window,
-#modulegroups-iop-popup,
-#modulegroups-iop-popup viewport
+#bauhaus-popup,
+#modulegroups-iop-popup
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
@@ -878,6 +900,11 @@ dialog combobox window,
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em 0;
+}
+
+#modulegroups-iop-popup viewport
+{
+  background-color: @tooltip_bg_color;
 }
 
 popover
@@ -1018,29 +1045,6 @@ notebook tab label /* disabled tabs */
 notebook header /* add space between notebook tabs and options below */
 {
   margin-bottom: 6px;
-}
-
-/*--------------------------------------------------------
-  - Bauhaus controls (sliders and comboboxes in modules) -
-  --------------------------------------------------------*/
-
-#bauhaus-popup
-{
-  background-color: @really_dark_bg_color;
-  color: @bauhaus_fg;
-}
-
-#bauhaus-popup:selected
-{
-  color: @bauhaus_fg_selected;
-}
-
-#bauhaus-combobox,
-#bauhaus-slider
-{
-  min-height: 1em;
-  background-color: transparent;
-  color: @bauhaus_fg;
 }
 
 /*--------------------------
