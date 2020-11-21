@@ -113,8 +113,10 @@ const dt_develop_name_value_t dt_develop_combine_masks_names[]
         { "", 0 } };
 
 const dt_develop_name_value_t dt_develop_feathering_guide_names[]
-    = { { N_("output image"), DEVELOP_MASK_GUIDE_OUT },
-        { N_("input image"), DEVELOP_MASK_GUIDE_IN },
+    = { { N_("output image before blur"), DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR },
+        { N_("input image before blur"), DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR },
+        { N_("output image after blur"), DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR },
+        { N_("input image after blur"), DEVELOP_MASK_GUIDE_IN_AFTER_BLUR },
         { "", 0 } };
 
 const dt_develop_name_value_t dt_develop_invert_mask_names[]
