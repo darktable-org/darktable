@@ -463,34 +463,26 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
 
     if(hist && hist_max > 0.0f)
     {
-      cairo_save(cr);
+      cairo_push_group_with_content(cr, CAIRO_CONTENT_COLOR);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
 
       if(p->autoscale == DT_IOP_RGBLEVELS_LINKED_CHANNELS)
       {
         cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-
-        set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
-        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_R, is_linear);
-
-        set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
-        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_G, is_linear);
-
-        set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
-        dt_draw_histogram_8(cr, hist, 4, DT_IOP_RGBLEVELS_B, is_linear);
+        for(int k=DT_IOP_RGBLEVELS_R; k<DT_IOP_RGBLEVELS_MAX_CHANNELS; k++)
+        {
+          set_color(cr, darktable.bauhaus->graph_primaries[k]);
+          dt_draw_histogram_8(cr, hist, 4, k, is_linear);
+        }
       }
       else if(p->autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS)
       {
-        if(ch == DT_IOP_RGBLEVELS_R)
-          set_color(cr, darktable.lib->proxy.histogram.primaries_display[0]);
-        else if(ch == DT_IOP_RGBLEVELS_G)
-          set_color(cr, darktable.lib->proxy.histogram.primaries_display[1]);
-        else
-          set_color(cr, darktable.lib->proxy.histogram.primaries_display[2]);
+        set_color(cr, darktable.bauhaus->graph_primaries[ch]);
         dt_draw_histogram_8(cr, hist, 4, ch, is_linear);
       }
 
-      cairo_restore(cr);
+      cairo_pop_group_to_source(cr);
+      cairo_paint_with_alpha(cr, 0.2);
     }
   }
 
