@@ -1217,7 +1217,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
           const int in_x = MAX(roi_in.x, 0);
           const int in_y = MAX(roi_in.y, 0);
-          const int cp_width = MIN(roi_out->width, pipe->iwidth - in_x);
+          const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
 
 #ifdef _OPENMP
