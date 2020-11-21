@@ -573,25 +573,47 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
 
+  const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
+  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
+
   g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
 
   GtkWidget *mi;
   int active_preset = -1, cnt = 0, writeprotect = 0;
   sqlite3_stmt *stmt;
-  // order: get shipped defaults first
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params, writeprotect, description"
-                              " FROM data.presets"
-                              " WHERE operation=?1 AND op_version=?2"
-                              " ORDER BY writeprotect DESC, name, rowid",
-                              -1, &stmt, NULL);
+  // order like the pref value
+  gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect, description"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2"
+                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
+                                 default_first ? "DESC" : "ASC");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
+  g_free(query);
 
   // collect all presets for op from db
   int found = 0;
+  int last_wp = -1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    // default vs built-in stuff
+    const int chk_writeprotect = sqlite3_column_int(stmt, 2);
+    if(hide_default && chk_writeprotect)
+    {
+      // skip default module if set to hide them.
+      continue;
+    }
+    if(last_wp == -1)
+    {
+      last_wp = chk_writeprotect;
+    }
+    else if(last_wp != chk_writeprotect)
+    {
+      last_wp = chk_writeprotect;
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    }
+
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
     const char *name = (char *)sqlite3_column_text(stmt, 0);
