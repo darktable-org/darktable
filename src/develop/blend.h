@@ -107,8 +107,10 @@ typedef enum dt_develop_mask_combine_mode_t
 
 typedef enum dt_develop_mask_feathering_guide_t
 {
-  DEVELOP_MASK_GUIDE_IN = 0x01,
-  DEVELOP_MASK_GUIDE_OUT = 0x02
+  DEVELOP_MASK_GUIDE_IN_BEFORE_BLUR = 0x01,
+  DEVELOP_MASK_GUIDE_OUT_BEFORE_BLUR = 0x02,
+  DEVELOP_MASK_GUIDE_IN_AFTER_BLUR = 0x05,
+  DEVELOP_MASK_GUIDE_OUT_AFTER_BLUR = 0x06,
 } dt_develop_mask_feathering_guide_t;
 
 typedef enum dt_develop_blendif_channels_t
@@ -356,6 +358,47 @@ typedef struct dt_develop_blend_params9_t
   int raster_mask_id;
   gboolean raster_mask_invert;
 } dt_develop_blend_params9_t;
+
+/** blend legacy parameters version 10 (identical to version 11) */
+typedef struct dt_develop_blend_params10_t
+{
+  /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
+   *  or raster mask */
+  uint32_t mask_mode;
+  /** blending color space type */
+  int32_t blend_cst;
+  /** blending mode */
+  uint32_t blend_mode;
+  /** parameter for the blending */
+  float blend_parameter;
+  /** mixing opacity */
+  float opacity;
+  /** how masks are combined */
+  uint32_t mask_combine;
+  /** id of mask in current pipeline */
+  uint32_t mask_id;
+  /** blendif mask */
+  uint32_t blendif;
+  /** feathering radius */
+  float feathering_radius;
+  /** feathering guide */
+  uint32_t feathering_guide;
+  /** blur radius */
+  float blur_radius;
+  /** mask contrast enhancement */
+  float contrast;
+  /** mask brightness adjustment */
+  float brightness;
+  /** some reserved fields for future use */
+  uint32_t reserved[4];
+  /** blendif parameters */
+  float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+  float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
+  dt_dev_operation_t raster_mask_source;
+  int raster_mask_instance;
+  int raster_mask_id;
+  gboolean raster_mask_invert;
+} dt_develop_blend_params10_t;
 
 /** blend parameters current version */
 typedef struct dt_develop_blend_params_t
