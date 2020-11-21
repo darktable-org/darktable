@@ -85,7 +85,7 @@
       darktable default install comes with a set of built-in presets.
     </para>
     <sect4 status="final" id="module_groups_defaultpresets_default">
-      <title>Default</title>
+      <title>modules: default</title>
       <para>
         This preset show modules ordered in 3 groups :
         <informaltable frame="none" width="80%">
@@ -133,30 +133,42 @@
       </para>
     </sect4>
     <sect4 status="final" id="module_groups_defaultpresets_display">
-      <title>Display referred</title>
+      <title>workflow: display-referred</title>
       <para>
         Same groups as in the default presets with a set of modules
         specially adapted to the "display referred" workflow.
       </para>
     </sect4>
     <sect4 status="final" id="module_groups_defaultpresets_scene">
-      <title>Scene referred</title>
+      <title>workflow: scene-referred</title>
       <para>
         Same groups as in the default presets with a set of modules
         specially adapted to the "scene referred" workflow.
       </para>
     </sect4>
     <sect4 status="final" id="module_groups_defaultpresets_minimal">
-      <title>Minimal</title>
+      <title>workflow: beginner</title>
       <para>
         Same groups as in the default presets with a very short
         set of modules.
       </para>
     </sect4>
     <sect4 status="final" id="module_groups_defaultpresets_all">
-      <title>All modules</title>
+      <title>modules: all</title>
       <para>
         Show all available modules ordered in 5 groups.
+      </para>
+    </sect4>
+    <sect4 status="final" id="module_groups_defaultpresets_search">
+      <title>search only</title>
+      <para>
+        Show no groups except the active one. For those who use only the search feature.
+      </para>
+    </sect4>
+    <sect4 status="final" id="module_groups_defaultpresets_deprecated">
+      <title>modules: deprecated</title>
+      <para>
+        Show recently deprecated modules, which will be removed in next version.
       </para>
     </sect4>
   </sect3>
@@ -180,5 +192,17 @@
         Modules order can't be changed. They are always shown in pipe order.
       </para></listitem>
     </itemizedlist>
+  </sect3>
+
+  <sect3 status="final" id="module_groups_quick_add">
+    <title>Temporary module addition</title>
+    <para>
+      Sometimes you want to temporary add a specific module to a group, without creating a new
+      preset which will be deleted soon.
+    </para>
+    <para>
+      If you right-click on a group icon, you'll acces to the "add modules" menu.
+      This will create a temporary preset on the fly.
+    </para>
   </sect3>
 </sect2>
