@@ -1673,7 +1673,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // dimensions of the popup
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = inner_height(allocation);
+  const int width = allocation.width;
+  const int height = inner_height(allocation);
 
   // dimensions of the original line
   GtkWidget *current = GTK_WIDGET(w);
