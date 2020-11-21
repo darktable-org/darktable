@@ -1220,16 +1220,19 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           const int cp_width = MAX(0, MIN(roi_out->width, pipe->iwidth - in_x));
           const int cp_height = MIN(roi_out->height, pipe->iheight - in_y);
 
+          if (cp_width > 0)
+          {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
           dt_omp_firstprivate(bpp, cp_height, cp_width, in_x, in_y) \
           shared(pipe, roi_out, roi_in, output) \
           schedule(static)
 #endif
-          for(int j = 0; j < cp_height; j++)
-            memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
-                   ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
-                   (size_t)bpp * cp_width);
+            for(int j = 0; j < cp_height; j++)
+              memcpy(((char *)*output) + (size_t)bpp * j * roi_out->width,
+                     ((char *)pipe->input) + (size_t)bpp * (in_x + (in_y + j) * pipe->iwidth),
+                     (size_t)bpp * cp_width);
+          }
         }
         else
         {
