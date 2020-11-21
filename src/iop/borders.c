@@ -398,7 +398,7 @@ static inline void set_pixels(float *buf, const float color[4], const int npixel
   for (int i = 0; i < npixels; i++)
   {
 #ifdef _OPENMP
-#pragma omp SIMD() aligned(buf, color : 16)
+#pragma omp simd aligned(buf, color : 16)
 #endif
     for (int c = 0; c < 4; c++)
     {
@@ -413,7 +413,7 @@ static inline void copy_pixels(float *out, const float *const in, const int npix
   for (int i = 0; i < npixels; i++)
   {
 #ifdef _OPENMP
-#pragma omp SIMD() aligned(in, out : 16)
+#pragma omp simd aligned(in, out : 16)
 #endif
     for (int c = 0; c < 4; c++)
     {
