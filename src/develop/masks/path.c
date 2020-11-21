@@ -419,8 +419,8 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
     // and "register" them in binter
     for(int j = dt_masks_dynbuf_position(extra) / 2 - 1; j >= 0; j--)
     {
-      int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
-      int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
+      const int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
+      const int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
 
       // we check also 2 points around to be sure catching intersection
       int v[3] = { 0 };
