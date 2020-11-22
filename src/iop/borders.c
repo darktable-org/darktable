@@ -367,97 +367,123 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   // don't request nothing or outside roi
   roi_in->width = MIN(roi_out->scale * piece->buf_in.width, MAX(1, roi_in->width));
   roi_in->height = MIN(roi_out->scale * piece->buf_in.height, MAX(1, roi_in->height));
+  // FIXME: clamping to 1 leads to a one-pixel visual glitch if the right/bottom border completely fills the
+  // FIXME: viewport, but changing it to 0 breaks all of the tiling_callback functions with a division by zero
 }
 
-#ifdef __SSE2__
-static void set_outer_border_sse(float *buf, const float col[4], const int height, const int width,
-                                 const int border_height, const int border_width)
+struct border_positions_t
 {
-  const __m128 color = _mm_loadu_ps(col);  // use unalignd load since 'col' is not necessarily 16-byte aligned
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, col, border_height, height, width, color)  \
-  schedule(static)
-#endif
-  for (size_t row = 0; row < border_height; row++)
+  float DT_ALIGNED_PIXEL bcolor[4];
+  float DT_ALIGNED_PIXEL flcolor[4];
+  int border_top;		// 0..bt is rows of top border outside the frameline
+  int fl_top;			//bt..ft is the top frameline
+  int image_top;		//ft..it is the top border inside the frameline
+  int border_left;		// 0..bl is columns of left border outside the frameline
+  int fl_left;			//bl..fl is the left frameline
+  int image_left;		//fl..il is the left border inside the frameline
+  int image_right;		//il..ir is the actual image area
+  int fl_right;			//ir..fr is the right border inside the frameline
+  int border_right;		//fr..br is the right frameeline
+  int width;			//br..width is the right border outside the frameline
+  int image_bot;		//it..ib is the actual image area
+  int fl_bot;			//ib..fb is the bottom border inside the frameline
+  int border_bot;		//fb..bt is the frameline
+  int height;			//bt..height is the bottom border outside the frameline
+  int stride;			// width of input roi
+};
+  
+// this will be called from inside an OpenMP parallel section, so no need to parallelize further
+static inline void set_pixels(float *buf, const float color[4], const int npixels)
+{
+  for (int i = 0; i < npixels; i++)
   {
-    float *const t_line = buf + 4 * row * width;
-    float *const b_line = buf + 4 * (height - border_height + row) * width;
-    for (size_t c = 0; c < width; c++)
-    {
-      _mm_store_ps(t_line+4*c, color);
-      _mm_store_ps(b_line+4*c, color);
-    }
-  }
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, col, border_width, border_height, height, width, color)    \
-  schedule(static)
+#pragma omp simd aligned(buf, color : 16)
 #endif
-  for (size_t c = 0; c < border_width; c++)
-  {
-    float *const l_column = buf + 4 * c;
-    float *const r_column = buf + 4 * (width - border_width + c);
-    for (size_t row = border_height; row < height - border_height; row++)
+    for (int c = 0; c < 4; c++)
     {
-      _mm_store_ps(l_column+4*row*width, color);
-      _mm_store_ps(r_column+4*row*width, color);
+      buf[4*i+c] = color[c];
     }
   }
 }
-#endif /* __SSE2__ */
 
-static void set_outer_border(float *buf, const float col[4], const int height, const int width,
-                             const int border_height, const int border_width)
+// this will be called from inside an OpenMP parallel section, so no need to parallelize further
+static inline void copy_pixels(float *out, const float *const in, const int npixels)
 {
-#ifdef __SSE2__
-  if (darktable.codepath.SSE2)
+  for (int i = 0; i < npixels; i++)
   {
-    set_outer_border_sse(buf,col,height,width,border_height,border_width);
-    return;
-  }
-#endif /* __SSE2__ */
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, col, border_height, height, width)  \
-  schedule(static)
+#pragma omp simd aligned(in, out : 16)
 #endif
-  for (size_t row = 0; row < border_height; row++)
-  {
-    float *const t_line = buf + 4 * row * width;
-    float *const b_line = buf + 4 * (height - border_height + row) * width;
-    for (size_t c = 0; c < width; c++)
+    for (int c = 0; c < 4; c++)
     {
-      memcpy(t_line+4*c, col, 4*sizeof(float));
-      memcpy(b_line+4*c, col, 4*sizeof(float));
+      out[4*i+c] = in[4*i+c];
     }
   }
+}
+
+void copy_image_with_border(float *out, const float *const in, const struct border_positions_t *binfo)
+{
+  const int image_width = binfo->image_right - binfo->image_left;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, col, border_width, border_height, height, width) \
+  dt_omp_firstprivate(in, out, binfo, image_width) \
   schedule(static)
 #endif
-  for (size_t c = 0; c < border_width; c++)
+  for (size_t row = 0; row < binfo->height; row++)
   {
-    float *const l_column = buf + 4 * c;
-    float *const r_column = buf + 4 * (width - border_width + c);
-    for (size_t row = border_height; row < height - border_height; row++)
+    float *outrow = out + 4 * row * binfo->width;
+    if (row < binfo->border_top || row >= binfo->border_bot)
     {
-      memcpy(l_column + 4*row*width, col, 4*sizeof(float));
-      memcpy(r_column + 4*row*width, col, 4*sizeof(float));
+      // top/bottom border outside the frameline: entirely the border color
+      set_pixels(outrow, binfo->bcolor, binfo->width);
+    }
+    else if (row < binfo->fl_top || row >= binfo->fl_bot)
+    {
+      // top/bottom frameline
+      set_pixels(outrow, binfo->bcolor, binfo->border_left);
+      set_pixels(outrow + 4*binfo->border_left, binfo->flcolor, binfo->border_right - binfo->border_left);
+      set_pixels(outrow + 4*binfo->border_right, binfo->bcolor, binfo->width - binfo->border_right);
+    }
+    else if (row < binfo->image_top || row >= binfo->image_bot)
+    {
+      // top/bottom border inside the frameline
+      set_pixels(outrow, binfo->bcolor, binfo->border_left);
+      set_pixels(outrow + 4*binfo->border_left, binfo->flcolor, binfo->fl_left - binfo->border_left);
+      set_pixels(outrow + 4*binfo->fl_left, binfo->bcolor, binfo->fl_right - binfo->fl_left);
+      set_pixels(outrow + 4*binfo->fl_right, binfo->flcolor, binfo->border_right - binfo->fl_right);
+      set_pixels(outrow + 4*binfo->border_right, binfo->bcolor, binfo->width - binfo->border_right);
+    }
+    else
+    {
+      // image area: set left border (w/optional frame line), copy image row, set right border (w/optional frame line)
+      // set outer border
+      set_pixels(outrow, binfo->bcolor, binfo->border_left);
+      if (binfo->image_left > binfo->border_left)
+      {
+        // we have a frameline, so set it and the inner border
+        set_pixels(outrow + 4*binfo->border_left, binfo->flcolor, binfo->fl_left - binfo->border_left);
+        set_pixels(outrow + 4*binfo->fl_left, binfo->bcolor, binfo->image_left - binfo->fl_left);
+      }
+      // copy image row
+      copy_pixels(outrow + 4*binfo->image_left, in + 4 * (row - binfo->image_top) * binfo->stride, image_width);
+      // set right border
+      set_pixels(outrow + 4*binfo->image_right, binfo->bcolor, binfo->fl_right - binfo->image_right);
+      if (binfo->width > binfo->fl_right)
+      {
+        // we have a frameline, so set it and the outer border
+        set_pixels(outrow + 4*binfo->fl_right, binfo->flcolor, binfo->border_right - binfo->fl_right);
+        set_pixels(outrow + 4*binfo->border_right, binfo->bcolor, binfo->width - binfo->border_right);
+      }
     }
   }
+
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_borders_data_t *d = (dt_iop_borders_data_t *)piece->data;
-
-  const int ch = piece->colors;
-  const size_t in_stride = (size_t)ch * roi_in->width;
-  const size_t out_stride = (size_t)ch * roi_out->width;
-  const size_t cp_stride = in_stride * sizeof(float);
+  const dt_iop_borders_data_t *const d = (dt_iop_borders_data_t *)piece->data;
 
   const int border_tot_width = (piece->buf_out.width - piece->buf_in.width) * roi_in->scale;
   const int border_tot_height = (piece->buf_out.height - piece->buf_in.height) * roi_in->scale;
@@ -468,16 +494,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int border_in_x = MAX(border_size_l - roi_out->x, 0);
   const int border_in_y = MAX(border_size_t - roi_out->y, 0);
 
-  // Fill the out image's border with border color
-  const float col[4] = { d->color[0], d->color[1], d->color[2], 1.0f };
-  set_outer_border(ovoid, col, roi_out->height, roi_out->width, border_tot_height, border_tot_width);
-
-  // Frame line draw
+  // compute frame line parameters
   const int border_min_size = MIN(MIN(border_size_t, border_size_b), MIN(border_size_l, border_size_r));
   const int frame_size = border_min_size * d->frame_size;
-  if(frame_size != 0)
+
+  const int b_in_x = CLAMP(border_in_x, 0, roi_out->width - 1);
+  struct border_positions_t binfo =
+    { .bcolor = { d->color[0], d->color[1], d->color[2], 1.0f },
+      .flcolor = { d->frame_color[0], d->frame_color[1], d->frame_color[2], 1.0f },
+      .border_top = border_in_y,
+      .fl_top = border_in_y,
+      .image_top = border_in_y,
+      .border_left = b_in_x,
+      .fl_left = b_in_x,
+      .image_left = b_in_x,
+      .image_right = b_in_x + roi_in->width,
+      .fl_right = roi_out->width,
+      .border_right = roi_out->width,
+      .width = roi_out->width,
+      .image_bot = border_in_y + roi_in->height,
+      .fl_bot = roi_out->height,
+      .border_bot = roi_out->height,
+      .height = roi_out->height,
+      .stride = roi_in->width
+  };
+  if (frame_size > 0)
   {
-    const float col_frame[4] = { d->frame_color[0], d->frame_color[1], d->frame_color[2], 1.0f };
     const int image_lx = border_size_l - roi_out->x;
     const int image_ty = border_size_t - roi_out->y;
     const int frame_space = border_min_size - frame_size;
@@ -486,6 +528,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int frame_tl_out_x = MAX(frame_tl_in_x - frame_size, 0);
     const int frame_tl_in_y = MAX(border_in_y - frame_offset, 0);
     const int frame_tl_out_y = MAX(frame_tl_in_y - frame_size, 0);
+    binfo.border_top = frame_tl_out_y;
+    binfo.fl_top = frame_tl_in_y;
+    binfo.border_left = CLAMP(frame_tl_out_x, 0, roi_out->width);
+    binfo.fl_left = CLAMP(frame_tl_in_x, 0, roi_out->width);
     const int frame_in_width = floor((piece->buf_in.width * roi_in->scale) + frame_offset * 2);
     const int frame_in_height = floor((piece->buf_in.height * roi_in->scale) + frame_offset * 2);
     const int frame_out_width = frame_in_width + frame_size * 2;
@@ -496,49 +542,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const int frame_br_out_x
         = (d->frame_offset == 1.0f && (border_min_size == MIN(border_size_l, border_size_r)))
               ? (roi_out->width)
-              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width);
+              : CLAMP(image_lx - frame_offset - frame_size + frame_out_width - 1, 0, roi_out->width - 1);
     const int frame_br_out_y
         = (d->frame_offset == 1.0f && (border_min_size == MIN(border_size_t, border_size_b)))
               ? (roi_out->height)
-              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height);
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, col_frame, frame_tl_out_y, frame_br_out_y, frame_tl_out_x, frame_br_out_x, out_stride) \
-  schedule(static)
-#endif
-    //FIXME: don't fill the entire rectangle, only the actual frame line; that will eliminate need for following loop
-    for(int r = frame_tl_out_y; r <= frame_br_out_y; r++)
-    {
-      float *const buf = (float *)ovoid + ((size_t)r * out_stride);
-      for(int c = frame_tl_out_x; c <= frame_br_out_x; c++)
-        memcpy(buf + 4 * c, col_frame, sizeof(float) * 4);
-    }
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ovoid, col, frame_tl_in_y, frame_br_in_y, frame_tl_in_x, frame_br_in_x, out_stride) \
-  schedule(static)
-#endif
-    for(int r = frame_tl_in_y; r <= frame_br_in_y; r++)
-    {
-      float *const buf = (float *)ovoid + ((size_t)r * out_stride);
-      for(int c = frame_tl_in_x; c <= frame_br_in_x; c++)
-        memcpy(buf + 4*c, col, sizeof(float) * 4);
-    }
+              : CLAMP(image_ty - frame_offset - frame_size + frame_out_height - 1, 0, roi_out->height - 1);
+    binfo.fl_right = frame_br_in_x + 1;		// need end+1 for these coordinates
+    binfo.border_right = frame_br_out_x + 1;
+    binfo.fl_bot = frame_br_in_y + 1;
+    binfo.border_bot = frame_br_out_y + 1;
   }
-
-  // blit image inside border and fill the output with previous processed out
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ivoid, ovoid, roi_in, ch, border_in_x, border_in_y, in_stride, out_stride, cp_stride) \
-  schedule(static)
-#endif
-  for(int j = 0; j < roi_in->height; j++)
-  {
-    float *out = ((float *)ovoid) + (size_t)(j + border_in_y) * out_stride + ch * border_in_x;
-    const float *in = ((float *)ivoid) + (size_t)j * in_stride;
-    memcpy(out, in, cp_stride);
-  }
+  copy_image_with_border((float*)ovoid, (const float*)ivoid, &binfo);
 }
 
 #ifdef HAVE_OPENCL
