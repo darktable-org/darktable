@@ -139,6 +139,7 @@ def parse_commandline():
    parser.add_argument("-p","--program",metavar="EXE",help="full path to darktable-cli executable",default=DARKTABLE_CLI)
    parser.add_argument("-r","--reps",metavar="N",help="run N times and report average time",type=int,choices=range(1,10),default=3)
    parser.add_argument("-t","--threads",metavar="N",help="tell darktable-cli to use N threads",default=None)
+   parser.add_argument("-C","--cpuonly",action="store_true",help="disable OpenCL GPU acceleration",default=False)
    parser.add_argument("-T","--tempdir",metavar="DIR",help="directory in which to create test data",default=DARKTABLE_TMP)
    if len(sys.argv) < 1:
       parser.print_usage()
@@ -183,13 +184,18 @@ def run_benchmark(program,image,xmp,args):
    arglist = ["--hq","1",image,xmp,outimage,"--core","--library",":memory:","--configdir",confdir,"-d","perf"]
    if args.threads:
       arglist = arglist + ["-t",args.threads]
+   if args.cpuonly:
+      arglist = arglist + ["--disable-opencl"]
    trace = subprocess.check_output([program]+arglist,stdin=None,stderr=subprocess.PIPE)
    if trace:
       trace = trace.decode('utf-8').split('\n')
    loadtime = 0.0
    savetime = -1
    pixpipe = 0.0
+   gpu = False
    for t in trace:
+      if 'GPU' in t:
+         gpu = True
       if 'to load the image' in t:
          loadtime = extract_seconds(t)
       elif 'to save the image' in t:  ## dt doesn't yet report file write times, so this does nothing right now
@@ -198,7 +204,7 @@ def run_benchmark(program,image,xmp,args):
          pixpipe = extract_seconds(t)
    if savetime < 0:
       savetime = loadtime	# if no reported save time, assume it's the same as the time to load the image
-   return pixpipe, loadtime+pixpipe+savetime
+   return pixpipe, loadtime+pixpipe+savetime, gpu
 
 def warm_up_caches(program,image,xmp,args):
    xmp = locate_xmp(xmp,'null')
@@ -212,11 +218,15 @@ def get_version(program):
    if output:
       output = output.decode('utf-8').split('\n')
    if 'this is ' in output[0]:
-      return output[0][8:]
+      return output[0][8:].replace('-cli','')
    else:
       return "(Undetermined darktable version)"
 
-def print_performance(pixpipe,total,dtversion,xmpversion,imagename,threads):
+def print_performance(pixpipe,total,dtversion,xmpversion,imagename,threads,used_gpu):
+   if used_gpu:
+      gpu = "using GPU"
+   else:
+      gpu = "CPU only"
    print('')
    print(f'{dtversion} ::: benchmark v{xmpversion} ::: image {imagename}')
    if threads:
@@ -224,7 +234,7 @@ def print_performance(pixpipe,total,dtversion,xmpversion,imagename,threads):
    print(f'Average pixelpipe processing time:    {pixpipe:7.3f} seconds')
    print(f'Average overall processing time:      {total:7.3f} seconds')
    thruput = 3600 / total
-   print(f'Throughput rating (higher is better): {thruput:7.1f}')
+   print(f'Throughput rating (higher is better): {thruput:7.1f} ({gpu})')
    return
 
 def cleanup(args):
@@ -251,17 +261,20 @@ def main():
    warm_up_caches(args.program,args.image,args.xmp0,args)
    total = 0.0
    pixpipe = 0.0
+   used_gpu = False
    for rep in range(args.reps):
       if args.reps > 1:
          print('     run #',rep+1,end='')
-      p, t = run_benchmark(args.program,args.image,args.xmp,args)
+      p, t, g = run_benchmark(args.program,args.image,args.xmp,args)
       pixpipe += p
       total += t
+      if g:
+         used_gpu = True
       if args.reps > 1:
          print(f': {p:7.3f} pixpipe,  {t:7.3f} total')
    total = total / args.reps
    pixpipe = pixpipe / args.reps
-   print_performance(pixpipe,total,get_version(args.program),args.version,args.image_base,args.threads)
+   print_performance(pixpipe,total,get_version(args.program),args.version,args.image_base,args.threads,used_gpu)
    cleanup(args)
    return
 
