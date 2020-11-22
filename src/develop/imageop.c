@@ -1260,13 +1260,19 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
                                  : module_name);
   g_free(module_name);
 
-  gchar *tooltip = module->description(module);
   gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
-  gtk_widget_set_tooltip_text(lab, tooltip);
+  if((module->flags() & IOP_FLAGS_DEPRECATED) && module->deprecated_msg())
+    gtk_widget_set_tooltip_text(lab, module->deprecated_msg());
+  else
+  {
+    gchar *tooltip = module->description(module);
+    gtk_widget_set_tooltip_text(lab, tooltip);
+    g_free(tooltip);
+  }
+
   g_free(label);
-  g_free(tooltip);
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
