@@ -48,6 +48,10 @@ The following commandline options are available:
    		tell darktable-cli to run with N threads (default is
 		the number of hardware threads)
 
+   -C / --cpuonly
+		disable OpenCL GPU acceleration and run using the CPU
+		only
+
    -T PATH / --tempdir PATH
    		store temporary files in a scratch directory under
    		PATH (default /tmp)
@@ -57,7 +61,7 @@ Report
 
 darktable-bench prints the time each development took, as well as the
 average and the throughput rating, which is the estimated number of
-image that could be exported per hour.  The reported times are the
+images that could be exported per hour.  The reported times are the
 total pixelpipe processing time reported by darktable-cli, and the
 pixelpipe time plus load/save time.  As darktable-cli currently does
 not report the time needed to write the final result, darktable-bench
@@ -70,10 +74,10 @@ Sample output
 	   run # 2:   8.322 pixpipe,    8.546 total
 	   run # 3:   8.162 pixpipe,    8.384 total
 
-      darktable-cli 3.2.1 ::: benchmark v3.4 ::: image mire1.cr2
+      darktable 3.2.1 ::: benchmark v3.4 ::: image mire1.cr2
       Average pixelpipe processing time:      8.242 seconds
       Average overall processing time:        8.465 seconds
-      Throughput rating (higher is better):   425.3
+      Throughput rating (higher is better):   425.3 (CPU only)
 
 
 
