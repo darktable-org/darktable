@@ -146,9 +146,37 @@ gboolean restart_required = FALSE;
 
   <xsl:text>&#xA;static void&#xA;init_tab_lighttable</xsl:text><xsl:value-of select="$tab_start"/><xsl:text>  gtk_stack_add_titled(GTK_STACK(stack), scroll, _("lighttable"), _("lighttable"));&#xA;</xsl:text>
 
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='lighttable']">
+  <!-- general section -->
+  <xsl:text>
+    {
+      GtkWidget *seclabel = gtk_label_new(_("general"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+    }
+  </xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='lighttable' and @section='general']">
     <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
+
+  <!-- module section -->
+
+  <xsl:text>
+   {
+      GtkWidget *seclabel = gtk_label_new(_("thumbnails"));
+      GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(lbox), seclabel, FALSE, FALSE, 0);
+      gtk_widget_set_name(lbox, "pref_section");
+      gtk_grid_attach(GTK_GRID(grid), lbox, 0, line++, 2, 1);
+   }
+  </xsl:text>
+
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='lighttable' and @section='thumbs']">
+    <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+
   <xsl:value-of select="$tab_end" />
 
   <!-- darkroom -->
