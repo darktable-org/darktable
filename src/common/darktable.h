@@ -124,7 +124,7 @@ typedef unsigned int u_int;
 // for signal debugging symbols
 #include "control/signal.h"
 
-#define DT_MODULE_VERSION 22 // version of dt's module interface
+#define DT_MODULE_VERSION 23 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
