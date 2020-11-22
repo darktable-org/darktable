@@ -95,6 +95,15 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("rotate image by step of 90 degrees."),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("geometric, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_orientation,
                                                      dt_image_orientation_t user_orientation)
 {
