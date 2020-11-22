@@ -1009,13 +1009,13 @@ void init_presets(dt_lib_module_t *self)
   gchar *tx = NULL;
   tx = dt_util_dstrcat(tx, "1ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
-                       "|flip|highlights|invert|negadoctor|overexposed|rawoverexposed|rawprepare"
+                       "|flip|highlights|negadoctor|overexposed|rawoverexposed|rawprepare"
                        "|shadhi|temperature|toneequal");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"),
-                       "tone", "bilat|filmicrgb|globaltonemap|levels"
-                       "|rgbcurve|rgblevels|tonecurve|tonemap");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"), "tone",
+                       "bilat|filmicrgb|levels"
+                       "|rgbcurve|rgblevels|tonecurve");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixer|channelmixerrgb|colorbalance|colorchecker|colorcontrast"
+                       "channelmixerrgb|colorbalance|colorchecker|colorcontrast"
                        "|colorcorrection|colorin|colorout|colorzones|lut3d|monochrome"
                        "|profile_gamma|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
@@ -1047,7 +1047,7 @@ void init_presets(dt_lib_module_t *self)
                        "basecurve|toneequal|clipping|flip|exposure|temperature"
                        "|rgbcurve|rgblevels|bilat|shadhi|highlights");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixer|colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
+                       "channelmixerrgb|colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
                        "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
                        "|lens|retouch|liquify|sharpen|nlmeans");
@@ -1075,17 +1075,17 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "1ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "technical"), "technical",
                        "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
                        "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
-                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|invert|lens"
+                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|lens"
                        "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
                        "|rawoverexposed|rotatepixels||temperature|scalepixels");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
-                       "basicadj|channelmixer|channelmixerrgb|colisa|colorbalance"
-                       "|colorcontrast|colorcorrection|colorize|colorzones|globaltonemap"
+                       "basicadj|channelmixerrgb|colisa|colorbalance"
+                       "|colorcontrast|colorcorrection|colorize|colorzones"
                        "|graduatednd|levels|rgbcurve|rgblevels|shadhi|splittoning"
-                       "|tonecurve|toneequal|tonemap"
+                       "|tonecurve|toneequal"
                        "|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
-                       "atrous|bilat|bloom|borders|clahe|colormapping"
+                       "atrous|bilat|bloom|borders|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
   dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
