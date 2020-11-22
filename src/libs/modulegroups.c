@@ -1246,7 +1246,8 @@ static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, i
   while(modules2)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules2->data);
-    if(g_list_find_custom(gr->modules, module->op, _iop_compare) && !dt_iop_is_hidden(module))
+    if((!(module->flags() & IOP_FLAGS_DEPRECATED) || !g_strcmp0(gr->name, C_("modulegroup", "deprecated")))
+       && !dt_iop_is_hidden(module) && g_list_find_custom(gr->modules, module->op, _iop_compare))
     {
       // we want to avoid showing multiple instances of the same module
       if(module->multi_priority <= 0
