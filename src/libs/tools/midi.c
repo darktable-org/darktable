@@ -415,7 +415,7 @@ void refresh_sliders_to_device(MidiDevice *midi)
           k->locked = FALSE;
         }
 
-        GtkWidget *w = GTK_WIDGET(k->accelerator->closure->data);
+        GtkWidget *w = k->accelerator->closure ? GTK_WIDGET(k->accelerator->closure->data) : NULL;
         if (k->group == midi->group && w)
         {
           const gboolean is_slider = DT_BAUHAUS_WIDGET(w)->type == DT_BAUHAUS_SLIDER;
@@ -635,7 +635,9 @@ void aggregate_and_set_slider(MidiDevice *midi,
     {
       if (midi->stored_knob)
       {
-        GtkWidget *w = midi->stored_knob->accelerator->closure->data;
+        GtkWidget *w = midi->stored_knob->accelerator->closure
+                     ? midi->stored_knob->accelerator->closure->data
+                     : NULL;
 
         if (w)
         {
@@ -981,7 +983,8 @@ void note_on(MidiDevice *midi, gint channel, gint note)
       {
         if ((d->group == midi->group) &&
             (d->channel == channel) &&
-            (d->key == note - midi->reset_knob_key + midi->first_knob_key))
+            (d->key == note - midi->reset_knob_key + midi->first_knob_key) &&
+            d->accelerator->closure)
         {
           dt_bauhaus_slider_reset(d->accelerator->closure->data);
         }
