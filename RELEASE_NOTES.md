@@ -142,7 +142,7 @@ making a backup is strongly advised.
   print size (cm or inch) and DPI or a scale factor.
 
 - The FilmicRGB module has new graph views to help first time users.
-  These views include a defaut base curve view in linear and logarithmic scales,
+  These views include a default base curve view in linear and logarithmic scales,
   consistent with the base curve module to help comparing them, and
   a zone-system view that shows the dynamic range mapping between scene
   and display grey scales. All the views get optional legends, that can be
