@@ -923,7 +923,7 @@
     <shortdescription>pattern for the thumbnail tooltip (empty to disable)</shortdescription>
     <longdescription>see manual to know all the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>pressure_sensitivity</name>
     <type>
       <enum>
@@ -939,7 +939,7 @@
     <shortdescription>pen pressure control for brush masks</shortdescription>
     <longdescription>off - pressure reading ignored, hardness/opacity/brush size - pressure reading controls specified attribute, absolute/relative - pressure reading is taken directly as attribute value or multiplied with pre-defined setting.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>brush_smoothing</name>
     <type>
       <enum>
@@ -952,7 +952,7 @@
     <shortdescription>smoothing of brush strokes</shortdescription>
     <longdescription>sets level for smoothing of brush strokes. stronger smoothing leads to less nodes and easier editing but with lower control of accuracy.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>channel_display</name>
     <type>
       <enum>
@@ -964,14 +964,14 @@
     <shortdescription>display of individual color channels</shortdescription>
     <longdescription>defines how color channels are displayed when activated in the parametric masks feature.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_pattern</name>
     <type>longstring</type>
     <default>$(EXIF_EXPOSURE) • f/$(EXIF_APERTURE) • $(EXIF_FOCAL_LENGTH) mm • $(EXIF_ISO) ISO</default>
     <shortdescription>pattern for the image information line</shortdescription>
     <longdescription>see manual for a list of the tags you can use.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/image_infos_position</name>
     <type>
       <enum>
@@ -1007,7 +1007,7 @@
     <shortdescription>sort built-in presets first</shortdescription>
     <longdescription>whether to show built-in presets first before user's presets in presets menu.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/hide_default_presets</name>
     <type>bool</type>
     <default>false</default>
@@ -1536,21 +1536,21 @@
     <shortdescription>always show thumbnail overlays</shortdescription>
     <longdescription>show overlays (rating stars, "edited" mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/single_module</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>expand a single darkroom module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/single_module_group_only</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>only collapse modules in current group</shortdescription>
     <longdescription>if only expanding a single module at a time, only collapse other modules in the current group - ignore modules in other groups</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/activate_expand</name>
     <type>bool</type>
     <default>false</default>
@@ -1620,7 +1620,7 @@
     <shortdescription>panels collapsing state in preview mode</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/scroll_to_module</name>
     <type>bool</type>
     <default>true</default>
@@ -1634,14 +1634,14 @@
     <shortdescription>mouse wheel scrolls modules side panel by default</shortdescription>
     <longdescription>when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to use mouse wheel for data entry.  when disabled, this behavior is reversed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/ui/border_size</name>
     <type>int</type>
     <default>10</default>
     <shortdescription>border around image in darkroom mode</shortdescription>
     <longdescription>process the image in darkroom mode with a small border. set to 0 if you don't want any border.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>darkroom/ui/scrollbars</name>
     <type>bool</type>
     <default>false</default>
@@ -1780,7 +1780,7 @@
     <shortdescription>whether to show the compute variance mode in denoiseprofile</shortdescription>
     <longdescription>adds a mode in denoiseprofile that allows to compute the variance after the generalized anscombe transform is performed</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>plugins/darkroom/demosaic/quality</name>
     <type>
       <enum>
@@ -1793,7 +1793,7 @@
     <shortdescription>demosaicing for zoomed out darkroom mode</shortdescription>
     <longdescription>interpolation when not viewing 1:1 in darkroom mode: bilinear is fastest, but not as sharp. middle ground is using PPG + interpolation modes specified on the 'pixel interpolator' option (processing tab), full will use exactly the settings for full-size export. X-Trans sensors use VNG rather than PPG as middle ground.</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" >
+  <dtconfig prefs="darkroom" section="general">
     <name>preview_downsampling</name>
     <type>
       <enum>
@@ -2468,7 +2468,7 @@
     <shortdescription>Geotagging search URL</shortdescription>
     <longdescription>this can be changed when the default OpenStreetMap search URL is broken</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="interface">
+  <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/temperature/colored_sliders</name>
     <type>
       <enum>
@@ -2495,7 +2495,7 @@
     <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
     <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="interface">
+  <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/colorbalance/layout</name>
     <type>
       <enum>
@@ -2508,7 +2508,7 @@
     <shortdescription>colorbalance slider block layout</shortdescription>
     <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom">
+  <dtconfig prefs="darkroom" section="general">
     <name>darkroom/ui/hide_header_buttons</name>
     <type>
       <enum>
