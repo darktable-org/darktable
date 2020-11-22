@@ -1853,7 +1853,7 @@ void reload_defaults(dt_iop_module_t *module)
   // currently we only support jpeg, j2k, tiff and png
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, module->dev->image_storage.id, 'w');
 
-  if(!img->profile)
+  if(!dt_image_is_matrix_correction_supported(img))
   {
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
