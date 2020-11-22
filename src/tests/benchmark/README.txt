@@ -10,8 +10,11 @@ same version of darktable, the same image, and the same sidecar file.
 Unless you override the image or sidecar, they will remain the same.
 Comparisons between different darktable versions will also reflect
 performance changes between the versions (for example, darktable 3.2.1
-rates ~430 on a 32-core Threadripper, while darktable 3.4 rates ~660
+rates ~410 on a 32-core Threadripper, while darktable 3.4 rates ~565
 on the same hardware).
+
+Note that on a slow machine, it could easily take three to five
+minutes to run the benchmark.
 
 Usage
 -----
@@ -60,24 +63,27 @@ Report
 ------
 
 darktable-bench prints the time each development took, as well as the
-average and the throughput rating, which is the estimated number of
-images that could be exported per hour.  The reported times are the
-total pixelpipe processing time reported by darktable-cli, and the
-pixelpipe time plus load/save time.  As darktable-cli currently does
-not report the time needed to write the final result, darktable-bench
-assumes that the save time is the same as the load time.
+average and the throughput rating, which is the approximate number of
+images of this size with this processing that could be exported per
+hour.  (You will likely see greater throughput on your own images, as
+the benchmark processing is deliberately very compute-intensive.)  The
+reported times are the total pixelpipe processing time reported by
+darktable-cli, and the pixelpipe time plus load/save time.  As
+darktable-cli currently does not report the time needed to write the
+final result, darktable-bench assumes that the save time is the same
+as the load time.
 
 Sample output
 
       Preparing...done
-	   run # 1:   8.243 pixpipe,    8.465 total
-	   run # 2:   8.322 pixpipe,    8.546 total
-	   run # 3:   8.162 pixpipe,    8.384 total
+	   run # 1:   8.595 pixpipe,    8.817 total
+	   run # 2:   8.572 pixpipe,    8.796 total
+	   run # 3:   8.548 pixpipe,    8.770 total
 
       darktable 3.2.1 ::: benchmark v3.4 ::: image mire1.cr2
-      Average pixelpipe processing time:      8.242 seconds
-      Average overall processing time:        8.465 seconds
-      Throughput rating (higher is better):   425.3 (CPU only)
+      Average pixelpipe processing time:      8.572 seconds
+      Average overall processing time:        8.794 seconds
+      Throughput rating (higher is better):   409.4 (CPU only)
 
 
 
