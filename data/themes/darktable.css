@@ -896,7 +896,8 @@ tooltip,
 popover,
 combobox window,
 dialog combobox window,
-#bauhaus-popup,
+#bauhaus-combobox *,
+#bauhaus-slider *,
 #modulegroups-iop-popup
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
