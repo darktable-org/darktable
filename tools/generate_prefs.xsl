@@ -177,7 +177,9 @@ gboolean restart_required = FALSE;
   <xsl:for-each select="./dtconfiglist/dtconfig[@prefs='otherviews' and @section='geoloc']">
     <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
-<xsl:text>
+
+  <!-- slideshow section -->
+  <xsl:text>
    {
       GtkWidget *seclabel = gtk_label_new(_("slideshow"));
       GtkWidget *lbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
