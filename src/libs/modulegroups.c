@@ -41,6 +41,9 @@ DT_MODULE(1)
 #define DEPRECATED_PRESET_NAME     "modules: deprecated"
 #define T_DEPRECATED_PRESET_NAME _("modules: deprecated")
 
+#define CURRENT_PRESET_NAME "last modified layout"
+#define T_CURRENT_PRESET_NAME _("last modified layout")
+
 // if a preset cannot be loaded or the current preset deleted, this is the fallabck preset
 
 #define PADDING 2
@@ -128,6 +131,8 @@ static void _lib_modulegroups_viewchanged_callback(gpointer instance, dt_view_t 
 
 static void _manage_preset_update_list(dt_lib_module_t *self);
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self);
+
+static void _buttons_update(dt_lib_module_t *self);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -241,76 +246,6 @@ static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(gchar *icon)
     return dtgtk_cairo_paint_modulegroup_technical;
 
   return dtgtk_cairo_paint_modulegroup_basic;
-}
-
-static void _buttons_update(dt_lib_module_t *self)
-{
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  // first, we destroy all existing buttons except active one an preset one
-  GList *l = gtk_container_get_children(GTK_CONTAINER(d->hbox_groups));
-  if(l) l = g_list_next(l);
-  while(l)
-  {
-    GtkWidget *bt = (GtkWidget *)l->data;
-    gtk_widget_destroy(bt);
-    l = g_list_next(l);
-  }
-
-  // if there's no groups, we ensure that the preset button is on the search line and we hide the active button
-  gtk_widget_set_visible(d->hbox_search_box, d->show_search);
-  if(g_list_length(d->groups) == 0 && d->show_search)
-  {
-    if(gtk_widget_get_parent(self->presets_button) != d->hbox_search_box)
-    {
-      g_object_ref(self->presets_button);
-      gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(self->presets_button)), self->presets_button);
-      gtk_box_pack_start(GTK_BOX(d->hbox_search_box), self->presets_button, FALSE, FALSE, 0);
-      g_object_unref(self->presets_button);
-    }
-    gtk_widget_hide(d->hbox_buttons);
-    d->current = DT_MODULEGROUP_ACTIVE_PIPE;
-    _lib_modulegroups_update_iop_visibility(self);
-    return;
-  }
-  else
-  {
-    if(gtk_widget_get_parent(self->presets_button) != d->hbox_buttons)
-    {
-      g_object_ref(self->presets_button);
-      gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(self->presets_button)), self->presets_button);
-      gtk_box_pack_start(GTK_BOX(d->hbox_buttons), self->presets_button, FALSE, FALSE, 0);
-      g_object_unref(self->presets_button);
-    }
-    gtk_widget_show(d->hbox_buttons);
-    gtk_widget_show(d->hbox_groups);
-  }
-
-  // then we repopulate the box with new buttons
-  l = d->groups;
-  while(l)
-  {
-    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
-    GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), CPF_STYLE_FLAT, NULL);
-    g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-    gtk_widget_set_tooltip_text(bt, gr->name);
-    gr->button = bt;
-    gtk_box_pack_start(GTK_BOX(d->hbox_groups), bt, TRUE, TRUE, 0);
-    gtk_widget_show(bt);
-    l = g_list_next(l);
-  }
-
-  // last, if d->current still valid, we select it otherwise the first one
-  int cur = d->current;
-  d->current = -1;
-  if(cur > g_list_length(d->groups)) cur = 0;
-  if(cur == 0)
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
-  else
-  {
-    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, cur - 1);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gr->button), TRUE);
-  }
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1175,13 +1110,13 @@ void init_presets(dt_lib_module_t *self)
   if(!dt_conf_key_exists("plugins/darkroom/modulegroups_preset"))
   {
     tx = _preset_retrieve_old_layout(NULL, NULL);
-    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+    dt_lib_presets_add(_("previous config"), self->plugin_name, self->version(), tx, strlen(tx), FALSE);
     dt_conf_set_string("plugins/darkroom/modulegroups_preset", _("previous layout"));
     g_free(tx);
 
     tx = _preset_retrieve_old_layout_updated();
     dt_lib_presets_add(_("previous config with new layout"), self->plugin_name, self->version(), tx,
-                       strlen(tx), TRUE);
+                       strlen(tx), FALSE);
     g_free(tx);
   }
   // if they exists, we retrieve old user presets from old modulelist lib
@@ -1372,7 +1307,37 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
   }
 }
 
-static void _manage_editor_module_add(GtkWidget *widget, gpointer data)
+static void _manage_direct_save(dt_lib_module_t *self)
+{
+  // get all the values
+  gchar *params = _preset_to_string(self, FALSE);
+  // update the preset in the database
+  dt_lib_presets_add(_(CURRENT_PRESET_NAME), self->plugin_name, self->version(), params, strlen(params), FALSE);
+  g_free(params);
+
+  // update the preset name
+  dt_conf_set_string("plugins/darkroom/modulegroups_preset", _(CURRENT_PRESET_NAME));
+  // and we update the gui
+  if(!dt_lib_presets_apply(_(CURRENT_PRESET_NAME), self->plugin_name, self->version()))
+    dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME), self->plugin_name, self->version());
+}
+
+static void _manage_direct_module_add(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
+  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  if(g_strcmp0(module, "") == 0) return;
+
+  if(!g_list_find_custom(gr->modules, module, _iop_compare))
+  {
+    gr->modules = g_list_append(gr->modules, g_strdup(module));
+    GtkWidget *pop = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "popup");
+    gtk_widget_destroy(pop);
+    _manage_direct_save(self);
+  }
+}
+
+static void _manage_editor_module_add(GtkWidget *widget, GdkEventButton *event, gpointer data)
 {
   gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
@@ -1402,10 +1367,9 @@ static int _manage_editor_module_add_sort(gconstpointer a, gconstpointer b)
   g_free(sb);
   return res;
 }
-static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
+static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_group_t *gr, GCallback callback,
+                                     gpointer data)
 {
-  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
-
   GtkWidget *pop = gtk_popover_new(widget);
   gtk_widget_set_name(pop, "modulegroups-iop-popup");
   GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
@@ -1416,6 +1380,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   GtkWidget *lb = NULL;
 
   int rec_nb = 0;
+  int other_nb = 0;
 
   GList *m2 = g_list_copy(g_list_first(darktable.iop));
   GList *modules = g_list_sort(m2, _manage_editor_module_add_sort);
@@ -1433,7 +1398,7 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
         g_object_set_data(G_OBJECT(bt), "group", gr);
         g_object_set_data(G_OBJECT(bt), "popup", pop);
         gtk_label_set_xalign(GTK_LABEL(gtk_bin_get_child(GTK_BIN(bt))), 1.0);
-        g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_module_add), NULL);
+        g_signal_connect(G_OBJECT(bt), "button-press-event", callback, data);
 
         // does it belong to recommended modules ?
         GtkWidget *vbc = vb2;
@@ -1441,14 +1406,18 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
            || ((module->default_group() & IOP_GROUP_COLOR) && g_strcmp0(gr->name, _("color")) == 0)
            || ((module->default_group() & IOP_GROUP_CORRECT) && g_strcmp0(gr->name, _("correct")) == 0)
            || ((module->default_group() & IOP_GROUP_TONE) && g_strcmp0(gr->name, _("tone")) == 0)
-           || ((module->default_group() & IOP_GROUP_EFFECT) && g_strcmp0(gr->name, _("effect")) == 0)
+           || ((module->default_group() & IOP_GROUP_EFFECT)
+               && g_strcmp0(gr->name, C_("modulegroup", "effect")) == 0)
            || ((module->default_group() & IOP_GROUP_TECHNICAL) && g_strcmp0(gr->name, _("technical")) == 0)
            || ((module->default_group() & IOP_GROUP_GRADING) && g_strcmp0(gr->name, _("grading")) == 0)
-           || ((module->default_group() & IOP_GROUP_EFFECTS) && g_strcmp0(gr->name, _("effects")) == 0))
+           || ((module->default_group() & IOP_GROUP_EFFECTS)
+               && g_strcmp0(gr->name, C_("modulegroup", "effects")) == 0))
         {
           vbc = vb1;
           rec_nb++;
         }
+        else
+          other_nb++;
         // gtk_container_add(GTK_CONTAINER(ev), lb);
         gtk_box_pack_start(GTK_BOX(vbc), bt, FALSE, TRUE, 0);
       }
@@ -1460,13 +1429,13 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   if(rec_nb > 0)
   {
     // we show the list of recommended modules
-    lb = gtk_label_new(_("recommended"));
+    lb = gtk_label_new(ngettext("recommended module", "recommended modules", rec_nb));
     gtk_label_set_xalign(GTK_LABEL(lb), 0);
     gtk_widget_set_name(lb, "modulegroups_iop_title");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vb), vb1, FALSE, TRUE, 0);
     // and the title for the other modules
-    lb = gtk_label_new(_("other"));
+    lb = gtk_label_new(ngettext("other", "others", rec_nb));
     gtk_label_set_xalign(GTK_LABEL(lb), 0);
     gtk_widget_set_name(lb, "modulegroups_iop_title");
     gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
@@ -1477,6 +1446,96 @@ static void _manage_editor_module_add_popup(GtkWidget *widget, gpointer data)
   gtk_container_add(GTK_CONTAINER(sw), vb);
   gtk_container_add(GTK_CONTAINER(pop), sw);
   gtk_widget_show_all(pop);
+}
+
+static void _manage_editor_module_add_popup(GtkWidget *widget, GdkEventButton *event, gpointer data)
+{
+  dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+  _manage_module_add_popup(widget, gr, G_CALLBACK(_manage_editor_module_add), data);
+}
+
+static gboolean _manage_direct_popup(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+  {
+    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
+    if(!g_strcmp0(gr->name, C_("modulegroup", "deprecated"))) return FALSE;
+    _manage_module_add_popup(widget, gr, G_CALLBACK(_manage_direct_module_add), self);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static void _buttons_update(dt_lib_module_t *self)
+{
+  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // first, we destroy all existing buttons except active one an preset one
+  GList *l = gtk_container_get_children(GTK_CONTAINER(d->hbox_groups));
+  if(l) l = g_list_next(l);
+  while(l)
+  {
+    GtkWidget *bt = (GtkWidget *)l->data;
+    gtk_widget_destroy(bt);
+    l = g_list_next(l);
+  }
+
+  // if there's no groups, we ensure that the preset button is on the search line and we hide the active button
+  gtk_widget_set_visible(d->hbox_search_box, d->show_search);
+  if(g_list_length(d->groups) == 0 && d->show_search)
+  {
+    if(gtk_widget_get_parent(self->presets_button) != d->hbox_search_box)
+    {
+      g_object_ref(self->presets_button);
+      gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(self->presets_button)), self->presets_button);
+      gtk_box_pack_start(GTK_BOX(d->hbox_search_box), self->presets_button, FALSE, FALSE, 0);
+      g_object_unref(self->presets_button);
+    }
+    gtk_widget_hide(d->hbox_buttons);
+    d->current = DT_MODULEGROUP_ACTIVE_PIPE;
+    _lib_modulegroups_update_iop_visibility(self);
+    return;
+  }
+  else
+  {
+    if(gtk_widget_get_parent(self->presets_button) != d->hbox_buttons)
+    {
+      g_object_ref(self->presets_button);
+      gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(self->presets_button)), self->presets_button);
+      gtk_box_pack_start(GTK_BOX(d->hbox_buttons), self->presets_button, FALSE, FALSE, 0);
+      g_object_unref(self->presets_button);
+    }
+    gtk_widget_show(d->hbox_buttons);
+    gtk_widget_show(d->hbox_groups);
+  }
+
+  // then we repopulate the box with new buttons
+  l = d->groups;
+  while(l)
+  {
+    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
+    GtkWidget *bt = dtgtk_togglebutton_new(_buttons_get_icon_fct(gr->icon), CPF_STYLE_FLAT, NULL);
+    g_object_set_data(G_OBJECT(bt), "group", gr);
+    g_signal_connect(bt, "button-press-event", G_CALLBACK(_manage_direct_popup), self);
+    g_signal_connect(bt, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
+    gtk_widget_set_tooltip_text(bt, gr->name);
+    gr->button = bt;
+    gtk_box_pack_start(GTK_BOX(d->hbox_groups), bt, TRUE, TRUE, 0);
+    gtk_widget_show(bt);
+    l = g_list_next(l);
+  }
+
+  // last, if d->current still valid, we select it otherwise the first one
+  int cur = d->current;
+  d->current = -1;
+  if(cur > g_list_length(d->groups)) cur = 0;
+  if(cur == 0)
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->active_btn), TRUE);
+  else
+  {
+    dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, cur - 1);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(gr->button), TRUE);
+  }
 }
 
 static void _manage_editor_group_move_right(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)

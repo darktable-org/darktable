@@ -156,6 +156,13 @@
 @define-color graph_grid @grey_05;
 @define-color graph_overlay @grey_50;
 @define-color inset_histogram alpha(@grey_65, 0.50);
+/* Primaries selected for visual legibility across a variety of
+   gamuts, and to combine to pleasing secondaries. The combination of
+   all three must either to either the same number or >= 255 to
+   produce a neutral overlap. */
+@define-color graph_red rgb(237,30,20);
+@define-color graph_green rgb(28,235,26);
+@define-color graph_blue rgb(14,14,233);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
 *
@@ -826,6 +833,28 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
     padding: 2px;
 }
 
+/*--------------------------------------------------------
+  - Bauhaus controls (sliders and comboboxes in modules) -
+  --------------------------------------------------------*/
+
+#bauhaus-popup
+{
+  color: @bauhaus_fg;
+}
+
+#bauhaus-popup:selected
+{
+  color: @bauhaus_fg_selected;
+}
+
+#bauhaus-combobox,
+#bauhaus-slider
+{
+  min-height: 1em;
+  background-color: transparent;
+  color: @bauhaus_fg;
+}
+
 /*----------------------------------------
   - Context menu & tooltips & comboboxes -
   ----------------------------------------*/
@@ -866,16 +895,23 @@ menuitem arrow,
 tooltip,
 popover,
 combobox window,
-dialog combobox window
+dialog combobox window,
+#bauhaus-popup,
+#modulegroups-iop-popup
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
   border-radius: 2px;
-  border: 0;
+  border: 1px solid @button_border;
   outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em 0;
+}
+
+#modulegroups-iop-popup viewport
+{
+  background-color: @tooltip_bg_color;
 }
 
 popover
@@ -1016,29 +1052,6 @@ notebook tab label /* disabled tabs */
 notebook header /* add space between notebook tabs and options below */
 {
   margin-bottom: 6px;
-}
-
-/*--------------------------------------------------------
-  - Bauhaus controls (sliders and comboboxes in modules) -
-  --------------------------------------------------------*/
-
-#bauhaus-popup
-{
-  background-color: @really_dark_bg_color;
-  color: @bauhaus_fg;
-}
-
-#bauhaus-popup:selected
-{
-  color: @bauhaus_fg_selected;
-}
-
-#bauhaus-combobox,
-#bauhaus-slider
-{
-  min-height: 1em;
-  background-color: transparent;
-  color: @bauhaus_fg;
 }
 
 /*--------------------------
@@ -1265,7 +1278,7 @@ margin: 0 2px;
 {
   color: @fg_color;
   background-color: @plugin_bg_color;
-  padding-left: 0.5em;
+  padding: 0.5em 0.6em;
 }
 
 #modulegroups-presets-list
@@ -1280,6 +1293,8 @@ margin: 0 2px;
   color: @plugin_label_color;
   border-left: 2px solid @bg_color;
   padding: 7px 17px;
+  font-size: 1.1em;
+  min-width: 150px;
 }
 
 #modulegroups-iop-header,
@@ -1293,14 +1308,8 @@ margin: 0 2px;
 
 #modulegroups-header
 {
+  padding-top: 0.5em;
   margin-bottom: 0.4em;
-}
-
-#modulegroups-preset,
-#modulegroups-preset-activated
-{
-  font-size: 1.1em;
-  min-width: 150px;
 }
 
 #modulegroups-group-icon {
@@ -1317,6 +1326,12 @@ margin: 0 2px;
 #modulegroups-iop-popup-name
 {
   border: 0;
+}
+
+#modulegroups_iop_title,
+#modulegroups-iop-popup-name
+{
+   padding: 0.2em 0.5em;
 }
 
 #modulegroups-groups-title
@@ -1378,12 +1393,6 @@ margin: 0 2px;
   min-width: 1.6em;
   min-height: 1.6em;
   border: 0;
-}
-
-#modulegroups-iop-popup
-{
-  padding: 0.2em;
-  background-color: @grey_30;
 }
 
 #modulegroups_iop_title

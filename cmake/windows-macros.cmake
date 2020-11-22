@@ -128,6 +128,16 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
   endif()
 
+  # workaround for msys2 gmic 2.9.0-3. Should be reviewed when gmic 2.9.3 is available
+  if(GMIC_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #GMIC
+      ${MINGW_PATH}/libopencv_core*.dll
+      ${MINGW_PATH}/libopencv_videoio*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
   if(WebP_FOUND)
     file(GLOB TMP_SYSTEM_RUNTIME_LIBS
       #LIBWEBP

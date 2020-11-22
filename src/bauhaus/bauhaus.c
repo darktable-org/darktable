@@ -536,6 +536,9 @@ void dt_bauhaus_load_theme()
   gtk_style_context_lookup_color(ctx, "graph_fg_active", &darktable.bauhaus->graph_fg_active);
   gtk_style_context_lookup_color(ctx, "graph_overlay", &darktable.bauhaus->graph_overlay);
   gtk_style_context_lookup_color(ctx, "inset_histogram", &darktable.bauhaus->inset_histogram);
+  gtk_style_context_lookup_color(ctx, "graph_red", &darktable.bauhaus->graph_primaries[0]);
+  gtk_style_context_lookup_color(ctx, "graph_green", &darktable.bauhaus->graph_primaries[1]);
+  gtk_style_context_lookup_color(ctx, "graph_blue", &darktable.bauhaus->graph_primaries[2]);
 
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
@@ -1393,7 +1396,7 @@ static void draw_equilateral_triangle(cairo_t *cr, float radius)
 }
 
 
-static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr, const GdkRGBA *fg_color, const GdkRGBA *border_color)
+static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr, const GdkRGBA fg_color, const GdkRGBA border_color)
 {
   // draw scale indicator (the tiny triangle)
   GtkWidget *widget = GTK_WIDGET(w);
@@ -1412,7 +1415,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   // draw the outer triangle
   draw_equilateral_triangle(cr, size);
   cairo_set_line_width(cr, border_width);
-  set_color(cr, *border_color);
+  set_color(cr, border_color);
   cairo_stroke(cr);
 
   draw_equilateral_triangle(cr, size - border_width);
@@ -1420,7 +1423,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
 
   // draw the inner triangle
   draw_equilateral_triangle(cr, size - border_width);
-  set_color(cr, *fg_color);
+  set_color(cr, fg_color);
   cairo_set_line_width(cr, border_width);
 
   const dt_bauhaus_slider_data_t *d = &w->data.slider;
@@ -1673,7 +1676,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // dimensions of the popup
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = inner_height(allocation);
+  const int width = allocation.width;
+  const int height = inner_height(allocation);
 
   // dimensions of the original line
   GtkWidget *current = GTK_WIDGET(w);
@@ -1749,7 +1753,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
 
       // draw indicator
-      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, fg_color, bg_color);
+      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, *fg_color, *bg_color);
 
       // draw numerical value:
       cairo_save(cr);
@@ -1983,7 +1987,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         cairo_save(cr);
         cairo_rectangle(cr, 0, 0, width - darktable.bauhaus->quad_width - INNER_PADDING, height + INNER_PADDING);
         cairo_clip(cr);
-        dt_bauhaus_draw_indicator(w, d->pos, cr, fg_color, &darktable.bauhaus->indicator_border);
+        dt_bauhaus_draw_indicator(w, d->pos, cr, *fg_color, darktable.bauhaus->indicator_border);
         cairo_restore(cr);
 
         // TODO: merge that text with combo

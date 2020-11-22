@@ -1534,6 +1534,29 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   // we prefetch next/previous images
   _thumbs_prefetch(table);
 
+  // ensure one of the shown image as the focus (to avoid to keep focus to hidden image)
+  const int selid = dt_control_get_mouse_over_id();
+  if(selid >= 0)
+  {
+    gboolean in_list = FALSE;
+    l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+      if(thumb->imgid == selid)
+      {
+        in_list = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+    if(!in_list)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+      dt_control_set_mouse_over_id(thumb->imgid);
+    }
+  }
+
   // be sure the focus is in the right widget (needed for accels)
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
 

@@ -63,6 +63,7 @@ DT_MODULE_INTROSPECTION(2, dt_iop_channelmixer_rgb_params_t)
 
 
 #define CHANNEL_SIZE 4
+#define NORM_MIN 1e-6f
 
 typedef struct dt_iop_channelmixer_rgb_params_t
 {
@@ -391,10 +392,8 @@ static inline float euclidean_norm(const float vector[4])
 static inline void downscale_vector(float vector[4], const float scaling)
 {
   // check zero or NaN
-  static const float eps = 1e-6f;
-  const int valid = (scaling < eps) && !isnan(scaling);
-
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + eps) : vector[c] / eps;
+  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
 }
 
 
@@ -403,10 +402,8 @@ static inline void downscale_vector(float vector[4], const float scaling)
 #endif
 static inline void upscale_vector(float vector[4], const float scaling)
 {
-  static const float eps = 1e-6f;
-  const int valid = (scaling < eps) && !isnan(scaling);
-
-  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + eps) : vector[c] * eps;
+  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
 }
 
 
@@ -418,18 +415,20 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   // Get the sum XYZ
   float sum = 0.f;
   for(size_t c = 0; c < 3; c++) sum += fabsf(input[c]);
+  sum = fmaxf(sum, NORM_MIN);
 
   // Convert to xyY
-  const float Y = fmaxf(input[1] + 1e-6f, 1e-6f);
-  float xyY[4] DT_ALIGNED_PIXEL = { input[0] / sum, input[1] / sum , input[1], 0.0f };
+  float Y = fmaxf(input[1], 0.f);
+  float xyY[4] DT_ALIGNED_PIXEL = { input[0] / sum, input[1] / sum , Y, 0.0f };
 
   // Convert to uvY
   float uvY[4] DT_ALIGNED_PIXEL;
   dt_xyY_to_uvY(xyY, uvY);
 
   // Get the chromaticity difference with white point uv
-  static const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
+  const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
   const float delta[2] DT_ALIGNED_PIXEL = { D50[0] - uvY[0], D50[1] - uvY[1] };
+  Y += NORM_MIN;
   const float DT_ALIGNED_PIXEL LOG_XYZ[4] = { logf(input[0] + Y), logf(input[1] + Y), logf(input[2] + Y), 0.f };
   const float Delta = Y * hypotf(delta[0], delta[1]) / (Y + hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2])));
   // the log part comes from the saturation in https://infoscience.epfl.ch/record/34026
@@ -451,10 +450,14 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   // Clip upon request
   if(clip) for(size_t c = 0; c < 2; c++) xyY[c] = fmaxf(xyY[c], 0.0f);
 
+  // Check sanity of y
+  // since we later divide by y, it can't be zero
+  xyY[1] = fmaxf(xyY[1], NORM_MIN);
+
   // Check sanity of x and y :
   // since Z = Y (1 - x - y) / y, if x + y >= 1, Z will be negative
-  const float scale = xyY[0] + xyY[1] + 1e-6f;
-  const int sanitize = (scale > 1.f);
+  const float scale = xyY[0] + xyY[1];
+  const int sanitize = (scale >= 1.f);
   for(size_t c = 0; c < 2; c++) xyY[c] = (sanitize) ? xyY[c] / scale : xyY[c];
 
   // Convert back to XYZ
@@ -717,7 +720,7 @@ static inline void auto_detect_WB(const float *const restrict in, dt_illuminant_
       XYZ[1] /= sum;   // y
 
       // Shift the chromaticity plane so the D50 point (target) becomes the origin
-      static const float D50[2] = { 0.34567f, 0.35850f };
+      const float D50[2] = { 0.34567f, 0.35850f };
       const float norm = hypotf(D50[0], D50[1]);
 
       temp[index    ] = (XYZ[0] - D50[0]) / norm;
@@ -1644,7 +1647,7 @@ static gboolean illuminant_color_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_t *cr = cairo_create(cst);
 
   // Margins
-  static const double INNER_PADDING = 4.0;
+  const double INNER_PADDING = 4.0;
   const float margin = 2. * DT_PIXEL_APPLY_DPI(darktable.bauhaus->line_space);
   width -= 2* INNER_PADDING;
   height -= 2 * margin;
@@ -2119,9 +2122,10 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   XYZ[2] = XYZ[1]; // Y
   XYZ[1] /= sum;   // y
 
-  ++darktable.gui->reset;
   p->x = XYZ[0];
   p->y = XYZ[1];
+
+  ++darktable.gui->reset;
 
   check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
 

@@ -383,7 +383,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
 
   // we allocate the buffer
   const size_t ss = (size_t)hb * wb;
-  if(ss < 10) return 0;
+  if(ss < 10 || hb < 0 || wb < 0) return 0;
 
   int *binter = dt_alloc_align(64, ss * sizeof(int));
   if(binter == NULL) return 0;
@@ -419,14 +419,20 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
     // and "register" them in binter
     for(int j = dt_masks_dynbuf_position(extra) / 2 - 1; j >= 0; j--)
     {
-      int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
-      int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
+      const int xx = (dt_masks_dynbuf_buffer(extra))[j * 2];
+      const int yy = (dt_masks_dynbuf_buffer(extra))[j * 2 + 1];
 
       // we check also 2 points around to be sure catching intersection
       int v[3] = { 0 };
-      v[0] = binter[(yy - ymin) * wb + (xx - xmin)];
-      if(xx > xmin) v[1] = binter[(yy - ymin) * wb + (xx - xmin - 1)];
-      if(yy > ymin) v[2] = binter[(yy - ymin - 1) * wb + (xx - xmin)];
+      const int idx = (yy - ymin) * wb + (xx - xmin);
+      if(idx < 0 || idx > ss)
+      {
+        dt_free_align(binter);
+        return 0;
+      }
+      v[0] = binter[idx];
+      if(xx > xmin) v[1] = binter[idx - 1];
+      if(yy > ymin) v[2] = binter[idx - wb];
 
       for(int k = 0; k < 3; k++)
       {
@@ -438,7 +444,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
           {
             // we haven't move from last point.
             // this is not a real self-interesection, so we just update binter
-            binter[(yy - ymin) * wb + (xx - xmin)] = i;
+            binter[idx] = i;
           }
           else if((i > v[k]
                    && ((posextr[0] < v[k] || posextr[0] > i) && (posextr[1] < v[k] || posextr[1] > i)
@@ -479,7 +485,7 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
         {
           // there wasn't anything "registered" at this place in binter
           // we do it now
-          binter[(yy - ymin) * wb + (xx - xmin)] = i;
+          binter[idx] = i;
         }
       }
       lastx = xx;
