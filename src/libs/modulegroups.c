@@ -486,6 +486,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
       /* lets show/hide modules dependent on current group*/
+      const gboolean show_deprecated
+          = !strcmp(dt_conf_get_string("plugins/darkroom/modulegroups_preset"), _(DEPRECATED_PRESET_NAME));
       switch(d->current)
       {
         case DT_MODULEGROUP_ACTIVE_PIPE:
@@ -505,7 +507,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_NONE:
         {
           /* show all except hidden ones */
-          if(_lib_modulegroups_test_visible(self, module->op) || module->enabled)
+          if(((!(module->flags() & IOP_FLAGS_DEPRECATED) || show_deprecated)
+              && _lib_modulegroups_test_visible(self, module->op))
+             || module->enabled)
           {
             if(w) gtk_widget_show(w);
           }
@@ -520,8 +524,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           // show deprecated module in specific group deprecated
-          const gboolean show_deprecated
-              = !strcmp(dt_conf_get_string("plugins/darkroom/modulegroups_preset"), _(DEPRECATED_PRESET_NAME));
           gtk_widget_set_visible(d->deprecated, show_deprecated);
 
           if(_lib_modulegroups_test_internal(self, d->current, module)
