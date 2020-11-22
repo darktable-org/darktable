@@ -6,6 +6,14 @@ import subprocess
 import argparse
 from shutil import which
 
+# default name of program to execute, can be overridden by the same-named environment variable or via
+# commandline option
+DARKTABLE_CLI = 'darktable-cli'
+
+# default name of directory in which to create a scratch folder for darktable to use as config directory,
+# can be overridden by the same-named environment variable, environment variable TMPDIR, or via commandline option
+DARKTABLE_TMP = '/tmp'
+
 def whereami():
    '''whereami: retrieve the path for this script
 
@@ -117,25 +125,40 @@ def locate_xmp(xmp,version):
 
 
 def parse_commandline():
+   global DARKTABLE_CLI, DARKTABLE_TMP
+   if 'DARKTABLE_CLI' in os.environ:
+      DARKTABLE_CLI = os.environ['DARKTABLE_CLI']
+   if 'TMPDIR' in os.environ:
+      DARKTABLE_TMP = os.environ['TMPDIR']
+   if 'DARKTABLE_TMP' in os.environ:
+      DARKTABLE_TMP = os.environ['DARKTABLE_TMP']
    parser = argparse.ArgumentParser(description="Darktable performance benchmarking")
    parser.add_argument("-i","--image",metavar="FILE",help="the name of the image to use",default="mire1.cr2")
    parser.add_argument("-v","--version",metavar="V",help="look for darktable version V sidecar",default="3.4")
    parser.add_argument("-x","--xmp",metavar="FILE",help="the root name of the .xmp sidecar file to use",default="darktable-bench")
-   parser.add_argument("-t","--threads",metavar="N",help="tell darktable-cli to use N threads",default=None)
-   parser.add_argument("-p","--program",metavar="EXE",help="full path to darktable-cli executable",default="darktable-cli")
+   parser.add_argument("-p","--program",metavar="EXE",help="full path to darktable-cli executable",default=DARKTABLE_CLI)
    parser.add_argument("-r","--reps",metavar="N",help="run N times and report average time",type=int,choices=range(1,10),default=3)
-
+   parser.add_argument("-t","--threads",metavar="N",help="tell darktable-cli to use N threads",default=None)
+   parser.add_argument("-T","--tempdir",metavar="DIR",help="directory in which to create test data",default=DARKTABLE_TMP)
    if len(sys.argv) < 1:
       parser.print_usage()
       parser.exit()
    args, remargs = parser.parse_known_args()
    args.program = locate_program(args.program)
    args.image = locate_image(args.image)
+   _, _, args.image_base = args.image.rpartition('/')
+   if not args.image_base:
+      args.image_base = args.image
    args.xmp0 = args.xmp
    args.xmp = locate_xmp(args.xmp,args.version)
    if remargs:
       parser.print_usage()
       parser.exit()
+   if os.path.exists(args.tempdir):
+      args.tempdir = args.tempdir + '/dtbench' + str(os.getpid())
+      os.mkdir(args.tempdir)
+   else:
+      os.mkdir(args.tempdir)
    return args, remargs
 
 def extract_seconds(line):
@@ -152,10 +175,11 @@ def extract_seconds(line):
    return float(line.strip())
    
 def run_benchmark(program,image,xmp,args):
-   outimage='/tmp/darktable-bench.png'
+   confdir=args.tempdir
+   outimage=args.tempdir+'/darktable-bench.png'
+   args.outimage=outimage
    if os.path.exists(outimage):
       os.remove(outimage)
-   confdir="/tmp"
    arglist = ["--hq","1",image,xmp,outimage,"--core","--library",":memory:","--configdir",confdir,"-d","perf"]
    if args.threads:
       arglist = arglist + ["-t",args.threads]
@@ -163,18 +187,25 @@ def run_benchmark(program,image,xmp,args):
    if trace:
       trace = trace.decode('utf-8').split('\n')
    loadtime = 0.0
+   savetime = -1
    pixpipe = 0.0
    for t in trace:
       if 'to load the image' in t:
          loadtime = extract_seconds(t)
+      elif 'to save the image' in t:  ## dt doesn't yet report file write times, so this does nothing right now
+         savetime = extract_seconds(t)
       elif 'pipeline processing took' in t:
          pixpipe = extract_seconds(t)
-   return pixpipe, loadtime+pixpipe
+   if savetime < 0:
+      savetime = loadtime	# if no reported save time, assume it's the same as the time to load the image
+   return pixpipe, loadtime+pixpipe+savetime
 
 def warm_up_caches(program,image,xmp,args):
    xmp = locate_xmp(xmp,'null')
    if xmp:
+      print('Preparing...',end='')
       run_benchmark(program,image,xmp,args)
+      print('done')
 
 def get_version(program):
    output = subprocess.check_output([program,"--version"],stdin=None,stderr=subprocess.PIPE)
@@ -185,15 +216,33 @@ def get_version(program):
    else:
       return "(Undetermined darktable version)"
 
-def print_performance(pixpipe,total,dtversion,xmpversion,threads):
+def print_performance(pixpipe,total,dtversion,xmpversion,imagename,threads):
    print('')
-   print(f'{dtversion} ::: benchmark v{xmpversion}')
+   print(f'{dtversion} ::: benchmark v{xmpversion} ::: image {imagename}')
    if threads:
       print(f'Number of threads used:               {threads:>7}')
    print(f'Average pixelpipe processing time:    {pixpipe:7.3f} seconds')
    print(f'Average overall processing time:      {total:7.3f} seconds')
    thruput = 3600 / total
    print(f'Throughput rating (higher is better): {thruput:7.1f}')
+   return
+
+def cleanup(args):
+   if args.outimage:
+      try:
+         os.remove(args.outimage)
+      except:
+         pass
+   if args.tempdir:
+      try:
+         # delete files in temp dir; since the ones darktable-cli creates all start with 'dar' or 'dat', limit the
+         #  deletion to such files just in case
+         for f in os.listdir(args.tempdir):
+            if f.startswith('da') and (f[2] == 'r' or f[2] == 't'):
+               os.remove(args.tempdir+'/'+f)
+         os.rmdir(args.tempdir)
+      except:
+         pass
    return
 
 def main():
@@ -212,7 +261,8 @@ def main():
          print(f': {p:7.3f} pixpipe,  {t:7.3f} total')
    total = total / args.reps
    pixpipe = pixpipe / args.reps
-   print_performance(pixpipe,total,get_version(args.program),args.version,args.threads)
+   print_performance(pixpipe,total,get_version(args.program),args.version,args.image_base,args.threads)
+   cleanup(args)
    return
 
 if __name__ == '__main__':
