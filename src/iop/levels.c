@@ -125,6 +125,15 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("adjust black, white and mid-gray points."),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
