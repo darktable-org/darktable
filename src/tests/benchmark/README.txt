@@ -1,0 +1,107 @@
+darktable-bench is a simple script to apply standardized processing to
+a standard image for the purpose of comparing performance between
+systems.  It reports the average time taken for the processing over
+multiple runs, as well as a performance metric which is useful for
+comparison (a system with a rating twice as high as another will let
+you export twice as many images in a given time).
+
+Performance numbers will only be directly comparable when using the
+same version of darktable, the same image, and the same sidecar file.
+Unless you override the image or sidecar, they will remain the same.
+Comparisons between different darktable versions will also reflect
+performance changes between the versions (for example, darktable 3.2.1
+rates ~430 on a 32-core Threadripper, while darktable 3.4 rates ~660
+on the same hardware).
+
+Usage
+-----
+
+In the simplest invocation, you can run the program directly from the
+top-level directory of your darktable source hierarchy:
+
+   src/tests/benchmark/darktable-bench
+
+This will then run the default sidecar (v3.4) on the default image
+(mire1.cr2 from the integration test suite) using the darktable-cli in
+the build directory, or the darktable-cli on your search path.
+
+
+The following commandline options are available:
+
+   -i / --image FILE
+   		specify the image to use instead of mire1.cr2
+
+   -v / --version VER
+   		use alternate sidecar darktable-bench-VER.xmp
+
+   -p / --program PATH
+   		specify the program to execute
+
+   -x / --xmp NAME
+   		override the base name of the sidecar file and use
+   		NAME-VER.xmp instead
+
+   -r N / --reps N
+   		run the development N times instead of 3
+
+   -t N / --threads N
+   		tell darktable-cli to run with N threads (default is
+		the number of hardware threads)
+
+   -T PATH / --tempdir PATH
+   		store temporary files in a scratch directory under
+   		PATH (default /tmp)
+
+Report
+------
+
+darktable-bench prints the time each development took, as well as the
+average and the throughput rating, which is the estimated number of
+image that could be exported per hour.  The reported times are the
+total pixelpipe processing time reported by darktable-cli, and the
+pixelpipe time plus load/save time.  As darktable-cli currently does
+not report the time needed to write the final result, darktable-bench
+assumes that the save time is the same as the load time.
+
+Sample output
+
+      Preparing...done
+	   run # 1:   8.243 pixpipe,    8.465 total
+	   run # 2:   8.322 pixpipe,    8.546 total
+	   run # 3:   8.162 pixpipe,    8.384 total
+
+      darktable-cli 3.2.1 ::: benchmark v3.4 ::: image mire1.cr2
+      Average pixelpipe processing time:      8.242 seconds
+      Average overall processing time:        8.465 seconds
+      Throughput rating (higher is better):   425.3
+
+
+
+Structure
+---------
+
+darktable-bench		 : the benchmarking script (Python 3)
+
+darktable-bench-null.xmp : a sidecar file with minimal processing,
+			   used to warm up disk caches
+
+darktable-bench-3.4.xmp  : the default benchmarking sidecar
+
+../integration/images/mire1.cr2 : the default benchmarking image
+
+
+How to add a new benchmark
+--------------------------
+
+1. open an image in darktable and apply whatever processing you desire
+
+2. copy the generated .xmp sidecar into src/tests/benchmark under the
+   name 'darktable-bench-XYZ.xmp'
+
+3. run
+
+   darktable-bench -v XYZ
+
+   to apply your new sidecar to the standard image from the
+   integration test suite (src/tests/integration/images/mire1.cr2).
+
