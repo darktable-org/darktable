@@ -1685,16 +1685,15 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   gtk_widget_get_allocation(current, &allocation_current);
   int wd = allocation_current.width, ht = inner_height(allocation_current);
 
+  const int popwin_wd = allocation.width + darktable.bauhaus->widget_space * 2.0f;
+  const int popwin_ht = allocation.height + darktable.bauhaus->widget_space * 2.0f;
+
   // get area properties
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                       popwin_wd, popwin_ht);
+
   cairo_t *cr = cairo_create(cst);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-
-  // translate to account for the widget spacing
-  cairo_translate(cr, 0, darktable.bauhaus->widget_space);
-
-  // draw background
-  gtk_render_background(context, cr, 0.0, 0.0, width, height);
 
   // look up some colors once
   GdkRGBA text_color, text_color_selected, text_color_hover, text_color_insensitive;
@@ -1706,10 +1705,23 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   GdkRGBA *fg_color = default_color_assign();
   GdkRGBA *bg_color = default_color_assign();
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  gtk_render_background(context, cr, 0, 0, width, height);
 
   gtk_style_context_get(context, state, "background-color", bg_color, NULL);
   gtk_style_context_get_color(context, state, fg_color);
+
+  // draw background
+  gtk_render_background(context, cr, 0, 0, popwin_wd, popwin_ht);
+
+  // draw border
+  cairo_save(cr);
+  set_color(cr, *fg_color);
+  cairo_set_line_width(cr, darktable.bauhaus->widget_space);
+  cairo_rectangle(cr, 0, 0, popwin_wd - 2, popwin_ht - 2);
+  cairo_stroke(cr);
+  cairo_restore(cr);
+
+  // translate to account for the widget spacing
+  cairo_translate(cr, darktable.bauhaus->widget_space, darktable.bauhaus->widget_space);
 
   // switch on bauhaus widget type (so we only need one static window)
   switch(w->type)
