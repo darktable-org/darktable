@@ -2680,6 +2680,10 @@ static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acce
 
 {
   dt_iop_module_t *module = (dt_iop_module_t *)data;
+
+  //cannot toggle module if there's no enable button
+  if(module->hide_enable_button) return TRUE;
+  
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 
