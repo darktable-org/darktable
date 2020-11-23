@@ -1561,7 +1561,11 @@ void reload_defaults(dt_iop_module_t *module)
     }
 
     // Store EXIF WB coeffs
-    find_coeffs(module, g->as_shot_wb);
+    if(is_raw)
+      find_coeffs(module, g->as_shot_wb);
+    else
+      g->as_shot_wb[0] = g->as_shot_wb[1] = g->as_shot_wb[2] = g->as_shot_wb[3] = 1.f;
+
     g->as_shot_wb[0] /= g->as_shot_wb[1];
     g->as_shot_wb[2] /= g->as_shot_wb[1];
     g->as_shot_wb[3] /= g->as_shot_wb[1];
