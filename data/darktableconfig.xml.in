@@ -1011,15 +1011,15 @@
     <name>plugins/darkroom/hide_default_presets</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>hide built-in presets for image operations</shortdescription>
-    <longdescription>hides built-in presets of modules in both presets and favourites menu.</longdescription>
+    <shortdescription>hide built-in presets for processing modules</shortdescription>
+    <longdescription>hides built-in presets of processing modules in both presets and favourites menu.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>plugins/lighttable/hide_default_presets</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>hide built-in presets for panels</shortdescription>
-    <longdescription>hides built-in presets of panels in presets menu.</longdescription>
+    <shortdescription>hide built-in presets for utility modules</shortdescription>
+    <longdescription>hides built-in presets of utility modules in presets menu.</longdescription>
   </dtconfig>
   <dtconfig prefs="import" section="session">
     <name>session/base_directory_pattern</name>
@@ -1183,8 +1183,8 @@
     <name>plugins/lighttable/collect/single-click</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>use single-click in the collect panel</shortdescription>
-    <longdescription>check this option to use single-click to select items in the collect panel. this will allow you to do range selections for date-time and numeric values.</longdescription>
+    <shortdescription>use single-click in the collect module</shortdescription>
+    <longdescription>check this option to use single-click to select items in the collect module. this will allow you to do range selections for date-time and numeric values.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/collect/num_rules</name>
@@ -1526,7 +1526,7 @@
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>expand a single lighttable module at a time</shortdescription>
+    <shortdescription>expand a single utility module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in lighttable mode</longdescription>
   </dtconfig>
   <dtconfig>
@@ -1540,7 +1540,7 @@
     <name>darkroom/ui/single_module</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>expand a single darkroom module at a time</shortdescription>
+    <shortdescription>expand a single processing module at a time</shortdescription>
     <longdescription>this option toggles the behavior of shift clicking in darkroom mode</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
@@ -1561,7 +1561,7 @@
     <name>lighttable/ui/scroll_to_module</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>scroll to lighttable modules when expanded/collapsed</shortdescription>
+    <shortdescription>scroll to utility modules when expanded/collapsed</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig>
@@ -1624,7 +1624,7 @@
     <name>darkroom/ui/scroll_to_module</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>scroll to darkroom modules when expanded/collapsed</shortdescription>
+    <shortdescription>scroll to processing modules when expanded/collapsed</shortdescription>
     <longdescription>when this option is enabled then darktable will try to scroll the module to the top of the visible list</longdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="interface">
@@ -2523,7 +2523,7 @@
       </enum>
     </type>
     <default>always</default>
-    <shortdescription>show right-side buttons in darkroom module headers</shortdescription>
+    <shortdescription>show right-side buttons in processing module headers</shortdescription>
     <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\nalways - always show all buttons,\nactive - only show the buttons when the mouse is over the module,\ndim - buttons are dimmed when mouse is away,\nauto - hide the buttons when the panel is narrow,\nfade - fade out all buttons when panel narrows,\nfit - hide all the buttons if the module name doesn't fit,\nsmooth - fade out all buttons in one header simultaneously,\nglide - gradually hide individual buttons as needed</longdescription>
   </dtconfig>
 
