@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 13:51+0100\n"
-"PO-Revision-Date: 2020-11-23 13:54+0100\n"
+"POT-Creation-Date: 2020-11-23 15:15+0100\n"
+"PO-Revision-Date: 2020-11-23 15:20+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1866,8 +1866,8 @@ msgstr ""
 "aller du plus récent au plus ancien."
 
 #: ../build/bin/preferences_gen.h:2957
-msgid "hide built-in presets for panels"
-msgstr "cacher les préréglages internes des panneaux"
+msgid "hide built-in presets for utility modules"
+msgstr "cacher les préréglages internes des modules utilitaires"
 
 #: ../build/bin/preferences_gen.h:2968 ../build/bin/preferences_gen.h:3003
 #: ../build/bin/preferences_gen.h:3038 ../build/bin/preferences_gen.h:3073
@@ -1887,17 +1887,18 @@ msgid "FALSE"
 msgstr "FAUX"
 
 #: ../build/bin/preferences_gen.h:2971
-msgid "hides built-in presets of panels in presets menu."
+msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
-"cacher les préréglages internes des panneaux dans le menu des préréglages."
+"cacher les préréglages internes des modules utilitaires dans le menu des "
+"préréglages."
 
 #: ../build/bin/preferences_gen.h:2992
-msgid "use single-click in the collect panel"
+msgid "use single-click in the collect module"
 msgstr "utiliser un seul clic pour les collections"
 
 #: ../build/bin/preferences_gen.h:3006
 msgid ""
-"check this option to use single-click to select items in the collect panel. "
+"check this option to use single-click to select items in the collect module. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
 "positionner cette option permet d'utiliser un seul clic pour sélectionner un "
@@ -1905,8 +1906,8 @@ msgstr ""
 "des étendues de dates et de valeurs numériques."
 
 #: ../build/bin/preferences_gen.h:3027
-msgid "expand a single lighttable module at a time"
-msgstr "déplier un seul module de la table lumineuse à la fois"
+msgid "expand a single utility module at a time"
+msgstr "déplier un seul module utilitaire de la table lumineuse à la fois"
 
 #: ../build/bin/preferences_gen.h:3041
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
@@ -1914,10 +1915,10 @@ msgstr ""
 "cette option échange le comportement du shift-clic de la table lumineuse"
 
 #: ../build/bin/preferences_gen.h:3062
-msgid "scroll to lighttable modules when expanded/collapsed"
+msgid "scroll to utility modules when expanded/collapsed"
 msgstr ""
-"positionne les modules de la table lumineuse lorsque qu'ils sont déplier/"
-"repliés"
+"positionne les modules utilitaires de la table lumineuse lorsque qu'ils sont "
+"déplier/repliés"
 
 #: ../build/bin/preferences_gen.h:3076 ../build/bin/preferences_gen.h:4307
 msgid ""
@@ -2039,13 +2040,13 @@ msgstr ""
 "lent)."
 
 #: ../build/bin/preferences_gen.h:3339
-msgid "delimiters for sizes categories"
+msgid "delimiters for size categories"
 msgstr "séparateurs de catégorie des tailles"
 
 #: ../build/bin/preferences_gen.h:3357
 msgid ""
-"sizes categories are used to be able to set different overlays and css "
-"values depending of the size of the thumbnail."
+"size categories are used to be able to set different overlays and css values "
+"depending of the size of the thumbnail."
 msgstr ""
 "les catégories des tailles permettent d'utiliser différentes information en "
 "superposition et présentation graphique en fonction de la taille des "
@@ -2265,8 +2266,8 @@ msgstr ""
 "précision des masques"
 
 #: ../build/bin/preferences_gen.h:3997
-msgid "show right-side buttons in darkroom module headers"
-msgstr "affichage des buttons sur la droite des modules en chambre noire"
+msgid "show right-side buttons in processing module headers"
+msgstr "affichage des buttons sur la droite des modules de développement"
 
 #: ../build/bin/preferences_gen.h:4013
 msgctxt "preferences"
@@ -2355,18 +2356,20 @@ msgstr ""
 "masques paramétriques."
 
 #: ../build/bin/preferences_gen.h:4153
-msgid "hide built-in presets for image operations"
-msgstr "cacher les préréglages internes des modules"
+msgid "hide built-in presets for processing modules"
+msgstr "cacher les préréglages internes des modules de développement"
 
 #: ../build/bin/preferences_gen.h:4167
-msgid "hides built-in presets of modules in both presets and favourites menu."
+msgid ""
+"hides built-in presets of processing modules in both presets and favourites "
+"menu."
 msgstr ""
-"cacher les préréglages internes des modules dans le menu des préréglages et "
-"les favoris."
+"cacher les préréglages internes des modules de développement dans le menu "
+"des préréglages et les favoris."
 
 #: ../build/bin/preferences_gen.h:4188
-msgid "expand a single darkroom module at a time"
-msgstr "déplier un seul module de la chambre noire à la fois"
+msgid "expand a single processing module at a time"
+msgstr "déplier un seul module de développement à la fois"
 
 #: ../build/bin/preferences_gen.h:4202
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
@@ -2397,10 +2400,9 @@ msgstr ""
 "activé ou désactivé."
 
 #: ../build/bin/preferences_gen.h:4293
-msgid "scroll to darkroom modules when expanded/collapsed"
+msgid "scroll to processing modules when expanded/collapsed"
 msgstr ""
-"positionne les modules de la chambre noire lorsque qu'ils sont dépliés/"
-"repliés"
+"positionne les modules de développement lorsqu'ils sont dépliés/repliés"
 
 #: ../build/bin/preferences_gen.h:4328
 msgid "white balance slider colors"
@@ -19281,6 +19283,9 @@ msgstr "raccourci"
 #: ../src/views/view.c:1666
 msgid "Action"
 msgstr "action"
+
+#~ msgid "hide built-in presets for image operations"
+#~ msgstr "cacher les préréglages internes des modules"
 
 #~ msgid ""
 #~ "perform color space corrections\n"
