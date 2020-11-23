@@ -121,8 +121,7 @@ const char *aliases()
 
 const char *description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("perform color space corrections\n"
-                                        "and apply looks"),
+  return dt_iop_set_description(self, _("perform color space corrections and apply looks."),
                                       _("corrective or creative"),
                                       _("linear or non-linear, Lab, display-referred"),
                                       _("defined by profile, Lab"),
