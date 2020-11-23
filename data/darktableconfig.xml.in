@@ -906,8 +906,8 @@
     <name>plugins/lighttable/thumbnail_sizes</name>
     <type>string</type>
     <default>120|400</default>
-    <shortdescription>delimiters for sizes categories</shortdescription>
-    <longdescription>sizes categories are used to be able to set different overlays and css values depending of the size of the thumbnail.</longdescription>
+    <shortdescription>delimiters for size categories</shortdescription>
+    <longdescription>size categories are used to be able to set different overlays and css values depending of the size of the thumbnail.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/extended_pattern</name>
