@@ -2,7 +2,7 @@
 <!ELEMENT dtconfig (name,type,default,capability?,shortdescription?,longdescription?)>
 <!ATTLIST dtconfig
 	prefs (import|lighttable|darkroom|otherviews|processing|security|cpugpu|storage|misc) #IMPLIED
-        section (import|session|interface|other|tags|geoloc|slideshow|cpugpu|database|xmp|accel) #IMPLIED
+        section (import|session|interface|other|tags|geoloc|slideshow|cpugpu|database|xmp|accel|general|modules|thumbs) #IMPLIED
         restart (true|false) #IMPLIED
         capability CDATA #IMPLIED
 >
