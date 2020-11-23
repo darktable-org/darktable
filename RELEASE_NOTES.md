@@ -229,6 +229,9 @@ making a backup is strongly advised.
   A "full gamut" mode finally shows the combination of the 3 previous ones for an
   overall control check.
 
+- A new preset has been added to denoise profiled to remove only chrominance
+  noise with wavelets.
+
 ## Bug fixes
 
 - Fix orientation in the clipping module after having selected the freehand aspect ratio.
