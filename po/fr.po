@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-23 08:44+0100\n"
-"PO-Revision-Date: 2020-11-23 08:45+0100\n"
+"POT-Creation-Date: 2020-11-23 13:51+0100\n"
+"PO-Revision-Date: 2020-11-23 13:54+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -616,7 +616,7 @@ msgstr "mode"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1810 ../src/iop/channelmixer.c:632
-#: ../src/iop/colorchecker.c:1372 ../src/iop/colorize.c:355
+#: ../src/iop/colorchecker.c:1371 ../src/iop/colorize.c:355
 #: ../src/iop/colorzones.c:2360
 msgid "lightness"
 msgstr "clarté"
@@ -630,7 +630,7 @@ msgstr "clarté"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:146
 #: ../src/develop/blend_gui.c:1820 ../src/iop/basicadj.c:627
 #: ../src/iop/channelmixer.c:631 ../src/iop/colisa.c:318
-#: ../src/iop/colorbalance.c:2043 ../src/iop/colorchecker.c:1390
+#: ../src/iop/colorbalance.c:2043 ../src/iop/colorchecker.c:1389
 #: ../src/iop/colorcontrast.c:93 ../src/iop/colorcorrection.c:273
 #: ../src/iop/colorize.c:350 ../src/iop/colorzones.c:2361
 #: ../src/iop/lowpass.c:592 ../src/iop/soften.c:657
@@ -641,7 +641,7 @@ msgstr "saturation"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1626 ../src/iop/atrous.c:1630
-#: ../src/iop/denoiseprofile.c:3699 ../src/iop/rawdenoise.c:783
+#: ../src/iop/denoiseprofile.c:3700 ../src/iop/rawdenoise.c:783
 msgid "smooth"
 msgstr "doux"
 
@@ -1150,7 +1150,7 @@ msgstr "détection par 3 voisins"
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:51
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:118
 #: ../src/iop/bilat.c:427 ../src/iop/colorbalance.c:1884
-#: ../src/iop/denoiseprofile.c:3956 ../src/iop/exposure.c:907
+#: ../src/iop/denoiseprofile.c:3957 ../src/iop/exposure.c:907
 #: ../src/iop/levels.c:691 ../src/iop/profile_gamma.c:730
 #: ../src/libs/copy_history.c:359 ../src/libs/export.c:1333
 #: ../src/libs/image.c:558 ../src/libs/print_settings.c:1516
@@ -5382,7 +5382,7 @@ msgstr "a"
 msgid "sliders for a channel"
 msgstr "conditions de fusion sur le canal a"
 
-#: ../src/develop/blend_gui.c:1813 ../src/iop/colorchecker.c:1376
+#: ../src/develop/blend_gui.c:1813 ../src/iop/colorchecker.c:1375
 msgid "green/red"
 msgstr "vert/rouge"
 
@@ -5394,7 +5394,7 @@ msgstr "b"
 msgid "sliders for b channel"
 msgstr "conditions de fusion sur le canal b"
 
-#: ../src/develop/blend_gui.c:1816 ../src/iop/colorchecker.c:1383
+#: ../src/develop/blend_gui.c:1816 ../src/iop/colorchecker.c:1382
 msgid "blue/yellow"
 msgstr "bleu/jaune"
 
@@ -5428,7 +5428,7 @@ msgid "gray"
 msgstr "gris"
 
 #: ../src/develop/blend_gui.c:1831 ../src/develop/blend_gui.c:1858
-#: ../src/iop/channelmixerrgb.c:2276 ../src/iop/denoiseprofile.c:3875
+#: ../src/iop/channelmixerrgb.c:2276 ../src/iop/denoiseprofile.c:3876
 #: ../src/iop/rawdenoise.c:932 ../src/iop/rgbcurve.c:1374
 #: ../src/iop/rgblevels.c:938
 msgid "R"
@@ -5439,7 +5439,7 @@ msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
 #: ../src/develop/blend_gui.c:1834 ../src/develop/blend_gui.c:1861
-#: ../src/iop/channelmixerrgb.c:2277 ../src/iop/denoiseprofile.c:3876
+#: ../src/iop/channelmixerrgb.c:2277 ../src/iop/denoiseprofile.c:3877
 #: ../src/iop/rawdenoise.c:933 ../src/iop/rgbcurve.c:1375
 #: ../src/iop/rgblevels.c:939
 msgid "G"
@@ -5450,7 +5450,7 @@ msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
 #: ../src/develop/blend_gui.c:1837 ../src/develop/blend_gui.c:1864
-#: ../src/iop/channelmixerrgb.c:2278 ../src/iop/denoiseprofile.c:3877
+#: ../src/iop/channelmixerrgb.c:2278 ../src/iop/denoiseprofile.c:3878
 #: ../src/iop/rawdenoise.c:934 ../src/iop/rgbcurve.c:1376
 #: ../src/iop/rgblevels.c:940
 msgid "B"
@@ -7201,7 +7201,7 @@ msgid "golden spiral"
 msgstr "spirale d'or"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:682
-#: ../src/iop/denoiseprofile.c:3874 ../src/iop/lens.cc:2235
+#: ../src/iop/denoiseprofile.c:3875 ../src/iop/lens.cc:2235
 #: ../src/iop/rawdenoise.c:931 ../src/libs/tools/filter.c:175
 msgid "all"
 msgstr "tout"
@@ -8410,7 +8410,7 @@ msgstr "déforme la perspective automatiquement"
 
 #: ../src/iop/ashift.c:124 ../src/iop/basecurve.c:339 ../src/iop/cacorrect.c:59
 #: ../src/iop/colorreconstruction.c:135 ../src/iop/defringe.c:80
-#: ../src/iop/denoiseprofile.c:633 ../src/iop/dither.c:110
+#: ../src/iop/denoiseprofile.c:634 ../src/iop/dither.c:110
 #: ../src/iop/hazeremoval.c:111 ../src/iop/highlights.c:87
 #: ../src/iop/hotpixels.c:72 ../src/iop/invert.c:121 ../src/iop/lens.cc:159
 #: ../src/iop/nlmeans.c:99 ../src/iop/profile_gamma.c:100
@@ -8423,7 +8423,7 @@ msgstr "correctif"
 #: ../src/iop/basicadj.c:142 ../src/iop/channelmixerrgb.c:138
 #: ../src/iop/channelmixerrgb.c:140 ../src/iop/clipping.c:328
 #: ../src/iop/clipping.c:330 ../src/iop/colorin.c:136 ../src/iop/demosaic.c:179
-#: ../src/iop/denoiseprofile.c:634 ../src/iop/denoiseprofile.c:636
+#: ../src/iop/denoiseprofile.c:635 ../src/iop/denoiseprofile.c:637
 #: ../src/iop/exposure.c:116 ../src/iop/exposure.c:118
 #: ../src/iop/hazeremoval.c:112 ../src/iop/hazeremoval.c:114
 #: ../src/iop/lens.cc:160 ../src/iop/lens.cc:162 ../src/iop/liquify.c:299
@@ -8716,12 +8716,12 @@ msgstr "défloutage : moyen, force 1"
 msgid "deblur: fine blur, strength 1"
 msgstr "défloutage : fine, force 1"
 
-#: ../src/iop/atrous.c:1606 ../src/iop/denoiseprofile.c:3682
+#: ../src/iop/atrous.c:1606 ../src/iop/denoiseprofile.c:3683
 #: ../src/iop/rawdenoise.c:766
 msgid "coarse"
 msgstr "global"
 
-#: ../src/iop/atrous.c:1613 ../src/iop/denoiseprofile.c:3690
+#: ../src/iop/atrous.c:1613 ../src/iop/denoiseprofile.c:3691
 #: ../src/iop/rawdenoise.c:774
 msgid "fine"
 msgstr "détail"
@@ -8730,7 +8730,7 @@ msgstr "détail"
 msgid "contrasty"
 msgstr "contrasté"
 
-#: ../src/iop/atrous.c:1631 ../src/iop/denoiseprofile.c:3704
+#: ../src/iop/atrous.c:1631 ../src/iop/denoiseprofile.c:3705
 #: ../src/iop/rawdenoise.c:788
 msgid "noisy"
 msgstr "bruité"
@@ -9130,7 +9130,7 @@ msgstr ""
 
 #: ../src/iop/bloom.c:81
 msgid "apply Orton effect for a dreamy aetherical look"
-msgstr "appliquer l'effet Orton pour un aspect vaporeux et onirique"
+msgstr "applique l'effet Orton pour un aspect vaporeux et onirique"
 
 #: ../src/iop/bloom.c:470 ../src/iop/soften.c:653 ../src/libs/camera.c:598
 msgid "size"
@@ -9144,7 +9144,7 @@ msgstr "taille de la lumière d'arrière-plan"
 msgid "the threshold of light"
 msgstr "seuil de lumière"
 
-#: ../src/iop/bloom.c:478 ../src/iop/denoiseprofile.c:3972
+#: ../src/iop/bloom.c:478 ../src/iop/denoiseprofile.c:3973
 #: ../src/iop/grain.c:583 ../src/iop/hazeremoval.c:205
 #: ../src/iop/hotpixels.c:381 ../src/iop/nlmeans.c:526 ../src/iop/velvia.c:331
 msgid "strength"
@@ -9392,12 +9392,12 @@ msgstr ""
 
 #: ../src/iop/channelmixer.c:138 ../src/iop/channelmixerrgb.c:137
 #: ../src/iop/clipping.c:327 ../src/iop/colorbalance.c:160
-#: ../src/iop/colorchecker.c:126 ../src/iop/colorcorrection.c:77
+#: ../src/iop/colorchecker.c:125 ../src/iop/colorcorrection.c:77
 #: ../src/iop/lut3d.c:138
 msgid "corrective or creative"
 msgstr "correctif ou créatif"
 
-#: ../src/iop/channelmixer.c:140 ../src/iop/denoiseprofile.c:635
+#: ../src/iop/channelmixer.c:140 ../src/iop/denoiseprofile.c:636
 #: ../src/iop/exposure.c:117
 msgid "linear, RGB"
 msgstr "linéaire, RVB"
@@ -10204,57 +10204,54 @@ msgid "profile|lut|color grading"
 msgstr "profil|lut|étalonnage des couleurs"
 
 #: ../src/iop/colorchecker.c:124
-msgid ""
-"perform color space corrections\n"
-"and apply looks"
+msgid "perform color space corrections and apply looks."
 msgstr ""
-"effectuer des corrections de l'espace colorimétrique\n"
-"et appliquer des ajustements couleurs"
+"effectue des corrections de l'espace colorimétrique et applique un style."
 
-#: ../src/iop/colorchecker.c:127 ../src/iop/colorchecker.c:129
+#: ../src/iop/colorchecker.c:126 ../src/iop/colorchecker.c:128
 #: ../src/iop/colormapping.c:153 ../src/iop/colorreconstruction.c:136
 #: ../src/iop/colorzones.c:145 ../src/iop/defringe.c:81
 msgid "linear or non-linear, Lab, display-referred"
 msgstr "relatif à l'affichage, linéaire ou non-linéaire, Lab"
 
-#: ../src/iop/colorchecker.c:128
+#: ../src/iop/colorchecker.c:127
 msgid "defined by profile, Lab"
 msgstr "défini par profil, Lab"
 
-#: ../src/iop/colorchecker.c:286
+#: ../src/iop/colorchecker.c:285
 msgid "it8 skin tones"
 msgstr "it8 tons chairs"
 
-#: ../src/iop/colorchecker.c:300
+#: ../src/iop/colorchecker.c:299
 msgid "helmholtz/kohlrausch monochrome"
 msgstr "monochrome helmholtz/kohlrausch"
 
-#: ../src/iop/colorchecker.c:316
+#: ../src/iop/colorchecker.c:315
 msgid "Fuji Astia emulation"
 msgstr "simulation Fuji Astia"
 
-#: ../src/iop/colorchecker.c:329
+#: ../src/iop/colorchecker.c:328
 msgid "Fuji Classic Chrome emulation"
 msgstr "simulation Fuji Classic Chrome"
 
-#: ../src/iop/colorchecker.c:342
+#: ../src/iop/colorchecker.c:341
 msgid "Fuji Monochrome emulation"
 msgstr "simulation Fuji Monochrome"
 
-#: ../src/iop/colorchecker.c:355
+#: ../src/iop/colorchecker.c:354
 msgid "Fuji Provia emulation"
 msgstr "simulation Fuji Provia"
 
-#: ../src/iop/colorchecker.c:368
+#: ../src/iop/colorchecker.c:367
 msgid "Fuji Velvia emulation"
 msgstr "simulation Fuji Velvia"
 
-#: ../src/iop/colorchecker.c:865 ../src/iop/colorchecker.c:1364
+#: ../src/iop/colorchecker.c:864 ../src/iop/colorchecker.c:1363
 #, c-format
 msgid "patch #%d"
 msgstr "pastille #%d"
 
-#: ../src/iop/colorchecker.c:1236
+#: ../src/iop/colorchecker.c:1235
 #, c-format
 msgid ""
 "(%2.2f %2.2f %2.2f)\n"
@@ -10271,35 +10268,35 @@ msgstr ""
 "clic-droit pour supprimer une pastille\n"
 "shift+clic avec la pipette pour remplacer une pastille"
 
-#: ../src/iop/colorchecker.c:1359
+#: ../src/iop/colorchecker.c:1358
 msgid "patch"
 msgstr "pastille"
 
-#: ../src/iop/colorchecker.c:1360
+#: ../src/iop/colorchecker.c:1359
 msgid "color checker patch"
 msgstr "pastille color checker"
 
-#: ../src/iop/colorchecker.c:1371
+#: ../src/iop/colorchecker.c:1370
 msgid "lightness offset"
 msgstr "décalage clarté"
 
-#: ../src/iop/colorchecker.c:1375
+#: ../src/iop/colorchecker.c:1374
 msgid "chroma offset green/red"
 msgstr "décalage chromatique vert/rouge"
 
-#: ../src/iop/colorchecker.c:1382
+#: ../src/iop/colorchecker.c:1381
 msgid "chroma offset blue/yellow"
 msgstr "décalage chromatique bleu/jaune"
 
-#: ../src/iop/colorchecker.c:1389
+#: ../src/iop/colorchecker.c:1388
 msgid "saturation offset"
 msgstr "décalage saturation"
 
-#: ../src/iop/colorchecker.c:1394
+#: ../src/iop/colorchecker.c:1393
 msgid "target color"
 msgstr "couleur cible"
 
-#: ../src/iop/colorchecker.c:1395
+#: ../src/iop/colorchecker.c:1394
 msgid ""
 "control target color of the patches via relative offsets or via absolute Lab "
 "values"
@@ -10307,11 +10304,11 @@ msgstr ""
 "la couleur cible des pastilles est donnée via un décalage relatif ou les "
 "valeurs Lab absolues"
 
-#: ../src/iop/colorchecker.c:1396
+#: ../src/iop/colorchecker.c:1395
 msgid "relative"
 msgstr "relative"
 
-#: ../src/iop/colorchecker.c:1397
+#: ../src/iop/colorchecker.c:1396
 msgid "absolute"
 msgstr "absolue"
 
@@ -10899,34 +10896,34 @@ msgstr "ondelettes: seulement chroma"
 msgid "denoise (profiled)"
 msgstr "réduction bruit (profil)"
 
-#: ../src/iop/denoiseprofile.c:632
-msgid "denoise using noise statistics profiled on sensors"
+#: ../src/iop/denoiseprofile.c:633
+msgid "denoise using noise statistics profiled on sensors."
 msgstr ""
-"débruiter en utilisant les statistiques de bruit profilées des capteurs"
+"débruite en utilisant les statistiques de bruit profilées des capteurs."
 
-#: ../src/iop/denoiseprofile.c:2993
+#: ../src/iop/denoiseprofile.c:2994
 #, c-format
 msgid "found match for ISO %d"
 msgstr "profil pour ISO %d trouvé"
 
-#: ../src/iop/denoiseprofile.c:3002
+#: ../src/iop/denoiseprofile.c:3003
 #, c-format
 msgid "interpolated from ISO %d and %d"
 msgstr "interpolé depuis ISO %d et %d"
 
-#: ../src/iop/denoiseprofile.c:3380 ../src/iop/denoiseprofile.c:3962
+#: ../src/iop/denoiseprofile.c:3381 ../src/iop/denoiseprofile.c:3963
 msgid "compute variance"
 msgstr "calcul la variance"
 
-#: ../src/iop/denoiseprofile.c:3882
+#: ../src/iop/denoiseprofile.c:3883
 msgid "Y0"
 msgstr "Y0"
 
-#: ../src/iop/denoiseprofile.c:3883
+#: ../src/iop/denoiseprofile.c:3884
 msgid "U0V0"
 msgstr "U0V0"
 
-#: ../src/iop/denoiseprofile.c:3914
+#: ../src/iop/denoiseprofile.c:3915
 msgid ""
 "use only with a perfectly\n"
 "uniform image if you want to\n"
@@ -10936,55 +10933,55 @@ msgstr ""
 "complètement uniforme pour estimer\n"
 "la variance du bruit."
 
-#: ../src/iop/denoiseprofile.c:3920
+#: ../src/iop/denoiseprofile.c:3921
 msgid "variance red: "
 msgstr "variance rouge : "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3923
+#: ../src/iop/denoiseprofile.c:3924
 msgid "variance computed on the red channel"
 msgstr "la variance calculée sur le canal rouge"
 
-#: ../src/iop/denoiseprofile.c:3928
+#: ../src/iop/denoiseprofile.c:3929
 msgid "variance green: "
 msgstr "variance vert : "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3931
+#: ../src/iop/denoiseprofile.c:3932
 msgid "variance computed on the green channel"
 msgstr "la variance calculée sur le canal vert"
 
-#: ../src/iop/denoiseprofile.c:3936
+#: ../src/iop/denoiseprofile.c:3937
 msgid "variance blue: "
 msgstr "variance bleu : "
 
 #. This gets filled in by process
-#: ../src/iop/denoiseprofile.c:3939
+#: ../src/iop/denoiseprofile.c:3940
 msgid "variance computed on the blue channel"
 msgstr "la variance calculée sur le canal bleu"
 
-#: ../src/iop/denoiseprofile.c:3949 ../src/libs/export.c:1266
+#: ../src/iop/denoiseprofile.c:3950 ../src/libs/export.c:1266
 #: ../src/libs/print_settings.c:1189 ../src/libs/print_settings.c:1409
 msgid "profile"
 msgstr "profil"
 
-#: ../src/iop/denoiseprofile.c:3957
+#: ../src/iop/denoiseprofile.c:3958
 msgid "non-local means"
 msgstr "moyennes non-locales"
 
-#: ../src/iop/denoiseprofile.c:3958
+#: ../src/iop/denoiseprofile.c:3959
 msgid "non-local means auto"
 msgstr "moyennes non-locales auto"
 
-#: ../src/iop/denoiseprofile.c:3959
+#: ../src/iop/denoiseprofile.c:3960
 msgid "wavelets"
 msgstr "ondelettes"
 
-#: ../src/iop/denoiseprofile.c:3960
+#: ../src/iop/denoiseprofile.c:3961
 msgid "wavelets auto"
 msgstr "ondelettes auto"
 
-#: ../src/iop/denoiseprofile.c:3987
+#: ../src/iop/denoiseprofile.c:3988
 msgid ""
 "adapt denoising according to the\n"
 "white balance coefficients.\n"
@@ -11000,7 +10997,7 @@ msgstr ""
 "devrait être désactivé si une instance précédente\n"
 "a été utilisée avec le mode de fusion sur la couleur."
 
-#: ../src/iop/denoiseprofile.c:3993
+#: ../src/iop/denoiseprofile.c:3994
 msgid ""
 "fix bugs in anscombe transform resulting\n"
 "in undersmoothing of the green channel in\n"
@@ -11021,11 +11018,11 @@ msgstr ""
 "en activant cette option le traitement est changé, une fois activé\n"
 "il ne sera plus possible de revenir aux anciens algorithmes."
 
-#: ../src/iop/denoiseprofile.c:4002
+#: ../src/iop/denoiseprofile.c:4003
 msgid "profile used for variance stabilization"
 msgstr "profil utilisé pour la stabilisation de variance"
 
-#: ../src/iop/denoiseprofile.c:4003
+#: ../src/iop/denoiseprofile.c:4004
 msgid ""
 "method used in the denoising core.\n"
 "non-local means works best for `lightness' blending,\n"
@@ -11036,7 +11033,7 @@ msgstr ""
 "'luminosité'. \n"
 "'ondelettes' fonctionne mieux pour le mode de fusion 'couleur'."
 
-#: ../src/iop/denoiseprofile.c:4006
+#: ../src/iop/denoiseprofile.c:4007
 msgid ""
 "color representation used within the algorithm.\n"
 "RGB keeps the RGB channels separated,\n"
@@ -11048,7 +11045,7 @@ msgstr ""
 "Y0U0V0 combine les canaux pour une suppression\n"
 "différentiée du bruit de chrominance et de luminance."
 
-#: ../src/iop/denoiseprofile.c:4010
+#: ../src/iop/denoiseprofile.c:4011
 msgid ""
 "radius of the patches to match.\n"
 "increase for more sharpness on strong edges, and better denoising of smooth "
@@ -11062,7 +11059,7 @@ msgstr ""
 "si les détails sont trop lissés, réduire cette valeur ou augmenter le "
 "contrôle des détails."
 
-#: ../src/iop/denoiseprofile.c:4013
+#: ../src/iop/denoiseprofile.c:4014
 msgid ""
 "emergency use only: radius of the neighbourhood to search patches in. "
 "increase for better denoising performance, but watch the long runtimes! "
@@ -11072,7 +11069,7 @@ msgstr ""
 "meilleure suppression du bruit au détriment de la performance qui peut très "
 "vite devenir très pénalisante."
 
-#: ../src/iop/denoiseprofile.c:4016
+#: ../src/iop/denoiseprofile.c:4017
 msgid ""
 "scattering of the neighbourhood to search patches in.\n"
 "increase for better coarse-grain noise reduction.\n"
@@ -11082,7 +11079,7 @@ msgstr ""
 "augmenter pour traiter un grain grossier.\n"
 "n'affecte pas le temps d'exécution."
 
-#: ../src/iop/denoiseprofile.c:4019
+#: ../src/iop/denoiseprofile.c:4020
 msgid ""
 "increase the weight of the central pixel\n"
 "of the patch in the patch comparison.\n"
@@ -11093,11 +11090,11 @@ msgstr ""
 "du patch lors de la comparaison des patchs.\n"
 "utile pour retrouver des détails lorsque la taille des patchs est importante."
 
-#: ../src/iop/denoiseprofile.c:4023
+#: ../src/iop/denoiseprofile.c:4024
 msgid "finetune denoising strength"
 msgstr "réglage fin de la force de réduction"
 
-#: ../src/iop/denoiseprofile.c:4024
+#: ../src/iop/denoiseprofile.c:4025
 msgid ""
 "controls the way parameters are autoset\n"
 "increase if shadows are not denoised enough\n"
@@ -11109,7 +11106,7 @@ msgstr ""
 "ou si le bruit de chrominance persiste.\n"
 "cela peut arriver si l'images est sous-exposée."
 
-#: ../src/iop/denoiseprofile.c:4028
+#: ../src/iop/denoiseprofile.c:4029
 msgid ""
 "finetune shadows denoising.\n"
 "decrease to denoise more aggressively\n"
@@ -11119,7 +11116,7 @@ msgstr ""
 "diminuer pour réduire le bruit plus agressivement\n"
 "les zones sombres de l'image."
 
-#: ../src/iop/denoiseprofile.c:4031
+#: ../src/iop/denoiseprofile.c:4032
 msgid ""
 "correct color cast in shadows.\n"
 "decrease if shadows are too purple.\n"
@@ -11129,7 +11126,7 @@ msgstr ""
 "diminuer si les ombres sont trop violettes.\n"
 "augmenter si les ombres sont trop vertes."
 
-#: ../src/iop/denoiseprofile.c:4034
+#: ../src/iop/denoiseprofile.c:4035
 msgid ""
 "upgrade the variance stabilizing algorithm.\n"
 "new algorithm extends the current one.\n"
@@ -19284,6 +19281,13 @@ msgstr "raccourci"
 #: ../src/views/view.c:1666
 msgid "Action"
 msgstr "action"
+
+#~ msgid ""
+#~ "perform color space corrections\n"
+#~ "and apply looks"
+#~ msgstr ""
+#~ "effectuer des corrections de l'espace colorimétrique\n"
+#~ "et appliquer des ajustements couleurs"
 
 #~ msgid "white balance applied on non-raw image"
 #~ msgstr "balance des blancs appliquée à une image non-raw"
