@@ -382,7 +382,10 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
-  // call reset_params on all pieces first.
+
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with defaults_params for pipe %i\n", pipe->type);
+
+  // call reset_params on all pieces first. This is mandatory to init utility modules that don't have an history stack
   GList *nodes = pipe->nodes;
   while(nodes)
   {
@@ -393,6 +396,9 @@ void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
                          pipe, piece);
     nodes = g_list_next(nodes);
   }
+
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch all modules with history for pipe %i\n", pipe->type);
+
   // go through all history items and adjust params
   GList *history = dev->history;
   for(int k = 0; k < dev->history_end && history; k++)
@@ -413,6 +419,8 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changed for pipe %i\n", pipe->type);
+
   dt_pthread_mutex_lock(&dev->history_mutex);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
