@@ -174,7 +174,8 @@ int main(int argc, char *arg[])
     }
     else if(!strcmp(arg[k], "--version"))
     {
-      printf("this is darktable-generate-cache\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n");
+      printf("this is darktable-generate-cache %s\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n",
+        darktable_package_version);
       exit(EXIT_FAILURE);
     }
     else if((!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip")) && argc > k + 1)
