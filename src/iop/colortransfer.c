@@ -550,7 +550,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   piece->data = malloc(sizeof(dt_iop_colortransfer_data_t));
   dt_iop_colortransfer_data_t *d = (dt_iop_colortransfer_data_t *)piece->data;
   d->flag = NEUTRAL;
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

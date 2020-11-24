@@ -1655,7 +1655,6 @@ void init(dt_iop_module_t *module)
 void init_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(module->params_size);
-  module->commit_params(module, module->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *module, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
