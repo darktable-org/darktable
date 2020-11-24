@@ -1646,7 +1646,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
     free(module);
     return 1;
   }
-  dt_iop_reload_defaults(module);
   return 0;
 }
 
@@ -1669,7 +1668,6 @@ GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
     res = g_list_insert_sorted(res, module, dt_sort_iop_by_order);
     module->global_data = module_so->data;
     module->so = module_so;
-    if(!no_image) dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
 
