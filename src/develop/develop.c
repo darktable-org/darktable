@@ -1377,6 +1377,8 @@ void _dev_insert_module(dt_develop_t *dev, dt_iop_module_t *module, const int im
   DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 4, module->default_params, module->params_size, SQLITE_TRANSIENT);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
+
+  dt_print(DT_DEBUG_PARAMS, "[history] module %s inserted to history\n", module->op);
 }
 
 static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
@@ -1685,6 +1687,15 @@ void _dev_write_history(dt_develop_t *dev, const int imgid)
   }
 }
 
+// helper function for debug strings
+char * _print_validity(gboolean state)
+{
+  if(state)
+    return "ok";
+  else
+    return "WRONG";
+}
+
 void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_image)
 {
   if(imgid <= 0) return;
@@ -1709,6 +1720,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // cleanup
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
 
+    dt_print(DT_DEBUG_PARAMS, "[history] temporary history deleted\n");
+
     // make sure all modules default params are loaded to init history
     _dt_dev_load_pipeline_defaults(dev);
 
@@ -1720,8 +1733,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     first_run = _dev_auto_apply_presets(dev);
     auto_apply_modules = _dev_get_module_nb_records() - default_modules;
 
+    dt_print(DT_DEBUG_PARAMS, "[history] temporary history initialised with default params and presets\n");
+
     // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
+
+    dt_print(DT_DEBUG_PARAMS, "[history] temporary history merged with image history\n");
 
     //  first time we are loading the image, try to import lightroom .xmp if any
     if(dev->image_loading && first_run) dt_lightroom_import(dev->image_storage.id, dev, TRUE);
@@ -1849,6 +1866,13 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     const gboolean is_valid_blendop_size = (bl_length == sizeof(dt_develop_blend_params_t));
     const gboolean is_valid_module_version = (modversion == hist->module->version());
     const gboolean is_valid_params_size = (param_length == hist->module->params_size);
+
+    dt_print(DT_DEBUG_PARAMS, "[history] successfully loaded module %s from history\n"
+                              "\t\t\tblendop v. %i:\tversion %s\tparams %s\n"
+                              "\t\t\tparams v. %i:\tversion %s\tparams %s\n",
+                              module_name,
+                              blendop_version, _print_validity(is_valid_blendop_version), _print_validity(is_valid_blendop_size),
+                              modversion, _print_validity(is_valid_module_version), _print_validity(is_valid_params_size));
 
     // Init buffers and values
     hist->enabled = enabled;
