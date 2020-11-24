@@ -633,6 +633,18 @@ restart:
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
 }
 
+
+static inline void _dt_dev_load_pipeline_defaults(dt_develop_t *dev)
+{
+  GList *modules = g_list_last(dev->iop);
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_reload_defaults(module);
+    modules = g_list_previous(modules);
+  }
+}
+
 // load the raw and get the new image struct, blocking in gui thread
 static inline void _dt_dev_load_raw(dt_develop_t *dev, const uint32_t imgid)
 {
@@ -1684,6 +1696,9 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // cleanup
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM memory.history", NULL, NULL, NULL);
 
+    // make sure all modules default params are loaded to init history
+    _dt_dev_load_pipeline_defaults(dev);
+
     // prepend all default modules to memory.history
     _dev_add_default_modules(dev, imgid);
     const int default_modules = _dev_get_module_nb_records();
@@ -1691,6 +1706,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     // maybe add auto-presets to memory.history
     first_run = _dev_auto_apply_presets(dev);
     auto_apply_modules = _dev_get_module_nb_records() - default_modules;
+
     // now merge memory.history into main.history
     _dev_merge_history(dev, imgid);
 
