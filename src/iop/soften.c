@@ -102,7 +102,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 const char *description(struct dt_iop_module_t *self)
 {
-  return dt_iop_set_description(self, _("create a softened image using the Orton effect."),
+  return dt_iop_set_description(self, _("create a softened image using the Orton effect"),
                                       _("creative"),
                                       _("linear, RGB, display-referred"),
                                       _("linear, RGB"),
