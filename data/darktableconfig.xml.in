@@ -1515,13 +1515,6 @@
     <shortdescription>minimum number of images to set up an images group</shortdescription>
     <longdescription>the minimum number of images to set up an images group. can influence the calculation time.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable" section="thumbs">
-    <name>plugins/lighttable/draw_custom_metadata</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>overlay txt sidecar over zoomed images</shortdescription>
-    <longdescription>when there is a txt file next to an image it can be shown as an overlay over zoomed images on the lighttable. the txt file either has to be there at import time or the crawler has to be enabled</longdescription>
-  </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/single_module</name>
     <type>bool</type>
