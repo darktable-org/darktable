@@ -243,8 +243,7 @@ git checkout tags/release-3.2.1
 Note that [LibXCF](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [rawspeed](https://github.com/darktable-org/rawspeed), and [whereami](https://github.com/gpakosz/whereami) are tracked via a git submodule, so after checking-out the darktable, you need to update/checkout them:
 
 ```bash
-git submodule init
-git submodule update
+git submodule update --init
 ```
 
 ### Compile
