@@ -1969,7 +1969,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, GdkEventButton *event, 
       if(grp) dt_masks_form_remove(module, NULL, grp);
     }
     /* reset to default params */
-    memcpy(module->params, module->default_params, module->params_size);
+    dt_iop_reload_defaults(module);
     dt_iop_commit_blend_params(module, module->default_blendop_params);
 
     /* reset ui to its defaults */
