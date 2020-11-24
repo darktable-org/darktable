@@ -1376,7 +1376,11 @@ void dt_iop_gui_init(dt_iop_module_t *module)
 void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
   if(darktable.gui) ++darktable.gui->reset;
-  if(module->reload_defaults) module->reload_defaults(module);
+  if(module->reload_defaults)
+  {
+    module->reload_defaults(module);
+    dt_print(DT_DEBUG_PARAMS, "[params] defaults reloaded for %s\n", module->op);
+  }
   dt_iop_load_default_params(module);
   if(darktable.gui) --darktable.gui->reset;
 
@@ -1934,6 +1938,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
     piece->hash = hash;
 
     free(str);
+
+    dt_print(DT_DEBUG_PARAMS, "[params] commit for %s in pipe %i with hash %lu\n", module->op, pipe->type, (long unsigned int)piece->hash);
   }
   // printf("commit params hash += module %s: %lu, enabled = %d\n", piece->module->op, piece->hash,
   // piece->enabled);
