@@ -950,8 +950,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
         dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
         dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
-
-        dt_iop_reload_defaults(module);
       }
     }
     else

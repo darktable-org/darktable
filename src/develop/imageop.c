@@ -137,7 +137,6 @@ static void default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *
                               dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(self->params_size);
-  default_commit_params(self, self->default_params, pipe, piece);
 }
 
 static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
@@ -604,8 +603,6 @@ void dt_iop_init_pipe(struct dt_iop_module_t *module, struct dt_dev_pixelpipe_t 
 {
   module->init_pipe(module, pipe, piece);
   piece->blendop_data = calloc(1, sizeof(dt_develop_blend_params_t));
-  /// FIXME: Commit params is already done in module
-  dt_iop_commit_params(module, module->default_params, module->default_blendop_params, pipe, piece);
 }
 
 static gboolean _header_motion_notify_show_callback(GtkWidget *eventbox, GdkEventCrossing *event, GtkWidget *header)
@@ -1364,9 +1361,8 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
 {
   if(darktable.gui) ++darktable.gui->reset;
   if(module->reload_defaults) module->reload_defaults(module);
-  if(darktable.gui) --darktable.gui->reset;
-
   dt_iop_load_default_params(module);
+  if(darktable.gui) --darktable.gui->reset;
 
   if(module->header) _iop_gui_update_header(module);
 }
@@ -1647,7 +1643,6 @@ int dt_iop_load_module(dt_iop_module_t *module, dt_iop_module_so_t *module_so, d
     free(module);
     return 1;
   }
-  dt_iop_reload_defaults(module);
   return 0;
 }
 
@@ -1670,7 +1665,6 @@ GList *dt_iop_load_modules_ext(dt_develop_t *dev, gboolean no_image)
     res = g_list_insert_sorted(res, module, dt_sort_iop_by_order);
     module->global_data = module_so->data;
     module->so = module_so;
-    if(!no_image) dt_iop_reload_defaults(module);
     iop = g_list_next(iop);
   }
 
@@ -1972,7 +1966,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, GdkEventButton *event, 
       if(grp) dt_masks_form_remove(module, NULL, grp);
     }
     /* reset to default params */
-    memcpy(module->params, module->default_params, module->params_size);
+    dt_iop_reload_defaults(module);
     dt_iop_commit_blend_params(module, module->default_blendop_params);
 
     /* reset ui to its defaults */
