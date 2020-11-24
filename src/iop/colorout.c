@@ -786,7 +786,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   piece->data = calloc(1, sizeof(dt_iop_colorout_data_t));
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->xform = NULL;
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

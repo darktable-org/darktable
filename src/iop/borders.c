@@ -391,7 +391,7 @@ struct border_positions_t
   int height;			//bt..height is the bottom border outside the frameline
   int stride;			// width of input roi
 };
-  
+
 // this will be called from inside an OpenMP parallel section, so no need to parallelize further
 static inline void set_pixels(float *buf, const float color[4], const int npixels)
 {
@@ -691,7 +691,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_borders_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
