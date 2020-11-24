@@ -1870,6 +1870,12 @@ void reload_defaults(dt_iop_module_t *module)
         color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
       }
     }
+    else if(!strcmp(ext, "pfm"))
+    {
+      // PFM have no embedded color profile nor ICC tag, we can't know the color space
+      // but we can assume the are linear since it's a floating point format
+      color_profile = DT_COLORSPACE_LIN_REC709;
+    }
 #ifdef HAVE_OPENJPEG
     else if(!strcmp(ext, "jp2") || !strcmp(ext, "j2k") || !strcmp(ext, "j2c") || !strcmp(ext, "jpc"))
     {
