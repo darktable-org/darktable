@@ -344,13 +344,7 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
     if(piece->module == hist->module)
     {
-      const gboolean mustbe_enabled = piece->module->default_enabled && piece->module->hide_enable_button;
-      piece->enabled = hist->enabled || mustbe_enabled;
-      if((hist->enabled == 0) && mustbe_enabled)
-      {
-        fprintf(stderr,"[dt_dev_pixelpipe_synch] alway-on module `%s' found as disabled in history\n", piece->module->op);
-        // FIXME can we also repair history from here?
-      }
+      piece->enabled = hist->enabled;
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
     }
     nodes = g_list_next(nodes);
