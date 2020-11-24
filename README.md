@@ -240,7 +240,7 @@ git checkout tags/release-3.2.1
 
 ### Get submodules
 
-Note that [rawspeed](https://github.com/darktable-org/rawspeed) is tracked via a git submodule, as well as OpenCL and LibXCF modules, so after checking-out the darktable, you need to update/checkout them,
+Note that [LibXCF](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [rawspeed](https://github.com/darktable-org/rawspeed), and [whereami](https://github.com/gpakosz/whereami) are tracked via a git submodule, so after checking-out the darktable, you need to update/checkout them:
 
 ```bash
 git submodule init
