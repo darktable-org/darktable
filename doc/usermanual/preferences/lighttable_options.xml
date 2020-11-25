@@ -70,8 +70,9 @@
     <bridgehead renderas="sect5">pattern for the thumbnail tooltip (empty to disable)</bridgehead>
 
     <para>
-      Define the pattern for the thumbnail tooltip. Empty it to disable thumbnail tooltip. As for
-      previous pattern, see <xref linkend="session_options"/> for possible tags to use.
+      Define the pattern for the thumbnail tooltip. Empty it to disable thumbnail tooltip.
+      As for previous pattern, several pre-defined variables can be used as placeholders.
+      See <xref linkend="darktable_variables"/> for an exhaustive list of available variables.
     </para>
 
     <bridgehead renderas="sect5">use single-click in the collect panel</bridgehead>
