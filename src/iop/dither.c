@@ -585,11 +585,11 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
                            const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                            const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
+  const dt_iop_dither_data_t *const data = (dt_iop_dither_data_t *)piece->data;
 
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int ch = piece->colors;
+  assert(piece->colors == 4);
 
   const float dither = powf(2.0f, data->random.damping / 10.0f);
 
@@ -597,24 +597,24 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, dither, height, ivoid, ovoid, tea_states, width) \
+  dt_omp_firstprivate(dither, height, ivoid, ovoid, tea_states, width) \
   schedule(static)
 #endif
   for(int j = 0; j < height; j++)
   {
-    const size_t k = (size_t)ch * width * j;
-    const float *in = (const float *)ivoid + k;
-    float *out = (float *)ovoid + k;
+    const size_t k = (size_t)4 * width * j;
+    const float *const in = (const float *)ivoid + k;
+    float *const out = (float *)ovoid + k;
     unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j * height + dt_get_thread_num();
-    for(int i = 0; i < width; i++, in += ch, out += ch)
+    for(int i = 0; i < width; i++)
     {
       encrypt_tea(tea_state);
       float dith = dither * tpdf(tea_state[0]);
 
-      out[0] = CLIP(in[0] + dith);
-      out[1] = CLIP(in[1] + dith);
-      out[2] = CLIP(in[2] + dith);
+      out[4*i+0] = CLIP(in[4*i+0] + dith);
+      out[4*i+1] = CLIP(in[4*i+1] + dith);
+      out[4*i+2] = CLIP(in[4*i+2] + dith);
     }
   }
 
