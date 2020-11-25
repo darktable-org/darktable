@@ -2537,24 +2537,39 @@ enum
 static const GtkTargetEntry _iop_target_list_internal[] = { { "iop", GTK_TARGET_SAME_WIDGET, DND_TARGET_IOP } };
 static const guint _iop_n_targets_internal = G_N_ELEMENTS(_iop_target_list_internal);
 
-static dt_iop_module_t *_get_dnd_dest_module(GtkBox *container, gint x, gint y)
+static dt_iop_module_t *_get_dnd_dest_module(GtkBox *container, gint x, gint y, dt_iop_module_t *module_src)
 {
   dt_iop_module_t *module_dest = NULL;
+
+  GtkAllocation allocation_w = {0};
+  gtk_widget_get_allocation(module_src->header, &allocation_w);
+  const int y_slop = allocation_w.height / 2;
+  // after source in pixelpipe, which is before it in the widgets list
+  gboolean after_src = TRUE;
 
   GtkWidget *widget_dest = NULL;
   GList *children = gtk_container_get_children(GTK_CONTAINER(container));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
     GtkWidget *w = GTK_WIDGET(l->data);
-
-    if(w && gtk_widget_is_visible(w))
+    if(w)
     {
-      GtkAllocation allocation_w = {0};
-      gtk_widget_get_allocation(w, &allocation_w);
-      if(y <= allocation_w.y + allocation_w.height + DT_PIXEL_APPLY_DPI(8) && y >= allocation_w.y - DT_PIXEL_APPLY_DPI(8))
+      if(w == module_src->expander) after_src = FALSE;
+      if(gtk_widget_is_visible(w))
       {
-        widget_dest = w;
-        break;
+        gtk_widget_get_allocation(w, &allocation_w);
+        // If dragging to later in the pixelpipe, we will insert after
+        // the destination module. If dragging to earlier in the
+        // pixelpipe, will insert before the destination module. This
+        // results in two code paths here and in our caller, but can
+        // handle all cases from inserting at the very start to the
+        // very end.
+        if((after_src && y <= allocation_w.y + y_slop) ||
+           (!after_src && y <= allocation_w.y + allocation_w.height + y_slop))
+        {
+          widget_dest = w;
+          break;
+        }
       }
     }
   }
@@ -2654,7 +2669,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   gboolean can_moved = FALSE;
   GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
   dt_iop_module_t *module_src = _get_dnd_source_module(container);
-  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y);
+  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y, module_src);
 
   if(module_src && module_dest && module_src != module_dest)
   {
@@ -2714,7 +2729,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
   int moved = 0;
   GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
   dt_iop_module_t *module_src = _get_dnd_source_module(container);
-  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y);
+  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y, module_src);
 
   if(module_src && module_dest && module_src != module_dest)
   {
