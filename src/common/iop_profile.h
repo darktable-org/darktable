@@ -351,6 +351,27 @@ static inline void dt_ioppr_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
     _ioppr_linear_rgb_matrix_to_xyz(rgb, xyz, matrix_in);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd \
+  aligned(rgb, xyz, matrix_out, unbounded_coeffs_out:16) \
+  aligned(lut_out:64) \
+  uniform(rgb, xyz, matrix_out, lut_out, unbounded_coeffs_out)
+#endif
+static inline void dt_ioppr_xyz_to_rgb_matrix(const float xyz[3], float rgb[3],
+                                              const float matrix_out[9], float *const lut_out[3],
+                                              const float unbounded_coeffs_out[3][3],
+                                              const int lutsize, const int nonlinearlut)
+{
+  if(nonlinearlut)
+  {
+    float linear_rgb[3] DT_ALIGNED_PIXEL;
+    _ioppr_xyz_to_linear_rgb_matrix(xyz, linear_rgb, matrix_out);
+    _apply_trc_out(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
+  }
+  else
+    _ioppr_xyz_to_linear_rgb_matrix(xyz, rgb, matrix_out);
+}
+
 
 #ifdef _OPENMP
 #pragma omp declare simd \
