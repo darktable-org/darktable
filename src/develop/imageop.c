@@ -2677,7 +2677,7 @@ static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acce
 
   //cannot toggle module if there's no enable button
   if(module->hide_enable_button) return TRUE;
-  
+
   gboolean active = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(module->off));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), !active);
 
@@ -3146,10 +3146,22 @@ char *dt_iop_warning_message(char *message)
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, const char *purpose, const char *input, const char *process,
                              const char *output)
 {
+#define TAB_SIZE 4.0
+#define P_TAB(n) (nb_tab + 1 - (int)ceilf((float)n / TAB_SIZE))
+
   const char *str_purpose = _("purpose");
-  const char *str_input = _("input");
+  const char *str_input   = _("input");
   const char *str_process = _("process");
-  const char *str_output = _("output");
+  const char *str_output  = _("output");
+
+  const int len_purpose = strlen(str_purpose);
+  const int len_input   = strlen(str_input);
+  const int len_process = strlen(str_process);
+  const int len_output  = strlen(str_output);
+
+  const int max = MAX(len_purpose,
+                      MAX(len_input, MAX(len_process, len_output)));
+  const int nb_tab = ceilf((float)max / TAB_SIZE);
 
 #ifdef _WIN32
   // TODO: a windows dev is needed to find 4 icons properly rendered
@@ -3172,18 +3184,25 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, con
     icon_purpose = icon_input = icon_process = icon_output = "";
   */
 
-  char *str_out = g_strdup_printf("%s.\n\n"
-                                  "%s\t%s\t:\t%s.\n"
-                                  "%s\t%s\t:\t%s.\n"
-                                  "%s\t%s\t:\t%s.\n"
-                                  "%s\t%s\t:\t%s.",
-                                  main_text,
-                                  icon_purpose, str_purpose, purpose,
-                                  icon_input, str_input, input,
-                                  icon_process, str_process, process,
-                                  icon_output, str_output, output);
+  // align on tabs
+  const char *tabs = "\t\t\t\t\t\t\t\t\t\t";
+
+  char *str_out = g_strdup_printf
+    ("%s.\n\n"
+     "%s\t%s%.*s:\t%s\n"
+     "%s\t%s%.*s:\t%s\n"
+     "%s\t%s%.*s:\t%s\n"
+     "%s\t%s%.*s:\t%s",
+     main_text,
+     icon_purpose, str_purpose, P_TAB(len_purpose), tabs, purpose,
+     icon_input,   str_input,   P_TAB(len_input),   tabs, input,
+     icon_process, str_process, P_TAB(len_process), tabs, process,
+     icon_output,  str_output,  P_TAB(len_output),  tabs, output);
 
   return str_out;
+
+#undef P_TAB
+#undef TAB_SIZE
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
