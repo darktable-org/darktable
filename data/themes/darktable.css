@@ -2088,13 +2088,11 @@ scale contents trough slider:hover
 
 .iop_drop_before
 {
-   border: 2px solid @plugin_bg_color;
    border-bottom: 2.4em solid @plugin_bg_color;
 }
 
 .iop_drop_after
 {
-   border: 2px solid @plugin_bg_color;
    border-top: 2.4em solid @plugin_bg_color;
 }
 
