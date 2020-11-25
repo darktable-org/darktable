@@ -271,6 +271,14 @@ const char *dt_camctl_camera_get_property(const dt_camctl_t *c, const dt_camera_
                                           const char *property_name);
 /** Check if property exists. */
 int dt_camctl_camera_property_exists(const dt_camctl_t *c, const dt_camera_t *cam, const char *property_name);
+
+/**
+ * @param cam the camera to check property type for
+ * @param property_name the property check type for
+ * @return the type of camera widget, NULL on failure
+ */
+const CameraWidgetType *dt_camctl_camera_get_property_type(const dt_camera_t *cam, const char *property_name);
+
 /** Get first choice available for named property. */
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c, const dt_camera_t *cam,
                                                        const char *property_name);

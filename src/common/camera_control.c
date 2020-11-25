@@ -1541,6 +1541,33 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c, const dt_camera_t *ca
   return exists;
 }
 
+const CameraWidgetType *dt_camctl_camera_get_property_type(const dt_camera_t *cam, const char *property_name)
+{
+  if(!cam)
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] can't get property type because camera==NULL\n");
+    return NULL;
+  }
+  dt_camera_t *camera = (dt_camera_t *)cam;
+  CameraWidgetType * widgetType = NULL;
+
+  dt_pthread_mutex_lock(&camera->config_lock);
+  CameraWidget *widget;
+  int retrieved_property = gp_widget_get_child_by_name(camera->configuration, property_name, &widget);
+  if(!retrieved_property){
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property %s from camera config. Error Code: %d\n", property_name, retrieved_property);
+  } else {
+    int retrieved_widget_type = gp_widget_get_type(widget, widgetType);
+    if(!retrieved_widget_type)
+    {
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property type for %s from camera config. Error Code: %d\n", property_name, retrieved_property);
+    }
+  }
+  dt_pthread_mutex_unlock(&camera->config_lock);
+
+  return widgetType;
+}
+
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c, const dt_camera_t *cam,
                                                        const char *property_name)
 {
