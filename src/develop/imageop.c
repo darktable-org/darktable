@@ -652,7 +652,7 @@ static void dt_iop_gui_delete_callback(GtkButton *button, dt_iop_module_t *modul
                             dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
 
   // we must pay attention if priority is 0
-  gboolean is_zero = (module->multi_priority == 0);
+  const gboolean is_zero = (module->multi_priority == 0);
 
   // we set the focus to the other instance
   dt_iop_gui_set_expanded(next, TRUE, FALSE);
