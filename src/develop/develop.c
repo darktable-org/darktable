@@ -1757,8 +1757,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     const int bl_length = sqlite3_column_bytes(stmt, 6);
 
     // Sanity checks
-    gboolean is_valid_id = (id == imgid);
-    gboolean has_module_name = (module_name != NULL);
+    const gboolean is_valid_id = (id == imgid);
+    const gboolean has_module_name = (module_name != NULL);
 
     if(!(has_module_name && is_valid_id))
     {
@@ -1831,11 +1831,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     }
 
     // Run a battery of tests
-    gboolean is_valid_module_name = (strcmp(module_name, hist->module->op) == 0);
-    gboolean is_valid_blendop_version = (blendop_version == dt_develop_blend_version());
-    gboolean is_valid_blendop_size = (bl_length == sizeof(dt_develop_blend_params_t));
-    gboolean is_valid_module_version = (modversion == hist->module->version());
-    gboolean is_valid_params_size = (param_length == hist->module->params_size);
+    const gboolean is_valid_module_name = (strcmp(module_name, hist->module->op) == 0);
+    const gboolean is_valid_blendop_version = (blendop_version == dt_develop_blend_version());
+    const gboolean is_valid_blendop_size = (bl_length == sizeof(dt_develop_blend_params_t));
+    const gboolean is_valid_module_version = (modversion == hist->module->version());
+    const gboolean is_valid_params_size = (param_length == hist->module->params_size);
 
     // Init buffers and values
     hist->enabled = enabled;
@@ -2746,7 +2746,7 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
                      const volatile uint64_t *const hash)
 {
   const int usec = 5000;
-  int nloop;
+  int nloop = 0;
 
 #ifdef HAVE_OPENCL
   if(pipe->devid >= 0)
@@ -2764,7 +2764,7 @@ int dt_dev_wait_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
     if(dt_atomic_get_int(&pipe->shutdown))
       return TRUE;  // stop waiting if pipe shuts down
 
-    uint64_t probehash;
+    uint64_t probehash = 0;
 
     if(lock)
     {
