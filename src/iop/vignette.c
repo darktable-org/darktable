@@ -757,6 +757,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           weight = 1.0;
         else if(weight <= 0.0)
           weight = 0.0;
+        else if(dither == 0.0f)
+        {
+          // don't bother computing the random number if dithering is disabled
+          dith = 0.0f;
+        }
         else
         {
           weight = 0.5 - cosf(M_PI * weight) / 2.0;
