@@ -47,6 +47,7 @@ typedef enum _camctl_camera_job_type_t
   _JOB_TYPE_SET_PROPERTY_CHOICE,
   /** For some reason stopping live view needs to pass an int, not a string. */
   _JOB_TYPE_SET_PROPERTY_INT,
+  _JOB_TYPE_SET_PROPERTY_FLOAT,
   /** gets a property from config cache. \todo This shouldn't be a job in jobqueue !?  */
   _JOB_TYPE_GET_PROPERTY
 } _camctl_camera_job_type_t;
@@ -76,6 +77,13 @@ typedef struct _camctl_camera_set_property_int_job_t
   char *name;
   int value;
 } _camctl_camera_set_property_int_job_t;
+
+typedef struct _camctl_camera_set_property_float_job_t
+{
+  _camctl_camera_job_type_t type;
+  char *name;
+  float value;
+} _camctl_camera_set_property_float_job_t;
 
 /** Initializes camera */
 static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam);
@@ -444,8 +452,14 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
       {
         int value = spj->value;
-        gp_widget_set_value(widget, &value);
-        gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        int set_value_succeeds = gp_widget_set_value(widget, &value);
+        if(set_value_succeeds != GP_OK){
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting int value %d on %s failed with code %d", spj->value, spj->name, set_value_succeeds);
+        }
+        int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        if(set_value_succeeds != GP_OK){
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting config failed with code %d", set_config_succeeds);
+        }
       }
       /* dt_pthread_mutex_lock( &cam->config_lock );
        CameraWidget *widget;
@@ -460,7 +474,31 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
       gp_widget_free(config);
     }
     break;
+    case _JOB_TYPE_SET_PROPERTY_FLOAT:
+    {
+      _camctl_camera_set_property_float_job_t *spj = (_camctl_camera_set_property_float_job_t *)job;
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] executing set camera config float job %s=%.2f\n", spj->name,
+               spj->value);
 
+      CameraWidget *config; // Copy of camera configuration
+      CameraWidget *widget;
+      gp_camera_get_config(cam->gpcam, &config, c->gpcontext);
+      if(gp_widget_get_child_by_name(config, spj->name, &widget) == GP_OK)
+      {
+        float value = spj->value;
+        int set_value_succeeds = gp_widget_set_value(widget, &value);
+        if(set_value_succeeds != GP_OK){
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting int value %.2f on %s failed with code %d", spj->value, spj->name, set_value_succeeds);
+        }
+        int set_config_succeeds = gp_camera_set_config(cam->gpcam, config, c->gpcontext);
+        if(set_value_succeeds != GP_OK){
+          dt_print(DT_DEBUG_CAMCTL, "[camera_control] setting config failed with code %d", set_config_succeeds);
+        }
+      }
+      g_free(spj->name);
+      gp_widget_free(config);
+    }
+      break;
     default:
       dt_print(DT_DEBUG_CAMCTL, "[camera_control] process of unknown job type 0x%x\n", j->type);
       break;
@@ -1432,6 +1470,26 @@ void dt_camctl_camera_set_property_int(const dt_camctl_t *c, const dt_camera_t *
   dt_camera_t *camera = (dt_camera_t *)cam;
 
   _camctl_camera_set_property_int_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
+  job->type = _JOB_TYPE_SET_PROPERTY_INT;
+  job->name = g_strdup(property_name);
+  job->value = value;
+
+  // Push the job on the jobqueue
+  _camera_add_job(camctl, camera, job);
+}
+
+void dt_camctl_camera_set_property_float(const dt_camctl_t *c, const dt_camera_t *cam,
+                                         const char *property_name, const float value)
+{
+  dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!get_or_set_cam(c, cam))
+  {
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
+    return;
+  }
+  dt_camera_t *camera = (dt_camera_t *)cam;
+
+  _camctl_camera_set_property_float_job_t *job = g_malloc(sizeof(_camctl_camera_set_property_int_job_t));
   job->type = _JOB_TYPE_SET_PROPERTY_INT;
   job->name = g_strdup(property_name);
   job->value = value;

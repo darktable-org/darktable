@@ -263,6 +263,8 @@ void dt_camctl_camera_set_property_choice(const dt_camctl_t *c, const dt_camera_
                                           const char *property_name, const int value);
 void dt_camctl_camera_set_property_int(const dt_camctl_t *c, const dt_camera_t *cam,
                                        const char *property_name, const int value);
+void dt_camctl_camera_set_property_float(const dt_camctl_t *c, const dt_camera_t *cam,
+                                       const char *property_name, const float value);
 /** Get a property value from cached configuration. \param cam Pointer to dt_camera_t if NULL the
  * camctl->active_camera is used. */
 const char *dt_camctl_camera_get_property(const dt_camctl_t *c, const dt_camera_t *cam,
