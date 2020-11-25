@@ -1402,6 +1402,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   gchar *workflow = dt_conf_get_string("plugins/darkroom/workflow");
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
+  const gboolean is_workflow_none = strcmp(workflow, "none") == 0;
 
   workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
   const gboolean is_modern_chroma = strcmp(workflow, "modern") == 0;
@@ -1527,6 +1528,18 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     const char *params = (char *)sqlite3_column_blob(stmt, 0);
     const int32_t params_len = sqlite3_column_bytes(stmt, 0);
     GList *iop_list = dt_ioppr_deserialize_iop_order_list(params, params_len);
+    dt_ioppr_write_iop_order_list(iop_list, imgid);
+    g_list_free_full(iop_list, free);
+    dt_ioppr_set_default_iop_order(dev, imgid);
+  }
+  else
+  {
+    // we have no auto-apply order, so apply iop order, depending of the worflow
+    GList *iop_list;
+    if(is_scene_referred || is_workflow_none)
+      iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
+    else
+      iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
     dt_ioppr_write_iop_order_list(iop_list, imgid);
     g_list_free_full(iop_list, free);
     dt_ioppr_set_default_iop_order(dev, imgid);
