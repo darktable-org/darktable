@@ -1037,7 +1037,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
   buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
@@ -1049,7 +1049,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
 #endif
   for(size_t j = 0; j < height; j++)
   {
-    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j + dt_get_thread_num();
     size_t index = j * 4 * width;
     for(int i = 0; i < 4 * width; i++)
@@ -1080,13 +1080,13 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   double end = dt_get_wtime();
 
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free(g);
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return INFINITY;
 }
 
