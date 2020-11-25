@@ -162,7 +162,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[k] = in[k];
       out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
       out[k + 2] = (in[k + 2] * d->b_steepness) + d->b_offset;
-      out[k + 4] = in[k + 4];
+      out[k + 3] = in[k + 3];
     }
   }
   else
@@ -177,7 +177,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       out[k] = in[k];
       out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
       out[k + 2] = CLAMP((in[k + 2] * d->b_steepness) + d->b_offset, -128.0f, 128.0f);
-      out[k + 4] = in[k + 4];
+      out[k + 3] = in[k + 3];
     }
   }
 }
