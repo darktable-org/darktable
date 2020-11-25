@@ -2605,10 +2605,22 @@ static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer 
     {
       GtkAllocation allocation_w = {0};
       gtk_widget_get_allocation(module_src->header, &allocation_w);
+      // method from https://blog.gtk.org/2017/04/23/drag-and-drop-in-lists/
+      cairo_surface_t *surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, allocation_w.width, allocation_w.height);
+      cairo_t *cr = cairo_create(surface);
 
-      GdkPixbuf *pixbuf = gdk_pixbuf_get_from_window(window, allocation_w.x, allocation_w.y,
-                                                     allocation_w.width, allocation_w.height);
-      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, allocation_w.height / 2);
+      // hack to render not transparent
+      GtkStyleContext *style_context = gtk_widget_get_style_context(module_src->header);
+      gtk_style_context_add_class(style_context, "iop_drag_icon");
+      gtk_widget_draw(module_src->header, cr);
+      gtk_style_context_remove_class(style_context, "iop_drag_icon");
+
+      // FIXME: this centers the icon on the mouse -- instead translate such that the label doesn't jump when mouse down?
+      cairo_surface_set_device_offset(surface, -allocation_w.width * darktable.gui->ppd / 2, -allocation_w.height * darktable.gui->ppd / 2);
+      gtk_drag_set_icon_surface(context, surface);
+
+      cairo_destroy(cr);
+      cairo_surface_destroy(surface);
     }
   }
 }
