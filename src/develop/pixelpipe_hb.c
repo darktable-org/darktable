@@ -339,16 +339,44 @@ void dt_dev_pixelpipe_synch(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, GList *
   // find piece in nodes list
   GList *nodes = pipe->nodes;
   dt_dev_pixelpipe_iop_t *piece = NULL;
+  gboolean hint = FALSE;
+
   while(nodes)
   {
     piece = (dt_dev_pixelpipe_iop_t *)nodes->data;
+    const dt_image_t *img = &piece->pipe->image;
+    const int imgid = img->id;
+
     if(piece->module == hist->module)
     {
-      piece->enabled = hist->enabled;
+      gboolean active = hist->enabled;
+
+      // demosaic must be OFF for non-raws and ON for raws
+      if(strcmp(piece->module->op, "demosaic") == 0)
+      {
+        if(dt_image_is_raw(img) && !active)
+        {
+          hint = TRUE;
+          active = TRUE;
+          fprintf(stderr,"[dt_dev_pixelpipe_synch] found disabled demosaic in history for raw `%s`, id: %i\n",
+            img->filename, imgid);
+        }
+        else if(!dt_image_is_raw(img) && active)
+        {
+          hint = TRUE;
+          active = FALSE;
+          fprintf(stderr,"[dt_dev_pixelpipe_synch] found enabled demosaic in history for non-raw `%s`, id: %i\n",
+            img->filename, imgid);
+        }
+      }
+
+      piece->enabled = active;
       dt_iop_commit_params(hist->module, hist->params, hist->blend_params, pipe, piece);
     }
     nodes = g_list_next(nodes);
   }
+  if(hint)
+    dt_control_log(_("history problem detected\nplease report via the issue tracker\nincluding the xmp file"));
 }
 
 void dt_dev_pixelpipe_synch_all(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
