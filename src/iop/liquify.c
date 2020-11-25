@@ -2929,7 +2929,7 @@ static void get_stamp_params(dt_iop_module_t *module, float *radius, float *r_st
 
   *radius = dt_conf_get_sanitize_float(CONF_RADIUS, 0.33f*im_scale, 3.0f*im_scale, im_scale);
   *r_strength = dt_conf_get_sanitize_float(CONF_STRENGTH, 0.5f * *radius, 2.0f * *radius, 1.5f * *radius);
-  *phi = dt_conf_get_sanitize_float(CONF_ANGLE, 0.0f, 2.0f * M_PI, 0.0f);
+  *phi = dt_conf_get_sanitize_float(CONF_ANGLE, -M_PI, M_PI, 0.0f);
 }
 /*
   add support for changing the radius and the strength vector for the temp node
