@@ -113,9 +113,11 @@ static inline gboolean _convert_color_space(const GdkRGBA *restrict sample, GdkR
                              display_profile->unbounded_coeffs_out, display_profile->lutsize,
                              display_profile->nonlinearlut);
 
-  color->red = RGB[0];
-  color->green = RGB[1];
-  color->blue = RGB[2];
+  // Sanitize values and ensure gamut-fitting
+  // we reproduce the default behaviour of colorout, which is harsh gamut clipping
+  color->red = CLAMP(RGB[0], 0.f, 1.f);
+  color->green = CLAMP(RGB[1], 0.f, 1.f);
+  color->blue = CLAMP(RGB[2], 0.f, 1.f);
 
   return FALSE;
 }
@@ -184,9 +186,9 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
   }
 
   // Setting the output button
-  sample->rgb.red   = CLAMP(rgb[0], 0.f, 1.f);
-  sample->rgb.green = CLAMP(rgb[1], 0.f, 1.f);
-  sample->rgb.blue  = CLAMP(rgb[2], 0.f, 1.f);
+  sample->rgb.red   = rgb[0];
+  sample->rgb.green = rgb[1];
+  sample->rgb.blue  = rgb[2];
 
   // Setting the output label
   char text[128] = { 0 };
