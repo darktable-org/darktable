@@ -35,8 +35,8 @@
 
   <para>
     The content of this line can be set in preferences (see <xref linkend="darkroom_options"/>).
-    Available variables are the same as for the export module (see <xref linkend="export_selected_usage_filename"/>).
-    You can also add new lines by using <code>$(NL)</code> variable.
+    Several pre-defined variables can be used as placeholders. See <xref linkend="darktable_variables"/>
+    for an exhaustive list of available variables.
   </para>
 
   <para>
