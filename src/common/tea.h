@@ -27,7 +27,7 @@
 inline unsigned int* alloc_tea_states(int numthreads)
 {
   unsigned int* states = dt_alloc_align(64, numthreads * TEA_STATE_SIZE);
-  if (states) memset(states, 0, numthreads * TEA_STATES);
+  if (states) memset(states, 0, numthreads * TEA_STATE_SIZE);
   return states;
 }
 
