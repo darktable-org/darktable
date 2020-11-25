@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/imageio.h"
 #include "common/opencl.h"
+#include "common/tea.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -44,7 +45,6 @@
 #endif
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define TEA_ROUNDS 8
 
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
@@ -581,32 +581,6 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
 }
 #endif
 
-
-static void encrypt_tea(unsigned int *arg)
-{
-  const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
-  unsigned int v0 = arg[0], v1 = arg[1];
-  unsigned int sum = 0;
-  unsigned int delta = 0x9e3779b9;
-  for(int i = 0; i < TEA_ROUNDS; i++)
-  {
-    sum += delta;
-    v0 += ((v1 << 4) + key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + key[1]);
-    v1 += ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3]);
-  }
-  arg[0] = v0;
-  arg[1] = v1;
-}
-
-
-static float tpdf(unsigned int urandom)
-{
-  float frandom = (float)urandom / (float)0xFFFFFFFFu;
-
-  return (frandom < 0.5f ? (sqrtf(2.0f * frandom) - 1.0f) : (1.0f - sqrtf(2.0f * (1.0f - frandom))));
-}
-
-
 static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                            const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                            const dt_iop_roi_t *const roi_out)
@@ -619,7 +593,7 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   const float dither = powf(2.0f, data->random.damping / 10.0f);
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -631,7 +605,7 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
     const size_t k = (size_t)ch * width * j;
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
-    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j * height + dt_get_thread_num();
     for(int i = 0; i < width; i++, in += ch, out += ch)
     {
@@ -644,7 +618,7 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
     }
   }
 
-  free(tea_states);
+  free_tea_states(tea_states);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 }
