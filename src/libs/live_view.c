@@ -237,9 +237,8 @@ static void _zoom_live_view_clicked(GtkWidget *widget, gpointer user_data)
 static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   int focus = GPOINTER_TO_INT(user_data);
-  dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
-  const CameraWidgetType *property_type = dt_camctl_camera_get_property_type(cam, "manualfocusdrive");
-  if(!property_type)
+  CameraWidgetType property_type;
+  if(dt_camctl_camera_get_property_type(darktable.camctl, NULL, "manualfocusdrive", &property_type))
   {
     // default to avoid breaking backwards compatibility
     // note that this might not work on non-Canon EOS cameras
@@ -250,7 +249,7 @@ static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
     // we need to check the property type here because of a peculiar difference between the property type that gphoto2
     // supports for Canon EOS and Nikon systems. In particular, if you have a Canon, expect a TOGGLE or RADIO.
     // If you have a Nikon, expect a RANGE.
-    switch(*property_type)
+    switch(property_type)
     {
       case GP_WIDGET_RANGE:
       {
@@ -280,7 +279,7 @@ static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
         break;
       default:
         // TODO evaluate if this is the right thing to do in default scenario
-        dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set manualfocusdrive for property type %d", *property_type);
+        dt_print(DT_DEBUG_CAMCTL, "[camera control] unable to set manualfocusdrive for property type %d", property_type);
         break;
     }
   }
