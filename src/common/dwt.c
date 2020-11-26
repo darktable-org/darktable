@@ -138,8 +138,8 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
   // process rows 0, 16, 32, ..., then 1, 17, 33, ..., 2, 18, 34, ..., etc.
   if (height <= scale)
     return rowid;
-  int per_pass = ((height + scale - 1) / scale);
-  int long_passes = height % scale;
+  const int per_pass = ((height + scale - 1) / scale);
+  const int long_passes = height % scale;
   // adjust for the fact that we have some passes with one fewer iteration when height is not a multiple of scale
   if (long_passes == 0 || rowid < long_passes * per_pass)
     return (rowid / per_pass) + scale * (rowid % per_pass);
