@@ -272,8 +272,8 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
   const int hscale = MIN(1 << lev, width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, hscale) \
-  dt_omp_sharedconst(in, out) \
+  dt_omp_firstprivate(height, width, hscale, thold, last) \
+  dt_omp_sharedconst(in, out, accum) \
   schedule(static)
 #endif
   for(int row = 0; row < height ; row++)
