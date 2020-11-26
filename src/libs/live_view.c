@@ -33,10 +33,10 @@
 
 typedef enum dt_lib_live_view_focus_control_t
 {
-  NEAR = 0,
-  NEARER = 2,
-  FAR = 4,
-  FARTHER = 6
+  DT_FOCUS_NEAR = 0,
+  DT_FOCUS_NEARER = 2,
+  DT_FOCUS_FAR = 4,
+  DT_FOCUS_FARTHER = 6
 } dt_lib_live_view_focus_control_t;
 
 typedef enum dt_lib_live_view_flip_t
@@ -278,16 +278,16 @@ static void _focus_button_clicked(GtkWidget *widget, gpointer user_data)
         float focus_amount;
         switch(focus)
         {
-          case NEARER:
+          case DT_FOCUS_NEARER:
             focus_amount = 250;
             break;
-          case NEAR:
+          case DT_FOCUS_NEAR:
             focus_amount = 50;
             break;
-          case FAR:
+          case DT_FOCUS_FAR:
             focus_amount = -50;
             break;
-          case FARTHER:
+          case DT_FOCUS_FARTHER:
             focus_amount = -250;
             break;
           default:
@@ -400,15 +400,15 @@ void gui_init(dt_lib_module_t *self)
 
 
   g_signal_connect(G_OBJECT(lib->focus_in_big), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(NEARER));
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_NEARER));
   g_signal_connect(G_OBJECT(lib->focus_in_small), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(NEAR));
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_NEAR));
   g_signal_connect(G_OBJECT(lib->auto_focus), "clicked",
                    G_CALLBACK(_auto_focus_button_clicked), GINT_TO_POINTER(1));
   g_signal_connect(G_OBJECT(lib->focus_out_small), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(FAR));
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FAR));
   g_signal_connect(G_OBJECT(lib->focus_out_big), "clicked",
-                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(FARTHER));
+                   G_CALLBACK(_focus_button_clicked), GINT_TO_POINTER(DT_FOCUS_FARTHER));
 
   // Guides
   lib->guide_selector = dt_bauhaus_combobox_new(NULL);
