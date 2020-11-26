@@ -145,7 +145,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
   }
 
-  TIFFSetField(tif, TIFFTAG_FILLORDER, (uint16_t)FILLORDER_MSB2LSB);
   if(profile != NULL)
   {
     TIFFSetField(tif, TIFFTAG_ICCPROFILE, (uint32_t)profile_len, profile);
@@ -231,11 +230,13 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)d->global.width);
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->global.height);
   if(layers == 3)
+  {
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+    TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
+  }
   else
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
 
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
   TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
@@ -411,8 +412,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
           TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
         }
 
-        TIFFSetField(tif, TIFFTAG_FILLORDER, (uint16_t)FILLORDER_MSB2LSB);
-
         if(resolution > 0)
         {
           TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
@@ -422,7 +421,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);
-        TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
         TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
 #ifdef MASKS_USE_SAME_FORMAT
@@ -430,7 +428,10 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
         TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
         if(layers == 3)
+        {
           TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+          TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
+        }
         else
           TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
         TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
