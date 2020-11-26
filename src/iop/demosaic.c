@@ -2116,7 +2116,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(colors, filters, in, roi_in, roi_out, xtrans) \
   shared(out) \
-  schedule(static) collapse(2)
+  schedule(static)
 #endif
   for(int row = 0; row < roi_out->height; row++)
     for(int col = 0; col < roi_out->width; col++)
