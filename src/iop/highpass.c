@@ -45,18 +45,6 @@
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 
-#ifndef dt_omp_shared
-#ifdef _OPENMP
-#if defined(__clang__) || __GNUC__ > 8
-# define dt_omp_shared(...)  shared(__VA_ARGS__)
-#else
-  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  //  'const' variables as shared
-# define dt_omp_shared(var, ...)
-#endif
-#endif /* _OPENMP */
-#endif /* dt_omp_shared */
-
 DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
 typedef struct dt_iop_highpass_params_t
@@ -537,7 +525,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, roi_out) \
-  dt_omp_shared(in) \
+  dt_omp_sharedconst(in) \
   shared(out) \
   schedule(static)
 #endif
@@ -573,7 +561,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, contrast_scale, npixels) \
-  dt_omp_shared(in) \
+  dt_omp_sharedconst(in) \
   shared(out, data) \
   schedule(static)
 #endif
