@@ -411,7 +411,7 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, in, thr, width, maximum) \
   shared(out, oi, oj) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(size_t j = oj; j < height - 2; j += 2)
   {
@@ -461,7 +461,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
   dt_omp_firstprivate(g2_offset, height, in, width) \
   reduction(+ : sum1, sum2) \
   shared(oi, oj) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(size_t j = oj; j < (height - 1); j += 2)
   {
@@ -481,7 +481,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(g2_offset, height, in, width) \
   shared(out, oi, oj, gr_ratio) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(int j = oj; j < (height - 1); j += 2)
   {
@@ -2416,7 +2416,7 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, roi_out, roi_in) \
   shared(out) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
