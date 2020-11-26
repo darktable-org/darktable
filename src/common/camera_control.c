@@ -1482,7 +1482,7 @@ void dt_camctl_camera_set_property_float(const dt_camctl_t *c, const dt_camera_t
                                          const char *property_name, const float value)
 {
   dt_camctl_t *camctl = (dt_camctl_t *)c;
-  if(!get_or_set_cam(c, cam))
+  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
   {
     dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to set property from camera, camera==NULL\n");
     return;
