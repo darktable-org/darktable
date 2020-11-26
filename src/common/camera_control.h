@@ -277,7 +277,7 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c, const dt_camera_t *ca
  * @param property_name the property check type for
  * @return the type of camera widget, NULL on failure
  */
-const CameraWidgetType *dt_camctl_camera_get_property_type(const dt_camera_t *cam, const char *property_name);
+int dt_camctl_camera_get_property_type(const dt_camctl_t *c, const dt_camera_t *cam, const char *property_name, CameraWidgetType *widget_type);
 
 /** Get first choice available for named property. */
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c, const dt_camera_t *cam,

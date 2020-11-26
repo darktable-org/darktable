@@ -1022,8 +1022,9 @@ static gboolean _camera_initialize(const dt_camctl_t *c, dt_camera_t *cam)
     gp_camera_get_config(cam->gpcam, &cam->configuration, c->gpcontext);
 
     // TODO: find a more robust way for this, once we find out how to do it with non-EOS cameras
-    cam->can_live_view_advanced = cam->can_live_view &&
-                                  dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition");
+    cam->can_live_view_advanced = cam->can_live_view
+                                  && (dt_camctl_camera_property_exists(camctl, cam, "eoszoomposition")
+                                  || dt_camctl_camera_property_exists(camctl, cam, "manualfocusdrive"));
 
     // initialize timeout callbacks eg. keep alive, some cameras needs it.
     cam->gpcontext = camctl->gpcontext;
@@ -1541,31 +1542,33 @@ int dt_camctl_camera_property_exists(const dt_camctl_t *c, const dt_camera_t *ca
   return exists;
 }
 
-const CameraWidgetType *dt_camctl_camera_get_property_type(const dt_camera_t *cam, const char *property_name)
+int dt_camctl_camera_get_property_type(const dt_camctl_t *c, const dt_camera_t *cam, const char *property_name, CameraWidgetType *widget_type)
 {
-  if(!cam)
+  dt_camctl_t *camctl = (dt_camctl_t *)c;
+  if(!cam && (cam = camctl->active_camera) == NULL && (cam = camctl->wanted_camera) == NULL)
   {
-    dt_print(DT_DEBUG_CAMCTL, "[camera_control] can't get property type because camera==NULL\n");
-    return NULL;
+    dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property type from camera, camera==NULL\n");
+    return -1;
   }
   dt_camera_t *camera = (dt_camera_t *)cam;
-  CameraWidgetType * widgetType = NULL;
-
+  int retrieved_widget_type = GP_ERROR;
   dt_pthread_mutex_lock(&camera->config_lock);
   CameraWidget *widget;
   int retrieved_property = gp_widget_get_child_by_name(camera->configuration, property_name, &widget);
-  if(!retrieved_property){
+  if(retrieved_property != GP_OK)
+  {
     dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property %s from camera config. Error Code: %d\n", property_name, retrieved_property);
   } else {
-    int retrieved_widget_type = gp_widget_get_type(widget, widgetType);
-    if(!retrieved_widget_type)
+    retrieved_widget_type = gp_widget_get_type(widget, widget_type);
+    if(retrieved_widget_type != GP_OK)
     {
-      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property type for %s from camera config. Error Code: %d\n", property_name, retrieved_property);
+      dt_print(DT_DEBUG_CAMCTL, "[camera_control] failed to get property type for %s from camera config. Error Code: %d\n",
+               property_name, retrieved_widget_type);
     }
   }
   dt_pthread_mutex_unlock(&camera->config_lock);
 
-  return widgetType;
+  return retrieved_property != GP_OK || retrieved_widget_type != GP_OK;
 }
 
 const char *dt_camctl_camera_property_get_first_choice(const dt_camctl_t *c, const dt_camera_t *cam,
