@@ -380,7 +380,7 @@ void gui_init(dt_lib_module_t *self)
   lib->focus_in_small
       = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
                                                   | CPF_DIRECTION_LEFT, NULL); // TODO icon not centered
-  lib->auto_focus = dtgtk_button_new(dtgtk_cairo_paint_zoom, CPF_STYLE_FLAT, NULL);
+  lib->auto_focus = dtgtk_button_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
   lib->focus_out_small = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_STYLE_FLAT
                                                                    | CPF_DIRECTION_RIGHT, NULL); // TODO same here
   lib->focus_out_big = dtgtk_button_new(dtgtk_cairo_paint_solid_triangle,
