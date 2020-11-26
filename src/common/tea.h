@@ -24,7 +24,7 @@
 // cutting throughput by a factor equal to the number of threads sharing a cache line (8 with a 64-byte cache
 // line and 32-bit ints)
 #define TEA_STATE_SIZE (MAX(64, 2*sizeof(unsigned int)))
-inline unsigned int* alloc_tea_states(int numthreads)
+static inline unsigned int* alloc_tea_states(int numthreads)
 {
   unsigned int* states = dt_alloc_align(64, numthreads * TEA_STATE_SIZE);
   if (states) memset(states, 0, numthreads * TEA_STATE_SIZE);
@@ -33,12 +33,12 @@ inline unsigned int* alloc_tea_states(int numthreads)
 
 // retrieve the state for the instance in the given thread from the array of states previously allocated with
 // alloc_tea_states()
-inline unsigned int* get_tea_state(unsigned int* const states, int threadnum)
+static inline unsigned int* get_tea_state(unsigned int* const states, int threadnum)
 {
   return states + threadnum * TEA_STATE_SIZE/sizeof(states[0]);
 }
 
-inline void free_tea_states(unsigned int* states)
+static inline void free_tea_states(unsigned int* states)
 {
   dt_free_align(states);
 }
@@ -48,7 +48,7 @@ inline void free_tea_states(unsigned int* states)
 
 // Run the encryption mixing function using and updating the given internal state.  For use as a PRNG, you can
 // set arg[0] to the random-number seed, then read out the value of arg[0] after each call to this function.
-inline void encrypt_tea(unsigned int *arg)
+static inline void encrypt_tea(unsigned int *arg)
 {
   const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
   unsigned int v0 = arg[0], v1 = arg[1];
@@ -64,7 +64,7 @@ inline void encrypt_tea(unsigned int *arg)
   arg[1] = v1;
 }
 
-inline float tpdf(unsigned int urandom)
+static inline float tpdf(unsigned int urandom)
 {
   float frandom = (float)urandom / (float)0xFFFFFFFFu;
 
