@@ -983,7 +983,16 @@ static gboolean _transform_for_blend(const dt_iop_module_t *const self, const dt
 
 static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self)
 {
-  dt_iop_colorspace_type_t picker_cst = dt_iop_color_picker_get_active_cst(self);
+  // Special case the colorout module used for the global colorpicker. In this module
+  // we don't have the default colorspace set as there is no picker in the module itself.
+  // the global colorpicker use the colorout in the pipe as process point for taking the
+  // samples. And in this case we want the colorout default_colorspace().
+
+  const dt_iop_colorspace_type_t picker_cst =
+    !strcmp(self->op, "colorout")
+    ? self->default_colorspace(self, NULL, NULL)
+    : dt_iop_color_picker_get_active_cst(self);
+
   switch(picker_cst)
   {
     case iop_cs_RAW:
