@@ -36,18 +36,6 @@
 
 #define HISTOGRAM_BINS 256
 
-#ifndef dt_omp_shared
-#ifdef _OPENMP
-#if defined(__clang__) || __GNUC__ > 8
-# define dt_omp_shared(...)  shared(__VA_ARGS__)
-#else
-  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  //  'const' variables as shared
-# define dt_omp_shared(var, ...)
-#endif
-#endif /* _OPENMP */
-#endif /* dt_omp_shared */
-
 
 DT_MODULE(1)
 
@@ -232,7 +220,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(input, width, height, wf_width, bin_width, _height, scale) \
-  dt_omp_shared(wf_linear) \
+  dt_omp_sharedconst(wf_linear) \
   aligned(input, wf_linear:64) \
   schedule(simd:static, bin_width)
 #endif
@@ -539,7 +527,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_width, wf_height, wf_linear, primaries_linear, ch) \
-  dt_omp_shared(wf_display) aligned(wf_linear, wf_display, primaries_linear:64) \
+  dt_omp_sharedconst(wf_display) aligned(wf_linear, wf_display, primaries_linear:64) \
   schedule(simd:static)
 #endif
   for(int p = 0; p < wf_height * wf_width * 4; p += 4)
@@ -563,7 +551,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
-  dt_omp_shared(wf_8bit) aligned(wf_8bit, wf_display:64) \
+  dt_omp_sharedconst(wf_8bit) aligned(wf_8bit, wf_display:64) \
   schedule(simd:static) collapse(2)
 #endif
   // FIXME: we could do this in place in wf_display, but it'd require care w/OpenMP

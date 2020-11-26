@@ -55,18 +55,6 @@
 # define _mm_prefetch(where,hint)
 #endif
 
-#ifndef dt_omp_shared
-#ifdef _OPENMP
-#if defined(__clang__) || __GNUC__ > 8
-# define dt_omp_shared(...)  shared(__VA_ARGS__)
-#else
-  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  //  'const' variables as shared
-# define dt_omp_shared(var, ...)
-#endif
-#endif /* _OPENMP */
-#endif /* dt_omp_shared */
-
 // the filter does internal tiling to keep memory requirements reasonable, so this structure
 // defines the position of the tile being processed
 typedef struct tile
@@ -331,7 +319,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   float *img_bak = dt_alloc_align(64, dt_get_num_threads() * img_bak_sz * sizeof(float));
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(img, imgg, mean, variance, img_bak) \
-  dt_omp_firstprivate(img_bak_sz, img_dimen, w, guide_weight) dt_omp_shared(source)
+  dt_omp_firstprivate(img_bak_sz, img_dimen, w, guide_weight) dt_omp_sharedconst(source)
 #endif
   for(int j_imgg = source.lower; j_imgg < source.upper; j_imgg++)
   {
@@ -432,7 +420,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   box_mean_4ch(a_b, w);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) \
-  shared(target, imgg, a_b, img_out) dt_omp_shared(source) dt_omp_firstprivate(min, max, width, guide_weight)
+  shared(target, imgg, a_b, img_out) dt_omp_sharedconst(source) dt_omp_firstprivate(min, max, width, guide_weight)
 #endif
   for(int j_imgg = target.lower; j_imgg < target.upper; j_imgg++)
   {
