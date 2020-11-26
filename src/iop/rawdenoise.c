@@ -25,6 +25,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/openmp_maths.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -33,18 +34,6 @@
 #include <gtk/gtk.h>
 #include <stdlib.h>
 #include <strings.h>
-
-#ifndef dt_omp_sharedconst
-#ifdef _OPENMP
-#if defined(__clang__) || __GNUC__ > 8
-# define dt_omp_sharedconst(...)  shared(__VA_ARGS__)
-#else
-  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
-  //  'const' variables as shared
-# define dt_omp_sharedconst(var, ...)
-#endif
-#endif /* _OPENMP */
-#endif /* dt_omp_sharedconst */
 
 DT_MODULE_INTROSPECTION(2, dt_iop_rawdenoise_params_t)
 
@@ -158,7 +147,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 }
 
 // transposes image, it is faster to read columns than to write them.
-/*static*/ void hat_transform(float *temp, const float *const base, int stride, int size, int scale)
+static void hat_transform(float *temp, const float *const base, int stride, int size, int scale)
 {
   int i;
   const float *basep0;
@@ -240,8 +229,8 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
 
 //TODO: merge back into src/common/dwt.c
 // first, "vertical" pass of wavelet decomposition
-/*static*/ void dwt_decompose_vert_1ch(float *const out, const float *const in,
-                                   const int height, const int width, const int lev)
+static void dwt_denoise_vert_1ch(float *const out, const float *const in,
+                                 const int height, const int width, const int lev)
 {
   const int vscale = MIN(1 << lev, height);
 #ifdef _OPENMP
@@ -276,15 +265,15 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
 
 // second, horizontal pass of wavelet decomposition; generates 'coarse' into the output buffer and overwrites
 //   the input buffer with 'details'
-/*static*/ void dwt_decompose_horiz_1ch(float *const out, float *const in, float *const temp,
-                                        const int height, const int width, const int lev,
-                                        float *const accum, const float thold)
+static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restrict in,
+                                  float *const restrict accum, const int height, const int width,
+                                  const int lev, const float thold, const int last)
 {
   const int hscale = MIN(1 << lev, width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, width, hscale) \
-  dt_omp_sharedconst(in, out, temp) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(int row = 0; row < height ; row++)
@@ -295,25 +284,41 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
     // final sum and split the original input into 'coarse' and 'details' by subtracting the scaled sum from
     // the original input.
     const int rowindex = (row * width);
-    float *const temprow = temp + dt_get_thread_num() * width;
     float *const details = in + rowindex;
-    float *const coarse = out + rowindex;
-    float *const accum_row = accum + rowindex;
-
+    float *const restrict coarse = out + rowindex;
+    float *const restrict accum_row = accum + rowindex;
+    // handle reflection at left edge
 #ifdef _OPENMP
 #pragma omp simd
 #endif
-    for (int col = 0; col < width - hscale; col++)
+    for (int col = 0; col < hscale; col++)
     {
-      const float left = coarse[abs(col-hscale)];	// the abs() handles reflection at the left edge
-      const float right = coarse[col+hscale];
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
-      const float hat = (2.f * coarse[col] + left + right) / 16.f;
+      const float hat = (2.f * coarse[col] + coarse[hscale-col] + coarse[col+hscale]) / 16.f;
       // the normalized value is our 'coarse' result; 'diff' is the difference between original input and 'coarse'
       // (which would ordinarily be stored as the details scale, but we don't need it any further)
-      temprow[col] = hat;
       const float diff = details[col] - hat;
-      accum_row[col] += copysignf(fmaxf(fabsf(diff) - thold, 0.0f), diff);
+      details[col] = hat;		// done with original input, so we can overwrite it with 'coarse'
+      // GCC8 won't vectorize if we use the following line, but it turns out that just adding the two conditional
+      // alternatives produces exactly the same result, and *that* does get vectorized
+      //const float excess = diff < 0.0 ? MIN(diff + thold, 0.0f) : MAX(diff - thold, 0.0f);
+      accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
+    }
+#ifdef _OPENMP
+#pragma omp simd
+#endif
+    for (int col = hscale; col < width - hscale; col++)
+    {
+      // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
+      const float hat = (2.f * coarse[col] + coarse[col-hscale] + coarse[col+hscale]) / 16.f;
+      // the normalized value is our 'coarse' result; 'diff' is the difference between original input and 'coarse'
+      // (which would ordinarily be stored as the details scale, but we don't need it any further)
+      const float diff = details[col] - hat;
+      details[col] = hat;		// done with original input, so we can overwrite it with 'coarse'
+      // GCC8 won't vectorize if we use the following line, but it turns out that just adding the two conditional
+      // alternatives produces exactly the same result, and *that* does get vectorized
+      //const float excess = diff < 0.0 ? MIN(diff + thold, 0.0f) : MAX(diff - thold, 0.0f);
+      accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
     // handle reflection at right edge
 #ifdef _OPENMP
@@ -321,55 +326,56 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
 #endif
     for (int col = width - hscale; col < width; col++)
     {
-      const float left = coarse[col-hscale];
       const float right = coarse[2*width - 2 - (col+hscale)];
       // add up left/center/right, and renormalize by dividing by the total weight of all numbers added together
-      const float hat = (2.f * coarse[col] + left + right) / 16.f;
+      const float hat = (2.f * coarse[col] + coarse[col-hscale] + right) / 16.f;
       // the normalized value is our 'coarse' result; 'diff' is the difference between original input and 'coarse'
       // (which would ordinarily be stored as the details scale, but we don't need it any further)
-      temprow[col] = hat;
       const float diff = details[col] - hat;
-      accum_row[col] += copysignf(fmaxf(fabsf(diff) - thold, 0.0f), diff);
+      details[col] = hat;		// done with original input, so we can overwrite it with 'coarse'
+//      accum_row[col] += copysignf(fmaxf(fabsf(diff) - thold, 0.0f), diff);
+      accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
-    // Now that we're done with the row of pixels, we can overwrite the intermediate result from the first
-    // pass with the final decomposition.  It's actually faster to do this separate copy than to write back
-    // the individual values as we iterate over the row, because doing so creates an anti-dependency which
-    // prevents vectorization.
-    memcpy(details, temprow, width * sizeof(float));
+    if (last)
+    {
+      // add the details to the residue to create the final denoised result
+      for (int col = 0; col < width; col++)
+      {
+        details[col] += accum_row[col];
+      }
+    }
   }
 }
 
 //TODO: merge into src/common/dwt.c, where it can make use of existing code without duplicating it into this file
-static int dwt_denoise(float *const fimg, int size, int width, int height, const float *const noise)
+static void dwt_denoise(float *const img, const int width, const int height,
+                          const int bands, const float *const noise)
 {
-  // fimg points at four consecutive buffers of size 'size' floats.  In order, these are an accumulator for
-  //   the portion of each scale above the noise threshold, a buffer for coarse/details, a scratch buffer, and
-  //   a second buffer for coarse/details.  The coarse/details buffers swap places during each pass, with
-  //   coarse being the output and details being updated to the difference between its original value and the
-  //   new 'coarse' value.
-//TODO: figure out why we need to pass in size; for Bayer, there's the half-Bayer-cell adjustment involved
-//  int size = height * width;
-  for(int lev = 0; lev < 5; lev++)
+  float *const details = dt_alloc_sse_ps(2 * width * height);
+  float *const interm = details + width * height;	// temporary storage for use during each pass
+
+  // zero the accumulator
+  memset(details, 0, width * height * sizeof(float));
+
+  for(int lev = 0; lev < bands; lev++)
   {
-    float *const in = fimg + size;
-    float *const interm = fimg + 2*size;
+    const int last = (lev+1) == bands;
 
-    // "vertical" pass, averages pixels with those 'scale' rows above and below
-    dwt_decompose_vert_1ch(interm, in, height, width, lev);
-    // horizontal filtering pass, averages pixels with those 'scale' rows to the left and right
-    // accumulates the portion of the detail scale that is above the noise threshold into the first buffer; this
-    // will be added to the residue at the end of the process
-    dwt_decompose_horiz_1ch(interm, in, fimg + 3*size, height, width, lev, fimg, noise[lev]);
+    // "vertical" pass, averages pixels with those 'scale' rows above and below and puts result in 'interm'
+    dwt_denoise_vert_1ch(interm, img, height, width, lev);
+    // horizontal filtering pass, averages pixels in 'interm' with those 'scale' rows to the left and right
+    // accumulates the portion of the detail scale that is above the noise threshold into 'details'; this
+    // will be added to the residue left in 'img' on the last iteration
+    dwt_denoise_horiz_1ch(interm, img, details, height, width, lev, noise[lev], last);
   }
-
-  return size;	// return offset of final output buffer within fimg
+  dt_free_align(details);
 }
 
 static void wavelet_denoise(const float *const in, float *const out, const dt_iop_roi_t *const roi,
                             dt_iop_rawdenoise_data_t *data, uint32_t filters)
 {
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
-  float *const fimg = dt_alloc_sse_ps(size * 4);
+  float *const fimg = dt_alloc_sse_ps(size);
 
   const int nc = 4;
   for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
@@ -377,9 +383,6 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     int color = FC(c % 2, c / 2, filters);
     float noise[DT_IOP_RAWDENOISE_BANDS];
     compute_channel_noise(noise,color,data);
-
-    // zero lowest quarter part
-    memset(fimg, 0, size * sizeof(float));
 
     // adjust for odd width and height
     const int halfwidth = roi->width / 2 + (roi->width & (~(c >> 1)) & 1);
@@ -389,39 +392,39 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
     // variance-stabilizing transform
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, fimg, roi, size, halfwidth) \
+    dt_omp_firstprivate(in, fimg, roi, halfwidth) \
     shared(c) \
     schedule(static)
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
-      float *fimgp = fimg + size + (size_t)row / 2 * halfwidth;
-      int col = (c & 2) >> 1;
-      const float *inp = in + (size_t)row * roi->width + col;
-      for(; col < roi->width; col += 2, fimgp++, inp += 2) *fimgp = sqrt(MAX(0, *inp));
+      float *const fimgp = fimg + (size_t)row / 2 * halfwidth;
+      const float *const inp = in + (size_t)row * roi->width;
+      const int offset = (c & 2) >> 1;
+      for(int col = 0; col < roi->width/2; col++)
+        fimgp[col] = sqrtf(MAX(0.0f, inp[2*col+offset]));
     }
 
     // perform the wavelet decomposition and denoising
-    const int lastpass = dwt_denoise(fimg,size,halfwidth,halfheight,noise);
+    dwt_denoise(fimg,halfwidth,halfheight,DT_IOP_RAWDENOISE_BANDS,noise);
 
     // distribute the denoised data back out to the original R/G1/G2/B channel, squaring the resulting values to
     // undo the original transform
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(fimg, halfwidth, out, roi) \
-    dt_omp_sharedconst(lastpass) \
+    dt_omp_firstprivate(fimg, halfwidth, out, roi, size) \
     shared(c) \
     schedule(static)
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
       const float *fimgp = fimg + (size_t)row / 2 * halfwidth;
-      int col = (c & 2) >> 1;
-      float *outp = out + (size_t)row * roi->width + col;
-      for(; col < roi->width; col += 2, fimgp++, outp += 2)
+      float *const outp = out + (size_t)row * roi->width;
+      const int offset = (c & 2) >> 1;
+      for(int col = 0; col < roi->width/2; col++)
       {
-        float d = fimgp[0] + fimgp[lastpass];	// combine the accumulated denoised details with the residue
-        *outp = d * d;
+        float d = fimgp[col];
+        outp[2*col+offset] = d * d;
       }
     }
   }
