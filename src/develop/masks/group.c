@@ -485,7 +485,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
           dt_omp_firstprivate(width, height) \
-          shared(bufs)
+	  shared(bufs) collapse(2)
 #else
 #pragma omp parallel for shared(bufs)
 #endif
@@ -504,7 +504,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
           dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs)
+          shared(buffer, bufs) collapse(2)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -522,7 +522,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
             dt_omp_firstprivate(width, height, op) \
-            shared(buffer, bufs)
+            shared(buffer, bufs) collapse(2)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -545,7 +545,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
           dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs)
+          shared(buffer, bufs) collapse(2)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -565,7 +565,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
           dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs)
+          shared(buffer, bufs) collapse(2)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
@@ -588,7 +588,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
           dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs)
+          shared(buffer, bufs) collapse(2)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
