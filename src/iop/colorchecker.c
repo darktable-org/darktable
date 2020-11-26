@@ -89,6 +89,7 @@ typedef struct dt_iop_colorchecker_params_t
 typedef struct dt_iop_colorchecker_gui_data_t
 {
   GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b, *scale_C, *combobox_target;
+  GtkWidget *colorpicker;
   int patch, drawn_patch;
   cmsHTRANSFORM xform;
   int absolute_target; // 0: show relative offsets in sliders, 1: show absolute Lab values
@@ -845,8 +846,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 void gui_reset(struct dt_iop_module_t *self)
 {
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   dt_bauhaus_widget_set_quad_active(g->combobox_patch, 0);
+  dt_iop_color_picker_reset(self, TRUE);
 }
 
 void gui_update(struct dt_iop_module_t *self)
@@ -892,9 +893,6 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_slider_set(g->scale_C, Cout-Cin);
   }
   gtk_widget_queue_draw(g->area);
-
-  if (self->request_color_pick == DT_REQUEST_COLORPICK_OFF)
-    dt_bauhaus_widget_set_quad_active(g->combobox_patch, 0);
 }
 
 void init(dt_iop_module_t *module)
@@ -933,25 +931,20 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void picker_callback(GtkWidget *button, gpointer user_data)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-
-  if(self->request_color_pick != DT_REQUEST_COLORPICK_MODULE)
-    self->request_color_pick = DT_REQUEST_COLORPICK_MODULE;
-  else
-    self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-
-  dt_iop_request_focus(self);
-
   if(self->request_color_pick != DT_REQUEST_COLORPICK_OFF)
   {
     self->gui_update(self);
   }
   dt_control_queue_redraw_center();
+}
 
-  if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
+static void _color_picker_callback(GtkWidget *button, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  dt_iop_color_picker_set_cst(self, iop_cs_LCh);
 }
 
 static void target_L_callback(GtkWidget *slider, gpointer user_data)
@@ -1073,7 +1066,7 @@ static void target_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   g->absolute_target = dt_bauhaus_combobox_get(combo);
   // switch off colour picker, it'll interfere with other changes of the patch:
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  dt_iop_color_picker_reset(self, TRUE);
   self->gui_update(self);
 }
 
@@ -1083,7 +1076,7 @@ static void patch_callback(GtkWidget *combo, gpointer user_data)
   dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
   g->patch = dt_bauhaus_combobox_get(combo);
   // switch off colour picker, it'll interfere with other changes of the patch:
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
+  dt_iop_color_picker_reset(self, TRUE);
   self->gui_update(self);
 }
 
@@ -1165,10 +1158,6 @@ static gboolean checker_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data
       }
     }
   }
-
-  dt_bauhaus_widget_set_quad_paint(
-      g->combobox_patch, dtgtk_cairo_paint_colorpicker,
-      (self->request_color_pick == DT_REQUEST_COLORPICK_MODULE ? CPF_ACTIVE : CPF_NONE), NULL);
 
   // highlight patch that is closest to picked colour,
   // or the one selected in the combobox.
@@ -1362,8 +1351,12 @@ void gui_init(struct dt_iop_module_t *self)
     snprintf(cboxentry, sizeof(cboxentry), _("patch #%d"), k);
     dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
   }
-  self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
-  dt_bauhaus_widget_set_quad_paint(g->combobox_patch, dtgtk_cairo_paint_colorpicker, CPF_NONE, NULL);
+
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+  gtk_box_pack_start(GTK_BOX(hbox), g->combobox_patch, TRUE, TRUE, 0);
+
+  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
+  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("lightness offset"));
@@ -1394,7 +1387,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->combobox_target, _("relative"));
   dt_bauhaus_combobox_add(g->combobox_target, _("absolute"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_patch, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_L, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_a, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
@@ -1402,7 +1395,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_target, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(g->combobox_patch), "value-changed", G_CALLBACK(patch_callback), self);
-  g_signal_connect(G_OBJECT(g->combobox_patch), "quad-pressed", G_CALLBACK(picker_callback), self);
   g_signal_connect(G_OBJECT(g->scale_L), "value-changed", G_CALLBACK(target_L_callback), self);
   g_signal_connect(G_OBJECT(g->scale_a), "value-changed", G_CALLBACK(target_a_callback), self);
   g_signal_connect(G_OBJECT(g->scale_b), "value-changed", G_CALLBACK(target_b_callback), self);
