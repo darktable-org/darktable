@@ -606,7 +606,7 @@ static void process_random(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
     const float *const in = (const float *)ivoid + k;
     float *const out = (float *)ovoid + k;
     unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
-    tea_state[0] = j * height + dt_get_thread_num();
+    tea_state[0] = j * height; /* + dt_get_thread_num() -- do not include, makes results unreproducible */
     for(int i = 0; i < width; i++)
     {
       encrypt_tea(tea_state);

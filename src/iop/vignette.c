@@ -714,7 +714,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float *in = (const float *)ivoid + k;
     float *out = (float *)ovoid + k;
     unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
-    tea_state[0] = j * roi_out->height + dt_get_thread_num();
+    tea_state[0] = j * roi_out->height; /* + dt_get_thread_num() -- do not include, makes results unreproducible */
     for(int i = 0; i < roi_out->width; i++, in += ch, out += ch)
     {
       // current pixel coord translated to local coord
