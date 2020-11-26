@@ -218,8 +218,8 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
   // process rows 0, 16, 32, ..., then 1, 17, 33, ..., 2, 18, 34, ..., etc.
   if (height <= scale)
     return rowid;
-  int per_pass = ((height + scale - 1) / scale);
-  int long_passes = height % scale;
+  const int per_pass = ((height + scale - 1) / scale);
+  const int long_passes = height % scale;
   // adjust for the fact that we have some passes with one fewer iteration when height is not a multiple of scale
   if (long_passes == 0 || rowid < long_passes * per_pass)
     return (rowid / per_pass) + scale * (rowid % per_pass);
@@ -229,7 +229,7 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
 
 //TODO: merge back into src/common/dwt.c
 // first, "vertical" pass of wavelet decomposition
-static void dwt_denoise_vert_1ch(float *const out, const float *const in,
+static void dwt_denoise_vert_1ch(float *const restrict out, const float *const restrict in,
                                  const int height, const int width, const int lev)
 {
   const int vscale = MIN(1 << lev, height);
@@ -249,16 +249,16 @@ static void dwt_denoise_vert_1ch(float *const out, const float *const in,
     //   we need to reflect around height
     const size_t rowstart = row * width;
     const int below_row = (row + vscale < height) ? (row + vscale) : 2*(height-1) - (row + vscale);
-    const float *const center = in + rowstart;
-    const float *const above =  in + abs(row - vscale) * width;
-    const float *const below = in + below_row * width;
-    float* const temprow = out + rowstart;
+    const float *const restrict center = in + rowstart;
+    const float *const restrict above =  in + abs(row - vscale) * width;
+    const float *const restrict below = in + below_row * width;
+    float* const restrict outrow = out + rowstart;
 #ifdef _OPENMP
 #pragma omp simd
 #endif
     for (int col= 0; col < width; col++)
     {
-      temprow[col] = 2.f * center[col] + above[col] + below[col];
+      outrow[col] = 2.f * center[col] + above[col] + below[col];
     }
   }
 }
@@ -284,7 +284,7 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
     // final sum and split the original input into 'coarse' and 'details' by subtracting the scaled sum from
     // the original input.
     const int rowindex = (row * width);
-    float *const details = in + rowindex;
+    float *const restrict details = in + rowindex;
     float *const restrict coarse = out + rowindex;
     float *const restrict accum_row = accum + rowindex;
     // handle reflection at left edge
@@ -349,7 +349,7 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
 
 //TODO: merge into src/common/dwt.c, where it can make use of existing code without duplicating it into this file
 static void dwt_denoise(float *const img, const int width, const int height,
-                          const int bands, const float *const noise)
+                        const int bands, const float *const noise)
 {
   float *const details = dt_alloc_sse_ps(2 * width * height);
   float *const interm = details + width * height;	// temporary storage for use during each pass
@@ -371,16 +371,16 @@ static void dwt_denoise(float *const img, const int width, const int height,
   dt_free_align(details);
 }
 
-static void wavelet_denoise(const float *const in, float *const out, const dt_iop_roi_t *const roi,
-                            dt_iop_rawdenoise_data_t *data, uint32_t filters)
+static void wavelet_denoise(const float *const restrict in, float *const restrict out, const dt_iop_roi_t *const roi,
+                            const dt_iop_rawdenoise_data_t * const data, const uint32_t filters)
 {
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
-  float *const fimg = dt_alloc_sse_ps(size);
+  float *const restrict fimg = dt_alloc_sse_ps(size);
 
   const int nc = 4;
   for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
   {
-    int color = FC(c % 2, c / 2, filters);
+    const int color = FC(c % 2, c / 2, filters);
     float noise[DT_IOP_RAWDENOISE_BANDS];
     compute_channel_noise(noise,color,data);
 
@@ -398,8 +398,8 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
-      float *const fimgp = fimg + (size_t)row / 2 * halfwidth;
-      const float *const inp = in + (size_t)row * roi->width;
+      float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
+      const float *const restrict inp = in + (size_t)row * roi->width;
       const int offset = (c & 2) >> 1;
       for(int col = 0; col < roi->width/2; col++)
         fimgp[col] = sqrtf(MAX(0.0f, inp[2*col+offset]));
@@ -418,8 +418,8 @@ static void wavelet_denoise(const float *const in, float *const out, const dt_io
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
-      const float *fimgp = fimg + (size_t)row / 2 * halfwidth;
-      float *const outp = out + (size_t)row * roi->width;
+      const float *restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
+      float *const restrict outp = out + (size_t)row * roi->width;
       const int offset = (c & 2) >> 1;
       for(int col = 0; col < roi->width/2; col++)
       {
