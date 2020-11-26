@@ -298,8 +298,8 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
   for(int i = 0; i < 3; i++)
   {
     const float *picked_rgb = (i == 0) ? sample->picked_color_rgb_mean :
-                             (i == 1) ? sample->picked_color_rgb_min
-                                      : sample->picked_color_rgb_max;
+                              (i == 1) ? sample->picked_color_rgb_min
+                                       : sample->picked_color_rgb_max;
     float rgb[3];
     for(size_t c = 0; c < 3; c++) rgb[c] = picked_rgb[c];
 
