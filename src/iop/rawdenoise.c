@@ -371,7 +371,7 @@ static void dwt_denoise(float *const img, const int width, const int height,
   dt_free_align(details);
 }
 
-static void wavelet_denoise(const float *const restrict in, float *const restrict out, const dt_iop_roi_t *const roi,
+/*static*/ void wavelet_denoise(const float *const restrict in, float *const restrict out, const dt_iop_roi_t *const roi,
                             const dt_iop_rawdenoise_data_t * const data, const uint32_t filters)
 {
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
@@ -399,10 +399,11 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
     for(int row = c & 1; row < roi->height; row += 2)
     {
       float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
-      const float *const restrict inp = in + (size_t)row * roi->width;
       const int offset = (c & 2) >> 1;
-      for(int col = 0; col < roi->width/2; col++)
-        fimgp[col] = sqrtf(MAX(0.0f, inp[2*col+offset]));
+      const float *const restrict inp = in + (size_t)row * roi->width + offset;
+      const int senselwidth = (roi->width-offset+1)/2;
+      for(int col = 0; col < senselwidth; col++)
+        fimgp[col] = sqrtf(MAX(0.0f, inp[2*col]));
     }
 
     // perform the wavelet decomposition and denoising
@@ -419,12 +420,13 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
     for(int row = c & 1; row < roi->height; row += 2)
     {
       const float *restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
-      float *const restrict outp = out + (size_t)row * roi->width;
       const int offset = (c & 2) >> 1;
-      for(int col = 0; col < roi->width/2; col++)
+      float *const restrict outp = out + (size_t)row * roi->width + offset;
+      const int senselwidth = (roi->width-offset+1)/2;
+      for(int col = 0; col < senselwidth; col++)
       {
         float d = fimgp[col];
-        outp[2*col+offset] = d * d;
+        outp[2*col] = d * d;
       }
     }
   }
