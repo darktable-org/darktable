@@ -98,32 +98,33 @@ const char *description(struct dt_iop_module_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_vibrance_data_t *d = (dt_iop_vibrance_data_t *)piece->data;
-  const float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  assert(piece->colors == 4);
+  const dt_iop_vibrance_data_t *const d = (dt_iop_vibrance_data_t *)piece->data;
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
 
   const float amount = (d->amount * 0.01);
+  const int npixels = roi_out->height * roi_out->width;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(amount, ch, roi_out) \
-  shared(in, out) \
+  dt_omp_firstprivate(amount, npixels) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(int k = 0; k < 4 * npixels; k += 4)
   {
-    size_t offs = (size_t)k * roi_out->width * ch;
-    for(int l = 0; l < (roi_out->width * ch); l += ch)
+    /* saturation weight 0 - 1 */
+    const float sw = sqrtf((in[k + 1] * in[k + 1]) + (in[k + 2] * in[k + 2])) / 256.0f;
+    const float ls = 1.0f - ((amount * sw) * .25f);
+    const float ss = 1.0f + (amount * sw);
+    const float weights[4] = { ls, ss, ss, 1.0f };
+#ifdef _OPENMP
+#pragma omp simd aligned(in, out : 16)
+#endif
+    for (int c = 0; c < 4; c++)
     {
-      /* saturation weight 0 - 1 */
-      float sw = sqrt((in[offs + l + 1] * in[offs + l + 1]) + (in[offs + l + 2] * in[offs + l + 2])) / 256.0;
-      float ls = 1.0 - ((amount * sw) * .25);
-      float ss = 1.0 + (amount * sw);
-      out[offs + l + 0] = in[offs + l + 0] * ls;
-      out[offs + l + 1] = in[offs + l + 1] * ss;
-      out[offs + l + 2] = in[offs + l + 2] * ss;
-      out[offs + l + 3] = in[offs + l + 3];
+      out[k + c] = in[k + c] * weights[c];
     }
   }
 }
