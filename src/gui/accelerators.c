@@ -627,10 +627,18 @@ float dt_accel_get_slider_scale_multiplier()
   return dt_conf_get_float("darkroom/ui/scale_step_multiplier");
 }
 
+static gboolean _widget_invisible(GtkWidget *w)
+{
+  return (!gtk_widget_get_visible(w) ||
+          !gtk_widget_get_visible(gtk_widget_get_parent(w)));
+}
+
 static gboolean bauhaus_slider_increase_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
                                                  guint keyval, GdkModifierType modifier, gpointer data)
 {
   GtkWidget *slider = GTK_WIDGET(data);
+
+  if(_widget_invisible(slider)) return TRUE;
 
   float value = dt_bauhaus_slider_get(slider);
   float step = dt_bauhaus_slider_get_step(slider);
@@ -653,6 +661,8 @@ static gboolean bauhaus_slider_decrease_callback(GtkAccelGroup *accel_group, GOb
 {
   GtkWidget *slider = GTK_WIDGET(data);
 
+  if(_widget_invisible(slider)) return TRUE;
+
   float value = dt_bauhaus_slider_get(slider);
   float step = dt_bauhaus_slider_get_step(slider);
   float multiplier = dt_accel_get_slider_scale_multiplier();
@@ -674,6 +684,8 @@ static gboolean bauhaus_slider_reset_callback(GtkAccelGroup *accel_group, GObjec
 {
   GtkWidget *slider = GTK_WIDGET(data);
 
+  if(_widget_invisible(slider)) return TRUE;
+
   dt_bauhaus_slider_reset(slider);
 
   g_signal_emit_by_name(G_OBJECT(slider), "value-changed");
@@ -688,6 +700,8 @@ static gboolean bauhaus_dynamic_callback(GtkAccelGroup *accel_group, GObject *ac
   if(DT_IS_BAUHAUS_WIDGET(data))
   {
     dt_bauhaus_widget_t *widget = DT_BAUHAUS_WIDGET(data);
+
+    if(_widget_invisible(GTK_WIDGET(widget))) return TRUE;
 
     darktable.view_manager->current_view->dynamic_accel_current = GTK_WIDGET(widget);
 
@@ -708,6 +722,8 @@ static gboolean bauhaus_combobox_next_callback(GtkAccelGroup *accel_group, GObje
 {
   GtkWidget *combobox = GTK_WIDGET(data);
 
+  if(_widget_invisible(combobox)) return TRUE;
+
   const int currentval = dt_bauhaus_combobox_get(combobox);
   const int nextval = currentval + 1 >= dt_bauhaus_combobox_length(combobox) ? 0 : currentval + 1;
   dt_bauhaus_combobox_set(combobox, nextval);
@@ -721,6 +737,8 @@ static gboolean bauhaus_combobox_prev_callback(GtkAccelGroup *accel_group, GObje
                                                  guint keyval, GdkModifierType modifier, gpointer data)
 {
   GtkWidget *combobox = GTK_WIDGET(data);
+
+  if(_widget_invisible(combobox)) return TRUE;
 
   const int currentval = dt_bauhaus_combobox_get(combobox);
   const int prevval = currentval - 1 < 0 ? dt_bauhaus_combobox_length(combobox) : currentval - 1;
