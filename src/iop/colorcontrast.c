@@ -145,19 +145,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  const int ch = piece->colors;
+  assert(piece->colors == 4);
 
-  const float *const in = (const float *const)ivoid;
-  float *const out = (float *const)ovoid;
+  const float *const restrict in = (const float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
+  const size_t npixels = roi_out->width * roi_out->height;
 
   if(d->unbound)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(in, out) \
+    dt_omp_sharedconst(d, npixels) \
+    aligned(in, out : 64) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       out[k] = in[k];
       out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
@@ -168,11 +171,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(in, out) \
+    dt_omp_sharedconst(d, npixels) \
+    aligned(in, out : 64) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       out[k] = in[k];
       out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
@@ -183,56 +188,51 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
+                  void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
 
   // get our data struct:
-  dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
+  const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  const int ch = piece->colors;
-
-  const int unbound = d->unbound;
+  assert(piece->colors == 4);
 
   const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
   const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
   const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
   const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
 
-// iterate over all output pixels (same coordinates as input)
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+
+  // iterate over all output pixels (same coordinates as input)
+  const int npixels = roi_out->height * roi_out->width;
+  if (d->unbound)
+  {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, max, min, offset, ovoid, roi_in, roi_out, \
-                      scale, unbound) \
-  shared(d) \
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, offset, npixels, scale) \
+  aligned(in, out : 64) \
   schedule(static)
 #endif
-  for(int j = 0; j < roi_out->height; j++)
-  {
-
-    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-
-    if(unbound)
+    for(int j = 0; j < 4 * npixels; j += 4)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _mm_stream_ps(out, _mm_add_ps(offset, _mm_mul_ps(scale, _mm_load_ps(in))));
-        in += ch;
-        out += ch;
-      }
+      _mm_stream_ps(out + j, offset + scale * _mm_load_ps(in + j));
     }
-    else
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, max, min, offset, npixels, scale) \
+  aligned(in, out : 64) \
+  schedule(static)
+#endif
+    for(int j = 0; j < 4 * npixels; j += 4)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _mm_stream_ps(
-            out, _mm_min_ps(max, _mm_max_ps(min, _mm_add_ps(offset, _mm_mul_ps(scale, _mm_load_ps(in))))));
-        in += ch;
-        out += ch;
-      }
+      _mm_stream_ps(out + j, _mm_min_ps(max, _mm_max_ps(min, offset + scale * _mm_load_ps(in + j))));
     }
   }
   _mm_sfence();
