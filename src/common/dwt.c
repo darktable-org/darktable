@@ -82,7 +82,7 @@ int dwt_get_max_scale(dwt_params_t *p)
   return _get_max_scale(p->width / p->preview_scale, p->height / p->preview_scale, p->preview_scale);
 }
 
-int _first_scale_visible(const int num_scales, const float preview_scale)
+static int _first_scale_visible(const int num_scales, const float preview_scale)
 {
   int first_scale = 0;
 
@@ -108,7 +108,8 @@ int dt_dwt_first_scale_visible(dwt_params_t *p)
 #ifdef _OPENMP
 #pragma omp declare simd aligned(img,layers : 16)
 #endif
-void dwt_add_layer(const float *const img, float *const layers, dwt_params_t *const p, const int n_scale)
+static void dwt_add_layer(const float *const restrict img, float *const restrict layers,
+                          const dwt_params_t *const p, const int n_scale)
 {
   assert(p->ch == 4);
   const int i_size = 4 * p->width * p->height;
@@ -148,7 +149,7 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
 }
 
 // first, "vertical" pass of wavelet decomposition
-static void dwt_decompose_vert(float *const out, const float *const in,
+static void dwt_decompose_vert(float *const restrict out, const float *const restrict in,
                                const int height, const int width, const int lev)
 {
   const int vscale = MIN(1 << lev, height);
@@ -168,10 +169,10 @@ static void dwt_decompose_vert(float *const out, const float *const in,
     //   we need to reflect around height
     const size_t rowstart = 4 * row * width;
     const int below_row = (row + vscale < height) ? (row + vscale) : 2*(height-1) - (row + vscale);
-    const float* const center = in + rowstart;
-    const float* const above =  in + 4 * abs(row - vscale) * width;
-    const float* const below = in + 4 * below_row * width;
-    float* const temprow = out + rowstart;
+    const float* const restrict center = in + rowstart;
+    const float* const restrict above = in + 4 * abs(row - vscale) * width;
+    const float* const restrict below = in + 4 * below_row * width;
+    float* const restrict temprow = out + rowstart;
 #ifdef _OPENMP
 #pragma omp simd aligned(center, above, below, temprow : 16)
 #endif
@@ -187,7 +188,7 @@ static void dwt_decompose_vert(float *const out, const float *const in,
 
 // second, horizontal pass of wavelet decomposition; generates 'coarse' into the output buffer and overwrites
 //   the input buffer with 'details'
-static void dwt_decompose_horiz(float *const out, float *const in, float *const temp,
+static void dwt_decompose_horiz(float *const restrict out, float *const restrict in, float *const temp,
                                 const int height, const int width, const int lev)
 {
   const int hscale = MIN(1 << lev, width);
@@ -205,9 +206,9 @@ static void dwt_decompose_horiz(float *const out, float *const in, float *const 
     // final sum and split the original input into 'coarse' and 'details' by subtracting the scaled sum from
     // the original input.
     const int rowindex = 4 * (row * width);
-    float* const temprow = temp + dt_get_thread_num() * 4 * width;
-    float* const details = in + rowindex;
-    float* const coarse = out + rowindex;
+    float* const restrict temprow = temp + dt_get_thread_num() * 4 * width;
+    float* const restrict details = in + rowindex;
+    float* const restrict coarse = out + rowindex;
 
     for (int col = 0; col < width - hscale; col++)
     {
@@ -253,7 +254,7 @@ static void dwt_decompose_horiz(float *const out, float *const in, float *const 
 }
 
 // split input into 'coarse' and 'details'; put 'details' back into the input buffer
-static void dwt_decompose_layer(float *const out, float *const in, float *const temp, const int lev,
+static void dwt_decompose_layer(float *const restrict out, float *const restrict in, float *const temp, const int lev,
                                 const dwt_params_t *const p)
 {
   dwt_decompose_vert(out, in, p->height, p->width, lev);
