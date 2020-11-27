@@ -399,22 +399,21 @@ overshoot.right
   color: @section_label;
 }
 
-#view_dropdown menu {
+#view_dropdown menu
+{
   padding: 2px 0;
 }
 
-#view_dropdown button {
-  margin: 0.3em 0.3em 0.3em 0;
-}
-
-#view_dropdown menuitem {
-  padding: 0.1em 0.3em;
-}
-
+#view_dropdown button,
 #view_label
 {
-  margin: 0.1em 0;
-  padding: 0.4em;
+  margin: 0.2em 0;
+  padding: 0.2em 0.4em;
+}
+
+#view_dropdown menuitem
+{
+  padding: 0.1em 0.3em;
 }
 
 /*------------------------------
