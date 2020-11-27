@@ -38,12 +38,14 @@ typedef struct dt_iop_mlens_params_t
   gboolean cor_dist;  // $DEFAULT: 1 $DESCRIPTION: "correct distortion"
   gboolean cor_ca;    // $DEFAULT: 1 $DESCRIPTION: "correct chromatic aberration"
   gboolean cor_vig;   // $DEFAULT: 1 $DESCRIPTION: "correct vignetting"
+  float cor_dist_ft;  // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "distortion fine-tune"
+  float cor_vig_ft;   // $DEFAULT: 1 $MIN: 0 $MAX: 2 $DESCRIPTION: "vignette fine-tune"
   float scale;
 } dt_iop_mlens_params_t;
 
 typedef struct dt_iop_mlens_gui_data_t
 {
-  GtkWidget *cor_dist, *cor_ca, *cor_vig;
+  GtkWidget *cor_dist, *cor_ca, *cor_vig, *cor_dist_ft, *cor_vig_ft;
 } dt_iop_mlens_gui_data_t;
 
 const char *name()
@@ -98,7 +100,7 @@ static int init_coeffs(const dt_image_t *img, const dt_iop_mlens_params_t *d,
       knots[i] = (float) i / (nc - 1);
 
       if(cor_rgb && d->cor_dist)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (cd->sony.distortion[i] * powf(2, -14) + 1) * d->scale;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (d->cor_dist_ft * cd->sony.distortion[i] * powf(2, -14) + 1) * d->scale;
       else if(cor_rgb)
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = d->scale;
 
@@ -109,7 +111,7 @@ static int init_coeffs(const dt_image_t *img, const dt_iop_mlens_params_t *d,
       }
 
       if(vig && d->cor_vig)
-        vig[i] = powf(2, 0.5f - powf(2, cd->sony.vignetting[i] * powf(2, -13) - 1));
+        vig[i] = powf(2, 0.5f - powf(2, d->cor_vig_ft * cd->sony.vignetting[i] * powf(2, -13)  - 1));
       else if(vig)
         vig[i] = 1;
     }
@@ -123,7 +125,7 @@ static int init_coeffs(const dt_image_t *img, const dt_iop_mlens_params_t *d,
       knots[i] = cd->fuji.cropf * cd->fuji.knots[i];
 
       if(cor_rgb && d->cor_dist)
-        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (cd->fuji.distortion[i] / 100 + 1) * d->scale;
+        cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = (d->cor_dist_ft * cd->fuji.distortion[i] / 100 + 1) * d->scale;
       else if(cor_rgb)
         cor_rgb[0][i] = cor_rgb[1][i] = cor_rgb[2][i] = d->scale;
 
@@ -134,7 +136,7 @@ static int init_coeffs(const dt_image_t *img, const dt_iop_mlens_params_t *d,
       }
 
       if(vig && d->cor_vig)
-        vig[i] = cd->fuji.vignetting[i] / 100;
+        vig[i] = 1 - d->cor_vig_ft * (1 - cd->fuji.vignetting[i] / 100);
       else if(vig)
         vig[i] = 1;
     }
@@ -402,6 +404,8 @@ void reload_defaults(dt_iop_module_t *module)
   p->cor_dist = 1;
   p->cor_ca = 1;
   p->cor_vig = 1;
+  p->cor_dist_ft = 1;
+  p->cor_vig_ft = 1;
 
   // Only admit if we have correction data available
   if(img->exif_correction_type)
@@ -422,6 +426,8 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cor_dist), p->cor_dist);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cor_ca), p->cor_ca);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->cor_vig), p->cor_vig);
+  dt_bauhaus_slider_set(g->cor_dist_ft, p->cor_dist_ft);
+  dt_bauhaus_slider_set(g->cor_vig_ft, p->cor_vig_ft);
 }
 
 void gui_init(dt_iop_module_t *self)
@@ -433,6 +439,8 @@ void gui_init(dt_iop_module_t *self)
   g->cor_dist = dt_bauhaus_toggle_from_params(self, "cor_dist");
   g->cor_ca = dt_bauhaus_toggle_from_params(self, "cor_ca");
   g->cor_vig = dt_bauhaus_toggle_from_params(self, "cor_vig");
+  g->cor_dist_ft = dt_bauhaus_slider_from_params(self, "cor_dist_ft");
+  g->cor_vig_ft = dt_bauhaus_slider_from_params(self, "cor_vig_ft");
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
