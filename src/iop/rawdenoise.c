@@ -526,7 +526,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     memset(fimg, 0, size * sizeof(float));
 
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
+#pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
     dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans) \
     shared(c) \
     schedule(static)
