@@ -1740,6 +1740,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       // ensure that the overall layout doesn't change
       // (i.e. we don't get empty spaces in the very first row)
       offset = (offset - 1) / table->thumbs_per_row * table->thumbs_per_row + 1;
+      table->offset = offset;
       table->thumbs_area.x = posx;
       table->thumbs_area.y = posy;
     }
@@ -1752,6 +1753,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       // (i.e. we don't get empty spaces in the very first row)
       const int offset_row = (table->offset-1) / table->thumbs_per_row;
       offset = offset_row * table->thumbs_per_row + 1;
+      table->offset = offset;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
