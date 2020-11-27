@@ -115,6 +115,12 @@ for dir in $TESTS; do
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0"
 
+            # Some // loops seems to not honor the omp_set_num_threads() in
+            # darktable.c (this is needed to run 0068-rawdenoise-xtrans on
+            # different configurations)
+
+            export OMP_THREAD_LIMIT=4
+
             $CLI --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
                  "$TEST_IMAGES/$IMAGE" "$TEST.xmp" output.png \
