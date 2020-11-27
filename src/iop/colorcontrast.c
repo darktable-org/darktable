@@ -154,7 +154,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(d->unbound)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
+#pragma omp parallel for simd default(none) \
     dt_omp_firstprivate(in, out) \
     dt_omp_sharedconst(d, npixels) \
     aligned(in, out : 64) \
@@ -171,8 +171,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(d, in, out) \
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(in, out) \
     dt_omp_sharedconst(d, npixels) \
     aligned(in, out : 64) \
     schedule(static)
@@ -212,7 +212,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if (d->unbound)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(in, out, offset, npixels, scale) \
   aligned(in, out : 64) \
   schedule(static)
@@ -225,7 +225,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
+#pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(in, out, max, min, offset, npixels, scale) \
   aligned(in, out : 64) \
   schedule(static)
