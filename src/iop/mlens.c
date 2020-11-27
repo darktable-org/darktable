@@ -408,14 +408,12 @@ void reload_defaults(dt_iop_module_t *module)
   p->cor_vig_ft = 1;
 
   // Only admit if we have correction data available
-  if(img->exif_correction_type)
-  {
-    module->hide_enable_button = 0;
-  }
-  else
-  {
-    module->hide_enable_button = 1;
-  }
+  module->hide_enable_button = !img->exif_correction_type;
+
+  if(module->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(module->widget),
+                                     module->hide_enable_button ? "unsupported" : "supported");
+
 }
 
 void gui_update(dt_iop_module_t *self)
@@ -434,13 +432,19 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_mlens_gui_data_t *g = IOP_GUI_ALLOC(mlens);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
+  GtkWidget *box_supported = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   g->cor_dist = dt_bauhaus_toggle_from_params(self, "cor_dist");
   g->cor_ca = dt_bauhaus_toggle_from_params(self, "cor_ca");
   g->cor_vig = dt_bauhaus_toggle_from_params(self, "cor_vig");
   g->cor_dist_ft = dt_bauhaus_slider_from_params(self, "cor_dist_ft");
   g->cor_vig_ft = dt_bauhaus_slider_from_params(self, "cor_vig_ft");
+
+  GtkWidget *label_unsupported = dt_ui_label_new(_("unsupported file type"));
+
+  self->widget = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
+  gtk_stack_add_named(GTK_STACK(self->widget), label_unsupported, "unsupported");
+  gtk_stack_add_named(GTK_STACK(self->widget), box_supported, "supported");
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
