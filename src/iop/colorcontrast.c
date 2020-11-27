@@ -156,7 +156,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
     dt_omp_firstprivate(in, out) \
-    dt_omp_sharedconst(npixels) \
+    dt_omp_sharedconst(d, npixels) \
     aligned(in, out : 64) \
     schedule(static)
 #endif
@@ -173,7 +173,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
     dt_omp_firstprivate(d, in, out) \
-    dt_omp_sharedconst(npixels) \
+    dt_omp_sharedconst(d, npixels) \
     aligned(in, out : 64) \
     schedule(static)
 #endif
