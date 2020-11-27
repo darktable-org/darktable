@@ -983,7 +983,9 @@ static gboolean _transform_for_blend(const dt_iop_module_t *const self, const dt
 
 static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self)
 {
-  dt_iop_colorspace_type_t picker_cst = dt_iop_color_picker_get_active_cst(self);
+  const dt_iop_colorspace_type_t picker_cst =
+    dt_iop_color_picker_get_active_cst(self);
+
   switch(picker_cst)
   {
     case iop_cs_RAW:
@@ -1003,10 +1005,20 @@ static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self)
 
 static gboolean _request_color_pick(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev, dt_iop_module_t *module)
 {
-  return dev->gui_attached && pipe == dev->preview_pipe
-      &&                           // pick from preview pipe to get pixels outside the viewport
-      module == dev->gui_module && // only modules with focus can pick
-      module->request_color_pick != DT_REQUEST_COLORPICK_OFF; // and they want to pick ;)
+  // Special case the colorout module used for the global
+  // colorpicker. In this module we don't have a colorpicker, and so
+  // this cannot be a module picker. The global colorpicker use the
+  // colorout in the pipe as process point for taking the samples.
+
+  return
+    // pick from preview pipe to get pixels outside the viewport
+    dev->gui_attached && pipe == dev->preview_pipe
+    // only modules with focus can pick
+    && module == dev->gui_module
+    // and they want to pick ;)
+    && module->request_color_pick != DT_REQUEST_COLORPICK_OFF
+    // and this is not the global colorpicker
+    && strcmp(module->op, "colorout");
 }
 
 static void collect_histogram_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
