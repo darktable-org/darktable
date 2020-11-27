@@ -93,6 +93,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {14.0f }, "retouch", 0},
   { {15.0f }, "lens", 0},
   { {15.5f }, "cacorrectrgb", 0},
+  { {15.5f }, "mlens", 0},
   { {16.0f }, "ashift", 0},
   { {17.0f }, "liquify", 0},
   { {18.0f }, "rotatepixels", 0},
@@ -182,6 +183,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {13.0f }, "lens", 0},
   { {13.5f }, "cacorrectrgb", 0}, // correct chromatic aberrations after lens correction so that lensfun
                                   // does not reintroduce chromatic aberrations when trying to correct them
+  { {13.5f }, "mlens", 0},
   { {14.0f }, "hazeremoval", 0},
   { {15.0f }, "ashift", 0},
   { {16.0f }, "flip", 0},

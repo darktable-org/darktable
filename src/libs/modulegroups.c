@@ -1628,6 +1628,7 @@ void init_presets(dt_lib_module_t *self)
   AM("hazeremoval");
   AM("hotpixels");
   AM("lens");
+  AM("mlens");
   AM("liquify");
   AM("nlmeans");
   AM("rawdenoise");
@@ -1673,6 +1674,7 @@ void init_presets(dt_lib_module_t *self)
   AM("exposure");
   AM("flip");
   AM("lens");
+  AM("mlens");
   AM("temperature");
 
   SMG(C_("modulegroup", "grading"), "grading");
@@ -1725,6 +1727,7 @@ void init_presets(dt_lib_module_t *self)
   AM("hazeremoval");
   AM("hotpixels");
   AM("lens");
+  AM("mlens");
   AM("retouch");
   AM("liquify");
   AM("sharpen");
@@ -1768,6 +1771,7 @@ void init_presets(dt_lib_module_t *self)
   AM("hazeremoval");
   AM("hotpixels");
   AM("lens");
+  AM("mlens");
   AM("retouch");
   AM("liquify");
   AM("sharpen");
