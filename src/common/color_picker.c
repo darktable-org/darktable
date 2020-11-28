@@ -29,6 +29,18 @@ static inline size_t _box_size(const int *const box)
   return (size_t)((box[3] - box[1]) * (box[2] - box[0]));
 }
 
+//TODO: move into a common header so others can use this function and macros if needed
+static void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
+{
+  const size_t alloc_size = n * objsize;
+  const size_t cache_lines = (alloc_size+63)/64;
+  *padded_size = 64 * cache_lines / objsize;
+  return dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads());
+}
+#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
+#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
+
+
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
 #endif
@@ -107,11 +119,12 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
 
   const int numthreads = dt_get_num_threads();
 
-  float *const mean = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmin = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmax = malloc((size_t)3 * numthreads * sizeof(float));
+  size_t allocsize;
+  float *const mean = dt_alloc_perthread(3, sizeof(float), &allocsize);
+  float *const mmin = dt_alloc_perthread(3, sizeof(float), &allocsize);
+  float *const mmax = dt_alloc_perthread(3, sizeof(float), &allocsize);
 
-  for(int n = 0; n < 3 * numthreads; n++)
+  for(int n = 0; n < allocsize * numthreads; n++)
   {
     mean[n] = 0.0f;
     mmin[n] = INFINITY;
@@ -120,14 +133,12 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
 
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, cst_to, pixel, width, box, mean, mmin, mmax, profile)
+  dt_omp_firstprivate(w, cst_to, pixel, width, box, mean, mmin, mmax, profile, allocsize)
 #endif
   {
-    const int tnum = dt_get_thread_num();
-
-    float *const tmean = mean + 3 * tnum;
-    float *const tmmin = mmin + 3 * tnum;
-    float *const tmmax = mmax + 3 * tnum;
+    float *const tmean = dt_get_perthread(mean,allocsize);
+    float *const tmmin = dt_get_perthread(mmin,allocsize);
+    float *const tmmax = dt_get_perthread(mmax,allocsize);
 
 #ifdef _OPENMP
 #pragma omp for schedule(static) collapse(2)
@@ -161,9 +172,9 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
   {
     for(int k = 0; k < 3; k++)
     {
-      picked_color[k] += mean[3 * n + k];
-      picked_color_min[k] = fminf(picked_color_min[k], mmin[3 * n + k]);
-      picked_color_max[k] = fmaxf(picked_color_max[k], mmax[3 * n + k]);
+      picked_color[k] += mean[allocsize * n + k];
+      picked_color_min[k] = fminf(picked_color_min[k], mmin[allocsize * n + k]);
+      picked_color_max[k] = fmaxf(picked_color_max[k], mmax[allocsize * n + k]);
     }
   }
 
@@ -234,6 +245,7 @@ static void color_picker_helper_bayer_parallel(const dt_iop_buffer_dsc_t *const 
 
   const int numthreads = dt_get_num_threads();
 
+  //TODO: convert to use dt_alloc_perthread
   float *const msum = malloc((size_t)4 * numthreads * sizeof(float));
   float *const mmin = malloc((size_t)4 * numthreads * sizeof(float));
   float *const mmax = malloc((size_t)4 * numthreads * sizeof(float));
@@ -362,6 +374,7 @@ static void color_picker_helper_xtrans_parallel(const dt_iop_buffer_dsc_t *const
 
   const int numthreads = dt_get_num_threads();
 
+  //TODO: convert to use dt_alloc_perthread
   float *const msum = malloc((size_t)3 * numthreads * sizeof(float));
   float *const mmin = malloc((size_t)3 * numthreads * sizeof(float));
   float *const mmax = malloc((size_t)3 * numthreads * sizeof(float));
