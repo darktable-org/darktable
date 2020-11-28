@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -37,7 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BOX_ITERATIONS 8
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
@@ -107,14 +107,16 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_bloom_data_t *data = (dt_iop_bloom_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
+  assert(piece->colors == 4);	//final blend code requires at least three channels
+
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
   /* gather light by threshold */
-  float *blurlightness = calloc((size_t)roi_out->width * roi_out->height, sizeof(float));
-  memcpy(out, in, (size_t)roi_out->width * roi_out->height * ch * sizeof(float));
+  float *const restrict blurlightness = dt_alloc_align(64, npixels * sizeof(float));
+//  memcpy(out, in, npixels * 4 * sizeof(float));  //TODO: do we need this?
 
   const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
@@ -125,119 +127,40 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, roi_out, scale) \
-  shared(data, blurlightness) \
+  dt_omp_firstprivate(in, npixels, scale) \
+  dt_omp_sharedconst(data, blurlightness) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-    float *inp = ((float *)ivoid) + ch * k;
-    const float L = inp[0] * scale;
-    if(L > data->threshold) blurlightness[k] = L;
+    const float L = in[4*k] * scale;
+    blurlightness[k] = (L > data->threshold) ? L : 0.0f;
   }
-
 
   /* horizontal blur into memchannel lightness */
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const size_t size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *const scanline_buf = malloc(size * dt_get_num_threads() * sizeof(float));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(hr, roi_out, scanline_buf, size) \
-    shared(blurlightness) \
-    schedule(static)
-#endif
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      float *scanline = scanline_buf + size * dt_get_thread_num();
-      float L = 0;
-      int hits = 0;
-      const size_t index = (size_t)y * roi_out->width;
-      for(int x = -hr; x < roi_out->width; x++)
-      {
-        int op = x - hr - 1;
-        int np = x + hr;
-        if(op >= 0)
-        {
-          L -= blurlightness[index + op];
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L += blurlightness[index + np];
-          hits++;
-        }
-        if(x >= 0) scanline[x] = L / hits;
-      }
-
-      for(int x = 0; x < roi_out->width; x++) blurlightness[index + x] = scanline[x];
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(hr + 1) * roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
-
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(hr, npoffs, opoffs, roi_out, size, scanline_buf) \
-    shared(blurlightness) \
-    schedule(static)
-#endif
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      float *scanline = scanline_buf + size * dt_get_thread_num();
-      float L = 0;
-      int hits = 0;
-      size_t index = (size_t)x - hr * roi_out->width;
-      for(int y = -hr; y < roi_out->height; y++)
-      {
-        int op = y - hr - 1;
-        int np = y + hr;
-
-        if(op >= 0)
-        {
-          L -= blurlightness[index + opoffs];
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L += blurlightness[index + npoffs];
-          hits++;
-        }
-        if(y >= 0) scanline[y] = L / hits;
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++) blurlightness[y * roi_out->width + x] = scanline[y];
-    }
-  }
-  free(scanline_buf);
+  dt_box_mean(blurlightness, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
-  shared(in, out, data, blurlightness) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(in, out, blurlightness) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-    float *inp = in + ch * k;
-    float *outp = out + ch * k;
-    outp[0] = 100.0f - (((100.0f - inp[0]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
-    outp[1] = inp[1];
-    outp[2] = inp[2];
+    out[4*k+0] = 100.0f - (((100.0f - in[4*k]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
+    out[4*k+1] = in[4*k+1];
+    out[4*k+2] = in[4*k+2];
+    out[4*k+3] = in[4*k+3];
   }
+  dt_free_align(blurlightness);
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-
-  free(blurlightness);
+//  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+//    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
