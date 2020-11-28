@@ -1417,7 +1417,7 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
   }
   dt_pthread_mutex_unlock(&g->lock);
 
-  dt_iop_refresh_center(self);
+  dt_dev_reprocess_center(self->dev);
 
   gtk_toggle_button_set_active(togglebutton, g->display_wavelet_scale);
   return TRUE;
