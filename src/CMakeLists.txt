@@ -12,6 +12,7 @@ FILE(GLOB SOURCE_FILES
   "common/atomic.c"
   "common/bilateral.c"
   "common/bilateralcl.c"
+  "common/box_filters.c"
   "common/cache.c"
   "common/calculator.c"
   "common/collection.c"

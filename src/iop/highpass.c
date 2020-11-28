@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -40,7 +41,6 @@
 #endif
 
 #define MAX_RADIUS 16
-#define BOX_ITERATIONS 8
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
@@ -275,239 +275,6 @@ error:
 }
 #endif
 
-static void blur_horizontal(float *buf, const int height, const int width, const int radius, float *scanlines)
-{
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, scanlines)   \
-  shared(buf) \
-  schedule(static)
-#endif
-  for(int y = 0; y < height; y++)
-  {
-    float L = 0;
-    int hits = 0;
-    size_t index = (size_t)y * width;
-    float *scanline = scanlines + dt_get_thread_num() * width;
-    // add up the left half of the window
-    for (int x = 0; x < radius && x < width ; x++)
-    {
-      L += buf[index+x];
-      hits++;
-    }
-    // process the blur up to the point where we start removing values
-    int x;
-    for (x = 0; x <= radius && x < width; x++)
-    {
-      const int np = x + radius;
-      if(np < width)
-      {
-        L += buf[index + np];
-        hits++;
-      }
-      scanline[x] = L / hits;
-    }
-    // process the blur for the bulk of the scan line
-    for(; x + radius < width; x++)
-    {
-      const int op = x - radius - 1;
-      const int np = x + radius;
-      L -= buf[index + op];
-      L += buf[index + np];
-      scanline[x] = L / hits;
-    }
-    // process the right end where we have no more values to add to the running sum
-    for(; x < width; x++)
-    {
-      const int op = x - radius - 1;
-      L -= buf[index + op];
-      hits--;
-      scanline[x] = L / hits;
-    }
-    // copy blurred values back to original location in buffer
-    for(x = 0; x < width; x++)
-      buf[index + x] = scanline[x];
-  }
-  return;
-}
-
-#ifdef __SSE2__
-static void blur_vertical_sse(float *buf, const int height, const int width, const int radius, float *scanline)
-{
-  __m128 L = { 0, 0, 0, 0 };
-  __m128 hits = { 0, 0, 0, 0 };
-  const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
-  // add up the top half of the window
-  for (size_t y = 0; y < radius && y < height; y++)
-  {
-    size_t index = y * width;
-    L += _mm_loadu_ps(buf + index);	// use unaligned load since width is not necessarily a multiple of 4
-    hits += one;
-  }
-  // process the blur up to the point where we start removing values
-  for (size_t y = 0; y <= radius && y < height; y++)
-  {
-    const int np = y + radius;
-    if(np < height)
-    {
-      L += _mm_loadu_ps(buf+np*width);
-      hits += one;
-    }
-    _mm_store_ps(scanline+4*y, L / hits);
-  }
-  // process the blur for the rest of the scan line
-  for (size_t y = radius+1 ; y < height; y++)
-  {
-    const int op = y - radius - 1;
-    const int np = y + radius;
-    L -= _mm_loadu_ps(buf+op*width);
-    hits -= one;
-    if(np < height)
-    {
-      L += _mm_loadu_ps(buf+np*width);
-      hits += one;
-    }
-    _mm_store_ps(scanline+4*y, L / hits);
-  }
-
-  // copy blurred values back to original location in buffer
-  for (size_t y = 0; y < height; y++)
-  {
-    // use unaligned store since width is not necessarily a multiple of four
-    // use the faster aligned load since we've ensured that scanline is aligned
-    _mm_storeu_ps(buf + y*width, _mm_load_ps(scanline + 4*y));
-  }
-  return;
-}
-#endif /* __SSE2__ */
-
-// invoked inside an OpenMP parallel for, so no need to parallelize
-static void blur_vertical_4ch(float *buf, const int height, const int width, const int radius, float *scanline)
-{
-#ifdef __SSE2__
-  if (darktable.codepath.SSE2)
-  {
-    blur_vertical_sse(buf, height, width, radius, scanline);
-    return;
-  }
-#endif /* __SSE2__ */
-
-  float L[4] = { 0, 0, 0, 0 };
-  int hits = 0;
-  // add up the left half of the window
-  for (size_t y = 0; y < radius && y < height; y++)
-  {
-    size_t index = y * width;
-    L[0] += buf[index];
-    L[1] += buf[index + 1];
-    L[2] += buf[index + 2];
-    L[3] += buf[index + 3];
-    hits++;
-  }
-  // process the blur up to the point where we start removing values
-  for (size_t y = 0; y <= radius && y < height; y++)
-  {
-    const int np = y + radius;
-    const int npoffset = np * width;
-    if(np < height)
-    {
-      L[0] += buf[npoffset];
-      L[1] += buf[npoffset+1];
-      L[2] += buf[npoffset+2];
-      L[3] += buf[npoffset+3];
-      hits++;
-    }
-    scanline[4*y] = L[0] / hits;
-    scanline[4*y+1] = L[1] / hits;
-    scanline[4*y+2] = L[2] / hits;
-    scanline[4*y+3] = L[3] / hits;
-  }
-  // process the blur for the rest of the scan line
-  for (size_t y = radius+1; y < height; y++)
-  {
-    const int op = y - radius - 1;
-    const int np = y + radius;
-    const int opoffset = op * width;
-    const int npoffset = np * width;
-    if(op >= 0)
-    {
-      L[0] -= buf[opoffset];
-      L[1] -= buf[opoffset+1];
-      L[2] -= buf[opoffset+2];
-      L[3] -= buf[opoffset+3];
-      hits--;
-    }
-    if(np < height)
-    {
-      L[0] += buf[npoffset];
-      L[1] += buf[npoffset+1];
-      L[2] += buf[npoffset+2];
-      L[3] += buf[npoffset+3];
-      hits++;
-    }
-    scanline[4*y] = L[0] / hits;
-    scanline[4*y+1] = L[1] / hits;
-    scanline[4*y+2] = L[2] / hits;
-    scanline[4*y+3] = L[3] / hits;
-  }
-
-  // copy blurred values back to original location in buffer
-  for (size_t y = 0; y < height; y++)
-  {
-    buf[y * width] = scanline[4*y];
-    buf[y * width + 1] = scanline[4*y+1];
-    buf[y * width + 2] = scanline[4*y+2];
-    buf[y * width + 3] = scanline[4*y+3];
-  }
-  return;
-}
-
-static void blur_vertical(float *buf, const int height, const int width, const int radius, float *scanlines)
-{
-  /* vertical pass on blurlightness */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, scanlines)   \
-  shared(buf) \
-  schedule(static)
-#endif
-  for(int x = 0; x < width-4; x += 4)
-  {
-    float *scanline = scanlines + 4 * dt_get_thread_num() * height;
-    blur_vertical_4ch(buf + x, height, width, radius, scanline);
-  }
-  const int opoffs = -(radius + 1) * width;
-  const int npoffs = radius*width;
-  for(int x = 4*(width/4); x < width; x++)
-  {
-    float L = 0;
-    int hits = 0;
-    size_t index = (size_t)x - radius * width;
-    float *scanline = scanlines + 4 * dt_get_thread_num() * height;
-    for(int y = -radius; y < height; y++)
-    {
-      const int op = y - radius - 1;
-      const int np = y + radius;
-      if(op >= 0)
-      {
-        L -= buf[index + opoffs];
-        hits--;
-      }
-      if(np < height)
-      {
-        L += buf[index + npoffs];
-        hits++;
-      }
-      if(y >= 0) scanline[y] = L / hits;
-      index += width;
-    }
-
-    for(int y = 0; y < height; y++)
-      buf[(size_t)y * width + x] = scanline[y];
-  }
-  return;
-}
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -522,16 +289,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 /* create inverted image and then blur */
 /* since we use only the L channel, pack the values together instead of every fourth float */
 /* to reduce cache pressure and memory bandwidth during the blur operation */
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
+  dt_omp_firstprivate(npixels) \
   dt_omp_sharedconst(in) \
   shared(out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-    out[k] = 100.0f - LCLIP(in[ch * k]); // only L in Lab space
-
+  for(size_t k = 0; k < (size_t)npixels; k++)
+    out[k] = 100.0f - LCLIP(in[4 * k]); // only L in Lab space
 
   const int rad = MAX_RADIUS * (fmin(100.0, data->sharpness + 1) / 100.0);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
@@ -540,16 +307,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *scanlines = dt_alloc_align(64, 4 * size * sizeof(float) * dt_get_num_threads());
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-    blur_horizontal(out, roi_out->height, roi_out->width, hr, scanlines);
-    blur_vertical(out, roi_out->height, roi_out->width, hr, scanlines);
-  }
-
-  dt_free_align(scanlines);
+  dt_box_mean(out, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
   const float contrast_scale = ((data->contrast / 100.0) * 7.5);
   /* Blend the inverted blurred L channel with the original input.  Because we packed the L values */
@@ -557,7 +315,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   /* reverse order */
   /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
   /* would clobber values still needed by other threads. */
-  const size_t npixels = (size_t)roi_out->height * roi_out->width;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, contrast_scale, npixels) \
