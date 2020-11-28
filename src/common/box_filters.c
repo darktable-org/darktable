@@ -22,10 +22,12 @@
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>
-//#include <string.h>
 
-#include "common/darktable.h"
 #include "common/box_filters.h"
+#include "common/darktable.h"
+#include "common/guided_filter.h"
+#include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
@@ -406,3 +408,141 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
     dt_free_align(scanline_buf);
   }
 }
+
+
+
+// calculate the one-dimensional moving maximum over a window of size 2*w+1
+// input array x has stride 1, output array y has stride stride_y
+static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, int w)
+{
+  float m = -(INFINITY);
+  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fmaxf(x[i], m);
+  for(int i = 0; i < N; i++)
+  {
+    y[i * stride_y] = m;
+    if(i - w >= 0 && x[i - w] == m)
+    {
+      m = -(INFINITY);
+      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fmaxf(x[j], m);
+    }
+    if(i + w + 1 < N) m = fmaxf(x[i + w + 1], m);
+  }
+}
+
+// calculate the two-dimensional moving maximum over a box of size (2*w+1) x (2*w+1)
+// does the calculation in-place if input and output images are identical
+static void box_max_1ch(float *const buf, const int height, const int width, const int w)
+{
+  float *scratch;
+#ifdef _OPENMP
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(w) \
+  private(scratch)
+#endif
+  {
+    scratch = dt_alloc_align(64, width * sizeof(float));
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+    for(int i1 = 0; i1 < height; i1++)
+    {
+      memcpy(scratch, buf + (size_t)i1 * width, sizeof(float) * width);
+      box_max_1d(width, scratch, buf + (size_t)i1 * width, 1, w);
+    }
+    dt_free_align(scratch);
+  }
+#ifdef _OPENMP
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(w) \
+  private(scratch)
+#endif
+  {
+    scratch = dt_alloc_align(64, height * sizeof(float));
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+    for(int i0 = 0; i0 < width; i0++)
+    {
+      for(int i1 = 0; i1 < height; i1++) scratch[i1] = buf[i0 + (size_t)i1 * width];
+      box_max_1d(height, scratch, buf + i0, width, w);
+    }
+    dt_free_align(scratch);
+  }
+}
+
+
+// in-place calculate the two-dimensional moving maximum over a box of size (2*radius+1) x (2*radius+1)
+void dt_box_max(float *const buf, const int height, const int width, const int ch, const int radius)
+{
+  if (ch == 1)
+    box_max_1ch(buf, height, width, radius);
+  //TODO: 4ch version if needed
+}
+
+// calculate the one-dimensional moving minimum over a window of size 2*w+1
+// input array x has stride 1, output array y has stride stride_y
+static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
+{
+  float m = INFINITY;
+  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fminf(x[i], m);
+  for(int i = 0; i < N; i++)
+  {
+    y[i * stride_y] = m;
+    if(i - w >= 0 && x[i - w] == m)
+    {
+      m = INFINITY;
+      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fminf(x[j], m);
+    }
+    if(i + w + 1 < N) m = fminf(x[i + w + 1], m);
+  }
+}
+
+
+// calculate the two-dimensional moving minimum over a box of size (2*w+1) x (2*w+1)
+// does the calculation in-place if input and output images are identical
+static void box_min_1ch(float *const buf, const int height, const int width, const int w)
+{
+  float *scratch;
+#ifdef _OPENMP
+#pragma omp parallel default(none)              \
+  dt_omp_firstprivate(w)            \
+  private(scratch)
+#endif
+  {
+    scratch = dt_alloc_align(64, width * sizeof(float));
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+    for(int i1 = 0; i1 < height; i1++)
+    {
+      memcpy(scratch, buf + (size_t)i1 * width, sizeof(float) * width);
+      box_min_1d(width, scratch, buf + (size_t)i1 * width, 1, w);
+    }
+    dt_free_align(scratch);
+  }
+#ifdef _OPENMP
+#pragma omp parallel default(none) \
+  dt_omp_firstprivate(w) \
+  private(scratch)
+#endif
+  {
+    scratch = dt_alloc_align(64, height * sizeof(float));
+#ifdef _OPENMP
+#pragma omp for schedule(static)
+#endif
+    for(int i0 = 0; i0 < width; i0++)
+    {
+      for(int i1 = 0; i1 < height; i1++) scratch[i1] = buf[i0 + (size_t)i1 * width];
+      box_min_1d(height, scratch, buf + i0, width, w);
+    }
+    dt_free_align(scratch);
+  }
+}
+
+void dt_box_min(float *const buf, const int height, const int width, const int ch, const int radius)
+{
+  if (ch == 1)
+    box_min_1ch(buf, height, width, radius);
+  //TODO: 4ch version if needed
+}
+
