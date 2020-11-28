@@ -1171,8 +1171,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     /*
      * Fuji lens correction data
      */
-    if(/*Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
-       &&*/ dt_exif_read_exif_tag(exifData, &posd, "Exif.Fujifilm.GeometricDistortionParams")
+    if(Exiv2::versionNumber() >= EXIV2_MAKE_VERSION(0, 27, 4)
+       && dt_exif_read_exif_tag(exifData, &posd, "Exif.Fujifilm.GeometricDistortionParams")
        && dt_exif_read_exif_tag(exifData, &posc, "Exif.Fujifilm.ChromaticAberrationParams")
        && dt_exif_read_exif_tag(exifData, &posv, "Exif.Fujifilm.VignettingParams"))
     {
