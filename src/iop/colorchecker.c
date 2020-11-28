@@ -89,7 +89,6 @@ typedef struct dt_iop_colorchecker_params_t
 typedef struct dt_iop_colorchecker_gui_data_t
 {
   GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b, *scale_C, *combobox_target;
-  GtkWidget *colorpicker;
   int patch, drawn_patch;
   cmsHTRANSFORM xform;
   int absolute_target; // 0: show relative offsets in sliders, 1: show absolute Lab values
@@ -845,8 +844,6 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_reset(struct dt_iop_module_t *self)
 {
-  dt_iop_colorchecker_gui_data_t *g = (dt_iop_colorchecker_gui_data_t *)self->gui_data;
-  dt_bauhaus_widget_set_quad_active(g->combobox_patch, 0);
   dt_iop_color_picker_reset(self, TRUE);
 }
 
@@ -938,13 +935,6 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
     self->gui_update(self);
   }
   dt_control_queue_redraw_center();
-}
-
-static void _color_picker_callback(GtkWidget *button, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-  dt_iop_color_picker_set_cst(self, iop_cs_LCh);
 }
 
 static void target_L_callback(GtkWidget *slider, gpointer user_data)
@@ -1352,11 +1342,7 @@ void gui_init(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_add(g->combobox_patch, cboxentry);
   }
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(hbox), g->combobox_patch, TRUE, TRUE, 0);
-
-  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
-  g_signal_connect(G_OBJECT(g->colorpicker), "toggled", G_CALLBACK(_color_picker_callback), self);
+  dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, g->combobox_patch);
 
   g->scale_L = dt_bauhaus_slider_new_with_range(self, -100.0, 200.0, 1.0, 0.0f, 2);
   gtk_widget_set_tooltip_text(g->scale_L, _("lightness offset"));
@@ -1387,7 +1373,7 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->combobox_target, _("relative"));
   dt_bauhaus_combobox_add(g->combobox_target, _("absolute"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->combobox_patch, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_L, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_a, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->scale_b, TRUE, TRUE, 0);
