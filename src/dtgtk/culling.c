@@ -842,7 +842,6 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
                             G_CALLBACK(_dt_filmstrip_change), table);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_dt_selection_changed_callback), table);
-  gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
 
