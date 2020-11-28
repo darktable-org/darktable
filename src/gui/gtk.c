@@ -1413,7 +1413,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Side-border hide/show
   dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
 
-  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_B, 0);
+  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_b, 0);
   dt_accel_connect_global("toggle panels collapsing controls",
                           g_cclosure_new(G_CALLBACK(_panels_controls_accel_callback), NULL, NULL));
 
