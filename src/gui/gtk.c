@@ -3158,7 +3158,11 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   if(event->state & GDK_CONTROL_MASK)
   {
-    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*event->delta_y);
+    int delta_y=0;
+    
+    dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
+
+    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*delta_y);
 
     _scroll_wrap_resize(w, NULL, config_str);
   }
