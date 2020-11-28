@@ -36,6 +36,7 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/darktable.h"
 #include "common/guided_filter.h"
 #include "develop/imageop.h"
@@ -254,164 +255,6 @@ static inline void pointer_swap_f(float *a, float *b)
 }
 
 
-// calculate the one-dimensional moving maximum over a window of size 2*w+1
-// input array x has stride 1, output array y has stride stride_y
-static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float m = -(INFINITY);
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fmaxf(x[i], m);
-  for(int i = 0; i < N; i++)
-  {
-    y[i * stride_y] = m;
-    if(i - w >= 0 && x[i - w] == m)
-    {
-      m = -(INFINITY);
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fmaxf(x[j], m);
-    }
-    if(i + w + 1 < N) m = fmaxf(x[i + w + 1], m);
-  }
-}
-
-
-// calculate the two-dimensional moving maximum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-static void box_max(const gray_image img1, const gray_image img2, const int w)
-{
-  gray_image img2_bak;
-  if(img1.data == img2.data)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-      img2_bak = new_gray_image(img2.width, 1);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img2.height; i1++)
-      {
-        memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-        box_max_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
-      }
-      free_gray_image(&img2_bak);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img1.height; i1++)
-        box_max_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    }
-  }
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(img1, img2, w) \
-  private(img2_bak)
-#endif
-  {
-    img2_bak = new_gray_image(1, img2.height);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i0 = 0; i0 < img1.width; i0++)
-    {
-      for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-      box_max_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-    }
-    free_gray_image(&img2_bak);
-  }
-}
-
-
-// calculate the one-dimensional moving minimum over a window of size 2*w+1
-// input array x has stride 1, output array y has stride stride_y
-static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float m = INFINITY;
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fminf(x[i], m);
-  for(int i = 0; i < N; i++)
-  {
-    y[i * stride_y] = m;
-    if(i - w >= 0 && x[i - w] == m)
-    {
-      m = INFINITY;
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fminf(x[j], m);
-    }
-    if(i + w + 1 < N) m = fminf(x[i + w + 1], m);
-  }
-}
-
-
-// calculate the two-dimensional moving minimum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-static void box_min(const gray_image img1, const gray_image img2, const int w)
-{
-  gray_image img2_bak;
-  if(img1.data == img2.data)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-      img2_bak = new_gray_image(img2.width, 1);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img2.height; i1++)
-      {
-        memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-        box_min_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
-      }
-      free_gray_image(&img2_bak);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-      for(int i1 = 0; i1 < img1.height; i1++)
-        box_min_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    }
-  }
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(img1, img2, w) \
-  private(img2_bak)
-#endif
-  {
-    img2_bak = new_gray_image(1, img2.height);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i0 = 0; i0 < img1.width; i0++)
-    {
-      for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-      box_min_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-    }
-    free_gray_image(&img2_bak);
-  }
-}
-
-
 // calculate the dark channel (minimal color component over a box of size (2*w+1) x (2*w+1) )
 static void dark_channel(const const_rgb_image img1, const gray_image img2, const int w)
 {
@@ -429,7 +272,7 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
     m = fminf(pixel[2], m);
     img2.data[i] = m;
   }
-  box_min(img2, img2, w);
+  dt_box_min(img2.data, img2.height, img2.width, 1, w);
 }
 
 
@@ -451,7 +294,7 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
     m = fminf(pixel[2] / A0[2], m);
     img2.data[i] = 1.f - m * strength;
   }
-  box_max(img2, img2, w);
+  dt_box_max(img2.data, img2.height, img2.width, 1, w);
 }
 
 
@@ -660,7 +503,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   transition_map(img_in, trans_map, w1, A0, strength);
 
   // refine the transition map
-  box_min(trans_map, trans_map, w1);
+  dt_box_min(trans_map.data, trans_map.height, trans_map.width, 1, w1);
   gray_image trans_map_filtered = new_gray_image(width, height);
   // apply guided filter with no clipping
   guided_filter(img_in.data, trans_map.data, trans_map_filtered.data, width, height, ch, w2, eps, 1.f, -FLT_MAX,
