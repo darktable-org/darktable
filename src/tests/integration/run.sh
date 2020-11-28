@@ -202,9 +202,18 @@ for dir in $TESTS; do
 
             if [ ! -f expected.png ]; then
                 echo "  copy output.png to expected.png"
+                echo "  optimize size of expected.png"
+
+                if [ -z $(which zopflipng) ]; then
+                    echo
+                    echo "  ERROR: please install zopflipng tool."
+                    exit 1
+                fi
+
+                zopflipng output.png expected.png 1> /dev/null 2>&1
+
                 echo "  check that expected.png is correct:"
                 echo "  \$ eog $(basename $PWD)/expected.png"
-                cp output.png expected.png
             fi
 
             exit $res
