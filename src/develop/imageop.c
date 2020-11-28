@@ -1008,10 +1008,26 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
 
   if(event->type == GDK_FOCUS_CHANGE || event->keyval == GDK_KEY_Return || event->keyval == GDK_KEY_KP_Enter)
   {
-    const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
-    if(strcmp(module->multi_name, name) != 0)
+    if(gtk_entry_get_text_length(GTK_ENTRY(entry)) > 0)
     {
-      g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+      // name is not empty, set new multi_name
+      
+       const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
+      
+      // restore saved 1st character of instance name (without it the same name wouls still produce unnecessary copy + add history item)
+      module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
+      module->multi_name[sizeof(module->multi_name) - 1] = 0;
+
+      if(g_strcmp0(module->multi_name, name) != 0)
+      {
+        g_strlcpy(module->multi_name, name, sizeof(module->multi_name));
+        dt_dev_add_history_item(module->dev, module, TRUE);
+      }
+    }
+    else
+    {
+      // clear out multi-name (set 1st char to 0)
+      module->multi_name[0] = 0;
       dt_dev_add_history_item(module->dev, module, TRUE);
     }
 
