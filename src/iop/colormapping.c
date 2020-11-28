@@ -170,6 +170,17 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+//TODO: refactor by moving into a common header and consolidating with copy in color_picker.c
+static void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
+{
+  const size_t alloc_size = n * objsize;
+  const size_t cache_lines = (alloc_size+63)/64;
+  *padded_size = 64 * cache_lines / objsize;
+  return dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads());
+}
+#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
+#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
+
 static void capture_histogram(const float *col, const int width, const int height, int *hist)
 {
   // build separate histogram
@@ -526,17 +537,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_bilateral_free(b);
     }
 
-    float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
+    size_t allocsize;
+    float *const weight_buf = dt_alloc_perthread(data->n, sizeof(float), &allocsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, height, mapio, var_ratio, weight_buf, width) \
+    dt_omp_firstprivate(ch, height, mapio, var_ratio, weight_buf, width, allocsize) \
     shared(data, in, out, equalization) \
     schedule(static)
 #endif
     for(int k = 0; k < height; k++)
     {
-      float *weight = weight_buf + data->n * dt_get_thread_num();
+      float *weight = dt_get_perthread(weight_buf,allocsize);
       size_t j = (size_t)ch * width * k;
       for(int i = 0; i < width; i++)
       {
