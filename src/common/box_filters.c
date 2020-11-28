@@ -263,12 +263,11 @@ static void blur_vertical_1ch(float *buf, const int height, const int width, con
   return;
 }
 
-void dt_box_mean(float *const buf, const int height, const int width, const int ch,
-                 const int radius, const int iterations)
+static void dt_box_mean_1ch(float *const buf, const int height, const int width, const int radius,
+                            const int iterations)
 {
-  assert(ch == 1); //TODO: implement 4ch version
   const int size = width > height ? width : height;
-  float *scanlines = dt_alloc_align(64, 4 * size * sizeof(float) * dt_get_num_threads());
+  float *const restrict scanlines = dt_alloc_align(64, 4 * size * sizeof(float) * dt_get_num_threads());
 
   for(int iteration = 0; iteration < iterations; iteration++)
   {
@@ -277,4 +276,133 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
   }
 
   dt_free_align(scanlines);
+}
+
+void dt_box_mean(float *const buf, const int height, const int width, const int ch,
+                 const int radius, const int iterations)
+{
+  if (ch == 1)
+  {
+    dt_box_mean_1ch(buf,height,width,radius,iterations);
+  }
+  else
+  {
+    assert(ch == 4);
+    //TODO: apply the same speedups as for the 1ch version above
+
+    const int size = width > height ? width : height;
+    const size_t scanline_size = (size_t)4 * size;
+    float *const restrict scanline_buf = dt_alloc_align(64, scanline_size * dt_get_num_threads() * sizeof(float));
+
+    for(int iteration = 0; iteration < iterations; iteration++)
+    {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(radius, buf, scanline_buf, scanline_size) \
+  schedule(static)
+#endif
+      /* horizontal blur out into out */
+      for(int y = 0; y < height; y++)
+      {
+        float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
+        __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        size_t index = (size_t)y * width;
+        int hits = 0;
+        for(int x = -radius; x < width; x++)
+        {
+          int op = x - radius - 1;
+          int np = x + radius;
+          if(op >= 0)
+          {
+            for(int c = 0; c < 4; c++)
+            {
+              L[c] -= buf[((index + op) * 4) + c];
+            }
+            hits--;
+          }
+          if(np < width)
+          {
+            for(int c = 0; c < 4; c++)
+            {
+              L[c] += buf[((index + np) * 4) + c];
+            }
+            hits++;
+          }
+          if(x >= 0)
+          {
+            for(int c = 0; c < 4; c++)
+            {
+              scanline[4 * x + c] = L[c] / hits;
+            }
+          }
+        }
+
+        for(int x = 0; x < width; x++)
+        {
+          for(int c = 0; c < 4; c++)
+          {
+            buf[(index + x) * 4 + c] = scanline[4 * x + c];
+          }
+        }
+      }
+
+      /* vertical pass on blurlightness */
+      const int opoffs = -(radius + 1) * width;
+      const int npoffs = (radius)*width;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npoffs, opoffs, radius, buf, scanline_buf, scanline_size) \
+  schedule(static)
+#endif
+      for(int x = 0; x < width; x++)
+      {
+        float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
+        __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+
+        int hits = 0;
+        size_t index = (size_t)x - radius * width;
+        for(int y = -radius; y < height; y++)
+        {
+          int op = y - radius - 1;
+          int np = y + radius;
+
+          if(op >= 0)
+          {
+            for(int c = 0; c < 4; c++)
+            {
+              L[c] -= buf[((index + opoffs) * 4) + c];
+            }
+            hits--;
+          }
+          if(np < height)
+          {
+            for(int c = 0; c < 4; c++)
+            {
+              L[c] += buf[((index + npoffs) * 4) + c];
+            }
+            hits++;
+          }
+          if(y >= 0)
+          {
+            for(int c = 0; c < 4; c++)
+            {
+              scanline[4 * y + c] = L[c] / hits;
+            }
+          }
+          index += width;
+        }
+
+        for(int y = 0; y < height; y++)
+        {
+          for(int c = 0; c < 4; c++)
+          {
+            buf[((size_t)y * width + x) * 4 + c] = scanline[4 * y + c];
+          }
+        }
+      }
+    }
+
+    dt_free_align(scanline_buf);
+  }
 }
