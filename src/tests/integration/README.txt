@@ -36,10 +36,6 @@ How to add a new test (using default driver)
    The output.png will be copied to expected.png, double check that
    expected.png is correct and really the expected output.
 
-   If possible run zopflipng on the PNG to gain some space:
-
-   $ zopflipng expected.png expected.png
-
 6. Test that all is ok by running:
 
    ./run <dir>
