@@ -1774,7 +1774,7 @@ void gui_reset(dt_iop_module_t *self)
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
 {
-  if(!dt_image_is_raw(&module->dev->image_storage))
+  if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
   {
     bwb[0] = 1.0;
     bwb[2] = 1.0;
@@ -1785,7 +1785,7 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
   }
 
   double mul[4];
-  if (dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, mul))
+  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, module->dev->image_storage.d65_color_matrix, mul))
   {
     // normalize green:
     bwb[0] = mul[0] / mul[1];

@@ -416,7 +416,27 @@ static int find_temperature_from_raw_coeffs(const dt_image_t *img, float *chroma
       // Get the camera input profile (matrice of primaries)
       float XYZ_to_CAM[4][3];
       XYZ_to_CAM[0][0] = NAN;
-      dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])XYZ_to_CAM);
+
+      if(!isnan(img->d65_color_matrix[0]))
+      {
+        // keep in sync with reload_defaults from colorin.c
+        // embedded matrix is used with higher priority than standard one
+        XYZ_to_CAM[0][0] = img->d65_color_matrix[0];
+        XYZ_to_CAM[0][1] = img->d65_color_matrix[1];
+        XYZ_to_CAM[0][2] = img->d65_color_matrix[2];
+
+        XYZ_to_CAM[1][0] = img->d65_color_matrix[3];
+        XYZ_to_CAM[1][1] = img->d65_color_matrix[4];
+        XYZ_to_CAM[1][2] = img->d65_color_matrix[5];
+
+        XYZ_to_CAM[2][0] = img->d65_color_matrix[6];
+        XYZ_to_CAM[2][1] = img->d65_color_matrix[7];
+        XYZ_to_CAM[2][2] = img->d65_color_matrix[8];
+      }
+      else
+      {
+        dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])XYZ_to_CAM);
+      }
 
       if(isnan(XYZ_to_CAM[0][0])) return FALSE;
 
