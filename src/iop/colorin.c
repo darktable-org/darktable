@@ -1555,13 +1555,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(type == DT_COLORSPACE_EMBEDDED_MATRIX)
   {
     // embedded matrix, hopefully D65
-    if(isnan(pipe->image.d65_color_matrix[0]))
+    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, pipe->image.id, 'r');
+    if(isnan(cimg->d65_color_matrix[0]))
       type = DT_COLORSPACE_STANDARD_MATRIX;
     else
     {
-      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])pipe->image.d65_color_matrix);
+      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])cimg->d65_color_matrix);
       d->clear_input = 1;
     }
+    dt_image_cache_read_release(darktable.image_cache, cimg);
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
@@ -1851,8 +1853,9 @@ void reload_defaults(dt_iop_module_t *module)
   // currently we only support jpeg, j2k, tiff and png
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, module->dev->image_storage.id, 'w');
 
-  if(!dt_image_is_matrix_correction_supported(img))
+  if(!img->profile)
   {
+    // the image has not a profile inited
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(img->id, filename, sizeof(filename), &from_cache);
@@ -1917,6 +1920,12 @@ void reload_defaults(dt_iop_module_t *module)
 #endif
     g_free(ext);
   }
+  else
+  {
+    // there is an inited embedded profile
+    color_profile = DT_COLORSPACE_EMBEDDED_ICC;
+  }
+
 
   if(color_profile != DT_COLORSPACE_NONE)
     d->type = color_profile;
@@ -1924,16 +1933,20 @@ void reload_defaults(dt_iop_module_t *module)
     d->type = DT_COLORSPACE_LIN_REC2020;
   else if (img->flags & DT_IMAGE_MONOCHROME)
     d->type = DT_COLORSPACE_LIN_REC709;
-  else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
+  else if(img->colorspace == DT_IMAGE_COLORSPACE_SRGB)
     d->type = DT_COLORSPACE_SRGB;
-  else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
+  else if(img->colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
     d->type = DT_COLORSPACE_ADOBERGB;
-  else if(dt_image_is_ldr(&module->dev->image_storage))
+  else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
-  else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
+  else if(!isnan(img->d65_color_matrix[0])) // image is DNG
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
-  else
+  else if(dt_image_is_matrix_correction_supported(img)) // image is raw
     d->type = DT_COLORSPACE_STANDARD_MATRIX;
+  else if(dt_image_is_hdr(img)) // image is 32 bit float, most likely linear space, best guess is Rec709
+    d->type = DT_COLORSPACE_LIN_REC709;
+  else // no ICC tag nor colorprofile was found - ICC spec says untagged files are sRGB
+    d->type = DT_COLORSPACE_SRGB;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
