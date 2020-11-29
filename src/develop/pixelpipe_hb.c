@@ -1444,13 +1444,14 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       return 1;
     }
 
+#ifdef HAVE_OPENCL
+
     // Fetch RGB working profile
     // if input is RAW, we can't color convert because RAW is not in a color space
     // so we send NULL to by-pass
     const dt_iop_order_iccprofile_info_t *const work_profile
         = (input_format->cst != iop_cs_RAW) ? dt_ioppr_get_pipe_work_profile_info(pipe) : NULL;
 
-#ifdef HAVE_OPENCL
     /* do we have opencl at all? did user tell us to use it? did we get a resource? */
     if(dt_opencl_is_inited() && pipe->opencl_enabled && pipe->devid >= 0)
     {
