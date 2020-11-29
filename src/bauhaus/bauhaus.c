@@ -22,6 +22,7 @@
 #include "control/conf.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -87,7 +88,6 @@ static inline float inner_height(GtkAllocation allocation)
   return allocation.height - 2.0f * darktable.bauhaus->widget_space;
 }
 
-
 static GdkRGBA * default_color_assign()
 {
   // helper to initialize a color pointer with red color as a default
@@ -98,7 +98,6 @@ static GdkRGBA * default_color_assign()
   color.alpha = 1.0f;
   return gdk_rgba_copy(&color);
 }
-
 
 static int show_pango_text(dt_bauhaus_widget_t *w, GtkStyleContext *context, cairo_t *cr,
                            char *text, float x_pos, float y_pos, float max_width,
@@ -535,18 +534,25 @@ void dt_bauhaus_load_theme()
   gtk_style_context_lookup_color(ctx, "graph_grid", &darktable.bauhaus->graph_grid);
   gtk_style_context_lookup_color(ctx, "graph_fg", &darktable.bauhaus->graph_fg);
   gtk_style_context_lookup_color(ctx, "graph_fg_active", &darktable.bauhaus->graph_fg_active);
+  gtk_style_context_lookup_color(ctx, "graph_overlay", &darktable.bauhaus->graph_overlay);
   gtk_style_context_lookup_color(ctx, "inset_histogram", &darktable.bauhaus->inset_histogram);
+  gtk_style_context_lookup_color(ctx, "graph_red", &darktable.bauhaus->graph_primaries[0]);
+  gtk_style_context_lookup_color(ctx, "graph_green", &darktable.bauhaus->graph_primaries[1]);
+  gtk_style_context_lookup_color(ctx, "graph_blue", &darktable.bauhaus->graph_primaries[2]);
 
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
   gtk_widget_path_free(path);
 
+  // make sure we release previously loaded font
+  if(darktable.bauhaus->pango_font_desc)
+    pango_font_description_free(darktable.bauhaus->pango_font_desc);
+
   darktable.bauhaus->pango_font_desc = pfont;
 
-  PangoLayout *layout;
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 128, 128);
   cairo_t *cr = cairo_create(cst);
-  layout = pango_cairo_create_layout(cr);
+  PangoLayout *layout = pango_cairo_create_layout(cr);
   pango_layout_set_text(layout, "m", -1);
   pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
   pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
@@ -573,6 +579,7 @@ void dt_bauhaus_init()
   darktable.bauhaus->current = NULL;
   darktable.bauhaus->popup_area = gtk_drawing_area_new();
   gtk_widget_set_name(darktable.bauhaus->popup_area, "bauhaus-popup");
+  darktable.bauhaus->pango_font_desc = NULL;
 
   dt_bauhaus_load_theme();
 
@@ -581,6 +588,8 @@ void dt_bauhaus_init()
   darktable.bauhaus->key_mod = NULL;
   darktable.bauhaus->key_val = NULL;
   memset(darktable.bauhaus->key_history, 0, sizeof(darktable.bauhaus->key_history));
+
+  darktable.bauhaus->skip_accel = 1;
 
   // this easily gets keyboard input:
   // darktable.bauhaus->popup_window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -841,14 +850,48 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
   d->hard_max = hard_max;
 }
 
-void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section, const char *label)
+void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
 {
+  const char *section = _(section_orig);
+  const char *label = _(label_orig);
+
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   memset(w->label, 0, sizeof(w->label)); // keep valgrind happy
   g_strlcpy(w->label, label, sizeof(w->label));
 
   if(w->module)
   {
+    if(!darktable.bauhaus->skip_accel && (!section_orig || strcmp("blend", section_orig)))
+    {
+      gchar *combined_label = section_orig
+                            ? g_strdup_printf("%s`%s", section_orig, label_orig)
+                            : g_strdup(label_orig);
+      if(darktable.control->accel_initialising)
+      {
+        if(w->type == DT_BAUHAUS_SLIDER)
+        {
+          dt_accel_register_slider_iop(w->module->so, FALSE, combined_label);
+        }
+        else if(w->type == DT_BAUHAUS_COMBOBOX)
+        {
+          dt_accel_register_combobox_iop(w->module->so, FALSE, combined_label);
+        }
+      }
+      else
+      {
+        if(w->type == DT_BAUHAUS_SLIDER)
+        {
+          dt_accel_connect_slider_iop(w->module, combined_label, widget);
+        }
+        else if(w->type == DT_BAUHAUS_COMBOBOX)
+        {
+          dt_accel_connect_combobox_iop(w->module, combined_label, widget);
+        }
+      }
+
+      g_free(combined_label);
+    }
+
     // construct control path name and insert into keymap:
     gchar *path;
     if(section && section[0] != '\0')
@@ -1355,7 +1398,7 @@ static void draw_equilateral_triangle(cairo_t *cr, float radius)
 }
 
 
-static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr, const GdkRGBA *fg_color, const GdkRGBA *border_color)
+static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t *cr, const GdkRGBA fg_color, const GdkRGBA border_color)
 {
   // draw scale indicator (the tiny triangle)
   GtkWidget *widget = GTK_WIDGET(w);
@@ -1374,7 +1417,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
   // draw the outer triangle
   draw_equilateral_triangle(cr, size);
   cairo_set_line_width(cr, border_width);
-  set_color(cr, *border_color);
+  set_color(cr, border_color);
   cairo_stroke(cr);
 
   draw_equilateral_triangle(cr, size - border_width);
@@ -1382,7 +1425,7 @@ static void dt_bauhaus_draw_indicator(dt_bauhaus_widget_t *w, float pos, cairo_t
 
   // draw the inner triangle
   draw_equilateral_triangle(cr, size - border_width);
-  set_color(cr, *fg_color);
+  set_color(cr, fg_color);
   cairo_set_line_width(cr, border_width);
 
   const dt_bauhaus_slider_data_t *d = &w->data.slider;
@@ -1635,7 +1678,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   // dimensions of the popup
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width, height = inner_height(allocation);
+  const int width = allocation.width;
+  const int height = inner_height(allocation);
 
   // dimensions of the original line
   GtkWidget *current = GTK_WIDGET(w);
@@ -1643,16 +1687,15 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   gtk_widget_get_allocation(current, &allocation_current);
   int wd = allocation_current.width, ht = inner_height(allocation_current);
 
+  const int popwin_wd = allocation.width + darktable.bauhaus->widget_space * 2.0f;
+  const int popwin_ht = allocation.height + darktable.bauhaus->widget_space * 2.0f;
+
   // get area properties
-  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+  cairo_surface_t *cst = dt_cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+                                                       popwin_wd, popwin_ht);
+
   cairo_t *cr = cairo_create(cst);
   GtkStyleContext *context = gtk_widget_get_style_context(widget);
-
-  // translate to account for the widget spacing
-  cairo_translate(cr, 0, darktable.bauhaus->widget_space);
-
-  // draw background
-  gtk_render_background(context, cr, 0.0, 0.0, width, height);
 
   // look up some colors once
   GdkRGBA text_color, text_color_selected, text_color_hover, text_color_insensitive;
@@ -1664,10 +1707,23 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   GdkRGBA *fg_color = default_color_assign();
   GdkRGBA *bg_color = default_color_assign();
   GtkStateFlags state = gtk_widget_get_state_flags(widget);
-  gtk_render_background(context, cr, 0, 0, width, height);
 
   gtk_style_context_get(context, state, "background-color", bg_color, NULL);
   gtk_style_context_get_color(context, state, fg_color);
+
+  // draw background
+  gtk_render_background(context, cr, 0, 0, popwin_wd, popwin_ht);
+
+  // draw border
+  cairo_save(cr);
+  set_color(cr, *fg_color);
+  cairo_set_line_width(cr, darktable.bauhaus->widget_space);
+  cairo_rectangle(cr, 0, 0, popwin_wd - 2, popwin_ht - 2);
+  cairo_stroke(cr);
+  cairo_restore(cr);
+
+  // translate to account for the widget spacing
+  cairo_translate(cr, darktable.bauhaus->widget_space, darktable.bauhaus->widget_space);
 
   // switch on bauhaus widget type (so we only need one static window)
   switch(w->type)
@@ -1711,7 +1767,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
       cairo_restore(cr);
 
       // draw indicator
-      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, fg_color, bg_color);
+      dt_bauhaus_draw_indicator(w, d->oldpos + mouse_off, cr, *fg_color, *bg_color);
 
       // draw numerical value:
       cairo_save(cr);
@@ -1807,9 +1863,8 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   if(darktable.bauhaus->keys_cnt)
   {
     cairo_save(cr);
-    PangoLayout *layout;
+    PangoLayout *layout = pango_cairo_create_layout(cr);
     PangoRectangle ink;
-    layout = pango_cairo_create_layout(cr);
     pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
     set_color(cr, text_color);
 
@@ -1946,7 +2001,7 @@ static gboolean dt_bauhaus_draw(GtkWidget *widget, cairo_t *crf, gpointer user_d
         cairo_save(cr);
         cairo_rectangle(cr, 0, 0, width - darktable.bauhaus->quad_width - INNER_PADDING, height + INNER_PADDING);
         cairo_clip(cr);
-        dt_bauhaus_draw_indicator(w, d->pos, cr, fg_color, &darktable.bauhaus->indicator_border);
+        dt_bauhaus_draw_indicator(w, d->pos, cr, *fg_color, darktable.bauhaus->indicator_border);
         cairo_restore(cr);
 
         // TODO: merge that text with combo
@@ -2012,6 +2067,7 @@ void dt_bauhaus_show_popup(dt_bauhaus_widget_t *w)
   int offset = 0;
   GtkAllocation tmp;
   gtk_widget_get_allocation(GTK_WIDGET(w), &tmp);
+  if(tmp.width == 1) return;
 
   gtk_widget_realize(darktable.bauhaus->popup_window);
   switch(darktable.bauhaus->current->type)

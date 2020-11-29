@@ -69,6 +69,11 @@ typedef struct dt_iop_bilateral_data_t
 
 const char *name()
 {
+  return _("surface blur");
+}
+
+const char *aliases()
+{
   return _("denoise (bilateral filter)");
 }
 
@@ -87,21 +92,13 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+const char *description(struct dt_iop_module_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "red"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "red", GTK_WIDGET(g->red));
-  dt_accel_connect_slider_iop(self, "green", GTK_WIDGET(g->green));
-  dt_accel_connect_slider_iop(self, "blue", GTK_WIDGET(g->blue));
+  return dt_iop_set_description(self, _("apply edge-aware surface blur to denoise or smoothen textures"),
+                                      _("corrective and creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -270,7 +267,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_bilateral_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -281,9 +277,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_bilateral_gui_data_t *g = (dt_iop_bilateral_gui_data_t *)self->gui_data;
-  dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)module->params;
+  dt_iop_bilateral_params_t *p = (dt_iop_bilateral_params_t *)self->params;
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   // dt_bauhaus_slider_set(g->scale2, p->sigma[1]);
   dt_bauhaus_slider_set_soft(g->red, p->red);

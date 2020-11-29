@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include <inttypes.h>
 
 #include <errno.h>
 
@@ -910,10 +911,9 @@ main(int argc, char** argv)
 
     // output the histograms:
     fprintf(f, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
-    for(int k=0;k<CURVE_RESOLUTION;k++)
-    {
-      fprintf(f, "%f %f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], (ch0[k] + ch1[k] + ch2[k])/3.0f, h0[k], h1[k], h2[k]);
-    }
+    for(int k = 0; k < CURVE_RESOLUTION; k++)
+      fprintf(f, "%f %f %f %f %" PRIu32 " %" PRIu32 " %" PRIu32 "\n", ch0[k], ch1[k], ch2[k],
+              (ch0[k] + ch1[k] + ch2[k]) / 3.0f, h0[k], h1[k], h2[k]);
   }
 
   fclose(f);
@@ -942,10 +942,8 @@ main(int argc, char** argv)
 
     // output the histogram
     fprintf(f, "# tonecurve-L tonecurve-a tonecurve-b cnt-L cnt-a cnt-b\n");
-    for(int k=0;k<CURVE_RESOLUTION;k++)
-    {
-      fprintf(f, "%f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], h0[k], h1[k], h2[k]);
-    }
+    for(int k = 0; k < CURVE_RESOLUTION; k++)
+      fprintf(f, "%f %f %f %" PRIu32 " %" PRIu32 " %" PRIu32 "\n", ch0[k], ch1[k], ch2[k], h0[k], h1[k], h2[k]);
   }
 
   fclose(f);
@@ -1147,14 +1145,13 @@ fit:;
                     opt.filename_exif ? model : "new measured tonecurve",
                     opt.filename_exif ? maker : "<MAKER>",
                     opt.filename_exif ? model : "<MODEL>");
-    for (int i=0; i<3; i++)
+    for(int i = 0; i < 3; i++)
     {
       fprintf(stdout, "{");
-      for(int k=0;k<params.tonecurve_nodes[i];k++)
-      {
-        fprintf(stdout, "{%f, %f}%s", params.tonecurve[i][k].x, params.tonecurve[i][k].y, params.tonecurve_nodes[i]-1?", ":"");
-      }
-      fprintf(stdout, "},");
+      for(int k = 0; k < params.tonecurve_nodes[i]; k++)
+        fprintf(stdout, "{%f, %f}%s", params.tonecurve[i][k].x, params.tonecurve[i][k].y,
+                (k + 1 < params.tonecurve_nodes[i]) ? ", " : "");
+      fprintf(stdout, (i + 1 < 3) ? "}, " : "}");
     }
     fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, %d, 0, %d}},\n",
       params.tonecurve_nodes[0], params.tonecurve_nodes[1], params.tonecurve_nodes[2],

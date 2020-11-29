@@ -99,6 +99,15 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("overlay a solid color on the image"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -115,24 +124,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
   return 1;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "lightness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "source mix"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->hue));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
-  dt_accel_connect_slider_iop(self, "lightness", GTK_WIDGET(g->lightness));
-  dt_accel_connect_slider_iop(self, "source mix", GTK_WIDGET(g->source_mix));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -319,7 +310,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_colorize_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -330,9 +320,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorize_gui_data_t *g = (dt_iop_colorize_gui_data_t *)self->gui_data;
-  dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)module->params;
+  dt_iop_colorize_params_t *p = (dt_iop_colorize_params_t *)self->params;
 
   dt_iop_color_picker_reset(self, TRUE);
 

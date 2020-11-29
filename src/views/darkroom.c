@@ -100,7 +100,7 @@ static void _update_softproof_gamut_checking(dt_develop_t *d);
 /* signal handler for filmstrip image switching */
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
-static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid);
+static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid);
 
 static void _darkroom_display_second_window(dt_develop_t *dev);
 static void _darkroom_ui_second_window_write_config(GtkWidget *widget);
@@ -197,6 +197,22 @@ static dt_darkroom_layout_t _lib_darkroom_get_layout(dt_view_t *self)
     return DT_DARKROOM_LAYOUT_EDITING;
   else
     return DT_DARKROOM_LAYOUT_EDITING;
+}
+
+static cairo_filter_t _get_filtering_level(dt_develop_t *dev)
+{
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 0);
+
+  // for pixel representation above 1:1, that is when a single pixel on the image
+  // is represented on screen by multiple pixels we want to disable any cairo filter
+  // which could only blur or smooth the output.
+
+  if(scale / darktable.gui->ppd > 1.0)
+    return CAIRO_FILTER_FAST;
+  else
+    return darktable.gui->dr_filter_image;
 }
 
 void expose(
@@ -342,7 +358,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_paint(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -400,7 +416,7 @@ void expose(
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -699,7 +715,7 @@ void reset(dt_view_t *self)
 
 int try_enter(dt_view_t *self)
 {
-  int imgid = dt_view_get_image_to_act_on();
+  int32_t imgid = dt_view_get_image_to_act_on();
 
   if(imgid < 0)
   {
@@ -727,13 +743,7 @@ int try_enter(dt_view_t *self)
   return 0;
 }
 
-static void dt_dev_cleanup_module_accels(dt_iop_module_t *module)
-{
-  dt_accel_disconnect_list(&module->accel_closures);
-  dt_accel_cleanup_locals_iop(module);
-}
-
-static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
+static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 {
   // stop crazy users from sleeping on key-repeat spacebar:
   if(dev->image_loading) return;
@@ -890,17 +900,16 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
     {
       if(!dt_iop_is_hidden(module))
       {
-        gtk_widget_destroy(module->expander);
         dt_iop_gui_cleanup_module(module);
+        gtk_widget_destroy(module->expander);
       }
 
       // we remove the module from the list
       dev->iop = g_list_remove_link(dev->iop, g_list_nth(dev->iop, i));
 
       // we cleanup the module
-      dt_accel_disconnect_list(&module->accel_closures);
-      dt_accel_cleanup_locals_iop(module);
-      dt_iop_cleanup_module(module);
+      dt_accel_cleanup_closures_iop(module);
+
       free(module);
     }
   }
@@ -935,7 +944,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
       if(!dt_iop_is_hidden(module))
       {
         module->gui_init(module);
-        dt_iop_reload_defaults(module);
 
         /* add module to right panel */
         GtkWidget *expander = dt_iop_gui_get_expander(module);
@@ -1023,7 +1031,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const uint32_t imgid)
   dt_iop_connect_accels_all();
 }
 
-static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
+static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
 {
   if(imgid > 0)
   {
@@ -1043,7 +1051,7 @@ static void dt_dev_jump_image(dt_develop_t *dev, int diff, gboolean by_key)
 {
   if(dev->image_loading) return;
 
-  const int imgid = dev->image_storage.id;
+  const int32_t imgid = dev->image_storage.id;
   int new_offset = 1;
   int new_id = -1;
 
@@ -1917,9 +1925,6 @@ static void _preference_changed(gpointer instance, gpointer user_data)
     gtk_widget_set_no_show_all(display_intent, TRUE);
     gtk_widget_set_visible(display_intent, FALSE);
   }
-
-  // reconstruct dynamic accels list
-  dt_dynamic_accel_get_valid_list();
 }
 
 static void _preference_prev_downsample_change(gpointer instance, gpointer user_data)
@@ -2190,7 +2195,7 @@ void gui_init(dt_view_t *self)
     /** let's fill the encapsulating widgets */
     /* mode of operation */
     GtkWidget *mode = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(mode, NULL, _("mode"));
+    dt_bauhaus_widget_set_label(mode, NULL, N_("mode"));
     dt_bauhaus_combobox_add(mode, _("mark with CFA color"));
     dt_bauhaus_combobox_add(mode, _("mark with solid color"));
     dt_bauhaus_combobox_add(mode, _("false color"));
@@ -2202,7 +2207,7 @@ void gui_init(dt_view_t *self)
 
     /* color scheme */
     GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(colorscheme, NULL, _("color scheme"));
+    dt_bauhaus_widget_set_label(colorscheme, NULL, N_("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "red"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "green"));
     dt_bauhaus_combobox_add(colorscheme, C_("solidcolor", "blue"));
@@ -2218,7 +2223,7 @@ void gui_init(dt_view_t *self)
     /* threshold */
     GtkWidget *threshold = dt_bauhaus_slider_new_with_range(NULL, 0.0, 2.0, 0.01, 1.0, 3);
     dt_bauhaus_slider_set(threshold, dev->rawoverexposed.threshold);
-    dt_bauhaus_widget_set_label(threshold, NULL, _("clipping threshold"));
+    dt_bauhaus_widget_set_label(threshold, NULL, N_("clipping threshold"));
     gtk_widget_set_tooltip_text(
         threshold, _("threshold of what shall be considered overexposed\n1.0 - white level\n0.0 - black level"));
     g_signal_connect(G_OBJECT(threshold), "value-changed", G_CALLBACK(rawoverexposed_threshold_callback), dev);
@@ -2254,7 +2259,7 @@ void gui_init(dt_view_t *self)
     /** let's fill the encapsulating widgets */
     /* preview mode */
     GtkWidget *mode = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(mode, NULL, _("clipping preview mode"));
+    dt_bauhaus_widget_set_label(mode, NULL, N_("clipping preview mode"));
     dt_bauhaus_combobox_add(mode, _("full gamut"));
     dt_bauhaus_combobox_add(mode, _("any RGB channel"));
     dt_bauhaus_combobox_add(mode, _("luminance only"));
@@ -2268,7 +2273,7 @@ void gui_init(dt_view_t *self)
 
     /* color scheme */
     GtkWidget *colorscheme = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(colorscheme, NULL, _("color scheme"));
+    dt_bauhaus_widget_set_label(colorscheme, NULL, N_("color scheme"));
     dt_bauhaus_combobox_add(colorscheme, _("black & white"));
     dt_bauhaus_combobox_add(colorscheme, _("red & blue"));
     dt_bauhaus_combobox_add(colorscheme, _("purple & green"));
@@ -2282,7 +2287,7 @@ void gui_init(dt_view_t *self)
     GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, -32., -4., 1., -12.69, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
     dt_bauhaus_slider_set_format(lower, "%+.2f EV");
-    dt_bauhaus_widget_set_label(lower, NULL, _("lower threshold"));
+    dt_bauhaus_widget_set_label(lower, NULL, N_("lower threshold"));
     gtk_widget_set_tooltip_text(lower, _("clipping threshold for the black point,\n"
                                          "in EV, relatively to white (0 EV).\n"
                                          "8 bits sRGB clips blacks at -12.69 EV,\n"
@@ -2299,7 +2304,7 @@ void gui_init(dt_view_t *self)
     GtkWidget *upper = dt_bauhaus_slider_new_with_range(NULL, 0.0, 100.0, 0.1, 99.99, 2);
     dt_bauhaus_slider_set(upper, dev->overexposed.upper);
     dt_bauhaus_slider_set_format(upper, "%.2f%%");
-    dt_bauhaus_widget_set_label(upper, NULL, _("upper threshold"));
+    dt_bauhaus_widget_set_label(upper, NULL, N_("upper threshold"));
     /* xgettext:no-c-format */
     gtk_widget_set_tooltip_text(upper, _("clipping threshold for the white point.\n"
                                          "100% is peak medium luminance."));
@@ -2355,7 +2360,7 @@ void gui_init(dt_view_t *self)
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
     GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(display_intent, NULL, _("display intent"));
+    dt_bauhaus_widget_set_label(display_intent, NULL, N_("display intent"));
     gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
     dt_bauhaus_combobox_add(display_intent, _("perceptual"));
     dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
@@ -2363,7 +2368,7 @@ void gui_init(dt_view_t *self)
     dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
     GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(display2_intent, NULL, _("preview display intent"));
+    dt_bauhaus_widget_set_label(display2_intent, NULL, N_("preview display intent"));
     gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
     dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
     dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
@@ -2382,10 +2387,10 @@ void gui_init(dt_view_t *self)
     GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new(NULL);
     GtkWidget *histogram_profile = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(softproof_profile, NULL, _("softproof profile"));
-    dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
-    dt_bauhaus_widget_set_label(display2_profile, NULL, _("preview display profile"));
-    dt_bauhaus_widget_set_label(histogram_profile, NULL, _("histogram profile"));
+    dt_bauhaus_widget_set_label(softproof_profile, NULL, N_("softproof profile"));
+    dt_bauhaus_widget_set_label(display_profile, NULL, N_("display profile"));
+    dt_bauhaus_widget_set_label(display2_profile, NULL, N_("preview display profile"));
+    dt_bauhaus_widget_set_label(histogram_profile, NULL, N_("histogram profile"));
     gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
@@ -2504,7 +2509,7 @@ void gui_init(dt_view_t *self)
 
     /** let's fill the encapsulating widget */
     GtkWidget *overlay_colors = dev->overlay_color.colors = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(overlay_colors, NULL, _("overlay color"));
+    dt_bauhaus_widget_set_label(overlay_colors, NULL, N_("overlay color"));
     dt_bauhaus_combobox_add(overlay_colors, _("gray"));
     dt_bauhaus_combobox_add(overlay_colors, _("red"));
     dt_bauhaus_combobox_add(overlay_colors, _("green"));
@@ -2532,24 +2537,39 @@ enum
 static const GtkTargetEntry _iop_target_list_internal[] = { { "iop", GTK_TARGET_SAME_WIDGET, DND_TARGET_IOP } };
 static const guint _iop_n_targets_internal = G_N_ELEMENTS(_iop_target_list_internal);
 
-static dt_iop_module_t *_get_dnd_dest_module(GtkBox *container, gint x, gint y)
+static dt_iop_module_t *_get_dnd_dest_module(GtkBox *container, gint x, gint y, dt_iop_module_t *module_src)
 {
   dt_iop_module_t *module_dest = NULL;
+
+  GtkAllocation allocation_w = {0};
+  gtk_widget_get_allocation(module_src->header, &allocation_w);
+  const int y_slop = allocation_w.height / 2;
+  // after source in pixelpipe, which is before it in the widgets list
+  gboolean after_src = TRUE;
 
   GtkWidget *widget_dest = NULL;
   GList *children = gtk_container_get_children(GTK_CONTAINER(container));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
     GtkWidget *w = GTK_WIDGET(l->data);
-
-    if(w && gtk_widget_is_visible(w))
+    if(w)
     {
-      GtkAllocation allocation_w = {0};
-      gtk_widget_get_allocation(w, &allocation_w);
-      if(y <= allocation_w.y + allocation_w.height + DT_PIXEL_APPLY_DPI(8) && y >= allocation_w.y - DT_PIXEL_APPLY_DPI(8))
+      if(w == module_src->expander) after_src = FALSE;
+      if(gtk_widget_is_visible(w))
       {
-        widget_dest = w;
-        break;
+        gtk_widget_get_allocation(w, &allocation_w);
+        // If dragging to later in the pixelpipe, we will insert after
+        // the destination module. If dragging to earlier in the
+        // pixelpipe, will insert before the destination module. This
+        // results in two code paths here and in our caller, but can
+        // handle all cases from inserting at the very start to the
+        // very end.
+        if((after_src && y <= allocation_w.y + y_slop) ||
+           (!after_src && y <= allocation_w.y + allocation_w.height + y_slop))
+        {
+          widget_dest = w;
+          break;
+        }
       }
     }
   }
@@ -2600,10 +2620,22 @@ static void _on_drag_begin(GtkWidget *widget, GdkDragContext *context, gpointer 
     {
       GtkAllocation allocation_w = {0};
       gtk_widget_get_allocation(module_src->header, &allocation_w);
+      // method from https://blog.gtk.org/2017/04/23/drag-and-drop-in-lists/
+      cairo_surface_t *surface = dt_cairo_image_surface_create(CAIRO_FORMAT_RGB24, allocation_w.width, allocation_w.height);
+      cairo_t *cr = cairo_create(surface);
 
-      GdkPixbuf *pixbuf = gdk_pixbuf_get_from_window(window, allocation_w.x, allocation_w.y,
-                                                     allocation_w.width, allocation_w.height);
-      gtk_drag_set_icon_pixbuf(context, pixbuf, allocation_w.width / 2, allocation_w.height / 2);
+      // hack to render not transparent
+      GtkStyleContext *style_context = gtk_widget_get_style_context(module_src->header);
+      gtk_style_context_add_class(style_context, "iop_drag_icon");
+      gtk_widget_draw(module_src->header, cr);
+      gtk_style_context_remove_class(style_context, "iop_drag_icon");
+
+      // FIXME: this centers the icon on the mouse -- instead translate such that the label doesn't jump when mouse down?
+      cairo_surface_set_device_offset(surface, -allocation_w.width * darktable.gui->ppd / 2, -allocation_w.height * darktable.gui->ppd / 2);
+      gtk_drag_set_icon_surface(context, surface);
+
+      cairo_destroy(cr);
+      cairo_surface_destroy(surface);
     }
   }
 }
@@ -2637,7 +2669,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   gboolean can_moved = FALSE;
   GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
   dt_iop_module_t *module_src = _get_dnd_source_module(container);
-  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y);
+  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y, module_src);
 
   if(module_src && module_dest && module_src != module_dest)
   {
@@ -2697,7 +2729,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
   int moved = 0;
   GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
   dt_iop_module_t *module_src = _get_dnd_source_module(container);
-  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y);
+  dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y, module_src);
 
   if(module_src && module_dest && module_src != module_dest)
   {
@@ -2889,8 +2921,6 @@ void enter(dt_view_t *self)
   /*
    * add IOP modules to plugin list
    */
-  // avoid triggering of events before plugin is ready:
-  ++darktable.gui->reset;
   char option[1024];
   GList *modules = g_list_last(dev->iop);
   while(modules)
@@ -2900,8 +2930,7 @@ void enter(dt_view_t *self)
     /* initialize gui if iop have one defined */
     if(!dt_iop_is_hidden(module))
     {
-      module->gui_init(module);
-      dt_iop_reload_defaults(module);
+      dt_iop_gui_init(module);
 
       /* add module to right panel */
       GtkWidget *expander = dt_iop_gui_get_expander(module);
@@ -2912,13 +2941,12 @@ void enter(dt_view_t *self)
         dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
       else
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
+
+      dt_iop_reload_defaults(module);
     }
 
     modules = g_list_previous(modules);
   }
-
-  // make signals work again:
-  --darktable.gui->reset;
 
   /* signal that darktable.develop is initialized and ready to be used */
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE);
@@ -3077,7 +3105,7 @@ void leave(dt_view_t *self)
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
 
-    dt_dev_cleanup_module_accels(module);
+    dt_accel_cleanup_closures_iop(module);
     module->accel_closures = NULL;
     dt_iop_cleanup_module(module);
     free(module);
@@ -3450,9 +3478,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
 
   int handled = 0;
   // dynamic accels
-  if(self->dynamic_accel_current && self->dynamic_accel_current->widget)
+  if(self->dynamic_accel_current)
   {
-    GtkWidget *widget = self->dynamic_accel_current->widget;
+    GtkWidget *widget = self->dynamic_accel_current;
     dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)DT_BAUHAUS_WIDGET(widget);
 
     if(w->type == DT_BAUHAUS_SLIDER)
@@ -3466,9 +3494,9 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
         multiplier = min_visible / fabsf(step);
 
       if(up)
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value + step * multiplier);
+        dt_bauhaus_slider_set(widget, value + step * multiplier);
       else
-        dt_bauhaus_slider_set(self->dynamic_accel_current->widget, value - step * multiplier);
+        dt_bauhaus_slider_set(widget, value - step * multiplier);
     }
     else
     {
@@ -3486,8 +3514,8 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       }
 
     }
-    g_signal_emit_by_name(G_OBJECT(self->dynamic_accel_current->widget), "value-changed");
-    dt_accel_widget_toast(self->dynamic_accel_current->widget);
+    g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
+    dt_accel_widget_toast(widget);
     return;
   }
   // masks
@@ -3955,9 +3983,6 @@ void connect_key_accels(dt_view_t *self)
   // change the precision for adjusting sliders with keyboard shortcuts
   closure = g_cclosure_new(G_CALLBACK(change_slider_accel_precision), (gpointer)self, NULL);
   dt_accel_connect_view(self, "change keyboard shortcut slider precision", closure);
-
-  // dynamics accels
-  dt_dynamic_accel_get_valid_list();
 }
 
 GSList *mouse_actions(const dt_view_t *self)
@@ -4104,7 +4129,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
 
     cairo_rectangle(cr, 0, 0, wd, ht);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_fill(cr);
 
     if(darktable.gui->show_focus_peaking)
@@ -4143,7 +4168,7 @@ static void second_window_expose(GtkWidget *widget, dt_develop_t *dev, cairo_t *
     // avoid to draw the 1px garbage that sometimes shows up in the preview :(
     cairo_rectangle(cr, 0, 0, wd - 1, ht - 1);
     cairo_set_source_surface(cr, surface, 0, 0);
-    cairo_pattern_set_filter(cairo_get_source(cr), darktable.gui->filter_image);
+    cairo_pattern_set_filter(cairo_get_source(cr), _get_filtering_level(dev));
     cairo_fill(cr);
     cairo_surface_destroy(surface);
     dt_pthread_mutex_unlock(mutex);
@@ -4429,8 +4454,8 @@ static gboolean _second_window_draw_callback(GtkWidget *widget, cairo_t *crf, dt
   int pointerx, pointery;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int32_t width = allocation.width;
-  int32_t height = allocation.height;
+  const int32_t width = allocation.width;
+  const int32_t height = allocation.height;
 
   dev->second_window.width = width;
   dev->second_window.height = height;

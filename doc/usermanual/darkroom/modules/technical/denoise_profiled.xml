@@ -1,0 +1,258 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="denoise_profiled">
+
+  <title>Denoise&nbsp;&ndash; profiled</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>denoise&nbsp;&ndash; profiled</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>denoise</primary>
+    <secondary>profiled</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>noise removal</primary>
+    <see>denoise</see>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module offers an easy to use and&nbsp;&ndash; at the same time&nbsp;&ndash;
+              highly efficient denoise operation. Under the hood it applies (your choice of) a
+              non-local means or edge-aware wavelet denoise algorithm with parameters
+              specifically profiled for certain camera models and ISO settings.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/denoise_profiled.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      The darktable team, with the help of many users, has measured noise profiles for various
+      cameras. Differentiated by ISO settings we evaluated how the noise statistics develop with
+      brightness for the three color channels. Our set of profiles covers well above 200 popular
+      camera models from all major manufacturers.
+    </para>
+
+    <para>
+      darktable stores noise profiles in an external json file. This file can be found in
+      <filename>$DARKTABLE/share/darktable/noiseprofile.json</filename> where
+      <filename>$DARKTABLE</filename> represents the darktable installation directory. The json
+      format is quite straightforward and explained in depth in
+      <ulink url="http://json.org/">json.org</ulink>. You can replace the default noise profiles
+      by your own ones and specify that file on the command line when starting darktable. For
+      more details see <xref linkend="darktable_commandline_parameters"/>. If you generate your
+      own noise profiles don't forget to share your results with the darktable team!
+    </para>
+
+    <para>
+      /!\ WARNING /!\
+      The darkroom zoomed out preview is not completely accurate. Always check your result at 100% zoom level!
+    </para>
+
+    <para>
+      Note that (almost) all sliders of this module can take values higher than their visible bounds
+      by entering values using Right-click and keyboard.
+    </para>
+
+    <sect5>
+      <title>profile</title>
+      <para>
+        Based on Exif data of your raw file, darktable will automatically determine the camera
+        model and ISO setting. If found in its database, the corresponding noise profile will be
+        used. If your image has an intermediate ISO value, the statistical properties will be
+        interpolated between the two closest datasets in the database, and this interpolated
+        setting will show up as the first line in the combo box. You also have the option to
+        manually overwrite this selection to suit your personal preferences better. The top-most
+        entry in the combo box brings you back to the profile darktable deems most suited.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>mode</title>
+      <para>
+        This module can eliminate noise by two different core algorithms. Both <quote>non-local
+        means</quote> and <quote>wavelet</quote> can tackle efficiently luma (lightness) noise
+        and chroma (color) noise.  <quote>wavelet</quote>  mode also lets you adjust the force
+        of the denoising depending on the noise coarseness. If needed
+        you can apply two instances of this module (see <xref linkend="multiple_instances"/>):
+        one instance to tackle luma noise with blend mode <quote>lightness</quote> or <quote>HSV
+        lightness</quote>, and another one to tackle chroma noise with blend mode
+        <quote>color</quote> or <quote>HSV color </quote>. An example of the use of two
+        instances with blending modes is available within the presets of this module. For more
+        information on blend modes have a look at <xref linkend="blending_operators"/>.
+        The module also offers an automatic mode for each algorithm. Automatic modes allow
+        to set module's parameters in an easier way, as it guesses several parameters from
+        the profile.
+        All sliders of this module can take values higher than their bounds if needed using Right-click.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>whitebalance-adaptive transform</title>
+      <para>
+        As white-balance amplifies the RGB channels differently, they exhibit
+        different noise levels. This checkbox makes the algorithm adaptive to white balance.
+        This option should be disabled on the second instance if you use a first instance
+        with a color blend mode.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>patch size</title>
+      <para>
+        This slider is only available if mode <quote>non-local means</quote> is selected. It
+        controls the size of the patches being matched when deciding which pixels to average
+        (see also <xref linkend="denoise_non_local_means"/>). Set this to higher values as the
+        noise gets higher. Beware that high values may smooth out small edges though.
+        Processing time will stay about the same.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>search radius</title>
+      <para>
+        This slider is only available if mode <quote>non-local means</quote> is selected. It
+        controls how far from a pixel the algorithm will try to find similar patches.
+        Increasing the value can give better results for very noisy images when coarse grain
+        noise is visible, but you should better use the scattering slider instead.
+        The processing time is hugely impacted by this parameter: it depends on the square of the
+        parameter. A lower value will make execution faster, a higher value will make it slower.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>scattering</title>
+      <para>
+        This slider is only available if mode <quote>non-local means</quote> is selected. Like
+        the search radius, it controls how far from a pixel the algorithm will try to find similar
+        patches, but does this without increasing the number of patches considered. As such,
+        processing time will stay about the same. Increasing the value will reduce coarse grain
+        noise, but may smooth local contrast. This slider is particularly effective to reduce
+        chroma noise.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>central pixel weight</title>
+      <para>
+        This slider is only available if mode <quote>non-local means</quote> or <quote>non-local means
+        auto</quote> is selected. It controls the amount of details which should be preserved by the
+        algorithm. It can be used as a way to control the amount of luma noise smoothing: giving a big
+        value to this slider will result mostly in chroma noise smoothing with little smoothing of luma
+        noise. This slider has no effect if patch-size is set to 0.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>coarse/fine curves</title>
+      <para>
+        <informaltable frame="none">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth="6*"/>
+            <colspec colwidth="4*"/>
+            <tbody>
+              <row>
+                <entry>
+                  These curves are only available if mode <quote>wavelet</quote> is selected.
+                  The noise of an image is usually not only fine grain, but also more or less
+                  coarse grain. These curves allow to denoise more or less depending on the
+                  coarseness of the visible noise. The left of the curve will act on very coarse
+                  grain noise, while the right of the curve will act on very fine grain noise.
+                  Pushing up the curve will result in more smoothing, pulling it down will
+                  result in less smoothing. As an example, you can preserve very-fine grain
+                  noise by pulling down the rightest point of the curve until the minimum value.
+                  As another example, if you are tackling chroma noise with a blend mode, you
+                  can push up the right part of the curve, as colors are not supposed to change
+                  a lot on fine grain scales: this will help especially if you see some isolated
+                  pixel left undenoised.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/denoise_profiled_ex1.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+      <para>
+        Considering R, G, and B curves, the best way to use them is to look at one of the
+        channel using the channel mixer module in gray mode, denoise this particular channel,
+        and then do the same for the other channels. This way, you can take into account the
+        fact that some channel may be noisier than others into your denoising. Be aware that
+        guessing which channel is noisy without actually seeing the channels individually is not
+        straightforward and can be counterintuitive: a pixel which is completely red may not be
+        caused by noise on the R channel, but actually by noise on B and G channels.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>strength</title>
+      <para>
+        This parameter is here to fine-tune the strength of the denoise effect. The default
+        value has been chosen to maximize the peak signal to noise ratio. It's mostly a matter
+        of taste if you prefer a rather low noise level at the costs of a higher loss of detail,
+        or if you accept more remaining noise in order to have finer structures better preserved
+        within your image.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>preserve shadows</title>
+      <para>
+        This option is available in <quote>wavelets</quote> and <quote>non local means</quote> modes.
+        It allows to denoise more agressively the shadows or the highlights. Lower the value to denoise
+        more the shadows than the highlights. Usually, as noise increases, you will need to lower this
+        value.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>bias correction</title>
+      <para>
+        This option is available in <quote>wavelets</quote> and <quote>non local means</quote> modes.
+        It allows to correct the color cast that may appear in the shadows. Increase this value
+        if dark shadows appear too greenish, decrease it if they appear purple-ish.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>adjust autoset parameters</title>
+      <para>
+        This option is available in <quote>auto</quote> modes. In these modes, darktable tries to
+        derive denoising parameters from the camera profile. Depending on your image the automatically
+        derived parameters may not be optimal. E.g. if your image is heavily underexposed and you lifted
+        the exposure, you will have to increase this parameter to get a proper denoising. This parameter
+        should reflect the amplification you add to your image: if you add 1EV of exposure, the signal
+        is multiplied by 2, so this parameter should be set to 2.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

@@ -1178,7 +1178,7 @@ gui_init (dt_lib_module_t *self)
 
   d->media = dt_bauhaus_combobox_new(NULL);
 
-  dt_bauhaus_widget_set_label(d->media, NULL, _("media"));
+  dt_bauhaus_widget_set_label(d->media, NULL, N_("media"));
 
   g_signal_connect(G_OBJECT(d->media), "value-changed", G_CALLBACK(_media_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
@@ -1186,7 +1186,7 @@ gui_init (dt_lib_module_t *self)
   //  Add printer profile combo
 
   d->pprofile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pprofile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(d->pprofile, NULL, N_("profile"));
 
   int combo_idx, n;
   GList *l = d->profiles;
@@ -1241,7 +1241,7 @@ gui_init (dt_lib_module_t *self)
   //  Add printer intent combo
 
   d->pintent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pintent, NULL, _("intent"));
+  dt_bauhaus_widget_set_label(d->pintent, NULL, N_("intent"));
   dt_bauhaus_combobox_add(d->pintent, _("perceptual"));
   dt_bauhaus_combobox_add(d->pintent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
@@ -1274,7 +1274,7 @@ gui_init (dt_lib_module_t *self)
 
   //// papers
 
-  dt_bauhaus_widget_set_label(d->papers, NULL, _("paper size"));
+  dt_bauhaus_widget_set_label(d->papers, NULL, N_("paper size"));
 
   g_signal_connect(G_OBJECT(d->papers), "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->papers), TRUE, TRUE, 0);
@@ -1282,7 +1282,7 @@ gui_init (dt_lib_module_t *self)
   //// portrait / landscape
 
   d->orientation = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->orientation, NULL, _("orientation"));
+  dt_bauhaus_widget_set_label(d->orientation, NULL, N_("orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
 
@@ -1406,7 +1406,7 @@ gui_init (dt_lib_module_t *self)
   //  Add export profile combo
 
   d->profile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->profile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(d->profile, NULL, N_("profile"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
@@ -1454,7 +1454,7 @@ gui_init (dt_lib_module_t *self)
   //  Add export intent combo
 
   d->intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
+  dt_bauhaus_widget_set_label(d->intent, NULL, N_("intent"));
 
   dt_bauhaus_combobox_add(d->intent, _("image settings"));
   dt_bauhaus_combobox_add(d->intent, _("perceptual"));
@@ -1470,7 +1470,7 @@ gui_init (dt_lib_module_t *self)
   //  Add export style combo
 
   d->style = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->style, NULL, _("style"));
+  dt_bauhaus_widget_set_label(d->style, NULL, N_("style"));
 
   dt_bauhaus_combobox_add(d->style, _("none"));
 
@@ -1513,7 +1513,7 @@ gui_init (dt_lib_module_t *self)
   //  Whether to add/replace style items
 
   d->style_mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->style_mode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(d->style_mode, NULL, N_("mode"));
 
   dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
   dt_bauhaus_combobox_add(d->style_mode, _("append history"));

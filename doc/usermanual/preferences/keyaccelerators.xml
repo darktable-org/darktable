@@ -118,18 +118,18 @@
 
      <sect3 id="shortcuts_categories_iop">
 
-        <title>image operations</title>
+        <title>processing modules</title>
 
         <para>
-           Shortcuts in this section are only applicable to the ‘image operations’ modules in the 
+           Shortcuts in this section are only applicable to the ‘processing’ modules in the 
            darktable view (i.e. those modules to the right of the edited image below the histogram and 
-           above the ‘module order’ module). A section is provided for each image operation module.
+           above the ‘module order’ module). A section is provided for each processing module.
         </para>
 
         <bridgehead renderas="sect5">common shortcuts</bridgehead>
 
         <para>
-           Every image operation module provides the following shortcuts by default
+           Every processing module provides the following shortcuts by default
         </para>
 
         <itemizedlist>
@@ -161,7 +161,7 @@
         <bridgehead renderas="sect5">sliders</bridgehead>
 
         <para>
-           All sliders in image operation modules can be edited via keyboard shortcuts (regardless of whether the 
+           All sliders in processing modules can be edited via keyboard shortcuts (regardless of whether the 
            module is currently shown or enabled). The following actions are provided:
         </para>
 
@@ -197,7 +197,7 @@
         <bridgehead renderas="sect5">comboboxes</bridgehead>
 
         <para>
-           As with sliders, all comboboxes in image operation modules can be edited via keyboard shortcuts. 
+           As with sliders, all comboboxes in processing modules can be edited via keyboard shortcuts. 
            The following actions are provided:
         </para>
 
@@ -225,7 +225,7 @@
         <bridgehead renderas="sect5">handling multiple module instances</bridgehead>
 
         <para>
-           It is possible to create multiple instances of many image operations modules. In this scenario 
+           It is possible to create multiple instances of many processing modules. In this scenario 
            it is not always obvious which instance should be controlled by keyboard shortcut operations. 
            Some additional options are present in the miscellaneous tab of the preferences dialog. 
            These options control rules that are applied (in order) to decide which module instance keyboard 
@@ -258,16 +258,15 @@
         
   <sect2 id="shortcuts_libs">
 
-     <title>modules</title>
+     <title>utility modules</title>
 
      <para>
-        Shortcuts in the modules section apply to what are known as library (or lib) modules. These are 
-        modules that are not used for image operations, may appear on either side of the screen and may 
-        apply to one or more views.
+        Shortcuts in the utility modules section apply to modules that are not used for image processing, may appear on either 
+        side of the screen and may apply to one or more views.
      </para>
 
      <para>
-        As with image operation modules, some shortcuts are provided by default:
+        As with processing modules, some shortcuts are provided by default:
      </para>
 
      <itemizedlist>

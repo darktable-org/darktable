@@ -222,49 +222,55 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2382
 msgid "enable extended thumb overlay"
-msgstr ""
+msgstr "开启扩展缩略图叠加"
 
 #: ../build/src/preferences_gen.h:2394
 msgid "if set to true, thumb overlay shows filename and some exif data."
-msgstr ""
+msgstr "如设置为是，缩略图叠加显示文件名及exif信息"
 
 #: ../build/src/preferences_gen.h:2402
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "在收藏面板中使用单击"
 
 #: ../build/src/preferences_gen.h:2414
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
+"启用此选项在收藏面板中使用单击选择项目。"
+"这将允许你对日期-时间和数值进行范围选择。"
 
 #: ../build/src/preferences_gen.h:2422
 msgid "expand a single lighttable module at a time"
-msgstr ""
+msgstr "一次只需展开一个光台"
 
 #: ../build/src/preferences_gen.h:2434
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
-msgstr ""
+msgstr "这个选项可以改变在lighttable模式下shift的点击行为"
 
 #: ../build/src/preferences_gen.h:2442
 msgid "scroll to lighttable modules when expanded/collapsed"
-msgstr ""
+msgstr "展开/折叠时滚动到lighttable模块"
 
 #: ../build/src/preferences_gen.h:2454 ../build/src/preferences_gen.h:2820
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
+"当启用该选项时，darktable将尝试将模块滚动到"
+"可见列表的顶部"
 
 #: ../build/src/preferences_gen.h:2462
 msgid "rating an image one star twice will not zero out the rating"
-msgstr ""
+msgstr "一张图片被评为一星两次不会清空评分"
 
 #: ../build/src/preferences_gen.h:2474
 msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
 msgstr ""
+"不要有手册中记载的一星评级行为--"
+"一张图片评级两次一星会导致零星评级"
 
 #: ../build/src/preferences_gen.h:2482 ../src/views/darkroom.c:110
 msgid "darkroom"
@@ -272,7 +278,7 @@ msgstr "暗房"
 
 #: ../build/src/preferences_gen.h:2491
 msgid "pen pressure control for brush masks"
-msgstr ""
+msgstr "画笔蒙版的笔压控制"
 
 #: ../build/src/preferences_gen.h:2502 ../build/src/preferences_gen.h:2542
 msgctxt "preferences"
@@ -313,7 +319,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:2553
 msgid "smoothing of brush strokes"
-msgstr ""
+msgstr "画笔描边平滑"
 
 #: ../build/src/preferences_gen.h:2564
 msgctxt "preferences"
@@ -335,10 +341,12 @@ msgid ""
 "sets level for smoothing of brush strokes. stronger smoothing leads to less "
 "nodes and easier editing but with lower control of accuracy."
 msgstr ""
+"设置画笔描边的平滑度，更强的平滑会导致更少的节点"
+"并更容易编辑，但精度控制会更低"
 
 #: ../build/src/preferences_gen.h:2600
 msgid "display of individual color channels"
-msgstr ""
+msgstr "显示单独的颜色通道"
 
 #: ../build/src/preferences_gen.h:2611 ../build/src/preferences_gen.h:2631
 msgctxt "preferences"
@@ -355,18 +363,19 @@ msgid ""
 "defines how color channels are displayed when activated in the parametric "
 "masks feature."
 msgstr ""
+"定义在参数蒙版功能启用时如何显示颜色通道"
 
 #: ../build/src/preferences_gen.h:2642
 msgid "pattern for the image infos line"
-msgstr ""
+msgstr "图像信息行的模式"
 
 #: ../build/src/preferences_gen.h:2658
 msgid "see manual to know all the tags you can use."
-msgstr ""
+msgstr "查看手册了解所有可用的标记"
 
 #: ../build/src/preferences_gen.h:2666
 msgid "position of the image infos line"
-msgstr ""
+msgstr "图像信息行的位置"
 
 #: ../build/src/preferences_gen.h:2677
 msgctxt "preferences"
@@ -395,26 +404,26 @@ msgstr "隐藏"
 
 #: ../build/src/preferences_gen.h:2722
 msgid "show search module text entry"
-msgstr ""
+msgstr "显示搜索模式文字条目"
 
 #: ../build/src/preferences_gen.h:2733
 msgctxt "preferences"
 msgid "show search text"
-msgstr ""
+msgstr "显示搜索文本"
 
 #: ../build/src/preferences_gen.h:2738
 msgctxt "preferences"
 msgid "show groups"
-msgstr ""
+msgstr "显示组"
 
 #: ../build/src/preferences_gen.h:2743 ../build/src/preferences_gen.h:2758
 msgctxt "preferences"
 msgid "show both"
-msgstr ""
+msgstr "显示两者"
 
 #: ../build/src/preferences_gen.h:2768
 msgid "expand a single darkroom module at a time"
-msgstr ""
+msgstr "一次展开一个暗房模式"
 
 #: ../build/src/preferences_gen.h:2777 ../build/src/preferences_gen.h:2817
 #: ../build/src/preferences_gen.h:2920 ../build/src/preferences_gen.h:2949
@@ -428,11 +437,11 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3794 ../build/src/preferences_gen.h:3917
 msgctxt "preferences"
 msgid "TRUE"
-msgstr ""
+msgstr "是"
 
 #: ../build/src/preferences_gen.h:2780
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
-msgstr ""
+msgstr "此选项可以定义shift+单击在暗房模式下的行为"
 
 #: ../build/src/preferences_gen.h:2788
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -634,7 +643,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3297
 msgctxt "preferences"
 msgid "no scrollbars"
-msgstr ""
+msgstr "无滚动条"
 
 #: ../build/src/preferences_gen.h:3302 ../build/src/preferences_gen.h:3322
 msgctxt "preferences"
@@ -648,11 +657,11 @@ msgstr "光台+暗房"
 
 #: ../build/src/preferences_gen.h:3325
 msgid "defines where scrollbars should be displayed"
-msgstr ""
+msgstr "定义滚动条显示位置"
 
 #: ../build/src/preferences_gen.h:3333
 msgid "always show panels' scrollbars"
-msgstr ""
+msgstr "总是显示面板滚动条"
 
 #: ../build/src/preferences_gen.h:3345
 msgid ""
@@ -672,12 +681,12 @@ msgstr "全部"
 #: ../build/src/preferences_gen.h:3369
 msgctxt "preferences"
 msgid "xatom"
-msgstr ""
+msgstr "xatom"
 
 #: ../build/src/preferences_gen.h:3374
 msgctxt "preferences"
 msgid "colord"
-msgstr ""
+msgstr "彩色"
 
 #: ../build/src/preferences_gen.h:3392
 msgid ""
@@ -739,7 +748,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:3514
 msgctxt "preferences"
 msgid "full (possibly slow)"
-msgstr ""
+msgstr "全部(可能会慢)"
 
 #: ../build/src/preferences_gen.h:3532
 msgid ""
@@ -824,7 +833,7 @@ msgstr "这些冗余文件以后可重新导入进其他数据库，并保留您
 
 #: ../build/src/preferences_gen.h:3681
 msgid "store xmp tags in compressed format"
-msgstr ""
+msgstr "压缩格式中存储xmp标记"
 
 #: ../build/src/preferences_gen.h:3702 ../build/src/preferences_gen.h:3717
 msgctxt "preferences"
@@ -850,7 +859,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3748
 msgid "cpu / gpu / memory"
-msgstr ""
+msgstr "cpu / gpu / memory"
 
 #: ../build/src/preferences_gen.h:3757
 msgid "memory in megabytes to use for thumbnail cache"
@@ -954,7 +963,7 @@ msgstr "当前系统不可用"
 
 #: ../build/src/preferences_gen.h:3936
 msgid "OpenCL scheduling profile"
-msgstr ""
+msgstr "OpenCL计划配置"
 
 #. Adding the restore defaults button
 #: ../build/src/preferences_gen.h:3947 ../build/src/preferences_gen.h:3972
@@ -996,7 +1005,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4020
 msgid "disable the entry completion"
-msgstr ""
+msgstr "禁用条目完成"
 
 #: ../build/src/preferences_gen.h:4032
 msgid ""
@@ -1069,7 +1078,7 @@ msgstr "会话选项"
 
 #: ../build/src/preferences_gen.h:4167
 msgid "base directory naming pattern"
-msgstr ""
+msgstr "基于目录命名模式"
 
 #: ../build/src/preferences_gen.h:4183 ../build/src/preferences_gen.h:4207
 msgid "part of full import path for an import session"
@@ -1077,15 +1086,15 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4191
 msgid "sub directory naming pattern"
-msgstr ""
+msgstr "子目录命名模式"
 
 #: ../build/src/preferences_gen.h:4215
 msgid "file naming pattern"
-msgstr "文件名模式"
+msgstr "文件命名模式"
 
 #: ../build/src/preferences_gen.h:4231
 msgid "file naming pattern used for a import session"
-msgstr ""
+msgstr "导入会话使用文件命名模式"
 
 #: ../data/darktable.appdata.xml.in.h:2
 msgid ""
@@ -1298,7 +1307,7 @@ msgstr[0] "已选 %d 张图像，当前集合共 %d 张图像"
 #: ../src/common/colorspaces.c:968 ../src/iop/colorin.c:2108
 #: ../src/iop/lut3d.c:1118
 msgid "sRGB"
-msgstr ""
+msgstr "sRGB"
 
 #. this is only used in error messages, no need for the (...) description
 #: ../src/common/colorspaces.c:969 ../src/common/colorspaces.c:1274

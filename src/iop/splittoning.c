@@ -97,32 +97,14 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+const char *description(struct dt_iop_module_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick primary color"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick secondary color"), 0, 0);
-
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows-saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-hue"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights-saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "balance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_button_iop(self, "pick primary color", GTK_WIDGET(g->shadow_colorpick));
-  dt_accel_connect_button_iop(self, "pick secondary color", GTK_WIDGET(g->highlight_colorpick));
-
-  dt_accel_connect_slider_iop(self, "shadows-hue", GTK_WIDGET(g->shadow_hue_gslider));
-  dt_accel_connect_slider_iop(self, "shadows-saturation", GTK_WIDGET(g->shadow_sat_gslider));
-  dt_accel_connect_slider_iop(self, "highlights-hue", GTK_WIDGET(g->highlight_hue_gslider));
-  dt_accel_connect_slider_iop(self, "highlights-saturation", GTK_WIDGET(g->highlight_sat_gslider));
-  dt_accel_connect_slider_iop(self, "balance", GTK_WIDGET(g->balance_scale));
-  dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress_scale));
+  return dt_iop_set_description(self, _("use two specific colors for shadows and highlights and\n"
+                                        "create a linear toning effect between them up to a pivot."),
+                                      _("creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 void init_presets(dt_iop_module_so_t *self)
@@ -136,7 +118,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic sepia"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 26.0 / 360.0, 92.0 / 100.0, 40.0 / 360.0, 92.0 / 100.0, 0.63, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows: #446CBB
   // highlights: #446CBB
@@ -145,7 +127,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic cyanotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 220.0 / 360.0, 64.0 / 100.0, 220.0 / 360.0, 64.0 / 100.0, 0.0, 5.22 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows : #A16C5E
   // highlights : #A16C5E
@@ -154,7 +136,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("authentic platinotype"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 13.0 / 360.0, 42.0 / 100.0, 13.0 / 360.0, 42.0 / 100.0, 100.0, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // shadows: #211A14
   // highlights: #D9D0C7
@@ -163,7 +145,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_gui_presets_add_generic(
       _("chocolate brown"), self->op, self->version(),
       &(dt_iop_splittoning_params_t){ 28.0 / 360.0, 39.0 / 100.0, 28.0 / 360.0, 8.0 / 100.0, 0.60, 0.0 },
-      sizeof(dt_iop_splittoning_params_t), 1);
+      sizeof(dt_iop_splittoning_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
@@ -171,52 +153,51 @@ void init_presets(dt_iop_module_so_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_splittoning_data_t *data = (dt_iop_splittoning_data_t *)piece->data;
-  float *in;
-  float *out;
-  const int ch = piece->colors;
-
+  assert(piece->colors == 4);
+  const dt_iop_splittoning_data_t *const data = (dt_iop_splittoning_data_t *)piece->data;
   const float compress = (data->compress / 110.0) / 2.0; // Don't allow 100% compression..
+
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  const int npixels = roi_out->width * roi_out->height;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, compress, ivoid, ovoid, roi_out) \
-  shared(data) \
-  private(in, out) \
+  dt_omp_firstprivate(compress, npixels)  \
+  dt_omp_sharedconst(data, in, out) \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(int k = 0; k < 4 * npixels; k += 4)
   {
-    in = ((float *)ivoid) + (size_t)ch * k * roi_out->width;
-    out = ((float *)ovoid) + (size_t)ch * k * roi_out->width;
-    for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+    float h, s, l;
+    rgb2hsl(in+k, &h, &s, &l);
+    if(l < data->balance - compress || l > data->balance + compress)
     {
-      double ra, la;
-      float mixrgb[3];
-      float h, s, l;
-      rgb2hsl(in, &h, &s, &l);
-      if(l < data->balance - compress || l > data->balance + compress)
-      {
-        h = l < data->balance ? data->shadow_hue : data->highlight_hue;
-        s = l < data->balance ? data->shadow_saturation : data->highlight_saturation;
-        ra = l < data->balance ? CLIP((fabs(-data->balance + compress + l) * 2.0))
+      h = l < data->balance ? data->shadow_hue : data->highlight_hue;
+      s = l < data->balance ? data->shadow_saturation : data->highlight_saturation;
+      const double ra = l < data->balance ? CLIP((fabs(-data->balance + compress + l) * 2.0))
                                : CLIP((fabs(-data->balance - compress + l) * 2.0));
-        la = (1.0 - ra);
+      const double la = (1.0 - ra);
 
-        hsl2rgb(mixrgb, h, s, l);
+      float DT_ALIGNED_PIXEL mixrgb[3];
+      hsl2rgb(mixrgb, h, s, l);
 
-        out[0] = CLIP(in[0] * la + mixrgb[0] * ra);
-        out[1] = CLIP(in[1] * la + mixrgb[1] * ra);
-        out[2] = CLIP(in[2] * la + mixrgb[2] * ra);
-      }
-      else
-      {
-        out[0] = in[0];
-        out[1] = in[1];
-        out[2] = in[2];
-      }
-
-      out[3] = in[3];
+      out[k+0] = CLIP(in[k+0] * la + mixrgb[0] * ra);
+      out[k+1] = CLIP(in[k+1] * la + mixrgb[1] * ra);
+      out[k+2] = CLIP(in[k+2] * la + mixrgb[2] * ra);
+      out[k+3] = in[k+3];
     }
+    else
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(in, out)
+#endif
+      for(int c = 0; c < 4; c++)
+      {
+        out[k+c] = in[k+c];
+      }
+    }
+
   }
 }
 
@@ -449,7 +430,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_splittoning_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -460,9 +440,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_splittoning_gui_data_t *g = (dt_iop_splittoning_gui_data_t *)self->gui_data;
-  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)module->params;
+  dt_iop_splittoning_params_t *p = (dt_iop_splittoning_params_t *)self->params;
 
   dt_bauhaus_slider_set(g->shadow_hue_gslider, p->shadow_hue);
   dt_bauhaus_slider_set(g->shadow_sat_gslider, p->shadow_saturation);
@@ -482,7 +461,7 @@ void gui_update(struct dt_iop_module_t *self)
 static inline void gui_init_section(struct dt_iop_module_t *self, char *section, GtkWidget *slider_box,
                                     GtkWidget *hue, GtkWidget *saturation, GtkWidget **picker, gboolean top)
 {
-  GtkWidget *label = dt_ui_section_label_new(section);
+  GtkWidget *label = dt_ui_section_label_new(_(section));
 
   if(top)
   {
@@ -492,6 +471,7 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
 
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, FALSE, 0);
 
+  dt_bauhaus_widget_set_label(hue, section, N_("hue"));
   dt_bauhaus_slider_set_feedback(hue, 0);
   dt_bauhaus_slider_set_stop(hue, 0.0f  , 1.0f, 0.0f, 0.0f);
   dt_bauhaus_slider_set_stop(hue, 0.166f, 1.0f, 1.0f, 0.0f);
@@ -503,6 +483,7 @@ static inline void gui_init_section(struct dt_iop_module_t *self, char *section,
   gtk_widget_set_tooltip_text(hue, _("select the hue tone"));
   dt_color_picker_new(self, DT_COLOR_PICKER_POINT, hue);
 
+  dt_bauhaus_widget_set_label(saturation, section, N_("saturation"));
   dt_bauhaus_slider_set_stop(saturation, 0.0f, 0.2f, 0.2f, 0.2f);
   dt_bauhaus_slider_set_stop(saturation, 1.0f, 1.0f, 1.0f, 1.0f);
   gtk_widget_set_tooltip_text(saturation, _("select the saturation tone"));
@@ -522,6 +503,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_splittoning_gui_data_t *g = IOP_GUI_ALLOC(splittoning);
 
+  ++darktable.bauhaus->skip_accel;
   GtkWidget *shadows_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   g->shadow_hue_gslider = dt_bauhaus_slider_from_params(self, "shadow_hue");
   g->shadow_sat_gslider = dt_bauhaus_slider_from_params(self, "shadow_saturation");
@@ -529,13 +511,14 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *highlights_box = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   g->highlight_hue_gslider = dt_bauhaus_slider_from_params(self, "highlight_hue");
   g->highlight_sat_gslider = dt_bauhaus_slider_from_params(self, "highlight_saturation");
+  --darktable.bauhaus->skip_accel;
 
   // start building top level widget
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  gui_init_section(self, _("shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick, TRUE);
+  gui_init_section(self, N_("shadows"), shadows_box, g->shadow_hue_gslider, g->shadow_sat_gslider, &g->shadow_colorpick, TRUE);
 
-  gui_init_section(self, _("highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick, FALSE);
+  gui_init_section(self, N_("highlights"), highlights_box, g->highlight_hue_gslider, g->highlight_sat_gslider, &g->highlight_colorpick, FALSE);
 
   // Additional parameters
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("properties")), FALSE, FALSE, 0);

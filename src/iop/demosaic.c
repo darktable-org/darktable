@@ -170,6 +170,15 @@ const char *name()
   return _("demosaic");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("reconstruct full RGB pixels from a sensor color filter array reading"),
+                                      _("mandatory"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
@@ -183,22 +192,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_RAW;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "edge threshold"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "color smoothing"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "match greens"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "edge threshold", GTK_WIDGET(g->median_thrs));
-  dt_accel_connect_combobox_iop(self, "color smoothing", GTK_WIDGET(g->color_smoothing));
-  dt_accel_connect_combobox_iop(self, "match greens", GTK_WIDGET(g->greeneq));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -418,7 +411,7 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, in, thr, width, maximum) \
   shared(out, oi, oj) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(size_t j = oj; j < height - 2; j += 2)
   {
@@ -468,7 +461,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
   dt_omp_firstprivate(g2_offset, height, in, width) \
   reduction(+ : sum1, sum2) \
   shared(oi, oj) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(size_t j = oj; j < (height - 1); j += 2)
   {
@@ -488,7 +481,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(g2_offset, height, in, width) \
   shared(out, oi, oj, gr_ratio) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(int j = oj; j < (height - 1); j += 2)
   {
@@ -2423,7 +2416,7 @@ static void passthrough_monochrome(float *out, const float *const in, dt_iop_roi
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(in, roi_out, roi_in) \
   shared(out) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -4944,7 +4937,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_demosaic_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -4996,7 +4988,7 @@ void gui_update(struct dt_iop_module_t *self)
      (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX))
     img->flags |= DT_IMAGE_MONOCHROME_BAYER;
   else
-    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;   
+    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
   const int mask_bw = dt_image_monochrome_flags(img);
   changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
 
@@ -5049,7 +5041,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
      (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX))
     img->flags |= DT_IMAGE_MONOCHROME_BAYER;
   else
-    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;   
+    img->flags &= ~DT_IMAGE_MONOCHROME_BAYER;
   const int mask_bw = dt_image_monochrome_flags(img);
   changed ^= img->flags & DT_IMAGE_MONOCHROME_BAYER;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);

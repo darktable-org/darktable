@@ -31,6 +31,7 @@
 #include "common/locallaplaciancl.h"
 #include "common/nvidia_gpus.h"
 #include "common/opencl_drivers_blacklist.h"
+#include "common/tea.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -192,7 +193,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
   char *devname = calloc(1024, sizeof(char));
   char *drvversion = calloc(1024, sizeof(char));
 
-  char *dtpath = calloc(PATH_MAX, sizeof(char));
+  char kerneldir[PATH_MAX] = { 0 };
   char *filename = calloc(PATH_MAX, sizeof(char));
   char *confentry = calloc(PATH_MAX, sizeof(char));
   char *binname = calloc(PATH_MAX, sizeof(char));
@@ -392,10 +393,11 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
     goto end;
   }
 
-  dt_loc_get_datadir(dtpath, PATH_MAX * sizeof(char));
-  snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "programs.conf", dtpath);
-  char kerneldir[PATH_MAX] = { 0 };
-  snprintf(kerneldir, sizeof(kerneldir), "%s" G_DIR_SEPARATOR_S "kernels", dtpath);
+  dt_loc_get_kerneldir(kerneldir, sizeof(kerneldir));
+  dt_print(DT_DEBUG_DEV, "kernel directory: %s\n", kerneldir);
+
+  snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "programs.conf", kerneldir);
+
   char *escapedkerneldir = NULL;
 #ifndef __APPLE__
   escapedkerneldir = g_strdup_printf("\"%s\"", kerneldir);
@@ -469,7 +471,7 @@ static int dt_opencl_device_init(dt_opencl_t *cl, const int dev, cl_device_id *d
         continue;
       }
 
-      snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, programname);
+      snprintf(filename, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s", kerneldir, programname);
       snprintf(binname, PATH_MAX * sizeof(char), "%s" G_DIR_SEPARATOR_S "%s.bin", cachedir, programname);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] compiling program `%s' ..\n", programname);
       int loaded_cached;
@@ -516,7 +518,6 @@ end:
   free(devname);
   free(drvversion);
 
-  free(dtpath);
   free(filename);
   free(confentry);
   free(binname);
@@ -950,30 +951,6 @@ static const char *dt_opencl_get_vendor_by_id(unsigned int id)
   return vendor;
 }
 
-#define TEA_ROUNDS 8
-static void encrypt_tea(unsigned int *arg)
-{
-  const unsigned int key[] = { 0xa341316c, 0xc8013ea4, 0xad90777d, 0x7e95761e };
-  unsigned int v0 = arg[0], v1 = arg[1];
-  unsigned int sum = 0;
-  unsigned int delta = 0x9e3779b9;
-  for(int i = 0; i < TEA_ROUNDS; i++)
-  {
-    sum += delta;
-    v0 += ((v1 << 4) + key[0]) ^ (v1 + sum) ^ ((v1 >> 5) + key[1]);
-    v1 += ((v0 << 4) + key[2]) ^ (v0 + sum) ^ ((v0 >> 5) + key[3]);
-  }
-  arg[0] = v0;
-  arg[1] = v1;
-}
-
-static float tpdf(unsigned int urandom)
-{
-  float frandom = (float)urandom / (float)0xFFFFFFFFu;
-
-  return (frandom < 0.5f ? (sqrtf(2.0f * frandom) - 1.0f) : (1.0f - sqrtf(2.0f * (1.0f - frandom))));
-}
-
 static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const size_t height, const int count, const float sigma)
 {
   const int bpp = 4 * sizeof(float);
@@ -985,7 +962,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
   buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
@@ -997,7 +974,7 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
 #endif
   for(size_t j = 0; j < height; j++)
   {
-    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j + dt_get_thread_num();
     size_t index = j * 4 * width;
     for(int i = 0; i < 4 * width; i++)
@@ -1040,13 +1017,13 @@ static float dt_opencl_benchmark_gpu(const int devid, const size_t width, const 
   double end = dt_get_wtime();
 
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free_cl(g);
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   dt_opencl_release_mem_object(dev_mem);
   return INFINITY;
 }
@@ -1060,7 +1037,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   const float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
   const float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
 
-  unsigned int *const tea_states = calloc(2 * dt_get_num_threads(), sizeof(unsigned int));
+  unsigned int *const tea_states = alloc_tea_states(dt_get_num_threads());
 
   buf = dt_alloc_align(64, width * height * bpp);
   if(buf == NULL) goto error;
@@ -1072,7 +1049,7 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
 #endif
   for(size_t j = 0; j < height; j++)
   {
-    unsigned int *tea_state = tea_states + 2 * dt_get_thread_num();
+    unsigned int *tea_state = get_tea_state(tea_states,dt_get_thread_num());
     tea_state[0] = j + dt_get_thread_num();
     size_t index = j * 4 * width;
     for(int i = 0; i < 4 * width; i++)
@@ -1103,13 +1080,13 @@ static float dt_opencl_benchmark_cpu(const size_t width, const size_t height, co
   double end = dt_get_wtime();
 
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return (end - start);
 
 error:
   dt_gaussian_free(g);
   dt_free_align(buf);
-  free(tea_states);
+  free_tea_states(tea_states);
   return INFINITY;
 }
 
@@ -1504,9 +1481,9 @@ static FILE *fopen_stat(const char *filename, struct stat *st)
 
 void dt_opencl_md5sum(const char **files, char **md5sums)
 {
-  char dtpath[PATH_MAX] = { 0 };
+  char kerneldir[PATH_MAX] = { 0 };
   char filename[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(dtpath, sizeof(dtpath));
+  dt_loc_get_kerneldir(kerneldir, sizeof(kerneldir));
 
   for(int n = 0; n < DT_OPENCL_MAX_INCLUDES; n++, files++, md5sums++)
   {
@@ -1516,7 +1493,7 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
       continue;
     }
 
-    snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "kernels" G_DIR_SEPARATOR_S "%s", dtpath, *files);
+    snprintf(filename, sizeof(filename), "%s" G_DIR_SEPARATOR_S "%s", kerneldir, *files);
 
     struct stat filestat;
     FILE *f = fopen_stat(filename, &filestat);
@@ -1555,7 +1532,6 @@ void dt_opencl_md5sum(const char **files, char **md5sums)
     free(file);
   }
 }
-
 
 int dt_opencl_load_program(const int dev, const int prog, const char *filename, const char *binname,
                            const char *cachedir, char *md5sum, char **includemd5, int *loaded_cached)

@@ -235,7 +235,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
     goto cleanup;
   if((thumb_width < 32) || (thumb_height < 32) || (tmp == NULL))
     goto cleanup;
- 
+
   mono = TRUE;
   for(int y = 0; y < thumb_height; y++)
   {
@@ -245,7 +245,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
       if((in[0] != in[1]) || (in[0] != in[2]) || (in[1] != in[2]))
       {
         mono = FALSE;
-        goto cleanup;      
+        goto cleanup;
       }
     }
   }
@@ -550,6 +550,7 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
     img->buf_dsc.cst = iop_cs_rgb; // jpeg is always RGB
     img->buf_dsc.filters = 0u;
     img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
     img->flags &= ~DT_IMAGE_HDR;
     img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_JPEG;
@@ -561,10 +562,9 @@ dt_imageio_retval_t dt_imageio_open_ldr(dt_image_t *img, const char *filename, d
   {
     // cst is set by dt_imageio_open_tiff()
     img->buf_dsc.filters = 0u;
+    // TIFF can be HDR or LDR. corresponding flags are set in dt_imageio_open_tiff()
     img->flags &= ~DT_IMAGE_RAW;
-    img->flags &= ~DT_IMAGE_HDR;
     img->flags &= ~DT_IMAGE_S_RAW;
-    img->flags |= DT_IMAGE_LDR;
     img->loader = LOADER_TIFF;
     return ret;
   }
@@ -629,7 +629,7 @@ void dt_imageio_to_fractional(float in, uint32_t *num, uint32_t *den)
   }
 }
 
-int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_module_format_t *format,
+int dt_imageio_export(const int32_t imgid, const char *filename, dt_imageio_module_format_t *format,
                       dt_imageio_module_data_t *format_params, const gboolean high_quality, const gboolean upscale,
                       const gboolean copy_metadata, const gboolean export_masks,
                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
@@ -647,7 +647,7 @@ int dt_imageio_export(const uint32_t imgid, const char *filename, dt_imageio_mod
 }
 
 // internal function: to avoid exif blob reading + 8-bit byteorder flag + high-quality override
-int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
+int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  dt_imageio_module_format_t *format, dt_imageio_module_data_t *format_params,
                                  const gboolean ignore_exif, const gboolean display_byteorder,
                                  const gboolean high_quality, const gboolean upscale, const gboolean thumbnail_export,
@@ -840,6 +840,21 @@ int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
 
     scale = fmin(width >  0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale,
                  height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale);
+
+    if (strcmp(dt_conf_get_string("plugins/lighttable/export/resizing"), "scaling") == 0)
+    {
+      // scaling
+      double scale_factor = 1;
+      double _num, _denum;
+      dt_imageio_resizing_factor_get_and_parsing(&_num, &_denum);
+
+      scale_factor = _num / _denum;
+
+      if (!thumbnail_export)
+      {
+        scale = fmin(scale_factor, max_scale);
+      }
+    }
 
     processed_width = scale * pipe.processed_width + 0.8f;
     processed_height = scale * pipe.processed_height + 0.8f;

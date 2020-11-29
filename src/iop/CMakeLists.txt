@@ -1,4 +1,4 @@
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../")
+include_directories("${DARKTABLE_BINDIR}")
 
 include(manage-symbol-visibility)
 
@@ -47,7 +47,7 @@ macro (add_iop _lib _src)
                             INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
   endif(WIN32)
 
-  install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
+  install(TARGETS ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
 
   list(APPEND _iop_list ${_lib})
 
@@ -142,6 +142,7 @@ endif(GMIC_FOUND)
 add_iop(toneequal "toneequal.c" DEFAULT_VISIBLE)
 add_iop(filmicrgb "filmicrgb.c")
 add_iop(negadoctor "negadoctor.c")
+add_iop(channelmixerrgb "channelmixerrgb.c")
 
 if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")

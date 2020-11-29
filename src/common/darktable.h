@@ -92,6 +92,18 @@ typedef unsigned int u_int;
 #  define dt_omp_firstprivate(...)
 # endif/* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
 
+#ifndef dt_omp_sharedconst
+#ifdef _OPENMP
+#if defined(__clang__) || __GNUC__ > 8
+# define dt_omp_sharedconst(...) shared(__VA_ARGS__)
+#else
+  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
+  //  'const' variables as shared
+# define dt_omp_sharedconst(var, ...)
+#endif
+#endif /* _OPENMP */
+#endif /* dt_omp_sharedconst */
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
@@ -124,7 +136,7 @@ typedef unsigned int u_int;
 // for signal debugging symbols
 #include "control/signal.h"
 
-#define DT_MODULE_VERSION 22 // version of dt's module interface
+#define DT_MODULE_VERSION 23 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
@@ -190,6 +202,14 @@ static inline int dt_version()
 #define STR(x) STR_HELPER(x)
 
 #define DT_IMAGE_DBLOCKS 64
+
+// If platform supports hardware-accelerated fused-multiply-add
+// This is not only faster but more accurate because rounding happens at the right place
+#ifdef FP_FAST_FMAF
+  #define DT_FMA(x, y, z) fmaf(x, y, z)
+#else
+  #define DT_FMA(x, y, z) ((x) * (y) + (z))
+#endif
 
 struct dt_gui_gtk_t;
 struct dt_control_t;
@@ -279,6 +299,7 @@ typedef struct darktable_t
   dt_pthread_mutex_t readFile_mutex;
   char *progname;
   char *datadir;
+  char *sharedir;
   char *plugindir;
   char *localedir;
   char *tmpdir;
@@ -305,7 +326,12 @@ void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
+
 void *dt_alloc_align(size_t alignment, size_t size);
+static inline void * dt_alloc_align_float(size_t pixels)
+{
+  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+}
 size_t dt_round_size(const size_t size, const size_t alignment);
 size_t dt_round_size_sse(const size_t size);
 
@@ -317,17 +343,17 @@ void dt_free_align(void *mem);
 #define dt_free_align_ptr free
 #endif
 
-static inline void dt_lock_image(uint32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image(int32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_lock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_unlock_image(uint32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image(int32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_lock_image_pair(uint32_t imgid1, uint32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image_pair(int32_t imgid1, int32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   if(imgid1 < imgid2)
   {
@@ -341,7 +367,7 @@ static inline void dt_lock_image_pair(uint32_t imgid1, uint32_t imgid2) ACQUIRE(
   }
 }
 
-static inline void dt_unlock_image_pair(uint32_t imgid1, uint32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image_pair(int32_t imgid1, int32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));

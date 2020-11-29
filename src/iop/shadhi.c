@@ -193,6 +193,16 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("modify the tonal range of the shadows and highlights\n"
+                                        "of an image by enhancing local contrast."),
+                                      _("corrective and creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
@@ -270,34 +280,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   }
   return 1;
 }
-
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point adjustment"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows color correction"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights color correction"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "soften with"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->shadows));
-  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
-  dt_accel_connect_slider_iop(self, "white point adjustment", GTK_WIDGET(g->whitepoint));
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress));
-  dt_accel_connect_slider_iop(self, "shadows color correction", GTK_WIDGET(g->shadows_ccorrect));
-  dt_accel_connect_slider_iop(self, "highlights color correction", GTK_WIDGET(g->highlights_ccorrect));
-  dt_accel_connect_combobox_iop(self, "soften with", GTK_WIDGET(g->shadhi_algo));
-}
-
 
 
 static inline void _Lab_scale(const float *i, float *o)
@@ -682,7 +664,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_shadhi_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -693,9 +674,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)module->params;
+  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
   dt_bauhaus_slider_set(g->shadows, p->shadows);
   dt_bauhaus_slider_set(g->highlights, p->highlights);
   dt_bauhaus_slider_set(g->whitepoint, p->whitepoint);

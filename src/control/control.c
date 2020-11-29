@@ -191,11 +191,6 @@ void dt_control_cleanup(dt_control_t *s)
   {
     g_slist_free_full(s->accelerator_list, g_free);
   }
-  if(s->dynamic_accelerator_list)
-  {
-    g_slist_free(s->dynamic_accelerator_valid);
-    g_slist_free_full(s->dynamic_accelerator_list, g_free);
-  }
 }
 
 
@@ -711,25 +706,6 @@ int dt_control_key_pressed_override(guint key, guint state)
 
   /* check if key accelerators are enabled*/
   if(darktable.control->key_accelerators_on != 1) return 0;
-
-  // dynamic accels
-  darktable.view_manager->current_view->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
-  if(darktable.view_manager->current_view->dynamic_accel_current)
-  {
-    gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->translated_path, "/", -1);
-    dt_iop_module_so_t *mod_so = darktable.view_manager->current_view->dynamic_accel_current->mod_so;
-    dt_iop_module_t *mod = dt_iop_get_module_accel_curr(mod_so);
-    if(vals[0] && vals[1] && vals[2] && vals[3])
-    {
-      gchar *txt = dt_util_dstrcat(NULL, _("scroll to change <b>%s</b> of %s %s module"), vals[3], vals[2], mod->multi_name);
-      dt_control_hinter_message(darktable.control, txt);
-      g_free(txt);
-    }
-    else
-      dt_control_hinter_message(darktable.control, "");
-    g_strfreev(vals);
-    return 1;
-  }
 
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
   {

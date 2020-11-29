@@ -120,7 +120,12 @@ const char *name()
 int flags()
 {
   return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_ALLOW_TILING
-         | IOP_FLAGS_PREVIEW_NON_OPENCL;
+         | IOP_FLAGS_PREVIEW_NON_OPENCL | IOP_FLAGS_DEPRECATED;
+}
+
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use tone equalizer module instead.");
 }
 
 int default_group()
@@ -334,7 +339,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out, size) \
-  schedule(static)
+  schedule(static) collapse(2)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
@@ -459,7 +464,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_zonesystem_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

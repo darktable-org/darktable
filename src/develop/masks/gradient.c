@@ -280,8 +280,10 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     const float yref = gpt->points[1];
 
     float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 4);
 
-    const float dv = atan2(pts[3] - pts[1], pts[2] - pts[0]) - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
+    const float dv = atan2(pts[3] - pts[1], pts[2] - pts[0])
+      - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
 
     gradient->rotation -= dv / M_PI * 180.0f;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -322,29 +324,40 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
   }
   else if(gui->creation)
   {
+    const float pr_d = darktable.develop->preview_downsampling;
     const float wd = darktable.develop->preview_pipe->backbuf_width;
     const float ht = darktable.develop->preview_pipe->backbuf_height;
 
     // get the rotation angle only if we are not too close from starting point
-    dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+    const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1 << closeup, 1);
-    const float diff = 5.0f * zoom_scale;
+    const float diff = 3.0f * zoom_scale * (pr_d / 2.0);
     float x0 = 0.0f, y0 = 0.0f;
-    float rotation = 0.0f;
+
+    float dx = 0.0f, dy = 0.0f;
+
     if(!gui->form_dragging
-       || (gui->posx_source - gui->posx > -diff && gui->posx_source - gui->posx < diff
-           && gui->posy_source - gui->posy > -diff && gui->posy_source - gui->posy < diff))
+       || (gui->posx_source - gui->posx > -diff
+           && gui->posx_source - gui->posx < diff
+           && gui->posy_source - gui->posy > -diff
+           && gui->posy_source - gui->posy < diff))
     {
-      rotation = -1.0f;
       x0 = pzx * wd;
       y0 = pzy * ht;
+      // rotation not updated and not yet dragged, in this case let's
+      // pretend that we are using a neutral dx, dy (where the rotation will
+      // still be unchanged). We do that as we don't know the actual rotation
+      // because those points must go through the backtransform.
+      dx = x0 + 100.0f;
+      dy = y0;
     }
     else
     {
-      rotation = 99.0f; // dummy value, we need to recompute after distort_backtransform
       x0 = gui->posx_source;
       y0 = gui->posy_source;
+      dx = pzx * wd;
+      dy = pzy * ht;
     }
 
     gui->form_dragging = FALSE;
@@ -353,12 +366,23 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
-    float pts[8] = { x0, y0, pzx * wd, pzy * ht, x0 - 100, y0 -100, x0 + 100, y0 + 100 };
+    float pts[8] = { x0, y0, dx, dy, x0+10.0f, y0, x0, y0+10.0f };
     dt_dev_distort_backtransform(darktable.develop, pts, 4);
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
-    rotation = atan2(pts[7] - pts[5], pts[6] - pts[4]) - atan2(200, 200);
+    float rotation = atan2(pts[3] - pts[1], pts[2] - pts[0]);
+    // If the transform has flipped the image about one axis, then the
+    // 'handedness' of the coordinate system is changed. In this case the
+    // rotation angle must be offset by 180 degrees so that the gradient points
+    // in the correct direction as dragged. We test for this by checking the
+    // angle between two vectors that should be 90 degrees apart. If the angle
+    // is -90 degrees, then the image is flipped.
+    float check_angle = atan2(pts[7] - pts[1], pts[6] - pts[0]) - atan2(pts[5] - pts[1], pts[4] - pts[0]);
+    // Normalize to the range -180 to 180 degrees
+    check_angle = atan2(sin(check_angle), cos(check_angle));
+    if (check_angle < 0)
+      rotation -= M_PI;
 
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
 
@@ -423,10 +447,10 @@ static int dt_gradient_events_mouse_moved(struct dt_iop_module_t *module, float 
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    const float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
-    int in, inb, near, ins;
+    const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;  // transformed to backbuf dimensions
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
+    int in, inb, near, ins;
     dt_gradient_get_distance(x, y, as, gui, index, &in, &inb, &near, &ins);
 
     const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -497,16 +521,16 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   // preview gradient creation
   if(gui->creation)
   {
-    const float pr_dn = darktable.develop->preview_downsampling;
-    const float iwd = pr_dn * darktable.develop->preview_pipe->iwidth;
-    const float iht = pr_dn * darktable.develop->preview_pipe->iheight;
+    const float pr_d = darktable.develop->preview_downsampling;
+    const float iwd = pr_d * darktable.develop->preview_pipe->iwidth;
+    const float iht = pr_d * darktable.develop->preview_pipe->iheight;
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
     const float distance = 0.1f * MIN(iwd, iht);
     const float scale = sqrtf(iwd * iwd + iht * iht);
-
-    float xpos = 0.0f, ypos = 0.0f, xpos0 = 0.0f, ypos0 = 0.0f;
     const float zoom_x = dt_control_get_dev_zoom_x();
     const float zoom_y = dt_control_get_dev_zoom_y();
+
+    float xpos = 0.0f, ypos = 0.0f, xpos0 = 0.0f, ypos0 = 0.0f;
     if((gui->posx == -1.0f && gui->posy == -1.0f) || gui->mouse_leaved_center)
     {
       xpos = (.5f + zoom_x) * darktable.develop->preview_pipe->backbuf_width;
@@ -519,11 +543,13 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     }
 
     // get the rotation angle only if we are not too close from starting point
-    const float diff = 5.0f * zoom_scale;
+    const float diff = 3.0f * zoom_scale * (pr_d / 2.0);
     float rotation = 0.0f;
     if(!gui->form_dragging
-       || (gui->posx_source - gui->posx > -diff && gui->posx_source - gui->posx < diff
-           && gui->posy_source - gui->posy > -diff && gui->posy_source - gui->posy < diff))
+       || (gui->posx_source - gui->posx > -diff
+           && gui->posx_source - gui->posx < diff
+           && gui->posy_source - gui->posy > -diff
+           && gui->posy_source - gui->posy < diff))
     {
       rotation = 0.0f;
       xpos0 = xpos;
@@ -552,15 +578,12 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     cairo_stroke(cr);
 
     // draw the arrow
-    float anchor_x = 0.0f, anchor_y = 0.0f;
-    float pivot_start_x = 0.0f, pivot_start_y = 0.0f;
-    float pivot_end_x = 0.0f, pivot_end_y = 0.0f;
-    anchor_x = xpos0;
-    anchor_y = ypos0;
-    pivot_start_x = xpos0 + sinf(rotation) * distance;
-    pivot_end_x = xpos0 - sinf(rotation) * distance;
-    pivot_start_y = ypos0 - cosf(rotation) * distance;
-    pivot_end_y = ypos0 + cosf(rotation) * distance;
+    const float anchor_x = xpos0;
+    const float anchor_y = ypos0;
+    float pivot_start_x = xpos0 + sinf(rotation) * distance;
+    float pivot_end_x = xpos0 - sinf(rotation) * distance;
+    float pivot_start_y = ypos0 - cosf(rotation) * distance;
+    float pivot_end_y = ypos0 + cosf(rotation) * distance;
     cairo_set_dash(cr, dashed, 0, 0);
     cairo_set_line_width(cr, 2.0 / zoom_scale);
     dt_draw_set_color_overlay(cr, 0.3, 0.8);
@@ -1088,7 +1111,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(grid, gh, gw, px, py) \
-  shared(points)
+  shared(points) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1145,7 +1168,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
-  shared(lut)
+  shared(lut) schedule(static)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1165,7 +1188,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
-  shared(points, clut)
+  shared(points, clut) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1203,7 +1226,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, w, gw, grid) \
-  shared(buffer, points)
+  shared(buffer, points) schedule(static)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif
@@ -1259,7 +1282,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(iscale, gh, gw, py, px, grid) \
-  shared(points)
+  shared(points) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1319,7 +1342,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
-  shared(lut)
+  shared(lut) schedule(static)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1338,7 +1361,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
-  shared(points, clut)
+  shared(points, clut) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1367,7 +1390,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, w, grid, gw) \
-  shared(buffer, points)
+  shared(buffer, points) schedule(static)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif

@@ -32,6 +32,7 @@
 #include "common/database.h"     // for dt_database_get
 #include "common/debug.h"        // for DT_DEBUG_SQLITE3_PREPARE_V2
 #include "common/mipmap_cache.h" // for dt_mipmap_size_t, etc
+#include "common/file_location.h"
 #include "common/history.h"      // for dt_history_hash_set_mipmap
 #include "config.h"              // for GETTEXT_PACKAGE, etc
 #include "control/conf.h"        // for dt_conf_get_bool
@@ -145,7 +146,13 @@ int main(int argc, char *arg[])
 #ifdef __APPLE__
   dt_osx_prepare_environment();
 #endif
-  bindtextdomain(GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
+
+  // get valid locale dir
+  dt_loc_init(NULL, NULL, NULL, NULL, NULL, NULL);
+  char localedir[PATH_MAX] = { 0 };
+  dt_loc_get_localedir(localedir, sizeof(localedir));
+  bindtextdomain(GETTEXT_PACKAGE, localedir);
+
   bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
   textdomain(GETTEXT_PACKAGE);
 
@@ -167,7 +174,8 @@ int main(int argc, char *arg[])
     }
     else if(!strcmp(arg[k], "--version"))
     {
-      printf("this is darktable-generate-cache\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n");
+      printf("this is darktable-generate-cache %s\ncopyright (c) 2014 johannes hanika; 2015 LebedevRI\n",
+        darktable_package_version);
       exit(EXIT_FAILURE);
     }
     else if((!strcmp(arg[k], "-m") || !strcmp(arg[k], "--max-mip")) && argc > k + 1)

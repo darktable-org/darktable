@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#pragma once
+
 #include <assert.h>
 #include <math.h>
 #include <stdlib.h>

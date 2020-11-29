@@ -39,8 +39,6 @@
 
   <xi:include href="modulegroups.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-  <xi:include href="modules.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
 <!-- Bottom -->
 
   <xi:include href="bottom_panel.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

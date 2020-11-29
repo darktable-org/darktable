@@ -581,8 +581,9 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
     const double x = event->x_root;
     const double y = event->y_root;
     // we want the images to stay in the screen
-    const float valx = x - table->pan_x;
-    const float valy = y - table->pan_y;
+    const float scale = darktable.gui->ppd_thb / darktable.gui->ppd;
+    const float valx = (x - table->pan_x) * scale;
+    const float valy = (y - table->pan_y) * scale;
 
     if((event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
@@ -619,10 +620,12 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
       int iw = 0;
       int ih = 0;
       gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
+      const int mindx = iw * darktable.gui->ppd_thb - th->img_width;
+      const int mindy = ih * darktable.gui->ppd_thb - th->img_height;
       if(th->zoomx > 0) th->zoomx = 0;
-      if(th->zoomx < iw - th->img_width) th->zoomx = iw - th->img_width;
+      if(th->zoomx < mindx) th->zoomx = mindx;
       if(th->zoomy > 0) th->zoomy = 0;
-      if(th->zoomy < ih - th->img_height) th->zoomy = ih - th->img_height;
+      if(th->zoomy < mindy) th->zoomy = mindy;
       l = g_list_next(l);
     }
 
@@ -839,7 +842,6 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
                             G_CALLBACK(_dt_filmstrip_change), table);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_dt_selection_changed_callback), table);
-  gtk_widget_show(table->widget);
 
   g_object_ref(table->widget);
 
@@ -1530,6 +1532,29 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
 
   // we prefetch next/previous images
   _thumbs_prefetch(table);
+
+  // ensure one of the shown image as the focus (to avoid to keep focus to hidden image)
+  const int selid = dt_control_get_mouse_over_id();
+  if(selid >= 0)
+  {
+    gboolean in_list = FALSE;
+    l = table->list;
+    while(l)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+      if(thumb->imgid == selid)
+      {
+        in_list = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+    }
+    if(!in_list)
+    {
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+      dt_control_set_mouse_over_id(thumb->imgid);
+    }
+  }
 
   // be sure the focus is in the right widget (needed for accels)
   gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));

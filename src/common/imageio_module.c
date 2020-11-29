@@ -437,6 +437,47 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
 }
 
+gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)
+{
+  double _num, _denum;
+  gchar *scale_str = dt_conf_get_string("plugins/lighttable/export/resizing_factor");
+
+  char sep[4] = "";
+  snprintf( sep, 4, "%g", (double) 3/2);
+  int i = -1;
+  while(scale_str[++i])
+  {
+      if ((scale_str[i] == '.') || (scale_str[i] == ',')) scale_str[i] = sep[1];
+  }
+
+  gchar *pdiv = strchr(scale_str, '/');
+
+  if (pdiv == NULL)
+  {
+    _num = atof(scale_str);
+    _denum = 1;
+  }
+  else if (pdiv-scale_str == 0)
+  {
+    _num = 1;
+    _denum = atof(pdiv + 1);
+}
+  else
+{
+    _num = atof(scale_str);
+    _denum = atof(pdiv+1);
+  }
+
+  if (_num == 0.0) _num = 1.0;
+  if (_denum == 0.0) _denum = 1.0;
+
+  *num = _num;
+  *denum = _denum;
+
+  dt_conf_set_string("plugins/lighttable/export/resizing_factor", scale_str);
+  return scale_str;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

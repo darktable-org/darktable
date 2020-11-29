@@ -185,9 +185,7 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
 
 
     // commit all the user input fields
-    char path[1024];
-    snprintf(path, sizeof(path), "preset/%s", g->original_name);
-    dt_accel_rename_preset_lib(g->module, path, name);
+    dt_accel_rename_preset_lib(g->module, g->original_name, name);
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
        "INSERT INTO data.presets (name, description, operation, op_version, op_params,"
@@ -408,7 +406,7 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
   g_free(name);
 }
 
-gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_version)
+gchar *dt_lib_presets_duplicate(const gchar *preset, gchar *module_name, int module_version)
 {
   sqlite3_stmt *stmt;
 
@@ -460,7 +458,7 @@ gchar *dt_lib_presets_duplicate(gchar *preset, gchar *module_name, int module_ve
   return nname;
 }
 
-void dt_lib_presets_remove(gchar *preset, gchar *module_name, int module_version)
+void dt_lib_presets_remove(const gchar *preset, gchar *module_name, int module_version)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -475,7 +473,7 @@ void dt_lib_presets_remove(gchar *preset, gchar *module_name, int module_version
   sqlite3_finalize(stmt);
 }
 
-gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_version)
+gboolean dt_lib_presets_apply(const gchar *preset, gchar *module_name, int module_version)
 {
   gboolean ret = TRUE;
   sqlite3_stmt *stmt;
@@ -534,7 +532,7 @@ gboolean dt_lib_presets_apply(gchar *preset, gchar *module_name, int module_vers
   return ret;
 }
 
-void dt_lib_presets_update(gchar *preset, gchar *module_name, int module_version, const gchar *newname,
+void dt_lib_presets_update(const gchar *preset, gchar *module_name, int module_version, const gchar *newname,
                            const gchar *desc, const void *params, const int32_t params_size)
 {
   sqlite3_stmt *stmt;
@@ -556,7 +554,7 @@ void dt_lib_presets_update(gchar *preset, gchar *module_name, int module_version
 static void pick_callback(GtkMenuItem *menuitem, dt_lib_module_info_t *minfo)
 {
   // apply preset via set_params
-  char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
+  const char *pn = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
   dt_lib_presets_apply(pn, minfo->plugin_name, minfo->version);
 }
 
@@ -575,25 +573,47 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
 
+  const gboolean hide_default = dt_conf_get_bool("plugins/lighttable/hide_default_presets");
+  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
+
   g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
 
   GtkWidget *mi;
   int active_preset = -1, cnt = 0, writeprotect = 0;
   sqlite3_stmt *stmt;
-  // order: get shipped defaults first
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT name, op_params, writeprotect, description"
-                              " FROM data.presets"
-                              " WHERE operation=?1 AND op_version=?2"
-                              " ORDER BY writeprotect DESC, name, rowid",
-                              -1, &stmt, NULL);
+  // order like the pref value
+  gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect, description"
+                                 " FROM data.presets"
+                                 " WHERE operation=?1 AND op_version=?2"
+                                 " ORDER BY writeprotect %s, LOWER(name), rowid",
+                                 default_first ? "DESC" : "ASC");
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, minfo->plugin_name, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, minfo->version);
+  g_free(query);
 
   // collect all presets for op from db
   int found = 0;
+  int last_wp = -1;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+    // default vs built-in stuff
+    const int chk_writeprotect = sqlite3_column_int(stmt, 2);
+    if(hide_default && chk_writeprotect)
+    {
+      // skip default module if set to hide them.
+      continue;
+    }
+    if(last_wp == -1)
+    {
+      last_wp = chk_writeprotect;
+    }
+    else if(last_wp != chk_writeprotect)
+    {
+      last_wp = chk_writeprotect;
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    }
+
     void *op_params = (void *)sqlite3_column_blob(stmt, 1);
     int32_t op_params_size = sqlite3_column_bytes(stmt, 1);
     const char *name = (char *)sqlite3_column_text(stmt, 0);
@@ -951,10 +971,8 @@ static void _preset_popup_posistion(GtkMenu *menu, gint *x, gint *y, gboolean *p
 }
 #endif
 
-static void popup_callback(GtkButton *button, GdkEventButton *event, dt_lib_module_t *module)
+static void popup_callback(GtkButton *button, dt_lib_module_t *module)
 {
-  if(event->button != 1 && event->button != 2) return;
-
   dt_lib_module_info_t *mi = (dt_lib_module_info_t *)calloc(1, sizeof(dt_lib_module_info_t));
 
   mi->plugin_name = g_strdup(module->plugin_name);
@@ -1168,7 +1186,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
     if(module->presets_button)
     {
       // if presets btn has been loaded to be shown outside expander
-      g_signal_connect(G_OBJECT(module->presets_button), "button-press-event", G_CALLBACK(popup_callback), module);
+      g_signal_connect(G_OBJECT(module->presets_button), "clicked", G_CALLBACK(popup_callback), module);
     }
     module->expander = NULL;
     return NULL;
@@ -1218,7 +1236,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   hw[DT_MODULE_PRESETS] = dtgtk_button_new(dtgtk_cairo_paint_presets, CPF_STYLE_FLAT, NULL);
   module->presets_button = GTK_WIDGET(hw[DT_MODULE_PRESETS]);
   gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
-  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "button-press-event", G_CALLBACK(popup_callback), module);
+  g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "clicked", G_CALLBACK(popup_callback), module);
 
   if(!module->get_params) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");

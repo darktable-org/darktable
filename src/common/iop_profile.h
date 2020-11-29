@@ -20,6 +20,8 @@
 #define DT_IOP_PROFILE_H
 
 #include "common/colorspaces_inline_conversions.h"
+#include "common/colorspaces.h"
+#include "develop/imageop.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -32,15 +34,16 @@
 struct dt_iop_module_t;
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
+struct dt_dev_pixelpipe_iop_t;
 
 // must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
 #define DT_IOPPR_COLOR_ICC_LEN 512
 
 typedef struct dt_iop_order_iccprofile_info_t
 {
-  int type; // a dt_colorspaces_color_profile_type_t
+  dt_colorspaces_color_profile_type_t type;
   char filename[DT_IOPPR_COLOR_ICC_LEN];
-  int intent; // a dt_iop_color_intent_t
+  dt_iop_color_intent_t intent;
   float matrix_in[9] DT_ALIGNED_PIXEL; // don't align on more than 16 bits or OpenCL will fail
   float matrix_out[9] DT_ALIGNED_PIXEL;
   int lutsize;
@@ -66,34 +69,75 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_de
 /** adds the profile info from (profile_type, profile_filename) to the dev profiles info list if not already exists
  * returns the generated profile or the existing one
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename, const int intent);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
+                                  const dt_colorspaces_color_profile_type_t profile_type,
+                                  const char *profile_filename,
+                                  const int intent);
 
 /** returns a reference to the work profile info as set on colorin iop
  * only if module is between colorin and colorout, otherwise returns NULL
  * work profile must not be cleanup()
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module, GList *iop_list);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module,
+                                                                   GList *iop_list);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_input_profile_info(struct dt_iop_module_t *module,
+                                                                    GList *iop_list);
 
 /** set the work profile (type, filename) on the pipe, should be called on process*()
  * if matrix cannot be generated it default to linear rec 2020
  * returns the actual profile that has been set
  */
-dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
-    const int type, const char *filename, const int intent);
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev,
+                                    struct dt_dev_pixelpipe_t *pipe,
+                                    const dt_colorspaces_color_profile_type_t type,
+                                    const char *filename,
+                                    const int intent);
+
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_set_pipe_input_profile_info(struct dt_develop_t *dev,
+                                     struct dt_dev_pixelpipe_t *pipe,
+                                     const dt_colorspaces_color_profile_type_t type,
+                                     const char *filename,
+                                     const int intent, const float matrix_in[9]);
+
+dt_iop_order_iccprofile_info_t *
+dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
+                                      struct dt_dev_pixelpipe_t *pipe,
+                                      const dt_colorspaces_color_profile_type_t type,
+                                      const char *filename,
+                                      const int intent);
+
 /** returns a reference to the histogram profile info
  * histogram profile must not be cleanup()
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
 
-/** returns the active work profile on the pipe */
+/** returns the active work/input/output profile on the pipe */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_input_profile_info(struct dt_dev_pixelpipe_t *pipe);
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_output_profile_info(struct dt_dev_pixelpipe_t *pipe);
+
+/** Get the relevant RGB -> XYZ profile at the position of current module */
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_current_profile_info(struct dt_iop_module_t *module,
+                                                                       struct dt_dev_pixelpipe_t *pipe);
 
 /** returns the current setting of the work profile on colorin iop */
-void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
+void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
+                                    dt_colorspaces_color_profile_type_t *profile_type,
+                                    const char **profile_filename);
+/** returns the current setting of the input profile on colorin iop */
+void dt_ioppr_get_input_profile_type(struct dt_develop_t *dev,
+                                     dt_colorspaces_color_profile_type_t *profile_type,
+                                     const char **profile_filename);
 /** returns the current setting of the export profile on colorout iop */
-void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, const char **profile_filename);
+void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
+                                      dt_colorspaces_color_profile_type_t *profile_type,
+                                      const char **profile_filename);
 /** returns the current setting of the histogram profile */
-void dt_ioppr_get_histogram_profile_type(int *profile_type, const char **profile_filename);
+void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
+                                         const char **profile_filename);
 
 /** transforms image from cst_from to cst_to colorspace using profile_info */
 void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
@@ -305,6 +349,27 @@ static inline void dt_ioppr_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
   }
   else
     _ioppr_linear_rgb_matrix_to_xyz(rgb, xyz, matrix_in);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd \
+  aligned(rgb, xyz, matrix_out, unbounded_coeffs_out:16) \
+  aligned(lut_out:64) \
+  uniform(rgb, xyz, matrix_out, lut_out, unbounded_coeffs_out)
+#endif
+static inline void dt_ioppr_xyz_to_rgb_matrix(const float xyz[3], float rgb[3],
+                                              const float matrix_out[9], float *const lut_out[3],
+                                              const float unbounded_coeffs_out[3][3],
+                                              const int lutsize, const int nonlinearlut)
+{
+  if(nonlinearlut)
+  {
+    float linear_rgb[3] DT_ALIGNED_PIXEL;
+    _ioppr_xyz_to_linear_rgb_matrix(xyz, linear_rgb, matrix_out);
+    _apply_trc_out(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
+  }
+  else
+    _ioppr_xyz_to_linear_rgb_matrix(xyz, rgb, matrix_out);
 }
 
 

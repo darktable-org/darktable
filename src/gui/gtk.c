@@ -229,6 +229,12 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_global(path, sizeof(path), "toggle side borders");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_sideborders);
 
+  dt_accel_path_global(path, sizeof(path), "toggle panels collapsing controls");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_collapsing_controls);
+
+  dt_accel_path_global(path, sizeof(path), "slideshow view");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.slideshow_view);
+
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
 
@@ -1225,8 +1231,9 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   g_setenv("LIBOVERLAY_SCROLLBAR", "0", 0);
 
   // unset gtk rc from kde:
-  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
+  char path[PATH_MAX] = { 0 }, datadir[PATH_MAX] = { 0 }, sharedir[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
   dt_loc_get_datadir(datadir, sizeof(datadir));
+  dt_loc_get_sharedir(sharedir, sizeof(sharedir));
   dt_loc_get_user_config_dir(configdir, sizeof(configdir));
 
   gchar *css_theme = dt_conf_get_string("ui_last/theme");
@@ -1272,7 +1279,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   darktable.control->accelerators = gtk_accel_group_new();
 
   darktable.control->accelerator_list = NULL;
-  darktable.control->dynamic_accelerator_list = NULL;
 
   // Connecting the callback to update keyboard accels for key_pressed
   g_signal_connect(G_OBJECT(gtk_accel_map_get()), "changed", G_CALLBACK(key_accel_changed), NULL);
@@ -1301,7 +1307,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
-  snprintf(path, sizeof(path), "%s/icons", DARKTABLE_SHAREDIR);
+  snprintf(path, sizeof(path), "%s/icons", sharedir);
   gtk_icon_theme_append_search_path(gtk_icon_theme_get_default(), path);
 
   widget = dt_ui_center(darktable.gui->ui);
@@ -1410,7 +1416,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // Side-border hide/show
   dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
 
-  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_B, 0);
+  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_b, 0);
   dt_accel_connect_global("toggle panels collapsing controls",
                           g_cclosure_new(G_CALLBACK(_panels_controls_accel_callback), NULL, NULL));
 
@@ -1575,13 +1581,15 @@ void dt_configure_ppd_dpi(dt_gui_gtk_t *gui)
 
   gui->ppd = gui->ppd_thb = dt_get_system_gui_ppd(widget);
   gui->filter_image = CAIRO_FILTER_GOOD;
+  gui->dr_filter_image = CAIRO_FILTER_BEST;
   if(dt_conf_get_bool("ui/performance"))
   {
       gui->ppd_thb *= DT_GUI_THUMBSIZE_REDUCE;
       gui->filter_image = CAIRO_FILTER_FAST;
+      gui->dr_filter_image = CAIRO_FILTER_GOOD;
   }
   // get the screen resolution
-  float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
+  const float screen_dpi_overwrite = dt_conf_get_float("screen_dpi_overwrite");
   if(screen_dpi_overwrite > 0.0)
   {
     gui->dpi = screen_dpi_overwrite;
@@ -2227,8 +2235,11 @@ static void _ui_panel_size_changed(GtkAdjustment *adjustment, GParamSpec *pspec,
 
   if(!darktable.gui->scroll_to[side]) return;
 
-  gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
-  gtk_adjustment_set_value(adjustment, allocation.y);
+  if(GTK_IS_WIDGET(darktable.gui->scroll_to[side]))
+  {
+    gtk_widget_get_allocation(darktable.gui->scroll_to[side], &allocation);
+    gtk_adjustment_set_value(adjustment, allocation.y);
+  }
 
   darktable.gui->scroll_to[side] = NULL;
 }
@@ -2976,6 +2987,9 @@ void dt_gui_load_theme(const char *theme)
     [DT_GUI_COLOR_MAP_COUNT_SAME_LOC] = { "map_count_same_loc_color", { 1.0, 1.0, 1.0, 1.0 } },
     [DT_GUI_COLOR_MAP_COUNT_DIFF_LOC] = { "map_count_diff_loc_color", { 1.0, 0.85, 0.0, 1.0 } },
     [DT_GUI_COLOR_MAP_COUNT_BG] = { "map_count_bg_color", { 0.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_MAP_LOC_SHAPE_HIGH] = { "map_count_circle_color_h", { 1.0, 1.0, 0.8, 1.0 } },
+    [DT_GUI_COLOR_MAP_LOC_SHAPE_LOW] = { "map_count_circle_color_l", { 0.0, 0.0, 0.0, 1.0 } },
+    [DT_GUI_COLOR_MAP_LOC_SHAPE_DEF] = { "map_count_circle_color_d", { 1.0, 0.0, 0.0, 1.0 } },
   };
 
   // starting from 1 as DT_GUI_COLOR_BG is not part of this table
@@ -3039,11 +3053,23 @@ static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocati
   g_free(sizes);
 }
 
+void dt_ui_notebook_clear(GtkNotebook *notebook)
+{
+  gint notebook_pages = gtk_notebook_get_n_pages(notebook);
+  if(notebook_pages >= 2)
+    g_signal_handlers_disconnect_by_func(G_OBJECT(notebook), G_CALLBACK(notebook_size_callback), NULL);
+  for(gint tabs = notebook_pages; tabs > 0; --tabs)
+  {
+    gtk_notebook_remove_page(notebook, tabs - 1);
+  }
+}
+
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
 {
   GtkWidget *label = gtk_label_new(text);
   GtkWidget *page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  if(strlen(text) > 2)
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   if(tooltip || strlen(text) > 1)
     gtk_widget_set_tooltip_text(label, tooltip ? tooltip : text);
   gtk_notebook_append_page(notebook, page, label);
@@ -3132,7 +3158,11 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   if(event->state & GDK_CONTROL_MASK)
   {
-    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*event->delta_y);
+    int delta_y=0;
+    
+    dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
+
+    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*delta_y);
 
     _scroll_wrap_resize(w, NULL, config_str);
   }

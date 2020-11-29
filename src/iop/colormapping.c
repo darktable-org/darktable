@@ -146,6 +146,15 @@ const char *name()
   return _("color mapping");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("transfer a color palette and tonal repartition from one image to another"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int default_group()
 {
   return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
@@ -161,29 +170,16 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-
-void init_key_accels(dt_iop_module_so_t *self)
+//TODO: refactor by moving into a common header and consolidating with copy in color_picker.c
+static void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "number of clusters"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "color dominance"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "histogram equalization"));
-
-  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as source"), 0, 0);
-  dt_accel_register_iop(self, FALSE, NC_("accel", "acquire as target"), 0, 0);
+  const size_t alloc_size = n * objsize;
+  const size_t cache_lines = (alloc_size+63)/64;
+  *padded_size = 64 * cache_lines / objsize;
+  return dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads());
 }
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colormapping_gui_data_t *g = (dt_iop_colormapping_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "number of clusters", GTK_WIDGET(g->clusters));
-  dt_accel_connect_slider_iop(self, "color dominance", GTK_WIDGET(g->dominance));
-  dt_accel_connect_slider_iop(self, "histogram equalization", GTK_WIDGET(g->equalization));
-
-  dt_accel_connect_button_iop(self, "acquire as source", g->acquire_source_button);
-  dt_accel_connect_button_iop(self, "acquire as target", g->acquire_target_button);
-}
-
+#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
+#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
 
 static void capture_histogram(const float *col, const int width, const int height, int *hist)
 {
@@ -541,17 +537,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_bilateral_free(b);
     }
 
-    float *const weight_buf = malloc(data->n * dt_get_num_threads() * sizeof(float));
+    size_t allocsize;
+    float *const weight_buf = dt_alloc_perthread(data->n, sizeof(float), &allocsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, height, mapio, var_ratio, weight_buf, width) \
+    dt_omp_firstprivate(ch, height, mapio, var_ratio, weight_buf, width, allocsize) \
     shared(data, in, out, equalization) \
     schedule(static)
 #endif
     for(int k = 0; k < height; k++)
     {
-      float *weight = weight_buf + data->n * dt_get_thread_num();
+      float *weight = dt_get_perthread(weight_buf,allocsize);
       size_t j = (size_t)ch * width * k;
       for(int i = 0; i < width; i++)
       {
@@ -843,7 +840,6 @@ static void acquire_target_button_pressed(GtkButton *button, dt_iop_module_t *se
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colormapping_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1074,24 +1070,20 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->target_area, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->target_area), "draw", G_CALLBACK(cluster_preview_draw), self);
 
+  GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+  gtk_box_pack_start(GTK_BOX(self->widget), box, TRUE, TRUE, 0);
 
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-  GtkWidget *button;
+  g->acquire_source_button = dt_iop_button_new(self, N_("acquire as source"),
+                                               G_CALLBACK(acquire_source_button_pressed), FALSE, 0, 0,
+                                               NULL, 0, box);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->acquire_source_button))), PANGO_ELLIPSIZE_START);
+  gtk_widget_set_tooltip_text(g->acquire_source_button, _("analyze this image as a source image"));
 
-  button = gtk_button_new_with_label(_("acquire as source"));
-  g->acquire_source_button = button;
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
-  gtk_widget_set_tooltip_text(button, _("analyze this image as a source image"));
-  gtk_box_pack_start(box, button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_source_button_pressed), (gpointer)self);
-
-  button = gtk_button_new_with_label(_("acquire as target"));
-  g->acquire_target_button = button;
-  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_START);
-  gtk_widget_set_tooltip_text(button, _("analyze this image as a target image"));
-  gtk_box_pack_start(box, button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(acquire_target_button_pressed), (gpointer)self);
+  g->acquire_target_button = dt_iop_button_new(self, N_("acquire as target"),
+                                               G_CALLBACK(acquire_target_button_pressed), FALSE, 0, 0,
+                                               NULL, 0, box);
+  gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(g->acquire_target_button))), PANGO_ELLIPSIZE_START);
+  gtk_widget_set_tooltip_text(g->acquire_target_button, _("analyze this image as a target image"));
 
   g->clusters = dt_bauhaus_slider_from_params(self, "n");
   gtk_widget_set_tooltip_text(g->clusters, _("number of clusters to find in image. value change resets all clusters"));
@@ -1108,7 +1100,6 @@ void gui_init(struct dt_iop_module_t *self)
   /* add signal handler for preview pipe finished: process clusters if requested */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(process_clusters), self);
-
 
   FILE *f = g_fopen("/tmp/dt_colormapping_loaded", "rb");
   if(f)

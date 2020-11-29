@@ -25,6 +25,7 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 #include "common/history.h"
+#include "common/map_locations.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -128,42 +129,42 @@ void *legacy_params(struct dt_lib_module_t *self,
     dt_lib_collect_params_t *o = (dt_lib_collect_params_t *)old_params;
 
     if(o->rules > MAX_RULES)
-	/* preset is corrupted, return NULL and drop the preset */
-	return NULL;
+      /* preset is corrupted, return NULL and drop the preset */
+      return NULL;
 
     dt_lib_collect_params_t *n = (dt_lib_collect_params_t *)malloc(old_params_size);
 
     const int table[DT_COLLECTION_PROP_LAST] =
-    {
-      DT_COLLECTION_PROP_FILMROLL,
-      DT_COLLECTION_PROP_FOLDERS,
-      DT_COLLECTION_PROP_CAMERA,
-      DT_COLLECTION_PROP_TAG,
-      DT_COLLECTION_PROP_DAY,
-      DT_COLLECTION_PROP_TIME,
-      DT_COLLECTION_PROP_HISTORY,
-      DT_COLLECTION_PROP_COLORLABEL,
+      {
+        DT_COLLECTION_PROP_FILMROLL,
+        DT_COLLECTION_PROP_FOLDERS,
+        DT_COLLECTION_PROP_CAMERA,
+        DT_COLLECTION_PROP_TAG,
+        DT_COLLECTION_PROP_DAY,
+        DT_COLLECTION_PROP_TIME,
+        DT_COLLECTION_PROP_HISTORY,
+        DT_COLLECTION_PROP_COLORLABEL,
 
-      // spaces for the metadata, see metadata.h
-      DT_COLLECTION_PROP_COLORLABEL + 1,
-      DT_COLLECTION_PROP_COLORLABEL + 2,
-      DT_COLLECTION_PROP_COLORLABEL + 3,
-      DT_COLLECTION_PROP_COLORLABEL + 4,
-      DT_COLLECTION_PROP_COLORLABEL + 5,
+        // spaces for the metadata, see metadata.h
+        DT_COLLECTION_PROP_COLORLABEL + 1,
+        DT_COLLECTION_PROP_COLORLABEL + 2,
+        DT_COLLECTION_PROP_COLORLABEL + 3,
+        DT_COLLECTION_PROP_COLORLABEL + 4,
+        DT_COLLECTION_PROP_COLORLABEL + 5,
 
-      DT_COLLECTION_PROP_LENS,
-      DT_COLLECTION_PROP_FOCAL_LENGTH,
-      DT_COLLECTION_PROP_ISO,
-      DT_COLLECTION_PROP_APERTURE,
-      DT_COLLECTION_PROP_EXPOSURE,
-      DT_COLLECTION_PROP_ASPECT_RATIO,
-      DT_COLLECTION_PROP_FILENAME,
-      DT_COLLECTION_PROP_GEOTAGGING,
-      DT_COLLECTION_PROP_GROUPING,
-      DT_COLLECTION_PROP_LOCAL_COPY,
-      DT_COLLECTION_PROP_MODULE,
-      DT_COLLECTION_PROP_ORDER
-    };
+        DT_COLLECTION_PROP_LENS,
+        DT_COLLECTION_PROP_FOCAL_LENGTH,
+        DT_COLLECTION_PROP_ISO,
+        DT_COLLECTION_PROP_APERTURE,
+        DT_COLLECTION_PROP_EXPOSURE,
+        DT_COLLECTION_PROP_ASPECT_RATIO,
+        DT_COLLECTION_PROP_FILENAME,
+        DT_COLLECTION_PROP_GEOTAGGING,
+        DT_COLLECTION_PROP_GROUPING,
+        DT_COLLECTION_PROP_LOCAL_COPY,
+        DT_COLLECTION_PROP_MODULE,
+        DT_COLLECTION_PROP_ORDER
+      };
 
     n->rules = o->rules;
 
@@ -185,41 +186,41 @@ void *legacy_params(struct dt_lib_module_t *self,
     dt_lib_collect_params_t *old = (dt_lib_collect_params_t *)old_params;
 
     if(old->rules > MAX_RULES)
-	/* preset is corrupted, return NULL and drop the preset */
-	return NULL;
+      /* preset is corrupted, return NULL and drop the preset */
+      return NULL;
 
     dt_lib_collect_params_t *new = (dt_lib_collect_params_t *)malloc(old_params_size);
 
     const int table[DT_COLLECTION_PROP_LAST] =
       {
-      DT_COLLECTION_PROP_FILMROLL,
-      DT_COLLECTION_PROP_FOLDERS,
-      DT_COLLECTION_PROP_FILENAME,
-      DT_COLLECTION_PROP_CAMERA,
-      DT_COLLECTION_PROP_LENS,
-      DT_COLLECTION_PROP_APERTURE,
-      DT_COLLECTION_PROP_EXPOSURE,
-      DT_COLLECTION_PROP_FOCAL_LENGTH,
-      DT_COLLECTION_PROP_ISO,
-      DT_COLLECTION_PROP_DAY,
-      DT_COLLECTION_PROP_TIME,
-      DT_COLLECTION_PROP_GEOTAGGING,
-      DT_COLLECTION_PROP_ASPECT_RATIO,
-      DT_COLLECTION_PROP_TAG,
-      DT_COLLECTION_PROP_COLORLABEL,
+        DT_COLLECTION_PROP_FILMROLL,
+        DT_COLLECTION_PROP_FOLDERS,
+        DT_COLLECTION_PROP_FILENAME,
+        DT_COLLECTION_PROP_CAMERA,
+        DT_COLLECTION_PROP_LENS,
+        DT_COLLECTION_PROP_APERTURE,
+        DT_COLLECTION_PROP_EXPOSURE,
+        DT_COLLECTION_PROP_FOCAL_LENGTH,
+        DT_COLLECTION_PROP_ISO,
+        DT_COLLECTION_PROP_DAY,
+        DT_COLLECTION_PROP_TIME,
+        DT_COLLECTION_PROP_GEOTAGGING,
+        DT_COLLECTION_PROP_ASPECT_RATIO,
+        DT_COLLECTION_PROP_TAG,
+        DT_COLLECTION_PROP_COLORLABEL,
 
-      // spaces for the metadata, see metadata.h
-      DT_COLLECTION_PROP_COLORLABEL + 1,
-      DT_COLLECTION_PROP_COLORLABEL + 2,
-      DT_COLLECTION_PROP_COLORLABEL + 3,
-      DT_COLLECTION_PROP_COLORLABEL + 4,
-      DT_COLLECTION_PROP_COLORLABEL + 5,
+        // spaces for the metadata, see metadata.h
+        DT_COLLECTION_PROP_COLORLABEL + 1,
+        DT_COLLECTION_PROP_COLORLABEL + 2,
+        DT_COLLECTION_PROP_COLORLABEL + 3,
+        DT_COLLECTION_PROP_COLORLABEL + 4,
+        DT_COLLECTION_PROP_COLORLABEL + 5,
 
-      DT_COLLECTION_PROP_GROUPING,
-      DT_COLLECTION_PROP_LOCAL_COPY,
-      DT_COLLECTION_PROP_HISTORY,
-      DT_COLLECTION_PROP_MODULE,
-      DT_COLLECTION_PROP_ORDER
+        DT_COLLECTION_PROP_GROUPING,
+        DT_COLLECTION_PROP_LOCAL_COPY,
+        DT_COLLECTION_PROP_HISTORY,
+        DT_COLLECTION_PROP_MODULE,
+        DT_COLLECTION_PROP_ORDER
       };
 
     new->rules = old->rules;
@@ -572,6 +573,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
         || is_time_property(d->view_rule)
         || d->view_rule == DT_COLLECTION_PROP_FOLDERS
         || d->view_rule == DT_COLLECTION_PROP_TAG
+        || d->view_rule == DT_COLLECTION_PROP_GEOTAGGING
        )
        && !(event->state & GDK_SHIFT_MASK)
       )
@@ -701,7 +703,8 @@ static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter 
   if(g_str_has_prefix(needle, "%")) startwildcard = TRUE;
   if(g_str_has_suffix(needle, "%")) needle[strlen(needle) - 1] = '\0';
   if(g_str_has_suffix(haystack, "%")) haystack[strlen(haystack) - 1] = '\0';
-  if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TAG)
+  if(_combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_TAG ||
+     _combo_get_active_collection(dr->combo) == DT_COLLECTION_PROP_GEOTAGGING)
   {
     if(g_str_has_suffix(needle, "|")) needle[strlen(needle) - 1] = '\0';
     if(g_str_has_suffix(haystack, "|")) haystack[strlen(haystack) - 1] = '\0';
@@ -775,8 +778,8 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
     dt_collection_split_operator_number(needle, &number, &number2, &operator);
     if(number)
     {
-      float nb1 = g_strtod(number, NULL);
-      float nb2 = g_strtod(haystack, NULL);
+      const float nb1 = g_strtod(number, NULL);
+      const float nb2 = g_strtod(haystack, NULL);
       if(operator&& strcmp(operator, ">") == 0)
       {
         visible = (nb2 > nb1);
@@ -1039,7 +1042,7 @@ static char **split_path(const char *path)
 #else
 
   // there are size + 1 elements in tokens -- the final NULL! we want to ignore it.
-  unsigned int size = g_strv_length(tokens);
+  const unsigned int size = g_strv_length(tokens);
 
   result = malloc(size * sizeof(char *));
   for(unsigned int i = 0; i < size; i++)
@@ -1135,6 +1138,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       format_separator = "%s" G_DIR_SEPARATOR_S;
       break;
     case DT_COLLECTION_PROP_TAG:
+    case DT_COLLECTION_PROP_GEOTAGGING:
       format_separator = "%s|";
       break;
     case DT_COLLECTION_PROP_DAY:
@@ -1189,6 +1193,28 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 "   ON tagid = tag_id"
                                 " WHERE %s"
                                 " GROUP BY name,tag_id", where_ext);
+        break;
+      case DT_COLLECTION_PROP_GEOTAGGING:
+        query = g_strdup_printf("SELECT "
+                                " CASE WHEN mi.longitude IS NULL"
+                                "           OR mi.latitude IS null THEN \'%s\'"
+                                "      ELSE CASE WHEN ta.imgid IS NULL THEN \'%s\'"
+                                "                ELSE \'%s\' || ta.tagname"
+                                "                END"
+                                "      END AS name,"
+                                " ta.id AS tag_id, COUNT(*) AS count"
+                                " FROM main.images AS mi"
+                                " LEFT JOIN (SELECT imgid, t.id, SUBSTR(t.name, %d) AS tagname"
+                                "   FROM main.tagged_images AS ti"
+                                "   JOIN data.tags AS t"
+                                "   ON ti.tagid = t.id"
+                                "   JOIN data.locations AS l"
+                                "   ON l.tagid = t.id"
+                                "   ) AS ta ON ta.imgid = mi.id"
+                                " WHERE %s"
+                                " GROUP BY name, tag_id",
+                                _("not tagged"), _("tagged"), _("tagged"),
+                                (int)strlen(dt_map_location_data_tag_root()) + 1, where_ext);
         break;
       case DT_COLLECTION_PROP_DAY:
         query = g_strdup_printf("SELECT SUBSTR(datetime_taken, 1, 10) AS date, 1, COUNT(*) AS count"
@@ -1531,19 +1557,6 @@ static void list_view(dt_lib_collect_rule_t *dr)
                    _("basic"), _("auto applied"), _("altered"), _("basic"), where_ext);
         break;
 
-      case DT_COLLECTION_PROP_GEOTAGGING: // Geotagging, 2 hardcoded alternatives
-        g_snprintf(query, sizeof(query),
-                   "SELECT CASE "
-                   "         WHEN latitude IS NOT NULL AND longitude IS NOT NULL THEN '%s'"
-                   "         ELSE '%s'"
-                   "       END as tagged, 1, COUNT(*) AS count"
-                   " FROM main.images AS mi "
-                   " WHERE %s"
-                   " GROUP BY tagged"
-                   " ORDER BY tagged ASC",
-                   _("tagged"),  _("not tagged"), where_ext);
-        break;
-
       case DT_COLLECTION_PROP_LOCAL_COPY: // local copy, 2 hardcoded alternatives
         g_snprintf(query, sizeof(query),
                    "SELECT CASE "
@@ -1822,11 +1835,10 @@ static void list_view(dt_lib_collect_rule_t *dr)
     // test selection range [xxx;xxx]
     GRegex *regex;
     GMatchInfo *match_info;
-    int match_count;
 
     regex = g_regex_new("^\\s*\\[\\s*(.*)\\s*;\\s*(.*)\\s*\\]\\s*$", 0, 0, NULL);
     g_regex_match_full(regex, gtk_entry_get_text(GTK_ENTRY(dr->text)), -1, 0, 0, &match_info, NULL);
-    match_count = g_match_info_get_match_count(match_info);
+    const int match_count = g_match_info_get_match_count(match_info);
 
     if(match_count == 3)
     {
@@ -1861,6 +1873,7 @@ static void update_view(dt_lib_collect_rule_t *dr)
 
   if(property == DT_COLLECTION_PROP_FOLDERS
      || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_GEOTAGGING
      || property == DT_COLLECTION_PROP_DAY
      || is_time_property(property)
     )
@@ -1920,7 +1933,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
     else if(i == active)
     {
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("clear this rule or add new rules"));
-      gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
+      const gint flags = CPF_DIRECTION_DOWN | CPF_BG_TRANSPARENT | CPF_STYLE_FLAT;
       dtgtk_button_set_paint(button, dtgtk_cairo_paint_solid_arrow, flags, NULL);
     }
     else
@@ -1964,6 +1977,7 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
 
   if(property == DT_COLLECTION_PROP_FOLDERS
      || property == DT_COLLECTION_PROP_TAG
+     || property == DT_COLLECTION_PROP_GEOTAGGING
      || property == DT_COLLECTION_PROP_DAY
      || is_time_property(property)
     )
@@ -1975,23 +1989,44 @@ static void combo_changed(GtkWidget *combo, dt_lib_collect_rule_t *d)
      || property == DT_COLLECTION_PROP_ISO || property == DT_COLLECTION_PROP_ASPECT_RATIO
      || property == DT_COLLECTION_PROP_EXPOSURE)
   {
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use <, <=, >, >=, <>, =, [;] as operators"));
+    gtk_widget_set_tooltip_text(d->text, _("use <, <=, >, >=, <>, =, [;] as operators"));
   }
   else if(property == DT_COLLECTION_PROP_DAY || is_time_property(property))
   {
     gtk_widget_set_tooltip_text(d->text,
-                                _("type your query, use <, <=, >, >=, <>, =, [;] as operators, type dates in "
-                                  "the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
+                                _("use <, <=, >, >=, <>, =, [;] as operators\n"
+                                  "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"));
   }
   else if(property == DT_COLLECTION_PROP_FILENAME)
   {
+    gtk_widget_set_tooltip_text(d->text,
     /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard and `,' to separate values"));
+                                _("use `%' as wildcard and `,' to separate values"));
+  }
+  else if(property == DT_COLLECTION_PROP_TAG)
+  {
+    gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
+                                _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
+                                  "use `|%' to include all sub-hierarchies (ctrl-click)\n"
+    /* xgettext:no-c-format */
+                                  "use `*' to include hierarchy and sub-hierarchies (shift-click)"));
+  }
+  else if(property == DT_COLLECTION_PROP_GEOTAGGING)
+  {
+    gtk_widget_set_tooltip_text(d->text,
+    /* xgettext:no-c-format */
+                                _("use `%' as wildcard\n"
+    /* xgettext:no-c-format */
+                                  "use `|%' to include all sub-locations (ctrl-click)\n"
+    /* xgettext:no-c-format */
+                                  "use `*' to include locations and sub-locations (shift-click)"));
   }
   else
   {
     /* xgettext:no-c-format */
-    gtk_widget_set_tooltip_text(d->text, _("type your query, use `%' as wildcard"));
+    gtk_widget_set_tooltip_text(d->text, _("use `%' as wildcard"));
   }
 
   gboolean order_request = FALSE;
@@ -2075,7 +2110,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       g_free(text2);
       text = n_text;
     }
-    else if(item == DT_COLLECTION_PROP_TAG)
+    else if(item == DT_COLLECTION_PROP_TAG ||
+            item == DT_COLLECTION_PROP_GEOTAGGING)
     {
       if(gtk_tree_model_iter_has_child(model, &iter))
       {
@@ -2090,7 +2126,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
          * hierarchy. */
         else if(event->state & GDK_SHIFT_MASK)
         {
-          gchar *n_text = g_strconcat(text, "%", NULL);
+          gchar *n_text = g_strconcat(text, "*", NULL);
           g_free(text);
           text = n_text;
         }
@@ -2164,6 +2200,7 @@ static void entry_activated(GtkWidget *entry, dt_lib_collect_rule_t *d)
 
   if(property != DT_COLLECTION_PROP_FOLDERS
       && property != DT_COLLECTION_PROP_TAG
+      && property != DT_COLLECTION_PROP_GEOTAGGING
       && property != DT_COLLECTION_PROP_DAY
       && !is_time_property(property)
     )
@@ -2336,6 +2373,30 @@ static void tag_changed(gpointer instance, gpointer self)
     }
     if(needs_update){
       // we have tags as one of rules, needs reload.
+      dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                      darktable.view_manager->proxy.module_collect.module);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+      dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
+                                        darktable.view_manager->proxy.module_collect.module);
+    }
+  }
+}
+
+static void _geotag_changed(gpointer instance, GList *imgs, const int locid, gpointer self)
+{
+  // if locid <> NULL this event doesn't concern collect module
+  if(!locid)
+  {
+    dt_lib_module_t *dm = (dt_lib_module_t *)self;
+    dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
+    // update tree
+    if(_combo_get_active_collection(d->rule[d->active_rule].combo) == DT_COLLECTION_PROP_GEOTAGGING)
+    {
+      d->view_rule = -1;
+      d->rule[d->active_rule].typing = FALSE;
+      _lib_collect_gui_update(self);
+
+      //need to reload collection since we have geotags as active collection filter
       dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
                                       darktable.view_manager->proxy.module_collect.module);
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
@@ -2522,12 +2583,19 @@ static void _populate_collect_combo(GtkWidget *w)
 
     dt_bauhaus_combobox_add_section(w, _("metadata"));
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_TAG);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_TITLE);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_DESCRIPTION);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_CREATOR);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_PUBLISHER);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_DC_RIGHTS);
-    ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + DT_METADATA_XMP_ACDSEE_NOTES);
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
+      const gchar *name = dt_metadata_get_name(keyid);
+      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
+      const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
+      g_free(setting);
+      const int meta_type = dt_metadata_get_type(keyid);
+      if(meta_type != DT_METADATA_TYPE_INTERNAL && !hidden)
+      {
+        ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_METADATA + i);
+      }
+    }
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_COLORLABEL);
     ADD_COLLECT_ENTRY(DT_COLLECTION_PROP_GEOTAGGING);
 
@@ -2693,6 +2761,9 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TAG_CHANGED, G_CALLBACK(tag_changed),
                             self);
 
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, G_CALLBACK(_geotag_changed),
+                            self);
+
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_METADATA_CHANGED, G_CALLBACK(metadata_changed), self);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE, G_CALLBACK(view_set_click), self);
@@ -2710,6 +2781,7 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(preferences_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(filmrolls_removed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(tag_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_geotag_changed), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(view_set_click), self);
   darktable.view_manager->proxy.module_collect.module = NULL;
   free(d->params);

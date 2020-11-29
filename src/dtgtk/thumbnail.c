@@ -147,6 +147,7 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
     thumb->has_localcopy = (img->flags & DT_IMAGE_LOCAL_COPY);
     thumb->rating = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
     thumb->is_bw = dt_image_monochrome_flags(img);
+    thumb->is_bw_flow = dt_image_use_monochrome_workflow(img);
     thumb->is_hdr = dt_image_is_hdr(img);
 
     thumb->groupid = img->group_id;
@@ -196,10 +197,13 @@ static void _image_get_infos(dt_thumbnail_t *thumb)
 
 static gboolean _thumb_expose_again(gpointer user_data)
 {
-  if(!user_data || !GTK_IS_WIDGET(user_data)) return FALSE;
+  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
+  if(!thumb) return FALSE;
+  gpointer w_image = thumb->w_image;
+  if(!w_image || !GTK_IS_WIDGET(w_image)) return FALSE;
 
-  GtkWidget *widget = (GtkWidget *)user_data;
-  gtk_widget_queue_draw(widget);
+  thumb->expose_again_timeout_id = 0;
+  gtk_widget_queue_draw((GtkWidget *)w_image);
   return FALSE;
 }
 
@@ -249,7 +253,7 @@ static void _thumb_write_extension(dt_thumbnail_t *thumb)
   gchar *ext2 = NULL;
   while(ext > thumb->filename && *ext != '.') ext--;
   ext++;
-  gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw);
+  gchar *uext = dt_view_extend_modes_str(ext, thumb->is_hdr, thumb->is_bw, thumb->is_bw_flow);
   ext2 = dt_util_dstrcat(ext2, "%s", uext);
   gtk_label_set_text(GTK_LABEL(thumb->w_ext), ext2);
   g_free(uext);
@@ -417,7 +421,9 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       if(res)
       {
         // if the image is missing, we reload it again
-        g_timeout_add(250, _thumb_expose_again, widget);
+        if(!thumb->expose_again_timeout_id)
+          thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
+
         // we still draw the thumb to avoid flickering
         _thumb_draw_image(thumb, cr);
         return TRUE;
@@ -1005,7 +1011,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
   {
     // this is only here to ensure that mouse-over value is updated correctly
     // all dragging actions take place inside thumbatble.c
-    gtk_drag_dest_set(thumb->w_main, GTK_DEST_DEFAULT_MOTION, target_list_all, n_targets_all, GDK_ACTION_COPY);
+    gtk_drag_dest_set(thumb->w_main, GTK_DEST_DEFAULT_MOTION, target_list_all, n_targets_all, GDK_ACTION_MOVE);
     g_signal_connect(G_OBJECT(thumb->w_main), "drag-motion", G_CALLBACK(_event_main_drag_motion), thumb);
 
     g_signal_connect(G_OBJECT(thumb->w_main), "button-press-event", G_CALLBACK(_event_main_press), thumb);
@@ -1225,6 +1231,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   thumb->zoom = 1.0f;
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
   thumb->tooltip = tooltip;
+  thumb->expose_again_timeout_id = 0;
 
   // we read and cache all the infos from dt_image_t that we need
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
@@ -1279,6 +1286,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb)
 {
   if(thumb->overlay_timeout_id > 0) g_source_remove(thumb->overlay_timeout_id);
+  if(thumb->expose_again_timeout_id != 0) g_source_remove(thumb->expose_again_timeout_id);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_selection_changed_callback), thumb);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_active_images_callback), thumb);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_dt_mipmaps_updated_callback), thumb);
@@ -1612,7 +1620,7 @@ void dt_thumbnail_set_drop(dt_thumbnail_t *thumb, gboolean accept_drop)
 {
   if(accept_drop)
   {
-    gtk_drag_dest_set(thumb->w_main, GTK_DEST_DEFAULT_MOTION, target_list_all, n_targets_all, GDK_ACTION_COPY);
+    gtk_drag_dest_set(thumb->w_main, GTK_DEST_DEFAULT_MOTION, target_list_all, n_targets_all, GDK_ACTION_MOVE);
   }
   else
   {

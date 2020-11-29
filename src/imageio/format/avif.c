@@ -42,32 +42,45 @@
 
 DT_MODULE(1)
 
-enum avif_compression_type_e {
+enum avif_compression_type_e
+{
   AVIF_COMP_LOSSLESS = 0,
   AVIF_COMP_LOSSY = 1,
 };
 
-enum avif_tiling_e {
+enum avif_tiling_e
+{
   AVIF_TILING_ON = 0,
   AVIF_TILING_OFF
 };
 
-typedef struct dt_imageio_avif_t {
+enum avif_color_mode_e
+{
+  AVIF_COLOR_MODE_RGB = 0,
+  AVIF_COLOR_MODE_GRAYSCALE,
+};
+
+typedef struct dt_imageio_avif_t
+{
   dt_imageio_module_data_t global;
   uint32_t bit_depth;
+  uint32_t color_mode;
   uint32_t compression_type;
   uint32_t quality;
   uint32_t tiling;
 } dt_imageio_avif_t;
 
-typedef struct dt_imageio_avif_gui_t {
+typedef struct dt_imageio_avif_gui_t
+{
   GtkWidget *bit_depth;
+  GtkWidget *color_mode;
   GtkWidget *compression_type;
   GtkWidget *quality;
   GtkWidget *tiling;
 } dt_imageio_avif_gui_t;
 
-static const struct {
+static const struct
+{
   char     *name;
   uint32_t bit_depth;
 } avif_bit_depth[] = {
@@ -129,6 +142,14 @@ void init(dt_imageio_module_format_t *self)
                                 dt_imageio_avif_t,
                                 bit_depth,
                                 int);
+  luaA_enum(darktable.lua_state.state,
+            enum avif_color_mode_e);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum avif_color_mode_e,
+                  AVIF_COLOR_MODE_GRAYSCALE);
+  luaA_enum_value(darktable.lua_state.state,
+                  enum avif_color_mode_e,
+                  AVIF_COLOR_MODE_GRAYSCALE);
 
   luaA_enum(darktable.lua_state.state,
             enum avif_tiling_e);
@@ -197,20 +218,36 @@ int write_image(struct dt_imageio_module_data_t *data,
   const size_t width = d->global.width;
   const size_t height = d->global.height;
   const size_t bit_depth = d->bit_depth > 0 ? d->bit_depth : 0;
+  enum avif_color_mode_e color_mode = d->color_mode;
 
-  switch (d->compression_type) {
-  case AVIF_COMP_LOSSLESS:
-    format = AVIF_PIXEL_FORMAT_YUV444;
-    break;
-  case AVIF_COMP_LOSSY:
-    format = AVIF_PIXEL_FORMAT_YUV420;
-    if (d->quality > 80) {
-        format = AVIF_PIXEL_FORMAT_YUV422;
-    }
-    if (d->quality > 90) {
-        format = AVIF_PIXEL_FORMAT_YUV444;
-    }
-    break;
+  switch (color_mode)
+  {
+    case AVIF_COLOR_MODE_RGB:
+      switch (d->compression_type)
+      {
+        case AVIF_COMP_LOSSLESS:
+          format = AVIF_PIXEL_FORMAT_YUV444;
+          break;
+        case AVIF_COMP_LOSSY:
+          if (d->quality > 90)
+          {
+              format = AVIF_PIXEL_FORMAT_YUV444;
+          }
+          else if (d->quality > 80)
+          {
+              format = AVIF_PIXEL_FORMAT_YUV422;
+          }
+          else
+          {
+            format = AVIF_PIXEL_FORMAT_YUV420;
+          }
+          break;
+      }
+
+      break;
+    case AVIF_COLOR_MODE_GRAYSCALE:
+      format = AVIF_PIXEL_FORMAT_YUV400;
+      break;
   }
 
   image = avifImageCreate(width, height, bit_depth, format);
@@ -627,6 +664,7 @@ void *get_params(dt_imageio_module_format_t *self)
       d->bit_depth = 8;
   }
 
+  d->color_mode = dt_conf_get_int("plugins/imageio/format/avif/color_mode");
   d->compression_type = dt_conf_get_int("plugins/imageio/format/avif/compression_type");
 
   switch (d->compression_type) {
@@ -657,6 +695,7 @@ int set_params(dt_imageio_module_format_t *self,
 
   dt_imageio_avif_gui_t *g = (dt_imageio_avif_gui_t *)self->gui_data;
   dt_bauhaus_combobox_set(g->bit_depth, d->bit_depth);
+  dt_bauhaus_combobox_set(g->color_mode, d->color_mode);
   dt_bauhaus_combobox_set(g->tiling, d->tiling);
   dt_bauhaus_combobox_set(g->compression_type, d->compression_type);
   dt_bauhaus_slider_set(g->quality, d->quality);
@@ -708,6 +747,13 @@ static void bit_depth_changed(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/imageio/format/avif/bit_depth", avif_bit_depth[idx].bit_depth);
 }
 
+static void color_mode_changed(GtkWidget *widget, gpointer user_data)
+{
+  const enum avif_color_mode_e color_mode = dt_bauhaus_combobox_get(widget);
+
+  dt_conf_set_int("plugins/imageio/format/avif/color_mode", color_mode);
+}
+
 static void tiling_changed(GtkWidget *widget, gpointer user_data)
 {
   const enum avif_tiling_e tiling = dt_bauhaus_combobox_get(widget);
@@ -744,6 +790,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_imageio_avif_gui_t *gui =
       (dt_imageio_avif_gui_t *)malloc(sizeof(dt_imageio_avif_gui_t));
   const uint32_t bit_depth = dt_conf_get_int("plugins/imageio/format/avif/bit_depth");
+  const enum avif_color_mode_e color_mode = dt_conf_get_int("plugins/imageio/format/avif/color_mode");
   const enum avif_tiling_e tiling = dt_conf_get_int("plugins/imageio/format/avif/tiling");
   const enum avif_compression_type_e compression_type = dt_conf_get_int("plugins/imageio/format/avif/compression_type");
   const uint32_t quality = dt_conf_get_int("plugins/imageio/format/avif/quality");
@@ -757,7 +804,7 @@ void gui_init(dt_imageio_module_format_t *self)
    */
   gui->bit_depth = dt_bauhaus_combobox_new(NULL);
 
-  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, _("bit depth"));
+  dt_bauhaus_widget_set_label(gui->bit_depth, NULL, N_("bit depth"));
   size_t idx = 0;
   for (size_t i = 0; avif_bit_depth[i].name != NULL; i++) {
     dt_bauhaus_combobox_add(gui->bit_depth,  _(avif_bit_depth[i].name));
@@ -773,12 +820,33 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), gui->bit_depth, TRUE, TRUE, 0);
 
   /*
+   * Color mode combo box
+   */
+  gui->color_mode = dt_bauhaus_combobox_new(NULL);
+  dt_bauhaus_widget_set_label(gui->color_mode,
+                              NULL,
+                              _("color mode"));
+  dt_bauhaus_combobox_add(gui->color_mode,
+                          _("rgb colors"));
+  dt_bauhaus_combobox_add(gui->color_mode,
+                          _("grayscale"));
+  dt_bauhaus_combobox_set(gui->color_mode, color_mode);
+
+  gtk_widget_set_tooltip_text(gui->color_mode,
+          _("Saving as grayscale will reduce the size for black & white images"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     gui->color_mode,
+                     TRUE,
+                     TRUE,
+                     0);
+  /*
    * Tiling combo box
    */
   gui->tiling = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->tiling,
                               NULL,
-                              _("tiling"));
+                              N_("tiling"));
   dt_bauhaus_combobox_add(gui->tiling,
                           _("on"));
   dt_bauhaus_combobox_add(gui->tiling,
@@ -803,7 +871,7 @@ void gui_init(dt_imageio_module_format_t *self)
   gui->compression_type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(gui->compression_type,
                               NULL,
-                              _("compression type"));
+                              N_("compression type"));
   dt_bauhaus_combobox_add(gui->compression_type,
                           _(avif_get_compression_string(AVIF_COMP_LOSSLESS)));
   dt_bauhaus_combobox_add(gui->compression_type,
@@ -828,7 +896,7 @@ void gui_init(dt_imageio_module_format_t *self)
                                                   1, /* step */
                                                   92, /* default */
                                                   0); /* digits */
-  dt_bauhaus_widget_set_label(gui->quality, NULL, _("quality"));
+  dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
   dt_bauhaus_slider_set_default(gui->quality, 95);
   dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
 
@@ -860,6 +928,10 @@ void gui_init(dt_imageio_module_format_t *self)
                    "value-changed",
                    G_CALLBACK(bit_depth_changed),
                    NULL);
+  g_signal_connect(G_OBJECT(gui->color_mode),
+                   "value-changed",
+                   G_CALLBACK(color_mode_changed),
+                   (gpointer)self);
   g_signal_connect(G_OBJECT(gui->tiling),
                    "value-changed",
                    G_CALLBACK(tiling_changed),

@@ -1,0 +1,303 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="perspective_correction">
+
+  <title>Perspective correction</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>perspective correction</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>perspective correction</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is designed to automatically correct for converging lines, a form of
+              perspective distortions frequently seen in architectural photographs. The
+              underlying mechanism is inspired by Markus Hebel's
+              <ulink url="http://www.shiftn.de/"><emphasis>ShiftN</emphasis></ulink> program.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/ashift.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      Perspective distortions are a natural effect when projecting a three dimensional scene
+      onto a two dimensional plane and cause objects close to the viewer to appear larger than
+      objects further away. Converging lines are a special case of perspective distortions
+      frequently seen in architectural photographs. Parallel lines when photographed at an angle
+      get transformed into converging lines that meet at some vantage point within or outside
+      the image frame.
+    </para>
+
+    <para>
+      This module is able to correct converging lines by warping the image in such a way that
+      the lines in question become parallel to the image frame. Corrections can be applied in
+      vertical and horizontal direction, either separately or in combination. In order to
+      perform an automatic correction the module analyzes the image for suitable structural
+      features consisting of line segments. Based on these line segments a fitting procedure is
+      started that determines the best values of the module parameters.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      Clicking the <quote>get structure</quote> icon (
+      <inlinegraphic fileref="&icon_ashift_structure;" scalefit="1" width="2%" align="center" />
+      ) causes darktable to analyze the image for structural elements. Line segments are
+      detected and evaluated. Only lines that form a set of either vertical or horizontal lines
+      are used for further processing steps. The line segments are displayed as overlays on the
+      image base. A color code describes what type of line darktable has found:
+      <informaltable frame="none" width="80%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth='1*'/>
+          <colspec colwidth='4*'/>
+          <tbody>
+            <row>
+              <entry>
+                <emphasis>green</emphasis>
+              </entry>
+              <entry>
+                lines that are selected as relevant vertical converging lines
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>red</emphasis>
+              </entry>
+              <entry>
+                lines that are vertical but are not part of the set of converging lines
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>blue</emphasis>
+              </entry>
+              <entry>
+                lines that are selected as relevant horizontal converging lines
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>yellow</emphasis>
+              </entry>
+              <entry>
+                lines that are horizontal but are not part of the set of converging lines
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <emphasis>grey</emphasis>
+              </entry>
+              <entry>
+                other lines identified but not of interest to this module
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+    <para>
+      Lines marked in red or yellow are regarded as outliers and are not taken into account for
+      the automatic fitting step. This outlier elimination involves a statistical process with
+      random sampling so that each time you press the <quote>get structure</quote> button the
+      color pattern of the lines will look a bit different. You can manually change the status
+      of line segments: left-clicking on a line selects it (turns the color to green or blue)
+      while right-clicking deselects it (turns the color to red or yellow). Keeping the mouse
+      button pressed allows for a sweeping action to select/deselect multiple lines in a row;
+      the size of the select/deselect brush can be changed with the mouse wheel. Holding down
+      the <emphasis>Shift</emphasis> key and keeping the left or right mouse button pressed
+      while dragging selects or deselects all lines in the chosen rectangular area.
+    </para>
+
+    <para>
+      Clicking one of the <quote>automatic fit</quote> icons (see below) starts an optimization
+      process which finds the best suited parameters. The image and the overlaid lines are then
+      displayed with perspective corrections applied.
+    </para>
+
+    <sect5>
+      <title>rotation</title>
+      <para>
+        This parameter controls a rotation of the image around its center and can correct for a
+        skewed horizon.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>lens shift (horizontal)</title>
+      <para>
+        This parameter corrects converging lines horizontally.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>lens shift (vertical)</title>
+      <para>
+        This parameter corrects converging lines vertically. In some cases you get a more
+        naturally looking image if you correct vertical distortions not to their full extent but
+        rather at an 80 to 90% level. If desired just reduce the value after having performed
+        the automatic correction.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>shear</title>
+      <para>
+        This parameter shears the image along one of its diagonals and is needed when correcting
+        vertical and horizontal perspective distortions simultaneously.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>guides</title>
+      <para>
+        If activated a number of guide lines is laid over the image to help you judge the
+        quality of the correction.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>automatic cropping</title>
+      <para>
+        When activated the automatic cropping feature clips the image to get rid of any black
+        corners. At your choice you can either clip to the <quote>largest area</quote> or to the
+        largest rectangle maintaining the original aspect ratio (<quote>original
+        format</quote>). In the latter case you can manually adjust the automatic cropping result:
+        left click into to clip region and move it around. The size of the region gets modified
+        automatically excluding any black corners.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>lens model</title>
+      <para>
+        This parameter controls how lens and camera specifics are taken into account. If set to
+        <quote>generic</quote> a focal length of 28mm on a full-format camera is assumed. If set
+        to <quote>specific</quote>, focal length and crop factor can be set manually.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>focal length</title>
+      <para>
+        The focal length of the lens used. The default value is taken from the Exif data of your
+        image. This parameter is only effective and visible if the <quote>specific</quote> lens
+        model has been selected.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>crop factor</title>
+      <para>
+        The crop factor of the camera used. You will typically need to set this value manually.
+        This parameter is only effective and visible if the <quote>specific</quote> lens model
+        has been selected.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>aspect adjust</title>
+      <para>
+        If the <quote>specific</quote> lens model has been selected this parameter allows for a
+        free manual adjustment of the image's aspect ratio.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>automatic fit</title>
+      <para>
+        Clicking on one of the icons starts an automatic fitting of the module parameters based
+        on the selected vertical and/or horizontal lines. You can choose to correct only
+        vertical distortions (
+        <inlinegraphic fileref="&icon_ashift_vertical;" scalefit="1" width="2%" align="center" />
+        ), only horizontal distortions (
+        <inlinegraphic fileref="&icon_ashift_horizontal;" scalefit="1" width="2%" align="center" />
+        ), or both types of distortions simultaneously (
+        <inlinegraphic fileref="&icon_ashift_both;" scalefit="1" width="2%" align="center" />
+        ). <emphasis>Ctrl+clicking</emphasis> on either icon only fits rotation.
+        <emphasis>Shift+clicking</emphasis> on either icon only fits vertical and/or horizontal
+        lens shift.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>get structure</title>
+      <para>
+        Clicking on the
+        <inlinegraphic fileref="&icon_ashift_structure;" scalefit="1" width="2%" align="center" />
+        icon causes the image to be (re-)analyzed for suitable line segments.
+        <emphasis>Shift+clicking</emphasis> applies a prior contrast enhancement step,
+        <emphasis>Ctrl+clicking</emphasis> applies an edge enhancement step. Both variations can
+        be used alone or in combination if the default is not able to detect a sufficient number
+        of lines. Clicking on the
+        <inlinegraphic fileref="&icon_ashift_clear;" scalefit="1" width="2%" align="center" />
+        icon discards all collected structural data. By clicking on the
+        <inlinegraphic fileref="&icon_ashift_eye;" scalefit="1" width="2%" align="center" />
+        icon you can switch the overlay display of line segments on and off.
+      </para>
+    </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Examples</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="4*"/>
+          <colspec colwidth="6*"/>
+          <tbody>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/ashift_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                An input image with a skewed horizon and converging lines caused by directing
+                the camera upwards.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/ashift_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                The image after having corrected for vertical and horizontal perspective
+                distortions. Note the framing by the automatic cropping feature and the still
+                visible overlay of structural lines.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+  </sect4>
+
+</sect3>

@@ -449,6 +449,8 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       const int stars = pos->toLong();
       dt_image_set_xmp_rating(img, stars);
     }
+    else
+      dt_image_set_xmp_rating(img, -2);
 
     if(!exif_read) dt_colorlabels_remove_labels(img->id);
     if(FIND_XMP_TAG("Xmp.xmp.Label"))
@@ -1088,6 +1090,8 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
       const int stars = pos->toLong() * 5. / 100;
       dt_image_set_xmp_rating(img, stars);
     }
+    else
+      dt_image_set_xmp_rating(img, -2);
 
     // read embedded color matrix as used in DNGs
     {
@@ -1427,17 +1431,17 @@ int dt_exif_read(dt_image_t *img, const char *path)
     if(!exifData.empty())
     {
       res = _exif_decode_exif_data(img, exifData);
- 
-      const int oldmono = dt_image_monochrome_flags(img);
-
-      if(dt_conf_get_bool("ui/detect_mono_exif") &&
-        !(oldmono & DT_IMAGE_MONOCHROME_PREVIEW))
+      if(dt_conf_get_bool("ui/detect_mono_exif"))
       {
+        const int oldflags = dt_image_monochrome_flags(img) | (img->flags & DT_IMAGE_MONOCHROME_WORKFLOW);
         if(dt_imageio_has_mono_preview(path))
-          img->flags |= DT_IMAGE_MONOCHROME_PREVIEW;
+          img->flags |= (DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+        else
+          img->flags &= ~(DT_IMAGE_MONOCHROME_PREVIEW | DT_IMAGE_MONOCHROME_WORKFLOW);
+
+        if(oldflags != (dt_image_monochrome_flags(img) | (img->flags & DT_IMAGE_MONOCHROME_WORKFLOW)))
+          dt_imageio_update_monochrome_workflow_tag(img->id, dt_image_monochrome_flags(img));
       }
-      if(oldmono != dt_image_monochrome_flags(img))
-        dt_imageio_update_monochrome_workflow_tag(img->id, dt_image_monochrome_flags(img));
     }
     else
       img->exif_inited = 1;

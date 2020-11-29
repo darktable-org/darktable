@@ -19,6 +19,7 @@
 #include "common/color_picker.h"
 #include "common/darktable.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/iop_profile.h"
 #include "develop/format.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -28,10 +29,37 @@ static inline size_t _box_size(const int *const box)
   return (size_t)((box[3] - box[1]) * (box[2] - box[0]));
 }
 
-static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
-                                        const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
-                                        float *const picked_color_min, float *const picked_color_max,
-                                        const dt_iop_colorspace_type_t cst_to)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
+#endif
+static inline void rgb_to_JzCzhz(const float *const rgb, float *const JzCzhz,
+                                 const dt_iop_order_iccprofile_info_t *const profile)
+{
+  float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+  float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+
+  if(profile)
+  {
+    float XYZ_D50[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, profile->matrix_in, profile->lut_in, profile->unbounded_coeffs_in,
+                               profile->lutsize, profile->nonlinearlut);
+    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+  }
+  else
+  {
+    // This should not happen (we don't know what RGB is), but use this when profile is not defined
+    dt_XYZ_D50_2_XYZ_D65(rgb, XYZ_D65);
+  }
+
+  dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
+  dt_JzAzBz_2_JzCzhz(JzAzBz, JzCzhz);
+}
+
+static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                        const dt_iop_roi_t *const roi, const int *const box,
+                                        float *const picked_color, float *const picked_color_min,
+                                        float *const picked_color_max, const dt_iop_colorspace_type_t cst_to,
+                                        const dt_iop_order_iccprofile_info_t *const profile)
 {
   const int width = roi->width;
 
@@ -45,11 +73,13 @@ static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *dsc, const fl
     for(size_t i = box[0]; i < box[2]; i++)
     {
       const size_t k = 4 * (width * j + i);
-      float Lab[3] = { pixel[k], pixel[k + 1], pixel[k + 2] };
+      float Lab[3] DT_ALIGNED_PIXEL = { pixel[k], pixel[k + 1], pixel[k + 2] };
       if(cst_to == iop_cs_LCh)
         dt_Lab_2_LCH(pixel + k, Lab);
-      if(cst_to == iop_cs_HSL)
+      else if(cst_to == iop_cs_HSL)
         dt_RGB_2_HSL(pixel + k, Lab);
+      else if(cst_to == iop_cs_JzCzhz)
+        rgb_to_JzCzhz(pixel + k, Lab, profile);
       picked_color[0] += w * Lab[0];
       picked_color[1] += w * Lab[1];
       picked_color[2] += w * Lab[2];
@@ -63,10 +93,11 @@ static void color_picker_helper_4ch_seq(const dt_iop_buffer_dsc_t *dsc, const fl
   }
 }
 
-static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
-                                             const dt_iop_roi_t *roi, const int *const box,
+static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
+                                             const dt_iop_roi_t *const roi, const int *const box,
                                              float *const picked_color, float *const picked_color_min,
-                                             float *const picked_color_max, const dt_iop_colorspace_type_t cst_to)
+                                             float *const picked_color_max, const dt_iop_colorspace_type_t cst_to,
+                                             const dt_iop_order_iccprofile_info_t *const profile)
 {
   const int width = roi->width;
 
@@ -89,7 +120,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, con
 
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, cst_to, pixel, width, box, mean, mmin, mmax)
+  dt_omp_firstprivate(w, cst_to, pixel, width, box, mean, mmin, mmax, profile)
 #endif
   {
     const int tnum = dt_get_thread_num();
@@ -106,11 +137,13 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, con
       for(size_t i = box[0]; i < box[2]; i++)
       {
         const size_t k = 4 * (width * j + i);
-        float Lab[3] = { pixel[k], pixel[k + 1], pixel[k + 2] };
+        float Lab[3] DT_ALIGNED_PIXEL = { pixel[k], pixel[k + 1], pixel[k + 2] };
         if(cst_to == iop_cs_LCh)
           dt_Lab_2_LCH(pixel + k, Lab);
-        if(cst_to == iop_cs_HSL)
+        else if(cst_to == iop_cs_HSL)
           dt_RGB_2_HSL(pixel + k, Lab);
+        else if(cst_to == iop_cs_JzCzhz)
+          rgb_to_JzCzhz(pixel + k, Lab, profile);
         tmean[0] += w * Lab[0];
         tmean[1] += w * Lab[1];
         tmean[2] += w * Lab[2];
@@ -141,14 +174,18 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *dsc, con
 
 static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
                                     const dt_iop_roi_t *roi, const int *const box, float *const picked_color,
-                                    float *const picked_color_min, float *const picked_color_max, const dt_iop_colorspace_type_t cst_to)
+                                    float *const picked_color_min, float *const picked_color_max,
+                                    const dt_iop_colorspace_type_t cst_to,
+                                    const dt_iop_order_iccprofile_info_t *const profile)
 {
   const size_t size = _box_size(box);
 
   if(size > 100) // avoid inefficient multi-threading in case of small region size (arbitrary limit)
-    return color_picker_helper_4ch_parallel(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, cst_to);
+    return color_picker_helper_4ch_parallel(dsc, pixel, roi, box, picked_color, picked_color_min,
+                                            picked_color_max, cst_to, profile);
   else
-    return color_picker_helper_4ch_seq(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, cst_to);
+    return color_picker_helper_4ch_seq(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max,
+                                       cst_to, profile);
 }
 
 static void color_picker_helper_bayer_seq(const dt_iop_buffer_dsc_t *const dsc, const float *const pixel,
@@ -409,14 +446,16 @@ static void color_picker_helper_xtrans(const dt_iop_buffer_dsc_t *dsc, const flo
 
 void dt_color_picker_helper(const dt_iop_buffer_dsc_t *dsc, const float *const pixel, const dt_iop_roi_t *roi,
                             const int *const box, float *const picked_color, float *const picked_color_min,
-                            float *const picked_color_max, const dt_iop_colorspace_type_t image_cst, const dt_iop_colorspace_type_t picker_cst)
+                            float *const picked_color_max, const dt_iop_colorspace_type_t image_cst,
+                            const dt_iop_colorspace_type_t picker_cst,
+                            const dt_iop_order_iccprofile_info_t *const profile)
 {
   if((dsc->channels == 4u) && ((image_cst == picker_cst) || (picker_cst == iop_cs_NONE)))
-    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
+    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
   else if(dsc->channels == 4u && image_cst == iop_cs_Lab && picker_cst == iop_cs_LCh)
-    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
-  else if(dsc->channels == 4u && image_cst == iop_cs_rgb && picker_cst == iop_cs_HSL)
-    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst);
+    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
+  else if(dsc->channels == 4u && image_cst == iop_cs_rgb && (picker_cst == iop_cs_HSL || picker_cst == iop_cs_JzCzhz))
+    color_picker_helper_4ch(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max, picker_cst, profile);
   else if(dsc->channels == 1u && dsc->filters != 0u && dsc->filters != 9u)
     color_picker_helper_bayer(dsc, pixel, roi, box, picked_color, picked_color_min, picked_color_max);
   else if(dsc->channels == 1u && dsc->filters == 9u)

@@ -49,11 +49,9 @@ static gboolean _iop_record_point_area(dt_iop_color_picker_t *self)
     {
       if(self->pick_pos[k] != self->module->color_picker_point[k])
       {
-
         self->pick_pos[k] = self->module->color_picker_point[k];
         selection_changed = TRUE;
       }
-
     }
     for(int k = 0; k < 4; k++)
     {
@@ -139,7 +137,7 @@ static void _iop_init_picker(dt_iop_color_picker_t *picker, dt_iop_module_t *mod
 {
   picker->module     = module;
   picker->kind       = kind;
-  picker->picker_cst = iop_cs_NONE;
+  picker->picker_cst = module ? module->default_colorspace(module, NULL, NULL) : iop_cs_NONE;
   picker->colorpick  = button;
 
   for(int j = 0; j<2; j++) picker->pick_pos[j] = NAN;
@@ -219,8 +217,11 @@ static void _iop_color_picker_callback(GtkWidget *button, dt_iop_color_picker_t 
 
 void dt_iop_color_picker_set_cst(dt_iop_module_t *module, const dt_iop_colorspace_type_t picker_cst)
 {
-  if(module->picker)
+  if(module->picker && module->picker->picker_cst != picker_cst)
+  {
     module->picker->picker_cst = picker_cst;
+    module->picker->pick_pos[0] = NAN; // trigger difference on next apply
+  }
 }
 
 dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *module)
@@ -234,6 +235,16 @@ dt_iop_colorspace_type_t dt_iop_color_picker_get_active_cst(dt_iop_module_t *mod
 static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                               gpointer user_data)
 {
+  dt_develop_t *dev = module->dev;
+
+  // Invalidate the cache to ensure it will be fully recomputed.
+  // modules between colorin & colorout may need the work_profile
+  // to work properly. This will force colorin to be run and it
+  // will set the work_profile if needed.
+
+  dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
+  dev->preview_pipe->cache_obsolete = 1;
+
   _iop_color_picker_apply(module, piece);
 }
 

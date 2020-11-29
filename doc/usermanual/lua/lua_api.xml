@@ -3,16 +3,10 @@
   <!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
   %darktable_dtd;
   ]>
-  <article status="draft" id="lua_api"><title>Lua API</title>
+  <article status="final" id="lua_api"><title>Lua API<para>Version 6.1.0</para></title>
   <indexterm>
   <primary>Lua API</primary>
   </indexterm>
-  <para>To access the darktable specific functions you must load the darktable environment:</para>
-
-<para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
-
-<para>All functions and data are accessed through the darktable module.</para>
-<para>This documentation for API version 5.0.0.</para>
 
 <section status="final" id="darktable">
 <title>darktable</title>
@@ -21,6 +15,11 @@
 <secondary>darktable</secondary>
 </indexterm>
 <para>The darktable library is the main entry point for all access to the darktable internals.</para>
+<para>To access the darktable specific functions you must load the darktable environment:</para>
+
+<para><programlisting language="lua">darktable = require "darktable"</programlisting></para>
+
+<para>All functions and data are accessed through the darktable module.</para>
 
 <section status="final" id="darktable_print">
 <title>darktable.print</title>

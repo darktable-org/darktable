@@ -661,7 +661,10 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     GList *style = NULL;
-    if(mode == DT_STYLE_HISTORY_OVERWRITE) dt_history_delete_on_image_ext(imgid, FALSE);
+
+    if(mode == DT_STYLE_HISTORY_OVERWRITE)
+      dt_history_delete_on_image_ext(imgid, FALSE);
+
     for (style = styles; style != NULL; style = style->next)
     {
       dt_styles_apply_to_image((char*)style->data, duplicate, imgid);
@@ -803,7 +806,8 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     if(duplicate)
     {
       newimgid = dt_image_duplicate(imgid);
-      if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
+      if(newimgid != -1)
+        dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
     }
     else
       newimgid = imgid;

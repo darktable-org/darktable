@@ -38,12 +38,13 @@ void dt_image_cache_allocate(void *data, dt_cache_entry_t *entry)
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure, "
-      "aperture, iso, focal_length, datetime_taken, flags, crop, orientation, focus_distance, "
-      "raw_parameters, longitude, latitude, altitude, color_matrix, colorspace, version, raw_black, "
-      "raw_maximum, aspect_ratio, exposure_bias, "
-      "import_timestamp, change_timestamp, export_timestamp, print_timestamp "
-      "FROM main.images WHERE id = ?1",
+      "SELECT id, group_id, film_id, width, height, filename, maker, model, lens, exposure,"
+      "       aperture, iso, focal_length, datetime_taken, flags, crop, orientation,"
+      "       focus_distance, raw_parameters, longitude, latitude, altitude, color_matrix,"
+      "       colorspace, version, raw_black, raw_maximum, aspect_ratio, exposure_bias,"
+      "       import_timestamp, change_timestamp, export_timestamp, print_timestamp"
+      "  FROM main.images"
+      "  WHERE id = ?1",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, entry->key);
   if(sqlite3_step(stmt) == SQLITE_ROW)
@@ -195,7 +196,7 @@ void dt_image_cache_print(dt_image_cache_t *cache)
          (float)cache->cache.cost / (float)cache->cache.cost_quota);
 }
 
-dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, char mode)
+dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, char mode)
 {
   if(imgid <= 0) return NULL;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
@@ -205,9 +206,9 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const uint32_t imgid, ch
   return img;
 }
 
-dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const uint32_t imgid, char mode)
+dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const int32_t imgid, char mode)
 {
-  if(imgid <= 0) return 0;
+  if(imgid <= 0) return NULL;
   dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
   if(!entry) return 0;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
@@ -245,14 +246,17 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
-      "UPDATE main.images SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5, "
-      "lens = ?6, exposure = ?7, aperture = ?8, iso = ?9, focal_length = ?10, "
-      "focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14, "
-      "crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18, longitude = ?19, "
-      "latitude = ?20, altitude = ?21, color_matrix = ?22, colorspace = ?23, raw_black = ?24, "
-      "raw_maximum = ?25, aspect_ratio = ROUND(?26,1), exposure_bias = ?27, "
-      "import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30, print_timestamp = ?31 "
-      "WHERE id = ?32",
+      "UPDATE main.images"
+      " SET width = ?1, height = ?2, filename = ?3, maker = ?4, model = ?5,"
+      "     lens = ?6, exposure = ?7, aperture = ?8, iso = ?9, focal_length = ?10,"
+      "     focus_distance = ?11, film_id = ?12, datetime_taken = ?13, flags = ?14,"
+      "     crop = ?15, orientation = ?16, raw_parameters = ?17, group_id = ?18,"
+      "     longitude = ?19, latitude = ?20, altitude = ?21, color_matrix = ?22,"
+      "     colorspace = ?23, raw_black = ?24, raw_maximum = ?25,"
+      "     aspect_ratio = ROUND(?26,1), exposure_bias = ?27,"
+      "     import_timestamp = ?28, change_timestamp = ?29, export_timestamp = ?30,"
+      "     print_timestamp = ?31"
+      " WHERE id = ?32",
       -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->width);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img->height);
@@ -303,13 +307,13 @@ void dt_image_cache_write_release(dt_image_cache_t *cache, dt_image_t *img, dt_i
 
 
 // remove the image from the cache
-void dt_image_cache_remove(dt_image_cache_t *cache, const uint32_t imgid)
+void dt_image_cache_remove(dt_image_cache_t *cache, const int32_t imgid)
 {
   dt_cache_remove(&cache->cache, imgid);
 }
 
 /* set timestamps */
-void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const uint32_t imgid)
+void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const int32_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -321,7 +325,7 @@ void dt_image_cache_set_change_timestamp(dt_image_cache_t *cache, const uint32_t
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const uint32_t imgid)
+void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const int32_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -333,7 +337,7 @@ void dt_image_cache_unset_change_timestamp(dt_image_cache_t *cache, const uint32
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const uint32_t imgid)
+void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const int32_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);
@@ -345,7 +349,7 @@ void dt_image_cache_set_export_timestamp(dt_image_cache_t *cache, const uint32_t
   dt_image_cache_write_release(cache, img, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const uint32_t imgid)
+void dt_image_cache_set_print_timestamp(dt_image_cache_t *cache, const int32_t imgid)
 {
   if(imgid <= 0) return;
   dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, DT_IMAGE_CACHE_SAFE);

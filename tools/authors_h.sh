@@ -24,6 +24,11 @@
 
 set -e
 
+# https://github.com/travis-ci/travis-ci/issues/8812#issuecomment-347457115
+# Since TracisCI uses LC_ALL=en_US.UTF-8 by default we change these envs. This should keep BSD sed working.
+export LANG=C
+export LC_ALL=C 
+
 AUTHORS="$1"
 H_FILE="$2"
 
@@ -63,7 +68,10 @@ while IFS="" read -r p || [ -n "$p" ]; do
       if [ "$p" = "" ] || [ "${p:0:13}" = "And all those" ]; then
           continue
       fi
-      CONTENT="\"$p\",$CONTENT"
+
+      #on some weird configs read doesn't remove new line, remove it here just to be sure
+      LINE=$(echo -n "$p" | tr -d '[:cntrl:]')
+      CONTENT="\"$LINE\",$CONTENT"
   fi
 done < "$AUTHORS"
 

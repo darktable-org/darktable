@@ -1303,12 +1303,8 @@
         <para>
           darktable ships with a number of modules, arranged into groups. These module groups
           are accessed via toggle buttons in the right panel, just under the histogram. There
-          are also two special module groups named <quote>active</quote> and
-          <quote>favorites</quote>, which only show modules enabled in the history for the
-          current image, and modules selected as a favorite, respectively. Marking a module as a
-          favorite is done in the <emphasis>more modules</emphasis> dialog
-          (<xref linkend="more_modules"/>), at the bottom of the right panel, by clicking a
-          module until a star is displayed in front of the icon.
+          is also a special module group named <quote>active</quote>, which only show modules
+          enabled in the history for the current image.
         </para>
 
       </sect3>

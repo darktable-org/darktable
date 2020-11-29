@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -51,6 +52,7 @@ uint32_t container(dt_lib_module_t *self)
 typedef struct dt_lib_map_settings_t
 {
   GtkWidget *show_osd_checkbutton, *filtered_images_checkbutton, *map_source_dropdown;
+  GtkWidget *epsilon_factor, *min_images;
 } dt_lib_map_settings_t;
 
 int position()
@@ -91,6 +93,26 @@ static void _map_source_changed(GtkWidget *widget, gpointer data)
     map_source = g_value_get_int(&value);
     g_value_unset(&value);
     dt_view_map_set_map_source(darktable.view_manager, map_source);
+  }
+}
+
+static void _epsilon_factor_callback(GtkWidget *slider, gpointer data)
+{
+  const float epsilon = dt_bauhaus_slider_get(slider);
+  dt_conf_set_int("plugins/map/epsilon_factor", epsilon);
+  if(darktable.view_manager->proxy.map.view)
+  {
+    darktable.view_manager->proxy.map.redraw(darktable.view_manager->proxy.map.view);
+  }
+}
+
+static void _min_images_callback(GtkWidget *slider, gpointer data)
+{
+  const int min_images = dt_bauhaus_slider_get(slider);
+  dt_conf_set_int("plugins/map/min_images_per_group", min_images);
+  if(darktable.view_manager->proxy.map.view)
+  {
+    darktable.view_manager->proxy.map.redraw(darktable.view_manager->proxy.map.view);
   }
 }
 
@@ -153,6 +175,19 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->map_source_dropdown), "changed", G_CALLBACK(_map_source_changed), NULL);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+  d->epsilon_factor = dt_bauhaus_slider_new_with_range(NULL, 10.0, 100.0, 1.0,
+                            dt_conf_get_int("plugins/map/epsilon_factor"), 0);
+  gtk_widget_set_tooltip_text(d->epsilon_factor, _("modify the spatial size of an images group on the map"));
+  dt_bauhaus_widget_set_label(d->epsilon_factor, NULL, N_("group size factor"));
+  g_signal_connect(G_OBJECT(d->epsilon_factor), "value-changed", G_CALLBACK(_epsilon_factor_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->epsilon_factor), TRUE, TRUE, 0);
+  d->min_images = dt_bauhaus_slider_new_with_range(NULL, 1.0, 10.0, 1.0,
+                            dt_conf_get_int("plugins/map/min_images_per_group"), 0);
+  gtk_widget_set_tooltip_text(d->min_images, _("minimum of images to make a group"));
+  dt_bauhaus_widget_set_label(d->min_images, NULL, N_("min images per group"));
+  g_signal_connect(G_OBJECT(d->min_images), "value-changed", G_CALLBACK(_min_images_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->min_images), TRUE, TRUE, 0);
 
   g_object_unref(model);
   g_free(map_source);

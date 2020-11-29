@@ -50,9 +50,6 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     ${MINGW_PATH}/gdbus.exe
   #LZO2
     ${MINGW_PATH}/liblzo*.dll
-  #OPENEXR
-    ${MINGW_PATH}/libIexMath*.dll
-    ${MINGW_PATH}/libIlmImfUtil*.dll
   #C-ARES
     ${MINGW_PATH}/libcares*.dll
   #LIBMETALINK
@@ -67,15 +64,6 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     ${MINGW_PATH}/libminizip*.dll
   #TIFF
     ${MINGW_PATH}/libtiffxx*.dll
-  #OPENJPEG
-    ${MINGW_PATH}/libopenjp3d*.dll
-    ${MINGW_PATH}/libopenjpip*.dll
-    ${MINGW_PATH}/libopenjpwl*.dll
-    ${MINGW_PATH}/libopenmj2*.dll
-  #GRAPHICKSMAGICK
-    ${MINGW_PATH}/libltdl*.dll
-    ${MINGW_PATH}/libGraphicsMagick++*.dll
-    ${MINGW_PATH}/libGraphicsMagickWand*.dll
   #GETTEXT
     ${MINGW_PATH}/libasprintf*.dll
     ${MINGW_PATH}/libgettextlib*.dll
@@ -102,11 +90,6 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
     ${MINGW_PATH}/libpcre32*.dll
     ${MINGW_PATH}/libpcrecpp*.dll
     ${MINGW_PATH}/libpcreposix*.dll
-  #LIBWEBP
-    ${MINGW_PATH}/libwebpdecoder*.dll
-    ${MINGW_PATH}/libwebpdemux*.dll
-    #${MINGW_PATH}/libwebpextras*.dll
-    ${MINGW_PATH}/libwebpmux*.dll
   #GNUTLS
     ${MINGW_PATH}/libgnutlsxx*.dll
   #GMP
@@ -114,6 +97,57 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
   #LIBUSB1
     ${MINGW_PATH}/libusb*.dll
     )
+
+  if(OpenEXR_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #OPENEXR
+      ${MINGW_PATH}/libIexMath*.dll
+      ${MINGW_PATH}/libIlmImfUtil*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
+  if(OpenJPEG_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #OPENJPEG
+      ${MINGW_PATH}/libopenjp3d*.dll
+      ${MINGW_PATH}/libopenjpip*.dll
+      ${MINGW_PATH}/libopenjpwl*.dll
+      ${MINGW_PATH}/libopenmj2*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
+  if(GraphicsMagick_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #GRAPHICKSMAGICK
+      ${MINGW_PATH}/libltdl*.dll
+      ${MINGW_PATH}/libGraphicsMagick++*.dll
+      ${MINGW_PATH}/libGraphicsMagickWand*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
+  # workaround for msys2 gmic 2.9.0-3. Should be reviewed when gmic 2.9.3 is available
+  if(GMIC_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #GMIC
+      ${MINGW_PATH}/libopencv_core*.dll
+      ${MINGW_PATH}/libopencv_videoio*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
+
+  if(WebP_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #LIBWEBP
+      ${MINGW_PATH}/libwebpdecoder*.dll
+      ${MINGW_PATH}/libwebpdemux*.dll
+      #${MINGW_PATH}/libwebpextras*.dll
+      ${MINGW_PATH}/libwebpmux*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif()
 
   install(PROGRAMS ${CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS} DESTINATION bin COMPONENT DTApplication)
 
@@ -166,13 +200,15 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       PATTERN "usb.dll" EXCLUDE)
 
   # Add GraphicsMagick libraries
-  install(DIRECTORY
-      "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/coders"
-      DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/
-      COMPONENT DTApplication
-      FILES_MATCHING PATTERN "*"
-      PATTERN "*.a" EXCLUDE
-      PATTERN "*.la" EXCLUDE)
+  if(GraphicsMagick_FOUND)
+    install(DIRECTORY
+        "${MINGW_PATH}/../lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/coders"
+        DESTINATION lib/GraphicsMagick-${GraphicsMagick_PKGCONF_VERSION}/modules-Q8/
+        COMPONENT DTApplication
+        FILES_MATCHING PATTERN "*"
+        PATTERN "*.a" EXCLUDE
+        PATTERN "*.la" EXCLUDE)
+  endif()
 
   # Add lensfun libraries
   if(LensFun_FOUND)

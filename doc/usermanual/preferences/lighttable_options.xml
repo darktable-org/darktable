@@ -6,7 +6,7 @@
 <sect1 status="final" id="lighttable_options">
 
     <title>Lighttable</title>
-    
+
     <bridgehead renderas="sect5">color manage cached thumbnails</bridgehead>
 
     <para>
@@ -16,7 +16,7 @@
       the specific monitor color space valid at generation time and are subsequently displayed
       without further corrections (default on).
     </para>
-    
+
     <bridgehead renderas="sect5">don't use embedded preview JPEG but half-size raw</bridgehead>
 
     <para>
@@ -29,7 +29,7 @@
     <para>
       The number of folder levels to show in film roll names, starting from the right (default 1).
     </para>
-    
+
     <bridgehead renderas="sect5">sort film rolls by</bridgehead>
 
     <para>
@@ -53,7 +53,11 @@
 
     <para>
       Sizes categories are used to be able to set different overlays and css values depending of
-      the size of the thumbnail. Set here thumbnails sizes delimiters.
+      the size of the thumbnail. Set here thumbnails sizes delimiters, separated by "|"
+    </para>
+    <para>
+      For example, "120|400" means 3 categories of thumbnails :
+      0px->120px, 120px->400px and >400px
     </para>
 
     <bridgehead renderas="sect5">pattern for the thumbnail extended overlay text</bridgehead>
@@ -62,25 +66,19 @@
       If enabled adds additional information to the thumbnail under the mouse cursor: image name,
       exposure time, aperture, focal length, ISO value (default off).
     </para>
-    
+
     <bridgehead renderas="sect5">pattern for the thumbnail tooltip (empty to disable)</bridgehead>
 
     <para>
-      Define the pattern for the thumbnail tooltip. Empty it to disable thumbnail tooltip. As for
-      previous pattern, see <xref linkend="session_options"/> for possible tags to use.
+      Define the pattern for the thumbnail tooltip. Empty it to disable thumbnail tooltip.
+      As for previous pattern, several pre-defined variables can be used as placeholders.
+      See <xref linkend="darktable_variables"/> for an exhaustive list of available variables.
     </para>
-    
+
     <bridgehead renderas="sect5">use single-click in the collect panel</bridgehead>
 
     <para>
       (default off). In single-click mode, you can select range of value directly with the mouse.
-    </para>
-
-    <bridgehead renderas="sect5">overlay txt sidecar over zoomed images</bridgehead>
-
-    <para>
-      When there is a txt file next to an image, it can be shown as an overlay over zoomed images
-      on the lighttable. The txt file either has to be there at import time or the crawler  has to be enabled.
     </para>
 
     <bridgehead renderas="sect5">expand a single lighttable module at a time</bridgehead>
