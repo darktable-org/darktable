@@ -10,7 +10,7 @@ same version of darktable, the same image, and the same sidecar file.
 Unless you override the image or sidecar, they will remain the same.
 Comparisons between different darktable versions will also reflect
 performance changes between the versions (for example, darktable 3.2.1
-rates ~410 on a 32-core Threadripper, while darktable 3.4 rates ~565
+rates ~410 on a 32-core Threadripper, while darktable 3.4 rates ~585
 on the same hardware).
 
 Note that on a slow machine, it could easily take three to five
@@ -84,6 +84,16 @@ Sample output
       Average pixelpipe processing time:      8.572 seconds
       Average overall processing time:        8.794 seconds
       Throughput rating (higher is better):   409.4 (CPU only)
+
+If you specified the number of threads to use (for example, to check
+whether hyperthreading helps or hinders performance), that number will
+be included in the report
+
+      darktable 3.3.0+1899~gb877bfb48 ::: benchmark v3.4 ::: image mire1.cr2
+      Number of threads used:                    32
+      Average pixelpipe processing time:      5.780 seconds
+      Average overall processing time:        5.998 seconds
+      Throughput rating (higher is better):   600.2 (CPU only)
 
 
 
