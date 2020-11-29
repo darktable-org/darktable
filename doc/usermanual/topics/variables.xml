@@ -1,0 +1,705 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="darktable_variables">
+
+  <title>variable substitution</title>
+
+  <para>
+    darktable supports variable substitution in a number of modules and preference settings. For example:
+  </para>
+  <itemizedlist>
+    <listitem><para>
+      Defining file names in the export selected lighttable module. See <xref linkend="export_selected_usage_filename"/>
+    </para></listitem>
+    <listitem><para>
+      Displaying image information in the darkroom’s image information line. See <xref linkend="infoline"/>
+    </para></listitem>
+    <listitem><para>
+      Displaying image information in the lighttable’s overlays and tooltips. See <xref linkend="lighttable_options"/>
+    </para></listitem>
+  </itemizedlist>
+
+  <sect2 status="final" id="darktable_variables_list">
+
+    <title>available variables</title>
+
+    <para>
+      Due to the specifities of some context, some variables are not available everywhere.
+    </para>
+
+    <informaltable frame="none" width="80%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <tbody>
+            <row>
+              <entry>
+                <code>$(ROLL_NAME)</code>
+              </entry>
+              <entry>
+                roll of the input image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(FILE_FOLDER)</code>
+              </entry>
+              <entry>
+                folder containing the input image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(FILE_NAME)</code>
+              </entry>
+              <entry>
+                basename of the input image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(FILE_EXTENSION)</code>
+              </entry>
+              <entry>
+                extension of the input image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(ID)</code>
+              </entry>
+              <entry>
+                the image id
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(VERSION)</code>
+              </entry>
+              <entry>
+                the duplicate version (see <xref linkend="sidecar_files"/>)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(VERSION_IF_MULTI)</code>
+              </entry>
+              <entry>
+                same as $(VERSION) but null string if only one version exists
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(VERSION_NAME)</code>
+              </entry>
+              <entry>
+                version name from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(SEQUENCEn)</code>
+              </entry>
+              <entry>
+                a sequence number within export job, 4 digits if n is not specified
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(JOBCODE)</code>
+              </entry>
+              <entry>
+                internal code of current job
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MAX_WIDTH)</code>
+              </entry>
+              <entry>
+                maximum image width to limit within export session
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MAX_HEIGHT)</code>
+              </entry>
+              <entry>
+                maximum image height to limit within export session
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(YEAR)</code>
+              </entry>
+              <entry>
+                year at date of export
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MONTH)</code>
+              </entry>
+              <entry>
+                month at date of export
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(DAY)</code>
+              </entry>
+              <entry>
+                day at date of export
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(HOUR)</code>
+              </entry>
+              <entry>
+                hour at time of export
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MINUTE)</code>
+              </entry>
+              <entry>
+                minute at time of export
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(SECOND)</code>
+              </entry>
+              <entry>
+                second at time of export
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_YEAR)</code>
+              </entry>
+              <entry>
+                Exif year
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_MONTH)</code>
+              </entry>
+              <entry>
+                Exif month
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_DAY)</code>
+              </entry>
+              <entry>
+                Exif day
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_HOUR)</code>
+              </entry>
+              <entry>
+                Exif hour
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_MINUTE)</code>
+              </entry>
+              <entry>
+                Exif minute
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_SECOND)</code>
+              </entry>
+              <entry>
+                Exif second
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_ISO)</code>
+              </entry>
+              <entry>
+                ISO value
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_EXPOSURE)</code>
+              </entry>
+              <entry>
+                Exif exposure
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_EXPOSURE_BIAS)</code>
+              </entry>
+              <entry>
+                Exif exposure bias
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_APERTURE)</code>
+              </entry>
+              <entry>
+                Exif aperture
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_FOCAL_LENGTH)</code>
+              </entry>
+              <entry>
+                Exif focal length
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(EXIF_FOCUS_DISTANCE)</code>
+              </entry>
+              <entry>
+                Exif focus distance
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LONGITUDE)</code>
+              </entry>
+              <entry>
+                Longitude
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LATITUDE)</code>
+              </entry>
+              <entry>
+                Latitude
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(ELEVATION)</code>
+              </entry>
+              <entry>
+                Elevation
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(STARS)</code>
+              </entry>
+              <entry>
+                star rating (number)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(RATING_ICONS)</code>
+              </entry>
+              <entry>
+                star rating with stars chars
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LABELS)</code>
+              </entry>
+              <entry>
+                colorlabels (text only)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LABELS_ICONS)</code>
+              </entry>
+              <entry>
+                colorlabels with bullets colored chars
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LABELS_COLORICONS)</code>
+              </entry>
+              <entry>
+                colorlabels with colored icons
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MAKER)</code>
+              </entry>
+              <entry>
+                camera maker
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(MODEL)</code>
+              </entry>
+              <entry>
+                camera model
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(LENS)</code>
+              </entry>
+              <entry>
+                lens
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(TITLE)</code>
+              </entry>
+              <entry>
+                title from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(DECRIPTION)</code>
+              </entry>
+              <entry>
+                description from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(CREATOR)</code>
+              </entry>
+              <entry>
+                creator from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(PUBLISHER)</code>
+              </entry>
+              <entry>
+                publisher from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(RIGHTS)</code>
+              </entry>
+              <entry>
+                rights from metadata
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(PICTURES_FOLDER)</code>
+              </entry>
+              <entry>
+                pictures folder
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(HOME)</code>
+              </entry>
+              <entry>
+                home folder
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(DESKTOP)</code>
+              </entry>
+              <entry>
+                desktop folder
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(USERNAME)</code>
+              </entry>
+              <entry>
+                user name as defined by the OS
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(OPENCL_ACTIVATED)</code>
+              </entry>
+              <entry>
+                whether OpenCL is activated
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(TAGS)</code>
+              </entry>
+              <entry>
+                tags list (Xmp.dc.Subject)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(CATEGORYn(category))</code>
+              </entry>
+              <entry>
+                tag name of level n [0,9] of selected category (or tag)
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(SIDECAR_TXT)</code>
+              </entry>
+              <entry>
+                content of the sidecar textfile if any
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(NL)</code>
+              </entry>
+              <entry>
+                add a new line
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </sect2>
+
+    <sect2 status="final" id="darktable_variables_substitutions">
+
+    <title>variables substitutions</title>
+
+      <para>
+        All of the variables support basic string substitution inspired by bash. The details
+        differ however, for example all patterns are treated as simple string comparisons. There
+        is no regex support. For example you can do the following:
+        <code>$(ROLL_NAME/search/replace)</code>
+        . This means if your roll name is e.g. <emphasis>1970-01-01_RAW_Time-Begins</emphasis>
+        and you use
+        <code>$(ROLL_NAME/RAW/JPG)</code>
+        it will result in a roll name of: <emphasis>1970-01-01_JPG_Time-Begins</emphasis>
+      </para>
+
+      <informaltable frame="none" width="80%">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <tbody>
+            <row>
+              <entry>
+                <code>$(var-default)</code>
+              </entry>
+              <entry>
+                If
+                <code>var</code>
+                is empty, use
+                <code>default</code>
+                .
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var+alt_value)</code>
+              </entry>
+              <entry>
+                If
+                <code>var</code>
+                is set, use
+                <code>alt_value</code>
+                , else use empty string.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var:offset)</code>
+              </entry>
+              <entry>
+                <code>var</code>
+                starting from
+                <code>offset</code>
+                . If
+                <code>offset</code>
+                is less than zero it is counted from the back of the string.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var:offset:length)</code>
+              </entry>
+              <entry>
+                At most
+                <code>length</code>
+                characters of
+                <code>var</code>
+                , starting from
+                <code>offset</code>
+                . If
+                <code>offset</code>
+                is less than zero it is counted from the back of
+                <code>var</code>
+                . If
+                <code>length</code>
+                is less than zero it indicates the end of the result, counted from the back of
+                <code>var</code>
+                , and not an actual length.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var#pattern)</code>
+              </entry>
+              <entry>
+                Remove
+                <code>pattern</code>
+                from the start of
+                <code>var</code>
+                .
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var%pattern)</code>
+              </entry>
+              <entry>
+                Remove
+                <code>pattern</code>
+                from the end of
+                <code>var</code>
+                .
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var/pattern/replacement)</code>
+              </entry>
+              <entry>
+                Replace the first occurrence of
+                <code>pattern</code>
+                in
+                <code>var</code>
+                with
+                <code>replacement</code>
+                . If
+                <code>replacement</code>
+                is empty then
+                <code>pattern</code>
+                will be removed.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var//pattern/replacement)</code>
+              </entry>
+              <entry>
+                Replace all occurrences of
+                <code>pattern</code>
+                in
+                <code>var</code>
+                with
+                <code>replacement</code>
+                . If
+                <code>replacement</code>
+                is empty then
+                <code>pattern</code>
+                will be removed.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var/#pattern/replacement)</code>
+              </entry>
+              <entry>
+                If
+                <code>var</code>
+                starts with
+                <code>pattern</code>
+                then
+                <code>pattern</code>
+                is replaced with
+                <code>replacement</code>
+                .
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var/%pattern/replacement)</code>
+              </entry>
+              <entry>
+                If
+                <code>var</code>
+                ends with
+                <code>pattern</code>
+                then
+                <code>pattern</code>
+                is replaced with
+                <code>replacement</code>
+                .
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var^)</code>
+              </entry>
+              <entry>
+                Make the first character of
+                <code>var</code>
+                uppercase.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var^^)</code>
+              </entry>
+              <entry>
+                Make all characters of
+                <code>var</code>
+                uppercase.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var,)</code>
+              </entry>
+              <entry>
+                Make the first character of
+                <code>var</code>
+                lowercase.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <code>$(var,,)</code>
+              </entry>
+              <entry>
+                Make all characters of
+                <code>var</code>
+                lowercase.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+
+  </sect2>
+  <sect2 status="final" id="darktable_variables_markup">
+
+    <title>pango markup</title>
+
+    <para>
+      If you use variables in gui context (panels) you can also use markup language to
+      set how to display texts. See <ulink url="https://developer.gnome.org/pygtk/stable/pango-markup-language.html">
+      <emphasis>The Pango Markup Language</emphasis></ulink>
+    </para>
+  </sect2>
+</sect1>
