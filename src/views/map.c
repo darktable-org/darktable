@@ -57,6 +57,7 @@ typedef struct dt_map_t
   GdkPixbuf *image_pin, *place_pin;
   GList *selected_images;
   gboolean start_drag;
+  int start_drag_x, start_drag_y;
   float thumb_lat_angle, thumb_lon_angle;
   sqlite3_stmt *main_query;
   gboolean drop_filmstrip_activated;
@@ -1479,42 +1480,43 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 {
   dt_map_t *lib = (dt_map_t *)self->data;
 
-  if(lib->loc.drag)
+  if(lib->loc.drag && lib->loc.main.id > 0 &&
+     (abs(lib->start_drag_x - (int)ceil(e->x_root)) +
+      abs(lib->start_drag_y - (int)ceil(e->y_root))) > DT_PIXEL_APPLY_DPI(8))
   {
-    if(lib->loc.main.id > 0)
+    lib->loc.drag = FALSE;
+    osm_gps_map_image_remove(lib->map, lib->loc.main.location);
+    GtkTargetList *targets = gtk_target_list_new(target_list_internal, n_targets_internal);
+
+    GdkDragContext *context =
+      gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
+                                      GDK_ACTION_MOVE, 1,
+                                      (GdkEvent *)e, -1, -1);
+
+    int width;
+    int height;
+    GdkPixbuf *location = _draw_location(lib, &width, &height,
+                                         lib->loc.main.data.shape, lib->loc.main.data.lat,
+                                         lib->loc.main.data.lon, lib->loc.main.data.delta1,
+                                         lib->loc.main.data.delta2 * lib->loc.main.data.ratio,
+                                         TRUE);
+    if(location)
     {
-      lib->loc.drag = FALSE;
-      osm_gps_map_image_remove(lib->map, lib->loc.main.location);
-      GtkTargetList *targets = gtk_target_list_new(target_list_internal, n_targets_internal);
-
-      GdkDragContext *context =
-        gtk_drag_begin_with_coordinates(GTK_WIDGET(lib->map), targets,
-                                        GDK_ACTION_MOVE, 1,
-                                        (GdkEvent *)e, -1, -1);
-
-      int width;
-      int height;
-      GdkPixbuf *location = _draw_location(lib, &width, &height,
-                                           lib->loc.main.data.shape, lib->loc.main.data.lat,
-                                           lib->loc.main.data.lon, lib->loc.main.data.delta1,
-                                           lib->loc.main.data.delta2 * lib->loc.main.data.ratio,
-                                           TRUE);
-      if(location)
-      {
-        GtkWidget *image = gtk_image_new_from_pixbuf(location);
-        gtk_widget_set_name(image, "map_drag_icon");
-        gtk_widget_show(image);
-        gtk_drag_set_icon_widget(context, image,
-                                 DT_PIXEL_APPLY_DPI(width),
-                                 DT_PIXEL_APPLY_DPI(height));
-        g_object_unref(location);
-      }
-      gtk_target_list_unref(targets);
-      return TRUE;
+      GtkWidget *image = gtk_image_new_from_pixbuf(location);
+      gtk_widget_set_name(image, "map_drag_icon");
+      gtk_widget_show(image);
+      gtk_drag_set_icon_widget(context, image,
+                               DT_PIXEL_APPLY_DPI(width),
+                               DT_PIXEL_APPLY_DPI(height));
+      g_object_unref(location);
     }
+    gtk_target_list_unref(targets);
+    return TRUE;
   }
 
-  if(lib->start_drag && lib->selected_images)
+  if(lib->start_drag && lib->selected_images &&
+     (abs(lib->start_drag_x - (int)ceil(e->x_root)) +
+      abs(lib->start_drag_y - (int)ceil(e->y_root))) > DT_PIXEL_APPLY_DPI(8))
   {
     const int nb = g_list_length(lib->selected_images);
     for(GSList *iter = lib->images; iter; iter = iter->next)
@@ -1657,6 +1659,8 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       {
         if(!(e->state & GDK_SHIFT_MASK))
         {
+          lib->start_drag_x = ceil(e->x_root);
+          lib->start_drag_y = ceil(e->y_root);
           lib->loc.drag = TRUE;
           return TRUE;
         }
@@ -1690,6 +1694,8 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       }
       if(lib->selected_images)
       {
+        lib->start_drag_x = ceil(e->x_root);
+        lib->start_drag_y = ceil(e->y_root);
         lib->start_drag = TRUE;
         return TRUE;
       }
