@@ -320,6 +320,11 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
           }
       }
     }
+    else
+    {
+      img->flags &= ~DT_IMAGE_RAW;
+    }
+
     // if buf is NULL, we quit the fct here
     if(!mbuf) return DT_IMAGEIO_OK;
 
@@ -365,10 +370,18 @@ dt_imageio_retval_t dt_imageio_open_rawspeed(dt_image_t *img, const char *filena
 
 dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, dt_mipmap_buffer_t *mbuf)
 {
-  // sraw aren't real raw, but not ldr either (need white balance and stuff)
-  img->flags &= ~DT_IMAGE_LDR;
-  img->flags &= ~DT_IMAGE_RAW;
-  img->flags |= DT_IMAGE_S_RAW;
+  // Some scanners output non-mosaiced DNG that pose as sRAW
+  const char *scanners[2] = { "Reflecta", "Pacific Image" };
+
+  int is_scanner = 0;
+
+  for(uint32_t i = 0; i < (sizeof(scanners) / sizeof(scanners[1])); i++)
+    if(!strcmp(scanners[i], r->metadata.make.c_str()))
+    {
+      is_scanner = 1;
+      break;
+    }
+
   img->width = r->dim.x;
   img->height = r->dim.y;
 
@@ -376,7 +389,38 @@ dt_imageio_retval_t dt_imageio_open_rawspeed_sraw(dt_image_t *img, RawImage r, d
   img->buf_dsc.channels = 4;
   img->buf_dsc.datatype = TYPE_FLOAT;
 
-  if(r->getDataType() != TYPE_USHORT16 && r->getDataType() != TYPE_FLOAT32) return DT_IMAGEIO_FILE_CORRUPTED;
+  RawImageType DataType = r->getDataType();
+
+  if(DataType != TYPE_USHORT16 && DataType != TYPE_FLOAT32) return DT_IMAGEIO_FILE_CORRUPTED;
+
+  if(!is_scanner)
+  {
+    // sraw aren't real raw, but not ldr either (need white balance and stuff)
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags |= DT_IMAGE_S_RAW;
+
+    if(DataType == TYPE_FLOAT32)
+      img->flags |= DT_IMAGE_HDR;
+    else
+      img->flags &= ~DT_IMAGE_HDR;
+  }
+  else
+  {
+    // Scanners DNG don't need white balance and black point
+    img->flags &= ~DT_IMAGE_LDR;
+    img->flags &= ~DT_IMAGE_RAW;
+    img->flags &= ~DT_IMAGE_S_RAW;
+
+    if(DataType == TYPE_USHORT16)
+    {
+      img->flags &= ~DT_IMAGE_HDR;
+    }
+    else if(DataType == TYPE_FLOAT32)
+    {
+      img->flags |= DT_IMAGE_HDR;
+    }
+  }
 
   const uint32_t cpp = r->getCpp();
   if(cpp != 1 && cpp != 3 && cpp != 4) return DT_IMAGEIO_FILE_CORRUPTED;
