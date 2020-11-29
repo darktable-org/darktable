@@ -812,21 +812,19 @@ inline static void sparse_scalar_product(const float *const buf, const size_t in
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB
 
-  float DT_ALIGNED_ARRAY accumulator[4] = { 0.f };
   const float DT_ALIGNED_ARRAY filter[FSIZE] =
                         { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
   #ifdef _OPENMP
-  #pragma omp simd aligned(accumulator:64) reduction(+:accumulator) collapse(2)
+  #pragma omp simd
   #endif
-  for(size_t c = 0; c < 3; ++c)
+  for(size_t c = 0; c < 4; ++c)
+  {
+    float acc = 0.0f;
     for(size_t k = 0; k < FSIZE; ++k)
-      accumulator[c] += filter[k] * buf[indices[k] + c];
-
-  #ifdef _OPENMP
-  #pragma omp simd aligned(accumulator, result:16)
-  #endif
-  for(size_t c = 0; c < 3; ++c) result[c] = accumulator[c];
+      acc += filter[k] * buf[indices[k] + c];
+    result[c] = acc;
+  }
 }
 
 //TODO: consolidate with the copy of this code in src/common/dwt.c
