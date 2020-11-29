@@ -4026,7 +4026,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       else
       {
         fprintf(stderr, "cannot write xmp file '%s': '%s'\n", filename, strerror(errno));
-        dt_control_log(_("cannot read xmp file '%s': '%s'"), filename, strerror(errno));
+        dt_control_log(_("cannot write xmp file '%s': '%s'"), filename, strerror(errno));
       }
       
     }
