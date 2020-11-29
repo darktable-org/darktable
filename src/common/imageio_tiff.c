@@ -402,6 +402,20 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
+  // flag the image buffer properly depending on bit depth
+  if(t.bpp == 32)
+  {
+    // HDR TIFF
+    t.image->flags &= ~DT_IMAGE_LDR;
+    t.image->flags |= DT_IMAGE_HDR;
+  }
+  else
+  {
+    // LDR TIFF
+    t.image->flags |= DT_IMAGE_LDR;
+    t.image->flags &= ~DT_IMAGE_HDR;
+  }
+
   int ok = 1;
 
   if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
