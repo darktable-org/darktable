@@ -146,8 +146,9 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
 static void _view_map_changed_callback(OsmGpsMap *map, dt_view_t *self);
 /* callback that handles mouse scroll */
 static gboolean _view_map_scroll_event(GtkWidget *w, GdkEventScroll *event, dt_view_t *self);
-/* callback that handles double clicks on the map */
+/* callback that handles clicks on the map */
 static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self);
+static gboolean _view_map_button_release_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self);
 /* callback when the mouse is moved */
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context,
@@ -658,6 +659,8 @@ void init(dt_view_t *self)
     g_signal_connect(GTK_WIDGET(lib->map), "changed", G_CALLBACK(_view_map_changed_callback), self);
     g_signal_connect_after(G_OBJECT(lib->map), "button-press-event",
                            G_CALLBACK(_view_map_button_press_callback), self);
+    g_signal_connect_after(G_OBJECT(lib->map), "button-release-event",
+                          G_CALLBACK(_view_map_button_release_callback), self);
     g_signal_connect(G_OBJECT(lib->map), "motion-notify-event", G_CALLBACK(_view_map_motion_notify_callback),
                      self);
   }
@@ -1482,7 +1485,6 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     {
       lib->loc.drag = FALSE;
       osm_gps_map_image_remove(lib->map, lib->loc.main.location);
-      lib->loc.drag = FALSE;
       GtkTargetList *targets = gtk_target_list_new(target_list_internal, n_targets_internal);
 
       GdkDragContext *context =
@@ -1721,6 +1723,14 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       return TRUE;
     }
   }
+  return FALSE;
+}
+
+static gboolean _view_map_button_release_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  lib->start_drag = FALSE;
+  lib->loc.drag = FALSE;
   return FALSE;
 }
 
