@@ -585,6 +585,11 @@ int key_released(dt_view_t *self, guint key, guint state)
     // do nothing for any combination of accel for showing the border controls
     return 0;
   }
+  else if(key == accels->slideshow_view.accel_key && state == accels->slideshow_view.accel_mods)
+  {
+    // do nothing : we don't want to exit slideshow
+    return 0;
+  }
   else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
   {
     _set_delay(d, 1);
