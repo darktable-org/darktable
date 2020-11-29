@@ -281,11 +281,11 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   /* image buffers */
   buffer[0] = img;
   /* temporary storage */
-  buffer[1] = dt_alloc_sse_ps(size);
+  buffer[1] = dt_alloc_align_float(size);
   // buffer to reconstruct the image
-  layers = dt_alloc_sse_ps(4 * p->width * p->height);
+  layers = dt_alloc_align_float(4 * p->width * p->height);
   // scratch buffer for decomposition
-  temp = dt_alloc_sse_ps(dt_get_num_threads() * 4 * p->width);
+  temp = dt_alloc_align_float(dt_get_num_threads() * 4 * p->width);
 
   if(buffer[1] == NULL || layers == NULL || temp == NULL)
   {
@@ -296,7 +296,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
 
   if(p->merge_from_scale > 0)
   {
-    merged_layers = dt_alloc_sse_ps(p->width * p->height * p->ch);
+    merged_layers = dt_alloc_align_float(p->width * p->height * p->ch);
     if(merged_layers == NULL)
     {
       printf("not enough memory for wavelet decomposition");
