@@ -2222,6 +2222,15 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-E3", WhiteFluorescent, 0, { 1.9834437086092715, 1, 2.4900662251655628, 0 } },
   { "Fujifilm", "X-E3", Underwater, 0, { 1.9503311258278146, 1, 1.8311258278145695, 0 } },
 
+  /* FUJIFILM X-S10 Firmware Version Digital Camera X-S10 Ver1.00 */
+  { "Fujifilm", "X-S10", Daylight           , 0, { 1.8576158940397351, 1, 1.8940397350993377, 0 } },
+  { "Fujifilm", "X-S10", Cloudy             , 0, { 2.0231788079470197, 1, 1.6258278145695364, 0 } },
+  { "Fujifilm", "X-S10", Incandescent       , 0, { 1.2483443708609272, 1, 2.8675496688741724, 0 } },
+  { "Fujifilm", "X-S10", DayWhiteFluorescent, 0, { 2.0264900662251657, 1, 2.0496688741721854, 0 } },
+  { "Fujifilm", "X-S10", DaylightFluorescent, 0, { 2.3874172185430464, 1, 1.6556291390728477, 0 } },
+  { "Fujifilm", "X-S10", WhiteFluorescent   , 0, { 1.9437086092715232, 1, 2.5794701986754967, 0 } },
+  { "Fujifilm", "X-S10", Underwater         , 0, { 1.8509933774834437, 1, 1.900662251655629, 0 } },
+
   /* Fujifilm X-T1 Firmware Version 1.10 */
   { "Fujifilm", "X-T1", Daylight, 0,          { 1.89404, 1, 1.569536, 0 } },
   // The manual calls it "Shade", but exiftool shows it as "Cloudy".
