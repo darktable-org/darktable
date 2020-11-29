@@ -31,6 +31,8 @@ extern "C" {
 #include <time.h>
 #include <unistd.h>
 #include <zlib.h>
+
+#include "control/control.h"
 }
 
 #include <cassert>
