@@ -126,7 +126,8 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
   for(uint32_t i = 0; i < params->count; i++)
   {
     // Delay if active
-    if(params->delay) g_usleep(params->delay * G_USEC_PER_SEC);
+    if(params->delay && !params->brackets) // delay between brackets
+      g_usleep(params->delay * G_USEC_PER_SEC);
 
     for(uint32_t b = 0; b < (params->brackets * 2) + 1; b++)
     {
@@ -143,6 +144,9 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
         }
         else
         {
+          if(params->delay) // delay after previous bracket (no delay for 1st bracket)
+            g_usleep(params->delay * G_USEC_PER_SEC);
+
           // Step up with (steps)
           for(uint32_t s = 0; s < params->steps; s++)
             if(g_list_previous(current_value)) current_value = g_list_previous(current_value);
@@ -163,6 +167,9 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
     // lets reset to original value before continue
     if(params->brackets)
     {
+      if(params->delay) // delay after final bracket
+        g_usleep(params->delay * G_USEC_PER_SEC);
+
       current_value = g_list_find(values, original_value);
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
     }
