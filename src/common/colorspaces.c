@@ -2091,13 +2091,38 @@ int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM
 }
 
 // Converted from dcraw's cam_xyz_coeff()
-int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4], double mul[4])
+int dt_colorspaces_conversion_matrices_rgb(const char *name,
+                                           double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4],
+                                           const float *embedded_matrix,
+                                           double mul[4])
 {
   double RGB_to_CAM[4][3];
 
   float XYZ_to_CAM[4][3];
   XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(name, (float(*)[12])XYZ_to_CAM);
+
+  if(embedded_matrix == NULL || isnan(embedded_matrix[0]))
+  {
+    dt_dcraw_adobe_coeff(name, (float(*)[12])XYZ_to_CAM);
+  }
+  else
+  {
+    // keep in sync with reload_defaults from colorin.c
+    // embedded matrix is used with higher priority than standard one
+    XYZ_to_CAM[0][0] = embedded_matrix[0];
+    XYZ_to_CAM[0][1] = embedded_matrix[1];
+    XYZ_to_CAM[0][2] = embedded_matrix[2];
+
+    XYZ_to_CAM[1][0] = embedded_matrix[3];
+    XYZ_to_CAM[1][1] = embedded_matrix[4];
+    XYZ_to_CAM[1][2] = embedded_matrix[5];
+
+    XYZ_to_CAM[2][0] = embedded_matrix[6];
+    XYZ_to_CAM[2][1] = embedded_matrix[7];
+    XYZ_to_CAM[2][2] = embedded_matrix[8];
+  }
+
+
   if(isnan(XYZ_to_CAM[0][0]))
     return FALSE;
 
