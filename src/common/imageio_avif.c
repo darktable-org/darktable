@@ -111,7 +111,9 @@ dt_imageio_retval_t dt_imageio_open_avif(dt_image_t *img,
   }
 
   /* This can be LDR or HDR, it depends on the ICC profile. */
+  img->buf_dsc.filters = 0u;
   img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
   img->flags |= DT_IMAGE_HDR;
 
   const float max_channel_f = (float)((1 << bit_depth) - 1);
