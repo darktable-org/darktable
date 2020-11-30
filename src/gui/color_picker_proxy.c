@@ -259,7 +259,8 @@ void dt_iop_color_picker_cleanup(void)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_iop_color_picker_signal_callback), NULL);
 }
 
-GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w)
+static GtkWidget *_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,
+                                    const gboolean init_cst, const dt_iop_colorspace_type_t cst)
 {
   dt_iop_color_picker_t *color_picker = (dt_iop_color_picker_t *)g_malloc(sizeof(dt_iop_color_picker_t));
 
@@ -267,6 +268,8 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
   {
     GtkWidget *button = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
     _iop_init_picker(color_picker, module, kind, button);
+    if(init_cst)
+      color_picker->picker_cst = cst;
     g_signal_connect_data(G_OBJECT(button), "button-press-event",
                           G_CALLBACK(_iop_color_picker_callback_button_press), color_picker, (GClosureNotify)g_free, 0);
     if (w) gtk_box_pack_start(GTK_BOX(w), button, FALSE, FALSE, 0);
@@ -278,11 +281,24 @@ GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind
     dt_bauhaus_widget_set_quad_paint(w, dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
     dt_bauhaus_widget_set_quad_toggle(w, TRUE);
     _iop_init_picker(color_picker, module, kind, w);
+    if(init_cst)
+      color_picker->picker_cst = cst;
     g_signal_connect_data(G_OBJECT(w), "quad-pressed",
                           G_CALLBACK(_iop_color_picker_callback), color_picker, (GClosureNotify)g_free, 0);
 
     return w;
   }
+}
+
+GtkWidget *dt_color_picker_new(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w)
+{
+  return _color_picker_new(module, kind, w, FALSE, iop_cs_NONE);
+}
+
+GtkWidget *dt_color_picker_new_with_cst(dt_iop_module_t *module, dt_iop_color_picker_kind_t kind, GtkWidget *w,
+                                        const dt_iop_colorspace_type_t cst)
+{
+  return _color_picker_new(module, kind, w, TRUE, cst);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
