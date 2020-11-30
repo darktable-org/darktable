@@ -402,8 +402,8 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_CACHE_FULL;
   }
 
-  // flag the image buffer properly depending on bit depth
-  if(t.bpp == 32)
+  // flag the image buffer properly depending on sample format
+  if(t.sampleformat == SAMPLEFORMAT_IEEEFP)
   {
     // HDR TIFF
     t.image->flags &= ~DT_IMAGE_LDR;
