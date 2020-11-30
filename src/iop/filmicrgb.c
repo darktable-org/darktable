@@ -845,47 +845,20 @@ static inline int rowid_to_row(const int rowid, const int height, const int scal
   return long_passes + (rowid2 / (per_pass-1)) + scale * (rowid2 % (per_pass-1));
 }
 
-inline static void blur_2D_Bspline_vertical(const float *const restrict in, float *const restrict out,
-                                            const size_t width, const size_t height, const size_t ch, const size_t mult)
+inline static void blur_2D_Bspline(const float *const in, float *const out, float *const tempbuf,
+                                   const size_t width, const size_t height, const size_t mult)
 {
   // À-trous B-spline interpolation/blur shifted by mult
-  // Convolve B-spline filter over lines
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, width, height, ch, mult) \
-    schedule(simd:static) collapse(2)
-  #endif
-  for(size_t i = 0; i < height; i++)
-    for(size_t j = 0; j < width; j++)
-    {
-      // Compute the array indices of the pixels of interest
-      size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
-
-      for(size_t jj = 0; jj < FSIZE; ++jj)
-      {
-        size_t col = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
-        indices[jj] = ch * (i * width + col);
-      }
-
-      // Compute the blur
-      sparse_scalar_product(in, indices, out + (i * width + j) * ch);
-    }
-}
-
-
-inline static void blur_2D_Bspline_horizontal(const float *const restrict in, float *const restrict out,
-                                              const size_t width, const size_t height, const size_t ch, const size_t mult)
-{
-  // À-trous B-spline interpolation/blur shifted by mult
-  // Convolve B-spline filter over columns
-  #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(out, in, width, height, ch, mult) \
+    dt_omp_firstprivate(out, in, width, height, mult) \
     schedule(simd:static)
   #endif
   for(size_t row = 0; row < height; row++)
   {
     size_t i = rowid_to_row(row, height, mult);
+    float *const temp = tempbuf + 4 * width * dt_get_thread_num();
+    // Convolve B-spline filter over columns
     for(size_t j = 0; j < width; j++)
     {
       // Compute the array indices of the pixels of interest
@@ -894,11 +867,25 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
       for(size_t ii = 0; ii < FSIZE; ++ii)
       {
         size_t r = CLAMP(mult * (ii - (FSIZE - 1) / 2) + i, 0, height - 1);
-        indices[ii] = ch * (r * width + j);
+        indices[ii] = 4 * (r * width + j);
+      }
+      // Compute the blur
+      sparse_scalar_product(in, indices, temp + j * 4);
+    }
+    // Convolve B-spline filter over current row
+    for(size_t j = 0; j < width; j++)
+    {
+      // Compute the array indices of the pixels of interest
+      size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
+
+      for(size_t jj = 0; jj < FSIZE; ++jj)
+      {
+        size_t col = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
+        indices[jj] = 4 * col;
       }
 
       // Compute the blur
-      sparse_scalar_product(in, indices, out + (i * width + j) * ch);
+      sparse_scalar_product(temp, indices, out + (i * width + j) * 4);
     }
   }
 }
@@ -1111,7 +1098,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
       = dt_alloc_sse_ps(roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * dt_get_num_threads() * ch);
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -1164,16 +1151,14 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
     const int mult = 1 << s; // fancy-pants C notation for 2^s with integer type, don't be afraid
 
     // Compute wavelets low-frequency scales
-    blur_2D_Bspline_vertical(detail, temp, roi_out->width, roi_out->height, ch, mult);
-    blur_2D_Bspline_horizontal(temp, LF, roi_out->width, roi_out->height, ch, mult);
+    blur_2D_Bspline(detail, LF, temp, roi_out->width, roi_out->height, mult);
 
     // Compute wavelets high-frequency scales and save the mininum of texture over the RGB channels
     // Note : HF_RGB = detail - LF, HF_grey = max(HF_RGB)
     wavelets_detail_level(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, ch);
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
-    blur_2D_Bspline_vertical(HF_RGB, temp, roi_out->width, roi_out->height, ch, mult);
-    blur_2D_Bspline_horizontal(temp, HF_RGB, roi_out->width, roi_out->height, ch, mult);
+    blur_2D_Bspline(HF_RGB, HF_RGB, temp, roi_out->width, roi_out->height, mult);
 
     // Reconstruct clipped parts
     if(variant == DT_FILMIC_RECONSTRUCT_RGB)
