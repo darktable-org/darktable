@@ -99,7 +99,7 @@ static int strinc(char *label, size_t buffer_size)
   return 1;
 }
 
-void set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, float c0, float c1, float c2)
+void checker_set_color(box_t *box, dt_colorspaces_color_profile_type_t color_space, float c0, float c1, float c2)
 {
   box->color_space = color_space;
   box->color[0] = c0;
@@ -487,7 +487,7 @@ chart_t *parse_cht(const char *filename)
         float c1 = parse_double(&c);
         if(c - line >= len) ERROR;
         float c2 = parse_double(&c);
-        set_color(box, color_space, c0, c1, c2);
+        checker_set_color(box, color_space, c0, c1, c2);
       }
       if(n_colors != 0) ERROR;
     }
@@ -599,7 +599,7 @@ int parse_it8(const char *filename, chart_t *chart)
       goto error;
     }
 
-    set_color(box, color_space, cmsIT8GetDataDbl(hIT8, key, columns[0]), cmsIT8GetDataDbl(hIT8, key, columns[1]),
+    checker_set_color(box, color_space, cmsIT8GetDataDbl(hIT8, key, columns[0]), cmsIT8GetDataDbl(hIT8, key, columns[1]),
               cmsIT8GetDataDbl(hIT8, key, columns[2]));
   }
 
