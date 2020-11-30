@@ -590,12 +590,12 @@ int key_released(dt_view_t *self, guint key, guint state)
     // do nothing : we don't want to exit slideshow
     return 0;
   }
-  else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
+  else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add || key == GDK_KEY_plus)
   {
     _set_delay(d, 1);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
   }
-  else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
+  else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract || key == GDK_KEY_minus)
   {
     _set_delay(d, -1);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
@@ -611,6 +611,10 @@ int key_released(dt_view_t *self, guint key, guint state)
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
     d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP);
+  }
+  else if(key == GDK_KEY_F11)
+  {
+    // let F11 be passed through, this is to make dt full screen
   }
   else
   {
