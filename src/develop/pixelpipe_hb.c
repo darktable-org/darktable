@@ -989,7 +989,7 @@ static gboolean _transform_for_blend(const dt_iop_module_t *const self, const dt
   return FALSE;
 }
 
-static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self)
+static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self, const dt_iop_colorspace_type_t cst)
 {
   const dt_iop_colorspace_type_t picker_cst =
     dt_iop_color_picker_get_active_cst(self);
@@ -1006,6 +1006,9 @@ static dt_iop_colorspace_type_t _transform_for_picker(dt_iop_module_t *self)
     case iop_cs_JzCzhz:
       return iop_cs_rgb;
     case iop_cs_NONE:
+      // iop_cs_NONE is used by temperature.c as it may work in RAW or RGB
+      // return the pipe color space to avoid any additional conversions
+      return cst;
     default:
       return picker_cst;
   }
@@ -1118,7 +1121,7 @@ static int pixelpipe_process_on_CPU(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev,
   if(_request_color_pick(pipe, dev, module))
   {
     // ensure that we are using the right color space
-    dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module);
+    dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
     dt_ioppr_transform_image_colorspace(module, input, input, roi_in->width, roi_in->height,
                                         input_format->cst, picker_cst, &input_format->cst,
                                         work_profile);
@@ -1606,7 +1609,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           if(success_opencl && _request_color_pick(pipe, dev, module))
           {
             // ensure that we are using the right color space
-            dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module);
+            dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
             success_opencl = dt_ioppr_transform_image_colorspace_cl(
                 module, piece->pipe->devid, cl_mem_input, cl_mem_input, roi_in.width, roi_in.height,
                 input_cst_cl, picker_cst, &input_cst_cl, work_profile);
@@ -1752,7 +1755,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           if(success_opencl && _request_color_pick(pipe, dev, module))
           {
             // ensure that we are using the right color space
-            dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module);
+            dt_iop_colorspace_type_t picker_cst = _transform_for_picker(module, pipe->dsc.cst);
             dt_ioppr_transform_image_colorspace(module, input, input, roi_in.width, roi_in.height,
                                                 input_format->cst, picker_cst, &input_format->cst,
                                                 work_profile);
