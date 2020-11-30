@@ -10010,7 +10010,7 @@ msgstr ""
 
 #: ../src/iop/colorbalance.c:159
 msgid "affect color, brightness and contrast"
-msgstr "Affecte la couleur, la luminosité et le contraste"
+msgstr "affecte la couleur, la luminosité et le contraste"
 
 #: ../src/iop/colorbalance.c:163
 msgid "non-linear, Lab, scene-referred"
