@@ -372,6 +372,14 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
+  /* don't depend on planar config if spp == 1 */
+  if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
+  {
+    fprintf(stderr, "[tiff_open] error: planar config other than contig is not supported.\n");
+    TIFFClose(t.tiff);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
   /* initialize cached image buffer */
   t.image->width = t.width;
   t.image->height = t.height;
@@ -386,14 +394,6 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
     fprintf(stderr, "[tiff_open] error: could not alloc full buffer for image `%s'\n", t.image->filename);
     TIFFClose(t.tiff);
     return DT_IMAGEIO_CACHE_FULL;
-  }
-
-  /* don't depend on planar config if spp == 1 */
-  if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
-  {
-    fprintf(stderr, "[tiff_open] error: planar config other than contig is not supported.\n");
-    TIFFClose(t.tiff);
-    return DT_IMAGEIO_FILE_CORRUPTED;
   }
 
   if((t.buf = _TIFFmalloc(t.scanlinesize)) == NULL)
