@@ -1964,40 +1964,20 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     if(p->illuminant == DT_ILLUMINANT_CAMERA)
     {
-      // if DT_ILLUMINANT_CAMERA was already selected, we switch to the closest match between the daylight or custom
-
       // Get camera WB and update illuminant
-      const float x = p->x;
-      const float y = p->y;
       const int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), &(p->x), &(p->y));
 
       if(found)
       {
-        if(x == p->x && y == p->y)
-        {
-          // Parameters did not change, assume user wants to edit auto-set params and display controls
-          dt_control_log(_("white balance successfuly extracted from raw image"));
-
-          check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
-
-          const float xyY[3] = { p->x, p->y, 1.f };
-          float Lch[3] = { 0 };
-          dt_xyY_to_Lch(xyY, Lch);
-
-          ++darktable.gui->reset;
-          dt_bauhaus_slider_set(g->temperature, p->temperature);
-          dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
-          dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-          dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
-          --darktable.gui->reset;
-        }
+        dt_control_log(_("white balance successfuly extracted from raw image"));
+        check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
       }
-      else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
-              || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
-      {
-        // We need to recompute only the full preview
-        dt_control_log(_("auto-detection of white balance started…"));
-      }
+    }
+    else if(p->illuminant == DT_ILLUMINANT_DETECT_EDGES
+            || p->illuminant == DT_ILLUMINANT_DETECT_SURFACES)
+    {
+      // We need to recompute only the full preview
+      dt_control_log(_("auto-detection of white balance started…"));
     }
   }
 

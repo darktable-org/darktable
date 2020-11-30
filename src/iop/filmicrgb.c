@@ -805,30 +805,45 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(cache, result:64)
+#pragma omp declare simd aligned(buf, indices, result:64)
 #endif
-inline static void scalar_product(const float cache[FSIZE * 3], float result[4])
+inline static void sparse_scalar_product(const float *const buf, const size_t indices[FSIZE], float result[4])
 {
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB
 
-  float DT_ALIGNED_ARRAY accumulator[4] = { 0.f };
   const float DT_ALIGNED_ARRAY filter[FSIZE] =
                         { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
   #ifdef _OPENMP
-  #pragma omp simd aligned(cache, accumulator:64) reduction(+:accumulator) collapse(2)
+  #pragma omp simd
   #endif
-  for(size_t c = 0; c < 3; ++c)
+  for(size_t c = 0; c < 4; ++c)
+  {
+    float acc = 0.0f;
     for(size_t k = 0; k < FSIZE; ++k)
-      accumulator[c] += filter[k] * cache[k + FSIZE * c];
-
-  #ifdef _OPENMP
-  #pragma omp simd aligned(accumulator, result:16)
-  #endif
-  for(size_t c = 0; c < 3; ++c) result[c] = accumulator[c];
+      acc += filter[k] * buf[indices[k] + c];
+    result[c] = acc;
+  }
 }
 
+//TODO: consolidate with the copy of this code in src/common/dwt.c
+static inline int rowid_to_row(const int rowid, const int height, const int scale)
+{
+  // to make this algorithm as cache-friendly as possible, we want to interleave the actual processing of rows
+  // such that the next iteration processes the row 'scale' pixels below the current one, which will already
+  // be in L2 cache (if not L1) from having been accessed on this iteration so if vscale is 16, we want to
+  // process rows 0, 16, 32, ..., then 1, 17, 33, ..., 2, 18, 34, ..., etc.
+  if (height <= scale)
+    return rowid;
+  const int per_pass = ((height + scale - 1) / scale);
+  const int long_passes = height % scale;
+  // adjust for the fact that we have some passes with one fewer iteration when height is not a multiple of scale
+  if (long_passes == 0 || rowid < long_passes * per_pass)
+    return (rowid / per_pass) + scale * (rowid % per_pass);
+  const int rowid2 = rowid - long_passes * per_pass;
+  return long_passes + (rowid2 / (per_pass-1)) + scale * (rowid2 % (per_pass-1));
+}
 
 inline static void blur_2D_Bspline_vertical(const float *const restrict in, float *const restrict out,
                                             const size_t width, const size_t height, const size_t ch, const size_t mult)
@@ -847,19 +862,13 @@ inline static void blur_2D_Bspline_vertical(const float *const restrict in, floa
       size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
 
       for(size_t jj = 0; jj < FSIZE; ++jj)
-        indices[jj] = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
-
-      // Prefetch RGB pixels of interest in RRRRR ; GGGGG ; BBBBB memory layout
-      float DT_ALIGNED_ARRAY cache[FSIZE * 3]= { 0.0f };
-
-      for(size_t jj = 0; jj < FSIZE; ++jj)
       {
-        const float *const restrict pix = __builtin_assume_aligned(in + (i * width + indices[jj]) * ch, 16);
-        for(size_t c = 0; c < 3; c++) cache[jj + FSIZE * c] = pix[c];
+        size_t col = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
+        indices[jj] = ch * (i * width + col);
       }
 
       // Compute the blur
-      scalar_product(cache, out + (i * width + j) * ch);
+      sparse_scalar_product(in, indices, out + (i * width + j) * ch);
     }
 }
 
@@ -872,29 +881,26 @@ inline static void blur_2D_Bspline_horizontal(const float *const restrict in, fl
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
     dt_omp_firstprivate(out, in, width, height, ch, mult) \
-    schedule(simd:static) collapse(2)
+    schedule(simd:static)
   #endif
-  for(size_t i = 0; i < height; i++)
+  for(size_t row = 0; row < height; row++)
+  {
+    size_t i = rowid_to_row(row, height, mult);
     for(size_t j = 0; j < width; j++)
     {
       // Compute the array indices of the pixels of interest
       size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
 
       for(size_t ii = 0; ii < FSIZE; ++ii)
-        indices[ii] = CLAMP(mult * (ii - (FSIZE - 1) / 2) + i, 0, height - 1);
-
-      // Prefetch RGB pixels of interest in RRRRR ; GGGGG ; BBBBB memory layout
-      float DT_ALIGNED_ARRAY cache[FSIZE * 3]= { 0.0f };
-
-      for(size_t ii = 0; ii < FSIZE; ++ii)
       {
-        const float *const restrict pix = __builtin_assume_aligned(in + (indices[ii] * width + j) * ch, 16);
-        for(size_t c = 0; c < 3; c++) cache[ii + FSIZE * c] = pix[c];
+        size_t r = CLAMP(mult * (ii - (FSIZE - 1) / 2) + i, 0, height - 1);
+        indices[ii] = ch * (r * width + j);
       }
 
       // Compute the blur
-      scalar_product(cache, out + (i * width + j) * ch);
+      sparse_scalar_product(in, indices, out + (i * width + j) * ch);
     }
+  }
 }
 
 
