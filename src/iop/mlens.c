@@ -106,8 +106,8 @@ static int init_coeffs(const dt_image_t *img, const dt_iop_mlens_params_t *d,
 
       if(cor_rgb && d->cor_ca)
       {
-        cor_rgb[0][i] *= cd->sony.ca_r[i] * pow(2, -21) + 1;
-        cor_rgb[2][i] *= cd->sony.ca_b[i] * pow(2, -21) + 1;
+        cor_rgb[0][i] *= cd->sony.ca_r[i] * powf(2, -21) + 1;
+        cor_rgb[2][i] *= cd->sony.ca_b[i] * powf(2, -21) + 1;
       }
 
       if(vig && d->cor_vig)
