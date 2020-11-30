@@ -266,6 +266,7 @@ static inline int _read_planar_16_Lab(tiff_t *t, uint16_t photometric)
 
   for(uint32_t row = 0; row < t->height; row++)
   {
+    float range = photometric == PHOTOMETRIC_CIELAB ? 65535.0f : 65280.f;
     uint16_t *in = ((uint16_t *)t->buf);
     float *output = ((float *)t->mipbuf) + (size_t)4 * row * t->width;
     float *out = output;
@@ -275,7 +276,7 @@ static inline int _read_planar_16_Lab(tiff_t *t, uint16_t photometric)
 
     for(uint32_t i = 0; i < t->width; i++, in += t->spp, out += 4)
     {
-      out[0] = ((float)in[0]) * (100.0f/65535.0f);
+      out[0] = ((float)in[0]) * (100.0f/range);
 
       if(t->spp == 1)
       {
