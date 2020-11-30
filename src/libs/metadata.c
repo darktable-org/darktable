@@ -42,12 +42,12 @@ typedef struct dt_lib_metadata_t
   gulong lost_focus_handler[DT_METADATA_NUMBER];
   GtkWidget *swindow[DT_METADATA_NUMBER];
   GList *metadata_list[DT_METADATA_NUMBER];
+  char *setting_name[DT_METADATA_NUMBER];
   GtkGrid *metadata_grid;
   gboolean editing;
   GtkWidget *clear_button;
   GtkWidget *apply_button;
   GtkWidget *config_button;
-  gint line_height;
   gboolean init_layout;
 } dt_lib_metadata_t;
 
@@ -343,14 +343,6 @@ static void _update_layout(dt_lib_module_t *self)
       }
     }
     g_free(setting);
-
-    setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
-    // add a small offset to avoid scroll bar when not needed.
-    // would be probably better with the actual value of scrolling threshold
-    const unsigned int height = dt_conf_get_int(setting) ?
-                  dt_conf_get_int(setting) : DT_PIXEL_APPLY_DPI(d->line_height + d->line_height / 5);
-    gtk_widget_set_size_request(GTK_WIDGET(d->swindow[i]), -1, (height));
-    g_free(setting);
   }
 }
 
@@ -515,40 +507,6 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_button_lib(self, "apply", d->apply_button);
 }
 
-static gboolean _mouse_scroll(GtkWidget *swindow, GdkEventScroll *event, dt_lib_module_t *self)
-{
-  const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-
-  if (event->state & GDK_CONTROL_MASK)
-  {
-    gint i;
-    for(i = 0; i < DT_METADATA_NUMBER; i++)
-      if(d->swindow[i] == swindow)
-    {
-      const gint increment = DT_PIXEL_APPLY_DPI(d->line_height);
-      const gint min_height = DT_PIXEL_APPLY_DPI(d->line_height + d->line_height / 5);
-      const gint max_height = DT_PIXEL_APPLY_DPI(20*d->line_height + d->line_height / 5);
-      gint height;
-      gtk_widget_get_size_request(GTK_WIDGET(swindow), NULL, &height);
-      int delta_y;
-      if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-      {
-        height = height + increment * delta_y;
-        height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-        gtk_widget_set_size_request(GTK_WIDGET(swindow), -1, (gint)height);
-
-        const gchar *name = dt_metadata_get_name_by_display_order(i);
-        gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
-        dt_conf_set_int(setting, height);
-        g_free(setting);
-
-        return TRUE;
-      }
-    }
-  }
-  return FALSE;
-}
-
 static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, dt_lib_module_t *self)
 {
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
@@ -665,6 +623,7 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(self->widget, "metadata_editor.html#metadata_editor_usage");
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
+  gint line_height = 0;
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -677,17 +636,28 @@ void gui_init(dt_lib_module_t *self)
               "\nin that case, right-click gives the possibility to choose one of them."
               "\npress escape to exit the popup window"));
 
-    GtkWidget *swindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(swindow), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
+    gtk_text_buffer_create_tag (buffer, "italic", "style", PANGO_STYLE_ITALIC, NULL);
+    GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
+
+    const char *name = (char *)dt_metadata_get_name_by_display_order(i);
+    d->setting_name[i] = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
+
+    if(!line_height)
+    {
+      PangoLayout *cell = gtk_widget_create_pango_layout(GTK_WIDGET(textview), "X");
+      pango_layout_get_size(cell, NULL, &line_height);
+      g_object_unref(cell);
+      line_height /= PANGO_SCALE;
+    }
+
+    GtkWidget *swindow = dt_ui_scroll_wrap(GTK_WIDGET(textview), 5 * line_height,
+                                           d->setting_name[i]);
+
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
     gtk_widget_set_hexpand(swindow, TRUE);
     d->swindow[i] = swindow;
     gtk_widget_set_size_request(d->swindow[i], -1, DT_PIXEL_APPLY_DPI(30));
-
-    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
-    gtk_text_buffer_create_tag (buffer, "italic", "style", PANGO_STYLE_ITALIC, NULL);
-    GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
-    gtk_container_add(GTK_CONTAINER(swindow), textview);
 
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(textview), GTK_WRAP_WORD);
     gtk_text_view_set_accepts_tab(GTK_TEXT_VIEW(textview), FALSE);
@@ -696,7 +666,6 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(textview), "button-press-event", G_CALLBACK(_click_on_textview), self);
     g_signal_connect(textview, "grab-focus", G_CALLBACK(_got_focus), self);
     d->lost_focus_handler[i] = g_signal_connect(textview, "focus-out-event", G_CALLBACK(_lost_focus), self);
-    g_signal_connect(G_OBJECT(swindow), "scroll-event", G_CALLBACK(_mouse_scroll), self);
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);
@@ -705,12 +674,6 @@ void gui_init(dt_lib_module_t *self)
     // gtk_widget_set_no_show_all(GTK_WIDGET(label), TRUE);
     // gtk_widget_set_no_show_all(GTK_WIDGET(textview), TRUE);
   }
-
-  PangoLayout *cell = gtk_widget_create_pango_layout(GTK_WIDGET(d->textview[0]), "X");
-
-  pango_layout_get_size(cell, NULL, &d->line_height);
-  g_object_unref(cell);
-  d->line_height /= PANGO_SCALE;
 
   d->init_layout = FALSE;
 
@@ -756,6 +719,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
+    g_free(d->setting_name[i]);
     g_signal_handler_disconnect(G_OBJECT(d->textview[i]), d->lost_focus_handler[i]);
     dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->textview[i]));
   }

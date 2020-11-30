@@ -1452,6 +1452,69 @@
     <shortdescription>whether to sort tags by count or by name</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/heightattachedwindow</name>
+    <type min="15" max="1000">int</type>
+    <default>100</default>
+    <shortdescription>height of the tagging attached view</shortdescription>
+    <longdescription>maximum height the tagging attached view will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/tagging/heightdictionarywindow</name>
+    <type min="15" max="1000">int</type>
+    <default>200</default>
+    <shortdescription>height of the tagging dictionary view</shortdescription>
+    <longdescription>maximum height the tagging dictionary view will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/creator_text_height</name>
+    <type min="15" max="1000">int</type>
+    <default>15</default>
+    <shortdescription>height of the metadata textview</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/publisher_text_height</name>
+    <type min="15" max="1000">int</type>
+    <default>15</default>
+    <shortdescription>height of the metadata textview</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/title_text_height</name>
+    <type min="15" max="1000">int</type>
+    <default>15</default>
+    <shortdescription>height of the metadata textview</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/description_text_height</name>
+    <type min="15" max="1000">int</type>
+    <default>15</default>
+    <shortdescription>height of the metadata textview</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/rights_text_height</name>
+    <type min="15" max="1000">int</type>
+    <default>15</default>
+    <shortdescription>height of the metadata textview</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/notes_text_height</name>
+    <type min="15" max="1000">int</type>
+    <default>15</default>
+    <shortdescription>height of the metadata textview</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata/version name_text_height</name>
+    <type min="15" max="1000">int</type>
+    <default>15</default>
+    <shortdescription>height of the metadata textview</shortdescription>
+    <longdescription>maximum height the metadata textview will grow to before scrolling</longdescription>
+  </dtconfig>
   <dtconfig prefs="security">
     <name>plugins/lighttable/style/ask_before_delete_style</name>
     <type>bool</type>

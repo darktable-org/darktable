@@ -3112,11 +3112,11 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
   GtkWidget *sw = gtk_widget_get_parent(w);
   if(GTK_IS_VIEWPORT(sw)) sw = gtk_widget_get_parent(sw);
 
-  gint increment = _get_container_row_heigth(w);
+  const gint increment = _get_container_row_heigth(w);
 
   gint height = dt_conf_get_int(config_str);
 
-  gint max_height = DT_PIXEL_APPLY_DPI(1000);
+  const gint max_height = DT_PIXEL_APPLY_DPI(1000);
 
   height = (height < 1) ? 1 : (height > max_height) ? max_height : height;
 
@@ -3125,7 +3125,7 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
   gint content_height;
   gtk_widget_get_preferred_height(w, NULL, &content_height);
 
-  gint min_height = - gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(sw));
+  const gint min_height = - gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(sw));
 
   if(content_height < min_height) content_height = min_height;
 
@@ -3154,12 +3154,12 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
   GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
   if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
 
-  gint increment = _get_container_row_heigth(w);
+  const gint increment = _get_container_row_heigth(w);
 
   if(event->state & GDK_CONTROL_MASK)
   {
     int delta_y=0;
-    
+
     dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
 
     dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*delta_y);
@@ -3170,11 +3170,11 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
   {
     GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(sw);
 
-    gint before = gtk_adjustment_get_value(adj);
+    const gint before = gtk_adjustment_get_value(adj);
     gint value = before + increment*event->delta_y;
     value -= value % increment;
     gtk_adjustment_set_value(adj, value);
-    gint after = gtk_adjustment_get_value(adj);
+    const gint after = gtk_adjustment_get_value(adj);
 
     if(after == before) return FALSE;
   }
