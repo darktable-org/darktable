@@ -530,16 +530,20 @@ static gboolean _mouse_scroll(GtkWidget *swindow, GdkEventScroll *event, dt_lib_
       const gint max_height = DT_PIXEL_APPLY_DPI(20*d->line_height + d->line_height / 5);
       gint height;
       gtk_widget_get_size_request(GTK_WIDGET(swindow), NULL, &height);
-      height = height + increment * event->delta_y;
-      height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-      gtk_widget_set_size_request(GTK_WIDGET(swindow), -1, (gint)height);
+      int delta_y;
+      if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+      {
+        height = height + increment * delta_y;
+        height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+        gtk_widget_set_size_request(GTK_WIDGET(swindow), -1, (gint)height);
 
-      const gchar *name = dt_metadata_get_name_by_display_order(i);
-      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
-      dt_conf_set_int(setting, height);
-      g_free(setting);
+        const gchar *name = dt_metadata_get_name_by_display_order(i);
+        gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
+        dt_conf_set_int(setting, height);
+        g_free(setting);
 
-      return TRUE;
+        return TRUE;
+      }
     }
   }
   return FALSE;
