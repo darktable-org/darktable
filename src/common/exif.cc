@@ -23,6 +23,7 @@ extern "C" {
 #include "config.h"
 #endif
 
+#include <errno.h>
 #include <glib.h>
 #include <sqlite3.h>
 #include <sys/stat.h>
@@ -30,6 +31,8 @@ extern "C" {
 #include <time.h>
 #include <unistd.h>
 #include <zlib.h>
+
+#include "control/control.h"
 }
 
 #include <cassert>
@@ -3952,6 +3955,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       // we want to avoid writing the sidecar file if it didn't change to avoid issues when using the same images
       // from different computers. sample use case: images on NAS, several computers using them NOT AT THE SAME TIME and
       // the xmp crawler is used to find changed sidecars.
+      errno = 0;
       FILE *fd = g_fopen(filename, "rb");
       if(fd)
       {
@@ -3966,6 +3970,11 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
           free(content);
         }
         fclose(fd);
+      }
+      else
+      {
+        fprintf(stderr, "cannot read xmp file '%s': '%s'\n", filename, strerror(errno));
+        dt_control_log(_("cannot read xmp file '%s': '%s'"), filename, strerror(errno));
       }
 
       Exiv2::DataBuf buf = Exiv2::readFile(WIDEN(filename));
@@ -4006,6 +4015,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
     if(write_sidecar)
     {
       // using std::ofstream isn't possible here -- on Windows it doesn't support Unicode filenames with mingw
+      errno = 0;
       FILE *fout = g_fopen(filename, "wb");
       if(fout)
       {
@@ -4013,6 +4023,12 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
         fprintf(fout, "%s", xmpPacket.c_str());
         fclose(fout);
       }
+      else
+      {
+        fprintf(stderr, "cannot write xmp file '%s': '%s'\n", filename, strerror(errno));
+        dt_control_log(_("cannot write xmp file '%s': '%s'"), filename, strerror(errno));
+      }
+      
     }
 
     return 0;
