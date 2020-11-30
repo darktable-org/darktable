@@ -1473,7 +1473,7 @@ static void collect_source_patches_foreach(gpointer key, gpointer value, gpointe
 
   get_xyz_sample_from_image(&self->source, self->source.shrink, box, xyz);
 
-  set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
+  checker_set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
 }
 
 static void collect_reference_patches_foreach(gpointer key, gpointer value, gpointer user_data)
@@ -1484,7 +1484,7 @@ static void collect_reference_patches_foreach(gpointer key, gpointer value, gpoi
 
   get_xyz_sample_from_image(&self->reference, self->reference.shrink, patch, xyz);
 
-  set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
+  checker_set_color(patch, DT_COLORSPACE_XYZ, xyz[0] * 100.0, xyz[1] * 100.0, xyz[2] * 100.0);
 }
 
 static box_t *find_patch(GHashTable *table, gpointer key)
