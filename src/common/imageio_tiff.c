@@ -224,15 +224,22 @@ static inline int _read_planar_8_Lab(tiff_t *t, uint16_t photometric)
     {
       out[0] = ((float)in[0]) * (100.0f/255.0f);
 
-      if(photometric == PHOTOMETRIC_CIELAB)
+      if(t->spp == 1)
       {
-        out[1] = ((float)((int8_t)in[1]));
-        out[2] = ((float)((int8_t)in[2]));
+        out[1] = out[2] = 0;
       }
-      else // photometric == PHOTOMETRIC_ICCLAB
+      else
       {
-        out[1] = ((float)(in[1])) - 128.0f;
-        out[2] = ((float)(in[2])) - 128.0f;
+        if(photometric == PHOTOMETRIC_CIELAB)
+        {
+          out[1] = ((float)((int8_t)in[1]));
+          out[2] = ((float)((int8_t)in[2]));
+        }
+        else // photometric == PHOTOMETRIC_ICCLAB
+        {
+          out[1] = ((float)(in[1])) - 128.0f;
+          out[2] = ((float)(in[2])) - 128.0f;
+        }
       }
 
       out[3] = 0;
@@ -270,15 +277,22 @@ static inline int _read_planar_16_Lab(tiff_t *t, uint16_t photometric)
     {
       out[0] = ((float)in[0]) * (100.0f/65535.0f);
 
-      if(photometric == PHOTOMETRIC_CIELAB)
+      if(t->spp == 1)
       {
-        out[1] = ((float)((int16_t)in[1])) / 256.0f;
-        out[2] = ((float)((int16_t)in[2])) / 256.0f;
+        out[1] = out[2] = 0;
       }
-      else // photometric == PHOTOMETRIC_ICCLAB
+      else
       {
-        out[1] = (((float)(in[1])) - 32768.0f) / 256.0f;
-        out[2] = (((float)(in[2])) - 32768.0f) / 256.0f;
+        if(photometric == PHOTOMETRIC_CIELAB)
+        {
+          out[1] = ((float)((int16_t)in[1])) / 256.0f;
+          out[2] = ((float)((int16_t)in[2])) / 256.0f;
+        }
+        else // photometric == PHOTOMETRIC_ICCLAB
+        {
+          out[1] = (((float)(in[1])) - 32768.0f) / 256.0f;
+          out[2] = (((float)(in[2])) - 32768.0f) / 256.0f;
+        }
       }
 
       out[3] = 0;
@@ -375,7 +389,7 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
   /* don't depend on planar config if spp == 1 */
   if(t.spp > 1 && config != PLANARCONFIG_CONTIG)
   {
-    fprintf(stderr, "[tiff_open] error: planar config other than contig is not supported.\n");
+    fprintf(stderr, "[tiff_open] error: PlanarConfiguration other than chunky is not supported.\n");
     TIFFClose(t.tiff);
     return DT_IMAGEIO_FILE_CORRUPTED;
   }
@@ -418,27 +432,27 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   int ok = 1;
 
-  if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+  if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
     ok = _read_planar_8_Lab(&t, photometric);
     t.image->buf_dsc.cst = iop_cs_Lab;
   }
-  else if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+  else if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
     ok = _read_planar_16_Lab(&t, photometric);
     t.image->buf_dsc.cst = iop_cs_Lab;
   }
-  else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+  else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
     ok = _read_planar_8(&t);
-  else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT && config == PLANARCONFIG_CONTIG)
+  else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
     ok = _read_planar_16(&t);
-  else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG)
+  else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_IEEEFP)
     ok = _read_planar_h(&t);
-  else if(t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP && config == PLANARCONFIG_CONTIG)
+  else if(t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP)
     ok = _read_planar_f(&t);
   else
   {
-    fprintf(stderr, "[tiff_open] error: Not a supported tiff image format.");
+    fprintf(stderr, "[tiff_open] error: not a supported tiff image format.\n");
     ok = 0;
   }
 
