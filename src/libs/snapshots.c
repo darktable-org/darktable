@@ -128,7 +128,7 @@ static void _draw_sym(cairo_t *cr, float x, float y, gboolean vertical, gboolean
   pango_font_description_set_absolute_size(desc, DT_PIXEL_APPLY_DPI(12) * PANGO_SCALE);
   PangoLayout *layout = pango_cairo_create_layout(cr);
   pango_layout_set_font_description(layout, desc);
-  pango_layout_set_text(layout, NC_("snapshot sign", "S"), -1);
+  pango_layout_set_text(layout, C_("snapshot sign", "S"), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
 
   if(vertical)
