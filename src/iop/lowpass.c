@@ -590,8 +590,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
   g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
 
-  dt_bauhaus_widget_set_label(g->brightness, NULL, NC_("lowpass", "brightness"));
-
   gtk_widget_set_tooltip_text(g->radius, _("radius of gaussian/bilateral blur"));
   gtk_widget_set_tooltip_text(g->contrast, _("contrast of lowpass filter"));
   gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment of lowpass filter"));

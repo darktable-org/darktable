@@ -452,7 +452,7 @@ void expose(
     else
     {
       fontsize = DT_PIXEL_APPLY_DPI(14);
-      load_txt = dt_util_dstrcat(NULL, NC_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
+      load_txt = dt_util_dstrcat(NULL, C_("darkroom", "loading `%s' ..."), dev->image_storage.filename);
     }
 
     pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
