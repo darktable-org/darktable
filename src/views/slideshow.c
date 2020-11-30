@@ -562,6 +562,11 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
 int key_released(dt_view_t *self, guint key, guint state)
 {
+  return 0;
+}
+
+int key_pressed(dt_view_t *self, guint key, guint state)
+{
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   dt_control_accels_t *accels = &darktable.control->accels;
 
@@ -577,17 +582,6 @@ int key_released(dt_view_t *self, guint key, guint state)
       d->auto_advance = FALSE;
       dt_control_log(_("slideshow paused"));
     }
-    return 0;
-  }
-  else if(key == accels->global_collapsing_controls.accel_key
-          || (state && accels->global_collapsing_controls.accel_mods))
-  {
-    // do nothing for any combination of accel for showing the border controls
-    return 0;
-  }
-  else if(key == accels->slideshow_view.accel_key && state == accels->slideshow_view.accel_mods)
-  {
-    // do nothing : we don't want to exit slideshow
     return 0;
   }
   else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add || key == GDK_KEY_plus)
@@ -612,10 +606,6 @@ int key_released(dt_view_t *self, guint key, guint state)
     d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP);
   }
-  else if(key == GDK_KEY_F11)
-  {
-    // let F11 be passed through, this is to make dt full screen
-  }
   else
   {
     // go back to lt mode
@@ -623,11 +613,6 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_ctl_switch_mode_to("lighttable");
   }
 
-  return 0;
-}
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
   return 0;
 }
 
