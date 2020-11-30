@@ -140,10 +140,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
       TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
   }
-  else // (d->compress == 0)
-  {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
-  }
 
   if(profile != NULL)
   {
@@ -236,14 +232,12 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
-  TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
   if(resolution > 0)
   {
     TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
     TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
-    TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   }
 
   const size_t rowsize = (d->global.width * layers) * d->bpp / 8;
@@ -405,22 +399,16 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
           TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
         }
-        else // (d->compress == 0)
-        {
-          TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
-        }
 
         if(resolution > 0)
         {
           TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
           TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
-          TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
         }
 
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);
         TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-        TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
 #ifdef MASKS_USE_SAME_FORMAT
         TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)layers);
