@@ -1393,6 +1393,7 @@ static gboolean _display_next_image(dt_view_t *self, dt_map_image_t *entry, cons
       entry->image = NULL;
     }
     _view_map_draw_image(entry, TRUE, self);
+    dt_control_set_mouse_over_id(entry->imgid);
     return TRUE;
   }
 
@@ -1457,6 +1458,7 @@ static gboolean _display_next_image(dt_view_t *self, dt_map_image_t *entry, cons
     entry->image = NULL;
   }
   _view_map_draw_image(entry, TRUE, self);
+  dt_control_set_mouse_over_id(entry->imgid);
   return TRUE;
 }
 
@@ -1555,6 +1557,16 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     gtk_target_list_unref(targets);
     return TRUE;
   }
+
+  // show image information if image is hovered
+  GList *img = _view_map_get_imgs_at_pos(self, e->x, e->y, TRUE);
+  if(img)
+  {
+    dt_control_set_mouse_over_id(GPOINTER_TO_INT(img->data));
+    g_list_free(img);
+  }
+  else dt_control_set_mouse_over_id(-1);
+
   return FALSE;
 }
 
@@ -1685,13 +1697,10 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
       }
     }
     // check if the click was on image(s) or just some random position
-    lib->selected_images = _view_map_get_imgs_at_pos(self, e->x, e->y, TRUE);
+    lib->selected_images = _view_map_get_imgs_at_pos(self, e->x, e->y,
+                                                     !(e->state & GDK_SHIFT_MASK));
     if(e->type == GDK_BUTTON_PRESS)
     {
-      if(e->state & GDK_SHIFT_MASK)
-      {
-        lib->selected_images = _view_map_get_imgs_at_pos(self, e->x, e->y, FALSE);
-      }
       if(lib->selected_images)
       {
         lib->start_drag_x = ceil(e->x_root);
