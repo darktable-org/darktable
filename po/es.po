@@ -14609,7 +14609,7 @@ msgstr "configuración de cámara"
 #: ../src/libs/camera.c:104
 msgctxt "accel"
 msgid "capture image(s)"
-msgstr "capturar imagen"
+msgstr "capturar imagen(es)"
 
 #: ../src/libs/camera.c:143
 msgid "toggle view property in center view"
@@ -14654,7 +14654,7 @@ msgstr "incrementos"
 
 #: ../src/libs/camera.c:478
 msgid "capture image(s)"
-msgstr "capturar imagen"
+msgstr "capturar imagen(es)"
 
 #: ../src/libs/camera.c:481
 msgid "toggle delayed capture mode"
@@ -15518,7 +15518,7 @@ msgstr "Formato de intercambio de datos GPS"
 
 #: ../src/libs/geotagging.c:501
 msgid "camera time zone"
-msgstr "zona horaria de la camara"
+msgstr "zona horaria de la cámara"
 
 #: ../src/libs/geotagging.c:502
 msgid ""
@@ -20853,7 +20853,7 @@ msgstr "Acción"
 #~ msgstr "no se pudo crear el álbum"
 
 #~ msgid "unable to export photo to webalbum"
-#~ msgstr "no se pudo exportar la foto al album web"
+#~ msgstr "no se pudo exportar la foto al álbum web"
 
 #~ msgid "%d/%d exported to facebook webalbum"
 #~ msgid_plural "%d/%d exported to facebook webalbum"
@@ -21181,7 +21181,7 @@ msgstr "Acción"
 #~ "siempre será más lento."
 
 #~ msgid "you are making a mistake!"
-#~ msgstr "Está cometiendo un error"
+#~ msgstr "¡Está cometiendo un error!"
 
 #~ msgid "_yes, i understood. please let me suffer by using 32-bit darktable."
 #~ msgstr ""
@@ -21726,7 +21726,7 @@ msgstr "Acción"
 #~ msgstr "Publico"
 
 #~ msgid "picasa webalbum"
-#~ msgstr "album web picasa"
+#~ msgstr "álbum web picasa"
 
 #~ msgid "b/w"
 #~ msgstr "b/w"
@@ -21913,7 +21913,7 @@ msgstr "Acción"
 #~ msgstr "comparar imágenes seleccionadas y ver resultados"
 
 #~ msgid "public album"
-#~ msgstr "album publico"
+#~ msgstr "album público"
 
 #~ msgid ""
 #~ "darktable has trapped an illegal instruction which probably means that an "
@@ -22277,7 +22277,7 @@ msgstr "Acción"
 #~ "crashes etc (needs a restart)."
 #~ msgstr ""
 #~ "crea copia del archivo cache para prevenir la perdida de las miniaturas "
-#~ "generadas en cuelges, etc ( necesita reinicarse)."
+#~ "generadas en cuelges, etc (necesita reinicarse)."
 
 #~ msgid "how many threads to use in background"
 #~ msgstr "cuántos hilos usar en segundo plano"
@@ -22753,7 +22753,7 @@ msgstr "Acción"
 #~ msgstr ""
 #~ "cuidado: estas son configuraciones \n"
 #~ "crípticas de bajo nivel. probablemente\n"
-#~ "no deba cambiarlas"
+#~ "no deba cambiarlas."
 
 #~ msgid "median passes"
 #~ msgstr "pase medio"
@@ -22805,7 +22805,7 @@ msgstr "Acción"
 #~ "o si prefiere un demosaico mas suave."
 
 #~ msgid "dcb iterations"
-#~ msgstr "iteracciones dcb"
+#~ msgstr "iteraciones dcb"
 
 #~ msgid ""
 #~ "number of DCB correction routines passes(the default is zero)\n"
@@ -22815,7 +22815,7 @@ msgstr "Acción"
 #~ msgstr ""
 #~ "numero de pasadas de rutinas de corrección DCB (por defecto es cero)\n"
 #~ "esto ayuda si ve cantidad de direcciones de interpolación incorrectas, "
-#~ "solo recordar que puede producir nuevos artifactos\n"
+#~ "solo recordar que puede producir nuevos artefactos\n"
 #~ "usualmente 0 o 1 debería funcionar bien, en algunas situaciones incluso "
 #~ "10 no es suficiente."
 
@@ -22891,7 +22891,7 @@ msgstr "Acción"
 #~ msgstr "botón"
 
 #~ msgid "VCD interpolation...\n"
-#~ msgstr "VCD interpolacion...\n"
+#~ msgstr "VCD interpolación...\n"
 
 #~ msgid ""
 #~ "\tAHD, LH, LV, varH, varV varD = %4.2f, %4.2f, %4.2f, %4.2f, %4.2f, %4.2f "
@@ -22982,7 +22982,7 @@ msgstr "Acción"
 #~ msgstr ""
 #~ "1-activar pre demosaico FBDD reduccion de ruido de imagen\n"
 #~ "2-con reducción de ruido croma adicional.\n"
-#~ "trabaja con todos los metodos de demosaico"
+#~ "trabaja con todos los métodos de demosaico"
 
 #~ msgid "select $(FILE_DIRECTORY)"
 #~ msgstr "seleccionar $(FILE_DIRECTORY)"
@@ -23018,7 +23018,7 @@ msgstr "Acción"
 #~ msgstr ""
 #~ "demosaico tratando RGGB\n"
 #~ "como cuatro colores distintos.\n"
-#~ "usar si se obtienen artifactos."
+#~ "usar si se obtienen artefactos."
 
 #, fuzzy
 #~ msgid "the amount of local contrast to apply"
@@ -23095,7 +23095,7 @@ msgstr "Acción"
 #~ msgstr "sigma b"
 
 #~ msgid "camera whitebalance"
-#~ msgstr "balance de blancos de la camara"
+#~ msgstr "balance de blancos de la cámara"
 
 #, fuzzy
 #~ msgid "snapshot %d"
