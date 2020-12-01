@@ -345,44 +345,30 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 
-static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
-{
-  // keep this in synch with temperature.c !
-  // predicts the bogus D65 that temperature.c will compute for the camera input matrix
-  if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
-  {
-    bwb[0] = 1.0;
-    bwb[2] = 1.0;
-    bwb[1] = 1.0;
-    bwb[3] = 1.0;
-
-    return 0;
-  }
-
-  double mul[4];
-  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, module->dev->image_storage.d65_color_matrix, mul))
-  {
-    // normalize green:
-    bwb[0] = mul[0] / mul[1];
-    bwb[2] = mul[2] / mul[1];
-    bwb[1] = 1.0;
-    bwb[3] = mul[3] / mul[1];
-
-    return 0;
-  }
-
-  return 1;
-}
-
-
 static int get_white_balance_coeff(struct dt_iop_module_t *self, float custom_wb[4])
 {
   // Init output with a no-op
   for(size_t k = 0; k < 4; k++) custom_wb[k] = 1.f;
 
+  if(!dt_image_is_matrix_correction_supported(&self->dev->image_storage)) return 1;
+
   // First, get the D65-ish coeffs from the input matrix
+  // keep this in synch with calculate_bogus_daylight_wb from temperature.c !
+  // predicts the bogus D65 that temperature.c will compute for the camera input matrix
   double bwb[4];
-  if(calculate_bogus_daylight_wb(self, bwb)) return 1;
+
+  if(dt_colorspaces_conversion_matrices_rgb(self->dev->image_storage.camera_makermodel, NULL, NULL, self->dev->image_storage.d65_color_matrix, bwb))
+  {
+    // normalize green:
+    bwb[0] /= bwb[1];
+    bwb[2] /= bwb[1];
+    bwb[3] /= bwb[1];
+    bwb[1] = 1.0;
+  }
+  else
+  {
+    return 1;
+  }
 
   // Second, if the temperature module is not using these, for example because they are wrong
   // and user made a correct preset, find the WB adaptation ratio
@@ -1029,7 +1015,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid, void *const restrict ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_channelmixer_rbg_data_t *data = (dt_iop_channelmixer_rbg_data_t *)piece->data;
+  dt_iop_channelmixer_rbg_data_t *data = (dt_iop_channelmixer_rbg_data_t *)piece->data;
   const struct dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
@@ -1068,6 +1054,37 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
       dt_control_log(_("auto-detection of white balance completed"));
       return;
+    }
+  }
+
+  if(data->illuminant_type == DT_ILLUMINANT_CAMERA)
+  {
+    // The camera illuminant is a behaviour rather than a preset of values:
+    // it uses whatever is in the RAW EXIF. But it depends on what temperature.c is doing
+    // and needs to be updated accordingly, to give a consistent result.
+    // We initialise the CAT defaults using the temperature coeffs at startup, but if temperature
+    // is changed later, we get no notification of the change here, so we can't update the defaults.
+    // So we need to re-run the detection at runtime…
+    float x, y;
+    float custom_wb[4];
+    get_white_balance_coeff(self, custom_wb);
+
+    if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
+    {
+      // Get the best-suited CAT for the illuminant
+      check_if_close_to_daylight(x, y, NULL, NULL, &(data->adaptation));
+
+      // Convert illuminant from xyY to XYZ
+      float XYZ[3];
+      illuminant_xy_to_XYZ(x, y, XYZ);
+
+      // Convert illuminant from XYZ to Bradford modified LMS
+      convert_any_XYZ_to_LMS(XYZ, data->illuminant, data->adaptation);
+      data->illuminant[3] = 0.f;
+    }
+    else
+    {
+      // just use whatever was defined in commit_params hoping the defaults work…
     }
   }
 
@@ -1210,23 +1227,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->clip = p->clip;
   d->gamut = (p->gamut == 0.f) ? p->gamut : 1.f / p->gamut;
 
-  // find x y coordinates of illuminant for CIE 1931 2° observer
-  float x = p->x;
-  float y = p->y;
-  float custom_wb[4];
-  get_white_balance_coeff(self, custom_wb);
-  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &x, &y, p->temperature, p->illum_fluo,
-                   p->illum_led);
-
-  // if illuminant is set as camera, x and y are set on-the-fly at commit time, so we need to set adaptation too
-  if(p->illuminant == DT_ILLUMINANT_CAMERA)
-    check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
-
   d->illuminant_type = p->illuminant;
 
   // Convert illuminant from xyY to XYZ
   float XYZ[3];
-  illuminant_xy_to_XYZ(x, y, XYZ);
+  illuminant_xy_to_XYZ(p->x, p->y, XYZ);
 
   // Convert illuminant from XYZ to Bradford modified LMS
   convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
@@ -1278,23 +1283,20 @@ static void update_illuminants(dt_iop_module_t *self)
     gtk_widget_set_visible(g->illum_x, TRUE);
   }
 
-  // Put current illuminant x y derivated from standard options
+  // Put current illuminant x y and temperature derivated from standard options
   // directly in user params x and y in case user wants take over manually
-  float x = p->x;
-  float y = p->y;
-
-  const int changed = illuminant_to_xy(p->illuminant, NULL, NULL, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
-
-  if(changed)
+  float custom_wb[4] = { 1.f };
+  get_white_balance_coeff(self, custom_wb);
+  if(illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &p->x, &p->y, p->temperature, p->illum_fluo, p->illum_led))
   {
-    p->x = x;
-    p->y = y;
+    check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
 
     float xyY[3] = { p->x, p->y, 1.f };
     float Lch[3];
     dt_xyY_to_Lch(xyY, Lch);
     dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
     dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
+    dt_bauhaus_slider_set(g->temperature, p->temperature);
   }
 
   // Display only the relevant sliders
