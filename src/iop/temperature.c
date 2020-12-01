@@ -774,6 +774,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     self->dev->proxy.wb_is_D65 = is_D65;
   }
+
+  for(int k = 0; k < 4; k++)
+  {
+    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
