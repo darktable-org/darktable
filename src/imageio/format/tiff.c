@@ -238,6 +238,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   {
     TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
     TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
+    TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
   }
 
   const size_t rowsize = (d->global.width * layers) * d->bpp / 8;
@@ -404,6 +405,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         {
           TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
           TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
+          TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
         }
 
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
