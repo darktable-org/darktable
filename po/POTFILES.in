@@ -126,6 +126,7 @@ src/develop/blend.c
 src/develop/blend_gui.c
 src/develop/develop.c
 src/develop/imageop.c
+src/develop/imageop_gui.c
 src/develop/lightroom.c
 src/develop/masks/masks.c
 src/develop/pixelpipe_hb.c
