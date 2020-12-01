@@ -1915,7 +1915,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:3036
 msgid "scroll to utility modules when expanded/collapsed"
 msgstr ""
-"positionne les modules utilitaires de la table lumineuse lorsque qu'ils sont "
+"positionne les modules utilitaires lorsque qu'ils sont "
 "déplier/repliés"
 
 #: ../build/bin/preferences_gen.h:3050 ../build/bin/preferences_gen.h:4246
