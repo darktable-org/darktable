@@ -3176,10 +3176,10 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, con
   const char *str_process = _("process");
   const char *str_output  = _("output");
 
-  const int len_purpose = strlen(str_purpose);
-  const int len_input   = strlen(str_input);
-  const int len_process = strlen(str_process);
-  const int len_output  = strlen(str_output);
+  const int len_purpose = g_utf8_strlen(str_purpose, -1);
+  const int len_input   = g_utf8_strlen(str_input, -1);
+  const int len_process = g_utf8_strlen(str_process, -1);
+  const int len_output  = g_utf8_strlen(str_output, -1);
 
   const int max = MAX(len_purpose,
                       MAX(len_input, MAX(len_process, len_output)));
