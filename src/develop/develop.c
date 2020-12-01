@@ -111,7 +111,8 @@ void dt_dev_init(dt_develop_t *dev, int32_t gui_attached)
 
   dev->proxy.exposure.module = NULL;
   dev->proxy.chroma_adaptation = NULL;
-  dev->proxy.wb_is_D65 = FALSE;
+  dev->proxy.wb_is_D65 = TRUE; // don't display error messages until we know for sure it's FALSE
+  dev->proxy.wb_coeffs[0] = 0.f;
 
   dev->rawoverexposed.enabled = FALSE;
   dev->rawoverexposed.mode = dt_conf_get_int("darkroom/ui/rawoverexposed/mode");
