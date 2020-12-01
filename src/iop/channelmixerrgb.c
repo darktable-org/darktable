@@ -20,10 +20,12 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "chart/common.h"
 #include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "common/chromatic_adaptation.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/colorchecker.h"
 #include "common/opencl.h"
 #include "common/illuminants.h"
 #include "common/imagebuf.h"
@@ -102,6 +104,19 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *color_picker;
   float xy[2];
   float XYZ[4];
+
+  point_t box[4];           // the current coordinates, possibly non rectangle, of the bounding box for the color checker
+  point_t ideal_box[4];     // the desired coordinates of the perfect rectangle bounding box for the color checker
+  gboolean active_node[4];  // true if the cursor is close to a node (node = corner of the bounding box)
+  gboolean is_cursor_close; // do we have the cursor close to a node ?
+  gboolean drag_drop;       // are we currently dragging and dropping a node ?
+  point_t click_start;      // the coordinates where the drag and drop started
+  point_t click_end;        // the coordinates where the drag and drop started
+
+  double homography[9*9];   // the perspective correction matrix
+
+  GtkWidget *start_profiling;
+  gboolean is_profiling_started;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
 typedef struct dt_iop_channelmixer_rbg_data_t
@@ -1097,6 +1112,321 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       break;
     }
   }
+}
+
+int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
+{
+  if(!self->enabled) return 0;
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  if(g == NULL) return 0;
+  if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
+
+  dt_develop_t *dev = self->dev;
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  if(wd == 0.f || ht == 0.f) return 0;
+
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  const float x_pointer = pzx * wd;
+  const float y_pointer = pzy * ht;
+
+  // if dragging and dropping, don't update active nodes,
+  // just update cursor coordinates then redraw
+  // this ensure smooth updates
+  if(g->drag_drop)
+  {
+    dt_pthread_mutex_lock(&g->lock);
+    g->click_end.x = pzx * wd;
+    g->click_end.y = pzy * ht;
+
+    for(size_t k = 0; k < 4; k++)
+    {
+      if(g->active_node[k])
+      {
+        g->box[k].x += g->click_end.x - g->click_start.x;
+        g->box[k].y += g->click_end.y - g->click_start.y;
+      }
+    }
+
+    // init the homography, although it's useless for now
+    get_homography(g->ideal_box, g->box, g->homography);
+
+    g->click_start.x = pzx * wd;
+    g->click_start.y = pzy * ht;
+    dt_pthread_mutex_unlock(&g->lock);
+
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+
+  // Find out if we are close to a node
+  dt_pthread_mutex_lock(&g->lock);
+  g->is_cursor_close = FALSE;
+
+  for(size_t k = 0; k < 4; k++)
+  {
+    const float distance = hypotf(x_pointer - g->box[k].x, y_pointer - g->box[k].y);
+    if(distance < 15.f)
+    {
+      g->active_node[k] = TRUE;
+      g->is_cursor_close = TRUE;
+    }
+    else
+      g->active_node[k] = FALSE;
+  }
+  dt_pthread_mutex_unlock(&g->lock);
+
+  // if cursor is close from a node, remove the system pointer arrow to prevent hiding the spot behind it
+  if(g->is_cursor_close)
+  {
+    dt_control_change_cursor(GDK_BLANK_CURSOR);
+  }
+  else
+  {
+    // fall back to default cursor
+    GdkCursor *const cursor = gdk_cursor_new_from_name(gdk_display_get_default(), "default");
+    gdk_window_set_cursor(gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui)), cursor);
+    g_object_unref(cursor);
+  }
+
+  dt_control_queue_redraw_center();
+
+  return 1;
+}
+
+int button_pressed(struct dt_iop_module_t *self, double x, double y, double pressure, int which, int type,
+                   uint32_t state)
+{
+  if(!self->enabled) return 0;
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  if(g == NULL) return 0;
+  if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
+  if(!g->is_cursor_close) return 0;
+
+  dt_develop_t *dev = self->dev;
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  if(wd == 0.f || ht == 0.f) return 0;
+
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  dt_pthread_mutex_lock(&g->lock);
+  g->drag_drop = TRUE;
+  g->click_start.x = pzx * wd;
+  g->click_start.y = pzy * ht;
+  dt_pthread_mutex_unlock(&g->lock);
+
+  dt_control_queue_redraw_center();
+
+  return 1;
+}
+
+int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state)
+{
+  if(!self->enabled) return 0;
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  if(g == NULL) return 0;
+  if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
+  if(!g->is_cursor_close || !g->drag_drop) return 0;
+
+  dt_develop_t *dev = self->dev;
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  if(wd == 0.f || ht == 0.f) return 0;
+
+  float pzx, pzy;
+  dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
+  pzx += 0.5f;
+  pzy += 0.5f;
+
+  dt_pthread_mutex_lock(&g->lock);
+  g->drag_drop = FALSE;
+  g->click_end.x = pzx * wd;
+  g->click_end.y = pzy * ht;
+
+  for(size_t k = 0; k < 4; k++)
+  {
+    if(g->active_node[k])
+    {
+      g->box[k].x += g->click_end.x - g->click_start.x;
+      g->box[k].y += g->click_end.y - g->click_start.y;
+    }
+  }
+
+  get_homography(g->ideal_box, g->box, g->homography);
+
+  dt_pthread_mutex_unlock(&g->lock);
+
+  dt_control_queue_redraw_center();
+
+  return 1;
+}
+
+void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, int32_t height,
+                     int32_t pointerx, int32_t pointery)
+{
+  const dt_color_checker_t *const checker = dt_get_color_checker(COLOR_CHECKER_SPYDER_48);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_output_profile_info(self->dev->pipe);
+  if(work_profile == NULL) return;
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  if(!g->is_profiling_started) return;
+
+  // Rescale and shift Cairo drawing coordinates
+  dt_develop_t *dev = self->dev;
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  if(wd == 0.f || ht == 0.f) return;
+
+  const float zoom_y = dt_control_get_dev_zoom_y();
+  const float zoom_x = dt_control_get_dev_zoom_x();
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(dev, zoom, 1<<closeup, 1);
+  cairo_translate(cr, width / 2.0, height / 2.0);
+  cairo_scale(cr, zoom_scale, zoom_scale);
+  cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
+
+  cairo_set_line_width(cr, 2.0);
+  const double origin = 8.;
+  const double destination = 16.;
+
+  for(size_t k = 0; k < 4; k++)
+  {
+    if(g->active_node[k])
+    {
+      // draw cross hair
+      cairo_set_source_rgba(cr, 1., 1., 1., 1.);
+
+      cairo_move_to(cr, g->box[k].x - origin, g->box[k].y);
+      cairo_line_to(cr, g->box[k].x - destination, g->box[k].y);
+
+      cairo_move_to(cr, g->box[k].x + origin, g->box[k].y);
+      cairo_line_to(cr, g->box[k].x + destination, g->box[k].y);
+
+      cairo_move_to(cr, g->box[k].x, g->box[k].y - origin);
+      cairo_line_to(cr, g->box[k].x, g->box[k].y - destination);
+
+      cairo_move_to(cr, g->box[k].x, g->box[k].y + origin);
+      cairo_line_to(cr, g->box[k].x, g->box[k].y + destination);
+
+      cairo_stroke(cr);
+    }
+
+    // draw outline circle
+    cairo_set_source_rgba(cr, 1., 1., 1., 1.);
+    cairo_arc(cr, g->box[k].x, g->box[k].y, 7., 0, 2. * M_PI);
+    cairo_stroke(cr);
+
+    // draw black dot
+    cairo_set_source_rgba(cr, 0., 0., 0., 1.);
+    cairo_arc(cr, g->box[k].x, g->box[k].y, 1.5, 0, 2. * M_PI);
+    cairo_fill(cr);
+  }
+
+  const float safety_margin = 0.707f;
+  const float radius = checker->radius * hypotf(wd, ht) * safety_margin;
+
+  for(size_t k = 0; k < checker->patches; k++)
+  {
+    // center of the patch in the ideal reference
+    const point_t center = { checker->values[k].x * wd, checker->values[k].y * ht };
+
+    // corners of the patch in the ideal reference
+    const point_t corners[4] = { {center.x - radius, center.y - radius},
+                                 {center.x + radius, center.y - radius},
+                                 {center.x + radius, center.y + radius},
+                                 {center.x - radius, center.y + radius} };
+
+    // apply patch coordinates transform depending on perspective
+    const point_t new_center = apply_homography(center, g->homography);
+    const double scaling = apply_homography_scaling(center, g->homography);
+    point_t new_corners[4];
+    for(size_t c = 0; c < 4; c++) new_corners[c] = apply_homography(corners[c], g->homography);
+
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_SQUARE);
+    cairo_set_source_rgba(cr, 0., 0., 0., 1.);
+    cairo_move_to(cr, new_corners[0].x, new_corners[0].y);
+    cairo_line_to(cr, new_corners[1].x, new_corners[1].y);
+    cairo_line_to(cr, new_corners[2].x, new_corners[2].y);
+    cairo_line_to(cr, new_corners[3].x, new_corners[3].y);
+    cairo_line_to(cr, new_corners[0].x, new_corners[0].y);
+    cairo_set_line_width(cr, 3.0);
+    cairo_stroke_preserve(cr);
+    cairo_set_line_width(cr, 1.0);
+    cairo_set_source_rgba(cr, 1., 1., 1., 1.);
+    cairo_stroke(cr);
+    cairo_set_line_cap(cr, CAIRO_LINE_CAP_BUTT);
+
+    float RGB[3];
+    dt_ioppr_lab_to_rgb_matrix(checker->values[k].Lab, RGB, work_profile->matrix_out, work_profile->lut_out,
+                               work_profile->unbounded_coeffs_out, work_profile->lutsize,
+                               work_profile->nonlinearlut);
+
+    cairo_set_source_rgba(cr, RGB[0], RGB[1], RGB[2], 1.);
+    cairo_arc(cr, new_center.x, new_center.y, 0.5 * radius / scaling, 0, 2. * M_PI);
+    cairo_fill(cr);
+  }
+}
+
+static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_request_focus(self);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+
+  dt_develop_t *dev = self->dev;
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  if(wd == 0.f || ht == 0.f) return;
+
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  g->is_profiling_started = !g->is_profiling_started;
+  const dt_color_checker_t *const checker = dt_get_color_checker(COLOR_CHECKER_SPYDER_48);
+
+  // init bounding box if needed
+  dt_pthread_mutex_lock(&g->lock);
+
+  // top left
+  g->box[0].x = g->box[0].y = 10.;
+
+  // top right
+  g->box[1].x = (wd - 10.);
+  g->box[1].y = g->box[0].y;
+
+  // bottom right
+  g->box[2].x = g->box[1].x;
+  g->box[2].y = (wd - 10.) * checker->ratio;
+
+  // bottom left
+  g->box[3].x = g->box[0].x;
+  g->box[3].y = g->box[2].y;
+
+  // init the ideal box that defines a perfectly rectangle color checker
+  // we will possibly need to compute an homography to get there
+  for(size_t k = 0; k < 4; k++)
+  {
+    g->ideal_box[k].x = g->box[k].x;
+    g->ideal_box[k].y = g->box[k].y;
+  }
+
+  // init the homography, although it's useless for now
+  get_homography(g->ideal_box, g->box, g->homography);
+
+  dt_pthread_mutex_unlock(&g->lock);
+
+  dt_control_queue_redraw_center();
+
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -2117,6 +2447,16 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = IOP_GUI_ALLOC(channelmixer_rgb);
 
+  // Init the color checker UI
+  for(size_t k = 0; k < 4; k++)
+  {
+    g->box[k].x = g->box[k].y = -1.;
+    g->active_node[k] = FALSE;
+  }
+  g->is_cursor_close = FALSE;
+  g->drag_drop = FALSE;
+  g->is_profiling_started = FALSE;
+
   g->XYZ[0] = NAN;
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
@@ -2204,6 +2544,15 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_hard_max(g->gamut, 12.f);
 
   g->clip = dt_bauhaus_toggle_from_params(self, "clip");
+
+  g->start_profiling = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->start_profiling, NULL, N_("display exposure mask"));
+  dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_showmask,
+                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->start_profiling, TRUE);
+  gtk_widget_set_tooltip_text(g->start_profiling, _("display exposure mask"));
+  g_signal_connect(G_OBJECT(g->start_profiling), "quad-pressed", G_CALLBACK(start_profiling_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->start_profiling), TRUE, TRUE, 0);
 
   GtkWidget *first, *second, *third;
 #define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap)              \
