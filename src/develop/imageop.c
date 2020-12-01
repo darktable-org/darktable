@@ -1011,9 +1011,9 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
     if(gtk_entry_get_text_length(GTK_ENTRY(entry)) > 0)
     {
       // name is not empty, set new multi_name
-      
+
        const gchar *name = gtk_entry_get_text(GTK_ENTRY(entry));
-      
+
       // restore saved 1st character of instance name (without it the same name wouls still produce unnecessary copy + add history item)
       module->multi_name[0] = module->multi_name[sizeof(module->multi_name) - 1];
       module->multi_name[sizeof(module->multi_name) - 1] = 0;
