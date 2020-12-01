@@ -420,8 +420,8 @@ void refresh_sliders_to_device(MidiDevice *midi)
         {
           const gboolean is_slider = DT_BAUHAUS_WIDGET(w)->type == DT_BAUHAUS_SLIDER;
 
-          float min = is_slider ? dt_bauhaus_slider_get_soft_min(w) : 0;
-          float max = is_slider ? dt_bauhaus_slider_get_soft_max(w) : dt_bauhaus_combobox_length(w);
+          float min = is_slider ? DT_BAUHAUS_WIDGET(w)->data.slider.min : 0;
+          float max = is_slider ? DT_BAUHAUS_WIDGET(w)->data.slider.max : dt_bauhaus_combobox_length(w);
           float c   = is_slider ? dt_bauhaus_slider_get(w) : dt_bauhaus_combobox_get(w);
 
           int velocity = is_slider ? round((c-min)/(max-min)*127) : (c>11?c+107:c*127./12.+1.25);
@@ -652,8 +652,8 @@ void aggregate_and_set_slider(MidiDevice *midi,
           {
             midi->last_known[midi->stored_key] = midi->accum;
 
-            float wmin = is_slider ? dt_bauhaus_slider_get_soft_min(w) : 0;
-            float wmax = is_slider ? dt_bauhaus_slider_get_soft_max(w) : dt_bauhaus_combobox_length(w);
+            float wmin = is_slider ? DT_BAUHAUS_WIDGET(w)->data.slider.min : 0;
+            float wmax = is_slider ? DT_BAUHAUS_WIDGET(w)->data.slider.max : dt_bauhaus_combobox_length(w);
 
             int location = is_slider ? round((v-wmin)/(wmax-wmin)*127) : (v>11?v+107:v*127./12.+1.25);
             if(is_slider && DT_BAUHAUS_WIDGET(w)->data.slider.factor < 0) location = 127 - location;
