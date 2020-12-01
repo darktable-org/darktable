@@ -219,8 +219,8 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 {
   // This module may work in RAW or RGB (e.g. for TIFF files) depending on the input
   // The module does not change the color space between the input and output, therefore implement it here
-  if(piece)
-    return piece->dsc_in.cst;
+  if(piece && piece->dsc_in.cst != iop_cs_RAW)
+    return iop_cs_rgb;
   return iop_cs_RAW;
 }
 
