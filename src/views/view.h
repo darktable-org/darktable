@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/action.h"
 #include "common/history.h"
 #include "common/image.h"
 #ifdef HAVE_PRINT
@@ -125,6 +126,8 @@ typedef struct dt_mouse_action_t
 struct dt_view_t;
 typedef struct dt_view_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "views/view_api.h"
 

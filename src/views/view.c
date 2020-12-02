@@ -171,6 +171,15 @@ static int dt_view_load_module(void *v, const char *libname, const char *module_
 #endif
 
   if(module->init) module->init(module);
+
+  if(darktable.gui)
+  {
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_VIEW, module->module_name, module->name(module),
+                                     .owner = &darktable.control->actions_views,
+                                     .next = darktable.control->actions_views.target };
+    darktable.control->actions_views.target = &module->actions;
+  }
+
   if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
 
   return 0;
@@ -403,6 +412,8 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
 
   /* update the scrollbars */
   dt_ui_update_scrollbars(darktable.gui->ui);
+
+  dt_shortcuts_select_view(new_view->view(new_view));
 
   /* update sticky accels window */
   if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);

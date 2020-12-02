@@ -164,6 +164,8 @@ Optional dependencies with no version requirement:
 * OpenJPEG *(for Jpeg2000 export)*
 * Colord, Xatom *(for system display color profile fetching)*
 * G'Mic *(for HaldcLUT support)*
+* PortMidi *(for MIDI input support)*
+* SDL2 *(for gamepad input support)*
 
 To install all the dependencies on Linux systems, you may use the source repositories of your distribution
 (provided they are up-to-date):
