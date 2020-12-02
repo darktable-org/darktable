@@ -113,6 +113,7 @@ static void collection_updated(gpointer instance, dt_collection_change_t query_c
                                gpointer self);
 static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTreeViewColumn *col, GdkEventButton *event, dt_lib_collect_t *d);
 static int is_time_property(int property);
+static void _populate_collect_combo(GtkWidget *w);
 
 const char *name(dt_lib_module_t *self)
 {
@@ -682,8 +683,10 @@ const int _combo_get_active_collection(GtkWidget *combo)
 
 const gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
 {
-  dt_bauhaus_combobox_set_from_value(combo, property + 1);
-  return TRUE;
+  const gboolean found = dt_bauhaus_combobox_set_from_value(combo, property + 1);
+  // make sure we have a valid collection
+  if(!found) dt_bauhaus_combobox_set_from_value(combo, DT_COLLECTION_PROP_FILMROLL + 1);
+  return found;
 }
 
 static gboolean tree_expand(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter *iter, gpointer data)
@@ -2412,23 +2415,13 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
   if(type != DT_METADATA_SIGNAL_NEW_VALUE)
   {
-    // hidden metadata have changed - update the collection list
+    // hidden/shown metadata have changed - update the collection list
     for(int i = 0; i < MAX_RULES; i++)
     {
       g_signal_handlers_block_matched(d->rule[i].combo, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, combo_changed, NULL);
       const int property = _combo_get_active_collection(d->rule[i].combo);
-      GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(d->rule[i].combo));
-      gtk_list_store_clear(GTK_LIST_STORE(model));
-      for(int k = 0; k < DT_COLLECTION_PROP_LAST; k++)
-      {
-        const char *name = dt_collection_name(k);
-        if(name)
-        {
-          GtkTreeIter iter;
-          gtk_list_store_append(GTK_LIST_STORE(model), &iter);
-          gtk_list_store_set(GTK_LIST_STORE(model), &iter, 0, name, 1, k, -1);
-        }
-      }
+      dt_bauhaus_combobox_clear(d->rule[i].combo);
+      _populate_collect_combo(d->rule[i].combo);
       if(property != -1 && !_combo_set_active_collection(d->rule[i].combo, property))
       {
         // this one has been hidden - remove entry
@@ -2442,21 +2435,12 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
     }
   }
 
-  // update metadata if metadata have been hidden or a metadata collection is active
+  // update collection if metadata have been hidden or a metadata collection is active
   const int prop = _combo_get_active_collection(d->rule[d->active_rule].combo);
   if(type == DT_METADATA_SIGNAL_HIDDEN || (prop >= DT_COLLECTION_PROP_METADATA
      && prop < DT_COLLECTION_PROP_METADATA + DT_METADATA_NUMBER))
   {
-    d->view_rule = -1;
-    d->rule[d->active_rule].typing = FALSE;
-    _lib_collect_gui_update(self);
-    // update images collection
-    dt_control_signal_block_by_func(darktable.signals, G_CALLBACK(collection_updated),
-                                    darktable.view_manager->proxy.module_collect.module);
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
-    dt_control_signal_unblock_by_func(darktable.signals, G_CALLBACK(collection_updated),
-                                      darktable.view_manager->proxy.module_collect.module);
-    dt_control_queue_redraw_center();
+    combo_changed(d->rule[d->active_rule].combo, &d->rule[d->active_rule]);
   }
 }
 
