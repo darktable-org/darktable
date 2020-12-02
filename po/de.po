@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-01 21:15+0100\n"
-"PO-Revision-Date: 2020-12-01 21:39+0100\n"
+"PO-Revision-Date: 2020-12-02 22:45+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -8542,11 +8542,8 @@ msgstr "linear, RGB, aufnahmebezogen"
 
 #: ../src/iop/ashift.c:126 ../src/iop/borders.c:188 ../src/iop/clipping.c:329
 #: ../src/iop/flip.c:103 ../src/iop/liquify.c:300
-#, fuzzy
-#| msgctxt "blendmode"
-#| msgid "geometric mean"
 msgid "geometric, RGB"
-msgstr "geometrisches Mittel"
+msgstr "Geometriekorrektur, RGB"
 
 #: ../src/iop/ashift.c:2637
 msgid "automatic cropping failed"
@@ -9234,7 +9231,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:72
 msgid "surface blur"
-msgstr ""
+msgstr "Flächenweichzeichner"
 
 #: ../src/iop/bilateral.cc:77
 msgid "denoise (bilateral filter)"
@@ -10333,7 +10330,7 @@ msgstr ""
 
 #: ../src/iop/colorchecker.c:124
 msgid "perform color space corrections and apply looks"
-msgstr ""
+msgstr "Farbraumkorrekturen basierend auf Quell-/Zielwerten"
 
 #: ../src/iop/colorchecker.c:126 ../src/iop/colorchecker.c:128
 #: ../src/iop/colorize.c:106 ../src/iop/colormapping.c:153
@@ -10508,6 +10505,8 @@ msgid ""
 "convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
 msgstr ""
+"Konvertiert RGB Eingangswerte in den Arbeitsfarbraum\n"
+"basierend auf Farbprofilen "
 
 #: ../src/iop/colorin.c:133 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:176
 msgid "mandatory"
@@ -10648,6 +10647,8 @@ msgid ""
 "convert pipeline reference RGB to any display RGB\n"
 "using color profiles to remap RGB values"
 msgstr ""
+"Konvertiert RGB Werte des Arbeitsfarbraums in den Ausgabefarbraum\n"
+"basierend auf Farbprofilen "
 
 #: ../src/iop/colorout.c:90
 msgid "linear or non-linear, RGB or Lab, display-referred"
@@ -10708,7 +10709,7 @@ msgstr "Farbrekonstruktion"
 
 #: ../src/iop/colorreconstruction.c:134
 msgid "recover clipped highlights by propagating surrounding colors"
-msgstr ""
+msgstr "Farbrekonstruktion für Spitzlichter anhand der Umgebung"
 
 #: ../src/iop/colorreconstruction.c:630 ../src/iop/colorreconstruction.c:1086
 #: ../src/iop/globaltonemap.c:196 ../src/iop/globaltonemap.c:367
@@ -11016,7 +11017,7 @@ msgstr "Entrauschen (Profil)"
 
 #: ../src/iop/denoiseprofile.c:633
 msgid "denoise using noise statistics profiled on sensors."
-msgstr ""
+msgstr "Entrauschen mit sensorspezifischen Rauschprofilen"
 
 #: ../src/iop/denoiseprofile.c:2994
 #, c-format
@@ -12209,7 +12210,7 @@ msgstr "Verlaufsfilter"
 
 #: ../src/iop/graduatednd.c:152
 msgid "simulate an optical graduated neutral density filter"
-msgstr ""
+msgstr "Simuliert einen Neutralen- oder Farbverlaufsfilter"
 
 #: ../src/iop/graduatednd.c:1150
 msgid "the density in EV for the filter"
@@ -12297,7 +12298,7 @@ msgstr ""
 
 #: ../src/iop/hazeremoval.c:111
 msgid "remove fog and atmospheric hazing from pictures"
-msgstr ""
+msgstr "Entfernt Nebel und Dunstschleier"
 
 #: ../src/iop/hazeremoval.c:206
 msgid "amount of haze reduction"
@@ -12318,6 +12319,7 @@ msgstr "Spitzlicht-Rekonstruktion"
 #: ../src/iop/highlights.c:86
 msgid "avoid magenta highlights and try to recover highlights colors"
 msgstr ""
+"Vermeidung magentafarbener Spitzlichter und Wiederherstellung von Farbtönen"
 
 #: ../src/iop/highlights.c:89 ../src/iop/hotpixels.c:74
 msgid "reconstruction, raw"
@@ -12373,7 +12375,7 @@ msgstr "Tote Pixel"
 
 #: ../src/iop/hotpixels.c:71
 msgid "remove abnormally bright pixels by dampening them with neighbours"
-msgstr ""
+msgstr "Ersetzen von Hotpixel mit Durchschnitt der Nachbarpixel"
 
 #: ../src/iop/hotpixels.c:354
 #, c-format
@@ -12454,10 +12456,8 @@ msgid "correct lenses optical flaws"
 msgstr "korrigiert Verzeichnung, Vignettierung, CA"
 
 #: ../src/iop/lens.cc:161
-#, fuzzy
-#| msgid "color reconstruction"
 msgid "geometric and reconstruction, RGB"
-msgstr "Farbrekonstruktion"
+msgstr "Geometrie und Rekonstruktion, RGB"
 
 #: ../src/iop/lens.cc:1558
 #, c-format
@@ -12916,7 +12916,7 @@ msgstr "3D LUT"
 
 #: ../src/iop/lut3d.c:137
 msgid "perform color space corrections and apply look"
-msgstr ""
+msgstr "Farbraumkorrekturen mit 3D LUTs"
 
 #: ../src/iop/lut3d.c:140
 msgid "defined by profile, RGB"
@@ -13123,7 +13123,7 @@ msgstr "Maskenverwaltung"
 
 #: ../src/iop/monochrome.c:97
 msgid "quickly convert an image to black & white using a variable color filter"
-msgstr ""
+msgstr "Schwarzweißumwandlung mit variablem Farbfilter"
 
 #: ../src/iop/monochrome.c:127
 msgid "red filter"
@@ -13148,7 +13148,7 @@ msgstr ""
 
 #: ../src/iop/negadoctor.c:155
 msgid "invert film negative scans and simulate printing on paper"
-msgstr ""
+msgstr "Umkehrung von Negativscans  mit Papiersimulation"
 
 #: ../src/iop/negadoctor.c:375
 msgid "color film"
@@ -13359,10 +13359,8 @@ msgid "toggle on or off the color controls"
 msgstr "Schaltet die Bedienfelder zur Farbkorrektur ein oder aus."
 
 #: ../src/iop/nlmeans.c:88
-#, fuzzy
-#| msgid "chroma denoise"
 msgid "astrophoto denoise"
-msgstr "Chrominanz-Entrauschen"
+msgstr "Astrofotografie Entrauschen"
 
 #: ../src/iop/nlmeans.c:93
 msgid "denoise (non-local means)"
@@ -13597,7 +13595,7 @@ msgstr ""
 
 #: ../src/iop/retouch.c:206
 msgid "remove and clone spots, perform split-frequency skin editing"
-msgstr ""
+msgstr "Heilen, Klonen von Bereichen mit Frequenzseparation "
 
 #: ../src/iop/retouch.c:209
 msgid "geometric and frequential, RGB"
@@ -13818,7 +13816,7 @@ msgstr "RGB-Kurve"
 
 #: ../src/iop/rgbcurve.c:138
 msgid "alter an image’s tones using curves in RGB color space"
-msgstr ""
+msgstr "Tonwertanpassung mittels Kurven im RGB Farbraum"
 
 #: ../src/iop/rgbcurve.c:189 ../src/iop/tonecurve.c:565
 msgid "gamma 1.0 (linear)"
@@ -13932,6 +13930,8 @@ msgid ""
 "modify the tonal range of the shadows and highlights\n"
 "of an image by enhancing local contrast."
 msgstr ""
+"Tonwertanpassung von Schatten und Lichter\n"
+"mittels lokaler Kontrasterhöhung "
 
 #: ../src/iop/shadhi.c:715 ../src/iop/splittoning.c:537
 msgid "compress"
@@ -14296,7 +14296,7 @@ msgstr "Farbkurve"
 
 #: ../src/iop/tonecurve.c:212
 msgid "alter an image’s tones using curves"
-msgstr ""
+msgstr "Tonwertanpassung mittels Kurven"
 
 #: ../src/iop/tonecurve.c:1170
 msgid ""
@@ -14700,7 +14700,7 @@ msgstr "Vignettierung"
 
 #: ../src/iop/vignette.c:159
 msgid "simulate a lens fall-off close to edges"
-msgstr ""
+msgstr "Simuliert Vignettierung an den Bildrändern"
 
 #: ../src/iop/vignette.c:953
 msgid "lomo"
