@@ -468,6 +468,9 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, c
     }
   }
 
+  dt_action_define_iop(self, combined_label, local, 0, 0, w);
+// FIXME CTRL-press callback? Presumably should be sub with fallback
+
   g_free(combined_ctrl_label);
   g_free(combined_label);
 

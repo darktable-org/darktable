@@ -24,6 +24,41 @@
 #include "libs/lib.h"
 #include "views/view.h"
 
+#define SHORTCUTS_TRANSITION
+
+GtkWidget *dt_shortcuts_prefs();
+
+void dt_shortcuts_save(const gchar *file_name);
+
+void dt_shortcuts_load(const gchar *file_name);
+
+void dt_shortcuts_reinitialise();
+
+void dt_shortcuts_select_view(dt_view_type_flags_t view);
+
+gboolean dt_shortcut_dispatcher(GtkWidget *w, GdkEvent *event, gpointer user_data);
+
+dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
+
+void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, gboolean local, guint accel_key, GdkModifierType mods, GtkWidget *widget);
+
+typedef uint8_t dt_input_device_t;
+
+typedef struct dt_input_driver_definition_t
+{
+  gchar *name;
+  gchar *(*key_to_string)(guint key, gboolean display);
+  gboolean (*string_to_key)(gchar *string, guint *key);
+  gchar *(*move_to_string)(guint move, gboolean display);
+  gboolean (*string_to_move)(gchar *string, guint *move);
+  dt_lib_module_t *module;
+} dt_input_driver_definition_t;
+
+dt_input_device_t dt_register_input_driver(dt_lib_module_t *module, const dt_input_driver_definition_t *callbacks);
+void dt_shortcut_key_press(dt_input_device_t id, guint time, guint key, guint mods);
+void dt_shortcut_key_release(dt_input_device_t id, guint time, guint key);
+float dt_shortcut_move(dt_input_device_t id, guint time, guint move, double size);
+
 typedef struct dt_accel_t
 {
 

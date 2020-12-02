@@ -136,6 +136,8 @@ void init(dt_view_t *self)
   self->data = malloc(sizeof(dt_develop_t));
   dt_dev_init((dt_develop_t *)self->data, 1);
 
+  darktable.view_manager->proxy.darkroom.view = self;
+
 #ifdef USE_LUA
   lua_State *L = darktable.lua_state.state;
   const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
@@ -2554,7 +2556,6 @@ void gui_init(dt_view_t *self)
     gtk_widget_set_state_flags(overlay_colors, GTK_STATE_FLAG_SELECTED, TRUE);
   }
 
-  darktable.view_manager->proxy.darkroom.view = self;
   darktable.view_manager->proxy.darkroom.get_layout = _lib_darkroom_get_layout;
   dev->border_size = DT_PIXEL_APPLY_DPI(dt_conf_get_int("plugins/darkroom/ui/border_size"));
 }
@@ -3725,14 +3726,16 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_dev_invalidate(darktable.develop);
     dt_control_queue_redraw_center();
     dt_control_navigation_redraw();
+    return 1;
   }
   // add an option to allow skip mouse events while editing masks
   if(key == accels->darkroom_skip_mouse_events.accel_key && state == accels->darkroom_skip_mouse_events.accel_mods)
   {
     darktable.develop->darkroom_skip_mouse_events = FALSE;
+    return 1;
   }
 
-  return 1;
+  return 0;
 }
 
 int key_pressed(dt_view_t *self, guint key, guint state)

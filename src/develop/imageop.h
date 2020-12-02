@@ -33,6 +33,7 @@ typedef struct dt_iop_roi_t
 #include "common/darktable.h"
 #include "common/introspection.h"
 #include "common/opencl.h"
+#include "common/action.h"
 #include "control/settings.h"
 #include "develop/pixelpipe.h"
 #include "dtgtk/togglebutton.h"
@@ -151,6 +152,8 @@ struct dt_iop_module_so_t;
 struct dt_iop_module_t;
 typedef struct dt_iop_module_so_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "iop/iop_api.h"
 
@@ -162,9 +165,8 @@ typedef struct dt_iop_module_so_t
    * read-only then. */
   dt_iop_global_data_t *data;
   /** gui is also only inited once at startup. */
-  dt_iop_gui_data_t *gui_data;
+//  dt_iop_gui_data_t *gui_data;
   /** which results in this widget here, too. */
-  GtkWidget *widget;
   /** button used to show/hide this module in the plugin list. */
   dt_iop_module_state_t state;
 
@@ -275,6 +277,9 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
+
+  GSList *widget_list;
+
   /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
   gboolean has_trouble;
   /** the corresponding SO object */
