@@ -1226,12 +1226,23 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   d->adaptation = p->adaptation;
   d->clip = p->clip;
   d->gamut = (p->gamut == 0.f) ? p->gamut : 1.f / p->gamut;
+  
+  // find x y coordinates of illuminant for CIE 1931 2° observer
+  float x = p->x;
+  float y = p->y;
+  float custom_wb[4];
+  get_white_balance_coeff(self, custom_wb);
+  illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
+
+  // if illuminant is set as camera, x and y are set on-the-fly at commit time, so we need to set adaptation too
+  if(p->illuminant == DT_ILLUMINANT_CAMERA)
+    check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
 
   d->illuminant_type = p->illuminant;
 
   // Convert illuminant from xyY to XYZ
   float XYZ[3];
-  illuminant_xy_to_XYZ(p->x, p->y, XYZ);
+  illuminant_xy_to_XYZ(x, y, XYZ);
 
   // Convert illuminant from XYZ to Bradford modified LMS
   convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
