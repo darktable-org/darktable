@@ -327,22 +327,15 @@ static void _update_layout(dt_lib_module_t *self)
     const gchar *name = dt_metadata_get_name_by_display_order(i);
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
     const gboolean hidden = dt_conf_get_int(setting) & DT_METADATA_FLAG_HIDDEN;
-    const int type = dt_metadata_get_type_by_display_order(i);
-    if(hidden || type == DT_METADATA_TYPE_INTERNAL)
-    {
-      for(int j = 0; j < 2; j++)
-      {
-        gtk_widget_hide(gtk_grid_get_child_at(d->metadata_grid,j,i));
-      }
-    }
-    else
-    {
-      for(int j = 0; j < 2; j++)
-      {
-        gtk_widget_show(gtk_grid_get_child_at(d->metadata_grid,j,i));
-      }
-    }
     g_free(setting);
+    const int type = dt_metadata_get_type_by_display_order(i);
+    for(int j = 0; j < 2; j++)
+    {
+      GtkWidget *w = gtk_grid_get_child_at(d->metadata_grid,j,i);
+      gtk_widget_show_all(w);
+      gtk_widget_set_no_show_all(w, TRUE);
+      gtk_widget_set_visible(w, (!hidden || type == DT_METADATA_TYPE_INTERNAL));
+    }
   }
 }
 
@@ -489,7 +482,7 @@ static void _config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
                               meta_remove ? DT_METADATA_SIGNAL_HIDDEN : DT_METADATA_SIGNAL_SHOWN);
   }
-//  update_layout(self);
+  _update_layout(self);
   gtk_widget_destroy(dialog);
 }
 
@@ -599,12 +592,6 @@ static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, d
   return TRUE;
 }
 
-void gui_post_expose(struct dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t height,
-                        int32_t pointerx, int32_t pointery)
-{
-  _update_layout(self);
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
@@ -623,7 +610,6 @@ void gui_init(dt_lib_module_t *self)
   dt_gui_add_help_link(self->widget, "metadata_editor.html#metadata_editor_usage");
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(10));
-  gint line_height = 0;
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -636,23 +622,14 @@ void gui_init(dt_lib_module_t *self)
               "\nin that case, right-click gives the possibility to choose one of them."
               "\npress escape to exit the popup window"));
 
-    GtkTextBuffer *buffer = gtk_text_buffer_new(NULL);
-    gtk_text_buffer_create_tag (buffer, "italic", "style", PANGO_STYLE_ITALIC, NULL);
-    GtkWidget *textview = gtk_text_view_new_with_buffer(buffer);
+    GtkWidget *textview = gtk_text_view_new();
+    gtk_text_buffer_create_tag (gtk_text_view_get_buffer(GTK_TEXT_VIEW(textview)),
+                                "italic", "style", PANGO_STYLE_ITALIC, NULL);
 
     const char *name = (char *)dt_metadata_get_name_by_display_order(i);
     d->setting_name[i] = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
 
-    if(!line_height)
-    {
-      PangoLayout *cell = gtk_widget_create_pango_layout(GTK_WIDGET(textview), "X");
-      pango_layout_get_size(cell, NULL, &line_height);
-      g_object_unref(cell);
-      line_height /= PANGO_SCALE;
-    }
-
-    GtkWidget *swindow = dt_ui_scroll_wrap(GTK_WIDGET(textview), 5 * line_height,
-                                           d->setting_name[i]);
+    GtkWidget *swindow = dt_ui_scroll_wrap(GTK_WIDGET(textview), 100, d->setting_name[i]);
 
     gtk_grid_attach(grid, swindow, 1, i, 1, 1);
     gtk_widget_set_hexpand(swindow, TRUE);
@@ -707,6 +684,7 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
   _update(self);
+  _update_layout(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)

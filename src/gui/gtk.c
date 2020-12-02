@@ -3086,13 +3086,25 @@ static gint _get_container_row_heigth(GtkWidget *w)
 
   if(GTK_IS_TREE_VIEW(w))
   {
-    gint cell_height = 0;
-    gtk_tree_view_column_cell_get_size(gtk_tree_view_get_column(GTK_TREE_VIEW(w), 0),
-                                       NULL, NULL, NULL, NULL, &cell_height);
+    gint row_height = 0;
+
+    const gint num_columns = gtk_tree_view_get_n_columns(GTK_TREE_VIEW(w));
+    for(int c = 0; c < num_columns; c++)
+    {
+      gint cell_height = 0;
+      gtk_tree_view_column_cell_get_size(gtk_tree_view_get_column(GTK_TREE_VIEW(w), c),
+                                        NULL, NULL, NULL, NULL, &cell_height);
+      if(cell_height > row_height) row_height = cell_height;
+    }
     GValue separation = { G_TYPE_INT };
     gtk_widget_style_get_property(w, "vertical-separator", &separation);
 
-    if(cell_height > 0) height = cell_height + g_value_get_int(&separation);
+    if(row_height > 0) height = row_height + g_value_get_int(&separation);
+  }
+  else if(GTK_IS_TEXT_VIEW(w))
+  {
+    gtk_widget_get_preferred_height(w, NULL, &height);
+    height /= gtk_text_buffer_get_line_count(gtk_text_view_get_buffer(GTK_TEXT_VIEW(w)));
   }
   else
   {
@@ -3139,12 +3151,18 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
                                 gtk_widget_get_state_flags(sw),
                                 &padding);
 
-  gtk_widget_set_size_request(sw, -1, height + padding.top + padding.bottom);
+  gint old_height = 0;
+  gtk_widget_get_size_request(sw, NULL, &old_height);
+  const gint new_height = height + padding.top + padding.bottom + (GTK_IS_TEXT_VIEW(w) ? 2 : 0);
+  if(new_height != old_height)
+  {
+    gtk_widget_set_size_request(sw, -1, new_height);
 
-  GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
-  gint value = gtk_adjustment_get_value(adj);
-  value -= value % increment;
-  gtk_adjustment_set_value(adj, value);
+    GtkAdjustment *adj = gtk_scrolled_window_get_vadjustment(GTK_SCROLLED_WINDOW(sw));
+    gint value = gtk_adjustment_get_value(adj);
+    value -= value % increment;
+    gtk_adjustment_set_value(adj, value);
+  }
 
   return FALSE;
 }
@@ -3162,7 +3180,11 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
     dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
 
-    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*delta_y);
+    const gint new_size = dt_conf_get_int(config_str) + increment*delta_y;
+
+    dt_toast_log("%d", 1 + new_size / increment);
+
+    dt_conf_set_int(config_str, new_size);
 
     _scroll_wrap_resize(w, NULL, config_str);
   }
