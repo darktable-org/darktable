@@ -562,10 +562,23 @@ int button_pressed(dt_view_t *self, double x, double y, double pressure, int whi
 
 int key_released(dt_view_t *self, guint key, guint state)
 {
+  return 0;
+}
+
+int key_pressed(dt_view_t *self, guint key, guint state)
+{
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   dt_control_accels_t *accels = &darktable.control->accels;
 
-  if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
+  if(key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R || key == GDK_KEY_Shift_Lock || key == GDK_KEY_Control_L
+     || key == GDK_KEY_Control_R || key == GDK_KEY_Alt_L || key == GDK_KEY_Alt_R || key == GDK_KEY_Caps_Lock
+     || key == GDK_KEY_Num_Lock || key == GDK_KEY_ISO_Level3_Shift)
+  {
+    // we don't want to handle modifiers keys here. They will be handled by the state value when pressing the
+    // regular key
+    return 0;
+  }
+  else if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
   {
     if(!d->auto_advance)
     {
@@ -579,17 +592,6 @@ int key_released(dt_view_t *self, guint key, guint state)
     }
     return 0;
   }
-  else if(key == accels->global_collapsing_controls.accel_key
-          || (state && accels->global_collapsing_controls.accel_mods))
-  {
-    // do nothing for any combination of accel for showing the border controls
-    return 0;
-  }
-  else if(key == accels->slideshow_view.accel_key && state == accels->slideshow_view.accel_mods)
-  {
-    // do nothing : we don't want to exit slideshow
-    return 0;
-  }
   else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add || key == GDK_KEY_plus)
   {
     _set_delay(d, 1);
@@ -600,21 +602,17 @@ int key_released(dt_view_t *self, guint key, guint state)
     _set_delay(d, -1);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
   }
-  else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
+  else if(key == GDK_KEY_Left)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
     d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP_BACK);
   }
-  else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
+  else if(key == GDK_KEY_Right)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
     d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP);
-  }
-  else if(key == GDK_KEY_F11)
-  {
-    // let F11 be passed through, this is to make dt full screen
   }
   else
   {
@@ -623,11 +621,6 @@ int key_released(dt_view_t *self, guint key, guint state)
     dt_ctl_switch_mode_to("lighttable");
   }
 
-  return 0;
-}
-
-int key_pressed(dt_view_t *self, guint key, guint state)
-{
   return 0;
 }
 
