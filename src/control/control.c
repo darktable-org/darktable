@@ -45,6 +45,19 @@
 
 void dt_control_init(dt_control_t *s)
 {
+  s->actions_global = (dt_action_t){ DT_ACTION_TYPE_GLOBAL, "global", C_("accel", "global"), .next = &s->actions_views };
+  s->actions_views = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "views", C_("accel", "views"), .next = &s->actions_libs, .target = &s->actions_thumb };
+  s->actions_thumb = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "thumbtable", C_("accel", "thumbtable"), .owner = &s->actions_views };
+  s->actions_libs = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "lib", C_("accel", "utility modules"), .next = &s->actions_iops };
+  s->actions_iops = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "iop", C_("accel", "processing modules"), .target = &s->actions_blend };
+  s->actions_blend = (dt_action_t){ DT_ACTION_TYPE_CATEGORY, "blend", C_("accel", "blending"), .owner = &s->actions_iops };
+  s->actions = &s->actions_global;
+
+  s->widgets = g_hash_table_new(NULL, NULL);
+  s->shortcuts = g_sequence_new(g_free);
+  s->mapping_widget = NULL;
+  s->input_drivers = NULL;
+
   memset(s->vimkey, 0, sizeof(s->vimkey));
   s->vimkey_cnt = 0;
 
@@ -86,15 +99,19 @@ void dt_control_init(dt_control_t *s)
 
 void dt_control_key_accelerators_on(struct dt_control_t *s)
 {
+#ifndef SHORTCUTS_TRANSITION
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accelerators);
+#endif // ifndef SHORTCUTS_TRANSITION
   if(!s->key_accelerators_on) s->key_accelerators_on = 1;
 }
 
 void dt_control_key_accelerators_off(struct dt_control_t *s)
 {
+#ifndef SHORTCUTS_TRANSITION
   gtk_window_remove_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                                 darktable.control->accelerators);
+#endif // ifndef SHORTCUTS_TRANSITION
   s->key_accelerators_on = 0;
 }
 
@@ -187,10 +204,10 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->res_mutex);
   dt_pthread_mutex_destroy(&s->run_mutex);
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
-  if(s->accelerator_list)
-  {
-    g_list_free_full(s->accelerator_list, g_free);
-  }
+  if(s->accelerator_list) g_list_free_full(s->accelerator_list, g_free);
+  if(s->widgets) g_hash_table_destroy(s->widgets);
+  if(s->shortcuts) g_sequence_free(s->shortcuts);
+  if(s->input_drivers) g_slist_free_full(s->input_drivers, g_free);
 }
 
 

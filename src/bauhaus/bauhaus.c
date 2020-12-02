@@ -931,6 +931,7 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, co
         }
       }
 
+      dt_action_define_iop(w->module, combined_label, FALSE, 0, 0, widget);
       g_free(combined_label);
     }
 
@@ -2591,6 +2592,25 @@ void dt_bauhaus_slider_set_soft(GtkWidget *widget, float pos)
   dt_bauhaus_slider_set(widget, rpos);
 }
 
+static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
+{
+  if(!GTK_IS_WIDGET(data)) return 0;
+
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)data;
+  dt_bauhaus_slider_data_t *d = &w->data.slider;
+  if(d->is_changed)
+  {
+    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+    d->is_changed = 0;
+    return TRUE;
+  }
+  else
+  {
+    d->timeout_handle = 0;
+    return FALSE;
+  }
+}
+
 static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
 {
   dt_bauhaus_slider_data_t *d = &w->data.slider;
@@ -2603,35 +2623,23 @@ static void dt_bauhaus_slider_set_normalized(dt_bauhaus_widget_t *w, float pos)
   d->pos = d->curve(GTK_WIDGET(w), rpos, DT_BAUHAUS_SET);
   gtk_widget_queue_draw(GTK_WIDGET(w));
   d->is_changed = 1;
-  if(!darktable.gui->reset && !d->is_dragging)
+  if(!darktable.gui->reset)
   {
-    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
-    d->is_changed = 0;
+    if(!d->is_dragging)
+    {
+      g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+      d->is_changed = 0;
+    }
+    else
+    {
+      if(!d->timeout_handle)
+      {
+        int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
+                          DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
+        d->timeout_handle = g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, w);
+      }
+    }
   }
-}
-
-static gboolean dt_bauhaus_slider_postponed_value_change(gpointer data)
-{
-  if(!GTK_IS_WIDGET(data)) return 0;
-
-  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)data;
-  dt_bauhaus_slider_data_t *d = &w->data.slider;
-  if(d->is_changed)
-  {
-    g_signal_emit_by_name(G_OBJECT(w), "value-changed");
-    d->is_changed = 0;
-  }
-
-  if(!d->is_dragging) d->timeout_handle = 0;
-  else
-  {
-    const int delay = CLAMP(darktable.develop->average_delay * 3 / 2,
-                            DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
-                            DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
-    d->timeout_handle = g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, data);
-  }
-
-  return FALSE;
 }
 
 static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data)
@@ -2800,11 +2808,6 @@ static gboolean dt_bauhaus_slider_button_press(GtkWidget *widget, GdkEventButton
       dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
       dt_bauhaus_slider_data_t *d = &w->data.slider;
       d->is_dragging = 1;
-      int delay = CLAMP(darktable.develop->average_delay * 3 / 2, DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN,
-                        DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX);
-      // timeout_handle should always be zero here, but check just in case
-      if(!d->timeout_handle)
-        d->timeout_handle = g_timeout_add(delay, dt_bauhaus_slider_postponed_value_change, widget);
     }
     return TRUE;
   }
@@ -2854,6 +2857,7 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
       dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
     }
   }
+
   return TRUE;
 }
 

@@ -83,6 +83,8 @@ typedef struct dt_lib_t
 
 typedef struct dt_lib_module_t
 {
+  dt_action_t actions; // !!! NEEDS to be FIRST (to be able to cast convert)
+
 #define INCLUDE_API_FROM_MODULE_H
 #include "libs/lib_api.h"
 
@@ -102,6 +104,7 @@ typedef struct dt_lib_module_t
   guint timeout_handle;
 
   GSList *accel_closures;
+
   GtkWidget *reset_button;
   GtkWidget *presets_button;
 } dt_lib_module_t;

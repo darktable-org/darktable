@@ -20,6 +20,7 @@
 
 #include "common/darktable.h"
 #include "common/dtpthread.h"
+#include "common/action.h"
 #include "control/settings.h"
 
 #include <gtk/gtk.h>
@@ -161,6 +162,13 @@ typedef struct dt_control_t
   // Accel remapping data
   gchar *accel_remap_str;
   GtkTreePath *accel_remap_path;
+
+  dt_action_t *actions, actions_global, actions_views, actions_thumb, actions_libs, actions_iops, actions_blend;
+
+  GHashTable *widgets;
+  GSequence *shortcuts;
+  void *mapping_widget;
+  GSList *input_drivers;
 
   char vimkey[256];
   int vimkey_cnt;

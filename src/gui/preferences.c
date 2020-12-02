@@ -905,17 +905,18 @@ static void init_tab_presets(GtkWidget *stack)
 
 static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data)
 {
+  search_data->last_search_term = NULL;
+#ifndef SHORTCUTS_TRANSITION
   GtkWidget *container = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   GtkWidget *tree = gtk_tree_view_new();
+
   GtkWidget *button, *searchentry;
   GtkWidget *hbox;
   GtkTreeStore *model = gtk_tree_store_new(A_N_COLUMNS, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
   GtkCellRenderer *renderer;
   GtkTreeViewColumn *column;
-
-  // Adding the outer container
-  gtk_stack_add_titled(GTK_STACK(stack), container, _("shortcuts"), _("shortcuts"));
 
   // Building the accelerator tree
   g_list_foreach(darktable.control->accelerator_list, tree_insert_accel, (gpointer)model);
@@ -992,6 +993,14 @@ static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data
   gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
 
   g_object_unref(G_OBJECT(model));
+#endif // ifndef SHORTCUTS_TRANSITION
+
+#ifdef SHORTCUTS_TRANSITION
+  GtkWidget *container = dt_shortcuts_prefs();
+#endif // SHORTCUTS_TRANSITION
+
+  // Adding the outer container
+  gtk_stack_add_titled(GTK_STACK(stack), container, _("shortcuts"), _("shortcuts"));
 }
 
 static void tree_insert_accel(gpointer accel_struct, gpointer model_link)

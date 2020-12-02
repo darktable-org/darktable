@@ -718,14 +718,20 @@ gboolean dt_gui_get_scroll_unit_delta(const GdkEventScroll *event, int *delta)
 
 static gboolean _widget_focus_in_block_key_accelerators(GtkWidget *widget, GdkEventFocus *event, gpointer data)
 {
+#ifndef SHORTCUTS_TRANSITION
   dt_control_key_accelerators_off(darktable.control);
+#endif // ifndef SHORTCUTS_TRANSITION
+
   return FALSE;
 }
 
 static gboolean _widget_focus_out_unblock_key_accelerators(GtkWidget *widget, GdkEventFocus *event,
                                                            gpointer data)
 {
+#ifndef SHORTCUTS_TRANSITION
   dt_control_key_accelerators_on(darktable.control);
+#endif // ifndef SHORTCUTS_TRANSITION
+
   return FALSE;
 }
 
@@ -1316,8 +1322,10 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   init_widgets(gui);
 
   // Adding the global shortcut group to the main window
+#ifndef SHORTCUTS_TRANSITION
   gtk_window_add_accel_group(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)),
                              darktable.control->accelerators);
+#endif // ifndef SHORTCUTS_TRANSITION
 
   /* Have the delete event (window close) end the program */
   snprintf(path, sizeof(path), "%s/icons", datadir);
@@ -1385,6 +1393,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // update the profile when the window is moved. resize is already handled in configure()
   widget = dt_ui_main_window(darktable.gui->ui);
   g_signal_connect(G_OBJECT(widget), "configure-event", G_CALLBACK(window_configure), NULL);
+  g_signal_connect(G_OBJECT(widget), "event", G_CALLBACK(dt_shortcut_dispatcher), NULL);
 
   // register keys for view switching
   dt_accel_register_global(NC_("accel", "tethering view"), GDK_KEY_t, 0);
@@ -1491,6 +1500,12 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   dt_accel_connect_global("toggle tooltip visibility",
                           g_cclosure_new(G_CALLBACK(toggle_tooltip_visibility), NULL, NULL));
+
+  // reinitialise input devices
+  dt_accel_register_global(NC_("accel", "reinitialise input devices"), GDK_KEY_I, GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK);
+
+  dt_accel_connect_global("reinitialise input devices",
+                          g_cclosure_new(G_CALLBACK(dt_shortcuts_reinitialise), NULL, NULL));
 
   darktable.gui->reset = 0;
 
@@ -2722,6 +2737,7 @@ gboolean dt_gui_show_standalone_yes_no_dialog(const char *title, const char *mar
   {
     GtkWindow *win = GTK_WINDOW(dt_ui_main_window(darktable.gui->ui));
     gtk_window_set_transient_for(GTK_WINDOW(window), win);
+    gtk_window_set_modal(GTK_WINDOW(window), TRUE);
     if(gtk_widget_get_visible(GTK_WIDGET(win)))
     {
       gtk_window_set_position(GTK_WINDOW(window), GTK_WIN_POS_CENTER_ON_PARENT);
@@ -3031,6 +3047,11 @@ GdkModifierType dt_key_modifier_state()
   GdkWindow *window = gtk_widget_get_window(dt_ui_main_window(darktable.gui->ui));
   gdk_device_get_state(gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(window))), window, NULL, &state);
   return state;
+
+/* FIXME double check correct way of doing this (merge conflict with Input System NG 20210319)
+  GdkKeymap *keymap = gdk_keymap_get_for_display(gdk_display_get_default());
+  return gdk_keymap_get_modifier_state(keymap) & gdk_keymap_get_modifier_mask(keymap, GDK_MODIFIER_INTENT_DEFAULT_MOD_MASK);
+*/
 }
 
 static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocation, gpointer *data)

@@ -39,6 +39,7 @@
 #include "common/camera_control.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/action.h"
 #include "common/cpuid.h"
 #include "common/file_location.h"
 #include "common/film.h"
@@ -61,6 +62,7 @@
 #include "control/signal.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/guides.h"
 #include "gui/presets.h"
@@ -1185,6 +1187,13 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       gtk_accel_map_load(keyfile);
     else
       gtk_accel_map_save(keyfile); // Save the default keymap if none is present
+
+    // Then load any shortcuts if available
+    snprintf(keyfile, sizeof(keyfile), "%s/shortcutsrc", datadir);
+    if(g_file_test(keyfile, G_FILE_TEST_EXISTS))
+      dt_shortcuts_load(keyfile);
+
+    dt_shortcuts_save(keyfile); // Save the shortcuts including defaults
 
     // initialize undo struct
     darktable.undo = dt_undo_init();

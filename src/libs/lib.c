@@ -760,6 +760,11 @@ static int dt_lib_load_module(void *m, const char *libname, const char *module_n
   module->reset_button = NULL;
   module->presets_button = NULL;
 
+  module->actions = (dt_action_t){ DT_ACTION_TYPE_LIB, module->plugin_name, module->name(module),
+                                  .owner = &darktable.control->actions_libs,
+                                  .next = darktable.control->actions_libs.target };
+  darktable.control->actions_libs.target = &module->actions;
+
   if(module->gui_reset)
   {
     dt_accel_register_lib(module, NC_("accel", "reset module parameters"), 0, 0);
@@ -902,6 +907,7 @@ static void dt_lib_init_module(void *m)
 {
   dt_lib_module_t *module = (dt_lib_module_t *)m;
   dt_lib_init_presets(module);
+
   // Calling the keyboard shortcut initialization callback if present
   // do not init accelerators if there is no gui
   if(darktable.gui)
@@ -1343,9 +1349,10 @@ void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 
 void dt_lib_connect_common_accels(dt_lib_module_t *module)
 {
-  if(module->reset_button)
+  if(module->reset_button && module->gui_reset)
     dt_accel_connect_button_lib(module, "reset module parameters", module->reset_button);
-  if(module->presets_button) dt_accel_connect_button_lib(module, "show preset menu", module->presets_button);
+  if(module->presets_button && module->get_params)
+    dt_accel_connect_button_lib(module, "show preset menu", module->presets_button);
   if(module->expandable(module))
   {
     GClosure *closure = NULL;

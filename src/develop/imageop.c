@@ -1448,6 +1448,11 @@ static void dt_iop_init_module_so(void *m)
   // do not init accelerators if there is no gui
   if(darktable.gui)
   {
+    module->actions = (dt_action_t){ DT_ACTION_TYPE_IOP, module->op, module->name(),
+                                    .owner = &darktable.control->actions_iops,
+                                    .next = darktable.control->actions_iops.target };
+    darktable.control->actions_iops.target = &module->actions;
+
     // Calling the accelerator initialization callback, if present
     init_key_accels(module);
 
@@ -1806,6 +1811,8 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
   while(g_idle_remove_by_data(module->widget))
     ; // remove multiple delayed gtk_widget_queue_draw triggers
+  g_slist_free_full(module->widget_list, g_free);
+  module->widget_list = NULL;
   module->gui_cleanup(module);
   dt_iop_gui_cleanup_blending(module);
 }
@@ -2675,9 +2682,10 @@ void dt_iop_connect_common_accels(dt_iop_module_t *module)
   dt_accel_connect_iop(module, "enable module", closure);
 
   // Connecting the reset and preset buttons
-  if(module->reset_button)
+  if(module->reset_button && module->gui_reset)
     dt_accel_connect_button_iop(module, "reset module parameters", module->reset_button);
-  if(module->presets_button) dt_accel_connect_button_iop(module, "show preset menu", module->presets_button);
+  if(module->presets_button)
+    dt_accel_connect_button_iop(module, "show preset menu", module->presets_button);
 
   if(module->fusion_slider) dt_accel_connect_slider_iop(module, "fusion", module->fusion_slider);
 
