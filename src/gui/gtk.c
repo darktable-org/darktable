@@ -3169,6 +3169,8 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
 
 static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event, const char *config_str)
 {
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
   if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
 
