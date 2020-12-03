@@ -73,7 +73,7 @@ public:
       for(int i = 0; i < KD; i++)
       {
         k += key[i];
-	k *= 2531011;
+	      k *= 2531011;
       }
       hash = (unsigned)k;
     }
@@ -83,8 +83,8 @@ public:
       for (int i = 0; i < KD; i++) { if (key[i] != other.key[i]) return false; }
       return true;
     }
-    unsigned hash;      // cache the hash value for this key
-    short key[KD];      // key is a KD-dimensional vector
+    unsigned hash{ 0 };      // cache the hash value for this key
+    short key[KD]{};      // key is a KD-dimensional vector
   };
 
 public:
@@ -117,7 +117,7 @@ public:
       for (int i = 0; i < VD; i++) { value[i] += other.value[i]; }
       return *this;
     }
-    float value[VD];
+    float value[VD]{};
   };
 
 public:
@@ -135,12 +135,16 @@ public:
     values = new Value[maxFill()] { 0 };
   }
 
+  HashTablePermutohedral(const HashTablePermutohedral &) = delete;
+
   ~HashTablePermutohedral()
   {
     delete[] entries;
     delete[] keys;
     delete[] values;
   }
+
+  HashTablePermutohedral &operator=(const HashTablePermutohedral &) = delete;
 
   // Returns the number of vectors stored.
   int size() const
@@ -187,14 +191,14 @@ public:
 	   grow();
 	   }
         // need to create an entry. Store the given key.
-	keys[filled] = key;
+	      keys[filled] = key;
         entries[h].keyIdx = filled;
         return filled++;
       }
 
       // check if the cell has a matching key
       if (keys[e.keyIdx] == key)
-	 return e.keyIdx;
+	      return e.keyIdx;
 
       // increment the bucket with wraparound
       h = (h + 1) & capacity_bits;
@@ -254,10 +258,7 @@ private:
   // Private struct for the hash table entries.
   struct Entry
   {
-    Entry() : keyIdx(-1)
-    {
-    }
-    int keyIdx;
+    int keyIdx{ -1 };
   };
 
   Key *keys;
@@ -331,6 +332,7 @@ public:
     hashTables = new HashTable[nThreads];
   }
 
+  PermutohedralLattice(const PermutohedralLattice&) = delete;
 
   ~PermutohedralLattice()
   {
@@ -340,9 +342,10 @@ public:
     delete[] hashTables;
   }
 
+  PermutohedralLattice & operator=(const PermutohedralLattice&) = delete;
 
   /* Performs splatting with given position and value vectors */
-  void splat(float *position, float *value, size_t replay_index, int thread_index = 0)
+  void splat(float *position, float *value, size_t replay_index, int thread_index = 0) const
   {
     float elevated[D + 1];
     int greedy[D + 1];
@@ -449,7 +452,7 @@ public:
   }
 
   /* Merge the multiple threads' hash tables into the totals. */
-  void merge_splat_threads(void)
+  void merge_splat_threads()
   {
     if(nThreads <= 1) return;
 
@@ -503,7 +506,7 @@ public:
    * containing each position vector were calculated and stored in the splatting step.
    * We may reuse this to accelerate the algorithm. (See pg. 6 in paper.)
    */
-  void slice(float *col, size_t replay_index)
+  void slice(float *col, size_t replay_index) const
   {
     const Value *base = hashTables[0].getValues();
     Value::clear(col);
@@ -515,7 +518,7 @@ public:
   }
 
   /* Performs a Gaussian blur along each projected axis in the hyperplane. */
-  void blur()
+  void blur() const
   {
     // Prepare arrays
     Value *newValue = new Value[hashTables[0].size()];
