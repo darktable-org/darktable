@@ -209,8 +209,7 @@ static gboolean _thumb_expose_again(gpointer user_data)
 
 static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
 {
-  // Safety check to avoid possible error
-  if(!thumb->img_surf || cairo_surface_get_reference_count(thumb->img_surf) < 1) return;
+  if(!thumb->w_image_box) return;
 
   // we draw the image
   GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image_box);
@@ -218,14 +217,25 @@ static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
   int h = 0;
   gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
 
-  const float scaler = 1.0f / darktable.gui->ppd_thb;
-  cairo_scale(cr, scaler, scaler);
+  // Safety check to avoid possible error
+  if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) >= 1)
+  {
+    const float scaler = 1.0f / darktable.gui->ppd_thb;
+    cairo_scale(cr, scaler, scaler);
 
-  cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx * darktable.gui->ppd, thumb->current_zy * darktable.gui->ppd);
-  cairo_paint(cr);
+    cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx * darktable.gui->ppd,
+                             thumb->current_zy * darktable.gui->ppd);
+    cairo_paint(cr);
 
-  // and eventually the image border
-  gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
+    // and eventually the image border
+    gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
+  }
+
+  // if needed we draw the working msg too
+  if(thumb->busy)
+  {
+    dt_control_draw_busy_msg(cr, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
+  }
 }
 
 static void _thumb_retrieve_margins(dt_thumbnail_t *thumb)
@@ -420,6 +430,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
 
       if(res)
       {
+        thumb->busy = TRUE;
         // if the image is missing, we reload it again
         if(!thumb->expose_again_timeout_id)
           thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
@@ -429,6 +440,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         return TRUE;
       }
 
+      thumb->busy = FALSE;
       cairo_surface_t *tmp_surf = thumb->img_surf;
       thumb->img_surf = img_surf;
       if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0) cairo_surface_destroy(tmp_surf);
