@@ -1940,7 +1940,7 @@ void dt_iop_gui_update_blendif(dt_iop_module_t *module)
     int index = 0;
     for(const dt_iop_gui_blendif_channel_t *ch = bd->channel; ch->label != NULL; ch++, index++)
     {
-      dt_ui_notebook_page(bd->channel_tabs, ch->label, ch->tooltip);
+      dt_ui_notebook_page(bd->channel_tabs, _(ch->label), _(ch->tooltip));
       gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(bd->channel_tabs, index)));
     }
 
