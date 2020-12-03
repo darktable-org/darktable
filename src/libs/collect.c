@@ -65,9 +65,6 @@ typedef struct dt_lib_collect_t
 
   GtkTreeModel *treefilter;
   GtkTreeModel *listfilter;
-  GtkScrolledWindow *scrolledwindow;
-
-  GtkScrolledWindow *sw2;
 
   gboolean singleclick;
   struct dt_lib_collect_params_t *params;
@@ -592,26 +589,6 @@ static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
   view_popup_menu(treeview, NULL, d);
 
   return TRUE; /* we handled this */
-}
-
-static gboolean view_onMouseScroll(GtkWidget *treeview, GdkEventScroll *event, dt_lib_collect_t *d)
-{
-  if(event->state & GDK_CONTROL_MASK)
-  {
-    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
-    const gint min_height = gtk_scrolled_window_get_min_content_height(GTK_SCROLLED_WINDOW(d->scrolledwindow));
-    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
-    gint width, height;
-
-    gtk_widget_get_size_request(GTK_WIDGET(d->scrolledwindow), &width, &height);
-    height = height + increment*event->delta_y;
-    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->scrolledwindow), -1, height);
-    dt_conf_set_int("plugins/lighttable/collect/windowheight", height);
-
-    return TRUE;
-  }
-  return FALSE;
 }
 
 static dt_lib_collect_t *get_collect(dt_lib_collect_rule_t *r)
@@ -1171,8 +1148,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     g_object_unref(d->treefilter);
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_tree_store_clear(GTK_TREE_STORE(model));
-    gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
-    gtk_widget_hide(GTK_WIDGET(d->sw2));
+    gtk_widget_hide(GTK_WIDGET(d->view));
 
     /* query construction */
     gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
@@ -1433,8 +1409,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->treefilter);
-    gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_set_no_show_all(GTK_WIDGET(d->view), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(d->view));
 
     g_object_unref(model);
     g_strfreev(last_tokens);
@@ -1503,8 +1479,7 @@ static void list_view(dt_lib_collect_rule_t *dr)
     g_object_ref(model);
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     gtk_list_store_clear(GTK_LIST_STORE(model));
-    gtk_widget_hide(GTK_WIDGET(d->scrolledwindow));
-    gtk_widget_hide(GTK_WIDGET(d->sw2));
+    gtk_widget_hide(GTK_WIDGET(d->view));
     gchar *where_ext = dt_collection_get_extended_where(darktable.collection, dr->num);
 
     char query[1024] = { 0 };
@@ -1811,8 +1786,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
     }
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->listfilter);
-    gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), FALSE);
-    gtk_widget_show_all(GTK_WIDGET(d->scrolledwindow));
+    gtk_widget_set_no_show_all(GTK_WIDGET(d->view), FALSE);
+    gtk_widget_show_all(GTK_WIDGET(d->view));
 
     g_object_unref(model);
 
@@ -1899,8 +1874,7 @@ static void _lib_collect_gui_update(dt_lib_module_t *self)
   d->nb_rules = active + 1;
   char confname[200] = { 0 };
 
-  gtk_widget_set_no_show_all(GTK_WIDGET(d->scrolledwindow), TRUE);
-  gtk_widget_set_no_show_all(GTK_WIDGET(d->sw2), TRUE);
+  gtk_widget_set_no_show_all(GTK_WIDGET(d->view), TRUE);
 
   for(int i = 0; i < MAX_RULES; i++)
   {
@@ -2667,27 +2641,19 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(box, w, FALSE, FALSE, 0);
   }
 
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  d->scrolledwindow = GTK_SCROLLED_WINDOW(sw);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw), DT_PIXEL_APPLY_DPI(200));
-  gint height = dt_conf_get_int("plugins/lighttable/collect/windowheight");
-  gtk_widget_set_size_request(sw, -1, DT_PIXEL_APPLY_DPI(height));
   GtkTreeView *view = GTK_TREE_VIEW(gtk_tree_view_new());
   d->view_rule = -1;
   d->view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
-  gtk_container_add(GTK_CONTAINER(sw), GTK_WIDGET(view));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(view_onButtonPressed), d);
   g_signal_connect(G_OBJECT(view), "popup-menu", G_CALLBACK(view_onPopupMenu), d);
-  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(view_onMouseScroll), d);
 
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, tree_count_show, NULL, NULL);
-  g_object_set(renderer, "strikethrough", TRUE, (gchar *)0);
+  g_object_set(renderer, "strikethrough", TRUE, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_add_attribute(col, renderer, "strikethrough-set", DT_LIB_COLLECT_COL_UNREACHABLE);
 
   GtkTreeModel *listmodel
@@ -2703,14 +2669,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->treefilter), DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw), TRUE, TRUE, 0);
-
-  GtkWidget *sw2 = gtk_scrolled_window_new(NULL, NULL);
-  d->sw2 = GTK_SCROLLED_WINDOW(sw2);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw2), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(sw2), DT_PIXEL_APPLY_DPI(300));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(sw2), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget),
+                     dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/collect/windowheight"), TRUE, TRUE, 0);
 
   /* setup proxy */
   darktable.view_manager->proxy.module_collect.module = self;

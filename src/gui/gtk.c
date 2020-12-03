@@ -3103,8 +3103,9 @@ static gint _get_container_row_heigth(GtkWidget *w)
   }
   else if(GTK_IS_TEXT_VIEW(w))
   {
-    gtk_widget_get_preferred_height(w, NULL, &height);
-    height /= gtk_text_buffer_get_line_count(gtk_text_view_get_buffer(GTK_TEXT_VIEW(w)));
+    PangoLayout *layout = gtk_widget_create_pango_layout(w, "X");
+    pango_layout_get_pixel_size(layout, NULL, &height);
+    g_object_unref(layout);
   }
   else
   {
@@ -3169,6 +3170,8 @@ static gboolean _scroll_wrap_resize(GtkWidget *w, void *cr, const char *config_s
 
 static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event, const char *config_str)
 {
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   GtkWidget *w = gtk_bin_get_child(GTK_BIN(sw));
   if(GTK_IS_VIEWPORT(w)) w = gtk_bin_get_child(GTK_BIN(w));
 
