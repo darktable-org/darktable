@@ -224,11 +224,12 @@ static inline void illuminant_CCT_to_RGB(const float t, float RGB[4])
 
 
 // Fetch image from pipeline and read EXIF for camera RAW WB coeffs
-static inline int find_temperature_from_raw_coeffs(const dt_image_t *img, float *chroma_x, float *chroma_y);
+static inline int find_temperature_from_raw_coeffs(const dt_image_t *img, const float custom_wb[4], float *chroma_x, float *chroma_y);
 
 
 static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of illuminant
                             const dt_image_t *img,            // image container
+                            const float custom_wb[4],         // optional user-set WB coeffs
                             float *x_out, float *y_out,       // chromaticity output
                             const float t,                    // temperature in K, if needed
                             const dt_illuminant_fluo_t fluo,  // sub-type of fluorescent illuminant, if needed
@@ -305,7 +306,7 @@ static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of
     {
       // Detect WB from RAW EXIF
       if(img)
-        if(find_temperature_from_raw_coeffs(img, &x, &y)) break;
+        if(find_temperature_from_raw_coeffs(img, custom_wb, &x, &y)) break;
     }
     case DT_ILLUMINANT_CUSTOM: // leave x and y as-is
     case DT_ILLUMINANT_DETECT_EDGES:
@@ -391,51 +392,71 @@ static inline void matrice_pseudoinverse(float (*in)[3], float (*out)[3], int si
 }
 
 
-static int find_temperature_from_raw_coeffs(const dt_image_t *img, float *chroma_x, float *chroma_y)
+static int find_temperature_from_raw_coeffs(const dt_image_t *img, const float custom_wb[4], float *chroma_x, float *chroma_y)
 {
   if(img == NULL) return FALSE;
-  const int is_raw = dt_image_is_matrix_correction_supported(img);
+  if(!dt_image_is_matrix_correction_supported(img)) return FALSE;
 
-  if(is_raw)
+  int has_valid_coeffs = TRUE;
+  const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
+
+  // Check coeffs
+  for(int k = 0; has_valid_coeffs && k < num_coeffs; k++)
+    if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
+
+  if(!has_valid_coeffs) return FALSE;
+
+  // Get white balance camera factors
+  float WB[4] = { img->wb_coeffs[0],
+                  img->wb_coeffs[1],
+                  img->wb_coeffs[2],
+                  img->wb_coeffs[3] };
+
+  // Adapt the camera coeffs with custom white balance if provided
+  // this can deal with WB coeffs that don't use the input matrix reference
+  if(custom_wb)
+    for(size_t k = 0; k < 4; k++) WB[k] *= custom_wb[k];
+
+  // Get the camera input profile (matrice of primaries)
+  float XYZ_to_CAM[4][3];
+  XYZ_to_CAM[0][0] = NAN;
+
+  if(!isnan(img->d65_color_matrix[0]))
   {
-    int has_valid_coeffs = TRUE;
-    const int num_coeffs = (img->flags & DT_IMAGE_4BAYER) ? 4 : 3;
+    // keep in sync with reload_defaults from colorin.c
+    // embedded matrix is used with higher priority than standard one
+    XYZ_to_CAM[0][0] = img->d65_color_matrix[0];
+    XYZ_to_CAM[0][1] = img->d65_color_matrix[1];
+    XYZ_to_CAM[0][2] = img->d65_color_matrix[2];
 
-    // Check coeffs
-    for(int k = 0; has_valid_coeffs && k < num_coeffs; k++)
-      if(!isnormal(img->wb_coeffs[k]) || img->wb_coeffs[k] == 0.0f) has_valid_coeffs = FALSE;
+    XYZ_to_CAM[1][0] = img->d65_color_matrix[3];
+    XYZ_to_CAM[1][1] = img->d65_color_matrix[4];
+    XYZ_to_CAM[1][2] = img->d65_color_matrix[5];
 
-    if(has_valid_coeffs)
-    {
-      // Get white balance camera factors
-      float WB[4] = { img->wb_coeffs[0],
-                      img->wb_coeffs[1],
-                      img->wb_coeffs[2],
-                      img->wb_coeffs[3] };
-
-      // Get the camera input profile (matrice of primaries)
-      float XYZ_to_CAM[4][3];
-      XYZ_to_CAM[0][0] = NAN;
-      dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])XYZ_to_CAM);
-
-      if(isnan(XYZ_to_CAM[0][0])) return FALSE;
-
-      // Bloody input matrices define XYZ -> CAM transform, as if we often needed camera profiles to output
-      // So we need to invert them. Here go your CPU cycles again.
-      float CAM_to_XYZ[4][3];
-      CAM_to_XYZ[0][0] = NAN;
-      matrice_pseudoinverse(XYZ_to_CAM, CAM_to_XYZ, 3);
-      if(isnan(CAM_to_XYZ[0][0])) return FALSE;
-
-      float x, y;
-      WB_coeffs_to_illuminant_xy(CAM_to_XYZ, WB, &x, &y);
-      *chroma_x = x;
-      *chroma_y = y;
-
-      return TRUE;
-    }
+    XYZ_to_CAM[2][0] = img->d65_color_matrix[6];
+    XYZ_to_CAM[2][1] = img->d65_color_matrix[7];
+    XYZ_to_CAM[2][2] = img->d65_color_matrix[8];
   }
-  return FALSE;
+  else
+  {
+    dt_dcraw_adobe_coeff(img->camera_makermodel, (float(*)[12])XYZ_to_CAM);
+  }
+
+  if(isnan(XYZ_to_CAM[0][0])) return FALSE;
+
+  // Bloody input matrices define XYZ -> CAM transform, as if we often needed camera profiles to output
+  // So we need to invert them. Here go your CPU cycles again.
+  float CAM_to_XYZ[4][3];
+  CAM_to_XYZ[0][0] = NAN;
+  matrice_pseudoinverse(XYZ_to_CAM, CAM_to_XYZ, 3);
+  if(isnan(CAM_to_XYZ[0][0])) return FALSE;
+
+  float x, y;
+  WB_coeffs_to_illuminant_xy(CAM_to_XYZ, WB, &x, &y);
+  *chroma_x = x;
+  *chroma_y = y;
+
+  return TRUE;
 }
 
 

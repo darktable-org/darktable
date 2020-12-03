@@ -217,6 +217,10 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+  // This module may work in RAW or RGB (e.g. for TIFF files) depending on the input
+  // The module does not change the color space between the input and output, therefore implement it here
+  if(piece && piece->dsc_in.cst != iop_cs_RAW)
+    return iop_cs_rgb;
   return iop_cs_RAW;
 }
 
@@ -769,6 +773,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       if(d->coeffs[c] != (float)g->daylight_wb[c]) is_D65 = FALSE;
 
     self->dev->proxy.wb_is_D65 = is_D65;
+  }
+
+  for(int k = 0; k < 4; k++)
+  {
+    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
   }
 }
 
@@ -1355,7 +1364,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
 {
-  if(!dt_image_is_raw(&module->dev->image_storage))
+  if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
   {
     bwb[0] = 1.0;
     bwb[2] = 1.0;
@@ -1366,7 +1375,7 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
   }
 
   double mul[4];
-  if (dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, mul))
+  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, module->dev->image_storage.d65_color_matrix, mul))
   {
     // normalize green:
     bwb[0] = mul[0] / mul[1];
@@ -2050,8 +2059,11 @@ void gui_init(struct dt_iop_module_t *self)
                                           dtgtk_cairo_paint_camera, NULL);
   gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
 
-  // create color picker to be able to send its signal when spot selected
-  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
+  // create color picker to be able to send its signal when spot selected,
+  // this module may expect data in RAW or RGB, setting the color picker CST to iop_cs_NONE will make the color
+  // picker to depend on the number of color channels of the pixels. It is done like this as we may not know the
+  // actual kind of data we are using in the GUI (it is part of the pipeline).
+  g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, NULL, iop_cs_NONE);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
 

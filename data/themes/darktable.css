@@ -1788,7 +1788,8 @@ combobox window *:selected,
 #iop-plugin-ui button:active,
 #lib-plugin-ui button:active,
 #recent-collection-button:active,
-#recent-collection-button:selected
+#recent-collection-button:selected,
+messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
   background-color: @button_checked_bg;
   color: @button_checked_fg;
