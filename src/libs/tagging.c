@@ -2608,6 +2608,7 @@ void gui_init(dt_lib_module_t *self)
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
+  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_tagname_show_attached, (gpointer)self, NULL);
 
@@ -2723,6 +2724,7 @@ void gui_init(dt_lib_module_t *self)
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
+  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_tagname_show_dictionary, (gpointer)self, NULL);
   gtk_tree_view_set_expander_column(view, col);
