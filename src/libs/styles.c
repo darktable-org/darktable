@@ -633,6 +633,7 @@ void gui_init(dt_lib_module_t *self)
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(d->tree), col);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_STYLES_COL_NAME);
 
