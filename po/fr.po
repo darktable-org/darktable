@@ -5489,7 +5489,7 @@ msgstr "Jz"
 
 #: ../src/develop/blend_gui.c:1867
 msgid "sliders for value channel (of JzCzhz)"
-msgstr "réglette pour le canal valeur (de JzCzhz)"
+msgstr "conditions de fusion sur le canal valeur (de JzCzhz)"
 
 #: ../src/develop/blend_gui.c:1871
 msgid "Cz"
@@ -5497,7 +5497,7 @@ msgstr "Cz"
 
 #: ../src/develop/blend_gui.c:1871
 msgid "sliders for chroma channel (of JzCzhz)"
-msgstr "réglette pour le canal chroma (de JzCzhz)"
+msgstr "conditions de fusion sur le canal chroma (de JzCzhz)"
 
 #: ../src/develop/blend_gui.c:1875
 msgid "hz"
@@ -5505,7 +5505,7 @@ msgstr "hz"
 
 #: ../src/develop/blend_gui.c:1875
 msgid "sliders for hue channel (of JzCzhz)"
-msgstr "réglette pour le canal teinte (de JzCzhz)"
+msgstr "conditions de fusion sur le canal teinte (de JzCzhz)"
 
 #: ../src/develop/blend_gui.c:1881
 msgid ""
