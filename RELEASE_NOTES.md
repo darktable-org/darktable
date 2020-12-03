@@ -17,7 +17,7 @@ $ sha256sum darktable-3.4.0.exe
 When updating from the currently stable 3.2.x series, please bear in
 mind that your edits will be preserved during this process, but the new
 library and configuration will not be usable with 3.2.x any more, so
-making a backup is strongly advised.
+you are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
@@ -28,161 +28,157 @@ making a backup is strongly advised.
 
 ## The Big Ones
 
-- The tether view has been reworked to be more stable.
+- The tethering view has been reworked and is now more stable.
 
-- The histogram is back on the tethering view (it was disabled on 3.2
-  for lack of time integrating the new histogram code into it).
+- The histogram is back on the tethering view (it was disabled in 3.2
+  due to lack of time)
 
-- The map view has been enhanced with locations and the performances
-  have been improved when lot of images are geo-localized.
+- A new module grouping feature has been introduced. This makes the "more modules" module
+  (at the bottom right of the darkroom) obsolete and this module has therefore been removed.
 
-- A new module group has been introduced. This makes the module list
-  (bottom right of the darkroom) obsolete and so has been removed.
+  The module grouping feature allows users to create their own groups
+  of modules. A number of pre-defined module groups are included as presets
+  (default, minimal, scene-referred, display-referred,
+  all modules) as well as a new default module group tab layout (technical / grading / effects),
+  which beter organizes the modules according to their purpose.
 
-  This module group is a versatile module which will let everyone
-  create it's own set of group and modules. Basic workflows default
-  sets of modules are proposed (default, minimal, scene-referred, display-referred,
-  all modules) as well as a new modules tab layout (technical / grading / effects),
-  introduced as an option to better state the purpose of the modules.
-
-- Module masking is now 100% scene-referred-able. A new masking implementation
-  has been added, with fully unbouded blending modes, that allows parametric masking
-  either in linear RGB or in JzCzHz for scene-referred imagery. A boost factor is
-  introduced in masking GUI to let users set thresholding parameters above 100%
+- Module masking is now enhanced for use with scene-referred workflows. A new masking implementation
+  has been added, with fully unbounded blending modes, which allows parametric masking
+  either in linear RGB or in JzCzHz color spaces. A boost factor slider has been 
+  introduced in the masking GUI so that users may set thresholding parameters above 100%
   to mask pixels in HDR images.
 
-  JzCzHz derivates from JzAzBz, which is a perceptual color space developed
+  JzCzHz is derived from JzAzBz, which is a perceptual color space developed
   for HDR and published in 2017, with better properties than CIE Lab from 1976,
   allowing near-perfect hue linearity, for a robust hue/saturation masking.
   A JzCzHz hue mask will produce the same output whether it is used
-  before input color profile, after output color profile, or in-between,
-  which is a big consistency improvement over the HSL masking.
+  before input color profile, after output color profile, or anywhere in-between,
+  providing an important consistency improvement over HSL masking.
 
 - A new color calibration module has been added as a full-featured hub for color correction.
   It was first intended as a scene-referred (unbounded) rewrite of the old channel mixer,
   allowing corrections of the color space, both for creative and corrective purposes.
 
-  Because channel mixing is also what white balancing and chromatic adaptation
-  do internally, color calibration introduces robust chromatic adaptation transforms,
+  Because channel mixing is how white balancing and chromatic adaptation
+  are implemented, color calibration also introduces robust chromatic adaptation transforms,
   Bradford (from ICC v4) and CAT16 (from CIECAM 2016), improving the color rendition
   of the white-balanced final image. The module provides a library of all standard
   CIE illuminants and two machine-learning illuminant detection algorithms, using
-  different assumptions for when no neutral colors can be sampled from the image,
+  different assumptions, for when no neutral colors can be sampled from the image,
   along with the traditional color-picker for manual sampling of neutral colors.
 
-  Color calibration implements internally a gamut-mapping and gamut-clipping
-  method, which tries to preserve the hue and luminance of pixels while avoiding imaginary and
+  Color calibration internally implements gamut-mapping and gamut-clipping, 
+  which attempts to preserve the hue and luminance of pixels while avoiding imaginary and
   out-of-gamut colors at the beginning of the pipeline, to improve the robustness of
   color-grading modules inside the pipeline. This is made necessary because
   white balancing will only push input out-of-gamut colors farther away,
   and will noticeably help dealing with artifical colored lights (LED, stage lighting, etc.).
 
-  A new workflow, "chromatic adaptation defaults", in processing preferences,
-  will let users choose if they want to keep using the white balance module
-  as a default to perform the chromatic adaptation ("legacy" worflow, set by default)
-  or use the new color calibration instead ("modern" workflow).
+  A new workflow setting "chromatic adaptation defaults", in processing preferences,
+  allows users to choose to keep using the white balance module
+  to perform the chromatic adaptation for new edits ("legacy" worflow, the default)
+  or to use the new color calibration instead ("modern" workflow).
   The modern workflow still uses the usual white balance module, although
   with different default settings, because input color profiles and
   demosaicing need at least a rough white balancing early in the pipe.
 
-  Map view has evolved. Images close to each other are now grouped and a count of
-  grouped images is displayed on the bottom-left corner. This provides better performances
-  when the map covers thousands of images. Scrolling over a group's thumb scrolls through
-  the images of the group. Groups containing selected images are highlighted (white border).
-  The count number is white if all images of the group are exactly at the same place,
-  yellow otherwise.
-  Dragging of images has also been improved. <kbd>Click</kbd> to drag the visible image,
-  <kbd>Shift-Click</kbd> to drag the full group.
-  A new module "locations" allows to define location areas (elliptic or rectangular shapes).
-  These locations are collections visible under geotagging in collect module.
+- Map view has evolved. Images close to each other are now grouped and a count of
+  grouped images is displayed on the bottom-left corner. This provides better performance
+  when many images need to be shown on the map. Mouse-scrolling over a group's thumb scrolls through
+  the images of the group. Groups containing selected images are highlighted with a white border.
+  The image count is displayed as a white number if all images of the group are exactly at the 
+  same place, and in yellow otherwise.
+
+  Movement of images within the map has also been improved. <kbd>Click</kbd> to drag the visible image,
+  <kbd>Shift-Click</kbd> to drag the full group. A new "locations" module allows you to define location 
+  areas (using elliptical or rectangular shapes). These locations are saved as collections visible under "
+  geotagging" in the collect module.
 
 ## New Features And Changes
 
-- Add a focus-peaking button in lighttable and darkroom which
-  complements the key accel. Focus-peaking helps visualizing the
+- A focus-peaking button has been added in the lighttable and darkroom views which
+  complements the existing keyboard shortcut. Focus-peaking helps to visualize the
   depth of field in an image by materializing the sharp edges.
 
-- Better visual feedback when changing module order with drag&drop.
+- Better visual feedback is provided when changing module order with drag&drop.
 
-- Better performance for the wavelet algorithm.
+- The wavelet algorithm has improved performance. 
 
-- A new tooltip was added to history items in the darkroom that shows
-  each of the individual parameter changes within the module. It could
-  especially help track down unintended adjustments in modules with
+- A new tooltip has been added to items in the darkroom history stack module showing
+  a list of the individual parameter changes at each step. This can
+  especially help to track down unintended adjustments in modules with
   many tabs, such as filmic rgb or the parametric blending
   settings. This feature was based on the under-the-hood introspection
-  enhancements in 3.2.
+  enhancements delivered in 3.2.
 
-- Modules get a new tooltip, accessible over their header, containing
-  a summary of what they do, how they work, in which color space,
+- Processing modules now have a new tooltip, accessible by hovering over their header, containing
+  a summary of what they do, how they work, in which color space they operate,
   if they expect linear, non-linear, display-referred, or scene-referred
-  input and what kind of output they produce. This will help users
+  input and what kind of output they produce. This will help users to
   build consistent pipelines when reordering modules, by exposing the
-  assumptions upon which each module is built, and provides in-app
+  assumptions upon which each module is built, and provides an in-app
   documentation summary accessible offline.
 
-- Modules get alias names and keywords that are used in the module group
-  search. As a result, a module search can be done using the exact names,
-  synonyms (e.g. "dehaze" for "haze removal") or features (e.g "saturation"
-  will return all modules performing a saturation adjustments inside).
+- Processing modules have been updated with alias names and keyword lists which are used in the module group
+  search. As a result, a module search can be performed using the exact names,
+  synonyms (e.g. "dehaze" for "haze removal") or features. For example searching for "saturation"
+  will return all modules that can perform saturation adjustments.
 
-- Importing pictures from memory cards do not use the gPhoto API anymore. It
-  should be more stable on Windows.
+- Importing pictures from memory cards no longer uses the gPhoto API. This 
+  should now be more stable on Windows.
 
-- Many changes done on the widgets to allow for narrower panels.
+- Many changes have been made to modules to allow for narrower panels.
 
-- Enhance the bilateral filter (used in local contrast for example) performance.
+- The bilateral filter (used in local contrast, for example) has been enhanced for better performance.
 
-- The history reset button can be used to delete the history stack.
+- The reset button in the history module can now be used to delete the history stack.
 
-- A <kbd>Ctrl+Click</kbd> on the 'compress history stack' can be used to
-  truncate the history without compressing it.
+- <kbd>Ctrl+Clicking</kbd> on the 'compress history stack' will truncate the history without compressing it.
 
-- The export module has now options to specify the output size using a
-  print size (cm or inch) and DPI or a scale factor.
+- The export module has new options to specify the maximum output pixel dimensions using a
+  scale factor or print size (cm or inch) and DPI.
 
-- The FilmicRGB module has new graph views to help first time users.
+- The Filmic RGB module has new graph views to help first time users.
   These views include a default base curve view in linear and logarithmic scales,
-  consistent with the base curve module to help comparing them, and
-  a zone-system view that shows the dynamic range mapping between scene
-  and display grey scales. All the views get optional legends, that can be
-  toggled on for new users, and off for experienced users seeking to spare
+  consistent with the base curve module, and
+  a zone-system view which shows the dynamic range mapping between scene
+  and display grey scales. All the views have optional legends, which can be
+  toggled on for new users, and off for experienced users seeking more
   GUI real-estate.
 
-- Changing the workflow in preference (none, display-referred,
-  scene-referred) does not need a restart.
+- Changing the pixel workflow preference (none, display-referred,
+  scene-referred) no longer requires a restart.
 
-- Fine tune the pixel-pipe cache for better performances.
+- The pixel-pipe cache can be fine-tuned for better performance.
 
-- The temperature module can use colored sliders with two available
+- The white balance  module can now show colored sliders with two available
   modes: 'illuminant color' or 'effect emulation'.
 
-- More compact combo-box display on some modules.
+- More compact combo-box displays have been added to some modules.
 
-- The list of collection names are now grouped in the collection
-  combo-box. The list being now long it feels easier to use properly
-  grouped in sections.
+- In the collect module, the collection properties drop-down is now grouped 
+  making it easier to find the property you wish to filter on.
 
-- Add read support for 16-bit (half) float TIFFs.
+- Read support for 16-bit (half) float TIFFs has been added.
 
-- The channel mixer has been improved to preserve highlights.
+- The channel mixer has been deprecated (now replaced with the new color calibration module)
 
-- The color picker has been reworked and comes with an enhanced
+- The global color picker has been reworked and now comes with an enhanced
   GUI. The colors can now be displayed in LCh or HSL.
 
-- The non default values in the preference dialog are now flagged with
-  a little bullet.
+- Any user-amended preferences (those which differ from their default values) are now
+  indicated with a small bullet.
 
-- A new preference has been added to hide the built-in presets.
+- A new preference has been added to allow you to hide built-in presets.
 
-- All modules with a list (styles, image information...) can be
+- All modules with a list (styles, image information etc.) can be
   resized with a <kbd>Ctrl+Scroll</kbd> action.
 
 - The history copy has been changed to include only safe
-  modules. Modules like "raw white/black point"; "scale pixels" are
-  not copied anymore for example. To copy such module use the copy
-  with dialog now named "copy parts...". Note that the unsafe modules
-  are not selected by default in the dialog.
+  modules. Modules like "raw white/black point" and "scale pixels" are
+  no longer copied, for example. To copy such modules, use the 
+  "copy parts..." button. Note that the unsafe modules
+  are not selected by default in the resulting dialog.
 
 - A new exposure independent guided filter has been introduced in the
   tone equalizer module. This solves the algorithmic drawback of the
@@ -191,61 +187,61 @@ making a backup is strongly advised.
   are used by the tone equalizer to apply contrast compression globally
   on the image while not reducing the percieved acutance for local details.
 
-- Add greyscale support for AVIF format.
+- Greyscale support has been added for the AVIF format.
 
-- Rework the "screen DPI overwrite" and "speed/quality trade-off for
-  drawing images" preferences to a single new performance mode for
-  slow computer. In this mode the thumbs are computed with less DPI
-  and are using faster drawing algorithm.
+- The "screen DPI overwrite" and "speed/quality trade-off for
+  drawing images" preferences have been combined into a single new performance mode for
+  slow computers. In this mode the thumbs are computed with a lower DPI
+  and use a faster drawing algorithm.
 
 - All values in the saved preferences are checked to detect possible
   data corruptions. Preferences having a min or max are validated to
-  be in the corresponding range, preferences with a set of possible
-  values are verified for example. Any preference detected with a
-  possible data corruption are automatically reset to its default.
+  ensure that they are in the appropriate range. Any preferences detected with 
+  possible data corruption are automatically reset to their default values.
 
 - Support for AVIF >= 0.8.2 (no support for older versions).
 
-- Guard against overwriting styles when exporting them by using
-  a dialog to let the user to confirm or abort the action.
+- In order to guard against overwriting styles when exporting them,
+  a dialog is shown to allow the user to confirm or abort the action.
 
-- Output channel sliders for parametric masking are hidden by default.
-
-- Add a “boost” slider to the parametric mask channels to extend their
-  range and allow selection of highlights in scene referred editing.
+- Output channel sliders for parametric masking are now hidden by default.
 
 - The over-exposure warning display has been improved. As of darktable 3.2.1,
-  it showed pixels which any RGB channel value was below 0.1% or above 98%, assuming they
+  it showed pixels for which any RGB channel value was below 0.1% or above 98%, assuming they
   would clip in the final export, which is wrong. This mode triggered a lot of
   false-positives that needlessly alarmed users who took them very seriously, but also
-  showed over-saturation and over-exposure issues altogether. This old mode
-  is still available as the "any RGB channel" mode. It comes now along with 2 other modes for
-  more accurate diagnostic:
-  "luminance only", showing by default pixels darker than -12.67 EV (sRGB black point
-  in 8 bits integers encoding) or brighter than 99%, and "saturation only" which shows
-  any pixel too saturated for its current luminance, meaning it is out of gamut.
-  This modes will allow to take appropriate measures: exposure adjustments to fix luminance
-  clipping or saturation adjustments to fix gamut clipping.
-  A "full gamut" mode finally shows the combination of the 3 previous ones for an
-  overall control check.
+  showed over-saturation and over-exposure issues altogether. This comes with 4 possible modes:
 
-- A new preset has been added to denoise profiled to remove only chrominance
-  noise with wavelets.
+  "any RGB channel" is the same as the previous "over exposure" warning. 
+
+  "luminance only" shows by default pixels darker than -12.67 EV (sRGB black point
+  in 8 bits integers encoding) or brighter than 99%
+
+  "saturation only" shows any pixel which is too saturated for its current luminance, 
+  meaning it is out of gamut.  
+
+  "full gamut" shows a combination of the 3 previous modes for an overall control check.
+
+  These modes allow the user to take appropriate measures: exposure adjustments to fix luminance
+  clipping or saturation adjustments to fix gamut clipping.
+
+- A new preset has been added to the denoise (profiled) module to remove only chrominance
+  noise using wavelets mode.
 
 ## Bug fixes
 
 - Fix orientation in the clipping module after having selected the freehand aspect ratio.
 
-- Fix compilation issue in AVIF format support.
+- Fix compilation issue with AVIF format support.
 
 - Fix multiple small memory leaks.
 
-- Fix daylight saving time in $(EXIF_HOUR) variable.
+- Fix daylight saving time in `$(EXIF_HOUR)` variable.
 
 - Fix timestamp display on Windows (use UTF-8 format for timestamps).
 
 - Fix many issues on the zoomable lighttable view introduced in 3.2
-  with the full rewrite of the lighttable.
+  with the lighttable rewrite.
 
 - Fix possible flickering while displaying thumbnails on the lighttable.
 
@@ -257,11 +253,11 @@ making a backup is strongly advised.
 
 ## Notes
 
-- The code base has received lot of refactoring and
-  simplification. This will help maintenance in the long run.
+- The code base has been significantly simplified and refactored,
+  which will make future code maintenance easier.
 
-- Many more tests have been added to track regressions in image filters
-  output and ensure backwards compatibility of edits.
+- Many more tests have been added to track regressions in image filter
+  outputs and ensure backwards compatibility of edits.
 
 ## Lua
 
@@ -280,15 +276,15 @@ making a backup is strongly advised.
 - darktble uses Lua 5.3.  Lua 5.4 has been released and is now the
   default Lua for some distributions.  Please install the Lua 5.3
   library package if your distribution is using Lua 5.4 as the
-  default.  If you compile darktable, then you may also set the
-  DONT_USE_INTERNAL_LUA to OFF in the DefineOptions.cmake file
+  default.  If you compile darktable, then you may also set 
+  `DONT_USE_INTERNAL_LUA` to OFF in the DefineOptions.cmake file
   to use the internal Lua.
 
 ## Changed Dependencies
 
 - Due to the current GMIC version windows users may have to rename two libraries
-  in darktable bin folder to get lut3d module working: libopencv_code4xx and libopencv_videoio4xx
-  to libopencv_code440 and libopencv_videoio440.
+  in the darktable bin folder to get lut3d module working:`libopencv_code4xx` and `libopencv_videoio4xx`
+  should be renamed to `libopencv_code440` and `libopencv_videoio440` respectively.
 
 ## RawSpeed changes
 
