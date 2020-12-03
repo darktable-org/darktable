@@ -4,16 +4,23 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
+<<<<<<< HEAD
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
 "PO-Revision-Date: 2020-12-03 22:49+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+=======
+"POT-Creation-Date: 2020-11-30 21:28+0100\n"
+"PO-Revision-Date: 2020-12-02 22:58+0100\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
+>>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Lokalize 20.08.2\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -288,31 +295,27 @@ msgstr "Spostamento cornice"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:431
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:435
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:439
-#, fuzzy
 #| msgid "Lab, linked channels"
 msgid "normalize channels"
-msgstr "Lab, canali collegati"
+msgstr "Normalizza canali"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:286
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:447
-#, fuzzy
 #| msgid "map source"
 msgid "F source"
-msgstr "Mappa sorgente"
+msgstr "Sorgente F"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:292
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:451
-#, fuzzy
 #| msgid "map source"
 msgid "LED source"
-msgstr "Mappa sorgente"
+msgstr "Sorgente LED"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:322
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:471
-#, fuzzy
 #| msgid "compression"
 msgid "gamut compression"
-msgstr "Compressione"
+msgstr "Compressione gamut"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:328
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:475
@@ -361,11 +364,15 @@ msgid "(AI) detect from image edges..."
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
+<<<<<<< HEAD
 #: ../src/iop/channelmixerrgb.c:1992
 #, fuzzy
+=======
+#: ../src/iop/channelmixerrgb.c:1949
+>>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 #| msgid "find camera"
 msgid "as shot in camera"
-msgstr "Trova fotocamera"
+msgstr "Come scattato dalla camera"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:504
 msgid "F1 (Daylight 6430 K) – medium CRI"
@@ -520,18 +527,16 @@ msgstr "lift, gamma, gain (sRGB)"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:54
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:121
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "increase contrast"
 msgid "green-magenta contrast"
-msgstr "augmenter le contraste"
+msgstr "Contrasto verde-magenta"
 
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:66
 #: ../build/lib/darktable/plugins/introspection_colorcontrast.c:129
-#, fuzzy
 #| msgid "low contrast"
 msgid "blue-yellow contrast"
-msgstr "Basso contrasto"
+msgstr "Contrasto blu-giallo"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:149
 #: ../build/lib/darktable/plugins/introspection_colorin.c:232
@@ -805,11 +810,10 @@ msgstr "Diffusione"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:161
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:324
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "central pixel weight"
 msgid "central pixel weight"
-msgstr "Pesatura dei pixel centrali"
+msgstr "Peso del pixel centrale"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:167
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:328
@@ -1203,10 +1207,9 @@ msgid "TCA blue"
 msgstr "TCA Blu"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:428
-#, fuzzy
 #| msgid "invalid paper size"
 msgid "invalidated"
-msgstr "Formato carta non valido"
+msgstr "Invalidato"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
@@ -1214,16 +1217,14 @@ msgid "move"
 msgstr "Sposta"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:430
-#, fuzzy
 #| msgid "linear"
 msgid "line"
-msgstr "Lineare"
+msgstr "Linea"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:431
-#, fuzzy
 #| msgid "Curve"
 msgid "curve"
-msgstr "Courbe"
+msgstr "Curva"
 
 #: ../build/lib/darktable/plugins/introspection_lowlight.c:43
 #: ../build/lib/darktable/plugins/introspection_lowlight.c:110
@@ -1379,10 +1380,9 @@ msgstr "Altezza taglio"
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:93
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:158
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:162
-#, fuzzy
 #| msgid "black level %i"
 msgid "black level"
-msgstr "Livello di nero %i"
+msgstr "Livello del nero"
 
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:99
 #: ../build/lib/darktable/plugins/introspection_rawprepare.c:166
@@ -1437,16 +1437,14 @@ msgid "heal"
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:416
-#, fuzzy
 #| msgid "mask blur"
 msgid "blur"
-msgstr "Sfocatura maschera"
+msgstr "Sfocatura"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:417
-#, fuzzy
 #| msgid "fill mode"
 msgid "fill"
-msgstr "Modalità di riempimento"
+msgstr "Riempimento"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:422
 msgid "bilateral"
@@ -1513,7 +1511,6 @@ msgstr "XYZ, canali collegati"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:144
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:289
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "blacks"
 msgid "blacks"
@@ -1521,11 +1518,10 @@ msgstr "Neri"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:150
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:293
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "deep shadows"
 msgid "deep shadows"
-msgstr "Ombre"
+msgstr "Ombre intense"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
@@ -1536,15 +1532,13 @@ msgstr "Ombre"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:162
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:301
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "light shadows"
 msgid "light shadows"
-msgstr "Schiarire le ombre"
+msgstr "Ombre leggere"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:168
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "midtones"
 msgid "midtones"
@@ -1552,7 +1546,6 @@ msgstr "Mezzitoni"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:174
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:309
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "dark highlights"
 msgid "dark highlights"
@@ -1568,7 +1561,6 @@ msgstr "Alteluci"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:186
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:317
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "whites"
 msgid "whites"
@@ -1576,7 +1568,6 @@ msgstr "Bianchi"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:192
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:321
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "speculars"
 msgid "speculars"
@@ -1740,28 +1731,25 @@ msgid "smaller border"
 msgstr "Bordo minore"
 
 #: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:6
-#, fuzzy
 #| msgid "* developers *"
 msgid "developers"
-msgstr "* développeurs *"
+msgstr "Sviluppatori"
 
 #: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:11
-#, fuzzy
 #| msgid "translator-credits"
 msgid "translators"
-msgstr "Mauro 'bartokk' Bartoccelli <bartokk@gmail.com>"
+msgstr "Traduttori"
 
 #: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:16
-#, fuzzy
 #| msgid "* contributors *"
 msgid "contributors"
-msgstr "* contributeurs *"
+msgstr "Contributori"
 
 #: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:21
 #, fuzzy
 #| msgid "* contributors *"
 msgid "rawspeed contributors"
-msgstr "* contributeurs *"
+msgstr "Contributori di Rawspeed"
 
 #: ../build/bin/preferences_gen.h:67 ../build/bin/preferences_gen.h:2789
 #: ../build/bin/preferences_gen.h:2834 ../build/bin/preferences_gen.h:2893
@@ -1810,10 +1798,9 @@ msgstr "* contributeurs *"
 #: ../build/bin/preferences_gen.h:6970 ../build/bin/preferences_gen.h:7023
 #: ../build/bin/preferences_gen.h:7062 ../build/bin/preferences_gen.h:7101
 #: ../build/bin/preferences_gen.h:7136
-#, fuzzy
 #| msgid "this image has not been indexed yet."
 msgid "this setting has been modified"
-msgstr "cette image n'a pas encore été indexée"
+msgstr "Questa impostazione è stata modificata"
 
 #: ../build/bin/preferences_gen.h:2769 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:88
@@ -1988,10 +1975,9 @@ msgstr ""
 "selezioni in base a valori data/ora e valori numerici."
 
 #: ../build/bin/preferences_gen.h:3001
-#, fuzzy
 #| msgid "expand a single lighttable module at a time"
 msgid "expand a single utility module at a time"
-msgstr "Espandi un solo modulo alla volta in modalità Tavolo Luminoso"
+msgstr "Espandi un solo modulo alla volta"
 
 #: ../build/bin/preferences_gen.h:3015
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
@@ -2000,10 +1986,9 @@ msgstr ""
 "Luminoso"
 
 #: ../build/bin/preferences_gen.h:3036
-#, fuzzy
 #| msgid "scroll to lighttable modules when expanded/collapsed"
 msgid "scroll to utility modules when expanded/collapsed"
-msgstr "Scorri i moduli del Tavolo Luminoso quando sono espansi/raggruppati"
+msgstr "Scorri i moduli quando sono espansi/raggruppati"
 
 #: ../build/bin/preferences_gen.h:3050 ../build/bin/preferences_gen.h:4246
 msgid ""
@@ -2036,10 +2021,9 @@ msgid "defines whether scrollbars should be displayed"
 msgstr "Stabilisci dove dovrebbero essere mostrate le barre di scorrimento"
 
 #: ../build/bin/preferences_gen.h:3129
-#, fuzzy
 #| msgid "thumbnail"
 msgid "thumbnails"
-msgstr "Anteprima"
+msgstr "Miniature"
 
 #: ../build/bin/preferences_gen.h:3149
 msgid "color manage cached thumbnails"
@@ -2245,13 +2229,11 @@ msgid "pattern for the image information line"
 msgstr "Schema del testo informativo dell'immagine"
 
 #: ../build/bin/preferences_gen.h:3630
-#, fuzzy
 #| msgid "see manual to know all the tags you can use."
 msgid "see manual for a list of the tags you can use."
-msgstr "Consulta il manuale per conoscere tutte le etichette che puoi usare."
+msgstr "Consulta il manuale per una lista di etichette che puoi usare."
 
 #: ../build/bin/preferences_gen.h:3651
-#, fuzzy
 #| msgid "position of the image infos line"
 msgid "position of the image information line"
 msgstr "Posizione del testo informativo dell'immagine"
@@ -2419,7 +2401,6 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4013
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "modules"
 msgid "modules"
@@ -2460,10 +2441,9 @@ msgid ""
 msgstr ""
 
 #: ../build/bin/preferences_gen.h:4127
-#, fuzzy
 #| msgid "expand a single darkroom module at a time"
 msgid "expand a single processing module at a time"
-msgstr "Espandi un solo modulo alla volta in modalità Camera Oscura"
+msgstr "Espandi un solo modulo alla volta"
 
 #: ../build/bin/preferences_gen.h:4141
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
@@ -2494,10 +2474,9 @@ msgstr ""
 "automaticamente quando viene attivato o disattivato."
 
 #: ../build/bin/preferences_gen.h:4232
-#, fuzzy
 #| msgid "scroll to darkroom modules when expanded/collapsed"
 msgid "scroll to processing modules when expanded/collapsed"
-msgstr "Scorri i moduli della Camera Oscura quando sono espansi/raggruppati"
+msgstr "Scorri i moduli quando sono espansi/raggruppati"
 
 #: ../build/bin/preferences_gen.h:4267
 #, fuzzy
@@ -2511,18 +2490,16 @@ msgid "no color"
 msgstr "Nessun colore"
 
 #: ../build/bin/preferences_gen.h:4283
-#, fuzzy
 #| msgid "illuminant red gain"
 msgctxt "preferences"
 msgid "illuminant color"
-msgstr "Illuminante di guadagno rosso"
+msgstr "Colore illuminante"
 
 #: ../build/bin/preferences_gen.h:4288
-#, fuzzy
 #| msgid "select the saturation"
 msgctxt "preferences"
 msgid "effect emulation"
-msgstr "Seleziona la saturazione"
+msgstr "Simulazione dell'effetto"
 
 #: ../build/bin/preferences_gen.h:4310
 msgid ""
@@ -2659,7 +2636,6 @@ msgid "select directory"
 msgstr "Seleziona cartella"
 
 #: ../build/bin/preferences_gen.h:4700
-#, fuzzy
 #| msgid ""
 #| "this folder (and sub-folders) contains Lut files used by lut3d modules. "
 #| "need to restart darktable."
@@ -2667,8 +2643,9 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. "
 "(need a restart)."
 msgstr ""
-"Questa cartella (e le relative sotto-cartelle) contengono i files Lut "
-"utilizzati dai moduli lut3d. Richiede il riavvio."
+"Questa cartella (e le sotto-cartelle) contiene i files Lut usate dal modulo"
+" lut3d."
+"(Richiede il riavvio)."
 
 #: ../build/bin/preferences_gen.h:4721
 msgid "auto-apply pixel workflow defaults"
@@ -2712,12 +2689,9 @@ msgstr ""
 "(è richiesto il riavvio)"
 
 #: ../build/bin/preferences_gen.h:4785
-#, fuzzy
 #| msgid "auto-apply pixel workflow defaults"
 msgid "auto-apply chromatic adaptation defaults"
-msgstr ""
-"Applica automaticamente i valori predefiniti per il flusso di lavoro sui "
-"pixel"
+msgstr "Applica automaticamente gli adattamenti cromatici di default"
 
 #: ../build/bin/preferences_gen.h:4796
 msgctxt "preferences"
@@ -3113,10 +3087,9 @@ msgstr ""
 "manutenzione automatica del database."
 
 #: ../build/bin/preferences_gen.h:5860
-#, fuzzy
 #| msgid "take snapshot"
 msgid "create database snapshot"
-msgstr "Scatta un'istantanea"
+msgstr "Crea un'istantanea del database"
 
 #: ../build/bin/preferences_gen.h:5876
 msgctxt "preferences"
@@ -3877,10 +3850,9 @@ msgid "tagged"
 msgstr "Etichettate"
 
 #: ../src/common/collection.c:1512
-#, fuzzy
 #| msgid "tagged"
 msgid "tagged*"
-msgstr "Etichettate"
+msgstr "Etichettate*"
 
 #: ../src/common/collection.c:1534 ../src/libs/collect.c:1569
 msgid "not copied locally"
@@ -5430,10 +5402,9 @@ msgstr "Visualizza"
 
 #: ../src/develop/blend_gui.c:97 ../src/develop/blend_gui.c:1571
 #: ../src/develop/blend_gui.c:1574
-#, fuzzy
 #| msgid "scene"
 msgid "RGB (scene)"
-msgstr "Scena"
+msgstr "RGB (scena)"
 
 #: ../src/develop/blend_gui.c:102 ../src/develop/blend_gui.c:2808
 msgid "uniformly"
@@ -5527,10 +5498,9 @@ msgid "sliders for L channel"
 msgstr "Selettore scorrevole per canale L"
 
 #: ../src/develop/blend_gui.c:1811 ../src/iop/tonecurve.c:1177
-#, fuzzy
 #| msgid "a4"
 msgid "a"
-msgstr "A4"
+msgstr "a"
 
 #: ../src/develop/blend_gui.c:1811
 msgid "sliders for a channel"
@@ -5541,10 +5511,9 @@ msgid "green/red"
 msgstr "Verde/rosso"
 
 #: ../src/develop/blend_gui.c:1814 ../src/iop/tonecurve.c:1178
-#, fuzzy
 #| msgid "wb"
 msgid "b"
-msgstr "BdB"
+msgstr "b"
 
 #: ../src/develop/blend_gui.c:1814
 msgid "sliders for b channel"
@@ -5625,7 +5594,6 @@ msgid "sliders for hue channel (of HSL)"
 msgstr "Selettore scorrevole per il canale tinta (di HSL)"
 
 #: ../src/develop/blend_gui.c:1844
-#, fuzzy
 #| msgctxt "snapshot sign"
 #| msgid "S"
 msgid "S"
@@ -5762,16 +5730,14 @@ msgid "blend"
 msgstr "Fusione"
 
 #: ../src/develop/blend_gui.c:2066
-#, fuzzy
 #| msgid "safety factor"
 msgid "boost factor"
-msgstr "Fattore di sicurezza"
+msgstr "Fattore di incremento"
 
 #: ../src/develop/blend_gui.c:2068
-#, fuzzy
 #| msgid "the rotation of the watermark"
 msgid "adjust the boost factor of the channel mask"
-msgstr "Rotazione della filigrana"
+msgstr "Regola il fattore di incremento della maschera canale"
 
 #: ../src/develop/blend_gui.c:2102
 #, c-format
@@ -7923,16 +7889,14 @@ msgstr "Aggiorno il preset?"
 
 #: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:2226
 #: ../src/libs/modulegroups.c:2235
-#, fuzzy
 #| msgid "more modules"
 msgid "manage module layouts"
-msgstr "Altri moduli"
+msgstr "Gestisci i layout dei moduli"
 
 #: ../src/gui/presets.c:942
-#, fuzzy
 #| msgid "new preset"
 msgid "manage quick presets"
-msgstr "Nuovo preset"
+msgstr "Gestisci le preimpostazioni rapide"
 
 #: ../src/gui/presets.c:1120
 msgid "manage quick presets list..."
@@ -7976,10 +7940,9 @@ msgstr ""
 "Vuoi sovrascriverlo?"
 
 #: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:418
-#, fuzzy
 #| msgid "overwrite preset?"
 msgid "overwrite style?"
-msgstr "Sovrascrivo preset?"
+msgstr "Sovrascrivo lo stile?"
 
 #: ../src/gui/styles_dialog.c:240 ../src/gui/styles_dialog.c:299
 #, fuzzy
@@ -8651,10 +8614,9 @@ msgstr "Ottimizza automaticamente"
 #: ../src/iop/profile_gamma.c:100 ../src/iop/rawdenoise.c:128
 #: ../src/iop/retouch.c:207 ../src/iop/sharpen.c:96 ../src/iop/spots.c:62
 #: ../src/iop/temperature.c:202
-#, fuzzy
 #| msgid "correct"
 msgid "corrective"
-msgstr "Correggi"
+msgstr "Correttivo"
 
 #: ../src/iop/ashift.c:125 ../src/iop/ashift.c:127 ../src/iop/atrous.c:130
 #: ../src/iop/basicadj.c:142 ../src/iop/bilateral.cc:99
@@ -8677,10 +8639,9 @@ msgstr "Riferito alla scena"
 
 #: ../src/iop/ashift.c:126 ../src/iop/borders.c:188 ../src/iop/clipping.c:329
 #: ../src/iop/flip.c:103 ../src/iop/liquify.c:300
-#, fuzzy
 #| msgid "geometry"
 msgid "geometric, RGB"
-msgstr "Geometria"
+msgstr "Geometria, RGB"
 
 #: ../src/iop/ashift.c:2637
 msgid "automatic cropping failed"
@@ -9965,11 +9926,15 @@ msgstr ""
 msgid "chromatic adaptation transform"
 msgstr "aberrazioni cromatiche"
 
+<<<<<<< HEAD
 #: ../src/iop/channelmixerrgb.c:2194
 #, fuzzy
+=======
+#: ../src/iop/channelmixerrgb.c:2151
+>>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 #| msgid "saturation"
 msgid "adaptation"
-msgstr "Saturazione"
+msgstr "Adattamento"
 
 #: ../src/iop/channelmixerrgb.c:2196
 msgid ""
@@ -10080,10 +10045,9 @@ msgid "invalid ratio format. it should be \"number:number\""
 msgstr "Rapporto di formato non valido. Dovrebbe essere \"numero:numero\""
 
 #: ../src/iop/clipping.c:1706
-#, fuzzy
 #| msgid "invalid ratio format. it should be \"number:number\""
 msgid "invalid ratio format. it should be a positive number"
-msgstr "Rapporto di formato non valido. Dovrebbe essere \"numero:numero\""
+msgstr "Rapporto di formato non valido. Dovrebbe essere un numero positivo"
 
 #: ../src/iop/clipping.c:1899 ../src/iop/clipping.c:2175
 msgid "full"
@@ -14565,6 +14529,7 @@ msgstr "Coefficienti canale"
 msgid "white balance settings"
 msgstr "Impostazioni bilanciamento del bianco"
 
+<<<<<<< HEAD
 #: ../src/iop/temperature.c:2057
 msgid "as shot"
 msgstr "Come da scatto"
@@ -14572,6 +14537,17 @@ msgstr "Come da scatto"
 #: ../src/iop/temperature.c:2060
 msgid "set white balance to as shot"
 msgstr "Imposta il bilanciamento del bianco come da scatto"
+=======
+#: ../src/iop/temperature.c:2048
+#| msgid "snapshots"
+msgid "as shot"
+msgstr "Dallo scatto"
+
+#: ../src/iop/temperature.c:2051
+#| msgid "spot white balance"
+msgid "set white balance to as shot"
+msgstr "Imposta il bilanciamento del bianco dallo scatto"
+>>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 
 #: ../src/iop/temperature.c:2070
 msgid "user modified"
