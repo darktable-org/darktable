@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-03 15:35-0300\n"
-"PO-Revision-Date: 2020-12-03 15:38-0300\n"
+"POT-Creation-Date: 2020-12-04 05:36-0300\n"
+"PO-Revision-Date: 2020-12-04 05:36-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1875,9 +1875,8 @@ msgstr ""
 "mais recente ao mais antigo"
 
 #: ../build/bin/preferences_gen.h:2931
-#, fuzzy
 msgid "hide built-in presets for utility modules"
-msgstr "excluindo predefinição de módulo obsoleto"
+msgstr "esconder predefinições nativas para módulos utilitários"
 
 #: ../build/bin/preferences_gen.h:2942 ../build/bin/preferences_gen.h:2977
 #: ../build/bin/preferences_gen.h:3012 ../build/bin/preferences_gen.h:3047
@@ -1896,26 +1895,23 @@ msgid "FALSE"
 msgstr "FALSO"
 
 #: ../build/bin/preferences_gen.h:2945
-#, fuzzy
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
-"esconde predefinições nativas dos módulos nos menus de predefinições e "
-"favoritos."
+"esconde predefinições nativas dos módulos utilitários nos menus de "
+"predefinições e favoritos."
 
 #: ../build/bin/preferences_gen.h:2966
-#, fuzzy
 msgid "use single-click in the collect module"
-msgstr "Use um único clique no painel de seleção"
+msgstr "use um único clique no painel de seleção"
 
 #: ../build/bin/preferences_gen.h:2980
-#, fuzzy
 msgid ""
 "check this option to use single-click to select items in the collect module. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
 "selecione esta opção para usar um único clique para escolher itens no painel "
 "de seleção. isto permite fazer seleções de faixas por data e valores "
-"numéricos"
+"numéricos."
 
 #: ../build/bin/preferences_gen.h:3001
 msgid "expand a single utility module at a time"
@@ -1926,9 +1922,8 @@ msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr "esta opção alterna o comportamento do shift+clique no modo mesa de luz"
 
 #: ../build/bin/preferences_gen.h:3036
-#, fuzzy
 msgid "scroll to utility modules when expanded/collapsed"
-msgstr "deslizar para módulos da mesa de luz quando expandido/colapsado"
+msgstr "deslizar para módulos utilitários quando expandido/recolhido"
 
 #: ../build/bin/preferences_gen.h:3050 ../build/bin/preferences_gen.h:4246
 msgid ""
@@ -2054,14 +2049,15 @@ msgid "delimiters for size categories"
 msgstr "delimitadores para categorias de tamanho"
 
 #: ../build/bin/preferences_gen.h:3331
-#, fuzzy
 msgid ""
 "size categories are used to be able to set different overlays and css values "
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
 "means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px"
 msgstr ""
 "catgorias de tamanho são usadas para poder determinar sobreposições e "
-"valores de CSS diferentes dependendo do tamanho da miniatura."
+"valores de CSS diferentes dependendo do tamanho da miniatura, separados por "
+"|. por exemplo, 120|400 significa 3 categorias de miniaturas : 0px->120px, "
+"120px->400px e >400px"
 
 #: ../build/bin/preferences_gen.h:3352
 msgid "pattern for the thumbnail extended overlay text"
@@ -2266,10 +2262,9 @@ msgstr ""
 "prejudicar a precisão do mascaramento"
 
 #: ../build/bin/preferences_gen.h:3936
-#, fuzzy
 msgid "show right-side buttons in processing module headers"
 msgstr ""
-"mostrar botões do lado direito nos cabeçalhos de módulos na sala escura"
+"mostrar botões do lado direito nos cabeçalhos de módulos de processamento"
 
 #: ../build/bin/preferences_gen.h:3952
 msgctxt "preferences"
@@ -2358,23 +2353,20 @@ msgstr ""
 "paramétricas."
 
 #: ../build/bin/preferences_gen.h:4092
-#, fuzzy
 msgid "hide built-in presets for processing modules"
-msgstr "excluindo predefinição de módulo obsoleto"
+msgstr "esconder predefinição nativa de módulo de processamento"
 
 #: ../build/bin/preferences_gen.h:4106
-#, fuzzy
 msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"esconde predefinições nativas dos módulos nos menus de predefinições e "
-"favoritos."
+"esconde predefinições nativas dos módulos de processamento nos menus de "
+"predefinições e favoritos."
 
 #: ../build/bin/preferences_gen.h:4127
-#, fuzzy
 msgid "expand a single processing module at a time"
-msgstr "expandir um único módulo da sala escura de cada vez"
+msgstr "expandir um único módulo de processamento de cada vez"
 
 #: ../build/bin/preferences_gen.h:4141
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
@@ -2407,9 +2399,8 @@ msgstr ""
 "quando estiver desabilitado."
 
 #: ../build/bin/preferences_gen.h:4232
-#, fuzzy
 msgid "scroll to processing modules when expanded/collapsed"
-msgstr "deslizar para módulos da sala escura quando expandido/colapsado"
+msgstr "deslizar para módulos de processamento quando expandido/recolhido"
 
 #: ../build/bin/preferences_gen.h:4267
 msgid "white balance slider colors"
@@ -15512,7 +15503,7 @@ msgstr "editar detalhes de exportação de metadados"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:2039 ../src/libs/styles.c:73
-#: ../src/views/darkroom.c:3824
+#: ../src/views/darkroom.c:3826
 msgctxt "accel"
 msgid "export"
 msgstr "exporta"
@@ -18705,195 +18696,195 @@ msgstr "cor de overlay"
 msgid "set overlay color"
 msgstr "selecionar cor do overlay"
 
-#: ../src/views/darkroom.c:3774
+#: ../src/views/darkroom.c:3776
 msgid "keyboard shortcut slider precision: fine"
 msgstr "precisão do atalho de teclado para deslizadores: leve"
 
-#: ../src/views/darkroom.c:3776
+#: ../src/views/darkroom.c:3778
 msgid "keyboard shortcut slider precision: normal"
 msgstr "precisão do atalho de teclado para deslizadores: normal"
 
-#: ../src/views/darkroom.c:3778
+#: ../src/views/darkroom.c:3780
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "precisão do atalho de teclado para deslizadores: pesada"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3815
+#: ../src/views/darkroom.c:3817
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "zoom primeiro plano"
 
-#: ../src/views/darkroom.c:3816
+#: ../src/views/darkroom.c:3818
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "zoom preecher"
 
-#: ../src/views/darkroom.c:3817
+#: ../src/views/darkroom.c:3819
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "zoom ajustado"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3820 ../src/views/lighttable.c:883
+#: ../src/views/darkroom.c:3822 ../src/views/lighttable.c:883
 msgctxt "accel"
 msgid "zoom in"
 msgstr "aproximar"
 
-#: ../src/views/darkroom.c:3821 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3823 ../src/views/lighttable.c:885
 msgctxt "accel"
 msgid "zoom out"
 msgstr "afastar"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3827
+#: ../src/views/darkroom.c:3829
 msgctxt "accel"
 msgid "image forward"
 msgstr "imagem adiante"
 
-#: ../src/views/darkroom.c:3828
+#: ../src/views/darkroom.c:3830
 msgctxt "accel"
 msgid "image back"
 msgstr "imagem anterior"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3831
+#: ../src/views/darkroom.c:3833
 msgctxt "accel"
 msgid "color assessment"
 msgstr "avaliação de cores"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3834
+#: ../src/views/darkroom.c:3836
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "raw superexposto"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3837
+#: ../src/views/darkroom.c:3839
 msgctxt "accel"
 msgid "overexposed"
 msgstr "superexposto"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3840
+#: ../src/views/darkroom.c:3842
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "passa por cores de overlay"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3843
+#: ../src/views/darkroom.c:3845
 msgctxt "accel"
 msgid "softproof"
 msgstr "impressão na tela"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3846
+#: ../src/views/darkroom.c:3848
 msgctxt "accel"
 msgid "gamut check"
 msgstr "verificação de gamut"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3849
+#: ../src/views/darkroom.c:3851
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "mostrar máscara desenhada"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3852
+#: ../src/views/darkroom.c:3854
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "aumentar tamanho do pincel"
 
-#: ../src/views/darkroom.c:3853
+#: ../src/views/darkroom.c:3855
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "diminuir tamanho do pincel"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3856
+#: ../src/views/darkroom.c:3858
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "aumentar dureza do pincel"
 
-#: ../src/views/darkroom.c:3857
+#: ../src/views/darkroom.c:3859
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "diminuir dureza do pincel"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3860
+#: ../src/views/darkroom.c:3862
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "aumentar opacidade do pincel"
 
-#: ../src/views/darkroom.c:3861
+#: ../src/views/darkroom.c:3863
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "diminuir opacidade do pincel"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3864
+#: ../src/views/darkroom.c:3866
 msgctxt "accel"
 msgid "full preview"
 msgstr "visualização total"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3867 ../src/views/lighttable.c:875
+#: ../src/views/darkroom.c:3869 ../src/views/lighttable.c:875
 #: ../src/views/map.c:1851
 msgctxt "accel"
 msgid "undo"
 msgstr "desfazer"
 
-#: ../src/views/darkroom.c:3868 ../src/views/lighttable.c:876
+#: ../src/views/darkroom.c:3870 ../src/views/lighttable.c:876
 #: ../src/views/map.c:1852
 msgctxt "accel"
 msgid "redo"
 msgstr "refazer"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3871
+#: ../src/views/darkroom.c:3873
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr "permitir pan & zoom ao editar máscaras"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3874
+#: ../src/views/darkroom.c:3876
 msgctxt "accel"
 msgid "search modules"
 msgstr "busca módulos"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:3877
+#: ../src/views/darkroom.c:3879
 msgctxt "accel"
 msgid "change keyboard shortcut slider precision"
 msgstr "mudar a precisão dos atalhos de teclado para deslizadores"
 
-#: ../src/views/darkroom.c:3996
+#: ../src/views/darkroom.c:3998
 msgid "switch to lighttable"
 msgstr "mudar para mesa de luz"
 
-#: ../src/views/darkroom.c:4001 ../src/views/lighttable.c:1059
+#: ../src/views/darkroom.c:4003 ../src/views/lighttable.c:1059
 msgid "zoom in the image"
 msgstr "zoom na imagem"
 
-#: ../src/views/darkroom.c:4007
+#: ../src/views/darkroom.c:4009
 msgid "unbounded zoom in the image"
 msgstr "zoom ilimitado na imagem"
 
-#: ../src/views/darkroom.c:4012
+#: ../src/views/darkroom.c:4014
 msgid "zoom to 100% 200% and back"
 msgstr "zoom para 100% 200% e volta"
 
-#: ../src/views/darkroom.c:4018
+#: ../src/views/darkroom.c:4020
 msgid "[modules] expand module without closing others"
 msgstr "[módulos] expande módulo sem fechar outros"
 
-#: ../src/views/darkroom.c:4024
+#: ../src/views/darkroom.c:4026
 msgid "[modules] change module position in pipe"
 msgstr "[módulos] muda posição do módulo no fluxo"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4714 ../src/views/darkroom.c:4732
+#: ../src/views/darkroom.c:4716 ../src/views/darkroom.c:4734
 msgid "darktable - darkroom preview"
 msgstr "darktable - pré-visualização de sala escura"
 
