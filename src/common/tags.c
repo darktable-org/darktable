@@ -728,7 +728,7 @@ static gint sort_tag_by_path(gconstpointer a, gconstpointer b)
   const dt_tag_t *tuple_a = (const dt_tag_t *)a;
   const dt_tag_t *tuple_b = (const dt_tag_t *)b;
 
-  return g_ascii_strcasecmp(tuple_a->tag, tuple_b->tag);
+  return g_strcmp0(tuple_a->tag, tuple_b->tag);
 }
 
 static gint sort_tag_by_leave(gconstpointer a, gconstpointer b)
@@ -736,7 +736,7 @@ static gint sort_tag_by_leave(gconstpointer a, gconstpointer b)
   const dt_tag_t *tuple_a = (const dt_tag_t *)a;
   const dt_tag_t *tuple_b = (const dt_tag_t *)b;
 
-  return g_ascii_strcasecmp(tuple_a->leave, tuple_b->leave);
+  return g_strcmp0(tuple_a->leave, tuple_b->leave);
 }
 
 static gint sort_tag_by_count(gconstpointer a, gconstpointer b)
