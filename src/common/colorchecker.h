@@ -53,7 +53,9 @@ typedef struct dt_color_checker_t
   float radius;                       // radius of a patch in ratio of the checker diagonal
   size_t patches;                     // number of patches in target
   size_t size[2];                     // dimension along x, y axes
-  dt_color_checker_patch middle_grey; // closest patch from 20% neutral grey
+  size_t middle_grey;                 // index of the closest patch to 20% neutral grey
+  size_t white;                       // index of the closest patch to pure white
+  size_t black;                       // index of the closest patch to pure black
   dt_color_checker_patch values[];    // array of colors
 } dt_color_checker_t;
 
@@ -91,7 +93,7 @@ const dt_color_checker_t xrite_24 = { .name = "Xrite ColorChecker 24",
                                                   { "D6", { 20.46,   -0.08,   -0.97 }} } };
 */
 
-const dt_color_checker_t spyder_48 = {  .name = "Datacolor SpyderCheckr 48",
+dt_color_checker_t spyder_48 = {  .name = "Datacolor SpyderCheckr 48",
                                         .author = "Aurélien PIERRE",
                                         .date = "dec, 9 2016",
                                         .manufacturer = "DataColor",
@@ -99,7 +101,9 @@ const dt_color_checker_t spyder_48 = {  .name = "Datacolor SpyderCheckr 48",
                                         .radius = 0.035,
                                         .patches = 48,
                                         .size = { 8, 6 },
-                                        .middle_grey = { "E2", { 80.44,	 1.17,	 2.05 } },
+                                        .middle_grey = 25,
+                                        .white = 24,
+                                        .black = 29,
                                         .values = { { "A1", { 61.35,  34.81,  18.38 }, { 0.085, 0.125 } },
                                                     { "A2", { 75.50 ,  5.84,  50.42 }, { 0.085, 0.274 } },
                                                     { "A3", { 66.82,	-25.1,	23.47 }, { 0.085, 0.423 } },
@@ -150,7 +154,7 @@ const dt_color_checker_t spyder_48 = {  .name = "Datacolor SpyderCheckr 48",
                                                     { "H6", { 36.13,	14.15,	15.78 }, { 0.915, 0.870 } } } };
 
 
-const dt_color_checker_t *const  dt_get_color_checker(const dt_color_checker_targets target_type)
+dt_color_checker_t * dt_get_color_checker(const dt_color_checker_targets target_type)
 {
   switch(target_type)
   {
