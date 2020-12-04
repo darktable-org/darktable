@@ -4,8 +4,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-03 23:56+0100\n"
-"PO-Revision-Date: 2020-12-04 00:19+0100\n"
+"POT-Creation-Date: 2020-12-03 15:30+0100\n"
+"PO-Revision-Date: 2020-12-04 12:34+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.4.2\n"
 "X-Poedit-Bookmarks: 3066,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
@@ -348,12 +348,12 @@ msgstr "benutzerdefiniert"
 # not really an AI method
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:497
 msgid "(AI) detect from image surfaces..."
-msgstr "aus Bildoberflächen ermitteln"
+msgstr "(AI) aus Flächen ermitteln…"
 
 # not really an AI method
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:498
 msgid "(AI) detect from image edges..."
-msgstr "aus Bildkanten ermitteln"
+msgstr "(AI) aus Kanten ermitteln…"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
 #: ../src/iop/channelmixerrgb.c:1992
@@ -458,7 +458,7 @@ msgstr "nichtlinear Bradford"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:536
 msgid "XYZ "
-msgstr "XYZ"
+msgstr "XYZ "
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:537
 msgid "none (bypass)"
@@ -1261,37 +1261,42 @@ msgstr "trilinear"
 msgid "pyramid"
 msgstr "py­ra­mi­dal"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:131
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:230
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:84
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:199
+msgid "film stock"
+msgstr "Filmmaterial"
+
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:132
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:231
 msgid "scan exposure bias"
 msgstr "Belichtungskorrektur"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:137
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:234
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:138
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:235
 msgid "paper black (density correction)"
 msgstr "Papierschwarz (Dichtekorrektur )"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:143
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:238
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:144
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:239
 #: ../src/iop/negadoctor.c:972
 msgid "paper grade (gamma)"
 msgstr "Papiergraduierung (Gamma)"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:149
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:242
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:150
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:243
 msgid "paper gloss (specular highlights)"
 msgstr "Papierglanz (Spiegelglanzlichter)"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:155
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:246
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:156
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:247
 msgid "print exposure adjustment"
 msgstr "Druck-Belichtungsanpassung"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:260
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
 msgid "black and white"
 msgstr "schwarz-weiß"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:262
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
 #: ../src/iop/watermark.c:1405 ../src/libs/image.c:574
@@ -1751,7 +1756,7 @@ msgstr "Mitwirkende (rawspeed)"
 #: ../build/bin/preferences_gen.h:7062 ../build/bin/preferences_gen.h:7101
 #: ../build/bin/preferences_gen.h:7136
 msgid "this setting has been modified"
-msgstr "Diese Voreinstellung wurde manuell angepasst."
+msgstr "Diese Voreinstellung wurde manuell angepasst"
 
 #: ../build/bin/preferences_gen.h:2769 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:88
@@ -1906,19 +1911,17 @@ msgstr ""
 "Favoritenmenü."
 
 #: ../build/bin/preferences_gen.h:2966
-#, fuzzy
 msgid "use single-click in the collect module"
-msgstr "verwende Einfach-Klick im „Bilder sammeln”-Eingabefeld"
+msgstr "Auswahl mit Einfachklick in „Bilder sammeln“ Liste"
 
 #: ../build/bin/preferences_gen.h:2980
-#, fuzzy
 msgid ""
 "check this option to use single-click to select items in the collect module. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
-"Aktiviere die Option, um Elemente im „Bilder sammeln”-Eingabefeld mit einem "
-"einzigen Mausklick auszuwählen. Hierdurch können Bereiche für „Datum/"
-"Uhrzeit” und numerische Werte wie „ISO”, „Blende” etc. ausgewählt werden."
+"Aktiviere die Option, um Elemente in „Bilder sammeln”-Liste mit einem "
+"einzigen Mausklick auszuwählen. Dies erlaubt die Mehrfachauswahl für „Datum/"
+"Uhrzeit” und numerische Werte wie „ISO”, „Blende” etc. "
 
 #: ../build/bin/preferences_gen.h:3001
 msgid "expand a single utility module at a time"
@@ -1939,8 +1942,8 @@ msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
 msgstr ""
-"Wenn diese Option aktiviert ist, wird darktable versuchen, das entsprechende "
-"Modul nach oben in den sichtbaren Bereich der Liste zu scrollen."
+"Wenn diese Option aktiviert ist, wird versucht, das entsprechende Modul nach "
+"oben in den sichtbaren Bereich der Liste zu scrollen."
 
 #: ../build/bin/preferences_gen.h:3071
 msgid "rating an image one star twice will not zero out the rating"
@@ -1963,9 +1966,8 @@ msgid "defines whether scrollbars should be displayed"
 msgstr "Definiert, ob Scrollbalken angezeigt werden sollen."
 
 #: ../build/bin/preferences_gen.h:3129
-#, fuzzy
 msgid "thumbnails"
-msgstr "Vorschau"
+msgstr "Vorschaubilder"
 
 #: ../build/bin/preferences_gen.h:3149
 msgid "color manage cached thumbnails"
@@ -2055,19 +2057,19 @@ msgstr ""
 "mit voller Qualität berechnet (besser aber langsamer)."
 
 #: ../build/bin/preferences_gen.h:3313
-#, fuzzy
 msgid "delimiters for size categories"
-msgstr "Grenzwerte der Größenkategorien"
+msgstr "Grenzwerte für größenabhängige Einstellungen"
 
 #: ../build/bin/preferences_gen.h:3331
-#, fuzzy
 msgid ""
 "size categories are used to be able to set different overlays and css values "
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
 "means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px"
 msgstr ""
 "Größenkategorien werden benutzt, um verschiedene Bildinfos und CSS-"
-"Einszellungen in Abhängigkeit von der Größe der Vorschaubilder zu wählen."
+"Einstellungen in Abhängigkeit von der Größe der Vorschaubilder zu wählen. "
+"Die Größen werden durch | getrennt. Der Default „120|400“ definiert 3 "
+"Kategorien: 0px->120px, 120px->400px und >400px"
 
 #: ../build/bin/preferences_gen.h:3352
 msgid "pattern for the thumbnail extended overlay text"
@@ -2273,10 +2275,8 @@ msgstr ""
 "zu weniger genaue Maskierungen zur Folge haben."
 
 #: ../build/bin/preferences_gen.h:3936
-#, fuzzy
 msgid "show right-side buttons in processing module headers"
-msgstr ""
-"Anzeige der rechten Schaltflächen in der Kopfzeile der Dunkelkammermodule"
+msgstr "Anzeige der rechten Schaltflächen in der Modul-Zeile"
 
 #: ../build/bin/preferences_gen.h:3952
 msgctxt "preferences"
@@ -2373,12 +2373,11 @@ msgid "hide built-in presets for processing modules"
 msgstr "Voreinstellung für Dunkelkammer-Module ausblenden"
 
 #: ../build/bin/preferences_gen.h:4106
-#, fuzzy
 msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"Verbirgt eingebaute Voreinstellungen im Voreinstellungsmenü und im "
+"Unterdrückt fest codierte Voreinstellungen im Voreinstellungsmenü und im "
 "Favoritenmenü."
 
 #: ../build/bin/preferences_gen.h:4127
@@ -3812,9 +3811,8 @@ msgid "tagged"
 msgstr "getaggt"
 
 #: ../src/common/collection.c:1512
-#, fuzzy
 msgid "tagged*"
-msgstr "getaggt"
+msgstr "getaggt*"
 
 #: ../src/common/collection.c:1534 ../src/libs/collect.c:1569
 msgid "not copied locally"
@@ -4280,14 +4278,14 @@ msgid "later"
 msgstr "später"
 
 #: ../src/common/exif.cc:3980
-#, fuzzy, c-format
+#, c-format
 msgid "cannot read xmp file '%s': '%s'"
-msgstr "konnte xmp Datei „%s” nicht lesen: „%s\""
+msgstr "konnte xmp Datei '%s’ nicht lesen: ‘%s’"
 
 #: ../src/common/exif.cc:4032
-#, fuzzy, c-format
+#, c-format
 msgid "cannot write xmp file '%s': '%s'"
-msgstr "konnte xmp Datei „%s” nicht schreiben: „%s\""
+msgstr "konnte xmp Datei '%s' nicht schreiben: '%s'"
 
 #: ../src/common/fast_guided_filter.h:508
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -5984,11 +5982,13 @@ msgid "process"
 msgstr "Bearbeitung"
 
 #: ../src/develop/imageop_gui.c:430
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s\n"
 "ctrl+click to %s"
-msgstr "Strg+Klick, um zu drehen"
+msgstr ""
+"%s\n"
+"ctrl+Klick für %s"
 
 #: ../src/develop/lightroom.c:1077
 msgid "cannot find lightroom XMP!"
@@ -7530,7 +7530,7 @@ msgstr "auto"
 #: ../src/gui/preferences.c:851 ../src/gui/preferences.c:957
 msgctxt "preferences"
 msgid "import..."
-msgstr "importieren"
+msgstr "importieren…"
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:892
@@ -8480,9 +8480,8 @@ msgid "perspective correction"
 msgstr "Perspektivkorrektur"
 
 #: ../src/iop/ashift.c:118
-#, fuzzy
 msgid "keystone|distortion"
-msgstr "nur Verzeichnung"
+msgstr "Trapezkorrektur|Verzeichnung"
 
 #: ../src/iop/ashift.c:123
 msgid "distort perspective automatically"
@@ -8713,9 +8712,8 @@ msgid "contrast equalizer"
 msgstr "Kontrast-Equalizer"
 
 #: ../src/iop/atrous.c:123
-#, fuzzy
 msgid "sharpness|acutance|local contrast"
-msgstr "ändert den lokalen Kontrast"
+msgstr "Schärfe|Konturschärfe|Lokaler Kontrast"
 
 #: ../src/iop/atrous.c:128
 msgid "add or remove local contrast, sharpness, acutance"
@@ -8941,15 +8939,12 @@ msgid "base curve"
 msgstr "Basiskurve"
 
 #: ../src/iop/basecurve.c:337
-#, fuzzy
 msgid ""
 "apply a view transform based on personal or camera manufacturer look,\n"
 "for corrective purposes, to prepare images for display"
 msgstr ""
-"Wendet eine Ausgabetransformation basierend auf dem Stil des "
-"Kameraherstellers an. Für korrigierende Zwecke, um das Bild für die Anzeige "
-"aufzubereiten. Modul arbeitet in RGB-Darstellung, Eingabe vorzugsweise in "
-"linearer RGB-Darstellung, Ausgabe in nicht-linearer RGB-Darstellung."
+"Simuliert kamerainterne JPEG Verarbeitung anhand einer Hersteller- oder "
+"Kameraspezifisch vordefinierten Tonwertkurve."
 
 #: ../src/iop/basecurve.c:340 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixer.c:141 ../src/iop/lut3d.c:139
@@ -9436,12 +9431,8 @@ msgid "chromatic aberrations"
 msgstr "Chromatische Aberration"
 
 #: ../src/iop/cacorrect.c:58
-#, fuzzy
 msgid "correct chromatic aberrations for Bayer sensors"
-msgstr ""
-"Automatische Korrektur der\n"
-"chromatischen Aberration\n"
-"funktioniert nur bei Bayer-Raw-Bildern."
+msgstr "Korrektur der chromatischen Aberration für Bayer Sensoren"
 
 #: ../src/iop/cacorrect.c:60 ../src/iop/cacorrect.c:62
 #: ../src/iop/demosaic.c:177 ../src/iop/highlights.c:88
@@ -9459,18 +9450,13 @@ msgstr "linear, RAW"
 
 #: ../src/iop/cacorrect.c:1519
 msgid "automatic chromatic aberration correction"
-msgstr ""
-"Automatische Korrektur der\n"
-"chromatischen Aberration."
+msgstr "Automatische Korrektur der chromatischen Aberration."
 
 #: ../src/iop/cacorrect.c:1522
 msgid ""
 "automatic chromatic aberration correction\n"
 "disabled for non-Bayer sensors"
-msgstr ""
-"Automatische Korrektur der\n"
-"chromatischen Aberration\n"
-"funktioniert nur bei Bayer-Raw-Bildern."
+msgstr "Automatische Korrektur der chromatischen Aberration für Bayer Sensoren"
 
 #: ../src/iop/cacorrect.c:1525
 msgid ""
@@ -9718,6 +9704,8 @@ msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
+"Farbkalibrierung: die Summe der Graukanal Parameter ist Null, die "
+"Normalisierung wird deaktiviert."
 
 #: ../src/iop/channelmixerrgb.c:2067
 msgid "double CAT applied"
@@ -9730,6 +9718,10 @@ msgid ""
 "this can lead to inconsistencies, unless you\n"
 "use them with masks or know what you are doing."
 msgstr ""
+"Es gibt mehrere Instanzen der Farbkalibrierung, die alle eine chromatische "
+"Adaption durchführen.\n"
+"Dies kann dies zu Inkonsistenzen führen, es sei denn sie werden mit Masken "
+"verwendet oder Sie wissen, was Sie tun."
 
 #: ../src/iop/channelmixerrgb.c:2081
 msgid "white balance module error"
@@ -9742,6 +9734,10 @@ msgid ""
 "with chromatic adaptation. either set it to reference\n"
 "or disable chromatic adaptation here."
 msgstr ""
+"das Weißabgleich-Modul verwendet die Kamera Referenzpunkt Einstellung. Dies "
+"führt hier zu fehlerhafter chromatischer Anpassung. \n"
+"entweder im Weißabgleichsmodul umstellen oder die chromatische Anpassung "
+"hier deaktivieren."
 
 # CAT is for "chromatic adaptation
 # transform"
@@ -9853,9 +9849,8 @@ msgid "crop and rotate"
 msgstr "Zuschneiden und Drehen"
 
 #: ../src/iop/clipping.c:321
-#, fuzzy
 msgid "reframe|perspective|keystone|distortion"
-msgstr "Perspektive für vertikale Trapezverzerrung anpassen"
+msgstr "Zuschneiden|Perspektive|Trapezverzerrung|Verzerrung"
 
 #: ../src/iop/clipping.c:326
 msgid "change the framing and correct the perspective"
@@ -10076,7 +10071,7 @@ msgstr "Farbbalance"
 
 #: ../src/iop/colorbalance.c:154
 msgid "lift gamma gain|cdl|color grading|contrast|saturation|hue"
-msgstr ""
+msgstr "Lift Gamma Gain|CDL|Color Grading|Kontrast|Sättigung|Farbton"
 
 #: ../src/iop/colorbalance.c:159
 msgid "affect color, brightness and contrast"
@@ -10295,7 +10290,7 @@ msgstr "Farb-Lookup-Tabelle"
 
 #: ../src/iop/colorchecker.c:119
 msgid "profile|lut|color grading"
-msgstr ""
+msgstr "Profil|LUT|Color Grading"
 
 #: ../src/iop/colorchecker.c:124
 msgid "perform color space corrections and apply looks"
@@ -10415,6 +10410,8 @@ msgid ""
 "increase saturation and separation between\n"
 "opposite colors"
 msgstr ""
+"Kontrast- und Farbtrennung zwischen Grün/Magenta und Blau/Gelb im Lab-"
+"Farbraum"
 
 #: ../src/iop/colorcontrast.c:335
 msgid ""
@@ -10563,6 +10560,8 @@ msgstr "Farbtransfer"
 msgid ""
 "transfer a color palette and tonal repartition from one image to another"
 msgstr ""
+"Übertragen von Aussehen und Wirkung eines Bildes auf ein anderes durch "
+"Abbildung der Farben des Quell- auf Farben des Zielbereichs."
 
 #: ../src/iop/colormapping.c:1061
 msgid "source clusters:"
@@ -10651,7 +10650,7 @@ msgstr "Wahrnehmung"
 #: ../src/views/darkroom.c:2366 ../src/views/darkroom.c:2374
 #: ../src/views/lighttable.c:1403 ../src/views/lighttable.c:1411
 msgid "relative colorimetric"
-msgstr "Kolorimetrisch (relativ)"
+msgstr "relativ Farbmetrisch"
 
 #: ../src/iop/colorout.c:871 ../src/libs/export.c:1292
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
@@ -10666,7 +10665,7 @@ msgstr "Sättigung"
 #: ../src/views/darkroom.c:2368 ../src/views/darkroom.c:2376
 #: ../src/views/lighttable.c:1405 ../src/views/lighttable.c:1413
 msgid "absolute colorimetric"
-msgstr "Kolorimetrisch (absolut)"
+msgstr "absolut Farbmetrisch"
 
 #: ../src/iop/colorout.c:889
 msgid "rendering intent"
@@ -10768,9 +10767,8 @@ msgid "color zones"
 msgstr "Farbbereiche"
 
 #: ../src/iop/colorzones.c:143
-#, fuzzy
 msgid "selectively shift hues, saturation and brightness of pixels"
-msgstr "Sättigung für die Spitzlichter wählen"
+msgstr "Selektive Anpassung von Farbton, Sättigung, Helligkeit "
 
 #: ../src/iop/colorzones.c:612
 msgid "red black white"
@@ -10877,11 +10875,8 @@ msgid "defringe"
 msgstr "Farbsaum-Entfernung"
 
 #: ../src/iop/defringe.c:79
-#, fuzzy
 msgid "attenuate chromatic aberration by desaturating edges"
-msgstr ""
-"Automatische Korrektur der\n"
-"chromatischen Aberration."
+msgstr "Dämpfung der chromatischen Aberration durch Entsättigung an Kanten"
 
 #: ../src/iop/defringe.c:417
 msgid ""
@@ -10919,6 +10914,8 @@ msgstr "Entrastern"
 #: ../src/iop/demosaic.c:175
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
+"Rekonstruktion der RGB Pixel aus Helligkeitswerten eines Sensors mit "
+"Farbfiltermatrix"
 
 #: ../src/iop/demosaic.c:4932
 #, c-format
@@ -11233,6 +11230,7 @@ msgid ""
 "reduce banding and posterization effects in output JPEGs by adding random "
 "noise"
 msgstr ""
+"Reduzierung von Banding-Artefakten durch Hinzufügen von zufälligem Rauschen"
 
 #. add the preset.
 #: ../src/iop/dither.c:138
@@ -11296,6 +11294,8 @@ msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
 msgstr ""
+"farbsichere Anpassung der Gesamthelligkeit ähnlich der Anpassung der ISO-"
+"Einstellung in der Kamera"
 
 #: ../src/iop/exposure.c:259
 msgid "magic lantern defaults"
@@ -11623,9 +11623,11 @@ msgstr ""
 msgid "filmic rgb"
 msgstr "Filmisch RGB"
 
+# inhaltgerechte Übersetzung view transformation  ?
 #: ../src/iop/filmicrgb.c:322
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
+"Tonemapping|Tonwertkurve|Ansichtstransformation|Kontrast|Sättigung|Highlights"
 
 #: ../src/iop/filmicrgb.c:327
 msgid ""
@@ -11633,6 +11635,10 @@ msgid ""
 "for display on SDR screens and paper prints\n"
 "while preventing clipping in non-destructive ways"
 msgstr ""
+"Bildet den Tonwertumfang einer Aufnahme durch nicht-destruktiv in den "
+"Dynamikbereich der Anzeige ab. \n"
+"Analog zu „klassischem“ Film durch Kompression von dunklen Schatten und "
+"hellen Lichtern."
 
 #: ../src/iop/filmicrgb.c:1118
 msgid ""
@@ -11647,11 +11653,8 @@ msgid "filmic works only on RGB input"
 msgstr "Filmic funktioniert nur mit RGB-Eingabedaten."
 
 #: ../src/iop/filmicrgb.c:1594
-#, fuzzy
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
-msgstr ""
-"Filmic Spitzlichtrekonstruktion konnte kein Speicher zuweisen werden, "
-"überprüfen Sie Ihre RAM-Einstellungen."
+msgstr "Filmic Spitzlichtrekonstruktion konnte keinen GPU Speicher allokieren."
 
 #: ../src/iop/filmicrgb.c:2715
 msgid "look only"
@@ -13102,7 +13105,7 @@ msgstr "Negadoctor"
 
 #: ../src/iop/negadoctor.c:150
 msgid "film|invert|negative|scan"
-msgstr ""
+msgstr "Film|Umkehrung|Negativ|Scan"
 
 #: ../src/iop/negadoctor.c:155
 msgid "invert film negative scans and simulate printing on paper"
@@ -13456,6 +13459,8 @@ msgid ""
 "\n"
 "you should not touch values here !"
 msgstr ""
+"Internes Modul um Sensoreigenschaften zu einzustellen.\n"
+"Werte sollten nicht verändert werden!"
 
 #: ../src/iop/rawprepare.c:119
 msgid "passthrough"
@@ -13550,7 +13555,7 @@ msgstr "Retusche"
 
 #: ../src/iop/retouch.c:200
 msgid "split-frequency|healing|cloning|stamp"
-msgstr ""
+msgstr "Frequenztrennung|Heilen|Klonen|Stempeln"
 
 #: ../src/iop/retouch.c:206
 msgid "remove and clone spots, perform split-frequency skin editing"
@@ -13935,7 +13940,7 @@ msgstr "Schärfen"
 
 #: ../src/iop/sharpen.c:95
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
-msgstr ""
+msgstr "Detailschärfen mit Standard Unschärfemaske (USM)"
 
 #: ../src/iop/sharpen.c:97
 msgid "linear or non-linear, Lab, display or scene-referred"
@@ -13970,7 +13975,7 @@ msgstr "Weichzeichnen"
 
 #: ../src/iop/soften.c:105
 msgid "create a softened image using the Orton effect"
-msgstr ""
+msgstr "Weichzeichnen mit Orton-Effekt"
 
 #: ../src/iop/soften.c:549
 msgid "the size of blur"
@@ -13997,6 +14002,8 @@ msgid ""
 "use two specific colors for shadows and highlights and\n"
 "create a linear toning effect between them up to a pivot."
 msgstr ""
+"Setzt zwei Farben für Schatten und Lichter um einen linearen "
+"Zweifarbentonungseffekt zu erzielen"
 
 #: ../src/iop/splittoning.c:119
 msgid "authentic sepia"
@@ -14084,7 +14091,7 @@ msgstr "Weißabgleich"
 
 #: ../src/iop/temperature.c:201
 msgid "scale raw RGB channels to balance white and help demosaicing"
-msgstr ""
+msgstr "Anpassung der RAW-RGB Kanäle für Weißabgleich und Entrastern"
 
 #: ../src/iop/temperature.c:240
 msgid "from image area"
@@ -14101,6 +14108,9 @@ msgid ""
 "set the white balance here to camera reference (D65)\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
+"Das Farbkalibrierungsmodul ist aktiv und steuert die Farbanpassungen.\n"
+"Bitte den Weißabgleich auf Kamera Referenzpunkt (D65) stellen oder \n"
+"CAT Anpassung im Farbkalibrierungsmodul deaktivieren."
 
 #: ../src/iop/temperature.c:1420
 #, c-format
@@ -14287,10 +14297,14 @@ msgstr "Tonwert-Equalizer"
 #: ../src/iop/toneequal.c:313
 msgid "tone curve|tone mapping|relight|background light|shadows highlights"
 msgstr ""
+"Tonwertkurve|Tonmapping|Nachbelichten|Hintergrundaufhellung|Schatten & "
+"Lichter"
 
 #: ../src/iop/toneequal.c:319
 msgid "relight the scene as if the lighting was done directly on the scene"
 msgstr ""
+"Selektives Aufhellen oder Abdunkeln über verschiedene Helligkeitsbereiche "
+"unter Beibehaltung des lokalen Kontrasts"
 
 #: ../src/iop/toneequal.c:322
 msgid "quasi-linear, RGB"
@@ -15536,6 +15550,20 @@ msgid ""
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
+"- Wahrnehmung: verschiebt Farben außerhalb des Farbspektrums in den "
+"Farbraum, wobei die Abstufungen erhalten bleiben, aber die Farben innerhalb "
+"des Farbspektrums verzerrt werden. Beachten Sie, dass Wahrnehmung oft eine "
+"proprietäre LUT ist, die vom Zielfarbraum abhängt.\n"
+"\n"
+"- relativ Farbmetrisch: behält die Luminanz bei und reduziert gleichzeitig "
+"die Sättigung so wenig wie möglich, bis die Farben in den Farbraum passen.\n"
+"\n"
+"- Sättigung: ausgelegt um auffällige Geschäftsgrafiken zu präsentieren, "
+"indem die Sättigung erhalten bleibt. (nicht für die Fotografie geeignet).\n"
+"\n"
+"- absolut Farbmetrisch : passt den Weißpunkt des Bildes an den Weißpunkt des "
+"Zielmediums an und tut nichts anderes. Wird hauptsächlich beim Proofing von "
+"Farben verwendet. (nicht für die Fotografie geeignet)."
 
 #: ../src/libs/export.c:1325 ../src/libs/print_settings.c:1473
 msgid "style"
@@ -16052,7 +16080,7 @@ msgstr "aus der Sammlung entfernen"
 
 #: ../src/libs/image.c:450
 msgid "move..."
-msgstr "verschieben"
+msgstr "verschieben…"
 
 #: ../src/libs/image.c:450
 msgid "move to other folder"
@@ -16060,7 +16088,7 @@ msgstr "in anderen Ordner verschieben"
 
 #: ../src/libs/image.c:454
 msgid "copy..."
-msgstr "kopieren"
+msgstr "kopieren…"
 
 #: ../src/libs/image.c:454
 msgid "copy to other folder"
@@ -16364,7 +16392,7 @@ msgstr "Importverzeichnis"
 #. add import single image buttons
 #: ../src/libs/import.c:786
 msgid "image..."
-msgstr "Bild"
+msgstr "Bild…"
 
 #: ../src/libs/import.c:786
 msgid "select one or more images to import"
@@ -16373,7 +16401,7 @@ msgstr "Ein oder mehrere Bilder zum Import wählen"
 #. adding the import folder button
 #: ../src/libs/import.c:794
 msgid "folder..."
-msgstr "Verzeichnis"
+msgstr "Verzeichnis…"
 
 #: ../src/libs/import.c:794
 msgid "select a folder to import as film roll"
@@ -16394,7 +16422,7 @@ msgstr "„%s” bearbeiten"
 
 #: ../src/libs/lib.c:656
 msgid "manage presets..."
-msgstr "Voreinstellungen bearbeiten"
+msgstr "Voreinstellungen bearbeiten…"
 
 #: ../src/libs/lib.c:679
 msgid "nothing to save"
@@ -17135,6 +17163,9 @@ msgid ""
 "that can't be solved and alternatives that solve them.\n"
 "they will be removed for new edits in next release."
 msgstr ""
+"Folgende Module sind veraltet, weil sie interne Konzeptionsschwächen haben, "
+"die nicht behoben werden können und die durch Alternativen abgelöst werden.\n"
+"Sie werden für neue Bearbeitungen in der nächsten Version entfernt."
 
 #: ../src/libs/modulegroups.c:1012 ../src/libs/modulegroups.c:1035
 #: ../src/libs/modulegroups.c:1048 ../src/libs/modulegroups.c:1063
@@ -17313,7 +17344,7 @@ msgstr "neu"
 
 #: ../src/libs/modulegroups.c:1914
 msgid "preset name : "
-msgstr "Name der Voreinstellung:"
+msgstr "Name der Voreinstellung: "
 
 #: ../src/libs/modulegroups.c:1916
 msgid "preset name"
@@ -17753,7 +17784,7 @@ msgstr "Erzeuge ein Duplikat des Bildes, bevor der Stil angewendet wird."
 #. create
 #: ../src/libs/styles.c:687
 msgid "create..."
-msgstr "erzeugen"
+msgstr "erzeugen…"
 
 #: ../src/libs/styles.c:687
 msgid "create styles from history stack of selected images"
@@ -17762,7 +17793,7 @@ msgstr "Stile aus den Verlaufsstapeln ausgewählter Bilder erzeugen"
 #. edit
 #: ../src/libs/styles.c:692
 msgid "edit..."
-msgstr "bearbeiten"
+msgstr "bearbeiten…"
 
 #: ../src/libs/styles.c:692
 msgid "edit the selected styles in list above"
@@ -17777,7 +17808,7 @@ msgstr "in Liste ausgewählte Stile löschen"
 #: ../src/libs/styles.c:702 ../src/libs/tagging.c:2808
 msgctxt "verb"
 msgid "import..."
-msgstr "importieren"
+msgstr "importieren…"
 
 #: ../src/libs/styles.c:702
 msgid "import styles from a style files"
@@ -17836,7 +17867,7 @@ msgstr "Tag löschen?"
 #: ../src/libs/tagging.c:1628
 #, c-format
 msgid "tag: %s "
-msgstr "Tag: %s"
+msgstr "Tag: %s "
 
 # korrekte Schreibweise nach Duden = das Tag
 #: ../src/libs/tagging.c:1342
@@ -17849,7 +17880,7 @@ msgid_plural ""
 "%d images are assigned this tag!"
 msgstr[0] ""
 "Soll das Tag „%s“ wirklich gelöscht werden?\n"
-"%d Bild ist dieses Tag zugewiesen."
+"%d Bild ist dieses Tag zugewiesen!"
 msgstr[1] ""
 "Soll das Tag „%s“ wirklich gelöscht werden?\n"
 "%d Bildern ist dieses Tag zugewiesen."
@@ -17875,7 +17906,7 @@ msgstr[1] "<u>%d</u> Tags werden gelöscht."
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
-msgstr[0] "<u>%d</u> Bild wird aktualisiert"
+msgstr[0] "<u>%d</u> Bild wird aktualisiert "
 msgstr[1] "<u>%d</u> Bilder werden aktualisiert"
 
 #: ../src/libs/tagging.c:1460
@@ -17907,7 +17938,7 @@ msgstr "Synonyme: "
 #: ../src/libs/tagging.c:1550 ../src/libs/tagging.c:1694
 #: ../src/libs/tagging.c:1880
 msgid "empty tag is not allowed, aborting"
-msgstr "Leeres Tag ist nicht erlaubt. Abbruch."
+msgstr "Leeres Tag ist nicht erlaubt. Abbruch"
 
 #: ../src/libs/tagging.c:1561
 msgid "tag name already exists. aborting."
@@ -17965,15 +17996,15 @@ msgstr "Tag löschen"
 
 #: ../src/libs/tagging.c:2046
 msgid "create tag..."
-msgstr "Tag erstellen"
+msgstr "Tag erstellen…"
 
 #: ../src/libs/tagging.c:2050
 msgid "edit tag..."
-msgstr "Tag bearbeiten"
+msgstr "Tag bearbeiten…"
 
 #: ../src/libs/tagging.c:2059
 msgid "rename path..."
-msgstr "Pfad umbenennen"
+msgstr "Pfad umbenennen…"
 
 #: ../src/libs/tagging.c:2066
 msgid "copy to entry"
@@ -18040,7 +18071,7 @@ msgstr ""
 "angefügte Tags,\n"
 "Doppelklick zum Entfernen\n"
 "Rechtsklick für andere Aktionen des ausgewählten Tag,\n"
-"Strg-Mausrad, um die Größe des Fensters zu ändern."
+"Strg-Mausrad, um die Größe des Fensters zu ändern"
 
 #: ../src/libs/tagging.c:2680
 msgid "attach"
@@ -18088,7 +18119,7 @@ msgstr ""
 "Tag-Verzeichnis,\n"
 "Duppelklick für hinzufügen,\n"
 "Rechtsklick für andere Aktionen des ausgewählten Tag,\n"
-"Strg+Mausrad, um die Größe des Fensters zu ändern."
+"Strg+Mausrad, um die Größe des Fensters zu ändern"
 
 #: ../src/libs/tagging.c:2804
 msgid ""
@@ -18105,7 +18136,7 @@ msgstr "Tags aus einer Lightroom-Stichwortdatei importieren"
 #: ../src/libs/tagging.c:2812
 msgctxt "verb"
 msgid "export..."
-msgstr "exportieren"
+msgstr "exportieren…"
 
 #: ../src/libs/tagging.c:2812
 msgid "export all tags to a Lightroom keyword file"
@@ -18197,7 +18228,7 @@ msgstr "Und alle, die frühere Releases möglich gemacht haben"
 
 #: ../src/libs/tools/darktable.c:300
 msgid "and..."
-msgstr "und"
+msgstr "und…"
 
 #: ../src/libs/tools/darktable.c:302
 msgid "translator-credits"
@@ -20706,9 +20737,6 @@ msgstr "Aktion"
 
 #~ msgid "factor of "
 #~ msgstr "Faktor für "
-
-#~ msgid "film stock"
-#~ msgstr "Filmmaterial"
 
 #~ msgid "D max"
 #~ msgstr "D max"
