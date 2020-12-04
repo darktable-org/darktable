@@ -200,7 +200,7 @@ static gint _sort_by_path(gconstpointer a, gconstpointer b)
   const dt_map_location_t *tuple_a = (const dt_map_location_t *)a;
   const dt_map_location_t *tuple_b = (const dt_map_location_t *)b;
 
-  return g_ascii_strcasecmp(tuple_a->tag, tuple_b->tag);
+  return g_strcmp0(tuple_a->tag, tuple_b->tag);
 }
 
 // sort the tag list considering the '|' character

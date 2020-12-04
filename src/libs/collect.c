@@ -1278,7 +1278,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         g_free(name_folded_slash);
       }
       else
-        collate_key = tag_collate_key(name_folded);
+        collate_key = tag_collate_key(name);
 
       g_free(name_folded);
       name_key_tuple_t *tuple = (name_key_tuple_t *)malloc(sizeof(name_key_tuple_t));
@@ -1302,8 +1302,13 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       char *name = tuple->name;
       const int count = tuple->count;
       if(name == NULL) continue; // safeguard against degenerated db entries
-
-      if(property == DT_COLLECTION_PROP_TAG && strchr(name, '|') == 0 && (last_tokens_length == 0 || strcmp(name, *last_tokens)))
+      // this is just for tags
+      char *next_name = g_strdup(names->next ? ((name_key_tuple_t *)names->next->data)->name : "");
+      if(strlen(next_name) >= strlen(name) + 1 && next_name[strlen(name)] == '|')
+        next_name[strlen(name)] = '\0';
+        
+      if(property == DT_COLLECTION_PROP_TAG && strchr(name, '|') == NULL
+        && (g_strcmp0(next_name, name)))
       {
         /* add uncategorized root iter if not exists */
         if(!uncategorized.stamp)
@@ -1412,6 +1417,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           last_tokens_length = tokens_length;
         }
       }
+      g_free(next_name);
     }
     g_list_free_full(sorted_names, free_tuple);
 

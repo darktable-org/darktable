@@ -1580,23 +1580,35 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       g_list_free(lists);
       query = dt_util_dstrcat(query, ")");
       break;
-    case DT_COLLECTION_PROP_TAG: // tag
-    
-      /* shift-click adds an asterix * to include items in and under this hierarchy without using a wildcard % which also would include similar named items */
-      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*')) 
-      {
-        escaped_text[escaped_length-1] = '\0';
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
-                              escaped_text, escaped_text);
-      /* default */
-      } else
-      {
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                     "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
-                              escaped_text);
-      }
 
+    case DT_COLLECTION_PROP_TAG: // tag
+      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+      {
+        // shift-click adds an asterix * to include items in and under this hierarchy
+        // without using a wildcard % which also would include similar named items
+        escaped_text[escaped_length-1] = '\0';
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+                                       "JOIN data.tags AS b ON a.tagid = b.id "
+                                       "WHERE name LIKE '%s'"
+                                       "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
+                                escaped_text, escaped_text, escaped_text);
+      }
+      else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+      {
+        // ends with % or |%
+        escaped_text[escaped_length-1] = '\0';
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+                                       "JOIN data.tags AS b ON a.tagid = b.id "
+                                       "WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s'))",
+                                escaped_text, escaped_text);
+      }
+      else
+      {
+        // default
+        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+                                     "data.tags AS b ON a.tagid = b.id WHERE name = '%s'))",
+                                escaped_text);
+      }
       break;
 
     case DT_COLLECTION_PROP_LENS: // lens
