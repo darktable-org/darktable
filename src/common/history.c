@@ -161,6 +161,9 @@ int dt_history_load_and_apply(const int imgid, gchar *filename, int history_only
 
     if(dt_exif_xmp_read(img, filename, history_only))
     {
+      dt_image_cache_write_release(darktable.image_cache, img,
+                                   // ugly but if not history_only => called from crawler - do not write the xmp
+                                   history_only ? DT_IMAGE_CACHE_SAFE : DT_IMAGE_CACHE_RELAXED);
       dt_unlock_image(imgid);
       return 1;
     }
