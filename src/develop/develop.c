@@ -1102,7 +1102,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
         dt_iop_gui_init(module);
 
         /* add module to right panel */
-        dt_iop_gui_get_expander(module);
+        dt_iop_gui_set_expander(module);
         dt_iop_gui_set_expanded(module, TRUE, FALSE);
 
         dt_iop_reload_defaults(module);
