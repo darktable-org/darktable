@@ -23,8 +23,8 @@
 // Includes wrappers around fwrite() and _write() where the wrappers
 // are resource limit aware.
 //
-//
 ///////////////////////////////////////////////////////////////
+
 #include <windows.h>
 #include "rlimit.h"
 #include <io.h>
@@ -36,8 +36,6 @@ static BOOL rInitialized = FALSE; // Indicates if the rlimit structure has been 
 static rlimit_t rlimits[RLIM_NLIMITS]; // Resource limits array on element for each limit we
                                        // keep track of.
 
-
-
 ///////////////////////////////////////////////////////////////
 //
 // InitializeRlimits()
@@ -47,7 +45,6 @@ static rlimit_t rlimits[RLIM_NLIMITS]; // Resource limits array on element for e
 ///////////////////////////////////////////////////////////////
 void InitializeRlimits()
 {
-  int i; // Index variable
   //
   // Initialize the rlimits structure with 0 for the current value,
   // and 2^32 - 1 for the max.  This function could be modified
@@ -58,7 +55,7 @@ void InitializeRlimits()
   //     ...other...
   // which would then be used to populate the rlimits structure.
   //
-  for(i = 0; i < RLIM_NLIMITS; i++)
+  for(int i = 0; i < RLIM_NLIMITS; i++)
   {
     rlimits[i].rlim_cur = RLIM_INFINITY;
     rlimits[i].rlim_max = 0xffffffff;
@@ -77,8 +74,6 @@ void InitializeRlimits()
 ///////////////////////////////////////////////////////////////int
 int getrlimit(int resource, struct rlimit *rlp)
 {
-  int iRet = 0; // return value - assume success
-
   //
   // If we have not initialized the limits yet, do so now
   //
@@ -87,17 +82,15 @@ int getrlimit(int resource, struct rlimit *rlp)
   //
   // Check to make sure the resource value is within range
   //
-  if((resource < 0) || (resource >= RLIM_NLIMITS))
-  {
-    iRet = EINVAL;
-  }
+  if(resource < 0 || resource >= RLIM_NLIMITS)
+    return EINVAL;
 
   //
   // Return both rlim_cur and rlim_max
   //
   *rlp = rlimits[resource];
 
-  return iRet;
+  return 0; // success
 }
 
 /////////////////////////////////////////////////////////////////
@@ -111,16 +104,12 @@ int getrlimit(int resource, struct rlimit *rlp)
 ///////////////////////////////////////////////////////////////int
 int setrlimit(int resource, const struct rlimit *rlp)
 {
-  int iRet = 0; // return value - assume success
-
   if(!rInitialized) InitializeRlimits();
   //
   // Check to make sure the resource value is within range
   //
-  if((resource < 0) || (resource >= RLIM_NLIMITS))
-  {
-    iRet = EINVAL;
-  }
+  if(resource < 0 || resource >= RLIM_NLIMITS)
+    return EINVAL;
   //
   // Only change the current limit - do not change the max limit.
   // We could pick some NT privilege, which if the user held, we
@@ -129,7 +118,7 @@ int setrlimit(int resource, const struct rlimit *rlp)
   if(rlp->rlim_cur < rlimits[resource].rlim_max)
     rlimits[resource].rlim_cur = rlp->rlim_cur;
   else
-    iRet = EINVAL;
+    return EINVAL;
   //
   // We should not let the user set the max value.  However,
   // since currently there is no defined source for initial
@@ -137,91 +126,74 @@ int setrlimit(int resource, const struct rlimit *rlp)
   //
   rlimits[resource].rlim_max = rlp->rlim_max;
 
-  return iRet;
+  return 0;  // success
 }
 
 /////////////////////////////////////////////////////////////////
 // Wrap the real fwrite() with this rfwrite() function, which is
 // resource limit aware.
 //
-//
 ///////////////////////////////////////////////////////////////size_t
 size_t rfwrite(const void *buffer, size_t size, size_t count, FILE *stream)
 {
-  long position;
-  size_t written;
-  __int64 liByteCount, liPosition;
   //
   // Convert the count to a large integer (64 bit integer)
   //
-  liByteCount = (__int64)count;
+  const __int64 liByteCount = (__int64)count;
 
   //
   // Get the current file position
   //
-  position = ftell(stream);
-  liPosition = (__int64)position;
+  const __int64 liPosition = (__int64)ftell(stream);
 
   //
   // Check to make sure the write will not exceed the RLIMIT_FSIZE limit.
   //
-  if((liPosition + liByteCount) > rlimits[RLIMIT_FSIZE].rlim_cur)
+  if(liPosition + liByteCount > rlimits[RLIMIT_FSIZE].rlim_cur)
   {
     //
     // report an error
     //
-    written = 0;
+    return 0;
   }
-  else
-  {
-    //
-    // Do the actual write the user requested
-    //
-    written = fwrite(buffer, size, count, stream);
-  }
-  return written;
+  //
+  // Do the actual write the user requested
+  //
+  return fwrite(buffer, size, count, stream);
 }
 
 /////////////////////////////////////////////////////////////////
 // Wrap the real _write() function with the _rwrite() function
 // which is resource aware.
 //
-//
 ///////////////////////////////////////////////////////////////int
 int _rwrite(int handle, const void *buffer, unsigned int count)
 {
-  long position;
-  DWORD dwWritten;
-  int64_t liByteCount, liPosition;
   //
   // Convert the count to a large integer
   //
-  liByteCount = (__int64)count;
+  const int64_t liByteCount = (__int64)count;
 
   //
   // Get the Current file position
   //
-  position = _tell(handle);
-  liPosition = (__int64)position;
+  const int64_t liPosition = (__int64)_tell(handle);
 
   //
   // Check to make sure the write will not exceed the RLIMIT_FSIZE limit.
   //
-  if((liPosition + liByteCount) > rlimits[RLIMIT_FSIZE].rlim_cur)
+  if(liPosition + liByteCount > rlimits[RLIMIT_FSIZE].rlim_cur)
   {
     //
     // report an error
     //
-    dwWritten = 0;
+    return 0;
   }
-  else
-  {
-    //
-    // Do the actual write the user requested
-    //
-    dwWritten = _write(handle, buffer, count);
-  }
-  return dwWritten;
+
+  //
+  // Do the actual write the user requested
+  //
+  return _write(handle, buffer, count);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
