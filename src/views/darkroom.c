@@ -946,7 +946,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
         module->gui_init(module);
 
         /* add module to right panel */
-        dt_iop_gui_get_expander(module);
+        dt_iop_gui_set_expander(module);
         dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
       }
@@ -2932,7 +2932,7 @@ void enter(dt_view_t *self)
       dt_iop_gui_init(module);
 
       /* add module to right panel */
-      dt_iop_gui_get_expander(module);
+      dt_iop_gui_set_expander(module);
 
       snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
       if(dt_conf_get_bool(option))

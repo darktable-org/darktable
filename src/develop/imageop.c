@@ -920,7 +920,7 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     dt_iop_gui_init(module);
 
     /* add module to right panel */
-    dt_iop_gui_get_expander(module);
+    dt_iop_gui_set_expander(module);
     GValue gv = { 0, { { 0 } } };
     g_value_init(&gv, G_TYPE_INT);
     gtk_container_child_get_property(
@@ -2435,7 +2435,7 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
   return TRUE;
 }
 
-GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
+void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
   char tooltip[512];
 
@@ -2568,8 +2568,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
 
   dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
   dt_iop_show_hide_header_buttons(header, NULL, FALSE, FALSE);
-
-  return module->expander;
 }
 
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)
