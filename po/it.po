@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-05 14:34+0100\n"
+"PO-Revision-Date: 2020-12-05 15:08+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
@@ -11168,10 +11168,8 @@ msgstr ""
 "Necessario solo per le immagini raw"
 
 #: ../src/iop/denoiseprofile.c:621
-#, fuzzy
-#| msgid "wavelets auto"
 msgid "wavelets: chroma only"
-msgstr "Wavelets automatico"
+msgstr "Wavelets: solo colore"
 
 #: ../src/iop/denoiseprofile.c:627
 msgid "denoise (profiled)"
@@ -11179,7 +11177,7 @@ msgstr "riduzione rumore (profilato)"
 
 #: ../src/iop/denoiseprofile.c:633
 msgid "denoise using noise statistics profiled on sensors."
-msgstr ""
+msgstr "Rimuovi rumore utilizzando profili statistici per sensore."
 
 #: ../src/iop/denoiseprofile.c:2994
 #, c-format
@@ -11429,6 +11427,8 @@ msgid ""
 "reduce banding and posterization effects in output JPEGs by adding random "
 "noise"
 msgstr ""
+"Riduce l'effetto a strisce e la posterizzazione quando si esporta in JPEG "
+"aggiungendo rumore a caso"
 
 #. add the preset.
 #: ../src/iop/dither.c:138
@@ -11459,6 +11459,8 @@ msgstr "Equalizzatore (obsoleto)"
 msgid ""
 "this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
+"Questo modulo è deprecato. E' consigliabile usare l'Equalizzatore di "
+"contrasto"
 
 #: ../src/iop/equalizer.c:305
 msgid "sharpen (strong)"
@@ -11492,6 +11494,10 @@ msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
 msgstr ""
+"Ripristina l'esposizione dello scatto come se tu fossi ancora sulla "
+"fotocamera\n"
+"aggiungendo luminosità in modo sicuro per i colori (simile ad aumentare il "
+"valore ISO)"
 
 #: ../src/iop/exposure.c:259
 msgid "magic lantern defaults"
@@ -11562,7 +11568,7 @@ msgstr ""
 
 #: ../src/iop/filmic.c:178 ../src/iop/globaltonemap.c:108
 msgid "this module is deprecated. better use filmic rgb module instead."
-msgstr ""
+msgstr "questo modulo è deprecato. E' consigliabile utilizzare filmic rgb"
 
 #: ../src/iop/filmic.c:305
 msgid "09 EV (low-key)"
@@ -11826,6 +11832,8 @@ msgstr "filmic rgb"
 #: ../src/iop/filmicrgb.c:322
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
+"Mappatura tonale | curve | trasforma vista | contrasto | saturazione | "
+"alteluci"
 
 #: ../src/iop/filmicrgb.c:327
 msgid ""
@@ -11833,6 +11841,10 @@ msgid ""
 "for display on SDR screens and paper prints\n"
 "while preventing clipping in non-destructive ways"
 msgstr ""
+"Applica una trasformazione per preparare la coda di sviluppo riferita alla "
+"scena\n"
+"per essere visualizzata su schermi SDR e stampe su carta\n"
+"prevenendo tagli in modo non distruttivo."
 
 #: ../src/iop/filmicrgb.c:1118
 msgid ""
@@ -11847,61 +11859,45 @@ msgid "filmic works only on RGB input"
 msgstr "filmic opera solamente su input in RGB"
 
 #: ../src/iop/filmicrgb.c:1594
-#, fuzzy
-#| msgid ""
-#| "filmic highlights reconstruction failed to allocate memory, check your "
-#| "RAM settings"
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
-"La ricostruzione delle alteluci di filmic non è riuscita ad allocare "
-"memoria. Verificate le impostazioni della RAM"
+"La ricostruzione delle alte luci di filmic non è riuscita ad allocare "
+"memoria sulla GPU"
 
 #: ../src/iop/filmicrgb.c:2715
-#, fuzzy
-#| msgid "look"
 msgid "look only"
-msgstr "Aspetto"
+msgstr "Solo aspetto"
 
 #: ../src/iop/filmicrgb.c:2717
-#, fuzzy
-#| msgid "color mapping"
 msgid "look + mapping (lin)"
-msgstr "mappatura dei colori"
+msgstr "Aspetto e mappatura (lin)"
 
 #: ../src/iop/filmicrgb.c:2719
-#, fuzzy
-#| msgid "color mapping"
 msgid "look + mapping (log)"
-msgstr "mappatura dei colori"
+msgstr "Aspetto e mappatura (log)"
 
 #: ../src/iop/filmicrgb.c:2721
-#, fuzzy
-#| msgid "dynamic range scaling"
 msgid "dynamic range mapping"
-msgstr "Scala gamma dinamica"
+msgstr "Mappatura gamma dinamica"
 
 #: ../src/iop/filmicrgb.c:3051
 #, c-format
 msgid "(%.0f %%)"
-msgstr ""
+msgstr "(%.0f %%)"
 
 #: ../src/iop/filmicrgb.c:3067
-#, fuzzy, no-c-format
-#| msgid "display"
+#, no-c-format
 msgid "% display"
-msgstr "Visualizza"
+msgstr "% visualizza"
 
 #: ../src/iop/filmicrgb.c:3078
-#, fuzzy
-#| msgid "scene"
 msgid "EV scene"
-msgstr "Scena"
+msgstr "EV scena"
 
 #: ../src/iop/filmicrgb.c:3082
-#, fuzzy, no-c-format
-#| msgid "camera"
+#, no-c-format
 msgid "% camera"
-msgstr "Fotocamera"
+msgstr "% Fotocamera"
 
 #. Page DISPLAY
 #: ../src/iop/filmicrgb.c:3118 ../src/iop/filmicrgb.c:3795
@@ -11911,7 +11907,7 @@ msgstr "Visualizza"
 #. axis legend
 #: ../src/iop/filmicrgb.c:3127
 msgid "(%)"
-msgstr ""
+msgstr "(%)"
 
 #. Page SCENE
 #: ../src/iop/filmicrgb.c:3136 ../src/iop/filmicrgb.c:3631
@@ -11921,28 +11917,22 @@ msgstr "Scena"
 #. axis legend
 #: ../src/iop/filmicrgb.c:3145
 msgid "(EV)"
-msgstr ""
+msgstr "(EV)"
 
 #. we are over the graph area
 #: ../src/iop/filmicrgb.c:3574
-#, fuzzy
-#| msgid ""
-#| "read-only graph, use the parameters below to set the nodes\n"
-#| "the bright curve is the filmic tone mapping curve\n"
-#| "the dark curve is the desaturation curve\n"
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve."
 msgstr ""
-"Grafico di sola lettura, utilizza i parametri qui sotto per impostare i "
-"nodi\n"
-"La curva luminosa è la curva di mappatura dei toni di Filmic\n"
-"La curva scura è la curva di desaturazione\n"
+"Utilizza i parametri qui sotto per impostare i nodi\n"
+"La curva luminosa è la curva di mappatura dei toni di filmic\n"
+"La curva scura è la curva di desaturazione"
 
 #: ../src/iop/filmicrgb.c:3580
 msgid "toggle axis labels and values display."
-msgstr ""
+msgstr "Inverti etichette assi e valori visualizzati"
 
 #: ../src/iop/filmicrgb.c:3584
 msgid ""
@@ -11951,6 +11941,10 @@ msgid ""
 "right click: cycle backward.\n"
 "double click: reset to look view."
 msgstr ""
+"Cambia ciclicamente le visualizzazioni del grafico.\n"
+"Click sinistro: vai avanti.\n"
+"Click destro: vai indietro.\n"
+"Doppio click: azzera la visualizzazione."
 
 #: ../src/iop/filmicrgb.c:3638
 msgid ""
@@ -12261,10 +12255,8 @@ msgid "scale into final size"
 msgstr "Scala nella dimensione finale"
 
 #: ../src/iop/flip.c:100
-#, fuzzy
-#| msgid "rotate by  90 degrees"
 msgid "rotate image by step of 90 degrees"
-msgstr "Ruota di 90° in senso orario"
+msgstr "Ruota in step di 90°"
 
 #: ../src/iop/flip.c:405 ../src/iop/flip.c:407
 msgid "autodetect"
@@ -12393,7 +12385,7 @@ msgstr "filtro graduato"
 
 #: ../src/iop/graduatednd.c:152
 msgid "simulate an optical graduated neutral density filter"
-msgstr ""
+msgstr "Simula un filtro neutro graduato"
 
 #: ../src/iop/graduatednd.c:1150
 msgid "the density in EV for the filter"
@@ -12446,7 +12438,7 @@ msgstr "grana"
 
 #: ../src/iop/grain.c:425
 msgid "simulate silver grains from film"
-msgstr ""
+msgstr "Simula i grani di argento della pellicola"
 
 #: ../src/iop/grain.c:579
 #, c-format
@@ -12477,11 +12469,11 @@ msgstr "rimozione foschia"
 
 #: ../src/iop/hazeremoval.c:106
 msgid "dehaze|defog|smoke|smog"
-msgstr ""
+msgstr "Rimuovi foschia | nebbia | fumo | smog"
 
 #: ../src/iop/hazeremoval.c:111
 msgid "remove fog and atmospheric hazing from pictures"
-msgstr ""
+msgstr "Rimuove nebbia e foschia dalla scena"
 
 #: ../src/iop/hazeremoval.c:206
 msgid "amount of haze reduction"
@@ -12501,13 +12493,11 @@ msgstr "recupero alteluci"
 
 #: ../src/iop/highlights.c:86
 msgid "avoid magenta highlights and try to recover highlights colors"
-msgstr ""
+msgstr "Cancella il magenta dalle alte luci e tenta di recuperare i colori"
 
 #: ../src/iop/highlights.c:89 ../src/iop/hotpixels.c:74
-#, fuzzy
-#| msgid "reconstruct in LCh"
 msgid "reconstruction, raw"
-msgstr "Ricostruisci in LCh"
+msgstr "Ricostruzione, raw"
 
 #: ../src/iop/highlights.c:1036
 msgid "highlight reconstruction method"
@@ -12527,22 +12517,19 @@ msgstr "passa-alto"
 
 #: ../src/iop/highpass.c:83
 msgid "isolate high frequencies in the image"
-msgstr ""
+msgstr "Isola le alte frequenze nell'immagine"
 
 #: ../src/iop/highpass.c:85 ../src/iop/lowpass.c:136
 msgid "linear or non-linear, Lab, scene-referred"
-msgstr ""
+msgstr "Lineare o non-lineare, Lab, riferito alla scena"
 
 #: ../src/iop/highpass.c:86 ../src/iop/lowpass.c:137 ../src/iop/sharpen.c:98
 msgid "frequential, Lab"
-msgstr ""
+msgstr "Frequenziale, Lab"
 
 #: ../src/iop/highpass.c:87 ../src/iop/lowpass.c:138
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "scene-referred"
 msgid "special, Lab, scene-referred"
-msgstr "Riferito alla scena"
+msgstr "Speciale, Lab, riferito alla scena"
 
 #: ../src/iop/highpass.c:404
 msgid "sharpness"
@@ -12562,7 +12549,7 @@ msgstr "pixel bruciati"
 
 #: ../src/iop/hotpixels.c:71
 msgid "remove abnormally bright pixels by dampening them with neighbours"
-msgstr ""
+msgstr "Rimuove i pixel anormalmente luminosi mediando con quelli vicini"
 
 #: ../src/iop/hotpixels.c:354
 #, c-format
@@ -12598,20 +12585,15 @@ msgstr "inverti"
 
 #: ../src/iop/invert.c:115
 msgid "this module is deprecated. better use negadoctor module instead."
-msgstr ""
+msgstr "Questo modulo è deprecato. E' consigliabile usare Negadoctor"
 
 #: ../src/iop/invert.c:120
-#, fuzzy
-#| msgid "invert mask"
 msgid "invert film negatives"
-msgstr "Inverti la maschera"
+msgstr "Inverti negativi pellicola"
 
 #: ../src/iop/invert.c:122 ../src/iop/invert.c:124
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "display-referred"
 msgid "linear, raw, display-referred"
-msgstr "Riferito allo schermo"
+msgstr "Lineare, raw, riferito allo schermo"
 
 #: ../src/iop/invert.c:145 ../src/iop/negadoctor.c:825
 msgid "pick color of film material from image"
@@ -12636,20 +12618,16 @@ msgid "lens correction"
 msgstr "correzione obiettivo"
 
 #: ../src/iop/lens.cc:153
-#, fuzzy
-#| msgid "automatic chromatic aberration correction"
 msgid "vignette|chromatic aberrations|distortion"
-msgstr "Correzione automatica aberrazioni cromatiche"
+msgstr "Vignettatura | aberrazioni cromatiche | distorsione"
 
 #: ../src/iop/lens.cc:158
 msgid "correct lenses optical flaws"
-msgstr ""
+msgstr "Corregge i difetti ottici delle lenti"
 
 #: ../src/iop/lens.cc:161
-#, fuzzy
-#| msgid "color reconstruction"
 msgid "geometric and reconstruction, RGB"
-msgstr "ricostruzione colore"
+msgstr "RGB geometrico e ricostruzione"
 
 #: ../src/iop/lens.cc:1558
 #, c-format
@@ -12706,7 +12684,7 @@ msgstr "Numero-f (apertura diaframma)"
 
 #: ../src/iop/lens.cc:1922
 msgid "d"
-msgstr "D"
+msgstr "d"
 
 #: ../src/iop/lens.cc:1923
 msgid "distance to subject"
@@ -12737,9 +12715,6 @@ msgid "only vignetting"
 msgstr "Solo vignettatura"
 
 #: ../src/iop/lens.cc:2279
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "camera model"
 msgid "camera model"
 msgstr "Modello fotocamera"
 
@@ -12839,10 +12814,8 @@ msgid "levels"
 msgstr "livelli"
 
 #: ../src/iop/levels.c:131
-#, fuzzy
-#| msgid "black white and skin tones"
 msgid "adjust black, white and mid-gray points"
-msgstr "Bianco nero e toni della pelle"
+msgstr "Regola i punti di nero, bianco e grigio medio"
 
 #: ../src/iop/levels.c:630 ../src/iop/rgblevels.c:956
 msgid ""
@@ -12892,7 +12865,7 @@ msgstr "fluidifica"
 
 #: ../src/iop/liquify.c:297
 msgid "distort parts of the image"
-msgstr ""
+msgstr "distorce parte dell'immagine"
 
 #: ../src/iop/liquify.c:3460
 msgid ""
@@ -12944,48 +12917,32 @@ msgid "warps|nodes count:"
 msgstr "Numero di forme|nodi"
 
 #: ../src/iop/liquify.c:3530
-#, fuzzy
-#| msgid "node tool: edit, add and delete nodes"
 msgid "edit, add and delete nodes"
-msgstr "Strumenti nodo: modifica, aggiunge ed elimina nodi"
+msgstr "Modifica, aggiunge ed elimina nodi"
 
 #: ../src/iop/liquify.c:3534
-#, fuzzy
-#| msgid "rgb curve"
 msgid "draw curves"
-msgstr "curva rgb"
+msgstr "Disegna curve"
 
 #: ../src/iop/liquify.c:3534
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "multiple GPUs"
 msgid "draw multiple curves"
-msgstr "GPUs multiple"
+msgstr "Disegna curve multiple"
 
 #: ../src/iop/liquify.c:3538
-#, fuzzy
-#| msgid "vertical lines"
 msgid "draw lines"
-msgstr "Linee verticali"
+msgstr "Disegna linee"
 
 #: ../src/iop/liquify.c:3538
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "multiple GPUs"
 msgid "draw multiple lines"
-msgstr "GPUs multiple"
+msgstr "Disegna linee multiple"
 
 #: ../src/iop/liquify.c:3542
-#, fuzzy
-#| msgid "Sample points"
 msgid "draw points"
-msgstr "Points d'échantillonnage"
+msgstr "Disegna punti"
 
 #: ../src/iop/liquify.c:3542
-#, fuzzy
-#| msgid "Sample points"
 msgid "draw multiple points"
-msgstr "Points d'échantillonnage"
+msgstr "Disegna punti multipli"
 
 #: ../src/iop/liquify.c:3546
 msgid ""
@@ -13034,16 +12991,12 @@ msgid "lowlight vision"
 msgstr "visione luminosità scarsa"
 
 #: ../src/iop/lowlight.c:91
-#, fuzzy
-#| msgid "night vision"
 msgid "simulate human night vision"
-msgstr "Visione notturna"
+msgstr "Simula la visione notturna umana"
 
 #: ../src/iop/lowlight.c:94
-#, fuzzy
-#| msgid "linear XYZ"
 msgid "linear, XYZ"
-msgstr "XYZ lineare "
+msgstr "XYZ, lineare"
 
 #: ../src/iop/lowlight.c:342
 msgid "indoor bright"
@@ -13103,7 +13056,7 @@ msgstr "passa-basso"
 
 #: ../src/iop/lowpass.c:134
 msgid "isolate low frequencies in the image"
-msgstr ""
+msgstr "Isola le basse frequenze nell'immagine"
 
 #: ../src/iop/lowpass.c:567
 msgid "local contrast mask"
@@ -13135,11 +13088,11 @@ msgstr "lut 3d"
 
 #: ../src/iop/lut3d.c:137
 msgid "perform color space corrections and apply look"
-msgstr ""
+msgstr "Esegue una correzione dello spazio colore e applica uno stile"
 
 #: ../src/iop/lut3d.c:140
 msgid "defined by profile, RGB"
-msgstr ""
+msgstr "Definito dal profilo, RGB"
 
 #: ../src/iop/lut3d.c:465
 msgid "error allocating buffer for gmz lut"
@@ -13287,11 +13240,6 @@ msgstr ""
 "Principali/Varie prima di selezionare il file lut"
 
 #: ../src/iop/lut3d.c:1686
-#, fuzzy
-#| msgid ""
-#| "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must "
-#| "be set in preferences/core options/miscellaneous before choosing the lut "
-#| "file"
 msgid ""
 "select a png (haldclut), a cube or a 3dl file CAUTION: 3D lut folder must be "
 "set in preferences/processing before choosing the lut file"
@@ -13343,6 +13291,8 @@ msgstr "Gestore maschere"
 #: ../src/iop/monochrome.c:97
 msgid "quickly convert an image to black & white using a variable color filter"
 msgstr ""
+"Converte velocemente un'immagine in bianco e nero utilizzando un filtro "
+"colorato"
 
 #: ../src/iop/monochrome.c:127
 msgid "red filter"
@@ -13363,11 +13313,11 @@ msgstr "negadoctor"
 
 #: ../src/iop/negadoctor.c:150
 msgid "film|invert|negative|scan"
-msgstr ""
+msgstr "Pellicola | inverti | negativo | scanner"
 
 #: ../src/iop/negadoctor.c:155
 msgid "invert film negative scans and simulate printing on paper"
-msgstr ""
+msgstr "Inverte i negativi digitalizzati per simulare la stampa su carta"
 
 #: ../src/iop/negadoctor.c:375
 msgid "color film"
@@ -13584,10 +13534,8 @@ msgid "toggle on or off the color controls"
 msgstr "Nascondi controlli colore"
 
 #: ../src/iop/nlmeans.c:88
-#, fuzzy
-#| msgid "chroma denoise"
 msgid "astrophoto denoise"
-msgstr "réduction du bruit de couleur"
+msgstr "Rimuovi rumore nelle astro-fotografie"
 
 #: ../src/iop/nlmeans.c:93
 msgid "denoise (non-local means)"
@@ -13596,6 +13544,7 @@ msgstr "riduzione rumore (non-local means)"
 #: ../src/iop/nlmeans.c:98
 msgid "apply a poisson noise removal best suited for astrophotography"
 msgstr ""
+"Rimuovi il rumore con sistema Poisson (consigliato per le astro-fotografie)"
 
 #: ../src/iop/nlmeans.c:524
 msgid "radius of the patches to match"
@@ -13620,6 +13569,7 @@ msgstr "correzione profilo di ingresso"
 #: ../src/iop/profile_gamma.c:99
 msgid "correct input color profiles meant to be applied on non-linear RGB"
 msgstr ""
+"Corregge i profili colore di input da applicare in modo RGB non-lineare"
 
 #: ../src/iop/profile_gamma.c:134
 msgid "16 EV dynamic range (generic)"
@@ -13695,7 +13645,7 @@ msgstr "riduzione rumore raw"
 
 #: ../src/iop/rawdenoise.c:127
 msgid "denoise the raw picture early in the pipeline"
-msgstr ""
+msgstr "Rimuove il rumore dal raw all'inizio della coda di sviluppo"
 
 #: ../src/iop/rawdenoise.c:1102
 msgid ""
@@ -13721,34 +13671,29 @@ msgid ""
 "\n"
 "you should not touch values here !"
 msgstr ""
+"Modulo interno che regola specifiche tecniche per i sensori raw.\n"
+"\n"
+"Non dovreste alterare nessun valore!"
 
 #: ../src/iop/rawprepare.c:119
 msgid "passthrough"
 msgstr "Passaggio"
 
 #: ../src/iop/rawprepare.c:745
-#, fuzzy
-#| msgid "black level %i"
 msgid "black level 0"
-msgstr "Livello di nero %i"
+msgstr "Livello di nero 0"
 
 #: ../src/iop/rawprepare.c:746
-#, fuzzy
-#| msgid "black level %i"
 msgid "black level 1"
-msgstr "Livello di nero %i"
+msgstr "Livello di nero 1"
 
 #: ../src/iop/rawprepare.c:747
-#, fuzzy
-#| msgid "black level %i"
 msgid "black level 2"
-msgstr "Livello di nero %i"
+msgstr "Livello di nero 2"
 
 #: ../src/iop/rawprepare.c:748
-#, fuzzy
-#| msgid "black level %i"
 msgid "black level 3"
-msgstr "Livello di nero %i"
+msgstr "Livello di nero 3"
 
 #: ../src/iop/rawprepare.c:775
 msgid "crop from left border"
@@ -13789,6 +13734,8 @@ msgstr "luce di riempimento"
 #: ../src/iop/relight.c:99 ../src/iop/zonesystem.c:128
 msgid "this module is deprecated. better use tone equalizer module instead."
 msgstr ""
+"Questo modulo è deprecato. E' consigliabile utilizzare l'Equalizzatore di "
+"Tono"
 
 #: ../src/iop/relight.c:272
 msgid "the fill-light in EV"
