@@ -5,15 +5,16 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-05 15:08+0100\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"PO-Revision-Date: 2020-12-05 23:07+0100\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Lokalize 20.08.2\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -350,11 +351,11 @@ msgstr "Personalizzato"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:497
 msgid "(AI) detect from image surfaces..."
-msgstr ""
+msgstr "(AI) rileva dalle superfici delle immagini..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:498
 msgid "(AI) detect from image edges..."
-msgstr ""
+msgstr "(AI) rileva dai margini dell'immagine..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
 #: ../src/iop/channelmixerrgb.c:1949
@@ -368,47 +369,47 @@ msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:505
 msgid "F2 (Cool White 4230 K) – medium CRI"
-msgstr ""
+msgstr "F2 (Bianco freddo 4230 K) – CRI medio"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:506
 msgid "F3 (White 3450 K) – medium CRI"
-msgstr ""
+msgstr "F3 (Bianco 3450 K) – CRI medio"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:507
 msgid "F4 (Warm White 2940 K) – medium CRI"
-msgstr ""
+msgstr "F4 (Bianco caldo 2940 K) – CRI medio"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:508
 msgid "F5 (Daylight 6350 K) – medium CRI"
-msgstr ""
+msgstr "F5 (Luce diurna 6350 K) – CRI medio"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:509
 msgid "F6 (Lite White 4150 K) – medium CRI"
-msgstr ""
+msgstr "F6 (Bianco chiaro 4150 K) – CRI medio"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:510
 msgid "F7 (D65 simulator 6500 K) – high CRI"
-msgstr ""
+msgstr "F7 (Simulator D65  6500 K) – CRI elevato"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:511
 msgid "F8 (D50 simulator 5000 K) – high CRI"
-msgstr ""
+msgstr "F8 (Simulator D50  5000 K) – CRI elevato"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:512
 msgid "F9 (Cool White Deluxe 4150 K) – high CRI"
-msgstr ""
+msgstr "F9 (Bianco freddo Deluxe 4150 K) – CRI elevato"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:513
 msgid "F10 (Tuned RGB 5000 K) – low CRI"
-msgstr ""
+msgstr "F10 (RGB regolato 5000 K) – CRI basso"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:514
 msgid "F11 (Tuned RGB 4000 K) – low CRI"
-msgstr ""
+msgstr "F11 (RGB regolato 4000 K) – CRI basso"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:515
 msgid "F12 (Tuned RGB 3000 K) – low CRI"
-msgstr ""
+msgstr "F12 (RGB regolato 3000 K) – CRI basso"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:520
 msgid "B1 (Blue 2733 K)"
@@ -432,7 +433,7 @@ msgstr "B5 (Blu 6598 K)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:525
 msgid "BH1 (Blue-Red hybrid 2851 K)"
-msgstr ""
+msgstr "BH1 (Blu-Rosso ibrido 2851 K)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:526
 msgid "RGB1 (RGB 2840 K)"
@@ -440,11 +441,11 @@ msgstr "RGB1 (RGB 2840 K)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:527
 msgid "V1 (Violet 2724 K)"
-msgstr ""
+msgstr "V1 (Violetto 2724 K)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:528
 msgid "V2 (Violet 4070 K)"
-msgstr ""
+msgstr "V2 (Violetto 4070 K)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:533
 msgid "linear Bradford (ICC v4)"
@@ -790,7 +791,6 @@ msgstr "Correzione imprecisione"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:155
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:320
-#, fuzzy
 #| msgctxt "accel"
 #| msgid "scattering"
 msgid "scattering"
@@ -1917,10 +1917,9 @@ msgstr ""
 "recente alla più vecchia"
 
 #: ../build/bin/preferences_gen.h:2931
-#, fuzzy
 #| msgid "deleting preset for obsolete module"
 msgid "hide built-in presets for utility modules"
-msgstr "Elimina preset per il modulo obsoleto"
+msgstr "Nascondi i preset incorporati per i moduli d'utilità"
 
 #: ../build/bin/preferences_gen.h:2942 ../build/bin/preferences_gen.h:2977
 #: ../build/bin/preferences_gen.h:3012 ../build/bin/preferences_gen.h:3047
@@ -1941,9 +1940,9 @@ msgstr "FALSO"
 #: ../build/bin/preferences_gen.h:2945
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
+"Nascondi i preset incorporati nei moduli di utilità nel menu dei preset."
 
 #: ../build/bin/preferences_gen.h:2966
-#, fuzzy
 #| msgid "use single-click in the collect panel"
 msgid "use single-click in the collect module"
 msgstr "Utilizza il click singolo nel pannello della collezione"
@@ -2101,10 +2100,9 @@ msgstr ""
 "processata utilizzando lo sviluppo in alta qualità (migliore ma più lento)"
 
 #: ../build/bin/preferences_gen.h:3313
-#, fuzzy
 #| msgid "delimiters for sizes categories"
 msgid "delimiters for size categories"
-msgstr "Delimitatori per le dimensioni delle categorie"
+msgstr "Delimitatori per le categorie di misura"
 
 #: ../build/bin/preferences_gen.h:3331
 #, fuzzy
@@ -2211,7 +2209,6 @@ msgstr ""
 "sull'accuratezza."
 
 #: ../build/bin/preferences_gen.h:3609
-#, fuzzy
 #| msgid "pattern for the image infos line"
 msgid "pattern for the image information line"
 msgstr "Schema del testo informativo dell'immagine"
@@ -2372,7 +2369,7 @@ msgstr "Morbidezza"
 #: ../build/bin/preferences_gen.h:3982
 msgctxt "preferences"
 msgid "glide"
-msgstr ""
+msgstr "Scivola"
 
 #: ../build/bin/preferences_gen.h:4004
 msgid ""
@@ -2417,16 +2414,17 @@ msgstr ""
 "funzione di maschera parametrica."
 
 #: ../build/bin/preferences_gen.h:4092
-#, fuzzy
 #| msgid "deleting preset for obsolete module"
 msgid "hide built-in presets for processing modules"
-msgstr "Elimina preset per il modulo obsoleto"
+msgstr "Nascondi i preset incorporati per i moduli di processo"
 
 #: ../build/bin/preferences_gen.h:4106
 msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
+"Nascondi i preset incorporati dei moduli di processo in entrambi i menu"
+" presets e preferiti."
 
 #: ../build/bin/preferences_gen.h:4127
 #| msgid "expand a single darkroom module at a time"
@@ -3346,12 +3344,11 @@ msgstr ""
 #. italic
 #: ../build/bin/preferences_gen.h:6558 ../src/libs/modulegroups.c:1441
 #: ../src/libs/tools/viewswitcher.c:145
-#, fuzzy
 #| msgid "other"
 msgid "other"
 msgid_plural "others"
 msgstr[0] "Altro"
-msgstr[1] "Altro"
+msgstr[1] "Altri"
 
 #: ../build/bin/preferences_gen.h:6578
 msgid "do not show april 1st game"
@@ -4218,10 +4215,9 @@ msgid "darktable - error opening database"
 msgstr "darktable - errore nell'apertura del database"
 
 #: ../src/common/database.c:2711 ../src/common/database.c:2891
-#, fuzzy
 #| msgid "target storage"
 msgid "attempt restore"
-msgstr "Destinazione"
+msgstr "Tenta il ripristino"
 
 #: ../src/common/database.c:2713 ../src/common/database.c:2729
 #: ../src/common/database.c:2893 ../src/common/database.c:2909
@@ -4244,7 +4240,7 @@ msgid ""
 msgstr ""
 
 #: ../src/common/database.c:2740 ../src/common/database.c:2918
-#, fuzzy, c-format
+#, c-format
 #| msgid ""
 #| "an error has occurred while trying to open the database from\n"
 #| "\n"
@@ -4263,7 +4259,8 @@ msgstr ""
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
-"%s\n"
+"sembra che il database sia corrotto.\n"
+"%s%s"
 
 #: ../src/common/database.c:3224
 msgid "click later to be asked on next startup"
@@ -4312,16 +4309,16 @@ msgid "later"
 msgstr "Successivamente"
 
 #: ../src/common/exif.cc:3980
-#, fuzzy, c-format
+#, c-format
 #| msgid "cannot open printer profile `%s'"
 msgid "cannot read xmp file '%s': '%s'"
-msgstr "Impossibile aprire il profilo stampante `%s'"
+msgstr "Impossibile leggere il file xmp `%s': `%s'"
 
 #: ../src/common/exif.cc:4032
-#, fuzzy, c-format
+#, c-format
 #| msgid "cannot open printer profile `%s'"
 msgid "cannot write xmp file '%s': '%s'"
-msgstr "Impossibile aprire il profilo stampante `%s'"
+msgstr "Impossibile scrivere il file xmp `%s': `%s'"
 
 #: ../src/common/fast_guided_filter.h:508
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -4816,20 +4813,20 @@ msgstr[0] "Rifletto %d immagine"
 msgstr[1] "Rifletto %d immagini"
 
 #: ../src/control/jobs/control_jobs.c:597
-#, fuzzy, c-format
+#, c-format
 #| msgctxt "accel"
 #| msgid "select toggle image"
 msgid "set %d color image"
 msgid_plural "setting %d color images"
-msgstr[0] "Attiva selezione immagine"
+msgstr[0] "imposta %d immagine a colori"
 msgstr[1] "Attiva selezione immagine"
 
 #: ../src/control/jobs/control_jobs.c:599
-#, fuzzy, c-format
+#, c-format
 #| msgid "add more images"
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
-msgstr[0] "Aggiungi più immagini"
+msgstr[0] "imposta %d immagina in bianco e nero"
 msgstr[1] "Aggiungi più immagini"
 
 #: ../src/control/jobs/control_jobs.c:681
@@ -4974,10 +4971,9 @@ msgid "flip images"
 msgstr "Rifletti immagini"
 
 #: ../src/control/jobs/control_jobs.c:1476
-#, fuzzy
 #| msgid "add more images"
 msgid "set monochrome images"
-msgstr "Aggiungi più immagini"
+msgstr "Imposta le immagini in bianco e nero"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1483
@@ -5330,7 +5326,7 @@ msgstr "Sottrai"
 #: ../src/develop/blend_gui.c:80
 msgctxt "blendmode"
 msgid "divide"
-msgstr ""
+msgstr "Dividi"
 
 #: ../src/develop/blend_gui.c:81
 msgctxt "blendmode"
@@ -5338,18 +5334,16 @@ msgid "divide reverse"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:82
-#, fuzzy
 #| msgid "RGB geometric mean"
 msgctxt "blendmode"
 msgid "geometric mean"
-msgstr "RGB media geometrica"
+msgstr "Media geometrica"
 
 #: ../src/develop/blend_gui.c:83
-#, fuzzy
 #| msgid "harmonious triangles"
 msgctxt "blendmode"
 msgid "harmonic mean"
-msgstr "Triangoli armonici"
+msgstr "Media armonica"
 
 #. * deprecated blend modes: make them available as legacy history stacks might want them
 #: ../src/develop/blend_gui.c:86
@@ -5470,15 +5464,14 @@ msgid "reset and hide output channels"
 msgstr "Quantità del canale verde nel canale di uscita"
 
 #: ../src/develop/blend_gui.c:1592
-#, fuzzy
 #| msgid "output channel"
 msgid "show output channels"
-msgstr "canal de sortie"
+msgstr "Mostra i canali di output"
 
 #: ../src/develop/blend_gui.c:1808 ../src/develop/blend_gui.c:1848
 #: ../src/iop/tonecurve.c:1176
 msgid "L"
-msgstr ""
+msgstr "L"
 
 #: ../src/develop/blend_gui.c:1808
 msgid "sliders for L channel"
@@ -5512,7 +5505,7 @@ msgstr "Blu/Giallo"
 
 #: ../src/develop/blend_gui.c:1817
 msgid "C"
-msgstr ""
+msgstr "C"
 
 #: ../src/develop/blend_gui.c:1817
 msgid "sliders for chroma channel (of LCh)"
@@ -5520,7 +5513,7 @@ msgstr "Selettore scorrevole per il canale crominanza (di LCh)"
 
 #: ../src/develop/blend_gui.c:1821
 msgid "h"
-msgstr ""
+msgstr "h"
 
 #: ../src/develop/blend_gui.c:1821
 msgid "sliders for hue channel (of LCh)"
@@ -5528,7 +5521,7 @@ msgstr "Selettore scorrevole per il canale tinta (di LCh)"
 
 #: ../src/develop/blend_gui.c:1828 ../src/develop/blend_gui.c:1855
 msgid "g"
-msgstr ""
+msgstr "g"
 
 #: ../src/develop/blend_gui.c:1828 ../src/develop/blend_gui.c:1855
 msgid "sliders for gray value"
@@ -5574,7 +5567,7 @@ msgstr "Selettore scorrevole per il canale del blu"
 
 #: ../src/develop/blend_gui.c:1840
 msgid "H"
-msgstr ""
+msgstr "H"
 
 #: ../src/develop/blend_gui.c:1840
 msgid "sliders for hue channel (of HSL)"
@@ -5602,33 +5595,30 @@ msgstr "Selettore scorrevole per il canale di valore (di HSL)"
 
 #: ../src/develop/blend_gui.c:1867
 msgid "Jz"
-msgstr ""
+msgstr "Jz"
 
 #: ../src/develop/blend_gui.c:1867
-#, fuzzy
 #| msgid "sliders for value channel (of HSL)"
 msgid "sliders for value channel (of JzCzhz)"
-msgstr "Selettore scorrevole per il canale di valore (di HSL)"
+msgstr "Selettore scorrevole per il canale di valore (di JzCzhz)"
 
 #: ../src/develop/blend_gui.c:1871
 msgid "Cz"
-msgstr ""
+msgstr "Cz"
 
 #: ../src/develop/blend_gui.c:1871
-#, fuzzy
 #| msgid "sliders for chroma channel (of LCh)"
 msgid "sliders for chroma channel (of JzCzhz)"
-msgstr "Selettore scorrevole per il canale crominanza (di LCh)"
+msgstr "Selettore scorrevole per il canale crominanza (di JzCzhz)"
 
 #: ../src/develop/blend_gui.c:1875
 msgid "hz"
-msgstr ""
+msgstr "hz"
 
 #: ../src/develop/blend_gui.c:1875
-#, fuzzy
 #| msgid "sliders for hue channel (of LCh)"
 msgid "sliders for hue channel (of JzCzhz)"
-msgstr "Selettore scorrevole per il canale tinta (di LCh)"
+msgstr "Selettore scorrevole per il canale tinta (di JzCzhz)"
 
 #: ../src/develop/blend_gui.c:1881
 msgid ""
@@ -5812,21 +5802,19 @@ msgid "color channel modes"
 msgstr "Modalità canali colore"
 
 #: ../src/develop/blend_gui.c:2551
-#, fuzzy
 #| msgid "normal & difference modes"
 msgid "normal & arithmetic modes"
-msgstr "Modalità normale e differenza"
+msgstr "Modalità normale e aritmetica"
 
 #: ../src/develop/blend_gui.c:2568
 msgid "chrominance & luminance modes"
-msgstr ""
+msgstr "Modalità crominanza e luminanza"
 
 #. add deprecated blend mode
 #: ../src/develop/blend_gui.c:2578
-#, fuzzy
 #| msgid "deprecated module"
 msgid "deprecated modes"
-msgstr "Moduli deprecati"
+msgstr "Modalità deprecate"
 
 #: ../src/develop/blend_gui.c:2854
 #, fuzzy
@@ -5952,11 +5940,10 @@ msgid "mask refinement"
 msgstr "Aggiustamento fine maschera"
 
 #: ../src/develop/develop.c:1470 ../src/gui/presets.c:801
-#, fuzzy
 #| msgctxt "preferences"
 #| msgid "display-referred"
 msgid "display-referred default"
-msgstr "Riferito allo schermo"
+msgstr "Default riferito allo schermo"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
@@ -6059,10 +6046,9 @@ msgid "ERROR"
 msgstr "ERRORE"
 
 #: ../src/develop/imageop.c:3174
-#, fuzzy
 #| msgid "purple"
 msgid "purpose"
-msgstr "Viola"
+msgstr "Scopo"
 
 #: ../src/develop/imageop.c:3176
 #, fuzzy
@@ -6071,12 +6057,14 @@ msgid "process"
 msgstr "Elaborazione"
 
 #: ../src/develop/imageop_gui.c:430
-#, fuzzy, c-format
+#, c-format
 #| msgid "ctrl+click to rotate"
 msgid ""
 "%s\n"
 "ctrl+click to %s"
-msgstr "Ctrl+click per ruotare"
+msgstr ""
+"%s\n"
+"ctrl+click per %s"
 
 #: ../src/develop/lightroom.c:1077
 msgid "cannot find lightroom XMP!"
@@ -6764,7 +6752,6 @@ msgid "processing modules"
 msgstr "Modalità di esecuzione"
 
 #: ../src/gui/accelerators.c:126
-#, fuzzy
 msgctxt "accel"
 msgid "utility modules"
 msgstr "Moduli utilità"
@@ -6860,7 +6847,7 @@ msgid "%s / %s"
 msgstr "%s / %s"
 
 #: ../src/gui/accelerators.c:708
-#, fuzzy, c-format
+#, c-format
 #| msgid "scroll to change <b>%s</b> of %s %s module"
 msgid "scroll to change <b>%s</b> of module %s %s"
 msgstr "Scorri per cambiare <b>%s</b> del %s %s modulo"
@@ -6975,10 +6962,9 @@ msgstr ""
 "gestore delle finestre ha il compositore abilitato."
 
 #: ../src/gui/gtk.c:963
-#, fuzzy
 #| msgid "close darktable"
 msgid "closing darktable..."
-msgstr "Chiudi darktable"
+msgstr "Chiudendo Darktable..."
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:1375
