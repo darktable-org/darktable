@@ -297,8 +297,7 @@ static void _add_module_expander(GList *iop_list, dt_iop_module_t *module)
   if(!dt_iop_is_hidden(module) && !module->expander)
   {
       /* add module to right panel */
-      GtkWidget *expander = dt_iop_gui_get_expander(module);
-      dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+      dt_iop_gui_get_expander(module);
       dt_iop_gui_set_expanded(module, TRUE, FALSE);
       dt_iop_gui_update_blending(module);
   }
