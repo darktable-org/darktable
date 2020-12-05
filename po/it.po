@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-03 22:49+0100\n"
+"PO-Revision-Date: 2020-12-05 14:34+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 20.08.2\n"
+"X-Generator: Poedit 2.3\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -2631,9 +2631,8 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. "
 "(need a restart)."
 msgstr ""
-"Questa cartella (e le sotto-cartelle) contiene i files Lut usate dal modulo"
-" lut3d."
-"(Richiede il riavvio)."
+"Questa cartella (e le sotto-cartelle) contiene i files Lut usate dal modulo "
+"lut3d.(Richiede il riavvio)."
 
 #: ../build/bin/preferences_gen.h:4721
 msgid "auto-apply pixel workflow defaults"
@@ -13822,15 +13821,17 @@ msgstr "ritocco"
 
 #: ../src/iop/retouch.c:200
 msgid "split-frequency|healing|cloning|stamp"
-msgstr ""
+msgstr "Divisione frequenze | cerotto | clona | timbro"
 
 #: ../src/iop/retouch.c:206
 msgid "remove and clone spots, perform split-frequency skin editing"
 msgstr ""
+"Rimuovi e clona aree, esegui la correzione della pelle con la divisione "
+"delle frequenze"
 
 #: ../src/iop/retouch.c:209
 msgid "geometric and frequential, RGB"
-msgstr ""
+msgstr "RGB geometrico e frequenziale"
 
 #: ../src/iop/retouch.c:1392
 msgid "cannot display scales when the blending mask is displayed"
@@ -13839,10 +13840,8 @@ msgstr ""
 "di fusione"
 
 #: ../src/iop/retouch.c:2037
-#, fuzzy
-#| msgid "shapes"
 msgid "shapes:"
-msgstr "Forme"
+msgstr "Forme:"
 
 #: ../src/iop/retouch.c:2041
 msgid ""
@@ -13858,24 +13857,16 @@ msgid "show and edit shapes on the current scale"
 msgstr "Mostra e modifica forme sulla scala corrente"
 
 #: ../src/iop/retouch.c:2045
-#, fuzzy
-#| msgid "show and edit shapes on the current scale"
 msgid "show and edit shapes in restricted mode"
-msgstr "Mostra e modifica forme sulla scala corrente"
+msgstr "Mostra e modifica forme in modalità ristretta"
 
 #: ../src/iop/retouch.c:2049 ../src/libs/masks.c:1032 ../src/libs/masks.c:1677
 msgid "add brush"
 msgstr "Aggiungi pennello"
 
 #: ../src/iop/retouch.c:2049
-#, fuzzy
-#| msgid ""
-#| "add brush\n"
-#| "ctrl+click to add multiple brush strokes"
 msgid "add multiple brush strokes"
-msgstr ""
-"Aggiungi pennello\n"
-"Ctrl+click per aggiungere pennelli multipli"
+msgstr "Aggiungi più pennellate"
 
 #: ../src/iop/retouch.c:2053 ../src/iop/spots.c:805 ../src/libs/masks.c:1004
 #: ../src/libs/masks.c:1044 ../src/libs/masks.c:1657
@@ -13883,11 +13874,8 @@ msgid "add path"
 msgstr "Aggiungi tracciato"
 
 #: ../src/iop/retouch.c:2053 ../src/iop/spots.c:805
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "multiple GPUs"
 msgid "add multiple paths"
-msgstr "GPUs multiple"
+msgstr "Aggiungi più tracciati"
 
 #: ../src/iop/retouch.c:2057 ../src/iop/spots.c:809 ../src/libs/masks.c:1000
 #: ../src/libs/masks.c:1040 ../src/libs/masks.c:1664
@@ -13895,10 +13883,8 @@ msgid "add ellipse"
 msgstr "Aggiungi ellisse"
 
 #: ../src/iop/retouch.c:2057 ../src/iop/spots.c:809
-#, fuzzy
-#| msgid "add ellipse"
 msgid "add multiple ellipses"
-msgstr "Aggiungi ellisse"
+msgstr "Aggiungi più forme ellittiche"
 
 #: ../src/iop/retouch.c:2061 ../src/iop/spots.c:813 ../src/libs/masks.c:996
 #: ../src/libs/masks.c:1036 ../src/libs/masks.c:1671
@@ -13906,44 +13892,32 @@ msgid "add circle"
 msgstr "Aggiungi forma circolare"
 
 #: ../src/iop/retouch.c:2061 ../src/iop/spots.c:813
-#, fuzzy
-#| msgid "add circle"
 msgid "add multiple circles"
-msgstr "Aggiungi forma circolare"
+msgstr "Aggiungi più forme circolari"
 
 #: ../src/iop/retouch.c:2068
 msgid "algorithms:"
 msgstr "Algoritmi:"
 
 #: ../src/iop/retouch.c:2070
-#, fuzzy
-#| msgid "activates blur tool"
 msgid "activate blur tool"
 msgstr "Attiva strumento sfocatura"
 
 #: ../src/iop/retouch.c:2074
-#, fuzzy
-#| msgid "activates fill tool"
 msgid "activate fill tool"
 msgstr "Attiva strumento riempimento"
 
 #: ../src/iop/retouch.c:2078
-#, fuzzy
-#| msgid "activates cloning tool"
 msgid "activate cloning tool"
 msgstr "Attiva strumento clona"
 
 #: ../src/iop/retouch.c:2082
-#, fuzzy
-#| msgid "activates healing tool"
 msgid "activate healing tool"
 msgstr "Attiva strumento cerotto"
 
 #: ../src/iop/retouch.c:2090
-#, fuzzy
-#| msgid "# scales:"
 msgid "scales:"
-msgstr "# scale:"
+msgstr "Scale:"
 
 #: ../src/iop/retouch.c:2095
 msgid "current:"
@@ -13954,12 +13928,6 @@ msgid "merge from:"
 msgstr "Unisci da:"
 
 #: ../src/iop/retouch.c:2108
-#, fuzzy
-#| msgid ""
-#| "top slider adjusts where the merge scales start\n"
-#| "bottom slider adjusts the number of scales\n"
-#| "red box indicates the current scale\n"
-#| "green line indicates that the scale has shapes on it"
 msgid ""
 "top slider adjusts where the merge scales start\n"
 "bottom slider adjusts the number of scales\n"
@@ -13969,8 +13937,10 @@ msgid ""
 msgstr ""
 "Il selettore scorrevole in cima regola la partenza delle scale di fusione\n"
 "Quello in basso imposta la quantità delle scale\n"
-"Il quadrato rosso indica la scala corrente\n"
-"La linea verde indica che quella scala contiene delle forme"
+"Il punto evidenzia la scala utilizzata\n"
+"La linea superiore indica che la scala è visibile al livello di zoom "
+"utilizzato\n"
+"La linea inferiore evidenzia che esistono delle forme sulla scala"
 
 #. display & suppress masks
 #: ../src/iop/retouch.c:2129
@@ -14080,6 +14050,7 @@ msgstr "curva rgb"
 #: ../src/iop/rgbcurve.c:138
 msgid "alter an image’s tones using curves in RGB color space"
 msgstr ""
+"Modifica i toni dell'immagine utilizzando le curve nello spazio colore RGB"
 
 #: ../src/iop/rgbcurve.c:189 ../src/iop/tonecurve.c:565
 msgid "gamma 1.0 (linear)"
@@ -14139,7 +14110,7 @@ msgstr "livelli rgb"
 
 #: ../src/iop/rgblevels.c:121
 msgid "adjust black, white and mid-gray points in RGB color space"
-msgstr ""
+msgstr "Regola i punti di nero, bianco e grigio medio nello spazio colore RGB"
 
 #: ../src/iop/rgblevels.c:996
 msgid ""
@@ -14161,8 +14132,6 @@ msgid "automatic pixel rotation"
 msgstr "Rotazione automatica pixel"
 
 #: ../src/iop/rotatepixels.c:353
-#, fuzzy
-#| msgid "automatic pixel rotation only works for the sensors that need it."
 msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
@@ -14180,14 +14149,12 @@ msgid "automatic pixel scaling"
 msgstr "Ridimensionamento automatico dei pixel"
 
 #: ../src/iop/scalepixels.c:269
-#, fuzzy
-#| msgid "automatic pixel scaling only works for the sensors that need it."
 msgid ""
 "automatic pixel scaling\n"
 "only works for the sensors that need it."
 msgstr ""
-"Il ridimensionamento automatico dei pixel funziona soltanto per i sensori "
-"che lo richiedono."
+"Il ridimensionamento automatico dei pixel\n"
+"funziona soltanto per i sensori che lo richiedono."
 
 #: ../src/iop/shadhi.c:178
 msgid "shadows and highlights"
@@ -14198,6 +14165,8 @@ msgid ""
 "modify the tonal range of the shadows and highlights\n"
 "of an image by enhancing local contrast."
 msgstr ""
+"Modifica la gamma tonale delle ombre e delle alte luci\n"
+"di un'immagine aumentando il contrasto tonale."
 
 #: ../src/iop/shadhi.c:715 ../src/iop/splittoning.c:537
 msgid "compress"
@@ -14243,14 +14212,16 @@ msgstr "nitidezza "
 #: ../src/iop/sharpen.c:95
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
 msgstr ""
+"Evidenzia i dettagli dell'immagine utilizzando una maschera di contrasto "
+"(USM)"
 
 #: ../src/iop/sharpen.c:97
 msgid "linear or non-linear, Lab, display or scene-referred"
-msgstr ""
+msgstr "Lineare o non-lineare, Lab, riferito allo schermo o alla scena"
 
 #: ../src/iop/sharpen.c:99
 msgid "quasi-linear, Lab, display or scene-referred"
-msgstr ""
+msgstr "Quasi-lineare, Lab, riferito allo schermo o alla scena"
 
 #. add the preset.
 #. restrict to raw images
@@ -14276,7 +14247,7 @@ msgstr "sfumatura"
 
 #: ../src/iop/soften.c:105
 msgid "create a softened image using the Orton effect"
-msgstr ""
+msgstr "Crea un'immagine dai toni morbidi con l'effetto Orton"
 
 #: ../src/iop/soften.c:549
 msgid "the size of blur"
@@ -14303,6 +14274,8 @@ msgid ""
 "use two specific colors for shadows and highlights and\n"
 "create a linear toning effect between them up to a pivot."
 msgstr ""
+"Utilizza due colori specifici per le ombre e per le alte luci e\n"
+"genera un effetto tonale lineare tra di essi con una pivot."
 
 #: ../src/iop/splittoning.c:119
 msgid "authentic sepia"
