@@ -105,6 +105,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
   { {27.5f }, "channelmixerrgb", 0},
+  { {27.5f }, "censorize", 0},
   { {27.5f }, "negadoctor", 0},
   { {27.5f }, "basicadj", 0},
   { {28.0f }, "colorreconstruct", 0},
@@ -188,6 +189,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
   { {28.5f }, "channelmixerrgb", 0},
+  { {28.5f }, "censorize", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
   { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
                                   //    -> needs a signal as scene-referred as possible (even if it works in Lab)
@@ -636,6 +638,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           //                The insertion can be done depending on the current iop-order list kind.
           _insert_before(iop_order_list, "nlmeans", "negadoctor");
           _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
+          _insert_before(iop_order_list, "negadoctor", "censorize");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
