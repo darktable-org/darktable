@@ -254,8 +254,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_censorize_data_t *data = (dt_iop_censorize_data_t *)piece->data;
-  const float *const restrict in = (const float *const restrict)ivoid;
-  float *const restrict out = (float *const restrict)ovoid;
+  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
 
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -320,18 +320,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
         // find the average color over the big pixel
         float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
-
-        #ifdef _OPENMP
-        #pragma omp reduction(+:RGB) aligned(RGB:16) aligned(input:64) collapse(2)
-        #endif
         for(size_t k = 0; k < 5; k++)
           for(size_t c = 0; c < 4; c++)
             RGB[c] += input[(width * box[k].y + box[k].x) * 4 + c] / 5.f;
 
         // paint the big pixel with solid color == average
-        #ifdef _OPENMP
-        #pragma omp collapse(3)
-        #endif
         for(size_t jj = tl.y; jj < br.y; jj++)
           for(size_t ii = tl.x; ii < br.x; ii++)
             for(size_t c = 0; c < 4; c++)
