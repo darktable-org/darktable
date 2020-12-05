@@ -541,7 +541,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     const size_t chunksize = (height + nthreads - 1) / nthreads;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans) \
+  dt_omp_firstprivate(fimg, height, in, roi, size, width, xtrans, nthreads, chunksize) \
     shared(c) num_threads(nthreads) \
     schedule(static)
 #endif
