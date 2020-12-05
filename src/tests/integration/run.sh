@@ -12,9 +12,10 @@
 #
 # Options:
 #
-#   --disable-opencl   - do not run the OpenCL path
-#   --no-deltae        - do a light check not requiring Delta-E module
-#   --fast-fail        - abort testing on the first NOK test
+#   --disable-opencl           - do not run the OpenCL path
+#   --no-deltae                - do a light check not requiring Delta-E module
+#   --fast-fail                - abort testing on the first NOK test
+#   --op=<n> | --operation=<n> - run test with matching operation n
 
 CDPATH=
 
@@ -31,7 +32,7 @@ DO_FAST_FAIL=no
 
 [ -z $(which $CLI) ] && echo Make sure $CLI is in the path && exit 1
 
-set -- $(getopt -q -u -o : -l disable-opencl,no-deltae,fast-fail -- $*)
+set -- $(getopt -q -u -o : -l disable-opencl,no-deltae,fast-fail,op:,operation: -- $*)
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -43,6 +44,12 @@ while [ $# -gt 0 ]; do
             ;;
         --fast-fail)
             DO_FAST_FAIL=yes
+            ;;
+        --op|--operation)
+            shift
+            OP=$1
+            TESTS=$(grep -l "operation=\"$OP\"" */*.xmp | while read xmp; do echo $(dirname $xmp); done)
+            [ -z "$TESTS" ] && echo error: operation $OP did not macth any test && exit 1
             ;;
         (--)
             ;;
