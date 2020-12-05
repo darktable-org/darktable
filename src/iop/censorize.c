@@ -28,6 +28,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/noise_generator.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -48,14 +49,15 @@ DT_MODULE_INTROSPECTION(1, dt_iop_censorize_params_t)
 typedef struct dt_iop_censorize_params_t
 {
   float radius_1;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0 $DESCRIPTION: "input blur radius"
-  float pixelate;              // $MIN: 0.0 $MAX: 5.0   $DEFAULT: 1.0  $DESCRIPTION: "pixellation radius"
+  float pixelate;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0  $DESCRIPTION: "pixellation radius"
   float radius_2;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0 $DESCRIPTION: "output blur radius"
+  float noise;                 // $MIN: 0.0 $MAX: 2.0   $DEFAULT: 0.25 $DESCRIPTION: "noise level"
 } dt_iop_censorize_params_t;
 
 
 typedef struct dt_iop_censorize_gui_data_t
 {
-  GtkWidget *radius_1, *pixelate, *radius_2;
+  GtkWidget *radius_1, *pixelate, *radius_2, *noise;
 } dt_iop_censorize_gui_data_t;
 
 typedef dt_iop_censorize_params_t dt_iop_censorize_data_t;
@@ -249,6 +251,34 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
+static inline void make_noise(float *const output, const float noise, const size_t width, const size_t height)
+{
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(output, width, height, noise) \
+  schedule(simd:static) aligned(output:64) collapse(2)
+#endif
+  for(size_t i = 0; i < height; i++)
+    for(size_t j = 0; j < width; j++)
+    {
+      // Init random number generator
+      uint32_t DT_ALIGNED_ARRAY state[4] = { splitmix32(j + 1), splitmix32((j + 1) * (i + 3)), splitmix32(1337), splitmix32(666) };
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+      xoshiro128plus(state);
+
+      const size_t index = (i * width + j) * 4;
+      const float norm = output[index + 1];
+
+      // create statistical noise
+      const float epsilon = gaussian_noise(norm, noise, TRUE, state) * norm;
+
+      // add noise to input
+      for(size_t c = 0; c < 3; c++) output[index + c] += epsilon * output[index + c];
+    }
+}
+
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -266,9 +296,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float sigma_1 = data->radius_1 * roi_in->scale / piece->iscale;
   const float sigma_2 = data->radius_2 * roi_in->scale / piece->iscale;
-  const size_t pixel_radius = data->pixelate / 100.f * hypotf(width, height);
+  const size_t pixel_radius = data->pixelate * roi_in->scale / piece->iscale;
   const size_t pixels_x = width / (2 * pixel_radius);
   const size_t pixels_y = height / (2 * pixel_radius);
+
+  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const float noise = data->noise / scale;
 
   float RGBmax[4], RGBmin[4];
   for(int k = 0; k < 4; k++)
@@ -334,11 +367,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     input = output;
   }
 
-  output = out;
-
   // second blurring step
   if(sigma_2 != 0.f)
   {
+    // add noise to defeat most AI reconstruction algos
+    if(noise != 0.f)
+      make_noise(output, data->radius_2 * noise, width, height);
+
+    output = out;
+
     dt_gaussian_t *g = dt_gaussian_init(width, height, ch, RGBmax, RGBmin, sigma_2, 0);
     if(!g) return;
     dt_gaussian_blur_4c(g, input, output);
@@ -346,8 +383,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    dt_simd_memcpy(input, output, width * height * ch);
+    output = out;
+    dt_simd_memcpy(input, output, width * height * 4);
   }
+
+  // add noise to defeat most AI reconstruction algos
+  if(noise != 0.f)
+    make_noise(output, noise, width, height);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
@@ -362,6 +404,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->radius_1, p->radius_1);
   dt_bauhaus_slider_set(g->pixelate, p->pixelate);
   dt_bauhaus_slider_set(g->radius_2, p->radius_2);
+  dt_bauhaus_slider_set(g->noise, p->noise);
 }
 
 /*
@@ -397,9 +440,12 @@ void gui_init(struct dt_iop_module_t *self)
   g->radius_2 = dt_bauhaus_slider_from_params(self, N_("radius_2"));
   dt_bauhaus_slider_set_step(g->radius_2, 0.1);
 
+  g->noise = dt_bauhaus_slider_from_params(self, N_("noise"));
+
   gtk_widget_set_tooltip_text(g->radius_1, _("radius of gaussian blur before pixellation"));
   gtk_widget_set_tooltip_text(g->radius_2, _("radius of gaussian blur after pixellation"));
   gtk_widget_set_tooltip_text(g->pixelate, _("radius of the intermediate pixellation"));
+  gtk_widget_set_tooltip_text(g->noise, _("amount of noise to add at the end"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
