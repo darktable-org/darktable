@@ -46,12 +46,6 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
-typedef void(_find_nearest_color)(float *val, float *err, const float f, const float rf);
-
-#if defined(__SSE__)
-typedef __m128(_find_nearest_color_sse)(float *val, const float f, const float rf);
-#endif
-
 typedef enum dt_iop_dither_type_t
 {
   DITHER_RANDOM,      // $DESCRIPTION: "random"
@@ -142,17 +136,26 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float _quantize(const float val, const float f, const float rf)
+{
+  const float tmp = val * f;
+  const float itmp = floorf(tmp);
+  const float adj = (tmp - itmp > 0.5f) ? 1.0f : 0.0f;
+  return (itmp + adj) * rf;
+}
 
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static void _find_nearest_color_n_levels_gray(float *val, float *err, const float f, const float rf)
+static void _find_nearest_color_n_levels_gray(float *restrict val, float *restrict err, const float f, const float rf)
 {
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
+  const float new = _quantize(in,f,rf);
 
-  const float tmp = in * f;
-  const int itmp = floorf(tmp);
-
-  const float new = (tmp - itmp > 0.5f ? (float)(itmp + 1) : (float)itmp) * rf;
-
+#ifdef _OPENMP
+#pragma omp simd aligned(val, err : 16)
+#endif
   for(int c = 0; c < 4; c++)
   {
     err[c] = val[c] - new;
@@ -162,18 +165,12 @@ static void _find_nearest_color_n_levels_gray(float *val, float *err, const floa
 
 #if defined(__SSE2__)
 // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, const float rf)
+static __m128 _find_nearest_color_n_levels_gray_sse(float *restrict val, const float f, const float rf)
 {
-  __m128 err;
-  __m128 new;
-
   const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
 
-  const float tmp = in * f;
-  const int itmp = floorf(tmp);
-
-  new = _mm_set1_ps(tmp - itmp > 0.5f ? (float)(itmp + 1) * rf : (float)itmp * rf);
-  err = _mm_sub_ps(_mm_load_ps(val), new);
+  __m128 new = _mm_set1_ps(_quantize(in,f,rf));
+  __m128 err = _mm_load_ps(val) - new;
   _mm_store_ps(val, new);
 
   return err;
@@ -181,42 +178,45 @@ static __m128 _find_nearest_color_n_levels_gray_sse(float *val, const float f, c
 #endif
 
 // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static void _find_nearest_color_n_levels_rgb(float *val, float *err, const float f, const float rf)
+static void _find_nearest_color_n_levels_rgb(float *const restrict val, float *const restrict err,
+                                             const float f, const float rf)
 {
+#ifdef _OPENMP
+#pragma omp simd aligned(val, err : 16)
+#endif
   for(int c = 0; c < 4; c++)
   {
-    float old = val[c];
-    float tmp = old * f;
-    float itmp = floorf(tmp);
-    float new = (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf;
-
-    val[c] = new;
+    const float old = val[c];
+    const float new = _quantize(old, f, rf);
     err[c] = old - new;
+    val[c] = new;
   }
 }
 
 #if defined(__SSE2__)
 // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_rgb_sse2(float *val, const float f, const float rf)
+static __m128 _find_nearest_color_n_levels_rgb_sse2(float *const restrict val, const float f, const float rf)
 {
   __m128 old = _mm_load_ps(val);
-  __m128 tmp = _mm_mul_ps(old, _mm_set1_ps(f));        // old * f
+  __m128 tmp = old * _mm_set1_ps(f);        // old * f
   __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp)); // floor(tmp)
   __m128 new = _mm_mul_ps(
       _mm_add_ps(itmp,
-                 _mm_and_ps(_mm_cmpgt_ps(_mm_sub_ps(tmp, itmp), // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
+                 _mm_and_ps(_mm_cmpgt_ps((tmp - itmp), // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
                                          _mm_set1_ps(0.5f)),
                             _mm_set1_ps(1.0f))),
       _mm_set1_ps(rf));
 
   _mm_store_ps(val, new);
-
-  return _mm_sub_ps(old, new);
+  return old - new;
 }
 #endif
 
-static inline void _diffuse_error(float *val, const float *err, const float factor)
+static inline void _diffuse_error(float *const restrict val, const float *const restrict err, const float factor)
 {
+#ifdef _OPENMP
+#pragma omp simd aligned(val, err)
+#endif
   for(int c = 0; c < 4; c++)
   {
     val[c] += err[c] * factor;
@@ -226,92 +226,98 @@ static inline void _diffuse_error(float *val, const float *err, const float fact
 #if defined(__SSE__)
 static inline void _diffuse_error_sse(float *val, const __m128 err, const float factor)
 {
-  _mm_store_ps(val,
-               _mm_add_ps(_mm_load_ps(val), _mm_mul_ps(err, _mm_set1_ps(factor)))); // *val += err * factor
+  _mm_store_ps(val, _mm_load_ps(val) + (err * _mm_set1_ps(factor))); // *val += err * factor
 }
 #endif
 
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
 static inline float clipnan(const float x)
 {
-  float r;
-
-  if(isnan(x))
-    r = 0.5f;
-  else // normal number
-    r = (isless(x, 0.0f) ? 0.0f : (isgreater(x, 1.0f) ? 1.0f : x));
-
-  return r;
+  // convert NaN to 0.5, otherwise clamp to between 0.0 and 1.0
+//  return isnan(x) ? 0.5f : (isless(x, 0.0f) ? 0.0f : (isgreater(x, 1.0f) ? 1.0f : x));
+  return isnan(x) ? 0.5f : ((x < 0.0f) ? 0.0f : (x > 1.0f) ? 1.0f : x);
 }
 
-static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
-                                    const void *const ivoid, void *const ovoid,
-                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+static inline void nearest_color(float *const restrict val, float *const restrict err, int graymode,
+                                 const float f, const float rf)
 {
-  dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
+  if (graymode)
+    _find_nearest_color_n_levels_gray(val,err,f,rf);
+  else
+    _find_nearest_color_n_levels_rgb(val,err,f,rf);
+}
 
-  const int width = roi_in->width;
-  const int height = roi_in->height;
-  const int ch = piece->colors;
-  const float scale = roi_in->scale / piece->iscale;
+static inline __m128 nearest_color_sse(float *const restrict val, int graymode, const float f, const float rf)
+{
+  return graymode
+    ? _find_nearest_color_n_levels_gray_sse(val,f,rf)
+    : _find_nearest_color_n_levels_rgb_sse2(val,f,rf);
+}
+
+static int get_dither_parameters(const dt_iop_dither_data_t *const data, const dt_dev_pixelpipe_iop_t *const piece,
+                                 const float scale, unsigned int *const restrict levels)
+{
+  int graymode = -1;
   const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
-
-  _find_nearest_color *nearest_color = NULL;
-  unsigned int levels = 1;
-  int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  const int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
   switch(data->dither_type)
   {
     case DITHER_FS1BIT:
-      nearest_color = _find_nearest_color_n_levels_gray;
-      levels = MAX(2, MIN(bds + 1, 256));
+      graymode = 1;
+      *levels = MAX(2, MIN(bds + 1, 256));
       break;
     case DITHER_FS4BIT_GRAY:
-      nearest_color = _find_nearest_color_n_levels_gray;
-      levels = MAX(16, MIN(15 * bds + 1, 256));
+      graymode = 1;
+      *levels = MAX(16, MIN(15 * bds + 1, 256));
       break;
     case DITHER_FS8BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb;
-      levels = 256;
+      graymode = 0;
+      *levels = 256;
       break;
     case DITHER_FS16BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb;
-      levels = 65536;
+      graymode = 0;
+      *levels = 65536;
       break;
     case DITHER_FSAUTO:
       switch(piece->pipe->levels & IMAGEIO_CHANNEL_MASK)
       {
         case IMAGEIO_RGB:
-          nearest_color = _find_nearest_color_n_levels_rgb;
+          graymode = 0;
           break;
         case IMAGEIO_GRAY:
-          nearest_color = _find_nearest_color_n_levels_gray;
+          graymode = 1;
           break;
       }
 
       switch(piece->pipe->levels & IMAGEIO_PREC_MASK)
       {
         case IMAGEIO_INT8:
-          levels = 256;
+          *levels = 256;
           break;
         case IMAGEIO_INT12:
-          levels = 4096;
+          *levels = 4096;
           break;
         case IMAGEIO_INT16:
-          levels = 65536;
+          *levels = 65536;
           break;
         case IMAGEIO_BW:
-          levels = 2;
+          *levels = 2;
           break;
         case IMAGEIO_INT32:
         case IMAGEIO_FLOAT:
         default:
-          nearest_color = NULL;
+          graymode = -1;
           break;
       }
       // no automatic dithering for preview and thumbnail
       if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
          || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
-        nearest_color = NULL;
+      {
+        graymode = -1;
+      }
       break;
     case DITHER_RANDOM:
       // this function won't ever be called for that type
@@ -319,95 +325,108 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
       __builtin_unreachable();
       break;
   }
+  return graymode;
+}
 
+
+static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
+                                    const void *const ivoid, void *const ovoid,
+                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  const dt_iop_dither_data_t *const restrict data = (dt_iop_dither_data_t *)piece->data;
+
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+  assert(piece->colors == 4);
+  const float scale = roi_in->scale / piece->iscale;
+
+  unsigned int levels = 1;
+  int graymode = get_dither_parameters(data,piece,scale,&levels);
+
+  const float *const restrict in = (const float *)ivoid;
+  float *const restrict out = (float *)ovoid;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, height, ivoid, ovoid, width) \
-  schedule(static)
+  dt_omp_firstprivate(height, width) \
+  dt_omp_sharedconst(in, out) \
+  schedule(simd:static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int j = 0; j < height * width * 4; j++)
   {
-    const float *in = (const float *)ivoid + (size_t)ch * width * j;
-    float *out = (float *)ovoid + (size_t)ch * width * j;
-    for(int i = 0; i < width; i++, in += ch, out += ch)
-    {
-      out[0] = clipnan(in[0]);
-      out[1] = clipnan(in[1]);
-      out[2] = clipnan(in[2]);
-    }
+    out[j] = clipnan(in[j]);
   }
 
-  if(nearest_color == NULL) return;
+  if(graymode < 0) return;
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
-  float err[4];
+  float DT_ALIGNED_PIXEL err[4];
 
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)
   {
-    for(int j = 0; j < height; j++)
+    for(int j = 0; j < height * width; j++)
     {
-      float *out = ((float *)ovoid) + (size_t)ch * j * width;
-      for(int i = 0; i < width; i++) nearest_color(out + ch * i, err, f, rf);
+      nearest_color(out + 4 * j, err, graymode, f, rf);
     }
 
-    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
     return;
   }
 
   // floyd-steinberg dithering follows here
 
+  // offsets to neighboring pixels
+  const size_t right = 4;
+  const size_t downleft = 4 * (width-1);
+  const size_t down = 4 * width;
+  const size_t downright = 4 * (width+1);
   // first height-1 rows
   for(int j = 0; j < height - 1; j++)
   {
-    float *out = ((float *)ovoid) + (size_t)ch * j * width;
+    float *const restrict outrow = out + (size_t)4 * j * width;
 
     // first column
-    nearest_color(out, err, f, rf);
-    _diffuse_error(out + ch, err, 7.0f / 16.0f);
-    _diffuse_error(out + ch * width, err, 5.0f / 16.0f);
-    _diffuse_error(out + ch * (width + 1), err, 1.0f / 16.0f);
-
+    nearest_color(outrow, err, graymode, f, rf);
+    _diffuse_error(outrow + right, err, 7.0f / 16.0f);
+    _diffuse_error(outrow + down, err, 5.0f / 16.0f);
+    _diffuse_error(outrow + downright, err, 1.0f / 16.0f);
 
     // main part of image
     for(int i = 1; i < width - 1; i++)
     {
-      nearest_color(out + ch * i, err, f, rf);
-      _diffuse_error(out + ch * (i + 1), err, 7.0f / 16.0f);
-      _diffuse_error(out + ch * (i - 1) + ch * width, err, 3.0f / 16.0f);
-      _diffuse_error(out + ch * i + ch * width, err, 5.0f / 16.0f);
-      _diffuse_error(out + ch * (i + 1) + ch * width, err, 1.0f / 16.0f);
+      nearest_color(outrow + 4 * i, err, graymode, f, rf);
+      _diffuse_error(outrow + 4 * i + right, err, 7.0f / 16.0f);
+      _diffuse_error(outrow + 4 * i + downleft, err, 3.0f / 16.0f);
+      _diffuse_error(outrow + 4 * i + down, err, 5.0f / 16.0f);
+      _diffuse_error(outrow + 4 * i + downright, err, 1.0f / 16.0f);
     }
 
     // last column
-    nearest_color(out + ch * (width - 1), err, f, rf);
-    _diffuse_error(out + ch * (width - 2) + ch * width, err, 3.0f / 16.0f);
-    _diffuse_error(out + ch * (width - 1) + ch * width, err, 5.0f / 16.0f);
+    nearest_color(outrow + 4 * (width - 1), err, graymode, f, rf);
+    _diffuse_error(outrow + 4 * (width - 1) + downleft, err, 3.0f / 16.0f);
+    _diffuse_error(outrow + 4 * (width - 1) + down, err, 5.0f / 16.0f);
   }
 
   // last row
   {
-    float *out = ((float *)ovoid) + (size_t)ch * (height - 1) * width;
+    float *const restrict outrow = out + (size_t)4 * (height - 1) * width;
 
-    // lower left pixel
-    nearest_color(out, err, f, rf);
-    _diffuse_error(out + ch, err, 7.0f / 16.0f);
-
-    // main part of last row
-    for(int i = 1; i < width - 1; i++)
+    // last row except for the right-most pixel
+    for(int i = 0; i < width - 1; i++)
     {
-      nearest_color(out + ch * i, err, f, rf);
-      _diffuse_error(out + ch * (i + 1), err, 7.0f / 16.0f);
+      nearest_color(outrow + 4 * i, err, graymode, f, rf);
+      _diffuse_error(outrow + 4 * i + right, err, 7.0f / 16.0f);
     }
 
     // lower right pixel
-    nearest_color(out + ch * (width - 1), err, f, rf);
-
+    nearest_color(outrow + 4 * (width - 1), err, graymode, f, rf);
   }
 
   // copy alpha channel if needed
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #if defined(__SSE2__)
@@ -419,93 +438,26 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
 
   const int width = roi_in->width;
   const int height = roi_in->height;
-  const int ch = piece->colors;
+  assert(piece->colors == 4);
   const float scale = roi_in->scale / piece->iscale;
-  const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
 
-  _find_nearest_color_sse *nearest_color = NULL;
   unsigned int levels = 1;
-  const int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
+  int graymode = get_dither_parameters(data,piece,scale,&levels);
 
-  switch(data->dither_type)
-  {
-    case DITHER_FS1BIT:
-      nearest_color = _find_nearest_color_n_levels_gray_sse;
-      levels = MAX(2, MIN(bds + 1, 256));
-      break;
-    case DITHER_FS4BIT_GRAY:
-      nearest_color = _find_nearest_color_n_levels_gray_sse;
-      levels = MAX(16, MIN(15 * bds + 1, 256));
-      break;
-    case DITHER_FS8BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb_sse2;
-      levels = 256;
-      break;
-    case DITHER_FS16BIT:
-      nearest_color = _find_nearest_color_n_levels_rgb_sse2;
-      levels = 65536;
-      break;
-    case DITHER_FSAUTO:
-      switch(piece->pipe->levels & IMAGEIO_CHANNEL_MASK)
-      {
-        case IMAGEIO_RGB:
-          nearest_color = _find_nearest_color_n_levels_rgb_sse2;
-          break;
-        case IMAGEIO_GRAY:
-          nearest_color = _find_nearest_color_n_levels_gray_sse;
-          break;
-      }
-
-      switch(piece->pipe->levels & IMAGEIO_PREC_MASK)
-      {
-        case IMAGEIO_INT8:
-          levels = 256;
-          break;
-        case IMAGEIO_INT12:
-          levels = 4096;
-          break;
-        case IMAGEIO_INT16:
-          levels = 65536;
-          break;
-        case IMAGEIO_BW:
-          levels = 2;
-          break;
-        case IMAGEIO_INT32:
-        case IMAGEIO_FLOAT:
-        default:
-          nearest_color = NULL;
-          break;
-      }
-      // no automatic dithering for preview and thumbnail
-      if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW
-         || (piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
-        nearest_color = NULL;
-      break;
-    case DITHER_RANDOM:
-      // this function won't ever be called for that type
-      // instead, process_random() will be called
-      __builtin_unreachable();
-      break;
-  }
-
+  const float *const restrict in = (const float *)ivoid;
+  float *const restrict out = (float *)ovoid;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, height, ivoid, ovoid, width) \
-  schedule(static)
+  dt_omp_firstprivate(height, width)  \
+  dt_omp_sharedconst(in, out) \
+  schedule(simd:static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int j = 0; j < height * width * 4; j++)
   {
-    const float *in = (const float *)ivoid + (size_t)ch * width * j;
-    float *out = (float *)ovoid + (size_t)ch * width * j;
-    for(int i = 0; i < width; i++, in += ch, out += ch)
-    {
-      out[0] = clipnan(in[0]);
-      out[1] = clipnan(in[1]);
-      out[2] = clipnan(in[2]);
-    }
+    out[j] = clipnan(in[j]);
   }
 
-  if(nearest_color == NULL) return;
+  if(graymode < 0) return;
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
@@ -514,68 +466,69 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)
   {
-    for(int j = 0; j < height; j++)
+    for(int j = 0; j < height * width; j++)
     {
-      float *out = ((float *)ovoid) + (size_t)ch * j * width;
-      for(int i = 0; i < width; i++) (void)nearest_color(out + ch * i, f, rf);
+      (void)nearest_color_sse(out + 4 * j, graymode, f, rf);
     }
 
-    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+    if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+      dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
     return;
   }
 
   // floyd-steinberg dithering follows here
 
+  // offsets to neighboring pixels
+  const size_t right = 4;
+  const size_t downleft = 4 * (width-1);
+  const size_t down = 4 * width;
+  const size_t downright = 4 * (width+1);
   // first height-1 rows
   for(int j = 0; j < height - 1; j++)
   {
-    float *out = ((float *)ovoid) + (size_t)ch * j * width;
+    float *const restrict outrow = out + (size_t)4 * j * width;
 
     // first column
-    err = nearest_color(out, f, rf);
-    _diffuse_error_sse(out + ch, err, 7.0f / 16.0f);
-    _diffuse_error_sse(out + ch * width, err, 5.0f / 16.0f);
-    _diffuse_error_sse(out + ch * (width + 1), err, 1.0f / 16.0f);
-
+    err = nearest_color_sse(outrow, graymode, f, rf);
+    _diffuse_error_sse(outrow + right, err, 7.0f / 16.0f);
+    _diffuse_error_sse(outrow + down, err, 5.0f / 16.0f);
+    _diffuse_error_sse(outrow + downright, err, 1.0f / 16.0f);
 
     // main part of image
     for(int i = 1; i < width - 1; i++)
     {
-      err = nearest_color(out + ch * i, f, rf);
-      _diffuse_error_sse(out + ch * (i + 1), err, 7.0f / 16.0f);
-      _diffuse_error_sse(out + ch * (i - 1) + ch * width, err, 3.0f / 16.0f);
-      _diffuse_error_sse(out + ch * i + ch * width, err, 5.0f / 16.0f);
-      _diffuse_error_sse(out + ch * (i + 1) + ch * width, err, 1.0f / 16.0f);
+      err = nearest_color_sse(outrow + 4 * i, graymode, f, rf);
+      _diffuse_error_sse(outrow + 4 * i + right, err, 7.0f / 16.0f);
+      _diffuse_error_sse(outrow + 4 * i + downleft, err, 3.0f / 16.0f);
+      _diffuse_error_sse(outrow + 4 * i + down, err, 5.0f / 16.0f);
+      _diffuse_error_sse(outrow + 4 * i + downright, err, 1.0f / 16.0f);
     }
 
     // last column
-    err = nearest_color(out + ch * (width - 1), f, rf);
-    _diffuse_error_sse(out + ch * (width - 2) + ch * width, err, 3.0f / 16.0f);
-    _diffuse_error_sse(out + ch * (width - 1) + ch * width, err, 5.0f / 16.0f);
+    err = nearest_color_sse(outrow + 4 * (width - 1), graymode, f, rf);
+    _diffuse_error_sse(outrow + 4 * (width - 1) + downleft, err, 3.0f / 16.0f);
+    _diffuse_error_sse(outrow + 4 * (width - 1) + down, err, 5.0f / 16.0f);
   }
 
   // last row
   {
-    float *out = ((float *)ovoid) + (size_t)ch * (height - 1) * width;
+    float *const restrict outrow = out + (size_t)4 * (height - 1) * width;
 
-    // lower left pixel
-    err = nearest_color(out, f, rf);
-    _diffuse_error_sse(out + ch, err, 7.0f / 16.0f);
-
-    // main part of last row
-    for(int i = 1; i < width - 1; i++)
+    // last row except for the right-most pixel
+    for(int i = 0; i < width - 1; i++)
     {
-      err = nearest_color(out + ch * i, f, rf);
-      _diffuse_error_sse(out + ch * (i + 1), err, 7.0f / 16.0f);
+      err = nearest_color_sse(outrow + 4 * i, graymode, f, rf);
+      _diffuse_error_sse(outrow + 4 * i + right, err, 7.0f / 16.0f);
     }
 
     // lower right pixel
-    (void)nearest_color(out + ch * (width - 1), f, rf);
+    (void)nearest_color_sse(outrow + 4 * (width - 1), graymode, f, rf);
 
   }
 
   // copy alpha channel if needed
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
 
