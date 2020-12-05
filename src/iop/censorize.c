@@ -48,10 +48,10 @@ DT_MODULE_INTROSPECTION(1, dt_iop_censorize_params_t)
 
 typedef struct dt_iop_censorize_params_t
 {
-  float radius_1;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0 $DESCRIPTION: "input blur radius"
-  float pixelate;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0  $DESCRIPTION: "pixellation radius"
-  float radius_2;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0 $DESCRIPTION: "output blur radius"
-  float noise;                 // $MIN: 0.0 $MAX: 2.0   $DEFAULT: 0.25 $DESCRIPTION: "noise level"
+  float radius_1;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0  $DESCRIPTION: "input blur radius"
+  float pixelate;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 100.0 $DESCRIPTION: "pixellation radius"
+  float radius_2;              // $MIN: 0.0 $MAX: 500.0 $DEFAULT: 10.0  $DESCRIPTION: "output blur radius"
+  float noise;                 // $MIN: 0.0 $MAX: 1.0   $DEFAULT: 0.5   $DESCRIPTION: "noise level"
 } dt_iop_censorize_params_t;
 
 
@@ -269,13 +269,14 @@ static inline void make_noise(float *const output, const float noise, const size
       xoshiro128plus(state);
 
       const size_t index = (i * width + j) * 4;
-      const float norm = output[index + 1];
+      float *const restrict pix_out = __builtin_assume_aligned(output + index, 16);
+      const float norm = pix_out[1];
 
       // create statistical noise
-      const float epsilon = gaussian_noise(norm, noise, TRUE, state) * norm;
+      const float epsilon = gaussian_noise(norm, noise * norm, i % 2 || j % 2, state);
 
-      // add noise to input
-      for(size_t c = 0; c < 3; c++) output[index + c] += epsilon * output[index + c];
+      // add noise to output
+      for(size_t c = 0; c < 3; c++) pix_out[c] += epsilon *  pix_out[c];
     }
 }
 
@@ -300,7 +301,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t pixels_x = width / (2 * pixel_radius);
   const size_t pixels_y = height / (2 * pixel_radius);
 
-  const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
+  const float scale = piece->iscale / roi_in->scale;
   const float noise = data->noise / scale;
 
   float RGBmax[4], RGBmin[4];
@@ -354,14 +355,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         // find the average color over the big pixel
         float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
         for(size_t k = 0; k < 5; k++)
-          for(size_t c = 0; c < 4; c++)
-            RGB[c] += input[(width * box[k].y + box[k].x) * 4 + c] / 5.f;
+        {
+          const float *const restrict pix_in = __builtin_assume_aligned(input + (width * box[k].y + box[k].x) * 4, 16);
+          for(size_t c = 0; c < 4; c++) RGB[c] += pix_in[c] / 5.f;
+        }
 
         // paint the big pixel with solid color == average
         for(size_t jj = tl.y; jj < br.y; jj++)
           for(size_t ii = tl.x; ii < br.x; ii++)
-            for(size_t c = 0; c < 4; c++)
-              output[(jj * width + ii) * 4 + c] = RGB[c];
+          {
+            float *const restrict pix_out = __builtin_assume_aligned(output + (jj * width + ii) * 4, 16);
+            for(size_t c = 0; c < 4; c++) pix_out[c] = RGB[c];
+          }
       }
 
     input = output;
