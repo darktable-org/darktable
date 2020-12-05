@@ -4,16 +4,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
-<<<<<<< HEAD
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
 "PO-Revision-Date: 2020-12-03 22:49+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
-=======
-"POT-Creation-Date: 2020-11-30 21:28+0100\n"
-"PO-Revision-Date: 2020-12-02 22:58+0100\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
->>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -364,12 +357,7 @@ msgid "(AI) detect from image edges..."
 msgstr ""
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
-<<<<<<< HEAD
-#: ../src/iop/channelmixerrgb.c:1992
-#, fuzzy
-=======
 #: ../src/iop/channelmixerrgb.c:1949
->>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 #| msgid "find camera"
 msgid "as shot in camera"
 msgstr "Come scattato dalla camera"
@@ -9926,12 +9914,8 @@ msgstr ""
 msgid "chromatic adaptation transform"
 msgstr "aberrazioni cromatiche"
 
-<<<<<<< HEAD
 #: ../src/iop/channelmixerrgb.c:2194
 #, fuzzy
-=======
-#: ../src/iop/channelmixerrgb.c:2151
->>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 #| msgid "saturation"
 msgid "adaptation"
 msgstr "Adattamento"
@@ -14529,7 +14513,6 @@ msgstr "Coefficienti canale"
 msgid "white balance settings"
 msgstr "Impostazioni bilanciamento del bianco"
 
-<<<<<<< HEAD
 #: ../src/iop/temperature.c:2057
 msgid "as shot"
 msgstr "Come da scatto"
@@ -14537,17 +14520,6 @@ msgstr "Come da scatto"
 #: ../src/iop/temperature.c:2060
 msgid "set white balance to as shot"
 msgstr "Imposta il bilanciamento del bianco come da scatto"
-=======
-#: ../src/iop/temperature.c:2048
-#| msgid "snapshots"
-msgid "as shot"
-msgstr "Dallo scatto"
-
-#: ../src/iop/temperature.c:2051
-#| msgid "spot white balance"
-msgid "set white balance to as shot"
-msgstr "Imposta il bilanciamento del bianco dallo scatto"
->>>>>>> 3de01ac94db4da31e7182933aff0263a5335b4e4
 
 #: ../src/iop/temperature.c:2070
 msgid "user modified"
