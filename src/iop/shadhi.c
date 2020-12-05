@@ -360,20 +360,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_free(b);
   }
 
-// invert and desaturate
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out) \
-  shared(out) \
-  schedule(static)
-#endif
-  for(size_t j = 0; j < (size_t)roi_out->width * roi_out->height * 4; j += 4)
-  {
-    out[j + 0] = 100.0f - out[j + 0];
-    out[j + 1] = 0.0f;
-    out[j + 2] = 0.0f;
-  }
-
   const float max[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
   const float min[4] = { 0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
@@ -395,6 +381,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     float ta[3], tb[3];
     _Lab_scale(&in[j], ta);
+    // invert and desaturate the blurred output pixel
+    out[j + 0] = 100.0f - out[j + 0];
+    out[j + 1] = 0.0f;
+    out[j + 2] = 0.0f;
     _Lab_scale(&out[j], tb);
 
     ta[0] = ta[0] > 0.0f ? ta[0] / whitepoint : ta[0];
