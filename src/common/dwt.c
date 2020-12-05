@@ -514,7 +514,6 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
       // (which would ordinarily be stored as the details scale, but we don't need it any further)
       const float diff = details[col] - hat;
       details[col] = hat;		// done with original input, so we can overwrite it with 'coarse'
-//      accum_row[col] += copysignf(fmaxf(fabsf(diff) - thold, 0.0f), diff);
       accum_row[col] += MAX(diff - thold,0.0f) + MIN(diff + thold, 0.0f);
     }
     if (last)
@@ -534,7 +533,7 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
  */
 void dwt_denoise(float *const img, const int width, const int height, const int bands, const float *const noise)
 {
-  float *const details = dt_alloc_sse_ps(2 * width * height);
+  float *const details = dt_alloc_align_float(2 * width * height);
   float *const interm = details + width * height;	// temporary storage for use during each pass
 
   // zero the accumulator
