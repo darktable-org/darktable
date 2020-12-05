@@ -1404,14 +1404,11 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   dt_accel_connect_global("quit", g_cclosure_new(G_CALLBACK(quit_callback), NULL, NULL));
 
-  // Full-screen accelerators
+  // Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
   dt_accel_register_global(NC_("accel", "toggle fullscreen"), GDK_KEY_F11, 0);
-  dt_accel_register_global(NC_("accel", "leave fullscreen"), GDK_KEY_Escape, 0);
 
   dt_accel_connect_global("toggle fullscreen", g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
                                                               GINT_TO_POINTER(1), NULL));
-  dt_accel_connect_global("leave fullscreen", g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
-                                                             GINT_TO_POINTER(0), NULL));
 
   // Side-border hide/show
   dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
