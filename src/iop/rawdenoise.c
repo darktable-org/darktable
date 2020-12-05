@@ -351,7 +351,7 @@ static void dwt_denoise_horiz_1ch(float *const restrict out, float *const restri
 static void dwt_denoise(float *const img, const int width, const int height,
                         const int bands, const float *const noise)
 {
-  float *const details = dt_alloc_sse_ps(2 * width * height);
+  float *const details = dt_alloc_align_float(2 * width * height);
   float *const interm = details + width * height;	// temporary storage for use during each pass
 
   // zero the accumulator
@@ -375,7 +375,7 @@ static void dwt_denoise(float *const img, const int width, const int height,
                             const dt_iop_rawdenoise_data_t * const data, const uint32_t filters)
 {
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
-  float *const restrict fimg = dt_alloc_sse_ps(size);
+  float *const restrict fimg = dt_alloc_align_float(size);
 
   const int nc = 4;
   for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
