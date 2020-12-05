@@ -57,7 +57,7 @@ void lut3d_decompress_clut(const unsigned char *const input_keypoints, const uns
 
   // decompress the keypoints to LUT
   // -cut 0,255 is added to mask GMIC 2.6.4 compressed clut issue.
-  std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-decompress_clut %d,%d,%d -cut 0,255",
+  std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-decompress_clut %u,%u,%u -cut 0,255",
     output_resolution, output_resolution, output_resolution);
   try
   {
@@ -120,7 +120,7 @@ unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned
   size_t img_size = image_list[0]._width*image_list[0]._height*image_list[0]._depth*image_list[0]._spectrum;
   if (output_size < img_size)  //downsize the cached lut
   {
-    std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-r %d,%d,%d,3,3", output_resolution, output_resolution, output_resolution);
+    std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-r %u,%u,%u,3,3", output_resolution, output_resolution, output_resolution);
     try
     {
       g_instance.run(gmic_cmd, image_list, image_names);
@@ -217,7 +217,7 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
       keypoints[nb_kp*3+i] = keypoints[nb_kp*4+i] = keypoints[nb_kp*5+i] = (unsigned char)img[nb_kp*3+i];
   }
   else
-    std::printf("[lut3d gmic] error: incompatible compressed LUT [%d] %s\n", l, image_names[l]._data);
+    std::printf("[lut3d gmic] error: incompatible compressed LUT [%u] %s\n", l, image_names[l]._data);
 
   image_list.assign(0);
   image_names.assign(0);
