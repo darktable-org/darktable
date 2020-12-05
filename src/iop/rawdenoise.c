@@ -529,6 +529,14 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
       noise[i] = noise_all[i] * threshold_exp_4 * 16.0;
     }
 
+    // ensure a defined value for every pixel in the top and bottom rows, even if they are more than
+    // one pixel away from the nearest neighbor of the same color and thus the simple interpolation
+    // used in the following loop does not set them
+    for (size_t col = 0; col < width; col++)
+    {
+      fimg[size + col] = 0.5f;
+      fimg[size + (height-1)*width + col] = 0.5f;
+    }
     const size_t nthreads = darktable.num_openmp_threads; // go direct, dt_get_num_threads() always returns numprocs
     const size_t chunksize = (height + nthreads - 1) / nthreads;
 #ifdef _OPENMP
@@ -584,17 +592,13 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
         // leftmost and rightmost pixel in the row may still need to be filled in from a neighbor
         if (FCxtrans(row, 0, roi, xtrans) != c)
         {
-          int src = 0;
+          int src = 0;	// fallback is current sensel even if it has the wrong color
           if (row > 1 && FCxtrans(row-1, 0, roi, xtrans) == c)
             src = -width;
           else if (FCxtrans(row, 1, roi, xtrans) == c)
             src = 1;
           else if (row > 1 && FCxtrans(row-1, 1, roi, xtrans) == c)
             src = -width + 1;
-          else
-          {
-            //TODO: find pixel of correct color
-          }
           fimgp[0] = vstransform(inp[src]);
         }
         // check the right-most pixel; if it's the desired color and not green, copy it to the neighbors
@@ -606,17 +610,13 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
         }
         else if (FCxtrans(row, width-1, roi, xtrans) != c)
         {
-          int src = width-1;
+          int src = width-1;	// fallback is current sensel even if it has the wrong color
           if (FCxtrans(row, width-2, roi, xtrans) == c)
             src = width-2;
           else if (row > 1 && FCxtrans(row-1, width-1, roi, xtrans) == c)
             src = -1;
           else if (row > 1 && FCxtrans(row-1, width-2, roi, xtrans) == c)
             src = -2;
-          else
-          {
-            //TODO: find pixel of correct color
-          }
           fimgp[width-1] = vstransform(inp[src]);
         }
       }
@@ -639,9 +639,8 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
             else // red/blue pixel
             {
               // copy the pixel's adjusted value to the prior row and left and right (if not at edge)
-              //fimgp[col] = fimgp[col+1] = d;
               fimgp[col-width] = fimgp[col-width+1] = d;
-              if (col > 0) /*fimgp[col-1] =*/ fimgp[col-width-1] = d;
+              if (col > 0) fimgp[col-width-1] = d;
             }
           }
           // some red and blue values may need to be restored from the row TWO past the end of our slice
