@@ -2403,6 +2403,7 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
       button && GTK_IS_BUTTON(button->data);
       button = g_list_previous(button))
   {
+    gtk_widget_set_no_show_all(GTK_WIDGET(button->data), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(button->data), show_buttons && !always_hide);
     gtk_widget_set_opacity(GTK_WIDGET(button->data), opacity);
   }
