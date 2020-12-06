@@ -18,7 +18,8 @@
 
 #include "common/eaw.h"
 #include "common/darktable.h"
-
+#include "control/control.h"     // needed by dwt.h
+#include "common/dwt.h"          // for dwt_interleave_rows
 #include <math.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
@@ -611,8 +612,9 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
   dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width, squared_sums) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int rowid = 0; rowid < height; rowid++)
   {
+    const size_t j = dwt_interleave_rows(rowid, height, mult);
     const float *px = ((float *)in) + (size_t)4 * j * width;
     const float *px2;
     float *pdetail = detail + (size_t)4 * j * width;
@@ -717,8 +719,9 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
   shared(squared_sums) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int rowid = 0; rowid < height; rowid++)
   {
+    const size_t j = dwt_interleave_rows(rowid, height, mult);
     const __m128 *px = ((__m128 *)in) + (size_t)j * width;
     const __m128 *px2;
     float *pdetail = detail + (size_t)4 * j * width;
