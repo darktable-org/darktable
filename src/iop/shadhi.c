@@ -302,13 +302,15 @@ static inline float sign(float x)
   return (x < 0 ? -1.0f : 1.0f);
 }
 
-
+#ifdef _OPENMP
+#pragma omp declare simd aligned(ivoid, ovoid : 64)
+#endif
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_shadhi_data_t *data = (dt_iop_shadhi_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const dt_iop_shadhi_data_t *const restrict data = (dt_iop_shadhi_data_t *)piece->data;
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
   const int width = roi_out->width;
   const int height = roi_out->height;
   const int ch = piece->colors;
@@ -360,20 +362,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_free(b);
   }
 
-// invert and desaturate
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out) \
-  shared(out) \
-  schedule(static)
-#endif
-  for(size_t j = 0; j < (size_t)roi_out->width * roi_out->height * 4; j += 4)
-  {
-    out[j + 0] = 100.0f - out[j + 0];
-    out[j + 1] = 0.0f;
-    out[j + 2] = 0.0f;
-  }
-
   const float max[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
   const float min[4] = { 0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
@@ -388,13 +376,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                       highlights, highlights_ccorrect, lmax, lmin, \
                       low_approximation, max, min,  shadows, \
                       shadows_ccorrect, unbound_mask, whitepoint, width) \
-  shared(in, out) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)width * height * ch; j += ch)
   {
     float ta[3], tb[3];
     _Lab_scale(&in[j], ta);
+    // invert and desaturate the blurred output pixel
+    out[j + 0] = 100.0f - out[j + 0];
+    out[j + 1] = 0.0f;
+    out[j + 2] = 0.0f;
     _Lab_scale(&out[j], tb);
 
     ta[0] = ta[0] > 0.0f ? ta[0] / whitepoint : ta[0];
@@ -402,19 +394,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     // overlay highlights
     float highlights2 = highlights * highlights;
-    float highlights_xform = CLAMP_RANGE(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
+    const float highlights_xform = CLAMP_RANGE(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
 
     while(highlights2 > 0.0f)
     {
-      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(-highlights) * sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
-      float href = copysignf(
+      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      const float href = copysignf(
           fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
-      float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
-      float optrans = chunk * highlights_xform;
+      const float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
+      const float optrans = chunk * highlights_xform;
       highlights2 -= 1.0f;
 
       ta[0] = la * (1.0 - optrans)
@@ -423,35 +415,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
-      ta[1] = ta[1] * (1.0f - optrans)
-              + (ta[1] + tb[1]) * (ta[0] * lref * (1.0f - highlights_ccorrect)
-                                   + (1.0f - ta[0]) * href * highlights_ccorrect) * optrans;
-
+      const float chroma_factor = (ta[0] * lref * (1.0f - highlights_ccorrect)
+                                   + (1.0f - ta[0]) * href * highlights_ccorrect);
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
       ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
 
-      ta[2] = ta[2] * (1.0f - optrans)
-              + (ta[2] + tb[2]) * (ta[0] * lref * (1.0f - highlights_ccorrect)
-                                   + (1.0f - ta[0]) * href * highlights_ccorrect) * optrans;
-
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
       ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
     }
 
     // overlay shadows
     float shadows2 = shadows * shadows;
-    float shadows_xform = CLAMP_RANGE(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
+    const float shadows_xform = CLAMP_RANGE(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
 
     while(shadows2 > 0.0f)
     {
-      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(shadows) * sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
-      float href = copysignf(
+      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      const float href = copysignf(
           fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
 
-      float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
-      float optrans = chunk * shadows_xform;
+      const float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
+      const float optrans = chunk * shadows_xform;
       shadows2 -= 1.0f;
 
       ta[0] = la * (1.0 - optrans)
@@ -460,16 +448,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
-      ta[1] = ta[1] * (1.0f - optrans)
-              + (ta[1] + tb[1]) * (ta[0] * lref * shadows_ccorrect
-                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect)) * optrans;
-
+      const float chroma_factor = (ta[0] * lref * shadows_ccorrect
+                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect));
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
       ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
 
-      ta[2] = ta[2] * (1.0f - optrans)
-              + (ta[2] + tb[2]) * (ta[0] * lref * shadows_ccorrect
-                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect)) * optrans;
-
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
       ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
     }
 
