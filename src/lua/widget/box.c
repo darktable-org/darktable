@@ -53,6 +53,7 @@ static int orientation_member(lua_State *L)
       {
         gtk_box_set_child_packing(GTK_BOX(box->widget), GTK_WIDGET(l->data), TRUE, TRUE, 0, GTK_PACK_START);
       }
+      g_list_free(children);
     }
     return 0;
   }
