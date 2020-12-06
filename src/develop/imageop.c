@@ -1341,7 +1341,7 @@ void dt_iop_gui_set_enable_button(dt_iop_module_t *module)
 
 void dt_iop_gui_update_header(dt_iop_module_t *module)
 {
-  _iop_gui_update_header(module);
+  if(module->header) _iop_gui_update_header(module);
 }
 
 void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)

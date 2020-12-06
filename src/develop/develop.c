@@ -1885,6 +1885,12 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     hist->params = malloc(hist->module->params_size);
     hist->blend_params = malloc(sizeof(dt_develop_blend_params_t));
 
+    if(hist->module->default_enabled)
+    {
+      hist->module->enabled = enabled;
+      dt_iop_gui_update_header(hist->module);
+    }
+
     // update module iop_order only on active history entries
     if(history_end_current > dev->history_end) hist->module->iop_order = hist->iop_order;
 
