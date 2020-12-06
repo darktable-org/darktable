@@ -147,32 +147,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
-// transposes image, it is faster to read columns than to write them.
-static void hat_transform(float *temp, const float *const base, int stride, int size, int scale)
-{
-  int i;
-  const float *basep0;
-  const float *basep1;
-  const float *basep2;
-  const size_t stxsc = (size_t)stride * scale;
-
-  basep0 = base;
-  basep1 = base + stxsc;
-  basep2 = base + stxsc;
-
-  for(i = 0; i < scale; i++, basep0 += stride, basep1 -= stride, basep2 += stride)
-    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2) * 0.25f;
-
-  for(; i < size - scale; i++, basep0 += stride)
-    temp[i] = ((*basep0) * 2 + *(basep0 - stxsc) + *(basep0 + stxsc)) * 0.25f;
-
-  basep1 = basep0 - stxsc;
-  basep2 = base + stride * (size - 2);
-
-  for(; i < size; i++, basep0 += stride, basep1 += stride, basep2 -= stride)
-    temp[i] = (*basep0 + *basep0 + *basep1 + *basep2) * 0.25f;
-}
-
 #define BIT16 65536.0
 
 static void compute_channel_noise(float *const noise, int color, const dt_iop_rawdenoise_data_t *const data)
@@ -258,7 +232,7 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 #endif
     for(int row = c & 1; row < roi->height; row += 2)
     {
-      const float *restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
+      const float *const restrict fimgp = fimg + (size_t)row / 2 * halfwidth;
       const int offset = (c & 2) >> 1;
       float *const restrict outp = out + (size_t)row * roi->width + offset;
       const int senselwidth = (roi->width-offset+1)/2;
@@ -328,7 +302,16 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   const int width = roi->width;
   const int height = roi->height;
   const size_t size = (size_t)width * height;
-  float *const fimg = dt_alloc_align_float((size_t)size * 4);
+  // allocate a buffer for the particular color channel to be denoise; we add two rows to simplify the
+  // channel-extraction code (no special case for top/bottom row)
+  float *const img = dt_alloc_align_float((size_t)width * (height+2) * 4);
+  if (!img)
+  {
+    // we ran out of memory, so just pass through the image without denoising
+    memcpy(out, in, size * sizeof(float));
+    return;
+  }
+  float *const fimg = img + width * 4;	// point at the actual color channel contents in the buffer
 
   for(int c = 0; c < 3; c++)
   {
@@ -360,7 +343,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
       for(size_t row = start; row < pastend; row++)
       {
         const float *const restrict inp = in + row * width;
-        float *const restrict fimgp = fimg + row * width + size;
+        float *const restrict fimgp = fimg + row * width;
         // handle red/blue pixel in first column
         if (c != 1 && FCxtrans(row, 0, roi, xtrans) == c)
         {
@@ -433,7 +416,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
         // Another slice follows us, and by updating the last row of our slice, we've clobbered values that
         // were previously written by the other thread.  Restore them.
         const float *const restrict inp = in + pastend * width;
-        float *const restrict fimgp = fimg + pastend * width + size;
+        float *const restrict fimgp = fimg + pastend * width;
         for (size_t col = 0; col < width-1; col++)
         {
           if (FCxtrans(pastend, col, roi, xtrans) == c)
@@ -461,72 +444,32 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
         }
       }
     }
-    memset(fimg, 0, size * sizeof(float));
 
-    int lastpass;
+    // perform the wavelet decomposition and denoising
+    dwt_denoise(fimg,width,height,DT_IOP_RAWDENOISE_BANDS,noise);
 
-    for(int lev = 0; lev < 5; lev++)
-    {
-      const size_t pass1 = size * ((lev & 1) * 2 + 1);
-      const size_t pass2 = 2 * size;
-      const size_t pass3 = 4 * size - pass1;
-
-// filter horizontally and transpose
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, height, pass1, pass2, width) \
-      shared(lev) \
-      schedule(static)
-#endif
-      for(int col = 0; col < width; col++)
-        hat_transform(fimg + pass2 + (size_t)col * height, fimg + pass1 + col, width, height, 1 << lev);
-// filter vertically and transpose back
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, height, pass2, pass3, width) \
-      shared(lev) \
-      schedule(static)
-#endif
-      for(int row = 0; row < height; row++)
-        hat_transform(fimg + pass3 + (size_t)row * width, fimg + pass2 + row, height, width, 1 << lev);
-
-      const float thold = noise[lev];
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-      dt_omp_firstprivate(fimg, pass1, pass3, size, thold) \
-      shared(lev) \
-      schedule(static)
-#endif
-      for(size_t i = 0; i < size; i++)
-      {
-        float *fimgp = fimg + i;
-        const float diff = fimgp[pass1] - fimgp[pass3];
-        fimgp[0] += copysignf(fmaxf(fabsf(diff) - thold, 0.0f), diff);
-      }
-
-      lastpass = pass3;
-    }
-
+    // distribute the denoised data back out to the original R/G/B channel, squaring the resulting values to
+    // undo the original transform
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(height, fimg, roi, width, xtrans) \
-    shared(c, lastpass, out) \
+    shared(c, out) \
     schedule(static)
 #endif
     for(int row = 0; row < height; row++)
     {
-      const float *fimgp = fimg + (size_t)row * width;
-      float *outp = out + (size_t)row * width;
-      for(int col = 0; col < width; col++, outp++, fimgp++)
+      const float *const restrict fimgp = fimg + (size_t)row * width;
+      float *const restrict outp = out + (size_t)row * width;
+      for(int col = 0; col < width; col++)
         if(FCxtrans(row, col, roi, xtrans) == c)
         {
-          float d = fimgp[0] + fimgp[lastpass];
-          *outp = d * d;
+          float d = fimgp[col];
+          outp[col] = d * d;
         }
     }
   }
 
-  dt_free_align(fimg);
+  dt_free_align(img);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
