@@ -240,6 +240,15 @@ static inline float clipnan(const float x)
   return isnan(x) ? 0.5f : ((x < 0.0f) ? 0.0f : (x > 1.0f) ? 1.0f : x);
 }
 
+static inline void clipnan_pixel(float *const restrict out, const float *const restrict in)
+{
+#ifdef _OPENMP
+#pragma omp simd aligned(in, out : 16)
+#endif
+  for (int c = 0; c < 4; c++)
+    out[c] = clipnan(in[c]);
+}
+
 static inline void nearest_color(float *const restrict val, float *const restrict err, int graymode,
                                  const float f, const float rf)
 {
@@ -343,20 +352,10 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
   unsigned int levels = 1;
   int graymode = get_dither_parameters(data,piece,scale,&levels);
 
+  if(graymode < 0) return;
+
   const float *const restrict in = (const float *)ivoid;
   float *const restrict out = (float *)ovoid;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  dt_omp_sharedconst(in, out) \
-  schedule(simd:static)
-#endif
-  for(int j = 0; j < height * width * 4; j++)
-  {
-    out[j] = clipnan(in[j]);
-  }
-
-  if(graymode < 0) return;
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
@@ -367,6 +366,7 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
   {
     for(int j = 0; j < height * width; j++)
     {
+      clipnan_pixel(out + 4 * j, in + 4 * j);
       nearest_color(out + 4 * j, err, graymode, f, rf);
     }
 
@@ -375,19 +375,31 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     return;
   }
 
-  // floyd-steinberg dithering follows here
-
   // offsets to neighboring pixels
   const size_t right = 4;
   const size_t downleft = 4 * (width-1);
   const size_t down = 4 * width;
   const size_t downright = 4 * (width+1);
+
+  // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
+  // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
+  // and down neighbors
+  for (int j = 0; j < width; j++)
+  {
+    clipnan_pixel(out + 4*j, in + 4*j);
+  }
+
+  // floyd-steinberg dithering follows here
+
   // first height-1 rows
   for(int j = 0; j < height - 1; j++)
   {
+    const float *const restrict inrow = in + (size_t)4 * j * width;
     float *const restrict outrow = out + (size_t)4 * j * width;
 
     // first column
+    clipnan_pixel(outrow + downright, inrow + downright); // down-right pixel is about to get its first access
+    clipnan_pixel(outrow + down, inrow + down);           // same for the pixel below
     nearest_color(outrow, err, graymode, f, rf);
     _diffuse_error(outrow + right, err, 7.0f / 16.0f);
     _diffuse_error(outrow + down, err, 5.0f / 16.0f);
@@ -396,17 +408,20 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     // main part of image
     for(int i = 1; i < width - 1; i++)
     {
-      nearest_color(outrow + 4 * i, err, graymode, f, rf);
-      _diffuse_error(outrow + 4 * i + right, err, 7.0f / 16.0f);
-      _diffuse_error(outrow + 4 * i + downleft, err, 3.0f / 16.0f);
-      _diffuse_error(outrow + 4 * i + down, err, 5.0f / 16.0f);
-      _diffuse_error(outrow + 4 * i + downright, err, 1.0f / 16.0f);
+      float *const restrict pixel = outrow + 4 * i;
+      clipnan_pixel(outrow + 4 * i + downright, inrow + 4 * i + downright); // prepare down-right pixel
+      nearest_color(pixel, err, graymode, f, rf);
+      _diffuse_error(pixel + right, err, 7.0f / 16.0f);
+      _diffuse_error(pixel + downleft, err, 3.0f / 16.0f);
+      _diffuse_error(pixel + down, err, 5.0f / 16.0f);
+      _diffuse_error(pixel + downright, err, 1.0f / 16.0f);
     }
 
     // last column
-    nearest_color(outrow + 4 * (width - 1), err, graymode, f, rf);
-    _diffuse_error(outrow + 4 * (width - 1) + downleft, err, 3.0f / 16.0f);
-    _diffuse_error(outrow + 4 * (width - 1) + down, err, 5.0f / 16.0f);
+    float *const restrict lastpixel = outrow + 4 * (width-1);
+    nearest_color(lastpixel, err, graymode, f, rf);
+    _diffuse_error(lastpixel + downleft, err, 3.0f / 16.0f);
+    _diffuse_error(lastpixel + down, err, 5.0f / 16.0f);
   }
 
   // last row
@@ -416,8 +431,9 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     // last row except for the right-most pixel
     for(int i = 0; i < width - 1; i++)
     {
-      nearest_color(outrow + 4 * i, err, graymode, f, rf);
-      _diffuse_error(outrow + 4 * i + right, err, 7.0f / 16.0f);
+      float *const restrict pixel = outrow + 4 * i;
+      nearest_color(pixel, err, graymode, f, rf);
+      _diffuse_error(pixel + right, err, 7.0f / 16.0f);
     }
 
     // lower right pixel
@@ -444,20 +460,10 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
   unsigned int levels = 1;
   int graymode = get_dither_parameters(data,piece,scale,&levels);
 
+  if(graymode < 0) return;
+
   const float *const restrict in = (const float *)ivoid;
   float *const restrict out = (float *)ovoid;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width)  \
-  dt_omp_sharedconst(in, out) \
-  schedule(simd:static)
-#endif
-  for(int j = 0; j < height * width * 4; j++)
-  {
-    out[j] = clipnan(in[j]);
-  }
-
-  if(graymode < 0) return;
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
@@ -468,6 +474,7 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
   {
     for(int j = 0; j < height * width; j++)
     {
+      clipnan_pixel(out + 4 * j, in + 4 * j);
       (void)nearest_color_sse(out + 4 * j, graymode, f, rf);
     }
 
@@ -476,19 +483,31 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     return;
   }
 
-  // floyd-steinberg dithering follows here
-
   // offsets to neighboring pixels
   const size_t right = 4;
   const size_t downleft = 4 * (width-1);
   const size_t down = 4 * width;
   const size_t downright = 4 * (width+1);
+
+  // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
+  // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
+  // and down neighbors
+  for (int j = 0; j < width; j++)
+  {
+    clipnan_pixel(out + 4*j, in + 4*j);
+  }
+
+  // floyd-steinberg dithering follows here
+
   // first height-1 rows
   for(int j = 0; j < height - 1; j++)
   {
+    const float *const restrict inrow = in + (size_t)4 * j * width;
     float *const restrict outrow = out + (size_t)4 * j * width;
 
     // first column
+    clipnan_pixel(outrow + downright, inrow + downright); // down-right pixel is about to get its first access
+    clipnan_pixel(outrow + down, inrow + down);           // same for the pixel below
     err = nearest_color_sse(outrow, graymode, f, rf);
     _diffuse_error_sse(outrow + right, err, 7.0f / 16.0f);
     _diffuse_error_sse(outrow + down, err, 5.0f / 16.0f);
@@ -497,17 +516,20 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     // main part of image
     for(int i = 1; i < width - 1; i++)
     {
-      err = nearest_color_sse(outrow + 4 * i, graymode, f, rf);
-      _diffuse_error_sse(outrow + 4 * i + right, err, 7.0f / 16.0f);
-      _diffuse_error_sse(outrow + 4 * i + downleft, err, 3.0f / 16.0f);
-      _diffuse_error_sse(outrow + 4 * i + down, err, 5.0f / 16.0f);
-      _diffuse_error_sse(outrow + 4 * i + downright, err, 1.0f / 16.0f);
+      float *const restrict pixel = outrow + 4 * i;
+      clipnan_pixel(outrow + 4 * i + downright, inrow + 4 * i + downright); // prepare down-right pixel
+      err = nearest_color_sse(pixel, graymode, f, rf);
+      _diffuse_error_sse(pixel + right, err, 7.0f / 16.0f);
+      _diffuse_error_sse(pixel + downleft, err, 3.0f / 16.0f);
+      _diffuse_error_sse(pixel + down, err, 5.0f / 16.0f);
+      _diffuse_error_sse(pixel + downright, err, 1.0f / 16.0f);
     }
 
     // last column
-    err = nearest_color_sse(outrow + 4 * (width - 1), graymode, f, rf);
-    _diffuse_error_sse(outrow + 4 * (width - 1) + downleft, err, 3.0f / 16.0f);
-    _diffuse_error_sse(outrow + 4 * (width - 1) + down, err, 5.0f / 16.0f);
+    float *const restrict lastpixel = outrow + 4 * (width-1);
+    err = nearest_color_sse(lastpixel, graymode, f, rf);
+    _diffuse_error_sse(lastpixel + downleft, err, 3.0f / 16.0f);
+    _diffuse_error_sse(lastpixel + down, err, 5.0f / 16.0f);
   }
 
   // last row
@@ -517,8 +539,9 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     // last row except for the right-most pixel
     for(int i = 0; i < width - 1; i++)
     {
-      err = nearest_color_sse(outrow + 4 * i, graymode, f, rf);
-      _diffuse_error_sse(outrow + 4 * i + right, err, 7.0f / 16.0f);
+      float *const restrict pixel = outrow + 4 * i;
+      err = nearest_color_sse(pixel, graymode, f, rf);
+      _diffuse_error_sse(pixel + right, err, 7.0f / 16.0f);
     }
 
     // lower right pixel
