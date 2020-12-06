@@ -87,7 +87,7 @@ for camera in xml_doc.getroot().findall('Camera'):
         maker = cid.get('make')
         model = cid.get('model')
     exif_name_map[exif_id] = maker,model
-    for alias in camera.findall('Alias'):
+    for alias in camera.findall('Aliases/Alias'):
         exif_model = alias.text
         exif_id = exif_maker, exif_model
         exif_name_map[exif_id] = maker,model
