@@ -439,34 +439,39 @@ void eaw_decompose_sse2(float *const restrict out, const float *const restrict i
 #endif
 
 void eaw_synthesize(float *const restrict out, const float *const restrict in, const float *const restrict detail,
-                           const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+                    const float *const restrict threshold, const float *const restrict boost,
+                    const int32_t width, const int32_t height)
 {
-  const float threshold[4] = { thrsf[0], thrsf[1], thrsf[2], thrsf[3] };
-  const float boost[4] = { boostf[0], boostf[1], boostf[2], boostf[3] };
-
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(boost, detail, height, in, out, width, threshold) \
-  schedule(static) \
-  collapse(2)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(height, width) \
+  dt_omp_sharedconst(in, out, detail, threshold, boost) \
+  schedule(simd:static)
 #endif
-  for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
+  for(size_t k = 0; k < (size_t)width * height; k++)
   {
+#ifdef _OPENMP
+#pragma omp simd simdlen(4) aligned(detail, in, out, threshold, boost)
+#endif
     for(size_t c = 0; c < 4; c++)
     {
-      const float absamt = fmaxf(0.0f, (fabsf(detail[k + c]) - threshold[c]));
-      const float amount = copysignf(absamt, detail[k + c]);
-      out[k + c] = in[k + c] + (boost[c] * amount);
+      // decrease the absolute magnitude of the detail by the threshold; copysignf does not vectorize, but it
+      // turns out that just adding up two clamped alternatives gives exactly the same result and DOES vectorize
+      //const float absamt = fmaxf(0.0f, (fabsf(detail[k + c]) - threshold[c]));
+      //const float amount = copysignf(absamt, detail[k + c]);
+      const float amount = MAX(detail[4*k+c] - threshold[c], 0.0f) + MIN(detail[4*k+c] + threshold[c], 0.0f);
+      out[4*k + c] = in[4*k + c] + (boost[c] * amount);
     }
   }
 }
 
 #if defined(__SSE2__)
 void eaw_synthesize_sse2(float *const restrict out, const float *const restrict in, const float *const restrict detail,
-                         const float *thrsf, const float *boostf, const int32_t width, const int32_t height)
+                         const float *const restrict thrsf, const float *const restrict boostf,
+                         const int32_t width, const int32_t height)
 {
-  const __m128 threshold = _mm_set_ps(thrsf[3], thrsf[2], thrsf[1], thrsf[0]);
-  const __m128 boost = _mm_set_ps(boostf[3], boostf[2], boostf[1], boostf[0]);
+  const __m128 threshold = _mm_load_ps(thrsf);
+  const __m128 boost = _mm_load_ps(boostf);
   const __m128i maski = _mm_set1_epi32(0x80000000u);
   const __m128 *mask = (__m128 *)&maski;
 

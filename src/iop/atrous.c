@@ -223,8 +223,8 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
                              const eaw_synthesize_t synthesize)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
-  float thrs[MAX_NUM_SCALES][4];
-  float boost[MAX_NUM_SCALES][4];
+  float DT_ALIGNED_PIXEL thrs[MAX_NUM_SCALES][4];
+  float DT_ALIGNED_PIXEL boost[MAX_NUM_SCALES][4];
   float sharp[MAX_NUM_SCALES];
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_mult = 1u << (max_scale - 1);
