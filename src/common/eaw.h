@@ -35,3 +35,14 @@ void eaw_decompose_sse2(float *const restrict out, const float *const restrict i
                         const int scale, const float sharpen, const int32_t width, const int32_t height);
 void eaw_synthesize_sse2(float *const restrict out, const float *const restrict in, const float *const restrict detail,
                          const float *thrsf, const float *boostf, const int32_t width, const int32_t height);
+
+typedef void((*eaw_dn_decompose_t)(float *const restrict out, const float *const restrict in, float *const restrict detail,
+                                   float sum_squared[4], const int scale, const float inv_sigma2,
+                                   const int32_t width, const int32_t height));
+
+void eaw_dn_decompose(float *const restrict out, const float *const restrict in, float *const restrict detail,
+                      float sum_squared[4], const int scale, const float inv_sigma2,
+                      const int32_t width, const int32_t height);
+void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict in, float *const restrict detail,
+                          float sum_squared[4], const int scale, const float inv_sigma2,
+                          const int32_t width, const int32_t height);
