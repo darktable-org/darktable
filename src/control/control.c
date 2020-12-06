@@ -558,26 +558,11 @@ void dt_control_toast_redraw()
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
-static gboolean _gtk_widget_queue_draw(gpointer user_data)
-{
-  GtkWidget **widget_pointer = (GtkWidget **)user_data;
-  if(*widget_pointer)
-  {
-    g_signal_handlers_disconnect_by_func(G_OBJECT(*widget_pointer), gtk_widget_destroyed, widget_pointer);
-    gtk_widget_queue_draw(GTK_WIDGET(*widget_pointer));
-  }
-  return FALSE;
-}
-
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    GtkWidget **widget_pointer = malloc(sizeof (GtkWidget *));
-    *widget_pointer = widget;
-    g_signal_connect(G_OBJECT(widget), "destroy", G_CALLBACK(gtk_widget_destroyed), widget_pointer);
-
-    g_main_context_invoke_full(NULL, G_PRIORITY_DEFAULT, _gtk_widget_queue_draw, widget_pointer, g_free);
+    g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)widget);
   }
 }
 
