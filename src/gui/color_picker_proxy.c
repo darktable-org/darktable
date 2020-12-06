@@ -242,6 +242,8 @@ static void _iop_color_picker_signal_callback(gpointer instance, dt_iop_module_t
   // to work properly. This will force colorin to be run and it
   // will set the work_profile if needed.
 
+  if(!dev) return;
+
   dev->preview_pipe->changed |= DT_DEV_PIPE_REMOVE;
   dev->preview_pipe->cache_obsolete = 1;
 
