@@ -19292,6 +19292,11 @@ msgctxt "accel"
 msgid "start and stop"
 msgstr "Start und Stop"
 
+#: ../src/views/slideshow.c:630
+msgctxt "accel"
+msgid "exit slideshow"
+msgstr "Diashow beenden"
+
 #: ../src/views/slideshow.c:643
 msgid "go to next image"
 msgstr "zum nächsten Bild gehen"
