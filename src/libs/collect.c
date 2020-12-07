@@ -1296,36 +1296,47 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                              ) ? neg_sort_folder_tag : sort_folder_tag
                               );
 
+    gboolean no_uncategorized = (property == DT_COLLECTION_PROP_TAG) ?
+                                dt_conf_get_bool("plugins/lighttable/tagging/no_uncategorized")
+                                : TRUE;
+
     for(GList *names = sorted_names; names; names = g_list_next(names))
     {
       name_key_tuple_t *tuple = (name_key_tuple_t *)names->data;
       char *name = tuple->name;
       const int count = tuple->count;
       if(name == NULL) continue; // safeguard against degenerated db entries
-      // this is just for tags
-      char *next_name = g_strdup(names->next ? ((name_key_tuple_t *)names->next->data)->name : "");
-      if(strlen(next_name) >= strlen(name) + 1 && next_name[strlen(name)] == '|')
-        next_name[strlen(name)] = '\0';
-        
-      if(property == DT_COLLECTION_PROP_TAG && strchr(name, '|') == NULL
-        && (g_strcmp0(next_name, name)))
-      {
-        /* add uncategorized root iter if not exists */
-        if(!uncategorized.stamp)
-        {
-          gtk_tree_store_insert(GTK_TREE_STORE(model), &uncategorized, NULL, 0);
-          gtk_tree_store_set(GTK_TREE_STORE(model), &uncategorized, DT_LIB_COLLECT_COL_TEXT,
-                             _(UNCATEGORIZED_TAG), DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE,
-                             TRUE, -1);
-        }
 
-        /* adding an uncategorized tag */
-        gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, -1);
-        gtk_tree_store_set(GTK_TREE_STORE(model), &temp, DT_LIB_COLLECT_COL_TEXT, name,
-                           DT_LIB_COLLECT_COL_PATH, name, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
-                           DT_LIB_COLLECT_COL_COUNT, count, -1);
+      // this is just for tags
+      gboolean uncategorized_found = FALSE;
+      if(!no_uncategorized && strchr(name, '|') == NULL)
+      {
+        char *next_name = g_strdup(names->next ? ((name_key_tuple_t *)names->next->data)->name : "");
+        if(strlen(next_name) >= strlen(name) + 1 && next_name[strlen(name)] == '|')
+          next_name[strlen(name)] = '\0';
+
+        if(g_strcmp0(next_name, name))
+        {
+          /* add uncategorized root iter if not exists */
+          if(!uncategorized.stamp)
+          {
+            gtk_tree_store_insert(GTK_TREE_STORE(model), &uncategorized, NULL, 0);
+            gtk_tree_store_set(GTK_TREE_STORE(model), &uncategorized, DT_LIB_COLLECT_COL_TEXT,
+                               _(UNCATEGORIZED_TAG), DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE,
+                               TRUE, -1);
+          }
+
+          /* adding an uncategorized tag */
+          gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, -1);
+          gtk_tree_store_set(GTK_TREE_STORE(model), &temp, DT_LIB_COLLECT_COL_TEXT, name,
+                             DT_LIB_COLLECT_COL_PATH, name, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
+                             DT_LIB_COLLECT_COL_COUNT, count, -1);
+          uncategorized_found = TRUE;
+        }
+        g_free(next_name);
       }
-      else
+
+      if(!uncategorized_found)
       {
         char **tokens;
         if(property == DT_COLLECTION_PROP_FOLDERS)
@@ -1417,7 +1428,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
           last_tokens_length = tokens_length;
         }
       }
-      g_free(next_name);
     }
     g_list_free_full(sorted_names, free_tuple);
 
