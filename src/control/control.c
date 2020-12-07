@@ -563,16 +563,12 @@ void dt_control_toast_redraw()
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
-static gboolean _gtk_widget_queue_draw(gpointer user_data)
-{
-  gtk_widget_queue_draw(GTK_WIDGET(user_data));
-  return FALSE;
-}
-
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
-    g_main_context_invoke(NULL, _gtk_widget_queue_draw, widget);
+  {
+    g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)widget);
+  }
 }
 
 
