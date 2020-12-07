@@ -32,20 +32,21 @@
 #include <xmmintrin.h>
 #endif
 
-static void blur_horizontal_1ch(float *buf, const int height, const int width, const int radius, float *scanlines)
+static void blur_horizontal_1ch(float *const restrict buf, const int height, const int width, const int radius,
+                                float *const restrict scanlines)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, scanlines)   \
-  shared(buf) \
+  dt_omp_firstprivate(radius, height, width) \
+  dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
 #endif
   for(int y = 0; y < height; y++)
   {
     float L = 0;
     int hits = 0;
-    size_t index = (size_t)y * width;
-    float *scanline = scanlines + dt_get_thread_num() * width;
+    const size_t index = (size_t)y * width;
+    float *const restrict scanline = scanlines + dt_get_thread_num() * width;
     // add up the left half of the window
     for (int x = 0; x < radius && x < width ; x++)
     {
@@ -89,7 +90,8 @@ static void blur_horizontal_1ch(float *buf, const int height, const int width, c
 }
 
 #ifdef __SSE2__
-static void blur_vertical_1ch_sse(float *buf, const int height, const int width, const int radius, float *scanline)
+static void blur_vertical_1ch_sse(float *const restrict buf, const int height, const int width, const int radius,
+                                  float *const restrict scanline)
 {
   __m128 L = { 0, 0, 0, 0 };
   __m128 hits = { 0, 0, 0, 0 };
@@ -139,27 +141,31 @@ static void blur_vertical_1ch_sse(float *buf, const int height, const int width,
 #endif /* __SSE2__ */
 
 // invoked inside an OpenMP parallel for, so no need to parallelize
-static void blur_vertical_4wide(float *buf, const int height, const int width, const int radius, float *scanline)
+/*static*/ void blur_vertical_4wide(float *const restrict buf, const int height, const int width, const int radius,
+                                    float *const restrict scanline)
 {
 #ifdef __SSE2__
-  if (darktable.codepath.SSE2)
+  if (darktable.codepath.SSE2 & 0)
   {
     blur_vertical_1ch_sse(buf, height, width, radius, scanline);
     return;
   }
 #endif /* __SSE2__ */
 
-  float L[4] = { 0, 0, 0, 0 };
+  float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
   int hits = 0;
   // add up the left half of the window
   for (size_t y = 0; y < radius && y < height; y++)
   {
     size_t index = y * width;
-    L[0] += buf[index];
-    L[1] += buf[index + 1];
-    L[2] += buf[index + 2];
-    L[3] += buf[index + 3];
     hits++;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf : 16)
+#endif
+    for (int c = 0; c < 4; c++)
+    {
+      L[c] += buf[index+c];
+    }
   }
   // process the blur up to the point where we start removing values
   for (size_t y = 0; y <= radius && y < height; y++)
@@ -168,16 +174,20 @@ static void blur_vertical_4wide(float *buf, const int height, const int width, c
     const int npoffset = np * width;
     if(np < height)
     {
-      L[0] += buf[npoffset];
-      L[1] += buf[npoffset+1];
-      L[2] += buf[npoffset+2];
-      L[3] += buf[npoffset+3];
       hits++;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf : 16)
+#endif
+      for (int c = 0; c < 4; c++)
+        L[c] += buf[npoffset+c];
     }
-    scanline[4*y] = L[0] / hits;
-    scanline[4*y+1] = L[1] / hits;
-    scanline[4*y+2] = L[2] / hits;
-    scanline[4*y+3] = L[3] / hits;
+#ifdef _OPENMP
+#pragma omp simd aligned(scanline : 16)
+#endif
+    for (int c = 0; c < 4; c++)
+    {
+      scanline[4*y + c] = L[c] / hits;
+    }
   }
   // process the blur for the rest of the scan line
   for (size_t y = radius+1; y < height; y++)
@@ -188,59 +198,64 @@ static void blur_vertical_4wide(float *buf, const int height, const int width, c
     const int npoffset = np * width;
     if(op >= 0)
     {
-      L[0] -= buf[opoffset];
-      L[1] -= buf[opoffset+1];
-      L[2] -= buf[opoffset+2];
-      L[3] -= buf[opoffset+3];
       hits--;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf : 16)
+#endif
+      for (int c = 0; c < 4; c++)
+        L[c] -= buf[opoffset + c];
     }
     if(np < height)
     {
-      L[0] += buf[npoffset];
-      L[1] += buf[npoffset+1];
-      L[2] += buf[npoffset+2];
-      L[3] += buf[npoffset+3];
       hits++;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf : 16)
+#endif
+      for (int c = 0; c < 4; c++)
+        L[c] += buf[npoffset + c];
     }
-    scanline[4*y] = L[0] / hits;
-    scanline[4*y+1] = L[1] / hits;
-    scanline[4*y+2] = L[2] / hits;
-    scanline[4*y+3] = L[3] / hits;
+#ifdef _OPENMP
+#pragma omp simd aligned(scanline : 16)
+#endif
+    for (int c = 0; c < 4; c++)
+      scanline[4*y + c] = L[c] / hits;
   }
 
   // copy blurred values back to original location in buffer
   for (size_t y = 0; y < height; y++)
   {
-    buf[y * width] = scanline[4*y];
-    buf[y * width + 1] = scanline[4*y+1];
-    buf[y * width + 2] = scanline[4*y+2];
-    buf[y * width + 3] = scanline[4*y+3];
+#ifdef _OPENMP
+#pragma omp simd aligned(buf, scanline : 16)
+#endif
+    for (int c = 0; c < 4; c++)
+      buf[y * width + c] = scanline[4*y + c];
   }
   return;
 }
 
-static void blur_vertical_1ch(float *buf, const int height, const int width, const int radius, float *scanlines)
+static void blur_vertical_1ch(float *const restrict buf, const int height, const int width, const int radius,
+                              float *const restrict scanlines)
 {
   /* vertical pass on L channel */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width, scanlines)   \
-  shared(buf) \
+  dt_omp_firstprivate(radius, height, width) \
+  dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
 #endif
-  for(int x = 0; x < width-4; x += 4)
+  for(int x = 0; x < (width & ~3); x += 4)
   {
-    float *scanline = scanlines + 4 * dt_get_thread_num() * height;
+    float *const restrict scanline = scanlines + 4 * dt_get_thread_num() * height;
     blur_vertical_4wide(buf + x, height, width, radius, scanline);
   }
   const int opoffs = -(radius + 1) * width;
   const int npoffs = radius*width;
-  for(int x = 4*(width/4); x < width; x++)
+  for(int x = width & ~3; x < width; x++)
   {
-    float L = 0;
+    float L = 0.0f;
     int hits = 0;
     size_t index = (size_t)x - radius * width;
-    float *scanline = scanlines + 4 * dt_get_thread_num() * height;
+    float *const restrict scanline = scanlines;
     for(int y = -radius; y < height; y++)
     {
       const int op = y - radius - 1;
@@ -268,7 +283,7 @@ static void blur_vertical_1ch(float *buf, const int height, const int width, con
 static void dt_box_mean_1ch(float *const buf, const int height, const int width, const int radius,
                             const int iterations)
 {
-  const int size = width > height ? width : height;
+  const int size = MAX(width,height);
   float *const restrict scanlines = dt_alloc_align(64, 4 * size * sizeof(float) * dt_get_num_threads());
 
   for(int iteration = 0; iteration < iterations; iteration++)
@@ -413,19 +428,79 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
 
 // calculate the one-dimensional moving maximum over a window of size 2*w+1
 // input array x has stride 1, output array y has stride stride_y
-static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, int w)
+static inline void box_max_1d(int N, const float *const restrict x, float *const restrict y, size_t stride_y, int w)
 {
   float m = -(INFINITY);
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fmaxf(x[i], m);
+  for(int i = 0; i < min_i(w + 1, N); i++)
+    m = MAX(x[i], m);
   for(int i = 0; i < N; i++)
   {
+    // store maximum of current window at center position
     y[i * stride_y] = m;
+    // if the earliest member of the current window is the max, we need to
+    // rescan the window to determine the new maximum
     if(i - w >= 0 && x[i - w] == m)
     {
       m = -(INFINITY);
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fmaxf(x[j], m);
+      for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+        m = MAX(x[j], m);
     }
-    if(i + w + 1 < N) m = fmaxf(x[i + w + 1], m);
+    // if the window has not yet exceeded the end of the row/column, update the maximum value
+    if(i + w + 1 < N)
+      m = MAX(x[i + w + 1], m);
+  }
+}
+
+// calculate the one-dimensional moving maximum on four adjacent columns over a window of size 2*w+1
+// input array x has stride 16, output array y has stride stride_y and we will write 16 consecutive elements
+//  every stride_y elements (thus processing a cache line at a time)
+static inline void box_max_vert_16wide(const int N, const float *const restrict x, float *const restrict y,
+                                      const int stride_y, const int w)
+{
+  float DT_ALIGNED_PIXEL m[16] = { -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
+                                  -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
+                                  -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
+                                  -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY) };
+  for(int i = 0; i < min_i(w + 1, N); i++)
+#ifdef _OPENMP
+#pragma omp simd aligned(m, x)
+#endif
+    for (int c = 0; c < 16; c++)
+      m[c] = MAX(x[16*i + c], m[c]);
+  for(int i = 0; i < N; i++)
+  {
+    // store maximum of current window at center position
+#ifdef _OPENMP
+#pragma omp simd aligned(m, y)
+#endif
+    for (int c = 0; c < 16; c++)
+      y[i * stride_y + c] = m[c];
+    // If the earliest member of the current window is the max, we need to
+    // rescan the window to determine the new maximum
+    if (i >= w)
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(m, x)
+#endif
+      for (int c = 0; c < 16; c++)
+      {
+//        if(x[16 * (i - w) + c] == m[c]) //prevents vectorization
+        {
+          m[c] = -(INFINITY);
+          for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+            m[c] = MAX(x[16*j+c], m[c]);
+        }
+      }
+    }
+    // if the window has not yet exceeded the end of the row/column, update the maximum value
+    if(i + w + 1 < N)
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(m, x)
+#endif
+      for (int c = 0; c < 16; c++)
+        m[c] = MAX(x[16 * (i + w + 1) + c], m[c]);
+    }
   }
 }
 
@@ -433,41 +508,45 @@ static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, 
 // does the calculation in-place if input and output images are identical
 static void box_max_1ch(float *const buf, const int height, const int width, const int w)
 {
-  float *scratch;
+  float *const restrict scratch_buffers = dt_alloc_align_float(MAX(width,16*height) * dt_get_num_threads());
 #ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, width, height, buf)        \
-  private(scratch)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(w, width, height, buf)    \
+  dt_omp_sharedconst(scratch_buffers) \
+  schedule(static)
 #endif
+  for(size_t row = 0; row < height; row++)
   {
-    scratch = dt_alloc_align(64, width * sizeof(float));
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i1 = 0; i1 < height; i1++)
-    {
-      memcpy(scratch, buf + (size_t)i1 * width, sizeof(float) * width);
-      box_max_1d(width, scratch, buf + (size_t)i1 * width, 1, w);
-    }
-    dt_free_align(scratch);
+    float *const restrict scratch = scratch_buffers + width * dt_get_thread_num();
+    memcpy(scratch, buf + row * width, sizeof(float) * width);
+    box_max_1d(width, scratch, buf + row * width, 1, w);
   }
 #ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(w, width, height, buf)        \
-  private(scratch)
+#pragma omp parallel for default(none)           \
+  dt_omp_firstprivate(w, width, height, buf) \
+  dt_omp_sharedconst(scratch_buffers) \
+  schedule(static)
+#endif
+#if 1
+  for(int col = 0; col < (width & ~15); col += 16)
+  {
+    float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
+    for (size_t row = 0; row < height; row++)
+      for (size_t c = 0; c < 16; c++)
+        scratch[16*row+c] = buf[row * width + col + c];
+    box_max_vert_16wide(height, scratch, buf + col, width, w);
+  }
+  for (size_t col = width & ~15 ; col < width; col++)
+#else
+  for (size_t col = 0 ; col < width; col++)
 #endif
   {
-    scratch = dt_alloc_align(64, height * sizeof(float));
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i0 = 0; i0 < width; i0++)
-    {
-      for(int i1 = 0; i1 < height; i1++) scratch[i1] = buf[i0 + (size_t)i1 * width];
-      box_max_1d(height, scratch, buf + i0, width, w);
-    }
-    dt_free_align(scratch);
+    float *const restrict scratch = scratch_buffers;
+    for(size_t row = 0; row < height; row++)
+      scratch[row] = buf[row * width + col];
+    box_max_1d(height, scratch, buf + col, width, w);
   }
+  dt_free_align(scratch_buffers);
 }
 
 
@@ -484,16 +563,72 @@ void dt_box_max(float *const buf, const int height, const int width, const int c
 static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
 {
   float m = INFINITY;
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fminf(x[i], m);
+  for(int i = 0; i < min_i(w + 1, N); i++)
+    m = MIN(x[i], m);
   for(int i = 0; i < N; i++)
   {
     y[i * stride_y] = m;
     if(i - w >= 0 && x[i - w] == m)
     {
       m = INFINITY;
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fminf(x[j], m);
+      for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+        m = MIN(x[j], m);
     }
-    if(i + w + 1 < N) m = fminf(x[i + w + 1], m);
+    if(i + w + 1 < N)
+      m = MIN(x[i + w + 1], m);
+  }
+}
+
+// calculate the one-dimensional moving minimum on four adjacent columns over a window of size 2*w+1
+// input array x has stride 16, output array y has stride stride_y and we will write 16 consecutive elements
+//  every stride_y elements (thus processing a cache line at a time)
+static inline void box_min_vert_16wide(const int N, const float *const restrict x, float *const restrict y,
+                                      const int stride_y, const int w)
+{
+  float DT_ALIGNED_PIXEL m[16] = { -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
+                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
+                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
+                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY) };
+  for(int i = 0; i < min_i(w + 1, N); i++)
+#ifdef _OPENMP
+#pragma omp simd aligned(m, x)
+#endif
+    for (int c = 0; c < 16; c++)
+      m[c] = MIN(x[16*i + c], m[c]);
+  for(int i = 0; i < N; i++)
+  {
+    // store minimum of current window at center position
+#ifdef _OPENMP
+#pragma omp simd aligned(m, y)
+#endif
+    for (int c = 0; c < 16; c++)
+      y[i * stride_y + c] = m[c];
+    // If the earliest member of the current window is the min, we need to
+    // rescan the window to determine the new minimum
+    if (i >= w)
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(m, x)
+#endif
+      for (int c = 0; c < 16; c++)
+      {
+//        if(x[16 * (i - w) + c] == m[c]) //prevents vectorization
+        {
+          m[c] = -(INFINITY);
+          for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+            m[c] = MIN(x[16*j+c], m[c]);
+        }
+      }
+    }
+    // if the window has not yet exceeded the end of the row/column, update the minimum value
+    if(i + w + 1 < N)
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(m, x)
+#endif
+      for (int c = 0; c < 16; c++)
+        m[c] = MIN(x[16 * (i + w + 1) + c], m[c]);
+    }
   }
 }
 
@@ -502,41 +637,46 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
 // does the calculation in-place if input and output images are identical
 static void box_min_1ch(float *const buf, const int height, const int width, const int w)
 {
-  float *scratch;
+  float *const restrict scratch_buffers = dt_alloc_align_float(MAX(width,16*height) * dt_get_num_threads());
 #ifdef _OPENMP
-#pragma omp parallel default(none)              \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(w, width, height, buf)    \
-  private(scratch)
+  dt_omp_sharedconst(scratch_buffers) \
+  schedule(static)
 #endif
+  for(size_t row = 0; row < height; row++)
   {
-    scratch = dt_alloc_align(64, width * sizeof(float));
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i1 = 0; i1 < height; i1++)
-    {
-      memcpy(scratch, buf + (size_t)i1 * width, sizeof(float) * width);
-      box_min_1d(width, scratch, buf + (size_t)i1 * width, 1, w);
-    }
-    dt_free_align(scratch);
+    float *const restrict scratch = scratch_buffers + width * dt_get_thread_num();
+    memcpy(scratch, buf + row * width, sizeof(float) * width);
+    box_min_1d(width, scratch, buf + row * width, 1, w);
   }
 #ifdef _OPENMP
-#pragma omp parallel default(none)           \
+#pragma omp parallel for default(none)           \
   dt_omp_firstprivate(w, width, height, buf) \
-  private(scratch)
+  dt_omp_sharedconst(scratch_buffers) \
+  schedule(static)
+#endif
+#if 1
+  for(int col = 0; col < (width & ~15); col += 16)
+  {
+    float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
+    for (size_t row = 0; row < height; row++)
+      for (size_t c = 0; c < 16; c++)
+        scratch[16*row+c] = buf[row * width + col + c];
+    box_min_vert_16wide(height, scratch, buf + col, width, w);
+  }
+  for (size_t col = width & ~15 ; col < width; col++)
+#else
+  for (size_t col = 0 ; col < width; col++)
 #endif
   {
-    scratch = dt_alloc_align(64, height * sizeof(float));
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i0 = 0; i0 < width; i0++)
-    {
-      for(int i1 = 0; i1 < height; i1++) scratch[i1] = buf[i0 + (size_t)i1 * width];
-      box_min_1d(height, scratch, buf + i0, width, w);
-    }
-    dt_free_align(scratch);
+    float *const restrict scratch = scratch_buffers;
+    for(size_t row = 0; row < height; row++)
+      scratch[row] = buf[row * width + col];
+    box_min_1d(height, scratch, buf + col, width, w);
   }
+
+  dt_free_align(scratch_buffers);
 }
 
 void dt_box_min(float *const buf, const int height, const int width, const int ch, const int radius)
