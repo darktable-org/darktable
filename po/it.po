@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-07 22:30+0100\n"
+"PO-Revision-Date: 2020-12-07 23:15+0100\n"
 "Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
@@ -5805,10 +5805,8 @@ msgid "deprecated modes"
 msgstr "Modalità deprecate"
 
 #: ../src/develop/blend_gui.c:2854
-#, fuzzy
-#| msgid "session options"
 msgid "blending options"
-msgstr "Opzioni sessione"
+msgstr "Opzioni di fusione"
 
 #: ../src/develop/blend_gui.c:2870 ../src/libs/history.c:888
 msgid "blend mode"
@@ -6011,6 +6009,8 @@ msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
 msgstr ""
+"Azzera i parametri\n"
+"Crtrl+click per applicare di nuovo qualsiasi preset automatico"
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2508 ../src/gui/preferences.c:791
@@ -6036,8 +6036,6 @@ msgid "purpose"
 msgstr "Scopo"
 
 #: ../src/develop/imageop.c:3176
-#, fuzzy
-#| msgid "processing"
 msgid "process"
 msgstr "Elaborazione"
 
@@ -6949,7 +6947,7 @@ msgstr ""
 #: ../src/gui/gtk.c:963
 #| msgid "close darktable"
 msgid "closing darktable..."
-msgstr "Chiudendo Darktable..."
+msgstr "Sto chiudendo darktable..."
 
 #. register keys for view switching
 #: ../src/gui/gtk.c:1375
@@ -7086,11 +7084,8 @@ msgid "toggle tooltip visibility"
 msgstr "Attiva visibilità suggerimenti"
 
 #: ../src/gui/gtk.c:1525
-#, fuzzy
-#| msgctxt "accel"
-#| msgid "toggle focus peaking"
 msgid "enable focus-peaking mode"
-msgstr "Nascondi l'evidenziatore del fuoco"
+msgstr "Abilita la modalità di visualizzazione delle aree a fuoco"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
@@ -7431,10 +7426,8 @@ msgid "metadata to be applied per default"
 msgstr "Metadati da applicare in modo predefinito"
 
 #: ../src/gui/import_metadata.c:178
-#, fuzzy
-#| msgid "import from camera"
 msgid "imported from xmp"
-msgstr "Importa dalla fotocamera"
+msgstr "Importa da file XMP"
 
 #: ../src/gui/import_metadata.c:180
 msgid ""
@@ -7443,6 +7436,12 @@ msgid ""
 "actions\n"
 " CAUTION: not selected metadata are cleaned up when xmp file is updated"
 msgstr ""
+"I metadati selezionati sono importati dall'immagine e sovrascriveranno\n"
+"quelli predefiniti. Questa opzione ha la precedenza su 'Verifica file XMP "
+"aggiornati\n"
+"all'avvio' e 'carica file sidecar'\n"
+"ATTENZIONE: i metadati non selezionati verranno cancellati all'aggiornamento "
+"del file XMP"
 
 #: ../src/gui/import_metadata.c:237
 msgid "comma separated list of tags"
@@ -7495,13 +7494,15 @@ msgstr "Imposta il tema dell'interfaccia utente"
 
 #: ../src/gui/preferences.c:396
 msgid "prefer performance over quality"
-msgstr ""
+msgstr "Preferisci la velocità alla qualità"
 
 #: ../src/gui/preferences.c:404
 msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
 msgstr ""
+"Se attivato, le anteprime verranno costruite con una qualità inferiore ma 4 "
+"volte più rapidamente"
 
 #: ../src/gui/preferences.c:418 ../src/gui/preferences.c:425
 msgid "use system font size"
@@ -7516,14 +7517,6 @@ msgid "GUI controls and text DPI"
 msgstr "DPI dei controlli della GUI e del testo"
 
 #: ../src/gui/preferences.c:453
-#, fuzzy
-#| msgid ""
-#| "adjust the global GUI resolution to rescale controls, buttons, labels, "
-#| "etc.\n"
-#| "increase for a magnified GUI, decrease to fit more content in window.\n"
-#| "set to -1 to use the system-defined global resolution.\n"
-#| "default is 96 DPI on most systems.\n"
-#| "this needs a restart to apply changes."
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
@@ -7535,7 +7528,7 @@ msgstr ""
 "controlli, i pulsanti, le etichette, ecc.\n"
 "Aumentare il valore per ingrandire l'interfaccia o diminuirlo per includere "
 "un maggior contenuto nello schermo.\n"
-"Importare a 1 per applicare la risoluzione definita dal sistema.\n"
+"Impostare a -1 per applicare la risoluzione definita dal sistema.\n"
 "Il valore predefinito è 96 DPI sulla maggior parte dei sistemi.\n"
 "Questa modifica richiede un riavvio."
 
@@ -7573,7 +7566,7 @@ msgstr "Preferenze darktable"
 
 #: ../src/gui/preferences.c:626
 msgid "darktable needs to be restarted for settings to take effect"
-msgstr ""
+msgstr "darktable deve essere riavviato affinchè le regolazioni abbiano effetto"
 
 #. exif
 #: ../src/gui/preferences.c:813 ../src/gui/preferences.c:1851
@@ -7782,6 +7775,7 @@ msgstr "Formato"
 #: ../src/gui/preferences.c:1934 ../src/gui/presets.c:541
 msgid "select image types you want this preset to be available for"
 msgstr ""
+"Seleziona i tipi di immagine per le quali questo preset sarà disponibile"
 
 #: ../src/gui/preferences.c:2040 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
@@ -7796,7 +7790,7 @@ msgstr "Il preset %s è stato salvato con successo"
 #: ../src/gui/presets.c:177
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
-msgstr ""
+msgstr "Il preset '%s' è di sola lettura! Non puoi cancellarlo!"
 
 #. then show edit dialog
 #: ../src/gui/presets.c:228 ../src/gui/presets.c:693 ../src/gui/presets.c:700
@@ -7830,7 +7824,7 @@ msgstr "Sovrascrivo preset?"
 #: ../src/gui/presets.c:401
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
-msgstr ""
+msgstr "Il preset '%s' è di sola lettura! Non puoi modificarlo!"
 
 #: ../src/gui/presets.c:434 ../src/libs/lib.c:253
 msgid "name of the preset"
@@ -7858,7 +7852,7 @@ msgstr "Gestisci le preimpostazioni rapide"
 
 #: ../src/gui/presets.c:1120
 msgid "manage quick presets list..."
-msgstr ""
+msgstr "Gestione rapida elenco preset..."
 
 #: ../src/gui/presets.c:1255 ../src/gui/presets.c:1268
 msgid "(default)"
@@ -7886,15 +7880,12 @@ msgid "update preset"
 msgstr "Aggiorna preset"
 
 #: ../src/gui/styles_dialog.c:206
-#, fuzzy, c-format
-#| msgid ""
-#| "preset `%s' already exists.\n"
-#| "do you want to overwrite?"
+#, c-format
 msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Preset '%s' già esistente.\n"
+"Stile '%s' già esistente.\n"
 "Vuoi sovrascriverlo?"
 
 #: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:418
@@ -7903,16 +7894,12 @@ msgid "overwrite style?"
 msgstr "Sovrascrivo lo stile?"
 
 #: ../src/gui/styles_dialog.c:240 ../src/gui/styles_dialog.c:299
-#, fuzzy
-#| msgid "please give preset a name"
 msgid "please give style a name"
-msgstr "Per favore, dai un nome al preset"
+msgstr "Per favore, dai un nome allo stile"
 
 #: ../src/gui/styles_dialog.c:244 ../src/gui/styles_dialog.c:303
-#, fuzzy
-#| msgid "unnamed preset"
 msgid "unnamed style"
-msgstr "Preset senza nome"
+msgstr "Stile senza nome"
 
 #: ../src/gui/styles_dialog.c:291
 #, c-format
@@ -8552,16 +8539,12 @@ msgid "perspective correction"
 msgstr "correzione prospettiva"
 
 #: ../src/iop/ashift.c:118
-#, fuzzy
-#| msgid "only distortion"
 msgid "keystone|distortion"
-msgstr "Solo distorsione"
+msgstr "Poligono | distorsione"
 
 #: ../src/iop/ashift.c:123
-#, fuzzy
-#| msgid "optimize automatically"
 msgid "distort perspective automatically"
-msgstr "Ottimizza automaticamente"
+msgstr "Corregge la prospettiva automaticamente"
 
 #: ../src/iop/ashift.c:124 ../src/iop/basecurve.c:339 ../src/iop/cacorrect.c:59
 #: ../src/iop/colorreconstruction.c:135 ../src/iop/defringe.c:80
@@ -8588,11 +8571,8 @@ msgstr "Correttivo"
 #: ../src/iop/retouch.c:210 ../src/iop/splittoning.c:105
 #: ../src/iop/splittoning.c:107 ../src/iop/spots.c:63 ../src/iop/spots.c:65
 #: ../src/iop/toneequal.c:321 ../src/iop/velvia.c:111 ../src/iop/velvia.c:113
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "scene-referred"
 msgid "linear, RGB, scene-referred"
-msgstr "Riferito alla scena"
+msgstr "Lineare, RGB, riferito alla scena"
 
 #: ../src/iop/ashift.c:126 ../src/iop/borders.c:188 ../src/iop/clipping.c:329
 #: ../src/iop/flip.c:103 ../src/iop/liquify.c:300
@@ -8792,35 +8772,28 @@ msgid "contrast equalizer"
 msgstr "equalizzatore contrasto"
 
 #: ../src/iop/atrous.c:123
-#, fuzzy
-#| msgid "changes the local contrast"
 msgid "sharpness|acutance|local contrast"
-msgstr "Modifica il contrasto locale"
+msgstr "Nitidezza | contrasto locale"
 
 #: ../src/iop/atrous.c:128
 msgid "add or remove local contrast, sharpness, acutance"
-msgstr ""
+msgstr "Aggiunge o rimuove contrasto locale e nitidezza"
 
 #: ../src/iop/atrous.c:129 ../src/iop/bilateral.cc:98 ../src/iop/exposure.c:115
 #: ../src/iop/filmicrgb.c:330 ../src/iop/graduatednd.c:153
 #: ../src/iop/negadoctor.c:156 ../src/iop/rgbcurve.c:139
 #: ../src/iop/rgblevels.c:122 ../src/iop/shadhi.c:200 ../src/iop/tonecurve.c:213
 #: ../src/iop/toneequal.c:320
-#, fuzzy
-#| msgid "correction applied"
 msgid "corrective and creative"
-msgstr "Correzione applicata"
+msgstr "Correttivo e creativo"
 
 #: ../src/iop/atrous.c:131 ../src/iop/hazeremoval.c:114
 msgid "frequential, RGB"
-msgstr ""
+msgstr "Frequenziale, RGB"
 
 #: ../src/iop/atrous.c:132 ../src/iop/colorbalance.c:161
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "scene-referred"
 msgid "linear, Lab, scene-referred"
-msgstr "Riferito alla scena"
+msgstr "Lineare, Lab, riferito alla scena"
 
 #: ../src/iop/atrous.c:1062
 msgctxt "eq_preset"
@@ -9024,34 +8997,21 @@ msgid "base curve"
 msgstr "curva base"
 
 #: ../src/iop/basecurve.c:337
-#, fuzzy
-#| msgid ""
-#| "apply a view transform based on camera manufacturer look,\n"
-#| "for corrective purposes, to prepare images for display.\n"
-#| "works in RGB,\n"
-#| "takes preferably a linear RGB input,\n"
-#| "outputs non-linear RGB."
 msgid ""
 "apply a view transform based on personal or camera manufacturer look,\n"
 "for corrective purposes, to prepare images for display"
 msgstr ""
 "Applica una trasformazione basata sull'aspetto standard delle immagini del "
 "produttore della fotocamera.\n"
-"Serve per preparare l'immagine alla visualizzazione corretta sullo schermo.\n"
-"Opera in RGB.\n"
-"Accetta preferibilmente input in RGB lineare mentre\n"
-"l'output è in RGB non lineare."
+"Serve per preparare l'immagine alla visualizzazione corretta sullo schermo."
 
 #: ../src/iop/basecurve.c:340 ../src/iop/channelmixer.c:139
 #: ../src/iop/channelmixer.c:141 ../src/iop/lut3d.c:139
 #: ../src/iop/negadoctor.c:157 ../src/iop/profile_gamma.c:101
 #: ../src/iop/rgbcurve.c:140 ../src/iop/rgbcurve.c:142
 #: ../src/iop/rgblevels.c:123 ../src/iop/soften.c:107 ../src/iop/soften.c:109
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "display-referred"
 msgid "linear, RGB, display-referred"
-msgstr "Riferito allo schermo"
+msgstr "Lineare, RGB, riferito allo schermo"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:143
 #: ../src/iop/colorbalance.c:162 ../src/iop/dither.c:112
@@ -9059,10 +9019,8 @@ msgstr "Riferito allo schermo"
 #: ../src/iop/negadoctor.c:158 ../src/iop/profile_gamma.c:102
 #: ../src/iop/rgbcurve.c:141 ../src/iop/rgblevels.c:124
 #: ../src/iop/vignette.c:162 ../src/iop/watermark.c:292
-#, fuzzy
-#| msgid "linear Rec709 RGB"
 msgid "non-linear, RGB"
-msgstr "Rec709 RGB lineare"
+msgstr "Non lineare, RGB"
 
 #: ../src/iop/basecurve.c:342 ../src/iop/colorout.c:92 ../src/iop/dither.c:111
 #: ../src/iop/dither.c:113 ../src/iop/filmicrgb.c:333
@@ -9070,11 +9028,8 @@ msgstr "Rec709 RGB lineare"
 #: ../src/iop/profile_gamma.c:103 ../src/iop/rgblevels.c:125
 #: ../src/iop/vignette.c:161 ../src/iop/vignette.c:163
 #: ../src/iop/watermark.c:291 ../src/iop/watermark.c:293
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "display-referred"
 msgid "non-linear, RGB, display-referred"
-msgstr "Riferito allo schermo"
+msgstr "Non lineare, RGB, riferito allo schermo"
 
 #: ../src/iop/basecurve.c:2090
 msgid "abscissa: input, ordinate: output. works on RGB channels"
@@ -9115,20 +9070,16 @@ msgstr ""
 "+1: riduce le ombre)"
 
 #: ../src/iop/basecurve.c:2119 ../src/iop/tonecurve.c:1229
-#, fuzzy
-#| msgid "scale factor"
 msgid "scale for graph"
-msgstr "Fattore di scala"
+msgstr "Scala per il grafico"
 
 #: ../src/iop/basicadj.c:135
 msgid "basic adjustments"
 msgstr "regolazioni di base"
 
 #: ../src/iop/basicadj.c:140
-#, fuzzy
-#| msgid "basic adjustments"
 msgid "apply usual image adjustments"
-msgstr "regolazioni di base"
+msgstr "Applica le regolazioni di base"
 
 #: ../src/iop/basicadj.c:141 ../src/iop/bilat.c:100 ../src/iop/bloom.c:82
 #: ../src/iop/borders.c:186 ../src/iop/colisa.c:85
@@ -9139,17 +9090,12 @@ msgstr "regolazioni di base"
 #: ../src/iop/monochrome.c:98 ../src/iop/soften.c:106
 #: ../src/iop/splittoning.c:104 ../src/iop/velvia.c:110 ../src/iop/vibrance.c:92
 #: ../src/iop/vignette.c:160 ../src/iop/watermark.c:290
-#, fuzzy
-#| msgid "relative"
 msgid "creative"
-msgstr "Relativo"
+msgstr "Creativo"
 
 #: ../src/iop/basicadj.c:144
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "scene-referred"
 msgid "non-linear, RGB, scene-referred"
-msgstr "Riferito alla scena"
+msgstr "Non lineare, RGB, riferito alla scena"
 
 #: ../src/iop/basicadj.c:593
 msgid ""
@@ -9226,7 +9172,7 @@ msgstr "contrasto locale"
 
 #: ../src/iop/bilat.c:99
 msgid "manipulate local and global contrast separately"
-msgstr ""
+msgstr "Manipola separatamente il contrasto locale e globale"
 
 #: ../src/iop/bilat.c:101 ../src/iop/bilat.c:103 ../src/iop/bloom.c:83
 #: ../src/iop/bloom.c:85 ../src/iop/colisa.c:86 ../src/iop/colisa.c:88
@@ -9238,11 +9184,8 @@ msgstr ""
 #: ../src/iop/levels.c:135 ../src/iop/lowlight.c:93 ../src/iop/lowlight.c:95
 #: ../src/iop/monochrome.c:101 ../src/iop/nlmeans.c:100 ../src/iop/nlmeans.c:102
 #: ../src/iop/shadhi.c:203 ../src/iop/tonecurve.c:216 ../src/iop/vibrance.c:95
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "display-referred"
 msgid "non-linear, Lab, display-referred"
-msgstr "Riferito allo schermo"
+msgstr "Non lineare, Lab, riferito allo schermo"
 
 #: ../src/iop/bilat.c:102 ../src/iop/bloom.c:84 ../src/iop/colisa.c:87
 #: ../src/iop/colorcontrast.c:102 ../src/iop/colorcorrection.c:79
@@ -9251,16 +9194,12 @@ msgstr "Riferito allo schermo"
 #: ../src/iop/defringe.c:82 ../src/iop/grain.c:428 ../src/iop/levels.c:134
 #: ../src/iop/monochrome.c:100 ../src/iop/nlmeans.c:101 ../src/iop/shadhi.c:202
 #: ../src/iop/tonecurve.c:215 ../src/iop/vibrance.c:94
-#, fuzzy
-#| msgid "linear part"
 msgid "non-linear, Lab"
-msgstr "Parte lineare"
+msgstr "Non lineare, Lab"
 
 #: ../src/iop/bilat.c:172
-#, fuzzy
-#| msgid "global tonemap"
 msgid "HDR local tone-mapping"
-msgstr "mappatura tonale globale"
+msgstr "Mappatura tonale locale HDR"
 
 #: ../src/iop/bilat.c:427
 msgid ""
@@ -9308,7 +9247,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:72
 msgid "surface blur"
-msgstr ""
+msgstr "Sfocatura superficie"
 
 #: ../src/iop/bilateral.cc:77
 msgid "denoise (bilateral filter)"
@@ -9316,15 +9255,13 @@ msgstr "riduzione rumore (filtro bilaterale)"
 
 #: ../src/iop/bilateral.cc:97
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
-msgstr ""
+msgstr "Applica una sfocatura della superficie per ridurre il rumore o la grana"
 
 #: ../src/iop/bilateral.cc:100 ../src/iop/channelmixer.c:140
 #: ../src/iop/denoiseprofile.c:636 ../src/iop/exposure.c:117
 #: ../src/iop/soften.c:108 ../src/iop/splittoning.c:106 ../src/iop/velvia.c:112
-#, fuzzy
-#| msgid "linear Rec709 RGB"
 msgid "linear, RGB"
-msgstr "Rec709 RGB lineare"
+msgstr "Lineare, RGB"
 
 #: ../src/iop/bilateral.cc:310 ../src/iop/clahe.c:337 ../src/iop/dither.c:741
 #: ../src/iop/lowpass.c:586 ../src/iop/shadhi.c:714 ../src/iop/sharpen.c:727
@@ -9349,7 +9286,7 @@ msgstr "Quanto sfocare il blu"
 
 #: ../src/iop/bloom.c:81
 msgid "apply Orton effect for a dreamy aetherical look"
-msgstr ""
+msgstr "Applica l'effetto Orton per un effetto sognante o etereo"
 
 #: ../src/iop/bloom.c:392 ../src/iop/soften.c:547 ../src/libs/camera.c:598
 msgid "size"
@@ -9379,11 +9316,11 @@ msgstr "cornice"
 
 #: ../src/iop/borders.c:185
 msgid "add solid borders or margins around the picture"
-msgstr ""
+msgstr "Aggiunge un bordo solito o dei margini intorno all'immagine"
 
 #: ../src/iop/borders.c:187 ../src/iop/borders.c:189 ../src/iop/lut3d.c:141
 msgid "linear or non-linear, RGB, display-referred"
-msgstr ""
+msgstr "Lineare o non-lineare, RGB, riferito allo schermo"
 
 #: ../src/iop/borders.c:717
 msgid "15:10 postcard white"
@@ -9546,32 +9483,21 @@ msgid "chromatic aberrations"
 msgstr "aberrazioni cromatiche"
 
 #: ../src/iop/cacorrect.c:58
-#, fuzzy
-#| msgid ""
-#| "automatic chromatic aberration correction\n"
-#| "disabled for non-Bayer sensors"
 msgid "correct chromatic aberrations for Bayer sensors"
-msgstr ""
-"Correzione automatica aberrazioni cromatiche\n"
-"disabilitata per sensori non-Bayer"
+msgstr "Correzione aberrazioni cromatiche per sensori Bayer"
 
 #: ../src/iop/cacorrect.c:60 ../src/iop/cacorrect.c:62 ../src/iop/demosaic.c:177
 #: ../src/iop/highlights.c:88 ../src/iop/highlights.c:90
 #: ../src/iop/hotpixels.c:73 ../src/iop/hotpixels.c:75
 #: ../src/iop/rawdenoise.c:129 ../src/iop/rawdenoise.c:131
 #: ../src/iop/temperature.c:203 ../src/iop/temperature.c:205
-#, fuzzy
-#| msgctxt "preferences"
-#| msgid "scene-referred"
 msgid "linear, raw, scene-referred"
-msgstr "Riferito alla scena"
+msgstr "Lineare, raw, riferito alla scena"
 
 #: ../src/iop/cacorrect.c:61 ../src/iop/demosaic.c:178 ../src/iop/invert.c:123
 #: ../src/iop/rawdenoise.c:130 ../src/iop/temperature.c:204
-#, fuzzy
-#| msgid "linear part"
 msgid "linear, raw"
-msgstr "Parte lineare"
+msgstr "Lineare, raw"
 
 #: ../src/iop/cacorrect.c:1519
 msgid "automatic chromatic aberration correction"
@@ -9600,6 +9526,7 @@ msgstr "miscelatore canali"
 #: ../src/iop/channelmixer.c:130
 msgid "this module is deprecated. better use color calibration module instead."
 msgstr ""
+"Questo modulo è deprecato. Consigliabile usare il modulo Calibrazione Colore"
 
 #: ../src/iop/channelmixer.c:135 ../src/iop/channelmixerrgb.c:134
 msgid ""
@@ -9607,15 +9534,16 @@ msgid ""
 "such as white balance, channels mixing\n"
 "and conversions to monochrome emulating film"
 msgstr ""
+"Effettua correzioni dello spazio colore\n"
+"come il bilanciamento del bianco, la miscelazione dei canali\n"
+"e le conversioni per simulare le pellicole."
 
 #: ../src/iop/channelmixer.c:138 ../src/iop/channelmixerrgb.c:137
 #: ../src/iop/clipping.c:327 ../src/iop/colorbalance.c:160
 #: ../src/iop/colorchecker.c:125 ../src/iop/colorcorrection.c:77
 #: ../src/iop/lut3d.c:138
-#, fuzzy
-#| msgid "correction applied"
 msgid "corrective or creative"
-msgstr "Correzione applicata"
+msgstr "Correttivo o creativo"
 
 #: ../src/iop/channelmixer.c:628
 msgid "destination"
@@ -9707,75 +9635,57 @@ msgid "B/W Kodak Tri-X 400"
 msgstr "B/N Kodak Tri-X 400"
 
 #: ../src/iop/channelmixerrgb.c:124
-#, fuzzy
-#| msgid "color correction"
 msgid "color calibration"
-msgstr "correzione colore"
+msgstr "Calibrazione colore"
 
 #: ../src/iop/channelmixerrgb.c:129
 msgid "channel mixer|white balance|monochrome"
-msgstr ""
+msgstr "Mixer canali | bilanciamento del bianco | monocromo"
 
 #: ../src/iop/channelmixerrgb.c:139
-#, fuzzy
-#| msgid "linear XYZ"
 msgid "linear, RGB or XYZ"
-msgstr "XYZ lineare "
+msgstr "Lineare, RGB o XYZ"
 
 #: ../src/iop/channelmixerrgb.c:222
-#, fuzzy
-#| msgid "B/W luminance-based"
 msgid "B&W : luminance-based"
-msgstr "B/N basato sulla luminanza"
+msgstr "B/N: basato sulla luminanza"
 
 #: ../src/iop/channelmixerrgb.c:251
-#, fuzzy
-#| msgid "B/W Ilford HP5"
 msgid "B&W : Ilford HP5+"
-msgstr "B/N Ilford HP5"
+msgstr "B/N: Ilford HP5+"
 
 #: ../src/iop/channelmixerrgb.c:260
-#, fuzzy
-#| msgid "B/W Ilford Delta 3200"
 msgid "B&W : Ilford Delta 100"
-msgstr "B/N Ilford Delta 3200"
+msgstr "B/N: Ilford Delta 100"
 
 #: ../src/iop/channelmixerrgb.c:270
-#, fuzzy
-#| msgid "B/W Ilford Delta 3200"
 msgid "B&W : Ilford Delta 400 - 3200"
-msgstr "B/N Ilford Delta 3200"
+msgstr "B/N: Ilford Delta 400 - 3200"
 
 #: ../src/iop/channelmixerrgb.c:279
-#, fuzzy
-#| msgid "B/W Ilford FP4"
 msgid "B&W : Ilford FP2"
-msgstr "B/N Ilford FP4"
+msgstr "B/N: Ilford FP2"
 
 #: ../src/iop/channelmixerrgb.c:288
 msgid "B&W : Fuji Acros 100"
-msgstr ""
+msgstr "B/N: Fuji Acros 100"
 
 #: ../src/iop/channelmixerrgb.c:304
-#, fuzzy
-#| msgid "channel mixer"
 msgid "basic channel mixer"
-msgstr "miscelatore canali"
+msgstr "Miscelatore canali base"
 
 #: ../src/iop/channelmixerrgb.c:330
-#, fuzzy
-#| msgid "swap G and B"
 msgid "swap G and R"
-msgstr "Scambia verde e blu"
+msgstr "Scambia G e R"
 
 #: ../src/iop/channelmixerrgb.c:1055
 msgid "auto-detection of white balance completed"
-msgstr ""
+msgstr "Ho terminato il calcolo del bilanciamento del bianco"
 
 #: ../src/iop/channelmixerrgb.c:1763
 #, c-format
 msgid "CCT: %.0f K (daylight)"
-msgstr ""
+msgstr "CCT: %.0f K (luce diurna)"
 
 #: ../src/iop/channelmixerrgb.c:1765
 msgid ""
@@ -9783,11 +9693,15 @@ msgid ""
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
 "so its temperature is relevant and meaningful with a D illuminant."
 msgstr ""
+"Colore temperatura approssimato.\n"
+"Questa fonte luminosa può essere gestita con lo\n"
+"spettro della luce solare, quindi la sua temperatura\n"
+"è rilevante e significativa con una finte luminosa D."
 
 #: ../src/iop/channelmixerrgb.c:1771
 #, c-format
 msgid "CCT: %.0f K (black body)"
-msgstr ""
+msgstr "CCT: %.0f K (corpo nero)"
 
 #: ../src/iop/channelmixerrgb.c:1773
 msgid ""
@@ -9795,11 +9709,15 @@ msgid ""
 "this illuminant can be accurately modeled by a black body spectrum,\n"
 "so its temperature is relevant and meaningful with a Planckian illuminant."
 msgstr ""
+"Colore temperatura approssimato.\n"
+"Questa fonte luminosa può essere modellata con\n"
+"un corpo nero, quindi la sua temperatura è rilevante\n"
+"e significativa con una fonte luminosa Planckiana."
 
 #: ../src/iop/channelmixerrgb.c:1779
 #, c-format
 msgid "CCT: %.0f K (invalid)"
-msgstr ""
+msgstr "CCT: %.0f K (non valido)"
 
 #: ../src/iop/channelmixerrgb.c:1781
 msgid ""
@@ -9809,41 +9727,47 @@ msgid ""
 "so its temperature is not relevant and meaningful and you need to use a "
 "custom illuminant."
 msgstr ""
+"Colore temperatura approssimato.\n"
+"Questa fonte luminosa non può essere modellata con cura\n"
+"da uno spettro solare o corpo nero, quindi la sua temperature\n"
+"non è rilevante e significativa e dovrai utilizzare\n"
+"una fonte luminosa personalizzata."
 
 #: ../src/iop/channelmixerrgb.c:1788
-#, fuzzy, c-format
-#| msgid "not defined"
+#, c-format
 msgid "CCT: undefined"
-msgstr "Non definito"
+msgstr "CCT: non definito"
 
 #: ../src/iop/channelmixerrgb.c:1790
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
 msgstr ""
+"Colore temperatura approssimato.\n"
+"Non è stato possibile calcolarlo quindi\n"
+"dovrai usare una fonte luminosa personalizzata."
 
 #: ../src/iop/channelmixerrgb.c:2017
-#, fuzzy
-#| msgid "choose white balance preset from camera"
 msgid "white balance successfuly extracted from raw image"
-msgstr "Scegli il bilanciamento del bianco preimpostato dalla fotocamera"
+msgstr ""
+"Il bilanciamento del bianco è stato regolato con successo dall'immagine raw"
 
 #. We need to recompute only the full preview
 #: ../src/iop/channelmixerrgb.c:2023
 msgid "auto-detection of white balance started…"
-msgstr ""
+msgstr "Il calcolo del bilanciamento del bianco è iniziato..."
 
 #: ../src/iop/channelmixerrgb.c:2046
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
 msgstr ""
+"Calibrazione colore: la somma dei parametri del canale grigio è zero. La "
+"normalizzazione verrà disabilitata"
 
 #: ../src/iop/channelmixerrgb.c:2067
-#, fuzzy
-#| msgid "auto applied"
 msgid "double CAT applied"
-msgstr "Applicato automaticamente"
+msgstr "Applicato doppio CAT"
 
 #: ../src/iop/channelmixerrgb.c:2071
 msgid ""
@@ -9852,12 +9776,14 @@ msgid ""
 "this can lead to inconsistencies, unless you\n"
 "use them with masks or know what you are doing."
 msgstr ""
+"Hai attivato due istanze o più di calibrazione colore,\n"
+"tutte impostate per modifiche di colori.\n"
+"Questo potrebbe causare colori non consistenti, a meno che\n"
+"non siano state usate delle maschere."
 
 #: ../src/iop/channelmixerrgb.c:2081
-#, fuzzy
-#| msgid "white balance disabled for camera"
 msgid "white balance module error"
-msgstr "Bilanciamento del bianco disabilitato per la fotocamera"
+msgstr "Errore modulo bilanciamento del bianco"
 
 #: ../src/iop/channelmixerrgb.c:2085
 msgid ""
@@ -9866,23 +9792,23 @@ msgid ""
 "with chromatic adaptation. either set it to reference\n"
 "or disable chromatic adaptation here."
 msgstr ""
+"Il modulo di bilanciamento del bianco non sta utilizzando\n"
+"la fonte luminosa impostata sulla fotocamera. Questo potrebbe\n"
+"causare dei problemi durante la modifica dei colori. E' possibile\n"
+"impostarla a Referenza oppure disabilitare la modifica colori."
 
 #. Page CAT
 #: ../src/iop/channelmixerrgb.c:2188
 msgid "CAT"
-msgstr ""
+msgstr "CAT"
 
 #: ../src/iop/channelmixerrgb.c:2188
-#, fuzzy
-#| msgid "chromatic aberrations"
 msgid "chromatic adaptation transform"
-msgstr "aberrazioni cromatiche"
+msgstr "Trasformazione cromatica"
 
 #: ../src/iop/channelmixerrgb.c:2194
-#, fuzzy
-#| msgid "saturation"
 msgid "adaptation"
-msgstr "Adattamento"
+msgstr "Modifica"
 
 #: ../src/iop/channelmixerrgb.c:2196
 msgid ""
@@ -9897,56 +9823,58 @@ msgid ""
 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
+"Seleziona il metodo per modificare la fonte luminosa\n"
+"e lo spazio colore che il modulo dovrà utilizzare:\n"
+"• Bradford Lineare (1985) è molto accurato per fonti luminose simili alla "
+"luce solare\n"
+"ma produce colori fuori gamma se la fonte luminosa è complessa.\n"
+"•  CAT 16 (2016) è molto valido se si vogliono evitare falsi colori\n"
+"lavorando con gamme molto ampie o con ciani e viola molto saturi.\n"
+"•  Bradford non Lineare (1985) è la Bradford originale che\n"
+"produce risultati migliori di quella lineare ma non è molto affidabile.\n"
+"•  XYZ è una semplice scalatura nello spazio XYZ. Non è raccomandata in "
+"generale.\n"
+"•  Nessuno, disabilita qualsiasi trasformazione e usa il flusso RGB."
 
 #: ../src/iop/channelmixerrgb.c:2215
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
 msgstr ""
+"Questo è il colore della fonte luminosa prima della modifica cromatica\n"
+"Questo colore sarà modificato in bianco puro"
 
 #: ../src/iop/channelmixerrgb.c:2222 ../src/iop/temperature.c:2068
-#, fuzzy
-#| msgid "choose white balance preset from camera"
 msgid "set white balance to detected from area"
-msgstr "Scegli il bilanciamento del bianco preimpostato dalla fotocamera"
+msgstr "Scegli il bilanciamento del bianco tracciando un'area"
 
 #: ../src/iop/channelmixerrgb.c:2226
-#, fuzzy
-#| msgid "luminance"
 msgid "illuminant"
-msgstr "Luminanza"
+msgstr "Fonte luminosa"
 
 #: ../src/iop/channelmixerrgb.c:2232 ../src/iop/temperature.c:2006
 msgid "temperature"
 msgstr "Temperatura"
 
 #: ../src/iop/channelmixerrgb.c:2276
-#, fuzzy
-#| msgid "input profile"
 msgid "input red"
-msgstr "Profilo di ingresso"
+msgstr "Ingresso rosso"
 
 #: ../src/iop/channelmixerrgb.c:2283
-#, fuzzy
-#| msgid "input image"
 msgid "input green"
-msgstr "Immagine in ingresso"
+msgstr "Ingresso verde"
 
 #: ../src/iop/channelmixerrgb.c:2290
-#, fuzzy
-#| msgid "input profile"
 msgid "input blue"
-msgstr "Profilo di ingresso"
+msgstr "Ingresso blu"
 
 #: ../src/iop/channelmixerrgb.c:2301
-#, fuzzy
-#| msgid "color zones"
 msgid "colorfulness"
-msgstr "zone colore"
+msgstr "Colorazione"
 
 #: ../src/iop/channelmixerrgb.c:2303
 msgid "grey"
-msgstr "gris"
+msgstr "Grigio"
 
 #: ../src/iop/choleski.h:303 ../src/iop/choleski.h:401
 msgid ""
@@ -9957,7 +9885,7 @@ msgstr ""
 
 #: ../src/iop/clahe.c:76
 msgid "this module is deprecated. better use new local contrast module instead."
-msgstr ""
+msgstr "Questo modulo è deprecato. Utilizzare il modulo Contrasto Locale"
 
 #: ../src/iop/clahe.c:339 ../src/iop/sharpen.c:733
 msgid "amount"
