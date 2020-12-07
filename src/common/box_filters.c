@@ -522,7 +522,6 @@ static void box_max_1ch(float *const buf, const int height, const int width, con
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
-#if 1
   for(int col = 0; col < (width & ~15); col += 16)
   {
     float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
@@ -532,9 +531,6 @@ static void box_max_1ch(float *const buf, const int height, const int width, con
     box_max_vert_16wide(height, scratch, buf + col, width, w);
   }
   for (size_t col = width & ~15 ; col < width; col++)
-#else
-  for (size_t col = 0 ; col < width; col++)
-#endif
   {
     float *const restrict scratch = scratch_buffers;
     for(size_t row = 0; row < height; row++)
@@ -651,7 +647,6 @@ static void box_min_1ch(float *const buf, const int height, const int width, con
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
-#if 1
   for(int col = 0; col < (width & ~15); col += 16)
   {
     float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
@@ -661,9 +656,6 @@ static void box_min_1ch(float *const buf, const int height, const int width, con
     box_min_vert_16wide(height, scratch, buf + col, width, w);
   }
   for (size_t col = width & ~15 ; col < width; col++)
-#else
-  for (size_t col = 0 ; col < width; col++)
-#endif
   {
     float *const restrict scratch = scratch_buffers;
     for(size_t row = 0; row < height; row++)
