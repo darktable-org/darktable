@@ -25,7 +25,6 @@
 
 #include "common/box_filters.h"
 #include "common/darktable.h"
-#include "common/guided_filter.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #if defined(__SSE__)
@@ -89,6 +88,93 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
   return;
 }
 
+static void blur_horizontal_4ch(float *const restrict buf, const int height, const int width, const int radius,
+                                float *const restrict scanlines)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(radius, height, width) \
+  dt_omp_sharedconst(buf, scanlines) \
+  schedule(static)
+#endif
+  for(int y = 0; y < height; y++)
+  {
+    float *const restrict scanline = scanlines + 4 * dt_get_thread_num() * width;
+    float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
+    int hits = 0;
+    const size_t index = (size_t)4 * y * width;
+    // add up the left half of the window
+    for (int x = 0; x < radius && x < width ; x++)
+    {
+      hits++;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf)
+#endif
+      for (int c = 0; c < 4; c++)
+        L[c] += buf[index+4*x + c];
+    }
+    // process the blur up to the point where we start removing values
+    int x;
+    for (x = 0; x <= radius && x < width; x++)
+    {
+      const int np = x + radius;
+      if(np < width)
+      {
+        hits++;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf)
+#endif
+        for (int c = 0; c < 4; c++)
+          L[c] += buf[index + 4*np + c];
+      }
+#ifdef _OPENMP
+#pragma omp simd aligned(scanline)
+#endif
+      for (int c = 0; c < 4; c++)
+        scanline[4*x + c] = L[c] / hits;
+    }
+    // process the blur for the bulk of the scan line
+    for(; x + radius < width; x++)
+    {
+      const int op = x - radius - 1;
+      const int np = x + radius;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf, scanline)
+#endif
+      for (int c = 0; c < 4; c++)
+      {
+        L[c] -= buf[index + 4*op + c];
+        L[c] += buf[index + 4*np + c];
+        scanline[4*x + c] = L[c] / hits;
+      }
+    }
+    // process the right end where we have no more values to add to the running sum
+    for(; x < width; x++)
+    {
+      const int op = x - radius - 1;
+      hits--;
+#ifdef _OPENMP
+#pragma omp simd aligned(buf, scanline)
+#endif
+      for (int c = 0; c < 4; c++)
+      {
+        L[c] -= buf[index + 4*op + c];
+        scanline[4*x + c] = L[c] / hits;
+      }
+    }
+    // copy blurred values back to original location in buffer
+    for(x = 0; x < width; x++)
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(buf, scanline)
+#endif
+      for (int c = 0; c < 4; c++)
+        buf[index + 4*x + c] = scanline[4*x + c];
+    }
+  }
+  return;
+}
+
 #ifdef __SSE2__
 static void blur_vertical_1ch_sse(float *const restrict buf, const int height, const int width, const int radius,
                                   float *const restrict scanline)
@@ -145,7 +231,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
                                     float *const restrict scanline)
 {
 #ifdef __SSE2__
-  if (darktable.codepath.SSE2 & 0)
+  if (darktable.codepath.SSE2)
   {
     blur_vertical_1ch_sse(buf, height, width, radius, scanline);
     return;
@@ -295,6 +381,31 @@ static void dt_box_mean_1ch(float *const buf, const int height, const int width,
   dt_free_align(scanlines);
 }
 
+static void dt_box_mean_4ch(float *const buf, const int height, const int width, const int radius,
+                            const int iterations)
+{
+  const int size = MAX(width,height);
+  float *const restrict scanlines = dt_alloc_align(64, 4 * size * sizeof(float) * dt_get_num_threads());
+
+  for(int iteration = 0; iteration < iterations; iteration++)
+  {
+    blur_horizontal_4ch(buf, height, width, radius, scanlines);
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(width, height, radius)  \
+  dt_omp_sharedconst(buf, scanlines) \
+  schedule(static)
+#endif
+    for (int col = 0; col < width; col++)
+    {
+      float *const restrict scanline = scanlines + 4 * dt_get_thread_num() * height; 
+      blur_vertical_4wide(buf + 4 * col, height, width, radius, scanline);
+    }
+  }
+
+  dt_free_align(scanlines);
+}
+
 void dt_box_mean(float *const buf, const int height, const int width, const int ch,
                  const int radius, const int iterations)
 {
@@ -302,125 +413,9 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
   {
     dt_box_mean_1ch(buf,height,width,radius,iterations);
   }
-  else
+  else if (ch == 4)
   {
-    assert(ch == 4);
-    //TODO: apply the same speedups as for the 1ch version above
-
-    const int size = width > height ? width : height;
-    const size_t scanline_size = (size_t)4 * size;
-    float *const restrict scanline_buf = dt_alloc_align(64, scanline_size * dt_get_num_threads() * sizeof(float));
-
-    for(int iteration = 0; iteration < iterations; iteration++)
-    {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, width, height, buf, scanline_buf, scanline_size) \
-  schedule(static)
-#endif
-      /* horizontal blur out into out */
-      for(int y = 0; y < height; y++)
-      {
-        float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-        __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-        size_t index = (size_t)y * width;
-        int hits = 0;
-        for(int x = -radius; x < width; x++)
-        {
-          int op = x - radius - 1;
-          int np = x + radius;
-          if(op >= 0)
-          {
-            for(int c = 0; c < 4; c++)
-            {
-              L[c] -= buf[((index + op) * 4) + c];
-            }
-            hits--;
-          }
-          if(np < width)
-          {
-            for(int c = 0; c < 4; c++)
-            {
-              L[c] += buf[((index + np) * 4) + c];
-            }
-            hits++;
-          }
-          if(x >= 0)
-          {
-            for(int c = 0; c < 4; c++)
-            {
-              scanline[4 * x + c] = L[c] / hits;
-            }
-          }
-        }
-
-        for(int x = 0; x < width; x++)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            buf[(index + x) * 4 + c] = scanline[4 * x + c];
-          }
-        }
-      }
-
-      /* vertical pass on blurlightness */
-      const int opoffs = -(radius + 1) * width;
-      const int npoffs = (radius)*width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npoffs, opoffs, width, height, radius, buf, scanline_buf, scanline_size) \
-  schedule(static)
-#endif
-      for(int x = 0; x < width; x++)
-      {
-        float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-        __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-        int hits = 0;
-        size_t index = (size_t)x - radius * width;
-        for(int y = -radius; y < height; y++)
-        {
-          int op = y - radius - 1;
-          int np = y + radius;
-
-          if(op >= 0)
-          {
-            for(int c = 0; c < 4; c++)
-            {
-              L[c] -= buf[((index + opoffs) * 4) + c];
-            }
-            hits--;
-          }
-          if(np < height)
-          {
-            for(int c = 0; c < 4; c++)
-            {
-              L[c] += buf[((index + npoffs) * 4) + c];
-            }
-            hits++;
-          }
-          if(y >= 0)
-          {
-            for(int c = 0; c < 4; c++)
-            {
-              scanline[4 * y + c] = L[c] / hits;
-            }
-          }
-          index += width;
-        }
-
-        for(int y = 0; y < height; y++)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            buf[((size_t)y * width + x) * 4 + c] = scanline[4 * y + c];
-          }
-        }
-      }
-    }
-
-    dt_free_align(scanline_buf);
+    dt_box_mean_4ch(buf,height,width,radius,iterations);
   }
 }
 
@@ -431,7 +426,7 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
 static inline void box_max_1d(int N, const float *const restrict x, float *const restrict y, size_t stride_y, int w)
 {
   float m = -(INFINITY);
-  for(int i = 0; i < min_i(w + 1, N); i++)
+  for(int i = 0; i < MIN(w + 1, N); i++)
     m = MAX(x[i], m);
   for(int i = 0; i < N; i++)
   {
@@ -442,7 +437,7 @@ static inline void box_max_1d(int N, const float *const restrict x, float *const
     if(i - w >= 0 && x[i - w] == m)
     {
       m = -(INFINITY);
-      for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
         m = MAX(x[j], m);
     }
     // if the window has not yet exceeded the end of the row/column, update the maximum value
@@ -461,7 +456,7 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY) };
-  for(int i = 0; i < min_i(w + 1, N); i++)
+  for(int i = 0; i < MIN(w + 1, N); i++)
 #ifdef _OPENMP
 #pragma omp simd aligned(m, x)
 #endif
@@ -487,7 +482,7 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
 //        if(x[16 * (i - w) + c] == m[c]) //prevents vectorization
         {
           m[c] = -(INFINITY);
-          for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+          for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
             m[c] = MAX(x[16*j+c], m[c]);
         }
       }
@@ -563,7 +558,7 @@ void dt_box_max(float *const buf, const int height, const int width, const int c
 static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
 {
   float m = INFINITY;
-  for(int i = 0; i < min_i(w + 1, N); i++)
+  for(int i = 0; i < MIN(w + 1, N); i++)
     m = MIN(x[i], m);
   for(int i = 0; i < N; i++)
   {
@@ -571,7 +566,7 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
     if(i - w >= 0 && x[i - w] == m)
     {
       m = INFINITY;
-      for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
         m = MIN(x[j], m);
     }
     if(i + w + 1 < N)
@@ -589,7 +584,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
                                    -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
                                    -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
                                    -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY) };
-  for(int i = 0; i < min_i(w + 1, N); i++)
+  for(int i = 0; i < MIN(w + 1, N); i++)
 #ifdef _OPENMP
 #pragma omp simd aligned(m, x)
 #endif
@@ -615,7 +610,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
 //        if(x[16 * (i - w) + c] == m[c]) //prevents vectorization
         {
           m[c] = -(INFINITY);
-          for(int j = i - w + 1; j < min_i(i + w + 2, N); j++)
+          for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
             m[c] = MIN(x[16*j+c], m[c]);
         }
       }
