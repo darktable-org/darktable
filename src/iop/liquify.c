@@ -844,8 +844,8 @@ static float *build_lookup_table(const int distance, const float control1, const
   return lookup;
 }
 
-static void compute_round_stamp_extent(cairo_rectangle_int_t *stamp_extent,
-                                        const dt_liquify_warp_t *warp)
+static void compute_round_stamp_extent(cairo_rectangle_int_t *const restrict stamp_extent,
+                                        const dt_liquify_warp_t *const restrict warp)
 {
 
   const int iradius = round(cabs(warp->radius - warp->point));
@@ -878,8 +878,8 @@ static void compute_round_stamp_extent(cairo_rectangle_int_t *stamp_extent,
 */
 
 static void build_round_stamp(float complex **pstamp,
-                               cairo_rectangle_int_t *stamp_extent,
-                               const dt_liquify_warp_t *warp)
+                               cairo_rectangle_int_t *const restrict stamp_extent,
+                               const dt_liquify_warp_t *const restrict warp)
 {
   const int iradius = round(cabs(warp->radius - warp->point));
   assert(iradius > 0);
@@ -894,8 +894,8 @@ static void build_round_stamp(float complex **pstamp,
     (strength * STAMP_RELOCATION) : strength;
   const float abs_strength = cabs(strength);
 
-  float complex *stamp = malloc(sizeof(float complex)
-                                 * stamp_extent->width * stamp_extent->height);
+  float complex *restrict stamp = malloc(sizeof(float complex)
+                                         * stamp_extent->width * stamp_extent->height);
 
   // clear memory
   #ifdef _OPENMP
@@ -910,72 +910,61 @@ static void build_round_stamp(float complex **pstamp,
 
   // lookup table: map of distance from center point => warp
   const int table_size = iradius * LOOKUP_OVERSAMPLE;
-  const float *lookup_table = build_lookup_table(table_size, warp->control1, warp->control2);
+  const float *const restrict lookup_table = build_lookup_table(table_size, warp->control1, warp->control2);
 
   // points into buffer at the center of the circle
-  float complex *center = stamp + 2 * iradius * iradius + 2 * iradius;
+  float complex *const center = stamp + 2 * iradius * iradius + 2 * iradius;
 
   // The expensive operation here is hypotf ().  By dividing the
-  // circle in octants and doing only the inside we have to calculate
-  // hypotf only for PI / 32 = 0.098 of the stamp area.
+  // circle in quadrants and doing only the inside we have to calculate
+  // hypotf only for PI / 16 = 0.196 of the stamp area.
+  // We don't do octants to avoid false sharing of cache lines between threads.
   #ifdef _OPENMP
-  #pragma omp parallel for schedule (dynamic, 1) default (shared)
+  #pragma omp parallel for schedule(static) default(none) \
+    dt_omp_firstprivate(iradius, strength, abs_strength, table_size)   \
+    dt_omp_sharedconst(center, warp, stamp_extent, lookup_table, LOOKUP_OVERSAMPLE)
   #endif
 
   for(int y = 0; y <= iradius; y++)
   {
-    for(int x = y; x <= iradius; x++)
+    for(int x = 0; x <= iradius; x++)
     {
-      const float dist = hypotf(x, y);
+      const float dist = sqrtf(x*x + y*y); // faster than hypotf(), and we know we won't have overflow or denormals
       const int idist = round(dist * LOOKUP_OVERSAMPLE);
       if(idist >= table_size)
         // idist will only grow bigger in this row
-        goto next_row;
+        break;
 
-      // pointers into the 8 octants of the circle
-      // octant count is ccw from positive x-axis
-      float complex *o1 = center - y * stamp_extent->width + x;
-      float complex *o2 = center - x * stamp_extent->width + y;
-      float complex *o3 = center - x * stamp_extent->width - y;
-      float complex *o4 = center - y * stamp_extent->width - x;
-      float complex *o5 = center + y * stamp_extent->width - x;
-      float complex *o6 = center + x * stamp_extent->width - y;
-      float complex *o7 = center + x * stamp_extent->width + y;
-      float complex *o8 = center + y * stamp_extent->width + x;
+      // pointers into the 4 quadrants of the circle
+      // quadrant count is ccw from positive x-axis
+      float complex *const q1 = center - y * stamp_extent->width + x;
+      float complex *const q2 = center - y * stamp_extent->width - x;
+      float complex *const q3 = center + y * stamp_extent->width - x;
+      float complex *const q4 = center + y * stamp_extent->width + x;
 
       float abs_lookup = abs_strength * lookup_table[idist] / iradius;
 
       switch (warp->type)
       {
          case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
-           *o1 = abs_lookup * ( x - y * I);
-           *o2 = abs_lookup * ( y - x * I);
-           *o3 = abs_lookup * (-y - x * I);
-           *o4 = abs_lookup * (-x - y * I);
-           *o5 = abs_lookup * (-x + y * I);
-           *o6 = abs_lookup * (-y + x * I);
-           *o7 = abs_lookup * ( y + x * I);
-           *o8 = abs_lookup * ( x + y * I);
+           *q1 = abs_lookup * ( x - y * I);
+           *q2 = abs_lookup * (-x - y * I);
+           *q3 = abs_lookup * (-x + y * I);
+           *q4 = abs_lookup * ( x + y * I);
            break;
 
          case DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK:
-           *o1 = -abs_lookup * ( x - y * I);
-           *o2 = -abs_lookup * ( y - x * I);
-           *o3 = -abs_lookup * (-y - x * I);
-           *o4 = -abs_lookup * (-x - y * I);
-           *o5 = -abs_lookup * (-x + y * I);
-           *o6 = -abs_lookup * (-y + x * I);
-           *o7 = -abs_lookup * ( y + x * I);
-           *o8 = -abs_lookup * ( x + y * I);
+           *q1 = -abs_lookup * ( x - y * I);
+           *q2 = -abs_lookup * (-x - y * I);
+           *q3 = -abs_lookup * (-x + y * I);
+           *q4 = -abs_lookup * ( x + y * I);
            break;
 
          default:
-           *o1 = *o2 = *o3 = *o4 = *o5 = *o6 = *o7 = *o8 =
-             strength * lookup_table[idist];
+           *q1 = *q2 = *q3 = *q4 = strength * lookup_table[idist];
            break;
       }
     }
-  next_row: ; // ";" makes compiler happy
   }
 
   dt_free_align((void *) lookup_table);
@@ -993,9 +982,9 @@ static void build_round_stamp(float complex **pstamp,
 */
 
 static void add_to_global_distortion_map(float complex *global_map,
-                                          const cairo_rectangle_int_t *global_map_extent,
-                                          const dt_liquify_warp_t *warp,
-                                          const float complex *stamp,
+                                          const cairo_rectangle_int_t *const restrict global_map_extent,
+                                          const dt_liquify_warp_t *const restrict warp,
+                                          const float complex *const restrict stamp,
                                           const cairo_rectangle_int_t *stamp_extent)
 {
   cairo_rectangle_int_t mmext = *stamp_extent;
@@ -1013,10 +1002,8 @@ static void add_to_global_distortion_map(float complex *global_map,
 
   for(int y = cmmext.y; y < cmmext.y + cmmext.height; y++)
   {
-    const float complex *srcrow = stamp + ((y - mmext.y) * mmext.width);
-
-    float complex *destrow = global_map +
-      ((y - global_map_extent->y) * global_map_extent->width);
+    const float complex *const srcrow = stamp + ((y - mmext.y) * mmext.width);
+    float complex *const destrow = global_map + ((y - global_map_extent->y) * global_map_extent->width);
 
     for(int x = cmmext.x; x < cmmext.x + cmmext.width; x++)
     {
@@ -1034,11 +1021,11 @@ static void add_to_global_distortion_map(float complex *global_map,
 
 static void apply_global_distortion_map(struct dt_iop_module_t *module,
                                          dt_dev_pixelpipe_iop_t *piece,
-                                         const float *in,
-                                         float *out,
-                                         const dt_iop_roi_t *roi_in,
-                                         const dt_iop_roi_t *roi_out,
-                                         const float complex *map,
+                                         const float *const restrict in,
+                                         float *const restrict out,
+                                         const dt_iop_roi_t *const roi_in,
+                                         const dt_iop_roi_t *const roi_out,
+                                         const float complex *const map,
                                          const cairo_rectangle_int_t *extent)
 {
   const int ch = piece->colors;
@@ -1156,10 +1143,10 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 
     for(int y = 0; y <  map_extent->height; y++)
     {
-      const float complex *row = map + y * map_extent->width;
+      const float complex *const row = map + y * map_extent->width;
       for(int x = 0; x < map_extent->width; x++)
       {
-        const float complex d = * (row + x);
+        const float complex d = row[x];
         // compute new position (nx,ny) given the displacement d
         const int nx = x + (int)creal(d);
         const int ny = y + (int)cimag(d);
@@ -1182,7 +1169,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 
     for(int y = 0; y <  map_extent->height; y++)
     {
-      float complex *row = imap + y * map_extent->width;
+      float complex *const row = imap + y * map_extent->width;
       float complex last[2] = { 0, 0 };
       for(int x = 0; x < map_extent->width / 2 + 1; x++)
       {
