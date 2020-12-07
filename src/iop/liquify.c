@@ -920,15 +920,16 @@ static void build_round_stamp(float complex **pstamp,
   // hypotf only for PI / 32 = 0.098 of the stamp area.
   #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) \
-    dt_omp_firstprivate(iradius, strength, abs_strength, table_size)  \
-    dt_omp_sharedconst(center, warp, stamp_extent, lookup_table)
+    dt_omp_firstprivate(iradius, strength, abs_strength, table_size)   \
+    dt_omp_sharedconst(center, warp, stamp_extent, lookup_table, LOOKUP_OVERSAMPLE)
   #endif
 
   for(int y = 0; y <= iradius; y++)
   {
     for(int x = y; x <= iradius; x++)
     {
-      const float dist = hypotf(x, y);
+//      const float dist = hypotf(x, y);
+      const float dist = sqrtf(x*x + y*y); // faster than lib function, and we know we won't have overflow or denormals
       const int idist = round(dist * LOOKUP_OVERSAMPLE);
       if(idist >= table_size)
         // idist will only grow bigger in this row
