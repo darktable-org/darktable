@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-05 23:07+0100\n"
+"PO-Revision-Date: 2020-12-07 22:43+0100\n"
 "Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "\n"
 "Language-Team: Italian <>\n"
@@ -314,11 +314,11 @@ msgstr "Compressione gamut"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:328
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:475
 msgid "clip negative RGB from gamut"
-msgstr ""
+msgstr "Taglia i valori RGB negativi dalla gamma"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "same as pipeline (D50)"
-msgstr ""
+msgstr "Come la coda di sviluppo (D50)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:490
 msgid "A (incandescent)"
@@ -3105,7 +3105,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5934
 msgid "how many snapshots to keep"
-msgstr ""
+msgstr "Quante istantanee tenere"
 
 #: ../build/bin/preferences_gen.h:5957
 msgid ""
@@ -3172,7 +3172,7 @@ msgstr "Interfaccia"
 
 #: ../build/bin/preferences_gen.h:6150
 msgid "sort built-in presets first"
-msgstr ""
+msgstr "Ordina prima le preimpostazioni integrate"
 
 #: ../build/bin/preferences_gen.h:6164
 msgid ""
@@ -4231,6 +4231,10 @@ msgid ""
 "from the most recent snapshot or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
+"Vuoi chiudere Darktable ora per ripristinare manualmente\n"
+"il database da un backup, tentare un ripristino automatico\n"
+"dall'istantanea più recente o cancellare il database corrotto\n"
+"e partire con uno nuovo?"
 
 #: ../src/common/database.c:2733 ../src/common/database.c:2913
 msgid ""
@@ -7446,10 +7450,9 @@ msgid "metadata to be applied per default"
 msgstr "Metadati da applicare in modo predefinito"
 
 #: ../src/gui/import_metadata.c:178
-#, fuzzy
 #| msgid "import from camera"
 msgid "imported from xmp"
-msgstr "Importa dalla fotocamera"
+msgstr "Importato dall'xmp"
 
 #: ../src/gui/import_metadata.c:180
 msgid ""
@@ -7458,6 +7461,12 @@ msgid ""
 "actions\n"
 " CAUTION: not selected metadata are cleaned up when xmp file is updated"
 msgstr ""
+"I metadata selezionati sono stati importati dall'immagine e sovrascrivono il"
+" valore di default\n"
+" questo comanda anche le azioni 'Controlla i file XMP aggiornati' e 'Carica"
+" file XMP' \n"
+" ATTENZIONE: i metadata non selezionati vengono eliminati quando il file XMP"
+" è aggiornato"
 
 #: ../src/gui/import_metadata.c:237
 msgid "comma separated list of tags"
@@ -7510,7 +7519,7 @@ msgstr "Imposta il tema dell'interfaccia utente"
 
 #: ../src/gui/preferences.c:396
 msgid "prefer performance over quality"
-msgstr ""
+msgstr "Preferisci le prestazioni alla qualità"
 
 #: ../src/gui/preferences.c:404
 msgid ""
@@ -7531,7 +7540,6 @@ msgid "GUI controls and text DPI"
 msgstr "DPI dei controlli della GUI e del testo"
 
 #: ../src/gui/preferences.c:453
-#, fuzzy
 #| msgid ""
 #| "adjust the global GUI resolution to rescale controls, buttons, labels, "
 #| "etc.\n"
@@ -7548,11 +7556,11 @@ msgid ""
 msgstr ""
 "Regola la risoluzione globale dell'interfaccia per ridimensionare i "
 "controlli, i pulsanti, le etichette, ecc.\n"
-"Aumentare il valore per ingrandire l'interfaccia o diminuirlo per includere "
+"Aumentare il valore per ingrandire l'interfaccia o diminuire per includere "
 "un maggior contenuto nello schermo.\n"
-"Importare a 1 per applicare la risoluzione definita dal sistema.\n"
+"Impostare a -1 per usare la risoluzione definita dal sistema.\n"
 "Il valore predefinito è 96 DPI sulla maggior parte dei sistemi.\n"
-"Questa modifica richiede un riavvio."
+"(Richiede un riavvio)."
 
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:462
@@ -7589,6 +7597,7 @@ msgstr "Preferenze darktable"
 #: ../src/gui/preferences.c:626
 msgid "darktable needs to be restarted for settings to take effect"
 msgstr ""
+"Darktable richiede di esser riavviato affinché le impostazioni siano attivate"
 
 #. exif
 #: ../src/gui/preferences.c:813 ../src/gui/preferences.c:1851
@@ -7795,8 +7804,9 @@ msgid "format"
 msgstr "Formato"
 
 #: ../src/gui/preferences.c:1934 ../src/gui/presets.c:541
+#, fuzzy
 msgid "select image types you want this preset to be available for"
-msgstr ""
+msgstr "select image types you want this preset to be available for"
 
 #: ../src/gui/preferences.c:2040 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
@@ -7873,7 +7883,7 @@ msgstr "Gestisci le preimpostazioni rapide"
 
 #: ../src/gui/presets.c:1120
 msgid "manage quick presets list..."
-msgstr ""
+msgstr "Gestisce la lista delle preimpostazioni veloci..."
 
 #: ../src/gui/presets.c:1255 ../src/gui/presets.c:1268
 msgid "(default)"
@@ -7901,7 +7911,7 @@ msgid "update preset"
 msgstr "Aggiorna preset"
 
 #: ../src/gui/styles_dialog.c:206
-#, fuzzy, c-format
+#, c-format
 #| msgid ""
 #| "preset `%s' already exists.\n"
 #| "do you want to overwrite?"
@@ -7909,7 +7919,7 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"Preset '%s' già esistente.\n"
+"Stile '%s' già esistente.\n"
 "Vuoi sovrascriverlo?"
 
 #: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:418
@@ -7918,16 +7928,14 @@ msgid "overwrite style?"
 msgstr "Sovrascrivo lo stile?"
 
 #: ../src/gui/styles_dialog.c:240 ../src/gui/styles_dialog.c:299
-#, fuzzy
 #| msgid "please give preset a name"
 msgid "please give style a name"
-msgstr "Per favore, dai un nome al preset"
+msgstr "Per favore, dai un nome allo stile"
 
 #: ../src/gui/styles_dialog.c:244 ../src/gui/styles_dialog.c:303
-#, fuzzy
 #| msgid "unnamed preset"
 msgid "unnamed style"
-msgstr "Preset senza nome"
+msgstr "Stile senza nome"
 
 #: ../src/gui/styles_dialog.c:291
 #, c-format
@@ -9918,6 +9926,18 @@ msgid ""
 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
+"Scegli il metodo per adattare l'illuminante\n"
+"e lo spazio colore con cui il modulo lavora: \n"
+"• Bradford Lineare (1985) è il più accurato per gli illuminanti vicini alla"
+" luce diurna\n"
+"ma produce colori fuori gamma per gli illuminanti difficili.\n"
+"• CAT16 (2016) è più robusto per evitare colori immaginari\n"
+"quando si lavora con ampia gamma o ciano e viola saturi.\n"
+"• Bradford Non-lineare (1985) è il Bradford originale,\n"
+"può produrre risultati migliori della versione Lineare, ma è inaffidabile.\n"
+"• XYZ è un semplice ridimensionamento nello spazio XYZ. In generale non è"
+" raccomandato.\n"
+"• none disables any adaptation and uses pipeline working RGB."
 
 #: ../src/iop/channelmixerrgb.c:2215
 msgid ""
@@ -10652,6 +10672,8 @@ msgid ""
 "convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
 msgstr ""
+"Converti ogni RGB di input al corrispondente RGB della coda di sviluppo\n"
+"usando i profili colore per rimappare i valori RGB"
 
 #: ../src/iop/colorin.c:133 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:176
 #, fuzzy
