@@ -916,8 +916,9 @@ static void build_round_stamp(float complex **pstamp,
   float complex *const center = stamp + 2 * iradius * iradius + 2 * iradius;
 
   // The expensive operation here is hypotf ().  By dividing the
-  // circle in octants and doing only the inside we have to calculate
-  // hypotf only for PI / 32 = 0.098 of the stamp area.
+  // circle in quadrants and doing only the inside we have to calculate
+  // hypotf only for PI / 16 = 0.196 of the stamp area.
+  // We don't do octants to avoid false sharing of cache lines between threads.
   #ifdef _OPENMP
   #pragma omp parallel for schedule(static) default(none) \
     dt_omp_firstprivate(iradius, strength, abs_strength, table_size)   \
@@ -926,60 +927,44 @@ static void build_round_stamp(float complex **pstamp,
 
   for(int y = 0; y <= iradius; y++)
   {
-    for(int x = y; x <= iradius; x++)
+    for(int x = 0; x <= iradius; x++)
     {
-//      const float dist = hypotf(x, y);
-      const float dist = sqrtf(x*x + y*y); // faster than lib function, and we know we won't have overflow or denormals
+      const float dist = sqrtf(x*x + y*y); // faster than hypotf(), and we know we won't have overflow or denormals
       const int idist = round(dist * LOOKUP_OVERSAMPLE);
       if(idist >= table_size)
         // idist will only grow bigger in this row
-        //goto next_row;
         break;
 
-      // pointers into the 8 octants of the circle
-      // octant count is ccw from positive x-axis
-      float complex *const o1 = center - y * stamp_extent->width + x;
-      float complex *const o2 = center - x * stamp_extent->width + y;
-      float complex *const o3 = center - x * stamp_extent->width - y;
-      float complex *const o4 = center - y * stamp_extent->width - x;
-      float complex *const o5 = center + y * stamp_extent->width - x;
-      float complex *const o6 = center + x * stamp_extent->width - y;
-      float complex *const o7 = center + x * stamp_extent->width + y;
-      float complex *const o8 = center + y * stamp_extent->width + x;
+      // pointers into the 4 quadrants of the circle
+      // quadrant count is ccw from positive x-axis
+      float complex *const q1 = center - y * stamp_extent->width + x;
+      float complex *const q2 = center - y * stamp_extent->width - x;
+      float complex *const q3 = center + y * stamp_extent->width - x;
+      float complex *const q4 = center + y * stamp_extent->width + x;
 
       float abs_lookup = abs_strength * lookup_table[idist] / iradius;
 
       switch (warp->type)
       {
          case DT_LIQUIFY_WARP_TYPE_RADIAL_GROW:
-           *o1 = abs_lookup * ( x - y * I);
-           *o2 = abs_lookup * ( y - x * I);
-           *o3 = abs_lookup * (-y - x * I);
-           *o4 = abs_lookup * (-x - y * I);
-           *o5 = abs_lookup * (-x + y * I);
-           *o6 = abs_lookup * (-y + x * I);
-           *o7 = abs_lookup * ( y + x * I);
-           *o8 = abs_lookup * ( x + y * I);
+           *q1 = abs_lookup * ( x - y * I);
+           *q2 = abs_lookup * (-x - y * I);
+           *q3 = abs_lookup * (-x + y * I);
+           *q4 = abs_lookup * ( x + y * I);
            break;
 
          case DT_LIQUIFY_WARP_TYPE_RADIAL_SHRINK:
-           *o1 = -abs_lookup * ( x - y * I);
-           *o2 = -abs_lookup * ( y - x * I);
-           *o3 = -abs_lookup * (-y - x * I);
-           *o4 = -abs_lookup * (-x - y * I);
-           *o5 = -abs_lookup * (-x + y * I);
-           *o6 = -abs_lookup * (-y + x * I);
-           *o7 = -abs_lookup * ( y + x * I);
-           *o8 = -abs_lookup * ( x + y * I);
+           *q1 = -abs_lookup * ( x - y * I);
+           *q2 = -abs_lookup * (-x - y * I);
+           *q3 = -abs_lookup * (-x + y * I);
+           *q4 = -abs_lookup * ( x + y * I);
            break;
 
          default:
-           *o1 = *o2 = *o3 = *o4 = *o5 = *o6 = *o7 = *o8 =
-             strength * lookup_table[idist];
+           *q1 = *q2 = *q3 = *q4 = strength * lookup_table[idist];
            break;
       }
     }
-//  next_row: ; // ";" makes compiler happy
   }
 
   dt_free_align((void *) lookup_table);
