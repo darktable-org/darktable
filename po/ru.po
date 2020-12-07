@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-03 19:10+0300\n"
-"PO-Revision-Date: 2020-12-06 22:43+0300\n"
+"POT-Creation-Date: 2020-12-07 06:56+0300\n"
+"PO-Revision-Date: 2020-12-07 07:05+0300\n"
 "Last-Translator: Timur Davletshin <timur.davletshin@gmail.com>\n"
 "Language-Team: русский\n"
 "Language: ru\n"
@@ -99,11 +99,11 @@ msgstr "Настраиваемая"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:316
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
-#: ../src/common/history.c:880 ../src/common/history.c:883
-#: ../src/common/history.c:899 ../src/common/styles.c:1088
+#: ../src/common/history.c:883 ../src/common/history.c:886
+#: ../src/common/history.c:902 ../src/common/styles.c:1088
 #: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:101
 #: ../src/develop/blend_gui.c:122 ../src/develop/blend_gui.c:2800
-#: ../src/develop/develop.c:2158 ../src/imageio/format/exr.cc:376
+#: ../src/develop/develop.c:2159 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:661 ../src/iop/ashift.c:4749
 #: ../src/iop/demosaic.c:5076 ../src/libs/live_view.c:429
 msgid "off"
@@ -358,7 +358,7 @@ msgid "(AI) detect from image edges..."
 msgstr "Автонастройка ББ по граничным значениям"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
-#: ../src/iop/channelmixerrgb.c:1949
+#: ../src/iop/channelmixerrgb.c:1981
 msgid "as shot in camera"
 msgstr "Из камеры"
 
@@ -574,7 +574,7 @@ msgstr "Выравнивание гистограммы"
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:127
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:45
 #: ../build/lib/darktable/plugins/introspection_tonemap.cc:92
-#: ../src/iop/shadhi.c:725
+#: ../src/iop/shadhi.c:709
 msgid "spatial extent"
 msgstr "Пространственный предел"
 
@@ -597,7 +597,7 @@ msgstr "Насыщенные цвета"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1824 ../src/develop/blend_gui.c:1843
 #: ../src/develop/blend_gui.c:1878 ../src/iop/channelmixer.c:629
-#: ../src/iop/channelmixerrgb.c:2207 ../src/iop/colorbalance.c:2025
+#: ../src/iop/channelmixerrgb.c:2239 ../src/iop/colorbalance.c:2025
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1289
 #: ../src/iop/colorzones.c:2362 ../src/iop/splittoning.c:474
 msgid "hue"
@@ -648,7 +648,7 @@ msgstr "Насыщенность"
 
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:267
 #: ../src/iop/atrous.c:1626 ../src/iop/atrous.c:1630
-#: ../src/iop/denoiseprofile.c:3699 ../src/iop/rawdenoise.c:906
+#: ../src/iop/denoiseprofile.c:3699 ../src/iop/rawdenoise.c:760
 msgid "smooth"
 msgstr "плавно"
 
@@ -960,7 +960,7 @@ msgstr "Резкость"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:287
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:462
-#: ../src/iop/filmic.c:1729 ../src/iop/filmicrgb.c:3937
+#: ../src/iop/filmic.c:1729 ../src/iop/filmicrgb.c:3933
 msgid "extreme luminance saturation"
 msgstr "Насыщенность верхов и низов"
 
@@ -1028,9 +1028,10 @@ msgstr "Версия генератора сплайнов"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:524
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:913 ../src/common/variables.c:520
-#: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/libs/export.c:1240 ../src/libs/export.c:1246
-#: ../src/libs/export.c:1253 ../src/libs/metadata_view.c:308
+#: ../src/develop/imageop_gui.c:302 ../src/imageio/format/pdf.c:670
+#: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:1240
+#: ../src/libs/export.c:1246 ../src/libs/export.c:1253
+#: ../src/libs/metadata_view.c:308
 msgid "no"
 msgstr "Нет"
 
@@ -1212,7 +1213,7 @@ msgstr "Алгоритм размытия"
 #: ../build/lib/darktable/plugins/introspection_lowpass.c:189
 #: ../build/lib/darktable/plugins/introspection_retouch.c:421
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:267
-#: ../src/iop/filmicrgb.c:3875
+#: ../src/iop/filmicrgb.c:3871
 msgid "gaussian"
 msgstr "По Гауссу"
 
@@ -1259,37 +1260,37 @@ msgstr "Пирамидальная"
 msgid "film stock"
 msgstr "Тип плёнки"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:131
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:230
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:132
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:231
 msgid "scan exposure bias"
 msgstr "Экспозиция"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:137
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:234
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:138
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:235
 msgid "paper black (density correction)"
 msgstr "Плотность чёрного"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:143
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:238
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:144
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:239
 #: ../src/iop/negadoctor.c:972
 msgid "paper grade (gamma)"
 msgstr "Гамма"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:149
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:242
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:150
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:243
 msgid "paper gloss (specular highlights)"
 msgstr "Сжатие светов"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:155
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:246
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:156
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:247
 msgid "print exposure adjustment"
 msgstr "Экспозиция"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:260
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
 msgid "black and white"
 msgstr "Ч-б"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:262
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
 #: ../src/iop/watermark.c:1405 ../src/libs/image.c:574
@@ -1387,7 +1388,7 @@ msgstr "Режим заливки"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:268
 #: ../build/lib/darktable/plugins/introspection_retouch.c:399
-#: ../src/iop/basicadj.c:622 ../src/iop/channelmixerrgb.c:2259
+#: ../src/iop/basicadj.c:622 ../src/iop/channelmixerrgb.c:2291
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:590 ../src/iop/soften.c:555
 #: ../src/iop/vignette.c:992 ../src/libs/history.c:896
 msgid "brightness"
@@ -1456,7 +1457,7 @@ msgstr "Цветность светов"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:66
 #: ../build/lib/darktable/plugins/introspection_temperature.c:121
-#: ../src/iop/temperature.c:1887
+#: ../src/iop/temperature.c:1892
 msgid "emerald"
 msgstr "Изумрудный"
 
@@ -1490,7 +1491,7 @@ msgstr "Глубокие тени"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:156
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:297
 #: ../src/iop/bilat.c:460 ../src/iop/colorbalance.c:2082
-#: ../src/iop/shadhi.c:710 ../src/iop/splittoning.c:519
+#: ../src/iop/shadhi.c:694 ../src/iop/splittoning.c:519
 msgid "shadows"
 msgstr "Тени"
 
@@ -1512,7 +1513,7 @@ msgstr "Затенённые света"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:180
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:313
 #: ../src/iop/bilat.c:454 ../src/iop/colorbalance.c:2084
-#: ../src/iop/monochrome.c:594 ../src/iop/shadhi.c:711
+#: ../src/iop/monochrome.c:594 ../src/iop/shadhi.c:695
 #: ../src/iop/splittoning.c:521
 msgid "highlights"
 msgstr "Света"
@@ -3651,14 +3652,14 @@ msgstr "Порядок модулей"
 #: ../src/common/collection.c:1472 ../src/develop/blend_gui.c:1833
 #: ../src/develop/blend_gui.c:1860 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:315 ../src/iop/channelmixer.c:632
-#: ../src/iop/channelmixer.c:642 ../src/iop/channelmixerrgb.c:2255
-#: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2034
+#: ../src/iop/channelmixer.c:642 ../src/iop/channelmixerrgb.c:2287
+#: ../src/iop/temperature.c:1886 ../src/iop/temperature.c:2039
 #: ../src/libs/collect.c:1597 ../src/views/darkroom.c:2514
 msgid "red"
 msgstr "Красный"
 
 #: ../src/common/collection.c:1474 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1871 ../src/libs/collect.c:1597
+#: ../src/iop/temperature.c:1876 ../src/libs/collect.c:1597
 #: ../src/views/darkroom.c:2516
 msgid "yellow"
 msgstr "Жёлтый"
@@ -3666,9 +3667,9 @@ msgstr "Жёлтый"
 #: ../src/common/collection.c:1476 ../src/develop/blend_gui.c:1836
 #: ../src/develop/blend_gui.c:1863 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:320 ../src/iop/channelmixer.c:633
-#: ../src/iop/channelmixer.c:648 ../src/iop/channelmixerrgb.c:2256
-#: ../src/iop/temperature.c:1865 ../src/iop/temperature.c:1883
-#: ../src/iop/temperature.c:2035 ../src/libs/collect.c:1597
+#: ../src/iop/channelmixer.c:648 ../src/iop/channelmixerrgb.c:2288
+#: ../src/iop/temperature.c:1870 ../src/iop/temperature.c:1888
+#: ../src/iop/temperature.c:2040 ../src/libs/collect.c:1597
 #: ../src/views/darkroom.c:2515
 msgid "green"
 msgstr "Зелёный"
@@ -3676,8 +3677,8 @@ msgstr "Зелёный"
 #: ../src/common/collection.c:1478 ../src/develop/blend_gui.c:1839
 #: ../src/develop/blend_gui.c:1866 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:325 ../src/iop/channelmixer.c:634
-#: ../src/iop/channelmixer.c:654 ../src/iop/channelmixerrgb.c:2257
-#: ../src/iop/temperature.c:1885 ../src/iop/temperature.c:2036
+#: ../src/iop/channelmixer.c:654 ../src/iop/channelmixerrgb.c:2289
+#: ../src/iop/temperature.c:1890 ../src/iop/temperature.c:2041
 #: ../src/libs/collect.c:1597
 msgid "blue"
 msgstr "Синий"
@@ -3924,10 +3925,10 @@ msgstr ""
 "Запустить настройку параметров производительности?\n"
 
 #: ../src/common/darktable.c:913 ../src/common/database.c:3247
-#: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
-#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:1241
-#: ../src/libs/export.c:1247 ../src/libs/export.c:1254
-#: ../src/libs/metadata_view.c:308
+#: ../src/common/variables.c:518 ../src/develop/imageop_gui.c:303
+#: ../src/imageio/format/pdf.c:671 ../src/imageio/format/pdf.c:696
+#: ../src/libs/export.c:1241 ../src/libs/export.c:1247
+#: ../src/libs/export.c:1254 ../src/libs/metadata_view.c:308
 msgid "yes"
 msgstr "Да"
 
@@ -4152,12 +4153,12 @@ msgstr "darktable — обслуживание базы данных"
 msgid "later"
 msgstr "Позже"
 
-#: ../src/common/exif.cc:3977
+#: ../src/common/exif.cc:3980
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "Ошибка чтения файла XMP «%s»: «%s»"
 
-#: ../src/common/exif.cc:4029
+#: ../src/common/exif.cc:4032
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "Ошибка записи файла XMP «%s»: «%s»"
@@ -4193,16 +4194,16 @@ msgstr ""
 "Невозможно удалить ленту снимков с локальными копиями и недоступными "
 "оригиналами"
 
-#: ../src/common/history.c:769
+#: ../src/common/history.c:772
 msgid "you need to copy history from an image before you paste it onto another"
 msgstr ""
 "Скопируйте историю изменений с одного снимка, чтобы применить её к другому "
 "снимку"
 
-#: ../src/common/history.c:880 ../src/common/history.c:883
-#: ../src/common/history.c:899 ../src/common/styles.c:1088
+#: ../src/common/history.c:883 ../src/common/history.c:886
+#: ../src/common/history.c:902 ../src/common/styles.c:1088
 #: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:123
-#: ../src/develop/develop.c:2158 ../src/iop/ashift.c:4750
+#: ../src/develop/develop.c:2159 ../src/iop/ashift.c:4750
 #: ../src/libs/live_view.c:430
 msgid "on"
 msgstr "Вкл."
@@ -4530,7 +4531,7 @@ msgstr "ниже уровня моря"
 msgid "m"
 msgstr "м"
 
-#: ../src/control/control.c:268
+#: ../src/control/control.c:226
 msgid "working..."
 msgstr "Операция выполняется..."
 
@@ -5283,12 +5284,12 @@ msgid "input image"
 msgstr "Иcходное изображение"
 
 #: ../src/develop/blend_gui.c:764 ../src/develop/blend_gui.c:2028
-#: ../src/develop/imageop.c:3175
+#: ../src/develop/imageop.c:3176
 msgid "input"
 msgstr "На входе"
 
 #: ../src/develop/blend_gui.c:764 ../src/develop/blend_gui.c:2028
-#: ../src/develop/imageop.c:3177
+#: ../src/develop/imageop.c:3178
 msgid "output"
 msgstr "На выходе"
 
@@ -5375,8 +5376,8 @@ msgid "gray"
 msgstr "Серый"
 
 #: ../src/develop/blend_gui.c:1831 ../src/develop/blend_gui.c:1858
-#: ../src/iop/channelmixerrgb.c:2255 ../src/iop/denoiseprofile.c:3875
-#: ../src/iop/rawdenoise.c:1055 ../src/iop/rgbcurve.c:1383
+#: ../src/iop/channelmixerrgb.c:2287 ../src/iop/denoiseprofile.c:3875
+#: ../src/iop/rawdenoise.c:909 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:947
 msgid "R"
 msgstr "R"
@@ -5386,8 +5387,8 @@ msgid "sliders for red channel"
 msgstr "Ползунки красного канала"
 
 #: ../src/develop/blend_gui.c:1834 ../src/develop/blend_gui.c:1861
-#: ../src/iop/channelmixerrgb.c:2256 ../src/iop/denoiseprofile.c:3876
-#: ../src/iop/rawdenoise.c:1056 ../src/iop/rgbcurve.c:1384
+#: ../src/iop/channelmixerrgb.c:2288 ../src/iop/denoiseprofile.c:3876
+#: ../src/iop/rawdenoise.c:910 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:948
 msgid "G"
 msgstr "G"
@@ -5397,8 +5398,8 @@ msgid "sliders for green channel"
 msgstr "Ползунки зелёного канала"
 
 #: ../src/develop/blend_gui.c:1837 ../src/develop/blend_gui.c:1864
-#: ../src/iop/channelmixerrgb.c:2257 ../src/iop/denoiseprofile.c:3877
-#: ../src/iop/rawdenoise.c:1057 ../src/iop/rgbcurve.c:1385
+#: ../src/iop/channelmixerrgb.c:2289 ../src/iop/denoiseprofile.c:3877
+#: ../src/iop/rawdenoise.c:911 ../src/iop/rgbcurve.c:1385
 #: ../src/iop/rgblevels.c:949
 msgid "B"
 msgstr "B"
@@ -5424,7 +5425,7 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "Ползунки канала насыщенности (HSL)"
 
 #: ../src/develop/blend_gui.c:1847 ../src/develop/blend_gui.c:1874
-#: ../src/iop/atrous.c:1849 ../src/iop/channelmixerrgb.c:2213
+#: ../src/iop/atrous.c:1849 ../src/iop/channelmixerrgb.c:2245
 #: ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:534
 msgid "chroma"
 msgstr "Цветность"
@@ -5757,19 +5758,19 @@ msgstr "Временно отключить маску смешивания дл
 msgid "mask refinement"
 msgstr "Параметры маски"
 
-#: ../src/develop/develop.c:1469 ../src/gui/presets.c:801
+#: ../src/develop/develop.c:1470 ../src/gui/presets.c:801
 msgid "display-referred default"
 msgstr "По умолчанию для «Базовая кривая»"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1471 ../src/gui/presets.c:803
+#: ../src/develop/develop.c:1472 ../src/gui/presets.c:803
 #: ../src/iop/exposure.c:273 ../src/iop/exposure.c:282
 msgid "scene-referred default"
 msgstr "По умолчанию для «Плёночная тональная кривая RGB»"
 
-#: ../src/develop/develop.c:1924
+#: ../src/develop/develop.c:1925
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: несоответствие версии модуля «%s»: %d != %d"
@@ -5800,12 +5801,12 @@ msgstr "Удалить"
 msgid "rename"
 msgstr "Переименовать"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2520
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2521
 #, c-format
 msgid "%s is switched on"
 msgstr "%s: включен"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2520
+#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2521
 #, c-format
 msgid "%s is switched off"
 msgstr "%s: выключен"
@@ -5825,7 +5826,7 @@ msgctxt "accel"
 msgid "fusion"
 msgstr "Совмещение"
 
-#: ../src/develop/imageop.c:2489
+#: ../src/develop/imageop.c:2490
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5833,7 +5834,7 @@ msgstr ""
 "Копии модуля.\n"
 "Щелчок правой кнопкой мыши создаёт новую копию."
 
-#: ../src/develop/imageop.c:2500
+#: ../src/develop/imageop.c:2501
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -5842,12 +5843,12 @@ msgstr ""
 "Ctrl+Щелчок для применения автоматических настроек."
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2508 ../src/gui/preferences.c:791
+#: ../src/develop/imageop.c:2509 ../src/gui/preferences.c:791
 #: ../src/libs/lib.c:1238 ../src/libs/modulegroups.c:278
 msgid "presets"
 msgstr "Профили"
 
-#: ../src/develop/imageop.c:2510
+#: ../src/develop/imageop.c:2511
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5855,17 +5856,26 @@ msgstr ""
 "Профили.\n"
 "Щелчок средней кнопкой мыши для применения над новой копией."
 
-#: ../src/develop/imageop.c:2807 ../src/develop/imageop.c:2833
+#: ../src/develop/imageop.c:2808 ../src/develop/imageop.c:2834
 msgid "ERROR"
 msgstr "ОШИБКА!"
 
-#: ../src/develop/imageop.c:3174
+#: ../src/develop/imageop.c:3175
 msgid "purpose"
 msgstr "Назначение"
 
-#: ../src/develop/imageop.c:3176
+#: ../src/develop/imageop.c:3177
 msgid "process"
 msgstr "Обработка"
+
+#: ../src/develop/imageop_gui.c:430
+#, c-format
+msgid ""
+"%s\n"
+"ctrl+click to %s"
+msgstr ""
+"%s\n"
+"Ctrl+Щелчок для %s"
 
 #: ../src/develop/lightroom.c:1077
 msgid "cannot find lightroom XMP!"
@@ -6201,7 +6211,7 @@ msgstr "Лидер"
 msgid "grouped images"
 msgstr "Сгруппированные снимки"
 
-#: ../src/dtgtk/thumbnail.c:521
+#: ../src/dtgtk/thumbnail.c:533
 msgid "fit"
 msgstr "Вписать"
 
@@ -6715,8 +6725,8 @@ msgid "images"
 msgstr "Снимок"
 
 #: ../src/gui/camera_import_dialog.c:317 ../src/iop/temperature.c:240
-#: ../src/iop/temperature.c:2052 ../src/iop/temperature.c:2065
-#: ../src/iop/temperature.c:2071 ../src/iop/temperature.c:2084
+#: ../src/iop/temperature.c:2057 ../src/iop/temperature.c:2070
+#: ../src/iop/temperature.c:2076 ../src/iop/temperature.c:2089
 msgid "settings"
 msgstr "Параметры"
 
@@ -6787,115 +6797,110 @@ msgctxt "accel"
 msgid "quit"
 msgstr "Выход"
 
-#. Full-screen accelerators
+#. Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
 #: ../src/gui/gtk.c:1408
 msgctxt "accel"
 msgid "toggle fullscreen"
 msgstr "Включить полноэкранный режим"
 
-#: ../src/gui/gtk.c:1409
-msgctxt "accel"
-msgid "leave fullscreen"
-msgstr "Покинуть полноэкранный режим"
-
 #. Side-border hide/show
-#: ../src/gui/gtk.c:1417
+#: ../src/gui/gtk.c:1414
 msgctxt "accel"
 msgid "toggle side borders"
 msgstr "Переключить боковые панели"
 
-#: ../src/gui/gtk.c:1419
+#: ../src/gui/gtk.c:1416
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
 msgstr "Переключить статус кнопок сокрытия панелей"
 
-#: ../src/gui/gtk.c:1423
+#: ../src/gui/gtk.c:1420
 msgctxt "accel"
 msgid "toggle left panel"
 msgstr "Переключить левую панель"
 
-#: ../src/gui/gtk.c:1427
+#: ../src/gui/gtk.c:1424
 msgctxt "accel"
 msgid "toggle right panel"
 msgstr "Переключить правую панель"
 
-#: ../src/gui/gtk.c:1431
+#: ../src/gui/gtk.c:1428
 msgctxt "accel"
 msgid "toggle top panel"
 msgstr "Переключить верхнюю панель"
 
-#: ../src/gui/gtk.c:1435
+#: ../src/gui/gtk.c:1432
 msgctxt "accel"
 msgid "toggle bottom panel"
 msgstr "Переключить нижнюю панель"
 
 #. specific top/bottom toggles
-#: ../src/gui/gtk.c:1440
+#: ../src/gui/gtk.c:1437
 msgctxt "accel"
 msgid "toggle header"
 msgstr "Переключить видимость заголовка"
 
-#: ../src/gui/gtk.c:1443
+#: ../src/gui/gtk.c:1440
 msgctxt "accel"
 msgid "toggle filmstrip and timeline"
 msgstr "Переключить ленту снимков или хронологию"
 
-#: ../src/gui/gtk.c:1447
+#: ../src/gui/gtk.c:1444
 msgctxt "accel"
 msgid "toggle top toolbar"
 msgstr "Переключить верхнюю панель"
 
-#: ../src/gui/gtk.c:1451
+#: ../src/gui/gtk.c:1448
 msgctxt "accel"
 msgid "toggle bottom toolbar"
 msgstr "Переключить нижнюю панель"
 
-#: ../src/gui/gtk.c:1455
+#: ../src/gui/gtk.c:1452
 msgctxt "accel"
 msgid "toggle all top panels"
 msgstr "Переключить все верхние панели"
 
-#: ../src/gui/gtk.c:1459
+#: ../src/gui/gtk.c:1456
 msgctxt "accel"
 msgid "toggle all bottom panels"
 msgstr "Переключить все нижние панели"
 
 #. toggle focus peaking everywhere
-#: ../src/gui/gtk.c:1464
+#: ../src/gui/gtk.c:1461
 msgctxt "accel"
 msgid "toggle focus peaking"
 msgstr "Переключить определение фокуса"
 
 #. View-switch
-#: ../src/gui/gtk.c:1469
+#: ../src/gui/gtk.c:1466
 msgctxt "accel"
 msgid "switch view"
 msgstr "Переключить режим"
 
 #. accels window
-#: ../src/gui/gtk.c:1475
+#: ../src/gui/gtk.c:1472
 msgctxt "accel"
 msgid "show accels window"
 msgstr "Комбинации клавиш"
 
 #. View-switch
-#: ../src/gui/gtk.c:1478
+#: ../src/gui/gtk.c:1475
 msgctxt "accel"
 msgid "toggle tooltip visibility"
 msgstr "Переключить видимость всплывающих подсказок"
 
-#: ../src/gui/gtk.c:1525
+#: ../src/gui/gtk.c:1522
 msgid "enable focus-peaking mode"
 msgstr "Переключить определение фокуса"
 
 #. font name can only use period as decimal separator
 #. but printf format strings use comma for some locales, so replace comma with period
-#: ../src/gui/gtk.c:2868
+#: ../src/gui/gtk.c:2865
 #, c-format
 msgid "%.1f"
 msgstr "%.1f"
 
-#: ../src/gui/gtk.c:2869
+#: ../src/gui/gtk.c:2866
 #, c-format
 msgid "Sans %s"
 msgstr "Sans %s"
@@ -7134,7 +7139,7 @@ msgstr "Золотая спираль"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:682
 #: ../src/iop/denoiseprofile.c:3874 ../src/iop/lens.cc:2234
-#: ../src/iop/rawdenoise.c:1054 ../src/libs/tools/filter.c:175
+#: ../src/iop/rawdenoise.c:908 ../src/libs/tools/filter.c:175
 msgid "all"
 msgstr "Все"
 
@@ -8337,7 +8342,7 @@ msgstr "Искажение перспективы"
 #: ../src/iop/flip.c:101 ../src/iop/hazeremoval.c:112
 #: ../src/iop/highlights.c:87 ../src/iop/hotpixels.c:72 ../src/iop/invert.c:121
 #: ../src/iop/lens.cc:159 ../src/iop/nlmeans.c:99
-#: ../src/iop/profile_gamma.c:100 ../src/iop/rawdenoise.c:128
+#: ../src/iop/profile_gamma.c:100 ../src/iop/rawdenoise.c:129
 #: ../src/iop/retouch.c:207 ../src/iop/sharpen.c:96 ../src/iop/spots.c:62
 #: ../src/iop/temperature.c:202
 msgid "corrective"
@@ -8642,12 +8647,12 @@ msgid "deblur: fine blur, strength 1"
 msgstr "Удаление размытия: мелкие детали, уровень 1"
 
 #: ../src/iop/atrous.c:1606 ../src/iop/denoiseprofile.c:3682
-#: ../src/iop/rawdenoise.c:889
+#: ../src/iop/rawdenoise.c:743
 msgid "coarse"
 msgstr "крупные детали"
 
 #: ../src/iop/atrous.c:1613 ../src/iop/denoiseprofile.c:3690
-#: ../src/iop/rawdenoise.c:897
+#: ../src/iop/rawdenoise.c:751
 msgid "fine"
 msgstr "мелкие детали"
 
@@ -8656,7 +8661,7 @@ msgid "contrasty"
 msgstr "высокий контраст"
 
 #: ../src/iop/atrous.c:1631 ../src/iop/denoiseprofile.c:3704
-#: ../src/iop/rawdenoise.c:911
+#: ../src/iop/rawdenoise.c:765
 msgid "noisy"
 msgstr "высокий шум"
 
@@ -8897,7 +8902,7 @@ msgstr "Коррекция сжатия в светах"
 
 #: ../src/iop/basicadj.c:608 ../src/iop/bilat.c:450 ../src/iop/colisa.c:315
 #: ../src/iop/colorbalance.c:1927 ../src/iop/colorbalance.c:1934
-#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:3757
+#: ../src/iop/filmic.c:1691 ../src/iop/filmicrgb.c:3753
 #: ../src/iop/lowpass.c:589
 msgid "contrast"
 msgstr "Контраст"
@@ -9043,7 +9048,7 @@ msgid "linear, RGB"
 msgstr "Линейн., RGB"
 
 #: ../src/iop/bilateral.cc:310 ../src/iop/clahe.c:337 ../src/iop/dither.c:741
-#: ../src/iop/lowpass.c:586 ../src/iop/shadhi.c:714 ../src/iop/sharpen.c:727
+#: ../src/iop/lowpass.c:586 ../src/iop/shadhi.c:698 ../src/iop/sharpen.c:727
 msgid "radius"
 msgstr "Радиус"
 
@@ -9267,14 +9272,14 @@ msgstr ""
 #: ../src/iop/cacorrect.c:60 ../src/iop/cacorrect.c:62
 #: ../src/iop/demosaic.c:177 ../src/iop/highlights.c:88
 #: ../src/iop/highlights.c:90 ../src/iop/hotpixels.c:73
-#: ../src/iop/hotpixels.c:75 ../src/iop/rawdenoise.c:129
-#: ../src/iop/rawdenoise.c:131 ../src/iop/temperature.c:203
+#: ../src/iop/hotpixels.c:75 ../src/iop/rawdenoise.c:130
+#: ../src/iop/rawdenoise.c:132 ../src/iop/temperature.c:203
 #: ../src/iop/temperature.c:205
 msgid "linear, raw, scene-referred"
 msgstr "Линейн., Raw, плёночная тональная кривая RGB"
 
 #: ../src/iop/cacorrect.c:61 ../src/iop/demosaic.c:178 ../src/iop/invert.c:123
-#: ../src/iop/rawdenoise.c:130 ../src/iop/temperature.c:204
+#: ../src/iop/rawdenoise.c:131 ../src/iop/temperature.c:204
 msgid "linear, raw"
 msgstr "Линейн., Raw"
 
@@ -9458,16 +9463,16 @@ msgstr "Микшер каналов"
 msgid "swap G and R"
 msgstr "Поменять местами G и R"
 
-#: ../src/iop/channelmixerrgb.c:1019
+#: ../src/iop/channelmixerrgb.c:1055
 msgid "auto-detection of white balance completed"
 msgstr "Автоматическая настройка баланса белого завершена"
 
-#: ../src/iop/channelmixerrgb.c:1692
+#: ../src/iop/channelmixerrgb.c:1752
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT: %.0f K (дневной свет)"
 
-#: ../src/iop/channelmixerrgb.c:1694
+#: ../src/iop/channelmixerrgb.c:1754
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -9477,12 +9482,12 @@ msgstr ""
 "Данный источник может быть описан как дневной свет.\n"
 "Используйте источник света «D»."
 
-#: ../src/iop/channelmixerrgb.c:1700
+#: ../src/iop/channelmixerrgb.c:1760
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT: %.0f K (чёрное тело)"
 
-#: ../src/iop/channelmixerrgb.c:1702
+#: ../src/iop/channelmixerrgb.c:1762
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -9492,12 +9497,12 @@ msgstr ""
 "Данный источник может быть описан как планковское чёрное тело.\n"
 "Используйте источник света «Чёрное тело (по Планку)»."
 
-#: ../src/iop/channelmixerrgb.c:1708
+#: ../src/iop/channelmixerrgb.c:1768
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT: %.0f K (ошибочн.)"
 
-#: ../src/iop/channelmixerrgb.c:1710
+#: ../src/iop/channelmixerrgb.c:1770
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -9510,12 +9515,12 @@ msgstr ""
 "чёрное тело.\n"
 "Используйте источник света «Пользовательский»."
 
-#: ../src/iop/channelmixerrgb.c:1717
+#: ../src/iop/channelmixerrgb.c:1777
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT: Не определено"
 
-#: ../src/iop/channelmixerrgb.c:1719
+#: ../src/iop/channelmixerrgb.c:1779
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -9524,16 +9529,16 @@ msgstr ""
 "Данный источник не может быть описан.\n"
 "Используйте источник света «Пользовательский»."
 
-#: ../src/iop/channelmixerrgb.c:1972
+#: ../src/iop/channelmixerrgb.c:2006
 msgid "white balance successfuly extracted from raw image"
 msgstr "Значение баланса белого получено из изображения в формате Raw"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:1980
+#: ../src/iop/channelmixerrgb.c:2012
 msgid "auto-detection of white balance started…"
 msgstr "Автоматическая настройка баланса белого..."
 
-#: ../src/iop/channelmixerrgb.c:2003
+#: ../src/iop/channelmixerrgb.c:2035
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
@@ -9541,11 +9546,11 @@ msgstr ""
 "Нормализация отключена, так как суммарное значение настроек канала серого "
 "равно нулю."
 
-#: ../src/iop/channelmixerrgb.c:2024
+#: ../src/iop/channelmixerrgb.c:2056
 msgid "double CAT applied"
 msgstr "Модель применена дважды"
 
-#: ../src/iop/channelmixerrgb.c:2028
+#: ../src/iop/channelmixerrgb.c:2060
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -9555,11 +9560,11 @@ msgstr ""
 "ВНИМАНИЕ: Обнаружено несколько копий модуля «Цветовая калибровка».\n"
 "Это может привести к непредсказуемым результатам."
 
-#: ../src/iop/channelmixerrgb.c:2038
+#: ../src/iop/channelmixerrgb.c:2070
 msgid "white balance module error"
 msgstr "Модуль «Баланс белого» вернул ошибку"
 
-#: ../src/iop/channelmixerrgb.c:2042
+#: ../src/iop/channelmixerrgb.c:2074
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -9571,19 +9576,19 @@ msgstr ""
 "адаптации цветового пространства."
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:2145
+#: ../src/iop/channelmixerrgb.c:2177
 msgid "CAT"
 msgstr "Модель"
 
-#: ../src/iop/channelmixerrgb.c:2145
+#: ../src/iop/channelmixerrgb.c:2177
 msgid "chromatic adaptation transform"
 msgstr "Модель адаптации цветового пространства"
 
-#: ../src/iop/channelmixerrgb.c:2151
+#: ../src/iop/channelmixerrgb.c:2183
 msgid "adaptation"
 msgstr "Модель"
 
-#: ../src/iop/channelmixerrgb.c:2153
+#: ../src/iop/channelmixerrgb.c:2185
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -9606,41 +9611,41 @@ msgstr ""
 "XYZ — простое преобразование в пространстве XYZ. Не рекомендуется.\n"
 "Отключено — без адаптации, рабочее цветовое пространство RGB."
 
-#: ../src/iop/channelmixerrgb.c:2172
+#: ../src/iop/channelmixerrgb.c:2204
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
 msgstr "Цвет источника света до адаптации цветового пространства"
 
-#: ../src/iop/channelmixerrgb.c:2179 ../src/iop/temperature.c:2063
+#: ../src/iop/channelmixerrgb.c:2211 ../src/iop/temperature.c:2068
 msgid "set white balance to detected from area"
 msgstr "Взять значение с изображения"
 
-#: ../src/iop/channelmixerrgb.c:2183
+#: ../src/iop/channelmixerrgb.c:2215
 msgid "illuminant"
 msgstr "Источник света"
 
-#: ../src/iop/channelmixerrgb.c:2189 ../src/iop/temperature.c:2001
+#: ../src/iop/channelmixerrgb.c:2221 ../src/iop/temperature.c:2006
 msgid "temperature"
 msgstr "Температура"
 
-#: ../src/iop/channelmixerrgb.c:2233
+#: ../src/iop/channelmixerrgb.c:2265
 msgid "input red"
 msgstr "Красный"
 
-#: ../src/iop/channelmixerrgb.c:2240
+#: ../src/iop/channelmixerrgb.c:2272
 msgid "input green"
 msgstr "Зелёный"
 
-#: ../src/iop/channelmixerrgb.c:2247
+#: ../src/iop/channelmixerrgb.c:2279
 msgid "input blue"
 msgstr "Синий"
 
-#: ../src/iop/channelmixerrgb.c:2258
+#: ../src/iop/channelmixerrgb.c:2290
 msgid "colorfulness"
 msgstr "Насыщенность"
 
-#: ../src/iop/channelmixerrgb.c:2260
+#: ../src/iop/channelmixerrgb.c:2292
 msgid "grey"
 msgstr "Серый"
 
@@ -11219,14 +11224,14 @@ msgstr ""
 "Коррекция серой точки. Значения, отличные от 18%, могут быть полезны при "
 "съёмке тёмного объекта на светлом фоне."
 
-#: ../src/iop/filmic.c:1650 ../src/iop/filmicrgb.c:3648
+#: ../src/iop/filmic.c:1650 ../src/iop/filmicrgb.c:3644
 msgid ""
 "number of stops between middle grey and pure white.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
 "adjust so highlights clipping is avoided"
 msgstr "Диапазон между серой точкой и чистым белым"
 
-#: ../src/iop/filmic.c:1662 ../src/iop/filmicrgb.c:3658
+#: ../src/iop/filmic.c:1662 ../src/iop/filmicrgb.c:3654
 msgid ""
 "number of stops between middle grey and pure black.\n"
 "this is a reading a lightmeter would give you on the scene.\n"
@@ -11242,7 +11247,7 @@ msgstr ""
 "Относительное изменение широты динамического диапазона.\n"
 "Полезно с функцией автоматического расчёта уровней."
 
-#: ../src/iop/filmic.c:1679 ../src/iop/filmicrgb.c:3671
+#: ../src/iop/filmic.c:1679 ../src/iop/filmicrgb.c:3667
 #: ../src/iop/profile_gamma.c:720
 msgid "auto tune levels"
 msgstr "Автоуровни"
@@ -11259,14 +11264,14 @@ msgstr "Автоматическая настройка по каналу све
 msgid "filmic S curve"
 msgstr "S-подобная кривая"
 
-#: ../src/iop/filmic.c:1693 ../src/iop/filmicrgb.c:3761
+#: ../src/iop/filmic.c:1693 ../src/iop/filmicrgb.c:3757
 msgid ""
 "slope of the linear part of the curve\n"
 "affects mostly the mid-tones"
 msgstr "Крутизна наклона линейной части кривой (контраст)"
 
 #. geotagging
-#: ../src/iop/filmic.c:1700 ../src/iop/filmicrgb.c:3770
+#: ../src/iop/filmic.c:1700 ../src/iop/filmicrgb.c:3766
 #: ../src/libs/metadata_view.c:143
 msgid "latitude"
 msgstr "Широта"
@@ -11280,7 +11285,7 @@ msgstr ""
 "Размер линейной части кривой. Увеличьте значение для достижения\n"
 "более выраженного контраста в верхних и нижних частях диапазона."
 
-#: ../src/iop/filmic.c:1713 ../src/iop/filmicrgb.c:3782
+#: ../src/iop/filmic.c:1713 ../src/iop/filmicrgb.c:3778
 msgid ""
 "slides the latitude along the slope\n"
 "to give more room to shadows or highlights.\n"
@@ -11357,13 +11362,13 @@ msgstr ""
 msgid "destination/display"
 msgstr "Конечное изображение"
 
-#: ../src/iop/filmic.c:1784 ../src/iop/filmicrgb.c:3802
+#: ../src/iop/filmic.c:1784 ../src/iop/filmicrgb.c:3798
 msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr "Значения, отличные от 0%, высветляют тёмные элементы изображения"
 
-#: ../src/iop/filmic.c:1793 ../src/iop/filmicrgb.c:3810
+#: ../src/iop/filmic.c:1793 ../src/iop/filmicrgb.c:3806
 msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
@@ -11371,7 +11376,7 @@ msgstr ""
 "Значения, отличные от 18%, сдвигают баланс серого в светлую или тёмную "
 "сторону"
 
-#: ../src/iop/filmic.c:1802 ../src/iop/filmicrgb.c:3818
+#: ../src/iop/filmic.c:1802 ../src/iop/filmicrgb.c:3814
 msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
@@ -11406,7 +11411,7 @@ msgstr ""
 "применения настраиваемой тональной кривой, имитирующей тоновоспроизведение "
 "плёнки"
 
-#: ../src/iop/filmicrgb.c:1118
+#: ../src/iop/filmicrgb.c:1112
 msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
@@ -11414,73 +11419,73 @@ msgstr ""
 "Плёночная тональная кривая RGB: ошибка выделения памяти! Проверьте настройки "
 "памяти."
 
-#: ../src/iop/filmicrgb.c:1459 ../src/iop/filmicrgb.c:1735
+#: ../src/iop/filmicrgb.c:1455 ../src/iop/filmicrgb.c:1731
 msgid "filmic works only on RGB input"
 msgstr "Плёночная тональная кривая RGB работает только с данными в формате RGB"
 
-#: ../src/iop/filmicrgb.c:1594
+#: ../src/iop/filmicrgb.c:1590
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
 msgstr ""
 "Плёночная тональная кривая RGB: ошибка выделения памяти! Проверьте настройки "
 "памяти."
 
-#: ../src/iop/filmicrgb.c:2715
+#: ../src/iop/filmicrgb.c:2711
 msgid "look only"
 msgstr "Кривая преобразования"
 
-#: ../src/iop/filmicrgb.c:2717
+#: ../src/iop/filmicrgb.c:2713
 msgid "look + mapping (lin)"
 msgstr "Линейн. масштабирование"
 
-#: ../src/iop/filmicrgb.c:2719
+#: ../src/iop/filmicrgb.c:2715
 msgid "look + mapping (log)"
 msgstr "Логарифмич. масштабирование"
 
-#: ../src/iop/filmicrgb.c:2721
+#: ../src/iop/filmicrgb.c:2717
 msgid "dynamic range mapping"
 msgstr "Масштабирование динамич. диапазона"
 
-#: ../src/iop/filmicrgb.c:3051
+#: ../src/iop/filmicrgb.c:3047
 #, c-format
 msgid "(%.0f %%)"
 msgstr "(%.0f %%)"
 
-#: ../src/iop/filmicrgb.c:3067
+#: ../src/iop/filmicrgb.c:3063
 #, no-c-format
 msgid "% display"
 msgstr "Выход, %"
 
-#: ../src/iop/filmicrgb.c:3078
+#: ../src/iop/filmicrgb.c:3074
 msgid "EV scene"
 msgstr "Вход, EV"
 
-#: ../src/iop/filmicrgb.c:3082
+#: ../src/iop/filmicrgb.c:3078
 #, no-c-format
 msgid "% camera"
 msgstr "Камера, %"
 
 #. Page DISPLAY
-#: ../src/iop/filmicrgb.c:3118 ../src/iop/filmicrgb.c:3795
+#: ../src/iop/filmicrgb.c:3114 ../src/iop/filmicrgb.c:3791
 msgid "display"
 msgstr "Выход"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3127
+#: ../src/iop/filmicrgb.c:3123
 msgid "(%)"
 msgstr "(%)"
 
 #. Page SCENE
-#: ../src/iop/filmicrgb.c:3136 ../src/iop/filmicrgb.c:3631
+#: ../src/iop/filmicrgb.c:3132 ../src/iop/filmicrgb.c:3627
 msgid "scene"
 msgstr "Вход"
 
 #. axis legend
-#: ../src/iop/filmicrgb.c:3145
+#: ../src/iop/filmicrgb.c:3141
 msgid "(EV)"
 msgstr "(EV)"
 
 #. we are over the graph area
-#: ../src/iop/filmicrgb.c:3574
+#: ../src/iop/filmicrgb.c:3570
 msgid ""
 "use the parameters below to set the nodes.\n"
 "the bright curve is the filmic tone mapping curve\n"
@@ -11489,11 +11494,11 @@ msgstr ""
 "Светлая кривая отображает преобразование тонов.\n"
 "Тёмная кривая отображает преобразование насыщенности."
 
-#: ../src/iop/filmicrgb.c:3580
+#: ../src/iop/filmicrgb.c:3576
 msgid "toggle axis labels and values display."
 msgstr "Легенда"
 
-#: ../src/iop/filmicrgb.c:3584
+#: ../src/iop/filmicrgb.c:3580
 msgid ""
 "cycle through graph views.\n"
 "left click: cycle forward.\n"
@@ -11505,7 +11510,7 @@ msgstr ""
 "Щелчок правой кнопкой мыши для перехода к предыдущему.\n"
 "Двойной щелчок сбрасывает изменения."
 
-#: ../src/iop/filmicrgb.c:3638
+#: ../src/iop/filmicrgb.c:3634
 msgid ""
 "adjust to match the average luminance of the image's subject.\n"
 "the value entered here will then be remapped to 18.45%.\n"
@@ -11514,8 +11519,8 @@ msgstr ""
 "Коррекция серой точки.\n"
 "Уменьшите значение для увеличения яркости изображения."
 
-#: ../src/iop/filmicrgb.c:3646 ../src/iop/filmicrgb.c:3656
-#: ../src/iop/filmicrgb.c:3689 ../src/iop/filmicrgb.c:3699
+#: ../src/iop/filmicrgb.c:3642 ../src/iop/filmicrgb.c:3652
+#: ../src/iop/filmicrgb.c:3685 ../src/iop/filmicrgb.c:3695
 #: ../src/iop/toneequal.c:3080 ../src/iop/toneequal.c:3084
 #: ../src/iop/toneequal.c:3088 ../src/iop/toneequal.c:3092
 #: ../src/iop/toneequal.c:3096 ../src/iop/toneequal.c:3100
@@ -11525,13 +11530,13 @@ msgstr ""
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
 
-#: ../src/iop/filmicrgb.c:3666
+#: ../src/iop/filmicrgb.c:3662
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr "Изменение широты динамического диапазона"
 
-#: ../src/iop/filmicrgb.c:3672
+#: ../src/iop/filmicrgb.c:3668
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -11544,15 +11549,15 @@ msgstr ""
 "светлоты в пределы гистограммы"
 
 #. Page RECONSTRUCT
-#: ../src/iop/filmicrgb.c:3681
+#: ../src/iop/filmicrgb.c:3677
 msgid "reconstruct"
 msgstr "Восстановление"
 
-#: ../src/iop/filmicrgb.c:3683
+#: ../src/iop/filmicrgb.c:3679
 msgid "highlights clipping"
 msgstr "Восстановление пересветов"
 
-#: ../src/iop/filmicrgb.c:3691
+#: ../src/iop/filmicrgb.c:3687
 msgid ""
 "set the exposure threshold upon which\n"
 "clipped highlights get reconstructed.\n"
@@ -11566,7 +11571,7 @@ msgstr ""
 "производится восстановление пересветов. Увеличение же\n"
 "значения уменьшает эту площадь."
 
-#: ../src/iop/filmicrgb.c:3701
+#: ../src/iop/filmicrgb.c:3697
 msgid ""
 "soften the transition between clipped highlights and valid pixels.\n"
 "decrease to make the transition harder and sharper,\n"
@@ -11576,15 +11581,15 @@ msgstr ""
 "Уменьшите значение для более контрастного перехода. Увеличьте его для\n"
 "более плавного перехода."
 
-#: ../src/iop/filmicrgb.c:3707
+#: ../src/iop/filmicrgb.c:3703
 msgid "display highlight reconstruction mask"
 msgstr "Маска восстановления пересветов"
 
-#: ../src/iop/filmicrgb.c:3714 ../src/iop/splittoning.c:526
+#: ../src/iop/filmicrgb.c:3710 ../src/iop/splittoning.c:526
 msgid "balance"
 msgstr "Баланс"
 
-#: ../src/iop/filmicrgb.c:3722
+#: ../src/iop/filmicrgb.c:3718
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -11599,7 +11604,7 @@ msgstr ""
 "один из каналов не подвергся клиппингу. Уменьшите его,\n"
 "если пиксели во всех каналах засвечены."
 
-#: ../src/iop/filmicrgb.c:3734
+#: ../src/iop/filmicrgb.c:3730
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -11614,7 +11619,7 @@ msgstr ""
 "необходимо сохранить больше деталей. Уменьшите его,\n"
 "если необходим эффект размытия."
 
-#: ../src/iop/filmicrgb.c:3747
+#: ../src/iop/filmicrgb.c:3743
 #, no-c-format
 msgid ""
 "decide which reconstruction strategy to favor,\n"
@@ -11630,11 +11635,11 @@ msgstr ""
 "пурпурные пересветы."
 
 #. Page LOOK
-#: ../src/iop/filmicrgb.c:3755
+#: ../src/iop/filmicrgb.c:3751
 msgid "look"
 msgstr "Кривая"
 
-#: ../src/iop/filmicrgb.c:3766
+#: ../src/iop/filmicrgb.c:3762
 msgid ""
 "equivalent to paper grade in analog.\n"
 "increase to make highlights brighter and less compressed.\n"
@@ -11643,7 +11648,7 @@ msgstr ""
 "Аналог качества бумаги при печати. Увеличьте для более ярких светов\n"
 "и уменьшения сжатия, уменьшите для более приглушённых светов."
 
-#: ../src/iop/filmicrgb.c:3774
+#: ../src/iop/filmicrgb.c:3770
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "in percent of the dynamic range (white exposure - black exposure).\n"
@@ -11654,7 +11659,7 @@ msgstr ""
 "Размер линейной части кривой. Увеличьте значение для достижения\n"
 "более выраженного контраста в верхних и нижних частях диапазона."
 
-#: ../src/iop/filmicrgb.c:3790
+#: ../src/iop/filmicrgb.c:3786
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -11665,11 +11670,11 @@ msgstr ""
 "слишком малую насыщенность."
 
 #. Page OPTIONS
-#: ../src/iop/filmicrgb.c:3822
+#: ../src/iop/filmicrgb.c:3818
 msgid "options"
 msgstr "Параметры"
 
-#: ../src/iop/filmicrgb.c:3827
+#: ../src/iop/filmicrgb.c:3823
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
 "v4 is a newer desaturation method, based on spectral purity of light."
@@ -11678,7 +11683,7 @@ msgstr ""
 "v4 в базируется на спектральной чистоте\n"
 "цвета и применяется в более новых версиях."
 
-#: ../src/iop/filmicrgb.c:3831
+#: ../src/iop/filmicrgb.c:3827
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
@@ -11687,21 +11692,21 @@ msgstr ""
 "Сохранять оригинальные цвета.\n"
 "Может чрезмерно усиливать цветовой шум или хроматические аберрации.\n"
 
-#: ../src/iop/filmicrgb.c:3837
+#: ../src/iop/filmicrgb.c:3833
 msgid ""
 "choose the desired curvature of the filmic spline in highlights.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr "Крутизна кривой в светах"
 
-#: ../src/iop/filmicrgb.c:3842
+#: ../src/iop/filmicrgb.c:3838
 msgid ""
 "choose the desired curvature of the filmic spline in shadows.\n"
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr "Крутизна кривой в тенях"
 
-#: ../src/iop/filmicrgb.c:3847
+#: ../src/iop/filmicrgb.c:3843
 #, c-format
 msgid ""
 "enable to input custom middle-grey values.\n"
@@ -11712,7 +11717,7 @@ msgstr ""
 "Включить возможность коррекции серой точки.\n"
 "Не рекомендуется, используйте модуль «Экспозиции»."
 
-#: ../src/iop/filmicrgb.c:3854
+#: ../src/iop/filmicrgb.c:3850
 msgid ""
 "enable to auto-set the look hardness depending on the scene white and black "
 "points.\n"
@@ -11720,7 +11725,7 @@ msgid ""
 "disable if you want a manual control."
 msgstr "Автонастройка резкости перехода исходя из белой и чёрной точек"
 
-#: ../src/iop/filmicrgb.c:3860
+#: ../src/iop/filmicrgb.c:3856
 msgid ""
 "run extra passes of chromaticity reconstruction.\n"
 "more iterations means more color propagation from neighbourhood.\n"
@@ -11730,7 +11735,7 @@ msgstr ""
 "Дополнительные проходы восстановления светов дают\n"
 "более естественное заполнение цветом засвеченных пикселей"
 
-#: ../src/iop/filmicrgb.c:3867
+#: ../src/iop/filmicrgb.c:3863
 msgid ""
 "add statistical noise in reconstructed highlights.\n"
 "this avoids highlights to look too smooth\n"
@@ -11740,15 +11745,15 @@ msgstr ""
 "Добавление шума в восстановленные света для\n"
 "получения более естественного изображения"
 
-#: ../src/iop/filmicrgb.c:3874
+#: ../src/iop/filmicrgb.c:3870
 msgid "uniform"
 msgstr "Равномерное"
 
-#: ../src/iop/filmicrgb.c:3876
+#: ../src/iop/filmicrgb.c:3872
 msgid "poissonian"
 msgstr "Распределение Пуассона"
 
-#: ../src/iop/filmicrgb.c:3877
+#: ../src/iop/filmicrgb.c:3873
 msgid ""
 "choose the statistical distribution of noise.\n"
 "this is useful to match natural sensor noise pattern.\n"
@@ -11756,7 +11761,7 @@ msgstr ""
 "Статистическая модель распределения,\n"
 "описывающая естественный шум сенсора\n"
 
-#: ../src/iop/filmicrgb.c:3939
+#: ../src/iop/filmicrgb.c:3935
 msgid "middle tones saturation"
 msgstr "Насыщенность в средних тонах"
 
@@ -13113,15 +13118,15 @@ msgstr "Автоматический расчёт уровней"
 msgid "tone mapping method"
 msgstr "Отображение тонов"
 
-#: ../src/iop/rawdenoise.c:122
+#: ../src/iop/rawdenoise.c:123
 msgid "raw denoise"
 msgstr "Шумоподавление Raw"
 
-#: ../src/iop/rawdenoise.c:127
+#: ../src/iop/rawdenoise.c:128
 msgid "denoise the raw picture early in the pipeline"
 msgstr "Шумоподавление на ранней стадии обработки изображения"
 
-#: ../src/iop/rawdenoise.c:1102
+#: ../src/iop/rawdenoise.c:956
 msgid ""
 "raw denoising\n"
 "only works for raw images."
@@ -13583,37 +13588,37 @@ msgstr ""
 "Изменение диапазона тонов в тенях и светах за счёт усиления локального "
 "контраста"
 
-#: ../src/iop/shadhi.c:715 ../src/iop/splittoning.c:537
+#: ../src/iop/shadhi.c:699 ../src/iop/splittoning.c:537
 msgid "compress"
 msgstr "Сжатие"
 
-#: ../src/iop/shadhi.c:722
+#: ../src/iop/shadhi.c:706
 msgid "correct shadows"
 msgstr "Скорректировать тени"
 
-#: ../src/iop/shadhi.c:723
+#: ../src/iop/shadhi.c:707
 msgid "correct highlights"
 msgstr "Скорректировать света"
 
-#: ../src/iop/shadhi.c:724
+#: ../src/iop/shadhi.c:708
 msgid "shift white point"
 msgstr "Сдвиг белой точки"
 
-#: ../src/iop/shadhi.c:726
+#: ../src/iop/shadhi.c:710
 msgid "filter to use for softening. bilateral avoids halos"
 msgstr "Алгоритм размытия. Билатеральный фильтр позволяет избежать ореолов."
 
-#: ../src/iop/shadhi.c:727
+#: ../src/iop/shadhi.c:711
 msgid ""
 "compress the effect on shadows/highlights and\n"
 "preserve midtones"
 msgstr "Сжатие эффекта в тенях и светах и сохранение полутонов"
 
-#: ../src/iop/shadhi.c:728
+#: ../src/iop/shadhi.c:712
 msgid "adjust saturation of shadows"
 msgstr "Скорректировать насыщенность тона теней"
 
-#: ../src/iop/shadhi.c:729
+#: ../src/iop/shadhi.c:713
 msgid "adjust saturation of highlights"
 msgstr "Скорректировать насыщенность тона светов"
 
@@ -13776,11 +13781,11 @@ msgstr "Коррекция баланса белого"
 msgid "from image area"
 msgstr "С изображения"
 
-#: ../src/iop/temperature.c:1160
+#: ../src/iop/temperature.c:1165
 msgid "white balance applied twice"
 msgstr "Обнаружено несколько копий модуля «Баланс белого»"
 
-#: ../src/iop/temperature.c:1164
+#: ../src/iop/temperature.c:1169
 msgid ""
 "the color calibration module is enabled,\n"
 "and performing chromatic adaptation.\n"
@@ -13791,147 +13796,147 @@ msgstr ""
 "настроек баланса белого или отключите модель адаптации\n"
 "цветового пространства в модуле «Цветовая калибровка»."
 
-#: ../src/iop/temperature.c:1415
+#: ../src/iop/temperature.c:1420
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "Цветовая матрица «%s» не найдена!"
 
-#: ../src/iop/temperature.c:1439
+#: ../src/iop/temperature.c:1444
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Ошибка чтения данных о балансе белого камеры из «%s»!"
 
-#: ../src/iop/temperature.c:1585
+#: ../src/iop/temperature.c:1590
 msgctxt "white balance"
 msgid "as shot"
 msgstr "Из камеры"
 
 #. old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-#: ../src/iop/temperature.c:1586
+#: ../src/iop/temperature.c:1591
 msgctxt "white balance"
 msgid "from image area"
 msgstr "С изображения"
 
 #. old "spot", reason: describes exactly what'll happen
-#: ../src/iop/temperature.c:1587
+#: ../src/iop/temperature.c:1592
 msgctxt "white balance"
 msgid "user modified"
 msgstr "Пользовательское"
 
-#: ../src/iop/temperature.c:1588
+#: ../src/iop/temperature.c:1593
 msgctxt "white balance"
 msgid "camera reference"
 msgstr "Эталонное значение из камеры"
 
-#: ../src/iop/temperature.c:1866 ../src/iop/temperature.c:1884
+#: ../src/iop/temperature.c:1871 ../src/iop/temperature.c:1889
 msgid "green channel coefficient"
 msgstr "Зелёный канал"
 
-#: ../src/iop/temperature.c:1867 ../src/views/darkroom.c:2518
+#: ../src/iop/temperature.c:1872 ../src/views/darkroom.c:2518
 msgid "magenta"
 msgstr "Пурпурный"
 
-#: ../src/iop/temperature.c:1868
+#: ../src/iop/temperature.c:1873
 msgid "magenta channel coefficient"
 msgstr "Пурпурный канал"
 
-#: ../src/iop/temperature.c:1869 ../src/views/darkroom.c:2517
+#: ../src/iop/temperature.c:1874 ../src/views/darkroom.c:2517
 msgid "cyan"
 msgstr "Сине-зелёный"
 
-#: ../src/iop/temperature.c:1870
+#: ../src/iop/temperature.c:1875
 msgid "cyan channel coefficient"
 msgstr "Сине-зелёный канал"
 
-#: ../src/iop/temperature.c:1872
+#: ../src/iop/temperature.c:1877
 msgid "yellow channel coefficient"
 msgstr "Жёлтый канал"
 
-#: ../src/iop/temperature.c:1882
+#: ../src/iop/temperature.c:1887
 msgid "red channel coefficient"
 msgstr "Красный канал"
 
-#: ../src/iop/temperature.c:1886
+#: ../src/iop/temperature.c:1891
 msgid "blue channel coefficient"
 msgstr "Синий канал"
 
-#: ../src/iop/temperature.c:1888
+#: ../src/iop/temperature.c:1893
 msgid "emerald channel coefficient"
 msgstr "Изумрудный канал"
 
-#: ../src/iop/temperature.c:1987
+#: ../src/iop/temperature.c:1992
 msgid "scene illuminant temp"
 msgstr "Источник света"
 
-#: ../src/iop/temperature.c:1988
+#: ../src/iop/temperature.c:1993
 msgid "click to cycle color mode on sliders"
 msgstr "Переключить вид"
 
-#: ../src/iop/temperature.c:2002
+#: ../src/iop/temperature.c:2007
 msgid "color temperature (in Kelvin)"
 msgstr "Температура, K"
 
-#: ../src/iop/temperature.c:2007
+#: ../src/iop/temperature.c:2012
 msgid "tint"
 msgstr "Оттенок"
 
-#: ../src/iop/temperature.c:2008
+#: ../src/iop/temperature.c:2013
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
 msgstr "Оттенок от пурпурного до зелёного"
 
-#: ../src/iop/temperature.c:2014
+#: ../src/iop/temperature.c:2019
 msgid "channel coefficients"
 msgstr "Каналы"
 
-#: ../src/iop/temperature.c:2049
+#: ../src/iop/temperature.c:2054
 msgid "white balance settings"
 msgstr "Настройки баланса белого"
 
-#: ../src/iop/temperature.c:2052
+#: ../src/iop/temperature.c:2057
 msgid "as shot"
 msgstr "Из камеры"
 
-#: ../src/iop/temperature.c:2055
+#: ../src/iop/temperature.c:2060
 msgid "set white balance to as shot"
 msgstr "Значение баланса белого из камеры"
 
-#: ../src/iop/temperature.c:2065
+#: ../src/iop/temperature.c:2070
 msgid "user modified"
 msgstr "Пользовательские"
 
-#: ../src/iop/temperature.c:2068
+#: ../src/iop/temperature.c:2073
 msgid "set white balance to user modified"
 msgstr "Пользовательское значение баланса белого"
 
-#: ../src/iop/temperature.c:2071
+#: ../src/iop/temperature.c:2076
 msgid "camera reference"
 msgstr "Эталонное значение из камеры"
 
-#: ../src/iop/temperature.c:2074
+#: ../src/iop/temperature.c:2079
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
 msgstr "Эталонное значение баланса белого из камеры (обычно D65)"
 
 #. relabel to settings to remove confusion between module presets and white balance settings
-#: ../src/iop/temperature.c:2085
+#: ../src/iop/temperature.c:2090
 msgid "choose white balance setting"
 msgstr "Выбор предустановок баланса белого"
 
-#: ../src/iop/temperature.c:2089
+#: ../src/iop/temperature.c:2094
 msgid "finetune"
 msgstr "Точная настройка"
 
-#: ../src/iop/temperature.c:2090
+#: ../src/iop/temperature.c:2095
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f"
 
-#: ../src/iop/temperature.c:2091
+#: ../src/iop/temperature.c:2096
 msgid "fine tune camera's white balance setting"
 msgstr "Корректировка профиля баланса белого"
 
-#: ../src/iop/temperature.c:2108
+#: ../src/iop/temperature.c:2113
 msgid "white balance disabled for camera"
 msgstr "Баланса белого отключен для данной камеры"
 
@@ -15258,7 +15263,7 @@ msgstr "Настройки экспорта метаданных"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:2039 ../src/libs/styles.c:73
-#: ../src/views/darkroom.c:3824
+#: ../src/views/darkroom.c:3826
 msgctxt "accel"
 msgid "export"
 msgstr "Экспортировать"
@@ -18417,153 +18422,153 @@ msgstr "Цвет"
 msgid "set overlay color"
 msgstr "Выбор цвета вспомогательных элементов интерфейса"
 
-#: ../src/views/darkroom.c:3774
+#: ../src/views/darkroom.c:3776
 msgid "keyboard shortcut slider precision: fine"
 msgstr "Точность ползунка: высокая"
 
-#: ../src/views/darkroom.c:3776
+#: ../src/views/darkroom.c:3778
 msgid "keyboard shortcut slider precision: normal"
 msgstr "Точность ползунка: обычная"
 
-#: ../src/views/darkroom.c:3778
+#: ../src/views/darkroom.c:3780
 msgid "keyboard shortcut slider precision: coarse"
 msgstr "Точность ползунка: грубая"
 
 #. Zoom shortcuts
-#: ../src/views/darkroom.c:3815
+#: ../src/views/darkroom.c:3817
 msgctxt "accel"
 msgid "zoom close-up"
 msgstr "Масштаб 1:1"
 
-#: ../src/views/darkroom.c:3816
+#: ../src/views/darkroom.c:3818
 msgctxt "accel"
 msgid "zoom fill"
 msgstr "Заполнение по высоте"
 
-#: ../src/views/darkroom.c:3817
+#: ../src/views/darkroom.c:3819
 msgctxt "accel"
 msgid "zoom fit"
 msgstr "Заполнение по ширине"
 
 #. zoom in/out
 #. zoom in/out/min/max
-#: ../src/views/darkroom.c:3820 ../src/views/lighttable.c:883
+#: ../src/views/darkroom.c:3822 ../src/views/lighttable.c:883
 msgctxt "accel"
 msgid "zoom in"
 msgstr "Приблизить"
 
-#: ../src/views/darkroom.c:3821 ../src/views/lighttable.c:885
+#: ../src/views/darkroom.c:3823 ../src/views/lighttable.c:885
 msgctxt "accel"
 msgid "zoom out"
 msgstr "Отдалить"
 
 #. Shortcut to skip images
-#: ../src/views/darkroom.c:3827
+#: ../src/views/darkroom.c:3829
 msgctxt "accel"
 msgid "image forward"
 msgstr "Следующий снимок"
 
-#: ../src/views/darkroom.c:3828
+#: ../src/views/darkroom.c:3830
 msgctxt "accel"
 msgid "image back"
 msgstr "Предыдущий снимок"
 
 #. toggle ISO 12646 color assessment condition
-#: ../src/views/darkroom.c:3831
+#: ../src/views/darkroom.c:3833
 msgctxt "accel"
 msgid "color assessment"
 msgstr "Цветовая оценка"
 
 #. toggle raw overexposure indication
-#: ../src/views/darkroom.c:3834
+#: ../src/views/darkroom.c:3836
 msgctxt "accel"
 msgid "raw overexposed"
 msgstr "Ошибки экспозиции"
 
 #. toggle overexposure indication
-#: ../src/views/darkroom.c:3837
+#: ../src/views/darkroom.c:3839
 msgctxt "accel"
 msgid "overexposed"
 msgstr "Индикатор ошибок экспозиции"
 
 #. cycle overlay colors
-#: ../src/views/darkroom.c:3840
+#: ../src/views/darkroom.c:3842
 msgctxt "accel"
 msgid "cycle overlay colors"
 msgstr "Цвет вспомогательных элементов"
 
 #. toggle softproofing
-#: ../src/views/darkroom.c:3843
+#: ../src/views/darkroom.c:3845
 msgctxt "accel"
 msgid "softproof"
 msgstr "Программная цветопроба"
 
 #. toggle gamut check
-#: ../src/views/darkroom.c:3846
+#: ../src/views/darkroom.c:3848
 msgctxt "accel"
 msgid "gamut check"
 msgstr "Проверка цветового охвата"
 
 #. toggle visability of drawn masks for current gui module
-#: ../src/views/darkroom.c:3849
+#: ../src/views/darkroom.c:3851
 msgctxt "accel"
 msgid "show drawn masks"
 msgstr "Нарисованная маска"
 
 #. brush size +/-
-#: ../src/views/darkroom.c:3852
+#: ../src/views/darkroom.c:3854
 msgctxt "accel"
 msgid "increase brush size"
 msgstr "Увеличить радиус кисти"
 
-#: ../src/views/darkroom.c:3853
+#: ../src/views/darkroom.c:3855
 msgctxt "accel"
 msgid "decrease brush size"
 msgstr "Уменьшить радиус кисти"
 
 #. brush hardness +/-
-#: ../src/views/darkroom.c:3856
+#: ../src/views/darkroom.c:3858
 msgctxt "accel"
 msgid "increase brush hardness"
 msgstr "Увеличить жёсткость кисти"
 
-#: ../src/views/darkroom.c:3857
+#: ../src/views/darkroom.c:3859
 msgctxt "accel"
 msgid "decrease brush hardness"
 msgstr "Уменьшить жёсткость кисти"
 
 #. brush opacity +/-
-#: ../src/views/darkroom.c:3860
+#: ../src/views/darkroom.c:3862
 msgctxt "accel"
 msgid "increase brush opacity"
 msgstr "Увеличить непрозрачность кисти"
 
-#: ../src/views/darkroom.c:3861
+#: ../src/views/darkroom.c:3863
 msgctxt "accel"
 msgid "decrease brush opacity"
 msgstr "Уменьшить непрозрачность кисти"
 
 #. fullscreen view
-#: ../src/views/darkroom.c:3864
+#: ../src/views/darkroom.c:3866
 msgctxt "accel"
 msgid "full preview"
 msgstr "Полноэкранный предпросмотр"
 
 #. undo/redo
-#: ../src/views/darkroom.c:3867 ../src/views/lighttable.c:875
+#: ../src/views/darkroom.c:3869 ../src/views/lighttable.c:875
 #: ../src/views/map.c:1851
 msgctxt "accel"
 msgid "undo"
 msgstr "Отменить"
 
-#: ../src/views/darkroom.c:3868 ../src/views/lighttable.c:876
+#: ../src/views/darkroom.c:3870 ../src/views/lighttable.c:876
 #: ../src/views/map.c:1852
 msgctxt "accel"
 msgid "redo"
 msgstr "Вернуть"
 
 #. add an option to allow skip mouse events while editing masks
-#: ../src/views/darkroom.c:3871
+#: ../src/views/darkroom.c:3873
 msgctxt "accel"
 msgid "allow to pan & zoom while editing masks"
 msgstr ""
@@ -18571,43 +18576,43 @@ msgstr ""
 "масок"
 
 #. set focus to the search modules text box
-#: ../src/views/darkroom.c:3874
+#: ../src/views/darkroom.c:3876
 msgctxt "accel"
 msgid "search modules"
 msgstr "Поиск модуля"
 
 #. change the precision for adjusting sliders with keyboard shortcuts
-#: ../src/views/darkroom.c:3877
+#: ../src/views/darkroom.c:3879
 msgctxt "accel"
 msgid "change keyboard shortcut slider precision"
 msgstr "Точность ползунков"
 
-#: ../src/views/darkroom.c:3996
+#: ../src/views/darkroom.c:3998
 msgid "switch to lighttable"
 msgstr "Переключить в режим обзора"
 
-#: ../src/views/darkroom.c:4001 ../src/views/lighttable.c:1059
+#: ../src/views/darkroom.c:4003 ../src/views/lighttable.c:1059
 msgid "zoom in the image"
 msgstr "Увеличить снимок"
 
-#: ../src/views/darkroom.c:4007
+#: ../src/views/darkroom.c:4009
 msgid "unbounded zoom in the image"
 msgstr "Увеличение без ограничений"
 
-#: ../src/views/darkroom.c:4012
+#: ../src/views/darkroom.c:4014
 msgid "zoom to 100% 200% and back"
 msgstr "Увеличить до 100% 200% и обратно"
 
-#: ../src/views/darkroom.c:4018
+#: ../src/views/darkroom.c:4020
 msgid "[modules] expand module without closing others"
 msgstr "[modules] развернуть модуль без сворачивания других"
 
-#: ../src/views/darkroom.c:4024
+#: ../src/views/darkroom.c:4026
 msgid "[modules] change module position in pipe"
 msgstr "[modules] изменить порядок модулей"
 
 #. workaround for GTK Quartz backend bug
-#: ../src/views/darkroom.c:4714 ../src/views/darkroom.c:4732
+#: ../src/views/darkroom.c:4716 ../src/views/darkroom.c:4734
 msgid "darktable - darkroom preview"
 msgstr "darktable — предпросмотр"
 
@@ -18867,12 +18872,12 @@ msgstr ""
 msgid "waiting to start slideshow"
 msgstr "Ожидание начала слайдшоу"
 
-#: ../src/views/slideshow.c:578 ../src/views/slideshow.c:605
-#: ../src/views/slideshow.c:611
+#: ../src/views/slideshow.c:591 ../src/views/slideshow.c:607
+#: ../src/views/slideshow.c:613
 msgid "slideshow paused"
 msgstr "Режим слайдшоу приостановлен"
 
-#: ../src/views/slideshow.c:596 ../src/views/slideshow.c:601
+#: ../src/views/slideshow.c:598 ../src/views/slideshow.c:603
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
@@ -18880,16 +18885,16 @@ msgstr[0] "Время показа изменено на %d секунду"
 msgstr[1] "Время показа изменено на %d секунды"
 msgstr[2] "Время показа изменено на %d секунд"
 
-#: ../src/views/slideshow.c:636
+#: ../src/views/slideshow.c:629
 msgctxt "accel"
 msgid "start and stop"
 msgstr "Начать и остановить"
 
-#: ../src/views/slideshow.c:650
+#: ../src/views/slideshow.c:643
 msgid "go to next image"
 msgstr "Переход к следующему снимку"
 
-#: ../src/views/slideshow.c:655
+#: ../src/views/slideshow.c:648
 msgid "go to previous image"
 msgstr "Переход к предыдущему снимку"
 
@@ -18965,6 +18970,10 @@ msgstr "Комбинация"
 #: ../src/views/view.c:1666
 msgid "Action"
 msgstr "Действие"
+
+#~ msgctxt "accel"
+#~ msgid "leave fullscreen"
+#~ msgstr "Покинуть полноэкранный режим"
 
 #~ msgid "green vs magenta"
 #~ msgstr "Зелёный / Пурпурный"
