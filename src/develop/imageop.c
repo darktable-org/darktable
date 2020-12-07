@@ -1947,6 +1947,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
+  while(g_idle_remove_by_data(module->widget))
+    ; // remove multiple delayed gtk_widget_queue_draw triggers
   module->gui_cleanup(module);
   dt_iop_gui_cleanup_blending(module);
 }
@@ -2403,6 +2405,7 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
       button && GTK_IS_BUTTON(button->data);
       button = g_list_previous(button))
   {
+    gtk_widget_set_no_show_all(GTK_WIDGET(button->data), TRUE);
     gtk_widget_set_visible(GTK_WIDGET(button->data), show_buttons && !always_hide);
     gtk_widget_set_opacity(GTK_WIDGET(button->data), opacity);
   }

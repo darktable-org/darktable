@@ -768,31 +768,31 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     dt_image_refresh_makermodel(img);
 
     /* Read shutter time */
-    if(FIND_EXIF_TAG("Exif.Photo.ExposureTime"))
+    if((pos = Exiv2::exposureTime(exifData)) != exifData.end() && pos->size())
     {
       // dt_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
       img->exif_exposure = pos->toFloat();
     }
-    else if(FIND_EXIF_TAG("Exif.Photo.ShutterSpeedValue"))
+    else if(FIND_EXIF_TAG("Exif.Photo.ShutterSpeedValue") || FIND_EXIF_TAG("Exif.Image.ShutterSpeedValue"))
     {
       // uf_strlcpy_to_utf8(uf->conf->shutterText, max_name, pos, exifData);
-      img->exif_exposure = 1.0 / pos->toFloat();
+      img->exif_exposure = exp2f(-1.0f * pos->toFloat());  // convert from APEX value
     }
 
     // Read exposure bias
-    if(FIND_EXIF_TAG("Exif.Photo.ExposureBiasValue"))
+    if(FIND_EXIF_TAG("Exif.Photo.ExposureBiasValue") || FIND_EXIF_TAG("Exif.Image.ExposureBiasValue"))
     {
       img->exif_exposure_bias = pos->toFloat();
     }
 
     /* Read aperture */
-    if(FIND_EXIF_TAG("Exif.Photo.FNumber"))
+    if((pos = Exiv2::fNumber(exifData)) != exifData.end() && pos->size())
     {
       img->exif_aperture = pos->toFloat();
     }
-    else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue"))
+    else if(FIND_EXIF_TAG("Exif.Photo.ApertureValue") || FIND_EXIF_TAG("Exif.Image.ApertureValue"))
     {
-      img->exif_aperture = pos->toFloat();
+      img->exif_aperture = exp2f(pos->toFloat() / 2.0f);  // convert from APEX value
     }
 
     /* Read ISO speed - Nikon happens to return a pair for Lo and Hi modes */
@@ -1788,6 +1788,9 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
         exifData["Exif.Image.Copyright"] = (char *)res->data;
         g_list_free_full(res, &g_free);
       }
+      else
+        // mandatory tag for TIFF/EP, empty is ok (unknown)
+        exifData["Exif.Image.Copyright"] = "";
 
       res = dt_metadata_get(imgid, "Xmp.xmp.Rating", NULL);
       if(res != NULL)

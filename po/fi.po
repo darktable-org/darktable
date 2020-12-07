@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-30 21:28+0100\n"
-"PO-Revision-Date: 2020-12-01 17:39+0200\n"
+"POT-Creation-Date: 2020-12-03 15:30+0100\n"
+"PO-Revision-Date: 2020-12-06 13:11+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -98,7 +98,7 @@ msgstr "Tietty"
 #: ../src/common/history.c:899 ../src/common/styles.c:1088
 #: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:101
 #: ../src/develop/blend_gui.c:122 ../src/develop/blend_gui.c:2800
-#: ../src/develop/develop.c:2158 ../src/imageio/format/exr.cc:376
+#: ../src/develop/develop.c:2159 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:661 ../src/iop/ashift.c:4749
 #: ../src/iop/demosaic.c:5076 ../src/libs/live_view.c:429
 msgid "off"
@@ -353,7 +353,7 @@ msgid "(AI) detect from image edges..."
 msgstr "(AI) tunnista kuvan reunoista..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
-#: ../src/iop/channelmixerrgb.c:1949
+#: ../src/iop/channelmixerrgb.c:1992
 msgid "as shot in camera"
 msgstr "Kameran kuvausasetus"
 
@@ -592,7 +592,7 @@ msgstr "Kylläiset värit"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1824 ../src/develop/blend_gui.c:1843
 #: ../src/develop/blend_gui.c:1878 ../src/iop/channelmixer.c:629
-#: ../src/iop/channelmixerrgb.c:2207 ../src/iop/colorbalance.c:2025
+#: ../src/iop/channelmixerrgb.c:2250 ../src/iop/colorbalance.c:2025
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1289
 #: ../src/iop/colorzones.c:2362 ../src/iop/splittoning.c:474
 msgid "hue"
@@ -1023,9 +1023,10 @@ msgstr "Splini-generaattorin versio"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:524
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:913 ../src/common/variables.c:520
-#: ../src/imageio/format/pdf.c:670 ../src/imageio/format/pdf.c:695
-#: ../src/libs/export.c:1240 ../src/libs/export.c:1246
-#: ../src/libs/export.c:1253 ../src/libs/metadata_view.c:308
+#: ../src/develop/imageop_gui.c:302 ../src/imageio/format/pdf.c:670
+#: ../src/imageio/format/pdf.c:695 ../src/libs/export.c:1240
+#: ../src/libs/export.c:1246 ../src/libs/export.c:1253
+#: ../src/libs/metadata_view.c:308
 msgid "no"
 msgstr "Ei"
 
@@ -1249,37 +1250,42 @@ msgstr "Trilineaarinen"
 msgid "pyramid"
 msgstr "Pyramidi"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:131
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:230
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:84
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:199
+msgid "film stock"
+msgstr "Filmivarasto"
+
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:132
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:231
 msgid "scan exposure bias"
 msgstr "Skannerin valotuksen korjaus"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:137
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:234
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:138
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:235
 msgid "paper black (density correction)"
 msgstr "Paperin musta (tiheyden korjaus)"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:143
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:238
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:144
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:239
 #: ../src/iop/negadoctor.c:972
 msgid "paper grade (gamma)"
 msgstr "Paperin luokka (gamma)"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:149
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:242
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:150
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:243
 msgid "paper gloss (specular highlights)"
 msgstr "Paperin kiilto (valon heijastus)"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:155
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:246
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:156
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:247
 msgid "print exposure adjustment"
 msgstr "Tulosteen valotuksen korjaus"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:260
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
 msgid "black and white"
 msgstr "Mustavalkoinen"
 
-#: ../build/lib/darktable/plugins/introspection_negadoctor.c:261
+#: ../build/lib/darktable/plugins/introspection_negadoctor.c:262
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
 #: ../src/iop/watermark.c:1405 ../src/libs/image.c:574
@@ -1377,7 +1383,7 @@ msgstr "Täytä-tila"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:268
 #: ../build/lib/darktable/plugins/introspection_retouch.c:399
-#: ../src/iop/basicadj.c:622 ../src/iop/channelmixerrgb.c:2259
+#: ../src/iop/basicadj.c:622 ../src/iop/channelmixerrgb.c:2302
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:590 ../src/iop/soften.c:555
 #: ../src/iop/vignette.c:992 ../src/libs/history.c:896
 msgid "brightness"
@@ -1446,7 +1452,7 @@ msgstr "Huippuvalojen värinsäätö"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:66
 #: ../build/lib/darktable/plugins/introspection_temperature.c:121
-#: ../src/iop/temperature.c:1883
+#: ../src/iop/temperature.c:1892
 msgid "emerald"
 msgstr "Smaragdinvihreä"
 
@@ -3700,14 +3706,14 @@ msgstr "Moduulien järjestys"
 #: ../src/common/collection.c:1472 ../src/develop/blend_gui.c:1833
 #: ../src/develop/blend_gui.c:1860 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:315 ../src/iop/channelmixer.c:632
-#: ../src/iop/channelmixer.c:642 ../src/iop/channelmixerrgb.c:2255
-#: ../src/iop/temperature.c:1877 ../src/iop/temperature.c:2030
+#: ../src/iop/channelmixer.c:642 ../src/iop/channelmixerrgb.c:2298
+#: ../src/iop/temperature.c:1886 ../src/iop/temperature.c:2039
 #: ../src/libs/collect.c:1597 ../src/views/darkroom.c:2514
 msgid "red"
 msgstr "Punainen"
 
 #: ../src/common/collection.c:1474 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1867 ../src/libs/collect.c:1597
+#: ../src/iop/temperature.c:1876 ../src/libs/collect.c:1597
 #: ../src/views/darkroom.c:2516
 msgid "yellow"
 msgstr "Keltainen"
@@ -3715,9 +3721,9 @@ msgstr "Keltainen"
 #: ../src/common/collection.c:1476 ../src/develop/blend_gui.c:1836
 #: ../src/develop/blend_gui.c:1863 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:320 ../src/iop/channelmixer.c:633
-#: ../src/iop/channelmixer.c:648 ../src/iop/channelmixerrgb.c:2256
-#: ../src/iop/temperature.c:1861 ../src/iop/temperature.c:1879
-#: ../src/iop/temperature.c:2031 ../src/libs/collect.c:1597
+#: ../src/iop/channelmixer.c:648 ../src/iop/channelmixerrgb.c:2299
+#: ../src/iop/temperature.c:1870 ../src/iop/temperature.c:1888
+#: ../src/iop/temperature.c:2040 ../src/libs/collect.c:1597
 #: ../src/views/darkroom.c:2515
 msgid "green"
 msgstr "Vihreä"
@@ -3725,8 +3731,8 @@ msgstr "Vihreä"
 #: ../src/common/collection.c:1478 ../src/develop/blend_gui.c:1839
 #: ../src/develop/blend_gui.c:1866 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:325 ../src/iop/channelmixer.c:634
-#: ../src/iop/channelmixer.c:654 ../src/iop/channelmixerrgb.c:2257
-#: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2032
+#: ../src/iop/channelmixer.c:654 ../src/iop/channelmixerrgb.c:2300
+#: ../src/iop/temperature.c:1890 ../src/iop/temperature.c:2041
 #: ../src/libs/collect.c:1597
 msgid "blue"
 msgstr "Sininen"
@@ -3972,10 +3978,10 @@ msgstr ""
 "Haluatko ottaa käyttöön konfiguraation suorituskykypäivityksen?\n"
 
 #: ../src/common/darktable.c:913 ../src/common/database.c:3247
-#: ../src/common/variables.c:518 ../src/imageio/format/pdf.c:671
-#: ../src/imageio/format/pdf.c:696 ../src/libs/export.c:1241
-#: ../src/libs/export.c:1247 ../src/libs/export.c:1254
-#: ../src/libs/metadata_view.c:308
+#: ../src/common/variables.c:518 ../src/develop/imageop_gui.c:303
+#: ../src/imageio/format/pdf.c:671 ../src/imageio/format/pdf.c:696
+#: ../src/libs/export.c:1241 ../src/libs/export.c:1247
+#: ../src/libs/export.c:1254 ../src/libs/metadata_view.c:308
 msgid "yes"
 msgstr "Kyllä"
 
@@ -4227,12 +4233,12 @@ msgstr "Darktable - rakenteen huolto"
 msgid "later"
 msgstr "Myöhemmin"
 
-#: ../src/common/exif.cc:3977
+#: ../src/common/exif.cc:3980
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "XMP-tiedoston luku ei onnistu '%s': '%s'"
 
-#: ../src/common/exif.cc:4029
+#: ../src/common/exif.cc:4032
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "XMP-tiedoston kirjoitus ei onnistu '%s': '%s'"
@@ -4276,7 +4282,7 @@ msgstr ""
 #: ../src/common/history.c:880 ../src/common/history.c:883
 #: ../src/common/history.c:899 ../src/common/styles.c:1088
 #: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:123
-#: ../src/develop/develop.c:2158 ../src/iop/ashift.c:4750
+#: ../src/develop/develop.c:2159 ../src/iop/ashift.c:4750
 #: ../src/libs/live_view.c:430
 msgid "on"
 msgstr "Päällä"
@@ -5424,7 +5430,7 @@ msgid "gray"
 msgstr "Harmaa"
 
 #: ../src/develop/blend_gui.c:1831 ../src/develop/blend_gui.c:1858
-#: ../src/iop/channelmixerrgb.c:2255 ../src/iop/denoiseprofile.c:3875
+#: ../src/iop/channelmixerrgb.c:2298 ../src/iop/denoiseprofile.c:3875
 #: ../src/iop/rawdenoise.c:1055 ../src/iop/rgbcurve.c:1383
 #: ../src/iop/rgblevels.c:947
 msgid "R"
@@ -5435,7 +5441,7 @@ msgid "sliders for red channel"
 msgstr "Liukusäätimet punaisen kanavalle"
 
 #: ../src/develop/blend_gui.c:1834 ../src/develop/blend_gui.c:1861
-#: ../src/iop/channelmixerrgb.c:2256 ../src/iop/denoiseprofile.c:3876
+#: ../src/iop/channelmixerrgb.c:2299 ../src/iop/denoiseprofile.c:3876
 #: ../src/iop/rawdenoise.c:1056 ../src/iop/rgbcurve.c:1384
 #: ../src/iop/rgblevels.c:948
 msgid "G"
@@ -5446,7 +5452,7 @@ msgid "sliders for green channel"
 msgstr "Liukusäätimet vihreän kanavalle"
 
 #: ../src/develop/blend_gui.c:1837 ../src/develop/blend_gui.c:1864
-#: ../src/iop/channelmixerrgb.c:2257 ../src/iop/denoiseprofile.c:3877
+#: ../src/iop/channelmixerrgb.c:2300 ../src/iop/denoiseprofile.c:3877
 #: ../src/iop/rawdenoise.c:1057 ../src/iop/rgbcurve.c:1385
 #: ../src/iop/rgblevels.c:949
 msgid "B"
@@ -5473,7 +5479,7 @@ msgid "sliders for chroma channel (of HSL)"
 msgstr "Liukusäätimet kroma-kanavalle (HSL)"
 
 #: ../src/develop/blend_gui.c:1847 ../src/develop/blend_gui.c:1874
-#: ../src/iop/atrous.c:1849 ../src/iop/channelmixerrgb.c:2213
+#: ../src/iop/atrous.c:1849 ../src/iop/channelmixerrgb.c:2256
 #: ../src/iop/equalizer.c:390 ../src/iop/nlmeans.c:534
 msgid "chroma"
 msgstr "Kroma"
@@ -5811,19 +5817,19 @@ msgstr ""
 msgid "mask refinement"
 msgstr "Maskin hienosäätö"
 
-#: ../src/develop/develop.c:1469 ../src/gui/presets.c:801
+#: ../src/develop/develop.c:1470 ../src/gui/presets.c:801
 msgid "display-referred default"
 msgstr "Näyttö-viitattu oletus"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1471 ../src/gui/presets.c:803
+#: ../src/develop/develop.c:1472 ../src/gui/presets.c:803
 #: ../src/iop/exposure.c:273 ../src/iop/exposure.c:282
 msgid "scene-referred default"
 msgstr "Näkymä-viitattu oletus"
 
-#: ../src/develop/develop.c:1924
+#: ../src/develop/develop.c:1925
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: moduulin `%s' versioristiriita: %d != %d"
@@ -5920,6 +5926,15 @@ msgstr "tarkoitus"
 #: ../src/develop/imageop.c:3176
 msgid "process"
 msgstr "toiminta"
+
+#: ../src/develop/imageop_gui.c:430
+#, c-format
+msgid ""
+"%s\n"
+"ctrl+click to %s"
+msgstr ""
+"%s\n"
+"CTRL+Napsaus muuttaa %s"
 
 #: ../src/develop/lightroom.c:1077
 msgid "cannot find lightroom XMP!"
@@ -6201,7 +6216,7 @@ msgstr ""
 "Ole hyvä ja luo vikatiketti joka sisältää\n"
 "XMP-tiedoston."
 
-#: ../src/develop/pixelpipe_hb.c:2362
+#: ../src/develop/pixelpipe_hb.c:2365
 msgid ""
 "darktable discovered problems with your OpenCL setup; disabling OpenCL for "
 "this session!"
@@ -6777,9 +6792,9 @@ msgstr ""
 msgid "images"
 msgstr "Kuvat"
 
-#: ../src/gui/camera_import_dialog.c:317 ../src/iop/temperature.c:236
-#: ../src/iop/temperature.c:2048 ../src/iop/temperature.c:2058
-#: ../src/iop/temperature.c:2064 ../src/iop/temperature.c:2077
+#: ../src/gui/camera_import_dialog.c:317 ../src/iop/temperature.c:240
+#: ../src/iop/temperature.c:2057 ../src/iop/temperature.c:2070
+#: ../src/iop/temperature.c:2076 ../src/iop/temperature.c:2089
 msgid "settings"
 msgstr "Asetukset"
 
@@ -8431,7 +8446,7 @@ msgstr "Korjaava"
 #: ../src/iop/splittoning.c:107 ../src/iop/spots.c:63 ../src/iop/spots.c:65
 #: ../src/iop/toneequal.c:321 ../src/iop/velvia.c:111 ../src/iop/velvia.c:113
 msgid "linear, RGB, scene-referred"
-msgstr "Suoralinjainen, RGB, näkymä-viitattu"
+msgstr "Suoralinjainen, RGB, Näkymä-viitattu"
 
 #: ../src/iop/ashift.c:126 ../src/iop/borders.c:188 ../src/iop/clipping.c:329
 #: ../src/iop/flip.c:103 ../src/iop/liquify.c:300
@@ -8646,7 +8661,7 @@ msgstr "Taajuudellinen, RGB"
 
 #: ../src/iop/atrous.c:132 ../src/iop/colorbalance.c:161
 msgid "linear, Lab, scene-referred"
-msgstr "Lineaarinen, Lab, näkymä viitattu"
+msgstr "Suoralinjainen, Lab, Näkymä-viitattu"
 
 #: ../src/iop/atrous.c:1062
 msgctxt "eq_preset"
@@ -8864,7 +8879,7 @@ msgstr ""
 #: ../src/iop/rgbcurve.c:140 ../src/iop/rgbcurve.c:142
 #: ../src/iop/rgblevels.c:123 ../src/iop/soften.c:107 ../src/iop/soften.c:109
 msgid "linear, RGB, display-referred"
-msgstr "Suoralinjainen, RGB, näyttö-viitattu"
+msgstr "Suoralinjainen, RGB, Näyttö-viitattu"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:143
 #: ../src/iop/colorbalance.c:162 ../src/iop/dither.c:112
@@ -8882,7 +8897,7 @@ msgstr "Epälineaarinen, RGB"
 #: ../src/iop/vignette.c:161 ../src/iop/vignette.c:163
 #: ../src/iop/watermark.c:291 ../src/iop/watermark.c:293
 msgid "non-linear, RGB, display-referred"
-msgstr "Epälineaarinen, RGB, näyttö-viitattu"
+msgstr "Epälineaarinen, RGB, Näyttö-viitattu"
 
 #: ../src/iop/basecurve.c:2090
 msgid "abscissa: input, ordinate: output. works on RGB channels"
@@ -8950,7 +8965,7 @@ msgstr "Luova"
 
 #: ../src/iop/basicadj.c:144
 msgid "non-linear, RGB, scene-referred"
-msgstr "Epälineaarinen, RGB, näkymä-viitattu"
+msgstr "Epälineaarinen, RGB, Näkymä-viitattu"
 
 #: ../src/iop/basicadj.c:593
 msgid ""
@@ -9042,7 +9057,7 @@ msgstr "Muuta kuvan paikallista ja yleistä kontrastia erikseen"
 #: ../src/iop/nlmeans.c:102 ../src/iop/shadhi.c:203 ../src/iop/tonecurve.c:216
 #: ../src/iop/vibrance.c:95
 msgid "non-linear, Lab, display-referred"
-msgstr "Epälineaarinen, Lab, näyttö-viitattu"
+msgstr "Epälineaarinen, Lab, Näyttö-viitattu"
 
 #: ../src/iop/bilat.c:102 ../src/iop/bloom.c:84 ../src/iop/colisa.c:87
 #: ../src/iop/colorcontrast.c:102 ../src/iop/colorcorrection.c:79
@@ -9181,7 +9196,7 @@ msgstr "Lisää kuvaan kiinteät reunat tai marginaalit"
 
 #: ../src/iop/borders.c:187 ../src/iop/borders.c:189 ../src/iop/lut3d.c:141
 msgid "linear or non-linear, RGB, display-referred"
-msgstr "Suoralinjainen tai epälineaarinen, RGB, näyttö-viitattu"
+msgstr "Suoralinjainen tai epälineaarinen, RGB, Näyttö-viitattu"
 
 #: ../src/iop/borders.c:717
 msgid "15:10 postcard white"
@@ -9353,7 +9368,7 @@ msgstr "Korjaa värivirheet Bayer-tyyppisiltä kuvakennoilta"
 #: ../src/iop/rawdenoise.c:131 ../src/iop/temperature.c:203
 #: ../src/iop/temperature.c:205
 msgid "linear, raw, scene-referred"
-msgstr "Suoralinjainen, RAW, näkymä-viitattu"
+msgstr "Suoralinjainen, RAW, Näkymä-viitattu"
 
 #: ../src/iop/cacorrect.c:61 ../src/iop/demosaic.c:178 ../src/iop/invert.c:123
 #: ../src/iop/rawdenoise.c:130 ../src/iop/temperature.c:204
@@ -9539,16 +9554,16 @@ msgstr "Normaali värikanavien sekoitin"
 msgid "swap G and R"
 msgstr "Vaihda vihreä ja punainen värikanava"
 
-#: ../src/iop/channelmixerrgb.c:1019
+#: ../src/iop/channelmixerrgb.c:1055
 msgid "auto-detection of white balance completed"
 msgstr "Valkotasapainon automaattinen tunnistus valmis."
 
-#: ../src/iop/channelmixerrgb.c:1692
+#: ../src/iop/channelmixerrgb.c:1763
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT: %.0f K (päivänvalo)"
 
-#: ../src/iop/channelmixerrgb.c:1694
+#: ../src/iop/channelmixerrgb.c:1765
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -9558,12 +9573,12 @@ msgstr ""
 "Tämä valaisu voidaan mallintaa tarkasti päivänvalon osalta,\n"
 "joten sen lämpötila on merkitsevää ja mielekästä D valaisulla."
 
-#: ../src/iop/channelmixerrgb.c:1700
+#: ../src/iop/channelmixerrgb.c:1771
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT: %.0f K (musta kohde)"
 
-#: ../src/iop/channelmixerrgb.c:1702
+#: ../src/iop/channelmixerrgb.c:1773
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -9573,12 +9588,12 @@ msgstr ""
 "Tämä valaisu voidaan mallintaa tarkasti mustan kappaleen osalta,\n"
 "joten sen lämpötila on merkitsevää ja mielekästä Planckian valaisulla."
 
-#: ../src/iop/channelmixerrgb.c:1708
+#: ../src/iop/channelmixerrgb.c:1779
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT: %.0f K (epäkelpo)"
 
-#: ../src/iop/channelmixerrgb.c:1710
+#: ../src/iop/channelmixerrgb.c:1781
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -9592,12 +9607,12 @@ msgstr ""
 "joten sen lämpötila ei ole merkitsevää tai mielekästä ja sinun tulee käyttää "
 "mukautettua valaisua."
 
-#: ../src/iop/channelmixerrgb.c:1717
+#: ../src/iop/channelmixerrgb.c:1788
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT: määrittämätön"
 
-#: ../src/iop/channelmixerrgb.c:1719
+#: ../src/iop/channelmixerrgb.c:1790
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -9605,16 +9620,16 @@ msgstr ""
 "Arvioitua ja korreloitua värin lämpötilaa\n"
 "ei voida laskea lainkaan, joten sinun täytyy käyttää mukautettua valaisua."
 
-#: ../src/iop/channelmixerrgb.c:1972
+#: ../src/iop/channelmixerrgb.c:2017
 msgid "white balance successfuly extracted from raw image"
 msgstr "Valkotasapaino poimittiin onnistuneesti RAW-kuvasta."
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:1980
+#: ../src/iop/channelmixerrgb.c:2023
 msgid "auto-detection of white balance started…"
 msgstr "Valkotasapainon automaattinen tunnistus aloitettu..."
 
-#: ../src/iop/channelmixerrgb.c:2003
+#: ../src/iop/channelmixerrgb.c:2046
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
@@ -9622,11 +9637,11 @@ msgstr ""
 "Värinkalibrointi: Harmaan kanavan arvojen summa on nolla, normalisointi on "
 "poistettu käytöstä."
 
-#: ../src/iop/channelmixerrgb.c:2024
+#: ../src/iop/channelmixerrgb.c:2067
 msgid "double CAT applied"
 msgstr "Kaksinkertainen CAT käytössä"
 
-#: ../src/iop/channelmixerrgb.c:2028
+#: ../src/iop/channelmixerrgb.c:2071
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -9638,11 +9653,11 @@ msgstr ""
 "Tämä saattaa johtaa epäjohdonmukaiseen lopputulokseen,\n"
 "ellet käytä niitä maskien kanssa tai tiedä mitä olet tekemässä."
 
-#: ../src/iop/channelmixerrgb.c:2038
+#: ../src/iop/channelmixerrgb.c:2081
 msgid "white balance module error"
 msgstr "Valkotasapaino-moduulin virhe"
 
-#: ../src/iop/channelmixerrgb.c:2042
+#: ../src/iop/channelmixerrgb.c:2085
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -9655,19 +9670,19 @@ msgstr ""
 "käytöstä tässä."
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:2145
+#: ../src/iop/channelmixerrgb.c:2188
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:2145
+#: ../src/iop/channelmixerrgb.c:2188
 msgid "chromatic adaptation transform"
 msgstr "Värien sovituksen muunnos"
 
-#: ../src/iop/channelmixerrgb.c:2151
+#: ../src/iop/channelmixerrgb.c:2194
 msgid "adaptation"
 msgstr "Sovitus"
 
-#: ../src/iop/channelmixerrgb.c:2153
+#: ../src/iop/channelmixerrgb.c:2196
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -9693,7 +9708,7 @@ msgstr ""
 "• Ei mitään poistaa käytöstä kaikki sovitukset ja käyttää työskentelyputken "
 "RGB-avaruutta."
 
-#: ../src/iop/channelmixerrgb.c:2172
+#: ../src/iop/channelmixerrgb.c:2215
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -9701,35 +9716,35 @@ msgstr ""
 "Tämä on näkymän valaisun väri ennen värien sovitusta.\n"
 "Sovitus muuttaa tämän värin puhtaan valkoiseksi."
 
-#: ../src/iop/channelmixerrgb.c:2179 ../src/iop/temperature.c:2056
+#: ../src/iop/channelmixerrgb.c:2222 ../src/iop/temperature.c:2068
 msgid "set white balance to detected from area"
 msgstr "Valitse alueesta tunnistettu valkotasapaino."
 
-#: ../src/iop/channelmixerrgb.c:2183
+#: ../src/iop/channelmixerrgb.c:2226
 msgid "illuminant"
 msgstr "Valaisu"
 
-#: ../src/iop/channelmixerrgb.c:2189 ../src/iop/temperature.c:1997
+#: ../src/iop/channelmixerrgb.c:2232 ../src/iop/temperature.c:2006
 msgid "temperature"
 msgstr "Värilämpötila"
 
-#: ../src/iop/channelmixerrgb.c:2233
+#: ../src/iop/channelmixerrgb.c:2276
 msgid "input red"
 msgstr "Punainen tulo"
 
-#: ../src/iop/channelmixerrgb.c:2240
+#: ../src/iop/channelmixerrgb.c:2283
 msgid "input green"
 msgstr "Vihreä tulo"
 
-#: ../src/iop/channelmixerrgb.c:2247
+#: ../src/iop/channelmixerrgb.c:2290
 msgid "input blue"
 msgstr "Sininen tulo"
 
-#: ../src/iop/channelmixerrgb.c:2258
+#: ../src/iop/channelmixerrgb.c:2301
 msgid "colorfulness"
 msgstr "Värikkyys"
 
-#: ../src/iop/channelmixerrgb.c:2260
+#: ../src/iop/channelmixerrgb.c:2303
 msgid "grey"
 msgstr "Harmaa"
 
@@ -9993,7 +10008,7 @@ msgstr "Vaikuta kuvan väreihin, kirkkauteen ja kontrastiin"
 
 #: ../src/iop/colorbalance.c:163
 msgid "non-linear, Lab, scene-referred"
-msgstr "Epälineaarinen, Lab, näkymä-viitattu"
+msgstr "Epälineaarinen, Lab, Näkymä-viitattu"
 
 #. these blobs were exported as dtstyle and copied from there:
 #: ../src/iop/colorbalance.c:274
@@ -10392,7 +10407,7 @@ msgstr "Pakollinen"
 #: ../src/iop/colorin.c:134 ../src/iop/filmicrgb.c:331
 #: ../src/iop/graduatednd.c:154
 msgid "linear or non-linear, RGB, scene-referred"
-msgstr "Suoralinjainen tai epälineaarinen, RGB, näkymä-viitattu"
+msgstr "Suoralinjainen tai epälineaarinen, RGB, Näkymä-viitattu"
 
 #: ../src/iop/colorin.c:135 ../src/iop/colorout.c:91
 msgid "defined by profile"
@@ -10527,7 +10542,7 @@ msgstr ""
 
 #: ../src/iop/colorout.c:90
 msgid "linear or non-linear, RGB or Lab, display-referred"
-msgstr "Suoralinjainen tai epälineaarinen, RGB tai Lab, näyttö-viitattu"
+msgstr "Suoralinjainen tai epälineaarinen, RGB tai Lab, Näyttö-viitattu"
 
 #: ../src/iop/colorout.c:673
 msgid "missing output profile has been replaced by sRGB!"
@@ -12214,7 +12229,7 @@ msgstr "Eristä korkeat taajuudet kuvasta"
 
 #: ../src/iop/highpass.c:85 ../src/iop/lowpass.c:136
 msgid "linear or non-linear, Lab, scene-referred"
-msgstr "Suoralinjainen tai epälineaarinen, Lab, näkymä-viitattu"
+msgstr "Suoralinjainen tai epälineaarinen, Lab, Näkymä-viitattu"
 
 #: ../src/iop/highpass.c:86 ../src/iop/lowpass.c:137 ../src/iop/sharpen.c:98
 msgid "frequential, Lab"
@@ -12222,7 +12237,7 @@ msgstr "Taajuudellinen, Lab"
 
 #: ../src/iop/highpass.c:87 ../src/iop/lowpass.c:138
 msgid "special, Lab, scene-referred"
-msgstr "Erityinen, Lab, näkymä-viitattu"
+msgstr "Erityinen, Lab, Näkymä-viitattu"
 
 #: ../src/iop/highpass.c:404
 msgid "sharpness"
@@ -12290,7 +12305,7 @@ msgstr "Käännä filminegatiiveja"
 
 #: ../src/iop/invert.c:122 ../src/iop/invert.c:124
 msgid "linear, raw, display-referred"
-msgstr "Suoralinjainen, RAW, näyttö-viitattu"
+msgstr "Suoralinjainen, RAW, Näyttö-viitattu"
 
 #: ../src/iop/invert.c:145 ../src/iop/negadoctor.c:825
 msgid "pick color of film material from image"
@@ -13846,12 +13861,11 @@ msgstr ""
 
 #: ../src/iop/sharpen.c:97
 msgid "linear or non-linear, Lab, display or scene-referred"
-msgstr ""
-"Suoralinjainen tai epälineaarinen, Lab, Näyttö-viitattu tai näkymä-viitattu"
+msgstr "Suoralinjainen tai epälineaarinen, Lab, Näyttö tai Näkymä-viitattu"
 
 #: ../src/iop/sharpen.c:99
 msgid "quasi-linear, Lab, display or scene-referred"
-msgstr "Näennäislineaarinen, Lab, näyttö tai näkymä-viitattu"
+msgstr "Näennäislineaarinen, Lab, Näyttö tai Näkymä-viitattu"
 
 #. add the preset.
 #. restrict to raw images
@@ -13996,15 +14010,15 @@ msgstr ""
 "Skaalaa RAW-kuvan RGB-kanavat valkoisen tasapainottamiseksi ja mosaiikin "
 "palautuksen helpottamiseksi"
 
-#: ../src/iop/temperature.c:236
+#: ../src/iop/temperature.c:240
 msgid "from image area"
 msgstr "Kuvan alueesta"
 
-#: ../src/iop/temperature.c:1156
+#: ../src/iop/temperature.c:1165
 msgid "white balance applied twice"
 msgstr "Valkotasapaino asetettu kahteen kertaan"
 
-#: ../src/iop/temperature.c:1160
+#: ../src/iop/temperature.c:1169
 msgid ""
 "the color calibration module is enabled,\n"
 "and performing chromatic adaptation.\n"
@@ -14016,123 +14030,123 @@ msgstr ""
 "Aseta tässä valkotasapaino kameran viittaamaksi (D65)\n"
 "tai poista värien sovitus käytöstä värikalibrointi-moduulissa."
 
-#: ../src/iop/temperature.c:1411
+#: ../src/iop/temperature.c:1420
 #, c-format
 msgid "`%s' color matrix not found for image"
 msgstr "`%s' värimatriisia ei löytynyt kuvalle."
 
-#: ../src/iop/temperature.c:1435
+#: ../src/iop/temperature.c:1444
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "Kameran valkotasapainon lukeminen lähteestä `%s' epäonnistui!"
 
-#: ../src/iop/temperature.c:1581
+#: ../src/iop/temperature.c:1590
 msgctxt "white balance"
 msgid "as shot"
 msgstr "Kuvausasetus"
 
 #. old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-#: ../src/iop/temperature.c:1582
+#: ../src/iop/temperature.c:1591
 msgctxt "white balance"
 msgid "from image area"
 msgstr "Kuvan alue"
 
 #. old "spot", reason: describes exactly what'll happen
-#: ../src/iop/temperature.c:1583
+#: ../src/iop/temperature.c:1592
 msgctxt "white balance"
 msgid "user modified"
 msgstr "Käyttäjän muokkaama"
 
-#: ../src/iop/temperature.c:1584
+#: ../src/iop/temperature.c:1593
 msgctxt "white balance"
 msgid "camera reference"
 msgstr "Kameran viitearvo"
 
-#: ../src/iop/temperature.c:1862 ../src/iop/temperature.c:1880
+#: ../src/iop/temperature.c:1871 ../src/iop/temperature.c:1889
 msgid "green channel coefficient"
 msgstr "Vihreän kanavan kerroin"
 
-#: ../src/iop/temperature.c:1863 ../src/views/darkroom.c:2518
+#: ../src/iop/temperature.c:1872 ../src/views/darkroom.c:2518
 msgid "magenta"
 msgstr "Magenta"
 
-#: ../src/iop/temperature.c:1864
+#: ../src/iop/temperature.c:1873
 msgid "magenta channel coefficient"
 msgstr "Magentan kanavan kerroin"
 
-#: ../src/iop/temperature.c:1865 ../src/views/darkroom.c:2517
+#: ../src/iop/temperature.c:1874 ../src/views/darkroom.c:2517
 msgid "cyan"
 msgstr "Syaani"
 
-#: ../src/iop/temperature.c:1866
+#: ../src/iop/temperature.c:1875
 msgid "cyan channel coefficient"
 msgstr "Syaanin kanavan kerroin"
 
-#: ../src/iop/temperature.c:1868
+#: ../src/iop/temperature.c:1877
 msgid "yellow channel coefficient"
 msgstr "Keltaisen kanavan kerroin"
 
-#: ../src/iop/temperature.c:1878
+#: ../src/iop/temperature.c:1887
 msgid "red channel coefficient"
 msgstr "Punaisen kanavan kerroin"
 
-#: ../src/iop/temperature.c:1882
+#: ../src/iop/temperature.c:1891
 msgid "blue channel coefficient"
 msgstr "Sinisen kanavan kerroin"
 
-#: ../src/iop/temperature.c:1884
+#: ../src/iop/temperature.c:1893
 msgid "emerald channel coefficient"
 msgstr "Smaragdin kanavan kerroin"
 
-#: ../src/iop/temperature.c:1983
+#: ../src/iop/temperature.c:1992
 msgid "scene illuminant temp"
 msgstr "Näkymän valaisun lämpötila"
 
-#: ../src/iop/temperature.c:1984
+#: ../src/iop/temperature.c:1993
 msgid "click to cycle color mode on sliders"
 msgstr "Napsauta vaihtaaksesi liukusäätimien väritilaa."
 
-#: ../src/iop/temperature.c:1998
+#: ../src/iop/temperature.c:2007
 msgid "color temperature (in Kelvin)"
 msgstr "Värilämpötila (Kelvin-asteikolla)"
 
-#: ../src/iop/temperature.c:2003
+#: ../src/iop/temperature.c:2012
 msgid "tint"
 msgstr "Sävy"
 
-#: ../src/iop/temperature.c:2004
+#: ../src/iop/temperature.c:2013
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
 msgstr "Kuvan värien sävy, magentasta (arvo <1) vihreään (arvo > 1)."
 
-#: ../src/iop/temperature.c:2010
+#: ../src/iop/temperature.c:2019
 msgid "channel coefficients"
 msgstr "Kanavien kertoimet"
 
-#: ../src/iop/temperature.c:2045
+#: ../src/iop/temperature.c:2054
 msgid "white balance settings"
 msgstr "Valkotasapainon asetus"
 
-#: ../src/iop/temperature.c:2048
+#: ../src/iop/temperature.c:2057
 msgid "as shot"
 msgstr "Kuvausasetus"
 
-#: ../src/iop/temperature.c:2051
+#: ../src/iop/temperature.c:2060
 msgid "set white balance to as shot"
 msgstr "Aseta valkotasapaino kuvausasetukseen."
 
-#: ../src/iop/temperature.c:2058
+#: ../src/iop/temperature.c:2070
 msgid "user modified"
 msgstr "Käyttäjän muokkaama"
 
-#: ../src/iop/temperature.c:2061
+#: ../src/iop/temperature.c:2073
 msgid "set white balance to user modified"
 msgstr "Aseta valkotasapaino käyttäjän muokkaamaan asetukseen."
 
-#: ../src/iop/temperature.c:2064
+#: ../src/iop/temperature.c:2076
 msgid "camera reference"
 msgstr "Kameran viitearvo"
 
-#: ../src/iop/temperature.c:2067
+#: ../src/iop/temperature.c:2079
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
@@ -14141,24 +14155,24 @@ msgstr ""
 "Yleensä sen pitäisi olla D65."
 
 #. relabel to settings to remove confusion between module presets and white balance settings
-#: ../src/iop/temperature.c:2078
+#: ../src/iop/temperature.c:2090
 msgid "choose white balance setting"
 msgstr "Valitse valkotasapainon asetus."
 
-#: ../src/iop/temperature.c:2082
+#: ../src/iop/temperature.c:2094
 msgid "finetune"
 msgstr "Hienosäätö"
 
-#: ../src/iop/temperature.c:2083
+#: ../src/iop/temperature.c:2095
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:2084
+#: ../src/iop/temperature.c:2096
 msgid "fine tune camera's white balance setting"
 msgstr "Hienosäädä kameran valkotasapainon asetusta."
 
-#: ../src/iop/temperature.c:2101
+#: ../src/iop/temperature.c:2113
 msgid "white balance disabled for camera"
 msgstr "Kameran valkotasapaino otettu pois käytöstä"
 
@@ -14213,7 +14227,7 @@ msgstr "Näennäislineaarinen, RGB"
 
 #: ../src/iop/toneequal.c:323
 msgid "quasi-linear, RGB, scene-referred"
-msgstr "Näennäislineaarinen, RGB, näkymä-viitattu"
+msgstr "Näennäislineaarinen, RGB, Näkymä-viitattu"
 
 #. No blending
 #: ../src/iop/toneequal.c:439
@@ -19011,7 +19025,7 @@ msgstr "Kohdista kuvat ruudukkoon"
 #: ../src/views/lighttable.c:863
 msgctxt "accel"
 msgid "reset first image offset"
-msgstr "Palauta ensimmäisen kuvan "
+msgstr "Palauta ensimmäisen kuvan poikkeama"
 
 #: ../src/views/lighttable.c:864
 msgctxt "accel"
@@ -19153,28 +19167,28 @@ msgstr "Viimeinen kuva. Mikä tahansa näppäin palauttaa valopöydälle."
 msgid "waiting to start slideshow"
 msgstr "Odotetaan kuvasarjan aloitusta"
 
-#: ../src/views/slideshow.c:578 ../src/views/slideshow.c:605
-#: ../src/views/slideshow.c:611
+#: ../src/views/slideshow.c:591 ../src/views/slideshow.c:607
+#: ../src/views/slideshow.c:613
 msgid "slideshow paused"
 msgstr "Kuvasarja pysäytetty"
 
-#: ../src/views/slideshow.c:596 ../src/views/slideshow.c:601
+#: ../src/views/slideshow.c:598 ../src/views/slideshow.c:603
 #, c-format
 msgid "slideshow delay set to %d second"
 msgid_plural "slideshow delay set to %d seconds"
 msgstr[0] "Kuvasarjan viipeeksi asetettu %d sekunti."
 msgstr[1] "Kuvasarjan viipeeksi asetettu %d sekuntia."
 
-#: ../src/views/slideshow.c:636
+#: ../src/views/slideshow.c:629
 msgctxt "accel"
 msgid "start and stop"
 msgstr "Aloita ja lopeta"
 
-#: ../src/views/slideshow.c:650
+#: ../src/views/slideshow.c:643
 msgid "go to next image"
 msgstr "Siirry seuraavaan kuvaan"
 
-#: ../src/views/slideshow.c:655
+#: ../src/views/slideshow.c:648
 msgid "go to previous image"
 msgstr "Siirry edelliseen kuvaan"
 

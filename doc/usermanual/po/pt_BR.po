@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.0\n"
 "POT-Creation-Date: 2020-11-30 18:16-0300\n"
-"PO-Revision-Date: 2020-11-30 19:32-0300\n"
+"PO-Revision-Date: 2020-12-01 07:58-0300\n"
 "Last-Translator: Jeronimo Pellegrini <j_p@aleph.info>\n"
 "Language-Team: pt_BR\n"
 "Language: pt_BR\n"
@@ -6626,14 +6626,11 @@ msgid "filename template"
 msgstr "gabarito de nome de arquivo"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5429(para)
-#, fuzzy
 msgid ""
 "You can define filenames that darktable generates for export. Several pre-"
 "defined variables can be used as placeholders. See <xref linkend="
 "\"darktable_variables\"/> for an exhaustive list of available variables."
-msgstr ""
-"Você pode definir nomes de arquivo que o darktable usa para exportação. "
-"Várias variáveis predefinidas podem ser usadas:"
+msgstr "Você pode definir nomes de arquivo que o darktable usa para exportação. Várias variáveis predefinidas podem ser usadas. Veja <xref linkend=\"darktable_variables\"/> para uma lista exaustiva de variáveis."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5439(title)
 msgid "output directory"
@@ -10562,18 +10559,12 @@ msgid "You can display a line with very important image infos."
 msgstr "Você pode visualizar uma linha com informações importantes da imagem."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8334(para)
-#, fuzzy
 msgid ""
 "The content of this line can be set in preferences (see <xref linkend="
 "\"darkroom_options\"/>). Several pre-defined variables can be used as "
 "placeholders. See <xref linkend=\"darktable_variables\"/> for an exhaustive "
 "list of available variables."
-msgstr ""
-"O conteúdo desta linha pode ser configurado nas preferências (veja <xref "
-"linkend=\"darkroom_options\"/>). As variáveis disponíveis são as mesmas do "
-"módulo de exportação (veja <xref linkend=\"export_selected_usage_filename\"/"
-">). Você também pode adicionar novas linhas usando a variável <code>$(NL)</"
-"code>."
+msgstr "O conteúdo desta linha pode ser configurado nas preferências (veja <xref linkend=\"darkroom_options\"/>). Várias variáveis predefinidas podem ser usadas. Veja <xref linkend=\"darktable_variables\"/> para uma lista exaustiva de variáveis."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:8340(para)
 msgid ""
@@ -25456,15 +25447,11 @@ msgid "delimiters for sizes categories"
 msgstr "delimitadores para categorias de tamanhos"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22905(para)
-#, fuzzy
 msgid ""
 "Sizes categories are used to be able to set different overlays and css "
 "values depending of the size of the thumbnail. Set here thumbnails sizes "
 "delimiters, separated by \"|\""
-msgstr ""
-"Categorias de temanho são usadas para que seja possível determinar overlays "
-"e valores diferentes de CSS ependendo do tamanho da miniatura. Determine "
-"aqui os limites de tamanhos de miniaturas."
+msgstr "Categorias de temanho são usadas para que seja possível determinar overlays e valores diferentes de CSS ependendo do tamanho da miniatura. Determine aqui os limites de tamanhos de miniaturas, separados por \"|\""
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22909(para)
 msgid ""
@@ -25491,16 +25478,12 @@ msgid "pattern for the thumbnail tooltip (empty to disable)"
 msgstr "padrão para tooltip da miniatura (vazio para desabilitar)"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22923(para)
-#, fuzzy
 msgid ""
 "Define the pattern for the thumbnail tooltip. Empty it to disable thumbnail "
 "tooltip. As for previous pattern, several pre-defined variables can be used "
 "as placeholders. See <xref linkend=\"darktable_variables\"/> for an "
 "exhaustive list of available variables."
-msgstr ""
-"Defina o padrão da tooltip das miniaturas. Vazio desabilita as tooltips. "
-"Assim como nos padrões anteriores, veja <xref linkend=\"session_options\"/> "
-"para possíveis rótulos a usar."
+msgstr "Defina o padrão da tooltip das miniaturas. Vazio desabilita as tooltips. Assim como nos padrões anteriores, várias variáveis predefinidas podem ser usadas. Veja <xref linkend=\"darktable_variables\"/> para uma lista exaustiva de variáveis disponíveis."
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22929(bridgehead)
 msgid "use single-click in the collect panel"
@@ -31126,7 +31109,7 @@ msgid ""
 "language to set how to display texts. See <ulink url=\"https://developer."
 "gnome.org/pygtk/stable/pango-markup-language.html\"><emphasis>The Pango "
 "Markup Language</emphasis></ulink>"
-msgstr ""
+msgstr "Se você usar variáveis no contexto da interface gráfica (painéis), pode também usar linguagem de markup para determinar como mostrar os textos. Veja <ulink url=\"https://developer.gnome.org/pygtk/stable/pango-markup-language.html\"><emphasis>The Pango Markup Language</emphasis></ulink>"
 
 #: /home/jeronimo/darktable/build/doc/usermanual/po/darktable-usermanual_profiled.xml:27148(title)
 msgid "Index"
