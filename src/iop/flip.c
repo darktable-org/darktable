@@ -439,15 +439,6 @@ void reload_defaults(dt_iop_module_t *self)
 
   d->orientation = ORIENTATION_NULL;
 
-  // report if reload_defaults was called unnecessarily => this should be considered a bug
-  // the whole point of reload_defaults is to update defaults _based on current image_
-  // any required initialisation should go in init (and not be performed repeatedly here)
-  if(!self->dev)
-  {
-    fprintf(stderr, "reload_defaults should not be called without image.\n");
-    return;
-  }
-
   self->default_enabled = 1;
 
   if(self->dev->image_storage.legacy_flip.user_flip != 0
