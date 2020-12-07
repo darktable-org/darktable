@@ -27,6 +27,7 @@ FILE(GLOB SOURCE_FILES
   "common/database.c"
   "common/dbus.c"
   "common/dtpthread.c"
+  "common/eaw.c"
   "common/exif.cc"
   "common/film.c"
   "common/file_location.c"
