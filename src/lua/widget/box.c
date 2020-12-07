@@ -45,6 +45,16 @@ static int orientation_member(lua_State *L)
   if(lua_gettop(L) > 2) {
     luaA_to(L,dt_lua_orientation_t,&orientation,3);
     gtk_orientable_set_orientation(GTK_ORIENTABLE(box->widget),orientation);
+    if(gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget)) == GTK_ORIENTATION_HORIZONTAL)
+    {
+      GList *children, *l;
+      children = gtk_container_get_children(GTK_CONTAINER(box->widget));
+      for(l = children; l != NULL; l = l->next)
+      {
+        gtk_box_set_child_packing(GTK_BOX(box->widget), GTK_WIDGET(l->data), TRUE, TRUE, 0, GTK_PACK_START);
+      }
+      g_list_free(children);
+    }
     return 0;
   }
   orientation = gtk_orientable_get_orientation(GTK_ORIENTABLE(box->widget));
