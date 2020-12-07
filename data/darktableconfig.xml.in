@@ -313,6 +313,13 @@
     <shortdescription>omit hierarchy in simple tag lists</shortdescription>
     <longdescription>when creating XMP file the hierarchical tags are also added as a simple list of non-hierarchical ones to make them visible to some other programs. when this option is checked darktable will only include their last part and ignore the rest. so 'foo|bar|baz' will only add 'baz'.</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="tags">
+    <name>plugins/lighttable/tagging/no_uncategorized</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>in collect module do not set the 'uncategorized' entry for tags</shortdescription>
+    <longdescription>in collect module do not set the 'uncategorized' entry for tags which do not have children</longdescription>
+  </dtconfig>
   <dtconfig prefs="misc" section="tags" restart="true">
     <name>plugins/lighttable/tagging/no_entry_completion</name>
     <type>bool</type>
