@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-04 12:34+0100\n"
+"PO-Revision-Date: 2020-12-07 16:16+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -348,12 +348,12 @@ msgstr "benutzerdefiniert"
 # not really an AI method
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:497
 msgid "(AI) detect from image surfaces..."
-msgstr "(AI) aus Flächen ermitteln…"
+msgstr "aus Flächen ermitteln…"
 
 # not really an AI method
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:498
 msgid "(AI) detect from image edges..."
-msgstr "(AI) aus Kanten ermitteln…"
+msgstr "aus Kanten ermitteln…"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:499
 #: ../src/iop/channelmixerrgb.c:1992
@@ -458,7 +458,7 @@ msgstr "nichtlinear Bradford"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:536
 msgid "XYZ "
-msgstr "XYZ "
+msgstr "XYZ"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:537
 msgid "none (bypass)"
@@ -1444,7 +1444,7 @@ msgstr "RGB, verknüpfte Kanäle"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:247
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:149
 msgid "RGB, independent channels"
-msgstr "RBG, unabhängige Kanäle"
+msgstr "RGB, unabhängige Kanäle"
 
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:112
 #: ../build/lib/darktable/plugins/introspection_shadhi.c:215
@@ -1756,7 +1756,7 @@ msgstr "Mitwirkende (rawspeed)"
 #: ../build/bin/preferences_gen.h:7062 ../build/bin/preferences_gen.h:7101
 #: ../build/bin/preferences_gen.h:7136
 msgid "this setting has been modified"
-msgstr "Diese Voreinstellung wurde manuell angepasst"
+msgstr "Diese Voreinstellung wurde manuell angepasst."
 
 #: ../build/bin/preferences_gen.h:2769 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:88
@@ -2377,7 +2377,7 @@ msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
-"Unterdrückt fest codierte Voreinstellungen im Voreinstellungsmenü und im "
+"Verbirgt eingebaute Voreinstellungen im Voreinstellungsmenü und im "
 "Favoritenmenü."
 
 #: ../build/bin/preferences_gen.h:4127
@@ -4280,12 +4280,12 @@ msgstr "später"
 #: ../src/common/exif.cc:3980
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
-msgstr "konnte xmp Datei '%s’ nicht lesen: ‘%s’"
+msgstr "konnte xmp Datei „%s“ nicht lesen: „%s“"
 
 #: ../src/common/exif.cc:4032
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
-msgstr "konnte xmp Datei '%s' nicht schreiben: '%s'"
+msgstr "konnte xmp Datei „%s“ nicht schreiben: „%s“"
 
 #: ../src/common/fast_guided_filter.h:508
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -7530,7 +7530,7 @@ msgstr "auto"
 #: ../src/gui/preferences.c:851 ../src/gui/preferences.c:957
 msgctxt "preferences"
 msgid "import..."
-msgstr "importieren…"
+msgstr "importieren"
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:892
@@ -16080,7 +16080,7 @@ msgstr "aus der Sammlung entfernen"
 
 #: ../src/libs/image.c:450
 msgid "move..."
-msgstr "verschieben…"
+msgstr "verschieben"
 
 #: ../src/libs/image.c:450
 msgid "move to other folder"
@@ -17880,7 +17880,7 @@ msgid_plural ""
 "%d images are assigned this tag!"
 msgstr[0] ""
 "Soll das Tag „%s“ wirklich gelöscht werden?\n"
-"%d Bild ist dieses Tag zugewiesen!"
+"%d Bild ist dieses Tag zugewiesen."
 msgstr[1] ""
 "Soll das Tag „%s“ wirklich gelöscht werden?\n"
 "%d Bildern ist dieses Tag zugewiesen."
