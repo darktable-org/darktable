@@ -1515,8 +1515,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // for some reason this is needed on some systems to pick up the correctly themed cursor
   dt_control_change_cursor(GDK_LEFT_PTR);
 
-  dt_iop_color_picker_init();
-
   // create focus-peaking button
   darktable.gui->focus_peaking_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_focus_peaking, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(darktable.gui->focus_peaking_button, _("enable focus-peaking mode"));
@@ -3156,7 +3154,7 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
   if(event->state & GDK_CONTROL_MASK)
   {
     int delta_y=0;
-    
+
     dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
 
     dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*delta_y);
