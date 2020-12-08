@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-01 17:48-0600\n"
-"PO-Revision-Date: 2020-12-02 22:21-0600\n"
+"PO-Revision-Date: 2020-12-08 16:27+0100\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: -1,1170,-1,-1,-1,-1,-1,-1,-1,-1\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 2.4.1\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -1904,6 +1904,7 @@ msgstr "FALSO"
 #: ../build/bin/preferences_gen.h:2945
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
+"ocultar los preajestes preinstalados para los módulos de funcionalidad."
 
 #: ../build/bin/preferences_gen.h:2966
 msgid "use single-click in the collect module"
@@ -2372,6 +2373,8 @@ msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
+"ocultar los preajustes preinstalados de los módulos de procesamiento, tanto "
+"en preajustes como en el menú de favoritos."
 
 #: ../build/bin/preferences_gen.h:4127
 msgid "expand a single processing module at a time"
@@ -2385,13 +2388,15 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4162
 msgid "only collapse modules in current group"
-msgstr ""
+msgstr "solo contraer módulos del grupo actual"
 
 #: ../build/bin/preferences_gen.h:4176
 msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
 msgstr ""
+"si expande un sólo módulo a la vez, contraer los otros módulos del grupo "
+"actual - ignorar módulos en otros grupos"
 
 #: ../build/bin/preferences_gen.h:4197
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -2436,10 +2441,15 @@ msgid ""
 "in 'effect emulation' slider colors represent the effect the adjustment "
 "would have on the scene"
 msgstr ""
+"indicaciones visuales de ajustes de temperatura.\n"
+"en el módulo 'color ilumninante' los colores deslizantes representan el "
+"color de la fuente de luz\n"
+"en el módulo 'emulación de efecto'  los colores deslizantes representan el "
+"efecto que el ajuste tendrá en la escena"
 
 #: ../build/bin/preferences_gen.h:4331
 msgid "colorbalance slider block layout"
-msgstr ""
+msgstr "disposición del bloque deslizante de balance de color"
 
 #: ../build/bin/preferences_gen.h:4342 ../build/bin/preferences_gen.h:4371
 msgctxt "preferences"
@@ -2604,7 +2614,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4785
 msgid "auto-apply chromatic adaptation defaults"
-msgstr ""
+msgstr "auto-aplicar aberración cromática por defecto"
 
 #: ../build/bin/preferences_gen.h:4796
 msgctxt "preferences"
@@ -2661,13 +2671,16 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4914
 msgid "detect monochrome previews"
-msgstr ""
+msgstr "detectar vistas previas en blanco y negro"
 
 #: ../build/bin/preferences_gen.h:4928
 msgid ""
 "many monochrome images can be identified via exif and preview data. beware: "
 "this slows down imports and reading exif data"
 msgstr ""
+"muchas imágenes en blanco y negro se pueden identificar con exif y datos de "
+"previsualización. atención: esto ralentiza la importación y la lectura de "
+"datos exif."
 
 #: ../build/bin/preferences_gen.h:4956
 msgid "security"
@@ -3081,12 +3094,14 @@ msgstr "interfaz"
 
 #: ../build/bin/preferences_gen.h:6150
 msgid "sort built-in presets first"
-msgstr ""
+msgstr "ordenar preajustes propios primero"
 
 #: ../build/bin/preferences_gen.h:6164
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
+"si mostrar los predefinidos preinstalados justo antes de los predefinidos "
+"del usuario en el menú de predefinidos."
 
 #: ../build/bin/preferences_gen.h:6185
 msgid "mouse wheel scrolls modules side panel by default"
@@ -4119,6 +4134,8 @@ msgid ""
 "quick_check said:\n"
 "%s \n"
 msgstr ""
+"chequeo_rápido dijo:\n"
+"%s\n"
 
 #: ../src/common/database.c:2706 ../src/common/database.c:2724
 #: ../src/common/database.c:2886 ../src/common/database.c:2904
@@ -4141,6 +4158,10 @@ msgid ""
 "from the most recent snapshot or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
+"¿quiere cerrar darktable ahora para hacer una restauración manual\n"
+"de la base de datos de una copia de seguridad, intentar realizar una\n"
+"restauración de la última instantánea o elimiar la base de datos \n"
+"corrompida para empezar con una nueva?"
 
 #: ../src/common/database.c:2733 ../src/common/database.c:2913
 msgid ""
@@ -4148,6 +4169,9 @@ msgid ""
 "the database from a backup or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
+"¿quiere cerrar darktable ahorar para restaturar la base de\n"
+"datos de una copia de seguridad o eliminar la base de datos\n"
+"corrompida para empezar con una nueva?"
 
 #: ../src/common/database.c:2740 ../src/common/database.c:2918
 #, c-format
@@ -5251,7 +5275,7 @@ msgstr "por defecto"
 
 #: ../src/develop/blend_gui.c:94
 msgid "RAW"
-msgstr ""
+msgstr "RAW"
 
 #: ../src/develop/blend_gui.c:96 ../src/develop/blend_gui.c:1560
 #: ../src/develop/blend_gui.c:1563
@@ -5331,7 +5355,7 @@ msgstr " (registro)"
 
 #: ../src/develop/blend_gui.c:1539
 msgid "reset to default blend colorspace"
-msgstr ""
+msgstr "resetear la mezcla de espacio de color por defecto"
 
 #: ../src/develop/blend_gui.c:1586
 msgid "reset and hide output channels"
@@ -5576,7 +5600,7 @@ msgstr "factor de intensidad"
 
 #: ../src/develop/blend_gui.c:2068
 msgid "adjust the boost factor of the channel mask"
-msgstr ""
+msgstr "adjustar el factor incremental de la máscara de canal"
 
 #: ../src/develop/blend_gui.c:2102
 #, c-format
@@ -5695,6 +5719,7 @@ msgstr "punto de referencia de la fusión"
 #: ../src/develop/blend_gui.c:2881
 msgid "adjust the fulcrum used by some blending operations"
 msgstr ""
+"ajustar el punto de referencia usado para algunas operaciones de mezcla"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:2888 ../src/iop/watermark.c:1450
@@ -6191,6 +6216,9 @@ msgid ""
 "please report via the issue tracker\n"
 "including the xmp file"
 msgstr ""
+"problema de historia detectado\n"
+"por favor informe mediante el control de incidencias\n"
+"incluya el fichero xmp"
 
 #: ../src/develop/pixelpipe_hb.c:2365
 msgid ""
@@ -7358,6 +7386,8 @@ msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
 msgstr ""
+"si está encendido, miniatura y vistas previas serán procesadas a menor "
+"calidad pero 4 veces más rápido"
 
 #: ../src/gui/preferences.c:418 ../src/gui/preferences.c:425
 msgid "use system font size"
@@ -7628,6 +7658,8 @@ msgstr "formato"
 #: ../src/gui/preferences.c:1934 ../src/gui/presets.c:541
 msgid "select image types you want this preset to be available for"
 msgstr ""
+"seleccionar los tipos de imágenes para los que quiera tener esta valores "
+"predefinidos"
 
 #: ../src/gui/preferences.c:2040 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
@@ -8127,7 +8159,7 @@ msgstr "con pérdida"
 
 #: ../src/imageio/format/webp.c:327
 msgid "lossless"
-msgstr "sin pérdidas"
+msgstr "sin pérdida"
 
 #: ../src/imageio/format/webp.c:335
 msgid "applies only to lossy setting"
@@ -9103,7 +9135,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:72
 msgid "surface blur"
-msgstr ""
+msgstr "desenfoque de superficie"
 
 #: ../src/iop/bilateral.cc:77
 msgid "denoise (bilateral filter)"
@@ -9112,6 +9144,8 @@ msgstr "reducción de ruido (filtro bilateral)"
 #: ../src/iop/bilateral.cc:97
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
 msgstr ""
+"aplicar desenfoque superficial borde-consciente para quitar ruido o suavizar "
+"texturas"
 
 #: ../src/iop/bilateral.cc:100 ../src/iop/channelmixer.c:140
 #: ../src/iop/denoiseprofile.c:636 ../src/iop/exposure.c:117
@@ -9390,6 +9424,9 @@ msgid ""
 "such as white balance, channels mixing\n"
 "and conversions to monochrome emulating film"
 msgstr ""
+"realizar correcciones de espacio de color\n"
+"tales como balance de blancos, mexcla de canales\n"
+"y conversiones a blanco y negro emulando carrete"
 
 #: ../src/iop/channelmixer.c:138 ../src/iop/channelmixerrgb.c:137
 #: ../src/iop/clipping.c:327 ../src/iop/colorbalance.c:160
@@ -10452,6 +10489,7 @@ msgstr "mapeo de color"
 msgid ""
 "transfer a color palette and tonal repartition from one image to another"
 msgstr ""
+"transferir una paleta de color y repartición tonal de una imágen a otra"
 
 #: ../src/iop/colormapping.c:1061
 msgid "source clusters:"
@@ -10565,6 +10603,8 @@ msgstr "reconstrucción de color"
 #: ../src/iop/colorreconstruction.c:134
 msgid "recover clipped highlights by propagating surrounding colors"
 msgstr ""
+"recuperar las luces altas recortadas mediante la propagación de los colores "
+"cercanos"
 
 #: ../src/iop/colorreconstruction.c:630 ../src/iop/colorreconstruction.c:1086
 #: ../src/iop/globaltonemap.c:196 ../src/iop/globaltonemap.c:367
@@ -10803,6 +10843,8 @@ msgstr "interpolación cromática"
 #: ../src/iop/demosaic.c:175
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
+"reconstruir píxeles RGB completos de una lectura de un sensor de filtro de "
+"color"
 
 #: ../src/iop/demosaic.c:4932
 #, c-format
@@ -11190,6 +11232,9 @@ msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
 msgstr ""
+"volver a aplicar la exposición de la imagen como si estuviera en la cámara\n"
+"usando un abrillantador de color seguro, similar a incrementar la "
+"configuración ISO"
 
 #: ../src/iop/exposure.c:259
 msgid "magic lantern defaults"
@@ -12180,7 +12225,7 @@ msgstr "reconstrucción de luces"
 
 #: ../src/iop/highlights.c:86
 msgid "avoid magenta highlights and try to recover highlights colors"
-msgstr ""
+msgstr "evitar luces altas magenta e intentar recuperar colores de luces altas"
 
 #: ../src/iop/highlights.c:89 ../src/iop/hotpixels.c:74
 msgid "reconstruction, raw"
@@ -12236,7 +12281,7 @@ msgstr "pixeles calientes"
 
 #: ../src/iop/hotpixels.c:71
 msgid "remove abnormally bright pixels by dampening them with neighbours"
-msgstr ""
+msgstr "quitar píxeles anormalmente brillantes moderándolos con los vecinos"
 
 #: ../src/iop/hotpixels.c:354
 #, c-format
@@ -12779,7 +12824,7 @@ msgstr "lut 3D"
 
 #: ../src/iop/lut3d.c:137
 msgid "perform color space corrections and apply look"
-msgstr ""
+msgstr "aplicar correcciones de espacio de color y aplicar aspecto"
 
 #: ../src/iop/lut3d.c:140
 msgid "defined by profile, RGB"
@@ -12980,6 +13025,8 @@ msgstr "gestor de máscaras"
 #: ../src/iop/monochrome.c:97
 msgid "quickly convert an image to black & white using a variable color filter"
 msgstr ""
+"convertir rápidamente una imagen a blancoy negro usando un filtro de color "
+"variable"
 
 #: ../src/iop/monochrome.c:127
 msgid "red filter"
@@ -13005,7 +13052,7 @@ msgstr "película|invertido|negativo|escaneo"
 
 #: ../src/iop/negadoctor.c:155
 msgid "invert film negative scans and simulate printing on paper"
-msgstr ""
+msgstr "invertir escaneo de negativos de carrete y simular impresión en papel"
 
 #: ../src/iop/negadoctor.c:375
 msgid "color film"
@@ -13230,6 +13277,8 @@ msgstr "reducción de ruido (medias no locales)"
 #: ../src/iop/nlmeans.c:98
 msgid "apply a poisson noise removal best suited for astrophotography"
 msgstr ""
+"aplicar una eliminación de ruido envenenado, mejor aplicado para "
+"astrofotografía"
 
 #: ../src/iop/nlmeans.c:524
 msgid "radius of the patches to match"
@@ -13254,6 +13303,8 @@ msgstr "corregir perfil de entrada"
 #: ../src/iop/profile_gamma.c:99
 msgid "correct input color profiles meant to be applied on non-linear RGB"
 msgstr ""
+"corregir perfiles de color de entrada que debería ser aplicados en RGB no "
+"lineales"
 
 #: ../src/iop/profile_gamma.c:134
 msgid "16 EV dynamic range (generic)"
@@ -13329,7 +13380,7 @@ msgstr "reducción de ruido (raw)"
 
 #: ../src/iop/rawdenoise.c:127
 msgid "denoise the raw picture early in the pipeline"
-msgstr ""
+msgstr "quitar ruido de la imagen raw temprano en el proceso"
 
 #: ../src/iop/rawdenoise.c:1102
 msgid ""
@@ -13449,11 +13500,12 @@ msgstr "retoque"
 
 #: ../src/iop/retouch.c:200
 msgid "split-frequency|healing|cloning|stamp"
-msgstr ""
+msgstr "partir-frecuencia|curar|clonar|sello"
 
 #: ../src/iop/retouch.c:206
 msgid "remove and clone spots, perform split-frequency skin editing"
 msgstr ""
+"quitar puntos de clonado, realizar edición de piel de frecuencia partida"
 
 #: ../src/iop/retouch.c:209
 msgid "geometric and frequential, RGB"
@@ -13671,6 +13723,7 @@ msgstr "curva rgb"
 #: ../src/iop/rgbcurve.c:138
 msgid "alter an image’s tones using curves in RGB color space"
 msgstr ""
+"alterar los tonos de la imagen usando curvas en el espacio de color RGB"
 
 #: ../src/iop/rgbcurve.c:189 ../src/iop/tonecurve.c:565
 msgid "gamma 1.0 (linear)"
@@ -13786,6 +13839,8 @@ msgid ""
 "modify the tonal range of the shadows and highlights\n"
 "of an image by enhancing local contrast."
 msgstr ""
+"modificar el rango de tonal de las sombras y luces altas\n"
+"de una imágen potenciando el contraste local."
 
 #: ../src/iop/shadhi.c:715 ../src/iop/splittoning.c:537
 msgid "compress"
@@ -13831,6 +13886,8 @@ msgstr "enfoque"
 #: ../src/iop/sharpen.c:95
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
 msgstr ""
+"enfocar los detalles de la imágen usando una máscara standard de desenfoque "
+"(USM)"
 
 #: ../src/iop/sharpen.c:97
 msgid "linear or non-linear, Lab, display or scene-referred"
@@ -13864,7 +13921,7 @@ msgstr "suavizar"
 
 #: ../src/iop/soften.c:105
 msgid "create a softened image using the Orton effect"
-msgstr ""
+msgstr "crear un imagen suavizada usando el effecto Orton"
 
 #: ../src/iop/soften.c:549
 msgid "the size of blur"
@@ -13891,6 +13948,8 @@ msgid ""
 "use two specific colors for shadows and highlights and\n"
 "create a linear toning effect between them up to a pivot."
 msgstr ""
+"usar dos colores concretos para sombras y luces altas\n"
+"y crear un efecto lineal de tonos entre ellos hacia una pivot."
 
 #: ../src/iop/splittoning.c:119
 msgid "authentic sepia"
@@ -13979,6 +14038,7 @@ msgstr "balance de blancos"
 #: ../src/iop/temperature.c:201
 msgid "scale raw RGB channels to balance white and help demosaicing"
 msgstr ""
+"escalar los canales raw RGB a balances de blancos y ayudarles al demosaico"
 
 #: ../src/iop/temperature.c:240
 msgid "from image area"
@@ -13995,6 +14055,10 @@ msgid ""
 "set the white balance here to camera reference (D65)\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
+"el módulo de calibración de color está activo,\n"
+"y realizando una adaptación cromática.\n"
+"marque aquí el balance de blanco a la referencia de cámara (D65)\n"
+"o desactive la adaptación cromática en la calibración de color"
 
 #: ../src/iop/temperature.c:1415
 #, c-format
@@ -14114,7 +14178,7 @@ msgstr "Establece el balance de blancos manualmente"
 
 #: ../src/iop/temperature.c:2071
 msgid "camera reference"
-msgstr ""
+msgstr "referencia de cámara"
 
 #: ../src/iop/temperature.c:2074
 msgid ""
@@ -14156,7 +14220,7 @@ msgstr "curva de tono"
 
 #: ../src/iop/tonecurve.c:212
 msgid "alter an image’s tones using curves"
-msgstr ""
+msgstr "alterar los tonos de la imagen usando curvas"
 
 #: ../src/iop/tonecurve.c:1170
 msgid ""
@@ -14192,6 +14256,8 @@ msgstr ""
 #: ../src/iop/toneequal.c:319
 msgid "relight the scene as if the lighting was done directly on the scene"
 msgstr ""
+"reiluminar la escena como si la ilumnicación se hiciera directamente en la "
+"escena"
 
 #: ../src/iop/toneequal.c:322
 msgid "quasi-linear, RGB"
@@ -14533,6 +14599,8 @@ msgstr "velvia"
 msgid ""
 "resaturate giving more weight to blacks, whites and low-saturation pixels"
 msgstr ""
+"volver a saturar dando más peso a los píxeles negros, blancos y poco "
+"saturados"
 
 #: ../src/iop/velvia.c:341
 msgid "the strength of saturation boost"
@@ -14547,6 +14615,8 @@ msgid ""
 "saturate and reduce the lightness of the most saturated pixels\n"
 "to make the colors more vivid."
 msgstr ""
+"saturar y reducir la luminosidad de los píxeles más saturados\n"
+"para hacer los colores más vivos."
 
 #: ../src/iop/vibrance.c:217
 msgid "the amount of vibrance"
@@ -14558,7 +14628,7 @@ msgstr "viñeteado"
 
 #: ../src/iop/vignette.c:159
 msgid "simulate a lens fall-off close to edges"
-msgstr ""
+msgstr "simular un viñetado cerca de los bordes"
 
 #: ../src/iop/vignette.c:953
 msgid "lomo"
@@ -14636,7 +14706,7 @@ msgstr "marca de agua"
 
 #: ../src/iop/watermark.c:289
 msgid "overlay an SVG watermark like a signature on the picture"
-msgstr ""
+msgstr "superponer una marca de agua SVG como firma en la imágen"
 
 #: ../src/iop/watermark.c:1371
 msgid "content"
@@ -15322,7 +15392,7 @@ msgstr "fijar tamaño"
 
 #: ../src/libs/export.c:1155
 msgid "choose a method for setting the output size"
-msgstr ""
+msgstr "elija un método para establecer el tamaño de salida"
 
 #: ../src/libs/export.c:1156
 msgid "in pixels (for file)"
@@ -15345,12 +15415,16 @@ msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
 msgstr ""
+"límite máximo de anchura de salida.\n"
+"Haga clic el botón central del ratón para resetear a 0."
 
 #: ../src/libs/export.c:1167 ../src/libs/export.c:1186
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
 msgstr ""
+"límite máximo de altura de salida.\n"
+"Haga clic el botón central del ratón para resetear a 0."
 
 #: ../src/libs/export.c:1171
 msgid "resolution in dot per inch"
@@ -16083,6 +16157,8 @@ msgstr ""
 #: ../src/libs/image.c:570
 msgid "set selection as monochrome images and activate monochrome workflow"
 msgstr ""
+"marcar selección como imágenes en monocromo y activar el flujo de trabajo "
+"monocromo"
 
 #: ../src/libs/image.c:574
 msgid "set selection as color images"
@@ -16520,6 +16596,8 @@ msgstr "ir a la colección (mesa de luz)"
 msgid ""
 "terminate edition (press enter or escape) before selecting another location"
 msgstr ""
+"finalizar edición (presion enter o escape) antes de seleccionar otra "
+"ubicación"
 
 #: ../src/libs/map_locations.c:950
 msgid ""
@@ -16542,10 +16620,12 @@ msgstr ""
 msgid ""
 "select the shape of the location's limits on the map, circle or rectangle"
 msgstr ""
+"seleccione la forma de los límites de ubicación en el mapa, círculo o "
+"rectángulo"
 
 #: ../src/libs/map_locations.c:980
 msgid "add a new location on the center of the visible map"
-msgstr ""
+msgstr "añadir nueva ubicación en el centro del mapa visible"
 
 #: ../src/libs/map_locations.c:985
 msgid "show all"
@@ -16553,7 +16633,7 @@ msgstr "mostrar todas"
 
 #: ../src/libs/map_locations.c:987
 msgid "show all loations which are on the visible map"
-msgstr ""
+msgstr "mostrar todas las ubicaciones que son visibles en el mapa"
 
 #: ../src/libs/map_settings.c:38
 msgid "map settings"
@@ -16574,6 +16654,7 @@ msgstr "imágenes flitradas"
 #: ../src/libs/map_settings.c:138
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr ""
+"cuando está activo, limita las imágenes dibujadas en la tira de imágenes"
 
 #: ../src/libs/map_settings.c:148
 msgid "map source"
@@ -16585,7 +16666,7 @@ msgstr "Elegir la fuente del mapa. Algunas entradas podrían no funcionar"
 
 #: ../src/libs/map_settings.c:181
 msgid "modify the spatial size of an images group on the map"
-msgstr ""
+msgstr "modificar el tamaño de un grupo de imágenes en el mapa"
 
 #: ../src/libs/map_settings.c:182
 msgid "group size factor"
@@ -16992,6 +17073,9 @@ msgid ""
 "that can't be solved and alternatives that solve them.\n"
 "they will be removed for new edits in next release."
 msgstr ""
+"los siguientes módulos están obsolotes porque tienen fallos de diseño "
+"internos que no pueden ser solucionadas y alternativas que las resuelven.\n"
+"serán eliminadas para nuevas ediciones en el siguiente versión de programa."
 
 #: ../src/libs/modulegroups.c:1012 ../src/libs/modulegroups.c:1035
 #: ../src/libs/modulegroups.c:1048 ../src/libs/modulegroups.c:1063
@@ -17052,7 +17136,7 @@ msgstr "flujo de trabajo: basado en la escena"
 #: ../src/libs/modulegroups.c:1077
 msgctxt "modulegroup"
 msgid "technical"
-msgstr ""
+msgstr "técnico"
 
 #: ../src/libs/modulegroups.c:1099
 msgid "search only"
@@ -17188,6 +17272,8 @@ msgstr "Agrupación de módulos"
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
+"este un preajuste preinstalado de sólo lectura. Duplíquelo si quiere "
+"realizar cambios"
 
 #: ../src/libs/modulegroups.c:1973
 msgid "reset"
@@ -18534,6 +18620,8 @@ msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes\n"
 msgstr ""
+"elíga la métrica que quiere previsualizar\n"
+"gamut completo es la combinación de todos los otros modos\n"
 
 #: ../src/views/darkroom.c:2278
 msgid "red & blue"
@@ -18562,6 +18650,14 @@ msgid ""
 "typical color glossy prints produce black at -8.00 EV,\n"
 "typical B&W glossy prints produce black at -9.00 EV."
 msgstr ""
+"umbral de recorte para el punto negro,\n"
+"en EV, relativo a blanco (0 EV).\n"
+"sRGB de 8bits recorta negros a -12.69EV,\n"
+"Adobre RGB de 8bits recorta negros a -19.79EV,\n"
+"sRGB de 16 bits recorta negros a -20.69EV,\n"
+"impresiones típicas de alta calidad en mate produce negro a -5.30EV,\n"
+"impresiones típicas de color en brillo produce negro a -8.00EV,\n"
+"impresiones típicas de blanco y negro en brillo produce negro a -9.00 EV."
 
 #: ../src/views/darkroom.c:2307
 msgid "upper threshold"
