@@ -1589,7 +1589,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         escaped_text[escaped_length-1] = '\0';
         query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
                                        "JOIN data.tags AS b ON a.tagid = b.id "
-                                       "WHERE name LIKE '%s'"
+                                       "WHERE name = '%s'"
                                        "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
                                 escaped_text, escaped_text, escaped_text);
       }
