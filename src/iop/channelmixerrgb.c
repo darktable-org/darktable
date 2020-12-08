@@ -2024,6 +2024,12 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   }
 
+  if(w == g->temperature)
+  {
+    // Commit temperature to illuminant x, y
+    illuminant_to_xy(p->illuminant, NULL, NULL, &(p->x), &(p->y), p->temperature, p->illum_fluo, p->illum_led);
+  }
+
   ++darktable.gui->reset;
 
   if(!w || w == g->illuminant || w == g->illum_fluo || w == g->illum_led || g->temperature)
