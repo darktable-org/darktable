@@ -128,6 +128,8 @@ cl_int dt_local_laplacian_cl(
 {
   cl_int err = -666;
 
+  if(b->bwidth <= 1 || b->bheight <= 1) return err;
+
   size_t sizes_pad[] = { ROUNDUPWD(b->bwidth), ROUNDUPHT(b->bheight), 1 };
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 0, sizeof(cl_mem), &input);
   dt_opencl_set_kernel_arg(b->devid, b->global->kernel_pad_input, 1, sizeof(cl_mem), &b->dev_padded[0]);
