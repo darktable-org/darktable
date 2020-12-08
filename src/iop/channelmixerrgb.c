@@ -466,7 +466,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   const float delta[2] DT_ALIGNED_PIXEL = { D50[0] - uvY[0], D50[1] - uvY[1] };
   Y += NORM_MIN;
   const float DT_ALIGNED_PIXEL LOG_XYZ[4] = { logf(input[0] + Y), logf(input[1] + Y), logf(input[2] + Y), 0.f };
-  const float Delta = Y * hypotf(delta[0], delta[1]) / (Y + hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2])));
+  const float Delta = Y * hypotf(delta[0], delta[1]) * hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2]));
   // the log part comes from the saturation in https://infoscience.epfl.ch/record/34026
 
   // Compress chromaticity (move toward white point)
@@ -1283,22 +1283,6 @@ static void update_illuminants(dt_iop_module_t *self)
     gtk_widget_set_visible(g->illum_x, TRUE);
   }
 
-  // Put current illuminant x y and temperature derivated from standard options
-  // directly in user params x and y in case user wants take over manually
-  float custom_wb[4] = { 1.f };
-  get_white_balance_coeff(self, custom_wb);
-  if(illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &p->x, &p->y, p->temperature, p->illum_fluo, p->illum_led))
-  {
-    check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
-
-    float xyY[3] = { p->x, p->y, 1.f };
-    float Lch[3];
-    dt_xyY_to_Lch(xyY, Lch);
-    dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-    dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
-    dt_bauhaus_slider_set(g->temperature, p->temperature);
-  }
-
   // Display only the relevant sliders
   switch(p->illuminant)
   {
@@ -2011,6 +1995,33 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       // We need to recompute only the full preview
       dt_control_log(_("auto-detection of white balance started…"));
     }
+
+    // Put current illuminant x y directly in user params x and y in case user wants to
+    // take over manually in custom mode
+    float custom_wb[4] = { 1.f };
+    get_white_balance_coeff(self, custom_wb);
+    gboolean changed = illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &(p->x), &(p->y),
+                                        p->temperature, p->illum_fluo, p->illum_led);
+    if(changed)
+    {
+      if(p->illuminant != DT_ILLUMINANT_D && p->illuminant != DT_ILLUMINANT_BB)
+      {
+        // Put current illuminant closest CCT directly in user params temperature in case user wants to
+        // switch to a temperature-based mode
+        check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
+      }
+
+      float xyY[3] = { p->x, p->y, 1.f };
+      float Lch[3];
+      dt_xyY_to_Lch(xyY, Lch);
+
+      ++darktable.gui->reset;
+      dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+      dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
+      dt_bauhaus_slider_set(g->temperature, p->temperature);
+      --darktable.gui->reset;
+    }
+
   }
 
   ++darktable.gui->reset;

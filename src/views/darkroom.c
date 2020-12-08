@@ -3015,10 +3015,14 @@ void enter(dt_view_t *self)
   // connect to preference change for module header button hiding
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                                   G_CALLBACK(_preference_changed_button_hide), dev);
+
+  dt_iop_color_picker_init();
 }
 
 void leave(dt_view_t *self)
 {
+  dt_iop_color_picker_cleanup();
+
   _unregister_modules_drag_n_drop(self);
 
   /* disconnect from filmstrip image activate */

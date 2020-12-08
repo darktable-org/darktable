@@ -11303,7 +11303,7 @@ msgstr ""
 #, no-c-format
 msgid "where in the histogram to meter for deflicking. E.g. 50% is median"
 msgstr ""
-"où dans l'histogramme mesurer pour le deflicking, E.g. 50% est la médiane"
+"où dans l'histogramme mesurer pour le deflicking, e.g. 50% est la médiane"
 
 #: ../src/iop/exposure.c:889
 msgid ""

@@ -1378,8 +1378,18 @@ void dt_iop_reload_defaults(dt_iop_module_t *module)
   if(darktable.gui) ++darktable.gui->reset;
   if(module->reload_defaults)
   {
-    module->reload_defaults(module);
-    dt_print(DT_DEBUG_PARAMS, "[params] defaults reloaded for %s\n", module->op);
+    // report if reload_defaults was called unnecessarily => this should be considered a bug
+    // the whole point of reload_defaults is to update defaults _based on current image_
+    // any required initialisation should go in init (and not be performed repeatedly here)
+    if(module->dev)
+    {
+      module->reload_defaults(module);
+      dt_print(DT_DEBUG_PARAMS, "[params] defaults reloaded for %s\n", module->op);
+    }
+    else
+    {
+      fprintf(stderr, "reload_defaults should not be called without image.\n");
+    }
   }
   dt_iop_load_default_params(module);
   if(darktable.gui) --darktable.gui->reset;
@@ -1947,6 +1957,8 @@ void dt_iop_commit_params(dt_iop_module_t *module, dt_iop_params_t *params,
 
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 {
+  while(g_idle_remove_by_data(module->widget))
+    ; // remove multiple delayed gtk_widget_queue_draw triggers
   module->gui_cleanup(module);
   dt_iop_gui_cleanup_blending(module);
 }
