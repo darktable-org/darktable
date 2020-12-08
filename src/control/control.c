@@ -558,14 +558,19 @@ void dt_control_toast_redraw()
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
+static int _widget_queue_draw(void *widget)
+{
+  gtk_widget_queue_draw((GtkWidget*)widget);
+  return FALSE;
+}
+
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)widget);
+    g_idle_add(_widget_queue_draw, (void*)widget);
   }
 }
-
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
