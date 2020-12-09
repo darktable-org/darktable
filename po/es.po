@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-08 15:25-0600\n"
-"PO-Revision-Date: 2020-12-08 14:09-0600\n"
+"PO-Revision-Date: 2020-12-08 23:35-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -1909,6 +1909,8 @@ msgstr "FALSO"
 #: ../build/bin/preferences_gen.h:2945
 msgid "hides built-in presets of utility modules in presets menu."
 msgstr ""
+"Ocultar los preajustes integrados para los módulos de funcionalidad del menú "
+"de preajustes."
 
 #: ../build/bin/preferences_gen.h:2966
 msgid "use single-click in the collect module"
@@ -2377,10 +2379,12 @@ msgid ""
 "hides built-in presets of processing modules in both presets and favourites "
 "menu."
 msgstr ""
+"Ocultar los preajustes integrados para los módulos de revelado del menú de "
+"preajustes y de favoritos."
 
 #: ../build/bin/preferences_gen.h:4127
 msgid "expand a single processing module at a time"
-msgstr "Desplegar sólo un módulo a la vez en el cuarto oscuro"
+msgstr "Desplegar sólo un módulo de revelado a la vez"
 
 #: ../build/bin/preferences_gen.h:4141
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
@@ -2390,13 +2394,15 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4162
 msgid "only collapse modules in current group"
-msgstr ""
+msgstr "Plegar sólo los módulos del grupo en curso"
 
 #: ../build/bin/preferences_gen.h:4176
 msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
 msgstr ""
+"Si se elige desplegar sólo un módulo a la vez, los módulos del mismo grupo "
+"se pliegan. No tiene efecto en módulos de otros grupos."
 
 #: ../build/bin/preferences_gen.h:4197
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -2441,10 +2447,17 @@ msgid ""
 "in 'effect emulation' slider colors represent the effect the adjustment "
 "would have on the scene"
 msgstr ""
+"Indicador visual de las modificaciones en la temperatura.\n"
+"En el modo de \"Color del iluminante\" los colores del control deslizante "
+"representan el color de la fuente de luz.\n"
+"En el modo de \"Emulación de efecto\" los colores del control deslizante "
+"representan el efecto del ajuste que tendría en la escena."
 
 #: ../build/bin/preferences_gen.h:4331
 msgid "colorbalance slider block layout"
 msgstr ""
+"Diseño visual de la sección \"sombras / tonos medios / luces\" en balance de "
+"color"
 
 #: ../build/bin/preferences_gen.h:4342 ../build/bin/preferences_gen.h:4371
 msgctxt "preferences"
@@ -2469,6 +2482,12 @@ msgid ""
 "columns - the blocks of sliders are shown next to each other (in narrow "
 "columns)"
 msgstr ""
+"Cambia la disposición visual de los controles deslizantes de la sección "
+"sombras / tonos medios / luces:\n"
+"Lista: Todos los controles están organizados en forma de lista.\n"
+"Pestañas: Los controles están organizados por conjunto en cada pestaña.\n"
+"Columnas: Los controles están organizados en columnas estrechas en una sola "
+"vista."
 
 #: ../build/bin/preferences_gen.h:4402
 msgid "other views"
@@ -3094,12 +3113,14 @@ msgstr "interfaz"
 
 #: ../build/bin/preferences_gen.h:6150
 msgid "sort built-in presets first"
-msgstr ""
+msgstr "Listar primero los preajustes incorporados"
 
 #: ../build/bin/preferences_gen.h:6164
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
+"Mostrar primero los preajustes incorporados antes que los personalizados en "
+"el menú de preajustes."
 
 #: ../build/bin/preferences_gen.h:6185
 msgid "mouse wheel scrolls modules side panel by default"
@@ -4132,6 +4153,8 @@ msgid ""
 "quick_check said:\n"
 "%s \n"
 msgstr ""
+"Mensaje de quick_check:\n"
+"%s \n"
 
 #: ../src/common/database.c:2706 ../src/common/database.c:2724
 #: ../src/common/database.c:2886 ../src/common/database.c:2904
@@ -9412,6 +9435,9 @@ msgid ""
 "such as white balance, channels mixing\n"
 "and conversions to monochrome emulating film"
 msgstr ""
+"Realiza correcciones en el espacio de color,\n"
+"el balance de blancos, la mezcla de canales\n"
+"y la conversión emulando la película monocromática"
 
 #: ../src/iop/channelmixer.c:138 ../src/iop/channelmixerrgb.c:137
 #: ../src/iop/clipping.c:327 ../src/iop/colorbalance.c:160
@@ -10121,7 +10147,7 @@ msgstr "Ajustar para que coincida con un tono neutro"
 #. is set in _configure_slider_blocks
 #: ../src/iop/colorbalance.c:1984
 msgid "click to cycle layout"
-msgstr "Pulse para cambiar la disposición"
+msgstr "Pulse para cambiar la disposición de los elementos"
 
 #: ../src/iop/colorbalance.c:2020
 msgid "factor"
@@ -11218,6 +11244,8 @@ msgid ""
 "redo the exposure of the shot as if you were still in-camera\n"
 "using a color-safe brightening similar to increasing ISO setting"
 msgstr ""
+"Cambia la exposición de la imagen usando un brillo sin afectar el color,\n"
+"similar a la configuración de ISO de la cámara."
 
 #: ../src/iop/exposure.c:259
 msgid "magic lantern defaults"
@@ -12208,7 +12236,7 @@ msgstr "reconstrucción de luces"
 
 #: ../src/iop/highlights.c:86
 msgid "avoid magenta highlights and try to recover highlights colors"
-msgstr ""
+msgstr "Intenta recuperar el color y evitar los tonos magentas en las luces"
 
 #: ../src/iop/highlights.c:89 ../src/iop/hotpixels.c:74
 msgid "reconstruction, raw"
@@ -12265,6 +12293,7 @@ msgstr "pixeles calientes"
 #: ../src/iop/hotpixels.c:71
 msgid "remove abnormally bright pixels by dampening them with neighbours"
 msgstr ""
+"Atenúa los pixeles brillantes anormales con base en los pixeles vecinos"
 
 #: ../src/iop/hotpixels.c:354
 #, c-format
@@ -13008,6 +13037,8 @@ msgstr "gestor de máscaras"
 #: ../src/iop/monochrome.c:97
 msgid "quickly convert an image to black & white using a variable color filter"
 msgstr ""
+"Convierte fácilmente la imagen en blanco y negro usando un filtro de color "
+"variable"
 
 #: ../src/iop/monochrome.c:127
 msgid "red filter"
@@ -13034,6 +13065,7 @@ msgstr "película|invertido|negativo|escaneo"
 #: ../src/iop/negadoctor.c:155
 msgid "invert film negative scans and simulate printing on paper"
 msgstr ""
+"Invierte los negativos de película escaneados y simula la impresión en papel"
 
 #: ../src/iop/negadoctor.c:375
 msgid "color film"
@@ -13258,6 +13290,8 @@ msgstr "reducción de ruido (medias no locales)"
 #: ../src/iop/nlmeans.c:98
 msgid "apply a poisson noise removal best suited for astrophotography"
 msgstr ""
+"Utiliza el método de Poisson para la reducción de ruido. Recomendado para "
+"astrofotografía."
 
 #: ../src/iop/nlmeans.c:524
 msgid "radius of the patches to match"
@@ -13698,7 +13732,7 @@ msgstr "curva rgb"
 
 #: ../src/iop/rgbcurve.c:138
 msgid "alter an image’s tones using curves in RGB color space"
-msgstr ""
+msgstr "Modifica los tonos de la imagen mediante curvas en el espacio RGB"
 
 #: ../src/iop/rgbcurve.c:189 ../src/iop/tonecurve.c:565
 msgid "gamma 1.0 (linear)"
@@ -13814,6 +13848,8 @@ msgid ""
 "modify the tonal range of the shadows and highlights\n"
 "of an image by enhancing local contrast."
 msgstr ""
+"Cambia la gama tonal de las sombras y las luces\n"
+"mediante el realce del contraste local."
 
 #: ../src/iop/shadhi.c:699 ../src/iop/splittoning.c:537
 msgid "compress"
@@ -14219,7 +14255,7 @@ msgstr "curva de tono|mapeo de tonos|luz de relleno|luz de fondo|sombras luces"
 
 #: ../src/iop/toneequal.c:319
 msgid "relight the scene as if the lighting was done directly on the scene"
-msgstr ""
+msgstr "Ilumina la escena como si se hubiera hecho directamente desde la toma"
 
 #: ../src/iop/toneequal.c:322
 msgid "quasi-linear, RGB"
@@ -15350,7 +15386,7 @@ msgstr "fijar tamaño"
 
 #: ../src/libs/export.c:1155
 msgid "choose a method for setting the output size"
-msgstr ""
+msgstr "Elegir un método para establecer el tamaño de la salida"
 
 #: ../src/libs/export.c:1156
 msgid "in pixels (for file)"
@@ -16551,6 +16587,8 @@ msgstr "ir a la colección (mesa de luz)"
 msgid ""
 "terminate edition (press enter or escape) before selecting another location"
 msgstr ""
+"Terminar la edición antes de seleccionar otra ubicación (pulsar Entrar o "
+"Escape)."
 
 #: ../src/libs/map_locations.c:950
 msgid ""
