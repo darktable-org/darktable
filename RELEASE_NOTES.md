@@ -251,6 +251,8 @@ you are strongly advised to take a backup first.
 - Fix some issues with lighttable display (thumbnails) when using
   HiDPI monitor.
 
+- Fix styles undo/redo in the darkroom.
+
 ## Notes
 
 - The code base has been significantly simplified and refactored,
