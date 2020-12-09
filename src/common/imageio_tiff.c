@@ -80,7 +80,7 @@ static inline float _half_to_float(uint16_t h)
   return o.f;
 }
 
-static inline int _read_planar_8(tiff_t *t)
+static inline int _read_chunky_8(tiff_t *t)
 {
   for(uint32_t row = 0; row < t->height; row++)
   {
@@ -112,7 +112,7 @@ static inline int _read_planar_8(tiff_t *t)
   return 1;
 }
 
-static inline int _read_planar_16(tiff_t *t)
+static inline int _read_chunky_16(tiff_t *t)
 {
   for(uint32_t row = 0; row < t->height; row++)
   {
@@ -143,7 +143,7 @@ static inline int _read_planar_16(tiff_t *t)
   return 1;
 }
 
-static inline int _read_planar_h(tiff_t *t)
+static inline int _read_chunky_h(tiff_t *t)
 {
   for(uint32_t row = 0; row < t->height; row++)
   {
@@ -174,7 +174,7 @@ static inline int _read_planar_h(tiff_t *t)
   return 1;
 }
 
-static inline int _read_planar_f(tiff_t *t)
+static inline int _read_chunky_f(tiff_t *t)
 {
   for(uint32_t row = 0; row < t->height; row++)
   {
@@ -205,7 +205,7 @@ static inline int _read_planar_f(tiff_t *t)
   return 1;
 }
 
-static inline int _read_planar_8_Lab(tiff_t *t, uint16_t photometric)
+static inline int _read_chunky_8_Lab(tiff_t *t, uint16_t photometric)
 {
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   const cmsHPROFILE output_profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
@@ -258,7 +258,7 @@ failed:
 }
 
 
-static inline int _read_planar_16_Lab(tiff_t *t, uint16_t photometric)
+static inline int _read_chunky_16_Lab(tiff_t *t, uint16_t photometric)
 {
   const cmsHPROFILE Lab = dt_colorspaces_get_profile(DT_COLORSPACE_LAB, "", DT_PROFILE_DIRECTION_ANY)->profile;
   const cmsHPROFILE output_profile = dt_colorspaces_get_profile(LAB_CONVERSION_PROFILE, "", DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY)->profile;
@@ -435,22 +435,22 @@ dt_imageio_retval_t dt_imageio_open_tiff(dt_image_t *img, const char *filename, 
 
   if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
-    ok = _read_planar_8_Lab(&t, photometric);
+    ok = _read_chunky_8_Lab(&t, photometric);
     t.image->buf_dsc.cst = iop_cs_Lab;
   }
   else if((photometric == PHOTOMETRIC_CIELAB || photometric == PHOTOMETRIC_ICCLAB) && t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
   {
-    ok = _read_planar_16_Lab(&t, photometric);
+    ok = _read_chunky_16_Lab(&t, photometric);
     t.image->buf_dsc.cst = iop_cs_Lab;
   }
   else if(t.bpp == 8 && t.sampleformat == SAMPLEFORMAT_UINT)
-    ok = _read_planar_8(&t);
+    ok = _read_chunky_8(&t);
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_UINT)
-    ok = _read_planar_16(&t);
+    ok = _read_chunky_16(&t);
   else if(t.bpp == 16 && t.sampleformat == SAMPLEFORMAT_IEEEFP)
-    ok = _read_planar_h(&t);
+    ok = _read_chunky_h(&t);
   else if(t.bpp == 32 && t.sampleformat == SAMPLEFORMAT_IEEEFP)
-    ok = _read_planar_f(&t);
+    ok = _read_chunky_f(&t);
   else
   {
     fprintf(stderr, "[tiff_open] error: not a supported tiff image format.\n");
