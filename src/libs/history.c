@@ -1110,8 +1110,10 @@ static void _lib_history_truncate(gboolean compress)
 
   // then we can get the item to select in the new clean-up history retrieve the position of the module
   // corresponding to the history end.
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT IFNULL(MAX(num)+1, 0) FROM main.history "
-                                                             "WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT IFNULL(MAX(num)+1, 0)"
+                              " FROM main.history"
+                              " WHERE imgid=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
 
   if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -1119,7 +1121,8 @@ static void _lib_history_truncate(gboolean compress)
   sqlite3_finalize(stmt);
 
   // select the new history end corresponding to the one before the history compression
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "UPDATE main.images SET history_end=?2 WHERE id=?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "UPDATE main.images SET history_end=?2 WHERE id=?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, darktable.develop->history_end);
