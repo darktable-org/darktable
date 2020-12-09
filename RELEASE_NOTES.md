@@ -96,6 +96,10 @@ you are strongly advised to take a backup first.
 
 ## New Features And Changes
 
+- Some parts of the GUI have been reworked in this version to complete
+  the overhaul done in previous 3.2 release to ensure seamless
+  integration (color, spacing). A good example is the combo-boxes.
+
 - A focus-peaking button has been added in the lighttable and darkroom views which
   complements the existing keyboard shortcut. Focus-peaking helps to visualize the
   depth of field in an image by materializing the sharp edges.
@@ -228,6 +232,12 @@ you are strongly advised to take a backup first.
 - A new preset has been added to the denoise (profiled) module to remove only chrominance
   noise using wavelets mode.
 
+- Many modules have been reworked to get better performance on CPU by
+  reordering and improving the OpenMP code. The modules are Liquify,
+  Shadows and Highlights, Filmic RGB reconstruction, RAW Denoise, Borders, High Pass.
+
+- The histogram has been improved for performance espcecially the log view.
+
 ## Bug fixes
 
 - Fix orientation in the clipping module after having selected the freehand aspect ratio.
@@ -259,7 +269,8 @@ you are strongly advised to take a backup first.
   which will make future code maintenance easier.
 
 - Many more tests have been added to track regressions in image filter
-  outputs and ensure backwards compatibility of edits.
+  outputs and ensure backwards compatibility of edits. The testsuite
+  counts now 77 tests and covers all the modules currently supported.
 
 ## Lua
 
