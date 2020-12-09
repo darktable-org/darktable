@@ -58,33 +58,46 @@ public:
   struct Key
   {
     Key() = default;
-    Key(const Key& origin, int dim, int direction)  // construct neighbor in dimension 'dim'
+
+    Key(const Key &origin, int dim, int direction) // construct neighbor in dimension 'dim'
     {
-       for (int i = 0; i < KD; i++) key[i] = origin.key[i] + direction;
-       key[dim] = origin.key[dim] - direction * KD;
-       setHash();
+      for(int i = 0; i < KD; i++) key[i] = origin.key[i] + direction;
+      key[dim] = origin.key[dim] - direction * KD;
+      setHash();
     }
-    Key(const Key&) = default; // let the compiler write the copy constructor
-    Key& operator= (const Key&) = default;
-    void setKey(int idx, short val) { key[idx] = val; }
+
+    Key(const Key &) = default; // let the compiler write the copy constructor
+
+    Key &operator=(const Key &) = default;
+
+    void setKey(int idx, short val)
+    {
+      key[idx] = val;
+    }
+
     void setHash()
     {
       size_t k = 0;
       for(int i = 0; i < KD; i++)
       {
         k += key[i];
-	k *= 2531011;
+        k *= 2531011;
       }
       hash = (unsigned)k;
     }
-    bool operator== (const Key& other) const
+
+    bool operator==(const Key &other) const
     {
-      if (hash != other.hash) return false;
-      for (int i = 0; i < KD; i++) { if (key[i] != other.key[i]) return false; }
+      if(hash != other.hash) return false;
+      for(int i = 0; i < KD; i++)
+      {
+        if(key[i] != other.key[i]) return false;
+      }
       return true;
     }
-    unsigned hash;      // cache the hash value for this key
-    short key[KD];      // key is a KD-dimensional vector
+
+    unsigned hash{ 0 }; // cache the hash value for this key
+    short key[KD]{};    // key is a KD-dimensional vector
   };
 
 public:
@@ -92,32 +105,76 @@ public:
   struct Value
   {
     Value() = default;
-    Value(int init) { for (int i = 0; i < VD; i++) { value[i] = init; } }
-    Value(const Value&) = default; // let the compiler write the copy constructor
-    Value& operator= (const Value&) = default;
-    static void clear(float *val) { for (int i = 0; i < VD; i++) val[i] = 0; }
-    void setValue(int idx, short val) { value[idx] = val; }
-    void addValue(int idx, short val) { value[idx] += val; }
+
+    Value(int init)
+    {
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] = init;
+      }
+    }
+
+    Value(const Value &) = default; // let the compiler write the copy constructor
+
+    Value &operator=(const Value &) = default;
+
+    static void clear(float *val)
+    {
+      for(int i = 0; i < VD; i++) val[i] = 0;
+    }
+
+    void setValue(int idx, short val)
+    {
+      value[idx] = val;
+    }
+
+    void addValue(int idx, short val)
+    {
+      value[idx] += val;
+    }
+
     void add(const Value &other)
     {
-      for (int i = 0; i < VD; i++) { value[i] += other.value[i]; }
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] += other.value[i];
+      }
     }
+
     void add(const float *other, float weight)
     {
-      for (int i = 0; i < VD; i++) { value[i] += weight * other[i]; }
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] += weight * other[i];
+      }
     }
-    void addTo(float* dest, float weight) const { for (int i = 0; i < VD; i++) { dest[i] += weight * value[i]; } }
-    void mix(const Value* left, const Value* center, const Value* right)
+
+    void addTo(float *dest, float weight) const
     {
-      for (int i = 0; i < VD; i++)
-	 { value[i] = (0.25f * left->value[i] + 0.5f * center->value[i] + 0.25f * right->value[i]); }
+      for(int i = 0; i < VD; i++)
+      {
+        dest[i] += weight * value[i];
+      }
     }
-    Value& operator+= (const Value& other)
+
+    void mix(const Value *left, const Value *center, const Value *right)
     {
-      for (int i = 0; i < VD; i++) { value[i] += other.value[i]; }
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] = (0.25f * left->value[i] + 0.5f * center->value[i] + 0.25f * right->value[i]);
+      }
+    }
+
+    Value &operator+=(const Value &other)
+    {
+      for(int i = 0; i < VD; i++)
+      {
+        value[i] += other.value[i];
+      }
       return *this;
     }
-    float value[VD];
+
+    float value[VD]{};
   };
 
 public:
@@ -132,8 +189,10 @@ public:
     filled = 0;
     entries = new Entry[capacity];
     keys = new Key[maxFill()];
-    values = new Value[maxFill()] { 0 };
+    values = new Value[maxFill()]{ 0 };
   }
+
+  HashTablePermutohedral(const HashTablePermutohedral &) = delete;
 
   ~HashTablePermutohedral()
   {
@@ -141,6 +200,8 @@ public:
     delete[] keys;
     delete[] values;
   }
+
+  HashTablePermutohedral &operator=(const HashTablePermutohedral &) = delete;
 
   // Returns the number of vectors stored.
   int size() const
@@ -150,7 +211,7 @@ public:
 
   size_t maxFill() const
   {
-    return capacity/2 ;
+    return capacity / 2;
   }
 
   // Returns a pointer to the keys array.
@@ -181,20 +242,19 @@ public:
       if(e.keyIdx == -1)
       {
         if(!create) return -1; // Return not found.
-	// Double hash table size if necessary
-	if(filled >= maxFill())
-	   {
-	   grow();
-	   }
+        // Double hash table size if necessary
+        if(filled >= maxFill())
+        {
+          grow();
+        }
         // need to create an entry. Store the given key.
-	keys[filled] = key;
+        keys[filled] = key;
         entries[h].keyIdx = filled;
         return filled++;
       }
 
       // check if the cell has a matching key
-      if (keys[e.keyIdx] == key)
-	 return e.keyIdx;
+      if(keys[e.keyIdx] == key) return e.keyIdx;
 
       // increment the bucket with wraparound
       h = (h + 1) & capacity_bits;
@@ -215,7 +275,7 @@ public:
   void grow(int order = 1)
   {
     size_t oldCapacity = capacity;
-    while (order-- > 0)
+    while(order-- > 0)
     {
       capacity *= 2;
       capacity_bits = (capacity_bits << 1) | 1;
@@ -242,7 +302,7 @@ public:
       size_t h = keys[entries[i].keyIdx].hash & capacity_bits;
       while(newEntries[h].keyIdx != -1)
       {
-        h = (h+1) & capacity_bits;
+        h = (h + 1) & capacity_bits;
       }
       newEntries[h] = entries[i];
     }
@@ -254,10 +314,7 @@ private:
   // Private struct for the hash table entries.
   struct Entry
   {
-    Entry() : keyIdx(-1)
-    {
-    }
-    int keyIdx;
+    int keyIdx{ -1 };
   };
 
   Key *keys;
@@ -266,6 +323,7 @@ private:
   size_t capacity, filled;
   unsigned long capacity_bits;
 };
+
 
 /******************************************************************
  * The algorithm class that performs the filter                   *
@@ -277,10 +335,11 @@ private:
 template <int D, int VD> class PermutohedralLattice
 {
 private:
-   // short-hand for types we use
-   typedef HashTablePermutohedral<D,VD> HashTable;
-   typedef typename HashTable::Key Key;
-   typedef typename HashTable::Value Value;
+  // short-hand for types we use
+  typedef HashTablePermutohedral<D, VD> HashTable;
+  typedef typename HashTable::Key Key;
+  typedef typename HashTable::Value Value;
+
 public:
   /* Constructor
    *     d_ : dimensionality of key vectors
@@ -289,7 +348,6 @@ public:
    */
   PermutohedralLattice(size_t nData_, int nThreads_ = 1) : nData(nData_), nThreads(nThreads_)
   {
-
     // Allocate storage for various arrays
     float *scaleFactorTmp = new float[D];
     int *canonicalTmp = new int[(D + 1) * (D + 1)];
@@ -331,6 +389,7 @@ public:
     hashTables = new HashTable[nThreads];
   }
 
+  PermutohedralLattice(const PermutohedralLattice &) = delete;
 
   ~PermutohedralLattice()
   {
@@ -340,9 +399,10 @@ public:
     delete[] hashTables;
   }
 
+  PermutohedralLattice &operator=(const PermutohedralLattice &) = delete;
 
   /* Performs splatting with given position and value vectors */
-  void splat(float *position, float *value, size_t replay_index, int thread_index = 0)
+  void splat(float *position, float *value, size_t replay_index, int thread_index = 0) const
   {
     float elevated[D + 1];
     int greedy[D + 1];
@@ -353,8 +413,8 @@ public:
     // first rotate position into the (d+1)-dimensional hyperplane
     elevated[D] = -D * position[D - 1] * scaleFactor[D - 1];
     for(int i = D - 1; i > 0; i--)
-      elevated[i] = (elevated[i + 1] - i * position[i - 1] * scaleFactor[i - 1]
-                     + (i + 2) * position[i] * scaleFactor[i]);
+      elevated[i]
+          = (elevated[i + 1] - i * position[i - 1] * scaleFactor[i - 1] + (i + 2) * position[i] * scaleFactor[i]);
     elevated[0] = elevated[1] + 2 * position[0] * scaleFactor[0];
 
     // prepare to find the closest lattice points
@@ -440,7 +500,7 @@ public:
       Value *val = hashTables[thread_index].lookup(key, true);
 
       // Accumulate values with barycentric weight.
-      val->add(value,barycentric[remainder]);
+      val->add(value, barycentric[remainder]);
 
       // Record this interaction to use later when slicing
       replay[replay_index].offset[remainder] = val - hashTables[thread_index].getValues();
@@ -449,7 +509,7 @@ public:
   }
 
   /* Merge the multiple threads' hash tables into the totals. */
-  void merge_splat_threads(void)
+  void merge_splat_threads()
   {
     if(nThreads <= 1) return;
 
@@ -459,16 +519,14 @@ public:
      * entries in the individual tables
      */
     size_t total_entries = hashTables[0].size();
-    for(int i = 1; i < nThreads; i++)
-      total_entries += hashTables[i].size();
+    for(int i = 1; i < nThreads; i++) total_entries += hashTables[i].size();
     int order = 0;
-    while (total_entries > hashTables[0].maxFill())
+    while(total_entries > hashTables[0].maxFill())
     {
       order++;
       total_entries /= 2;
     }
-    if (order > 0)
-       hashTables[0].grow(order);
+    if(order > 0) hashTables[0].grow(order);
     /* Merge the multiple hash tables into one, creating an offset remap table. */
     int **offset_remap = new int *[nThreads];
     for(int i = 1; i < nThreads; i++)
@@ -480,7 +538,7 @@ public:
       for(int j = 0; j < filled; j++)
       {
         Value *val = hashTables[0].lookup(oldKeys[j], true);
-	val->add(oldVals[j]);
+        val->add(oldVals[j]);
         offset_remap[i][j] = val - hashTables[0].getValues();
       }
     }
@@ -490,8 +548,8 @@ public:
     {
       if(replay[i].table > 0)
       {
-        for (int dim = 0; dim <= D; dim++)
-	  replay[i].offset[dim] = offset_remap[replay[i].table][replay[i].offset[dim]];
+        for(int dim = 0; dim <= D; dim++)
+          replay[i].offset[dim] = offset_remap[replay[i].table][replay[i].offset[dim]];
       }
     }
 
@@ -503,27 +561,26 @@ public:
    * containing each position vector were calculated and stored in the splatting step.
    * We may reuse this to accelerate the algorithm. (See pg. 6 in paper.)
    */
-  void slice(float *col, size_t replay_index)
+  void slice(float *col, size_t replay_index) const
   {
     const Value *base = hashTables[0].getValues();
     Value::clear(col);
     ReplayEntry &r = replay[replay_index];
     for(int i = 0; i <= D; i++)
     {
-      base[r.offset[i]].addTo(col,r.weight[i]);
+      base[r.offset[i]].addTo(col, r.weight[i]);
     }
   }
 
   /* Performs a Gaussian blur along each projected axis in the hyperplane. */
-  void blur()
+  void blur() const
   {
     // Prepare arrays
     Value *newValue = new Value[hashTables[0].size()];
     Value *oldValue = hashTables[0].getValues();
     const Value *hashTableBase = oldValue;
     const Key *keyBase = hashTables[0].getKeys();
-
-    const Value zero { 0 };
+    const Value zero{ 0 };
 
     // For each of d+1 axes,
     for(int j = 0; j <= D; j++)
@@ -535,29 +592,29 @@ public:
       for(int i = 0; i < hashTables[0].size(); i++) // blur point i in dimension j
       {
         const Key &key = keyBase[i]; // keys to current vertex
-	// construct keys to the neighbors along the given axis.
-	Key neighbor1(key,j,+1);
-	Key neighbor2(key,j,-1);
+        // construct keys to the neighbors along the given axis.
+        Key neighbor1(key, j, +1);
+        Key neighbor2(key, j, -1);
 
         const Value *oldVal = oldValue + i;
 
         const Value *vm1 = hashTables[0].lookup(neighbor1, false); // look up first neighbor
-	vm1 = vm1 ? vm1 - hashTableBase + oldValue : &zero;
+        vm1 = vm1 ? vm1 - hashTableBase + oldValue : &zero;
 
         const Value *vp1 = hashTables[0].lookup(neighbor2, false); // look up second neighbor
-	vp1 = vp1 ? vp1 - hashTableBase + oldValue  : &zero;
+        vp1 = vp1 ? vp1 - hashTableBase + oldValue : &zero;
 
         // Mix values of the three vertices
-	newValue[i].mix(vm1,oldVal,vp1);
+        newValue[i].mix(vm1, oldVal, vp1);
       }
-      std::swap(newValue,oldValue);
+      std::swap(newValue, oldValue);
       // the freshest data is now in oldValue, and newValue is ready to be written over
     }
 
     // depending where we ended up, we may have to copy data
     if(oldValue != hashTableBase)
     {
-      std::copy(oldValue, oldValue+hashTables[0].size(), hashTables[0].getValues());
+      std::copy(oldValue, oldValue + hashTables[0].size(), hashTables[0].getValues());
       delete[] oldValue;
     }
     else
@@ -578,9 +635,9 @@ private:
     // since every dimension of a lattice point gets handled by the same thread,
     // we only need to store the id of the hash table once, instead of for each dimension
     int table;
-    int offset[D+1];
-    float weight[D+1];
-  } *replay;
+    int offset[D + 1];
+    float weight[D + 1];
+  } * replay;
 
   HashTable *hashTables;
 };

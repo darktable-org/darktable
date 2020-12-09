@@ -20,27 +20,27 @@
 #include <iostream>
 #include <string>
 
-extern "C" {
+extern "C"
+{
+  // otherwise the name will be mangled and the linker won't be able to see the function ...
+  void lut3d_decompress_clut(const unsigned char *const input_keypoints, const unsigned int nb_input_keypoints,
+                             const unsigned int output_resolution, float *const output_clut_data,
+                             const char *const filename);
 
-// otherwise the name will be mangled and the linker won't be able to see the function ...
-void lut3d_decompress_clut(const unsigned char *const input_keypoints, const unsigned int nb_input_keypoints,
-                    const unsigned int output_resolution, float *const output_clut_data,
-                    const char *const filename);
+  unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned int output_resolution,
+                                     const char *const filename);
 
-unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned int output_resolution,
-                    const char *const filename);
+  gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints, const char *const filename,
+                          int *const nb_lut, void *widget, const char *const lutname, const gboolean newlutname);
 
-gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints, const char *const filename,
-              int *const nb_lut, void *widget, const char *const lutname, const gboolean newlutname);
+  void lut3d_add_lutname_to_list(void *g, const char *const lutname);
 
-void lut3d_add_lutname_to_list(void *g, const char *const lutname);
-
-void lut3d_clear_lutname_list(void *g);
+  void lut3d_clear_lutname_list(void *g);
 }
 
 void lut3d_decompress_clut(const unsigned char *const input_keypoints, const unsigned int nb_input_keypoints,
-                     const unsigned int output_resolution, float *const output_clut_data,
-                     const char *const filename)
+                           const unsigned int output_resolution, float *const output_clut_data,
+                           const char *const filename)
 {
   gmic_list<float> image_list;
   gmic_list<char> image_names;
@@ -48,17 +48,16 @@ void lut3d_decompress_clut(const unsigned char *const input_keypoints, const uns
   g_instance.verbosity = -1;
   char gmic_cmd[512];
   image_list.assign(1);
-  gmic_image<float>& img = image_list[0];
+  gmic_image<float> &img = image_list[0];
   img.assign(1, nb_input_keypoints, 1, 6);
   // set the keypoint image
   float *ptr = img;
-  for (size_t i = 0; i < nb_input_keypoints * 6; ++i)
-    *(ptr++) = (float)input_keypoints[i];
+  for(size_t i = 0; i < nb_input_keypoints * 6; ++i) *(ptr++) = (float)input_keypoints[i];
 
   // decompress the keypoints to LUT
   // -cut 0,255 is added to mask GMIC 2.6.4 compressed clut issue.
-  std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-decompress_clut %d,%d,%d -cut 0,255",
-    output_resolution, output_resolution, output_resolution);
+  std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-decompress_clut %u,%u,%u -cut 0,255", output_resolution,
+                output_resolution, output_resolution);
   try
   {
     g_instance.run(gmic_cmd, image_list, image_names);
@@ -75,7 +74,7 @@ void lut3d_decompress_clut(const unsigned char *const input_keypoints, const uns
     std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-o \"%s\",uchar", filename);
     g_instance.run(gmic_cmd, image_list, image_names);
   }
-  catch (...)
+  catch(...)
   {
     std::fprintf(stderr, "[lut3d gmic] error - saving cache lut (does the cache folder exist ?)\n");
   }
@@ -90,13 +89,14 @@ void lut3d_decompress_clut(const unsigned char *const input_keypoints, const uns
     image_list.assign(0);
     return;
   }
-  const size_t img_size = image_list[0]._width*image_list[0]._height*image_list[0]._depth*image_list[0]._spectrum;
-  std::memcpy( output_clut_data, image_list[0]._data, img_size*sizeof(float));
+  const size_t img_size
+      = image_list[0]._width * image_list[0]._height * image_list[0]._depth * image_list[0]._spectrum;
+  std::memcpy(output_clut_data, image_list[0]._data, img_size * sizeof(float));
   image_list.assign(0);
 }
 
 unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned int output_resolution,
-                  const char *const filename)
+                                   const char *const filename)
 {
   gmic_list<float> image_list;
   gmic_list<char> image_names;
@@ -109,7 +109,7 @@ unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned
     std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-i \"%s\"", filename);
     g_instance.run(gmic_cmd, image_list, image_names);
   }
-  catch (...)
+  catch(...)
   { // no cached lut
     image_list.assign(0);
     return 0;
@@ -117,10 +117,11 @@ unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned
   // expected LUT size ?
   const unsigned int output_size = 3 * output_resolution * output_resolution * output_resolution;
   unsigned int output_res = output_resolution;
-  size_t img_size = image_list[0]._width*image_list[0]._height*image_list[0]._depth*image_list[0]._spectrum;
-  if (output_size < img_size)  //downsize the cached lut
+  size_t img_size = image_list[0]._width * image_list[0]._height * image_list[0]._depth * image_list[0]._spectrum;
+  if(output_size < img_size) // downsize the cached lut
   {
-    std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-r %d,%d,%d,3,3", output_resolution, output_resolution, output_resolution);
+    std::snprintf(gmic_cmd, sizeof(gmic_cmd), "-r %u,%u,%u,3,3", output_resolution, output_resolution,
+                  output_resolution);
     try
     {
       g_instance.run(gmic_cmd, image_list, image_names);
@@ -131,9 +132,9 @@ unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned
       image_list.assign(0);
       return 0;
     }
-    img_size = image_list[0]._width*image_list[0]._height*image_list[0]._depth*image_list[0]._spectrum;
+    img_size = image_list[0]._width * image_list[0]._height * image_list[0]._depth * image_list[0]._spectrum;
   }
-  else if (output_size > img_size) // reduce the expected lut size
+  else if(output_size > img_size) // reduce the expected lut size
   {
     output_res = image_list[0]._width;
   }
@@ -148,13 +149,13 @@ unsigned int lut3d_get_cached_clut(float *const output_clut_data, const unsigned
     image_list.assign(0);
     return 0;
   }
-  std::memcpy(output_clut_data, image_list[0]._data, img_size*sizeof(float));
+  std::memcpy(output_clut_data, image_list[0]._data, img_size * sizeof(float));
   image_list.assign(0);
   return output_res;
 }
 
 gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints, const char *const filename,
-              int *const nb_lut, void *g, const char *const lutname, const gboolean newlutname)
+                        int *const nb_lut, void *g, const char *const lutname, const gboolean newlutname)
 {
   gmic_list<float> image_list;
   gmic_list<char> image_names;
@@ -177,11 +178,11 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
     return lut_found;
   }
   unsigned int l = 0;
-  if (lutname[0])  // find this specific lut
+  if(lutname[0]) // find this specific lut
   {
-    for (unsigned int i = 0; i<image_names._width; ++i)
+    for(unsigned int i = 0; i < image_names._width; ++i)
     {
-      if (strcmp(image_names[i]._data, lutname) == 0)
+      if(strcmp(image_names[i]._data, lutname) == 0)
       {
         l = i;
         lut_found = TRUE;
@@ -190,34 +191,33 @@ gboolean lut3d_read_gmz(int *const nb_keypoints, unsigned char *const keypoints,
     }
   }
   *nb_lut = (int)image_names._width;
-  if (!newlutname)
-  {  // list of luts for this new file
+  if(!newlutname)
+  { // list of luts for this new file
     lut3d_clear_lutname_list(g);
-    for (unsigned int i = 0; i<image_names._width; ++i)
+    for(unsigned int i = 0; i < image_names._width; ++i)
     {
       lut3d_add_lutname_to_list(g, image_names[i]._data);
     }
   }
 
   int nb_kp = *nb_keypoints = (int)image_list[l]._height;
-  if (image_list[l]._width == 1 && image_list[l]._height <= 2048
-    && image_list[l]._depth == 1 && image_list[l]._spectrum == 6)
+  if(image_list[l]._width == 1 && image_list[l]._height <= 2048 && image_list[l]._depth == 1
+     && image_list[l]._spectrum == 6)
   { // color lut
-    gmic_image<float>& img = image_list[l];
-    for (int i = 0; i < nb_kp * 6; ++i)
-      keypoints[i] = (unsigned char)img[i];
+    gmic_image<float> &img = image_list[l];
+    for(int i = 0; i < nb_kp * 6; ++i) keypoints[i] = (unsigned char)img[i];
   }
-  else if (image_list[l]._width == 1 && image_list[l]._height <= 2048
-    && image_list[l]._depth == 1 && image_list[l]._spectrum == 4)
+  else if(image_list[l]._width == 1 && image_list[l]._height <= 2048 && image_list[l]._depth == 1
+          && image_list[l]._spectrum == 4)
   { // black & white lut
-    gmic_image<float>& img = image_list[l];
-    for (int i = 0; i < nb_kp * 3; ++i)
-      keypoints[i] = (unsigned char)img[i];
-    for (int i = 0; i < nb_kp; ++i)
-      keypoints[nb_kp*3+i] = keypoints[nb_kp*4+i] = keypoints[nb_kp*5+i] = (unsigned char)img[nb_kp*3+i];
+    gmic_image<float> &img = image_list[l];
+    for(int i = 0; i < nb_kp * 3; ++i) keypoints[i] = (unsigned char)img[i];
+    for(int i = 0; i < nb_kp; ++i)
+      keypoints[nb_kp * 3 + i] = keypoints[nb_kp * 4 + i] = keypoints[nb_kp * 5 + i]
+          = (unsigned char)img[nb_kp * 3 + i];
   }
   else
-    std::printf("[lut3d gmic] error: incompatible compressed LUT [%d] %s\n", l, image_names[l]._data);
+    std::printf("[lut3d gmic] error: incompatible compressed LUT [%u] %s\n", l, image_names[l]._data);
 
   image_list.assign(0);
   image_names.assign(0);

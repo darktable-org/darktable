@@ -213,6 +213,30 @@ static GdkRGBA lookup_color(GtkStyleContext *context, const char *name)
   return color;
 }
 
+void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
+{
+  PangoRectangle ink;
+  PangoLayout *layout;
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  const float fontsize = DT_PIXEL_APPLY_DPI(14);
+  pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+  pango_layout_set_text(layout, _("working..."), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
+  cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
+  pango_cairo_layout_path(cr, layout);
+  cairo_set_line_width(cr, 2.0);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+  cairo_stroke_preserve(cr);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
+  cairo_fill(cr);
+  pango_font_description_free(desc);
+  g_object_unref(layout);
+}
+
 void *dt_control_expose(void *voidptr)
 {
   int pointerx, pointery;
@@ -257,26 +281,7 @@ void *dt_control_expose(void *voidptr)
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_busy > 0)
   {
-    PangoRectangle ink;
-    PangoLayout *layout;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
-    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-    layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, desc);
-    pango_layout_set_text(layout, _("working..."), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
-    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
-    pango_cairo_layout_path(cr, layout);
-    cairo_set_line_width(cr, 2.0);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
-    cairo_stroke_preserve(cr);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
-    cairo_fill(cr);
-    pango_font_description_free(desc);
-    g_object_unref(layout);
+    dt_control_draw_busy_msg(cr, width, height);
   }
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
@@ -558,18 +563,19 @@ void dt_control_toast_redraw()
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
-static gboolean _gtk_widget_queue_draw(gpointer user_data)
+static int _widget_queue_draw(void *widget)
 {
-  gtk_widget_queue_draw(GTK_WIDGET(user_data));
+  gtk_widget_queue_draw((GtkWidget*)widget);
   return FALSE;
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
-    g_main_context_invoke(NULL, _gtk_widget_queue_draw, widget);
+  {
+    g_idle_add(_widget_queue_draw, (void*)widget);
+  }
 }
-
 
 int dt_control_key_pressed_override(guint key, guint state)
 {

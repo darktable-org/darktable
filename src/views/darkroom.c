@@ -2669,6 +2669,8 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
   gboolean can_moved = FALSE;
   GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
   dt_iop_module_t *module_src = _get_dnd_source_module(container);
+  if(!module_src) return FALSE;
+
   dt_iop_module_t *module_dest = _get_dnd_dest_module(container, x, y, module_src);
 
   if(module_src && module_dest && module_src != module_dest)
@@ -3013,10 +3015,14 @@ void enter(dt_view_t *self)
   // connect to preference change for module header button hiding
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                                   G_CALLBACK(_preference_changed_button_hide), dev);
+
+  dt_iop_color_picker_init();
 }
 
 void leave(dt_view_t *self)
 {
+  dt_iop_color_picker_cleanup();
+
   _unregister_modules_drag_n_drop(self);
 
   /* disconnect from filmstrip image activate */

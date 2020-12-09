@@ -2423,7 +2423,7 @@ static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
   gtk_tree_model_get(model, b, DT_LIB_TAGGING_COL_TAG, &tag_b, -1);
   if(tag_a == NULL) tag_a = g_strdup("");
   if(tag_b == NULL) tag_b = g_strdup("");
-  const gboolean sort = g_ascii_strcasecmp(tag_a, tag_b);
+  const gboolean sort = g_strcmp0(tag_a, tag_b);
   g_free(tag_a);
   g_free(tag_b);
   return sort;
@@ -2451,7 +2451,7 @@ static gint _sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
   else
     tag_b = g_strdup("");
 
-  const gboolean sort = g_ascii_strcasecmp(tag_a, tag_b);
+  const gboolean sort = g_strcmp0(tag_a, tag_b);
   g_free(tag_a);
   g_free(tag_b);
   return sort;
