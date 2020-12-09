@@ -232,6 +232,9 @@ static void key_accel_changed(GtkAccelMap *object, gchar *accel_path, guint acce
   dt_accel_path_global(path, sizeof(path), "toggle panels collapsing controls");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_collapsing_controls);
 
+  dt_accel_path_global(path, sizeof(path), "slideshow view");
+  gtk_accel_map_lookup_entry(path, &darktable.control->accels.slideshow_view);
+
   dt_accel_path_global(path, sizeof(path), "show accels window");
   gtk_accel_map_lookup_entry(path, &darktable.control->accels.global_accels_window);
 
@@ -1401,19 +1404,16 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
 
   dt_accel_connect_global("quit", g_cclosure_new(G_CALLBACK(quit_callback), NULL, NULL));
 
-  // Full-screen accelerators
+  // Full-screen accelerator (no ESC handler here to enable quit-slideshow using ESC)
   dt_accel_register_global(NC_("accel", "toggle fullscreen"), GDK_KEY_F11, 0);
-  dt_accel_register_global(NC_("accel", "leave fullscreen"), GDK_KEY_Escape, 0);
 
   dt_accel_connect_global("toggle fullscreen", g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
                                                               GINT_TO_POINTER(1), NULL));
-  dt_accel_connect_global("leave fullscreen", g_cclosure_new(G_CALLBACK(fullscreen_key_accel_callback),
-                                                             GINT_TO_POINTER(0), NULL));
 
   // Side-border hide/show
   dt_accel_register_global(NC_("accel", "toggle side borders"), GDK_KEY_Tab, 0);
 
-  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_B, 0);
+  dt_accel_register_global(NC_("accel", "toggle panels collapsing controls"), GDK_KEY_b, 0);
   dt_accel_connect_global("toggle panels collapsing controls",
                           g_cclosure_new(G_CALLBACK(_panels_controls_accel_callback), NULL, NULL));
 
@@ -1514,8 +1514,6 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   // finally set the cursor to be the default.
   // for some reason this is needed on some systems to pick up the correctly themed cursor
   dt_control_change_cursor(GDK_LEFT_PTR);
-
-  dt_iop_color_picker_init();
 
   // create focus-peaking button
   darktable.gui->focus_peaking_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_focus_peaking, CPF_STYLE_FLAT, NULL);
@@ -3155,7 +3153,11 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   if(event->state & GDK_CONTROL_MASK)
   {
-    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*event->delta_y);
+    int delta_y=0;
+
+    dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y);
+
+    dt_conf_set_int(config_str, dt_conf_get_int(config_str) + increment*delta_y);
 
     _scroll_wrap_resize(w, NULL, config_str);
   }

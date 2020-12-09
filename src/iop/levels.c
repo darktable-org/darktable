@@ -32,6 +32,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/openmp_maths.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
 #include "gui/color_picker_proxy.h"
@@ -123,6 +124,15 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("adjust black, white and mid-gray points"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -354,6 +364,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
+  assert(piece->colors >= 3);
   const dt_iop_levels_data_t *const d = (dt_iop_levels_data_t *)piece->data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
@@ -361,52 +372,41 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     commit_params_late(self, piece);
   }
 
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  const size_t npixels = roi_out->width * roi_out->height;
+  
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  dt_omp_firstprivate(ch, d) \
+  dt_omp_sharedconst(in, out, npixels) \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(int i = 0; i < ch * npixels; i += ch)
   {
-    float *in = (float *)ivoid + (size_t)k * ch * roi_out->width;
-    float *out = (float *)ovoid + (size_t)k * ch * roi_out->width;
-    for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+    const float L_in = in[i] / 100.0f;
+    float L_out;
+    if(L_in <= d->levels[0])
     {
-      float L_in = in[0] / 100.0f;
-
-      if(L_in <= d->levels[0])
-      {
-        // Anything below the lower threshold just clips to zero
-        out[0] = 0.0f;
-      }
-      else if(L_in >= d->levels[2])
-      {
-        float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
-        out[0] = 100.0f * pow(percentage, d->in_inv_gamma);
-      }
-      else
-      {
-        // Within the expected input range we can use the lookup table
-        float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
-        // out[0] = 100.0 * pow(percentage, d->in_inv_gamma);
-        out[0] = d->lut[CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
-      }
-
-      // Preserving contrast
-      if(in[0] > 0.01f)
-      {
-        out[1] = in[1] * out[0] / in[0];
-        out[2] = in[2] * out[0] / in[0];
-      }
-      else
-      {
-        out[1] = in[1] * out[0] / 0.01f;
-        out[2] = in[2] * out[0] / 0.01f;
-      }
+      // Anything below the lower threshold just clips to zero
+      L_out = 0.0f;
     }
+    else
+    {
+      const float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
+      // Within the expected input range we can use the lookup table, else we need to compute from scratch
+      L_out = percentage < 1.0f ? d->lut[(int)(percentage * 0x10000ul)] : 100.0f * pow(percentage, d->in_inv_gamma);
+    }
+
+    // Preserving contrast
+    const float denom = (in[i] > 0.01f) ? in[i] : 0.01f;
+    out[i] = L_out;
+    out[i+1] = in[i+1] * L_out / denom;
+    out[i+2] = in[i+2] * L_out / denom;
   }
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL

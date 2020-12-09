@@ -217,6 +217,10 @@ int flags()
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
+  // This module may work in RAW or RGB (e.g. for TIFF files) depending on the input
+  // The module does not change the color space between the input and output, therefore implement it here
+  if(piece && piece->dsc_in.cst != iop_cs_RAW)
+    return iop_cs_rgb;
   return iop_cs_RAW;
 }
 
@@ -770,12 +774,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
     self->dev->proxy.wb_is_D65 = is_D65;
   }
+
+  for(int k = 0; k < 4; k++)
+  {
+    self->dev->proxy.wb_coeffs[k] = d->coeffs[k];
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_temperature_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1147,13 +1155,9 @@ static void display_wb_error(struct dt_iop_module_t *self)
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
-  const gboolean is_raw = dt_image_is_raw(&(self->dev->image_storage));
-
   ++darktable.gui->reset;
 
-  if(self->dev->proxy.chroma_adaptation != NULL
-     && !self->dev->proxy.wb_is_D65
-     && is_raw)
+  if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65)
   {
     // our second biggest problem : another channelmixerrgb instance is doing CAT
     // earlier in the pipe
@@ -1166,20 +1170,6 @@ static void display_wb_error(struct dt_iop_module_t *self)
                                   "and performing chromatic adaptation.\n"
                                   "set the white balance here to camera reference (D65)\n"
                                   "or disable chromatic adaptation in color calibration."));
-    gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
-  }
-  else if(!is_raw && self->enabled)
-  {
-    // if image is not raw, it is almost guaranteed to be gamma-encoded because we are before colorin in the pipe
-    // it means RGB coeffs will have weird effects and temperature <-> RGB coeffs conversions are completely wrong
-    dt_iop_set_module_in_trouble(self, TRUE);
-    char *wmes = dt_iop_warning_message(_("white balance applied on non-raw image"));
-    gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
-    g_free(wmes);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
-                                _("the white balance module is designed to work on raw images.\n"
-                                  "using it on non-raw images may have unexpected effects.\n"
-                                  "use chromatic adaptation in color calibration instead."));
     gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
   }
   else
@@ -1374,7 +1364,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
 {
-  if(!dt_image_is_raw(&module->dev->image_storage))
+  if(!dt_image_is_matrix_correction_supported(&module->dev->image_storage))
   {
     bwb[0] = 1.0;
     bwb[2] = 1.0;
@@ -1385,7 +1375,7 @@ static int calculate_bogus_daylight_wb(dt_iop_module_t *module, double bwb[4])
   }
 
   double mul[4];
-  if (dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, mul))
+  if(dt_colorspaces_conversion_matrices_rgb(module->dev->image_storage.camera_makermodel, NULL, NULL, module->dev->image_storage.d65_color_matrix, mul))
   {
     // normalize green:
     bwb[0] = mul[0] / mul[1];
@@ -1449,7 +1439,7 @@ static void find_coeffs(dt_iop_module_t *module, double coeffs[4])
     return;
   }
 
-  if(!ignore_missing_wb(&(module->dev->image_storage)) && dt_image_is_raw(&(module->dev->image_storage)))
+  if(!ignore_missing_wb(&(module->dev->image_storage)))
   {
     dt_control_log(_("failed to read camera white balance information from `%s'!"),
                    img->filename);
@@ -1493,8 +1483,7 @@ void reload_defaults(dt_iop_module_t *module)
   // we might be called from presets update infrastructure => there is no image
   if(!module->dev || module->dev->image_storage.id == -1) return;
 
-  const gboolean is_raw = dt_image_is_raw(&(module->dev->image_storage))
-    && dt_image_is_matrix_correction_supported(&module->dev->image_storage);
+  const gboolean is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
   gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
   const gboolean is_modern = strcmp(workflow, "modern") == 0;
   g_free(workflow);
@@ -1505,8 +1494,6 @@ void reload_defaults(dt_iop_module_t *module)
   // White balance module doesn't need to be enabled for monochrome raws (like
   // for leica monochrom cameras). prepare_matrices is a noop as well, as there
   // isn't a color matrix, so we can skip that as well.
-  // On non-raw images, the module is not necessary but also the temperature to RGB coeffs
-  // is completely wrong since 8 and 16 bits integer RGB is encoded with a gamma before colorin
   if(dt_image_is_monochrome(&(module->dev->image_storage)))
   {
     module->hide_enable_button = 1;
@@ -1582,7 +1569,11 @@ void reload_defaults(dt_iop_module_t *module)
     }
 
     // Store EXIF WB coeffs
-    find_coeffs(module, g->as_shot_wb);
+    if(is_raw)
+      find_coeffs(module, g->as_shot_wb);
+    else
+      g->as_shot_wb[0] = g->as_shot_wb[1] = g->as_shot_wb[2] = g->as_shot_wb[3] = 1.f;
+
     g->as_shot_wb[0] /= g->as_shot_wb[1];
     g->as_shot_wb[2] /= g->as_shot_wb[1];
     g->as_shot_wb[3] /= g->as_shot_wb[1];
@@ -2068,8 +2059,11 @@ void gui_init(struct dt_iop_module_t *self)
                                           dtgtk_cairo_paint_camera, NULL);
   gtk_widget_set_tooltip_text(g->btn_asshot, _("set white balance to as shot"));
 
-  // create color picker to be able to send its signal when spot selected
-  g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, NULL);
+  // create color picker to be able to send its signal when spot selected,
+  // this module may expect data in RAW or RGB, setting the color picker CST to iop_cs_NONE will make the color
+  // picker to depend on the number of color channels of the pixels. It is done like this as we may not know the
+  // actual kind of data we are using in the GUI (it is part of the pipeline).
+  g->colorpicker = dt_color_picker_new_with_cst(self, DT_COLOR_PICKER_AREA, NULL, iop_cs_NONE);
   dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(g->colorpicker), dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(g->colorpicker, _("set white balance to detected from area"));
 

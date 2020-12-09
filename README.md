@@ -217,7 +217,7 @@ which is fine if you don't need to open your edits again in the future, but mayb
 After backing up your `~/.config/darktable` directory as well as the sidecar .XMP files of the pictures you will open
 with the master branch, you may get the source:
 ```bash
-git clone https://github.com/darktable-org/darktable.git
+git clone --recurse-submodules https://github.com/darktable-org/darktable.git
 cd darktable
 ```
 
@@ -232,7 +232,7 @@ Minor revisions are tagged with a third digit (like 3.0.1, 3.0.2) and mostly pro
 You may want to compile these stable releases yourself in order to get better performance for your particular computer:
 
 ```bash
-git clone https://github.com/darktable-org/darktable.git
+git clone --recurse-submodules https://github.com/darktable-org/darktable.git 
 cd darktable
 git fetch --tags
 git checkout tags/release-3.2.1
@@ -240,11 +240,10 @@ git checkout tags/release-3.2.1
 
 ### Get submodules
 
-Note that [rawspeed](https://github.com/darktable-org/rawspeed) is tracked via a git submodule, as well as OpenCL and LibXCF modules, so after checking-out the darktable, you need to update/checkout them,
+Note that [LibXCF](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [rawspeed](https://github.com/darktable-org/rawspeed), and [whereami](https://github.com/gpakosz/whereami) are tracked via a git submodule, so after checking-out the darktable, you need to update/checkout them:
 
 ```bash
-git submodule init
-git submodule update
+git submodule update --init
 ```
 
 ### Compile

@@ -97,6 +97,12 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
+                    "you should not touch values here !"));
+}
+
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
                       float *o)
 {
@@ -320,7 +326,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rotatepixels_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

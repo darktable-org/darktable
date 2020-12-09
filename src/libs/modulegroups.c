@@ -486,6 +486,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
       /* lets show/hide modules dependent on current group*/
+      const gboolean show_deprecated
+          = !strcmp(dt_conf_get_string("plugins/darkroom/modulegroups_preset"), _(DEPRECATED_PRESET_NAME));
       switch(d->current)
       {
         case DT_MODULEGROUP_ACTIVE_PIPE:
@@ -505,7 +507,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         case DT_MODULEGROUP_NONE:
         {
           /* show all except hidden ones */
-          if(_lib_modulegroups_test_visible(self, module->op) || module->enabled)
+          if(((!(module->flags() & IOP_FLAGS_DEPRECATED) || show_deprecated)
+              && _lib_modulegroups_test_visible(self, module->op))
+             || module->enabled)
           {
             if(w) gtk_widget_show(w);
           }
@@ -520,8 +524,6 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
         default:
         {
           // show deprecated module in specific group deprecated
-          const gboolean show_deprecated
-              = !strcmp(dt_conf_get_string("plugins/darkroom/modulegroups_preset"), _(DEPRECATED_PRESET_NAME));
           gtk_widget_set_visible(d->deprecated, show_deprecated);
 
           if(_lib_modulegroups_test_internal(self, d->current, module)
@@ -1009,13 +1011,13 @@ void init_presets(dt_lib_module_t *self)
   gchar *tx = NULL;
   tx = dt_util_dstrcat(tx, "1ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
-                       "|flip|highlights|invert|negadoctor|overexposed|rawoverexposed|rawprepare"
+                       "|flip|highlights|negadoctor|overexposed|rawoverexposed|rawprepare"
                        "|shadhi|temperature|toneequal");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"),
-                       "tone", "bilat|filmicrgb|globaltonemap|levels"
-                       "|rgbcurve|rgblevels|tonecurve|tonemap");
+  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"), "tone",
+                       "bilat|filmicrgb|levels"
+                       "|rgbcurve|rgblevels|tonecurve");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixer|channelmixerrgb|colorbalance|colorchecker|colorcontrast"
+                       "channelmixerrgb|colorbalance|colorchecker|colorcontrast"
                        "|colorcorrection|colorin|colorout|colorzones|lut3d|monochrome"
                        "|profile_gamma|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
@@ -1047,7 +1049,7 @@ void init_presets(dt_lib_module_t *self)
                        "basecurve|toneequal|clipping|flip|exposure|temperature"
                        "|rgbcurve|rgblevels|bilat|shadhi|highlights");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixer|colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
+                       "channelmixerrgb|colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
                        "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
                        "|lens|retouch|liquify|sharpen|nlmeans");
@@ -1075,17 +1077,17 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "1ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "technical"), "technical",
                        "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
                        "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
-                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|invert|lens"
+                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|lens"
                        "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
                        "|rawoverexposed|rotatepixels||temperature|scalepixels");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
-                       "basicadj|channelmixer|channelmixerrgb|colisa|colorbalance"
-                       "|colorcontrast|colorcorrection|colorize|colorzones|globaltonemap"
+                       "basicadj|channelmixerrgb|colisa|colorbalance"
+                       "|colorcontrast|colorcorrection|colorize|colorzones"
                        "|graduatednd|levels|rgbcurve|rgblevels|shadhi|splittoning"
-                       "|tonecurve|toneequal|tonemap"
+                       "|tonecurve|toneequal"
                        "|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
-                       "atrous|bilat|bloom|borders|clahe|colormapping"
+                       "atrous|bilat|bloom|borders|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
                        "|soften|spots|vignette|watermark");
   dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
@@ -1246,7 +1248,8 @@ static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, i
   while(modules2)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules2->data);
-    if(g_list_find_custom(gr->modules, module->op, _iop_compare) && !dt_iop_is_hidden(module))
+    if((!(module->flags() & IOP_FLAGS_DEPRECATED) || !g_strcmp0(gr->name, C_("modulegroup", "deprecated")))
+       && !dt_iop_is_hidden(module) && g_list_find_custom(gr->modules, module->op, _iop_compare))
     {
       // we want to avoid showing multiple instances of the same module
       if(module->multi_priority <= 0

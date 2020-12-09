@@ -11,6 +11,9 @@ deltae     : python script to compute a delta-E between 2 images
 
 nnnn-name/  : tests
 
+Needed tools : zopflipng
+
+
 How to add a new test (using default driver)
 --------------------------------------------
 

@@ -2152,11 +2152,15 @@ static gboolean _mouse_scroll_attached(GtkWidget *treeview, GdkEventScroll *even
     const gint max_height = DT_PIXEL_APPLY_DPI(500.0);
     gint width, height;
     gtk_widget_get_size_request (GTK_WIDGET(d->attached_window), &width, &height);
-    height = height + increment * event->delta_y;
-    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, (gint)height);
-    dt_conf_set_int("plugins/lighttable/tagging/heightattachedwindow", (gint)height);
-    return TRUE;
+    int delta_y;
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    {
+      height = height + increment * delta_y;
+      height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+      gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, (gint)height);
+      dt_conf_set_int("plugins/lighttable/tagging/heightattachedwindow", (gint)height);
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -2171,11 +2175,15 @@ static gboolean _mouse_scroll_dictionary(GtkWidget *treeview, GdkEventScroll *ev
     const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
     gint width, height;
     gtk_widget_get_size_request (GTK_WIDGET(d->dictionary_window), &width, &height);
-    height = height + increment * event->delta_y;
-    height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-    gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, (gint)height);
-    dt_conf_set_int("plugins/lighttable/tagging/heightdictionarywindow", (gint)height);
-    return TRUE;
+    int delta_y;
+    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+    {
+      height = height + increment * delta_y;
+      height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+      gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, (gint)height);
+      dt_conf_set_int("plugins/lighttable/tagging/heightdictionarywindow", (gint)height);
+      return TRUE;
+    }
   }
   return FALSE;
 }
@@ -2415,7 +2423,7 @@ static gint _sort_tree_tag_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter
   gtk_tree_model_get(model, b, DT_LIB_TAGGING_COL_TAG, &tag_b, -1);
   if(tag_a == NULL) tag_a = g_strdup("");
   if(tag_b == NULL) tag_b = g_strdup("");
-  const gboolean sort = g_ascii_strcasecmp(tag_a, tag_b);
+  const gboolean sort = g_strcmp0(tag_a, tag_b);
   g_free(tag_a);
   g_free(tag_b);
   return sort;
@@ -2443,7 +2451,7 @@ static gint _sort_tree_path_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIte
   else
     tag_b = g_strdup("");
 
-  const gboolean sort = g_ascii_strcasecmp(tag_a, tag_b);
+  const gboolean sort = g_strcmp0(tag_a, tag_b);
   g_free(tag_a);
   g_free(tag_b);
   return sort;

@@ -62,6 +62,7 @@ void dt_control_log_busy_enter();
 void dt_control_toast_busy_enter();
 void dt_control_log_busy_leave();
 void dt_control_toast_busy_leave();
+void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 // disable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_forbid_change_cursor();
 // enable the possibility to change the cursor shape with dt_control_change_cursor
@@ -131,7 +132,8 @@ typedef struct dt_control_accels_t
     lighttable_center, lighttable_preview, lighttable_preview_display_focus,
     lighttable_timeline, lighttable_preview_zoom_100, lighttable_preview_zoom_fit,
     global_focus_peaking, global_sideborders, global_accels_window,
-    darkroom_preview, slideshow_start, darkroom_skip_mouse_events, global_collapsing_controls;
+    darkroom_preview, slideshow_start, darkroom_skip_mouse_events, global_collapsing_controls,
+    slideshow_view;
 } dt_control_accels_t;
 
 #define DT_CTL_LOG_SIZE 10

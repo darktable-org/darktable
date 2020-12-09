@@ -1555,13 +1555,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   if(type == DT_COLORSPACE_EMBEDDED_MATRIX)
   {
     // embedded matrix, hopefully D65
-    if(isnan(pipe->image.d65_color_matrix[0]))
+    const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, pipe->image.id, 'r');
+    if(isnan(cimg->d65_color_matrix[0]))
       type = DT_COLORSPACE_STANDARD_MATRIX;
     else
     {
-      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])pipe->image.d65_color_matrix);
+      d->input = dt_colorspaces_create_xyzimatrix_profile((float(*)[3])cimg->d65_color_matrix);
       d->clear_input = 1;
     }
+    dt_image_cache_read_release(darktable.image_cache, cimg);
   }
   if(type == DT_COLORSPACE_STANDARD_MATRIX)
   {
@@ -1747,7 +1749,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   d->xform_cam_Lab = NULL;
   d->xform_cam_nrgb = NULL;
   d->xform_nrgb_Lab = NULL;
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1848,13 +1849,13 @@ void reload_defaults(dt_iop_module_t *module)
 
   dt_colorspaces_color_profile_type_t color_profile = DT_COLORSPACE_NONE;
 
-  gboolean use_eprofile = FALSE;
   // some file formats like jpeg can have an embedded color profile
   // currently we only support jpeg, j2k, tiff and png
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, module->dev->image_storage.id, 'w');
 
   if(!img->profile)
   {
+    // the image has not a profile inited
     char filename[PATH_MAX] = { 0 };
     gboolean from_cache = TRUE;
     dt_image_full_path(img->id, filename, sizeof(filename), &from_cache);
@@ -1869,26 +1870,33 @@ void reload_defaults(dt_iop_module_t *module)
       if(!dt_imageio_jpeg_read_header(filename, &jpg))
       {
         img->profile_size = dt_imageio_jpeg_read_profile(&jpg, &img->profile);
-        use_eprofile = (img->profile_size > 0);
+        color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
       }
+    }
+    else if(!strcmp(ext, "pfm"))
+    {
+      // PFM have no embedded color profile nor ICC tag, we can't know the color space
+      // but we can assume the are linear since it's a floating point format
+      color_profile = DT_COLORSPACE_LIN_REC709;
     }
 #ifdef HAVE_OPENJPEG
     else if(!strcmp(ext, "jp2") || !strcmp(ext, "j2k") || !strcmp(ext, "j2c") || !strcmp(ext, "jpc"))
     {
       img->profile_size = dt_imageio_j2k_read_profile(filename, &img->profile);
-      use_eprofile = (img->profile_size > 0);
+      color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
+
     }
 #endif
     // the ldr test just checks for magics in the file header
     else if((!strcmp(ext, "tif") || !strcmp(ext, "tiff")) && dt_imageio_is_ldr(filename))
     {
       img->profile_size = dt_imageio_tiff_read_profile(filename, &img->profile);
-      use_eprofile = (img->profile_size > 0);
+      color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
     }
     else if(!strcmp(ext, "png"))
     {
       img->profile_size = dt_imageio_png_read_profile(filename, &img->profile);
-      use_eprofile = (img->profile_size > 0);
+      color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
     }
 #ifdef HAVE_LIBAVIF
     else if(!strcmp(ext, "avif"))
@@ -1906,34 +1914,39 @@ void reload_defaults(dt_iop_module_t *module)
       {
         img->profile_size = cp.icc_profile_size;
         img->profile      = cp.icc_profile;
-
-        use_eprofile = (img->profile_size > 0);
+        color_profile = (img->profile_size > 0) ? DT_COLORSPACE_EMBEDDED_ICC : DT_COLORSPACE_NONE;
       }
     }
 #endif
     g_free(ext);
   }
   else
-    use_eprofile = TRUE; // the image has a profile assigned
+  {
+    // there is an inited embedded profile
+    color_profile = DT_COLORSPACE_EMBEDDED_ICC;
+  }
 
-  if (color_profile != DT_COLORSPACE_NONE)
+
+  if(color_profile != DT_COLORSPACE_NONE)
     d->type = color_profile;
-  else if(use_eprofile)
-    d->type = DT_COLORSPACE_EMBEDDED_ICC;
   else if(img->flags & DT_IMAGE_4BAYER) // 4Bayer images have been pre-converted to rec2020
-    d->type = DT_COLORSPACE_LIN_REC709;
+    d->type = DT_COLORSPACE_LIN_REC2020;
   else if (img->flags & DT_IMAGE_MONOCHROME)
     d->type = DT_COLORSPACE_LIN_REC709;
-  else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_SRGB)
+  else if(img->colorspace == DT_IMAGE_COLORSPACE_SRGB)
     d->type = DT_COLORSPACE_SRGB;
-  else if(module->dev->image_storage.colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
+  else if(img->colorspace == DT_IMAGE_COLORSPACE_ADOBE_RGB)
     d->type = DT_COLORSPACE_ADOBERGB;
-  else if(dt_image_is_ldr(&module->dev->image_storage))
+  else if(dt_image_is_ldr(img))
     d->type = DT_COLORSPACE_SRGB;
-  else if(!isnan(module->dev->image_storage.d65_color_matrix[0]))
+  else if(!isnan(img->d65_color_matrix[0])) // image is DNG
     d->type = DT_COLORSPACE_EMBEDDED_MATRIX;
-  else
-    d->type = DT_COLORSPACE_ENHANCED_MATRIX;
+  else if(dt_image_is_matrix_correction_supported(img)) // image is raw
+    d->type = DT_COLORSPACE_STANDARD_MATRIX;
+  else if(dt_image_is_hdr(img)) // image is 32 bit float, most likely linear space, best guess is Rec709
+    d->type = DT_COLORSPACE_LIN_REC709;
+  else // no ICC tag nor colorprofile was found - ICC spec says untagged files are sRGB
+    d->type = DT_COLORSPACE_SRGB;
 
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 

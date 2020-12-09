@@ -1135,7 +1135,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
   darktable.gui->presets_popup_menu = GTK_MENU(gtk_menu_new());
   menu = darktable.gui->presets_popup_menu;
   const gboolean hide_default = dt_conf_get_bool("plugins/darkroom/hide_default_presets");
-  const gboolean default_first = dt_conf_get_bool("plugins/darkroom/default_presets_first");
+  const gboolean default_first = dt_conf_get_bool("modules/default_presets_first");
 
   gchar *query = NULL;
 

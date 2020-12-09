@@ -83,7 +83,7 @@ typedef enum dt_iop_negadoctor_filmstock_t
 
 typedef struct dt_iop_negadoctor_params_t
 {
-  dt_iop_negadoctor_filmstock_t film_stock; // $DEFAULT: DT_FILMSTOCK_COLOR
+  dt_iop_negadoctor_filmstock_t film_stock; /* $DEFAULT: DT_FILMSTOCK_COLOR $DESCRIPTION: "film stock" */
   float Dmin[4];                            /* color of film substrate
                                                $MIN: 0.00001 $MAX: 1.5 $DEFAULT: 1.0 */
   float wb_high[4];                         /* white balance RGB coeffs (illuminant)
@@ -412,7 +412,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = g_malloc0(sizeof(dt_iop_negadoctor_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

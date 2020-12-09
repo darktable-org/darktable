@@ -280,6 +280,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     const float yref = gpt->points[1];
 
     float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
+    dt_dev_distort_backtransform(darktable.develop, pts, 4);
 
     const float dv = atan2(pts[3] - pts[1], pts[2] - pts[0])
       - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
@@ -365,12 +366,23 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(malloc(sizeof(dt_masks_point_gradient_t)));
 
     // we change the offset value
-    float pts[8] = { x0, y0, dx, dy };
-    dt_dev_distort_backtransform(darktable.develop, pts, 2);
+    float pts[8] = { x0, y0, dx, dy, x0+10.0f, y0, x0, y0+10.0f };
+    dt_dev_distort_backtransform(darktable.develop, pts, 4);
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
-    const float rotation = atan2(pts[3] - pts[1], pts[2] - pts[0]);
+    float rotation = atan2(pts[3] - pts[1], pts[2] - pts[0]);
+    // If the transform has flipped the image about one axis, then the
+    // 'handedness' of the coordinate system is changed. In this case the
+    // rotation angle must be offset by 180 degrees so that the gradient points
+    // in the correct direction as dragged. We test for this by checking the
+    // angle between two vectors that should be 90 degrees apart. If the angle
+    // is -90 degrees, then the image is flipped.
+    float check_angle = atan2(pts[7] - pts[1], pts[6] - pts[0]) - atan2(pts[5] - pts[1], pts[4] - pts[0]);
+    // Normalize to the range -180 to 180 degrees
+    check_angle = atan2(sin(check_angle), cos(check_angle));
+    if (check_angle < 0)
+      rotation -= M_PI;
 
     const float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
 
@@ -1099,7 +1111,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(grid, gh, gw, px, py) \
-  shared(points)
+  shared(points) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1156,7 +1168,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
-  shared(lut)
+  shared(lut) schedule(static)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1176,7 +1188,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
-  shared(points, clut)
+  shared(points, clut) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1214,7 +1226,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, w, gw, grid) \
-  shared(buffer, points)
+  shared(buffer, points) schedule(static)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif
@@ -1270,7 +1282,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(iscale, gh, gw, py, px, grid) \
-  shared(points)
+  shared(points) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1330,7 +1342,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(lutsize, lutmax, hwscale, state, normf, compression) \
-  shared(lut)
+  shared(lut) schedule(static)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1349,7 +1361,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(gh, gw, sinv, cosv, xoffset, yoffset, hwscale, ihwscale, curvature, compression) \
-  shared(points, clut)
+  shared(points, clut) schedule(static) collapse(2)
 #else
 #pragma omp parallel for shared(points)
 #endif
@@ -1378,7 +1390,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(h, w, grid, gw) \
-  shared(buffer, points)
+  shared(buffer, points) schedule(static)
 #else
 #pragma omp parallel for shared(points, buffer)
 #endif

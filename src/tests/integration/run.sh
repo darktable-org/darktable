@@ -12,9 +12,10 @@
 #
 # Options:
 #
-#   --disable-opencl   - do not run the OpenCL path
-#   --no-deltae        - do a light check not requiring Delta-E module
-#   --fast-fail        - abort testing on the first NOK test
+#   --disable-opencl           - do not run the OpenCL path
+#   --no-deltae                - do a light check not requiring Delta-E module
+#   --fast-fail                - abort testing on the first NOK test
+#   --op=<n> | --operation=<n> - run test with matching operation n
 
 CDPATH=
 
@@ -31,7 +32,7 @@ DO_FAST_FAIL=no
 
 [ -z $(which $CLI) ] && echo Make sure $CLI is in the path && exit 1
 
-set -- $(getopt -q -u -o : -l disable-opencl,no-deltae,fast-fail -- $*)
+set -- $(getopt -q -u -o : -l disable-opencl,no-deltae,fast-fail,op:,operation: -- $*)
 
 while [ $# -gt 0 ]; do
     case $1 in
@@ -43,6 +44,12 @@ while [ $# -gt 0 ]; do
             ;;
         --fast-fail)
             DO_FAST_FAIL=yes
+            ;;
+        --op|--operation)
+            shift
+            OP=$1
+            TESTS=$(grep -l "operation=\"$OP\"" */*.xmp | while read xmp; do echo $(dirname $xmp); done)
+            [ -z "$TESTS" ] && echo error: operation $OP did not macth any test && exit 1
             ;;
         (--)
             ;;
@@ -114,6 +121,12 @@ for dir in $TESTS; do
                  --conf worker_threads=4 -t 4 \
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0"
+
+            # Some // loops seems to not honor the omp_set_num_threads() in
+            # darktable.c (this is needed to run 0068-rawdenoise-xtrans on
+            # different configurations)
+
+            export OMP_THREAD_LIMIT=4
 
             $CLI --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
@@ -196,9 +209,18 @@ for dir in $TESTS; do
 
             if [ ! -f expected.png ]; then
                 echo "  copy output.png to expected.png"
+                echo "  optimize size of expected.png"
+
+                if [ -z $(which zopflipng) ]; then
+                    echo
+                    echo "  ERROR: please install zopflipng tool."
+                    exit 1
+                fi
+
+                zopflipng output.png expected.png 1> /dev/null 2>&1
+
                 echo "  check that expected.png is correct:"
                 echo "  \$ eog $(basename $PWD)/expected.png"
-                cp output.png expected.png
             fi
 
             exit $res

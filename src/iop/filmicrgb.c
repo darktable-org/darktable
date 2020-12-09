@@ -340,7 +340,7 @@ int default_group()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -805,96 +805,96 @@ inline static void inpaint_noise(const float *const in, const float *const mask,
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(cache, result:64)
+#pragma omp declare simd aligned(buf, indices, result:64)
 #endif
-inline static void scalar_product(const float cache[FSIZE * 3], float result[4])
+inline static void sparse_scalar_product(const float *const buf, const size_t indices[FSIZE], float result[4])
 {
   // scalar product of 2 3×5 vectors stored as RGB planes and B-spline filter,
   // e.g. RRRRR - GGGGG - BBBBB
 
-  float DT_ALIGNED_ARRAY accumulator[4] = { 0.f };
   const float DT_ALIGNED_ARRAY filter[FSIZE] =
                         { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
 
   #ifdef _OPENMP
-  #pragma omp simd aligned(cache, accumulator:64) reduction(+:accumulator) collapse(2)
+  #pragma omp simd
   #endif
-  for(size_t c = 0; c < 3; ++c)
+  for(size_t c = 0; c < 4; ++c)
+  {
+    float acc = 0.0f;
     for(size_t k = 0; k < FSIZE; ++k)
-      accumulator[c] += filter[k] * cache[k + FSIZE * c];
-
-  #ifdef _OPENMP
-  #pragma omp simd aligned(accumulator, result:16)
-  #endif
-  for(size_t c = 0; c < 3; ++c) result[c] = accumulator[c];
+      acc += filter[k] * buf[indices[k] + c];
+    result[c] = acc;
+  }
 }
 
-
-inline static void blur_2D_Bspline_vertical(const float *const restrict in, float *const restrict out,
-                                            const size_t width, const size_t height, const size_t ch, const size_t mult)
+//TODO: consolidate with the copy of this code in src/common/dwt.c
+static inline int dwt_interleave_rows(const int rowid, const int height, const int scale)
 {
-  // À-trous B-spline interpolation/blur shifted by mult
-  // Convolve B-spline filter over lines
-  #ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, width, height, ch, mult) \
-    schedule(simd:static) collapse(2)
-  #endif
-  for(size_t i = 0; i < height; i++)
-    for(size_t j = 0; j < width; j++)
-    {
-      // Compute the array indices of the pixels of interest
-      size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
-
-      for(size_t jj = 0; jj < FSIZE; ++jj)
-        indices[jj] = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
-
-      // Prefetch RGB pixels of interest in RRRRR ; GGGGG ; BBBBB memory layout
-      float DT_ALIGNED_ARRAY cache[FSIZE * 3]= { 0.0f };
-
-      for(size_t jj = 0; jj < FSIZE; ++jj)
-      {
-        const float *const restrict pix = __builtin_assume_aligned(in + (i * width + indices[jj]) * ch, 16);
-        for(size_t c = 0; c < 3; c++) cache[jj + FSIZE * c] = pix[c];
-      }
-
-      // Compute the blur
-      scalar_product(cache, out + (i * width + j) * ch);
-    }
+  // to make this algorithm as cache-friendly as possible, we want to interleave the actual processing of rows
+  // such that the next iteration processes the row 'scale' pixels below the current one, which will already
+  // be in L2 cache (if not L1) from having been accessed on this iteration so if vscale is 16, we want to
+  // process rows 0, 16, 32, ..., then 1, 17, 33, ..., 2, 18, 34, ..., etc.
+  if (height <= scale)
+    return rowid;
+  const int per_pass = ((height + scale - 1) / scale);
+  const int long_passes = height % scale;
+  // adjust for the fact that we have some passes with one fewer iteration when height is not a multiple of scale
+  if (long_passes == 0 || rowid < long_passes * per_pass)
+    return (rowid / per_pass) + scale * (rowid % per_pass);
+  const int rowid2 = rowid - long_passes * per_pass;
+  return long_passes + (rowid2 / (per_pass-1)) + scale * (rowid2 % (per_pass-1));
 }
 
-
-inline static void blur_2D_Bspline_horizontal(const float *const restrict in, float *const restrict out,
-                                              const size_t width, const size_t height, const size_t ch, const size_t mult)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in, out:64) aligned(tempbuf:16)
+#endif
+inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
+                                   float *const restrict tempbuf,
+                                   const size_t width, const size_t height, const size_t mult)
 {
   // À-trous B-spline interpolation/blur shifted by mult
-  // Convolve B-spline filter over columns
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(out, in, width, height, ch, mult) \
-    schedule(simd:static) collapse(2)
+    dt_omp_firstprivate(width, height, mult)  \
+    dt_omp_sharedconst(out, in, tempbuf) \
+    schedule(simd:static)
   #endif
-  for(size_t i = 0; i < height; i++)
+  for(size_t row = 0; row < height; row++)
+  {
+    // get a thread-private one-row temporary buffer
+    float *const temp = tempbuf + 4 * width * dt_get_thread_num();
+    // interleave the order in which we process the rows so that we minimize cache misses
+    const size_t i = dwt_interleave_rows(row, height, mult);
+    // Convolve B-spline filter over columns: for each pixel in the current row, compute vertical blur
+    size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
+    // Start by computing the array indices of the pixels of interest; the offsets from the current pixel stay
+    // unchanged over the entire row, so we can compute once and just offset the base address while iterating
+    // over the row
+    for(size_t ii = 0; ii < FSIZE; ++ii)
+    {
+      const size_t r = CLAMP(mult * (ii - (FSIZE - 1) / 2) + i, 0, height - 1);
+      indices[ii] = 4 * r * width;
+    }
     for(size_t j = 0; j < width; j++)
     {
-      // Compute the array indices of the pixels of interest
-      size_t DT_ALIGNED_ARRAY indices[FSIZE] = { 0 };
-
-      for(size_t ii = 0; ii < FSIZE; ++ii)
-        indices[ii] = CLAMP(mult * (ii - (FSIZE - 1) / 2) + i, 0, height - 1);
-
-      // Prefetch RGB pixels of interest in RRRRR ; GGGGG ; BBBBB memory layout
-      float DT_ALIGNED_ARRAY cache[FSIZE * 3]= { 0.0f };
-
-      for(size_t ii = 0; ii < FSIZE; ++ii)
-      {
-        const float *const restrict pix = __builtin_assume_aligned(in + (indices[ii] * width + j) * ch, 16);
-        for(size_t c = 0; c < 3; c++) cache[ii + FSIZE * c] = pix[c];
-      }
-
-      // Compute the blur
-      scalar_product(cache, out + (i * width + j) * ch);
+      // Compute the vertical blur of the current pixel and store it in the temp buffer for the row
+      sparse_scalar_product(in + j * 4, indices, temp + j * 4);
     }
+    // Convolve B-spline filter horizontally over current row
+    for(size_t j = 0; j < width; j++)
+    {
+      // Compute the array indices of the pixels of interest; since the offsets will change near the ends of
+      // the row, we need to recompute for each pixel
+      for(size_t jj = 0; jj < FSIZE; ++jj)
+      {
+        const size_t col = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
+        indices[jj] = 4 * col;
+      }
+      // Compute the horizonal blur of the already vertically-blurred pixel and store the result at the proper
+      //  row/column location in the output buffer
+      sparse_scalar_product(temp, indices, out + (i * width + j) * 4);
+    }
+  }
 }
 
 
@@ -1055,15 +1055,15 @@ static inline void wavelets_detail_level(const float *const restrict detail, con
                                              const size_t width, const size_t height, const size_t ch)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, ch, HF, LF, detail, texture)       \
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, HF, LF, detail, texture)           \
     schedule(simd                                                                                                 \
              : static) aligned(HF, LF, detail, texture : 64)
 #endif
-  for(size_t k = 0; k < height * width * ch; k += ch)
+  for(size_t k = 0; k < 4 * height * width; k += 4)
   {
-    for(size_t c = 0; c < 3; ++c) HF[k + c] = detail[k + c] - LF[k + c];
+    for(size_t c = 0; c < 4; ++c) HF[k + c] = detail[k + c] - LF[k + c];
 
-    texture[k / ch] = fminabsf(fminabsf(HF[k], HF[k + 1]), HF[k + 2]);
+    texture[k / 4] = fminabsf(fminabsf(HF[k], HF[k + 1]), HF[k + 2]);
   }
 }
 
@@ -1105,7 +1105,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
       = dt_alloc_sse_ps(roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * dt_get_num_threads() * ch);
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -1135,39 +1135,41 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   // with a vertical and horizontal blur, wich is 10 multiply-add instead of 25 by pixel.
   for(int s = 0; s < scales; ++s)
   {
-    const float *restrict detail;
-    float *restrict LF;
+    const float *restrict detail;       // buffer containing this scale's input
+    float *restrict LF;                 // output buffer for the current scale
+    float *restrict HF_RGB_temp;        // temp buffer for HF_RBG terms before blurring
 
     // swap buffers so we only need 2 LF buffers : the LF at scale (s-1) and the one at current scale (s)
     if(s == 0)
     {
       detail = in;
       LF = LF_odd;
+      HF_RGB_temp = LF_even;
     }
     else if(s % 2 != 0)
     {
       detail = LF_odd;
       LF = LF_even;
+      HF_RGB_temp = LF_odd;
     }
     else
     {
       detail = LF_even;
       LF = LF_odd;
+      HF_RGB_temp = LF_even;
     }
 
     const int mult = 1 << s; // fancy-pants C notation for 2^s with integer type, don't be afraid
 
     // Compute wavelets low-frequency scales
-    blur_2D_Bspline_vertical(detail, temp, roi_out->width, roi_out->height, ch, mult);
-    blur_2D_Bspline_horizontal(temp, LF, roi_out->width, roi_out->height, ch, mult);
+    blur_2D_Bspline(detail, LF, temp, roi_out->width, roi_out->height, mult);
 
     // Compute wavelets high-frequency scales and save the mininum of texture over the RGB channels
     // Note : HF_RGB = detail - LF, HF_grey = max(HF_RGB)
-    wavelets_detail_level(detail, LF, HF_RGB, HF_grey, roi_out->width, roi_out->height, ch);
+    wavelets_detail_level(detail, LF, HF_RGB_temp, HF_grey, roi_out->width, roi_out->height, ch);
 
     // interpolate/blur/inpaint (same thing) the RGB high-frequency to fill holes
-    blur_2D_Bspline_vertical(HF_RGB, temp, roi_out->width, roi_out->height, ch, mult);
-    blur_2D_Bspline_horizontal(temp, HF_RGB, roi_out->width, roi_out->height, ch, mult);
+    blur_2D_Bspline(HF_RGB_temp, HF_RGB, temp, roi_out->width, roi_out->height, mult);
 
     // Reconstruct clipped parts
     if(variant == DT_FILMIC_RECONSTRUCT_RGB)
@@ -1640,20 +1642,20 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
     const int mult = 1 << s; // fancy-pants C notation for 2^s with integer type, don't be afraid
 
     // Compute wavelets low-frequency scales
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 0, sizeof(cl_mem), (void *)&detail);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 1, sizeof(cl_mem), (void *)&temp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 2, sizeof(int), (void *)&width);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 3, sizeof(int), (void *)&height);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 4, sizeof(int), (void *)&mult);
-    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
-    if(err != CL_SUCCESS) goto error;
-
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 0, sizeof(cl_mem), (void *)&temp);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 1, sizeof(cl_mem), (void *)&LF);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 0, sizeof(cl_mem), (void *)&detail);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 1, sizeof(cl_mem), (void *)&temp);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 2, sizeof(int), (void *)&width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 3, sizeof(int), (void *)&height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_horizontal, 4, sizeof(int), (void *)&mult);
     err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_horizontal, sizes);
+    if(err != CL_SUCCESS) goto error;
+
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 0, sizeof(cl_mem), (void *)&temp);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 1, sizeof(cl_mem), (void *)&LF);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 2, sizeof(int), (void *)&width);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 3, sizeof(int), (void *)&height);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_bspline_vertical, 4, sizeof(int), (void *)&mult);
+    err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_filmic_bspline_vertical, sizes);
     if(err != CL_SUCCESS) goto error;
 
     // Compute wavelets high-frequency scales and save the maximum of texture over the RGB channels
@@ -2390,7 +2392,6 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_filmicrgb_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)

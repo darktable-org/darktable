@@ -95,6 +95,15 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("rotate image by step of 90 degrees"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("geometric, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_orientation,
                                                      dt_image_orientation_t user_orientation)
 {
@@ -379,7 +388,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_flip_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -431,15 +439,6 @@ void reload_defaults(dt_iop_module_t *self)
 
   d->orientation = ORIENTATION_NULL;
 
-  // report if reload_defaults was called unnecessarily => this should be considered a bug
-  // the whole point of reload_defaults is to update defaults _based on current image_
-  // any required initialisation should go in init (and not be performed repeatedly here)
-  if(!self->dev)
-  {
-    fprintf(stderr, "reload_defaults should not be called without image.\n");
-    return;
-  }
-
   self->default_enabled = 1;
 
   if(self->dev->image_storage.legacy_flip.user_flip != 0
@@ -453,7 +452,6 @@ void reload_defaults(dt_iop_module_t *self)
     if(sqlite3_step(stmt) != SQLITE_ROW)
     {
       // convert the old legacy flip bits to a proper parameter set:
-      self->default_enabled = 1;
       d->orientation
           = merge_two_orientations(dt_image_orientation(&self->dev->image_storage),
                                    (dt_image_orientation_t)(self->dev->image_storage.legacy_flip.user_flip));
