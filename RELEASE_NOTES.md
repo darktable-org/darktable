@@ -21,12 +21,25 @@ you are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Almost 2700 commits to darktable+rawspeed since 3.2
-- 790 pull requests handled
-- 92 issues closed
-- Updated user manual is coming soon™
+- Almost 2058 commits to darktable+rawspeed since 3.2
+- 88 pull requests handled
+- 116 issues closed
 
 ## The Big Ones
+
+- The user manual is made available at the same time as the
+  release. Note that this user manual is also the last version as a
+  new project has taken over the lead on this. The goal is to have
+  an up-to-date user manual by using a simpler format
+  to write text for contributors.
+
+  Current manual (multilingual):
+
+  https://darktable.gitlab.io/doc/
+
+  New manual (English only):
+
+  https://darktable-org.github.io/dtdocs/
 
 - The tethering view has been reworked and is now more stable.
 
