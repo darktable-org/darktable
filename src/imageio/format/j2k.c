@@ -69,10 +69,10 @@ typedef enum
 } dt_imageio_j2k_format_t;
 
 // borrowed from blender
-#define DOWNSAMPLE_FLOAT_TO_8BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 255 : (int)(255.0f * (_val)))
-#define DOWNSAMPLE_FLOAT_TO_12BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 4095 : (int)(4095.0f * (_val)))
+#define DOWNSAMPLE_FLOAT_TO_8BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 255 : (int)(255.0f * (_val) + 0.5f))
+#define DOWNSAMPLE_FLOAT_TO_12BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 4095 : (int)(4095.0f * (_val) + 0.5f))
 #define DOWNSAMPLE_FLOAT_TO_16BIT(_val)                                                                      \
-  (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 65535 : (int)(65535.0f * (_val)))
+  (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 65535 : (int)(65535.0f * (_val) + 0.5f))
 
 DT_MODULE(2)
 
