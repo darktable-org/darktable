@@ -3038,6 +3038,15 @@ start:
   // drop table settings -- we don't want old versions of dt to drop our tables
   sqlite3_exec(db->handle, "drop table main.settings", NULL, NULL, NULL);
 
+#ifdef HAVE_ICU
+  char *msg = NULL;
+  const int res = sqlite3_load_extension(db->handle, "libicu", 0, &msg);
+  if(res != SQLITE_OK && msg)
+  {
+    fprintf(stderr, "[sqlite] load extension error %d - %s\n", res, msg);
+  }
+#endif
+
   // take care of potential bad data in the db.
   _sanitize_db(db);
 

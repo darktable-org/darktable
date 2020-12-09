@@ -320,6 +320,13 @@
     <shortdescription>disable the entry completion</shortdescription>
     <longdescription>the entry completion is useful for those who enter tags from keyboard only. for others the entry completion can be embarrassing. need to restart darktable.</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="tags" restart="true">
+    <name>plugins/lighttable/tagging/case_insensitive</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>set tags case insensitive in collect module</shortdescription>
+    <longdescription>set tags case insensitive in collect module. without the Sqlite ICU extension, works only for English letters</longdescription>
+  </dtconfig>
   <dtconfig prefs="cpugpu" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
