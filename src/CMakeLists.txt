@@ -478,6 +478,15 @@ if(USE_GMIC)
   endif(GMIC_FOUND)
 endif(USE_GMIC)
 
+if(USE_ICU)
+  find_package(ICU)
+  if(ICU_FOUND)
+    add_definitions(-DHAVE_ICU)
+    include_directories(SYSTEM ${ICU_INCLUDE_DIRS})
+    list(APPEND LIBS ${ICU_LIBRARIES})
+  endif(ICU_FOUND)
+endif(USE_ICU)
+
 #
 # Add HAVE_xxx defines used by darktable
 #
