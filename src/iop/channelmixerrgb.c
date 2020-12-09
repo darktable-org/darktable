@@ -466,7 +466,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   const float delta[2] DT_ALIGNED_PIXEL = { D50[0] - uvY[0], D50[1] - uvY[1] };
   Y += NORM_MIN;
   const float DT_ALIGNED_PIXEL LOG_XYZ[4] = { logf(input[0] + Y), logf(input[1] + Y), logf(input[2] + Y), 0.f };
-  const float Delta = Y * hypotf(delta[0], delta[1]) * hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2]));  
+  const float Delta = Y * hypotf(delta[0], delta[1]) * hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2]));
   // the log part comes from the saturation in https://infoscience.epfl.ch/record/34026
 
   // Compress chromaticity (move toward white point)
@@ -2307,8 +2307,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page", gtk_notebook_get_current_page (g->notebook));
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
