@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.4\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-08 15:25-0600\n"
-"PO-Revision-Date: 2020-12-08 23:35-0600\n"
+"POT-Creation-Date: 2020-12-09 08:25-0600\n"
+"PO-Revision-Date: 2020-12-09 23:47-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -97,7 +97,7 @@ msgstr "específico"
 #: ../src/common/history.c:902 ../src/common/styles.c:1088
 #: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:101
 #: ../src/develop/blend_gui.c:122 ../src/develop/blend_gui.c:2800
-#: ../src/develop/develop.c:2159 ../src/imageio/format/exr.cc:376
+#: ../src/develop/develop.c:2175 ../src/imageio/format/exr.cc:376
 #: ../src/imageio/format/j2k.c:661 ../src/iop/ashift.c:4749
 #: ../src/iop/demosaic.c:5076 ../src/libs/live_view.c:429
 msgid "off"
@@ -4302,7 +4302,7 @@ msgstr "Necesita copiar el historial de una imagen antes de pegarlo en otra"
 #: ../src/common/history.c:883 ../src/common/history.c:886
 #: ../src/common/history.c:902 ../src/common/styles.c:1088
 #: ../src/common/styles.c:1092 ../src/develop/blend_gui.c:123
-#: ../src/develop/develop.c:2159 ../src/iop/ashift.c:4750
+#: ../src/develop/develop.c:2175 ../src/iop/ashift.c:4750
 #: ../src/libs/live_view.c:430
 msgid "on"
 msgstr "activo"
@@ -5359,12 +5359,12 @@ msgid "input image"
 msgstr "imagen de entrada"
 
 #: ../src/develop/blend_gui.c:764 ../src/develop/blend_gui.c:2028
-#: ../src/develop/imageop.c:3188
+#: ../src/develop/imageop.c:3187
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:764 ../src/develop/blend_gui.c:2028
-#: ../src/develop/imageop.c:3190
+#: ../src/develop/imageop.c:3189
 msgid "output"
 msgstr "salida"
 
@@ -5623,7 +5623,7 @@ msgstr "factor de intensidad"
 
 #: ../src/develop/blend_gui.c:2068
 msgid "adjust the boost factor of the channel mask"
-msgstr ""
+msgstr "Adecúa el factor de intensidad de la máscara del canal"
 
 #: ../src/develop/blend_gui.c:2102
 #, c-format
@@ -5741,7 +5741,7 @@ msgstr "punto de referencia de la fusión"
 
 #: ../src/develop/blend_gui.c:2881
 msgid "adjust the fulcrum used by some blending operations"
-msgstr ""
+msgstr "Adecúa el punto de referencia para algunas operaciones de fusión"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:2888 ../src/iop/watermark.c:1450
@@ -5852,48 +5852,48 @@ msgstr "basado en la pantalla (predefinido)"
 msgid "scene-referred default"
 msgstr "basado en la escena (predefinido)"
 
-#: ../src/develop/develop.c:1925
+#: ../src/develop/develop.c:1940
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s: módulo '%s' versión incoincidente: %d != %d"
 
-#: ../src/develop/imageop.c:1122
+#: ../src/develop/imageop.c:1124
 msgid "new instance"
 msgstr "nuevo módulo"
 
-#: ../src/develop/imageop.c:1128
+#: ../src/develop/imageop.c:1130
 msgid "duplicate instance"
 msgstr "duplicar módulo"
 
-#: ../src/develop/imageop.c:1134 ../src/libs/masks.c:1169
+#: ../src/develop/imageop.c:1136 ../src/libs/masks.c:1169
 msgid "move up"
 msgstr "subir"
 
-#: ../src/develop/imageop.c:1140 ../src/libs/masks.c:1172
+#: ../src/develop/imageop.c:1142 ../src/libs/masks.c:1172
 msgid "move down"
 msgstr "bajar"
 
-#: ../src/develop/imageop.c:1146 ../src/gui/preferences.c:1809
+#: ../src/develop/imageop.c:1148 ../src/gui/preferences.c:1809
 #: ../src/libs/image.c:169 ../src/libs/tagging.c:1329
 #: ../src/libs/tagging.c:1416
 msgid "delete"
 msgstr "borrar"
 
-#: ../src/develop/imageop.c:1153 ../src/libs/tagging.c:1840
+#: ../src/develop/imageop.c:1155 ../src/libs/tagging.c:1840
 msgid "rename"
 msgstr "renombrar"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2533
+#: ../src/develop/imageop.c:1225 ../src/develop/imageop.c:2532
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está activado"
 
-#: ../src/develop/imageop.c:1223 ../src/develop/imageop.c:2533
+#: ../src/develop/imageop.c:1225 ../src/develop/imageop.c:2532
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desactivado"
 
-#: ../src/develop/imageop.c:1618 ../src/gui/accelerators.c:58
+#: ../src/develop/imageop.c:1620 ../src/gui/accelerators.c:58
 #: ../src/gui/accelerators.c:959 ../src/gui/accelerators.c:1043
 #: ../src/gui/accelerators.c:1230 ../src/gui/accelerators.c:1247
 #: ../src/gui/accelerators.c:1284 ../src/gui/import_metadata.c:163
@@ -5903,12 +5903,12 @@ msgstr "%s está desactivado"
 msgid "preset"
 msgstr "predefinido"
 
-#: ../src/develop/imageop.c:1653
+#: ../src/develop/imageop.c:1655
 msgctxt "accel"
 msgid "fusion"
 msgstr "fusión"
 
-#: ../src/develop/imageop.c:2502
+#: ../src/develop/imageop.c:2501
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5916,7 +5916,7 @@ msgstr ""
 "Gestión de acciones para el módulo\n"
 "Pulse el botón central para crear un módulo nuevo"
 
-#: ../src/develop/imageop.c:2513
+#: ../src/develop/imageop.c:2512
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -5925,12 +5925,12 @@ msgstr ""
 "Ctrl+Clic para volver a aplicar cualquier preajuste automático"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2521 ../src/gui/preferences.c:791
+#: ../src/develop/imageop.c:2520 ../src/gui/preferences.c:791
 #: ../src/libs/lib.c:1238 ../src/libs/modulegroups.c:278
 msgid "presets"
 msgstr "preajustes"
 
-#: ../src/develop/imageop.c:2523
+#: ../src/develop/imageop.c:2522
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5939,15 +5939,15 @@ msgstr ""
 "Pulse el botón central sobre el preajuste para establecerlo en un módulo "
 "nuevo"
 
-#: ../src/develop/imageop.c:2820 ../src/develop/imageop.c:2846
+#: ../src/develop/imageop.c:2819 ../src/develop/imageop.c:2845
 msgid "ERROR"
 msgstr "ERROR"
 
-#: ../src/develop/imageop.c:3187
+#: ../src/develop/imageop.c:3186
 msgid "purpose"
 msgstr "finalidad\t"
 
-#: ../src/develop/imageop.c:3189
+#: ../src/develop/imageop.c:3188
 msgid "process"
 msgstr "proceso"
 
@@ -7403,6 +7403,8 @@ msgid ""
 "if switched on, thumbnails and previews are rendered at lower quality but 4 "
 "times faster"
 msgstr ""
+"Al activarse, las miniaturas y previsualizaciones se generarán 4 veces más "
+"rápido pero con una calidad inferior."
 
 #: ../src/gui/preferences.c:418 ../src/gui/preferences.c:425
 msgid "use system font size"
@@ -7673,6 +7675,7 @@ msgstr "formato"
 #: ../src/gui/preferences.c:1934 ../src/gui/presets.c:541
 msgid "select image types you want this preset to be available for"
 msgstr ""
+"Elija los formatos de imagen para los que este preajuste estará disponible"
 
 #: ../src/gui/preferences.c:2040 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
@@ -9148,7 +9151,7 @@ msgstr ""
 
 #: ../src/iop/bilateral.cc:72
 msgid "surface blur"
-msgstr ""
+msgstr "difuminar textura"
 
 #: ../src/iop/bilateral.cc:77
 msgid "denoise (bilateral filter)"
@@ -9157,6 +9160,8 @@ msgstr "reducción de ruido (filtro bilateral)"
 #: ../src/iop/bilateral.cc:97
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
 msgstr ""
+"Aplica un difuminado en ciertas áreas al detectar los contornos para "
+"suavizar texturas o reducir el ruido."
 
 #: ../src/iop/bilateral.cc:100 ../src/iop/channelmixer.c:140
 #: ../src/iop/denoiseprofile.c:637 ../src/iop/exposure.c:117
@@ -9646,6 +9651,8 @@ msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
 msgstr ""
+"La temperatura de color correlacionada aproximada\n"
+"no se puede calcular. Es necesario utilizar un iluminante personalizado."
 
 #: ../src/iop/channelmixerrgb.c:1990
 msgid "white balance successfuly extracted from raw image"
@@ -9685,12 +9692,17 @@ msgid "white balance module error"
 msgstr "Error del módulo de balance de blancos"
 
 #: ../src/iop/channelmixerrgb.c:2091
+#, fuzzy
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
 "with chromatic adaptation. either set it to reference\n"
 "or disable chromatic adaptation here."
 msgstr ""
+"el módulo de balance de blancos no está usando la cámara\n"
+"iluminante de referencia, lo que causará problemas aquí\n"
+"con la adaptación cromática. O bien lo fijamos como referencia\n"
+"o desactivar la adaptación cromática aquí."
 
 #. Page CAT
 #: ../src/iop/channelmixerrgb.c:2194
@@ -9724,6 +9736,8 @@ msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
 msgstr ""
+"Este es el color del iluminante antes de la adaptación cromática.\n"
+"Por la adaptación, el color se convertirá en blanco puro."
 
 #: ../src/iop/channelmixerrgb.c:2228 ../src/iop/temperature.c:2068
 msgid "set white balance to detected from area"
@@ -10414,10 +10428,13 @@ msgid "input color profile"
 msgstr "perfil de color de entrada"
 
 #: ../src/iop/colorin.c:131
+#, fuzzy
 msgid ""
 "convert any RGB input to pipeline reference RGB\n"
 "using color profiles to remap RGB values"
 msgstr ""
+"Transforma cualquier entrada RGB en RGB de referencia para el procesado\n"
+"en función de perfiles de color para la correspondencia los valores RGB"
 
 #: ../src/iop/colorin.c:133 ../src/iop/colorout.c:89 ../src/iop/demosaic.c:176
 msgid "mandatory"
@@ -10506,6 +10523,8 @@ msgstr "mapeo de color"
 msgid ""
 "transfer a color palette and tonal repartition from one image to another"
 msgstr ""
+"Transfiere la paleta de colores mediante el mapeo correspondiente\n"
+"de la imagen de origen a la de destino"
 
 #: ../src/iop/colormapping.c:1061
 msgid "source clusters:"
@@ -10554,10 +10573,13 @@ msgid "output color profile"
 msgstr "perfil de color de salida"
 
 #: ../src/iop/colorout.c:87
+#, fuzzy
 msgid ""
 "convert pipeline reference RGB to any display RGB\n"
 "using color profiles to remap RGB values"
 msgstr ""
+"Transforma cualquier entrada RGB en RGB de referencia para el procesado\n"
+"en función de perfiles de color para la correspondencia los valores RGB"
 
 #: ../src/iop/colorout.c:90
 msgid "linear or non-linear, RGB or Lab, display-referred"
@@ -10857,6 +10879,8 @@ msgstr "interpolación cromática"
 #: ../src/iop/demosaic.c:175
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
+"Reconstruye la imagen a partir de las muestras cromáticas obtenidas desde un "
+"sensor recubierto de un mosaico de filtros de color"
 
 #: ../src/iop/demosaic.c:4932
 #, c-format
@@ -11179,6 +11203,8 @@ msgid ""
 "reduce banding and posterization effects in output JPEGs by adding random "
 "noise"
 msgstr ""
+"Añade cierto nivel de ruido aleatorio para prevenir bandas y efectos de "
+"posterización indeseados al exportar en formato JPEG"
 
 #. add the preset.
 #: ../src/iop/dither.c:138
@@ -11587,6 +11613,11 @@ msgid ""
 "for display on SDR screens and paper prints\n"
 "while preventing clipping in non-destructive ways"
 msgstr ""
+"Efectúa una transformación visual mediante una curva de tono personalizable\n"
+"imitando la reproducción del rango tonal de la película evitando recortes en "
+"sombras y luces,\n"
+"para mostrarse en pantallas con Rango Dinámigo Estándar (SDR) o para "
+"impresión"
 
 #: ../src/iop/filmicrgb.c:1112
 msgid ""
@@ -13314,8 +13345,10 @@ msgid "unbreak input profile"
 msgstr "corregir perfil de entrada"
 
 #: ../src/iop/profile_gamma.c:99
+#, fuzzy
 msgid "correct input color profiles meant to be applied on non-linear RGB"
 msgstr ""
+"perfiles de color de entrada correctos para ser aplicados en RGB no lineal"
 
 #: ../src/iop/profile_gamma.c:134
 msgid "16 EV dynamic range (generic)"
@@ -13391,7 +13424,7 @@ msgstr "reducción de ruido (raw)"
 
 #: ../src/iop/rawdenoise.c:128
 msgid "denoise the raw picture early in the pipeline"
-msgstr ""
+msgstr "Reduce el ruido de la imagen en bruto al inicio del procesado"
 
 #: ../src/iop/rawdenoise.c:956
 msgid ""
@@ -13412,11 +13445,21 @@ msgstr "punto negro / punto blanco"
 
 #: ../src/iop/rawprepare.c:111 ../src/iop/rotatepixels.c:102
 #: ../src/iop/scalepixels.c:80
+#, fuzzy
 msgid ""
 "internal module to setup technical specificities of raw sensor.\n"
 "\n"
 "you should not touch values here !"
 msgstr ""
+"Módulo interno para configurar las especificidades técnicas del sensor en "
+"bruto.\n"
+"\n"
+"¡no deberías tocar los valores aquí!\n"
+"\n"
+"Ajuste de los parámetros técnicos del sensor\n"
+"\n"
+"Módulo interno para establecer las propiedades del sensor.\n"
+"\"¡Los valores no deben ser cambiados!"
 
 #: ../src/iop/rawprepare.c:119
 msgid "passthrough"
@@ -13514,8 +13557,10 @@ msgid "split-frequency|healing|cloning|stamp"
 msgstr "separación de frecuencias|saneado|clonado|tampón de clonar"
 
 #: ../src/iop/retouch.c:206
+#, fuzzy
 msgid "remove and clone spots, perform split-frequency skin editing"
 msgstr ""
+"Elimina y clona manchas, realizar edición cutánea de frecuencia dividida"
 
 #: ../src/iop/retouch.c:209
 msgid "geometric and frequential, RGB"
@@ -13895,6 +13940,8 @@ msgstr "enfoque"
 #: ../src/iop/sharpen.c:95
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
 msgstr ""
+"Aumenta la nitidez en los detalles utilizando una máscara de desenfoque "
+"(UnSharp Mask [USM])"
 
 #: ../src/iop/sharpen.c:97
 msgid "linear or non-linear, Lab, display or scene-referred"
@@ -13951,10 +13998,13 @@ msgid "split-toning"
 msgstr "variaciones tonales"
 
 #: ../src/iop/splittoning.c:102
+#, fuzzy
 msgid ""
 "use two specific colors for shadows and highlights and\n"
 "create a linear toning effect between them up to a pivot."
 msgstr ""
+"Utiliza dos colores específicos para las sombras y los toques de luz y\n"
+"crear un efecto de tonificación lineal entre ellos hasta un pivote."
 
 #: ../src/iop/splittoning.c:119
 msgid "authentic sepia"
@@ -14053,12 +14103,17 @@ msgid "white balance applied twice"
 msgstr "Balance de blancos aplicado dos veces"
 
 #: ../src/iop/temperature.c:1169
+#, fuzzy
 msgid ""
 "the color calibration module is enabled,\n"
 "and performing chromatic adaptation.\n"
 "set the white balance here to camera reference (D65)\n"
 "or disable chromatic adaptation in color calibration."
 msgstr ""
+"El módulo de calibración de color está activado,\n"
+"y realiza la adaptación cromática.\n"
+"ajustar el balance de blancos aquí a la referencia de la cámara (D65)\n"
+"o desactivar la adaptación cromática en la calibración del color."
 
 #: ../src/iop/temperature.c:1420
 #, c-format
@@ -14594,9 +14649,11 @@ msgid "velvia"
 msgstr "velvia"
 
 #: ../src/iop/velvia.c:109
+#, fuzzy
 msgid ""
 "resaturate giving more weight to blacks, whites and low-saturation pixels"
 msgstr ""
+"Satura dando más peso a los negros, blancos y píxeles de baja saturación"
 
 #: ../src/iop/velvia.c:341
 msgid "the strength of saturation boost"
@@ -14607,10 +14664,13 @@ msgid "how much to spare highlights and shadows"
 msgstr "Proporción de luces y sombras excluidas"
 
 #: ../src/iop/vibrance.c:90
+#, fuzzy
 msgid ""
 "saturate and reduce the lightness of the most saturated pixels\n"
 "to make the colors more vivid."
 msgstr ""
+"Satura y reduce la luminosidad de los píxeles más saturados\n"
+"para hacer los colores más vívidos"
 
 #: ../src/iop/vibrance.c:217
 msgid "the amount of vibrance"
@@ -14699,8 +14759,9 @@ msgid "watermark"
 msgstr "marca de agua"
 
 #: ../src/iop/watermark.c:289
+#, fuzzy
 msgid "overlay an SVG watermark like a signature on the picture"
-msgstr ""
+msgstr "Superponer una marca de agua de SVG como una firma en la imagen"
 
 #: ../src/iop/watermark.c:1371
 msgid "content"
@@ -15977,11 +16038,11 @@ msgstr "máscara paramétrica de salida:"
 msgid "parametric input mask:"
 msgstr "máscara paramétrica de entrada:"
 
-#: ../src/libs/history.c:1215
+#: ../src/libs/history.c:1218
 msgid "do you really want to clear history of current image?"
 msgstr "¿Desea realmente descartar el historial de la imagen seleccionada?"
 
-#: ../src/libs/history.c:1220
+#: ../src/libs/history.c:1223
 msgid "delete image's history?"
 msgstr "¿Borrar el historial de las imágenes?"
 
@@ -16608,21 +16669,25 @@ msgid ""
 msgstr ""
 
 #: ../src/libs/map_locations.c:977
+#, fuzzy
 msgid ""
 "select the shape of the location's limits on the map, circle or rectangle"
 msgstr ""
+"Seleccionar la forma para delimitar el lugar en el mapa: círculo o rectángulo"
 
 #: ../src/libs/map_locations.c:980
+#, fuzzy
 msgid "add a new location on the center of the visible map"
-msgstr ""
+msgstr "Añadir una nueva ubicación en el centro del área visible"
 
 #: ../src/libs/map_locations.c:985
 msgid "show all"
 msgstr "mostrar todas"
 
 #: ../src/libs/map_locations.c:987
+#, fuzzy
 msgid "show all loations which are on the visible map"
-msgstr ""
+msgstr "Muestra todas los lugares que están en el área visible"
 
 #: ../src/libs/map_settings.c:38
 msgid "map settings"
@@ -17056,11 +17121,15 @@ msgid "clear text"
 msgstr "Borrar texto"
 
 #: ../src/libs/modulegroups.c:305
+#, fuzzy
 msgid ""
 "following modules are deprecated because they have internal design mistakes "
 "that can't be solved and alternatives that solve them.\n"
 "they will be removed for new edits in next release."
 msgstr ""
+"Los siguientes módulos están desaprobados porque tienen errores internos de "
+"diseño que no pueden ser resueltos y alternativas que los resuelven.\n"
+"serán eliminados para nuevas ediciones en la próxima versión."
 
 #: ../src/libs/modulegroups.c:1012 ../src/libs/modulegroups.c:1035
 #: ../src/libs/modulegroups.c:1048 ../src/libs/modulegroups.c:1063
@@ -17254,9 +17323,11 @@ msgid "module groups"
 msgstr "Agrupación de módulos"
 
 #: ../src/libs/modulegroups.c:1962
+#, fuzzy
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
+"Este es un preajuste integrado. Para editarlo, primero hay que duplicarlo."
 
 #: ../src/libs/modulegroups.c:1973
 msgid "reset"
