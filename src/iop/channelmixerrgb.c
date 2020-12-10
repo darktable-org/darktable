@@ -1080,9 +1080,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
     if(find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(x), &(y)))
     {
-      // Get the best-suited CAT for the illuminant
-      check_if_close_to_daylight(x, y, NULL, NULL, &(data->adaptation));
-
       // Convert illuminant from xyY to XYZ
       float XYZ[3];
       illuminant_xy_to_XYZ(x, y, XYZ);
@@ -1353,6 +1350,15 @@ static void update_illuminants(dt_iop_module_t *self)
       break;
     }
     case DT_ILLUMINANT_CAMERA:
+    {
+      gtk_widget_set_visible(g->adaptation, TRUE);
+      gtk_widget_set_visible(g->temperature, FALSE);
+      gtk_widget_set_visible(g->illum_fluo, FALSE);
+      gtk_widget_set_visible(g->illum_led, FALSE);
+      gtk_widget_set_visible(g->illum_x, FALSE);
+      gtk_widget_set_visible(g->illum_y, FALSE);
+      break;
+    }
     case DT_ILLUMINANT_DETECT_EDGES:
     case DT_ILLUMINANT_DETECT_SURFACES:
     {
@@ -1982,7 +1988,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       float custom_wb[4];
       get_white_balance_coeff(self, custom_wb);
       const int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(p->x), &(p->y));
-      check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
+      check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
 
       if(found)
         dt_control_log(_("white balance successfuly extracted from raw image"));
