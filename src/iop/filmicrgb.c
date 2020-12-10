@@ -1055,15 +1055,15 @@ static inline void wavelets_detail_level(const float *const restrict detail, con
                                              const size_t width, const size_t height, const size_t ch)
 {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, HF, LF, detail, texture)           \
+#pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, ch, HF, LF, detail, texture) \
     schedule(simd                                                                                                 \
              : static) aligned(HF, LF, detail, texture : 64)
 #endif
-  for(size_t k = 0; k < 4 * height * width; k += 4)
+  for(size_t k = 0; k < ch * height * width; k += ch)
   {
-    for(size_t c = 0; c < 4; ++c) HF[k + c] = detail[k + c] - LF[k + c];
+    for(size_t c = 0; c < 3; ++c) HF[k + c] = detail[k + c] - LF[k + c];
 
-    texture[k / 4] = fminabsf(fminabsf(HF[k], HF[k + 1]), HF[k + 2]);
+    texture[k / ch] = fminabsf(fminabsf(HF[k], HF[k + 1]), HF[k + 2]);
   }
 }
 
