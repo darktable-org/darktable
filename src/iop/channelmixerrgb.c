@@ -2740,10 +2740,6 @@ void gui_init(struct dt_iop_module_t *self)
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), _("chromatic adaptation transform"));
 
-  g->warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->warning_label, FALSE, FALSE, 4);
-
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
                               _("choose the method to adapt the illuminant\n"
@@ -2817,40 +2813,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->clip = dt_bauhaus_toggle_from_params(self, "clip");
 
-  // Add the color checker collapsible panel
-  g->start_profiling = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->start_profiling, NULL, N_("calibrate with a color checker"));
-  dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->start_profiling, TRUE);
-  gtk_widget_set_tooltip_text(g->start_profiling, _("use a color checker target to autoset CAT and channels"));
-  g_signal_connect(G_OBJECT(g->start_profiling), "quad-pressed", G_CALLBACK(start_profiling_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->start_profiling), TRUE, TRUE, 0);
-
-  g->collapsible = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-
-  g->checkers_list = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite Color Checker 24"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor Spyder Checkr 48"));
-  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
-
-  GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
-
-  g->label_delta_E = dt_ui_label_new("");
-  gtk_box_pack_start(GTK_BOX(toolbar), GTK_WIDGET(g->label_delta_E), FALSE, FALSE, 0);
-
-  g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_BOX, NULL);
-  g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
-  gtk_box_pack_start(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
-
-  g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_BOX, NULL);
-  gtk_box_pack_start(GTK_BOX(toolbar), GTK_WIDGET(g->button_commit), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible), FALSE, FALSE, 0);
-  gtk_widget_hide(g->collapsible);
-
-
   GtkWidget *first, *second, *third;
 #define NOTEBOOK_PAGE(var, short, label, tooltip, section, swap)              \
   self->widget = dt_ui_notebook_page(g->notebook, _(label), _(tooltip));      \
@@ -2889,10 +2851,49 @@ void gui_init(struct dt_iop_module_t *self)
   NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("brightness"), N_("brightness"), FALSE)
   NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), N_("grey"), FALSE)
 
-  self->widget = GTK_WIDGET(g->notebook);
+  // start building top level widget
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->warning_label, FALSE, FALSE, 4);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
   const int active_page = dt_conf_get_int("plugins/darkroom/channelmixerrgb/gui_page");
   gtk_widget_show(gtk_notebook_get_nth_page(g->notebook, active_page));
   gtk_notebook_set_current_page(g->notebook, active_page);
+
+  // Add the color checker collapsible panel
+  g->start_profiling = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->start_profiling, NULL, N_("calibrate with a color checker"));
+  dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->start_profiling, TRUE);
+  gtk_widget_set_tooltip_text(g->start_profiling, _("use a color checker target to autoset CAT and channels"));
+  g_signal_connect(G_OBJECT(g->start_profiling), "quad-pressed", G_CALLBACK(start_profiling_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->start_profiling), TRUE, TRUE, 0);
+
+  g->collapsible = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+
+  g->checkers_list = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite Color Checker 24"));
+  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor Spyder Checkr 48"));
+  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
+
+  GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
+
+  g->label_delta_E = dt_ui_label_new("");
+  gtk_box_pack_start(GTK_BOX(toolbar), GTK_WIDGET(g->label_delta_E), TRUE, TRUE, 0);
+
+  g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_BOX, NULL);
+  gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_commit), FALSE, FALSE, 0);
+
+  g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_BOX, NULL);
+  g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
+  gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->collapsible), FALSE, FALSE, 0);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
