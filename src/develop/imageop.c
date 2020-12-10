@@ -174,6 +174,8 @@ static void default_process(struct dt_iop_module_t *self, struct dt_dev_pixelpip
                             const void *const i, void *const o, const struct dt_iop_roi_t *const roi_in,
                             const struct dt_iop_roi_t *const roi_out)
 {
+  if(roi_in->width <= 1 || roi_in->height <= 1 || roi_out->width <= 1 || roi_out->height <= 1) return;
+
   if(darktable.codepath.OPENMP_SIMD && self->process_plain)
     self->process_plain(self, piece, i, o, roi_in, roi_out);
 #if defined(__SSE__)
@@ -1965,19 +1967,16 @@ void dt_iop_gui_cleanup_module(dt_iop_module_t *module)
 
 void dt_iop_gui_update(dt_iop_module_t *module)
 {
-  if(module->gui_data)
+  ++darktable.gui->reset;
+  if(!dt_iop_is_hidden(module))
   {
-    ++darktable.gui->reset;
-    if(!dt_iop_is_hidden(module))
-    {
-      if(module->params && module->gui_update) module->gui_update(module);
-      dt_iop_gui_update_blending(module);
-      dt_iop_gui_update_expanded(module);
-      _iop_gui_update_label(module);
-      dt_iop_gui_set_enable_button(module);
-    }
-    --darktable.gui->reset;
+    if(module->params && module->gui_update) module->gui_update(module);
+    dt_iop_gui_update_blending(module);
+    dt_iop_gui_update_expanded(module);
+    _iop_gui_update_label(module);
+    dt_iop_gui_set_enable_button(module);
   }
+  --darktable.gui->reset;
 }
 
 void dt_iop_gui_reset(dt_iop_module_t *module)

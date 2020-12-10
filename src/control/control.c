@@ -225,6 +225,11 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_text(layout, _("working..."), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
+  if(ink.width > width * 0.98)
+  {
+    pango_layout_set_text(layout, "...", -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+  }
   const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
   cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
   pango_cairo_layout_path(cr, layout);
@@ -563,14 +568,19 @@ void dt_control_toast_redraw()
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
+static int _widget_queue_draw(void *widget)
+{
+  gtk_widget_queue_draw((GtkWidget*)widget);
+  return FALSE;
+}
+
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)widget);
+    g_idle_add(_widget_queue_draw, (void*)widget);
   }
 }
-
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
