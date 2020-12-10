@@ -243,6 +243,29 @@ static inline void dt_Lab_to_XYZ(const float Lab[3], float XYZ[3])
 
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, XYZ:16)
+#endif
+static inline void dt_XYZ_to_xyY(const float XYZ[3], float xyY[3])
+{
+  const float sum = XYZ[0] + XYZ[1] + XYZ[2];
+  xyY[0] = XYZ[0] / sum;
+  xyY[1] = XYZ[1] / sum;
+  xyY[2] = XYZ[1];
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, XYZ:16)
+#endif
+static inline void dt_xyY_to_XYZ(const float xyY[3], float XYZ[3])
+{
+  XYZ[0] = xyY[2] * xyY[0] / xyY[1];
+  XYZ[1] = xyY[2];
+  XYZ[2] = xyY[2] * (1.f - xyY[0] - xyY[1]) / xyY[1];
+}
+
+
+#ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, uvY:16)
 #endif
 static inline void dt_xyY_to_uvY(const float xyY[3], float uvY[3])
