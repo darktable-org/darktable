@@ -1185,7 +1185,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 " GROUP BY folder, film_rolls_id", where_ext);
         break;
       case DT_COLLECTION_PROP_TAG:
-        if(dt_conf_get_bool("plugins/lighttable/tagging/case_insensitive"))
+      {
+        char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
+        if(!strcmp(sensitive, _("insensitive")))
           query = g_strdup_printf("SELECT name, 1 AS tagid , COUNT(*) AS count"
                                   " FROM (SELECT DISTINCT name, id"
                                   "   FROM main.images AS mi"
@@ -1204,7 +1206,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                   "   ON tagid = tag_id"
                                   " WHERE %s"
                                   " GROUP BY name,tag_id", where_ext);
-        break;
+        g_free(sensitive);
+      }
+      break;
       case DT_COLLECTION_PROP_GEOTAGGING:
         query = g_strdup_printf("SELECT "
                                 " CASE WHEN mi.longitude IS NULL"

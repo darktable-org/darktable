@@ -1582,7 +1582,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_TAG: // tag
-      if(dt_conf_get_bool("plugins/lighttable/tagging/case_insensitive"))
+    {
+      char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
+      if(!strcmp(sensitive, _("insensitive")))
       {
         if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
         {
@@ -1611,7 +1613,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           escaped_text[escaped_length-1] = '\0';
           query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
                                          "JOIN data.tags AS b ON a.tagid = b.id "
-                                         "WHERE name LIKE '%s'"
+                                         "WHERE name = '%s'"
                                          "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
                                   escaped_text, escaped_text, escaped_text);
         }
@@ -1632,7 +1634,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                                   escaped_text);
         }
       }
-      break;
+      g_free(sensitive);
+    }
+    break;
 
     case DT_COLLECTION_PROP_LENS: // lens
       query = dt_util_dstrcat(query, "(lens LIKE '%%%s%%')", escaped_text);
