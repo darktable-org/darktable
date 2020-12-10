@@ -428,7 +428,7 @@ static inline float euclidean_norm(const float vector[4])
 static inline void downscale_vector(float vector[4], const float scaling)
 {
   // check zero or NaN
-  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
   for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
 }
 
@@ -438,7 +438,7 @@ static inline void downscale_vector(float vector[4], const float scaling)
 #endif
 static inline void upscale_vector(float vector[4], const float scaling)
 {
-  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
   for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
 }
 
