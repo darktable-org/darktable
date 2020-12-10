@@ -315,7 +315,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsToneCurve *out_curves[3] = { trc, trc, trc };
   cmsHPROFILE profile = cmsCreateRGBProfile(whitepoint, primaries, out_curves);
 
-  if(v2) cmsSetProfileVersion(profile, 2.1);
+  if(v2) cmsSetProfileVersion(profile, 2.4);
 
   cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue);
 
