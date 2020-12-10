@@ -1,12 +1,11 @@
-# Germano Massullo <germano.massullo@gmail.com>, 2018.
 # mmardegan <11093569+mmardegan@users.noreply.github.com>, 2019, 2020.
 msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-07 23:15+0100\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"PO-Revision-Date: 2020-12-07 22:43+0100\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
 "Language-Team: Italian <>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
@@ -313,11 +312,11 @@ msgstr "Compressione gamut"
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:328
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:475
 msgid "clip negative RGB from gamut"
-msgstr ""
+msgstr "Taglia i valori RGB negativi dalla gamma"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:489
 msgid "same as pipeline (D50)"
-msgstr ""
+msgstr "Come la coda di sviluppo (D50)"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:490
 msgid "A (incandescent)"
@@ -3100,7 +3099,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:5934
 msgid "how many snapshots to keep"
-msgstr ""
+msgstr "Quante istantanee tenere"
 
 #: ../build/bin/preferences_gen.h:5957
 msgid ""
@@ -3167,7 +3166,7 @@ msgstr "Interfaccia"
 
 #: ../build/bin/preferences_gen.h:6150
 msgid "sort built-in presets first"
-msgstr ""
+msgstr "Ordina prima le preimpostazioni integrate"
 
 #: ../build/bin/preferences_gen.h:6164
 msgid ""
@@ -4221,6 +4220,10 @@ msgid ""
 "from the most recent snapshot or delete the corrupted database\n"
 "and start with a new one?"
 msgstr ""
+"Vuoi chiudere Darktable ora per ripristinare manualmente\n"
+"il database da un backup, tentare un ripristino automatico\n"
+"dall'istantanea più recente o cancellare il database corrotto\n"
+"e partire con uno nuovo?"
 
 #: ../src/common/database.c:2733 ../src/common/database.c:2913
 msgid ""
@@ -7426,8 +7429,10 @@ msgid "metadata to be applied per default"
 msgstr "Metadati da applicare in modo predefinito"
 
 #: ../src/gui/import_metadata.c:178
+
+#| msgid "import from camera"
 msgid "imported from xmp"
-msgstr "Importa da file XMP"
+msgstr "Importato dall'xmp"
 
 #: ../src/gui/import_metadata.c:180
 msgid ""
@@ -7436,12 +7441,14 @@ msgid ""
 "actions\n"
 " CAUTION: not selected metadata are cleaned up when xmp file is updated"
 msgstr ""
+
 "I metadati selezionati sono importati dall'immagine e sovrascriveranno\n"
 "quelli predefiniti. Questa opzione ha la precedenza su 'Verifica file XMP "
 "aggiornati\n"
 "all'avvio' e 'carica file sidecar'\n"
 "ATTENZIONE: i metadati non selezionati verranno cancellati all'aggiornamento "
 "del file XMP"
+
 
 #: ../src/gui/import_metadata.c:237
 msgid "comma separated list of tags"
@@ -7494,7 +7501,9 @@ msgstr "Imposta il tema dell'interfaccia utente"
 
 #: ../src/gui/preferences.c:396
 msgid "prefer performance over quality"
-msgstr "Preferisci la velocità alla qualità"
+
+msgstr "Preferisci le prestazioni alla qualità"
+
 
 #: ../src/gui/preferences.c:404
 msgid ""
@@ -7517,6 +7526,7 @@ msgid "GUI controls and text DPI"
 msgstr "DPI dei controlli della GUI e del testo"
 
 #: ../src/gui/preferences.c:453
+
 msgid ""
 "adjust the global GUI resolution to rescale controls, buttons, labels, etc.\n"
 "increase for a magnified GUI, decrease to fit more content in window.\n"
@@ -7526,11 +7536,12 @@ msgid ""
 msgstr ""
 "Regola la risoluzione globale dell'interfaccia per ridimensionare i "
 "controlli, i pulsanti, le etichette, ecc.\n"
-"Aumentare il valore per ingrandire l'interfaccia o diminuirlo per includere "
+"Aumentare il valore per ingrandire l'interfaccia o diminuire per includere "
 "un maggior contenuto nello schermo.\n"
-"Impostare a -1 per applicare la risoluzione definita dal sistema.\n"
+
+"Impostare a -1 per usare la risoluzione definita dal sistema.\n"
 "Il valore predefinito è 96 DPI sulla maggior parte dei sistemi.\n"
-"Questa modifica richiede un riavvio."
+"(Richiede un riavvio)."
 
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:462
@@ -7566,7 +7577,8 @@ msgstr "Preferenze darktable"
 
 #: ../src/gui/preferences.c:626
 msgid "darktable needs to be restarted for settings to take effect"
-msgstr "darktable deve essere riavviato affinchè le regolazioni abbiano effetto"
+msgstr ""
+"Darktable richiede di esser riavviato affinché le impostazioni siano attivate"
 
 #. exif
 #: ../src/gui/preferences.c:813 ../src/gui/preferences.c:1851
@@ -7773,7 +7785,9 @@ msgid "format"
 msgstr "Formato"
 
 #: ../src/gui/preferences.c:1934 ../src/gui/presets.c:541
+
 msgid "select image types you want this preset to be available for"
+
 msgstr ""
 "Seleziona i tipi di immagine per le quali questo preset sarà disponibile"
 
@@ -7852,6 +7866,7 @@ msgstr "Gestisci le preimpostazioni rapide"
 
 #: ../src/gui/presets.c:1120
 msgid "manage quick presets list..."
+
 msgstr "Gestione rapida elenco preset..."
 
 #: ../src/gui/presets.c:1255 ../src/gui/presets.c:1268
@@ -7881,6 +7896,7 @@ msgstr "Aggiorna preset"
 
 #: ../src/gui/styles_dialog.c:206
 #, c-format
+
 msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
@@ -7894,10 +7910,16 @@ msgid "overwrite style?"
 msgstr "Sovrascrivo lo stile?"
 
 #: ../src/gui/styles_dialog.c:240 ../src/gui/styles_dialog.c:299
+
+#| msgid "please give preset a name"
+
 msgid "please give style a name"
 msgstr "Per favore, dai un nome allo stile"
 
 #: ../src/gui/styles_dialog.c:244 ../src/gui/styles_dialog.c:303
+
+#| msgid "unnamed preset"
+
 msgid "unnamed style"
 msgstr "Stile senza nome"
 
@@ -9823,6 +9845,7 @@ msgid ""
 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
+
 "Seleziona il metodo per modificare la fonte luminosa\n"
 "e lo spazio colore che il modulo dovrà utilizzare:\n"
 "• Bradford Lineare (1985) è molto accurato per fonti luminose simili alla "
@@ -9835,6 +9858,7 @@ msgstr ""
 "•  XYZ è una semplice scalatura nello spazio XYZ. Non è raccomandata in "
 "generale.\n"
 "•  Nessuno, disabilita qualsiasi trasformazione e usa il flusso RGB."
+
 
 #: ../src/iop/channelmixerrgb.c:2215
 msgid ""
