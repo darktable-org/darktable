@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-06 13:11+0200\n"
+"PO-Revision-Date: 2020-12-10 17:16+0200\n"
 "Last-Translator: Marko Vertainen <marko.vertainen@iki.fi>\n"
 "Language-Team: Finnish (Finland)\n"
 "Language: fi_FI\n"
@@ -871,7 +871,7 @@ msgstr "Kohdetaso"
 #: ../build/lib/darktable/plugins/introspection_exposure.c:91
 #: ../build/lib/darktable/plugins/introspection_exposure.c:154
 msgid "compensate exposure bias"
-msgstr "Kompensoi valotuksen korjausta"
+msgstr "Kompensoi valotuksen vinoumaa"
 
 #: ../build/lib/darktable/plugins/introspection_exposure.c:168
 #: ../build/lib/darktable/plugins/introspection_levels.c:160
@@ -1258,7 +1258,7 @@ msgstr "Filmivarasto"
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:132
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:231
 msgid "scan exposure bias"
-msgstr "Skannerin valotuksen korjaus"
+msgstr "Skannerin valotuksen vinouma"
 
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:138
 #: ../build/lib/darktable/plugins/introspection_negadoctor.c:235
@@ -3280,7 +3280,7 @@ msgstr[1] "Muut"
 
 #: ../build/bin/preferences_gen.h:6578
 msgid "do not show april 1st game"
-msgstr "Älä näytä aprillipäivän peliä."
+msgstr "Älä näytä aprillipäivän peliä"
 
 #: ../build/bin/preferences_gen.h:6612
 msgid "password storage backend to use"
@@ -5921,7 +5921,7 @@ msgstr "VIRHE"
 
 #: ../src/develop/imageop.c:3174
 msgid "purpose"
-msgstr "tarkoitus"
+msgstr "tarkoitus "
 
 #: ../src/develop/imageop.c:3176
 msgid "process"
@@ -6859,7 +6859,7 @@ msgstr "Kuvasarja"
 #: ../src/gui/gtk.c:1380
 msgctxt "accel"
 msgid "print view"
-msgstr "Tulostus"
+msgstr "Tulostusnäkymä"
 
 #. register ctrl-q to quit:
 #: ../src/gui/gtk.c:1403
@@ -7469,7 +7469,7 @@ msgstr "Automaattinen"
 #: ../src/gui/preferences.c:851 ../src/gui/preferences.c:957
 msgctxt "preferences"
 msgid "import..."
-msgstr "Tuo..."
+msgstr "Tuo"
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:892
@@ -7501,7 +7501,7 @@ msgstr ""
 #. export button
 #: ../src/gui/preferences.c:962 ../src/libs/styles.c:707
 msgid "export..."
-msgstr "Vie..."
+msgstr "Vie"
 
 #. Setting the notification text
 #: ../src/gui/preferences.c:1316
@@ -8342,7 +8342,7 @@ msgstr "Kirjaudu"
 
 #: ../src/imageio/storage/piwigo.c:811
 msgid "piwigo login"
-msgstr "Piwiko kirjautuminen"
+msgstr "Piwigo kirjautuminen"
 
 #: ../src/imageio/storage/piwigo.c:825
 msgid "visible to"
@@ -11244,7 +11244,7 @@ msgid ""
 "automatically remove the camera exposure bias\n"
 "this is useful if you exposed the image to the right."
 msgstr ""
-"Poista automaattisesti kameran valotuksen korjaus.\n"
+"Poista automaattisesti kameran valotuksen vinouma.\n"
 "Tämän on hyödyllistä, jos valotat kuvasi huippuvalojen mukaan."
 
 #: ../src/iop/exposure.c:870
@@ -12166,8 +12166,8 @@ msgid ""
 "greater the bias, the more pronounced the fall off of the grain in shadows "
 "and highlights"
 msgstr ""
-"Keskiharmaan poikkeama valokuvapaperin vasteesta. Suurempi poikkeama "
-"korostaa varjojen ja huippuvalojen rakeisuutta."
+"Keskisävyjen vinouma valokuvapaperin vasteesta. Suurempi vinouma korostaa "
+"varjojen ja huippuvalojen rakeisuutta."
 
 #: ../src/iop/hazeremoval.c:100
 msgid "haze removal"
@@ -14929,7 +14929,7 @@ msgstr "Etsi filmirulla..."
 
 #: ../src/libs/collect.c:508
 msgid "remove..."
-msgstr "Poista..."
+msgstr "Poista"
 
 #: ../src/libs/collect.c:1127
 msgid "uncategorized"
@@ -15159,7 +15159,7 @@ msgstr "Poista kuvan muokkaushistoria?"
 
 #: ../src/libs/copy_history.c:327
 msgid "copy parts..."
-msgstr "Kopioi osia..."
+msgstr "Kopioi osia"
 
 #: ../src/libs/copy_history.c:328
 msgid ""
@@ -15179,7 +15179,7 @@ msgstr ""
 
 #: ../src/libs/copy_history.c:337
 msgid "paste parts..."
-msgstr "Liitä osia..."
+msgstr "Liitä osia"
 
 #: ../src/libs/copy_history.c:338
 msgid ""
@@ -15235,7 +15235,7 @@ msgstr "Olemassa olevan muokkaushistorian käsittelytapa"
 
 #: ../src/libs/copy_history.c:367
 msgid "load sidecar file..."
-msgstr "Lataa aputiedosto..."
+msgstr "Lataa aputiedosto"
 
 #: ../src/libs/copy_history.c:368
 msgid ""
@@ -15996,7 +15996,7 @@ msgstr "Poista valitut kuvat nykyisestä kokoelmasta."
 
 #: ../src/libs/image.c:450
 msgid "move..."
-msgstr "Siirrä..."
+msgstr "Siirrä"
 
 #: ../src/libs/image.c:450
 msgid "move to other folder"
@@ -16004,7 +16004,7 @@ msgstr "Siirrä valitut kuvat toiseen hakemistoon."
 
 #: ../src/libs/image.c:454
 msgid "copy..."
-msgstr "Kopioi..."
+msgstr "Kopioi"
 
 #: ../src/libs/image.c:454
 msgid "copy to other folder"
@@ -16067,7 +16067,7 @@ msgstr "Lisää valitut kuvat laajennettuun ryhmään tai luo niille uusi ryhmä
 
 #: ../src/libs/image.c:494
 msgid "ungroup"
-msgstr "Pura ryhmitys"
+msgstr "Pura ryhmä"
 
 #: ../src/libs/image.c:494
 msgid "remove selected images from the group"
@@ -17431,11 +17431,11 @@ msgstr "Vasen marginaali"
 
 #: ../src/libs/print_settings.c:1346
 msgid "lock"
-msgstr "Lukko"
+msgstr "Lukitse"
 
 #: ../src/libs/print_settings.c:1347
 msgid "change all margins uniformly"
-msgstr "Tee kaikista marginaaleista samanmittaiset"
+msgstr "Muuta marginaalit saman levyisiksi."
 
 #. d->b_right  = gtk_spin_button_new_with_range(0, 10000, 1);
 #: ../src/libs/print_settings.c:1351
@@ -17454,7 +17454,7 @@ msgstr "Tulostuksessa käytettävä väliaikainen tyyli"
 #. Print button
 #: ../src/libs/print_settings.c:1534
 msgid "print"
-msgstr "Tulosta"
+msgstr "Tulostus"
 
 #: ../src/libs/print_settings.c:1536
 msgid "print with current settings"
@@ -17676,7 +17676,7 @@ msgstr "Luo kopio kuvasta ennen tyylin käyttöönottoa."
 #. create
 #: ../src/libs/styles.c:687
 msgid "create..."
-msgstr "Luo..."
+msgstr "Luo"
 
 #: ../src/libs/styles.c:687
 msgid "create styles from history stack of selected images"
@@ -17685,7 +17685,7 @@ msgstr "Luo uusi tyyli valittujen kuvien muokkaushistoriasta."
 #. edit
 #: ../src/libs/styles.c:692
 msgid "edit..."
-msgstr "Muokkaa..."
+msgstr "Muokkaa"
 
 #: ../src/libs/styles.c:692
 msgid "edit the selected styles in list above"
@@ -17699,7 +17699,7 @@ msgstr "Poista valitut tyylit listalta"
 #: ../src/libs/styles.c:702 ../src/libs/tagging.c:2808
 msgctxt "verb"
 msgid "import..."
-msgstr "Tuo..."
+msgstr "Tuo"
 
 #: ../src/libs/styles.c:702
 msgid "import styles from a style files"
@@ -18026,7 +18026,7 @@ msgstr "Tuo tunnisteet Lightroomin avainsanatiedostosta."
 #: ../src/libs/tagging.c:2812
 msgctxt "verb"
 msgid "export..."
-msgstr "Vie..."
+msgstr "Vie"
 
 #: ../src/libs/tagging.c:2812
 msgid "export all tags to a Lightroom keyword file"
@@ -18204,7 +18204,7 @@ msgstr "Peitekuvia ei saatavilla täällä..."
 #: ../src/libs/tools/global_toolbox.c:384
 #: ../src/libs/tools/global_toolbox.c:522
 msgid "expand grouped images"
-msgstr "Laajenna kuvaryhmät"
+msgstr "Laajenna ryhmitetyt kuvat"
 
 #: ../src/libs/tools/global_toolbox.c:386
 #: ../src/libs/tools/global_toolbox.c:524
@@ -19157,7 +19157,7 @@ msgstr "Muuta kuvan sijainti"
 #: ../src/views/print.c:53
 msgctxt "view"
 msgid "print"
-msgstr "Tulosta"
+msgstr "Tulostus"
 
 #: ../src/views/slideshow.c:314 ../src/views/slideshow.c:330
 msgid "end of images. press any key to return to lighttable mode"
