@@ -21,12 +21,25 @@ you are strongly advised to take a backup first.
 
 #### Important note: to make sure that darktable can keep on supporting the raw file format for your camera, *please* read [this post](https://discuss.pixls.us/t/raw-samples-wanted/5420?u=lebedevri) on how/what raw samples you can contribute to ensure that we have the *full* raw sample set for your camera under CC0 license!
 
-- Almost 2700 commits to darktable+rawspeed since 3.2
-- 790 pull requests handled
-- 92 issues closed
-- Updated user manual is coming soon™
+- Almost 2146 commits to darktable+rawspeed since 3.2
+- 700 pull requests handled
+- 116 issues closed
 
 ## The Big Ones
+
+- The user manual is made available at the same time as the
+  release. Note that this user manual is also the last version as a
+  new project has taken over the lead on this. The goal is to have
+  an up-to-date user manual by using a simpler format
+  to write text for contributors.
+
+  Current manual (multilingual):
+
+  https://darktable.gitlab.io/doc/
+
+  New manual (English only):
+
+  https://darktable-org.github.io/dtdocs/
 
 - The tethering view has been reworked and is now more stable.
 
@@ -44,7 +57,7 @@ you are strongly advised to take a backup first.
 
 - Module masking is now enhanced for use with scene-referred workflows. A new masking implementation
   has been added, with fully unbounded blending modes, which allows parametric masking
-  either in linear RGB or in JzCzHz color spaces. A boost factor slider has been 
+  either in linear RGB or in JzCzHz color spaces. A boost factor slider has been
   introduced in the masking GUI so that users may set thresholding parameters above 100%
   to mask pixels in HDR images.
 
@@ -67,7 +80,7 @@ you are strongly advised to take a backup first.
   different assumptions, for when no neutral colors can be sampled from the image,
   along with the traditional color-picker for manual sampling of neutral colors.
 
-  Color calibration internally implements gamut-mapping and gamut-clipping, 
+  Color calibration internally implements gamut-mapping and gamut-clipping,
   which attempts to preserve the hue and luminance of pixels while avoiding imaginary and
   out-of-gamut colors at the beginning of the pipeline, to improve the robustness of
   color-grading modules inside the pipeline. This is made necessary because
@@ -86,15 +99,19 @@ you are strongly advised to take a backup first.
   grouped images is displayed on the bottom-left corner. This provides better performance
   when many images need to be shown on the map. Mouse-scrolling over a group's thumb scrolls through
   the images of the group. Groups containing selected images are highlighted with a white border.
-  The image count is displayed as a white number if all images of the group are exactly at the 
+  The image count is displayed as a white number if all images of the group are exactly at the
   same place, and in yellow otherwise.
 
   Movement of images within the map has also been improved. <kbd>Click</kbd> to drag the visible image,
-  <kbd>Shift-Click</kbd> to drag the full group. A new "locations" module allows you to define location 
+  <kbd>Shift-Click</kbd> to drag the full group. A new "locations" module allows you to define location
   areas (using elliptical or rectangular shapes). These locations are saved as collections visible under "
   geotagging" in the collect module.
 
 ## New Features And Changes
+
+- Some parts of the GUI have been reworked in this version to complete
+  the overhaul done in previous 3.2 release to ensure seamless
+  integration (color, spacing). A good example is the combo-boxes.
 
 - A focus-peaking button has been added in the lighttable and darkroom views which
   complements the existing keyboard shortcut. Focus-peaking helps to visualize the
@@ -102,7 +119,7 @@ you are strongly advised to take a backup first.
 
 - Better visual feedback is provided when changing module order with drag&drop.
 
-- The wavelet algorithm has improved performance. 
+- The wavelet algorithm has improved performance.
 
 - A new tooltip has been added to items in the darkroom history stack module showing
   a list of the individual parameter changes at each step. This can
@@ -124,7 +141,7 @@ you are strongly advised to take a backup first.
   synonyms (e.g. "dehaze" for "haze removal") or features. For example searching for "saturation"
   will return all modules that can perform saturation adjustments.
 
-- Importing pictures from memory cards no longer uses the gPhoto API. This 
+- Importing pictures from memory cards no longer uses the gPhoto API. This
   should now be more stable on Windows.
 
 - Many changes have been made to modules to allow for narrower panels.
@@ -156,7 +173,7 @@ you are strongly advised to take a backup first.
 
 - More compact combo-box displays have been added to some modules.
 
-- In the collect module, the collection properties drop-down is now grouped 
+- In the collect module, the collection properties drop-down is now grouped
   making it easier to find the property you wish to filter on.
 
 - Read support for 16-bit (half) float TIFFs has been added.
@@ -176,7 +193,7 @@ you are strongly advised to take a backup first.
 
 - The history copy has been changed to include only safe
   modules. Modules like "raw white/black point" and "scale pixels" are
-  no longer copied, for example. To copy such modules, use the 
+  no longer copied, for example. To copy such modules, use the
   "copy parts..." button. Note that the unsafe modules
   are not selected by default in the resulting dialog.
 
@@ -196,7 +213,7 @@ you are strongly advised to take a backup first.
 
 - All values in the saved preferences are checked to detect possible
   data corruptions. Preferences having a min or max are validated to
-  ensure that they are in the appropriate range. Any preferences detected with 
+  ensure that they are in the appropriate range. Any preferences detected with
   possible data corruption are automatically reset to their default values.
 
 - Support for AVIF >= 0.8.2 (no support for older versions).
@@ -212,13 +229,13 @@ you are strongly advised to take a backup first.
   false-positives that needlessly alarmed users who took them very seriously, but also
   showed over-saturation and over-exposure issues altogether. This comes with 4 possible modes:
 
-  "any RGB channel" is the same as the previous "over exposure" warning. 
+  "any RGB channel" is the same as the previous "over exposure" warning.
 
   "luminance only" shows by default pixels darker than -12.67 EV (sRGB black point
   in 8 bits integers encoding) or brighter than 99%
 
-  "saturation only" shows any pixel which is too saturated for its current luminance, 
-  meaning it is out of gamut.  
+  "saturation only" shows any pixel which is too saturated for its current luminance,
+  meaning it is out of gamut.
 
   "full gamut" shows a combination of the 3 previous modes for an overall control check.
 
@@ -227,6 +244,12 @@ you are strongly advised to take a backup first.
 
 - A new preset has been added to the denoise (profiled) module to remove only chrominance
   noise using wavelets mode.
+
+- Many modules have been reworked to get better performance on CPU by
+  reordering and improving the OpenMP code. The modules are Liquify,
+  Shadows and Highlights, Filmic RGB reconstruction, RAW Denoise, Borders, High Pass.
+
+- The histogram has been improved for performance espcecially the log view.
 
 ## Bug fixes
 
@@ -251,13 +274,16 @@ you are strongly advised to take a backup first.
 - Fix some issues with lighttable display (thumbnails) when using
   HiDPI monitor.
 
+- Fix styles undo/redo in the darkroom.
+
 ## Notes
 
 - The code base has been significantly simplified and refactored,
   which will make future code maintenance easier.
 
 - Many more tests have been added to track regressions in image filter
-  outputs and ensure backwards compatibility of edits.
+  outputs and ensure backwards compatibility of edits. The testsuite
+  counts now 77 tests and covers all the modules currently supported.
 
 ## Lua
 
@@ -276,7 +302,7 @@ you are strongly advised to take a backup first.
 - darktble uses Lua 5.3.  Lua 5.4 has been released and is now the
   default Lua for some distributions.  Please install the Lua 5.3
   library package if your distribution is using Lua 5.4 as the
-  default.  If you compile darktable, then you may also set 
+  default.  If you compile darktable, then you may also set
   `DONT_USE_INTERNAL_LUA` to OFF in the DefineOptions.cmake file
   to use the internal Lua.
 

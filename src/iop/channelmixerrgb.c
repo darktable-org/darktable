@@ -428,7 +428,7 @@ static inline float euclidean_norm(const float vector[4])
 static inline void downscale_vector(float vector[4], const float scaling)
 {
   // check zero or NaN
-  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
   for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] / (scaling + NORM_MIN) : vector[c] / NORM_MIN;
 }
 
@@ -438,7 +438,7 @@ static inline void downscale_vector(float vector[4], const float scaling)
 #endif
 static inline void upscale_vector(float vector[4], const float scaling)
 {
-  const int valid = (scaling < NORM_MIN) && !isnan(scaling);
+  const int valid = (scaling > NORM_MIN) && !isnan(scaling);
   for(size_t c = 0; c < 3; c++) vector[c] = (valid) ? vector[c] * (scaling + NORM_MIN) : vector[c] * NORM_MIN;
 }
 
@@ -450,7 +450,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
 {
   // Get the sum XYZ
   float sum = 0.f;
-  for(size_t c = 0; c < 3; c++) sum += fabsf(input[c]);
+  for(size_t c = 0; c < 3; c++) sum += input[c];
   sum = fmaxf(sum, NORM_MIN);
 
   // Convert to xyY
@@ -464,10 +464,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
   // Get the chromaticity difference with white point uv
   const float D50[2] DT_ALIGNED_PIXEL = { 0.20915914598542354f, 0.488075320769787f };
   const float delta[2] DT_ALIGNED_PIXEL = { D50[0] - uvY[0], D50[1] - uvY[1] };
-  Y += NORM_MIN;
-  const float DT_ALIGNED_PIXEL LOG_XYZ[4] = { logf(input[0] + Y), logf(input[1] + Y), logf(input[2] + Y), 0.f };
-  const float Delta = Y * hypotf(delta[0], delta[1]) * hypotf((LOG_XYZ[0] - LOG_XYZ[1]), (LOG_XYZ[0] + LOG_XYZ[1] - 2.f * LOG_XYZ[2]));
-  // the log part comes from the saturation in https://infoscience.epfl.ch/record/34026
+  const float Delta = Y * (sqf(delta[0]) + sqf(delta[1]));
 
   // Compress chromaticity (move toward white point)
   const float correction = (compression == 0.0f) ? 0.f : powf(Delta, compression);
@@ -900,16 +897,17 @@ static inline void repack_3x3_to_3xSSE(const float input[9], float output[3][4])
 }
 
 
-static void declare_cat_on_pipe(struct dt_iop_module_t *self)
+static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 {
   // Advertise to the pipeline that we are doing chromatic adaptation here
+  // preset = TRUE allows to capture the CAT a priori at init time
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
   dt_iop_order_entry_t *this
       = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
 
   if(this == NULL) return; // there is no point then
 
-  if(self->enabled && !(p->adaptation == DT_ADAPTATION_RGB || p->illuminant == DT_ILLUMINANT_PIPE))
+  if((self->enabled && !(p->adaptation == DT_ADAPTATION_RGB || p->illuminant == DT_ILLUMINANT_PIPE)) || preset)
   {
     // We do CAT here so we need to register this instance as CAT-handler.
     if(self->dev->proxy.chroma_adaptation == NULL)
@@ -935,6 +933,17 @@ static void declare_cat_on_pipe(struct dt_iop_module_t *self)
         self->dev->proxy.chroma_adaptation = NULL;
     }
   }
+}
+
+static inline gboolean is_module_cat_on_pipe(struct dt_iop_module_t *self)
+{
+  // Check on the pipeline that we are doing chromatic adaptation here
+  dt_iop_order_entry_t *this
+      = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
+
+  if(this == NULL) return FALSE; // there is no point then
+
+  return (self->dev->proxy.chroma_adaptation == this);
 }
 
 
@@ -1136,7 +1145,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       break;
     }
   }
-  declare_cat_on_pipe(self);
+  declare_cat_on_pipe(self, FALSE);
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -1247,7 +1256,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // test illuminant is user params
   d->p = powf(0.818155f / d->illuminant[2], 0.0834f);
 
-  declare_cat_on_pipe(self);
+  declare_cat_on_pipe(self, FALSE);
 }
 
 
@@ -1898,33 +1907,18 @@ void reload_defaults(dt_iop_module_t *module)
   d->illuminant = module->get_f("illuminant")->Enum.Default;
   d->adaptation = module->get_f("adaptation")->Enum.Default;
 
-  // note that if there is already an instance of this module with an
-  // adaptation set we default to RGB (none) in this instance.
-
-  gboolean CAT_already_applied = FALSE;
-
-  GList *iop = darktable.develop->iop;
-  while(iop)
-  {
-    const dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
-    if(module != m && m->enabled && !strcmp(m->op, "channelmixerrgb"))
-    {
-      const dt_iop_channelmixer_rgb_params_t *mp =
-        (dt_iop_channelmixer_rgb_params_t *)m->params;
-      if(!(mp->adaptation == DT_ADAPTATION_RGB || mp->illuminant == DT_ILLUMINANT_PIPE))
-      {
-        // CAT already applied, default to none (bypass)
-        CAT_already_applied = TRUE;
-        break;
-      }
-    }
-    iop = g_list_next(iop);
-  }
-  module->default_enabled = FALSE;
-
   gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
   const gboolean is_modern = strcmp(workflow, "modern") == 0;
   g_free(workflow);
+
+  // note that if there is already an instance of this module with an
+  // adaptation set we default to RGB (none) in this instance.
+  // try to register the CAT here
+  declare_cat_on_pipe(module, is_modern);
+  // check if we could register
+  gboolean CAT_already_applied = !is_module_cat_on_pipe(module);
+  module->default_enabled = FALSE;
+
 
   const dt_image_t *img = &module->dev->image_storage;
 
@@ -2324,8 +2318,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page", gtk_notebook_get_current_page (g->notebook));
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -225,6 +225,11 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_text(layout, _("working..."), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
+  if(ink.width > width * 0.98)
+  {
+    pango_layout_set_text(layout, "...", -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+  }
   const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
   cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
   pango_cairo_layout_path(cr, layout);
