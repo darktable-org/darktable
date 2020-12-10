@@ -27,6 +27,9 @@
 #include "common/iop_order.h"
 #include "common/styles.h"
 #include "common/history.h"
+#ifdef HAVE_ICU
+#include "common/sqliteicu.h"
+#endif
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/legacy_presets.h"
@@ -3038,17 +3041,24 @@ start:
   // drop table settings -- we don't want old versions of dt to drop our tables
   sqlite3_exec(db->handle, "drop table main.settings", NULL, NULL, NULL);
 
-#ifdef HAVE_ICU
-  char *msg = NULL;
-  const int res = sqlite3_load_extension(db->handle, "libicu", 0, &msg);
-  if(res != SQLITE_OK && msg)
-  {
-    fprintf(stderr, "[sqlite] load extension error %d - %s\n", res, msg);
-  }
-#endif
-
   // take care of potential bad data in the db.
   _sanitize_db(db);
+
+#ifdef HAVE_ICU
+  // check if sqlite is already icu enabled
+  // if not enabled expected error: no such function:icu_load_collation
+  rc = sqlite3_prepare_v2(db->handle,
+                          "SELECT icu_load_collation('en_US', 'english')",
+                          -1, &stmt, NULL);
+  sqlite3_finalize(stmt);
+
+  if(rc != SQLITE_OK)
+  {
+    rc = sqlite3IcuInit(db->handle);
+    if(rc != SQLITE_OK)
+      fprintf(stderr, "[sqlite] init icu extension error %d\n", rc);
+  }
+#endif
 
 error:
   g_free(dbname);
