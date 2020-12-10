@@ -1039,6 +1039,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                               &pipe, export_masks);
   }
 
+  if(res)
+    goto error;
+
   dt_dev_pixelpipe_cleanup(&pipe);
   dt_dev_cleanup(&dev);
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
@@ -1079,7 +1082,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                             format_params, storage, storage_params);
   }
 
-  return res;
+  return 0; // success
 
 error:
   dt_dev_pixelpipe_cleanup(&pipe);
