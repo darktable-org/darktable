@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-09 08:25-0600\n"
-"PO-Revision-Date: 2020-12-09 23:47-0600\n"
+"PO-Revision-Date: 2020-12-10 14:15+0100\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -12,7 +12,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Poedit-Bookmarks: -1,1170,-1,-1,-1,-1,-1,-1,-1,-1\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 2.3\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
 #: ../data/darktable.desktop.in.h:1
@@ -2628,7 +2628,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:4785
 msgid "auto-apply chromatic adaptation defaults"
-msgstr "Establecer por defecto la adaptación cromática siguiente"
+msgstr "aplicar automáticamente la adaptación cromática por defecto"
 
 #: ../build/bin/preferences_gen.h:4796
 msgctxt "preferences"
@@ -3025,7 +3025,7 @@ msgstr "Una vez por mes"
 #: ../build/bin/preferences_gen.h:5881 ../build/bin/preferences_gen.h:5910
 msgctxt "preferences"
 msgid "once a week"
-msgstr "Una vez por semana"
+msgstr "Una por semana"
 
 #: ../build/bin/preferences_gen.h:5886
 msgctxt "preferences"
@@ -3043,6 +3043,17 @@ msgid ""
 "once a day - create snapshot if over 24h passed since last snapshot\n"
 "on close - create snapshot every time darktable is closed"
 msgstr ""
+"Instantáneas de la base de datos son creadas justo antes de cerrar "
+"darktable. Las opciones le permiten elegir con qué frecuencia se realizan:\n"
+"nunca - no se harán instantáneas. De esta manera la única instantánea "
+"realizadas serán las obligatorias por actualización de versión\n"
+"una vez por mes - creará una instantánea si ha pasado un mes de la última "
+"instantánea\n"
+"una vez por semana - se creará una instantánea si han pasado 7 días desde la "
+"última instantánea\n"
+"una vez al día - se creará una instantánea si han pasado 24 horas desla la "
+"última instantánea\n"
+"al cierre - se creará una instantánea cada vez que se cierre darktable"
 
 #: ../build/bin/preferences_gen.h:5934
 msgid "how many snapshots to keep"
@@ -3055,6 +3066,12 @@ msgid ""
 "keep in mind that snapshots do take some space and you only need the most "
 "recent one for successful restore"
 msgstr ""
+"después de crear una instantánea correctamente, cuántas instantáneas viejas "
+"quiere conservar (excluyendo las obligatorias por actualización de "
+"versión).\n"
+"Introduzca -1 para guardar todas las instantáneas. Tenga en cuenta que las "
+"instantáneas ocupan espacio y sólo necesita las más recientes para una "
+"recuparación correcta."
 
 #: ../build/bin/preferences_gen.h:5966
 msgid "xmp"
@@ -9730,6 +9747,19 @@ msgid ""
 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
 "• none disables any adaptation and uses pipeline working RGB."
 msgstr ""
+"seleccione el método para adaptar la iluminación\n"
+"y el espacio de color con el que trabajará el módulo: \n"
+"• Linear Bradford (1985) es más precios para ilumincaciones cercanas a luz "
+"de día\n"
+"pero produce colores fuera del gamut la ilumincaciones difíciles.\n"
+"• CAT16 (2016) es mas robusto para evitar colores imaginarios\n"
+"cuando se trababaja con gamuts grandes o saturación de cyan y morado.\n"
+"• Non-linear Bradford (1985) es el Bradford original,\n"
+"puede producir mejores resultados que la version lineal pero es menos "
+"fiable.\n"
+"• XYZ es un simple escalado en en el espacio XYZ . En general, no está "
+"recomendado.\n"
+"• ninguno, desabilita cualquier adaptación y usa el flujo de trabajo RGB."
 
 #: ../src/iop/channelmixerrgb.c:2221
 msgid ""
@@ -13345,10 +13375,10 @@ msgid "unbreak input profile"
 msgstr "corregir perfil de entrada"
 
 #: ../src/iop/profile_gamma.c:99
-#, fuzzy
 msgid "correct input color profiles meant to be applied on non-linear RGB"
 msgstr ""
-"perfiles de color de entrada correctos para ser aplicados en RGB no lineal"
+"perfiles de color de entrada correctos con intención de ser aplicados en RGB "
+"no lineal"
 
 #: ../src/iop/profile_gamma.c:134
 msgid "16 EV dynamic range (generic)"
@@ -14093,6 +14123,7 @@ msgstr "balance de blancos"
 #: ../src/iop/temperature.c:201
 msgid "scale raw RGB channels to balance white and help demosaicing"
 msgstr ""
+"escalar los canales raw RGB a balances de blancos y ayudarles al demosaico"
 
 #: ../src/iop/temperature.c:240
 msgid "from image area"
@@ -14542,6 +14573,16 @@ msgid ""
 "'averaged eigf' is a geometric mean of 'no' and 'exposure-independent guided "
 "filter' methods"
 msgstr ""
+"'no' afecta al contraste global y local (seguro si sólo añade contraste)\n"
+"'filtro de guiado' sólo afecta el contraste local e intenta preservar el "
+"contraste local\n"
+"'filtro de guiado ponderado' es una mediana geométrica entre los métodos "
+"'no' y 'filtro de guiado'\n"
+"'eigf' (filtro de guiíado de exposición independiente) es un filtro de "
+"guiado que es independiente de la exposición, suaviza las sombras y luces "
+"altas de la misma manera (contrario al filtro de guiado que suaviza menos "
+"las luces altas)\n"
+"'eigf ponderado' is una mediana geométrica entre los métodos 'no' y 'eigf'"
 
 #: ../src/iop/toneequal.c:3177
 msgid ""
@@ -15557,6 +15598,21 @@ msgid ""
 "of the destination medium and do nothing else. mainly used when proofing "
 "colors. (not suited for photography)."
 msgstr ""
+"• perceptivo : \n"
+"suavemente mueves los colores fuera del gamut a dentro del mismo, "
+"preservando gradientes, pero distorsiona colores dentro del gamut en el "
+"proceso. Tenga en cuanta que perceptivo suele ser un LUT propietario que "
+"depende del espacio de destino.\n"
+"\n"
+"• colometría relativac : mantiene la luminanceia mientra reduce lo menor "
+"posible la saturación hasta que los colores entren en el gamut.\n"
+"\n"
+"• saturacion : diseñados para producir gráficos coorporativos vistosos que "
+"llamen la atención al preservar la saturación (no apto para fotografía).\n"
+"\n"
+"• colorimetría absola : adapta el punto blanco de la imagen al punto blanco "
+"del medio de destino y no hace nada más. Principalmente usado para corregir "
+"colores (no apto para fotografía)."
 
 #: ../src/libs/export.c:1325 ../src/libs/print_settings.c:1473
 msgid "style"
@@ -16211,6 +16267,8 @@ msgstr ""
 #: ../src/libs/image.c:570
 msgid "set selection as monochrome images and activate monochrome workflow"
 msgstr ""
+"marcar selección como imágenes en monocromo y activar el flujo de trabajo "
+"monocromo"
 
 #: ../src/libs/image.c:574
 msgid "set selection as color images"
@@ -16667,6 +16725,22 @@ msgid ""
 "right-click for other actions: delete location and go to collection,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"listado de ubicaciones de usuario,\n"
+"clic para mostrar u oculatar ubicaciones en el mapa:\n"
+" - desplaze con la rueda de desplazamiento del ratón dentro de la forma para "
+"cambiar su tamaño\n"
+" - si es un rectángula, <shift> o <ctrl> con la rueda de desplazamiento del "
+"ratón para modificar la anchura o altura\n"
+" - clic dentro de la forma y arrástrela para cambiar su posición\n"
+" - ctrl-clic para mover una imagen desde dentro de una ubicación\n"
+"ctrl-clic para editar el nombre de la ubicación\n"
+" - símbolo de barrote '|' parte el nombre en varios niveles\n"
+" - para eliminar un grupo de ubicacione borre su nombre\n"
+" - presione enter para validar un nuevo nombre, escaape para cancelar la "
+"edición\n"
+"clck dererecho para otras acciones: eliminitar ubicación e ir a la "
+"colección,\n"
+"ctrl-rueda de desplazamiento del ratón para cambiar el tamaño de la venta"
 
 #: ../src/libs/map_locations.c:977
 #, fuzzy
@@ -16708,6 +16782,7 @@ msgstr "imágenes flitradas"
 #: ../src/libs/map_settings.c:138
 msgid "when set limit the images drawn to the current filmstrip"
 msgstr ""
+"cuando está activo, limita las imágenes dibujadas en la tira de imágenes"
 
 #: ../src/libs/map_settings.c:148
 msgid "map source"
@@ -16719,7 +16794,7 @@ msgstr "Elegir la fuente del mapa. Algunas entradas podrían no funcionar"
 
 #: ../src/libs/map_settings.c:181
 msgid "modify the spatial size of an images group on the map"
-msgstr ""
+msgstr "modificar el tamaño espacial de un grupo de imágenes en el mapa"
 
 #: ../src/libs/map_settings.c:182
 msgid "group size factor"
@@ -17323,11 +17398,9 @@ msgid "module groups"
 msgstr "Agrupación de módulos"
 
 #: ../src/libs/modulegroups.c:1962
-#, fuzzy
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
-msgstr ""
-"Este es un preajuste integrado. Para editarlo, primero hay que duplicarlo."
+msgstr "Este es un preajuste integrado. Duplíquelo si quiere realizar cambios."
 
 #: ../src/libs/modulegroups.c:1973
 msgid "reset"
@@ -18674,6 +18747,8 @@ msgid ""
 "select the metric you want to preview\n"
 "full gamut is the combination of all other modes\n"
 msgstr ""
+"seleccione la métrica que quiere previsualizar\n"
+"gamut completo es la combinación de los otros modos\n"
 
 #: ../src/views/darkroom.c:2278
 msgid "red & blue"
@@ -18702,6 +18777,14 @@ msgid ""
 "typical color glossy prints produce black at -8.00 EV,\n"
 "typical B&W glossy prints produce black at -9.00 EV."
 msgstr ""
+"umbral de recorte para el punto negro\n"
+"en EV, relativo a blanco (0 EV).\n"
+"sRGB de 8bits recorta negros a -12.69EV,\n"
+"Adobre RGB de 8bits recorta negros a -19.79EV,\n"
+"sRGB de 16 bits recorta negros a -20.69EV,\n"
+"impresiones típicas de alta calidad en mate produce negro a -5.30EV,\n"
+"impresiones típicas de color en brillo produce negro a -8.00EV,\n"
+"impresiones típicas de blanco y negro en brillo produce negro a -9.00 EV."
 
 #: ../src/views/darkroom.c:2307
 msgid "upper threshold"
