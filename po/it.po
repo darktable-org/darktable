@@ -4,15 +4,14 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-10 23:14+0100\n"
-"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
-"\n"
+"PO-Revision-Date: 2020-12-11 17:49+0100\n"
+"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Lokalize 20.08.2\n"
+"X-Generator: Poedit 2.3\n"
 "Language-Team: Italian <>\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
@@ -1029,10 +1028,9 @@ msgid "compensate output ICC profile black point"
 msgstr "Compensa il punto di nero del profilo ICC di uscita"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:359
-#, fuzzy
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:510
 msgid "version of the spline generator"
-msgstr "Versione del generatore di scanalature"
+msgstr "Versione del generatore di curva"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:524
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
@@ -1950,9 +1948,9 @@ msgid ""
 "check this option to use single-click to select items in the collect module. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
-"Abilita questa opzione per utilizzare il click singolo per selezionare"
-" oggetti nel pannello della collezione. Questo vi permetterà di effettuare"
-" selezioni in base a valori data/ora e numerici."
+"Abilita questa opzione per utilizzare il click singolo per selezionare "
+"oggetti nel pannello della collezione. Questo vi permetterà di effettuare "
+"selezioni in base a valori data/ora e numerici."
 
 #: ../build/bin/preferences_gen.h:3001
 #| msgid "expand a single lighttable module at a time"
@@ -2106,10 +2104,10 @@ msgid ""
 "depending of the size of the thumbnail, separated by |. for example, 120|400 "
 "means 3 categories of thumbnails : 0px->120px, 120px->400px and >400px"
 msgstr ""
-"Le categorie di misura sono utilizzate per poter impostare differenti"
-" sovrimpressioni e i valori CSS in base alla dimensione dell'anteprima,"
-" separati da |. Per esempio, 120|400 "
-"significa 3 categorie di anteprima : 0px->120px, 120px->400px e >400px"
+"Le categorie di misura sono utilizzate per poter impostare differenti "
+"sovrimpressioni e i valori CSS in base alla dimensione dell'anteprima, "
+"separati da |. Per esempio, 120|400 significa 3 categorie di anteprima : 0px-"
+">120px, 120px->400px e >400px"
 
 #: ../build/bin/preferences_gen.h:3352
 msgid "pattern for the thumbnail extended overlay text"
@@ -2121,8 +2119,7 @@ msgstr "Consulta il manuale per conoscere tutte le etichette che puoi usare."
 
 #: ../build/bin/preferences_gen.h:3394
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr ""
-"Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
+msgstr "Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
 
 #: ../build/bin/preferences_gen.h:3443 ../src/views/darkroom.c:110
 msgid "darkroom"
@@ -2286,14 +2283,12 @@ msgid ""
 "settings for full-size export. X-Trans sensors use VNG rather than PPG as "
 "middle ground."
 msgstr ""
-"Interpolazione quando la visualizzazione in modalità Camera Oscura non è 1:1:"
-" bilineare è più veloce, ma "
-"non molto definita. Una via di mezzo si ottiene usando PPG + le modalità di"
-" interpolazione specificate "
-"nell'opzione 'interpolatore pixel' (scheda di processo), pieno usa"
-" esattamente le "
-"impostazioni per l'esportazione nella dimensione massima. I sensori X-Trans"
-" usano VNG anziché PPG come via di mezzo."
+"Interpolazione quando la visualizzazione in modalità Camera Oscura non è 1:1: "
+"bilineare è più veloce, ma non molto definita. Una via di mezzo si ottiene "
+"usando PPG + le modalità di interpolazione specificate nell'opzione "
+"'interpolatore pixel' (scheda di processo), pieno usa esattamente le "
+"impostazioni per l'esportazione nella dimensione massima. I sensori X-Trans "
+"usano VNG anziché PPG come via di mezzo."
 
 #: ../build/bin/preferences_gen.h:3867
 msgid "reduce resolution of preview image"
@@ -2378,8 +2373,8 @@ msgid ""
 "smooth - fade out all buttons in one header simultaneously,\n"
 "glide - gradually hide individual buttons as needed"
 msgstr ""
-"Quando il mouse non è sopra ad un modulo, i pulsanti a scelta multipla,"
-" ripristina e preimposta possono essere nascosti:\n"
+"Quando il mouse non è sopra ad un modulo, i pulsanti a scelta multipla, "
+"ripristina e preimposta possono essere nascosti:\n"
 "sempre - mostra sempre tutti i pulsanti,\n"
 "attiva - mostra i pulsanti solo quando il mouse è sopra al modulo,\n"
 "oscura - i pulsanti sono oscurati quando il mouse è altrove,\n"
@@ -2450,6 +2445,8 @@ msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
 msgstr ""
+"Se si vuole espandere un solo gruppo alla volta, comprimere gli altri gruppi "
+"nel gruppo corrente o ignorarli"
 
 #: ../build/bin/preferences_gen.h:4197
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -2497,10 +2494,15 @@ msgid ""
 "in 'effect emulation' slider colors represent the effect the adjustment would "
 "have on the scene"
 msgstr ""
+"Indicazione visiva della correzione della temperatura.\n"
+"In modalità 'Colore fonte luminosa' i selettori scorrevoli dei colori "
+"rappresentano il colore della sorgente luminosa,\n"
+"in 'Emulazione effetto' i selettori scorrevoli dei colori rappresentano "
+"l'effetto che la regolazione avrà sulla scena."
 
 #: ../build/bin/preferences_gen.h:4331
 msgid "colorbalance slider block layout"
-msgstr ""
+msgstr "Disposizione blocchi selettori scorrevoli nel bilanciamento colore"
 
 #: ../build/bin/preferences_gen.h:4342 ../build/bin/preferences_gen.h:4371
 msgctxt "preferences"
@@ -2525,6 +2527,12 @@ msgid ""
 "columns - the blocks of sliders are shown next to each other (in narrow "
 "columns)"
 msgstr ""
+"Scegli come organizzare i blocchi dei selettori per lift, gamma e gain:\n"
+"lista - tutti i selettori scorrevoli verranno visualizzati in una lunga lista "
+"(con intestazioni),\n"
+"schede - verranno usate delle schede per catalogare i blocchi di selettori,\n"
+"colonne - i blocchi di selettori vengono visualizzati uno di fianco all'altro "
+"(in colonne sottili)"
 
 #: ../build/bin/preferences_gen.h:4402
 msgid "other views"
@@ -2694,6 +2702,10 @@ msgid ""
 "modern uses a combination of white balance module and color calibration "
 "module, with improved color science for chromatic adaptation."
 msgstr ""
+"Legacy effettua una correzione cromatica semplice usando solamente il modulo "
+"del bilanciamento del bianco\n"
+"Moderno usa una combinazione di bilanciamento del bianco e calibrazione "
+"colore, con una scienza del colore migliorata per la correzione cromatica."
 
 #: ../build/bin/preferences_gen.h:4844
 msgid "auto-apply per camera basecurve presets"
@@ -2732,9 +2744,8 @@ msgid ""
 "sharpen your images with other means."
 msgstr ""
 "Questa nitidezza aggiunta non è consigliata con fotocamere senza il filtro "
-"passa-basso. Dovresti disabilitare questa opzione se utilizzi "
-"una di queste fotocamere più recenti o render più nitide le tue immagini con"
-" altri mezzi."
+"passa-basso. Dovresti disabilitare questa opzione se utilizzi una di queste "
+"fotocamere più recenti o render più nitide le tue immagini con altri mezzi."
 
 #: ../build/bin/preferences_gen.h:4914
 msgid "detect monochrome previews"
@@ -2745,9 +2756,9 @@ msgid ""
 "many monochrome images can be identified via exif and preview data. beware: "
 "this slows down imports and reading exif data"
 msgstr ""
-"Molte immagini in bianco e nero possono esser identificate tramite i dati"
-" EXIF ed anteprima. Fa attenzione: questo rallenta l'importazione e la"
-" lettura dei dati EXIF"
+"Molte immagini in bianco e nero possono esser identificate tramite i dati "
+"EXIF ed anteprima. Fa attenzione: questo rallenta l'importazione e la lettura "
+"dei dati EXIF"
 
 #: ../build/bin/preferences_gen.h:4956
 msgid "security"
@@ -3090,16 +3101,16 @@ msgid ""
 "once a day - create snapshot if over 24h passed since last snapshot\n"
 "on close - create snapshot every time darktable is closed"
 msgstr ""
-"Le istantanee del database sono create appena prima la chiusura di Darktable."
-" Le opzioni consentono di scegliere quanto spesso fare le istantanee:\n"
-"Mai - semplicemente non prende istantanee. In questo modo le uniche"
-" istantanee fatte sono quelle obbligatorie per aggiornamento di versione\n"
-"Una volta al mese - crea un'istantanea se è passato un mese dall'ultima"
-" fatta\n"
-"Una volta a settimana - crea un'istantanea se sono passati 7 giorni"
-" dall'ultima fatta\n"
-"Una volta al giorno - crea un'istantanea se sono passate più di 24 ore"
-" dall'ultima fatta\n"
+"Le istantanee del database sono create appena prima la chiusura di Darktable. "
+"Le opzioni consentono di scegliere quanto spesso fare le istantanee:\n"
+"Mai - semplicemente non prende istantanee. In questo modo le uniche "
+"istantanee fatte sono quelle obbligatorie per aggiornamento di versione\n"
+"Una volta al mese - crea un'istantanea se è passato un mese dall'ultima "
+"fatta\n"
+"Una volta a settimana - crea un'istantanea se sono passati 7 giorni "
+"dall'ultima fatta\n"
+"Una volta al giorno - crea un'istantanea se sono passate più di 24 ore "
+"dall'ultima fatta\n"
 "Alla chiusura - crea un'istantanea ogni volta che Darktable viene chiuso"
 
 #: ../build/bin/preferences_gen.h:5934
@@ -3114,10 +3125,10 @@ msgid ""
 "recent one for successful restore"
 msgstr ""
 "Dopo che è stata creata un istantanea con successo, quante istantanee tenere "
-"(escluse quelle obbligatorie di aggiornamento di versione). Inserisci -1 per"
-" tenere tutte le istantanee\n"
-"Tieni a mente che le istantanee occupano un po' di spazio e che hai bisogno"
-" solo della più recente per ripristinare con successo."
+"(escluse quelle obbligatorie di aggiornamento di versione). Inserisci -1 per "
+"tenere tutte le istantanee\n"
+"Tieni a mente che le istantanee occupano un po' di spazio e che hai bisogno "
+"solo della più recente per ripristinare con successo."
 
 #: ../build/bin/preferences_gen.h:5966
 msgid "xmp"
@@ -3182,8 +3193,8 @@ msgstr "Ordina prima le preimpostazioni integrate"
 msgid ""
 "whether to show built-in presets first before user's presets in presets menu."
 msgstr ""
-"Se mostrare le preimpostazioni predefinite appena prima di quelle dell'utente"
-" nel menù delle preimpostazioni."
+"Se mostrare le preimpostazioni predefinite appena prima di quelle dell'utente "
+"nel menù delle preimpostazioni."
 
 #: ../build/bin/preferences_gen.h:6185
 msgid "mouse wheel scrolls modules side panel by default"
@@ -3374,8 +3385,7 @@ msgid "kwallet"
 msgstr "kwallet"
 
 #: ../build/bin/preferences_gen.h:6662
-msgid ""
-"the storage backend for password storage: auto, none, libsecret, kwallet"
+msgid "the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
 "Gestore delle password memorizzate: automatico, nessuno, libsecret, kwallet"
 
@@ -3601,8 +3611,7 @@ msgstr "Intento ICC non valido per --icc-intent: '%s'\n"
 #: ../src/cli/main.c:450
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
-msgstr ""
-"Errore: file e opzioni di input specificate! Questo non è supportato!\n"
+msgstr "Errore: file e opzioni di input specificate! Questo non è supportato!\n"
 
 #: ../src/cli/main.c:484
 #, c-format
@@ -5837,7 +5846,7 @@ msgstr "Fulcro fusione"
 
 #: ../src/develop/blend_gui.c:2881
 msgid "adjust the fulcrum used by some blending operations"
-msgstr ""
+msgstr "Regola il fulcro utilizzato da alcuni operatori di fusione"
 
 #. Add opacity/scale sliders to table
 #: ../src/develop/blend_gui.c:2888 ../src/iop/watermark.c:1450
@@ -5873,8 +5882,7 @@ msgstr "Guida per la sfumatura"
 
 #: ../src/develop/blend_gui.c:2905
 msgid "choose to guide mask by input or output image"
-msgstr ""
-"Scegli di guidare la maschera in base all'immagine in ingresso o uscita"
+msgstr "Scegli di guidare la maschera in base all'immagine in ingresso o uscita"
 
 #: ../src/develop/blend_gui.c:2910 ../src/libs/history.c:892
 msgid "feathering radius"
@@ -6342,6 +6350,9 @@ msgid ""
 "please report via the issue tracker\n"
 "including the xmp file"
 msgstr ""
+"Ci sono problemi nella coda di sviluppo\n"
+"Ti chiediamo di riportare il problema agli sviluppatori\n"
+"allegando il file xmp"
 
 #: ../src/develop/pixelpipe_hb.c:2365
 msgid ""
@@ -9271,8 +9282,7 @@ msgstr "riduzione rumore (filtro bilaterale)"
 
 #: ../src/iop/bilateral.cc:97
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
-msgstr ""
-"Applica una sfocatura della superficie per ridurre il rumore o la grana"
+msgstr "Applica una sfocatura della superficie per ridurre il rumore o la grana"
 
 #: ../src/iop/bilateral.cc:100 ../src/iop/channelmixer.c:140
 #: ../src/iop/denoiseprofile.c:636 ../src/iop/exposure.c:117
@@ -9901,8 +9911,7 @@ msgstr ""
 "impostazioni della RAM"
 
 #: ../src/iop/clahe.c:76
-msgid ""
-"this module is deprecated. better use new local contrast module instead."
+msgid "this module is deprecated. better use new local contrast module instead."
 msgstr "Questo modulo è deprecato. Utilizzare il modulo Contrasto Locale"
 
 #: ../src/iop/clahe.c:339 ../src/iop/sharpen.c:733
@@ -10059,8 +10068,7 @@ msgstr "3:1, panorama"
 #: ../src/iop/clipping.c:2234 ../src/iop/clipping.c:2246
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr ""
-"Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
+msgstr "Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
 
 #: ../src/iop/clipping.c:2293
 msgid ""
@@ -10633,8 +10641,7 @@ msgid "color mapping"
 msgstr "mappatura dei colori"
 
 #: ../src/iop/colormapping.c:151
-msgid ""
-"transfer a color palette and tonal repartition from one image to another"
+msgid "transfer a color palette and tonal repartition from one image to another"
 msgstr ""
 "Trasferisce una paletta colore e la suddivisione dei toni da un'immagine ad "
 "un'altra"
@@ -10772,8 +10779,7 @@ msgstr "Sono stati corretti i pixel con luminosità sopra questa soglia"
 
 #: ../src/iop/colorreconstruction.c:1303
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr ""
-"Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
+msgstr "Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
 
 #: ../src/iop/colorreconstruction.c:1304
 msgid "how far to look for replacement colors in the luminance dimension"
@@ -10985,8 +10991,7 @@ msgstr "demosaicizzazione "
 
 #: ../src/iop/demosaic.c:175
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
-msgstr ""
-"Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
+msgstr "Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
 
 #: ../src/iop/demosaic.c:4932
 #, c-format
@@ -11332,8 +11337,7 @@ msgid "legacy equalizer"
 msgstr "Equalizzatore (obsoleto)"
 
 #: ../src/iop/equalizer.c:109
-msgid ""
-"this module is deprecated. better use contrast equalizer module instead."
+msgid "this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
 "Questo modulo è deprecato. E' consigliabile usare l'Equalizzatore di contrasto"
 
@@ -11400,8 +11404,7 @@ msgstr ""
 "se si espone sulla destra."
 
 #: ../src/iop/exposure.c:870
-msgid ""
-"percentage of bright values clipped out, toggle color picker to activate"
+msgid "percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "Percentuale di valori alti troncati, usa la pipetta di estrazione del colore "
 "per attivare"
@@ -12518,8 +12521,7 @@ msgstr ""
 
 #: ../src/iop/lens.cc:1771
 msgid "camera/lens not found - please select manually"
-msgstr ""
-"Fotocamera/obiettivo non trovata/o - per favore selezionali manualmente"
+msgstr "Fotocamera/obiettivo non trovata/o - per favore selezionali manualmente"
 
 #: ../src/iop/lens.cc:1774
 msgid "try to locate your camera/lens in the above two menus"
@@ -13042,8 +13044,7 @@ msgstr "Errore - numero non valido sulla riga %d del cubo lut"
 #: ../src/iop/lut3d.c:833
 #, c-format
 msgid "error - cube lut lines number %d is not correct, should be %d"
-msgstr ""
-"Errore - il numero della riga lut %d non è corretto, dovrebbe essere %d"
+msgstr "Errore - il numero della riga lut %d non è corretto, dovrebbe essere %d"
 
 #: ../src/iop/lut3d.c:843
 #, c-format
@@ -13440,8 +13441,7 @@ msgstr "correzione profilo di ingresso"
 
 #: ../src/iop/profile_gamma.c:99
 msgid "correct input color profiles meant to be applied on non-linear RGB"
-msgstr ""
-"Corregge i profili colore di input da applicare in modo RGB non-lineare"
+msgstr "Corregge i profili colore di input da applicare in modo RGB non-lineare"
 
 #: ../src/iop/profile_gamma.c:134
 msgid "16 EV dynamic range (generic)"
@@ -15253,8 +15253,7 @@ msgstr "Max"
 
 #: ../src/libs/colorpicker.c:468
 msgid "hover to highlight sample on canvas, click to lock sample"
-msgstr ""
-"Posizionati sopra per evidenziare il campione, fai click per acquisirlo"
+msgstr "Posizionati sopra per evidenziare il campione, fai click per acquisirlo"
 
 #: ../src/libs/colorpicker.c:609 ../src/libs/colorpicker.c:654
 msgid "click to (un)hide large color patch"
@@ -15928,8 +15927,7 @@ msgstr "Applica un file tracciato GPX..."
 
 #: ../src/libs/geotagging.c:816
 msgid "parses a GPX file and updates location of selected images"
-msgstr ""
-"Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
+msgstr "Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
 
 #: ../src/libs/histogram.c:109
 msgid "histogram"
@@ -16304,8 +16302,7 @@ msgstr "Come gestire i metadati esistenti"
 
 #: ../src/libs/image.c:566
 msgid "update image information to match changes to file"
-msgstr ""
-"Aggiorna le informazioni immagine per riflettere i cambiamenti del file"
+msgstr "Aggiorna le informazioni immagine per riflettere i cambiamenti del file"
 
 #: ../src/libs/image.c:570
 msgid "set selection as monochrome images and activate monochrome workflow"
@@ -18487,8 +18484,7 @@ msgstr "Sovrimpressione anteprime/sovrimpressione al passaggio del mouse"
 #: ../src/libs/tools/global_toolbox.c:705
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
-msgstr ""
-"Sovrimpressione anteprime/sovrimpressione estesa al passaggio del mouse"
+msgstr "Sovrimpressione anteprime/sovrimpressione estesa al passaggio del mouse"
 
 #: ../src/libs/tools/global_toolbox.c:706
 msgctxt "accel"
@@ -18510,8 +18506,7 @@ msgstr ""
 #: ../src/libs/tools/global_toolbox.c:709
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
-msgstr ""
-"Sovrimpressione anteprime/Blocca sovrimpressione al passaggio del mouse"
+msgstr "Sovrimpressione anteprime/Blocca sovrimpressione al passaggio del mouse"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
