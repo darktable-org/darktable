@@ -1054,6 +1054,9 @@ static inline void wavelets_detail_level(const float *const restrict detail, con
                                              float *const restrict HF, float *const restrict texture,
                                              const size_t width, const size_t height, const size_t ch)
 {
+  printf("[wavelets_detail_level] ch=%ld\n", ch);
+  fflush(stdout);
+
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, HF, LF, detail, texture)           \
     schedule(simd                                                                                                 \
@@ -1102,7 +1105,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   float *const restrict LF_odd = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // low-frequencies RGB
   float *const restrict HF_RGB = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // high-frequencies RGB
   float *const restrict HF_grey
-      = dt_alloc_sse_ps(roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
+      = dt_alloc_sse_ps(roi_out->width * roi_out->height * 4); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
   float *const restrict temp = dt_alloc_sse_ps(roi_out->width * dt_get_num_threads() * ch);
@@ -1113,6 +1116,10 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
     success = FALSE;
     goto error;
   }
+
+  printf("roi_out->width %d   roi_out->height %d   ch %ld\n", roi_out->width, roi_out->height, ch);
+  printf("size LF_* : %ld\n", roi_out->width * roi_out->height * ch);
+  fflush(stdout);
 
   // Init reconstructed with valid parts of image
   init_reconstruct(in, mask, reconstructed, roi_out->width, roi_out->height, ch);
