@@ -1240,11 +1240,7 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
   /* write current history changes so nothing gets lost */
   dt_dev_write_history(darktable.develop);
 
-  /* record current history state : before change (needed for undo) */
-  DT_DEBUG_CONTROL_SIGNAL_RAISE
-    (darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-     dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-     dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(darktable.develop);
 
   /* apply style on image and reload*/
   dt_styles_apply_to_image(name, FALSE, darktable.develop->image_storage.id);
@@ -1253,7 +1249,7 @@ static void _darkroom_ui_apply_style_activate_callback(gchar *name)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   /* record current history state : after change (needed for undo) */
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  dt_dev_undo_end_record(darktable.develop);
 
   // rebuild the accelerators (style might have changed order)
   dt_iop_connect_accels_all();
