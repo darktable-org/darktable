@@ -207,34 +207,45 @@ static gboolean _thumb_expose_again(gpointer user_data)
   return FALSE;
 }
 
+static void _thumb_set_image_size(dt_thumbnail_t *thumb, int image_w, int image_h)
+{
+  int imgbox_w = 0;
+  int imgbox_h = 0;
+  gtk_widget_get_size_request(thumb->w_image_box, &imgbox_w, &imgbox_h);
+
+  gtk_widget_set_size_request(thumb->w_image, MIN(image_w, imgbox_w), MIN(image_h, imgbox_h));
+}
+
 static void _thumb_draw_image(dt_thumbnail_t *thumb, cairo_t *cr)
 {
-  if(!thumb->w_image_box) return;
+  if(!thumb->w_image) return;
 
   // we draw the image
-  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image_box);
+  GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
   int w = 0;
   int h = 0;
-  gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
+  gtk_widget_get_size_request(thumb->w_image, &w, &h);
 
   // Safety check to avoid possible error
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) >= 1)
   {
-    const float scaler = 1.0f / darktable.gui->ppd_thb;
+    cairo_save(cr);
+    float scaler = 1.0f / darktable.gui->ppd_thb;
     cairo_scale(cr, scaler, scaler);
 
-    cairo_set_source_surface(cr, thumb->img_surf, thumb->current_zx * darktable.gui->ppd,
-                             thumb->current_zy * darktable.gui->ppd);
+    cairo_set_source_surface(cr, thumb->img_surf, thumb->zoomx * darktable.gui->ppd,
+                             thumb->zoomy * darktable.gui->ppd);
     cairo_paint(cr);
 
     // and eventually the image border
     gtk_render_frame(context, cr, 0, 0, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
+    cairo_restore(cr);
   }
 
   // if needed we draw the working msg too
   if(thumb->busy)
   {
-    dt_control_draw_busy_msg(cr, w * darktable.gui->ppd_thb, h * darktable.gui->ppd_thb);
+    dt_control_draw_busy_msg(cr, w, h);
   }
 }
 
@@ -290,6 +301,63 @@ static gboolean _event_cursor_draw(GtkWidget *widget, cairo_t *cr, gpointer user
   return TRUE;
 }
 
+static void _thumb_set_image_area(dt_thumbnail_t *thumb)
+{
+  // let's ensure we have the right margins
+  _thumb_retrieve_margins(thumb);
+
+  int image_w, image_h;
+  int posy = 0;
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
+  {
+    image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
+    int w = 0;
+    int h = 0;
+    gtk_widget_get_size_request(thumb->w_bottom_eb, &w, &h);
+    image_h = thumb->height - h;
+    gtk_widget_get_size_request(thumb->w_altered, &w, &h);
+    if(!thumb->zoomable)
+    {
+      posy = h + gtk_widget_get_margin_top(thumb->w_altered);
+      image_h -= posy;
+    }
+    else
+      image_h -= thumb->img_margin->bottom;
+    image_h -= thumb->img_margin->top;
+    posy += thumb->img_margin->top;
+  }
+  else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
+  {
+    image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
+    int w = 0;
+    int h = 0;
+    gtk_widget_get_size_request(thumb->w_reject, &w, &h);
+    image_h = thumb->height - (h + gtk_widget_get_margin_bottom(thumb->w_reject));
+    gtk_widget_get_size_request(thumb->w_altered, &w, &h);
+    posy = h + gtk_widget_get_margin_top(thumb->w_altered);
+    image_h -= posy;
+    image_h -= thumb->img_margin->top + thumb->img_margin->bottom;
+    posy += thumb->img_margin->top;
+  }
+  else
+  {
+    image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
+    image_h = thumb->height - thumb->img_margin->top - thumb->img_margin->bottom;
+    posy = thumb->img_margin->top;
+  }
+
+  // we check that the image drawing area is not greater than the box
+  int wi = 0;
+  int hi = 0;
+  gtk_widget_get_size_request(thumb->w_image, &wi, &hi);
+  const float scale = fminf((float)image_w / wi, (float)image_h / hi);
+  if(scale < 1.0f) gtk_widget_set_size_request(thumb->w_image, wi * scale, hi * scale);
+  // and we set the size and margins of the imagebox
+  gtk_widget_set_size_request(thumb->w_image_box, image_w, image_h);
+  gtk_widget_set_margin_start(thumb->w_image_box, thumb->img_margin->left);
+  gtk_widget_set_margin_top(thumb->w_image_box, posy);
+}
+
 static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 {
   if(!user_data) return TRUE;
@@ -318,41 +386,13 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   if(thumb->img_surf && cairo_surface_get_reference_count(thumb->img_surf) < 1) thumb->img_surf = NULL;
 
   // if we don't have it in memory, we want the image surface
+  dt_view_surface_value_t res = DT_VIEW_SURFACE_OK;
   if(!thumb->img_surf || thumb->img_surf_dirty)
   {
-    // let's ensure we have the right margins
-    _thumb_retrieve_margins(thumb);
-
-    int image_w, image_h;
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
-    {
-      image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
-      int w = 0;
-      int h = 0;
-      gtk_widget_get_size_request(thumb->w_bottom_eb, &w, &h);
-      image_h = thumb->height - h;
-      gtk_widget_get_size_request(thumb->w_altered, &w, &h);
-      if (!thumb->zoomable) image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
-      else
-        image_h -= thumb->img_margin->bottom;
-      image_h -= thumb->img_margin->top;
-    }
-    else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
-    {
-      image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
-      int w = 0;
-      int h = 0;
-      gtk_widget_get_size_request(thumb->w_reject, &w, &h);
-      image_h = thumb->height - (h + gtk_widget_get_margin_bottom(thumb->w_reject));
-      gtk_widget_get_size_request(thumb->w_altered, &w, &h);
-      image_h -= h + gtk_widget_get_margin_top(thumb->w_altered);
-      image_h -= thumb->img_margin->top + thumb->img_margin->bottom;
-    }
-    else
-    {
-      image_w = thumb->width - thumb->img_margin->left - thumb->img_margin->right;
-      image_h = thumb->height - thumb->img_margin->top - thumb->img_margin->bottom;
-    }
+    int image_w = 0;
+    int image_h = 0;
+    _thumb_set_image_area(thumb);
+    gtk_widget_get_size_request(thumb->w_image_box, &image_w, &image_h);
 
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
        && dev->preview_pipe->output_backbuf)
@@ -416,7 +456,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
     }
     else
     {
-      gboolean res;
       cairo_surface_t *img_surf = NULL;
       if(thumb->zoomable)
       {
@@ -428,24 +467,56 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         res = dt_view_image_get_surface(thumb->imgid, image_w, image_h, &img_surf, FALSE);
       }
 
-      if(res)
+      if(res == DT_VIEW_SURFACE_OK || res == DT_VIEW_SURFACE_SMALLER)
       {
-        thumb->busy = TRUE;
-        // if the image is missing, we reload it again
-        if(!thumb->expose_again_timeout_id)
-          thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
-
-        // we still draw the thumb to avoid flickering
-        _thumb_draw_image(thumb, cr);
-        return TRUE;
+        // if we succeed to get an image (even a smaller one)
+        cairo_surface_t *tmp_surf = thumb->img_surf;
+        thumb->img_surf = img_surf;
+        if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0) cairo_surface_destroy(tmp_surf);
+        thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
+        thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
       }
 
-      thumb->busy = FALSE;
-      cairo_surface_t *tmp_surf = thumb->img_surf;
-      thumb->img_surf = img_surf;
-      if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0) cairo_surface_destroy(tmp_surf);
+      if(thumb->img_surf)
+      {
+        // and we want to resize the imagebox to fit in the imagearea
+        const int imgbox_w = MIN(image_w, thumb->img_width / darktable.gui->ppd_thb);
+        const int imgbox_h = MIN(image_h, thumb->img_height / darktable.gui->ppd_thb);
+        // we record the imagebox size before the change
+        int hh = 0;
+        int ww = 0;
+        gtk_widget_get_size_request(thumb->w_image, &ww, &hh);
+        // and we set the new size of the imagebox
+        _thumb_set_image_size(thumb, imgbox_w, imgbox_h);
+        // the imagebox size may have been slightly sanitized, so we get it again
+        int nhi = 0;
+        int nwi = 0;
+        gtk_widget_get_size_request(thumb->w_image, &nwi, &nhi);
 
-      if(thumb->display_focus)
+        // panning value need to be adjusted if the imagebox size as changed
+        thumb->zoomx = thumb->zoomx + (nwi - ww) / 2.0;
+        thumb->zoomy = thumb->zoomy + (nhi - hh) / 2.0;
+        // let's sanitize and apply panning values as we are sure the zoomed image is loaded now
+        // here we have to make sure to properly align according to ppd
+        thumb->zoomx
+            = CLAMP(thumb->zoomx, (nwi * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
+        thumb->zoomy
+            = CLAMP(thumb->zoomy, (nhi * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
+
+        // for overlay block, we need to resize it
+        if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
+      }
+
+      // if we don't have the right size of the image now, we reload it again
+      if(res != DT_VIEW_SURFACE_OK)
+      {
+        thumb->busy = TRUE;
+        if(!thumb->expose_again_timeout_id)
+          thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
+      }
+
+      // if needed we compute and draw here the big rectangle to show focused areas
+      if(res == DT_VIEW_SURFACE_OK && thumb->display_focus)
       {
         uint8_t *full_res_thumb = NULL;
         int32_t full_res_thumb_wd, full_res_thumb_ht;
@@ -471,62 +542,15 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       }
     }
 
-    thumb->img_surf_dirty = FALSE;
-    // let save thumbnail image size
-    thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
-    thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-    const int imgbox_w = MIN(image_w, thumb->img_width/darktable.gui->ppd_thb);
-    const int imgbox_h = MIN(image_h, thumb->img_height/darktable.gui->ppd_thb);
-    // if the imgbox size change, this should also change the panning values
-    int hh = 0;
-    int ww = 0;
-    gtk_widget_get_size_request(thumb->w_image_box, &ww, &hh);
-    thumb->zoomx = thumb->zoomx + (imgbox_w - ww) / 2.0;
-    thumb->zoomy = thumb->zoomy + (imgbox_h - hh) / 2.0;
-    gtk_widget_set_size_request(thumb->w_image_box, imgbox_w, imgbox_h);
-    // and we set the position of the image
-    int posx, posy;
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL || thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED)
+    // here we are sure to have the right imagesurface
+    if(res == DT_VIEW_SURFACE_OK)
     {
-      posx = thumb->img_margin->left + (image_w - imgbox_w) / 2;
-      int w = 0;
-      int h = 0;
-      if(!thumb->zoomable)
-      {
-        gtk_widget_get_size_request(thumb->w_altered, &w, &h);
-        posy = h + gtk_widget_get_margin_top(thumb->w_altered);
-      }
-      else
-      {
-        posy = 0;
-      }
-
-      gtk_widget_get_size_request(thumb->w_bottom_eb, &w, &h);
-      posy += thumb->img_margin->top + (image_h - imgbox_h) / 2;
+      thumb->img_surf_dirty = FALSE;
+      thumb->busy = FALSE;
     }
-    else if(thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED)
-    {
-      posx = thumb->img_margin->left + (image_w - imgbox_w) / 2;
-      int w = 0;
-      int h = 0;
-      gtk_widget_get_size_request(thumb->w_altered, &w, &h);
-      posy = h + gtk_widget_get_margin_top(thumb->w_altered);
-
-      posy += thumb->img_margin->top + (image_h - imgbox_h) / 2;
-    }
-    else
-    {
-      posx = thumb->img_margin->left + (image_w - imgbox_w) / 2;
-      posy = thumb->img_margin->top + (image_h - imgbox_h) / 2;
-    }
-    gtk_widget_set_margin_start(thumb->w_image_box, posx);
-    gtk_widget_set_margin_top(thumb->w_image_box, posy);
-
-    // for overlay block, we need to resize it
-    if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
 
     // and we can also set the zooming level if needed
-    if(thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
+    if(res == DT_VIEW_SURFACE_OK && thumb->zoomable && thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
       if(thumb->zoom_100 < 1.0 || thumb->zoom <= 1.0f)
       {
@@ -539,13 +563,6 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         g_free(z);
       }
     }
-
-    // let's sanitize and apply panning values as we are sure the zoomed image is loaded now
-    // here we have to make sure to properly align according to ppd
-    thumb->zoomx = CLAMP(thumb->zoomx, (imgbox_w * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
-    thumb->zoomy = CLAMP(thumb->zoomy, (imgbox_h * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
-    thumb->current_zx = thumb->zoomx;
-    thumb->current_zy = thumb->zoomy;
   }
 
   _thumb_draw_image(thumb, cr);
@@ -1073,8 +1090,22 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_image_box);
     thumb->w_image = gtk_drawing_area_new();
     gtk_widget_set_name(thumb->w_image, "thumb_image");
-    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_FILL);
-    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_FILL);
+    // we pre-set the size of the imagebox with the aspect ratio so the image is already centered
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+    int iw = thumb->width;
+    int ih = thumb->height;
+    if(img)
+    {
+      const float ar = img->aspect_ratio;
+      dt_image_cache_read_release(darktable.image_cache, img);
+      if(ar < 0)
+        iw = ih * ar;
+      else
+        ih = iw / ar;
+    }
+    gtk_widget_set_size_request(thumb->w_image, iw, ih);
+    gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
+    gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                               | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                               | GDK_POINTER_MOTION_HINT_MASK | GDK_POINTER_MOTION_MASK);
@@ -1431,7 +1462,12 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
   }
   else
   {
-    gtk_widget_get_size_request(thumb->w_image_box, &width, &height);
+    gtk_widget_get_size_request(thumb->w_image, &width, &height);
+    int w = 0;
+    int h = 0;
+    gtk_widget_get_size_request(thumb->w_image_box, &w, &h);
+    const int px = (w - width) / 2;
+    const int py = (h - height) / 2;
 
     // we need to squeeze 5 stars + 1 reject + 1 colorlabels symbols on a thumbnail width
     // all icons having a width of 3.0 * r1 => 21 * r1
@@ -1439,8 +1475,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     const float r1 = fminf(max_size / 2.0f, width / 25.0f);
 
     // file extension
-    gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width);
-    gtk_widget_set_margin_start(thumb->w_ext, 0.03 * width);
+    gtk_widget_set_margin_top(thumb->w_ext, 0.03 * width + py);
+    gtk_widget_set_margin_start(thumb->w_ext, 0.03 * width + px);
 
     // bottom background
     attrlist = pango_attr_list_new();
@@ -1449,8 +1485,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_label_set_attributes(GTK_LABEL(thumb->w_bottom), attrlist);
     gtk_label_set_attributes(GTK_LABEL(thumb->w_zoom), attrlist);
     pango_attr_list_unref(attrlist);
-    int w = 0;
-    int h = 0;
+    w = 0;
+    h = 0;
     pango_layout_get_pixel_size(gtk_label_get_layout(GTK_LABEL(thumb->w_bottom)), &w, &h);
     // for the position, we use css margin and use it as per thousand (and not pixels)
     GtkBorder *margins = gtk_border_new();
@@ -1483,8 +1519,8 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     gtk_widget_set_valign(thumb->w_bottom_eb, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_bottom_eb, GTK_ALIGN_START);
 
-    gtk_widget_set_margin_top(thumb->w_bottom_eb, margin_t + border_t);
-    gtk_widget_set_margin_start(thumb->w_bottom_eb, margin_l + border_l);
+    gtk_widget_set_margin_top(thumb->w_bottom_eb, margin_t + border_t + py);
+    gtk_widget_set_margin_start(thumb->w_bottom_eb, margin_l + border_l + px);
     gtk_widget_set_margin_top(thumb->w_bottom, padding_t);
     gtk_widget_set_margin_start(thumb->w_bottom, padding_t);
     gtk_widget_set_margin_end(thumb->w_bottom, padding_t);
@@ -1492,47 +1528,47 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
     // reject icon
     gtk_widget_set_size_request(thumb->w_reject, icon_size, icon_size);
     gtk_widget_set_valign(thumb->w_reject, GTK_ALIGN_START);
-    gtk_widget_set_margin_start(thumb->w_reject, padding - icon_size / 8.0 + border_l);
-    gtk_widget_set_margin_top(thumb->w_reject, line2);
+    gtk_widget_set_margin_start(thumb->w_reject, padding - icon_size / 8.0 + border_l + px);
+    gtk_widget_set_margin_top(thumb->w_reject, line2 + py);
     // stars
     for(int i = 0; i < MAX_STARS; i++)
     {
       gtk_widget_set_size_request(thumb->w_stars[i], icon_size, icon_size);
       gtk_widget_set_valign(thumb->w_stars[i], GTK_ALIGN_START);
-      gtk_widget_set_margin_top(thumb->w_stars[i], line2);
+      gtk_widget_set_margin_top(thumb->w_stars[i], line2 + py);
       gtk_widget_set_margin_start(thumb->w_stars[i],
-                                  padding - icon_size / 8.0 + border_l + r1 + (i + 1) * 3.0 * r1);
+                                  padding - icon_size / 8.0 + border_l + r1 + (i + 1) * 3.0 * r1 + px);
     }
     // the color labels
     gtk_widget_set_size_request(thumb->w_color, icon_size, icon_size);
     gtk_widget_set_valign(thumb->w_color, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_color, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_color, line2);
+    gtk_widget_set_margin_top(thumb->w_color, line2 + py);
     gtk_widget_set_margin_start(thumb->w_color,
-                                padding - icon_size / 8.0 + border_l + 2.0 * r1 + (MAX_STARS + 1) * 3.0 * r1);
+                                padding - icon_size / 8.0 + border_l + 2.0 * r1 + (MAX_STARS + 1) * 3.0 * r1 + px);
     // the local copy indicator
     gtk_widget_set_size_request(thumb->w_local_copy, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_local_copy, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_altered, line3);
-    gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_altered, line3 + py);
+    gtk_widget_set_margin_start(thumb->w_altered, 10.0 * r1 + px);
     // the altered icon
     gtk_widget_set_size_request(thumb->w_altered, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_altered, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_altered, line3);
-    gtk_widget_set_margin_start(thumb->w_altered, 7.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_altered, line3 + py);
+    gtk_widget_set_margin_start(thumb->w_altered, 7.0 * r1 + px);
     // the group bouton
     gtk_widget_set_size_request(thumb->w_group, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_group, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_group, line3);
-    gtk_widget_set_margin_start(thumb->w_group, 4.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_group, line3 + py);
+    gtk_widget_set_margin_start(thumb->w_group, 4.0 * r1 + px);
     // the sound icon
     gtk_widget_set_size_request(thumb->w_audio, icon_size2, icon_size2);
     gtk_widget_set_halign(thumb->w_audio, GTK_ALIGN_START);
-    gtk_widget_set_margin_top(thumb->w_audio, line3);
-    gtk_widget_set_margin_start(thumb->w_audio, r1);
+    gtk_widget_set_margin_top(thumb->w_audio, line3 + py);
+    gtk_widget_set_margin_start(thumb->w_audio, r1 + px);
     // the zoomming indicator
-    gtk_widget_set_margin_top(thumb->w_zoom_eb, line3);
-    gtk_widget_set_margin_start(thumb->w_zoom_eb, 18.0 * r1);
+    gtk_widget_set_margin_top(thumb->w_zoom_eb, line3 + py);
+    gtk_widget_set_margin_start(thumb->w_zoom_eb, 18.0 * r1 + px);
   }
 }
 
@@ -1551,17 +1587,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_widget_set_size_request(thumb->w_main, width, height);
 
   // we change the size and margins according to the size change. This will be refined after
-  if(h > 0 && w > 0)
-  {
-    int wi = 0;
-    int hi = 0;
-    gtk_widget_get_size_request(thumb->w_image_box, &wi, &hi);
-    const int nimg_w = width * wi / w;
-    const int nimg_h = height * hi / h;
-    gtk_widget_set_size_request(thumb->w_image_box, nimg_w, nimg_h);
-  }
-
-  _thumb_retrieve_margins(thumb);
+  _thumb_set_image_area(thumb);
 
   // file extension
   gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
@@ -1706,11 +1732,9 @@ void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb)
   // here we have to make sure to properly align according to ppd
   int iw = 0;
   int ih = 0;
-  gtk_widget_get_size_request(thumb->w_image_box, &iw, &ih);
+  gtk_widget_get_size_request(thumb->w_image, &iw, &ih);
   thumb->zoomx = CLAMP(thumb->zoomx, (iw * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
   thumb->zoomy = CLAMP(thumb->zoomy, (ih * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
-  thumb->current_zx = thumb->zoomx;
-  thumb->current_zy = thumb->zoomy;
   gtk_widget_queue_draw(thumb->w_main);
 }
 

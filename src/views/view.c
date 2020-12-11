@@ -931,8 +931,10 @@ int dt_view_get_image_to_act_on()
   return ret;
 }
 
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality)
+dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+                                                  const gboolean quality)
 {
+  dt_view_surface_value_t ret = DT_VIEW_SURFACE_KO;
   // if surface not null, clean it up
   if(*surface && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
   *surface = NULL;
@@ -943,24 +945,15 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
-  gboolean buf_ok = TRUE;
-  int buf_wd = 0;
-  int buf_ht = 0;
-
   dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
-  buf_wd = buf.width;
-  buf_ht = buf.height;
-  if(!buf.buf)
-    buf_ok = FALSE;
-  else if(mip != buf.size)
-    buf_ok = FALSE;
+  const int buf_wd = buf.width;
+  const int buf_ht = buf.height;
 
-  // if we got a different mip than requested, and it's not a skull (8x8 px), we count
-  // this thumbnail as missing (to trigger re-exposure)
-  if(!buf_ok && buf_wd != 8 && buf_ht != 8)
+  // if we don't get buffer, no image is awailable at the moment
+  if(!buf.buf)
   {
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    return 1;
+    return DT_VIEW_SURFACE_KO;
   }
 
   // so we create a new image surface to return
@@ -1052,9 +1045,13 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     // in between, filtering just makes stuff go unsharp.
     if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    else if(mip != buf.size)
+      cairo_pattern_set_filter(cairo_get_source(cr),
+                               CAIRO_FILTER_FAST); // not the right size, so we scale as fast a possible
     else
-    cairo_pattern_set_filter(cairo_get_source(cr), ((darktable.gui->filter_image == CAIRO_FILTER_FAST) && quality)
-      ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
+      cairo_pattern_set_filter(cairo_get_source(cr), ((darktable.gui->filter_image == CAIRO_FILTER_FAST) && quality)
+                                                         ? CAIRO_FILTER_GOOD
+                                                         : darktable.gui->filter_image);
 
     cairo_paint(cr);
     /* from focus_peaking.h
@@ -1064,16 +1061,26 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
        The current implementation assumes the data at image is organized as a rectangle without a stride,
        So we pass the raw data to be processed, this is more data but correct.
     */
-    if(darktable.gui->show_focus_peaking)
+    if(darktable.gui->show_focus_peaking && mip == buf.size)
       dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
   }
 
+  // we consider skull as ok as the image hasn't to be reload
+  if(buf_wd <= 8 && buf_ht <= 8)
+    ret = DT_VIEW_SURFACE_OK;
+  else if(mip != buf.size)
+    ret = DT_VIEW_SURFACE_SMALLER;
+  else
+    ret = DT_VIEW_SURFACE_OK;
+
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   if(rgbbuf) free(rgbbuf);
-  return 0;
+
+  // we consider skull as ok as the image hasn't to be reload
+  return ret;
 }
 
 char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow)
