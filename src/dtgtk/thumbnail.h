@@ -125,10 +125,8 @@ typedef struct
 
   // difference between the global zoom values and the value to apply to this specific thumbnail
   float zoom;     // zoom value. 1.0 is "image to fit" (the initial value)
-  int zoomx;      // zoom panning of the image
-  int zoomy;      //
-  int current_zx; // zoom panning currently applied on the image
-  int current_zy; // can differ from zoomx if image is not loaded on first try
+  double zoomx;   // zoom panning of the image
+  double zoomy;   //
 
   float zoom_100; // max zoom value (image 100%)
 
