@@ -1097,15 +1097,17 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   // wavelets scales
   const int scales = get_scales(roi_in, piece);
 
+  const int buf_size = roi_out->width * roi_out->height * (ch + 1);
+
   // wavelets scales buffers
-  float *const restrict LF_even = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch); // low-frequencies RGB
-  float *const restrict LF_odd = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // low-frequencies RGB
-  float *const restrict HF_RGB = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // high-frequencies RGB
+  float *const restrict LF_even = dt_alloc_sse_ps(buf_size); // low-frequencies RGB
+  float *const restrict LF_odd = dt_alloc_sse_ps(buf_size);  // low-frequencies RGB
+  float *const restrict HF_RGB = dt_alloc_sse_ps(buf_size);  // high-frequencies RGB
   float *const restrict HF_grey
       = dt_alloc_sse_ps(roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * dt_get_num_threads() * ch);
+  float *const restrict temp = dt_alloc_sse_ps(buf_size);
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
