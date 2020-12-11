@@ -3033,6 +3033,32 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
   if(boxhh) *boxhh = boxh;
 }
 
+void dt_dev_undo_start_record(dt_develop_t *dev)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  /* record current history state : before change (needed for undo) */
+  if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE
+      (darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+       dt_history_duplicate(dev->history),
+       dev->history_end,
+       dt_ioppr_iop_order_copy_deep(dev->iop_order_list));
+  }
+}
+
+void dt_dev_undo_end_record(dt_develop_t *dev)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  /* record current history state : after change (needed for undo) */
+  if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
