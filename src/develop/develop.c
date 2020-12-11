@@ -942,10 +942,7 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
-  if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(dev);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -985,7 +982,8 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
+
     if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* redraw */
@@ -1036,10 +1034,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, g
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
-  if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(dev);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1055,7 +1050,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, g
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
 
     /* recreate mask list */
     dt_dev_masks_list_change(dev);
@@ -1717,10 +1712,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   dt_lock_image(imgid);
 
-  if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(dev);
 
   int auto_apply_modules = 0;
   gboolean first_run = FALSE;
@@ -2001,7 +1993,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_dev_invalidate_all(dev);
 
     /* signal history changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
   }
   dt_dev_masks_list_change(dev);
 
@@ -2429,11 +2421,10 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   // if(darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
   int del = 0;
+
   if(dev->gui_attached)
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+    dt_dev_undo_start_record(dev);
 
     GList *elem = g_list_first(dev->history);
     while(elem != NULL)
@@ -2472,7 +2463,8 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached && del)
   {
     /* signal that history has changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
+
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     /* redraw */
     dt_control_queue_redraw_center();
