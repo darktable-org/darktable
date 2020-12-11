@@ -1243,10 +1243,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   convert_any_XYZ_to_LMS(XYZ, d->illuminant, d->adaptation);
   d->illuminant[3] = 0.f;
 
-  // Normalize
-  const float M_illu = d->illuminant[1];
-  for(size_t c = 0; c < 3; c++) d->illuminant[c] /= M_illu;
-
   //fprintf(stdout, "illuminant: %i\n", p->illuminant);
   //fprintf(stdout, "x: %f, y: %f\n", x, y);
   //fprintf(stdout, "X: %f - Y: %f - Z: %f\n", XYZ[0], XYZ[1], XYZ[2]);
