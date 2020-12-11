@@ -2036,16 +2036,27 @@ static gboolean _accel_paste(GtkAccelGroup *accel_group, GObject *acceleratable,
                              GdkModifierType modifier, gpointer data)
 {
   GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
+
+  dt_dev_undo_start_record(darktable.develop);
+
   const gboolean ret = dt_history_paste_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+
+  dt_dev_undo_end_record(darktable.develop);
+
   return TRUE;
 }
 static gboolean _accel_paste_parts(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                    GdkModifierType modifier, gpointer data)
 {
   GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
+
+  dt_dev_undo_start_record(darktable.develop);
+
   const gboolean ret = dt_history_paste_parts_on_list(imgs, TRUE);
   if(ret) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+
+  dt_dev_undo_end_record(darktable.develop);
   return TRUE;
 }
 static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
