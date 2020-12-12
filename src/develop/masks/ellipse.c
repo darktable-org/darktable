@@ -365,7 +365,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", rotation);
     }
-    else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    else if((state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == GDK_SHIFT_MASK)
     {
       float masks_border = 0.0f;
       int flags = 0;
@@ -453,7 +453,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK && !((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK))
+    if((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == GDK_CONTROL_MASK)
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(form, parentid, up);
@@ -480,7 +480,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
           dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", ellipse->rotation);
       }
       // resize don't care where the mouse is inside a shape
-      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      if((state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == GDK_SHIFT_MASK)
       {
         const float reference = (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
         if(up && ellipse->border > 0.001f * reference)
