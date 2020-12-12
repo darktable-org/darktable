@@ -1464,7 +1464,6 @@ void dt_configure_performance()
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
     dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem > (2lu << 20) && threads >= 4 && atom_cores == 0)
@@ -1478,7 +1477,6 @@ void dt_configure_performance()
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
     dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem < (1lu << 20) || threads <= 2 || atom_cores > 0)
@@ -1490,7 +1488,6 @@ void dt_configure_performance()
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", TRUE);
     dt_conf_set_bool("ui/performance", TRUE);
   }
   else
@@ -1502,7 +1499,6 @@ void dt_configure_performance()
     dt_conf_set_int("host_memory_limit", 1500);
     dt_conf_set_int("singlebuffer_limit", 16);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
     dt_conf_set_bool("ui/performance", FALSE);
   }
 
