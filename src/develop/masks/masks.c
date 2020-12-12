@@ -1790,7 +1790,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   if(gui)
   {
     // for brush, the opacity is the density of the masks, do not update opacity here for the brush.
-    if(gui->creation && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(gui->creation && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == GDK_CONTROL_MASK)
     {
       float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
       float amount = 0.05f;
