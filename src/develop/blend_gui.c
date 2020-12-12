@@ -1329,7 +1329,7 @@ static int _blendop_masks_add_shape_callback(GtkWidget *widget, GdkEventButton *
 {
   if(event->button ==1)
   {
-    return _blendop_masks_add_shape(widget, self, event->state & GDK_CONTROL_MASK);
+    return _blendop_masks_add_shape(widget, self, (event->state & KEY_STATE_MASK) == GDK_CONTROL_MASK);
   }
   return FALSE;
 }
@@ -1349,7 +1349,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
-      const int control_button_pressed = event->state & GDK_CONTROL_MASK;
+      const int control_button_pressed = (event->state & KEY_STATE_MASK) == GDK_CONTROL_MASK;
 
       switch(bd->masks_shown)
       {
