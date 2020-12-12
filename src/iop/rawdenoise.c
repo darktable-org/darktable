@@ -304,29 +304,27 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   const size_t size = (size_t)width * height;
   // allocate a buffer for the particular color channel to be denoise; we add two rows to simplify the
   // channel-extraction code (no special case for top/bottom row)
-  float *const img = dt_alloc_align_float((size_t)width * (height+2) * 4);
+  float *const img = dt_alloc_align_float((size_t)width * (height+2));
   if (!img)
   {
     // we ran out of memory, so just pass through the image without denoising
     memcpy(out, in, size * sizeof(float));
     return;
   }
-  float *const fimg = img + width * 4;	// point at the actual color channel contents in the buffer
+  float *const fimg = img + width;	// point at the actual color channel contents in the buffer
 
   for(int c = 0; c < 3; c++)
   {
     float noise[DT_IOP_RAWDENOISE_BANDS];
     compute_channel_noise(noise, c, data);
 
-    memset(fimg, 0, size * sizeof(float));
-
     // ensure a defined value for every pixel in the top and bottom rows, even if they are more than
     // one pixel away from the nearest neighbor of the same color and thus the simple interpolation
     // used in the following loop does not set them
     for (size_t col = 0; col < width; col++)
     {
-      fimg[size + col] = 0.5f;
-      fimg[size + (height-1)*width + col] = 0.5f;
+      fimg[col] = 0.5f;
+      fimg[(height-1)*width + col] = 0.5f;
     }
     const size_t nthreads = darktable.num_openmp_threads; // go direct, dt_get_num_threads() always returns numprocs
     const size_t chunksize = (height + nthreads - 1) / nthreads;
