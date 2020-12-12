@@ -876,13 +876,6 @@
     <shortdescription>last timeline zoom.</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig> <!-- this option is not exposed in the gui because there might be crashy synchronisation issues when it's updated on the fly -->
-    <name>plugins/lighttable/low_quality_thumbnails</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>low quality thumbnails</shortdescription>
-    <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
-  </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
     <type>
