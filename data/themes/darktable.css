@@ -996,7 +996,6 @@ notebook tabs,
 #modules-tabs #dt-toggle-button
 {
   min-height: 2em;
-  min-width: 2em;
   padding: 0.1em;
 }
 
@@ -1009,8 +1008,15 @@ notebook tabs,
 {
   font-size: 0.8em;
   min-height: 1.55em;
-  min-width: 1.55em;
   padding: 0.45em;
+}
+
+#modules-tabs #dt-toggle-button,   /* This is needed separately to set a minimal width if panel is really narrow */
+#blending-tabs #dt-toggle-button
+{
+  min-width: 0em;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
 }
 
 #blending-tabs #dt-button
