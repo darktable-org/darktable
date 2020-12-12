@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 Thierry Leconte.
-    copyright (c) 2012 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -41,6 +40,7 @@ extern "C" {
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -55,7 +55,8 @@ DT_MODULE_INTROSPECTION(1, dt_iop_tonemapping_params_t)
 
 typedef struct dt_iop_tonemapping_params_t
 {
-  float contrast, Fsize;
+  float contrast; // $MIN: 1.0 $MAX: 5.0 $DEFAULT: 2.5 $DESCRIPTION: "contrast compression"
+  float Fsize;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 30 $DESCRIPTION: "spatial extent"
 } dt_iop_tonemapping_params_t;
 
 typedef struct dt_iop_tonemapping_gui_data_t
@@ -76,31 +77,22 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_DEPRECATED;
+}
+
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use local contrast or tone equalizer modules instead.");
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast compression"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "contrast compression", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "spatial extent", GTK_WIDGET(g->Fsize));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -210,24 +202,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // GUI
 //
-static void contrast_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
-  p->contrast = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void Fsize_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
-  p->Fsize = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -240,7 +214,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_tonemapping_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -251,66 +224,20 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
-  dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)module->params;
+  dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->Fsize, p->Fsize);
 }
 
-void reload_defaults(dt_iop_module_t *module)
-{
-  dt_iop_tonemapping_params_t tmp = (dt_iop_tonemapping_params_t){ 2.5, 30 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_tonemapping_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_tonemapping_params_t));
-}
-
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_tonemapping_data_t));
-  module->params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
-  module->default_params = (dt_iop_params_t *)malloc(sizeof(dt_iop_tonemapping_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_tonemapping_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_tonemapping_gui_data_t));
-  dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
-  dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
+  dt_iop_tonemapping_gui_data_t *g = IOP_GUI_ALLOC(tonemapping);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
 
-  /* contrast */
-  g->contrast = dt_bauhaus_slider_new_with_range(self, 1.0, 5.0000, 0.1, p->contrast, 3);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->contrast), TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast compression"));
-  g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
-
-  /* spatial extent */
-  g->Fsize = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->Fsize, 1);
+  g->Fsize = dt_bauhaus_slider_from_params(self, "Fsize");
   dt_bauhaus_slider_set_format(g->Fsize, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->Fsize, NULL, _("spatial extent"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->Fsize), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->Fsize), "value-changed", G_CALLBACK(Fsize_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 }
 

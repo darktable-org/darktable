@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 edgardo hoszowski.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -28,24 +28,30 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
+#include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 
-DT_MODULE_INTROSPECTION(1, dt_iop_basicadj_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_basicadj_params_t)
 
 #define exposure2white(x) exp2f(-(x))
 
 typedef struct dt_iop_basicadj_params_t
 {
-  float black_point;
-  float exposure;
-  float hlcompr;
+  float black_point;    /* $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+                           $DESCRIPTION:"black level correction" */
+  float exposure;       // $MIN: -18.0 $MAX: 18.0 $DEFAULT: 0.0
+  float hlcompr;        /* $MIN: 0 $MAX: 500.0 $DEFAULT: 0.0
+                           $DESCRIPTION:"highlight compression" */
   float hlcomprthresh;
-  float contrast;
-  int preserve_colors;
-  float middle_grey;
-  float brightness;
-  float saturation;
-  float clip;
+  float contrast;       // $MIN: -1.0 $MAX: 5.0 $DEFAULT: 0.0
+  dt_iop_rgb_norms_t preserve_colors; /* $DEFAULT: DT_RGB_NORM_LUMINANCE
+                                         $DESCRIPTION:"preserve colors" */
+  float middle_grey;    // $MIN: 0.05 $MAX: 100 $DEFAULT: 18.42 $DESCRIPTION: "middle grey"
+  float brightness;     // $MIN: -4.0 $MAX: 4.0 $DEFAULT: 0.0
+  float saturation;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+  float vibrance;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
+  float clip;           // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0
 } dt_iop_basicadj_params_t;
 
 typedef struct dt_iop_basicadj_gui_data_t
@@ -70,9 +76,8 @@ typedef struct dt_iop_basicadj_gui_data_t
   GtkWidget *sl_middle_grey;
   GtkWidget *sl_brightness;
   GtkWidget *sl_saturation;
+  GtkWidget *sl_vibrance;
   GtkWidget *sl_clip;
-
-  dt_iop_color_picker_t color_picker;
 } dt_iop_basicadj_gui_data_t;
 
 typedef struct dt_iop_basicadj_data_t
@@ -87,14 +92,61 @@ typedef struct dt_iop_basicadj_global_data_t
   int kernel_basicadj;
 } dt_iop_basicadj_global_data_t;
 
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
+                  const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_basicadj_params_v1_t
+    {
+      float black_point;
+      float exposure;
+      float hlcompr;
+      float hlcomprthresh;
+      float contrast;
+      int preserve_colors;
+      float middle_grey;
+      float brightness;
+      float saturation;
+      float clip;
+    } dt_iop_basicadj_params_v1_t;
+
+    const dt_iop_basicadj_params_v1_t *old = old_params;
+    dt_iop_basicadj_params_t *new = new_params;
+
+    new->black_point = old->black_point;
+    new->exposure = old->exposure;
+    new->hlcompr = old->hlcompr;
+    new->hlcomprthresh = old->hlcomprthresh;
+    new->contrast = old->contrast;
+    new->preserve_colors = old->preserve_colors;
+    new->middle_grey = old->middle_grey;
+    new->brightness = old->brightness;
+    new->saturation = old->saturation;
+    new->clip = old->clip;
+    new->vibrance = 0;
+    return 0;
+  }
+  return 1;
+}
+
 const char *name()
 {
   return _("basic adjustments");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("apply usual image adjustments"),
+                                      _("creative"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, scene-referred"));
+}
+
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -123,118 +175,14 @@ static void _turn_selregion_picker_off(struct dt_iop_module_t *self)
   dt_iop_color_picker_reset(self, TRUE);
 }
 
-static void _black_point_callback(GtkWidget *slider, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->black_point = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _turn_select_region_off(self);
 }
 
-static void _exposure_callback(GtkWidget *slider, dt_iop_module_t *self)
+static void _color_picker_callback(GtkWidget *button, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->exposure = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _hlcompr_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->hlcompr = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _contrast_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->contrast = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->preserve_colors = dt_bauhaus_combobox_get(widget);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _middle_grey_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->middle_grey = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _color_picker_callback(GtkWidget *button, dt_iop_color_picker_t *self)
-{
-  _turn_select_region_off(self->module);
-  dt_iop_color_picker_callback(button, self);
-}
-
-static void _brightness_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->brightness = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _saturation_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->saturation = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void _clip_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
-
-  p->clip = dt_bauhaus_slider_get(slider);
-
-  _turn_selregion_picker_off(self);
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  _turn_select_region_off(self);
 }
 
 static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
@@ -319,12 +267,11 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
     dt_pthread_mutex_unlock(&g->lock);
 
-    const int reset = darktable.gui->reset;
-    darktable.gui->reset = 1;
+    ++darktable.gui->reset;
 
     gui_update(self);
 
-    darktable.gui->reset = reset;
+    --darktable.gui->reset;
   }
   else
   {
@@ -353,12 +300,11 @@ static void _signal_profile_user_changed(gpointer instance, uint8_t profile_type
 
       if(g)
       {
-        const int reset = darktable.gui->reset;
-        darktable.gui->reset = 1;
+        ++darktable.gui->reset;
 
         dt_bauhaus_slider_set_default(g->sl_middle_grey, def_middle_grey);
 
-        darktable.gui->reset = reset;
+        --darktable.gui->reset;
       }
     }
   }
@@ -511,13 +457,13 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   p->middle_grey = (work_profile) ? (dt_ioppr_get_rgb_matrix_luminance(self->picked_color,
                                                                        work_profile->matrix_in,
                                                                        work_profile->lut_in,
@@ -526,13 +472,9 @@ static void _iop_color_picker_apply(struct dt_iop_module_t *self, dt_dev_pixelpi
                                                                        work_profile->nonlinearlut) * 100.f)
                                   : dt_camera_rgb_luminance(self->picked_color);
 
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
+  ++darktable.gui->reset;
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
-  darktable.gui->reset = reset;
-
-  // avoid recursion
-  self->picker->skip_apply = TRUE;
+  --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -592,7 +534,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_basicadj_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -614,38 +555,15 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->sl_middle_grey, p->middle_grey);
   dt_bauhaus_slider_set(g->sl_brightness, p->brightness);
   dt_bauhaus_slider_set(g->sl_saturation, p->saturation);
+  dt_bauhaus_slider_set(g->sl_vibrance, p->vibrance);
   dt_bauhaus_slider_set(g->sl_clip, p->clip);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_select_region), g->draw_selected_region);
 }
 
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_basicadj_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_basicadj_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_basicadj_params_t);
-  module->gui_data = NULL;
-
-  dt_iop_basicadj_params_t tmp = { 0 };
-  tmp.preserve_colors = DT_RGB_NORM_LUMINANCE;
-  tmp.middle_grey = 18.42f;
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_basicadj_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_basicadj_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  if(!in) _turn_selregion_picker_off(self);
+  if(!in) _turn_select_region_off(self);
 }
 
 void change_image(struct dt_iop_module_t *self)
@@ -661,137 +579,97 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_basicadj_gui_data_t));
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  dt_iop_basicadj_params_t *p = (dt_iop_basicadj_params_t *)self->params;
+  dt_iop_basicadj_gui_data_t *g = IOP_GUI_ALLOC(basicadj);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->sl_black_point = dt_bauhaus_slider_new_with_range(self, -0.10, 0.10, .001, p->black_point, 4);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_black_point, -1.0, 1.0);
-  dt_bauhaus_widget_set_label(g->sl_black_point, NULL, _("black level correction"));
-  dt_bauhaus_slider_set_format(g->sl_black_point, "%.4f");
-  g_object_set(g->sl_black_point, "tooltip-text", _("adjust the black level to unclip negative RGB values.\n"
+  g->sl_black_point = dt_bauhaus_slider_from_params(self, "black_point");
+  dt_bauhaus_slider_set_soft_range(g->sl_black_point, -0.1, 0.1);
+  dt_bauhaus_slider_set_step(g->sl_black_point, .001);
+  dt_bauhaus_slider_set_digits(g->sl_black_point, 4);
+  gtk_widget_set_tooltip_text(g->sl_black_point, _("adjust the black level to unclip negative RGB values.\n"
                                                     "you should never use it to add more density in blacks!\n"
                                                     "if poorly set, it will clip near-black colors out of gamut\n"
-                                                    "by pushing RGB values into negatives"),
-               (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_black_point), "value-changed", G_CALLBACK(_black_point_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_black_point, TRUE, TRUE, 0);
+                                                    "by pushing RGB values into negatives"));
 
-  g->sl_exposure = dt_bauhaus_slider_new_with_range(self, -4.0, 4.0, .02, p->exposure, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_exposure, -18.0, 18.0);
-  dt_bauhaus_widget_set_label(g->sl_exposure, NULL, _("exposure"));
+  g->sl_exposure = dt_bauhaus_slider_from_params(self, N_("exposure"));
+  dt_bauhaus_slider_set_soft_range(g->sl_exposure, -4.0, 4.0);
+  dt_bauhaus_slider_set_step(g->sl_exposure, .02);
   dt_bauhaus_slider_set_format(g->sl_exposure, _("%.2f EV"));
-  g_object_set(g->sl_exposure, "tooltip-text", _("adjust the exposure correction"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_exposure), "value-changed", G_CALLBACK(_exposure_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_exposure, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->sl_exposure, _("adjust the exposure correction"));
 
-  g->sl_hlcompr = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->hlcompr, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_hlcompr, 0.0, 500.0);
-  dt_bauhaus_widget_set_label(g->sl_hlcompr, NULL, _("highlight compression"));
-  g_object_set(g->sl_hlcompr, "tooltip-text", _("highlight compression adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_hlcompr), "value-changed", G_CALLBACK(_hlcompr_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_hlcompr, TRUE, TRUE, 0);
+  g->sl_hlcompr = dt_bauhaus_slider_from_params(self, "hlcompr");
+  dt_bauhaus_slider_set_soft_max(g->sl_hlcompr, 100.0);
+  gtk_widget_set_tooltip_text(g->sl_hlcompr, _("highlight compression adjustment"));
 
-  g->sl_contrast = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->contrast, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_contrast, -1.0, 5.0);
-  dt_bauhaus_widget_set_label(g->sl_contrast, NULL, _("contrast"));
-  g_object_set(g->sl_contrast, "tooltip-text", _("contrast adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_contrast), "value-changed", G_CALLBACK(_contrast_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_contrast, TRUE, TRUE, 0);
+  g->sl_contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
+  dt_bauhaus_slider_set_soft_range(g->sl_contrast, -1.0, 1.0);
+  gtk_widget_set_tooltip_text(g->sl_contrast, _("contrast adjustment"));
 
-  g->cmb_preserve_colors = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_preserve_colors, NULL, _("preserve colors"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("none"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("max RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("average RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("sum RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("norm RGB"));
-  dt_bauhaus_combobox_add(g->cmb_preserve_colors, _("basic power"));
-  gtk_box_pack_start(GTK_BOX(self->widget), g->cmb_preserve_colors, TRUE, TRUE, 0);
+  g->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors") ;
   gtk_widget_set_tooltip_text(g->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
-  g_signal_connect(G_OBJECT(g->cmb_preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
 
-  g->sl_middle_grey = dt_bauhaus_slider_new_with_range(self, 0.05, 100.0, .5, p->middle_grey, 2);
-  dt_bauhaus_widget_set_label(g->sl_middle_grey, NULL, _("middle grey"));
+  g->sl_middle_grey = dt_color_picker_new(self, DT_COLOR_PICKER_AREA,
+                      dt_bauhaus_slider_from_params(self, "middle_grey"));
+  dt_bauhaus_slider_set_step(g->sl_middle_grey, .5);
   dt_bauhaus_slider_set_format(g->sl_middle_grey, "%.2f %%");
-  g_object_set(g->sl_middle_grey, "tooltip-text", _("middle grey adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_middle_grey), "value-changed", G_CALLBACK(_middle_grey_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_middle_grey, TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->sl_middle_grey, _("middle grey adjustment"));
+  g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback), self);
 
-  dt_bauhaus_widget_set_quad_paint(g->sl_middle_grey, dtgtk_cairo_paint_colorpicker,
-                                   CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  dt_bauhaus_widget_set_quad_toggle(g->sl_middle_grey, TRUE);
-  g_signal_connect(G_OBJECT(g->sl_middle_grey), "quad-pressed", G_CALLBACK(_color_picker_callback),
-                   &g->color_picker);
+  g->sl_brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
+  dt_bauhaus_slider_set_soft_range(g->sl_brightness, -1.0, 1.0);
+  gtk_widget_set_tooltip_text(g->sl_brightness,_("brightness adjustment"));
 
-  g->sl_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->brightness, 2);
-  dt_bauhaus_slider_enable_soft_boundaries(g->sl_brightness, -4.0, 4.0);
-  dt_bauhaus_widget_set_label(g->sl_brightness, NULL, _("brightness"));
-  g_object_set(g->sl_brightness, "tooltip-text", _("brightness adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_brightness), "value-changed", G_CALLBACK(_brightness_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_brightness, TRUE, TRUE, 0);
+  g->sl_saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
+  gtk_widget_set_tooltip_text(g->sl_saturation,_("saturation adjustment"));
 
-  g->sl_saturation = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->saturation, 2);
-  dt_bauhaus_widget_set_label(g->sl_saturation, NULL, _("saturation"));
-  g_object_set(g->sl_saturation, "tooltip-text", _("saturation adjustment"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_saturation), "value-changed", G_CALLBACK(_saturation_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_saturation, TRUE, TRUE, 0);
+  g->sl_vibrance = dt_bauhaus_slider_from_params(self, N_("vibrance"));
+  gtk_widget_set_tooltip_text(g->sl_vibrance, _("vibrance adjustment"));
 
   GtkWidget *autolevels_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
 
-  g->bt_auto_levels = gtk_button_new_with_label(_("auto"));
-  g_object_set(G_OBJECT(g->bt_auto_levels), "tooltip-text", _("apply auto exposure based on the entire image"),
-               (char *)NULL);
+  g->bt_auto_levels = dt_ui_button_new(_("auto"), _("apply auto exposure based on the entire image"), NULL);
   g_signal_connect(G_OBJECT(g->bt_auto_levels), "clicked", G_CALLBACK(_auto_levels_callback), self);
   gtk_widget_set_size_request(g->bt_auto_levels, -1, DT_PIXEL_APPLY_DPI(24));
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_auto_levels, TRUE, TRUE, 0);
 
   g->bt_select_region = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT, NULL);
-  g_object_set(G_OBJECT(g->bt_select_region), "tooltip-text",
-               _("apply auto exposure based on a region defined by the user\n"
-                 "click and drag to draw the area\n"
-                 "right click to cancel"),
-               (char *)NULL);
+  gtk_widget_set_tooltip_text(g->bt_select_region,
+                              _("apply auto exposure based on a region defined by the user\n"
+                                "click and drag to draw the area\n"
+                                "right click to cancel"));
   g_signal_connect(G_OBJECT(g->bt_select_region), "toggled", G_CALLBACK(_select_region_toggled_callback), self);
   gtk_box_pack_start(GTK_BOX(autolevels_box), g->bt_select_region, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), autolevels_box, TRUE, TRUE, 0);
 
-  g->sl_clip = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .01, p->clip, 3);
-  dt_bauhaus_widget_set_label(g->sl_clip, NULL, _("clip"));
-  g_object_set(g->sl_clip, "tooltip-text", _("adjusts clipping value for auto exposure calculation"), (char *)NULL);
-  g_signal_connect(G_OBJECT(g->sl_clip), "value-changed", G_CALLBACK(_clip_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->sl_clip, TRUE, TRUE, 0);
+  g->sl_clip = dt_bauhaus_slider_from_params(self, N_("clip"));
+  dt_bauhaus_slider_set_digits(g->sl_clip, 3);
+  gtk_widget_set_tooltip_text(g->sl_clip, _("adjusts clipping value for auto exposure calculation"));
 
   // add signal handler for preview pipe finish
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
   // and profile change
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_signal_profile_user_changed), self);
-
-  dt_iop_init_single_picker(&g->color_picker, self, GTK_WIDGET(g->sl_middle_grey), DT_COLOR_PICKER_AREA,
-                            _iop_color_picker_apply);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_signal_profile_user_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_user_changed), self);
 
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
   if(g)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 static inline int64_t doubleToRawLongBits(double d)
@@ -1393,7 +1271,7 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
   const int ch = piece->colors;
   dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
@@ -1418,7 +1296,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_in->height;
 
   // process auto levels
-  if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     dt_pthread_mutex_lock(&g->lock);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
@@ -1471,13 +1349,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int plain_contrast = (!p->preserve_colors && p->contrast != 0.f);
   const int preserve_colors = (p->contrast != 0.f) ? p->preserve_colors : 0;
   const int process_gamma = (p->brightness != 0.f);
-  const int process_saturation = (p->saturation != 0.f);
+  const int process_saturation_vibrance = (p->saturation != 0.f)||(p->vibrance != 0.f);
   const int process_hlcompr = (p->hlcompr > 0.f);
 
   const float black_point = p->black_point;
   const float hlcompr = p->hlcompr;
   const float hlcomprthresh = p->hlcomprthresh;
   const float saturation = p->saturation + 1.0f;
+  const float vibrance = p->vibrance / 1.4f;
   const float contrast = p->contrast + 1.0f;
   const float white = exposure2white(p->exposure);
   const float scale = 1.0f / (white - p->black_point);
@@ -1529,20 +1408,21 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 11, sizeof(int), (void *)&preserve_colors);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 12, sizeof(float), (void *)&contrast);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 13, sizeof(int), (void *)&process_saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 13, sizeof(int), (void *)&process_saturation_vibrance);
   dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 14, sizeof(float), (void *)&saturation);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 15, sizeof(float), (void *)&vibrance);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 15, sizeof(int), (void *)&process_hlcompr);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 16, sizeof(float), (void *)&hlcomp);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 17, sizeof(float), (void *)&hlrange);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 16, sizeof(int), (void *)&process_hlcompr);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 17, sizeof(float), (void *)&hlcomp);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 18, sizeof(float), (void *)&hlrange);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 18, sizeof(float), (void *)&middle_grey);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 19, sizeof(float), (void *)&inv_middle_grey);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 19, sizeof(float), (void *)&middle_grey);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 20, sizeof(float), (void *)&inv_middle_grey);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 20, sizeof(cl_mem), (void *)&dev_profile_info);
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 21, sizeof(cl_mem), (void *)&dev_profile_lut);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 21, sizeof(cl_mem), (void *)&dev_profile_info);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 22, sizeof(cl_mem), (void *)&dev_profile_lut);
 
-  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 22, sizeof(int), (void *)&use_work_profile);
+  dt_opencl_set_kernel_arg(devid, gd->kernel_basicadj, 23, sizeof(int), (void *)&use_work_profile);
   err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_basicadj, sizes);
   if(err != CL_SUCCESS)
   {
@@ -1566,7 +1446,7 @@ cleanup:
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
 
   const int ch = piece->colors;
   dt_iop_basicadj_data_t *d = (dt_iop_basicadj_data_t *)piece->data;
@@ -1574,7 +1454,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
 
   // process auto levels
-  if(g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     dt_pthread_mutex_lock(&g->lock);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
@@ -1607,6 +1487,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float hlcompr = p->hlcompr;
   const float hlcomprthresh = p->hlcomprthresh;
   const float saturation = p->saturation + 1.0f;
+  const float vibrance = p->vibrance / 1.4f;
   const float contrast = p->contrast + 1.0f;
   const float white = exposure2white(p->exposure);
   const float scale = 1.0f / (white - p->black_point);
@@ -1622,7 +1503,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int plain_contrast = (!p->preserve_colors && p->contrast != 0.f);
   const int preserve_colors = (p->contrast != 0.f) ? p->preserve_colors : 0;
   const int process_gamma = (p->brightness != 0.f);
-  const int process_saturation = (p->saturation != 0.f);
+  const int process_saturation_vibrance = (p->saturation != 0.f)||(p->vibrance != 0.f);
   const int process_hlcompr = (p->hlcompr > 0.f);
 
   const float *const in = (const float *const)ivoid;
@@ -1634,8 +1515,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_omp_firstprivate(black_point, ch, contrast, gamma, hlcomp, hlrange, in, \
                       inv_middle_grey, middle_grey, out, plain_contrast, \
                       preserve_colors, process_hlcompr, process_gamma, \
-                      process_saturation, saturation, scale, stride, \
-                      work_profile) \
+                      process_saturation_vibrance, saturation, vibrance, \
+                      scale, stride, work_profile) \
   shared(d) \
   schedule(static)
 #endif
@@ -1696,19 +1577,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // saturation
-    if(process_saturation)
+    if(process_saturation_vibrance)
     {
-      const float luminance = (work_profile) ? dt_ioppr_get_rgb_matrix_luminance(out + k,
-                                                                                 work_profile->matrix_in,
-                                                                                 work_profile->lut_in,
-                                                                                 work_profile->unbounded_coeffs_in,
-                                                                                 work_profile->lutsize,
-                                                                                 work_profile->nonlinearlut)
-                                             : dt_camera_rgb_luminance(out + k);
+      const float average = (out[k] + out[k+1] + out[k+2]) / 3;
+      const float delta = sqrt( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
+      const float P = vibrance * (1 - powf(delta, fabsf(vibrance)));
 
       for(size_t c = 0; c < 3; c++)
       {
-        out[k + c] = luminance + saturation * (out[k + c] - luminance);
+        out[k + c] = average + (saturation + P) * (out[k+c] - average);
       }
     }
 

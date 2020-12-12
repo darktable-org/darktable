@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int 
 
 #define dt_lua_lock() dt_lua_lock_internal(__FUNCTION__, __FILE__, __LINE__, FALSE)
 #define dt_lua_lock_silent() dt_lua_lock_internal(__FUNCTION__, __FILE__, __LINE__, TRUE)
-#define dt_lua_unlock() dt_lua_unlock_internal( __FUNCTION__, __LINE__) 
+#define dt_lua_unlock() dt_lua_unlock_internal( __FUNCTION__, __LINE__)
 
 typedef struct
 {

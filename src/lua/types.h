@@ -1,7 +1,7 @@
 
 /*
     This file is part of darktable,
-    copyright (c) 2012 Jeremy Rosen
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -136,7 +136,7 @@ luaA_Type dt_lua_init_int_type_type(lua_State *L, luaA_Type type_id);
 luaA_Type dt_lua_init_gpointer_type_type(lua_State *L, luaA_Type type_id);
 
 /**
-  * make a pointer an alias of another pointer. Both pointers will push the same lua object 
+  * make a pointer an alias of another pointer. Both pointers will push the same lua object
   * when pushed on the stack. The object contains the original pointer
   */
 #define dt_lua_type_gpointer_alias(L,type_name,pointer,alias) \

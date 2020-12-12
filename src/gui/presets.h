@@ -1,19 +1,45 @@
+/*
+    This file is part of darktable,
+    Copyright (C) 2010-2020 darktable developers.
+
+    darktable is free software: you can redistribute it and/or modify
+    it under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    darktable is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+    GNU General Public License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #pragma once
 
-// format flags stored into the presets database
+#include "develop/blend.h"
+
+// format flags stored into the presets database; the FOR_NOT_ variants are negated to keep existing presets
 typedef enum dt_gui_presets_format_flag_t
 {
   FOR_LDR = 1 << 0,
   FOR_RAW = 1 << 1,
-  FOR_HDR = 1 << 2
+  FOR_HDR = 1 << 2,
+  FOR_NOT_MONO = 1 << 3,
+  FOR_NOT_COLOR = 1 << 4
 } dt_gui_presets_format_flag_t;
+
+#define DT_PRESETS_FOR_NOT (FOR_NOT_MONO | FOR_NOT_COLOR);
 
 /** create a db table with presets for all operations. */
 void dt_gui_presets_init();
 
 /** add or replace a generic (i.e. non-exif specific) preset for this operation. */
 void dt_gui_presets_add_generic(const char *name, dt_dev_operation_t op, const int32_t version,
-                                const void *params, const int32_t params_size, const int32_t enabled);
+                                const void *params, const int32_t params_size,
+                                const int32_t enabled,
+                                const dt_develop_blend_colorspace_t blend_cst);
 
 /** same as add_generic but also supply blendop parameters for the presets. */
 void dt_gui_presets_add_with_blendop(
@@ -55,6 +81,9 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module);
 
 /** show popupmenu for favorite modules */
 void dt_gui_favorite_presets_menu_show();
+
+/** apply any auto presets that are appropriate for the current module **/
+gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2015 LebedevRI.
+    Copyright (C) 2015-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -63,8 +63,6 @@ GtkWidget *dtgtk_expander_get_body_event_box(GtkDarktableExpander *expander)
 
 void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expanded)
 {
-  GtkWidget *frame;
-
   g_return_if_fail(DTGTK_IS_EXPANDER(expander));
 
   expanded = expanded != FALSE;
@@ -75,7 +73,7 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
     expander->expanded = expanded;
 
-    frame = expander->body;
+    GtkWidget *frame = expander->body;
 
     if(frame)
     {
@@ -105,7 +103,7 @@ GtkWidget *dtgtk_expander_new(GtkWidget *header, GtkWidget *body)
   g_return_val_if_fail(GTK_IS_WIDGET(body), NULL);
 
   expander
-      = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 3, NULL);
+      = g_object_new(dtgtk_expander_get_type(), "orientation", GTK_ORIENTATION_VERTICAL, "spacing", 0, NULL);
   expander->expanded = -1;
   expander->header = header;
   expander->body = body;

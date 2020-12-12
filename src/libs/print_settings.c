@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014-2017 pascal obry.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -147,7 +147,8 @@ static const char *mime(dt_imageio_module_data_t *data)
 
 static int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                        dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                       void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                       const gboolean export_masks)
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
@@ -238,13 +239,14 @@ static int _print_job_run(dt_job_t *job)
 
   const gboolean high_quality = TRUE;
   const gboolean upscale = TRUE;
+  const gboolean export_masks = FALSE;
   const dt_colorspaces_color_profile_t *buf_profile = dt_colorspaces_get_output_profile(params->imgid,
                                                                                         params->buf_icc_type,
                                                                                         params->buf_icc_profile);
 
   dt_imageio_export_with_flags(params->imgid, "unused", &buf, (dt_imageio_module_data_t *)&dat, TRUE, FALSE,
-                               high_quality, upscale, FALSE, NULL, FALSE, params->buf_icc_type, params->buf_icc_profile,
-                               params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
+                               high_quality, upscale, FALSE, NULL, FALSE, export_masks, params->buf_icc_type,
+                               params->buf_icc_profile, params->buf_icc_intent,  NULL, NULL, 1, 1, NULL);
 
   // after exporting we know the real size of the image, compute the layout
 
@@ -358,7 +360,11 @@ static int _print_job_run(dt_job_t *job)
   guint tagid = 0;
   snprintf (tag, sizeof(tag), "darktable|printed|%s", params->prt.printer.name);
   dt_tag_new(tag, &tagid);
-  dt_tag_attach_from_gui(tagid, params->imgid);
+  if(dt_tag_attach(tagid, params->imgid, FALSE, FALSE))
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+  /* register print timestamp in cache */
+  dt_image_cache_set_print_timestamp(darktable.image_cache, params->imgid);
 
   return 0;
 }
@@ -383,7 +389,9 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  const int imgid = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  int imgid = -1;
+  if(g_slist_length(dt_view_active_images_get()) > 0)
+    imgid = GPOINTER_TO_INT(g_slist_nth_data(dt_view_active_images_get(), 0));
 
   if (imgid == -1)
   {
@@ -1007,12 +1015,12 @@ static void _set_orientation(dt_lib_print_settings_t *ps)
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
 }
 
-static void _print_settings_activate_or_update_callback(gpointer instance,gpointer user_data)
+static void _print_settings_activate_or_update_callback(gpointer instance, int imgid, gpointer user_data)
 {
   const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
 
-  ps->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  ps->image_id = imgid;
   ps->iwidth = ps->iheight = 0;
   _set_orientation (ps);
 }
@@ -1082,15 +1090,13 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 {
   // user activated a new image via the filmstrip or user entered view
   // mode which activates an image: get image_id and orientation
-  dt_control_signal_connect(darktable.signals,
-                            DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_print_settings_activate_or_update_callback),
-                            self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                            G_CALLBACK(_print_settings_activate_or_update_callback), self);
 
   // when an updated mipmap, we may have new orientation information
   // about the current image. This updates the image_id as well and
   // zeros out dimensions, but there should be no harm in that
-  dt_control_signal_connect(darktable.signals,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals,
                             DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
                             G_CALLBACK(_print_settings_activate_or_update_callback),
                             self);
@@ -1100,7 +1106,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 
 void view_leave(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct dt_view_t *new_view)
 {
-  dt_control_signal_disconnect(darktable.signals,
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                G_CALLBACK(_print_settings_activate_or_update_callback),
                                self);
 }
@@ -1172,7 +1178,7 @@ gui_init (dt_lib_module_t *self)
 
   d->media = dt_bauhaus_combobox_new(NULL);
 
-  dt_bauhaus_widget_set_label(d->media, NULL, _("media"));
+  dt_bauhaus_widget_set_label(d->media, NULL, N_("media"));
 
   g_signal_connect(G_OBJECT(d->media), "value-changed", G_CALLBACK(_media_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->media), TRUE, TRUE, 0);
@@ -1180,7 +1186,7 @@ gui_init (dt_lib_module_t *self)
   //  Add printer profile combo
 
   d->pprofile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pprofile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(d->pprofile, NULL, N_("profile"));
 
   int combo_idx, n;
   GList *l = d->profiles;
@@ -1235,7 +1241,7 @@ gui_init (dt_lib_module_t *self)
   //  Add printer intent combo
 
   d->pintent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pintent, NULL, _("intent"));
+  dt_bauhaus_widget_set_label(d->pintent, NULL, N_("intent"));
   dt_bauhaus_combobox_add(d->pintent, _("perceptual"));
   dt_bauhaus_combobox_add(d->pintent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(d->pintent, C_("rendering intent", "saturation"));
@@ -1268,7 +1274,7 @@ gui_init (dt_lib_module_t *self)
 
   //// papers
 
-  dt_bauhaus_widget_set_label(d->papers, NULL, _("paper size"));
+  dt_bauhaus_widget_set_label(d->papers, NULL, N_("paper size"));
 
   g_signal_connect(G_OBJECT(d->papers), "value-changed", G_CALLBACK(_paper_changed), self);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->papers), TRUE, TRUE, 0);
@@ -1276,7 +1282,7 @@ gui_init (dt_lib_module_t *self)
   //// portrait / landscape
 
   d->orientation = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->orientation, NULL, _("orientation"));
+  dt_bauhaus_widget_set_label(d->orientation, NULL, N_("orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
 
@@ -1400,7 +1406,7 @@ gui_init (dt_lib_module_t *self)
   //  Add export profile combo
 
   d->profile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->profile, NULL, _("profile"));
+  dt_bauhaus_widget_set_label(d->profile, NULL, N_("profile"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->profile), TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(d->profile, _("image settings"));
@@ -1448,7 +1454,7 @@ gui_init (dt_lib_module_t *self)
   //  Add export intent combo
 
   d->intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->intent, NULL, _("intent"));
+  dt_bauhaus_widget_set_label(d->intent, NULL, N_("intent"));
 
   dt_bauhaus_combobox_add(d->intent, _("image settings"));
   dt_bauhaus_combobox_add(d->intent, _("perceptual"));
@@ -1464,7 +1470,7 @@ gui_init (dt_lib_module_t *self)
   //  Add export style combo
 
   d->style = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->style, NULL, _("style"));
+  dt_bauhaus_widget_set_label(d->style, NULL, N_("style"));
 
   dt_bauhaus_combobox_add(d->style, _("none"));
 
@@ -1507,7 +1513,7 @@ gui_init (dt_lib_module_t *self)
   //  Whether to add/replace style items
 
   d->style_mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->style_mode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(d->style_mode, NULL, N_("mode"));
 
   dt_bauhaus_combobox_add(d->style_mode, _("replace history"));
   dt_bauhaus_combobox_add(d->style_mode, _("append history"));

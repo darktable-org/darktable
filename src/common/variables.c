@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
-    copyright (c) 2010--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "common/debug.h"
 #include "common/variables.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -51,11 +51,13 @@ typedef struct dt_variables_data_t
   int exif_iso;
   char *camera_maker;
   char *camera_alias;
+  char *exif_lens;
   int version;
   int stars;
   struct tm exif_tm;
 
   float exif_exposure;
+  float exif_exposure_bias;
   float exif_aperture;
   float exif_focal_length;
   float exif_focus_distance;
@@ -64,6 +66,8 @@ typedef struct dt_variables_data_t
   double elevation;
 
   uint32_t tags_flags;
+
+  int flags;
 
 } dt_variables_data_t;
 
@@ -94,9 +98,11 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->exif_iso = 100;
   params->data->camera_maker = NULL;
   params->data->camera_alias = NULL;
+  params->data->exif_lens = NULL;
   params->data->version = 0;
   params->data->stars = 0;
   params->data->exif_exposure = 0.0f;
+  params->data->exif_exposure_bias = NAN;
   params->data->exif_aperture = 0.0f;
   params->data->exif_focal_length = 0.0f;
   params->data->exif_focus_distance = 0.0f;
@@ -116,11 +122,13 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     params->data->exif_iso = img->exif_iso;
     params->data->camera_maker = g_strdup(img->camera_maker);
     params->data->camera_alias = g_strdup(img->camera_alias);
+    params->data->exif_lens = g_strdup(img->exif_lens);
     params->data->version = img->version;
     params->data->stars = (img->flags & 0x7);
     if(params->data->stars == 6) params->data->stars = -1;
 
     params->data->exif_exposure = img->exif_exposure;
+    params->data->exif_exposure_bias = img->exif_exposure_bias;
     params->data->exif_aperture = img->exif_aperture;
     params->data->exif_focal_length = img->exif_focal_length;
     if(!isnan(img->exif_focus_distance) && fpclassify(img->exif_focus_distance) != FP_ZERO)
@@ -128,6 +136,8 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
     if(!isnan(img->geoloc.longitude)) params->data->longitude = img->geoloc.longitude;
     if(!isnan(img->geoloc.latitude)) params->data->latitude = img->geoloc.latitude;
     if(!isnan(img->geoloc.elevation)) params->data->elevation = img->geoloc.elevation;
+
+    params->data->flags = img->flags;
 
     dt_image_cache_read_release(darktable.image_cache, img);
   }
@@ -155,6 +165,7 @@ static inline gboolean has_prefix(char **str, const char *prefix)
 static char *get_base_value(dt_variables_params_t *params, char **variable)
 {
   char *result = NULL;
+  gboolean escape = TRUE;
 
   struct tm exif_tm = params->data->have_exif_tm ? params->data->exif_tm : params->data->time;
 
@@ -187,31 +198,21 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->exif_iso);
   else if(has_prefix(variable, "NL") && g_strcmp0(params->jobcode, "infos") == 0)
     result = g_strdup_printf("\n");
+  else if(has_prefix(variable, "EXIF_EXPOSURE_BIAS"))
+  {
+    if(!isnan(params->data->exif_exposure_bias))
+      result = g_strdup_printf("%+.2f", params->data->exif_exposure_bias);
+  }
   else if(has_prefix(variable, "EXIF_EXPOSURE"))
   {
-    /* no special chars for all jobs except infos */
+    result = dt_util_format_exposure(params->data->exif_exposure);
+    // for job other than info (export) we strip the slash char
     if(g_strcmp0(params->jobcode, "infos") != 0)
-      if(nearbyintf(params->data->exif_exposure) == params->data->exif_exposure)
-        result = g_strdup_printf("%.0f", params->data->exif_exposure);
-      else
-        result = g_strdup_printf("%.1f", params->data->exif_exposure);
-    else if(params->data->exif_exposure >= 1.0f)
-      if(nearbyintf(params->data->exif_exposure) == params->data->exif_exposure)
-        result = g_strdup_printf("%.0f″", params->data->exif_exposure);
-      else
-        result = g_strdup_printf("%.1f″", params->data->exif_exposure);
-    /* want to catch everything below 0.3 seconds */
-    else if(params->data->exif_exposure < 0.29f)
-      result = g_strdup_printf("1/%.0f", 1.0 / params->data->exif_exposure);
-    /* catch 1/2, 1/3 */
-    else if(nearbyintf(1.0f / params->data->exif_exposure) == 1.0f / params->data->exif_exposure)
-      result = g_strdup_printf("1/%.0f", 1.0 / params->data->exif_exposure);
-    /* catch 1/1.3, 1/1.6, etc. */
-    else if(10 * nearbyintf(10.0f / params->data->exif_exposure)
-            == nearbyintf(100.0f / params->data->exif_exposure))
-      result = g_strdup_printf("1/%.1f", 1.0 / params->data->exif_exposure);
-    else
-      result = g_strdup_printf("%.1f″", params->data->exif_exposure);
+    {
+      gchar *res = dt_util_str_replace(result, "/", "_");
+      g_free(result);
+      result = res;
+    }
   }
   else if(has_prefix(variable, "EXIF_APERTURE"))
     result = g_strdup_printf("%.1f", params->data->exif_aperture);
@@ -251,8 +252,44 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(params->data->camera_maker);
   else if(has_prefix(variable, "MODEL"))
     result = g_strdup(params->data->camera_alias);
+  else if(has_prefix(variable, "LENS"))
+    result = g_strdup(params->data->exif_lens);
   else if(has_prefix(variable, "ID"))
     result = g_strdup_printf("%d", params->imgid);
+  else if(has_prefix(variable, "VERSION_NAME"))
+  {
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      result = g_strdup((char *)res->data);
+    }
+    g_list_free_full(res, &g_free);
+  }
+  else if(has_prefix(variable, "VERSION_IF_MULTI"))
+  {
+    sqlite3_stmt *stmt;
+
+    // count duplicates
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT COUNT(1)"
+                                " FROM images AS i1"
+                                " WHERE EXISTS (SELECT 'y' FROM images AS i2"
+                                "               WHERE  i2.id = ?1"
+                                "               AND    i1.film_id = i2.film_id"
+                                "               AND    i1.filename = i2.filename)",
+                                -1, &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, params->imgid);
+
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const int count = sqlite3_column_int(stmt, 0);
+      //only return data if more than one matching image
+      if(count > 1)
+        result = g_strdup_printf("%d", params->data->version);
+    }
+    sqlite3_finalize (stmt);
+  }
   else if(has_prefix(variable, "VERSION"))
     result = g_strdup_printf("%d", params->data->version);
   else if(has_prefix(variable, "JOBCODE"))
@@ -289,7 +326,15 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "FILE_EXTENSION"))
     result = g_strdup(params->data->file_ext);
   else if(has_prefix(variable, "SEQUENCE"))
-    result = g_strdup_printf("%.4d", params->sequence >= 0 ? params->sequence : params->data->sequence);
+  {
+    uint8_t nb_digit = 4;
+    if(g_ascii_isdigit(*variable[0]))
+    {
+      nb_digit = (uint8_t)*variable[0] & 0b1111;
+      (*variable) ++;
+    }
+    result = g_strdup_printf("%.*d", nb_digit, params->sequence >= 0 ? params->sequence : params->data->sequence);
+  }
   else if(has_prefix(variable, "USERNAME"))
     result = g_strdup(g_get_user_name());
   else if(has_prefix(variable, "HOME_FOLDER"))
@@ -304,7 +349,102 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(g_get_user_special_dir(G_USER_DIRECTORY_DESKTOP));
   else if(has_prefix(variable, "STARS"))
     result = g_strdup_printf("%d", params->data->stars);
-  else if(has_prefix(variable, "LABELS"))
+  else if(has_prefix(variable, "RATING_ICONS"))
+  {
+    switch(params->data->stars)
+    {
+      case -1:
+        result = g_strdup("X");
+        break;
+      case 1:
+        result = g_strdup("★");
+        break;
+      case 2:
+        result = g_strdup("★★");
+        break;
+      case 3:
+        result = g_strdup("★★★");
+        break;
+      case 4:
+        result = g_strdup("★★★★");
+        break;
+      case 5:
+        result = g_strdup("★★★★★");
+        break;
+      default:
+        result = g_strdup("");
+        break;
+    }
+  }
+  else if(has_prefix(variable, "LABELS_ICONS") && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    escape = FALSE;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      do
+      {
+        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
+        if(g_strcmp0(lb, "red") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "yellow") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "green") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "blue") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⚫ </span>");
+        }
+        else if(g_strcmp0(lb, "purple") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⚫ </span>");
+        }
+      } while((res = g_list_next(res)) != NULL);
+    }
+    g_list_free(res);
+  }
+  else if(has_prefix(variable, "LABELS_COLORICONS") && g_strcmp0(params->jobcode, "infos") == 0)
+  {
+    escape = FALSE;
+    GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
+    res = g_list_first(res);
+    if(res != NULL)
+    {
+      do
+      {
+        const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
+        if(g_strcmp0(lb, "red") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">🔴 </span>");
+        }
+        else if(g_strcmp0(lb, "yellow") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">🟡 </span>");
+        }
+        else if(g_strcmp0(lb, "green") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">🟢 </span>");
+        }
+        else if(g_strcmp0(lb, "blue") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">🔵 </span>");
+        }
+        else if(g_strcmp0(lb, "purple") == 0)
+        {
+          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">🟣 </span>");
+        }
+      } while((res = g_list_next(res)) != NULL);
+    }
+    g_list_free(res);
+  }
+  else if(has_prefix(variable, "LABELS") || has_prefix(variable, "LABELS_ICONS") || has_prefix(variable, "LABELS_COLORICONS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
@@ -385,10 +525,10 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup_printf("%d", params->data->max_height);
   else if (has_prefix(variable, "CATEGORY"))
   {
-    // TAG should be followed by n [0,3] and "(category)". category can contain 0 or more '|'
-    if (*variable[0] == '0' || *variable[0] == '1' || *variable[0] == '2' || *variable[0] == '3')
+    // CATEGORY should be followed by n [0,9] and "(category)". category can contain 0 or more '|'
+    if (g_ascii_isdigit(*variable[0]))
     {
-      const uint8_t level = (uint8_t)*variable[0] & 0b11;
+      const uint8_t level = (uint8_t)*variable[0] & 0b1111;
       (*variable) ++;
       if (*variable[0] == '(')
       {
@@ -399,7 +539,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
           end[0] = '|';
           end[1] = '\0';
           (*variable) += strlen(category) + 1;
-          char *tag = dt_tag_get_subtag(params->imgid, category, (int)level);
+          char *tag = dt_tag_get_subtags(params->imgid, category, (int)level);
           if (tag)
           {
             result = g_strdup(tag);
@@ -418,6 +558,21 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     result = g_strdup(tags);
     g_free(tags);
   }
+  else if(has_prefix(variable, "SIDECAR_TXT") && g_strcmp0(params->jobcode, "infos") == 0
+          && (params->data->flags & DT_IMAGE_HAS_TXT))
+  {
+    char *path = dt_image_get_text_path(params->imgid);
+    if(path)
+    {
+      gchar *txt = NULL;
+      if(g_file_get_contents(path, &txt, NULL, NULL))
+      {
+        result = g_strdup_printf("\n%s", txt);
+      }
+      g_free(txt);
+      g_free(path);
+    }
+  }
   else
   {
     // go past what looks like an invalid variable. we only expect to see [a-zA-Z]* in a variable name.
@@ -425,6 +580,12 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   }
   if(!result) result = g_strdup("");
 
+  if(params->escape_markup && escape)
+  {
+    gchar *e_res = g_markup_escape_text(result, -1);
+    g_free(result);
+    return e_res;
+  }
   return result;
 }
 
@@ -454,7 +615,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
       */
       {
         char *replacement = expand(params, variable, ')');
-        if(!base_value || !*base_value)
+        if(*base_value == '\0')
         {
           g_free(base_value);
           base_value = replacement;
@@ -470,7 +631,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
       */
       {
         char *replacement = expand(params, variable, ')');
-        if(*base_value)
+        if(*base_value != '\0')
         {
           g_free(base_value);
           base_value = replacement;
@@ -493,15 +654,15 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
         expansion is the characters between offset and that result.
       */
       {
-        const size_t base_value_utf8_length = g_utf8_strlen(base_value, -1);
-        const int offset = strtol(*variable, variable, 10);
+        const glong base_value_utf8_length = g_utf8_strlen(base_value, -1);
+        const glong offset = strtol(*variable, variable, 10);
 
         // find where to start
         char *start; // from where to copy ...
         if(offset >= 0)
           start = g_utf8_offset_to_pointer(base_value, MIN(offset, base_value_utf8_length));
         else
-          start = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(offset, -1 * base_value_utf8_length));
+          start = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(offset, -base_value_utf8_length));
 
         // now find the end if there is a length provided
         char *end = base_value + base_value_length; // ... and until where
@@ -513,7 +674,7 @@ static char *variable_get_value(dt_variables_params_t *params, char **variable)
           if(length >= 0)
             end = g_utf8_offset_to_pointer(start, MIN(length, start_utf8_length));
           else
-            end = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(length, -1 * start_utf8_length));
+            end = g_utf8_offset_to_pointer(base_value + base_value_length, MAX(length, -start_utf8_length));
         }
 
         char *_base_value = g_strndup(start, end - start);
@@ -814,6 +975,8 @@ void dt_variables_set_tags_flags(dt_variables_params_t *params, uint32_t flags)
 {
   params->data->tags_flags = flags;
 }
+
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

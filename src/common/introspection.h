@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013-2019 tobias ellinghaus.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 // some typedefs for structs that hold the data in a machine readable form
 
-#define DT_INTROSPECTION_VERSION 7
+#define DT_INTROSPECTION_VERSION 8
 
 // clang-format off
 
@@ -183,8 +183,9 @@ typedef struct dt_introspection_type_array_t
 
 typedef struct dt_introspection_type_enum_tuple_t
 {
-  const char                         *name;
-  int                                 value;
+  const char                         *name;            // the id of the enum value as a string
+  int                                 value;           // the enum value
+  const char                         *description;     // some human readable description taken from the comments
 } dt_introspection_type_enum_tuple_t;
 
 typedef struct dt_introspection_type_enum_t
@@ -192,6 +193,7 @@ typedef struct dt_introspection_type_enum_t
   dt_introspection_type_header_t      header;
   size_t                              entries;         // # entries in values (without the closing {NULL, 0})
   dt_introspection_type_enum_tuple_t *values;          // the enum tuples, consisting of { "STRING", VALUE }. terminated with { NULL, 0 }
+  int                                 Default;         // default value for this enum field. taken from comments. defaults to 0
 } dt_introspection_type_enum_t;
 
 typedef struct dt_introspection_type_struct_t

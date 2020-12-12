@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -21,14 +21,18 @@
 #include "common/darktable.h"
 #include <gtk/gtk.h>
 
-/** \brief applies specified rating to selected images */
-void dt_ratings_apply_to_selection(int rating);
+#define DT_VIEW_RATINGS_MASK 0x7
+// first three bits of dt_view_image_over_t
+
+/** get rating tfor the specified image */
+const int dt_ratings_get(const int imgid);
 
 /** apply rating to the specified image */
-void dt_ratings_apply_to_image(int imgid, int rating);
+void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on,
+                               const gboolean undo_on, const gboolean group_on);
 
-/** apply rating to the specified image, or any image in a collapsed group */
-void dt_ratings_apply_to_image_or_group(int imgid, int rating);
+/** apply rating to all images in the list */
+void dt_ratings_apply_on_list(const GList *list, const int rating, const gboolean undo_on);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

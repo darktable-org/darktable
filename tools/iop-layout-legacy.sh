@@ -1,4 +1,9 @@
-#! /bin/bash
+#!/bin/bash
+
+if pgrep -x "darktable" > /dev/null ; then
+    echo "error: darktable is running, please exit first"
+    exit 1
+fi
 
 # do not touch the following 5 definitions
 
@@ -38,6 +43,8 @@ group_basic=(
     'highlights'
     'invert'
     'basicadj'
+    'negadoctor'
+    'toneequal'
 )
 
 group_tone=(

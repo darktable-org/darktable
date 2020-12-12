@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 #    This file is part of darktable.
 #    copyright (c) 2016 Roman Lebedev.
@@ -22,20 +22,49 @@
 #   INSTALL_DIR - the installation prefix.
 #   SRC_DIR - read-only directory with git checkout to compile
 #   CC, CXX, CFLAGS, CXXFLAGS are not required, should make sense too
-#   TARGET - either build or usermanual
+#   TARGET - either build, skiptest, nofeatures or usermanual
 #   ECO - some other flags for cmake
 
 set -ex
 
-PARALLEL="-j2"
+VERBOSE="-v"
+KEEPGOING="-k0"
+
+if [ "$GENERATOR" = "Unix Makefiles" ];
+then
+  VERBOSE="VERBOSE=1";
+  KEEPGOING="-k"
+fi;
+
+if [ "$GENERATOR" = "MSYS Makefiles" ];
+then
+  VERBOSE="VERBOSE=1";
+  KEEPGOING="-k"
+fi;
+
+if [ -z "${MAKEFLAGS+x}" ];
+then
+  MAKEFLAGS="-j2 $VERBOSE"
+fi
 
 target_build()
 {
   # to get as much of the issues into the log as possible
-  cmake --build "$BUILD_DIR" -- $PARALLEL -v || cmake --build "$BUILD_DIR" -- -j1 -v -k0
+  cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
+
+  ctest --output-on-failure || ctest --rerun-failed -V -VV
 
   # and now check that it installs where told and only there.
-  cmake --build "$BUILD_DIR" --target install -- $PARALLEL -v || cmake --build "$BUILD_DIR" --target install -- -j1 -v -k0
+  cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
+}
+
+target_notest()
+{
+  # to get as much of the issues into the log as possible
+  cmake --build "$BUILD_DIR" -- $MAKEFLAGS || cmake --build "$BUILD_DIR" -- -j1 "$VERBOSE" "$KEEPGOING"
+
+  # and now check that it installs where told and only there.
+  cmake --build "$BUILD_DIR" --target install -- $MAKEFLAGS || cmake --build "$BUILD_DIR" --target install -- -j1 "$VERBOSE" "$KEEPGOING"
 }
 
 target_usermanual()
@@ -48,25 +77,59 @@ target_usermanual()
   # ls -lah doc/usermanual/darktable-usermanual.pdf
 }
 
-du -hcs "$SRC_DIR"
-du -hcs "$BUILD_DIR"
-du -hcs "$INSTALL_PREFIX"
+diskspace()
+{
+  df
+  du -hcs "$SRC_DIR"
+  du -hcs "$BUILD_DIR"
+  du -hcs "$INSTALL_PREFIX"
+}
+
+diskspace
 
 cd "$BUILD_DIR"
-cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo $ECO -DVALIDATE_APPDATA_FILE=On "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
 
 case "$TARGET" in
-  "usermanual")
-    target_usermanual
-    ;;
   "build")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" -DVALIDATE_APPDATA_FILE=ON -DBUILD_TESTING=ON -DTESTBUILD_OPENCL_PROGRAMS=ON "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_build
+    ;;
+  "skiptest")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+    target_notest
+    ;;
+  "nofeatures")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
+      -G"$GENERATOR" \
+      -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+      -DUSE_OPENMP=OFF \
+      -DUSE_OPENCL=OFF \
+      -DUSE_LUA=OFF \
+      -DUSE_GAME=OFF \
+      -DUSE_CAMERA_SUPPORT=OFF \
+      -DUSE_NLS=OFF \
+      -DUSE_GRAPHICSMAGICK=OFF \
+      -DUSE_OPENJPEG=OFF \
+      -DUSE_WEBP=OFF \
+      -DUSE_AVIF=OFF \
+      -DUSE_XCF=OFF \
+      -DBUILD_CMSTEST=OFF \
+      -DUSE_OPENEXR=OFF \
+      -DBUILD_PRINT=OFF \
+      -DBUILD_RS_IDENTIFY=OFF \
+      -DUSE_LENSFUN=OFF \
+      -DUSE_GMIC=OFF \
+      -DUSE_LIBSECRET=OFF \
+      $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+    target_notest
+    ;;
+  "usermanual")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+    target_usermanual
     ;;
   *)
     exit 1
     ;;
 esac
 
-du -hcs "$SRC_DIR"
-du -hcs "$BUILD_DIR"
-du -hcs "$INSTALL_PREFIX"
+diskspace

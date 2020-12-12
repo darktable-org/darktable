@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -64,7 +64,7 @@ static int style_duplicate(lua_State *L)
   const char *newname = luaL_checkstring(L, 2);
   const char *description = lua_isnoneornil(L, 3) ? style.description : luaL_checkstring(L, 3);
   GList *filter = style_item_table_to_id_list(L, 4);
-  dt_styles_create_from_style(style.name, newname, description, filter, -1, NULL);
+  dt_styles_create_from_style(style.name, newname, description, filter, -1, NULL, TRUE, FALSE);
   g_list_free(filter);
   return 0;
 }
@@ -117,7 +117,7 @@ static int name_member(lua_State *L)
   {
     const char *newval;
     newval = luaL_checkstring(L, 3);
-    dt_styles_update(style.name, newval, style.description, NULL, -1, NULL);
+    dt_styles_update(style.name, newval, style.description, NULL, -1, NULL, FALSE, FALSE);
     return 0;
   }
 }
@@ -135,7 +135,7 @@ static int description_member(lua_State *L)
   {
     const char *newval;
     newval = luaL_checkstring(L, -1);
-    dt_styles_update(style.name, style.name, newval, NULL, -1, NULL);
+    dt_styles_update(style.name, style.name, newval, NULL, -1, NULL, FALSE, FALSE);
     return 0;
   }
 }
@@ -229,7 +229,7 @@ int dt_lua_style_create_from_image(lua_State *L)
   luaA_to(L, dt_lua_image_t, &imgid, -3);
   const char *newname = luaL_checkstring(L, -2);
   const char *description = lua_isnoneornil(L, -1) ? "" : luaL_checkstring(L, -1);
-  dt_styles_create_from_image(newname, description, imgid, NULL);
+  dt_styles_create_from_image(newname, description, imgid, NULL, TRUE);
   GList *style_list = dt_styles_get_list(newname);
   while(style_list)
   {
@@ -260,6 +260,7 @@ int dt_lua_style_apply(lua_State *L)
     luaA_to(L, dt_lua_image_t, &imgid, 2);
   }
   dt_styles_apply_to_image(style.name, FALSE, imgid);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return 1;
 }
 

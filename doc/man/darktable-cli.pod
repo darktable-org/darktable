@@ -14,6 +14,7 @@ Options:
     --bpp <bpp>
     --hq <0|1|false|true>
     --upscale <0|1|false|true>
+    --export_masks <0|1|false|true>
     --style <style name>
     --style-overwrite
     --apply-custom-presets <0|1|false|true>
@@ -84,6 +85,12 @@ Defaults to true.
 A flag that defines whether to allow upscaling during export.
 Defaults to false.
 
+=item B<< --export_masks <0|1|true|false>  >>
+
+A flag that defines whether masks used in the image will be stored as layers in the
+exported image (provided the format supports it).
+Defaults to false.
+
 =item B<< --style <style name>  >>
 
 Specify the name of a style to be applied during export.  If a style
@@ -100,6 +107,8 @@ appended to it.
 
 With this option you can decide if darktable loads its set of default parameters from
 B<data.db> and applies them. Otherwise the defaults that ship with darktable are used.
+
+Set this flag to false in order to run multiple instances.
 
 =item B<< --verbose  >>
 

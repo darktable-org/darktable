@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2015 LebedevRI.
+    Copyright (C) 2015-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,7 +36,8 @@ static void dtgtk_side_panel_class_init(GtkDarktableSidePanelClass *class)
 
   widget_class->get_preferred_width = dtgtk_side_panel_get_preferred_width;
 
-  class->width = dt_conf_get_int("panel_width");
+  class->width
+      = dt_conf_get_int("min_panel_width"); // this is the miminum width, real size has to be applied after
 }
 
 static void dtgtk_side_panel_init(GtkDarktableSidePanel *panel)

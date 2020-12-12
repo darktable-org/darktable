@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2016 Roman Lebedev.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by

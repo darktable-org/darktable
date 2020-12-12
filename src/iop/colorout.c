@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +22,7 @@
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
+#include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -65,9 +65,9 @@ typedef struct dt_iop_colorout_global_data_t
 
 typedef struct dt_iop_colorout_params_t
 {
-  dt_colorspaces_color_profile_type_t type;
+  dt_colorspaces_color_profile_type_t type; // $DEFAULT: DT_COLORSPACE_SRGB
   char filename[DT_IOP_COLOR_ICC_LEN];
-  dt_iop_color_intent_t intent;
+  dt_iop_color_intent_t intent; // $DEFAULT: DT_INTENT_PERCEPTUAL
 } dt_iop_colorout_params_t;
 
 typedef struct dt_iop_colorout_gui_data_t
@@ -81,9 +81,21 @@ const char *name()
   return _("output color profile");
 }
 
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("convert pipeline reference RGB to any display RGB\n"
+                                        "using color profiles to remap RGB values"),
+                                      _("mandatory"),
+                                      _("linear or non-linear, RGB or Lab, display-referred"),
+                                      _("defined by profile"),
+                                      _("non-linear, RGB, display-referred"));
+}
+
+
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -214,7 +226,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 static void intent_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   p->intent = (dt_iop_color_intent_t)dt_bauhaus_combobox_get(widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -223,7 +235,7 @@ static void intent_changed(GtkWidget *widget, gpointer user_data)
 static void output_profile_changed(GtkWidget *widget, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
   int pos = dt_bauhaus_combobox_get(widget);
 
@@ -235,8 +247,8 @@ static void output_profile_changed(GtkWidget *widget, gpointer user_data)
       p->type = pp->type;
       g_strlcpy(p->filename, pp->filename, sizeof(p->filename));
       dt_dev_add_history_item(darktable.develop, self, TRUE);
-      
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
+
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_EXPORT);
       return;
     }
   }
@@ -315,9 +327,6 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   dt_opencl_release_mem_object(dev_g);
   dt_opencl_release_mem_object(dev_b);
   dt_opencl_release_mem_object(dev_coeffs);
-
-  // we no longer use the working profile
-  piece->pipe->dsc.work_profile_info = NULL;
 
   return TRUE;
 
@@ -455,9 +464,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  // we no longer use the working profile
-  piece->pipe->dsc.work_profile_info = NULL;
-
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
@@ -541,9 +547,6 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     _mm_sfence();
   }
 
-  // we no longer use the working profile
-  piece->pipe->dsc.work_profile_info = NULL;
-
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 #endif
@@ -587,7 +590,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   cmsHPROFILE softproof = NULL;
   cmsUInt32Number output_format = TYPE_RGBA_FLT;
 
-  d->mode = pipe->type == DT_DEV_PIXELPIPE_FULL ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
+  d->mode = (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL ? darktable.color_profiles->mode : DT_PROFILE_NORMAL;
 
   if(d->xform)
   {
@@ -601,7 +604,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   piece->process_cl_ready = 1;
 
   /* if we are exporting then check and set usage of override profile */
-  if(pipe->type == DT_DEV_PIXELPIPE_EXPORT)
+  if((pipe->type & DT_DEV_PIXELPIPE_EXPORT) == DT_DEV_PIXELPIPE_EXPORT)
   {
     if(pipe->icc_type != DT_COLORSPACE_NONE)
     {
@@ -614,13 +617,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     out_filename = p->filename;
     out_intent = p->intent;
   }
-  else if(pipe->type == DT_DEV_PIXELPIPE_THUMBNAIL)
+  else if((pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL)
   {
     out_type = dt_mipmap_cache_get_colorspace();
     out_filename = (out_type == DT_COLORSPACE_DISPLAY ? darktable.color_profiles->display_filename : "");
     out_intent = darktable.color_profiles->display_intent;
   }
-  else if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW2)
+  else if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW2) == DT_DEV_PIXELPIPE_PREVIEW2)
   {
     /* preview2 is only used in second darkroom window, using display2 profile as output */
     out_type = darktable.color_profiles->display2_type;
@@ -651,8 +654,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
 
   const dt_colorspaces_color_profile_t *out_profile
-      = dt_colorspaces_get_profile(out_type, out_filename, DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY
-                                                               | DT_PROFILE_DIRECTION_DISPLAY2);
+      = dt_colorspaces_get_profile(out_type, out_filename,
+                                   DT_PROFILE_DIRECTION_OUT
+                                   | DT_PROFILE_DIRECTION_DISPLAY
+                                   | DT_PROFILE_DIRECTION_DISPLAY2);
   if(out_profile)
   {
     output = out_profile->profile;
@@ -660,9 +665,10 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
   else
   {
-    output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT
-                                                                    | DT_PROFILE_DIRECTION_DISPLAY
-                                                                    | DT_PROFILE_DIRECTION_DISPLAY2)
+    output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
+                                        DT_PROFILE_DIRECTION_OUT
+                                        | DT_PROFILE_DIRECTION_DISPLAY
+                                        | DT_PROFILE_DIRECTION_DISPLAY2)
                  ->profile;
     dt_control_log(_("missing output profile has been replaced by sRGB!"));
     fprintf(stderr, "missing output profile `%s' has been replaced by sRGB!\n",
@@ -670,18 +676,21 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   /* creating softproof profile if softproof is enabled */
-  if(d->mode != DT_PROFILE_NORMAL && pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(d->mode != DT_PROFILE_NORMAL && (pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
-    const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile(
-        darktable.color_profiles->softproof_type, darktable.color_profiles->softproof_filename,
-        DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
+    const dt_colorspaces_color_profile_t *prof = dt_colorspaces_get_profile
+      (darktable.color_profiles->softproof_type,
+       darktable.color_profiles->softproof_filename,
+       DT_PROFILE_DIRECTION_OUT | DT_PROFILE_DIRECTION_DISPLAY | DT_PROFILE_DIRECTION_DISPLAY2);
+
     if(prof)
       softproof = prof->profile;
     else
     {
-      softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT
-                                                                         | DT_PROFILE_DIRECTION_DISPLAY
-                                                                         | DT_PROFILE_DIRECTION_DISPLAY2)
+      softproof = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "",
+                                             DT_PROFILE_DIRECTION_OUT
+                                             | DT_PROFILE_DIRECTION_DISPLAY
+                                             | DT_PROFILE_DIRECTION_DISPLAY2)
                       ->profile;
       dt_control_log(_("missing softproof profile has been replaced by sRGB!"));
       fprintf(stderr, "missing softproof profile `%s' has been replaced by sRGB!\n",
@@ -713,7 +722,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
    */
 
   /* get matrix from profile, if softproofing or high quality exporting always go xform codepath */
-  if(d->mode != DT_PROFILE_NORMAL || force_lcms2
+  if(d->mode != DT_PROFILE_NORMAL
+     || force_lcms2
      || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1], d->lut[2],
                                                       LUT_SAMPLES, out_intent))
   {
@@ -729,6 +739,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     dt_control_log(_("unsupported output profile has been replaced by sRGB!"));
     fprintf(stderr, "unsupported output profile `%s' has been replaced by sRGB!\n", out_profile->name);
     output = dt_colorspaces_get_profile(DT_COLORSPACE_SRGB, "", DT_PROFILE_DIRECTION_OUT)->profile;
+
     if(d->mode != DT_PROFILE_NORMAL
        || dt_colorspaces_get_matrix_from_output_profile(output, d->cmatrix, d->lut[0], d->lut[1],
                                                         d->lut[2], LUT_SAMPLES, out_intent))
@@ -754,7 +765,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     if(d->lut[k][0] >= 0.0f)
     {
       const float x[4] = { 0.7f, 0.8f, 0.9f, 1.0f };
-      const float y[4] = { lerp_lut(d->lut[k], x[0]), lerp_lut(d->lut[k], x[1]), lerp_lut(d->lut[k], x[2]),
+      const float y[4] = { lerp_lut(d->lut[k], x[0]),
+                           lerp_lut(d->lut[k], x[1]),
+                           lerp_lut(d->lut[k], x[2]),
                            lerp_lut(d->lut[k], x[3]) };
       dt_iop_estimate_exp(x, y, 4, d->unbounded_coeffs[k]);
     }
@@ -765,6 +778,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // softproof is never the original but always a copy that went through _make_clipping_profile()
   dt_colorspaces_cleanup_profile(softproof);
 
+  dt_ioppr_set_pipe_output_profile_info(self->dev, piece->pipe, d->type, out_filename, p->intent);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -772,7 +786,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   piece->data = calloc(1, sizeof(dt_iop_colorout_data_t));
   dt_iop_colorout_data_t *d = (dt_iop_colorout_data_t *)piece->data;
   d->xform = NULL;
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -790,9 +803,9 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
-  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)module->params;
+  dt_iop_colorout_params_t *p = (dt_iop_colorout_params_t *)self->params;
+
   dt_bauhaus_combobox_set(g->output_intent, (int)p->intent);
 
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
@@ -812,23 +825,10 @@ void gui_update(struct dt_iop_module_t *self)
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_colorout_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorout_params_t));
-  module->params_size = sizeof(dt_iop_colorout_params_t);
-  module->gui_data = NULL;
+  dt_iop_default_init(module);
+
   module->hide_enable_button = 1;
   module->default_enabled = 1;
-  dt_iop_colorout_params_t tmp = (dt_iop_colorout_params_t){ DT_COLORSPACE_SRGB, "", DT_INTENT_PERCEPTUAL};
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorout_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorout_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 static void _preference_changed(gpointer instance, gpointer user_data)
@@ -853,8 +853,7 @@ void gui_init(struct dt_iop_module_t *self)
 {
   const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
-  self->gui_data = calloc(1, sizeof(dt_iop_colorout_gui_data_t));
-  dt_iop_colorout_gui_data_t *g = (dt_iop_colorout_gui_data_t *)self->gui_data;
+  dt_iop_colorout_gui_data_t *g = IOP_GUI_ALLOC(colorout);
 
   char datadir[PATH_MAX] = { 0 };
   char confdir[PATH_MAX] = { 0 };
@@ -862,12 +861,11 @@ void gui_init(struct dt_iop_module_t *self)
   dt_loc_get_user_config_dir(confdir, sizeof(confdir));
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
 
   // TODO:
   g->output_intent = dt_bauhaus_combobox_new(self);
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_intent, TRUE, TRUE, 0);
-  dt_bauhaus_widget_set_label(g->output_intent, NULL, _("output intent"));
+  dt_bauhaus_widget_set_label(g->output_intent, NULL, N_("output intent"));
   dt_bauhaus_combobox_add(g->output_intent, _("perceptual"));
   dt_bauhaus_combobox_add(g->output_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(g->output_intent, C_("rendering intent", "saturation"));
@@ -880,7 +878,7 @@ void gui_init(struct dt_iop_module_t *self)
   }
 
   g->output_profile = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->output_profile, NULL, _("export profile"));
+  dt_bauhaus_widget_set_label(g->output_profile, NULL, N_("export profile"));
   gtk_box_pack_start(GTK_BOX(self->widget), g->output_profile, TRUE, TRUE, 0);
   for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
@@ -901,20 +899,19 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->output_profile), "value-changed", G_CALLBACK(output_profile_changed), (gpointer)self);
 
   // reload the profiles when the display or softproof profile changed!
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED,
                             G_CALLBACK(_signal_profile_changed), self->dev);
   // update the gui when the preferences changed (i.e. show intent when using lcms2)
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,
                             G_CALLBACK(_preference_changed), (gpointer)self);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_signal_profile_changed), self->dev);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_preference_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_changed), self->dev);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preference_changed), self);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

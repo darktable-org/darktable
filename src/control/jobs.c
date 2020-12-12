@@ -1,10 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2010--2013 henrik andersson.
-    Copyright (c) 2012 James C. McPherson
-    copyright (c) 2014 tobias ellinghaus.
-    copyright (c) 2015 LebedevRI.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -637,6 +633,10 @@ void dt_control_jobs_init(dt_control_t *control)
     params->threadid = k;
     dt_pthread_create(&control->thread_res[k], dt_control_work_res, params);
   }
+  /* create thread taking care of connecting gphoto2 devices */
+#ifdef HAVE_GPHOTO2
+  dt_pthread_create(&control->update_gphoto_thread, dt_update_cameras_thread, control);
+#endif
 }
 
 void dt_control_jobs_cleanup(dt_control_t *control)

@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2014 johannes hanika.
-    copyright (c) 2014 Ulrich Pegelow.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,12 +32,14 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/drawingarea.h"
 #include "dtgtk/paint.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 #include "libs/colorpicker.h"
 
@@ -85,13 +86,17 @@ typedef struct dt_iop_tonecurve_node_t
 
 typedef enum dt_iop_tonecurve_autoscale_t
 {
-  DT_S_SCALE_MANUAL = 0,           // user specified curves
-  DT_S_SCALE_AUTOMATIC = 1,        // automatically adjust saturation based on L_out/L_in
-  DT_S_SCALE_AUTOMATIC_XYZ = 2,    // automatically adjust saturation by
-                                   // transforming the curve C to C' like:
-                                   // L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
-                                   // channels, too (and then transforming it back to Lab of course)
-  DT_S_SCALE_AUTOMATIC_RGB = 3,    // similar to above but use an rgb working space
+  DT_S_SCALE_AUTOMATIC = 1,        /* automatically adjust saturation based on L_out/L_in
+                                      $DESCRIPTION: "Lab, linked channels" */
+  DT_S_SCALE_MANUAL = 0,           /* user specified curves
+                                      $DESCRIPTION: "Lab, independent channels" */
+  DT_S_SCALE_AUTOMATIC_XYZ = 2,    /* automatically adjust saturation by
+                                      transforming the curve C to C' like:
+                                      L_out=C(L_in) -> Y_out=C'(Y_in) and applying C' to the X and Z
+                                      channels, too (and then transforming it back to Lab of course)
+                                      $DESCRIPTION: "XYZ, linked channels" */
+  DT_S_SCALE_AUTOMATIC_RGB = 3,    /* similar to above but use an rgb working space
+                                      $DESCRIPTION: "RGB, linked channels" */
 } dt_iop_tonecurve_autoscale_t;
 
 // parameter structure of tonecurve 1st version, needed for use in legacy_params()
@@ -128,11 +133,11 @@ typedef struct dt_iop_tonecurve_params_t
   dt_iop_tonecurve_node_t tonecurve[3][DT_IOP_TONECURVE_MAXNODES]; // three curves (L, a, b) with max number
                                                                    // of nodes
   int tonecurve_nodes[3];
-  int tonecurve_type[3];
-  int tonecurve_autoscale_ab;
-  int tonecurve_preset;
-  int tonecurve_unbound_ab;
-  int preserve_colors;
+  int tonecurve_type[3]; // $DEFAULT: MONOTONE_HERMITE
+  dt_iop_tonecurve_autoscale_t tonecurve_autoscale_ab; //$DEFAULT: DT_S_SCALE_AUTOMATIC_RGB $DESCRIPTION: "color space"
+  int tonecurve_preset; // $DEFAULT: 0
+  int tonecurve_unbound_ab; // $DEFAULT: 1
+  dt_iop_rgb_norms_t preserve_colors; // $DEFAULT: DT_RGB_NORM_AVERAGE $DESCRIPTION: "preserve colors"
 } dt_iop_tonecurve_params_t;
 
 typedef struct dt_iop_tonecurve_gui_data_t
@@ -146,9 +151,7 @@ typedef struct dt_iop_tonecurve_gui_data_t
   GtkWidget *autoscale_ab;
   GtkNotebook *channel_tabs;
   GtkWidget *colorpicker;
-  dt_iop_color_picker_t color_picker;
   GtkWidget *interpolator;
-  GtkWidget *scale;
   tonecurve_channel_t channel;
   double mouse_x, mouse_y;
   int selected;
@@ -191,7 +194,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -202,6 +205,15 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("alter an image’s tones using curves"),
+                                      _("corrective and creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -490,19 +502,19 @@ static const struct
   // Here is a valid example for you to compare
   // clang-format off
     // nikon d750 by Edouard Gomez
-    {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.083508, 0.073677}, {0.212191, 0.274799}, {0.397095, 0.594035}, {0.495025, 0.714660}, {0.683565, 0.878550}, {0.854059, 0.950927}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
+    {"Nikon D750", "NIKON CORPORATION", "NIKON D750", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.083508, 0.073677}, {0.212191, 0.274799}, {0.397095, 0.594035}, {0.495025, 0.714660}, {0.683565, 0.878550}, {0.854059, 0.950927}, {1.000000, 1.000000}}, {{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}}, {{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000} }}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
     // nikon d5100 contributed by Stefan Kauerauf
-    {"NIKON D5100", "NIKON CORPORATION", "NIKON D5100", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000957, 0.000176}, {0.002423, 0.000798}, {0.005893, 0.003685}, {0.013219, 0.006619}, {0.023372, 0.011954}, {0.037580, 0.017817}, {0.069695, 0.035353}, {0.077276, 0.040315}, {0.123707, 0.082707}, {0.145249, 0.112105}, {0.189168, 0.186135}, {0.219576, 0.243677}, {0.290201, 0.385251}, {0.428150, 0.613355}, {0.506199, 0.700256}, {0.622833, 0.805488}, {0.702763, 0.870959}, {0.935053, 0.990139}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
+    {"NIKON D5100", "NIKON CORPORATION", "NIKON D5100", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000957, 0.000176}, {0.002423, 0.000798}, {0.005893, 0.003685}, {0.013219, 0.006619}, {0.023372, 0.011954}, {0.037580, 0.017817}, {0.069695, 0.035353}, {0.077276, 0.040315}, {0.123707, 0.082707}, {0.145249, 0.112105}, {0.189168, 0.186135}, {0.219576, 0.243677}, {0.290201, 0.385251}, {0.428150, 0.613355}, {0.506199, 0.700256}, {0.622833, 0.805488}, {0.702763, 0.870959}, {0.935053, 0.990139}, {1.000000, 1.000000}}, {{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}}, {{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}}}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
     // nikon d7000 by Edouard Gomez
-    {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.110633, 0.111192}, {0.209771, 0.286963}, {0.355888, 0.561236}, {0.454987, 0.673098}, {0.769212, 0.920485}, {0.800468, 0.933428}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
+    {"Nikon D7000", "NIKON CORPORATION", "NIKON D7000", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.110633, 0.111192}, {0.209771, 0.286963}, {0.355888, 0.561236}, {0.454987, 0.673098}, {0.769212, 0.920485}, {0.800468, 0.933428}, {1.000000, 1.000000}}, {{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}}, {{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}}}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
     // nikon d7200 standard by Ralf Brown (firmware 1.00)
-    {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000618, 0.003286}, {0.001639, 0.003705}, {0.005227, 0.005101}, {0.013299, 0.011192}, {0.016048, 0.013130}, {0.037941, 0.027014}, {0.058195, 0.041339}, {0.086531, 0.069088}, {0.116679, 0.107283}, {0.155629, 0.159422}, {0.205477, 0.246265}, {0.225923, 0.287343}, {0.348056, 0.509104}, {0.360629, 0.534732}, {0.507562, 0.762089}, {0.606899, 0.865692}, {0.734828, 0.947468}, {0.895488, 0.992021}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },{{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}, },}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
+    {"Nikon D7200", "NIKON CORPORATION", "NIKON D7200", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000618, 0.003286}, {0.001639, 0.003705}, {0.005227, 0.005101}, {0.013299, 0.011192}, {0.016048, 0.013130}, {0.037941, 0.027014}, {0.058195, 0.041339}, {0.086531, 0.069088}, {0.116679, 0.107283}, {0.155629, 0.159422}, {0.205477, 0.246265}, {0.225923, 0.287343}, {0.348056, 0.509104}, {0.360629, 0.534732}, {0.507562, 0.762089}, {0.606899, 0.865692}, {0.734828, 0.947468}, {0.895488, 0.992021}, {1.000000, 1.000000}}, {{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}}, {{0.000000, 0.000000}, {0.050000, 0.050000}, {0.100000, 0.100000}, {0.150000, 0.150000}, {0.200000, 0.200000}, {0.250000, 0.250000}, {0.300000, 0.300000}, {0.350000, 0.350000}, {0.400000, 0.400000}, {0.450000, 0.450000}, {0.500000, 0.500000}, {0.550000, 0.550000}, {0.600000, 0.600000}, {0.650000, 0.650000}, {0.700000, 0.700000}, {0.750000, 0.750000}, {0.800000, 0.800000}, {0.850000, 0.850000}, {0.900000, 0.900000}, {0.950000, 0.950000}}}, {20, 20, 20}, {2, 2, 2}, 1, 0, 0}},
     // nikon d7500 by Anders Bennehag (firmware C 1.00, LD 2.016)
-    {"NIKON D7500", "NIKON CORPORATION", "NIKON D7500", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000421, 0.003412}, {0.003775, 0.004001}, {0.013762, 0.008704}, {0.016698, 0.010230}, {0.034965, 0.018732}, {0.087311, 0.049808}, {0.101389, 0.060789}, {0.166845, 0.145269}, {0.230944, 0.271288}, {0.333399, 0.502609}, {0.353207, 0.542549}, {0.550014, 0.819535}, {0.731749, 0.944033}, {0.783283, 0.960546}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },{{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}, },}, {16, 16, 16}, {2, 2, 2}, 1, 0, 0}},
+    {"NIKON D7500", "NIKON CORPORATION", "NIKON D7500", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.000421, 0.003412}, {0.003775, 0.004001}, {0.013762, 0.008704}, {0.016698, 0.010230}, {0.034965, 0.018732}, {0.087311, 0.049808}, {0.101389, 0.060789}, {0.166845, 0.145269}, {0.230944, 0.271288}, {0.333399, 0.502609}, {0.353207, 0.542549}, {0.550014, 0.819535}, {0.731749, 0.944033}, {0.783283, 0.960546}, {1.000000, 1.000000}}, {{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}}, {{0.000000, 0.000000}, {0.062500, 0.062500}, {0.125000, 0.125000}, {0.187500, 0.187500}, {0.250000, 0.250000}, {0.312500, 0.312500}, {0.375000, 0.375000}, {0.437500, 0.437500}, {0.500000, 0.500000}, {0.562500, 0.562500}, {0.625000, 0.625000}, {0.687500, 0.687500}, {0.750000, 0.750000}, {0.812500, 0.812500}, {0.875000, 0.875000}, {0.937500, 0.937500}}}, {16, 16, 16}, {2, 2, 2}, 1, 0, 0}},
     // nikon d90 by Edouard Gomez
-    {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.002915, 0.006453}, {0.023324, 0.021601}, {0.078717, 0.074963}, {0.186589, 0.242230}, {0.364432, 0.544956}, {0.629738, 0.814127}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },{{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}, },}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
+    {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.002915, 0.006453}, {0.023324, 0.021601}, {0.078717, 0.074963}, {0.186589, 0.242230}, {0.364432, 0.544956}, {0.629738, 0.814127}, {1.000000, 1.000000}}, {{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}}, {{0.000000, 0.000000}, {0.125000, 0.125000}, {0.250000, 0.250000}, {0.375000, 0.375000}, {0.500000, 0.500000}, {0.625000, 0.625000}, {0.750000, 0.750000}, {0.875000, 0.875000}}}, {8, 8, 8}, {2, 2, 2}, 1, 0, 0}},
     // Olympus OM-D E-M10 II by Lukas Schrangl
-    {"Olympus OM-D E-M10 II", "OLYMPUS CORPORATION    ", "E-M10MarkII     ", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.004036, 0.000809}, {0.015047, 0.009425}, {0.051948, 0.042053}, {0.071777, 0.066635}, {0.090018, 0.086722}, {0.110197, 0.118773}, {0.145817, 0.171861}, {0.207476, 0.278652}, {0.266832, 0.402823}, {0.428061, 0.696319}, {0.559728, 0.847113}, {0.943576, 0.993482}, {1.000000, 1.000000}, },{{0.000000, 0.000000}, {0.071429, 0.071429}, {0.142857, 0.142857}, {0.214286, 0.214286}, {0.285714, 0.285714}, {0.357143, 0.357143}, {0.428571, 0.428571}, {0.500000, 0.500000}, {0.571429, 0.571429}, {0.642857, 0.642857}, {0.714286, 0.714286}, {0.785714, 0.785714}, {0.857143, 0.857143}, {0.928571, 0.928571}, },{{0.000000, 0.000000}, {0.071429, 0.071429}, {0.142857, 0.142857}, {0.214286, 0.214286}, {0.285714, 0.285714}, {0.357143, 0.357143}, {0.428571, 0.428571}, {0.500000, 0.500000}, {0.571429, 0.571429}, {0.642857, 0.642857}, {0.714286, 0.714286}, {0.785714, 0.785714}, {0.857143, 0.857143}, {0.928571, 0.928571}, },}, {14, 14, 14}, {2, 2, 2}, 1, 0, 0}},
+    {"Olympus OM-D E-M10 II", "OLYMPUS CORPORATION    ", "E-M10MarkII     ", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.004036, 0.000809}, {0.015047, 0.009425}, {0.051948, 0.042053}, {0.071777, 0.066635}, {0.090018, 0.086722}, {0.110197, 0.118773}, {0.145817, 0.171861}, {0.207476, 0.278652}, {0.266832, 0.402823}, {0.428061, 0.696319}, {0.559728, 0.847113}, {0.943576, 0.993482}, {1.000000, 1.000000}}, {{0.000000, 0.000000}, {0.071429, 0.071429}, {0.142857, 0.142857}, {0.214286, 0.214286}, {0.285714, 0.285714}, {0.357143, 0.357143}, {0.428571, 0.428571}, {0.500000, 0.500000}, {0.571429, 0.571429}, {0.642857, 0.642857}, {0.714286, 0.714286}, {0.785714, 0.785714}, {0.857143, 0.857143}, {0.928571, 0.928571}}, {{0.000000, 0.000000}, {0.071429, 0.071429}, {0.142857, 0.142857}, {0.214286, 0.214286}, {0.285714, 0.285714}, {0.357143, 0.357143}, {0.428571, 0.428571}, {0.500000, 0.500000}, {0.571429, 0.571429}, {0.642857, 0.642857}, {0.714286, 0.714286}, {0.785714, 0.785714}, {0.857143, 0.857143}, {0.928571, 0.928571}}}, {14, 14, 14}, {2, 2, 2}, 1, 0, 0}},
   // clang-format on
 };
 
@@ -541,7 +553,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][3].y = 0.290352;
   p.tonecurve[ch_L][4].y = 0.773852;
   p.tonecurve[ch_L][5].y = 1.000000;
-  dt_gui_presets_add_generic(_("contrast compression"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast compression"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   p.tonecurve_nodes[ch_L] = 7;
   float linear_L[7] = { 0.0, 0.08, 0.17, 0.50, 0.83, 0.92, 1.0 };
@@ -549,7 +562,8 @@ void init_presets(dt_iop_module_so_t *self)
   // Linear - no contrast
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
-  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 1.0 (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Linear contrast
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
@@ -558,7 +572,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][2].y -= 0.030;
   p.tonecurve[ch_L][4].y += 0.030;
   p.tonecurve[ch_L][5].y += 0.020;
-  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - med (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
@@ -566,7 +581,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][2].y -= 0.060;
   p.tonecurve[ch_L][4].y += 0.060;
   p.tonecurve[ch_L][5].y += 0.040;
-  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - high (linear)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma contrast
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
@@ -577,7 +593,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][5].y += 0.020;
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - med (gamma 2.2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].x = linear_L[k];
   for(int k = 0; k < 7; k++) p.tonecurve[ch_L][k].y = linear_L[k];
@@ -587,7 +604,8 @@ void init_presets(dt_iop_module_so_t *self)
   p.tonecurve[ch_L][5].y += 0.040;
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].x = powf(p.tonecurve[ch_L][k].x, 2.2f);
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(p.tonecurve[ch_L][k].y, 2.2f);
-  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("contrast - high (gamma 2.2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   /** for pure power-like functions, we need more nodes close to the bounds**/
 
@@ -598,25 +616,29 @@ void init_presets(dt_iop_module_so_t *self)
 
   // Gamma 2.0 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 2.0f);
-  dt_gui_presets_add_generic(_("gamma 2.0"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 2.0"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Gamma 0.5 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(linear_L[k], 0.5f);
-  dt_gui_presets_add_generic(_("gamma 0.5"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("gamma 0.5"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Log2 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = logf(linear_L[k] + 1.0f) / logf(2.0f);
-  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("logarithm (base 2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   // Exp2 - no contrast
   for(int k = 1; k < 6; k++) p.tonecurve[ch_L][k].y = powf(2.0f, linear_L[k]) - 1.0f;
-  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("exponential (base 2)"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   for (int k=0; k<sizeof(preset_camera_curves)/sizeof(preset_camera_curves[0]); k++)
   {
     // insert the preset
     dt_gui_presets_add_generic(preset_camera_curves[k].name, self->op, self->version(),
-                               &preset_camera_curves[k].preset, sizeof(p), 1);
+                               &preset_camera_curves[k].preset, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
     // restrict it to model, maker
     dt_gui_presets_update_mml(preset_camera_curves[k].name, self->op, self->version(),
@@ -640,7 +662,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)p1;
 
-  if(pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if((pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     piece->request_histogram |= (DT_REQUEST_ON);
   else
     piece->request_histogram &= ~(DT_REQUEST_ON);
@@ -748,7 +770,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 
 static float eval_grey(float x)
 {
-  // estimate the log base to remap the grey x to 0.5
+  // "log base" is a combined scaling and offset change so that x->[0,1] with
+  // the left side of the histogram expanded (slider->right) or not (slider left, linear)
   return x;
 }
 
@@ -789,8 +812,7 @@ void gui_reset(struct dt_iop_module_t *self)
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
-
-  dt_bauhaus_combobox_set(g->scale, 0); // linear
+  dt_bauhaus_slider_set(g->logbase, 0);
   g->loglogscale = 0;
   g->semilog = 0;
 
@@ -803,84 +825,33 @@ void gui_update(struct dt_iop_module_t *self)
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
 
-  switch(p->tonecurve_autoscale_ab)
-  {
-    case DT_S_SCALE_MANUAL:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 1);
-      gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
-      gtk_widget_set_visible(g->preserve_colors, FALSE);
-      break;
-    }
-    case DT_S_SCALE_AUTOMATIC:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 0);
-      g->channel = (tonecurve_channel_t)ch_L;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      gtk_widget_set_visible(g->preserve_colors, FALSE);
-      break;
-    }
-    case DT_S_SCALE_AUTOMATIC_XYZ:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 2);
-      g->channel = (tonecurve_channel_t)ch_L;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      gtk_widget_set_visible(g->preserve_colors, FALSE);
-      break;
-    }
-    case DT_S_SCALE_AUTOMATIC_RGB:
-    {
-      dt_bauhaus_combobox_set(g->autoscale_ab, 3);
-      g->channel = (tonecurve_channel_t)ch_L;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      gtk_widget_set_visible(g->preserve_colors, TRUE);
-      break;
-    }
-  }
+  dt_bauhaus_combobox_set_from_value(g->autoscale_ab, p->tonecurve_autoscale_ab);
+
+  gui_changed(self, g->autoscale_ab, 0);
 
   dt_bauhaus_combobox_set(g->interpolator, p->tonecurve_type[ch_L]);
   dt_bauhaus_combobox_set(g->preserve_colors, p->preserve_colors);
-
-  if (dt_bauhaus_combobox_get(g->scale) != 0)
-  {
-    g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-    gtk_widget_set_visible(g->logbase, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(g->logbase, FALSE);
-  }
-
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   // that's all, gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_tonecurve_params_t));
-  module->default_enabled = 0;
+  dt_iop_default_init(module);
+
   module->request_histogram |= (DT_REQUEST_ON);
-  module->params_size = sizeof(dt_iop_tonecurve_params_t);
-  module->gui_data = NULL;
-  dt_iop_tonecurve_params_t tmp = (dt_iop_tonecurve_params_t){
-    { { // three curves (L, a, b) with a number of nodes
-        { 0.0, 0.0 },
-        { 1.0, 1.0 }
-      },
-      { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } },
-      { { 0.0, 0.0 }, { 0.5, 0.5 }, { 1.0, 1.0 } } },
-    { 2, 3, 3 }, // number of nodes per curve
-    // { CATMULL_ROM, CATMULL_ROM, CATMULL_ROM},  // curve types
-    { MONOTONE_HERMITE, MONOTONE_HERMITE, MONOTONE_HERMITE },
-    // { CUBIC_SPLINE, CUBIC_SPLINE, CUBIC_SPLINE},
-    DT_S_SCALE_AUTOMATIC_RGB, // autoscale_ab
-    0,
-    1, // unbound_ab
-    DT_RGB_NORM_AVERAGE  // preserve color = Average rgb
-  };
-  memcpy(module->params, &tmp, sizeof(dt_iop_tonecurve_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_tonecurve_params_t));
+
+  dt_iop_tonecurve_params_t *d = module->default_params;
+
+  d->tonecurve_nodes[0] = 2;
+  d->tonecurve_nodes[1] =
+  d->tonecurve_nodes[2] = 3;
+  d->tonecurve[0][1].x = d->tonecurve[0][1].y =
+  d->tonecurve[1][2].x = d->tonecurve[1][2].y =
+  d->tonecurve[2][2].x = d->tonecurve[2][2].y = 1.0f;
+  d->tonecurve[1][1].x = d->tonecurve[1][1].y =
+  d->tonecurve[2][1].x = d->tonecurve[2][1].y = 0.5f;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -907,92 +878,29 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
-static void scale_callback(GtkWidget *widget, dt_iop_module_t *self)
+static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
 {
   if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  gtk_widget_set_visible(g->scale, TRUE);
-  switch(dt_bauhaus_combobox_get(widget))
-  {
-    case 0:
-    {
-      // x: linear
-      g->loglogscale = 0;
-      g->semilog = 0;
-      gtk_widget_set_visible(g->logbase, FALSE);
-      break;
-    }
-    case 1:
-    {
-      // x: log
-      g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-      g->semilog = 1;
-      gtk_widget_set_visible(g->logbase, TRUE);
-      break;
-    }
-  }
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void logbase_callback(GtkWidget *slider, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(self->dt->gui->reset) return;
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-
-  if (dt_bauhaus_combobox_get(g->scale) != 0)
-  {
-    g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
-    gtk_widget_queue_draw(GTK_WIDGET(g->area));
-  }
-}
-
-static void autoscale_ab_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
   dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  const int combo = dt_bauhaus_combobox_get(widget);
 
-  g->channel = (tonecurve_channel_t)ch_L;
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
-
-  switch(combo)
+  if(w == g->autoscale_ab)
   {
-    case 0:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      gtk_widget_set_visible(g->preserve_colors, FALSE);
-      break;
+    g->channel = (tonecurve_channel_t)ch_L;
+    gtk_notebook_set_current_page(GTK_NOTEBOOK(g->channel_tabs), ch_L);
 
-    case 1:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_MANUAL;
-      gtk_notebook_set_show_tabs(g->channel_tabs, TRUE);
-      gtk_widget_set_visible(g->preserve_colors, FALSE);
-      break;
+    gtk_notebook_set_show_tabs(g->channel_tabs, p->tonecurve_autoscale_ab == DT_S_SCALE_MANUAL);
+    gtk_widget_set_visible(g->preserve_colors, p->tonecurve_autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB);
 
-    case 2:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_XYZ;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      gtk_widget_set_visible(g->preserve_colors, FALSE);
-      break;
-
-    case 3:
-      p->tonecurve_autoscale_ab = DT_S_SCALE_AUTOMATIC_RGB;
-      gtk_notebook_set_show_tabs(g->channel_tabs, FALSE);
-      gtk_widget_set_visible(g->preserve_colors, TRUE);
-      break;
+    gtk_widget_queue_draw(self->widget);
   }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  gtk_widget_queue_draw(self->widget);
 }
 
 static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
@@ -1008,33 +916,12 @@ static void interpolator_callback(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
-static void preserve_colors_callback(GtkWidget *widget, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  p->preserve_colors = dt_bauhaus_combobox_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 static void tab_switch(GtkNotebook *notebook, GtkWidget *page, guint page_num, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   c->channel = (tonecurve_channel_t)page_num;
-  if (c->channel == ch_L)
-  {
-    gtk_widget_set_visible(c->scale, TRUE);
-    if (c->loglogscale == 0 && c->semilog == 0)
-      gtk_widget_set_visible(c->logbase, FALSE);
-    else
-      gtk_widget_set_visible(c->logbase, TRUE);
-  }
-  else
-  {
-    gtk_widget_set_visible(c->scale, FALSE);
-    gtk_widget_set_visible(c->logbase, FALSE);
-  }
   gtk_widget_queue_draw(self->widget);
 }
 
@@ -1052,7 +939,7 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
 static float to_log(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && ch == ch_L)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -1066,7 +953,7 @@ static float to_log(const float x, const float base, const int ch, const int sem
     }
     else
     {
-      return logf(x * (base - 1.0f) + 1.0f) / logf(base);
+      return logf(x * base + 1.0f) / logf(base + 1.0f);
     }
   }
   else
@@ -1078,7 +965,7 @@ static float to_log(const float x, const float base, const int ch, const int sem
 static float to_lin(const float x, const float base, const int ch, const int semilog, const int is_ordinate)
 {
   // don't log-encode the a and b channels
-  if(base > 0.0f && base != 1.0f && ch == ch_L)
+  if(base > 0.0f && ch == ch_L)
   {
     if (semilog == 1 && is_ordinate == 1)
     {
@@ -1092,7 +979,7 @@ static float to_lin(const float x, const float base, const int ch, const int sem
     }
     else
     {
-      return (powf(base, x) - 1.0f) / (base - 1.0f);
+      return (powf(base + 1.0f, x) - 1.0f) / base;
     }
   }
   else
@@ -1101,7 +988,7 @@ static float to_lin(const float x, const float base, const int ch, const int sem
   }
 }
 
-static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
+void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
 
@@ -1112,31 +999,6 @@ static void _iop_color_picker_apply(dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     gd->picked_color_max[k] = self->picked_color_max[k];
     gd->picked_output_color[k] = self->picked_output_color[k];
   }
-  dt_control_queue_redraw_widget(self->widget);
-}
-
-static int _iop_color_picker_get_set(dt_iop_module_t *self, GtkWidget *button)
-{
-  dt_iop_color_picker_t *picker = self->picker;
-  const int current_picker = picker->current_picker;
-
-  picker->current_picker = 1;
-
-  if(current_picker == picker->current_picker)
-    return DT_COLOR_PICKER_ALREADY_SELECTED;
-  else
-    return picker->current_picker;
-}
-
-static void _iop_color_picker_update(dt_iop_module_t *self)
-{
-  dt_iop_tonecurve_gui_data_t *g = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  const int reset = darktable.gui->reset;
-  darktable.gui->reset = 1;
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->colorpicker), g->color_picker.current_picker == 1);
-
-  darktable.gui->reset = reset;
   dt_control_queue_redraw_widget(self->widget);
 }
 
@@ -1205,9 +1067,9 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
 
   dt_iop_tonecurve_sanity_check(self, widget);
 
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
   gtk_widget_queue_draw(widget);
 
+  dt_iop_queue_history_update(self, FALSE);
   return TRUE;
 }
 
@@ -1219,7 +1081,8 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   int ch = c->channel;
   int autoscale_ab = p->tonecurve_autoscale_ab;
 
@@ -1284,9 +1147,8 @@ static gboolean dt_iop_tonecurve_key_press(GtkWidget *widget, GdkEventKey *event
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_tonecurve_gui_data_t));
-  dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
-  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
+  dt_iop_tonecurve_gui_data_t *c = IOP_GUI_ALLOC(tonecurve);
+  dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->default_params;
 
   for(int ch = 0; ch < ch_max; ch++)
   {
@@ -1302,58 +1164,29 @@ void gui_init(struct dt_iop_module_t *self)
   c->selected = -1;
   c->loglogscale = 0;
   c->semilog = 0;
+  self->timeout_handle = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  c->autoscale_ab = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->autoscale_ab, NULL, _("color space"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, linked channels"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("Lab, independent channels"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("XYZ, linked channels"));
-  dt_bauhaus_combobox_add(c->autoscale_ab, _("RGB, linked channels"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->autoscale_ab, TRUE, TRUE, 0);
+  c->autoscale_ab = dt_bauhaus_combobox_from_params(self, "tonecurve_autoscale_ab");
   gtk_widget_set_tooltip_text(c->autoscale_ab, _("if set to auto, a and b curves have no effect and are "
                                                  "not displayed. chroma values (a and b) of each pixel are "
                                                  "then adjusted based on L curve data. auto XYZ is similar "
                                                  "but applies the saturation changes in XYZ space."));
-  g_signal_connect(G_OBJECT(c->autoscale_ab), "value-changed", G_CALLBACK(autoscale_ab_callback), self);
-
-  // tabs
+  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   c->channel_tabs = GTK_NOTEBOOK(gtk_notebook_new());
-
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  L  ")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("tonecurve for L channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  a  ")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("tonecurve for a channel"));
-  gtk_notebook_append_page(GTK_NOTEBOOK(c->channel_tabs),
-                           GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0)), gtk_label_new(_("  b  ")));
-  gtk_widget_set_tooltip_text(gtk_notebook_get_tab_label(c->channel_tabs, gtk_notebook_get_nth_page(c->channel_tabs, -1)),
-                              _("tonecurve for b channel"));
-
-  gtk_widget_show_all(GTK_WIDGET(gtk_notebook_get_nth_page(c->channel_tabs, c->channel)));
-  gtk_notebook_set_current_page(GTK_NOTEBOOK(c->channel_tabs), c->channel);
-
-  GtkWidget *tb = dtgtk_togglebutton_new(dtgtk_cairo_paint_colorpicker, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
-  gtk_widget_set_tooltip_text(tb, _("pick GUI color from image\nctrl+click to select an area"));
-  c->colorpicker = tb;
-
-  GtkWidget *notebook = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_box_pack_start(GTK_BOX(notebook), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(notebook), GTK_WIDGET(tb), FALSE, FALSE, 0);
-
-  GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), vbox, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(notebook), TRUE, TRUE, 0);
-
+  dt_ui_notebook_page(c->channel_tabs, _("L"), _("tonecurve for L channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("a"), _("tonecurve for a channel"));
+  dt_ui_notebook_page(c->channel_tabs, _("b"), _("tonecurve for b channel"));
   g_signal_connect(G_OBJECT(c->channel_tabs), "switch_page", G_CALLBACK(tab_switch), self);
+  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(c->channel_tabs), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), gtk_grid_new(), TRUE, TRUE, 0);
+
+  c->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT_AREA, hbox);
+  gtk_widget_set_tooltip_text(c->colorpicker, _("pick GUI color from image\nctrl+click to select an area"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), hbox, FALSE, FALSE, 0);
 
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
-  gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   // FIXME: that tooltip goes in the way of the numbers when you hover a node to get a reading
   //gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("double click to reset curve"));
@@ -1369,7 +1202,6 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "leave-notify-event", G_CALLBACK(dt_iop_tonecurve_leave_notify), self);
   g_signal_connect(G_OBJECT(c->area), "enter-notify-event", G_CALLBACK(dt_iop_tonecurve_enter_notify), self);
   g_signal_connect(G_OBJECT(c->area), "configure-event", G_CALLBACK(area_resized), self);
-  g_signal_connect(G_OBJECT(tb), "button-press-event", G_CALLBACK(dt_iop_color_picker_callback_button_press), &c->color_picker);
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(_scrolled), self);
   g_signal_connect(G_OBJECT(c->area), "key-press-event", G_CALLBACK(dt_iop_tonecurve_key_press), self);
 
@@ -1379,7 +1211,7 @@ void gui_init(struct dt_iop_module_t *self)
     #define MONOTONE_HERMITE 2
   */
   c->interpolator = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->interpolator, NULL, _("interpolation method"));
+  dt_bauhaus_widget_set_label(c->interpolator, NULL, N_("interpolation method"));
   dt_bauhaus_combobox_add(c->interpolator, _("cubic spline"));
   dt_bauhaus_combobox_add(c->interpolator, _("centripetal spline"));
   dt_bauhaus_combobox_add(c->interpolator, _("monotonic spline"));
@@ -1390,47 +1222,17 @@ void gui_init(struct dt_iop_module_t *self)
                                                  "- monotonic is better for accuracy of pure analytical functions (log, gamma, exp)\n"));
   g_signal_connect(G_OBJECT(c->interpolator), "value-changed", G_CALLBACK(interpolator_callback), self);
 
-  c->preserve_colors = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->preserve_colors, NULL, _("preserve colors"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("none"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("luminance"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("max RGB"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("average RGB"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("sum RGB"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("norm RGB"));
-  dt_bauhaus_combobox_add(c->preserve_colors, _("basic power"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->preserve_colors, TRUE, TRUE, 0);
+  c->preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(c->preserve_colors, _("method to preserve colors when applying contrast"));
-  g_signal_connect(G_OBJECT(c->preserve_colors), "value-changed", G_CALLBACK(preserve_colors_callback), self);
 
-  c->scale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
-  dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("log"));
-  gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
-                                          "more precise control near the blacks"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
-
-
-  c->logbase = dt_bauhaus_slider_new_with_range(self, 2.0f, 64.f, 0.5f, 2.0f, 2);
-  dt_bauhaus_widget_set_label(c->logbase, NULL, _("base of the logarithm"));
+  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
+  dt_bauhaus_widget_set_label(c->logbase, NULL, N_("scale for graph"));
   gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
-
 
   c->sizegroup = GTK_SIZE_GROUP(gtk_size_group_new(GTK_SIZE_GROUP_HORIZONTAL));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->area));
   gtk_size_group_add_widget(c->sizegroup, GTK_WIDGET(c->channel_tabs));
-
-  dt_iop_init_picker(&c->color_picker,
-              self,
-              DT_COLOR_PICKER_POINT_AREA,
-              _iop_color_picker_get_set,
-              _iop_color_picker_apply,
-              _iop_color_picker_update);
-
-  dt_bauhaus_combobox_set(c->scale, 0); // linear
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -1441,8 +1243,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_draw_curve_destroy(c->minmax_curve[ch_L]);
   dt_draw_curve_destroy(c->minmax_curve[ch_a]);
   dt_draw_curve_destroy(c->minmax_curve[ch_b]);
-  free(self->gui_data);
-  self->gui_data = NULL;
+  dt_iop_cancel_history_update(self);
+
+  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_tonecurve_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
@@ -1469,7 +1272,6 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_tonecurve_gui_data_t *c = (dt_iop_tonecurve_gui_data_t *)self->gui_data;
   dt_iop_tonecurve_params_t *p = (dt_iop_tonecurve_params_t *)self->params;
-  dt_develop_t *dev = darktable.develop;
   dt_iop_tonecurve_global_data_t *gd = (dt_iop_tonecurve_global_data_t *)self->global_data;
 
   int ch = c->channel;
@@ -1573,15 +1375,15 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   {
     if (c->semilog == 0)
     {
-      dt_draw_loglog_grid(cr, 4, 0, height, width, 0, c->loglogscale);
+      dt_draw_loglog_grid(cr, 4, 0, height, width, 0, c->loglogscale + 1.0f);
     }
     else if (c->semilog == 1)
     {
-      dt_draw_semilog_x_grid(cr, 4, 0, height, width, 0, c->loglogscale);
+      dt_draw_semilog_x_grid(cr, 4, 0, height, width, 0, c->loglogscale + 1.0f);
     }
     else if (c->semilog == -1)
     {
-      dt_draw_semilog_y_grid(cr, 4, 0, height, width, 0, c->loglogscale);
+      dt_draw_semilog_y_grid(cr, 4, 0, height, width, 0, c->loglogscale + 1.0f);
     }
   }
   else
@@ -1602,6 +1404,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     float *raw_mean, *raw_min, *raw_max;
     float *raw_mean_output;
     float picker_mean[3], picker_min[3], picker_max[3];
+    const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
 
     raw_mean = gd->picked_color;
     raw_min = gd->picked_color_min;
@@ -1609,8 +1412,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
     raw_mean_output = gd->picked_output_color;
 
     const uint32_t *hist = self->histogram;
-    const float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[ch]
-                                                                          : logf(1.0 + self->histogram_max[ch]);
+    const float hist_max = is_linear ? self->histogram_max[ch] : logf(1.0 + self->histogram_max[ch]);
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
@@ -1620,18 +1422,18 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
 
       if (ch == ch_L && c->loglogscale > 0.0f)
       {
-        dt_draw_histogram_8_log_base(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR, c->loglogscale);
+        dt_draw_histogram_8_log_base(cr, hist, 4, ch, is_linear, c->loglogscale + 1.0f);
       }
       else
       {
-        // TODO: make draw handle waveform histograms
-        dt_draw_histogram_8(cr, hist, 4, ch, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR);
+        dt_draw_histogram_8(cr, hist, 4, ch, is_linear);
       }
       cairo_restore(cr);
     }
 
     cairo_move_to(cr, 0, height);
-    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE)
+    if(self->request_color_pick == DT_REQUEST_COLORPICK_MODULE &&
+       gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(c->colorpicker)))
     {
       // the global live samples ...
       GSList *samples = darktable.lib->proxy.colorpicker.live_samples;
@@ -2031,6 +1833,7 @@ static gboolean dt_iop_tonecurve_button_press(GtkWidget *widget, GdkEventButton 
       tonecurve[k].x = tonecurve[k + 1].x;
       tonecurve[k].y = tonecurve[k + 1].y;
     }
+    tonecurve[nodes - 1].x = tonecurve[nodes - 1].y = 0;
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->tonecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);

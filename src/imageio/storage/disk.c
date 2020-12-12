@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -141,6 +141,7 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
     gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
 
     gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
+    gtk_editable_set_position(GTK_EDITABLE(d->entry), strlen(escaped));
     g_free(dir);
     g_free(composed);
     g_free(escaped);
@@ -174,6 +175,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
+    gtk_editable_set_position(GTK_EDITABLE(widget), strlen(dir));
     g_free(dir);
   }
 
@@ -190,13 +192,14 @@ void gui_init(dt_imageio_module_storage_t *self)
   gtk_widget_set_tooltip_text(widget, tooltip_text);
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
 
-  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
+  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
   d->onsave_action = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->onsave_action, NULL, _("on conflict"));
+  dt_bauhaus_widget_set_label(d->onsave_action, NULL, N_("on conflict"));
   dt_bauhaus_combobox_add(d->onsave_action, _("create unique filename"));
   dt_bauhaus_combobox_add(d->onsave_action, _("overwrite"));
   dt_bauhaus_combobox_add(d->onsave_action, _("skip"));
@@ -225,8 +228,9 @@ void gui_reset(dt_imageio_module_storage_t *self)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
+          const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
+          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+          dt_export_metadata_t *metadata)
 {
   dt_imageio_disk_t *d = (dt_imageio_disk_t *)sdata;
 
@@ -325,8 +329,8 @@ try_again:
   if(fail) return 1;
 
   /* export image to file */
-  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename,
-                       icc_intent, self, sdata, num, total, metadata) != 0)
+  if(dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
+                       icc_filename, icc_intent, self, sdata, num, total, metadata) != 0)
   {
     fprintf(stderr, "[imageio_storage_disk] could not export to file: `%s'!\n", filename);
     dt_control_log(_("could not export to file `%s'!"), filename);
@@ -384,6 +388,7 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   if(size != self->params_size(self)) return 1;
 
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
+  gtk_editable_set_position(GTK_EDITABLE(g->entry), strlen(d->filename));
   dt_bauhaus_combobox_set(g->onsave_action, d->onsave_action);
   return 0;
 }

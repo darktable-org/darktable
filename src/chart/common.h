@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2016 tobias ellinghaus.
+ *    Copyright (C) 2016-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ typedef struct image_t
   gboolean draw_colored;
 } image_t;
 
-point_t transform_coords(point_t p, point_t *bb);
+int get_homography(const point_t *source, const point_t *target, double *h);
+point_t apply_homography(point_t p, const double *h);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

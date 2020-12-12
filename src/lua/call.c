@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include <sys/select.h>
 #endif
 
-int dt_lua_check_print_error(lua_State* L, int result) 
+int dt_lua_check_print_error(lua_State* L, int result)
 {
   if(result == LUA_OK) return result;
   if(darktable.unmuted & DT_DEBUG_LUA)
@@ -86,7 +86,7 @@ int dt_lua_treated_pcall(lua_State*L, int nargs, int nresults)
   * check all call, pcall etc... sites
   * lua lock et recursivité
   * réimplémenter l'intégration avec la boucle gtk pour mieux faire le bounce
-  ? add a name in the thread stack for debug purpose 
+  ? add a name in the thread stack for debug purpose
   * two pcall with no tracebacks: call.c and lua.c
 
    */
@@ -192,7 +192,7 @@ static void end_job_init()
 
 /*
    STACKED JOB
-   This is a source that deals with lua jobs that are put on the stack to 
+   This is a source that deals with lua jobs that are put on the stack to
    be run on the lua thread.
    */
 static gboolean stacked_job_prepare (GSource *source, gint    *timeout)
@@ -474,7 +474,7 @@ void dt_lua_async_call_internal(const char* function, int line,lua_State *L, int
 #ifdef _DEBUG
   dt_print(DT_DEBUG_LUA,"LUA DEBUG : %s called from %s %d, nargs : %d\n",__FUNCTION__,function,line,nargs);
 #endif
-  
+
   lua_State *new_thread = lua_newthread(L);
   lua_pushlightuserdata(new_thread,cb);
   lua_pushlightuserdata(new_thread,data);
@@ -567,7 +567,7 @@ void dt_lua_async_call_string_internal(const char* function, int line,const char
 
   g_async_queue_push(darktable.lua_state.string_job_queue,(gpointer)data);
   g_main_context_wakeup(darktable.lua_state.context);
-  
+
 }
 
 
@@ -646,10 +646,10 @@ gboolean dt_lua_gtk_wrap_callback(gpointer data)
   g_mutex_unlock(&communication->end_mutex);
   dt_lua_unlock();
   return false;
-} 
+}
 
 static int gtk_wrap(lua_State*L)
-{ 
+{
   lua_pushvalue(L,lua_upvalueindex(1));
   lua_insert(L,1);
   if(pthread_equal(darktable.control->gui_thread, pthread_self())) {
@@ -697,7 +697,7 @@ int dt_lua_init_call(lua_State *L)
   luaA_Type type_id = dt_lua_init_singleton(L, "control", NULL);
   lua_setfield(L, -2, "control");
   lua_pop(L, 1);
-  
+
   lua_pushcfunction(L, ending_cb);
   dt_lua_type_register_const_type(L, type_id, "ending");
   lua_pushcfunction(L, dispatch_cb);

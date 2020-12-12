@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #  This file is part of darktable,
-#  copyright (c) 2013-2014 tobias ellinghaus.
+#  copyright (c) 2013-2020 tobias ellinghaus.
 #
 #  darktable is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -74,6 +74,8 @@ while()
   }
 }
 
+#dump_comments(); #exit 1;
+
 open my $OUT, '>', $output_file;
 
 if(defined($params_type))
@@ -106,39 +108,38 @@ close $OUT;
 
 ################# some debug functions #################
 
-# sub print_token
-# {
-#   my $token = shift;
-#   print @$token[0]." : ".@$token[1]." : ".@$token[2]." : ".@$token[3]."\n";
-# }
-#
-# sub dump_tokens
-# {
-#   while()
-#   {
-#     my @token = get_token();
-#     last if($token[$P_TYPE] == $T_NONE);
-#     print_token(\@token);
-#   }
-# }
-#
-# sub dump_comments
-# {
-#   my $lineno = 0;
-#   foreach(@comments)
-#   {
-#     if(defined($_))
-#     {
-#       print "$lineno:\n";
-#       my %line = %{$_};
-#       foreach(@{$line{raw}})
-#       {
-#         print "  ".$_."\n";
-#       }
-#     }
-#     $lineno++;
-#   }
-# }
+sub print_token
+{
+  my $token = shift;
+  print @$token[0]." : ".@$token[1]." : ".@$token[2]." : ".@$token[3]."\n";
+}
+
+sub dump_tokens
+{
+  while()
+  {
+    my @token = get_token();
+    last if($token[$P_TYPE] == $T_NONE);
+    print_token(\@token);
+  }
+}
+
+sub dump_comments
+{
+  foreach my $filename (keys(%comments))
+  {
+    print "$filename\n";
+    while (my ($lineno, $line) = each(@{$comments{$filename}}))
+    {
+      next unless defined($line);
+      print "   $lineno:\n";
+      foreach(@{%{$line}{raw}})
+      {
+        print "     ".$_."\n";
+      }
+    }
+  }
+}
 
 # modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 # vim: shiftwidth=2 expandtab tabstop=2 cindent

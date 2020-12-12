@@ -1,0 +1,96 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="general">
+
+  <title>General</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>general</secondary>
+  </indexterm>
+
+  <para>
+    These options control the look and feel of darktable.
+  </para>
+
+  <bridgehead renderas="sect5">interface language</bridgehead>
+
+  <para>
+    Set the language of the user interface. the system default is marked with an * (needs a restart).
+  </para>
+
+  <bridgehead renderas="sect5">theme</bridgehead>
+
+  <para>
+    Set the theme for the user interface.
+  </para>
+  
+  <bridgehead renderas="sect5">use system font</bridgehead>
+
+  <para>
+    Select this option to use the font size defined by your system. If unchecked, you may enter 
+    a custom font size in the box below (default on).
+  </para>
+  
+  <bridgehead renderas="sect5">font size in points</bridgehead>
+
+  <para>
+    If the “use system font size” option is switched off, enter a font size (in points) for darktable to use. 
+    The font size will be changed immediately.
+  </para>
+  
+  <bridgehead renderas="sect5">performance mode</bridgehead>
+
+  <para>
+    If performance mode is switched on, thumbnails and previews are rendered at lower quality but 4 times faster.
+    Use this while working on a slower computer.
+  </para>
+  
+    <bridgehead renderas="sect5">GUI control and text DPI</bridgehead>
+
+  <para>
+    Adjust the global GUI resolution to rescale controls, buttons, labels, etc. Increase for a magnified GUI, decrease to fit more content in window. Set to -1 to use the system-defined global resolution. Default is 96 DPI on most systems. This needs a restart to apply changes.
+  </para>
+
+  <bridgehead renderas="sect5">modify selected theme with CSS tweaks below</bridgehead>
+
+  <para>
+    Allow to apply tweaks added in text box below or not on selected theme in theme setting above.
+  </para>
+  
+  <bridgehead renderas="sect5">CSS text editor</bridgehead>
+
+  <para>
+    In addition to selecting a pre-built theme to apply to darktable as a whole (above) you can also enter 
+    additional CSS customisations of your own to tweak the look-and-feel of darktable. A text entry box is 
+    provided for this purpose. You can just take what you want to change from default CSS files.
+  </para>
+  
+  <para>    
+    For example, if you want to change main text color, let's say to apply a pure white color, just copy/paste 
+    line 76 from darktable.css to define a @grey_100 which is a pure white color set in same css file. That way, 
+    you will have that line in CSS editor:
+    
+    <programlisting>@define-color fg_color @grey_100;</programlisting>
+  </para>
+
+  <para>
+    When you have finished entering your CSS tweaks, click on the ‘save and apply’ button, which will save the 
+    tweaks to a file ($HOME/.config/darktable/user.css) and immediately apply them to the current darktable session.
+  </para>
+  
+  <para>
+    If there are any issues with the entered tweaks, you can uncheck the “modify selected theme with CSS tweaks below” 
+    check box. This will immediately restore the base theme but will leave your tweaks in the editor so that you can 
+    edit and try again. Simply press “save and apply” again when you are ready to retry. This will automatically 
+    re-check the “modify selected theme with CSS tweaks below” checkbox and apply the new CSS.
+  </para>
+  
+  <para>
+    If you have any issues with darktable please retry with this option unchecked to be certain that they were not caused by any of your changes.
+  </para>
+
+</sect1>

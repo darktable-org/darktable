@@ -59,214 +59,431 @@
       <title>image attributes</title>
 
       <para>
-        The left combobox lets you choose from the available attributes:
-        <informaltable frame="none" width="80%">
-          <tgroup cols="2" colsep="0" rowsep="0">
-            <colspec colwidth='1*'/>
-            <colspec colwidth='3*'/>
-            <tbody>
-              <row>
-                <entry>
-                  film roll
-                </entry>
-                <entry>
-                  <para>
-                    the film roll to which the image belongs
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  folders
-                </entry>
-                <entry>
-                  <para>
-                    the disk folder where the input image file is located
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  camera
-                </entry>
-                <entry>
-                  <para>
-                    the Exif data entry describing the camera make and model
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  tag
-                </entry>
-                <entry>
-                  <para>
-                    any tag that is attached to the image; if activated a hierarchical list of
-                    known tags is displayed for quick selection
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  date
-                </entry>
-                <entry>
-                  <para>
-                    the date when the photo was taken, in the format
-                    <emphasis>YYYY:MM:DD</emphasis>
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  time
-                </entry>
-                <entry>
-                  <para>
-                    the time (date <emphasis>and</emphasis> time of day) when the photo was
-                    taken, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  history
-                </entry>
-                <entry>
-                  <para>
-                    choose images whose history stacks have been altered or not altered
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  color label
-                </entry>
-                <entry>
-                  <para>
-                    any color label that is attached to the image: <quote>red</quote>,
-                    <quote>yellow</quote>, <quote>green</quote>, <quote>blue</quote>,
-                    <quote>purple</quote>
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  title
-                </entry>
-                <entry>
-                  <para>
-                    the title, as listed in the image's metadata <quote>title</quote> field
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  description
-                </entry>
-                <entry>
-                  <para>
-                    the description, as listed in the image's metadata
-                    <quote>description</quote> field
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  creator
-                </entry>
-                <entry>
-                  <para>
-                    the creator, as listed in the image's metadata <quote>creator</quote> field
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  publisher
-                </entry>
-                <entry>
-                  <para>
-                    the publisher, as listed in the image's metadata <quote>publisher</quote>
-                    field
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  rights
-                </entry>
-                <entry>
-                  <para>
-                    the copyrights statement, as written in the image's metadata
-                    <quote>rights</quote> field
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  lens
-                </entry>
-                <entry>
-                  <para>
-                    the Exif data entry describing the lens
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  focal length
-                </entry>
-                <entry>
-                  <para>
-                    the focal length value, as derived from Exif data
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  ISO
-                </entry>
-                <entry>
-                  <para>
-                    the ISO value, as derived from Exif data
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  aperture
-                </entry>
-                <entry>
-                  <para>
-                    the aperture value, as derived from Exif data
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  filename
-                </entry>
-                <entry>
-                  <para>
-                    the filename of the physical input image
-                  </para>
-                </entry>
-              </row>
-              <row>
-                <entry>
-                  geotagging
-                </entry>
-                <entry>
-                  <para>
-                    the geo location of the image
-                  </para>
-                </entry>
-              </row>
-            </tbody>
-          </tgroup>
-        </informaltable>
+        The left combobox lets you choose from the available
+        attributes sorted in different categories.
       </para>
+
+      <sect5 id="collect_attribute_files">
+        <title>files</title>
+
+        <para>
+          <informaltable frame="none" width="80%">
+            <tgroup cols="2" colsep="0" rowsep="0">
+              <colspec colwidth='1*'/>
+              <colspec colwidth='3*'/>
+              <tbody>
+                <row>
+                  <entry>
+                    film roll
+                  </entry>
+                  <entry>
+                    <para>
+                      the film roll to which the image belongs
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    folders
+                  </entry>
+                  <entry>
+                    <para>
+                      the disk folder where the input image file is located
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    filename
+                  </entry>
+                  <entry>
+                    <para>
+                      the filename of the physical input image
+                    </para>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </para>
+      </sect5>
+
+      <sect5 id="collect_attribute_metadata">
+        <title>metadata</title>
+
+        <para>
+          <informaltable frame="none" width="80%">
+            <tgroup cols="2" colsep="0" rowsep="0">
+              <colspec colwidth='1*'/>
+              <colspec colwidth='3*'/>
+              <tbody>
+                <row>
+                  <entry>
+                    tag
+                  </entry>
+                  <entry>
+                    <para>
+                      any tag that is attached to the image; if
+                      activated a hierarchical list of known tags is
+                      displayed for quick selection
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    title
+                  </entry>
+                  <entry>
+                    <para>
+                      the title, as listed in the image's metadata
+                      <quote>title</quote> field
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    description
+                  </entry>
+                  <entry>
+                    <para>
+                      the description, as listed in the image's metadata
+                      <quote>description</quote> field
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    creator
+                  </entry>
+                  <entry>
+                    <para>
+                      the creator, as listed in the image's metadata
+                      <quote>creator</quote> field
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    publisher
+                  </entry>
+                  <entry>
+                    <para>
+                      the publisher, as listed in the image's metadata
+                      <quote>publisher</quote> field
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    rights
+                  </entry>
+                  <entry>
+                    <para>
+                      the copyrights statement, as written in the image's metadata
+                      <quote>rights</quote> field
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    notes
+                  </entry>
+                  <entry>
+                    <para>
+                      the notes statement, as written in the image's metadata
+                      <quote>notes</quote> field
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    color label
+                  </entry>
+                  <entry>
+                    <para>
+                      any color label that is attached to the image: <quote>red</quote>,
+                      <quote>yellow</quote>, <quote>green</quote>, <quote>blue</quote>,
+                      <quote>purple</quote>
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    geotagging
+                  </entry>
+                  <entry>
+                    <para>
+                      the geo location of the image
+                    </para>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </para>
+      </sect5>
+
+      <sect5 id="collect_attribute_times">
+        <title>times</title>
+
+        <para>
+          <informaltable frame="none" width="80%">
+            <tgroup cols="2" colsep="0" rowsep="0">
+              <colspec colwidth='1*'/>
+              <colspec colwidth='3*'/>
+              <tbody>
+                <row>
+                  <entry>
+                    date taken
+                  </entry>
+                  <entry>
+                    <para>
+                      the date when the photo was taken, in the format
+                      <emphasis>YYYY:MM:DD</emphasis>
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    date-time taken
+                  </entry>
+                  <entry>
+                    <para>
+                      the time (date <emphasis>and</emphasis> time of day) when the photo was
+                      taken, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    import timestamp
+                  </entry>
+                  <entry>
+                    <para>
+                      the time (date <emphasis>and</emphasis> time of day) when the photo was
+                      imported, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    change timestamp
+                  </entry>
+                  <entry>
+                    <para>
+                      the time (date <emphasis>and</emphasis> time of day) when the photo was
+                      last modified, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    export timestamp
+                  </entry>
+                  <entry>
+                    <para>
+                      the time (date <emphasis>and</emphasis> time of day) when the photo was
+                      last exported, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    print timestamp
+                  </entry>
+                  <entry>
+                    <para>
+                      the time (date <emphasis>and</emphasis> time of day) when the photo was
+                      last printed, in the format <emphasis>YYYY:MM:DD hh:mm:ss</emphasis>
+                    </para>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </para>
+      </sect5>
+
+      <sect5 id="collect_attribute_capture">
+        <title>capture details</title>
+
+        <para>
+          <informaltable frame="none" width="80%">
+            <tgroup cols="2" colsep="0" rowsep="0">
+              <colspec colwidth='1*'/>
+              <colspec colwidth='3*'/>
+              <tbody>
+                <row>
+                  <entry>
+                    camera
+                  </entry>
+                  <entry>
+                    <para>
+                      the Exif data entry describing the camera make and model
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    lens
+                  </entry>
+                  <entry>
+                    <para>
+                      the Exif data entry describing the lens
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    aperture
+                  </entry>
+                  <entry>
+                    <para>
+                      the aperture value, as derived from Exif data
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    exposure
+                  </entry>
+                  <entry>
+                    <para>
+                      the exposure time, as derived from Exif data
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    focal length
+                  </entry>
+                  <entry>
+                    <para>
+                      the focal length value, as derived from Exif data
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    ISO
+                  </entry>
+                  <entry>
+                    <para>
+                      the ISO value, as derived from Exif data
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    aspect ratio
+                  </entry>
+                  <entry>
+                    <para>
+                      the image's aspect ratio as it would be
+                      exported. this takes into account any cropping
+                      done during development.
+                    </para>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </para>
+      </sect5>
+
+      <sect5 id="collect_attribute_darktable">
+        <title>darktable</title>
+
+        <para>
+          <informaltable frame="none" width="80%">
+            <tgroup cols="2" colsep="0" rowsep="0">
+              <colspec colwidth='1*'/>
+              <colspec colwidth='3*'/>
+              <tbody>
+                <row>
+                  <entry>
+                    grouping
+                  </entry>
+                  <entry>
+                    <para>
+                      choose group leaders or followers
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    local copy
+                  </entry>
+                  <entry>
+                    <para>
+                      choose images with or without local copies
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    history
+                  </entry>
+                  <entry>
+                    <para>
+                      choose images whose history stacks have been altered or not altered
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    module
+                  </entry>
+                  <entry>
+                    <para>
+                      choose images based on development modules used.
+                    </para>
+                  </entry>
+                </row>
+
+                <row>
+                  <entry>
+                    module order
+                  </entry>
+                  <entry>
+                    <para>
+                      choose images using a specific order of
+                      development. either <emphasis>legacy</emphasis> for images developed
+                      before 3.0 release, <emphasis>v3.0</emphasis>
+                      for images developed since 3.0 release or
+                      <emphasis>none</emphasis> for images not yet developed.
+                    </para>
+                  </entry>
+                </row>
+              </tbody>
+            </tgroup>
+          </informaltable>
+        </para>
+      </sect5>
 
     </sect4>
 
@@ -297,7 +514,7 @@
         The box below the search rule will list all matching database entries of the query you
         are currently working on. This list gets updated continuously as you type. You may also
         choose sorting criteria by scrolling through the list and double-clicking (or single-click
-        if you have set the option in preferences. See <xref linkend="gui_options_lighttable"/>).
+        if you have set the option in preferences. See <xref linkend="lighttable_options"/>).
       </para>
 
       <para>

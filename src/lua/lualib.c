@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2015 Jeremy Rosen
+   Copyright (C) 2015-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -164,7 +164,6 @@ static void view_leave_wrapper(struct dt_lib_module_t *self,struct dt_view_t *ol
 
 static dt_lib_module_t ref_lib = {
   .module = NULL,
-  .dt = &darktable,
   .data = NULL,
   .plugin_name ={ 0 },
   .widget = NULL,
@@ -245,7 +244,7 @@ static int register_lib(lua_State *L)
     lua_pushinteger(L,1);
     lua_gettable(L,-2);
     dt_ui_container_t container;
-    luaA_to(L,dt_ui_container_t,&container,-1); 
+    luaA_to(L,dt_ui_container_t,&container,-1);
     lua_pop(L,1);
     position_description->container = container;
 
@@ -289,7 +288,7 @@ static int register_lib(lua_State *L)
 
 
 
- 
+
   if(lib->gui_reset)
   {
     dt_accel_register_lib(lib, NC_("accel", "reset lib parameters"), 0, 0);

@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2016 Roman Lebedev.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -86,6 +84,7 @@ void *legacy_params(struct dt_lib_module_t *self, const void *const old_params, 
 void *get_params(struct dt_lib_module_t *self, int *size);
 int set_params(struct dt_lib_module_t *self, const void *params, int size);
 void init_presets(struct dt_lib_module_t *self);
+void manage_presets(struct dt_lib_module_t *self);
 
 /** Optional callbacks for keyboard accelerators */
 void init_key_accels(struct dt_lib_module_t *self);

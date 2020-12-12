@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 */
 
 #include "common/colorlabels.h"
+#include "common/collection.h"
 #include "control/control.h"
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
@@ -86,6 +87,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_colorlabels_button_clicked_callback),
                      GINT_TO_POINTER(k));
+    gtk_widget_set_name(self->widget, "lib-label-colors");
   }
 }
 
@@ -97,7 +99,10 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void _lib_colorlabels_button_clicked_callback(GtkWidget *w, gpointer user_data)
 {
-  dt_colorlabels_key_accel_callback(NULL, NULL, 0, 0, user_data);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+  dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(user_data), TRUE);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
+                             g_list_copy((GList *)imgs));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -31,13 +31,13 @@ void dt_lua_gtk_wrap_internal(lua_State*L,const char* function, int line);
    similar to pcall, but in case of error, it will call dt_lua_check_print_error with a proper stack
    */
 int dt_lua_treated_pcall(lua_State*L, int nargs, int nresults);
-/* 
+/*
    deal with lua_pcall calling convention
    * print the string on the top of L if result != LUA_OK
    * pop the error string
-   * return result 
+   * return result
    */
-int dt_lua_check_print_error(lua_State* L, int result); 
+int dt_lua_check_print_error(lua_State* L, int result);
 
 
 /*

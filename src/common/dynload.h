@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Ulrich Pegelow
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,12 +24,18 @@
 #include "config.h"
 #endif
 
+#ifndef __APPLE__
 #include <glib.h>
 #include <gmodule.h>
+#endif //!__APPLE__
 
 typedef struct dt_gmodule_t
 {
+#ifndef __APPLE__
   GModule *gmodule;
+#else
+  void *gmodule;
+#endif
   char *library;
 } dt_gmodule_t;
 

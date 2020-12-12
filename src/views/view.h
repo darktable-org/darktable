@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2010--2014 henrik andersson.
-    copyright (c) 2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,12 +18,14 @@
 
 #pragma once
 
+#include "common/history.h"
 #include "common/image.h"
 #ifdef HAVE_PRINT
 #include "common/cups_print.h"
 #endif
 #ifdef HAVE_MAP
 #include "common/geo.h"
+#include "common/map_locations.h"
 #include <osm-gps-map.h>
 #endif
 #include <cairo.h>
@@ -73,6 +73,14 @@ typedef enum dt_lighttable_layout_t
   DT_LIGHTTABLE_LAYOUT_LAST = 3
 } dt_lighttable_layout_t;
 
+typedef enum dt_darkroom_layout_t
+{
+  DT_DARKROOM_LAYOUT_FIRST = -1,
+  DT_DARKROOM_LAYOUT_EDITING = 0,
+  DT_DARKROOM_LAYOUT_COLOR_ASSESMENT = 1,
+  DT_DARKROOM_LAYOUT_LAST = 3
+} dt_darkroom_layout_t;
+
 // flags for culling zoom mode
 typedef enum dt_lighttable_culling_zoom_mode_t
 {
@@ -104,6 +112,9 @@ typedef struct dt_mouse_action_t
 #define DT_VIEW_ALL                                                                              \
   (DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_SLIDESHOW | \
    DT_VIEW_PRINT | DT_VIEW_KNIGHT)
+
+/* maximum zoom factor for the lighttable */
+#define DT_LIGHTTABLE_MAX_ZOOM 25
 
 /**
  * main dt view module (as lighttable or darkroom)
@@ -158,78 +169,35 @@ typedef struct dt_view_t
   GSList *(*mouse_actions)(const struct dt_view_t *self);
 
   GSList *accel_closures;
-  struct dt_accel_dynamic_t *dynamic_accel_current;
+  GtkWidget *dynamic_accel_current;
 } dt_view_t;
 
 typedef enum dt_view_image_over_t
 {
-  DT_VIEW_ERR = -1,
-  DT_VIEW_DESERT = 0,
-  DT_VIEW_STAR_1 = 1,
-  DT_VIEW_STAR_2 = 2,
-  DT_VIEW_STAR_3 = 3,
-  DT_VIEW_STAR_4 = 4,
-  DT_VIEW_STAR_5 = 5,
-  DT_VIEW_REJECT = 6,
-  DT_VIEW_GROUP = 7,
-  DT_VIEW_AUDIO = 8,
-  DT_VIEW_ALTERED = 9,
-  DT_VIEW_END = 10 // placeholder for the end of the list
+  DT_VIEW_ERR     = -1,
+  DT_VIEW_DESERT  =  0,
+  DT_VIEW_STAR_1  =  1,
+  DT_VIEW_STAR_2  =  2,
+  DT_VIEW_STAR_3  =  3,
+  DT_VIEW_STAR_4  =  4,
+  DT_VIEW_STAR_5  =  5,
+  DT_VIEW_REJECT  =  6,
+  DT_VIEW_GROUP   =  7,
+  DT_VIEW_AUDIO   =  8,
+  DT_VIEW_ALTERED =  9,
+  DT_VIEW_END     = 10, // placeholder for the end of the list
 } dt_view_image_over_t;
 
-/** returns -1 if the action has to be applied to the selection,
-    or the imgid otherwise */
-int32_t dt_view_get_image_to_act_on();
+// get images to act on for gloabals change (via libs or accels)
+// no need to free the list - done internally
+const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gboolean force);
+// get the main image to act on during global changes (libs, accels)
+int dt_view_get_image_to_act_on();
 
-/** guess the image_over flag assuming that all possible controls are displayed */
-dt_view_image_over_t dt_view_guess_image_over(int32_t width, int32_t height, int32_t zoom, int32_t px, int32_t py);
-
-typedef struct dt_view_image_expose_t
-{
-  dt_view_image_over_t *image_over;
-  uint32_t imgid;
-  cairo_t *cr;
-  float width;
-  float height;
-  int32_t zoom;
-  int32_t px;
-  int32_t py;
-  gboolean full_preview;
-  gboolean filmstrip;
-  gboolean image_only;
-  gboolean no_deco;
-  gboolean mouse_over;
-  float full_zoom;
-  float full_zoom100;
-  float *full_w1;
-  float *full_h1;
-  float full_x;
-  float full_y;
-  float *full_maxdx;
-  float *full_maxdy;
-
-  cairo_surface_t **full_surface;
-  uint8_t **full_rgbbuf;
-  int *full_surface_mip;
-  int *full_surface_id;
-  int *full_surface_wd;
-  int *full_surface_ht;
-  int *full_surface_w_lock;
-} dt_view_image_expose_t;
-/** expose an image, set image over flags. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_expose(dt_view_image_expose_t *vals);
-
-/* expose only the image imgid at position (offsetx,offsety) into the cairo surface occupying width/height pixels.
-   this routine does not output any meta-data as the version above.
- */
-void
-dt_view_image_only_expose(
-  uint32_t imgid,
-  cairo_t *cr,
-  int32_t width,
-  int32_t height,
-  int32_t offsetx,
-  int32_t offsety);
+/** returns an uppercase string of file extension **plus** some flag information **/
+char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow);
+/** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
+int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
@@ -246,6 +214,12 @@ typedef struct dt_view_manager_t
   GList *views;
   dt_view_t *current_view;
 
+  // images currently active in the main view (there can be more than 1 in culling)
+  GSList *active_images;
+
+  // copy/paste history structure
+  dt_history_copy_item_t copy_paste;
+
   struct
   {
     GtkWidget *window;
@@ -254,6 +228,15 @@ typedef struct dt_view_manager_t
     gboolean sticky;
     gboolean prevent_refresh;
   } accels_window;
+
+  struct
+  {
+    GList *images;
+    gboolean ok;
+    int image_over;
+    gboolean inside_table;
+    GSList *active_imgs;
+  } act_on;
 
   /* reusable db statements
    * TODO: reconsider creating a common/database helper API
@@ -275,6 +258,12 @@ typedef struct dt_view_manager_t
     sqlite3_stmt *get_grouped;
   } statements;
 
+  struct
+  {
+    GPid audio_player_pid;   // the pid of the child process
+    int32_t audio_player_id; // the imgid of the image the audio is played for
+    guint audio_player_event_source;
+  } audio;
 
   /*
    * Proxy
@@ -314,10 +303,14 @@ typedef struct dt_view_manager_t
     struct
     {
       struct dt_lib_module_t *module;
-      void (*scroll_to_image)(struct dt_lib_module_t *, gint imgid, gboolean activate);
-      int32_t (*activated_image)(struct dt_lib_module_t *);
-      GtkWidget *(*widget)(struct dt_lib_module_t *);
     } filmstrip;
+
+    /* darkroom view proxy object */
+    struct
+    {
+      struct dt_view_t *view;
+      dt_darkroom_layout_t (*get_layout)(struct dt_view_t *view);
+    } darkroom;
 
     /* lighttable view proxy object */
     struct
@@ -328,13 +321,12 @@ typedef struct dt_view_manager_t
       gint (*get_zoom)(struct dt_lib_module_t *module);
       dt_lighttable_layout_t (*get_layout)(struct dt_lib_module_t *module);
       void (*set_layout)(struct dt_lib_module_t *module, dt_lighttable_layout_t layout);
+      void (*culling_init_mode)(struct dt_view_t *view);
+      void (*culling_preview_refresh)(struct dt_view_t *view);
+      void (*culling_preview_reload_overlays)(struct dt_view_t *view);
       dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
-      void (*set_position)(struct dt_view_t *view, uint32_t pos);
-      uint32_t (*get_position)(struct dt_view_t *view);
-      int (*get_images_in_row)(struct dt_view_t *view);
-      int (*get_full_preview_id)(struct dt_view_t *view);
-      void (*force_expose_all)(struct dt_view_t *view);
-      gboolean (*culling_is_image_visible)(struct dt_view_t *view, gint imgid);
+      gboolean (*get_preview_state)(struct dt_view_t *view);
+      void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
     } lighttable;
 
     /* tethering view proxy object */
@@ -343,15 +335,8 @@ typedef struct dt_view_manager_t
       struct dt_view_t *view;
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
-      uint32_t (*get_selected_imgid)(const dt_view_t *view);
+      int32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
-
-    /* more module window proxy */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*update)(struct dt_lib_module_t *);
-    } more_module;
 
     /* timeline module proxy */
     struct
@@ -371,6 +356,11 @@ typedef struct dt_view_manager_t
       void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
       GObject *(*add_marker)(const dt_view_t *view, dt_geo_map_display_t type, GList *points);
       gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
+      void (*add_location)(const dt_view_t *view, dt_map_location_data_t *p, const guint posid);
+      void (*location_action)(const dt_view_t *view, const int action);
+      void (*drag_set_icon)(const dt_view_t *view, GdkDragContext *context, const int imgid, const int count);
+      gboolean (*redraw)(gpointer user_data);
+      gboolean (*display_selected)(gpointer user_data);
     } map;
 #endif
 
@@ -423,8 +413,8 @@ void dt_view_manager_view_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt
 void dt_view_manager_module_toolbox_add(dt_view_manager_t *vm, GtkWidget *tool, dt_view_type_flags_t view);
 
 /** set scrollbar positions, gui method. */
-void dt_view_set_scrollbar(dt_view_t *view, float hpos, float vscroll_lower, float hsize, float hwinsize,
-                           float vpos, float hscroll_lower, float vsize, float vwinsize);
+void dt_view_set_scrollbar(dt_view_t *view, float hpos, float hscroll_lower, float hsize, float hwinsize,
+                           float vpos, float vscroll_lower, float vsize, float vwinsize);
 
 /*
  * Tethering View PROXY
@@ -444,21 +434,15 @@ void dt_view_collection_update(const dt_view_manager_t *vm);
  */
 void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter);
 
-/*
- * NEW filmstrip api
- */
-/*** scrolls filmstrip to the image in position 'diff' from the current one
- *** offset to be provided is the offset of the current image, as given by
- *** dt_collection_image_offset. Getting this data before changing flags allows
- *** for using this function with images disappearing from the current collection  */
-void dt_view_filmstrip_scroll_relative(const int diff, int offset);
-/** scrolls filmstrip to the specified image */
-void dt_view_filmstrip_scroll_to_image(dt_view_manager_t *vm, const int imgid, gboolean activate);
-/** get the imageid from last filmstrip activate request */
-int32_t dt_view_filmstrip_get_activated_imgid(dt_view_manager_t *vm);
+// active images functions
+void dt_view_active_images_reset(gboolean raise);
+void dt_view_active_images_add(int imgid, gboolean raise);
+GSList *dt_view_active_images_get();
 
 /** get the lighttable current layout */
 dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
+/** get the darkroom current layout */
+dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm);
 /** get the lighttable full preview state */
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
 /** sets the lighttable image in row zoom */
@@ -467,26 +451,23 @@ void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
 /** gets the culling zoom mode */
 dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm);
-/** set first visible image offset */
-void dt_view_lighttable_set_position(dt_view_manager_t *vm, uint32_t pos);
-/** read first visible image offset */
-uint32_t dt_view_lighttable_get_position(dt_view_manager_t *vm);
-/** force a full redraw of the lighttable */
-void dt_view_lighttable_force_expose_all(dt_view_manager_t *vm);
-/** is the image visible in culling layout */
-gboolean dt_view_lighttable_culling_is_image_visible(dt_view_manager_t *vm, gint imgid);
-
-/** set active image */
-void dt_view_filmstrip_set_active_image(dt_view_manager_t *vm, int iid);
-/** prefetch the next few images in film strip, from selected on.
-    TODO: move to control ?
-*/
-void dt_view_filmstrip_prefetch();
+/** reinit culling for new mode */
+void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm);
+/** force refresh of culling and/or preview */
+void dt_view_lighttable_culling_preview_refresh(dt_view_manager_t *vm);
+/** force refresh of culling and/or preview overlays */
+void dt_view_lighttable_culling_preview_reload_overlays(dt_view_manager_t *vm);
+/** sets the offset image (for culling and full preview) */
+void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid);
 
 /* accel window */
 void dt_view_accels_show(dt_view_manager_t *vm);
 void dt_view_accels_hide(dt_view_manager_t *vm);
 void dt_view_accels_refresh(dt_view_manager_t *vm);
+
+/* audio */
+void dt_view_audio_start(dt_view_manager_t *vm, int imgid);
+void dt_view_audio_stop(dt_view_manager_t *vm);
 
 /*
  * Map View Proxy
@@ -498,6 +479,9 @@ void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
 GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GList *points);
 gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker);
+void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_t *p, const guint posid);
+void dt_view_map_location_action(const dt_view_manager_t *vm, const int action);
+void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const int imgid, const int count);
 #endif
 
 /*

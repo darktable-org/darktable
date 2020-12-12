@@ -33,7 +33,7 @@
             export.</emphasis>
           </entry>
           <entry>
-            <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="80%" align="center" />
+            <graphic fileref="lighttable/images/panel_exportselected.png" scalefit="1" width="100%" align="center" />
           </entry>
         </row>
       </tbody>
@@ -69,568 +69,9 @@
 
       <para>
         You can define filenames that darktable generates for export. Several pre-defined
-        variables can be used as placeholders:
+        variables can be used as placeholders. See <xref linkend="darktable_variables"/>
+        for an exhaustive list of available variables.
       </para>
-
-      <informaltable frame="none" width="80%">
-        <tgroup cols="2" colsep="0" rowsep="0">
-          <tbody>
-            <row>
-              <entry>
-                <code>$(ROLL_NAME)</code>
-              </entry>
-              <entry>
-                roll of the input image
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(FILE_FOLDER)</code>
-              </entry>
-              <entry>
-                folder containing the input image
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(FILE_NAME)</code>
-              </entry>
-              <entry>
-                basename of the input image
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(FILE_EXTENSION)</code>
-              </entry>
-              <entry>
-                extension of the input image
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(ID)</code>
-              </entry>
-              <entry>
-                the image id
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(VERSION)</code>
-              </entry>
-              <entry>
-                the duplicate version (see <xref linkend="sidecar_files"/>)
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(SEQUENCE)</code>
-              </entry>
-              <entry>
-                a sequence number within export job
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(MAX_WIDTH)</code>
-              </entry>
-              <entry>
-                maximum image width to limit within export session
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(MAX_HEIGHT)</code>
-              </entry>
-              <entry>
-                maximum image height to limit within export session
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(YEAR)</code>
-              </entry>
-              <entry>
-                year at date of export
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(MONTH)</code>
-              </entry>
-              <entry>
-                month at date of export
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(DAY)</code>
-              </entry>
-              <entry>
-                day at date of export
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(HOUR)</code>
-              </entry>
-              <entry>
-                hour at time of export
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(MINUTE)</code>
-              </entry>
-              <entry>
-                minute at time of export
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(SECOND)</code>
-              </entry>
-              <entry>
-                second at time of export
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_YEAR)</code>
-              </entry>
-              <entry>
-                Exif year
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_MONTH)</code>
-              </entry>
-              <entry>
-                Exif month
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_DAY)</code>
-              </entry>
-              <entry>
-                Exif day
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_HOUR)</code>
-              </entry>
-              <entry>
-                Exif hour
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_MINUTE)</code>
-              </entry>
-              <entry>
-                Exif minute
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_SECOND)</code>
-              </entry>
-              <entry>
-                Exif second
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_EXPOSURE)</code>
-              </entry>
-              <entry>
-                Exif exposure
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_APERTURE)</code>
-              </entry>
-              <entry>
-                Exif aperture
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_FOCAL_LENGTH)</code>
-              </entry>
-              <entry>
-                Exif focal length
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(EXIF_FOCUS_DISTANCE)</code>
-              </entry>
-              <entry>
-                Exif focus distance
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(LONGITUDE)</code>
-              </entry>
-              <entry>
-                Longitude
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(LATITUDE)</code>
-              </entry>
-              <entry>
-                Latitude
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(ELEVATION)</code>
-              </entry>
-              <entry>
-                Elevation
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(STARS)</code>
-              </entry>
-              <entry>
-                star rating
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(LABELS)</code>
-              </entry>
-              <entry>
-                colorlabels
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(MAKER)</code>
-              </entry>
-              <entry>
-                camera maker
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(MODEL)</code>
-              </entry>
-              <entry>
-                camera model
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(TITLE)</code>
-              </entry>
-              <entry>
-                title from metadata
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(DECRIPTION)</code>
-              </entry>
-              <entry>
-                description from metadata
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(CREATOR)</code>
-              </entry>
-              <entry>
-                creator from metadata
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(PUBLISHER)</code>
-              </entry>
-              <entry>
-                publisher from metadata
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(RIGHTS)</code>
-              </entry>
-              <entry>
-                rights from metadata
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(USERNAME)</code>
-              </entry>
-              <entry>
-                user name
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(PICTURES_FOLDER)</code>
-              </entry>
-              <entry>
-                pictures folder
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(HOME)</code>
-              </entry>
-              <entry>
-                home folder
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(DESKTOP)</code>
-              </entry>
-              <entry>
-                desktop folder
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(TAGS)</code>
-              </entry>
-              <entry>
-                tags list (Xmp.dc.Subject)
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(CATEGORYn$(category))</code>
-              </entry>
-              <entry>
-                tag name of level n [0,3] of selected category (or tag)
-              </entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
-
-      <para>
-        All of the variables support basic string substitution inspired by bash. The details
-        differ however, for example all patterns are treated as simple string comparisons. There
-        is no regex support. For example you can do the following:
-        <code>$(ROLL_NAME/search/replace)</code>
-        . This means if your roll name is e.g. <emphasis>1970-01-01_RAW_Time-Begins</emphasis>
-        and you use
-        <code>$(ROLL_NAME/RAW/JPG)</code>
-        it will result in a roll name of: <emphasis>1970-01-01_JPG_Time-Begins</emphasis>
-      </para>
-
-      <informaltable frame="none" width="80%">
-        <tgroup cols="2" colsep="0" rowsep="0">
-          <tbody>
-            <row>
-              <entry>
-                <code>$(var-default)</code>
-              </entry>
-              <entry>
-                If
-                <code>var</code>
-                is empty, use
-                <code>default</code>
-                .
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var+alt_value)</code>
-              </entry>
-              <entry>
-                If
-                <code>var</code>
-                is set, use
-                <code>alt_value</code>
-                , else use empty string.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var:offset)</code>
-              </entry>
-              <entry>
-                <code>var</code>
-                starting from
-                <code>offset</code>
-                . If
-                <code>offset</code>
-                is less than zero it is counted from the back of the string.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var:offset:length)</code>
-              </entry>
-              <entry>
-                At most
-                <code>length</code>
-                characters of
-                <code>var</code>
-                , starting from
-                <code>offset</code>
-                . If
-                <code>offset</code>
-                is less than zero it is counted from the back of
-                <code>var</code>
-                . If
-                <code>length</code>
-                is less than zero it indicates the end of the result, counted from the back of
-                <code>var</code>
-                , and not an actual length.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var#pattern)</code>
-              </entry>
-              <entry>
-                Remove
-                <code>pattern</code>
-                from the start of
-                <code>var</code>
-                .
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var%pattern)</code>
-              </entry>
-              <entry>
-                Remove
-                <code>pattern</code>
-                from the end of
-                <code>var</code>
-                .
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var/pattern/replacement)</code>
-              </entry>
-              <entry>
-                Replace the first occurrence of
-                <code>pattern</code>
-                in
-                <code>var</code>
-                with
-                <code>replacement</code>
-                . If
-                <code>replacement</code>
-                is empty then
-                <code>pattern</code>
-                will be removed.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var//pattern/replacement)</code>
-              </entry>
-              <entry>
-                Replace all occurrences of
-                <code>pattern</code>
-                in
-                <code>var</code>
-                with
-                <code>replacement</code>
-                . If
-                <code>replacement</code>
-                is empty then
-                <code>pattern</code>
-                will be removed.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var/#pattern/replacement)</code>
-              </entry>
-              <entry>
-                If
-                <code>var</code>
-                starts with
-                <code>pattern</code>
-                then
-                <code>pattern</code>
-                is replaced with
-                <code>replacement</code>
-                .
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var/%pattern/replacement)</code>
-              </entry>
-              <entry>
-                If
-                <code>var</code>
-                ends with
-                <code>pattern</code>
-                then
-                <code>pattern</code>
-                is replaced with
-                <code>replacement</code>
-                .
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var^)</code>
-              </entry>
-              <entry>
-                Make the first character of
-                <code>var</code>
-                uppercase.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var^^)</code>
-              </entry>
-              <entry>
-                Make all characters of
-                <code>var</code>
-                uppercase.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var,)</code>
-              </entry>
-              <entry>
-                Make the first character of
-                <code>var</code>
-                lowercase.
-              </entry>
-            </row>
-            <row>
-              <entry>
-                <code>$(var,,)</code>
-              </entry>
-              <entry>
-                Make all characters of
-                <code>var</code>
-                lowercase.
-              </entry>
-            </row>
-          </tbody>
-        </tgroup>
-      </informaltable>
 
     </sect4>
 
@@ -699,26 +140,51 @@
         your can tweak the export metadata configuration.
       </para>
 
+      <para>
+        Exported grayscale TIFF images - either originating from a monochrome camera or after
+        conversion - can either contain all valid RGB channels (default) or just one intensity
+        channel, you can select this in the menu.
+
+        The second option leads to smaller files but at least some windows printer drivers
+        don't like them.
+      </para>
+
     </sect4>
 
     <sect4 id="export_selected_usage_size">
 
-      <title>max size</title>
+      <title>set size</title>
 
       <para>
-        Set the maximum width and height of the output images in pixels. Set both to a value of
-        <quote>0</quote> to export with the original dimensions (after cropping). If the values
-        exceed the original dimensions darktable will either export with the original dimensions
-        or perform an upscaling step, depending on the setting of the following parameter.
+	The exported size can be a size expressed in pixels, a
+	print size in cm or inch, or a scaling factor.
       </para>
 
       <para>
-        <emphasis>Caution: it's a frequent pitfall to accidentally put low values, like 1 or 10,
-        in these fields, causing darktable to produce miniature output files. You might think
-        darktable's output is broken, but in fact it only generated what you asked
-        for.</emphasis>
+	When pixels unit is selected, set the maximum width and height
+	of the output images in pixels. Set both to a value of
+	<quote>0</quote> to export with the original dimensions (after
+	cropping). If the values exceed the original dimensions
+	darktable will either export with the original dimensions or
+	perform an upscaling step, depending on the setting of the
+	following parameter.
       </para>
 
+      <para>
+	When a print unit is selected, set the maximum width and
+	height of the final print in cm or inch and the DPI
+	needed. The corresponding size in pixels is still displayed
+	but not editable in this mode.
+      </para>
+
+      <para>
+	When a scale is selected, set the maximum width and height
+	based on a scaling factor of the original size. A scale of 1
+	will export a file with it's full size. A scale of 2 will
+	export twice the original size if <quote>allow
+	upscaling</quote> is set. A fraction 1/2 or a float like 0.3
+	can be specified.
+      </para>
     </sect4>
 
     <sect4 id="export_selected_usage_upscaling">
@@ -730,6 +196,34 @@
         defined maximum width and height exceed the original dimensions. If set to
         <quote>no</quote> the exported image's dimensions will not exceed the original ones
         (after cropping).
+      </para>
+
+    </sect4>
+
+    <sect4 id="export_selected_usage_hq">
+
+      <title>high quality resampling</title>
+
+      <para>
+        If set to <quote>yes</quote> darktable will process the image
+        at full format. The resizing will be done as the very final
+        step. If set to <quote>no</quote> the image is first resized
+        to its final size before being processed.
+      </para>
+
+    </sect4>
+
+    <sect4 id="export_selected_usage_store_masks">
+
+      <title>store masks</title>
+
+      <para>
+        Only apply to <emphasis>TIFF</emphasis> format. If set to
+        <quote>yes</quote> darktable creates a TIFF layer for every
+        module using a mask (<quote>drawn</quote>,
+        <quote>parametric</quote> or <quote>raster</quote>). Each mask layer
+        is named after the module and contains a black and white image
+        representing the opacity mask as created by darktable.
       </para>
 
     </sect4>

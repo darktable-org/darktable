@@ -1,0 +1,107 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="output_color_profile">
+
+  <title>Output color profile</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>output color profile</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>output color profile</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>color management</primary>
+    <secondary>output color profile</secondary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              <para>
+                This module manages the output profiles for export as well as the rendering
+                intent to be used when mapping between the different color spaces.
+              </para>
+
+              <para>
+                darktable comes with pre-defined profiles sRGB, AdobeRGB, XYZ and linear RGB but
+                you can provide additional profiles by placing these in
+                <filename>$DARKTABLE/share/darktable/color/out</filename> and
+                <filename>$HOME/.config/darktable/color/out</filename>.
+                <filename>$DARKTABLE</filename> is used here to represent your chosen darktable
+                installation directory and <filename>$HOME</filename> your home directory.
+              </para>
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/outputcolorprofile.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      You can define the output color profile in two different places, either in this module, or
+      in the export panel in lighttable mode (see <xref linkend="export_selected"/>).
+    </para>
+
+    <sect5>
+      <title>output intent</title>
+      <para>
+        Sets the rendering intent for output/export. For more details see
+        <xref linkend="rendering_intent"/>).
+      </para>
+      <para>
+        Only rendering with LittleCMS2 gives you a choice of rendering intent. The option is
+        hidden, if darktable's internal rendering routines are used. Rendering with LittleCMS2
+        is activated in the preferences dialog (see <xref linkend="processing"/>).
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>output profile</title>
+      <para>
+        Sets the color profile for output/export, causing darktable to render colors with this
+        profile. darktable embeds the profile data into the output file if supported by the file
+        format&nbsp;&ndash; this allows other applications reading the file to correctly
+        interpret its colors.
+      </para>
+<!--
+      <para>
+        Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+        by their specification. However, there is an established de-facto standard to embed
+        profiles which darktable adheres to. Beware that some applications might fail to correctly
+        handle those profiles and render colors incorrectly.
+      </para>
+-->
+      <para>
+        As not all applications, e.g. image viewers, are aware of color profiles, a general
+        recommendation is to stick to <emphasis>sRGB</emphasis> as the default output profile.
+        You should only deviate from <emphasis>sRGB</emphasis> if this is really required and if
+        you know what you are doing.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018 edgardo hoszowski.
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU Lesser General Public License as published by
@@ -16,27 +16,136 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+/**
+   What is the IOP order ?
+
+      The IOP order support is the way to order the modules in the
+      pipe. There was the pre-3.0 version which is called "legacy" and
+      the post-3.0 called v3.0 which has been introduced to keep a
+      clean linear part in the pipe to avoid different issues about
+      color shift.
+
+   How is this stored in the DB ?
+
+      For each image we keep record of the iop-order, there is
+      basically three cases:
+
+      1. order is legacy (built-in)
+
+         All modules are sorted using the legacy order (see table
+         below). We still have a legacy order if all multiple
+         instances of the same module are grouped together.
+
+      2. order is v3.0 (built-in)
+
+         All modules are sorted using the v3.0 order (see table
+         below). We still have a v3.0 order if all multiple
+         instances of the same module are grouped together.
+
+      3. order is custom
+
+         All other cases. Either:
+         - the modules are not sorted using one of the order above.
+         - some instances have been moved and so not grouped together.
+
+      The order for each image is stored into the table module_order,
+      the table contains:
+         - imgid    : the id of the image
+         - iop_list : the ordered list of modules + the multi-priority
+         - version  : the iop order version
+
+       For each version we set:
+
+         - legacy : iop_list = NULL / version = 1
+         - v3.0   : iop_list = NULL / version = 2
+         - custom : iop_list to ordered list of each modules / version = 0
+
+         This writing is done with dt_ioppr_write_iop_order.
+
+   How to ensure the order is correct ?
+
+      Initial implementation:
+
+         We used to have a double value to sort the modules in memory
+         for the final part order. Adding a new instance meant to use
+         a value (double) in middle of the before and after modules'
+         iop-order. Also this double was stored with the history and
+         we supposed to be stable for all the life the picture. This
+         did not worked as expected as with each instance created,
+         removed or moved the gap between each modules was shrinking
+         and finally created clashes (multiple modules with the same
+         order).
+
+         Also the history had only the active modules and no
+         information at all about other modules. It was impossible to
+         properly migrate some pictures because of this.
+
+      New (this) implementation:
+
+         The iop-order is a simple chained list and only this list is
+         used to order the module. One can create, delete or move
+         instances at will. There won't be clashes. We still have an
+         iop-order integer used to reorder the module in memory by
+         using a simple sort. But this is not used to map the history
+         at all. This makes it possible to migrate from one order to
+         another. (see below for a discussion about the history
+         mapping).
+
+         The iop-order list kept into the database contains all known
+         modules. So we can migrate and/or copy/paste with better
+         respect of the source or target order for example.
+
+         For example we can copy an history from an image using a
+         legacy order and paste it to an image using the v3.0 order
+         and place the module at the proper position in the pipe for
+         the target. Likewise for styles.
+
+   How is this used to read an image (setup the iop-order) ?
+
+      Loading and image means:
+
+         - getting the iop-order list (dt_ioppr_get_iop_order_list)
+         - reading the history and mapping it to the iop-order list
+
+      How is the mapping of history and iop-order list done ?
+
+         Each history item contains the name of the operation
+         (e.g. exposure, clip) and the multi-instance number. Both
+         information are used as the stable key to map the history
+         item into the iop-list.
+
+         This is done by using the dt_ioppr_get_iop_order.
+ */
+
 #ifndef DT_IOP_ORDER_H
 #define DT_IOP_ORDER_H
 
-#include "common/colorspaces_inline_conversions.h"
-
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#endif
-
-#ifdef HAVE_OPENCL
-#include <CL/cl.h>           // for cl_mem
 #endif
 
 struct dt_iop_module_t;
 struct dt_develop_t;
 struct dt_dev_pixelpipe_t;
 
+typedef enum dt_iop_order_t
+{
+  DT_IOP_ORDER_CUSTOM  = 0, // a customr order (re-ordering the pipe)
+  DT_IOP_ORDER_LEGACY  = 1, // up to dt 2.6.3
+  DT_IOP_ORDER_V30     = 2, // starts with dt 3.0
+  DT_IOP_ORDER_LAST    = 3
+} dt_iop_order_t;
+
 typedef struct dt_iop_order_entry_t
 {
-  double iop_order;
+  union {
+    double iop_order_f;  // only used for backward compatibility while migrating db
+    int iop_order;       // order from 1 and incrementing
+  } o;
+  // operation + instance is the unique id for an active module in the pipe
   char operation[20];
+  int32_t instance;      // or previously named multi_priority
+  char name[25];
 } dt_iop_order_entry_t;
 
 typedef struct dt_iop_order_rule_t
@@ -45,20 +154,66 @@ typedef struct dt_iop_order_rule_t
   char op_next[20];
 } dt_iop_order_rule_t;
 
+/** return the name string for that dy_iop_order */
+const char *dt_iop_order_string(const dt_iop_order_t order);
+
+/** return the iop-order-version used by imgid (DT_IOP_ORDER_V30 if unknown iop-order-version) */
+dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
+
+/** returns the kind of the list by looking at the order of the modules, it is either one of the built-in version
+    or a customr order  */
+dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list);
+
 /** returns a list of dt_iop_order_entry_t and updates *_version */
-GList *dt_ioppr_get_iop_order_list(int *_version);
+GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted);
+/** return the iop-order list for the given version, this is used to get the built-in lists */
+GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version);
 /** returns the dt_iop_order_entry_t of iop_order_list with operation = op_name */
-dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name);
+dt_iop_order_entry_t *dt_ioppr_get_iop_order_entry(GList *iop_order_list, const char *op_name, const int multi_priority);
+/** likewise, but returns the link in the list instead of the entry */
+GList *dt_ioppr_get_iop_order_link(GList *iop_order_list, const char *op_name, const int multi_priority);
+/** For a non custom order, returns TRUE if iop_order_list has multiple instances grouped together */
+gboolean dt_ioppr_has_multiple_instances(GList *iop_order_list);
+
 /** returns the iop_order from iop_order_list list with operation = op_name */
-double dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name);
+int dt_ioppr_get_iop_order(GList *iop_order_list, const char *op_name, const int multi_priority);
+/** returns TRUE if operation/multi-priority is before base_operation (first in pipe) on the iop-list */
+gboolean dt_ioppr_is_iop_before(GList *iop_order_list, const char *base_operation,
+                                const char *operation, const int multi_priority);
+/* write iop-order list for the given image */
+gboolean dt_ioppr_write_iop_order_list(GList *iop_order_list, const int32_t imgid);
+gboolean dt_ioppr_write_iop_order(const dt_iop_order_t kind, GList *iop_order_list, const int32_t imgid);
+
+/** serialize list, used for presets */
+void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size);
+/** returns the iop_order_list from the serialized form found in buf (blob in preset table) */
+GList *dt_ioppr_deserialize_iop_order_list(const char *buf, size_t size);
+/** likewise but a text serializer/deserializer */
+char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list);
+GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf);
+
+/** insert a match for module into the iop-order list */
+void dt_ioppr_insert_module_instance(struct dt_develop_t *dev, struct dt_iop_module_t *module);
+void dt_ioppr_resync_modules_order(struct dt_develop_t *dev);
+void dt_ioppr_resync_iop_list(struct dt_develop_t *dev);
+
+/** update target_iop_order_list to ensure that modules in iop_order_list are in target_iop_order_list
+    note that iop_order_list contains a set of dt_iop_order_entry_t where order is the multi-priority */
+void dt_ioppr_update_for_entries(struct dt_develop_t *dev, GList *entry_list, gboolean append);
+void dt_ioppr_update_for_style_items(struct dt_develop_t *dev, GList *st_items, gboolean append);
+void dt_ioppr_update_for_modules(struct dt_develop_t *dev, GList *modules, gboolean append);
 
 /** check if there's duplicate iop_order entries in iop_list */
 void dt_ioppr_check_duplicate_iop_order(GList **_iop_list, GList *history_list);
 
 /** sets the default iop_order to iop_list */
-void dt_ioppr_set_default_iop_order(GList **_iop_list, GList *iop_order_list);
-/** adjusts iop_list and iop_order_list to the current version of iop order */
-void dt_ioppr_legacy_iop_order(GList **_iop_list, GList **_iop_order_list, GList *history_list, const int old_version);
+void dt_ioppr_set_default_iop_order(struct dt_develop_t *dev, const int32_t imgid);
+void dt_ioppr_migrate_iop_order(struct dt_develop_t *dev, const int32_t imgid);
+void dt_ioppr_change_iop_order(struct dt_develop_t *dev, const int32_t imgid, GList *new_iop_list);
+/** extract all modules with multi-instances */
+GList *dt_ioppr_extract_multi_instances_list(GList *iop_order_list);
+/** merge all modules with multi-instances as extracted with routine above into a canonical iop-order list */
+GList *dt_ioppr_merge_multi_instance_iop_order_list(GList *iop_order_list, GList *multi_instance_list);
 
 /** returns 1 if there's a module_so without a iop_order defined */
 int dt_ioppr_check_so_iop_order(GList *iop_list, GList *iop_order_list);
@@ -71,372 +226,18 @@ GList *dt_ioppr_iop_order_copy_deep(GList *iop_order_list);
 
 /** sort two modules by iop_order */
 gint dt_sort_iop_by_order(gconstpointer a, gconstpointer b);
-
-/** convert images history v3->v4 on the fly; returns images history version */
-int dt_ioppr_convert_onthefly(int imgid);
+gint dt_sort_iop_list_by_order_f(gconstpointer a, gconstpointer b);
 
 /** returns the iop_order before module_next if module can be moved */
-double dt_ioppr_get_iop_order_before_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next,
-                                  const int validate_order, const int log_error);
+gboolean dt_ioppr_check_can_move_before_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next);
 /** returns the iop_order after module_prev if module can be moved */
-double dt_ioppr_get_iop_order_after_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev,
-                                 const int validate_order, const int log_error);
+gboolean dt_ioppr_check_can_move_after_iop(GList *iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
 
 /** moves module before/after module_next/previous on pipe */
-int dt_ioppr_move_iop_before(GList **_iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next,
-                       const int validate_order, const int log_error);
-int dt_ioppr_move_iop_after(GList **_iop_list, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev,
-                      const int validate_order, const int log_error);
-
-// must be in synch with filename in dt_colorspaces_color_profile_t in colorspaces.h
-#define DT_IOPPR_COLOR_ICC_LEN 512
-
-typedef struct dt_iop_order_iccprofile_info_t
-{
-  int type; // a dt_colorspaces_color_profile_type_t
-  char filename[DT_IOPPR_COLOR_ICC_LEN];
-  int intent; // a dt_iop_color_intent_t
-  float matrix_in[9] DT_ALIGNED_PIXEL; // don't align on more than 16 bits or OpenCL will fail
-  float matrix_out[9] DT_ALIGNED_PIXEL;
-  int lutsize;
-  float *lut_in[3];
-  float *lut_out[3];
-  float unbounded_coeffs_in[3][3] DT_ALIGNED_PIXEL;
-  float unbounded_coeffs_out[3][3] DT_ALIGNED_PIXEL;
-  int nonlinearlut;
-  float grey;
-} dt_iop_order_iccprofile_info_t;
-
-#undef DT_IOPPR_COLOR_ICC_LEN
-
-/** must be called before using profile_info, default lutsize = 0 */
-void dt_ioppr_init_profile_info(dt_iop_order_iccprofile_info_t *profile_info, const int lutsize);
-/** must be called when done with profile_info */
-void dt_ioppr_cleanup_profile_info(dt_iop_order_iccprofile_info_t *profile_info);
-
-/** returns the profile info from dev profiles info list that matches (profile_type, profile_filename)
- * NULL if not found
- */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename);
-/** adds the profile info from (profile_type, profile_filename) to the dev profiles info list if not already exists
- * returns the generated profile or the existing one
- */
-dt_iop_order_iccprofile_info_t *dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev, const int profile_type, const char *profile_filename, const int intent);
-
-/** returns a reference to the work profile info as set on colorin iop
- * only if module is between colorin and colorout, otherwise returns NULL
- * work profile must not be cleanup()
- */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop_module_t *module, GList *iop_list);
-
-/** set the work profile (type, filename) on the pipe, should be called on process*()
- * if matrix cannot be generated it default to linear rec 2020
- * returns the actual profile that has been set
- */
-dt_iop_order_iccprofile_info_t *dt_ioppr_set_pipe_work_profile_info(struct dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
-    const int type, const char *filename, const int intent);
-/** returns a reference to the histogram profile info
- * histogram profile must not be cleanup()
- */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
-
-/** returns the active work profile on the pipe */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);
-
-/** returns the current setting of the work profile on colorin iop */
-void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename);
-/** returns the current setting of the export profile on colorout iop */
-void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev, int *profile_type, char **profile_filename);
-/** returns the current setting of the histogram profile */
-void dt_ioppr_get_histogram_profile_type(int *profile_type, char **profile_filename);
-
-/** transforms image from cst_from to cst_to colorspace using profile_info */
-void dt_ioppr_transform_image_colorspace(struct dt_iop_module_t *self, const float *const image_in,
-                                         float *const image_out, const int width, const int height,
-                                         const int cst_from, const int cst_to, int *converted_cst,
-                                         const dt_iop_order_iccprofile_info_t *const profile_info);
-
-void dt_ioppr_transform_image_colorspace_rgb(const float *const image_in, float *const image_out, const int width,
-                                             const int height,
-                                             const dt_iop_order_iccprofile_info_t *const profile_info_from,
-                                             const dt_iop_order_iccprofile_info_t *const profile_info_to,
-                                             const char *message);
-
-#ifdef HAVE_OPENCL
-typedef struct dt_colorspaces_cl_global_t
-{
-  int kernel_colorspaces_transform_lab_to_rgb_matrix;
-  int kernel_colorspaces_transform_rgb_matrix_to_lab;
-  int kernel_colorspaces_transform_rgb_matrix_to_rgb;
-} dt_colorspaces_cl_global_t;
-
-// must be in synch with colorspaces.cl dt_colorspaces_iccprofile_info_cl_t
-typedef struct dt_colorspaces_iccprofile_info_cl_t
-{
-  cl_float matrix_in[9];
-  cl_float matrix_out[9];
-  cl_int lutsize;
-  cl_float unbounded_coeffs_in[3][3];
-  cl_float unbounded_coeffs_out[3][3];
-  cl_int nonlinearlut;
-  cl_float grey;
-} dt_colorspaces_iccprofile_info_cl_t;
-
-dt_colorspaces_cl_global_t *dt_colorspaces_init_cl_global(void);
-void dt_colorspaces_free_cl_global(dt_colorspaces_cl_global_t *g);
-
-/** sets profile_info_cl using profile_info
- * to be used as a parameter when calling opencl
- */
-void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const profile_info, dt_colorspaces_iccprofile_info_cl_t *profile_info_cl);
-/** returns the profile_info trc
- * to be used as a parameter when calling opencl
- */
-cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info);
-
-/** build the required parameters for a kernel that uses a profile info */
-cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t *const profile_info,
-                                           const int devid, dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
-                                           cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
-                                           cl_mem *_dev_profile_lut);
-/** free parameters build with the previous function */
-void dt_ioppr_free_iccprofile_params_cl(dt_colorspaces_iccprofile_info_cl_t **_profile_info_cl,
-                                        cl_float **_profile_lut_cl, cl_mem *_dev_profile_info,
-                                        cl_mem *_dev_profile_lut);
-
-/** same as the C version */
-int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const int devid, cl_mem dev_img_in,
-                                           cl_mem dev_img_out, const int width, const int height,
-                                           const int cst_from, const int cst_to, int *converted_cst,
-                                           const dt_iop_order_iccprofile_info_t *const profile_info);
-
-int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_in, cl_mem dev_img_out,
-                                               const int width, const int height,
-                                               const dt_iop_order_iccprofile_info_t *const profile_info_from,
-                                               const dt_iop_order_iccprofile_info_t *const profile_info_to,
-                                               const char *message);
-#endif
-
-/** the following must have the matrix_in and matrix out generated */
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(lut:64)
-#endif
-static inline float extrapolate_lut(const float *const lut, const float v, const int lutsize)
-{
-  // TODO: check if optimization is worthwhile!
-  const float ft = CLAMPS(v * (lutsize - 1), 0, lutsize - 1);
-  const int t = (ft < lutsize - 2) ? ft : lutsize - 2;
-  const float f = ft - t;
-  const float l1 = lut[t];
-  const float l2 = lut[t + 1];
-  return l1 * (1.0f - f) + l2 * f;
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float eval_exp(const float coeff[3], const float x)
-{
-  return coeff[1] * powf(x * coeff[0], coeff[2]);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(rgb_in, rgb_out, unbounded_coeffs_in:16) \
-  aligned(lut_in:64) \
-  uniform(rgb_in, rgb_out, unbounded_coeffs_in, lut_in)
-#endif
-static inline void _apply_trc_in(const float rgb_in[3], float rgb_out[3],
-                                float *const lut_in[3],
-                                const float unbounded_coeffs_in[3][3],
-                                const int lutsize)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb_out[c] = (lut_in[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? extrapolate_lut(lut_in[c], rgb_in[c], lutsize)
-                                        : eval_exp(unbounded_coeffs_in[c], rgb_in[c]))
-                                        : rgb_in[c];
-  }
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(rgb_in, rgb_out, unbounded_coeffs_out:16) \
-  aligned(lut_out:64) \
-  uniform(rgb_in, rgb_out, unbounded_coeffs_out, lut_out)
-#endif
-static inline void _apply_trc_out(const float rgb_in[3], float rgb_out[3],
-                                  float *const lut_out[3],
-                                  const float unbounded_coeffs_out[3][3],
-                                  const int lutsize)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb_out[c] = (lut_out[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? extrapolate_lut(lut_out[c], rgb_in[c], lutsize)
-                                                        : eval_exp(unbounded_coeffs_out[c], rgb_in[c]))
-                                                        : rgb_in[c];
-  }
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(xyz, rgb, matrix:16) \
-  uniform(xyz, rgb, matrix)
-#endif
-static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
-                                                   const float matrix[9])
-{
-  for(int c = 0; c < 3; c++) xyz[c] = 0.0f;
-
-  for(int c = 0; c < 3; c++)
-    for(int i = 0; i < 3; i++)
-      xyz[c] += matrix[3 * c + i] * rgb[i];
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(xyz, rgb, matrix:16) \
-  uniform(xyz, rgb, matrix)
-#endif
-static inline void _ioppr_xyz_to_linear_rgb_matrix(const float xyz[3], float rgb[3],
-                                                   const float matrix[9])
-{
-  for(int c = 0; c < 3; c++) rgb[c] = 0.0f;
-
-  for(int c = 0; c < 3; c++)
-    for(int i = 0; i < 3; i++)
-      rgb[c] += matrix[3 * c + i] * xyz[i];
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(rgb, matrix_in, unbounded_coeffs_in:16) \
-  aligned(lut_in:64) \
-  uniform(rgb, matrix_in, lut_in, unbounded_coeffs_in)
-#endif
-static inline float dt_ioppr_get_rgb_matrix_luminance(const float rgb[3],
-                                                      const float matrix_in[9], float *const lut_in[3],
-                                                      const float unbounded_coeffs_in[3][3],
-                                                      const int lutsize, const int nonlinearlut)
-{
-  float luminance = 0.f;
-
-  if(nonlinearlut)
-  {
-    float linear_rgb[3] DT_ALIGNED_PIXEL;
-    _apply_trc_in(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
-    luminance = matrix_in[3] * linear_rgb[0] + matrix_in[4] * linear_rgb[1] + matrix_in[5] * linear_rgb[2];
-  }
-  else
-    luminance = matrix_in[3] * rgb[0] + matrix_in[4] * rgb[1] + matrix_in[5] * rgb[2];
-
-  return luminance;
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(rgb, xyz, matrix_in, unbounded_coeffs_in:16) \
-  aligned(lut_in:64) \
-  uniform(rgb, xyz, matrix_in, lut_in, unbounded_coeffs_in)
-#endif
-static inline void dt_ioppr_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
-                                              const float matrix_in[9], float *const lut_in[3],
-                                              const float unbounded_coeffs_in[3][3],
-                                              const int lutsize, const int nonlinearlut)
-{
-  if(nonlinearlut)
-  {
-    float linear_rgb[3] DT_ALIGNED_PIXEL;
-    _apply_trc_in(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
-    _ioppr_linear_rgb_matrix_to_xyz(linear_rgb, xyz, matrix_in);
-  }
-  else
-    _ioppr_linear_rgb_matrix_to_xyz(rgb, xyz, matrix_in);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(lab, rgb, matrix_out, unbounded_coeffs_out:16) \
-  aligned(lut_out:64) \
-  uniform(lab, rgb, matrix_out, lut_out, unbounded_coeffs_out)
-#endif
-static inline void dt_ioppr_lab_to_rgb_matrix(const float lab[3], float rgb[3],
-                                              const float matrix_out[9], float *const lut_out[3],
-                                              const float unbounded_coeffs_out[3][3],
-                                              const int lutsize, const int nonlinearlut)
-{
-  float xyz[3] DT_ALIGNED_PIXEL;
-  dt_Lab_to_XYZ(lab, xyz);
-
-  if(nonlinearlut)
-  {
-    float linear_rgb[3] DT_ALIGNED_PIXEL;
-    _ioppr_xyz_to_linear_rgb_matrix(xyz, linear_rgb, matrix_out);
-    _apply_trc_out(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
-  }
-  else
-  {
-    _ioppr_xyz_to_linear_rgb_matrix(xyz, rgb, matrix_out);
-  }
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(lab, rgb, matrix_in, unbounded_coeffs_in:16) \
-  aligned(lut_in:64) \
-  uniform(rgb, lab, matrix_in, lut_in, unbounded_coeffs_in)
-#endif
-static inline void dt_ioppr_rgb_matrix_to_lab(const float rgb[3], float lab[3],
-                                              const float matrix_in[9], float *const lut_in[3],
-                                              const float unbounded_coeffs_in[3][3],
-                                              const int lutsize, const int nonlinearlut)
-{
-  float xyz[3] DT_ALIGNED_PIXEL;
-  dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, matrix_in, lut_in, unbounded_coeffs_in, lutsize, nonlinearlut);
-  dt_XYZ_to_Lab(xyz, lab);
-}
-
-static inline float dt_ioppr_get_profile_info_middle_grey(const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  return profile_info->grey;
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float dt_ioppr_compensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  // we transform the curve nodes from the image colorspace to lab
-  float lab[3] DT_ALIGNED_PIXEL = { 0.0f };
-  const float rgb[3] DT_ALIGNED_PIXEL = { x, x, x };
-  dt_ioppr_rgb_matrix_to_lab(rgb, lab, profile_info->matrix_in, profile_info->lut_in, profile_info->unbounded_coeffs_in, profile_info->lutsize, profile_info->nonlinearlut);
-  return lab[0] * .01f;
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float dt_ioppr_uncompensate_middle_grey(const float x, const dt_iop_order_iccprofile_info_t *const profile_info)
-{
-  // we transform the curve nodes from lab to the image colorspace
-  const float lab[3] DT_ALIGNED_PIXEL = { x * 100.f, 0.0f, 0.0f };
-  float rgb[3] DT_ALIGNED_PIXEL = { 0.0f };
-
-  dt_ioppr_lab_to_rgb_matrix(lab, rgb, profile_info->matrix_out, profile_info->lut_out, profile_info->unbounded_coeffs_out, profile_info->lutsize, profile_info->nonlinearlut);
-  return rgb[0];
-}
+gboolean dt_ioppr_move_iop_before(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_next);
+gboolean dt_ioppr_move_iop_after(struct dt_develop_t *dev, struct dt_iop_module_t *module, struct dt_iop_module_t *module_prev);
 
 // for debug only
-int dt_ioppr_check_db_integrity();
 int dt_ioppr_check_iop_order(struct dt_develop_t *dev, const int imgid, const char *msg);
 void dt_ioppr_print_module_iop_order(GList *iop_list, const char *msg);
 void dt_ioppr_print_history_iop_order(GList *history_list, const char *msg);

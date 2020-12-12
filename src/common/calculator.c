@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2013 tobias ellinghaus.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -186,22 +186,20 @@ static float parse_expression(parser_state_t *self)
 
 static float parse_additive_expression(parser_state_t *self)
 {
-  float left, right;
-
   if(!self->token) return NAN;
 
-  left = parse_multiplicative_expression(self);
+  float left = parse_multiplicative_expression(self);
 
   while(self->token && self->token->type == T_OPERATOR)
   {
-    operators_t operator= self->token->data.operator;
+    const operators_t operator= self->token->data.operator;
 
     if(operator!= O_PLUS &&operator!= O_MINUS) return left;
 
     free(self->token);
     self->token = get_token(self);
 
-    right = parse_multiplicative_expression(self);
+    const float right = parse_multiplicative_expression(self);
 
     if(operator== O_PLUS)
       left += right;
@@ -214,22 +212,20 @@ static float parse_additive_expression(parser_state_t *self)
 
 static float parse_multiplicative_expression(parser_state_t *self)
 {
-  float left, right;
-
   if(!self->token) return NAN;
 
-  left = parse_power_expression(self);
+  float left = parse_power_expression(self);
 
   while(self->token && self->token->type == T_OPERATOR)
   {
-    operators_t operator= self->token->data.operator;
+    const operators_t operator= self->token->data.operator;
 
     if(operator!= O_MULTIPLY &&operator!= O_DIVISION &&operator!= O_MODULO) return left;
 
     free(self->token);
     self->token = get_token(self);
 
-    right = parse_power_expression(self);
+    float right = parse_power_expression(self);
 
     if(operator== O_MULTIPLY)
       left *= right;

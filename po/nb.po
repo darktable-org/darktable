@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2019-11-01 11:31+0100\n"
-"PO-Revision-Date: 2019-02-24 19:12+0100\n"
+"PO-Revision-Date: 2019-11-27 21:40+0100\n"
 "Last-Translator: Ragnar Wisløff <ragnar@wisloff.no>\n"
 "Language-Team: \n"
 "Language: nb\n"
@@ -18,8 +18,8 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.1.1\n"
-"X-Poedit-Bookmarks: -1,-1,-1,-1,-1,-1,-1,185,-1,-1\n"
+"X-Generator: Poedit 2.2.4\n"
+"X-Poedit-Bookmarks: -1,-1,-1,-1,-1,-1,-1,2362,1305,-1\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
@@ -229,13 +229,15 @@ msgstr "et ekstra lag vil vise filnavn og utvalgte EXIF-verdier."
 
 #: ../build/src/preferences_gen.h:2402
 msgid "use single-click in the collect panel"
-msgstr ""
+msgstr "bruk enkelt-klikk i samlingspanelet"
 
 #: ../build/src/preferences_gen.h:2414
 msgid ""
 "check this option to use single-click to select items in the collect panel. "
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
+"slår på enkelt-klikk for valg av elementer i samlingspanelet. du kan da "
+"sette sammen utvalg basert på tidsangivelser og numeriske verdier."
 
 #: ../build/src/preferences_gen.h:2422
 msgid "expand a single lighttable module at a time"
@@ -364,68 +366,60 @@ msgid ""
 msgstr "velger hvordan fargekanaler vises når aktivert i parametriske masker."
 
 #: ../build/src/preferences_gen.h:2642
-#, fuzzy
 msgid "pattern for the image infos line"
-msgstr "pen utskrift av stedet bildet ble tatt"
+msgstr "visningselementer for bildeinformasjon"
 
 #: ../build/src/preferences_gen.h:2658
 msgid "see manual to know all the tags you can use."
-msgstr ""
+msgstr "merkelapper som kan brukes finnes i brukermanualen."
 
 #: ../build/src/preferences_gen.h:2666
-#, fuzzy
 msgid "position of the image infos line"
-msgstr "dpi for bilder i pdf'en"
+msgstr "plassering av bildeinformasjon"
 
 #: ../build/src/preferences_gen.h:2677
-#, fuzzy
 msgctxt "preferences"
 msgid "top left"
-msgstr "bla venstre"
+msgstr "øvre venstre hjørne"
 
 #: ../build/src/preferences_gen.h:2682
-#, fuzzy
 msgctxt "preferences"
 msgid "top right"
-msgstr "copyright"
+msgstr "øvre høyre hjørne"
 
 #: ../build/src/preferences_gen.h:2687
-#, fuzzy
 msgctxt "preferences"
 msgid "top center"
-msgstr "senter"
+msgstr "topp senter"
 
 #: ../build/src/preferences_gen.h:2692 ../build/src/preferences_gen.h:2712
-#, fuzzy
 msgctxt "preferences"
 msgid "bottom"
-msgstr "bunnmarg"
+msgstr "bunn"
 
 #: ../build/src/preferences_gen.h:2697
 msgctxt "preferences"
 msgid "hidden"
-msgstr ""
+msgstr "skjult"
 
 #: ../build/src/preferences_gen.h:2722
 msgid "show search module text entry"
-msgstr ""
+msgstr "vis tekst for søk etter modul"
 
 #: ../build/src/preferences_gen.h:2733
 msgctxt "preferences"
 msgid "show search text"
-msgstr ""
+msgstr "vis tekst i søkefelt"
 
 #: ../build/src/preferences_gen.h:2738
-#, fuzzy
 msgctxt "preferences"
 msgid "show groups"
-msgstr "tonemoduler"
+msgstr "vis grupper"
 
 #: ../build/src/preferences_gen.h:2743 ../build/src/preferences_gen.h:2758
-#, fuzzy
 msgctxt "preferences"
 msgid "show both"
-msgstr "vis ingen"
+msgstr "vis begge"
 
 #: ../build/src/preferences_gen.h:2768
 msgid "expand a single darkroom module at a time"
@@ -451,13 +445,15 @@ msgstr "avgjør hvilken effekt skift-klikk har i mørkeroms-modus"
 
 #: ../build/src/preferences_gen.h:2788
 msgid "expand the module when it is activated, and collapse it when disabled"
-msgstr ""
+msgstr "utvid modulen når den er aktivert, reduser den når deaktivert"
 
 #: ../build/src/preferences_gen.h:2800
 msgid ""
 "this option allows to expand or collapse automatically the module when it is "
 "enabled or disabled."
 msgstr ""
+"denne innstillingen avgjør om modulen automatisk utvides eller reduseres når "
+"den er aktivert eller deaktivert."
 
 #: ../build/src/preferences_gen.h:2808
 msgid "scroll to darkroom modules when expanded/collapsed"
@@ -599,13 +595,12 @@ msgid "(needs a restart)"
 msgstr "(krever en omstart)"
 
 #: ../build/src/preferences_gen.h:3134
-#, fuzzy
 msgid "waiting time between each picture in slideshow"
-msgstr "venter på start av lysbilde-show"
+msgstr "forsinkelse mellom hvert bilde i lysbildeserie"
 
 #: ../build/src/preferences_gen.h:3160
 msgid "do not show april 1st game"
-msgstr ""
+msgstr "ikke vis aprilsnarr"
 
 #: ../build/src/preferences_gen.h:3179
 msgid "number of folder levels to show in lists"
@@ -626,13 +621,12 @@ msgid "enable the filmstrip in darkroom, tethering and map modes."
 msgstr "bruk film-remse i darkroom, fjernstyring og kart-modus."
 
 #: ../build/src/preferences_gen.h:3226
-#, fuzzy
 msgid "enable timeline"
-msgstr "bruk modul"
+msgstr "slå på tidslinje"
 
 #: ../build/src/preferences_gen.h:3238
 msgid "enable the timeline in lighttable mode."
-msgstr ""
+msgstr "slå på tidslinje i lysbord-modus"
 
 #: ../build/src/preferences_gen.h:3246
 msgid "overlay txt sidecar over zoomed images"
@@ -650,13 +644,15 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3266
 msgid "mouse wheel scrolls modules side panel by default"
-msgstr ""
+msgstr "musehjul ruller moduler i sidepanel"
 
 #: ../build/src/preferences_gen.h:3278
 msgid ""
 "when enabled, use mouse wheel to scroll modules side panel.  use ctrl+alt to "
 "use mouse wheel for data entry.  when disabled, this behavior is reversed"
 msgstr ""
+"når aktivert vil musehjulet rulle modulene i sidepanelet.  bruk ctrl+alt for "
+"å bruke musehjulet til å velge.  hvis deaktivert fungerer dette ikke"
 
 #: ../build/src/preferences_gen.h:3286
 msgid "show scrollbars for center view"
@@ -683,13 +679,15 @@ msgstr "definerer hvor rullefeltene skal vises"
 
 #: ../build/src/preferences_gen.h:3333
 msgid "always show panels' scrollbars"
-msgstr ""
+msgstr "alltid vis rullefeltene for panelene"
 
 #: ../build/src/preferences_gen.h:3345
 msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content.  (need a restart)"
 msgstr ""
+"hvorvidt panelenes rullefelt skal være synlige eller aktiverte avhengig av "
+"innhold.  (omstart nødvendig)"
 
 #: ../build/src/preferences_gen.h:3353
 msgid "method to use for getting the display profile"
@@ -941,12 +939,10 @@ msgstr ""
 "hele bildesamlingen, kjør 'darktable-generate-cache'."
 
 #: ../build/src/preferences_gen.h:3805
-#, fuzzy
 msgid "enable disk backend for full preview cache"
 msgstr "bruk disk for mellomlagring av miniatyrbilder"
 
 #: ../build/src/preferences_gen.h:3817
-#, fuzzy
 msgid ""
 "if enabled, write full preview to disk (.cache/darktable/) when evicted from "
 "the memory cache. note that this can take a lot of memory (several gigabytes "
@@ -1049,7 +1045,6 @@ msgid "very fast GPU"
 msgstr "svært rask grafisk prosessor"
 
 #: ../build/src/preferences_gen.h:3975
-#, fuzzy
 msgid ""
 "defines how preview and full pixelpipe tasks are scheduled on OpenCL enabled "
 "systems. default - GPU processes full and CPU processes preview pipe "
@@ -1069,7 +1064,6 @@ msgid "omit hierarchy in simple tag lists"
 msgstr "utelat hierarki i enkle lister med merkelapper"
 
 #: ../build/src/preferences_gen.h:4012
-#, fuzzy
 msgid ""
 "when creating XMP file the hierarchical tags are also added as a simple list "
 "of non-hierarchical ones to make them visible to some other programs. when "
@@ -1084,7 +1078,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:4020
 msgid "disable the entry completion"
-msgstr ""
+msgstr "skru av fullføring av tekst"
 
 #: ../build/src/preferences_gen.h:4032
 msgid ""
@@ -1092,6 +1086,9 @@ msgid ""
 "for others the entry completion can be embarrassing. need to restart "
 "darktable."
 msgstr ""
+"felt-fullføring er nyttig for brukere som legger inn merkelapper fra "
+"tastaturet. for andre kan felt-fullføring være unødvendig. darktable må "
+"restartes hvis endret."
 
 #: ../build/src/preferences_gen.h:4040
 msgid "password storage backend to use"
@@ -1135,9 +1132,8 @@ msgstr ""
 "for å lagre notater for bilder"
 
 #: ../build/src/preferences_gen.h:4118
-#, fuzzy
 msgid "3D lut root folder"
-msgstr "flytt til annen mappe"
+msgstr "3D lut toppmappe"
 
 #: ../build/src/preferences_gen.h:4123 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/preferences.c:1616
@@ -1153,6 +1149,8 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
+"denne mappen og undermapper inneholder Lut-filer som brukes av lut3d "
+"moduler. darktable må restartes om dette endres."
 
 #: ../build/src/preferences_gen.h:4164
 msgid "session options"
@@ -1227,12 +1225,12 @@ msgstr "Skriv ut bilder"
 #: ../src/bauhaus/bauhaus.c:2260
 #, c-format
 msgid "%s/%s: %s"
-msgstr ""
+msgstr "%s/%s: %s"
 
 #: ../src/bauhaus/bauhaus.c:2262
 #, c-format
 msgid "%s: %s"
-msgstr ""
+msgstr "%s: %s"
 
 #: ../src/chart/main.c:463 ../src/control/jobs/control_jobs.c:1629
 #: ../src/control/jobs/control_jobs.c:1689 ../src/gui/hist_dialog.c:171
@@ -1477,9 +1475,8 @@ msgstr "prøvevisningsprofil"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:985 ../src/common/colorspaces.c:1243
-#, fuzzy
 msgid "work profile"
-msgstr "utgående profil"
+msgstr "arbeidsprofil"
 
 #: ../src/common/colorspaces.c:1265
 msgid "sRGB (e.g. JPG)"
@@ -1490,14 +1487,12 @@ msgid "sRGB (web-safe)"
 msgstr "sRGB (web-sikker)"
 
 #: ../src/common/colorspaces.c:1283
-#, fuzzy
 msgid "gamma Rec709 RGB"
-msgstr "lineær Rec709 RGB"
+msgstr "gamma Rec709 RGB"
 
 #: ../src/common/colorspaces.c:1293
-#, fuzzy
 msgid "linear prophoto RGB"
-msgstr "rettlinjet del"
+msgstr "rettlinjet prophoto RGB"
 
 #: ../src/common/colorspaces.c:1311
 msgid "BRG (for testing)"
@@ -1633,16 +1628,19 @@ msgid ""
 "\n"
 "do you want to proceed or quit now to do a backup\n"
 msgstr ""
+"databasen må oppgraderes for\n"
+"\n"
+"<span style=\"italic\">%s</span>\n"
+"\n"
+"vil du fortsette eller avslutte og kjøre backup?\n"
 
 #: ../src/common/database.c:1782
-#, fuzzy
 msgid "darktable - schema migration"
-msgstr "darktable - kjøre ytelses-oppsett?"
+msgstr "darktable - migrering av databasestruktur"
 
 #: ../src/common/database.c:1783
-#, fuzzy
 msgid "upgrade database"
-msgstr "slett database"
+msgstr "oppgrader database"
 
 #. oh, bad situation. the database is corrupt and can't be read!
 #. we inform the user here and let him decide what to do: exit or delete and try again.
@@ -1676,6 +1674,7 @@ msgstr "slett database"
 #: ../src/common/fast_guided_filter.h:456
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
 msgstr ""
+"raskt guidet filter kunne ikke allokere minne, sjekk innstillingene for RAM"
 
 #: ../src/common/film.c:311
 msgid "do you want to remove this empty directory?"
@@ -1747,34 +1746,34 @@ msgid "orphaned image"
 msgstr "foreldreløst bilde"
 
 #: ../src/common/image.c:1455
-#, fuzzy, c-format
+#, c-format
 msgid "cannot access local copy `%s'"
-msgstr "kan ikke lage lokal kopi."
+msgstr "får ikke tilgang til lokal kopi `%s'"
 
 #: ../src/common/image.c:1461
-#, fuzzy, c-format
+#, c-format
 msgid "cannot write local copy `%s'"
-msgstr "kan ikke lage lokal kopi."
+msgstr "kan ikke lagre lokal kopi `%s'"
 
 #: ../src/common/image.c:1468
-#, fuzzy, c-format
+#, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "fjerner lokal kopi av %d bilde"
+msgstr "feil ved flytting av lokal kopi `%s' -> `%s'"
 
 #: ../src/common/image.c:1484
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr ""
+msgstr "feil ved flytting av `%s':filen ikke funnet"
 
 #: ../src/common/image.c:1494
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr ""
+msgstr "feil ved flytting av `%s' -> `%s': filen finnes fra før"
 
 #: ../src/common/image.c:1498
-#, fuzzy, c-format
+#, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "feil ved utskrift av `%s' på `%s'"
+msgstr "feil ved flytting `%s' -> `%s'"
 
 #: ../src/common/image.c:1755
 msgid "cannot create local copy when the original file is not accessible."
@@ -1834,9 +1833,9 @@ msgstr ""
 "innstillingene for import."
 
 #: ../src/common/iop_order.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid "unsupported working profile %s has been replaced by Rec2020 RGB!\n"
-msgstr "ikke støttet inngående profil er erstattet av lineær Rec709 RGB!"
+msgstr "ikke støttet arbeidsprofil %s er erstattet av lineær Rec709 RGB!\n"
 
 #: ../src/common/noiseprofiles.c:27
 msgid "generic poissonian"
@@ -1951,9 +1950,9 @@ msgid "no image selected!"
 msgstr "intet bilde valgt!"
 
 #: ../src/common/styles.c:612
-#, fuzzy, c-format
+#, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "%s: modul `%s' versjonsfeil: %d != %d"
+msgstr "modul `%s' versjon mismatch: %d != %d"
 
 #: ../src/common/styles.c:1007
 #, c-format
@@ -1990,7 +1989,7 @@ msgstr "jobber..."
 #: ../src/control/control.c:685
 #, c-format
 msgid "scroll to change <b>%s</b> of %s module"
-msgstr ""
+msgstr "rull for å bytte <b>%s</b> av %s modul"
 
 #: ../src/control/crawler.c:342 ../src/libs/select.c:40
 msgid "select"
@@ -2208,11 +2207,11 @@ msgstr[0] "fjerner lokal kopi av %d bilde"
 msgstr[1] "fjerner lokale kopier av %d bilder"
 
 #: ../src/control/jobs/control_jobs.c:1287
-#, fuzzy, c-format
+#, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
-msgstr[0] "legger %d bilde i papirkurven"
-msgstr[1] "legger %d bilder i papirkurven"
+msgstr[0] "oppfrisker informasjon for %d bilde"
+msgstr[1] "oppfrisker informasjon for %d bilder"
 
 #: ../src/control/jobs/control_jobs.c:1354
 #, c-format
@@ -2344,9 +2343,8 @@ msgid "local copy images"
 msgstr "lokal kopi av bilder"
 
 #: ../src/control/jobs/control_jobs.c:1751 ../src/libs/image.c:276
-#, fuzzy
 msgid "refresh exif"
-msgstr "oppfrisk"
+msgstr "les inn exif på nytt"
 
 #: ../src/control/jobs/control_jobs.c:1814
 #, c-format
@@ -2514,11 +2512,12 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:1512 ../src/iop/colorzones.c:2287
 #: ../src/iop/tonecurve.c:1340
-#, fuzzy
 msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
-msgstr "velg brukergrensesnitt-farge fra bilde"
+msgstr ""
+"velg brukergrensesnitt-farge fra bilde\n"
+"ctrl-klikk for å velge et område"
 
 #: ../src/develop/blend_gui.c:1516
 msgid ""
@@ -2526,6 +2525,9 @@ msgid ""
 "click+drag to use the input image\n"
 "ctrl+click + drag to use the output image"
 msgstr ""
+"angi området basert på et utsnitt av bildet\n"
+"klikk og dra for å bruke input-bildet\n"
+"ctrl-klikk og dra for å bruke output-bildet"
 
 #: ../src/develop/blend_gui.c:1520
 msgid "reset blend mask settings"
@@ -3079,112 +3081,107 @@ msgstr[1] "%s er importert"
 
 #: ../src/develop/masks/masks.c:157
 msgid "[SHAPE] remove shape"
-msgstr ""
+msgstr "[SHAPE] fjern figur eller form"
 
 #: ../src/develop/masks/masks.c:164
 msgid "[PATH creation] add a smooth node"
-msgstr ""
+msgstr "[PATH creation] legg til en myk node"
 
 #: ../src/develop/masks/masks.c:170
-#, fuzzy
 msgid "[PATH creation] add a sharp node"
-msgstr "ctrl-klikk for å legge til en skarp node"
+msgstr "[PATH creation] legg til et spisst knutepunkt"
 
 #: ../src/develop/masks/masks.c:175
 msgid "[PATH creation] terminate path creation"
-msgstr ""
+msgstr "[PATH creation] avslutt opprettelse av sti"
 
 #: ../src/develop/masks/masks.c:181
-#, fuzzy
 msgid "[PATH on node] switch between smooth/sharp node"
-msgstr "crtl-klikk for å bytte mellom myk og skarp modus"
+msgstr "[PATH on node] bytt mellom et glatt og spisst knutepunkt"
 
 #: ../src/develop/masks/masks.c:186
 msgid "[PATH on node] remove the node"
-msgstr ""
+msgstr "[PATH on node] fjern knutepuktet"
 
 #: ../src/develop/masks/masks.c:191
 msgid "[PATH on feather] reset curvature"
-msgstr ""
+msgstr "[PATH on feather] nullstill kurvatur"
 
 #: ../src/develop/masks/masks.c:197
 msgid "[PATH on segment] add node"
-msgstr ""
+msgstr "[PATH on segment] legg til knutepunkt"
 
 #: ../src/develop/masks/masks.c:202
 msgid "[PATH] change size"
-msgstr ""
+msgstr "[PATH] endre størrelse"
 
 #: ../src/develop/masks/masks.c:208
 msgid "[PATH] change opacity"
-msgstr ""
+msgstr "[PATH] endre gjennomsiktighet"
 
 #: ../src/develop/masks/masks.c:214
 msgid "[PATH] change feather size"
-msgstr ""
+msgstr "[PATH] endre størrelse på uttoning"
 
 #: ../src/develop/masks/masks.c:221
-#, fuzzy
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr "flytt for å rotere omrisset"
+msgstr "[GRADIENT on pivot] roter figur"
 
 #: ../src/develop/masks/masks.c:226
-#, fuzzy
 msgid "[GRADIENT creation] set rotation"
-msgstr "nullstill rotering"
+msgstr "[GRADIENT creation] angi rotasjon"
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change compression"
-msgstr ""
+msgstr "[GRADIENT] endre kompresjon"
 
 #: ../src/develop/masks/masks.c:237
 msgid "[GRADIENT] change opacity"
-msgstr ""
+msgstr "[GRADIENT] endre gjennomsiktighet"
 
 #: ../src/develop/masks/masks.c:244
 msgid "[ELLIPSE] change size"
-msgstr ""
+msgstr "[ELLIPSE] endre størrelse"
 
 #: ../src/develop/masks/masks.c:250
 msgid "[ELLIPSE] change opacity"
-msgstr ""
+msgstr "[ELLIPSE] endre gjennomsiktighet"
 
 #: ../src/develop/masks/masks.c:256
 msgid "[ELLIPSE] switch feathering mode"
-msgstr ""
+msgstr "[ELLIPSE] bytt modus for uttoning"
 
 #: ../src/develop/masks/masks.c:262
-#, fuzzy
 msgid "[ELLIPSE] rotate shape"
-msgstr "flytt for å rotere omrisset"
+msgstr "[ELLIPSE] roter figur"
 
 #: ../src/develop/masks/masks.c:269
 msgid "[BRUSH creation] change size"
-msgstr ""
+msgstr "[BRUSH creation] endre størrelse"
 
 #: ../src/develop/masks/masks.c:275
 msgid "[BRUSH creation] change hardness"
-msgstr ""
+msgstr "[BRUSH creation] endre hardhet"
 
 #: ../src/develop/masks/masks.c:281
 msgid "[BRUSH] change opacity"
-msgstr ""
+msgstr "[BRUSH] endre gjennomsiktighet"
 
 #: ../src/develop/masks/masks.c:286
 msgid "[BRUSH] change hardness"
-msgstr ""
+msgstr "[BRUSH] endre hardhet"
 
 #: ../src/develop/masks/masks.c:293
 msgid "[CIRCLE] change size"
-msgstr ""
+msgstr "[CIRCLE] endre størrelse"
 
 #: ../src/develop/masks/masks.c:299
 msgid "[CIRCLE] change opacity"
-msgstr ""
+msgstr "[CIRCLE] endre gjennomsiktighet"
 
 #: ../src/develop/masks/masks.c:305
 msgid "[CIRCLE] change feather size"
-msgstr ""
+msgstr "[CIRCLE] endre kantstørrelse"
 
 #: ../src/develop/masks/masks.c:331
 msgid "ctrl+click to add a sharp node"
@@ -3241,7 +3238,7 @@ msgid ""
 msgstr ""
 "shift-klikk for å bytte uttonings-modus, ctrl-klikk for å rotere\n"
 "shift-rull for endre bredde på overgangssone, ctrl-rull for for å sette "
-"gjennomsiktighet (%d%%)."
+"gjennomsiktighet (%d%%),"
 
 #: ../src/develop/masks/masks.c:363
 #, c-format
@@ -3546,7 +3543,6 @@ msgid "edit"
 msgstr "rediger"
 
 #: ../src/gui/accelerators.c:61 ../src/gui/accelerators.c:104
-#, fuzzy
 msgctxt "accel"
 msgid "dynamic"
 msgstr "dynamisk bredde"
@@ -3735,30 +3731,27 @@ msgstr "vis sidestolper"
 #: ../src/gui/gtk.c:1257
 msgctxt "accel"
 msgid "toggle panels collapsing controls"
-msgstr ""
+msgstr "piler for å skjule/vise paneler av/på"
 
 #: ../src/gui/gtk.c:1261
-#, fuzzy
 msgctxt "accel"
 msgid "toggle left panel"
-msgstr "live view av/på"
+msgstr "venstre panel av/på"
 
 #: ../src/gui/gtk.c:1265
-#, fuzzy
 msgctxt "accel"
 msgid "toggle right panel"
-msgstr "vis overskrift"
+msgstr "høyre panel av/på"
 
 #: ../src/gui/gtk.c:1269
-#, fuzzy
 msgctxt "accel"
 msgid "toggle top panel"
-msgstr "vis overskrift"
+msgstr "øvre panel av/på"
 
 #: ../src/gui/gtk.c:1273
 msgctxt "accel"
 msgid "toggle bottom panel"
-msgstr ""
+msgstr "bunn-panel av/på"
 
 #. toggle view of header
 #: ../src/gui/gtk.c:1278
@@ -3787,7 +3780,7 @@ msgstr "zoom ut"
 #: ../src/gui/gtk.c:1291
 msgctxt "accel"
 msgid "show accels window"
-msgstr ""
+msgstr "vis accels vindu"
 
 #: ../src/gui/gtkentry.c:186
 msgid "$(ROLL_NAME) - roll of the input image"
@@ -3795,31 +3788,31 @@ msgstr "$(ROLL_NAME) - inputbildets filmrull"
 
 #: ../src/gui/gtkentry.c:187
 msgid "$(FILE_FOLDER) - folder containing the input image"
-msgstr "$(FILE_FOLDER) - mappen som inneholder bildet som skal importeres"
+msgstr "$(FIL_MAPPE) - mappen som inneholder bildet som skal importeres"
 
 #: ../src/gui/gtkentry.c:188
 msgid "$(FILE_NAME) - basename of the input image"
-msgstr "$(FILE_NAME) - navnet på bildet som skal importeres"
+msgstr "$(FIL_NAVN) - navnet på bildet som skal importeres"
 
 #: ../src/gui/gtkentry.c:189
 msgid "$(FILE_EXTENSION) - extension of the input image"
-msgstr "$(FILE_EXTENSION) - filendelsen for bildet som skal importeres"
+msgstr "$(FIL_TYPE) - filendelsen for bildet som skal importeres"
 
 #: ../src/gui/gtkentry.c:190
 msgid "$(VERSION) - duplicate version"
-msgstr "$(VERSION) - duplikatversjon"
+msgstr "$(VERSJON) - duplikatversjon"
 
 #: ../src/gui/gtkentry.c:191
 msgid "$(SEQUENCE) - sequence number"
-msgstr "$(SEQUENCE) - sekvensnummer"
+msgstr "$(SEKVENS) - sekvensnummer"
 
 #: ../src/gui/gtkentry.c:192
 msgid "$(MAX_WIDTH) - maximum image export width"
-msgstr ""
+msgstr "$(MAX_WIDTH) - største bredde på eksportert bilde"
 
 #: ../src/gui/gtkentry.c:193
 msgid "$(MAX_HEIGHT) - maximum image export height"
-msgstr ""
+msgstr "$(MAX_HEIGHT) - største høyde på eksportert bilde"
 
 #: ../src/gui/gtkentry.c:194
 msgid "$(YEAR) - year"
@@ -3831,27 +3824,27 @@ msgstr "$(MONTH) - måned"
 
 #: ../src/gui/gtkentry.c:196
 msgid "$(DAY) - day"
-msgstr "$(DAY) - dag"
+msgstr "$(DAG) - dag"
 
 #: ../src/gui/gtkentry.c:197
 msgid "$(HOUR) - hour"
-msgstr "$(HOUR) - time"
+msgstr "$(TIME) - time"
 
 #: ../src/gui/gtkentry.c:198
 msgid "$(MINUTE) - minute"
-msgstr "$(MINUTE) - minutt"
+msgstr "$(MINUTT) - minutt"
 
 #: ../src/gui/gtkentry.c:199
 msgid "$(SECOND) - second"
-msgstr "$(SECOND) - sekund"
+msgstr "$(SEKUND) - sekund"
 
 #: ../src/gui/gtkentry.c:200
 msgid "$(EXIF_YEAR) - EXIF year"
-msgstr "$(EXIF_YEAR) - EXIF år"
+msgstr "$(EXIF_ÅR) - EXIF år"
 
 #: ../src/gui/gtkentry.c:201
 msgid "$(EXIF_MONTH) - EXIF month"
-msgstr "$(EXIF_MONTH) - EXIF måned"
+msgstr "$(EXIF_MÅNED) - EXIF måned"
 
 #: ../src/gui/gtkentry.c:202
 msgid "$(EXIF_DAY) - EXIF day"
@@ -3891,7 +3884,7 @@ msgstr "$(LABELS) - fargemerking"
 
 #: ../src/gui/gtkentry.c:211
 msgid "$(PICTURES_FOLDER) - pictures folder"
-msgstr "$(PICTURES_FOLDER) - bildemappe"
+msgstr "$(BILLED_MAPPE) - bildemappe"
 
 #: ../src/gui/gtkentry.c:212
 msgid "$(HOME) - home folder"
@@ -3906,9 +3899,8 @@ msgid "$(TITLE) - title from metadata"
 msgstr "$(TITLE) - tittel fra metadata"
 
 #: ../src/gui/gtkentry.c:215
-#, fuzzy
 msgid "$(DESCRIPTION) - description from metadata"
-msgstr "$(CREATOR) - fotograf fra metadata"
+msgstr "$(DESCRIPTION) - ta beskrivelse fra metadata"
 
 #: ../src/gui/gtkentry.c:216
 msgid "$(CREATOR) - creator from metadata"
@@ -3924,43 +3916,39 @@ msgstr "$(RIGHTS) - rettigheter fra metadata"
 
 #: ../src/gui/gtkentry.c:219
 msgid "$(OPENCL_ACTIVATED) - whether OpenCL is activated"
-msgstr ""
+msgstr "$(OPENCL_ACTIVATED) - hvorvidt OpenCL er aktivert"
 
 #: ../src/gui/gtkentry.c:220
 msgid "$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags"
-msgstr ""
+msgstr "$(CATEGORY0(category)) - underordnet merkelapp av nivå 0 i hierarkiet"
 
 #: ../src/gui/gtkentry.c:221
 msgid "$(TAGS) - tags as set in metadata settings"
-msgstr ""
+msgstr "$(TAGS) - merkelapper slik angitt i metadata-innstillingene"
 
 #: ../src/gui/guides.c:108
-#, fuzzy
 msgid "horizontal lines"
-msgstr "vannrett senter"
+msgstr "vannrette linjer"
 
 #: ../src/gui/guides.c:109
 msgid "number of horizontal guide lines"
-msgstr ""
+msgstr "antall horisontale hjelpelinjer"
 
 #: ../src/gui/guides.c:115
-#, fuzzy
 msgid "vertical lines"
-msgstr "loddrett senter"
+msgstr "loddrette linjer"
 
 #: ../src/gui/guides.c:116
-#, fuzzy
 msgid "number of vertical guide lines"
-msgstr "antall klynger"
+msgstr "antall vertikale hjelpelinjer"
 
 #: ../src/gui/guides.c:122
-#, fuzzy
 msgid "subdivisions"
-msgstr "dagssyn"
+msgstr "oppdeling"
 
 #: ../src/gui/guides.c:123
 msgid "number of subdivisions per grid rectangle"
-msgstr ""
+msgstr "antall inndelinger av hvert rutenett-rektangel"
 
 #: ../src/gui/guides.c:440
 msgid "extra"
@@ -4153,10 +4141,9 @@ msgstr "auto"
 
 #. Adding the import/export buttons
 #: ../src/gui/preferences.c:544 ../src/gui/preferences.c:637
-#, fuzzy
 msgctxt "preferences"
 msgid "import..."
-msgstr "import"
+msgstr "importer..."
 
 #. Adding the outer container
 #: ../src/gui/preferences.c:584
@@ -4173,9 +4160,8 @@ msgstr "binding"
 
 #. export button
 #: ../src/gui/preferences.c:642 ../src/libs/styles.c:472
-#, fuzzy
 msgid "export..."
-msgstr "eksporter"
+msgstr "eksporter..."
 
 #. Setting the notification text
 #: ../src/gui/preferences.c:919
@@ -4183,17 +4169,17 @@ msgid "press key combination to remap..."
 msgstr "trykk tastaturkombinasjon for å sette på nytt ..."
 
 #: ../src/gui/preferences.c:1020
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "%s accel is already mapped to\n"
 "%s.\n"
 "do you want to replace it ?"
 msgstr ""
-"forhåndsinnstilling `%s' finnes fra før.\n"
+"forhåndsinnstilling %s er tilordnet\n"
+"%s.\n"
 "vil du skrive over?"
 
 #: ../src/gui/preferences.c:1026
-#, fuzzy
 msgid "accel conflict"
 msgstr "ved konflikt"
 
@@ -4834,7 +4820,7 @@ msgstr "skriv over"
 
 #: ../src/imageio/storage/disk.c:202
 msgid "skip"
-msgstr ""
+msgstr "hopp over"
 
 #: ../src/imageio/storage/disk.c:281 ../src/imageio/storage/gallery.c:274
 #: ../src/imageio/storage/latex.c:273
@@ -4851,8 +4837,8 @@ msgstr "kunne ikke skrive til mappen `%s'!"
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "%d/%d hopper over `%s'"
+msgstr[1] "%d/%d hopper over `%s'"
 
 #: ../src/imageio/storage/disk.c:337 ../src/imageio/storage/email.c:143
 #: ../src/imageio/storage/gallery.c:398 ../src/imageio/storage/latex.c:362
@@ -4869,6 +4855,10 @@ msgid ""
 "\n"
 "do you really want to continue?"
 msgstr ""
+"eksport i skriv over-modus, dette vil skrive over alle bilder som allerede "
+"finnes\n"
+"\n"
+"sikker på at du vil fortsette?"
 
 #: ../src/imageio/storage/email.c:52
 msgid "send as email"
@@ -5252,7 +5242,6 @@ msgstr "kontakter"
 
 #. Available albums
 #: ../src/imageio/storage/piwigo.c:838
-#, fuzzy
 msgid "album"
 msgstr "albumer"
 
@@ -5526,27 +5515,26 @@ msgstr "skru av/på synlighet av strukturlinjer"
 #: ../src/iop/ashift.c:5049
 #, c-format
 msgid "[%s on segment] select segment"
-msgstr ""
+msgstr "[%s på segment] velg segment"
 
 #: ../src/iop/ashift.c:5054
 #, c-format
 msgid "[%s on segment] unselect segment"
-msgstr ""
+msgstr "[%s på segment] fjern valg av segment"
 
 #: ../src/iop/ashift.c:5060
 #, c-format
 msgid "[%s] select all segments from zone"
-msgstr ""
+msgstr "[%s] velg alle segmenter fra sone"
 
 #: ../src/iop/ashift.c:5066
 #, c-format
 msgid "[%s] unselect all segments from zone"
-msgstr ""
+msgstr "[%s] fjern alle valg av segment fra sone"
 
 #: ../src/iop/atrous.c:117
-#, fuzzy
 msgid "contrast equalizer"
-msgstr "kontrast vippepunkt"
+msgstr "kontrast-justering"
 
 #: ../src/iop/atrous.c:137 ../src/iop/soften.c:108
 msgctxt "accel"
@@ -5641,7 +5629,7 @@ msgstr "mer kontrast"
 #: ../src/iop/colorzones.c:2334 ../src/iop/denoiseprofile.c:3734
 #: ../src/iop/rawdenoise.c:830
 msgid "smooth"
-msgstr "jevn"
+msgstr "mykere"
 
 #: ../src/iop/atrous.c:1622 ../src/iop/denoiseprofile.c:3739
 #: ../src/iop/rawdenoise.c:835
@@ -5804,9 +5792,8 @@ msgstr ""
 #: ../src/iop/basecurve.c:2139 ../src/iop/basicadj.c:706
 #: ../src/iop/rgbcurve.c:1619 ../src/iop/rgblevels.c:1116
 #: ../src/iop/tonecurve.c:1392
-#, fuzzy
 msgid "preserve colors"
-msgstr "kantfarge"
+msgstr "bevar farger"
 
 #: ../src/iop/basecurve.c:2140 ../src/iop/basecurve.c:2153
 #: ../src/iop/basicadj.c:707 ../src/iop/clipping.c:1696
@@ -5824,7 +5811,6 @@ msgstr "ingen"
 #: ../src/iop/basecurve.c:2141 ../src/iop/basicadj.c:708
 #: ../src/iop/rgbcurve.c:1621 ../src/iop/rgblevels.c:1118
 #: ../src/iop/tonecurve.c:1394
-#, fuzzy
 msgid "luminance"
 msgstr "fargedominans"
 
@@ -5832,39 +5818,37 @@ msgstr "fargedominans"
 #: ../src/iop/filmicrgb.c:1557 ../src/iop/rgbcurve.c:1622
 #: ../src/iop/rgblevels.c:1119 ../src/iop/tonecurve.c:1395
 msgid "max RGB"
-msgstr ""
+msgstr "max RGB"
 
 #: ../src/iop/basecurve.c:2143 ../src/iop/basicadj.c:710
 #: ../src/iop/rgbcurve.c:1623 ../src/iop/rgblevels.c:1120
 #: ../src/iop/tonecurve.c:1396
-#, fuzzy
 msgid "average RGB"
-msgstr "gjennomsnitt"
+msgstr "gjennomsnittlig RGB"
 
 #: ../src/iop/basecurve.c:2144 ../src/iop/basicadj.c:711
 #: ../src/iop/rgbcurve.c:1624 ../src/iop/rgblevels.c:1121
 #: ../src/iop/tonecurve.c:1397
 msgid "sum RGB"
-msgstr ""
+msgstr "sum RGB"
 
 #: ../src/iop/basecurve.c:2145 ../src/iop/basicadj.c:712
 #: ../src/iop/rgbcurve.c:1625 ../src/iop/rgblevels.c:1122
 #: ../src/iop/tonecurve.c:1398
 msgid "norm RGB"
-msgstr ""
+msgstr "normal RGB"
 
 #: ../src/iop/basecurve.c:2146 ../src/iop/basicadj.c:713
 #: ../src/iop/rgbcurve.c:1626 ../src/iop/rgblevels.c:1123
 #: ../src/iop/tonecurve.c:1399
-#, fuzzy
 msgid "basic power"
-msgstr "basismoduler"
+msgstr "basis styrke"
 
 #: ../src/iop/basecurve.c:2148 ../src/iop/basicadj.c:715
 #: ../src/iop/rgbcurve.c:1628 ../src/iop/rgblevels.c:1125
 #: ../src/iop/tonecurve.c:1401
 msgid "method to preserve colors when applying contrast"
-msgstr ""
+msgstr "metode for å bevare farger når kontrasten endres"
 
 #: ../src/iop/basecurve.c:2152
 msgid "fusion"
@@ -5908,16 +5892,14 @@ msgid "exposure bias"
 msgstr "eksponeringsstyring"
 
 #: ../src/iop/basicadj.c:92
-#, fuzzy
 msgid "basic adjustments"
-msgstr "justering av kontrast"
+msgstr "grunnleggende justeringer"
 
 #: ../src/iop/basicadj.c:673 ../src/iop/exposure.c:896
 msgid "black level correction"
 msgstr "svartnivå korreksjon"
 
 #: ../src/iop/basicadj.c:675
-#, fuzzy
 msgid ""
 "adjust the black level to unclip negative RGB values.\n"
 "you should never use it to add more density in blacks!\n"
@@ -5927,21 +5909,19 @@ msgstr ""
 "juster svart-nivå for å fjerne klipping av RGB-verdier.\n"
 "ikke bruk dette for å øke tettheten i svarte områder!\n"
 "ved feil bruk vil nesten svarte farger klippes ut av synlig område\n"
-"ved å endre RGB-verdier til negative."
+"ved å endre RGB-verdier til negative"
 
 #: ../src/iop/basicadj.c:687 ../src/iop/exposure.c:884
 msgid "adjust the exposure correction"
 msgstr "juster eksponerings-korrigering"
 
 #: ../src/iop/basicadj.c:693
-#, fuzzy
 msgid "highlight compression"
-msgstr "høylys gjenoppretning"
+msgstr "høylys komprimering"
 
 #: ../src/iop/basicadj.c:694
-#, fuzzy
 msgid "highlight compression adjustment"
-msgstr "fargejustering av høylys"
+msgstr "komprimering av høylys"
 
 #: ../src/iop/basicadj.c:700 ../src/iop/bilat.c:546 ../src/iop/colisa.c:379
 #: ../src/iop/colorbalance.c:2419 ../src/iop/colorbalance.c:2421
@@ -5955,14 +5935,12 @@ msgid "contrast adjustment"
 msgstr "justering av kontrast"
 
 #: ../src/iop/basicadj.c:719
-#, fuzzy
 msgid "middle grey"
-msgstr "middels grå luma"
+msgstr "middels grå"
 
 #: ../src/iop/basicadj.c:721
-#, fuzzy
 msgid "middle grey adjustment"
-msgstr "mellomgrå destinasjon"
+msgstr "mellomgrå justering"
 
 #: ../src/iop/basicadj.c:733 ../src/iop/colisa.c:380 ../src/iop/retouch.c:2918
 #: ../src/iop/soften.c:748 ../src/iop/vignette.c:1158
@@ -5986,13 +5964,12 @@ msgid "saturation"
 msgstr "fargemetning"
 
 #: ../src/iop/basicadj.c:740
-#, fuzzy
 msgid "saturation adjustment"
 msgstr "justering av fargemetning"
 
 #: ../src/iop/basicadj.c:747
 msgid "apply auto exposure based on the entire image"
-msgstr ""
+msgstr "autoeksponering basert på hele bildet"
 
 #: ../src/iop/basicadj.c:755
 msgid ""
@@ -6000,14 +5977,17 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"bruk automatisk eksponering basert på et utsnitt bestemt av brukeren\n"
+"klikk og dra for å definere utsnittet\n"
+"høyre-klikk for å kansellere"
 
 #: ../src/iop/basicadj.c:765
 msgid "clip"
-msgstr ""
+msgstr "klipp"
 
 #: ../src/iop/basicadj.c:766
 msgid "adjusts clipping value for auto exposure calculation"
-msgstr ""
+msgstr "justerer klipp-verdi"
 
 #: ../src/iop/bilat.c:95 ../src/iop/clahe.c:66
 msgid "local contrast"
@@ -6515,6 +6495,7 @@ msgstr "S/H Kodak Tri-X 400"
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
 msgstr ""
+"Choleski-dekomponeringen har ikke nok minne, sjekk innstillingene for RAM"
 
 #: ../src/iop/clahe.c:337 ../src/iop/sharpen.c:791
 msgid "amount"
@@ -6694,17 +6675,17 @@ msgstr "vinkel"
 #: ../src/iop/clipping.c:3244
 #, c-format
 msgid "[%s on borders] crop"
-msgstr ""
+msgstr "[%s på grenselinjer] beskjæring"
 
 #: ../src/iop/clipping.c:3250
 #, c-format
 msgid "[%s on borders] crop keeping ratio"
-msgstr ""
+msgstr "[%s på grenselinjer] beskjæring med forholdet høyde/bredde beholdt"
 
 #: ../src/iop/clipping.c:3255
 #, c-format
 msgid "[%s] define/rotate horizon"
-msgstr ""
+msgstr "[%s] definer/roter horisont"
 
 #: ../src/iop/colisa.c:78
 msgid "contrast brightness saturation"
@@ -7127,6 +7108,8 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
+"kan ikke trekke ut matrise fra fargemodellen `%s', blir erstattet med "
+"Rec2020 RGB!"
 
 #: ../src/iop/colorin.c:1583
 #, c-format
@@ -7142,14 +7125,12 @@ msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "ikke støttet inngående profil er erstattet av lineær Rec709 RGB!"
 
 #: ../src/iop/colorin.c:2069
-#, fuzzy
 msgid "input profile"
 msgstr "inngående fargeprofil"
 
 #: ../src/iop/colorin.c:2073
-#, fuzzy
 msgid "working profile"
-msgstr "utgående profil"
+msgstr "arbeidsprofil"
 
 #: ../src/iop/colorin.c:2083 ../src/iop/colorin.c:2094
 #: ../src/iop/colorout.c:892
@@ -7467,21 +7448,23 @@ msgid ""
 "ctrl+click to create a positive curve\n"
 "shift+click to create a negative curve"
 msgstr ""
+"opprett en kurve basert på et utsnitt av bildet\n"
+"klikk for en flat kurve\n"
+"ctrl-klikk for en positiv kurve\n"
+"shift-klikk for en negativ kurve"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2306
-#, fuzzy
 msgid "edit by area"
-msgstr "rediger stil"
+msgstr "rediger basert på område"
 
 #: ../src/iop/colorzones.c:2308
 msgid "edit the curve nodes by area"
-msgstr ""
+msgstr "rediger kurvenes knutepunkter etter område"
 
 #: ../src/iop/colorzones.c:2315
-#, fuzzy
 msgid "display selection"
-msgstr "nullstill valg"
+msgstr "vis utvalg"
 
 #: ../src/iop/colorzones.c:2324
 msgid "select by"
@@ -7492,17 +7475,16 @@ msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "velg valgkriterium, vil bli x-aksen i grafen"
 
 #: ../src/iop/colorzones.c:2333
-#, fuzzy
 msgid "process mode"
-msgstr "fokus-modus"
+msgstr "prosessmodus"
 
 #: ../src/iop/colorzones.c:2335
 msgid "strong"
-msgstr ""
+msgstr "sterk"
 
 #: ../src/iop/colorzones.c:2337
 msgid "choose between a smoother or stronger effect"
-msgstr ""
+msgstr "velg mellom en svakere eller sterkere effekt"
 
 #: ../src/iop/colorzones.c:2373 ../src/iop/rgbcurve.c:1598
 #: ../src/iop/tonecurve.c:1380
@@ -7748,7 +7730,7 @@ msgstr "interpolert mellom ISO %d og %d"
 
 #: ../src/iop/denoiseprofile.c:3454 ../src/iop/denoiseprofile.c:4078
 msgid "compute variance"
-msgstr ""
+msgstr "beregn variansen"
 
 #: ../src/iop/denoiseprofile.c:3936
 msgid ""
@@ -7756,36 +7738,36 @@ msgid ""
 "uniform image if you want to\n"
 "estimate the noise variance."
 msgstr ""
+"brukes kun med et helt\n"
+"flatt motiv hvis du vil\n"
+"estimere støy-variansen."
 
 #: ../src/iop/denoiseprofile.c:3943
 msgid "variance red: "
-msgstr ""
+msgstr "rød varians: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3946
-#, fuzzy
 msgid "variance computed on the red channel"
-msgstr "klikk for å skjule rød kanal"
+msgstr "beregnet varians for rød kanal"
 
 #: ../src/iop/denoiseprofile.c:3951
 msgid "variance green: "
-msgstr ""
+msgstr "grønn varians: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3954
-#, fuzzy
 msgid "variance computed on the green channel"
-msgstr "klikk for å skjule grønn kanal"
+msgstr "varians beregnet for grønn kanal"
 
 #: ../src/iop/denoiseprofile.c:3959
 msgid "variance blue: "
-msgstr ""
+msgstr "blå varians: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:3962
-#, fuzzy
 msgid "variance computed on the blue channel"
-msgstr "klikk for å skjule blå kanal"
+msgstr "beregnet varianss for blå kanal"
 
 #: ../src/iop/denoiseprofile.c:3973 ../src/iop/rawdenoise.c:987
 msgid "R"
@@ -7800,9 +7782,8 @@ msgid "B"
 msgstr "B"
 
 #: ../src/iop/denoiseprofile.c:4011
-#, fuzzy
 msgid "whitebalance-adaptive transform"
-msgstr "hvitbalanse deaktivert for kamera"
+msgstr "hvitbalanse"
 
 #: ../src/iop/denoiseprofile.c:4013
 msgid ""
@@ -7813,10 +7794,16 @@ msgid ""
 "should be disabled if an earlier instance\n"
 "has been used with a color blending mode."
 msgstr ""
+"tilpass støyfjerning basert på\n"
+"koeffisientene for hvitbalanse.\n"
+"bør aktiveres i første runde\n"
+"for bedre støyfjerning.\n"
+"bør deaktiveres hvis allerede brukt\n"
+"i en fargeblandingsmodus."
 
 #: ../src/iop/denoiseprofile.c:4033
 msgid "fix various bugs in algorithm"
-msgstr ""
+msgstr "fiks diverse feil i algoritmen"
 
 #: ../src/iop/denoiseprofile.c:4035
 msgid ""
@@ -7830,10 +7817,12 @@ msgid ""
 "you get. once enabled, you won't be able to\n"
 "return back to old algorithm."
 msgstr ""
+"her er det feil i anscombe transformeringen.\n"
+"velger du dette går alt i dass."
 
 #: ../src/iop/denoiseprofile.c:4046
 msgid "upgrade profiled transform"
-msgstr ""
+msgstr "oppgrader profilert transformasjon"
 
 #: ../src/iop/denoiseprofile.c:4048
 msgid ""
@@ -7842,6 +7831,10 @@ msgid ""
 "it is more flexible but could give small\n"
 "differences in the images already processed."
 msgstr ""
+"oppgrader algoritmen for varianse-stabilisering.\n"
+"den nye algoritmen utvider den gamle.\n"
+"den er mer fleksibel, men kan gi små\n"
+"forskjeller i bildene som allerede er prosessert."
 
 #: ../src/iop/denoiseprofile.c:4059 ../src/libs/export.c:647
 #: ../src/libs/print_settings.c:1183 ../src/libs/print_settings.c:1403
@@ -7862,40 +7855,35 @@ msgstr "spredning (grovkornet støy)"
 
 #: ../src/iop/denoiseprofile.c:4066
 msgid "central pixel weight (details)"
-msgstr ""
+msgstr "sentral pikselvekt (detaljer)"
 
 #: ../src/iop/denoiseprofile.c:4068
-#, fuzzy
 msgid "adjust autoset parameters"
-msgstr "nullstill parametre"
+msgstr "juster automatisk satte parametre"
 
 #: ../src/iop/denoiseprofile.c:4069
-#, fuzzy
 msgid "preserve shadows"
-msgstr "skyggekorrigering"
+msgstr "bevar skygger"
 
 #: ../src/iop/denoiseprofile.c:4070
-#, fuzzy
 msgid "bias correction"
-msgstr "objektiv-korrigering"
+msgstr "skjevhets-korreksjon"
 
 #: ../src/iop/denoiseprofile.c:4071
 msgid "non-local means"
 msgstr "ikke-lokal metode"
 
 #: ../src/iop/denoiseprofile.c:4072
-#, fuzzy
 msgid "non-local means auto"
-msgstr "ikke-lokal metode"
+msgstr "ikke-lokal gjennomsnittlig auto"
 
 #: ../src/iop/denoiseprofile.c:4073
 msgid "wavelets"
 msgstr "småbølger"
 
 #: ../src/iop/denoiseprofile.c:4074
-#, fuzzy
 msgid "wavelets auto"
-msgstr "småbølger"
+msgstr "småbølger auto"
 
 #: ../src/iop/denoiseprofile.c:4080
 msgid "profile used for variance stabilization"
@@ -7917,6 +7905,10 @@ msgid ""
 "if details are oversmoothed, reduce this value or increase the details "
 "slider."
 msgstr ""
+"radius for lappene som skal passe sammen.\n"
+"øk for mer skarphet rundt kantene og bedre støyfjerning i jevne utsnitt.\n"
+"hvis detaljer blir for glatte bør verdien reduseres eller glideskalaen for "
+"detaljer økes."
 
 #: ../src/iop/denoiseprofile.c:4087
 msgid ""
@@ -7943,6 +7935,10 @@ msgid ""
 "useful to recover details when patch size\n"
 "is quite big."
 msgstr ""
+"øk vektingen av sentrale piksler\n"
+"i lappen i sammenligningen av lappene.\n"
+"nyttig for å hente tilbake detaljer når lapp-størrelsen\n"
+"er ganske stor."
 
 #: ../src/iop/denoiseprofile.c:4095
 msgid "finetune denoising strength"
@@ -7955,6 +7951,10 @@ msgid ""
 "or if chroma noise remains.\n"
 "this can happen if your picture is underexposed."
 msgstr ""
+"styrer måten parametre settes automatisk\n"
+"øk verdien hvis støyfjerning i skygger ikke er god nok\n"
+"eller hvis chroma-støy ikke blir borte.\n"
+"dette kan skje med undereksponerte motiver."
 
 #: ../src/iop/denoiseprofile.c:4100
 msgid ""
@@ -7962,6 +7962,9 @@ msgid ""
 "decrease to denoise more aggressively\n"
 "dark areas of the image.\n"
 msgstr ""
+"finjustering av støyfjerning i skygger.\n"
+"reduser verdien for mer aggressiv støyfjerning\n"
+"i mørke områder av bildet.\n"
 
 #: ../src/iop/denoiseprofile.c:4103
 msgid ""
@@ -7969,6 +7972,9 @@ msgid ""
 "decrease if shadows are too purple.\n"
 "increase if shadows are too green."
 msgstr ""
+"korrigering av farger i skygger.\n"
+"reduser verdien hvis skyggene er for røde.\n"
+"øk hvis skyggene er for grønne."
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1164
 msgid "dithering"
@@ -8195,7 +8201,7 @@ msgstr "18 EV (HDR++)"
 #: ../src/iop/filmic.c:1679
 msgid "read-only graph, use the parameters below to set the nodes"
 msgstr ""
-"grafen er kun for avlesning, Bruk parameterne under for å sette knutepunkter."
+"grafen er kun for avlesning, bruk parameterne under for å sette knutepunkter"
 
 #: ../src/iop/filmic.c:1683
 msgid "logarithmic shaper"
@@ -8438,78 +8444,64 @@ msgstr ""
 "du bør ikke endre denne med mindre du vet hva du gjør."
 
 #: ../src/iop/filmicrgb.c:192
-#, fuzzy
 msgid "filmic rgb"
-msgstr "filmaktig"
+msgstr "filmaktig rgb"
 
 #: ../src/iop/filmicrgb.c:233
-#, fuzzy
 msgid "07 EV dynamic range"
-msgstr "dynamisk spennvidde"
+msgstr "07 EB dynamisk spennvidde"
 
 #: ../src/iop/filmicrgb.c:239
-#, fuzzy
 msgid "09 EV dynamic range"
-msgstr "dynamisk spennvidde"
+msgstr "09 EV dynamisk spennvidde"
 
 #: ../src/iop/filmicrgb.c:245
-#, fuzzy
 msgid "11 EV dynamic range"
-msgstr "dynamisk spennvidde"
+msgstr "11 EV dynamisk spennvidde"
 
 #: ../src/iop/filmicrgb.c:251
-#, fuzzy
 msgid "13 EV dynamic range"
-msgstr "dynamisk spennvidde"
+msgstr "13 EV dynamisk spennvidde"
 
 #: ../src/iop/filmicrgb.c:257
-#, fuzzy
 msgid "15 EV (backlighting)"
-msgstr "14 EV (motlys)"
+msgstr "15 EV (motlys)"
 
 #: ../src/iop/filmicrgb.c:263
-#, fuzzy
 msgid "17 EV (HDR)"
-msgstr "16 EV (HDR)"
+msgstr "17 EV (HDR)"
 
 #: ../src/iop/filmicrgb.c:268
-#, fuzzy
 msgctxt "accel"
 msgid "white exposure"
-msgstr "tre eksponeringer"
+msgstr "hvit eksponering"
 
 #: ../src/iop/filmicrgb.c:269
-#, fuzzy
 msgctxt "accel"
 msgid "black exposure"
-msgstr "svart relativ eksponering"
+msgstr "svart eksponering"
 
 #: ../src/iop/filmicrgb.c:270
-#, fuzzy
 msgctxt "accel"
 msgid "middle grey luminance"
 msgstr "middels grå luminans"
 
 #: ../src/iop/filmicrgb.c:271
-#, fuzzy
 msgctxt "accel"
 msgid "dynamic range scaling"
-msgstr "dynamisk bredde"
+msgstr "dynamisk bredde skalering"
 
 #: ../src/iop/filmicrgb.c:273
-#, fuzzy
 msgctxt "accel"
 msgid "latitude"
 msgstr "breddegrad"
 
 #: ../src/iop/filmicrgb.c:274
-#, fuzzy
 msgctxt "accel"
 msgid "shadows/highlights balance"
 msgstr "skygger og høylys balanse"
 
 #: ../src/iop/filmicrgb.c:275
-#, fuzzy
 msgctxt "accel"
 msgid "extreme luminance saturation"
 msgstr "ekstrem luminansmetning"
@@ -8520,19 +8512,22 @@ msgid ""
 "the bright curve is the filmic tone mapping curve\n"
 "the dark curve is the desaturation curve\n"
 msgstr ""
+"kurven er kun for avlesning, bruk verdiene under for å justere "
+"knutepunktene\n"
+"den lyse kurven er den filmaktige tone-kurven\n"
+"den mørke kurven er metningskurven\n"
 
 #: ../src/iop/filmicrgb.c:1430
 msgid "scene"
-msgstr ""
+msgstr "motiv"
 
 #: ../src/iop/filmicrgb.c:1431
 msgid "look"
-msgstr ""
+msgstr "utseende"
 
 #: ../src/iop/filmicrgb.c:1432
-#, fuzzy
 msgid "display"
-msgstr "vis masker"
+msgstr "skjerm"
 
 #: ../src/iop/filmicrgb.c:1446
 msgid ""
@@ -8540,23 +8535,22 @@ msgid ""
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
+"juster for å passe med motivets gjennomsnittlige luminans.\n"
+"verdien lagt inn her justeres med 18.45%."
 
 #: ../src/iop/filmicrgb.c:1485
-#, fuzzy
 msgid "dynamic range scaling"
-msgstr "dynamisk spennvidde"
+msgstr "dynamisk spennvidde skalering"
 
 #: ../src/iop/filmicrgb.c:1488
-#, fuzzy
 msgid ""
 "symmetrically enlarge or shrink the computed dynamic range.\n"
 "useful to give a safety margin to extreme luminances."
 msgstr ""
-"utvid eller reduser den beregnede dynamiske spennvidde\n"
-"dette er nyttig sammen med \"autojustering av nivåer\"."
+"utvid eller reduser symmetrisk den beregnede dynamiske spennvidde.\n"
+"dette er nyttig for å gi sikkerhetsmargin mot ekstrem luminans."
 
 #: ../src/iop/filmicrgb.c:1499
-#, fuzzy
 msgid ""
 "try to optimize the settings with some statistical assumptions.\n"
 "this will fit the luminance range inside the histogram bounds.\n"
@@ -8565,13 +8559,14 @@ msgid ""
 "this is not an artificial intelligence, but a simple guess.\n"
 "ensure you understand its assumptions before using it."
 msgstr ""
-"forsøk å optimalisere innstillingene med litt gjetting.\n"
+"forsøk å optimalisere innstillingene med noen statistiske forutsetninger.\n"
 "dette vil tilpasse luminans-området til grensene for histogrammet.\n"
 "virker bedre for landskap og motiver med jevnt lys,\n"
-"men fungerer dårlig ved svake eller skarpe lysforhold."
+"men fungerer dårlig ved svake eller skarpe lysforhold.\n"
+"Dette er ikke kunstig intelligens, bare vanlig gjetting.\n"
+"det er viktig å forstå forutsetningene før du bruker den."
 
 #: ../src/iop/filmicrgb.c:1523
-#, fuzzy
 msgid ""
 "width of the linear domain in the middle of the curve,\n"
 "in percent of the dynamic range (white exposure - black exposure).\n"
@@ -8579,12 +8574,13 @@ msgid ""
 "decrease otherwise. no desaturation happens in the latitude range.\n"
 "this has no effect on mid-tones."
 msgstr ""
-"lineærdelen midt i kurven\n"
-"juster opp for å få mer kontrast i ekstreme luminanser\n"
+"lineærdelen midt i kurven,\n"
+"i prosent av den dynamiske spennvidden (hvit til svart eksponering).\n"
+"juster opp for å få mer kontrast og mindre avmetning i ekstreme luminanser,\n"
+"ingen avmetning i latitude-området.\n"
 "ingen effekt på midt-tone-området."
 
 #: ../src/iop/filmicrgb.c:1547
-#, fuzzy
 msgid ""
 "desaturates the output of the module\n"
 "specifically at extreme luminances.\n"
@@ -8595,33 +8591,30 @@ msgstr ""
 "reduser verdien hvis skygger og/eller høylys er overmettet."
 
 #: ../src/iop/filmicrgb.c:1555
-#, fuzzy
 msgid "preserve chrominance"
 msgstr "bevar fargesettet"
 
 #: ../src/iop/filmicrgb.c:1558
-#, fuzzy
 msgid "luminance Y"
-msgstr "fargedominans"
+msgstr "luminans Y"
 
 #: ../src/iop/filmicrgb.c:1559 ../src/iop/toneequal.c:3145
 msgid "RGB power norm"
-msgstr ""
+msgstr "RGB styrke"
 
 #: ../src/iop/filmicrgb.c:1560
-#, fuzzy
 msgid ""
 "ensure the original color are preserved.\n"
 "may reinforce chromatic aberrations and chroma noise,\n"
 "so ensure they are properly corrected elsewhere.\n"
 msgstr ""
-"bevar de originale fargene\n"
-"kan forsterke kromatiske feil.\n"
-"muligens nødvendig å manuelt justere fargemetning ved bruk av denne modus."
+"bevar de originale fargene.\n"
+"kan forsterke kromatiske feil og kromatisk støy,\n"
+"så sørg for at de er korrigert andre steder.\n"
 
 #: ../src/iop/filmicrgb.c:1595
 msgid "target power transfer function"
-msgstr ""
+msgstr "målfunksjon for power transfer"
 
 #: ../src/iop/finalscale.c:39
 msgctxt "modulename"
@@ -8813,22 +8806,22 @@ msgstr "velg metningen for filteret"
 #: ../src/iop/graduatednd.c:1293
 #, c-format
 msgid "[%s on nodes] change line rotation"
-msgstr ""
+msgstr "[%s på noder] endre linjerotasjon"
 
 #: ../src/iop/graduatednd.c:1298
 #, c-format
 msgid "[%s on line] move line"
-msgstr ""
+msgstr "[%s på linje] flytt linje"
 
 #: ../src/iop/graduatednd.c:1304
 #, c-format
 msgid "[%s on line] change density"
-msgstr ""
+msgstr "[%s på linje] endre tetthet"
 
 #: ../src/iop/graduatednd.c:1310
 #, c-format
 msgid "[%s on line] change compression"
-msgstr ""
+msgstr "[%s på linje] endre kompresjon"
 
 #: ../src/iop/grain.c:418
 msgid "grain"
@@ -8990,9 +8983,8 @@ msgid "color of film material"
 msgstr "farge på filmmateriale"
 
 #: ../src/iop/invert.c:611
-#, fuzzy
 msgid "brightness of film material"
-msgstr "farge på filmmateriale"
+msgstr "lysstyrke på filmmaterialet"
 
 #: ../src/iop/invert.c:635
 msgid "select color of film material"
@@ -9073,7 +9065,7 @@ msgid "try to locate your camera/lens in the above two menus"
 msgstr "forsøk å finne kamera/objektiv i de to menyene over"
 
 #: ../src/iop/lens.cc:1902
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "maker:\t\t%s\n"
 "model:\t\t%s\n"
@@ -9543,84 +9535,80 @@ msgstr "hvilket filter som skal brukes i tilsløring"
 
 #: ../src/iop/lut3d.c:91
 msgid "lut 3D"
-msgstr ""
+msgstr "lut 3D"
 
 #: ../src/iop/lut3d.c:355
-#, fuzzy, c-format
+#, c-format
 msgid "invalid png header from %s"
-msgstr "ugyldig papirstørrelse"
+msgstr "ugyldig png header fra %s"
 
 #: ../src/iop/lut3d.c:363
 #, c-format
 msgid "png bit-depth %d not supported"
-msgstr ""
+msgstr "png bit-dybde %d ikke støttet"
 
 #: ../src/iop/lut3d.c:375
 #, c-format
 msgid "invalid level in png file %d %d"
-msgstr ""
+msgstr "ugyldig nivå i png-fil %d %d"
 
 #: ../src/iop/lut3d.c:390 ../src/iop/lut3d.c:407
-#, fuzzy
 msgid "error - allocating buffer for png lut"
-msgstr "kunne ikke allokere mellomlager for miksing"
+msgstr "kunne ikke allokere mellomlager for png lut"
 
 #: ../src/iop/lut3d.c:397
-#, fuzzy, c-format
+#, c-format
 msgid "error - could not read png image %s"
-msgstr "feil ved lesing av filen `%s'"
+msgstr "feil ved lesing av png-bildet %s"
 
 #: ../src/iop/lut3d.c:573
-#, fuzzy, c-format
+#, c-format
 msgid "error - invalid cube file: %s"
-msgstr "feil: kan ikke åpne filen %s"
+msgstr "feil: ugyldig kubisk fil: %s"
 
 #: ../src/iop/lut3d.c:589
 msgid "DOMAIN MIN <> 0.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MIN <> 0.0 ikke støttet"
 
 #: ../src/iop/lut3d.c:600
 msgid "DOMAIN MAX <> 1.0 is not supported"
-msgstr ""
+msgstr "DOMAIN MAX <> 1.0 ikke støttet"
 
 #: ../src/iop/lut3d.c:609
 msgid "1D cube lut is not supported"
-msgstr ""
+msgstr "1D kubisk lut er ikke støttet"
 
 #: ../src/iop/lut3d.c:623
-#, fuzzy
 msgid "error - allocating buffer for cube lut"
-msgstr "kunne ikke allokere mellomlager for miksing"
+msgstr "kunne ikke allokere mellomlager for kubisk lut"
 
 #: ../src/iop/lut3d.c:634
 msgid "error - cube lut size is not defined"
-msgstr ""
+msgstr "feil - kubisk lut størrelse ikke definert"
 
 #: ../src/iop/lut3d.c:651
 msgid "error - cube lut lines number is not correct"
-msgstr ""
+msgstr "feil - antall linjer kubisk lut ikke korrekt"
 
 #: ../src/iop/lut3d.c:1007
 msgid "Lut root folder not defined"
-msgstr ""
+msgstr "Lut grunnmappe ikke definert"
 
 #: ../src/iop/lut3d.c:1013
-#, fuzzy
 msgid "select lut file"
-msgstr "velg fil"
+msgstr "velg lut-fil"
 
 #: ../src/iop/lut3d.c:1014
-#, fuzzy
 msgid "_select"
-msgstr "velg"
+msgstr "_velg"
 
 #: ../src/iop/lut3d.c:1031
 msgid "hald cluts (png)"
-msgstr ""
+msgstr "hald luts (png)"
 
 #: ../src/iop/lut3d.c:1038
 msgid "3D lut (cube)"
-msgstr ""
+msgstr "3D lut (kubisk)"
 
 #: ../src/iop/lut3d.c:1044 ../src/libs/copy_history.c:93
 #: ../src/libs/geotagging.c:495 ../src/libs/import.c:790
@@ -9630,11 +9618,11 @@ msgstr "alle filer"
 
 #: ../src/iop/lut3d.c:1059
 msgid "Select file outside Lut root folder is not allowed"
-msgstr ""
+msgstr "valg av fil utenfor grunnmappen for Lut er ikke tillatt"
 
 #: ../src/iop/lut3d.c:1103
 msgid "select a png (haldclut) or a cube file"
-msgstr ""
+msgstr "velg en png (haldclut) eller kube-fil"
 
 #: ../src/iop/lut3d.c:1110
 msgid ""
@@ -9643,51 +9631,49 @@ msgid ""
 "CAUTION: lut folder must be set in preferences/core options/miscellaneous "
 "before choosing the lut file"
 msgstr ""
+"stien (relativ til lut-mappen) lagres med bildet (og ikke lut-dataene selv)\n"
+"ADVARSEL: lut-mappen må angis i innstillinger/nøkkelinnstillinger/diverse "
+"før valg av lut-fil"
 
 #: ../src/iop/lut3d.c:1117
-#, fuzzy
 msgid "application color space"
-msgstr "fargerom"
+msgstr "fargerom for programmet"
 
 #: ../src/iop/lut3d.c:1119
 msgid "REC.709"
-msgstr ""
+msgstr "REC.709"
 
 #: ../src/iop/lut3d.c:1120
 msgid "lin sRGB/REC.709"
-msgstr ""
+msgstr "lin sRGB/REC.709"
 
 #: ../src/iop/lut3d.c:1121
 msgid "lin prophoto RGB"
-msgstr ""
+msgstr "lin prophoto RGB"
 
 #: ../src/iop/lut3d.c:1123
 msgid "select the color space in which the LUT has to be applied"
-msgstr ""
+msgstr "velg fargeområdet LUT skal benyttes"
 
 #: ../src/iop/lut3d.c:1127
-#, fuzzy
 msgid "interpolation"
-msgstr "interpolasjonsmetode"
+msgstr "interpolasjon"
 
 #: ../src/iop/lut3d.c:1128
 msgid "tetrahedral"
-msgstr ""
+msgstr "tetrahedral"
 
 #: ../src/iop/lut3d.c:1129
-#, fuzzy
 msgid "trilinear"
-msgstr "bilineær"
+msgstr "trilineær"
 
 #: ../src/iop/lut3d.c:1130
-#, fuzzy
 msgid "pyramid"
-msgstr "panorama"
+msgstr "pyramide"
 
 #: ../src/iop/lut3d.c:1132
-#, fuzzy
 msgid "select the interpolation method"
-msgstr "interpolasjonsmetode"
+msgstr "velg interpolasjonsmetode"
 
 #: ../src/iop/mask_manager.c:45 ../src/libs/masks.c:56
 msgid "mask manager"
@@ -9967,11 +9953,12 @@ msgid "width of fill-light area defined in zones"
 msgstr "bredden på området med fyll-lys, definert i soner"
 
 #: ../src/iop/relight.c:380
-#, fuzzy
 msgid ""
 "select the center of fill-light\n"
 "ctrl+click to select an area"
-msgstr "velg senter for fyll-lys"
+msgstr ""
+"velg senter for fyll-lys\n"
+"ctrl-click for å velge et område"
 
 #: ../src/iop/relight.c:395
 msgid "toggle tool for picking median lightness in image"
@@ -10206,9 +10193,8 @@ msgid "max scale is %i for this image size"
 msgstr "største skala er %i for denne billedstørrelsen"
 
 #: ../src/iop/rgbcurve.c:126
-#, fuzzy
 msgid "rgb curve"
-msgstr "basiskurve"
+msgstr "rgb kurve"
 
 #: ../src/iop/rgbcurve.c:208 ../src/iop/tonecurve.c:544
 #: ../src/iop/tonemap.cc:297
@@ -10257,55 +10243,48 @@ msgid "RGB, linked channels"
 msgstr "RGB, koblede kanaler"
 
 #: ../src/iop/rgbcurve.c:1515 ../src/iop/rgblevels.c:1012
-#, fuzzy
 msgid "RGB, independent channels"
-msgstr "Lab, uavhengige kanaler"
+msgstr "RGB, uavhengige kanaler"
 
 #: ../src/iop/rgbcurve.c:1517 ../src/iop/rgblevels.c:1014
-#, fuzzy
 msgid "choose between linked and independent channels."
-msgstr "Lab, uavhengige kanaler"
+msgstr "velg mellom koblede og uavhengige kanaler."
 
 #: ../src/iop/rgbcurve.c:1524 ../src/iop/rgblevels.c:1021
 msgid "  R  "
-msgstr ""
+msgstr "  R  "
 
 #: ../src/iop/rgbcurve.c:1527 ../src/iop/rgblevels.c:1024
-#, fuzzy
 msgid "curve nodes for r channel"
-msgstr "tonekurve for L-kanal"
+msgstr "tonekurve for r-kanal"
 
 #: ../src/iop/rgbcurve.c:1529 ../src/iop/rgblevels.c:1026
 msgid "  G  "
-msgstr ""
+msgstr "  G  "
 
 #: ../src/iop/rgbcurve.c:1532 ../src/iop/rgblevels.c:1029
-#, fuzzy
 msgid "curve nodes for g channel"
-msgstr "tonekurve for L-kanal"
+msgstr "knutepunkter for g-kanal"
 
 #: ../src/iop/rgbcurve.c:1534 ../src/iop/rgblevels.c:1031
 msgid "  B  "
-msgstr ""
+msgstr "  B  "
 
 #: ../src/iop/rgbcurve.c:1537 ../src/iop/rgblevels.c:1034
-#, fuzzy
 msgid "curve nodes for b channel"
-msgstr "tonekurve for b-kanal"
+msgstr "knutepunkter for b-kanal"
 
 #: ../src/iop/rgbcurve.c:1557
 msgid "pick GUI color from image"
 msgstr "velg brukergrensesnitt-farge fra bilde"
 
 #: ../src/iop/rgbcurve.c:1611 ../src/iop/rgbcurve.c:1613
-#, fuzzy
 msgid "compensate middle grey"
-msgstr "ønsket midt-grå"
+msgstr "kompenser midt-grå"
 
 #: ../src/iop/rgblevels.c:108
-#, fuzzy
 msgid "rgb levels"
-msgstr "nivåer"
+msgstr "rgb-nivåer"
 
 #: ../src/iop/rgblevels.c:1094
 msgid ""
@@ -10313,6 +10292,9 @@ msgid ""
 "click and drag to draw the area\n"
 "right click to cancel"
 msgstr ""
+"bruk automatisk nivåer basert på et utsnitt definert av brukeren\n"
+"klikk og dra for å angi utsnittet\n"
+"høyreklikk for å kansellere"
 
 #: ../src/iop/rotatepixels.c:76
 msgctxt "modulename"
@@ -10324,11 +10306,8 @@ msgid "automatic pixel rotation"
 msgstr "automatisk punkt-rotering"
 
 #: ../src/iop/rotatepixels.c:358
-#, fuzzy
 msgid "automatic pixel rotation only works for the sensors that need it."
-msgstr ""
-"automatisk punkt-rotasjon\n"
-"virker kun for sensorer som trenger det."
+msgstr "automatisk punkt-rotasjon virker kun for sensorer som trenger det."
 
 #: ../src/iop/scalepixels.c:56
 msgctxt "modulename"
@@ -10340,9 +10319,8 @@ msgid "automatic pixel scaling"
 msgstr "automatisk punkt-skalering"
 
 #: ../src/iop/scalepixels.c:275
-#, fuzzy
 msgid "automatic pixel scaling only works for the sensors that need it."
-msgstr "automatisk punkt-skalering."
+msgstr "automatisk punkt-skalering virker bare for sensorer som trenger det."
 
 #: ../src/iop/shadhi.c:177
 msgid "shadows and highlights"
@@ -10723,51 +10701,43 @@ msgid "tonecurve for b channel"
 msgstr "tonekurve for b-kanal"
 
 #: ../src/iop/tonecurve.c:1407
-#, fuzzy
 msgid "log"
-msgstr "logg inn"
+msgstr "logg"
 
 #: ../src/iop/tonecurve.c:1415
 msgid "base of the logarithm"
 msgstr "logaritmisk base"
 
 #: ../src/iop/toneequal.c:290
-#, fuzzy
 msgid "tone equalizer"
-msgstr "equalizer"
+msgstr "fargetone equalizer"
 
 #: ../src/iop/toneequal.c:310
-#, fuzzy
 msgctxt "accel"
 msgid "blacks"
 msgstr "sort"
 
 #: ../src/iop/toneequal.c:311
-#, fuzzy
 msgctxt "accel"
 msgid "deep shadows"
-msgstr "skygger"
+msgstr "dype skygger"
 
 #: ../src/iop/toneequal.c:313
-#, fuzzy
 msgctxt "accel"
 msgid "light shadows"
-msgstr "skygger"
+msgstr "svake skygger"
 
 #: ../src/iop/toneequal.c:314
-#, fuzzy
 msgctxt "accel"
 msgid "midtones"
-msgstr "relativ styrke mellomtoner"
+msgstr "mellomtoner"
 
 #: ../src/iop/toneequal.c:315
-#, fuzzy
 msgctxt "accel"
 msgid "dark highlights"
-msgstr "høylys"
+msgstr "mørke høylys"
 
 #: ../src/iop/toneequal.c:317
-#, fuzzy
 msgctxt "accel"
 msgid "whites"
 msgstr "hvit"
@@ -10775,85 +10745,78 @@ msgstr "hvit"
 #: ../src/iop/toneequal.c:318
 msgctxt "accel"
 msgid "speculars"
-msgstr ""
+msgstr "speil"
 
 #: ../src/iop/toneequal.c:319
 msgctxt "accel"
 msgid "filter diffusion"
-msgstr ""
+msgstr "filter-spedning"
 
 #: ../src/iop/toneequal.c:320
-#, fuzzy
 msgctxt "accel"
 msgid "smoothing diameter"
-msgstr "kjølig filter"
+msgstr "utviskingsdiameter"
 
 #: ../src/iop/toneequal.c:321
 msgctxt "accel"
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "kantforbedring/utvasking"
 
 #: ../src/iop/toneequal.c:322
-#, fuzzy
 msgctxt "accel"
 msgid "mask quantization"
-msgstr "histogramutjevning"
+msgstr "maske styrke"
 
 #: ../src/iop/toneequal.c:323
-#, fuzzy
 msgctxt "accel"
 msgid "mask exposure compensation"
-msgstr "kompensering for sort-nivå"
+msgstr "kompensering eksponering maske"
 
 #: ../src/iop/toneequal.c:324
-#, fuzzy
 msgctxt "accel"
 msgid "mask contrast compensation"
-msgstr "komprimering av kontrast"
+msgstr "kompensering av kontrast maske"
 
 #. No blending
 #: ../src/iop/toneequal.c:416
-#, fuzzy
 msgid "mask blending : none"
-msgstr "velg mikse-modus"
+msgstr "mikse-modus: ingen"
 
 #: ../src/iop/toneequal.c:428
 msgid "mask blending : landscapes"
-msgstr ""
+msgstr "maskeblanding : landskap"
 
 #: ../src/iop/toneequal.c:436
 msgid "mask blending : all purposes"
-msgstr ""
+msgstr "maskeblaniding : alle formål"
 
 #: ../src/iop/toneequal.c:444
 msgid "mask blending : isolated subjects"
-msgstr ""
+msgstr "maskeblanding : isolerte motiv"
 
 #: ../src/iop/toneequal.c:465
-#, fuzzy
 msgid "compress shadows/highlights : soft"
-msgstr "balanse skygger og høylys"
+msgstr "komprimer skygger og høylys: myk"
 
 #: ../src/iop/toneequal.c:484
-#, fuzzy
 msgid "compress shadows/highlights : strong"
-msgstr ""
-"komprimer effekten på skygger/høylys og\n"
-"bevarer mellomtoner"
+msgstr "komprimer effekten på skygger/høylys: sterk"
 
 #: ../src/iop/toneequal.c:503
 msgid "relight : fill-in"
-msgstr ""
+msgstr "relight : fill-in"
 
 #: ../src/iop/toneequal.c:554
 msgid ""
 "tone equalizer needs to be after distorsion modules in the pipeline – "
 "disabled"
 msgstr ""
+"tone equalizer må brukes etter forvrengningsmodulene i rekkefølgen - skrudd "
+"av"
 
 #: ../src/iop/toneequal.c:828 ../src/iop/toneequal.c:949
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
-msgstr ""
+msgstr "tone equalizer kunne ikke allokere minne, sjekk innstillingene for RAM"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:850
@@ -10861,38 +10824,36 @@ msgid ""
 "tone equalizer in/out buffer are ill-aligned, please report the bug to the "
 "developers"
 msgstr ""
+"tone equalizer inn/ut buffer stemmer ikke overens, rapporter feilen til "
+"utviklerne"
 
 #: ../src/iop/toneequal.c:1774 ../src/iop/toneequal.c:2147
 msgid "the interpolation is unstable, decrease the curve smoothing"
-msgstr ""
+msgstr "interpolasjonen er ustabil, reduser kurveglattingen"
 
 #: ../src/iop/toneequal.c:1859 ../src/iop/toneequal.c:1919
-#, fuzzy
 msgid "wait for the preview to finish recomputing"
-msgstr "vent mens forhåndsvisningen oppdateres."
+msgstr "vent mens forhåndsvisningen oppdateres"
 
 #: ../src/iop/toneequal.c:2152
 msgid "some parameters are out-of-bounds"
-msgstr ""
+msgstr "noen parametre er utenfor grenseverdiene"
 
 #. Build text object
 #: ../src/iop/toneequal.c:2417
 #, c-format
 msgid "%+.1f EV"
-msgstr ""
+msgstr "%+.1f EV"
 
 #: ../src/iop/toneequal.c:3039
-#, fuzzy
 msgid "simple"
-msgstr "legg til prøve"
+msgstr "enkel"
 
 #: ../src/iop/toneequal.c:3040
-#, fuzzy
 msgid "advanced"
-msgstr "balanse"
+msgstr "avansert"
 
 #: ../src/iop/toneequal.c:3041
-#, fuzzy
 msgid "masking"
 msgstr "maske-håndterer"
 
@@ -10903,53 +10864,51 @@ msgstr "maske-håndterer"
 #: ../src/iop/toneequal.c:3102
 #, c-format
 msgid "%+.2f EV"
-msgstr ""
+msgstr "%+.2f EV"
 
 #: ../src/iop/toneequal.c:3055
 msgid "-8 EV"
-msgstr ""
+msgstr "-8 EV"
 
 #: ../src/iop/toneequal.c:3061
 msgid "-7 EV"
-msgstr ""
+msgstr "-7 EV"
 
 #: ../src/iop/toneequal.c:3067
 msgid "-6 EV"
-msgstr ""
+msgstr "-6 EV"
 
 #: ../src/iop/toneequal.c:3073
 msgid "-5 EV"
-msgstr ""
+msgstr "-5 EV"
 
 #: ../src/iop/toneequal.c:3079
 msgid "-4 EV"
-msgstr ""
+msgstr "-4 EV"
 
 #: ../src/iop/toneequal.c:3085
 msgid "-3 EV"
-msgstr ""
+msgstr "-3 EV"
 
 #: ../src/iop/toneequal.c:3091
 msgid "-2 EV"
-msgstr ""
+msgstr "-2 EV"
 
 #: ../src/iop/toneequal.c:3097
 msgid "-1 EV"
-msgstr ""
+msgstr "-1 EV"
 
 #: ../src/iop/toneequal.c:3103
 msgid "+0 EV"
-msgstr ""
+msgstr "+0 EV"
 
 #: ../src/iop/toneequal.c:3121
-#, fuzzy
 msgid "double-click to reset the curve"
 msgstr "dobbeltklikk for å nullstille kurve"
 
 #: ../src/iop/toneequal.c:3128
-#, fuzzy
 msgid "curve smoothing"
-msgstr "fargeglatting"
+msgstr "kurveglatting"
 
 #: ../src/iop/toneequal.c:3129
 msgid ""
@@ -10958,58 +10917,58 @@ msgid ""
 "negative values will avoid oscillations and behave more robustly\n"
 "but may produce brutal tone transitions and damage local contrast."
 msgstr ""
+"positive verdier vil produsere mer aggressive tone-overganger,\n"
+"men kurven kan oscillere i enkelte situasjoner.\n"
+"negative verdier vil unngå oscilleringer og ha mer robust funksjon,\n"
+"men kan føre til sterke tone-overganger og ødelegge lokal kontrast."
 
 #: ../src/iop/toneequal.c:3138
-#, fuzzy
 msgid "luminance estimator"
-msgstr "ekstrem luminansmetning"
+msgstr "estimering av luminans"
 
 #: ../src/iop/toneequal.c:3140
-#, fuzzy
 msgid "RGB average"
-msgstr "gjennomsnitt"
+msgstr "RGB gjennomsnitt"
 
 #: ../src/iop/toneequal.c:3141
-#, fuzzy
 msgid "HSL lightness"
 msgstr "HSV lysstyrke"
 
 #: ../src/iop/toneequal.c:3142
 msgid "HSV value / RGB max"
-msgstr ""
+msgstr "HSV verdi / RGB max"
 
 #: ../src/iop/toneequal.c:3143
 msgid "RGB sum"
-msgstr ""
+msgstr "RGB sum"
 
 #: ../src/iop/toneequal.c:3144
 msgid "RGB euclidean norm"
-msgstr ""
+msgstr "RGB euklidisk norm"
 
 #: ../src/iop/toneequal.c:3146
 msgid "RGB geometric mean"
-msgstr ""
+msgstr "RGB geometrisk gjennomsnitt"
 
 #: ../src/iop/toneequal.c:3147
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
 msgstr ""
+"forhåndsvis masken og velg estimatoren som gir den\n"
+"høyeste kontrasten mellom områder som skal dodges og børnes"
 
 #: ../src/iop/toneequal.c:3153
-#, fuzzy
 msgid "preserve details"
-msgstr "forhåndsinnstillinger"
+msgstr "bevare detaljer"
 
 #: ../src/iop/toneequal.c:3156
-#, fuzzy
 msgid "averaged guided filter"
-msgstr "rødt filter"
+msgstr "gjennomsnittlig guidet filter"
 
 #: ../src/iop/toneequal.c:3157
-#, fuzzy
 msgid "guided filter"
-msgstr "rødt filter"
+msgstr "guidet filter"
 
 #: ../src/iop/toneequal.c:3158
 msgid ""
@@ -11018,21 +10977,28 @@ msgid ""
 "contrast\n"
 "'averaged guided filter' is a geometric mean of both methods"
 msgstr ""
+"'nei' har virkning på global og lokal kontrast (trygt hvis du kun legger på "
+"kontrast)\n"
+"'filter med veiledning' har virkning på global kontrast og forsøker å "
+"beholde lokal kontrast\n"
+"'gjennomsmittlig filter med veiledning' er et geometrisk gjennomsnitt av "
+"begge metoder"
 
 #: ../src/iop/toneequal.c:3165
 msgid "filter diffusion"
-msgstr ""
+msgstr "filter-spredning"
 
 #: ../src/iop/toneequal.c:3166
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
 msgstr ""
+"antall runder det guidede filteret skal kjøres\n"
+"glatter kantene av filteret, men tar tid"
 
 #: ../src/iop/toneequal.c:3174
-#, fuzzy
 msgid "smoothing diameter"
-msgstr "kjølig filter"
+msgstr "glattingsdiameter"
 
 #: ../src/iop/toneequal.c:3175
 msgid ""
@@ -11040,10 +11006,13 @@ msgid ""
 "warning: big values of this parameter can make the darkroom\n"
 "preview much slower if denoise profiled is used."
 msgstr ""
+"diameter av slør-effekten angitt som prosent av det største bildet\n"
+"advarsel: store verdier her kan føre til at forhåndsvisning tar mye\n"
+"lenger tid enn hvis støyfjerningsmodulen benyttes."
 
 #: ../src/iop/toneequal.c:3183
 msgid "edges refinement/feathering"
-msgstr ""
+msgstr "kantforbedring/glatting"
 
 #: ../src/iop/toneequal.c:3184
 msgid ""
@@ -11053,10 +11022,15 @@ msgid ""
 "lower values give smoother gradients and better smoothing\n"
 "but may lead to inaccurate edges taping and halos"
 msgstr ""
+"presisjon i uttoning:\n"
+"høyere verdier tvinger masken til å følge kantene bedre,\n"
+"men kan gi dårlig kurvetilpasning\n"
+"lavere verdier kan gi mykere kurver,\n"
+"men mindre nøyaktig følging av kanter."
 
 #: ../src/iop/toneequal.c:3192
 msgid "mask post-processing"
-msgstr ""
+msgstr "etter-prosesssering av maske"
 
 #: ../src/iop/toneequal.c:3198
 msgid ""
@@ -11064,11 +11038,13 @@ msgid ""
 "the central line shows the average. orange bars appear at extrema if "
 "clipping occurs."
 msgstr ""
+"masker histogram mellom første og siste tiendedeler.\n"
+"midtlinjen viser gjennomsnittet. oransje stolper vises hvis klipping "
+"forekommer."
 
 #: ../src/iop/toneequal.c:3203
-#, fuzzy
 msgid "mask quantization"
-msgstr "histogramutjevning"
+msgstr "maskekvantifisering"
 
 #: ../src/iop/toneequal.c:3205
 msgid ""
@@ -11076,11 +11052,13 @@ msgid ""
 "higher values posterize the luminance mask to help the guiding\n"
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
+"0 disables the quantization.\n"
+"higher values posterize the luminance mask to help the guiding\n"
+"produce piece-wise smooth areas when using high feathering values"
 
 #: ../src/iop/toneequal.c:3213
-#, fuzzy
 msgid "mask exposure compensation"
-msgstr "kompensering for sort-nivå"
+msgstr "eksponerings-kompensering for maske"
 
 #: ../src/iop/toneequal.c:3215
 msgid ""
@@ -11088,11 +11066,14 @@ msgid ""
 "for a better control of the exposure correction with the available nodes.\n"
 "the picker will auto-adjust the average exposure at -4EV."
 msgstr ""
+"brukes for å dra gjennomsnittlig maske-eksponering langs kanaler\n"
+"for bedre kontroll med eksponeringskorreksjon med de tilgjengelige "
+"knutepunktene.\n"
+"velgeren vil auto-justere gjennomsnittlig eksponering til -4EV."
 
 #: ../src/iop/toneequal.c:3227
-#, fuzzy
 msgid "mask contrast compensation"
-msgstr "komprimering av kontrast"
+msgstr "kontrastkompensering for maske"
 
 #: ../src/iop/toneequal.c:3229
 msgid ""
@@ -11101,11 +11082,14 @@ msgid ""
 "this allows to spread the exposure histogram over more channels\n"
 "for a better control of the exposure correction."
 msgstr ""
+"brukes for motvirke det guidede filterets gjennomsnitts-beregninger\n"
+"og utvanne maskekontrasten rundt -4EV\n"
+"dette vil spre eksponeringshistogrammet over flere kanaler\n"
+"for bedre kontroll med eksponeringskorreksjonen."
 
 #: ../src/iop/toneequal.c:3242 ../src/iop/toneequal.c:3246
-#, fuzzy
 msgid "display exposure mask"
-msgstr "vis masker"
+msgstr "vis eksponerings-masker"
 
 #: ../src/iop/tonemap.cc:73
 msgid "tone mapping"
@@ -11271,17 +11255,18 @@ msgstr "legg til et nivå for tilfeldig støy for å hindre striping"
 #: ../src/iop/vignette.c:1220
 #, c-format
 msgid "[%s on node] change vignette/feather size"
-msgstr ""
+msgstr "[%s på node] endre vignett/kantstørrelse"
 
 #: ../src/iop/vignette.c:1226
 #, c-format
 msgid "[%s on node] change vignette/feather size keeping ratio"
 msgstr ""
+"[%s på linje] endre vignett/kantstørrelse med forholdet høyde/bredde beholdt"
 
 #: ../src/iop/vignette.c:1232
 #, c-format
 msgid "[%s on center] move vignette"
-msgstr ""
+msgstr "[%s på senter] flytt vignett"
 
 #: ../src/iop/watermark.c:236
 msgid "watermark"
@@ -11803,11 +11788,15 @@ msgid_plural ""
 "no history compression of %d images.\n"
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
+"ingen komprimering av redigeringshistorien for ett bilde.\n"
+"gå til: darktable|problem|redigeringskomprimering"
 msgstr[1] ""
+"ingen komprimering av redigeringshistorien for %d bilder.\n"
+"gå til: darktable|problem|redigeringskomprimering"
 
 #: ../src/libs/copy_history.c:172
 msgid "history compression warning"
-msgstr ""
+msgstr "history compression warning"
 
 #: ../src/libs/copy_history.c:220
 #, c-format
@@ -11821,9 +11810,8 @@ msgid "delete images' history?"
 msgstr "fjerne redigeringshistorikk for bildene?"
 
 #: ../src/libs/copy_history.c:308 ../src/libs/image.c:204
-#, fuzzy
 msgid "copy..."
-msgstr "kopier"
+msgstr "kopier..."
 
 #: ../src/libs/copy_history.c:311
 msgid ""
@@ -11846,9 +11834,8 @@ msgstr ""
 "første valgte bilde"
 
 #: ../src/libs/copy_history.c:323
-#, fuzzy
 msgid "paste..."
-msgstr "lim inn"
+msgstr "lim inn..."
 
 #: ../src/libs/copy_history.c:325
 msgid ""
@@ -11871,21 +11858,18 @@ msgstr ""
 "alle valgte bilder"
 
 #: ../src/libs/copy_history.c:337
-#, fuzzy
 msgid "compress history"
-msgstr "komprimer redigeringslisten"
+msgstr "komprimer redigeringshistorikken"
 
 #: ../src/libs/copy_history.c:339
-#, fuzzy
 msgid ""
 "compress history stack of\n"
 "all selected images"
 msgstr ""
 "forkast redigeringshistorikken til\n"
-"alle alle valgte bilder"
+"alle valgte bilder"
 
 #: ../src/libs/copy_history.c:342
-#, fuzzy
 msgid "discard history"
 msgstr "slett redigeringshistorikk"
 
@@ -11906,9 +11890,8 @@ msgid "how to handle existing history"
 msgstr "hvordan håndtere eksisterende redigeringshistorikk"
 
 #: ../src/libs/copy_history.c:359
-#, fuzzy
 msgid "load sidecar file..."
-msgstr "les inn redigeringsfil"
+msgstr "les inn redigeringsfil..."
 
 #: ../src/libs/copy_history.c:362
 msgid ""
@@ -11978,9 +11961,8 @@ msgid "export selected"
 msgstr "eksporter valgte"
 
 #: ../src/libs/export.c:129
-#, fuzzy
 msgid "export to disk"
-msgstr "eksporter merkelapper"
+msgstr "eksporter til disk"
 
 #: ../src/libs/export.c:550
 msgid "storage options"
@@ -12031,9 +12013,8 @@ msgid "allow upscaling"
 msgstr "tillat oppskalering"
 
 #: ../src/libs/export.c:633
-#, fuzzy
 msgid "high quality resampling"
-msgstr "kjør høykvalitets resampling ved eksport"
+msgstr "høykvalitets resampling"
 
 #: ../src/libs/export.c:636
 msgid "do high quality resampling during export"
@@ -12081,7 +12062,7 @@ msgstr "eksporter med nåværende innstillinger"
 
 #: ../src/libs/export.c:724
 msgid "edit metadata exportation details"
-msgstr ""
+msgstr "rediger detaljer for metadataeksport"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:1311 ../src/libs/styles.c:71
@@ -12091,58 +12072,53 @@ msgid "export"
 msgstr "eksporter"
 
 #: ../src/libs/export_metadata.c:151
-#, fuzzy
 msgid "select tag"
-msgstr "velg alle"
+msgstr "velg merkelapp"
 
 #: ../src/libs/export_metadata.c:152
 msgid "done"
-msgstr ""
+msgstr "ferdig"
 
 #: ../src/libs/export_metadata.c:166
 msgid ""
 "list of available tags. click 'add' button or double-click on tag to add the "
 "selected one"
 msgstr ""
+"liste over tilgjengelige merkelapper. klikk \"legg til\" eller dobbeltklikk "
+"for å legge til den valgte"
 
 #: ../src/libs/export_metadata.c:231
-#, fuzzy
 msgid "edit metadata exportation"
-msgstr "metadata redigering"
+msgstr "metadata redigering for eksport"
 
 #: ../src/libs/export_metadata.c:232 ../src/libs/tagging.c:1348
 #: ../src/libs/tagging.c:1514
-#, fuzzy
 msgid "save"
-msgstr "_lagre"
+msgstr "lagre"
 
 #: ../src/libs/export_metadata.c:244
-#, fuzzy
 msgid "general settings"
-msgstr "kamerainnstillinger"
+msgstr "generell innstillinger"
 
 #: ../src/libs/export_metadata.c:249
 msgid "exif data"
-msgstr ""
+msgstr "exif data"
 
 #: ../src/libs/export_metadata.c:250
-#, fuzzy
 msgid "export exif metadata"
-msgstr "eksporter valgte"
+msgstr "eksporter exif metadata"
 
 #: ../src/libs/export_metadata.c:252
-#, fuzzy
 msgid "metadata"
-msgstr "metadata redigering"
+msgstr "metadata"
 
 #: ../src/libs/export_metadata.c:253
 msgid "export dt xmp metadata (from metadata editor module)"
-msgstr ""
+msgstr "eksporter dt metadata (fra metadata redigeringsmodul)"
 
 #: ../src/libs/export_metadata.c:263
-#, fuzzy
 msgid "only embedded"
-msgstr "bare meg"
+msgstr "bare innebygget"
 
 #: ../src/libs/export_metadata.c:264
 msgid ""
@@ -12152,87 +12128,86 @@ msgid ""
 "if remote storage doesn't understand dt xmp metadata, you can use calculated "
 "metadata instead"
 msgstr ""
+"som standard vil noen metadata sendes sammen med bildet til fjernlagring.\n"
+"for å hindre dette legge inn redigeringsdata i selve bildet, kryss av her.\n"
+"hvis fjernlageret ikke forstår darktable sine xmp metadata kan du bruke "
+"beregnede metadata i stedet"
 
 #: ../src/libs/export_metadata.c:270
-#, fuzzy
 msgid "geo tags"
-msgstr "eksporter merkelapper"
+msgstr "geotags"
 
 #: ../src/libs/export_metadata.c:271
-#, fuzzy
 msgid "export geo tags"
-msgstr "eksporter merkelapper"
+msgstr "eksporter geotags"
 
 #: ../src/libs/export_metadata.c:274
 msgid "export tags (to Xmp.dc.Subject)"
-msgstr ""
+msgstr "eksporter merkelapper (til Xmp.dc.Navn)"
 
 #: ../src/libs/export_metadata.c:281
-#, fuzzy
 msgid "private tags"
-msgstr "eksporter merkelapper"
+msgstr "private merkelapper"
 
 #: ../src/libs/export_metadata.c:282
-#, fuzzy
 msgid "export private tags"
-msgstr "eksporter merkelapper"
+msgstr "eksporter private merkelapper"
 
 #: ../src/libs/export_metadata.c:284
 msgid "synonyms"
-msgstr ""
+msgstr "synonymer"
 
 #: ../src/libs/export_metadata.c:285
-#, fuzzy
 msgid "export tags synonyms"
-msgstr "eksporter merkelapper"
+msgstr "eksporter synonym-merkelapper"
 
 #: ../src/libs/export_metadata.c:287
 msgid "omit hierarchy"
-msgstr ""
+msgstr "hopp over hierarki"
 
 #: ../src/libs/export_metadata.c:288
 msgid ""
 "only the last part of the hierarchical tags is included. can be useful if "
 "categories are not used"
 msgstr ""
+"kun den siste delen av hierarkiske merkelapper blir tatt med. kan være "
+"nyttig hvis det ikke benytte kategorier"
 
 #: ../src/libs/export_metadata.c:291
 msgid "hierarchical tags"
-msgstr ""
+msgstr "hierarkiske merkelapper"
 
 #: ../src/libs/export_metadata.c:292
 msgid "export hierarchical tags (to Xmp.lr.Hierarchical Subject)"
-msgstr ""
+msgstr "eksporter hierarkiske merkelapper (til Xmp.lr.Hierarkisk Emne)"
 
 #: ../src/libs/export_metadata.c:294
-#, fuzzy
 msgid "develop history"
-msgstr "kopier redigeringshistorikk"
+msgstr "redigeringshistorikk"
 
 #: ../src/libs/export_metadata.c:295
 msgid ""
 "export dt development data (recovery purpose in case of loss of database or "
 "xmp file)"
 msgstr ""
+"eksporter darktables redigeringsdata (for å kunne hente tilbake "
+"redigeringshistorien om databasen eller xmp-filen ødelegges)"
 
 #: ../src/libs/export_metadata.c:302
-#, fuzzy
 msgid "per metadata settings"
-msgstr "innstillinger for utskrift"
+msgstr "innstillinger for metadata"
 
 #: ../src/libs/export_metadata.c:312
-#, fuzzy
 msgid "list of available tags"
-msgstr "ikke tilgjengelig"
+msgstr "liste over tilgjengelige merkelapper"
 
 #: ../src/libs/export_metadata.c:315
 msgid "redefined tag"
-msgstr ""
+msgstr "redefinert merkelapp"
 
 #: ../src/libs/export_metadata.c:320
-#, fuzzy
 msgid "formula"
-msgstr "format"
+msgstr "formel"
 
 #: ../src/libs/export_metadata.c:323
 msgid ""
@@ -12243,15 +12218,19 @@ msgid ""
 "file\n"
 "click on formula cell to edit. recognized variables:"
 msgstr ""
+"liste over beregnede metadata\n"
+"tom formel fører til at tilsvarende metadata fjernes fra filen\n"
+"ellers vil tilsvarende metadata beregnes og legges inn i den eksporterte "
+"filen\n"
+"klikk på formel-feltet for å redigere. aksepterte variabler:"
 
 #: ../src/libs/export_metadata.c:378
 msgid "add an output metadata tag"
-msgstr ""
+msgstr "legg til en merkelapp for metadata"
 
 #: ../src/libs/export_metadata.c:383
-#, fuzzy
 msgid "delete metadata tag"
-msgstr "slett valgt merkelapp"
+msgstr "slett metadata merkelapp"
 
 #: ../src/libs/geotagging.c:411
 msgid ""
@@ -12303,9 +12282,8 @@ msgstr "bruk tidsforskyvingen på de valgte bilder"
 
 #. gpx
 #: ../src/libs/geotagging.c:815
-#, fuzzy
 msgid "apply GPX track file..."
-msgstr "bruk GPX sporfil"
+msgstr "bruk GPX sporfil..."
 
 #: ../src/libs/geotagging.c:816
 msgid "parses a GPX file and updates location of selected images"
@@ -12369,10 +12347,9 @@ msgstr ""
 "dobbeltklikk for å nullstille"
 
 #: ../src/libs/histogram.c:588
-#, fuzzy
 msgctxt "accel"
 msgid "hide histogram"
-msgstr "histogram"
+msgstr "gjem histogram"
 
 #: ../src/libs/history.c:86
 msgctxt "accel"
@@ -12422,9 +12399,8 @@ msgid "remove from the collection"
 msgstr "fjern fra samling"
 
 #: ../src/libs/image.c:197
-#, fuzzy
 msgid "move..."
-msgstr "fjerne..."
+msgstr "flytt..."
 
 #: ../src/libs/image.c:200
 msgid "move to other folder"
@@ -12501,7 +12477,7 @@ msgstr "fjern valgte bilder fra gruppen"
 
 #: ../src/libs/image.c:279
 msgid "update image information to match changes to file"
-msgstr ""
+msgstr "oppdater informasjon om bildet etter endringer i filen"
 
 #: ../src/libs/image.c:302
 msgctxt "accel"
@@ -12514,13 +12490,11 @@ msgid "delete from disk or send to trash"
 msgstr "slett fra disk eller legg i papirkurv"
 
 #: ../src/libs/image.c:304
-#, fuzzy
 msgctxt "accel"
 msgid "move to other folder"
 msgstr "flytt til annen mappe"
 
 #: ../src/libs/image.c:305
-#, fuzzy
 msgctxt "accel"
 msgid "copy to other folder"
 msgstr "kopier til annen mappe"
@@ -12551,22 +12525,19 @@ msgid "reset rotation"
 msgstr "nullstill rotering"
 
 #: ../src/libs/image.c:311
-#, fuzzy
 msgctxt "accel"
 msgid "copy the image locally"
 msgstr "kopier bildet lokalt"
 
 #: ../src/libs/image.c:312
-#, fuzzy
 msgctxt "accel"
 msgid "resync the local copy"
 msgstr "synkroniser lokal kopi"
 
 #: ../src/libs/image.c:313
-#, fuzzy
 msgctxt "accel"
 msgid "refresh exif"
-msgstr "oppfrisk"
+msgstr "oppfrisk exif"
 
 #. Grouping keys
 #: ../src/libs/image.c:315
@@ -12651,9 +12622,8 @@ msgstr "importer film"
 
 #. add import single image buttons
 #: ../src/libs/import.c:982
-#, fuzzy
 msgid "image..."
-msgstr "bilde"
+msgstr "bilde..."
 
 #: ../src/libs/import.c:986
 msgid "select one or more images to import"
@@ -12661,9 +12631,8 @@ msgstr "velg ett eller flere bilder å importere"
 
 #. adding the import folder button
 #: ../src/libs/import.c:993
-#, fuzzy
 msgid "folder..."
-msgstr "mappe"
+msgstr "mappe..."
 
 #: ../src/libs/import.c:997
 msgid "select a folder to import as film roll"
@@ -13073,9 +13042,8 @@ msgid "elevation"
 msgstr "høyde o.h."
 
 #: ../src/libs/metadata_view.c:138
-#, fuzzy
 msgid "categories"
-msgstr "ikke kategorisert"
+msgstr "kategorier"
 
 #: ../src/libs/metadata_view.c:149
 msgid "image information"
@@ -13225,18 +13193,16 @@ msgstr "effektmoduler"
 
 #. search box
 #: ../src/libs/modulegroups.c:230
-#, fuzzy
 msgid "search module"
-msgstr "vis modul"
+msgstr "finn modul"
 
 #: ../src/libs/modulegroups.c:237
 msgid "search modules by name or tag"
-msgstr ""
+msgstr "finn modul basert på navn eller merkelapp"
 
 #: ../src/libs/modulegroups.c:244
-#, fuzzy
 msgid "clear text"
-msgstr "tøm"
+msgstr "tøm tekstfelt"
 
 #: ../src/libs/modulelist.c:58
 msgid "more modules"
@@ -13346,7 +13312,7 @@ msgstr "1600%"
 #: ../src/libs/navigation.c:569
 msgctxt "accel"
 msgid "hide navigation thumbnail"
-msgstr ""
+msgstr "skjul småbilder for navigasjon"
 
 #. //////////////////////// PRINT SETTINGS
 #: ../src/libs/print_settings.c:44 ../src/libs/print_settings.c:1396
@@ -13680,9 +13646,8 @@ msgstr "lager et duplikat av bildet før stilen brukes"
 
 #. create
 #: ../src/libs/styles.c:445
-#, fuzzy
 msgid "create..."
-msgstr "lag"
+msgstr "lag..."
 
 #: ../src/libs/styles.c:447
 msgid "create styles from history stack of selected images"
@@ -13690,9 +13655,8 @@ msgstr "lag stiler fra redigeringslisten til valgte bilder"
 
 #. edit
 #: ../src/libs/styles.c:451
-#, fuzzy
 msgid "edit..."
-msgstr "rediger"
+msgstr "rediger..."
 
 #: ../src/libs/styles.c:454
 msgid "edit the selected style in list above"
@@ -13704,10 +13668,9 @@ msgstr "slett valgt stil i listen over"
 
 #. import button
 #: ../src/libs/styles.c:465 ../src/libs/tagging.c:2690
-#, fuzzy
 msgctxt "verb"
 msgid "import..."
-msgstr "import"
+msgstr "importer..."
 
 #: ../src/libs/styles.c:467
 msgid "import style from a style file"
@@ -13742,14 +13705,12 @@ msgid "tag"
 msgstr "merk"
 
 #: ../src/libs/tagging.c:1039
-#, fuzzy
 msgid "attach tag to all"
 msgstr "legg til merkelapp for alle valgte bilder"
 
 #: ../src/libs/tagging.c:1047 ../src/libs/tagging.c:1912
-#, fuzzy
 msgid "detach tag"
-msgstr "fjern"
+msgstr "fjern merkelapp"
 
 #: ../src/libs/tagging.c:1162
 msgid "delete tag?"
@@ -13759,7 +13720,7 @@ msgstr "slette merkelapp?"
 #: ../src/libs/tagging.c:1520
 #, c-format
 msgid "tag: %s "
-msgstr ""
+msgstr "merkelapp : %s "
 
 #: ../src/libs/tagging.c:1176
 #, c-format
@@ -13777,167 +13738,155 @@ msgstr[1] ""
 "%d bilder er merket med denne!"
 
 #: ../src/libs/tagging.c:1212
-#, fuzzy, c-format
+#, c-format
 msgid "tag %s removed"
-msgstr "fjern"
+msgstr "merkelappen %s er fjernet"
 
 #: ../src/libs/tagging.c:1259 ../src/libs/tagging.c:1924
-#, fuzzy
 msgid "delete branch"
-msgstr "slette merkelapp?"
+msgstr "slette gren"
 
 #: ../src/libs/tagging.c:1273
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<u>%d</u> merkelapp blir fjernet."
+msgstr[1] "<u>%d</u> merkelapper blir fjernet."
 
 #: ../src/libs/tagging.c:1278 ../src/libs/tagging.c:1532
 #: ../src/libs/tagging.c:1752
 #, c-format
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<u>%d</u> bilde blir oppdatert"
+msgstr[1] "<u>%d</u> bilder blir oppdatert "
 
 #: ../src/libs/tagging.c:1304
-#, fuzzy, c-format
+#, c-format
 msgid "%d tags removed"
-msgstr "%zd merkelapper importert"
+msgstr "%d merkelapper fjernet"
 
 #: ../src/libs/tagging.c:1347
-#, fuzzy
 msgid "create tag"
-msgstr "lag"
+msgstr "lag merkelapp"
 
 #: ../src/libs/tagging.c:1357 ../src/libs/tagging.c:1540
-#, fuzzy
 msgid "name: "
-msgstr "navn"
+msgstr "navn: "
 
 #: ../src/libs/tagging.c:1370
 #, c-format
 msgid "add to: \"%s\" "
-msgstr ""
+msgstr "legg til i: \"%s\" "
 
 #: ../src/libs/tagging.c:1376 ../src/libs/tagging.c:1555
-#, fuzzy
 msgid "category"
-msgstr "ikke kategorisert"
+msgstr "kategori"
 
 #: ../src/libs/tagging.c:1379 ../src/libs/tagging.c:1558
-#, fuzzy
 msgid "private"
-msgstr "synlighet"
+msgstr "privat"
 
 #: ../src/libs/tagging.c:1385 ../src/libs/tagging.c:1564
 msgid "synonyms: "
-msgstr ""
+msgstr "synonymer: "
 
 #: ../src/libs/tagging.c:1402 ../src/libs/tagging.c:1585
 #: ../src/libs/tagging.c:1774
 msgid "empty tag is not allowed, aborting"
-msgstr ""
+msgstr "blank merkelapp ikke mulig, avslutter"
 
 #: ../src/libs/tagging.c:1404
 msgid "'|' character is not allowed to create a tag. aborting."
 msgstr ""
+"tegnet '|' kan ikke brukes for å sette navn på en merkelapp. avslutter."
 
 #: ../src/libs/tagging.c:1419
-#, fuzzy
 msgid "tag name already exists. aborting."
-msgstr "stil med navn '%s' finnes fra før"
+msgstr "merkelappen finnes fra før. avslutter."
 
 #: ../src/libs/tagging.c:1513
-#, fuzzy
 msgid "edit tag"
-msgstr "rediger stil"
+msgstr "rediger merkelapp"
 
 #: ../src/libs/tagging.c:1527 ../src/libs/tagging.c:1747
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "<u>%d</u> merkelapp blir oppdatert."
+msgstr[1] "<u>%d</u> merkelapper blir oppdatert."
 
 #: ../src/libs/tagging.c:1587
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
 msgstr ""
+"tegnet '|' kan ikke brukes for å gi merkelappen nytt navn.\n"
+"gi heller nytt navn til stien for å justere hierarkiet. Avslutter."
 
 #: ../src/libs/tagging.c:1625
-#, fuzzy, c-format
+#, c-format
 msgid "at least one new tag name (%s) already exists, aborting"
-msgstr "stil med navn '%s' finnes fra før"
+msgstr "merkelapp(er) med navn '%s' finnes fra før, avslutter"
 
 #: ../src/libs/tagging.c:1733
-#, fuzzy
 msgid "rename path?"
-msgstr "gi nytt navn"
+msgstr "gi stien nytt navn?"
 
 #: ../src/libs/tagging.c:1740
-#, fuzzy, c-format
+#, c-format
 msgid "selected path: %s "
-msgstr "velg deler"
+msgstr "valgt sti: %s "
 
 #: ../src/libs/tagging.c:1776
 msgid "'|' misplaced, empty tag is not allowed, aborting"
-msgstr ""
+msgstr "tegnet '|' kan ikke brukes, merkelapper må ha et navn, avslutter"
 
 #: ../src/libs/tagging.c:1802
-#, fuzzy, c-format
+#, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "stil med navn '%s' finnes fra før"
+msgstr "minst en merkelapp med dette navnet (%s) finnes fra før, avslutter."
 
 #: ../src/libs/tagging.c:1908
-#, fuzzy
 msgid "attach tag"
-msgstr "legg til"
+msgstr "klistre merkelapp"
 
 #: ../src/libs/tagging.c:1920
-#, fuzzy
 msgid "delete tag"
-msgstr "slette merkelapp?"
+msgstr "slette merkelapp"
 
 #: ../src/libs/tagging.c:1930
-#, fuzzy
 msgid "create tag..."
-msgstr "lag"
+msgstr "lag merkelapp..."
 
 #: ../src/libs/tagging.c:1934
 msgid "edit tag..."
-msgstr ""
+msgstr "rediger merkelapp..."
 
 #: ../src/libs/tagging.c:1943
-#, fuzzy
 msgid "rename path..."
-msgstr "gi nytt navn"
+msgstr "nytt sti-navn..."
 
 #: ../src/libs/tagging.c:1950
-#, fuzzy
 msgid "copy to entry"
-msgstr "kopier redigeringshistorikk"
+msgstr "kopier til felt"
 
 #: ../src/libs/tagging.c:1974
-#, fuzzy
 msgid "go to tag collection"
-msgstr "fjern fra samling"
+msgstr "gå til samling av merkelapper"
 
 #: ../src/libs/tagging.c:1980
 msgid "go back to work"
-msgstr ""
+msgstr "tilbake til arbeidet"
 
 #: ../src/libs/tagging.c:2096
 #, c-format
 msgid "%s"
-msgstr ""
+msgstr "%s"
 
 #: ../src/libs/tagging.c:2097
-#, fuzzy
 msgid "(private)"
-msgstr "synlighet"
+msgstr "(privat)"
 
 #: ../src/libs/tagging.c:2123
 msgid "Select a keyword file"
@@ -13980,6 +13929,10 @@ msgid ""
 "right-click for other actions on attached tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"tilordnede merklapper,\n"
+"dobbeltklikk for å fjerne tilordning\n"
+"høyreklikk for andre funksjoner for den tilordnede merkelappen,\n"
+"ctrl-rull for å endre størrelsen på vinduet"
 
 #: ../src/libs/tagging.c:2553
 msgid "attach"
@@ -13999,22 +13952,21 @@ msgstr "fjern merkelapp fra valgte bilder"
 
 #: ../src/libs/tagging.c:2571
 msgid "toggle list with / without hierarchy"
-msgstr ""
+msgstr "skru av eller på visning av liste med hierarki"
 
 #: ../src/libs/tagging.c:2579
 msgid "toggle sort by name or by count"
-msgstr ""
+msgstr "skru av eller på sortering etter navn eller antall"
 
 #: ../src/libs/tagging.c:2589
 msgid "toggle show or not darktable tags"
-msgstr ""
+msgstr "skru av eller på visning av darktable merkelapper"
 
 #: ../src/libs/tagging.c:2605
 msgid "enter tag name"
 msgstr "angi navn på merkelapp"
 
 #: ../src/libs/tagging.c:2615
-#, fuzzy
 msgid "clear entry"
 msgstr "tøm"
 
@@ -14025,6 +13977,10 @@ msgid ""
 "right-click for other actions on selected tag,\n"
 "ctrl-wheel scroll to resize the window"
 msgstr ""
+"liste over merkelapper,\n"
+"dobbelt-klikk for å legge til,\n"
+"høyre-klikk for andre funksjoner på valgt merkelapp,\n"
+"ctrl-musehjul-rulle for å endre størrelsen på vinduet"
 
 #: ../src/libs/tagging.c:2682
 msgid "new"
@@ -14043,28 +13999,26 @@ msgid "import tags from a Lightroom keyword file"
 msgstr "importer merkelapper fra en Lightroom nøkkelordsfil"
 
 #: ../src/libs/tagging.c:2698
-#, fuzzy
 msgctxt "verb"
 msgid "export..."
-msgstr "eksporter"
+msgstr "eksporter..."
 
 #: ../src/libs/tagging.c:2701
 msgid "export all tags to a Lightroom keyword file"
 msgstr "eksporter alle merkelapper til en Lightroom nøkkelordsfil"
 
 #: ../src/libs/tagging.c:2708
-#, fuzzy
 msgid "toggle list / tree view"
-msgstr "velg sanntidsvisning"
+msgstr "tre- eller liste-visning"
 
 #: ../src/libs/tagging.c:2716
 msgid "toggle list with / without suggestion"
-msgstr ""
+msgstr "liste med eller uten forslag"
 
 #: ../src/libs/tagging.c:2821
 msgid ""
 "tag shortcut is not active with tag tree view. please switch to list view"
-msgstr ""
+msgstr "snarvei virker ikke i tre-visning. bytt til liste-visning"
 
 #: ../src/libs/tools/battery_indicator.c:38
 #: ../src/libs/tools/battery_indicator.c:71
@@ -14297,16 +14251,16 @@ msgstr "vis informasjonslag"
 #: ../src/libs/tools/global_toolbox.c:108
 msgid "enable this, then click on a control element to see its online help"
 msgstr ""
-"skru på, og klikk på et kontrollement for å vise hjelpetekst fra nettet"
+"klikk her, deretter på en kommando eller kommando for å vise hjelpetekst fra "
+"nettet"
 
 #: ../src/libs/tools/global_toolbox.c:118
 msgid "show global preferences"
-msgstr "vis globale innstillinger"
+msgstr "rediger globale innstillinger"
 
 #: ../src/libs/tools/global_toolbox.c:232
-#, fuzzy
 msgid "do you want to access https://darktable.gitlab.io/doc/?"
-msgstr "vil du åpne https://www.darktable.org/?"
+msgstr "vil du åpne https://darktable.gitlab.io/doc/?"
 
 #: ../src/libs/tools/global_toolbox.c:237
 msgid "access the online usermanual?"
@@ -14340,9 +14294,8 @@ msgid "hinter"
 msgstr "hint"
 
 #: ../src/libs/tools/image_infos.c:40
-#, fuzzy
 msgid "image infos"
-msgstr "billed-tips"
+msgstr "bilde-informasjon"
 
 #: ../src/libs/tools/lighttable.c:140
 msgid "zoomable light table"
@@ -14354,16 +14307,15 @@ msgstr "filhåndterer"
 
 #: ../src/libs/tools/lighttable.c:142
 msgid "culling"
-msgstr ""
+msgstr "sortering"
 
 #: ../src/libs/tools/lighttable.c:173
 msgid "fixed zoom"
-msgstr ""
+msgstr "fast zoom"
 
 #: ../src/libs/tools/lighttable.c:174
-#, fuzzy
 msgid "dynamic zoom"
-msgstr "dynamisk spennvidde"
+msgstr "dynamisk zoom"
 
 #. view accels
 #: ../src/libs/tools/lighttable.c:212
@@ -14377,21 +14329,19 @@ msgid "zoom min"
 msgstr "min zoom"
 
 #: ../src/libs/tools/lighttable.c:217
-#, fuzzy
 msgctxt "accel"
 msgid "toggle culling mode"
-msgstr "skru av/på exposé modus"
+msgstr "skru av/på filter modus"
 
 #: ../src/libs/tools/lighttable.c:218
 msgctxt "accel"
 msgid "toggle culling dynamic mode"
-msgstr ""
+msgstr "modus for dynamisk utsletting av/på"
 
 #: ../src/libs/tools/lighttable.c:219
-#, fuzzy
 msgctxt "accel"
 msgid "toggle culling zoom mode"
-msgstr "skru av/på exposé modus"
+msgstr "skru av/på filter modus"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
@@ -14402,21 +14352,18 @@ msgid "ratings"
 msgstr "gradering"
 
 #: ../src/libs/tools/timeline.c:110
-#, fuzzy
 msgid "timeline"
-msgstr "tid"
+msgstr "tidslinje"
 
 #: ../src/libs/tools/timeline.c:1487
-#, fuzzy
 msgctxt "accel"
 msgid "start selection"
-msgstr "nullstill valg"
+msgstr "start utvalg"
 
 #: ../src/libs/tools/timeline.c:1488
-#, fuzzy
 msgctxt "accel"
 msgid "stop selection"
-msgstr "omvendt valg"
+msgstr "stans utvalg"
 
 #: ../src/libs/tools/view_toolbox.c:46
 msgid "view toolbox"
@@ -14482,7 +14429,7 @@ msgstr "snarvei for å benytte en av dine stiler"
 
 #: ../src/views/darkroom.c:1803
 msgid "display a second darkroom image window"
-msgstr ""
+msgstr "vis et nytt mørkeromsvindu"
 
 #: ../src/views/darkroom.c:1815
 msgid ""
@@ -14607,7 +14554,6 @@ msgid "display intent"
 msgstr "visningsmål"
 
 #: ../src/views/darkroom.c:1987 ../src/views/lighttable.c:4883
-#, fuzzy
 msgid "preview display intent"
 msgstr "visningsmål"
 
@@ -14616,9 +14562,8 @@ msgid "display profile"
 msgstr "skjerm-profil"
 
 #: ../src/views/darkroom.c:2008 ../src/views/lighttable.c:4895
-#, fuzzy
 msgid "preview display profile"
-msgstr "angi skjermprofil"
+msgstr "forhåndsvisning av skjermprofil"
 
 #: ../src/views/darkroom.c:2009
 msgid "histogram profile"
@@ -14630,9 +14575,9 @@ msgid "display ICC profiles in %s or %s"
 msgstr "skjerm ICC skjermprofiler i %s eller %s"
 
 #: ../src/views/darkroom.c:2066 ../src/views/lighttable.c:4928
-#, fuzzy, c-format
+#, c-format
 msgid "preview display ICC profiles in %s or %s"
-msgstr "skjerm ICC skjermprofiler i %s eller %s"
+msgstr "forhåndsvis ICC skjermprofiler i %s eller %s"
 
 #: ../src/views/darkroom.c:2069
 #, c-format
@@ -14763,42 +14708,38 @@ msgstr "tillat pan & zoom under maskeredigering"
 
 #. set focus to the search modules text box
 #: ../src/views/darkroom.c:3221
-#, fuzzy
 msgctxt "accel"
 msgid "search modules"
-msgstr "søkeradius"
+msgstr "søk i moduler"
 
 #: ../src/views/darkroom.c:3320
-#, fuzzy
 msgid "switch to lighttable"
-msgstr "lysbord"
+msgstr "bytt til lysbord"
 
 #: ../src/views/darkroom.c:3325 ../src/views/lighttable.c:4566
-#, fuzzy
 msgid "zoom in the image"
-msgstr "zoom sanntids visning"
+msgstr "zoom bildet"
 
 #: ../src/views/darkroom.c:3331
 msgid "unbounded zoom in the image"
-msgstr ""
+msgstr "full zoom på bildet"
 
 #: ../src/views/darkroom.c:3336
 msgid "zoom to 100% 200% and back"
-msgstr ""
+msgstr "zoom til100% 200% og tilbake"
 
 #: ../src/views/darkroom.c:3342
 msgid "[modules] expand module without closing others"
-msgstr ""
+msgstr "[modules] utvid modulen uten å lukke andre moduler"
 
 #: ../src/views/darkroom.c:3348
 msgid "[modules] change module position in pipe"
-msgstr ""
+msgstr "[modules] flytt modulens plass i behandlingssekvensen"
 
 #. workaround for GTK Quartz backend bug
 #: ../src/views/darkroom.c:4050 ../src/views/darkroom.c:4068
-#, fuzzy
 msgid "darktable - darkroom preview"
-msgstr "darktable - feil ved åpning av database"
+msgstr "darktable - forhåndsvisning mørkerom"
 
 #: ../src/views/knight.c:334
 msgid "good knight"
@@ -14828,28 +14769,28 @@ msgstr "eller legg til bilder i samle-modulen i venstre panel"
 #, c-format
 msgid "you have reached the start of your selection (%d image)"
 msgid_plural "you have reached the start of your selection (%d images)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "du har kommet til starten på utvalget (%d bilde)"
+msgstr[1] "du har kommet til starten på utvalget (%d bilder)"
 
 #: ../src/views/lighttable.c:3259
 msgid "you have reached the start of your collection"
-msgstr ""
+msgstr "du er kommet til starten av samlingen"
 
 #: ../src/views/lighttable.c:3283
 #, c-format
 msgid "you have reached the end of your selection (%d image)"
 msgid_plural "you have reached the end of your selection (%d images)"
-msgstr[0] ""
-msgstr[1] ""
+msgstr[0] "du er kommet til slutten av samlingen (%d bilde)"
+msgstr[1] "du er kommet til slutten av samlingen (%d bilder)"
 
 #: ../src/views/lighttable.c:3288
 msgid "you have reached the end of your collection"
-msgstr ""
+msgstr "du er kommet til slutten av samlingen"
 
 #: ../src/views/lighttable.c:3608
-#, fuzzy, c-format
+#, c-format
 msgid "zooming is limited to %d images"
-msgstr "gir vurdering %d til %d bilde"
+msgstr "zoom er begrenset til %d bilder"
 
 #: ../src/views/lighttable.c:4384
 msgctxt "accel"
@@ -14943,73 +14884,62 @@ msgstr "låst forhåndsvisning med fokus-angivelse"
 #: ../src/views/lighttable.c:4423
 msgctxt "accel"
 msgid "preview zoom 100%"
-msgstr ""
+msgstr "100% størrelse forhåndsvisning"
 
 #: ../src/views/lighttable.c:4424
-#, fuzzy
 msgctxt "accel"
 msgid "preview zoom fit"
 msgstr "zoom for å passe inn"
 
 #. timeline
 #: ../src/views/lighttable.c:4427
-#, fuzzy
 msgctxt "accel"
 msgid "toggle timeline"
-msgstr "live view av/på"
+msgstr "tidslinje av/på"
 
 #: ../src/views/lighttable.c:4553
-#, fuzzy
 msgid "open image in darkroom"
-msgstr "ramme rundt bildet i mørkeroms-modus"
+msgstr "åpne bildet i mørkerom"
 
 #: ../src/views/lighttable.c:4560
 msgid "switch to next/previous image"
-msgstr ""
+msgstr "bytt til neste/forrige bilde"
 
 #: ../src/views/lighttable.c:4573 ../src/views/lighttable.c:4595
-#, fuzzy
 msgid "scroll the collection"
-msgstr "fjern fra samling"
+msgstr "rull samlingen"
 
 #: ../src/views/lighttable.c:4579
-#, fuzzy
 msgid "change number of images per row"
-msgstr "høyeste antall bilder vist på kart"
+msgstr "endre antall bilder i hver rad"
 
 #: ../src/views/lighttable.c:4587
-#, fuzzy
 msgid "change image order"
-msgstr "gjem informasjonslag"
+msgstr "endre rekkefølge på bilder"
 
 #: ../src/views/lighttable.c:4601
-#, fuzzy
 msgid "zoom all the images"
-msgstr "roter bilder"
+msgstr "zoom alle bildene"
 
 #: ../src/views/lighttable.c:4606
-#, fuzzy
 msgid "pan inside all the images"
-msgstr "slett bilder"
+msgstr "flytt på innsiden av alle bilder"
 
 #: ../src/views/lighttable.c:4612
-#, fuzzy
 msgid "zoom current image"
-msgstr "ta bilder"
+msgstr "zoom valgt bilde"
 
 #: ../src/views/lighttable.c:4618
-#, fuzzy
 msgid "pan inside current image"
-msgstr "benyttet stilen `%s' på valgt bilde"
+msgstr "flytt på innsiden av valgt bilde"
 
 #: ../src/views/lighttable.c:4625
-#, fuzzy
 msgid "zoom the main view"
-msgstr "zoom sanntids visning"
+msgstr "zoom hovedmotivet"
 
 #: ../src/views/lighttable.c:4630
 msgid "pan inside the main view"
-msgstr ""
+msgstr "flytt på innsiden av hovedmotivet"
 
 #: ../src/views/lighttable.c:4851
 msgid "set display profile"
@@ -15020,18 +14950,16 @@ msgid "map"
 msgstr "kart"
 
 #: ../src/views/map.c:1405
-#, fuzzy
 msgid "[on image] open in darkroom"
-msgstr "ramme rundt bildet i mørkeroms-modus"
+msgstr "[on image] åpne i mørkerom"
 
 #: ../src/views/map.c:1410
 msgid "[on map] zoom map"
-msgstr ""
+msgstr "[on map] zoom-kart"
 
 #: ../src/views/map.c:1415
-#, fuzzy
 msgid "move image location"
-msgstr "bilde-operasjoner"
+msgstr "flytt bildelokasjon"
 
 #: ../src/views/print.c:50
 msgctxt "view"
@@ -15068,14 +14996,12 @@ msgid "start and stop"
 msgstr "start og stopp"
 
 #: ../src/views/slideshow.c:613
-#, fuzzy
 msgid "go to next image"
-msgstr "hopp til neste fil"
+msgstr "hopp til neste bilde"
 
 #: ../src/views/slideshow.c:618
-#, fuzzy
 msgid "go to previous image"
-msgstr "utgående bilde"
+msgstr "gå til forrige bilde"
 
 #: ../src/views/tethering.c:93
 msgid "tethering"
@@ -15092,69 +15018,64 @@ msgstr "tilkoblet kamera kan ikke fjernstyres..."
 
 #: ../src/views/view.c:2143
 msgid "Left click"
-msgstr ""
+msgstr "Venstreklikk"
 
 #: ../src/views/view.c:2146
 msgid "Right click"
-msgstr ""
+msgstr "Høyreklikk"
 
 #: ../src/views/view.c:2149
 msgid "Middle click"
-msgstr ""
+msgstr "Midtklikk"
 
 #: ../src/views/view.c:2152
-#, fuzzy
 msgid "Scroll"
-msgstr "bla opp"
+msgstr "Bla"
 
 #: ../src/views/view.c:2155
-#, fuzzy
 msgid "Left double-click"
-msgstr "dobbelt-klikk for å nullstille"
+msgstr "dobbelt-klikk venstre knapp"
 
 #: ../src/views/view.c:2158
-#, fuzzy
 msgid "Right double-click"
-msgstr "dobbelt-klikk for å nullstille"
+msgstr "dobbelt-klikk høyre knapp"
 
 #: ../src/views/view.c:2161
 msgid "Drag and drop"
-msgstr ""
+msgstr "Flytt og slipp"
 
 #: ../src/views/view.c:2164
 msgid "Left click+Drag"
-msgstr ""
+msgstr "Venstreklikk og dra"
 
 #: ../src/views/view.c:2167
 msgid "Right click+Drag"
-msgstr ""
+msgstr "Høyreklikk og dra"
 
 #: ../src/views/view.c:2191
-#, fuzzy
 msgid "darktable - accels window"
-msgstr "darktable » %s"
+msgstr "darktable - tastatursnarveier"
 
 #: ../src/views/view.c:2247
 msgid "switch to a classic window which will stay open after key release."
 msgstr ""
+"bytt til et klassisk vindu som forblir åpent etter at museknappen slippes."
 
 #: ../src/views/view.c:2360
-#, fuzzy
 msgid "+Scroll"
-msgstr "bla opp"
+msgstr "+Rull"
 
 #: ../src/views/view.c:2375
-#, fuzzy
 msgid "mouse actions"
-msgstr "korrigeringer"
+msgstr "musefunksjoner"
 
 #: ../src/views/view.c:2413
 msgid "Accel"
-msgstr ""
+msgstr "Tastatursnarvei"
 
 #: ../src/views/view.c:2415
 msgid "Action"
-msgstr ""
+msgstr "Funksjon"
 
 #~ msgid ""
 #~ "the image will first be processed in full resolution, and downscaled at "
@@ -15335,3 +15256,4 @@ msgstr ""
 
 #~ msgid "automatic in RGB"
 #~ msgstr "automatisk i RGB"
+

@@ -2,7 +2,7 @@
 name: New Camera Support
 about: A request for a new camera to be supported
 title: <Enter your camera name here>
-labels: camera-support
+labels: "scope: camera support" 
 assignees: LebedevRI
 
 ---

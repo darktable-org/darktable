@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2014-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ static int visible_member(lua_State *L)
   }
   else
   {
-    dt_lib_set_visible(module, lua_toboolean(L, 3));
+    dt_lib_gui_set_expanded(module, lua_toboolean(L, 3));
     return 0;
   }
 }

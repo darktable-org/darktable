@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,9 +19,11 @@
 #include <gdk/gdkkeysyms.h>
 
 #include "common/collection.h"
+#include "common/debug.h"
 #include "common/selection.h"
 #include "control/conf.h"
 #include "control/control.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "libs/lib.h"
@@ -61,18 +63,6 @@ static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey
                                                    dt_lib_module_t *self);
 
 /* zoom key accel callback */
-static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data);
-static gboolean _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data);
-static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                                           guint keyval, GdkModifierType modifier,
-                                                           gpointer data);
-static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data);
 static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGroup *accel_group,
                                                                       GObject *acceleratable, guint keyval,
                                                                       GdkModifierType modifier, gpointer data);
@@ -119,12 +109,13 @@ void gui_init(dt_lib_module_t *self)
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   d->layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/layout"));
   d->base_layout = MIN(DT_LIGHTTABLE_LAYOUT_LAST - 1, dt_conf_get_int("plugins/lighttable/base_layout"));
+
   if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
   {
     d->zoom_mode = dt_conf_get_int("plugins/lighttable/culling_zoom_mode");
     if(d->zoom_mode == DT_LIGHTTABLE_ZOOM_DYNAMIC && darktable.collection)
     {
-      d->current_zoom = MAX(1, MIN(30, dt_collection_get_selected_count(darktable.collection)));
+      d->current_zoom = MAX(1, MIN(DT_LIGHTTABLE_MAX_ZOOM, dt_collection_get_selected_count(darktable.collection)));
       if(d->current_zoom == 1) d->current_zoom = dt_conf_get_int("plugins/lighttable/culling_num_images");
     }
     else
@@ -149,7 +140,7 @@ void gui_init(dt_lib_module_t *self)
 
 
   /* create horizontal zoom slider */
-  d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 21, 1);
+  d->zoom = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, DT_LIGHTTABLE_MAX_ZOOM, 1);
   gtk_widget_set_size_request(GTK_WIDGET(d->zoom), DT_PIXEL_APPLY_DPI(140), -1);
   gtk_scale_set_draw_value(GTK_SCALE(d->zoom), FALSE);
   gtk_range_set_increments(GTK_RANGE(d->zoom), 1, 1);
@@ -203,20 +194,14 @@ void gui_init(dt_lib_module_t *self)
   darktable.view_manager->proxy.lighttable.get_zoom_mode = _lib_lighttable_get_zoom_mode;
   darktable.view_manager->proxy.lighttable.get_layout = _lib_lighttable_get_layout;
   darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
-  darktable.view_manager->proxy.lighttable.set_layout = _lib_lighttable_set_layout;
 }
 
 void init_key_accels(dt_lib_module_t *self)
 {
   // view accels
-  dt_accel_register_lib(self, NC_("accel", "zoom max"), GDK_KEY_1, GDK_MOD1_MASK);
-  dt_accel_register_lib(self, NC_("accel", "zoom in"), GDK_KEY_2, GDK_MOD1_MASK);
-  dt_accel_register_lib(self, NC_("accel", "zoom out"), GDK_KEY_3, GDK_MOD1_MASK);
-  dt_accel_register_lib(self, NC_("accel", "zoom min"), GDK_KEY_4, GDK_MOD1_MASK);
-
-  dt_accel_register_lib(self, NC_("accel", "toggle culling mode"), GDK_KEY_x, 0);
-  dt_accel_register_lib(self, NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "toggle culling zoom mode"), GDK_KEY_less, 0);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling mode"), GDK_KEY_x, 0);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x, GDK_CONTROL_MASK);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling zoom mode"), GDK_KEY_less, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -224,20 +209,12 @@ void connect_key_accels(dt_lib_module_t *self)
   /* setup key accelerators */
 
   // view accels
-  dt_accel_connect_lib(self, "zoom max",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_max_callback), self, NULL));
-  dt_accel_connect_lib(self, "zoom in",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_in_callback), self, NULL));
-  dt_accel_connect_lib(self, "zoom out",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_out_callback), self, NULL));
-  dt_accel_connect_lib(self, "zoom min",
-                       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_zoom_min_callback), self, NULL));
-  dt_accel_connect_lib(
-      self, "toggle culling dynamic mode",
+  dt_accel_connect_lib_as_view(
+      self,"lighttable", "toggle culling dynamic mode",
       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_dynamic_mode), self, NULL));
-  dt_accel_connect_lib(self, "toggle culling mode",
+  dt_accel_connect_lib_as_view(self,"lighttable", "toggle culling mode",
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_mode), self, NULL));
-  dt_accel_connect_lib(self, "toggle culling zoom mode",
+  dt_accel_connect_lib_as_view(self,"lighttable", "toggle culling zoom mode",
                        g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_culling_zoom_mode), self, NULL));
 }
 
@@ -258,6 +235,11 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
   }
   else
     dt_conf_set_int("plugins/lighttable/images_in_row", zoom);
+
+  if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  {
+    dt_thumbtable_zoom_changed(dt_ui_thumbtable(darktable.gui->ui), d->current_zoom, zoom);
+  }
 }
 
 static void _lib_lighttable_zoom_slider_changed(GtkRange *range, gpointer user_data)
@@ -383,7 +365,7 @@ static void _lib_lighttable_change_layout(dt_lib_module_t *self, dt_lighttable_l
     d->combo_evt_reset = TRUE;
     gtk_combo_box_set_active(GTK_COMBO_BOX(d->layout_combo), layout);
     d->combo_evt_reset = FALSE;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED);
+    dt_control_queue_redraw_center();
   }
   else
   {
@@ -419,7 +401,24 @@ static void _lib_lighttable_zoom_mode_changed(GtkComboBox *widget, gpointer user
     int selnb = dt_collection_get_selected_count(darktable.collection);
     if(selnb <= 1) selnb = dt_conf_get_int("plugins/lighttable/culling_num_images");
     _lib_lighttable_set_zoom(self, selnb);
+    // and we set the offset to the first selected image
+    if(selnb != 0)
+    {
+      sqlite3_stmt *stmt;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
+                                  "WHERE m.imgid=s.imgid "
+                                  "ORDER BY m.rowid LIMIT 1",
+                                  -1, &stmt, NULL);
+      if(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        dt_view_lighttable_change_offset(darktable.view_manager, FALSE, sqlite3_column_int(stmt, 0));
+      }
+      sqlite3_finalize(stmt);
+    }
   }
+  dt_view_lighttable_culling_init_mode(darktable.view_manager);
+
   gtk_widget_set_sensitive(
       d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->zoom_mode != DT_LIGHTTABLE_ZOOM_DYNAMIC));
   gtk_widget_set_sensitive(
@@ -442,7 +441,6 @@ static dt_lighttable_layout_t _lib_lighttable_get_layout(dt_lib_module_t *self)
   return d->layout;
 }
 
-#define DT_LIBRARY_MAX_ZOOM 13
 static void _lib_lighttable_set_zoom(dt_lib_module_t *self, gint zoom)
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
@@ -460,57 +458,6 @@ static dt_lighttable_culling_zoom_mode_t _lib_lighttable_get_zoom_mode(dt_lib_mo
 {
   dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
   return d->zoom_mode;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_max_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_range_set_value(GTK_RANGE(d->zoom), 1);
-  // FIXME: scroll to active image
-  return TRUE;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_min_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  gtk_range_set_value(GTK_RANGE(d->zoom), DT_LIBRARY_MAX_ZOOM);
-  return TRUE;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_in_callback(GtkAccelGroup *accel_group, GObject *acceleratable,
-                                                           guint keyval, GdkModifierType modifier,
-                                                           gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  int zoom = d->current_zoom;
-  if(zoom <= 1)
-    zoom = 1;
-  else
-    zoom--;
-  gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
-  return TRUE;
-}
-
-static gboolean _lib_lighttable_key_accel_zoom_out_callback(GtkAccelGroup *accel_group,
-                                                            GObject *acceleratable, guint keyval,
-                                                            GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
-  int zoom = d->current_zoom;
-  if(zoom >= 2 * DT_LIBRARY_MAX_ZOOM)
-    zoom = 2 * DT_LIBRARY_MAX_ZOOM;
-  else
-    zoom++;
-  gtk_range_set_value(GTK_RANGE(d->zoom), zoom);
-  return TRUE;
 }
 
 static gboolean _lib_lighttable_key_accel_toggle_culling_dynamic_mode(GtkAccelGroup *accel_group,

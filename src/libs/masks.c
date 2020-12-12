@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 aldric renaudin.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,7 +44,6 @@ typedef struct dt_lib_masks_t
   GtkWidget *hbox;
   GtkWidget *bt_circle, *bt_path, *bt_gradient, *bt_ellipse, *bt_brush;
   GtkWidget *treeview;
-  GtkWidget *scroll_window;
 
   GdkPixbuf *ic_inverse, *ic_union, *ic_intersection, *ic_difference, *ic_exclusion, *ic_used;
   int gui_reset;
@@ -89,7 +88,6 @@ typedef enum dt_masks_tree_cols_t
   TREE_COUNT
 } dt_masks_tree_cols_t;
 
-
 static void _lib_masks_inactivate_icons(dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -102,7 +100,6 @@ static void _lib_masks_inactivate_icons(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lm->bt_brush), FALSE);
 }
 
-
 static void _tree_add_circle(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -113,6 +110,7 @@ static void _tree_add_circle(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_circle(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -125,6 +123,7 @@ static void _bt_add_circle(GtkWidget *widget, GdkEventButton *event, dt_lib_modu
     _tree_add_circle(NULL, NULL);
   }
 }
+
 static void _tree_add_ellipse(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -135,6 +134,7 @@ static void _tree_add_ellipse(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -147,6 +147,7 @@ static void _bt_add_ellipse(GtkWidget *widget, GdkEventButton *event, dt_lib_mod
     _tree_add_ellipse(NULL, NULL);
   }
 }
+
 static void _tree_add_path(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -157,6 +158,7 @@ static void _tree_add_path(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_path(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -169,6 +171,7 @@ static void _bt_add_path(GtkWidget *widget, GdkEventButton *event, dt_lib_module
     _tree_add_path(NULL, NULL);
   }
 }
+
 static void _tree_add_gradient(GtkButton *button, dt_iop_module_t *module)
 {
   // we create the new form
@@ -179,6 +182,7 @@ static void _tree_add_gradient(GtkButton *button, dt_iop_module_t *module)
   darktable.develop->form_gui->group_selected = 0;
   dt_control_queue_redraw_center();
 }
+
 static void _bt_add_gradient(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
   if(darktable.gui->reset) return;
@@ -213,7 +217,6 @@ static void _bt_add_brush(GtkWidget *widget, GdkEventButton *event, dt_lib_modul
     _tree_add_brush(NULL, NULL);
   }
 }
-
 
 static void _tree_add_exist(GtkButton *button, dt_masks_form_t *grp)
 {
@@ -320,6 +323,15 @@ static void _tree_cleanup(GtkButton *button, dt_lib_module_t *self)
   _lib_masks_recreate_list(self);
 }
 
+static void _add_masks_history_item(dt_lib_masks_t *lm)
+{
+  const int reset = lm->gui_reset;
+  lm->gui_reset = 1;
+  dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+  lm->gui_reset = reset;
+}
+
+
 static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -375,7 +387,7 @@ static void _tree_inverse(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -442,7 +454,7 @@ static void _tree_intersection(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -509,7 +521,7 @@ static void _tree_difference(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -576,7 +588,7 @@ static void _tree_exclusion(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -643,7 +655,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
 
   if(change)
   {
-    dt_dev_add_masks_history_item(darktable.develop, NULL, FALSE);
+    _add_masks_history_item(lm);
     dt_masks_update_image(darktable.develop);
     dt_control_queue_redraw_center();
   }
@@ -728,6 +740,7 @@ static void _tree_movedown(GtkButton *button, dt_lib_module_t *self)
   _lib_masks_recreate_list(self);
   dt_masks_update_image(darktable.develop);
 }
+
 static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -775,6 +788,7 @@ static void _tree_delete_shape(GtkButton *button, dt_lib_module_t *self)
   lm->gui_reset = 0;
   _lib_masks_recreate_list(self);
 }
+
 static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
 {
   dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
@@ -801,11 +815,13 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
     //_lib_masks_recreate_list(self);
   }
 }
+
 static void _tree_cell_editing_started(GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path,
                                        gpointer data)
 {
   dt_control_key_accelerators_off(darktable.control);
 }
+
 static void _tree_cell_edited(GtkCellRendererText *cell, gchar *path_string, gchar *new_text,
                               dt_lib_module_t *self)
 {
@@ -844,7 +860,7 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
   dt_masks_reset_show_masks_icons();
 
   // if selection empty, we hide all
-  int nb = gtk_tree_selection_count_selected_rows(selection);
+  const int nb = gtk_tree_selection_count_selected_rows(selection);
   if(nb == 0)
   {
     dt_masks_change_form_gui(NULL);
@@ -915,7 +931,6 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
 
 static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_module_t *self)
 {
-  // dt_lib_masks_t *lm = (dt_lib_masks_t *)self->data;
   // we first need to adjust selection
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(treeview));
@@ -1010,6 +1025,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
         grpid = g_value_get_int(&gv);
         g_value_unset(&gv);
       }
+
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, grpid);
       if(grp && (grp->type & DT_MASKS_GROUP))
       {
@@ -1130,7 +1146,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     if(from_group && depth < 3)
     {
       gtk_menu_shell_append(menu, gtk_separator_menu_item_new());
-      item = gtk_menu_item_new_with_label(_("use inversed shape"));
+      item = gtk_menu_item_new_with_label(_("use inverted shape"));
       g_signal_connect(item, "activate", (GCallback)_tree_inverse, self);
       gtk_menu_shell_append(menu, item);
       if(nb == 1)
@@ -1225,25 +1241,22 @@ static gboolean _tree_query_tooltip(GtkWidget *widget, gint x, gint y, gboolean 
   GtkTreeView *tree_view = GTK_TREE_VIEW(widget);
   GtkTreeModel *model = gtk_tree_view_get_model(tree_view);
   GtkTreePath *path = NULL;
-  gchar *tmp;
-  gboolean show;
-
-  char buffer[512];
+  gchar *tmp = NULL;
+  gboolean show = FALSE;
 
   if(!gtk_tree_view_get_tooltip_context(tree_view, &x, &y, keyboard_tip, &model, &path, &iter)) return FALSE;
 
   gtk_tree_model_get(model, &iter, TREE_IC_USED_VISIBLE, &show, TREE_USED_TEXT, &tmp, -1);
-  if(!show) return FALSE;
-
-  g_strlcpy(buffer, tmp, sizeof(buffer));
-  gtk_tooltip_set_markup(tooltip, buffer);
-
-  gtk_tree_view_set_tooltip_row(tree_view, tooltip, path);
+  if(show)
+  {
+    gtk_tooltip_set_markup(tooltip, tmp);
+    gtk_tree_view_set_tooltip_row(tree_view, tooltip, path);
+  }
 
   gtk_tree_path_free(path);
   g_free(tmp);
 
-  return TRUE;
+  return show;
 }
 
 static int _is_form_used(int formid, dt_masks_form_t *grp, char *text, size_t text_length)
@@ -1403,7 +1416,7 @@ static void _lib_masks_recreate_list(dt_lib_module_t *self)
 
   gtk_tree_view_set_model(GTK_TREE_VIEW(lm->treeview), GTK_TREE_MODEL(treestore));
   g_object_unref(treestore);
-  
+
   lm->gui_reset = gui_reset;
 }
 
@@ -1515,12 +1528,6 @@ static void _lib_masks_remove_item(dt_lib_module_t *self, int formid, int parent
     }
     rlt = g_list_next(rlt);
   }
-}
-
-static void _lib_history_change_callback(gpointer instance, gpointer user_data)
-{
-  // dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  //_lib_masks_recreate_list(self);
 }
 
 static void _lib_masks_selection_change(dt_lib_module_t *self, int selectid, int throw_event)
@@ -1635,47 +1642,43 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   GtkWidget *label = gtk_label_new(_("created shapes"));
+  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, TRUE, 0);
 
   d->bt_gradient
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_gradient, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(d->bt_gradient), "button-press-event", G_CALLBACK(_bt_add_gradient), self);
   gtk_widget_set_tooltip_text(d->bt_gradient, _("add gradient"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_gradient), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_gradient, FALSE, FALSE, 0);
 
-  d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  d->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(d->bt_path), "button-press-event", G_CALLBACK(_bt_add_path), self);
   gtk_widget_set_tooltip_text(d->bt_path, _("add path"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_path), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_path, FALSE, FALSE, 0);
 
   d->bt_ellipse
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(d->bt_ellipse), "button-press-event", G_CALLBACK(_bt_add_ellipse), self);
   gtk_widget_set_tooltip_text(d->bt_ellipse, _("add ellipse"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_ellipse), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_ellipse, FALSE, FALSE, 0);
 
   d->bt_circle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(d->bt_circle), "button-press-event", G_CALLBACK(_bt_add_circle), self);
   gtk_widget_set_tooltip_text(d->bt_circle, _("add circle"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_circle), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_circle, FALSE, FALSE, 0);
 
-  d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  d->bt_brush = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(d->bt_brush), "button-press-event", G_CALLBACK(_bt_add_brush), self);
   gtk_widget_set_tooltip_text(d->bt_brush, _("add brush"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->bt_brush), FALSE);
   gtk_box_pack_end(GTK_BOX(hbox), d->bt_brush, FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
-
-  d->scroll_window = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(d->scroll_window), GTK_POLICY_AUTOMATIC,
-                                 GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(GTK_BOX(self->widget), d->scroll_window, TRUE, TRUE, 0);
 
   d->treeview = gtk_tree_view_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
@@ -1705,20 +1708,15 @@ void gui_init(dt_lib_module_t *self)
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
   gtk_tree_selection_set_select_function(selection, _tree_restrict_select, d, NULL);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(d->treeview), FALSE);
-  gtk_widget_set_size_request(d->scroll_window, -1, DT_PIXEL_APPLY_DPI(300));
-  gtk_container_add(GTK_CONTAINER(d->scroll_window), d->treeview);
   // gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(d->treeview),TREE_USED_TEXT);
   g_object_set(d->treeview, "has-tooltip", TRUE, (gchar *)0);
   g_signal_connect(d->treeview, "query-tooltip", G_CALLBACK(_tree_query_tooltip), NULL);
-
   g_signal_connect(selection, "changed", G_CALLBACK(_tree_selection_change), d);
   g_signal_connect(d->treeview, "button-press-event", (GCallback)_tree_button_pressed, self);
 
-  gtk_widget_show_all(self->widget);
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_scroll_wrap(d->treeview, 200, "plugins/darkroom/masks/heightview"), FALSE, FALSE, 0);
 
-  /* connect to history change signal for updating the history view */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
-                            G_CALLBACK(_lib_history_change_callback), self);
+  gtk_widget_show_all(self->widget);
 
   // set proxy functions
   darktable.develop->proxy.masks.module = self;
@@ -1730,8 +1728,6 @@ void gui_init(dt_lib_module_t *self)
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_lib_history_change_callback), self);
-
   g_free(self->data);
   self->data = NULL;
 }

@@ -1,6 +1,5 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 tobias ellinghaus.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,6 +26,7 @@
 #include <gtkosxapplication.h>
 #endif
 #include "osx.h"
+#include "libintl.h"
 
 void dt_osx_autoset_dpi(GtkWidget *widget)
 {
@@ -49,42 +49,57 @@ void dt_osx_autoset_dpi(GtkWidget *widget)
 
 float dt_osx_get_ppd()
 {
-  NSScreen *nsscreen = [NSScreen mainScreen];
+  @autoreleasepool
+  {
+    NSScreen *nsscreen = [NSScreen mainScreen];
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= MAC_OS_X_VERSION_10_7
-  if([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")]) {
-    return [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
-  } else {
-    return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
-  }
+    if([nsscreen respondsToSelector: NSSelectorFromString(@"backingScaleFactor")])
+    {
+      return [[nsscreen valueForKey: @"backingScaleFactor"] floatValue];
+    }
+    else
+    {
+      return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
+    }
 #else
-  return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
+    return [[nsscreen valueForKey: @"userSpaceScaleFactor"] floatValue];
 #endif
+  }
 }
 
+#if !GTK_CHECK_VERSION(3, 24, 14)
 static void dt_osx_disable_fullscreen(GtkWidget *widget)
 {
 #ifdef GDK_WINDOWING_QUARTZ
-  GdkWindow *window = gtk_widget_get_window(widget);
-  if(window) {
-    NSWindow *native = gdk_quartz_window_get_nswindow(window);
-    [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary) | NSWindowCollectionBehaviorFullScreenAuxiliary];
+  @autoreleasepool
+  {
+    GdkWindow *window = gtk_widget_get_window(widget);
+    if(window)
+    {
+      NSWindow *native = gdk_quartz_window_get_nswindow(window);
+      [native setCollectionBehavior: ([native collectionBehavior] & ~NSWindowCollectionBehaviorFullScreenPrimary) | NSWindowCollectionBehaviorFullScreenAuxiliary];
+    }
   }
 #endif
 }
+#endif
 
 void dt_osx_disallow_fullscreen(GtkWidget *widget)
 {
+#if !GTK_CHECK_VERSION(3, 24, 14)
 #ifdef GDK_WINDOWING_QUARTZ
   if(gtk_widget_get_realized(widget))
     dt_osx_disable_fullscreen(widget);
   else
     g_signal_connect(G_OBJECT(widget), "realize", G_CALLBACK(dt_osx_disable_fullscreen), NULL);
 #endif
+#endif
 }
 
 gboolean dt_osx_file_trash(const char *filename, GError **error)
 {
-  @autoreleasepool {
+  @autoreleasepool
+  {
     NSFileManager *fm = [NSFileManager defaultManager];
     NSError *err;
 
@@ -101,8 +116,8 @@ gboolean dt_osx_file_trash(const char *filename, GError **error)
         *error = g_error_new_literal(G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, "trash not supported on OS X versions < 10.8");
       return FALSE;
     }
+    return TRUE;
   }
-  return TRUE;
 }
 
 char* dt_osx_get_bundle_res_path()
@@ -127,8 +142,46 @@ char* dt_osx_get_bundle_res_path()
   return result;
 }
 
+static char* _get_user_locale()
+{
+  @autoreleasepool
+  {
+    NSLocale* locale_ns = [NSLocale currentLocale];
+    NSString* locale_c = [NSString stringWithFormat: @"%@_%@", [locale_ns languageCode], [locale_ns countryCode]];
+    return strdup([locale_c UTF8String]);
+  }
+}
+
 void dt_osx_prepare_environment()
 {
+  // check that LC_CTYPE is set to something sane
+  // on macOS it's usually set to UTF-8
+  // which is fine for native setlocale function
+  // but since we link with libintl
+  // we are actually using libintl_setlocale (in case of macOS)
+  // which expects LC_CTYPE to be normal locale name
+  // otherwise calling setlocale(LC_ALL, "") fails
+  const gchar* ctype = g_getenv("LC_CTYPE");
+  if(ctype)
+  {
+    char *saved_locale = strdup(setlocale(LC_ALL, NULL));
+    if(!setlocale(LC_ALL, ctype))
+    {
+      g_unsetenv("LC_CTYPE");
+    }
+    else
+    {
+      setlocale(LC_ALL, saved_locale);
+    }
+    free(saved_locale);
+  }
+  // set LANG according to user settings, unless already set
+  // otherwise we may get some non-default interface language
+  // and not even detect it
+  char* user_locale = _get_user_locale();
+  g_setenv("LANG", user_locale, FALSE);
+  free(user_locale);
+  // set all required paths if we are in the app bundle
   char* res_path = dt_osx_get_bundle_res_path();
   if(res_path)
   {
@@ -176,6 +229,11 @@ void dt_osx_prepare_environment()
     }
     g_free(res_path);
   }
+}
+
+void dt_osx_focus_window()
+{
+  [NSApp activateIgnoringOtherApps:YES];
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

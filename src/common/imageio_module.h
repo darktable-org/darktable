@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,8 @@
 typedef enum dt_imageio_format_flags_t
 {
   FORMAT_FLAGS_SUPPORT_XMP = 1,
-  FORMAT_FLAGS_NO_TMPFILE = 2
+  FORMAT_FLAGS_NO_TMPFILE = 2,
+  FORMAT_FLAGS_SUPPORT_LAYERS = 4
 } dt_imageio_format_flags_t;
 
 /**
@@ -119,7 +120,8 @@ typedef struct dt_imageio_module_format_t
   /* write to file, with exif if not NULL, and icc profile if supported. */
   int (*write_image)(dt_imageio_module_data_t *data, const char *filename, const void *in,
                      dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                     void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe);
+                     void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                     const gboolean export_masks);
   /* flag that describes the available precision/levels of output format. mainly used for dithering. */
   int (*levels)(dt_imageio_module_data_t *data);
 
@@ -177,7 +179,7 @@ typedef struct dt_imageio_module_storage_t
   int (*store)(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
                const int num, const int total, const gboolean high_quality, const gboolean upscale,
-               dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
+               const gboolean export_masks, dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata_flags);
   /* called once at the end (after exporting all images), if implemented. */
   void (*finalize_store)(struct dt_imageio_module_storage_t *self, dt_imageio_module_data_t *data);
@@ -228,6 +230,13 @@ int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t *storage);
 
 /* add a module into the known module list */
 void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage);
+
+// This function returns value of string which stored in the
+// "plugins/lighttable/export/resizing_factor" parameter of the configuration file
+// and its "num" and "denum" fraction's elements to calculate the scaling factor
+// and improve the readability of the displayed string itself in the "scale" field
+// of the settings export.
+gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

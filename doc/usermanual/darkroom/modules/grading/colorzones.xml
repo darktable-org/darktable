@@ -1,0 +1,164 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="color_zones">
+
+  <title>Color zones</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>color zones</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>color zones</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module selectively modifies the colors in your image. It is highly versatile
+              and allows every transformation possible in the LCh colorspace.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorzones.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
+    <para>
+      The horizontal axis represents the range of values you can work on. The vertical axis
+      shows the modifications you can apply by designing a curve. For both horizontal and
+      vertical axes you can work on lightness, saturation or hue.
+    </para>
+
+    <para>
+      You can click on any of the eight nodes on the curve and drag to adjust it vertically. A
+      circle indicates how strong adjacent nodes will be affected. Use the scroll wheel of your
+      mouse to change the circle diameter. You can also use the eight controlpoints (triangles
+      which define the vertical value of the nodes) at the bottom to adjust the curve.
+    </para>
+
+    <para>
+      A color picker is activated by pressing
+      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      and will show the picked values in the diagram. You can use an
+      area sampling mode by using <emphasis>Ctrl+Click</emphasis>.
+    </para>
+
+    <para>
+      A second color picker can be used to directly change the curve
+      based on the sampled area. A <emphasis>Click</emphasis> on
+      <inlinegraphic fileref="&icon_module_action_picker;"
+                     scalefit="1" width="2%" align="center" /> will
+      activate the action picker. Then, on the picture, a
+      <emphasis>Ctrl+Click+Drag</emphasis> will create a positive curve for
+      the sampled area and a <emphasis>Shift+Click+Drag</emphasis> a negative curve.
+    </para>
+
+    <sect5>
+      <title>tabbed controls</title>
+      <para>
+        You can define curves for each of the three channels <quote>lightness</quote>,
+        <quote>saturation</quote>, and <quote>hue</quote> individually.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>edit by area</title>
+      <para>
+        Control the interaction mode with the curve. When <emphasis>edit by area</emphasis>
+        is selected the nodes' axis coordinates are fixed. This is the
+        default mode up to darktable version 2.6.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>mask display</title>
+      <para>
+        By clicking <inlinegraphic fileref="&icon_module_mask;"
+        scalefit="1" width="2%" align="center" /> the pixels affected
+        by the curve are displayed directly on center area.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>select by</title>
+      <para>
+        Defines the horizontal axis, i.e. the range of values you work on. You can choose
+        between <quote>lightness</quote>, <quote>saturation</quote>, and <quote>hue</quote>
+        (default). Changing this parameter resets any defined curve to a straight horizontal
+        line.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>process mode</title>
+      <para>
+        Choose between a <quote>smooth</quote> (default) or
+        <quote>strong</quote> processing mode which alter the final effect.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>mix</title>
+      <para>
+        Use this parameter to tune the strength of the overall effect.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>interpolation method</title>
+      <para>
+        The interpolation is the process by which a continuous curve is derived from a few
+        punctual nodes. As this process is never perfect, several methods are offered that
+        can alleviate the potential issues you may encounter with some nodes setups.
+      </para>
+      <para>
+        Arguably, the most visually pleasing method is the <quote>cubic spline</quote>. Since
+        it gives smooth curves, the contrast in the image is better enhanced. However, this
+        method is very sensitive to the nodes position, and can produce cusps and oscillations
+        when the nodes are too close to each other, or when there are too many of them.
+        This method works best when there are only 4 to 5 nodes, evenly spaced.
+      </para>
+      <para>
+        The <quote>centripetal spline</quote> is a method designed specifically to avoid
+        cusps and oscillations, but as a drawback it will follow the nodes more loosely.
+        It is very robust, no matter the number of nodes and their spacing, but will produce
+        a more faded and dull contrast.
+      </para>
+      <para>
+        The <quote>monotonic spline</quote> is a method designed specifically to give a monotonic
+        interpolation, meaning that there will be none of the oscillations the cubic spline may
+        produce. This method is very suitable when you try to build an analytical function
+        from a node interpolation (for example: exponential, logarithm, power, etc.). Such
+        functions are provided as presets. It is a good trade-off between the two
+        aforementioned methods.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

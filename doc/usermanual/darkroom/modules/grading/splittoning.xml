@@ -1,0 +1,131 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="splittoning">
+
+  <title>split-toning</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>split-toning</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>split-toning</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              darktable's split-toning method creates a two color linear toning effect where the
+              shadows and highlights are represented by two different colors. In the example
+              image below you can see an original black and white image and one where a
+              split-toning effect is applied with blue in shadows and a yellowish color in
+              highlights.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/splittoning.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      Compared to traditional split-toning our module has more parameters to influence its
+      behavior. We have parameter <quote>balance</quote>, which offsets the 50% gray level in
+      your image&nbsp;&ndash; at your choice&nbsp;&ndash; more to the shadows or more to the
+      highlights. Additionally, with parameter <quote>compression</quote> you can compress
+      toning in the shadows and highlights and leave a gap in the mid-tones, which remain
+      untouched by the effect.
+    </para>
+
+    <para>
+      The split-toning module does not convert images to black and white and has limited benefits
+      on color images. So, if you want to do traditional split-toning, use the
+      <emphasis>monochrome</emphasis> module (see <xref linkend="monochrome"/>) to make the
+      image black and white before playing around with split-toning effect.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <sect5>
+      <title>shadows and highlights color</title>
+      <para>
+        These controls are used to set the color of the split-toning effect, you select the
+        desired color and saturation for both shadows and highlights. Clicking on the colored
+        squares will open a color selector dialog which offers you a choice of commonly used
+        colors, or allows to define a color in RGB color space.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>balance</title>
+      <para>
+        This parameter represents the ratio of toning between shadows and highlights. For a
+        value of 50% half of the lightness range in image is used for shadows toning and the
+        other half for highlights toning.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>compression</title>
+      <para>
+        Compression is a percentage of total lightness range that is not affected by color
+        toning. Default value is set to 33%; this is not the default behavior of an original
+        split-toning which would be 0% compression. The choice of 33% as a default is to invite
+        you experimenting with these parameters and how it extends the original split-toning
+        method.
+      </para>
+    </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Examples</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="4*"/>
+          <colspec colwidth="6*"/>
+          <tbody>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/splittoning_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Original black and white image.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/splittoning_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                split-toning with blue shadows and yellow highlights.
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+  </sect4>
+
+</sect3>

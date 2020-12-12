@@ -52,4 +52,4 @@ fi
 # If there are whitespace errors, print the offending file names and fail.
 exec git diff-index --check --cached $against --
 ```
-* Also, there is a [Coding Style](https://redmine.darktable.org/projects/darktable/wiki/Coding_Style) page on our redmine wiki.
+* Also, there is a [Developer's Guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide) on our GitHub wiki, which includues some [Coding Style](https://github.com/darktable-org/darktable/wiki/Developer's-guide#coding-style) guidelines.

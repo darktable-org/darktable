@@ -16,23 +16,28 @@
     <itemizedlist>
 
       <listitem><para>
-        Input color specifications are taken from embedded or user supplied ICC profiles
-        or&nbsp;&ndash; in the case of raw files&nbsp;&ndash; from a library of camera specific
-        color matrices.
+        Input color specifications are taken from embedded or user supplied
+        <ulink url="https://en.wikipedia.org/wiki/ICC_profile">ICC profiles</ulink>
+        or, in the case of raw files, from a library of camera specific color matrices.
       </para></listitem>
 
       <listitem><para>
         darktable automatically reads the display profile of your monitor (if properly
         configured) for an accurate color rendition on screen. Multi-screen setups are fully
-        supported as long as a system service like <emphasis>colord</emphasis> is in place and
-        properly set up to inform darktable about the correct monitor profile.
+        supported as long as a system service such as
+        <ulink url="https://www.freedesktop.org/software/colord/intro.html"><emphasis>colord</emphasis></ulink>
+        is in place and properly set up to inform darktable about the correct monitor profile.
       </para></listitem>
 
       <listitem><para>
-        Output files can be encoded in one of darktable's built-in profiles, like
-        <ulink url="http://en.wikipedia.org/wiki/SRGB">sRGB</ulink> or
-        <ulink url="http://en.wikipedia.org/wiki/Adobergb">AdobeRGB (compatible)</ulink>, or
-        into any other output color space that the user supplies to darktable as an ICC profile.
+        Output files can be encoded in one of darktable's built-in profiles, including
+        <ulink url="http://en.wikipedia.org/wiki/SRGB">sRGB</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/Adobe_RGB_color_space">Adobe</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/ProPhoto_RGB_color_space">ProPhoto</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/Rec._2020">Rec. 2020</ulink>,
+        <ulink url="https://en.wikipedia.org/wiki/Rec._709">Rec. 709</ulink>
+        and other standard RGB color spaces, or into a color space supplied by the user as
+        an ICC profile.
       </para></listitem>
 
     </itemizedlist>
@@ -61,8 +66,8 @@
       calibrated and profiled, and it needs the profile to be correctly installed on your
       system. darktable queries your X display server's <emphasis>xatom</emphasis> as well as the
       system service <emphasis>colord</emphasis> (if available) for the right profile. If needed
-      you can enforce a specific method in the GUI preferences dialog (see
-      <xref linkend="gui_options"/>).
+      you can enforce a specific method in the <emphasis>miscellaneous</emphasis> section of the
+      preferences dialog (see <xref linkend="miscellaneous"/>).
     </para>
 
     <para>
@@ -95,12 +100,6 @@
     </indexterm>
 
     <para>
-      A configuration parameter <quote>always use LittleCMS 2 to apply output color
-      profile</quote> in darktable's <emphasis>core options</emphasis> (see
-      <xref linkend="core_options"/>) defines how colors are rendered.
-    </para>
-
-    <para>
       darktable can render colors either with its internal algorithms or by using the external
       library <ulink url="http://www.littlecms.com/"><emphasis>LittleCMS2</emphasis></ulink>.
       darktable's internal method is by an order of magnitude faster than the external one. The
@@ -109,7 +108,10 @@
     </para>
 
     <para>
-      Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable
+      A configuration parameter <quote>always use LittleCMS 2 to apply output color
+      profile</quote> in the <emphasis>processing</emphasis> section of the preferences
+      dialog (see <xref linkend="processing"/>) defines which method is used. Note, however,
+      that if the given ICC is LUT-based, or contains both a LUT and a matrix, darktable
       will use LittleCMS 2 to render the colors regardless of that configuration parameter's
       value.
     </para>
@@ -192,16 +194,16 @@
 
     <para>
       darktable's input images are either RGB files (like JPEGs or TIFFs) or camera
-      raws&nbsp;&ndash; both represent colors by a combination of red, green and blue. Most part
-      of our modules act in the <ulink url="http://en.wikipedia.org/wiki/Lab_color_space">CIELAB
-      color space</ulink> (often just called <quote>Lab</quote>) which describes color as a
-      combination of lightness data (L) and a point in the a-b color plane. The final output of
-      the image processing pipeline is once again in RGB, either shaped for the monitor display
-      or the output file.
+      raws&nbsp;&ndash; both represent colors by a combination of red, green and blue. Most
+      of the actual image processing takes place in a large RGB "working profile" space, with
+      some (mostly older) modules internally working in the
+      <ulink url="https://en.wikipedia.org/wiki/CIELAB_color_space">CIELAB color space</ulink>.
+      The final output of the image processing pipeline is in an RGB space shaped for either
+      the monitor display or the output file.
     </para>
 
     <para>
-      This process implies that the pixelpipe has two color conversion steps:
+      This process implies that the pixelpipe has two fixed color conversion steps:
       <link linkend="input_color_profile"><emphasis>input color profile</emphasis></link> and
       <link linkend="output_color_profile"><emphasis>output color profile</emphasis></link>. In
       addition there is the <link linkend="demosaic"><emphasis>demosaic</emphasis></link> step
@@ -209,7 +211,7 @@
     </para>
 
     <para>
-      Each module has a fixed position in the pixelpipe which tells you which color space the
+      Each module has a position in the pixelpipe which tells you which color space the
       module lives in:
     </para>
 
@@ -250,10 +252,9 @@
               </entry>
               <entry></entry>
               <entry>
-                Image is in Lab format. This is a very huge universal color space which covers
-                all colors visible to the human eye (and even more). As darktable processes
-                images in 4x32-bit floating point buffers, we can handle the Lab color space
-                without risking banding or tonal breaks.
+                Image is in the space defined by the selected working profile (linear Rec2020 RGB by
+                default). As darktable processes images in 4x32-bit floating point buffers, we can
+                handle large working color spaces without risking banding or tonal breaks.
               </entry>
             </row>
             <row>
@@ -290,7 +291,7 @@
     <para>
       In practice sometimes the image processing steps in darktable's modules can lead to values
       which lie outside of these confined ranges. In fact even the well established color
-      matrices, which convert from camera RGB to Lab, may sometimes produce pixels with negative
+      matrices, which convert from RGB to Lab, may sometimes produce pixels with negative
       L values.
     </para>
 
@@ -341,9 +342,9 @@
     </para>
 
     <para>
-      It has been found that highly saturated blue light sources in the image frame are hot
+      It has been found that highly saturated blue light sources in the image frame are likely
       candidates for pixels with negative L values. If you are engaged in stage photography you
-      should pay close attention to image areas like that.
+      should pay close attention to such lights appearing in images.
     </para>
 
     <para>

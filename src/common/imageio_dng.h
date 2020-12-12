@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 johannes hanika.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -151,11 +151,11 @@ static inline void dt_imageio_dng_write_tiff_header(
   } white;
   white.f = whitelevel;
   b = dt_imageio_dng_make_tag(50717, LONG, 1, white.u, b, &cnt); // WhiteLevel in float, actually.
-  b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
   b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 480, b, &cnt); // ColorMatrix1 (XYZ->native cam)
 
   // b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 512, b, &cnt); // AsShotNeutral
   // b = dt_imageio_dng_make_tag(50729, RATIONAL, 2, 512, b, &cnt); // AsShotWhiteXY
+  b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
   b = dt_imageio_dng_make_tag(0, 0, 0, 0, b, &cnt); /* Next IFD.  */
   buf[11] = cnt - 1; // write number of directory entries of this ifd
 
@@ -171,51 +171,6 @@ static inline void dt_imageio_dng_write_tiff_header(
     dt_imageio_dng_write_buf(buf, 484+k*8, 1000000);
   }
 
-#if 0
-  // mostly garbage below, but i'm too lazy to clean it up:
-  int32_t num, den;
-  // ColorMatrix1
-  float m[9] = { 1, 0, 0, 0, 1, 0, 0, 0, 1 };
-  // colorspace_get_xyz_to_cam(m);
-  for(int k = 0; k < 9; k++)
-  {
-    dt_imageio_dng_convert_rational(m[3 * (k % 3) + k / 3], &num, &den);
-    dt_imageio_dng_write_buf(buf, 328 + 8 * k, num);
-    dt_imageio_dng_write_buf(buf, 328 + 8 * k + 4, den);
-  }
-  // for(int k=332;k<400;k+=8) dt_imageio_dng_write_buf(buf, k, 1); // den
-  // dt_imageio_dng_write_buf(buf, 328, 1);// color matrix1: identity
-  // dt_imageio_dng_write_buf(buf, 360, 1);
-  // dt_imageio_dng_write_buf(buf, 392, 1);
-  dt_imageio_dng_convert_rational(Tv, &num, &den);
-  dt_imageio_dng_write_buf(buf, 400, num); // exposure time
-  dt_imageio_dng_write_buf(buf, 404, den);
-  dt_imageio_dng_convert_rational(Av, &num, &den);
-  dt_imageio_dng_write_buf(buf, 408, num); // fnumber
-  dt_imageio_dng_write_buf(buf, 412, den);
-  dt_imageio_dng_convert_rational(f, &num, &den);
-  dt_imageio_dng_write_buf(buf, 416, num); // focal length
-  dt_imageio_dng_write_buf(buf, 420, den);
-  strncpy((char *)buf + 428, "2008:07:15 13:37:00\0", 20); // DateTime
-  strncpy((char *)buf + 484, "corona-6\0", 9);
-  strncpy((char *)buf + 494, "hanatos\0", 8);
-
-  // AsShotNeutral
-  // dt_imageio_dng_convert_rational(0.333, &num, &den);
-  // for(int k=0;k<3;k++)
-  // {
-  //   dt_imageio_dng_write_buf(buf, 518+8*k,   num);
-  //   dt_imageio_dng_write_buf(buf, 518+8*k+4, den);
-  // }
-  // AsShotWhiteXY
-  dt_imageio_dng_convert_rational(0.3333, &num, &den);
-  dt_imageio_dng_write_buf(buf, 512, num);
-  dt_imageio_dng_write_buf(buf, 516, den);
-  dt_imageio_dng_convert_rational(0.333, &num, &den);
-  dt_imageio_dng_write_buf(buf, 520, num);
-  dt_imageio_dng_write_buf(buf, 524, den);
-#endif
-
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
   int written = fwrite(buf, 1, 584, fp);
   if(written != 584) fprintf(stderr, "[dng_write_header] failed to write image header!\n");
@@ -228,11 +183,10 @@ static inline void dt_imageio_write_dng(
     const float whitelevel)
 {
   FILE *f = g_fopen(filename, "wb");
-  int k = 0;
   if(f)
   {
     dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel);
-    k = fwrite(pixel, sizeof(float), wd * ht, f);
+    const int k = fwrite(pixel, sizeof(float), wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
     if(exif) dt_exif_write_blob(exif, exif_len, filename, 0);

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2018 Pascal Obry
+    Copyright (C) 2018-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -745,7 +745,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // account
   ui->account_list = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(ui->account_list, NULL, _("accounts"));
+  dt_bauhaus_widget_set_label(ui->account_list, NULL, N_("accounts"));
   GList *a = ui->accounts;
   int account_index = -1, index=0;
   while(a)
@@ -822,7 +822,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // permissions list
   ui->permission_list = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(ui->permission_list, NULL, _("visible to"));
+  dt_bauhaus_widget_set_label(ui->permission_list, NULL, N_("visible to"));
   dt_bauhaus_combobox_add(ui->permission_list, _("everyone"));
   dt_bauhaus_combobox_add(ui->permission_list, _("contacts"));
   dt_bauhaus_combobox_add(ui->permission_list, _("friends"));
@@ -835,12 +835,12 @@ void gui_init(dt_imageio_module_storage_t *self)
   hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
   ui->album_list = dt_bauhaus_combobox_new(NULL); // Available albums
-  dt_bauhaus_widget_set_label(ui->album_list, NULL, _("album"));
+  dt_bauhaus_widget_set_label(ui->album_list, NULL, N_("album"));
   g_signal_connect(G_OBJECT(ui->album_list), "value-changed", G_CALLBACK(_piwigo_album_changed), (gpointer)ui);
   gtk_widget_set_sensitive(ui->album_list, FALSE);
   gtk_box_pack_start(GTK_BOX(hbox), ui->album_list, TRUE, TRUE, 0);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_DO_NOT_USE_BORDER, NULL);
+  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_NONE, NULL);
   gtk_widget_set_tooltip_text(button, _("refresh album list"));
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_piwigo_refresh_clicked), (gpointer)ui);
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
@@ -868,7 +868,7 @@ void gui_init(dt_imageio_module_storage_t *self)
 
   // parent album list
   ui->parent_album_list = dt_bauhaus_combobox_new(NULL); // Available albums
-  dt_bauhaus_widget_set_label(ui->parent_album_list, NULL, _("parent album"));
+  dt_bauhaus_widget_set_label(ui->parent_album_list, NULL, N_("parent album"));
   gtk_widget_set_sensitive(ui->parent_album_list, TRUE);
   gtk_box_pack_start(ui->create_box, ui->parent_album_list, TRUE, TRUE, 0);
 
@@ -901,8 +901,9 @@ void finalize_store(struct dt_imageio_module_storage_t *self, dt_imageio_module_
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
+          const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
+          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+          dt_export_metadata_t *metadata)
 {
   dt_storage_piwigo_gui_data_t *ui = self->gui_data;
 
@@ -962,8 +963,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       g_list_free_full(auth, &g_free);
     }
   }
-  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename, icc_intent,
-                       self, sdata, num, total, metadata) != 0)
+  if(dt_imageio_export(imgid, fname, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
+                       icc_intent, self, sdata, num, total, metadata) != 0)
   {
     fprintf(stderr, "[imageio_storage_piwigo] could not export to file: `%s'!\n", fname);
     dt_control_log(_("could not export to file `%s'!"), fname);

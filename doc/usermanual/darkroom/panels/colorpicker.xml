@@ -50,10 +50,17 @@
   </para>
 
   <para>
-    The global color picker can be run in point or area mode. When in point mode only a small
-    spot under your cursor is taken as a sample. In area mode you can draw a rectangle and
-    darktable samples the area within that rectangle. The combobox to switch between point and
-    area mode can also be used to toggle the mode of local color pickers.
+    A large color patch can be displayed or hidden by clicking on the
+    sampled patch.
+  </para>
+
+  <para>
+    The global color picker can be run in point
+    (<emphasis>Click</emphasis>) or area mode
+    (<emphasis>Ctrl+Click</emphasis>). When in point mode only a small
+    spot under your cursor is taken as a sample. In area mode you can
+    draw a rectangle and darktable samples the area within that
+    rectangle.
   </para>
 
   <para>
@@ -79,7 +86,7 @@
 
   <para>
     The sampled colors in either area or point mode can be <quote>stored</quote> as live samples
-    by pressing the <quote>add</quote> button. darktable will then show a color swatch and
+    by pressing the <quote>+</quote> button. darktable will then show a color swatch and
     numerical values for each stored sample. You can once again select which numerical value
     (mean, min, max) is to be displayed and if this is to be done in RGB or Lab color space.
   </para>

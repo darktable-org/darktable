@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2010--2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,7 +38,7 @@
 #define O_BINARY 0
 #endif
 
-#include "ThreadSafetyAnalysis.h"
+#include "external/ThreadSafetyAnalysis.h"
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -93,6 +92,18 @@ typedef unsigned int u_int;
 #  define dt_omp_firstprivate(...)
 # endif/* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
 
+#ifndef dt_omp_sharedconst
+#ifdef _OPENMP
+#if defined(__clang__) || __GNUC__ > 8
+# define dt_omp_sharedconst(...) shared(__VA_ARGS__)
+#else
+  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
+  //  'const' variables as shared
+# define dt_omp_sharedconst(var, ...)
+#endif
+#endif /* _OPENMP */
+#endif /* dt_omp_sharedconst */
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
@@ -122,7 +133,10 @@ typedef unsigned int u_int;
 
 #include "common/usermanual_url.h"
 
-#define DT_MODULE_VERSION 20 // version of dt's module interface
+// for signal debugging symbols
+#include "control/signal.h"
+
+#define DT_MODULE_VERSION 23 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
@@ -189,6 +203,14 @@ static inline int dt_version()
 
 #define DT_IMAGE_DBLOCKS 64
 
+// If platform supports hardware-accelerated fused-multiply-add
+// This is not only faster but more accurate because rounding happens at the right place
+#ifdef FP_FAST_FMAF
+  #define DT_FMA(x, y, z) fmaf(x, y, z)
+#else
+  #define DT_FMA(x, y, z) ((x) * (y) + (z))
+#endif
+
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;
@@ -206,23 +228,27 @@ struct dt_l10n_t;
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking
-  DT_DEBUG_CACHE = 1 << 0,
-  DT_DEBUG_CONTROL = 1 << 1,
-  DT_DEBUG_DEV = 1 << 2,
-  DT_DEBUG_PERF = 1 << 4,
-  DT_DEBUG_CAMCTL = 1 << 5,
-  DT_DEBUG_PWSTORAGE = 1 << 6,
-  DT_DEBUG_OPENCL = 1 << 7,
-  DT_DEBUG_SQL = 1 << 8,
-  DT_DEBUG_MEMORY = 1 << 9,
-  DT_DEBUG_LIGHTTABLE = 1 << 10,
-  DT_DEBUG_NAN = 1 << 11,
-  DT_DEBUG_MASKS = 1 << 12,
-  DT_DEBUG_LUA = 1 << 13,
-  DT_DEBUG_INPUT = 1 << 14,
-  DT_DEBUG_PRINT = 1 << 15,
+  DT_DEBUG_CACHE          = 1 <<  0,
+  DT_DEBUG_CONTROL        = 1 <<  1,
+  DT_DEBUG_DEV            = 1 <<  2,
+  DT_DEBUG_PERF           = 1 <<  4,
+  DT_DEBUG_CAMCTL         = 1 <<  5,
+  DT_DEBUG_PWSTORAGE      = 1 <<  6,
+  DT_DEBUG_OPENCL         = 1 <<  7,
+  DT_DEBUG_SQL            = 1 <<  8,
+  DT_DEBUG_MEMORY         = 1 <<  9,
+  DT_DEBUG_LIGHTTABLE     = 1 << 10,
+  DT_DEBUG_NAN            = 1 << 11,
+  DT_DEBUG_MASKS          = 1 << 12,
+  DT_DEBUG_LUA            = 1 << 13,
+  DT_DEBUG_INPUT          = 1 << 14,
+  DT_DEBUG_PRINT          = 1 << 15,
   DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
-  DT_DEBUG_IOPORDER = 1 << 17,
+  DT_DEBUG_IOPORDER       = 1 << 17,
+  DT_DEBUG_IMAGEIO        = 1 << 18,
+  DT_DEBUG_UNDO           = 1 << 19,
+  DT_DEBUG_SIGNAL         = 1 << 20,
+  DT_DEBUG_PARAMS         = 1 << 21,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -273,6 +299,7 @@ typedef struct darktable_t
   dt_pthread_mutex_t readFile_mutex;
   char *progname;
   char *datadir;
+  char *sharedir;
   char *plugindir;
   char *localedir;
   char *tmpdir;
@@ -282,6 +309,8 @@ typedef struct darktable_t
   GList *guides;
   double start_wtime;
   GList *themes;
+  int32_t unmuted_signal_dbg_acts;
+  gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
 } darktable_t;
 
 typedef struct
@@ -297,7 +326,12 @@ void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
+
 void *dt_alloc_align(size_t alignment, size_t size);
+static inline void * dt_alloc_align_float(size_t pixels)
+{
+  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+}
 size_t dt_round_size(const size_t size, const size_t alignment);
 size_t dt_round_size_sse(const size_t size);
 
@@ -309,17 +343,17 @@ void dt_free_align(void *mem);
 #define dt_free_align_ptr free
 #endif
 
-static inline void dt_lock_image(uint32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image(int32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_lock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_unlock_image(uint32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image(int32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_lock_image_pair(uint32_t imgid1, uint32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image_pair(int32_t imgid1, int32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   if(imgid1 < imgid2)
   {
@@ -333,7 +367,7 @@ static inline void dt_lock_image_pair(uint32_t imgid1, uint32_t imgid2) ACQUIRE(
   }
 }
 
-static inline void dt_unlock_image_pair(uint32_t imgid1, uint32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image_pair(int32_t imgid1, int32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
@@ -428,6 +462,36 @@ static inline float dt_fast_expf(const float x)
   } u;
   u.k = k0 > 0 ? k0 : 0;
   return u.f;
+}
+
+// fast approximation of 2^-x for 0<x<126
+static inline float dt_fast_mexp2f(const float x)
+{
+  const int i1 = 0x3f800000; // bit representation of 2^0
+  const int i2 = 0x3f000000; // bit representation of 2^-1
+  const int k0 = i1 + (int)(x * (i2 - i1));
+  union {
+    float f;
+    int i;
+  } k;
+  k.i = k0 >= 0x800000 ? k0 : 0;
+  return k.f;
+}
+
+// The below version is incorrect, suffering from reduced precision.
+// It is used by the non-local means code in both nlmeans.c and
+// denoiseprofile.c, and fixing it would cause a change in output.
+static inline float fast_mexp2f(const float x)
+{
+  const float i1 = (float)0x3f800000u; // 2^0
+  const float i2 = (float)0x3f000000u; // 2^-1
+  const float k0 = i1 + x * (i2 - i1);
+  union {
+    float f;
+    int i;
+  } k;
+  k.i = k0 >= (float)0x800000u ? k0 : 0;
+  return k.f;
 }
 
 static inline void dt_print_mem_usage()

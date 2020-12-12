@@ -1,0 +1,198 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="exposure">
+
+  <title>Exposure</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>exposure</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>exposure</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>time-lapse photography</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>deflicker</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is used to tweak the exposure. It is directly linked to the histogram
+              panel. If you correct exposure graphically, using the <emphasis>histogram
+              </emphasis> (see <xref linkend="histogram"/>), you automatically activate the
+              exposure module. The histogram simply acts as a view for the exposure module.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/exposure.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      You can activate multiple instances of this module each with different parameters acting
+      on different parts of the image which you select by a drawn mask (see
+      <xref linkend="multiple_instances"/> and <xref linkend="drawn_mask"/>). The histogram is
+      always linked to the last instance in pixelpipe.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      This module is responsible for one of the most basic steps in each raw image development.
+      An exposure adjustment value allows you&nbsp;&ndash; within certain limits&nbsp;&ndash; to
+      correct for under- or overexposure. A shift by 1EV is equivalent to a change of exposure
+      time by a factor of 2.
+    </para>
+
+    <para>
+      Positive exposure corrections will make the image brighter. As a side effect noise level
+      gets higher. Depending on the basic noise level of your camera and the ISO value of your
+      image, positive exposure compensations with up to 1EV or 2EV still give reasonable
+      results.
+    </para>
+
+    <para>
+      Negative exposure corrections will make the image darker. Given the nature of digital
+      images this can not correct for fully blown out highlights but allows to reconstruct data
+      in case that only some of the RGB channels are clipped (see also
+      <xref linkend="highlight_reconstruction"/>).
+    </para>
+
+    <para>
+      A black level adjustment is a basic tool to increase contrast and pop of an image. The
+      value defines at what threshold dark gray values are cut off to pure black. Use with care
+      as the clipped values can not be recovered in other modules further down the pixelpipe.
+      Please also have a look at the <emphasis>tone curve</emphasis> module (see
+      <xref linkend="tone_curve"/>) and the <emphasis>levels</emphasis> module (see
+      <xref linkend="levels"/>) which can produce similar results with less side effects as they
+      come later in pixelpipe.
+    </para>
+
+    <para>
+      The exposure module has two modes of operation.
+    </para>
+
+    <para>
+      In <quote>manual</quote> mode you directly define the value for exposure correction that
+      you want to apply to your image.
+    </para>
+
+    <para>
+      In <quote>automatic</quote> mode darktable analyses the histogram of your image. You
+      select a reference point within the histogram as a <emphasis>percentile</emphasis> and
+      define a <emphasis>target level</emphasis>&nbsp;&ndash; darktable automatically calculates
+      the exposure compensation that is needed to shift the selected position to that target
+      value. The computed exposure compensation value is displayed in the module's GUI for your
+      information.
+    </para>
+
+    <para>
+      The <quote>automatic</quote> mode has a black level adjustment that works as in manual
+      mode.
+    </para>
+
+    <para>
+      Automatic adjustment is only available for raw images. A typical use case is deflickering
+      of <ulink url="http://en.wikipedia.org/wiki/Time-lapse_photography"><emphasis>time-lapse
+      photographs</emphasis></ulink>. You apply an automatic exposure correction with the same
+      set of parameters to all images of the series&nbsp;&ndash; differences in lighting get
+      compensated so that the final video sequence does not show any flickering.
+    </para>
+
+    <sect5>
+      <title>mode</title>
+      <para>
+        Defines the mode of operation. Defaults to <quote>manual</quote>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>compensate camera exposure</title>
+      <para>
+        Automatically remove the camera exposure bias (only available in <quote>manual</quote> mode).
+        The camera exposure bias is the EV compensation of the camera lightmeter, commonly used to
+        prevent highlight clipping, for photographers who expose to the right of the histogram. This
+        feature relies on reading the EXIF field <programlisting>ExposureBiasValue</programlisting>
+        which must be correctly filled in the RAW file by the camera for it to work.
+      </para>
+
+      <para>
+        Note: for Fuji RAWs, it will be necessary to add aditional +0.75 EV, for an overall correction
+        of +1.25 EV, to compensate for their native underexposure.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>exposure</title>
+      <para>
+        Adjust the exposure correction [EV] (only available in <quote>manual</quote> mode).
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>clipping threshold</title>
+      <para>
+        darktable can calculate correct black level and exposure values for your image based on
+        the content of a rectangular area. The adjustment slider lets you define what percentage
+        of bright values are to be clipped out in the calculation. Pressing the
+        <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+        icon starts the calculation and lets you draw a rectangular area of your choice using
+        your mouse. This feature is only available in <quote>manual</quote> mode.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>black</title>
+      <para>
+        Adjust the black level in both <quote>manual</quote> and <quote>automatic</quote> mode.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>percentile</title>
+      <para>
+        Defines a location in the histogram for automatic exposure correction. A percentile of
+        50% denotes a position in the histogram where 50% of pixel values are below and 50% of
+        pixel values are above. For more details see
+        <ulink url="http://en.wikipedia.org/wiki/Percentile"><emphasis>percentile</emphasis>
+        </ulink>. Only available in <quote>automatic</quote> mode.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>target level</title>
+      <para>
+        Defines the target level for automatic exposure correction in terms of [EV] relative to
+        the white point of the camera. The white point is camera specific and defines the
+        highest lightness value that the camera sensor can detect. Only available in
+        <quote>automatic</quote> mode.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

@@ -1,4 +1,4 @@
-include_directories("${CMAKE_CURRENT_BINARY_DIR}/../" "${CMAKE_CURRENT_SOURCE_DIR}")
+include_directories("${DARKTABLE_BINDIR}")
 
 include(manage-symbol-visibility)
 
@@ -23,7 +23,7 @@ macro (add_iop _lib _src)
   set(_input ${CMAKE_CURRENT_SOURCE_DIR}/${_src})
   set(_output ${CMAKE_CURRENT_BINARY_DIR}/introspection_${_src}) # keep ${_src} in the end to keep the file extension (c vs. cc)
   add_custom_command(
-    DEPENDS ${_input} ${CMAKE_SOURCE_DIR}/src/common/introspection.h
+    DEPENDS ${_input} ${CMAKE_SOURCE_DIR}/src/common/introspection.h ${CMAKE_SOURCE_DIR}/tools/introspection/ast.pm
     OUTPUT ${_output}
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/tools/introspection/
     COMMAND ${perl_BIN} ${CMAKE_SOURCE_DIR}/tools/introspection/parser.pl ${CMAKE_CURRENT_SOURCE_DIR}/../ ${_input} ${_output}
@@ -42,19 +42,12 @@ macro (add_iop _lib _src)
   if (WIN32)
     _detach_debuginfo (${_lib} ${CMAKE_INSTALL_LIBDIR}/darktable/plugins)
   else()
-      # Note that $ORIGIN is not a variable but has a special meaning at runtime.
-      # The string "$ORIGIN" should end up in the executable as-is.
-      set(RPATH_DT "$ORIGIN")
-      if (APPLE)
-          # The string "@loader_path" should end up in the executable as-is.
-          set(RPATH_DT "@loader_path")
-      endif()
       set_target_properties(${_lib}
                             PROPERTIES
-                            INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+                            INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH})
   endif(WIN32)
 
-  install(TARGETS  ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
+  install(TARGETS ${_lib} DESTINATION ${CMAKE_INSTALL_LIBDIR}/darktable/plugins COMPONENT DTApplication)
 
   list(APPEND _iop_list ${_lib})
 
@@ -65,6 +58,8 @@ macro (add_iop _lib _src)
     list(APPEND _iop_default_visible_list ${_lib})
   endif(${add_iop_DEFAULT_VISIBLE})
 endmacro (add_iop)
+
+# @@_NEW_MODULE: when adding a new module here, please grep @@_NEW_MODULE in the code and adjust accordingly.
 
 # add_iop(useless "useless.c")
 add_iop(rawprepare "rawprepare.c")
@@ -139,17 +134,23 @@ add_iop(ashift "ashift.c")
 add_iop(hazeremoval "hazeremoval.c" DEFAULT_VISIBLE)
 add_iop(filmic "filmic.c")
 add_iop(mask_manager "mask_manager.c")
-add_iop(lut3d "lut3d.c")
+if(GMIC_FOUND)
+  add_iop(lut3d "lut3d.c" "lut3dgmic.cpp")
+else(GMIC_FOUND)
+  add_iop(lut3d "lut3d.c")
+endif(GMIC_FOUND)
 add_iop(toneequal "toneequal.c" DEFAULT_VISIBLE)
 add_iop(filmicrgb "filmicrgb.c")
+add_iop(negadoctor "negadoctor.c")
+add_iop(channelmixerrgb "channelmixerrgb.c")
 
-if(RSVG2_FOUND)
+if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")
-endif(RSVG2_FOUND)
+endif(Rsvg2_FOUND)
 
-if(LENSFUN_FOUND)
+if(LensFun_FOUND)
   add_iop(lens "lens.cc" DEFAULT_VISIBLE)
-endif(LENSFUN_FOUND)
+endif(LensFun_FOUND)
 
 # fix for Mac when OpenMP is only available in C compiler
 if(APPLE)

@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2014-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -78,8 +78,8 @@ static int default_dimension_wrapper(struct dt_imageio_module_storage_t *self, d
 static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_imageio_module_data_t *self_data,
                          const int imgid, dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata,
                          const int num, const int total, const gboolean high_quality, const gboolean upscale,
-                         dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
-                         dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
+                         const gboolean export_masks, dt_colorspaces_color_profile_type_t icc_type,
+                         const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
 {
 
   /* construct a temporary file name */
@@ -96,8 +96,8 @@ static int store_wrapper(struct dt_imageio_module_storage_t *self, struct dt_ima
 
   gchar *complete_name = g_build_filename(tmpdir, filename, (char *)NULL);
 
-  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename,
-                       icc_intent, self, self_data, num, total, metadata) != 0)
+  if(dt_imageio_export(imgid, complete_name, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type,
+                       icc_filename, icc_intent, self, self_data, num, total, metadata) != 0)
   {
     fprintf(stderr, "[%s] could not export to file: `%s'!\n", self->name(self), complete_name);
     g_free(complete_name);

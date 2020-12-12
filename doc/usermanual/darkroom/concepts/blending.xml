@@ -17,11 +17,17 @@
 
     <para>
       By default a module takes its input from the preceding module, performs its calculations
-      and handles its output over to the next module in the pixelpipe. On demand you can
+      and hands its output over to the next module in the pixelpipe. On demand you can
       activate an additional step where a module's output is reprocessed with its input before
       giving the result to the next module. This additional processing step is called blending.
       Input and output can be processed with different algorithms, called blending operators or
       blend modes.
+    </para>
+
+    <para>
+      Multiple versions of the blending operators exist and are specific to demosaiced or non
+      demosaiced images or the color spaces in which they are supposed to work. Depending on
+      the module one or multiple versions will be available in the blending menu.
     </para>
 
     <para>
@@ -48,16 +54,16 @@
 
     <informaltable frame="none">
       <tgroup cols="2" colsep="0" rowsep="0">
-        <colspec colwidth="6*"/>
         <colspec colwidth="4*"/>
+        <colspec colwidth="6*"/>
         <tbody>
           <row>
             <entry>
-              Modules with blending support exhibit an additional combobox <quote>blend</quote>
-              at the bottom of their GUI.
+              Modules with blending support exhibit an additional line
+              with the different <quote>blend modes</quote> at the bottom of their GUI.
             </entry>
             <entry>
-              <graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="80%" align="center" />
+              <graphic fileref="darkroom/concepts/images/blending.png" scalefit="1" width="90%" align="center" />
             </entry>
           </row>
         </tbody>
@@ -69,12 +75,13 @@
       <title>blend</title>
 
       <para>
-        Blending is activated with this combobox. Depending on the value selected additional
-        control elements will show up.
+        Blending is activated by clicking on one of the
+        buttons. Depending on the selected mode additional control elements will show up.
       </para>
 
       <sect5 id="blending_usage_off">
         <title>off</title>
+        <para><inlinegraphic fileref="&blend_off;" scalefit="1" width="3%" align="center"/></para>
         <para>
           module's output is passed to the next module in pixelpipe without additional
           reprocessing. No further controls are displayed.
@@ -83,6 +90,7 @@
 
       <sect5 id="blending_usage_uniform">
         <title>uniformily</title>
+        <para><inlinegraphic fileref="&blend_uniformly;" scalefit="1" width="3%" align="center"/></para>
         <para>
           reprocessing takes place with the chosen blend mode and opacity value&nbsp;&ndash; the
           same for all pixels. Additional controls to select blend mode and opacity value are
@@ -92,6 +100,7 @@
 
       <sect5 id="blending_usage_drawn_mask">
         <title>drawn mask</title>
+        <para><inlinegraphic fileref="&blend_drawn;" scalefit="1" width="3%" align="center"/></para>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
           are displayed which allow you to draw a mask. If no mask elements are drawn all pixels
@@ -105,6 +114,7 @@
 
       <sect5 id="blending_usage_parametric_mask">
         <title>parametric mask</title>
+        <para><inlinegraphic fileref="&blend_parametric;" scalefit="1" width="3%" align="center"/></para>
         <para>
           reprocessing takes place with the chosen blend mode and opacity. Additional controls
           are displayed which allow you to adjust the opacity on a per-pixel basis determined by
@@ -115,6 +125,7 @@
 
       <sect5 id="blending_usage_drawn_parametric_mask">
         <title>drawn and parametric mask</title>
+        <para><inlinegraphic fileref="&blend_drawn_parametric;" scalefit="1" width="3%" align="center"/></para>
         <para>
           this option combines drawn and parametric masks and shows the full set of both
           controls. See <xref linkend="combined_masks"/> to learn how to best use this
@@ -122,6 +133,23 @@
         </para>
       </sect5>
 
+      <sect5 id="blending_usage_raster">
+        <title>raster mask</title>
+        <para><inlinegraphic fileref="&blend_raster;" scalefit="1" width="3%" align="center"/></para>
+        <para>
+          this option reuse a mask created in another module using a
+          parametric mask possibly combined with a drawn mask.  See
+          <xref linkend="raster_mask"/> for further details.
+        </para>
+      </sect5>
+
+      <sect5 id="blending_usage_menu">
+        <title>blending menu</title>
+        <para>
+          this item provides access to the available blending versions for the module and
+          additional options specific to the blending operation.
+        </para>
+      </sect5>
     </sect4>
 
   </sect3>
@@ -181,7 +209,7 @@
                     This is the original image, pretty heavily processed: first
                     <link linkend="monochrome"> <emphasis>monochrome</emphasis></link>, then
                     some blue <link linkend="splittoning">
-                    <emphasis>splittoning</emphasis></link> but as you see it lacks pop in
+                    <emphasis>split-toning</emphasis></link> but as you see it lacks pop in
                     details and is a bit out of focus...
                   </para>
                 </entry>

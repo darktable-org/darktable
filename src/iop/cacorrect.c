@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,14 +39,12 @@ DT_MODULE_INTROSPECTION(1, dt_iop_cacorrect_params_t)
 
 typedef struct dt_iop_cacorrect_params_t
 {
-  int keep;
+  int keep; // $DEFAULT: 50
 } dt_iop_cacorrect_params_t;
 
 typedef struct dt_iop_cacorrect_gui_data_t
 {
 } dt_iop_cacorrect_gui_data_t;
-
-dt_iop_cacorrect_gui_data_t dummy;
 
 // this returns a translatable name
 const char *name()
@@ -55,9 +53,19 @@ const char *name()
   return _("chromatic aberrations");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("correct chromatic aberrations for Bayer sensors"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
+
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -426,7 +434,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     {
 // Main algorithm: Tile loop calculating correction parameters per tile
 #ifdef _OPENMP
-#pragma omp for collapse(2) schedule(dynamic) nowait
+#pragma omp for collapse(2) schedule(static) nowait
 #endif
       for(int top = -border; top < height; top += ts - border2)
         for(int left = -border; left < width; left += ts - border2)
@@ -471,7 +479,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
                 int c = FC(rr, cc, filters);
@@ -492,7 +500,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(ccmax < cc1)
           {
             for(int rr = rrmin; rr < rrmax; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
@@ -512,8 +520,8 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmax < cc1)
           {
-            for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
@@ -523,7 +531,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(rrmin > 0 && ccmax < cc1)
           {
             for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
@@ -532,7 +540,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmin > 0)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < border; cc++)
               {
                 int c = FC(rr, cc, filters);
@@ -1074,7 +1082,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
     if(processpasstwo)
     {
 #ifdef _OPENMP
-#pragma omp for schedule(dynamic) collapse(2) nowait
+#pragma omp for schedule(static) collapse(2) nowait
 #endif
 
       for(int top = -border; top < height; top += ts - border2)
@@ -1128,7 +1136,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = ccmin; cc < ccmax; cc++)
               {
                 int c = FC(rr, cc, filters);
@@ -1151,7 +1159,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(ccmax < cc1)
           {
             for(int rr = rrmin; rr < rrmax; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][rr * ts + ccmax + cc] = (in[(top + rr) * width + (width - cc - 2)]);
@@ -1173,8 +1181,8 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmax < cc1)
           {
-            for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rrmax + rr) * ts + ccmax + cc] = (in[(height - rr - 2) * width + (width - cc - 2)]);
@@ -1185,7 +1193,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           if(rrmin > 0 && ccmax < cc1)
           {
             for(int rr = 0; rr < border; rr++)
-              for(int cc = 0; cc < border; cc++)
+              for(int cc = 0; cc < MIN(border, cc1 - ccmax); cc++)
               {
                 int c = FC(rr, cc, filters);
                 rgb[c][(rr)*ts + ccmax + cc] = (in[(border2 - rr) * width + (width - cc - 2)]);
@@ -1195,7 +1203,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
           if(rrmax < rr1 && ccmin > 0)
           {
-            for(int rr = 0; rr < border; rr++)
+            for(int rr = 0; rr < MIN(border, rr1 - rrmax); rr++)
               for(int cc = 0; cc < border; cc++)
               {
                 int c = FC(rr, cc, filters);
@@ -1495,49 +1503,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // init defaults:
-  dt_iop_cacorrect_params_t tmp = (dt_iop_cacorrect_params_t){.keep = 50 };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!module->dev) goto end;
-
   dt_image_t *img = &module->dev->image_storage;
   // can't be switched on for non-raw or x-trans images:
-  if((img->flags & DT_IMAGE_RAW) && (img->buf_dsc.filters != 9u) && !dt_image_is_monochrome(img))
+  if(dt_image_is_raw(img) && (img->buf_dsc.filters != 9u) &&
+     !(dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
     module->hide_enable_button = 0;
   else
     module->hide_enable_button = 1;
-  module->default_enabled = 0;
 
-end:
-  memcpy(module->params, &tmp, sizeof(dt_iop_cacorrect_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_cacorrect_params_t));
-}
-
-/** init, cleanup, commit to pipeline */
-void init(dt_iop_module_t *module)
-{
-  // we don't need global data:
-  module->global_data = NULL; // malloc(sizeof(dt_iop_cacorrect_global_data_t));
-  module->params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_cacorrect_params_t));
-  // our module is disabled by default
-  // by default:
-  module->default_enabled = 0;
-
-  // we come just before demosaicing.
-  module->params_size = sizeof(dt_iop_cacorrect_params_t);
-  module->gui_data = NULL;
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-  free(module->global_data); // just to be sure
-  module->global_data = NULL;
+  if(module->widget)
+  {
+    if(dt_image_is_raw(&module->dev->image_storage))
+      if(module->dev->image_storage.buf_dsc.filters != 9u &&
+        !(dt_image_monochrome_flags(&module->dev->image_storage) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
+        gtk_label_set_text(GTK_LABEL(module->widget), _("automatic chromatic aberration correction"));
+      else
+        gtk_label_set_text(GTK_LABEL(module->widget),
+                          _("automatic chromatic aberration correction\ndisabled for non-Bayer sensors"));
+    else
+      gtk_label_set_text(GTK_LABEL(module->widget),
+                        _("automatic chromatic aberration correction\nonly works for raw images."));
+  }
 }
 
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
@@ -1545,7 +1531,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_image_t *img = &pipe->image;
-  if(!(img->flags & DT_IMAGE_RAW) || dt_image_is_monochrome(img)) piece->enabled = 0;
+  if(!dt_image_is_raw(img) || (dt_image_monochrome_flags(img) & (DT_IMAGE_MONOCHROME | DT_IMAGE_MONOCHROME_BAYER)))
+    piece->enabled = 0;
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1558,30 +1545,11 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-void gui_update(dt_iop_module_t *self)
-{
-  if(self->dev->image_storage.flags & DT_IMAGE_RAW)
-    if(self->dev->image_storage.buf_dsc.filters != 9u && !dt_image_is_monochrome(&self->dev->image_storage))
-      gtk_label_set_text(GTK_LABEL(self->widget), _("automatic chromatic aberration correction"));
-    else
-      gtk_label_set_text(GTK_LABEL(self->widget),
-                         _("automatic chromatic aberration correction\ndisabled for non-Bayer sensors"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget),
-                       _("automatic chromatic aberration correction\nonly works for raw images."));
-}
-
 void gui_init(dt_iop_module_t *self)
 {
-  self->widget = gtk_label_new("");
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-  self->gui_data = &dummy;
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-}
+  IOP_GUI_ALLOC(cacorrect);
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
+  self->widget = dt_ui_label_new("");
 }
 
 /** additional, optional callbacks to capture darkroom center events. */

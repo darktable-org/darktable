@@ -93,7 +93,8 @@
 
       <para>
         Images that already have geo location attributes in their metadata are displayed as
-        small icons on the map.
+        small icons on the map. Images close to each other are
+        grouped and a count of grouped images is displayed on the bottom-left corner.
       </para>
 
       <para>
@@ -107,6 +108,27 @@
       <para>
         In order to remove geo coordinates from an image just drag it from the map and drop it
         onto the filmstrip.
+      </para>
+
+      <para>
+        Images closed to each others are grouped under a single one. See map settings to
+        control the grouping as needed. The number displayed on the bottom left of the thumb
+        gives the number of images inside the group. A white number means that all images of the
+        group are exactly at the same location. Otherwise the number is yellow.
+      </para>
+
+      <para>
+        Mouse <emphasis>Scroll</emphasis> over a group of images scrolls through these images.
+      </para>
+
+      <para>
+        Normally images have a black border. The border is white when at least one image
+        of the group is selected.
+      </para>
+
+      <para>
+        <emphasis>Click</emphasis> and drag an image to adjust its position.
+        <emphasis>Ctrl-click</emphasis> to move the complete group.
       </para>
 
       <para>

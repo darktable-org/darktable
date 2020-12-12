@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2015 johannes hanika
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -791,13 +790,10 @@ inline static void do_recursion(w128_t *r, w128_t *a, w128_t *b, w128_t *c, w128
 #if defined(BIG_ENDIAN64) && !defined(ONLY64) && !defined(HAVE_ALTIVEC)
 inline static void swap(w128_t *array, int size)
 {
-  int i;
-  uint32_t x, y;
-
-  for(i = 0; i < size; i++)
+  for(int i = 0; i < size; i++)
   {
-    x = array[i].u[0];
-    y = array[i].u[2];
+    uint32_t x = array[i].u[0];
+    uint32_t y = array[i].u[2];
     array[i].u[0] = array[i].u[1];
     array[i].u[2] = array[i].u[3];
     array[i].u[1] = x;
@@ -833,11 +829,9 @@ static uint32_t func2(uint32_t x)
 static void period_certification(sfmt_state_t *s)
 {
   int inner = 0;
-  int i, j;
-  uint32_t work;
 
-  for(i = 0; i < 4; i++) inner ^= s->psfmt32[idxof(i)] & s->parity[i];
-  for(i = 16; i > 0; i >>= 1) inner ^= inner >> i;
+  for(int i = 0; i < 4; i++) inner ^= s->psfmt32[idxof(i)] & s->parity[i];
+  for(int i = 16; i > 0; i >>= 1) inner ^= inner >> i;
   inner &= 1;
   /* check OK */
   if(inner == 1)
@@ -845,10 +839,10 @@ static void period_certification(sfmt_state_t *s)
     return;
   }
   /* check NG, and modification */
-  for(i = 0; i < 4; i++)
+  for(int i = 0; i < 4; i++)
   {
-    work = 1;
-    for(j = 0; j < 32; j++)
+    uint32_t work = 1;
+    for(int j = 0; j < 32; j++)
     {
       if((work & s->parity[i]) != 0)
       {

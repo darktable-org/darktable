@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 - 2014 henrik andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -138,7 +138,7 @@ static dt_lib_camera_property_t *_lib_property_add_new(dt_lib_camera_t *lib, con
       dt_bauhaus_widget_set_label(prop->values, NULL, label);
       g_object_ref_sink(prop->values);
 
-      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
+      prop->osd = DTGTK_TOGGLEBUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_eye, CPF_STYLE_FLAT, NULL));
       g_object_ref_sink(prop->osd);
       gtk_widget_set_tooltip_text(GTK_WIDGET(prop->osd), _("toggle view property in center view"));
       do
@@ -217,19 +217,19 @@ static void _camera_error_callback(const dt_camera_t *camera, dt_camera_error_t 
 static void _capture_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const char *jobcode = NULL;
-  dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
-  uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer)) == TRUE
-                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.timer))
-                       : 0;
-  uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_sequence)) == TRUE
-                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.count))
-                       : 1;
-  uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
-                          ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.brackets))
-                          : 0;
-  uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
-                       ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.steps))
-                       : 0;
+  const dt_lib_camera_t *lib = (dt_lib_camera_t *)user_data;
+  const uint32_t delay = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_timer)) == TRUE
+                             ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.timer))
+                             : 0;
+  const uint32_t count = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_sequence)) == TRUE
+                             ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.count))
+                             : 1;
+  const uint32_t brackets = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+                                ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.brackets))
+                                : 0;
+  const uint32_t steps = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->gui.toggle_bracket)) == TRUE
+                             ? (uint32_t)gtk_spin_button_get_value(GTK_SPIN_BUTTON(lib->gui.steps))
+                             : 0;
 
   /* create a capture background job */
   jobcode = dt_view_tethering_get_job_code(darktable.view_manager);
@@ -346,7 +346,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
   pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
   pango_layout_set_font_description(layout, desc);
   char model[4096] = { 0 };
-  snprintf(model, strlen(model), "%s", lib->data.camera_model);
+  g_strlcpy(model, lib->data.camera_model, strlen(model));
   pango_layout_set_text(layout, model, -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
   cairo_move_to(cr, DT_PIXEL_APPLY_DPI(5), DT_PIXEL_APPLY_DPI(1) + BAR_HEIGHT - ink.height / 2 - fontsize);
@@ -425,10 +425,13 @@ void gui_init(dt_lib_module_t *self)
   lib->gui.main_grid = GTK_GRID(self->widget);
   gtk_grid_set_row_spacing(GTK_GRID(self->widget), DT_PIXEL_APPLY_DPI(5));
 
+  gtk_grid_set_column_homogeneous(GTK_GRID(self->widget), FALSE);
+
   GtkBox *hbox;
 
   // Camera control
   GtkWidget *label = dt_ui_section_label_new(_("camera control"));
+  gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(GTK_GRID(self->widget), label, lib->gui.rows++, 0, 2, 1);
   dt_gui_add_help_link(self->widget, "camera_settings.html#camera_settings");
 
@@ -451,11 +454,11 @@ void gui_init(dt_lib_module_t *self)
 
   // capture modes buttons
   lib->gui.toggle_timer = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_timer, CPF_STYLE_FLAT, NULL));
   lib->gui.toggle_sequence = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_filmstrip, CPF_STYLE_FLAT, NULL));
   lib->gui.toggle_bracket = DTGTK_TOGGLEBUTTON(
-      dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL));
+      dtgtk_togglebutton_new(dtgtk_cairo_paint_bracket, CPF_STYLE_FLAT, NULL));
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_pack_start(hbox, GTK_WIDGET(lib->gui.toggle_timer), TRUE, TRUE, 0);
@@ -464,7 +467,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(hbox), GTK_WIDGET(modes_label), GTK_POS_RIGHT, 1, 1);
 
   lib->gui.timer = gtk_spin_button_new_with_range(1, 60, 1);
-  lib->gui.count = gtk_spin_button_new_with_range(1, 500, 1);
+  lib->gui.count = gtk_spin_button_new_with_range(1, 9999, 1);
   lib->gui.brackets = gtk_spin_button_new_with_range(1, 5, 1);
   lib->gui.steps = gtk_spin_button_new_with_range(1, 9, 1);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), GTK_WIDGET(lib->gui.timer), GTK_WIDGET(timer_label), GTK_POS_RIGHT, 1, 1);
@@ -544,8 +547,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_add_property_button_clicked), lib);
   gtk_widget_show(widget);
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(widget), 0, lib->gui.rows++, 2, 1);
-
-
 }
 
 void gui_cleanup(dt_lib_module_t *self)

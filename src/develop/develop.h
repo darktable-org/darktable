@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ typedef struct dt_dev_history_item_t
   dt_iop_params_t *params;        // parameters for this operation
   struct dt_develop_blend_params_t *blend_params;
   char op_name[20];
-  double iop_order;
+  int iop_order;
   int multi_priority;
   char multi_name[128];
   GList *forms; // snapshot of dt_develop_t->forms
@@ -53,6 +53,16 @@ typedef enum dt_dev_overexposed_colorscheme_t
   DT_DEV_OVEREXPOSED_PURPLEGREEN = 2
 } dt_dev_overexposed_colorscheme_t;
 
+typedef enum dt_dev_overlay_colors_t
+{
+  DT_DEV_OVERLAY_GRAY = 0,
+  DT_DEV_OVERLAY_RED = 1,
+  DT_DEV_OVERLAY_GREEN = 2,
+  DT_DEV_OVERLAY_YELLOW = 3,
+  DT_DEV_OVERLAY_CYAN = 4,
+  DT_DEV_OVERLAY_MAGENTA = 5
+} dt_dev_overlay_colors_t;
+
 typedef enum dt_dev_rawoverexposed_mode_t {
   DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA = 0,
   DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID = 1,
@@ -65,14 +75,6 @@ typedef enum dt_dev_rawoverexposed_colorscheme_t {
   DT_DEV_RAWOVEREXPOSED_BLUE = 2,
   DT_DEV_RAWOVEREXPOSED_BLACK = 3
 } dt_dev_rawoverexposed_colorscheme_t;
-
-typedef enum dt_dev_histogram_type_t
-{
-  DT_DEV_HISTOGRAM_LOGARITHMIC = 0,
-  DT_DEV_HISTOGRAM_LINEAR,
-  DT_DEV_HISTOGRAM_WAVEFORM,
-  DT_DEV_HISTOGRAM_N // needs to be the last one
-} dt_dev_histogram_type_t;
 
 typedef enum dt_dev_transform_direction_t
 {
@@ -109,10 +111,22 @@ typedef enum dt_dev_pixelpipe_display_mask_t
   DT_DEV_PIXELPIPE_DISPLAY_HSL_H = 10 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_S = 11 << 3,
   DT_DEV_PIXELPIPE_DISPLAY_HSL_l = 12 << 3,
-  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Jz = 13 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_Cz = 14 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_JzCzhz_hz = 15 << 3,
+  DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU = 16 << 3,  //show module's output without processing by later iops
+  DT_DEV_PIXELPIPE_DISPLAY_ANY = 0xff << 2,
+  DT_DEV_PIXELPIPE_DISPLAY_STICKY = 1 << 16
 } dt_dev_pixelpipe_display_mask_t;
 
-extern const gchar *dt_dev_histogram_type_names[];
+
+typedef enum dt_clipping_preview_mode_t
+{
+  DT_CLIPPING_PREVIEW_GAMUT = 0,
+  DT_CLIPPING_PREVIEW_ANYRGB = 1,
+  DT_CLIPPING_PREVIEW_LUMINANCE = 2,
+  DT_CLIPPING_PREVIEW_SATURATION = 3
+} dt_clipping_preview_mode_t;
 
 typedef struct dt_dev_proxy_exposure_t
 {
@@ -131,10 +145,11 @@ typedef struct dt_develop_t
   int32_t gui_leaving;  // set if everything is scheduled to shut down.
   int32_t gui_synch;    // set by the render threads if gui_update should be called in the modules.
   int32_t focus_hash;   // determines whether to start a new history item or to merge down.
-  int32_t image_loading, first_load, image_force_reload;
-  int32_t preview_loading, preview_input_changed;
-  int32_t preview2_loading, preview2_input_changed;
+  gboolean preview_loading, preview2_loading, image_loading, history_updating, image_force_reload, first_load;
+  gboolean preview_input_changed, preview2_input_changed;
+
   dt_dev_pixelpipe_status_t image_status, preview_status, preview2_status;
+  int32_t image_invalid_cnt;
   uint32_t timestamp;
   uint32_t average_delay;
   uint32_t preview_average_delay;
@@ -177,14 +192,8 @@ typedef struct dt_develop_t
   GList *allprofile_info;
 
   // histogram for display.
-  uint32_t *histogram, *histogram_pre_tonecurve, *histogram_pre_levels;
-  uint32_t histogram_max, histogram_pre_tonecurve_max, histogram_pre_levels_max;
-  uint32_t *histogram_waveform, histogram_waveform_width, histogram_waveform_height,
-      histogram_waveform_stride;
-  // we should process the waveform histogram in the correct size to make it not look like crap. since this
-  // requires gui knowledge we need this mutex
-  //   dt_pthread_mutex_t histogram_waveform_mutex;
-  dt_dev_histogram_type_t histogram_type;
+  uint32_t *histogram_pre_tonecurve, *histogram_pre_levels;
+  uint32_t histogram_pre_tonecurve_max, histogram_pre_levels_max;
 
   // list of forms iop can use for masks or whatever
   GList *forms;
@@ -200,12 +209,16 @@ typedef struct dt_develop_t
   struct dt_iop_module_t *full_preview_last_module;
   int full_preview_masks_state;
 
+  // darkroom border size
+  int32_t border_size;
+  int32_t orig_width, orig_height;
+
   /* proxy for communication between plugins and develop/darkroom */
   struct
   {
     // list of exposure iop instances, with plugin hooks, used by histogram dragging functions
     // each element is dt_dev_proxy_exposure_t
-    GList *exposure;
+    dt_dev_proxy_exposure_t exposure;
 
     // modulegroups plugin hooks
     struct
@@ -216,11 +229,15 @@ typedef struct dt_develop_t
       /* get current module group */
       uint32_t (*get)(struct dt_lib_module_t *self);
       /* test if iop group flags matches modulegroup */
-      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, uint32_t iop_group);
+      gboolean (*test)(struct dt_lib_module_t *self, uint32_t group, struct dt_iop_module_t *module);
       /* switch to modulegroup */
       void (*switch_group)(struct dt_lib_module_t *self, struct dt_iop_module_t *module);
+      /* update modulegroup visibility */
+      void (*update_visibility)(struct dt_lib_module_t *self);
       /* set focus to the search module text box */
       void (*search_text_focus)(struct dt_lib_module_t *self);
+      /* test if module is preset in one of the current groups */
+      gboolean (*test_visible)(struct dt_lib_module_t *self, gchar *module);
     } modulegroups;
 
     // snapshots plugin hooks
@@ -244,6 +261,15 @@ typedef struct dt_develop_t
       void (*selection_change)(struct dt_lib_module_t *self, int selectid, int throw_event);
     } masks;
 
+    // what is the ID of the module currently doing pipeline chromatic adaptation ?
+    // this is to prevent multiple modules/instances from doing white balance globally.
+    // only used to display warnings in GUI of modules that should probably not be doing white balance
+    dt_iop_order_entry_t *chroma_adaptation;
+
+    // is the WB module using D65 illuminant and not doing full chromatic adaptation ?
+    gboolean wb_is_D65;
+    float wb_coeffs[4];
+
   } proxy;
 
   // for the overexposure indicator
@@ -256,6 +282,7 @@ typedef struct dt_develop_t
     dt_dev_overexposed_colorscheme_t colorscheme;
     float lower;
     float upper;
+    dt_clipping_preview_mode_t mode;
   } overexposed;
 
   // for the raw overexposure indicator
@@ -270,6 +297,23 @@ typedef struct dt_develop_t
     float threshold;
   } rawoverexposed;
 
+  // for the overlay color indicator
+  struct
+  {
+    guint timeout;
+    GtkWidget *floating_window, *button, *colors; // yes, having gtk stuff in here is ugly. live with it.
+
+    gboolean enabled;
+    dt_dev_overlay_colors_t color;
+  } overlay_color;
+
+  // ISO 12646-compliant colour assessment conditions
+  struct
+  {
+    GtkWidget *button; // yes, ugliness is the norm. what did you expect ?
+    gboolean enabled;
+  } iso_12646;
+
   // the display profile related things (softproof, gamut check, profiles ...)
   struct
   {
@@ -283,7 +327,7 @@ typedef struct dt_develop_t
     GtkWidget *second_wnd;
     GtkWidget *widget;
     int width, height;
-    double dpi, dpi_factor, ppd;
+    double dpi, dpi_factor, ppd, ppd_thb;
 
     GtkWidget *button;
 
@@ -303,6 +347,7 @@ typedef struct dt_develop_t
 void dt_dev_init(dt_develop_t *dev, int32_t gui_attached);
 void dt_dev_cleanup(dt_develop_t *dev);
 
+float dt_dev_get_preview_downsampling();
 void dt_dev_process_image_job(dt_develop_t *dev);
 void dt_dev_process_preview_job(dt_develop_t *dev);
 void dt_dev_process_preview2_job(dt_develop_t *dev);
@@ -317,6 +362,7 @@ void dt_dev_reload_image(dt_develop_t *dev, const uint32_t imgid);
 int dt_dev_is_current_image(dt_develop_t *dev, uint32_t imgid);
 void dt_dev_add_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable, gboolean no_image);
 void dt_dev_add_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
+void dt_dev_add_new_history_item(dt_develop_t *dev, struct dt_iop_module_t *module, gboolean enable);
 void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, struct dt_iop_module_t *_module, gboolean _enable, gboolean no_image);
 void dt_dev_add_masks_history_item(dt_develop_t *dev, struct dt_iop_module_t *_module, gboolean enable);
 void dt_dev_reload_history_items(dt_develop_t *dev);
@@ -345,7 +391,6 @@ float dt_dev_get_zoom_scale(dt_develop_t *dev, dt_dev_zoom_t zoom, int closeup_f
 void dt_dev_get_pointer_zoom_pos(dt_develop_t *dev, const float px, const float py, float *zoom_x,
                                  float *zoom_y);
 
-
 void dt_dev_configure(dt_develop_t *dev, int wd, int ht);
 void dt_dev_invalidate_from_gui(dt_develop_t *dev);
 
@@ -353,8 +398,6 @@ void dt_dev_invalidate_from_gui(dt_develop_t *dev);
  * exposure plugin hook, set the exposure and the black level
  */
 
-/** a function used to sort the list */
-gint dt_dev_exposure_hooks_sort(gconstpointer a, gconstpointer b);
 /** check if exposure iop hooks are available */
 gboolean dt_dev_exposure_hooks_available(dt_develop_t *dev);
 /** reset exposure to defaults */
@@ -371,10 +414,10 @@ float dt_dev_exposure_get_black(dt_develop_t *dev);
 /*
  * modulegroups plugin hooks
  */
-/** check if modulegroups hooks are available */
-gboolean dt_dev_modulegroups_available(dt_develop_t *dev);
 /** switch to modulegroup of module */
 void dt_dev_modulegroups_switch(dt_develop_t *dev, struct dt_iop_module_t *module);
+/** update modulegroup visibility */
+void dt_dev_modulegroups_update_visibility(dt_develop_t *dev);
 /** set the focus to modulegroup search text */
 void dt_dev_modulegroups_search_text_focus(dt_develop_t *dev);
 /** set the active modulegroup */
@@ -382,9 +425,11 @@ void dt_dev_modulegroups_set(dt_develop_t *dev, uint32_t group);
 /** get the active modulegroup */
 uint32_t dt_dev_modulegroups_get(dt_develop_t *dev);
 /** test if iop group flags matches modulegroup */
-gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, uint32_t iop_group);
+gboolean dt_dev_modulegroups_test(dt_develop_t *dev, uint32_t group, struct dt_iop_module_t *module);
 /** reorder the module list */
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev);
+/** test if the iop is visible in current groups layout **/
+gboolean dt_dev_modulegroups_is_visible(dt_develop_t *dev, gchar *module);
 
 /** request snapshot */
 void dt_dev_snapshot_request(dt_develop_t *dev, const char *filename);
@@ -414,8 +459,6 @@ void dt_dev_modules_update_multishow(dt_develop_t *dev);
 /** generates item multi-instance name */
 gchar *dt_history_item_get_name(const struct dt_iop_module_t *module);
 gchar *dt_history_item_get_name_html(const struct dt_iop_module_t *module);
-/* returns the iop-module found in list with the given name */
-struct dt_iop_module_t *dt_dev_get_base_module(GList *iop_list, const char *op);
 
 /*
  * distort functions
@@ -427,8 +470,16 @@ int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points
 /** same fct, but we can specify iop with priority between pmin and pmax */
 int dt_dev_distort_transform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                   float *points, size_t points_count);
+/** same fct, but can only be called from a distort_transform function called by dt_dev_distort_transform_plus */
+int dt_dev_distort_transform_locked(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                    const int transf_direction, float *points, size_t points_count);
+/** same fct as dt_dev_distort_backtransform, but we can specify iop with priority between pmin and pmax */
 int dt_dev_distort_backtransform_plus(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order, const int transf_direction,
                                       float *points, size_t points_count);
+/** same fct, but can only be called from a distort_backtransform function called by dt_dev_distort_backtransform_plus */
+int dt_dev_distort_backtransform_locked(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe, const double iop_order,
+                                    const int transf_direction, float *points, size_t points_count);
+
 /** get the iop_pixelpipe instance corresponding to the iop in the given pipe */
 struct dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
                                                            struct dt_iop_module_t *module);
@@ -474,6 +525,14 @@ void dt_second_window_set_zoom_scale(dt_develop_t *dev, const float value);
 void dt_second_window_get_processed_size(const dt_develop_t *dev, int *procw, int *proch);
 void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, const dt_dev_zoom_t zoom,
                                         const int closeup, float *boxww, float *boxhh);
+
+/*
+ *   history undo suport helpers for darkroom
+ */
+
+/* all history change must be enclosed into a start / end call */
+void dt_dev_undo_start_record(dt_develop_t *dev);
+void dt_dev_undo_end_record(dt_develop_t *dev);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

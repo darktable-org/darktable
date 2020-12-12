@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2012 Jeremy Rosen
+   Copyright (C) 2013-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -38,7 +38,7 @@ void dt_lua_debug_stack_internal(lua_State *L, const char *function, int line)
     printf("\t%d:%s %s\n", i, lua_typename(L, lua_type(L, i)), luaL_tolstring(L, i, NULL));
     lua_pop(L, 1); // remove the result of luaL_tolstring() from the stack
 #else
-    // no tolstring when stack is really screwed up 
+    // no tolstring when stack is really screwed up
     printf("\t%d:%s %p\n", i, lua_typename(L, lua_type(L, i)),lua_topointer(L,i));
 #endif
   }
@@ -111,7 +111,7 @@ void dt_lua_goto_subtable(lua_State *L, const char *sub_name)
    that the lua code from the first thread is followed from the lua code in the
    second thread with no other lua thread having a chance to run in the middle
 
-   pthread_mutex (and glib mutexes) have undefined behaviour if unlocked from 
+   pthread_mutex (and glib mutexes) have undefined behaviour if unlocked from
    a different thread. So we replace the simple mutex with a boolean protected
    by a pthread_cond, protected by a pthread_mutex
    */

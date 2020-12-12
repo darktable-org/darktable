@@ -1,0 +1,336 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="liquify">
+
+  <title>Liquify</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>liquify</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>liquify</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              The liquify module offers a versatile way of moving pixels around by applying free
+              style distortions to parts of the image. There are three tools to help doing that:
+              points, lines, and curves.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/liquify.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      Each of liquify's tools is based on nodes. A point is given by a single node, a line or a
+      curve consist of a set of nodes defining the path.
+    </para>
+
+    <para>
+      There is a limit of 100 nodes in a single liquify instance. For more distortions one can
+      use multiple instances of the liquify module. However, take into account that the liquify
+      module requires a lot of computing resources.
+    </para>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              The basic elements of all tools in liquify are nodes.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <para>
+      You can drag the central point of a node to move the node around. The radius describes the
+      area of the applied effect: the distortion occurs only inside this radius. To change the
+      radius drag the handle at the circumference. A strength vector starting from the center
+      describes the direction of the distortion, and its strength is depicted by the length of
+      the vector. You change the vector by dragging its arrowhead.
+    </para>
+
+    <sect5>
+      <title>warps and nodes count</title>
+      <para>
+        This information field displays the number of warps (individual distortion object)
+        and nodes currently used.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>point tool</title>
+      <para>
+        Click the
+        <inlinegraphic fileref="&icon_liquify_point;" scalefit="1" width="2%" align="center" />
+        icon to activate the point tool and left-click on the image to place it.
+      </para>
+      <para>
+        A point is formed by a single node. In a point the strength vector has three different
+        modes which are toggled using Ctrl+click over the arrowhead of the strength vector:
+        <informaltable frame="none" width="80%">
+          <tgroup cols="3" colsep="0" rowsep="0">
+            <colspec colwidth='2*'/>
+            <colspec colwidth='4*'/>
+            <colspec colwidth='4*'/>
+            <tbody>
+              <row>
+                <entry>
+                  <emphasis>linear</emphasis>
+                </entry>
+                <entry>
+                  The linear mode produces a linear distortion inside the circle. Starting from
+                  the opposite side of the strength vector and following the strength vector's
+                  direction. This is the default mode.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>radial growing</emphasis>
+                </entry>
+                <entry>
+                  In this mode the strength vector's effect is radial, starting with a strength
+                  of 0% in the center and growing when going away from the center. This mode is
+                  depicted by an additional circle with the arrow pointing outwards.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/liquify_ex4.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>radial shrinking</emphasis>
+                </entry>
+                <entry>
+                  In this mode the strength vector's effect is radial, starting with a strength
+                  of 100% in the center and shrinking when going away from the center. This mode
+                  is depicted by an additional circle with the arrow pointing inwards.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/liquify_ex3.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+      <para>
+        Note that the strength by default varies linearly from 0% to 100% between the center and
+        the radius of the control point. It is possible to modify the feathering effect by
+        clicking on the center of the circle:
+        <informaltable frame="none" width="80%">
+          <tgroup cols="3" colsep="0" rowsep="0">
+            <colspec colwidth='2*'/>
+            <colspec colwidth='4*'/>
+            <colspec colwidth='4*'/>
+            <tbody>
+              <row>
+                <entry>
+                  <emphasis>default</emphasis>
+                </entry>
+                <entry>
+                  Linear from the center to the radius.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/liquify_ex1.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>feathered</emphasis>
+                </entry>
+                <entry>
+                  Two control circles are displayed and can be modified independently to feather
+                  the strength of the effect. Note that clicking again the center of the circle
+                  only hides the feathering controls but does not return to the default.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/liquify_ex2.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+      <para>
+        A point can be removed by right-clicking on the center.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>line tool</title>
+      <para>
+        Click the
+        <inlinegraphic fileref="&icon_liquify_line;" scalefit="1" width="2%" align="center" />
+        icon to activate the line tool and left-click on the image to place the first point,
+        move and left-click to place another point and start forming the path. To end the line
+        just right-click anywhere.
+      </para>
+      <para>
+        <informaltable frame="none" width="80%">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth='6*'/>
+            <colspec colwidth='4*'/>
+            <tbody>
+              <row>
+                <entry>
+                  A line is a set of points. The points are linked together, the effect is
+                  interpolated by a set of strength vectors.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/liquify_ex5.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+      <para>
+        It is possible to add a control point on a line by Ctrl+Click on a segment. You may
+        remove a control point from a line by Ctrl+right click on the node center.
+      </para>
+      <para>
+        A right-click on a segment will remove the shape completely.
+      </para>
+      <para>
+        A Ctrl+Alt+click on a segment will change it to a curve segment.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>curve tool</title>
+      <para>
+        Click the
+        <inlinegraphic fileref="&icon_liquify_curve;" scalefit="1" width="2%" align="center" />
+        icon to activate the curve tool and left-click on the image to place the first point,
+        move and left-click to place another point and start forming the path. To end the line
+        just right-click anywhere.
+      </para>
+      <para>
+        <informaltable frame="none" width="80%">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth='6*'/>
+            <colspec colwidth='4*'/>
+            <tbody>
+              <row>
+                <entry>
+                  A curve is a set of points. The points are linked together, the effect is
+                  interpolated as a bezier curve by a set of strength vectors.
+                </entry>
+                <entry>
+                  <graphic fileref="darkroom/modules/images/liquify_ex6.png" scalefit="1" width="80%" align="center" />
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+      <para>
+        It is possible to add a control point on a curve by Ctrl+click on a segment. You may
+        remove a control point from a curve by Ctrl+right click on the node center.
+      </para>
+      <para>
+        A right-click on a segment will remove the shape completely.
+      </para>
+      <para>
+        A Ctrl+Alt+click on a segment will change it to a line segment.
+      </para>
+      <para>
+        It is possible to change the way the points of the curve are linked together by using
+        Ctrl+click on the center. There are four modes which correspond to different ways of
+        handling the steepness of the bezier curve by control handles:
+        <informaltable frame="none" width="80%">
+          <tgroup cols="2" colsep="0" rowsep="0">
+            <colspec colwidth='4*'/>
+            <colspec colwidth='6*'/>
+               <tbody>
+              <row>
+                <entry>
+                  <emphasis>autosmooth</emphasis>
+                </entry>
+                <entry>
+                  This is the default mode in which the control handles are not displayed as
+                  they are automatically computed to always give a smooth curve.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>cusp</emphasis>
+                </entry>
+                <entry>
+                  Control handles can be moved independently. This mode is depicted by a
+                  triangle symbol in the node center.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>smooth</emphasis>
+                </entry>
+                <entry>
+                  Control handles are always giving a smooth curve. This mode is depicted by a
+                  diamond symbol in the node center.
+                </entry>
+              </row>
+              <row>
+                <entry>
+                  <emphasis>symmetrical</emphasis>
+                </entry>
+                <entry>
+                  Control handles are always moved together. This mode is depicted by a square
+                  symbol in the node center.
+                </entry>
+              </row>
+            </tbody>
+          </tgroup>
+        </informaltable>
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>node edit tool</title>
+      <para>
+        Clicking the
+        <inlinegraphic fileref="&icon_liquify_edit;" scalefit="1" width="2%" align="center" />
+        icon activates or deactivates the node edit tool displaying all defined distortion
+        objects and their controls. Alternatively you can at any time right-click on the image
+        for the same effect.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

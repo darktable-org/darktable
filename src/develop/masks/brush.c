@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2012 aldric renaudin.
-    copyright (c) 2013 Ulrich Pegelow.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,6 +21,12 @@
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
+
+#define HARDNESS_MIN 0.0005f
+#define HARDNESS_MAX 1.0f
+
+#define BORDER_MIN 0.00005f
+#define BORDER_MAX 0.5f
 
 /** get squared distance of indexed point to line segment, taking weighted payload data into account */
 static float _brush_point_line_distance2(int index, int pointscount, const float *points, const float *payload)
@@ -58,7 +62,7 @@ static float _brush_point_line_distance2(int index, int pointscount, const float
   const float l = r3 * r3 + r4 * r4;
   const float p = r / l;
 
-  float dx, dy, db, dh, dd;
+  float dx = 0.0f, dy = 0.0f, db = 0.0f, dh = 0.0f, dd = 0.0f;
 
   if(l == 0.0f)
   {
@@ -158,10 +162,11 @@ static GList *_brush_ramer_douglas_peucker(const float *points, int points_count
 static void _brush_get_XY(float p0x, float p0y, float p1x, float p1y, float p2x, float p2y, float p3x,
                           float p3y, float t, float *x, float *y)
 {
-  float a = (1 - t) * (1 - t) * (1 - t);
-  float b = 3 * t * (1 - t) * (1 - t);
-  float c = 3 * t * t * (1 - t);
-  float d = t * t * t;
+  const float ti = 1.0f - t;
+  const float a = ti * ti * ti;
+  const float b = 3.0f * t * ti * ti;
+  const float c = 3.0f * t * t * ti;
+  const float d = t * t * t;
   *x = p0x * a + p1x * b + p2x * c + p3x * d;
   *y = p0y * a + p1y * b + p2y * c + p3y * d;
 }
@@ -174,13 +179,14 @@ static void _brush_border_get_XY(float p0x, float p0y, float p1x, float p1y, flo
   _brush_get_XY(p0x, p0y, p1x, p1y, p2x, p2y, p3x, p3y, t, xc, yc);
 
   // now we get derivative points
-  float a = 3 * (1 - t) * (1 - t);
-  float b = 3 * ((1 - t) * (1 - t) - 2 * t * (1 - t));
-  float c = 3 * (2 * t * (1 - t) - t * t);
-  float d = 3 * t * t;
+  const float ti = 1.0f - t;
+  const float a = 3.0f * ti * ti;
+  const float b = 3.0f * (ti * ti - 2.0f * t * ti);
+  const float c = 3.0f * (2.0f * t * ti - t * t);
+  const float d = 3.0f * t * t;
 
-  float dx = -p0x * a + p1x * b + p2x * c + p3x * d;
-  float dy = -p0y * a + p1y * b + p2y * c + p3y * d;
+  const float dx = -p0x * a + p1x * b + p2x * c + p3x * d;
+  const float dy = -p0y * a + p1y * b + p2y * c + p3y * d;
 
   // so we can have the resulting point
   if(dx == 0 && dy == 0)
@@ -189,7 +195,7 @@ static void _brush_border_get_XY(float p0x, float p0y, float p1x, float p1y, flo
     *yb = NAN;
     return;
   }
-  float l = 1.0 / sqrtf(dx * dx + dy * dy);
+  const float l = 1.0f / sqrtf(dx * dx + dy * dy);
   *xb = (*xc) + rad * dy * l;
   *yb = (*yc) - rad * dx * l;
 }
@@ -251,7 +257,7 @@ static void _brush_init_ctrl_points(dt_masks_form_t *form)
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
 
-  guint nb = g_list_length(form->points);
+  const guint nb = g_list_length(form->points);
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
@@ -298,7 +304,7 @@ static void _brush_init_ctrl_points(dt_masks_form_t *form)
       }
 
 
-      float bx1, by1, bx2, by2;
+      float bx1 = 0.0f, by1 = 0.0f, bx2 = 0.0f, by2 = 0.0f;
       _brush_catmull_to_bezier(point1->corner[0], point1->corner[1], point2->corner[0], point2->corner[1],
                                point3->corner[0], point3->corner[1], point4->corner[0], point4->corner[1],
                                &bx1, &by1, &bx2, &by2);
@@ -359,8 +365,7 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   float aa = a1 + incra;
   for(int i = 1; i < l; i++)
   {
-    dt_masks_dynbuf_add(dpoints, cmax[0]);
-    dt_masks_dynbuf_add(dpoints, cmax[1]);
+    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
     dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
     dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
     rr += incrr;
@@ -399,8 +404,7 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
   float aa = a1 + incra;
   for(int i = 1; i < l; i++)
   {
-    dt_masks_dynbuf_add(dpoints, cmax[0]);
-    dt_masks_dynbuf_add(dpoints, cmax[1]);
+    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
     dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
     dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
     rr += incrr;
@@ -429,8 +433,7 @@ static void _brush_points_stamp(float *cmax, float *bmin, dt_masks_dynbuf_t *dpo
   float aa = a1 + incra;
   for(int i = 0; i < l; i++)
   {
-    dt_masks_dynbuf_add(dpoints, cmax[0]);
-    dt_masks_dynbuf_add(dpoints, cmax[1]);
+    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
     dt_masks_dynbuf_add(dborder, cmax[0] + rad * cosf(aa));
     dt_masks_dynbuf_add(dborder, cmax[1] + rad * sinf(aa));
     aa += incra;
@@ -471,8 +474,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
   {
     rpoints[0] = points_max[0];
     rpoints[1] = points_max[1];
-    dt_masks_dynbuf_add(dpoints, rpoints[0]);
-    dt_masks_dynbuf_add(dpoints, rpoints[1]);
+    dt_masks_dynbuf_add_n(dpoints, rpoints, 2);
 
     if(withborder)
     {
@@ -495,8 +497,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
 
       rborder[0] = border_max[0];
       rborder[1] = border_max[1];
-      dt_masks_dynbuf_add(dborder, rborder[0]);
-      dt_masks_dynbuf_add(dborder, rborder[1]);
+      dt_masks_dynbuf_add_n(dborder, rborder, 2);
     }
 
     if(withpayload)
@@ -505,8 +506,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
       {
         rpayload[0] = p1[5] + tmax * (p2[5] - p1[5]);
         rpayload[1] = p1[6] + tmax * (p2[6] - p1[6]);
-        dt_masks_dynbuf_add(dpayload, rpayload[0]);
-        dt_masks_dynbuf_add(dpayload, rpayload[1]);
+        dt_masks_dynbuf_add_n(dpayload, rpayload, 2);
       }
     }
 
@@ -581,7 +581,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   // we store all points
   float dx = 0.0f, dy = 0.0f;
 
-  guint nb = g_list_length(form->points);
+  const guint nb = g_list_length(form->points);
 
   if(source && nb > 0)
   {
@@ -641,9 +641,9 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   for(int n = 0; n < 2 * nb; n++)
   {
     float p1[7], p2[7], p3[7], p4[7];
-    int k = _brush_cyclic_cursor(n, nb);
-    int k1 = _brush_cyclic_cursor(n + 1, nb);
-    int k2 = _brush_cyclic_cursor(n + 2, nb);
+    const int k = _brush_cyclic_cursor(n, nb);
+    const int k1 = _brush_cyclic_cursor(n + 1, nb);
+    const int k2 = _brush_cyclic_cursor(n + 2, nb);
 
     dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
     dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k1);
@@ -707,8 +707,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
         {
           while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
           {
-            dt_masks_dynbuf_add(dpayload, p1[5]);
-            dt_masks_dynbuf_add(dpayload, p1[6]);
+            dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
           }
         }
       }
@@ -729,8 +728,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add(dpayload, p1[5]);
-          dt_masks_dynbuf_add(dpayload, p1[6]);
+          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
         }
       }
     }
@@ -750,8 +748,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add(dpayload, p1[5]);
-          dt_masks_dynbuf_add(dpayload, p1[6]);
+          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
         }
       }
 
@@ -768,13 +765,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
 
     _brush_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, rp, dpoints, dborder, dpayload);
 
-    dt_masks_dynbuf_add(dpoints, rc[0]);
-    dt_masks_dynbuf_add(dpoints, rc[1]);
+    dt_masks_dynbuf_add_n(dpoints, rc, 2);
 
     if(dpayload)
     {
-      dt_masks_dynbuf_add(dpayload, rp[0]);
-      dt_masks_dynbuf_add(dpayload, rp[1]);
+      dt_masks_dynbuf_add_n(dpayload, rp, 2);
     }
 
     if(dborder)
@@ -789,8 +784,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
         rb[0] = dt_masks_dynbuf_get(dborder, -2);
         rb[1] = dt_masks_dynbuf_get(dborder, -1);
       }
-      dt_masks_dynbuf_add(dborder, rb[0]);
-      dt_masks_dynbuf_add(dborder, rb[1]);
+      dt_masks_dynbuf_add_n(dborder, rb, 2);
     }
 
     // we first want to be sure that there are no gaps in border
@@ -815,8 +809,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
     {
       while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
       {
-        dt_masks_dynbuf_add(dpayload, rp[0]);
-        dt_masks_dynbuf_add(dpayload, rp[1]);
+        dt_masks_dynbuf_add_n(dpayload, rp, 2);
       }
     }
   }
@@ -860,15 +853,21 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   }
 
   // if we failed, then free all and return
-  free(*points);
+  dt_free_align(*points);
   *points = NULL;
   *points_count = 0;
-  if(border) free(*border);
-  if(border) *border = NULL;
-  if(border) *border_count = 0;
-  if(payload) free(*payload);
-  if(payload) *payload = NULL;
-  if(payload) *payload_count = 0;
+  if(border)
+  {
+    dt_free_align(*border);
+    *border = NULL;
+    *border_count = 0;
+  }
+  if(payload)
+  {
+    dt_free_align(*payload);
+    *payload = NULL;
+    *payload_count = 0;
+  }
   return 0;
 }
 
@@ -932,7 +931,7 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
     int nb = 0;
     for(int i = corner_count * 3; i < gpt->border_count; i++)
     {
-      float yy = gpt->border[i * 2 + 1];
+      const float yy = gpt->border[i * 2 + 1];
       if (((yf<=yy && yf>last) || (yf>=yy && yf<last)) && (gpt->border[i * 2] > x)) nb++;
       last = yy;
     }
@@ -951,8 +950,8 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
         current_seg = (current_seg + 1) % corner_count;
       }
       //distance from tested point to current form point
-      float yy = gpt->points[i * 2 + 1];
-      float xx = gpt->points[i * 2];
+      const float yy = gpt->points[i * 2 + 1];
+      const float xx = gpt->points[i * 2];
       if ((yy-yf)<as && (yy-yf)>-as && (xx-x)<as && (xx-x)>-as)
       {
         if(current_seg == 0)
@@ -969,7 +968,7 @@ static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t 
 static int dt_brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float **points,
                                       int *points_count, float **border, int *border_count, int source)
 {
-  return _brush_get_points_border(dev, form, 0.f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
+  return _brush_get_points_border(dev, form, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
                                   border_count, NULL, NULL, source);
 }
 
@@ -978,11 +977,11 @@ static int dt_brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, 
    frills */
 static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *form, int segment)
 {
-  guint nb = g_list_length(form->points);
-  int pos0 = segment;
-  int pos1 = segment + 1;
-  int pos2 = segment + 2;
-  int pos3 = segment + 3;
+  const guint nb = g_list_length(form->points);
+  const int pos0 = segment;
+  const int pos1 = segment + 1;
+  const int pos2 = segment + 2;
+  const int pos3 = segment + 3;
 
   dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos0);
   dt_masks_point_brush_t *point1 = pos1 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos1)
@@ -997,12 +996,12 @@ static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *f
 
   for(int i = 0; i <= 100; i++)
   {
-    float t = i / 100.0f;
+    const float t = i / 100.0f;
     float sx, sy;
     _brush_get_XY(point0->corner[0], point0->corner[1], point1->corner[0], point1->corner[1],
                   point2->corner[0], point2->corner[1], point3->corner[0], point3->corner[1], t, &sx, &sy);
 
-    float d = (x - sx) * (x - sx) + (y - sy) * (y - sy);
+    const float d = (x - sx) * (x - sx) + (y - sy) * (y - sy);
     if(d < dmin)
     {
       dmin = d;
@@ -1028,13 +1027,13 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
         masks_hardness = dt_conf_get_float("plugins/darkroom/spots/brush_hardness");
-        masks_hardness = MAX(0.05f, MIN(masks_hardness * amount, 1.0f));
+        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
         dt_conf_set_float("plugins/darkroom/spots/brush_hardness", masks_hardness);
       }
       else
       {
         masks_hardness = dt_conf_get_float("plugins/darkroom/masks/brush/hardness");
-        masks_hardness = MAX(0.05f, MIN(masks_hardness * amount, 1.0f));
+        masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
         dt_conf_set_float("plugins/darkroom/masks/brush/hardness", masks_hardness);
       }
 
@@ -1043,32 +1042,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
       }
     }
-    else if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
-    {
-      float masks_density;
-      float amount = 1.03f;
-      if(up) amount = 0.97f;
-
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-      {
-        masks_density = dt_conf_get_float("plugins/darkroom/spots/brush_density");
-        masks_density = MAX(0.05f, MIN(masks_density * amount, 1.0f));
-        dt_conf_set_float("plugins/darkroom/spots/brush_density", masks_density);
-      }
-      else
-      {
-        masks_density = dt_conf_get_float("plugins/darkroom/masks/brush/density");
-        masks_density = MAX(0.05f, MIN(masks_density * amount, 1.0f));
-        dt_conf_set_float("plugins/darkroom/masks/brush/density", masks_density);
-      }
-
-      if(gui->guipoints_count > 0)
-      {
-        dt_masks_dynbuf_set(gui->guipoints_payload, -2, masks_density);
-      }
-    }
-
-    else
+    else if(state == 0)
     {
       float masks_border;
       float amount = 1.03f;
@@ -1077,13 +1051,13 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
         masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
-        masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
+        masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
         dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
       }
       else
       {
         masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
-        masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
+        masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
         dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
       }
 
@@ -1111,7 +1085,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     }
     else
     {
-      guint nb = g_list_length(form->points);
+      const guint nb = g_list_length(form->points);
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
@@ -1132,13 +1106,13 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
-          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
+          masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
-          masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
+          masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
         }
       }
@@ -1149,19 +1123,19 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
-          float masks_hardness = point->hardness;
-          point->hardness = MAX(0.05f, MIN(masks_hardness * amount, 1.0f));
+          const float masks_hardness = point->hardness;
+          point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
         }
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
           float masks_hardness = dt_conf_get_float("plugins/darkroom/spots/brush_hardness");
-          masks_hardness = MAX(0.05f, MIN(masks_hardness * amount, 1.0f));
+          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
           dt_conf_set_float("plugins/darkroom/spots/brush_hardness", masks_hardness);
         }
         else
         {
           float masks_hardness = dt_conf_get_float("plugins/darkroom/masks/brush/hardness");
-          masks_hardness = MAX(0.05f, MIN(masks_hardness * amount, 1.0f));
+          masks_hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
           dt_conf_set_float("plugins/darkroom/masks/brush/hardness", masks_hardness);
         }
       }
@@ -1190,23 +1164,20 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
-  float masks_border;
+  float masks_border = 0.0f;
   if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), 0.5f);
+    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
   else
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), 0.5f);
+    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
 
-  float masks_hardness;
+  float masks_hardness = 0.0f;
   if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), 1.0f);
+    masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), HARDNESS_MAX);
   else
-    masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), 1.0f);
+    masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), HARDNESS_MAX);
 
-  float masks_density;
-  if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_density = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_density"), 1.0f);
-  else
-    masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"), 1.0f);
+  // always start with a mask density of 100%, it will be adjusted with pen pressure if used.
+  const float masks_density = 1.0f;
 
   if(gui->creation && which == 1
      && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
@@ -1338,15 +1309,15 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     }
     else if(gui->seg_selected >= 0)
     {
-      guint nb = g_list_length(form->points);
+      const guint nb = g_list_length(form->points);
       gui->point_edited = -1;
       if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
       {
         // we add a new point to the brush
         dt_masks_point_brush_t *bzpt = (dt_masks_point_brush_t *)(malloc(sizeof(dt_masks_point_brush_t)));
 
-        float wd = darktable.develop->preview_pipe->backbuf_width;
-        float ht = darktable.develop->preview_pipe->backbuf_height;
+        const float wd = darktable.develop->preview_pipe->backbuf_width;
+        const float ht = darktable.develop->preview_pipe->backbuf_height;
         float pts[2] = { pzx * wd, pzy * ht };
         dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -1358,7 +1329,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
 
         // set other attributes of the new point. we interpolate the starting and the end point of that
         // segment
-        float t = _brush_get_position_in_segment(bzpt->corner[0], bzpt->corner[1], form, gui->seg_selected);
+        const float t = _brush_get_position_in_segment(bzpt->corner[0], bzpt->corner[1], form, gui->seg_selected);
         // start and end point of the segment
         dt_masks_point_brush_t *point0
             = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->seg_selected);
@@ -1419,7 +1390,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
         dt_masks_change_form_gui(NULL);
       else
       {
-        int emode = gui->edit_mode;
+        const int emode = gui->edit_mode;
         dt_masks_clear_form_gui(darktable.develop);
         GList *forms = g_list_first(darktable.develop->form_visible->points);
         while(forms)
@@ -1447,6 +1418,7 @@ static int dt_brush_events_button_pressed(struct dt_iop_module_t *module, float 
     form->points = g_list_remove(form->points, point);
     free(point);
     gui->point_selected = -1;
+    gui->point_edited = -1;
     _brush_init_ctrl_points(form);
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -1521,11 +1493,11 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
 
-  float masks_border;
+  float masks_border = 0.0f;
   if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), 0.5f);
+    masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
   else
-    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), 0.5f);
+    masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
 
   if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
   {
@@ -1580,13 +1552,13 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
         switch(gui->pressure_sensitivity)
         {
           case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-            payload[0] = MAX(0.005f, payload[0] * pressure);
+            payload[0] = MAX(BORDER_MIN, payload[0] * pressure);
             break;
           case DT_MASKS_PRESSURE_HARDNESS_ABS:
-            payload[1] = MAX(0.05f, pressure);
+            payload[1] = MAX(HARDNESS_MIN, pressure);
             break;
           case DT_MASKS_PRESSURE_HARDNESS_REL:
-            payload[1] = MAX(0.05f, payload[1] * pressure);
+            payload[1] = MAX(HARDNESS_MIN, payload[1] * pressure);
             break;
           case DT_MASKS_PRESSURE_OPACITY_ABS:
             payload[2] = MAX(0.05f, pressure);
@@ -1615,7 +1587,7 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
       }
 
       // accuracy level for node elimination, dependent on brush size
-      const float epsilon2 = factor * MAX(0.005f, masks_border) * MAX(0.005f, masks_border);
+      const float epsilon2 = factor * MAX(BORDER_MIN, masks_border) * MAX(BORDER_MIN, masks_border);
 
       // we simplify the path and generate the nodes
       form->points = _brush_ramer_douglas_peucker(guipoints, gui->guipoints_count, guipoints_payload, epsilon2);
@@ -1637,9 +1609,10 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
       {
         dt_dev_add_history_item(darktable.develop, crea_module, TRUE);
         // and we switch in edit mode to show all the forms
-        if(gui->creation_continuous)
+        // spots and retouch have their own handling of creation_continuous
+        if(gui->creation_continuous && ( strcmp(crea_module->so->op, "spots") == 0 || strcmp(crea_module->so->op, "retouch") == 0))
           dt_masks_set_edit_mode_single_form(crea_module, form->formid, DT_MASKS_EDIT_FULL);
-        else
+        else if(!gui->creation_continuous)
           dt_masks_set_edit_mode(crea_module, DT_MASKS_EDIT_FULL);
         dt_masks_iop_update(crea_module);
         gui->creation_module = NULL;
@@ -1651,11 +1624,30 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 
       if(gui->creation_continuous)
       {
-        dt_masks_form_t *form_new = dt_masks_create(form->type);
-        dt_masks_change_form_gui(form_new);
+        //spot and retouch manage creation_continuous in their own way
+        if(strcmp(crea_module->so->op, "spots") != 0 && strcmp(crea_module->so->op, "retouch") != 0)
+        {
+          dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)crea_module->blend_data;
+          for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
+            if(bd->masks_type[n] == form->type)
+              gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
 
-        darktable.develop->form_gui->creation = TRUE;
-        darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
+          gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+          dt_masks_form_t *newform = dt_masks_create(form->type);
+          dt_masks_change_form_gui(newform);
+          darktable.develop->form_gui->creation = TRUE;
+          darktable.develop->form_gui->creation_module = crea_module;
+          darktable.develop->form_gui->creation_continuous = TRUE;
+          darktable.develop->form_gui->creation_continuous_module = crea_module;
+        }
+        else
+        {
+          dt_masks_form_t *form_new = dt_masks_create(form->type);
+          dt_masks_change_form_gui(form_new);
+
+          darktable.develop->form_gui->creation = TRUE;
+          darktable.develop->form_gui->creation_module = gui->creation_continuous_module;
+        }
       }
       else if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
@@ -1814,8 +1806,8 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->feather_dragging);
     gui->feather_dragging = -1;
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
@@ -1860,10 +1852,10 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
                                        int which, dt_masks_form_t *form, int parentid,
                                        dt_masks_form_gui_t *gui, int index)
 {
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-  float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
+  const float as = 0.005f / zoom_scale * darktable.develop->preview_pipe->backbuf_width;
   if(!gui) return 0;
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return 0;
@@ -1888,8 +1880,8 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   }
   else if(gui->point_dragging >= 0)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_brush_t *bzpt
@@ -1912,16 +1904,16 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   else if(gui->seg_dragging >= 0)
   {
     // we get point0 new values
-    int pos2 = (gui->seg_dragging + 1) % g_list_length(form->points);
+    const int pos2 = (gui->seg_dragging + 1) % g_list_length(form->points);
     dt_masks_point_brush_t *point
         = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->seg_dragging);
     dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos2);
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
-    float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
-    float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
+    const float dx = pts[0] / darktable.develop->preview_pipe->iwidth - point->corner[0];
+    const float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
 
     // we move all points
     point->corner[0] += dx;
@@ -1950,8 +1942,8 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   }
   else if(gui->feather_dragging >= 0)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
     dt_masks_point_brush_t *point
@@ -1976,15 +1968,15 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   }
   else if(gui->point_border_dragging >= 0)
   {
-    float wd = darktable.develop->preview_pipe->backbuf_width;
-    float ht = darktable.develop->preview_pipe->backbuf_height;
+    const float wd = darktable.develop->preview_pipe->backbuf_width;
+    const float ht = darktable.develop->preview_pipe->backbuf_height;
 
-    int k = gui->point_border_dragging;
+    const int k = gui->point_border_dragging;
 
     // now we want to know the position reflected on actual corner/border segment
-    float a = (gpt->border[k * 6 + 1] - gpt->points[k * 6 + 3])
-              / (float)(gpt->border[k * 6] - gpt->points[k * 6 + 2]);
-    float b = gpt->points[k * 6 + 3] - a * gpt->points[k * 6 + 2];
+    const float a = (gpt->border[k * 6 + 1] - gpt->points[k * 6 + 3])
+                    / (float)(gpt->border[k * 6] - gpt->points[k * 6 + 2]);
+    const float b = gpt->points[k * 6 + 3] - a * gpt->points[k * 6 + 2];
 
     float pts[2];
     pts[0] = (a * pzy * ht + pzx * wd - b * a) / (a * a + 1.0);
@@ -1993,10 +1985,10 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     dt_dev_distort_backtransform(darktable.develop, pts, 1);
 
     dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
-    float nx = point->corner[0] * darktable.develop->preview_pipe->iwidth;
-    float ny = point->corner[1] * darktable.develop->preview_pipe->iheight;
-    float nr = sqrtf((pts[0] - nx) * (pts[0] - nx) + (pts[1] - ny) * (pts[1] - ny));
-    float bdr = nr / fminf(darktable.develop->preview_pipe->iwidth, darktable.develop->preview_pipe->iheight);
+    const float nx = point->corner[0] * darktable.develop->preview_pipe->iwidth;
+    const float ny = point->corner[1] * darktable.develop->preview_pipe->iheight;
+    const float nr = sqrtf((pts[0] - nx) * (pts[0] - nx) + (pts[1] - ny) * (pts[1] - ny));
+    const float bdr = nr / fminf(darktable.develop->preview_pipe->iwidth, darktable.develop->preview_pipe->iheight);
 
     point->border[0] = point->border[1] = bdr;
 
@@ -2020,14 +2012,14 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   // are we near a point or feather ?
-  guint nb = g_list_length(form->points);
+  const guint nb = g_list_length(form->points);
 
-  pzx *= darktable.develop->preview_pipe->backbuf_width,
-      pzy *= darktable.develop->preview_pipe->backbuf_height;
+  pzx *= darktable.develop->preview_pipe->backbuf_width;
+  pzy *= darktable.develop->preview_pipe->backbuf_height;
 
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
-    int k = gui->point_edited;
+    const int k = gui->point_edited;
     // we only select feather if the point is not "sharp"
     if(gpt->points[k * 6 + 2] != gpt->points[k * 6 + 4] && gpt->points[k * 6 + 3] != gpt->points[k * 6 + 5])
     {
@@ -2102,15 +2094,16 @@ static int dt_brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx
 static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index,
                                         int nb)
 {
+  if(!gui) return;
+  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  if(!gpt) return;
+
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
   const int len = sizeof(dashed) / sizeof(dashed[0]);
 
-  if(!gui) return;
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-  if(!gpt) return;
-  float dx = 0, dy = 0, dxs = 0, dys = 0;
+  float dx = 0.0f, dy = 0.0f, dxs = 0.0f, dys = 0.0f;
   if((gui->group_selected == index) && gui->form_dragging)
   {
     dx = gui->posx + gui->dx - gpt->points[2];
@@ -2125,37 +2118,36 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // in creation mode
   if(gui->creation)
   {
-    const float wd = darktable.develop->preview_pipe->iwidth;
-    const float ht = darktable.develop->preview_pipe->iheight;
+    const float pr_d = darktable.develop->preview_downsampling;
+    const float iwd = darktable.develop->preview_pipe->iwidth;
+    const float iht = darktable.develop->preview_pipe->iheight;
+    const float min_iwd_iht= pr_d * MIN(iwd,iht);
 
     if(gui->guipoints_count == 0)
     {
       dt_masks_form_t *form = darktable.develop->form_visible;
       if(!form) return;
 
-      float masks_border;
+      float masks_border = 0.0f;
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), 0.5f);
+        masks_border = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_border"), BORDER_MAX);
       else
-        masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), 0.5f);
+        masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
 
-      float masks_hardness;
+      float masks_hardness = 0.0f;
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), 1.0f);
+        masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_hardness"), HARDNESS_MAX);
       else
-        masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), 1.0f);
+        masks_hardness = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/hardness"), HARDNESS_MAX);
 
-      float masks_density;
-      if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-        masks_density = MIN(dt_conf_get_float("plugins/darkroom/spots/brush_density"), 1.0f);
-      else
-        masks_density = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/density"), 1.0f);
+      const float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
 
-      const float radius1 = masks_border * masks_hardness * MIN(wd, ht);
-      const float radius2 = masks_border * MIN(wd, ht);
+      const float radius1 = masks_border * masks_hardness * min_iwd_iht;
+      const float radius2 = masks_border * min_iwd_iht;
 
-      float xpos, ypos;
-      if((gui->posx == -1.f && gui->posy == -1.f) || gui->mouse_leaved_center)
+      float xpos = 0.0f, ypos = 0.0f;
+      if((gui->posx == -1.0f && gui->posy == -1.0f)
+         || gui->mouse_leaved_center)
       {
         xpos = (.5f + dt_control_get_dev_zoom_x()) * darktable.develop->preview_pipe->backbuf_width;
         ypos = (.5f + dt_control_get_dev_zoom_y()) * darktable.develop->preview_pipe->backbuf_height;
@@ -2167,8 +2159,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       }
 
       cairo_save(cr);
-      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, masks_density);
-      if(masks_density < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
+      dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
+      cairo_set_line_width(cr, 3.0 / zoom_scale);
       cairo_arc(cr, xpos, ypos, radius1, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
@@ -2179,8 +2171,9 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
       if(form->type & DT_MASKS_CLONE)
       {
-        float x = 0.f, y = 0.f;
-        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, xpos, ypos, xpos, ypos, &x, &y, FALSE);
+        float x = 0.0f, y = 0.0f;
+        dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, xpos, ypos,
+                                            xpos, ypos, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
 
@@ -2188,8 +2181,8 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     }
     else
     {
-      float masks_border, masks_hardness, masks_density;
-      float radius, oldradius, opacity, oldopacity, pressure;
+      float masks_border = 0.0f, masks_hardness = 0.0f, masks_density = 0.0f;
+      float radius = 0.0f, oldradius = 0.0f, opacity = 0.0f, oldopacity = 0.0f, pressure = 0.0f;
       int stroked = 1;
 
       const float *guipoints = dt_masks_dynbuf_buffer(gui->guipoints);
@@ -2198,7 +2191,6 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_save(cr);
       cairo_set_line_join(cr, CAIRO_LINE_JOIN_ROUND);
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      const float linewidth = cairo_get_line_width(cr);
       masks_border = guipoints_payload[0];
       masks_hardness = guipoints_payload[1];
       masks_density = guipoints_payload[2];
@@ -2207,10 +2199,10 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       switch(gui->pressure_sensitivity)
       {
         case DT_MASKS_PRESSURE_HARDNESS_ABS:
-          masks_hardness = MAX(0.05f, pressure);
+          masks_hardness = MAX(HARDNESS_MIN, pressure);
           break;
         case DT_MASKS_PRESSURE_HARDNESS_REL:
-          masks_hardness = MAX(0.05f, masks_hardness * pressure);
+          masks_hardness = MAX(HARDNESS_MIN, masks_hardness * pressure);
           break;
         case DT_MASKS_PRESSURE_OPACITY_ABS:
           masks_density = MAX(0.05f, pressure);
@@ -2219,7 +2211,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
           masks_density = MAX(0.05f, masks_density * pressure);
           break;
         case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-          masks_border = MAX(0.005f, masks_border * pressure);
+          masks_border = MAX(BORDER_MIN, masks_border * pressure);
           break;
         default:
         case DT_MASKS_PRESSURE_OFF:
@@ -2227,7 +2219,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
           break;
       }
 
-      radius = oldradius = masks_border * masks_hardness * MIN(wd, ht);
+      radius = oldradius = masks_border * masks_hardness * min_iwd_iht;
       opacity = oldopacity = masks_density;
 
       cairo_set_line_width(cr, 2 * radius);
@@ -2246,10 +2238,10 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         switch(gui->pressure_sensitivity)
         {
           case DT_MASKS_PRESSURE_HARDNESS_ABS:
-            masks_hardness = MAX(0.05f, pressure);
+            masks_hardness = MAX(HARDNESS_MIN, pressure);
             break;
           case DT_MASKS_PRESSURE_HARDNESS_REL:
-            masks_hardness = MAX(0.05f, masks_hardness * pressure);
+            masks_hardness = MAX(HARDNESS_MIN, masks_hardness * pressure);
             break;
           case DT_MASKS_PRESSURE_OPACITY_ABS:
             masks_density = MAX(0.05f, pressure);
@@ -2258,7 +2250,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
             masks_density = MAX(0.05f, masks_density * pressure);
             break;
           case DT_MASKS_PRESSURE_BRUSHSIZE_REL:
-            masks_border = MAX(0.005f, masks_border * pressure);
+            masks_border = MAX(BORDER_MIN, masks_border * pressure);
             break;
           default:
           case DT_MASKS_PRESSURE_OFF:
@@ -2266,7 +2258,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
             break;
         }
 
-        radius = masks_border * masks_hardness * MIN(wd, ht);
+        radius = masks_border * masks_hardness * min_iwd_iht;
         opacity = masks_density;
 
         if(radius != oldradius || opacity != oldopacity)
@@ -2282,24 +2274,25 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       }
       if(!stroked) cairo_stroke(cr);
 
-      cairo_set_line_width(cr, linewidth);
+      cairo_set_line_width(cr, 3.0 / zoom_scale);
       dt_gui_gtk_set_source_rgba(cr, DT_GUI_COLOR_BRUSH_CURSOR, opacity);
-      if(opacity < 1.0) cairo_set_line_width(cr, cairo_get_line_width(cr) * .8);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
-                guipoints[2 * (gui->guipoints_count - 1) + 1], radius, 0, 2.0 * M_PI);
+                guipoints[2 * (gui->guipoints_count - 1) + 1],
+                radius, 0, 2.0 * M_PI);
       cairo_fill_preserve(cr);
       cairo_set_source_rgba(cr, .8, .8, .8, .8);
       cairo_stroke(cr);
       cairo_set_dash(cr, dashed, len, 0);
       cairo_arc(cr, guipoints[2 * (gui->guipoints_count - 1)],
-                guipoints[2 * (gui->guipoints_count - 1) + 1], masks_border * MIN(wd, ht), 0,
+                guipoints[2 * (gui->guipoints_count - 1) + 1], masks_border * min_iwd_iht, 0,
                 2.0 * M_PI);
       cairo_stroke(cr);
 
-      if(darktable.develop->form_visible && (darktable.develop->form_visible->type & DT_MASKS_CLONE))
+      if(darktable.develop->form_visible
+         && (darktable.develop->form_visible->type & DT_MASKS_CLONE))
       {
         const int i = gui->guipoints_count - 1;
-        float x = 0.f, y = 0.f;
+        float x = 0.0f, y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_BRUSH, guipoints[0], guipoints[1], guipoints[i * 2],
                                             guipoints[i * 2 + 1], &x, &y, TRUE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
@@ -2308,7 +2301,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_restore(cr);
     }
     return;
-  }
+  } // creation
 
   // draw path
   if(gpt->points_count > nb * 3 + 2)
@@ -2329,14 +2322,14 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
           cairo_set_line_width(cr, 5.0 / zoom_scale);
         else
           cairo_set_line_width(cr, 3.0 / zoom_scale);
-        cairo_set_source_rgba(cr, .3, .3, .3, .8);
+        dt_draw_set_color_overlay(cr, 0.3, 0.8);
         cairo_stroke_preserve(cr);
         if((gui->group_selected == index)
            && (gui->form_selected || gui->form_dragging || gui->seg_selected == seg2))
           cairo_set_line_width(cr, 2.0 / zoom_scale);
         else
           cairo_set_line_width(cr, 1.0 / zoom_scale);
-        cairo_set_source_rgba(cr, .8, .8, .8, .8);
+        dt_draw_set_color_overlay(cr, 0.8, 0.8);
         cairo_stroke(cr);
         // and we update the segment number
         seg = (seg + 1) % nb;
@@ -2347,11 +2340,11 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   }
 
   // draw corners
-  float anchor_size;
   if(gui->group_selected == index && gpt->points_count > nb * 3 + 2)
   {
     for(int k = 0; k < nb; k++)
     {
+      float anchor_size = 0.0f;
       if(k == gui->point_dragging || k == gui->point_selected)
       {
         anchor_size = 7.0f / zoom_scale;
@@ -2360,7 +2353,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       {
         anchor_size = 5.0f / zoom_scale;
       }
-      cairo_set_source_rgba(cr, .8, .8, .8, .8);
+      dt_draw_set_color_overlay(cr, 0.8, 0.8);
       cairo_rectangle(cr, gpt->points[k * 6 + 2] - (anchor_size * 0.5) + dx,
                       gpt->points[k * 6 + 3] - (anchor_size * 0.5) + dy, anchor_size, anchor_size);
       cairo_fill_preserve(cr);
@@ -2372,7 +2365,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         cairo_set_line_width(cr, 2.0 / zoom_scale);
       else
         cairo_set_line_width(cr, 1.0 / zoom_scale);
-      cairo_set_source_rgba(cr, .3, .3, .3, .8);
+      dt_draw_set_color_overlay(cr, 0.3, 0.8);
       cairo_stroke(cr);
     }
   }
@@ -2380,7 +2373,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // draw feathers
   if((gui->group_selected == index) && gui->point_edited >= 0)
   {
-    int k = gui->point_edited;
+    const int k = gui->point_edited;
     // uncomment this part if you want to see "real" control points
     /*cairo_move_to(cr, gui->points[k*6+2]+dx,gui->points[k*6+3]+dy);
     cairo_line_to(cr, gui->points[k*6]+dx,gui->points[k*6+1]+dy);
@@ -2394,29 +2387,27 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     cairo_move_to(cr, gpt->points[k * 6 + 2] + dx, gpt->points[k * 6 + 3] + dy);
     cairo_line_to(cr, ffx, ffy);
     cairo_set_line_width(cr, 1.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_stroke_preserve(cr);
     cairo_set_line_width(cr, 0.75 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_stroke(cr);
 
     if((gui->group_selected == index) && (k == gui->feather_dragging || k == gui->feather_selected))
       cairo_arc(cr, ffx, ffy, 3.0f / zoom_scale, 0, 2.0 * M_PI);
     else
       cairo_arc(cr, ffx, ffy, 1.5f / zoom_scale, 0, 2.0 * M_PI);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_fill_preserve(cr);
 
     cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_stroke(cr);
   }
 
   // draw border and corners
   if((gui->group_selected == index) && gpt->border_count > nb * 3 + 2)
   {
-
-
     cairo_move_to(cr, gpt->border[nb * 6] + dx, gpt->border[nb * 6 + 1] + dy);
 
     for(int i = nb * 3 + 1; i < gpt->border_count; i++)
@@ -2428,14 +2419,14 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_set_dash(cr, dashed, len, 0);
     cairo_stroke_preserve(cr);
     if(gui->border_selected)
       cairo_set_line_width(cr, 2.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.0 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_set_dash(cr, dashed, len, 4);
     cairo_stroke(cr);
 
@@ -2479,13 +2470,13 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_line_width(cr, 2.5 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_stroke_preserve(cr);
     if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 0.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_stroke(cr);
 
     // we draw the source
@@ -2494,7 +2485,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_line_width(cr, 2.5 / zoom_scale);
     else
       cairo_set_line_width(cr, 1.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .3, .3, .3, .8);
+    dt_draw_set_color_overlay(cr, 0.3, 0.8);
     cairo_move_to(cr, gpt->source[nb * 6] + dxs, gpt->source[nb * 6 + 1] + dys);
     for(int i = nb * 3; i < gpt->source_count; i++)
       cairo_line_to(cr, gpt->source[i * 2] + dxs, gpt->source[i * 2 + 1] + dys);
@@ -2504,7 +2495,7 @@ static void dt_brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       cairo_set_line_width(cr, 1.0 / zoom_scale);
     else
       cairo_set_line_width(cr, 0.5 / zoom_scale);
-    cairo_set_source_rgba(cr, .8, .8, .8, .8);
+    dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_stroke(cr);
   }
 }
@@ -2519,21 +2510,21 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 1))
   {
-    free(points);
-    free(border);
+    dt_free_align(points);
+    dt_free_align(border);
     return 0;
   }
 
   // now we want to find the area, so we search min/max points
-  float xmin, xmax, ymin, ymax;
+  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
   guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
-    float xx = border[i * 2];
-    float yy = border[i * 2 + 1];
+    const float xx = border[i * 2];
+    const float yy = border[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
@@ -2542,16 +2533,16 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   for(int i = nb_corner * 3; i < points_count; i++)
   {
     // we look at the brush too
-    float xx = points[i * 2];
-    float yy = points[i * 2 + 1];
+    const float xx = points[i * 2];
+    const float yy = points[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free_align(points);
+  dt_free_align(border);
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
   *posx = xmin - 2;
@@ -2569,21 +2560,21 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
                                &border, &border_count, NULL, NULL, 0))
   {
-    free(points);
-    free(border);
+    dt_free_align(points);
+    dt_free_align(border);
     return 0;
   }
 
   // now we want to find the area, so we search min/max points
-  float xmin, xmax, ymin, ymax;
+  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
   guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
-    float xx = border[i * 2];
-    float yy = border[i * 2 + 1];
+    const float xx = border[i * 2];
+    const float yy = border[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
@@ -2592,16 +2583,16 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   for(int i = nb_corner * 3; i < points_count; i++)
   {
     // we look at the brush too
-    float xx = points[i * 2];
-    float yy = points[i * 2 + 1];
+    const float xx = points[i * 2];
+    const float yy = points[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
     ymax = fmaxf(yy, ymax);
   }
 
-  free(points);
-  free(border);
+  dt_free_align(points);
+  dt_free_align(border);
 
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
@@ -2628,13 +2619,13 @@ static void _brush_falloff(float **buffer, int *p0, int *p1, int posx, int posy,
     const int x = (int)((float)i * lx / (float)l) + p0[0] - posx;
     const int y = (int)((float)i * ly / (float)l) + p0[1] - posy;
     const float op = density * ((i <= solid) ? 1.0f : 1.0 - (float)(i - solid) / (float)soft);
-    (*buffer)[y * bw + x] = fmaxf((*buffer)[y * bw + x], op);
+    (*buffer)[y * bw + x] = MAX((*buffer)[y * bw + x], op);
     if(x > 0)
       (*buffer)[y * bw + x - 1]
-          = fmaxf((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
+          = MAX((*buffer)[y * bw + x - 1], op); // this one is to avoid gap due to int rounding
     if(y > 0)
       (*buffer)[(y - 1) * bw + x]
-          = fmaxf((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
+          = MAX((*buffer)[(y - 1) * bw + x], op); // this one is to avoid gap due to int rounding
   }
 }
 
@@ -2651,9 +2642,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe,&points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
     return 0;
   }
 
@@ -2669,8 +2660,8 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
-    float xx = border[i * 2];
-    float yy = border[i * 2 + 1];
+    const float xx = border[i * 2];
+    const float yy = border[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
@@ -2679,8 +2670,8 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   for(int i = nb_corner * 3; i < points_count; i++)
   {
     // we look at the brush too
-    float xx = points[i * 2];
-    float yy = points[i * 2 + 1];
+    const float xx = points[i * 2];
+    const float yy = points[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
@@ -2698,7 +2689,16 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 //   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = calloc((size_t)(*width) * (*height), sizeof(float));
+  const size_t bufsize = (size_t)(*width) * (*height)  * sizeof(float);
+  *buffer = dt_alloc_align(64, bufsize);
+  if(*buffer == NULL)
+  {
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
+    return 0;
+  }
+  memset(*buffer, 0, bufsize);
 
   // now we fill the falloff
   int p0[2], p1[2];
@@ -2713,9 +2713,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     _brush_falloff(buffer, p0, p1, *posx, *posy, *width, payload[i * 2], payload[i * 2 + 1]);
   }
 
-  free(points);
-  free(border);
-  free(payload);
+  dt_free_align(points);
+  dt_free_align(border);
+  dt_free_align(payload);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,
@@ -2725,7 +2725,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 }
 
 /** we write a falloff segment respecting limits of buffer */
-static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, int bh, float hardness,
+static inline void _brush_falloff_roi(float *buffer, const int *p0, const int *p1, int bw, int bh, float hardness,
                                       float density)
 {
   // segment length (increase by 1 to avoid division-by-zero special case handling)
@@ -2744,7 +2744,7 @@ static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, i
   float fy = p0[1];
 
   float op = density;
-  float dop = density / (float)(l - solid);
+  const float dop = density / (float)(l - solid);
 
   for(int i = 0; i < l; i++)
   {
@@ -2759,11 +2759,11 @@ static inline void _brush_falloff_roi(float *buffer, int *p0, int *p1, int bw, i
 
     float *buf = buffer + (size_t)y * bw + x;
 
-    *buf = fmaxf(*buf, op);
+    *buf = MAX(*buf, op);
     if(x + dx >= 0 && x + dx < bw)
-      buf[dpx] = fmaxf(buf[dpx], op); // this one is to avoid gaps due to int rounding
+      buf[dpx] = MAX(buf[dpx], op); // this one is to avoid gaps due to int rounding
     if(y + dy >= 0 && y + dy < bh)
-      buf[dpy] = fmaxf(buf[dpy], op); // this one is to avoid gaps due to int rounding
+      buf[dpy] = MAX(buf[dpy], op); // this one is to avoid gaps due to int rounding
   }
 }
 
@@ -2784,12 +2784,13 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   float *points = NULL, *border = NULL, *payload = NULL;
 
   int points_count, border_count, payload_count;
+
   if(!_brush_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe,&points, &points_count,
                                &border, &border_count, &payload, &payload_count, 0))
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
     return 0;
   }
 
@@ -2800,35 +2801,35 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   // empty the output buffer
   memset(buffer, 0, (size_t)width * height * sizeof(float));
 
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
 
   // we shift and scale down brush and border
   for(int i = nb_corner * 3; i < border_count; i++)
   {
-    float xx = border[2 * i];
-    float yy = border[2 * i + 1];
+    const float xx = border[2 * i];
+    const float yy = border[2 * i + 1];
     border[2 * i] = xx * scale - px;
     border[2 * i + 1] = yy * scale - py;
   }
 
   for(int i = nb_corner * 3; i < points_count; i++)
   {
-    float xx = points[2 * i];
-    float yy = points[2 * i + 1];
+    const float xx = points[2 * i];
+    const float yy = points[2 * i + 1];
     points[2 * i] = xx * scale - px;
     points[2 * i + 1] = yy * scale - py;
   }
 
   // now we want to find the area, so we search min/max points
-  float xmin, xmax, ymin, ymax;
+  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
 
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
-    float xx = border[i * 2];
-    float yy = border[i * 2 + 1];
+    const float xx = border[i * 2];
+    const float yy = border[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
@@ -2837,8 +2838,8 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   for(int i = nb_corner * 3; i < points_count; i++)
   {
     // we look at the brush too
-    float xx = points[i * 2];
-    float yy = points[i * 2 + 1];
+    const float xx = points[i * 2];
+    const float yy = points[i * 2 + 1];
     xmin = fminf(xx, xmin);
     xmax = fmaxf(xx, xmax);
     ymin = fminf(yy, ymin);
@@ -2853,20 +2854,26 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   // check if the path completely lies outside of roi -> we're done/mask remains empty
   if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
   {
-    free(points);
-    free(border);
-    free(payload);
+    dt_free_align(points);
+    dt_free_align(border);
+    dt_free_align(payload);
     return 1;
   }
 
   // now we fill the falloff
-  int p0[2], p1[2];
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(nb_corner, border_count, width, height) \
+  shared(buffer, points, border, payload)
+#else
+#pragma omp parallel for shared(buffer)
+#endif
+#endif
   for(int i = nb_corner * 3; i < border_count; i++)
   {
-    p0[0] = points[i * 2];
-    p0[1] = points[i * 2 + 1];
-    p1[0] = border[i * 2];
-    p1[1] = border[i * 2 + 1];
+    const int p0[] = { points[i * 2], points[i * 2 + 1] };
+    const int p1[] = { border[i * 2], border[i * 2 + 1] };
 
     if(MAX(p0[0], p1[0]) < 0 || MIN(p0[0], p1[0]) >= width || MAX(p0[1], p1[1]) < 0
        || MIN(p0[1], p1[1]) >= height)
@@ -2875,9 +2882,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
     _brush_falloff_roi(buffer, p0, p1, width, height, payload[i * 2], payload[i * 2 + 1]);
   }
 
-  free(points);
-  free(border);
-  free(payload);
+  dt_free_align(points);
+  dt_free_align(border);
+  dt_free_align(payload);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush fill buffer took %0.04f sec\n", form->name,

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@
 
 #include "common/dlopencl.h"
 #include "common/dtpthread.h"
+#include "common/iop_profile.h"
 #include "control/conf.h"
 
 // #pragma GCC diagnostic push
@@ -173,10 +174,10 @@ typedef struct dt_opencl_t
 
   // global kernels for dwt filter.
   struct dt_dwt_cl_global_t *dwt;
-  
+
   // global kernels for heal filter.
   struct dt_heal_cl_global_t *heal;
-  
+
   // global kernels for colorspaces filter.
   struct dt_colorspaces_cl_global_t *colorspaces;
 

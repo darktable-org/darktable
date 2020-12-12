@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 Henrik Andersson.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -23,20 +23,8 @@
 */
 typedef enum dt_lib_modulegroup_t
 {
-  DT_MODULEGROUP_ACTIVE_PIPE,
-  DT_MODULEGROUP_FAVORITES,
-
-  DT_MODULEGROUP_BASIC,
-  DT_MODULEGROUP_TONE,
-  DT_MODULEGROUP_COLOR,
-  DT_MODULEGROUP_CORRECT,
-  DT_MODULEGROUP_EFFECT,
-
-  /* don't touch the following */
-  DT_MODULEGROUP_SIZE,
-
-  DT_MODULEGROUP_NONE
-
+  DT_MODULEGROUP_NONE = -1,
+  DT_MODULEGROUP_ACTIVE_PIPE = 0
 } dt_lib_modulegroup_t;
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 Henrik Andersson.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,9 +57,10 @@ const char *dt_import_session_name(struct dt_import_session_t *self);
 /** \brief get import session filename.
     \param[in] current If TRUE the current filename will be returned without evaluating a new filename.
  */
-const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean current);
+const char *dt_import_session_filename(struct dt_import_session_t *self, gboolean use_filename);
 /** \brief get import session path
-    \param[in] current If TRUE the current filename will be returned without evaluating a new filename.
+    \param[in] use_filename If TRUE the filename passed by dt_import_session_set_filename will be returned
+    without evaluating a new filename.
 */
 const char *dt_import_session_path(struct dt_import_session_t *self, gboolean current);
 

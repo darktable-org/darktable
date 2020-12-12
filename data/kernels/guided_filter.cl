@@ -18,7 +18,6 @@
 
 #include "common.h"
 
-
 kernel void guided_filter_split_rgb_image(const int width, const int height, read_only image2d_t in,
                                           write_only image2d_t out_r, write_only image2d_t out_g,
                                           write_only image2d_t out_b, const float guide_weight)
@@ -34,6 +33,16 @@ kernel void guided_filter_split_rgb_image(const int width, const int height, rea
 }
 
 
+// Kahan summation algorithm
+#define Kahan_sum(m, c, add)                                                                                      \
+  {                                                                                                               \
+    const float t1 = (add) - (c);                                                                                 \
+    const float t2 = (m) + t1;                                                                                    \
+    c = (t2 - m) - t1;                                                                                            \
+    m = t2;                                                                                                       \
+  }
+
+
 kernel void guided_filter_box_mean_x(const int width, const int height, read_only image2d_t in,
                                      write_only image2d_t out, const int w)
 {
@@ -41,29 +50,30 @@ kernel void guided_filter_box_mean_x(const int width, const int height, read_onl
   const int y = get_global_id(1);
   if(x >= 1 || y >= height) return;
 
-  float m = 0.f, n_box = 0.f;
+  float m = 0.f, n_box = 0.f, c = 0.f;
   if(width > 2 * w)
   {
     for(int i = 0, i_end = w + 1; i < i_end; i++)
     {
-      m += read_imagef(in, sampleri, (int2)(i, y)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(i, y)).x);
       n_box += 1.f;
     }
     for(int i = 0, i_end = w; i < i_end; i++)
     {
       write_imagef(out, (int2)(i, y), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
-      m += read_imagef(in, sampleri, (int2)(i + w + 1, y)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(i + w + 1, y)).x);
       n_box += 1.f;
     }
     for(int i = w, i_end = width - w - 1; i < i_end; i++)
     {
       write_imagef(out, (int2)(i, y), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
-      m += read_imagef(in, sampleri, (int2)(i + w + 1, y)).x - read_imagef(in, sampleri, (int2)(i - w, y)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(i + w + 1, y)).x);
+      Kahan_sum(m, c, -read_imagef(in, sampleri, (int2)(i - w, y)).x);
     }
     for(int i = width - w - 1, i_end = width; i < i_end; i++)
     {
       write_imagef(out, (int2)(i, y), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
-      m -= read_imagef(in, sampleri, (int2)(i - w, y)).x;
+      Kahan_sum(m, c, -read_imagef(in, sampleri, (int2)(i - w, y)).x);
       n_box -= 1.f;
     }
   }
@@ -71,7 +81,7 @@ kernel void guided_filter_box_mean_x(const int width, const int height, read_onl
   {
     for(int i = 0, i_end = min(w + 1, width); i < i_end; i++)
     {
-      m += read_imagef(in, sampleri, (int2)(i, y)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(i, y)).x);
       n_box += 1.f;
     }
     for(int i = 0; i < width; i++)
@@ -79,12 +89,12 @@ kernel void guided_filter_box_mean_x(const int width, const int height, read_onl
       write_imagef(out, (int2)(i, y), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
       if(i - w >= 0)
       {
-        m -= read_imagef(in, sampleri, (int2)(i - w, y)).x;
+        Kahan_sum(m, c, -read_imagef(in, sampleri, (int2)(i - w, y)).x);
         n_box -= 1.f;
       }
       if(i + w + 1 < width)
       {
-        m += read_imagef(in, sampleri, (int2)(i + w + 1, y)).x;
+        Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(i + w + 1, y)).x);
         n_box += 1.f;
       }
     }
@@ -99,29 +109,30 @@ kernel void guided_filter_box_mean_y(const int width, const int height, read_onl
   const int y = get_global_id(1);
   if(x >= width || y >= 1) return;
 
-  float m = 0.f, n_box = 0.f;
+  float m = 0.f, n_box = 0.f, c = 0.f;
   if(height > 2 * w)
   {
     for(int i = 0, i_end = w + 1; i < i_end; i++)
     {
-      m += read_imagef(in, sampleri, (int2)(x, i)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(x, i)).x);
       n_box += 1.f;
     }
     for(int i = 0, i_end = w; i < i_end; i++)
     {
       write_imagef(out, (int2)(x, i), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
-      m += read_imagef(in, sampleri, (int2)(x, i + w + 1)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(x, i + w + 1)).x);
       n_box += 1.f;
     }
     for(int i = w, i_end = height - w - 1; i < i_end; i++)
     {
       write_imagef(out, (int2)(x, i), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
-      m += read_imagef(in, sampleri, (int2)(x, i + w + 1)).x - read_imagef(in, sampleri, (int2)(x, i - w)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(x, i + w + 1)).x);
+      Kahan_sum(m, c, -read_imagef(in, sampleri, (int2)(x, i - w)).x);
     }
     for(int i = height - w - 1, i_end = height; i < i_end; i++)
     {
       write_imagef(out, (int2)(x, i), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
-      m -= read_imagef(in, sampleri, (int2)(x, i - w)).x;
+      Kahan_sum(m, c, -read_imagef(in, sampleri, (int2)(x, i - w)).x);
       n_box -= 1.f;
     }
   }
@@ -129,7 +140,7 @@ kernel void guided_filter_box_mean_y(const int width, const int height, read_onl
   {
     for(int i = 0, i_end = min(w + 1, height); i < i_end; i++)
     {
-      m += read_imagef(in, sampleri, (int2)(x, i)).x;
+      Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(x, i)).x);
       n_box += 1.f;
     }
     for(int i = 0; i < height; i++)
@@ -137,12 +148,12 @@ kernel void guided_filter_box_mean_y(const int width, const int height, read_onl
       write_imagef(out, (int2)(x, i), (float4)(m / n_box, 0.0f, 0.0f, 0.0f));
       if(i - w >= 0)
       {
-        m -= read_imagef(in, sampleri, (int2)(x, i - w)).x;
+        Kahan_sum(m, c, -read_imagef(in, sampleri, (int2)(x, i - w)).x);
         n_box -= 1.f;
       }
       if(i + w + 1 < height)
       {
-        m += read_imagef(in, sampleri, (int2)(x, i + w + 1)).x;
+        Kahan_sum(m, c, read_imagef(in, sampleri, (int2)(x, i + w + 1)).x);
         n_box += 1.f;
       }
     }

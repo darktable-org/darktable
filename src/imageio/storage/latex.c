@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2011 johannes hanika.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -174,7 +174,8 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(entry_changed_callback), self);
   g_free(tooltip_text);
 
-  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_DO_NOT_USE_BORDER, NULL);
+  widget = dtgtk_button_new(dtgtk_cairo_paint_directory, CPF_NONE, NULL);
+  gtk_widget_set_name(widget, "non-flat");
   gtk_widget_set_tooltip_text(widget, _("select directory"));
   gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
@@ -223,8 +224,9 @@ static gint sort_pos(pair_t *a, pair_t *b)
 
 int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, const int imgid,
           dt_imageio_module_format_t *format, dt_imageio_module_data_t *fdata, const int num, const int total,
-          const gboolean high_quality, const gboolean upscale, dt_colorspaces_color_profile_type_t icc_type,
-          const gchar *icc_filename, dt_iop_color_intent_t icc_intent, dt_export_metadata_t *metadata)
+          const gboolean high_quality, const gboolean upscale, const gboolean export_masks,
+          dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename, dt_iop_color_intent_t icc_intent,
+          dt_export_metadata_t *metadata)
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)sdata;
 
@@ -276,7 +278,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     }
 
     // store away dir.
-    snprintf(d->cached_dirname, sizeof(d->cached_dirname), "%s", dirname);
+    g_strlcpy(d->cached_dirname, dirname, sizeof(d->cached_dirname));
 
     c = filename + strlen(filename);
     //     for(; c>filename && *c != '.' && *c != '/' ; c--);
@@ -331,7 +333,7 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
       ;
     if(*c == '/') c++;
     if(c <= filename) c = filename;
-    snprintf(relfilename, sizeof(relfilename), "%s", c);
+    g_strlcpy(relfilename, c, sizeof(relfilename));
 
     snprintf(pair->line, sizeof(pair->line),
              "\\begin{minipage}{\\imgwidth}%%\n"
@@ -355,8 +357,8 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
   /* export image to file */
-  dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, icc_type, icc_filename, icc_intent,
-                    self, sdata, num, total, metadata);
+  dt_imageio_export(imgid, filename, format, fdata, high_quality, upscale, TRUE, export_masks, icc_type, icc_filename,
+                    icc_intent, self, sdata, num, total, metadata);
 
   printf("[export_job] exported to `%s'\n", filename);
   dt_control_log(ngettext("%d/%d exported to `%s'", "%d/%d exported to `%s'", num),
@@ -396,7 +398,7 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
 {
   dt_imageio_latex_t *d = (dt_imageio_latex_t *)dd;
   char filename[PATH_MAX] = { 0 };
-  snprintf(filename, sizeof(filename), "%s", d->cached_dirname);
+  g_strlcpy(filename, d->cached_dirname, sizeof(filename));
   char *c = filename + strlen(filename);
 
   sprintf(c, "/photobook.cls");

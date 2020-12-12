@@ -58,6 +58,21 @@
   </para>
 
   <para>
+    Hitting <quote>compress history stack</quote> while holding the <emphasis>Ctrl</emphasis> 
+    key truncates the history stack without compressing it i.e. it discards all modules 
+    above the currently selected one without suppressing obsolete items in the rest of the
+    stack.
+  </para>
+
+  <para>
+    Hovering the mouse over an item in the history stack will show a tooltip with all the
+    detailed changes that were made in that module compared to its previous or the default
+    state. This could help track down adjustments that were made unintentionally and that
+    cause a module to have unintended effects. Especially in complex modules with many tabs,
+    or in parametric blending settings, this can avoid tedious searching.
+  </para>
+
+  <para>
     The button to the right
     <inlinegraphic fileref="&icon_styles;" scalefit="1" width="2%" align="center" />
     lets you create a new style for applying your history stack to other images. Use the first

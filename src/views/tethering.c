@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 -- 2014 henrik andersson.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -30,15 +30,23 @@
 
 
 #include "common/camera_control.h"
+#include "common/collection.h"
+#include "common/colorspaces.h"
 #include "common/darktable.h"
 #include "common/image_cache.h"
+#include "common/imageio.h"
 #include "common/import_session.h"
+#include "common/iop_profile.h"
+#include "common/selection.h"
 #include "common/utility.h"
 #include "common/variables.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
 #include "control/settings.h"
+#include "develop/imageop_math.h"
+#include "develop/noise_generator.h"
+#include "dtgtk/thumbtable.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -79,14 +87,15 @@ typedef struct dt_capture_t
   /** Cursor position for dragging the zoomed live view */
   double live_view_zoom_cursor_x, live_view_zoom_cursor_y;
 
+  gboolean busy;
 } dt_capture_t;
 
 /* signal handler for filmstrip image switching */
-static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointer user_data);
+static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data);
 
 static void _capture_view_set_jobcode(const dt_view_t *view, const char *name);
 static const char *_capture_view_get_jobcode(const dt_view_t *view);
-static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view);
+static int32_t _capture_view_get_selected_imgid(const dt_view_t *view);
 
 const char *name(const dt_view_t *self)
 {
@@ -98,27 +107,26 @@ uint32_t view(const dt_view_t *self)
   return DT_VIEW_TETHERING;
 }
 
-static void _view_capture_filmstrip_activate_callback(gpointer instance, gpointer user_data)
+static void _view_capture_filmstrip_activate_callback(gpointer instance, int imgid, gpointer user_data)
 {
-  if(dt_view_filmstrip_get_activated_imgid(darktable.view_manager) >= 0) dt_control_queue_redraw_center();
-}
+  dt_view_t *self = (dt_view_t *)user_data;
+  dt_capture_t *lib = (dt_capture_t *)self->data;
 
-static gboolean film_strip_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                              GdkModifierType modifier, gpointer data)
-{
-  dt_lib_module_t *m = darktable.view_manager->proxy.filmstrip.module;
-  gboolean vs = dt_lib_is_visible(m);
-  dt_lib_set_visible(m, !vs);
-  return TRUE;
+  lib->image_id = imgid;
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(lib->image_id, TRUE);
+  if(imgid >= 0)
+  {
+    dt_collection_memory_update();
+    dt_selection_select_single(darktable.selection, imgid);
+    dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), imgid, TRUE);
+    dt_control_queue_redraw_center();
+  }
 }
-
 
 void init(dt_view_t *self)
 {
   self->data = calloc(1, sizeof(dt_capture_t));
-
-  /* prefetch next few from first selected image on. */
-  dt_view_filmstrip_prefetch();
 
   /* setup the tethering view proxy */
   darktable.view_manager->proxy.tethering.view = self;
@@ -133,7 +141,7 @@ void cleanup(dt_view_t *self)
 }
 
 
-static uint32_t _capture_view_get_selected_imgid(const dt_view_t *view)
+static int32_t _capture_view_get_selected_imgid(const dt_view_t *view)
 {
   g_assert(view != NULL);
   dt_capture_t *cv = (dt_capture_t *)view->data;
@@ -161,64 +169,247 @@ void configure(dt_view_t *self, int wd, int ht)
   // dt_capture_t *lib=(dt_capture_t*)self->data;
 }
 
+typedef struct _tethering_format_t
+{
+  dt_imageio_module_data_t head;
+  float *buf;
+} _tethering_format_t;
+
+static const char *_tethering_mime(dt_imageio_module_data_t *data)
+{
+  return "memory";
+}
+
+static int _tethering_levels(dt_imageio_module_data_t *data)
+{
+  return IMAGEIO_RGB | IMAGEIO_FLOAT;
+}
+
+static int _tethering_bpp(dt_imageio_module_data_t *data)
+{
+  return 32;
+}
+
+static int _tethering_write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
+                                  dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
+                                  void *exif, int exif_len, int imgid, int num, int total,
+                                  dt_dev_pixelpipe_t *pipe, const gboolean export_masks)
+{
+  _tethering_format_t *d = (_tethering_format_t *)data;
+  d->buf = (float *)malloc(sizeof(float) * 4 * d->head.width * d->head.height);
+  memcpy(d->buf, in, sizeof(float) * 4 * d->head.width * d->head.height);
+  return 0;
+}
+
 #define MARGIN DT_PIXEL_APPLY_DPI(20)
 #define BAR_HEIGHT DT_PIXEL_APPLY_DPI(18) /* see libs/camera.c */
+
+static gboolean _expose_again(gpointer user_data)
+{
+  dt_control_queue_redraw_center();
+  return FALSE;
+}
+
 static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                           int32_t pointery)
+                                  int32_t pointery)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
   dt_camera_t *cam = (dt_camera_t *)darktable.camctl->active_camera;
+  if(!cam) return;
+
   lib->image_over = DT_VIEW_DESERT;
-  lib->image_id = dt_view_filmstrip_get_activated_imgid(darktable.view_manager);
+  GSList *l = dt_view_active_images_get();
+  if(g_slist_length(l) > 0) lib->image_id = GPOINTER_TO_INT(g_slist_nth_data(l, 0));
+
+  lib->image_over = lib->image_id;
 
   if(cam->is_live_viewing == TRUE) // display the preview
   {
-    dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-    if(GDK_IS_PIXBUF(cam->live_view_pixbuf))
+    dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
+    if(cam->live_view_buffer)
     {
-      gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-      gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+      const gint pw = cam->live_view_width;
+      const gint ph = cam->live_view_height;
+      const uint8_t *const p_buf = cam->live_view_buffer;
 
-      float w = width - (MARGIN * 2.0f);
-      float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
+      // draw live view image
+      uint8_t *const tmp_i = dt_alloc_align(64, sizeof(uint8_t) * pw * ph * 4);
+      if(tmp_i)
+      {
+        const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, pw);
+        pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
+        // FIXME: if liveview image is tagged and we can read its colorspace, use that
+        cmsDoTransformLineStride(darktable.color_profiles->transform_srgb_to_display, p_buf, tmp_i, pw, ph, pw * 4,
+                                 stride, 0, 0);
+        pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-      float scale;
-      if(cam->live_view_rotation % 2 == 0)
-        scale = fminf(w / pw, h / ph);
-      else
-        scale = fminf(w / ph, h / pw);
-      scale = fminf(1.0, scale);
+        cairo_surface_t *source
+            = dt_cairo_image_surface_create_for_data(tmp_i, CAIRO_FORMAT_RGB24, pw, ph, stride);
+        if(cairo_surface_status(source) == CAIRO_STATUS_SUCCESS)
+        {
+          const float w = width - (MARGIN * 2.0f);
+          const float h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
+          float scale;
+          if(cam->live_view_rotation % 2 == 0)
+            scale = fminf(w / pw, h / ph);
+          else
+            scale = fminf(w / ph, h / pw);
+          scale = fminf(1.0, scale);
 
-      cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5);  // origin to middle of canvas
-      if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);     // mirror image
-      cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation);            // rotate around middle
-      if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale); // scale to fit canvas
-      cairo_translate(cr, -0.5 * pw, -0.5 * ph);                      // origin back to corner
+          // FIXME: use cairo_pattern_set_filter()?
+          cairo_translate(cr, width * 0.5, (height + BAR_HEIGHT) * 0.5); // origin to middle of canvas
+          if(cam->live_view_flip == TRUE) cairo_scale(cr, -1.0, 1.0);    // mirror image
+          if(cam->live_view_rotation) cairo_rotate(cr, -M_PI_2 * cam->live_view_rotation); // rotate around middle
+          if(cam->live_view_zoom == FALSE) cairo_scale(cr, scale, scale);                  // scale to fit canvas
+          cairo_translate(cr, -0.5 * pw, -0.5 * ph);                                       // origin back to corner
+          cairo_scale(cr, darktable.gui->ppd, darktable.gui->ppd);
+          cairo_set_source_surface(cr, source, 0.0, 0.0);
+          cairo_paint(cr);
+        }
+        cairo_surface_destroy(source);
+        dt_free_align(tmp_i);
+      }
 
-      gdk_cairo_set_source_pixbuf(cr, cam->live_view_pixbuf, 0, 0);
-      cairo_paint(cr);
+      // process live view histogram
+      float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
+      if(tmp_f)
+      {
+        dt_develop_t *dev = darktable.develop;
+        // FIXME: add OpenMP
+        for(size_t p = 0; p < (size_t)4 * pw * ph; p += 4)
+        {
+          uint32_t DT_ALIGNED_ARRAY state[4]
+              = { splitmix32(p + 1), splitmix32((p + 1) * (p + 3)), splitmix32(1337), splitmix32(666) };
+          xoshiro128plus(state);
+          xoshiro128plus(state);
+          xoshiro128plus(state);
+          xoshiro128plus(state);
+
+          for(int k = 0; k < 3; k++)
+            tmp_f[p + k] = dt_noise_generator(DT_NOISE_UNIFORM, p_buf[p + k], 0.5f, 0, state) / 255.0f;
+        }
+
+        // Do colorspace conversion here rather than having histogram
+        // process do it. We need to do special cases for work/export
+        // colorspace which dt_ioppr_get_histogram_profile_type()
+        // can't handle when not in darkroom view. Plus we can do an
+        // in-place conversion which saves allocating an extra buffer.
+        const dt_iop_order_iccprofile_info_t *profile_to;
+        if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+        {
+          // The work profile of a SOC JPEG is nonsensical. So that
+          // the histogram will have some relationship to a captured
+          // image's profile, go with the standard work profile.
+          // FIXME: can figure out the current default work colorspace via checking presets?
+          profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+        }
+        else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+        {
+          // don't touch the image
+          profile_to = NULL;
+        }
+        else
+        {
+          profile_to = dt_ioppr_get_histogram_profile_info(dev);
+        }
+
+        if(profile_to)
+        {
+          // FIXME: if liveview image is tagged and we can read its colorspace, use that
+          const dt_iop_order_iccprofile_info_t *const profile_from
+              = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
+          dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph, profile_from, profile_to,
+                                                  "live view histogram");
+        }
+
+        darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, tmp_f, pw, ph,
+                                               DT_COLORSPACE_NONE, "");
+        dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+        dt_free_align(tmp_f);
+      }
     }
-    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+    dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
   }
   else if(lib->image_id >= 0) // First of all draw image if available
   {
-    cairo_translate(cr, MARGIN, MARGIN);
-    dt_view_image_expose_t params = { 0 };
-    params.image_over = &(lib->image_over);
-    params.imgid = lib->image_id;
-    params.cr = cr;
-    params.width = width - (MARGIN * 2.0f);
-    params.height = height - (MARGIN * 2.0f);
-    params.px = pointerx;
-    params.py = pointery;
-    params.zoom = 1;
-    dt_view_image_expose(&params);
+    // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
+    cairo_surface_t *surf = NULL;
+    const int res = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f),
+                                              &surf, FALSE);
+    if(res)
+    {
+      // if the image is missing, we reload it again
+      g_timeout_add(250, _expose_again, NULL);
+      if(!lib->busy) dt_control_log_busy_enter();
+      lib->busy = TRUE;
+    }
+    else
+    {
+      cairo_translate(cr, (width - cairo_image_surface_get_width(surf)) / 2,
+                      (height - cairo_image_surface_get_height(surf)) / 2);
+      cairo_set_source_surface(cr, surf, 0.0, 0.0);
+      cairo_paint(cr);
+      cairo_surface_destroy(surf);
+      if(lib->busy) dt_control_log_busy_leave();
+      lib->busy = FALSE;
+    }
+
+    // update the histogram
+    dt_imageio_module_format_t format;
+    _tethering_format_t dat;
+    format.bpp = _tethering_bpp;
+    format.write_image = _tethering_write_image;
+    format.levels = _tethering_levels;
+    format.mime = _tethering_mime;
+    // FIXME: is this reasonable resolution? does it match what pixelpipe preview pipe does?
+    dat.head.max_width = darktable.mipmap_cache->max_width[DT_MIPMAP_F];
+    dat.head.max_height = darktable.mipmap_cache->max_height[DT_MIPMAP_F];
+    dat.head.style[0] = '\0';
+
+    dt_colorspaces_color_profile_type_t icc_type;
+    const char *icc_filename;
+    const char _icc_filename[1] = { 0 };
+    if(darktable.color_profiles->histogram_type == DT_COLORSPACE_WORK)
+    {
+      const dt_colorspaces_color_profile_t *work_profile = dt_colorspaces_get_work_profile(lib->image_id);
+      icc_type = work_profile->type;
+      icc_filename = work_profile->filename;
+    }
+    else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
+    {
+      icc_type = DT_COLORSPACE_NONE; // use the colorout profile
+      icc_filename = _icc_filename;
+    }
+    else
+    {
+      dt_ioppr_get_histogram_profile_type(&icc_type, &icc_filename);
+    }
+
+    // this uses the export rather than thumbnail pipe -- slower, but
+    // as we're not competing with the full pixelpipe, it's a
+    // reasonable trade-off for a histogram which matches that in
+    // darkroom view
+    if(!dt_imageio_export_with_flags(lib->image_id, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE,
+                                     FALSE, FALSE, FALSE, FALSE, NULL, FALSE, FALSE, icc_type, icc_filename,
+                                     DT_INTENT_PERCEPTUAL, NULL, NULL, 1, 1, NULL))
+    {
+      darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, dat.buf, dat.head.width,
+                                             dat.head.height, DT_COLORSPACE_NONE, "");
+      dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
+      free(dat.buf);
+    }
+  }
+  else // not in live view, no image selected
+  {
+    // if we just left live view, blank out its histogram
+    darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, NULL, 0, 0, DT_COLORSPACE_NONE,
+                                           "");
+    dt_control_queue_redraw_widget(darktable.lib->proxy.histogram.module->widget);
   }
 }
 
 
-void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx,
-            int32_t pointery)
+void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_t pointerx, int32_t pointery)
 {
   cairo_set_source_rgb(cri, .2, .2, .2);
   cairo_rectangle(cri, 0, 0, width, height);
@@ -252,8 +443,15 @@ int try_enter(dt_view_t *self)
   return 1;
 }
 
-static void _capture_mipmaps_updated_signal_callback(gpointer instance, gpointer user_data)
+static void _capture_mipmaps_updated_signal_callback(gpointer instance, int imgid, gpointer user_data)
 {
+  dt_view_t *self = (dt_view_t *)user_data;
+  struct dt_capture_t *lib = (dt_capture_t *)self->data;
+
+  lib->image_id = imgid;
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(lib->image_id, TRUE);
+
   dt_control_queue_redraw_center();
 }
 
@@ -294,27 +492,36 @@ void enter(dt_view_t *self)
 {
   dt_capture_t *lib = (dt_capture_t *)self->data;
 
-  /* connect signal for mipmap update for a redraw */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
-                            G_CALLBACK(_capture_mipmaps_updated_signal_callback), (gpointer)self);
+  // no active image when entering the tethering view
+  lib->image_over = DT_VIEW_DESERT;
+  GSList *l = dt_view_active_images_get();
+  if(g_slist_length(l) > 0)
+    lib->image_id = GPOINTER_TO_INT(g_slist_nth_data(l, 0));
+  else
+    lib->image_id = -1;
 
-
-  /* connect signal for fimlstrip image activate */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
-                            G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
-
-  dt_view_filmstrip_scroll_to_image(darktable.view_manager, lib->image_id, TRUE);
-
+  dt_view_active_images_reset(FALSE);
+  dt_view_active_images_add(lib->image_id, TRUE);
+  dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), lib->image_id, TRUE);
 
   /* initialize a session */
   lib->session = dt_import_session_new();
 
-  char *tmp = dt_conf_get_string("plugins/capture/jobcode");
+  char *tmp = dt_conf_get_string("plugins/session/jobcode");
   if(tmp != NULL)
   {
     _capture_view_set_jobcode(self, tmp);
     g_free(tmp);
   }
+
+  /* connect signal for mipmap update for a redraw */
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
+                                  G_CALLBACK(_capture_mipmaps_updated_signal_callback), (gpointer)self);
+
+
+  /* connect signal for fimlstrip image activate */
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
+                                  G_CALLBACK(_view_capture_filmstrip_activate_callback), self);
 
   // register listener
   lib->listener = g_malloc0(sizeof(dt_camctl_listener_t));
@@ -337,12 +544,12 @@ void leave(dt_view_t *self)
   dt_import_session_destroy(cv->session);
 
   /* disconnect from mipmap updated signal */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_capture_mipmaps_updated_signal_callback),
-                               (gpointer)self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_capture_mipmaps_updated_signal_callback),
+                                     (gpointer)self);
 
   /* disconnect from filmstrip image activate */
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_view_capture_filmstrip_activate_callback),
-                               (gpointer)self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_capture_filmstrip_activate_callback),
+                                     (gpointer)self);
 }
 
 void reset(dt_view_t *self)
@@ -388,18 +595,6 @@ void mouse_moved(dt_view_t *self, double x, double y, double pressure, int which
     dt_camctl_camera_set_property_string(darktable.camctl, NULL, "eoszoomposition", str);
   }
   dt_control_queue_redraw_center();
-}
-
-void init_key_accels(dt_view_t *self)
-{
-  // Setup key accelerators in capture view...
-  dt_accel_register_view(self, NC_("accel", "toggle film strip"), GDK_KEY_f, GDK_CONTROL_MASK);
-}
-
-void connect_key_accels(dt_view_t *self)
-{
-  GClosure *closure = g_cclosure_new(G_CALLBACK(film_strip_key_accel), (gpointer)self, NULL);
-  dt_accel_connect_view(self, "toggle film strip", closure);
 }
 
 int button_pressed(dt_view_t *self, double x, double y, double pressure, int which, int type, uint32_t state)

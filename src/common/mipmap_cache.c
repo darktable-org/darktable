@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2014 johannes hanika.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -374,7 +374,8 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
     {
       // try and load from disk, if successful set flag
       char filename[PATH_MAX] = {0};
-      snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
+      snprintf(filename, sizeof(filename), "%s.d/%d/%" PRIu32 ".jpg", cache->cachedir, (int)mip,
+               get_imgid(entry->key));
       FILE *f = g_fopen(filename, "rb");
       if(f)
       {
@@ -394,9 +395,12 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
            || ((color_space = dt_imageio_jpeg_read_color_space(&jpg)) == DT_COLORSPACE_NONE) // pointless test to keep it in the if clause
            || dt_imageio_jpeg_decompress(&jpg, entry->data + sizeof(*dsc)))
         {
-          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %d from `%s'!\n", get_imgid(entry->key), filename);
+          fprintf(stderr, "[mipmap_cache] failed to decompress thumbnail for image %" PRIu32 " from `%s'!\n",
+                  get_imgid(entry->key), filename);
           goto read_error;
         }
+        dt_print(DT_DEBUG_CACHE, "[mipmap_cache] grab mip %d for image %" PRIu32 " from disk cache\n", mip,
+                 get_imgid(entry->key));
         dsc->width = jpg.width;
         dsc->height = jpg.height;
         dsc->iscale = 1.0f;
@@ -465,7 +469,8 @@ void dt_mipmap_cache_deallocate_dynamic(void *data, dt_cache_entry_t *entry)
         const int mkd = g_mkdir_with_parents(filename, 0750);
         if(!mkd)
         {
-          snprintf(filename, sizeof(filename), "%s.d/%d/%d.jpg", cache->cachedir, mip, get_imgid(entry->key));
+          snprintf(filename, sizeof(filename), "%s.d/%d/%" PRIu32 ".jpg", cache->cachedir, (int)mip,
+                   get_imgid(entry->key));
           // Don't write existing files as both performance and quality (lossy jpg) suffer
           FILE *f = NULL;
           if (!g_file_test(filename, G_FILE_TEST_EXISTS) && (f = g_fopen(filename, "wb")))
@@ -657,7 +662,7 @@ void dt_mipmap_cache_print(dt_mipmap_cache_t *cache)
 
 static gboolean _raise_signal_mipmap_updated(gpointer user_data)
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, GPOINTER_TO_INT(user_data));
   return FALSE; // only call once
 }
 
@@ -852,7 +857,7 @@ void dt_mipmap_cache_get_with_caller(
     if(mipmap_generated)
     {
       /* raise signal that mipmaps has been flushed to cache */
-      g_idle_add(_raise_signal_mipmap_updated, 0);
+      g_idle_add(_raise_signal_mipmap_updated, GINT_TO_POINTER(imgid));
     }
 
     buf->width = dsc->width;
@@ -949,25 +954,17 @@ void dt_mipmap_cache_release_with_caller(dt_mipmap_cache_t *cache, dt_mipmap_buf
 }
 
 
-// return the closest mipmap size
+// return index dt_mipmap_size_t having at least width & height requested instead of minimum combined diff
+// please note that the requested size is in pixels not dots.
 dt_mipmap_size_t dt_mipmap_cache_get_matching_size(const dt_mipmap_cache_t *cache, const int32_t width,
                                                    const int32_t height)
 {
-  const double ppd = (darktable.gui != NULL) ? darktable.gui->ppd : 1.0;
-
-  // find `best' match to width and height.
-  int32_t error = 0x7fffffff;
   dt_mipmap_size_t best = DT_MIPMAP_NONE;
   for(int k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
-    // find closest l1 norm:
-    int32_t new_error = cache->max_width[k] + cache->max_height[k] - width * ppd - height * ppd;
-    // and allow the first one to be larger in pixel size to override the smaller mip
-    if(abs(new_error) < abs(error) || (error < 0 && new_error > 0))
-    {
-      best = k;
-      error = new_error;
-    }
+    best = k;
+    if((cache->max_width[k] >= width) && (cache->max_height[k] >= height))
+      break;
   }
   return best;
 }
@@ -1130,7 +1127,8 @@ static int _bpp(dt_imageio_module_data_t *data)
 
 static int _write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                         dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                        void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe)
+                        void *exif, int exif_len, int imgid, int num, int total, dt_dev_pixelpipe_t *pipe,
+                        const gboolean export_masks)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
   memcpy(d->buf, in, data->width * data->height * sizeof(uint32_t));
@@ -1156,7 +1154,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     return;
   }
 
-  const int altered = dt_image_altered(imgid);
+  const gboolean altered = dt_image_altered(imgid);
   int res = 1;
 
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -1187,6 +1185,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
         if(!dt_imageio_jpeg_read(&jpg, tmp))
         {
           // scale to fit
+          dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from jpeg\n", size, imgid);
           dt_iop_flip_and_zoom_8(tmp, jpg.width, jpg.height, buf, wd, ht, orientation, width, height);
           res = 0;
         }
@@ -1212,6 +1211,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
         else
         {
           // scale to fit
+          dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from embedded jpeg\n", size, imgid);
           dt_iop_flip_and_zoom_8(tmp, thumb_width, thumb_height, buf, wd, ht, orientation, width, height);
         }
         dt_free_align(tmp);
@@ -1228,7 +1228,7 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
       dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, imgid, k, DT_MIPMAP_TESTLOCK, 'r');
       if(tmp.buf == NULL)
         continue;
-      dt_print(DT_DEBUG_CACHE, "[_init_8] generate mip %d for %s from level %d\n", size, filename, k);
+      dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from level %d\n", size, imgid, k);
       *color_space = tmp.color_space;
       // downsample
       dt_iop_flip_and_zoom_8(tmp.buf, tmp.width, tmp.height, buf, wd, ht, ORIENTATION_NONE, width, height);
@@ -1253,10 +1253,11 @@ static void _init_8(uint8_t *buf, uint32_t *width, uint32_t *height, float *isca
     // export with flags: ignore exif (don't load from disk), don't swap byte order, don't do hq processing,
     // no upscaling and signal we want thumbnail export
     res = dt_imageio_export_with_flags(imgid, "unused", &format, (dt_imageio_module_data_t *)&dat, TRUE, FALSE, FALSE,
-                                       FALSE, TRUE, NULL, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL, NULL,
-                                       1, 1, NULL);
+                                       FALSE, TRUE, NULL, FALSE, FALSE, DT_COLORSPACE_NONE, NULL, DT_INTENT_LAST, NULL,
+                                       NULL, 1, 1, NULL);
     if(!res)
     {
+      dt_print(DT_DEBUG_CACHE, "[mipmap_cache] generate mip %d for image %d from scratch\n", size, imgid);
       // might be smaller, or have a different aspect than what we got as input.
       *width = dat.head.width;
       *height = dat.head.height;

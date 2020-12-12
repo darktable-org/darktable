@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2010--2012 tobias ellinghaus.
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,6 +18,14 @@
 #include "dtwin.h"
 #include <setjmp.h>
 #include <windows.h>
+
+// Required by (at least) clang 10.0 as packaged by MSYS2 MinGW64.
+// This platform combination is needed for dt appveyor build.
+#ifdef __clang__
+#ifdef __MINGW32__ // 64-bit subsystem also sets this symbol
+#include <errno.h>
+#endif
+#endif
 
 const wchar_t *dtwin_get_locale()
 {

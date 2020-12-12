@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -39,6 +39,7 @@ typedef struct _GtkDarktableButton
   gint icon_flags;
   void *icon_data;
   GdkRGBA bg, fg;
+  GtkWidget *canvas;
 } GtkDarktableButton;
 
 typedef struct _GtkDarktableButtonClass

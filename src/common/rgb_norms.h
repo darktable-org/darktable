@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2019 philippe weyland
+ *    Copyright (C) 2019-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -16,15 +16,17 @@
  *    along with darktable.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "common/iop_profile.h"
+
  typedef enum dt_iop_rgb_norms_t
  {
-   DT_RGB_NORM_NONE = 0,
-   DT_RGB_NORM_LUMINANCE = 1,
-   DT_RGB_NORM_MAX = 2,
-   DT_RGB_NORM_AVERAGE = 3,
-   DT_RGB_NORM_SUM = 4,
-   DT_RGB_NORM_NORM = 5,
-   DT_RGB_NORM_POWER = 6,
+   DT_RGB_NORM_NONE = 0,      // $DESCRIPTION: "none"
+   DT_RGB_NORM_LUMINANCE = 1, // $DESCRIPTION: "luminance"
+   DT_RGB_NORM_MAX = 2,       // $DESCRIPTION: "max RGB"
+   DT_RGB_NORM_AVERAGE = 3,   // $DESCRIPTION: "average RGB"
+   DT_RGB_NORM_SUM = 4,       // $DESCRIPTION: "sum RGB"
+   DT_RGB_NORM_NORM = 5,      // $DESCRIPTION: "norm RGB"
+   DT_RGB_NORM_POWER = 6,     // $DESCRIPTION: "basic power"
  } dt_iop_rgb_norms_t;
 
 static inline float dt_rgb_norm(const float *in, const int norm, const dt_iop_order_iccprofile_info_t *const work_profile)

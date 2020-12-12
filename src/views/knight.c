@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2016 tobias ellinghaus.
+ *    Copyright (C) 2016-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -934,7 +934,7 @@ static gboolean _event_loop_animation(dt_knight_t *d)
 static gboolean _event_loop(gpointer user_data)
 {
   dt_knight_t *d = (dt_knight_t *)user_data;
-  gboolean res;
+  gboolean res = FALSE;  // silence warning about unitialized res
   switch(d->game_state)
   {
     case INTRO:

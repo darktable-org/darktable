@@ -1,0 +1,315 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="import_tab">
+
+  <title>Import</title>
+  
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>import</secondary>
+  </indexterm>
+
+  <para>
+    Set here all your import options.
+  </para>
+  
+  <sect2 id="import_options">
+
+    <title>import</title>
+
+    <bridgehead renderas="sect5">ignore JPEG images when importing film rolls</bridgehead>
+
+    <para>
+      When having RAW+JPEG images together in one directory it makes no sense to import both. With
+      this flag one can ignore all JPEGs found (default off).
+    </para>
+
+    <bridgehead renderas="sect5">recursive directory traversal when importing film rolls</bridgehead>
+
+    <para>
+      Not only import images from the directory selected but recursively go through all
+      subdirectories as well (default off).
+    </para>
+
+    <bridgehead renderas="sect5">creator to be applied when importing</bridgehead>
+
+    <para>
+      If provided, automatically add this string as a creator tag when importing images (default
+      none).
+    </para>
+
+    <bridgehead renderas="sect5">publisher to be applied when importing</bridgehead>
+
+    <para>
+      If provided, automatically add this string as a publisher tag when importing images (default
+      none).
+    </para>
+
+    <bridgehead renderas="sect5">rights to be applied when importing</bridgehead>
+
+    <para>
+      If provided, automatically add this string as a copyrights tag when importing images
+      (default none).
+    </para>
+
+    <bridgehead renderas="sect5">comma separated tags to be applied when importing</bridgehead>
+
+    <para>
+      If you want to add further tags when importing images, you can give them as a comma
+      separated list (default none).
+    </para>
+
+    <bridgehead renderas="sect5">initial import rating</bridgehead>
+
+    <para>
+      Initial star rating (from 0 to 5) for all images when importing a film roll (default 1).
+    </para>
+    
+  </sect2>
+
+  <sect2 id="session_options">
+  
+    <title>session options</title>
+
+    <para>
+      These options define a naming pattern to organize images on disk when importing from a
+      connected camera (see <xref linkend="import"/>) and when taking photos in the tethering view
+      (see <xref linkend="tethering_chapter"/>).
+    </para>
+
+    <para>
+      The naming pattern consists of three parts: a base part defining the parent folder, a
+      session part defining a sub directory which is specific to the individual import session,
+      and a file name part defining the filename structure for each imported image.
+    </para>
+
+    <para>
+      Several pre-defined variables can be used in the pattern as placeholders:
+    </para>
+
+    <informaltable frame="none" width="80%">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <tbody>
+          <row>
+            <entry>
+              $(HOME)
+            </entry>
+            <entry>
+              the home folder as defined by the system
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(PICTURES_FOLDER)
+            </entry>
+            <entry>
+              the pictures folder as defined by the system (usually <quote>$HOME/Pictures</quote>)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(DESKTOP)
+            </entry>
+            <entry>
+              the desktop folder as defined by the system (usually <quote>$HOME/Desktop</quote>)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(USERNAME)
+            </entry>
+            <entry>
+              your user account name on the system
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(FILE_NAME)
+            </entry>
+            <entry>
+              basename of the imported image
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(FILE_EXTENSION)
+            </entry>
+            <entry>
+              extension of the imported image
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(JOBCODE)
+            </entry>
+            <entry>
+              unique identifier of the import job
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(SEQUENCE)
+            </entry>
+            <entry>
+              a sequence number within the import job
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(MAX_WIDTH)
+            </entry>
+            <entry>
+              maximum image width to limit within export session
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(MAX_HEIGHT)
+            </entry>
+            <entry>
+              maximum image height to limit within export session
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(ID)
+            </entry>
+            <entry>
+              unique identification number of the image in darktable's database
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(YEAR)
+            </entry>
+            <entry>
+              year at the date of import
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(MONTH)
+            </entry>
+            <entry>
+              month at the date of import
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(DAY)
+            </entry>
+            <entry>
+              day at the date of import
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(HOUR)
+            </entry>
+            <entry>
+              hour at the time of import
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(MINUTE)
+            </entry>
+            <entry>
+              minute at the time of import
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(SECOND)
+            </entry>
+            <entry>
+              second at the time of import
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(EXIF_YEAR)
+            </entry>
+            <entry>
+              year the photo was taken (from Exif data)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(EXIF_MONTH)
+            </entry>
+            <entry>
+              month the photo was taken (from Exif data)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(EXIF_DAY)
+            </entry>
+            <entry>
+              day the photo was taken (from Exif data)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(EXIF_HOUR)
+            </entry>
+            <entry>
+              hour the photo was taken (from Exif data)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(EXIF_MINUTE)
+            </entry>
+            <entry>
+              minute the photo was taken (from Exif data)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(EXIF_SECOND)
+            </entry>
+            <entry>
+              seconds the photo was taken (from Exif data)
+            </entry>
+          </row>
+          <row>
+            <entry>
+              $(EXIF_ISO)
+            </entry>
+            <entry>
+              ISO value of the photo (from Exif data)
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+    <bridgehead renderas="sect4">base directory naming pattern</bridgehead>
+
+    <para>
+      The base directory part of the naming pattern (default
+      <quote>$(PICTURES_FOLDER)/Darktable</quote>).
+    </para>
+
+    <bridgehead renderas="sect4">sub directory naming pattern</bridgehead>
+
+    <para>
+      The sub directory part of the naming pattern (default
+      <quote>$(YEAR)$(MONTH)$(DAY)_$(JOBCODE)</quote>).
+    </para>
+
+    <bridgehead renderas="sect4">file naming pattern</bridgehead>
+
+    <para>
+      The file name part of the naming pattern (default
+      <quote>$(YEAR)$(MONTH)$(DAY)_$(SEQUENCE).$(FILE_EXTENSION</quote>).
+    </para>
+    
+  </sect2>
+  
+</sect1>

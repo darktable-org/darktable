@@ -1,10 +1,7 @@
 /* -*- Mode: c; c-basic-offset: 2; -*- */
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika
-    copyright (c) 2011 Sergey Astanin
-    copyright (c) 2012 Henrik Andersson
-    copyright (c) 2014 Ulrich Pegelow
+    Copyright (C) 2011-2020 darktable developers.
 
 
     darktable is free software: you can redistribute it and/or modify
@@ -27,6 +24,7 @@
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
@@ -51,11 +49,11 @@ typedef struct dt_iop_colorcontrast_params1_t
 
 typedef struct dt_iop_colorcontrast_params_t
 {
-  float a_steepness;
+  float a_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "green-magenta contrast"
   float a_offset;
-  float b_steepness;
+  float b_steepness; // $MIN: 0.0 $MAX: 5.0 $DEFAULT: 1.0 $DESCRIPTION: "blue-yellow contrast"
   float b_offset;
-  int unbound;
+  int unbound;       // $DEFAULT: 1
 } dt_iop_colorcontrast_params_t;
 
 typedef struct dt_iop_colorcontrast_gui_data_t
@@ -90,6 +88,21 @@ const char *name()
   return _("color contrast");
 }
 
+const char *aliases()
+{
+  return _("saturation");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("increase saturation and separation between\n"
+                                        "opposite colors"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -97,7 +110,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -123,23 +136,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "green vs magenta"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "blue vs yellow"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorcontrast_gui_data_t *g =
-    (dt_iop_colorcontrast_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "green vs magenta",
-                              GTK_WIDGET(g->a_scale));
-  dt_accel_connect_slider_iop(self, "blue vs yellow",
-                              GTK_WIDGET(g->b_scale));
-}
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -149,94 +145,94 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  const int ch = piece->colors;
+  assert(piece->colors == 4);
 
-  const float *const in = (const float *const)ivoid;
-  float *const out = (float *const)ovoid;
+  const float *const restrict in = (const float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
+  const size_t npixels = roi_out->width * roi_out->height;
 
   if(d->unbound)
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(in, out) \
+    dt_omp_sharedconst(d, npixels) \
+    aligned(in, out : 64) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       out[k] = in[k];
       out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
       out[k + 2] = (in[k + 2] * d->b_steepness) + d->b_offset;
-      out[k + 4] = in[k + 4];
+      out[k + 3] = in[k + 3];
     }
   }
   else
   {
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-    dt_omp_firstprivate(ch, d, in, out, roi_out) \
+#pragma omp parallel for simd default(none) \
+    dt_omp_firstprivate(in, out) \
+    dt_omp_sharedconst(d, npixels) \
+    aligned(in, out : 64) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
       out[k] = in[k];
       out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
       out[k + 2] = CLAMP((in[k + 2] * d->b_steepness) + d->b_offset, -128.0f, 128.0f);
-      out[k + 4] = in[k + 4];
+      out[k + 3] = in[k + 3];
     }
   }
 }
 
 #if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const restrict ivoid,
+                  void *const restrict ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
 
   // get our data struct:
-  dt_iop_colorcontrast_params_t *d = (dt_iop_colorcontrast_params_t *)piece->data;
+  const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  const int ch = piece->colors;
-
-  const int unbound = d->unbound;
+  assert(piece->colors == 4);
 
   const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
   const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);
   const __m128 min = _mm_set_ps(-INFINITY, -128.0f, -128.0f, -INFINITY);
   const __m128 max = _mm_set_ps(INFINITY, 128.0f, 128.0f, INFINITY);
 
-// iterate over all output pixels (same coordinates as input)
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+
+  // iterate over all output pixels (same coordinates as input)
+  const int npixels = roi_out->height * roi_out->width;
+  if (d->unbound)
+  {
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, max, min, offset, ovoid, roi_in, roi_out, \
-                      scale, unbound) \
-  shared(d) \
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, offset, npixels, scale) \
+  aligned(in, out : 64) \
   schedule(static)
 #endif
-  for(int j = 0; j < roi_out->height; j++)
-  {
-
-    float *in = ((float *)ivoid) + (size_t)ch * roi_in->width * j;
-    float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-
-    if(unbound)
+    for(int j = 0; j < 4 * npixels; j += 4)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _mm_stream_ps(out, _mm_add_ps(offset, _mm_mul_ps(scale, _mm_load_ps(in))));
-        in += ch;
-        out += ch;
-      }
+      _mm_stream_ps(out + j, offset + scale * _mm_load_ps(in + j));
     }
-    else
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, max, min, offset, npixels, scale) \
+  aligned(in, out : 64) \
+  schedule(static)
+#endif
+    for(int j = 0; j < 4 * npixels; j += 4)
     {
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        _mm_stream_ps(
-            out, _mm_min_ps(max, _mm_max_ps(min, _mm_add_ps(offset, _mm_mul_ps(scale, _mm_load_ps(in))))));
-        in += ch;
-        out += ch;
-      }
+      _mm_stream_ps(out + j, _mm_min_ps(max, _mm_max_ps(min, offset + scale * _mm_load_ps(in + j))));
     }
   }
   _mm_sfence();
@@ -299,40 +295,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 }
 
 
-void reload_defaults(dt_iop_module_t *module)
-{
-  // change default_enabled depending on type of image, or set new default_params even.
-  // if this callback exists, it has to write default_params and default_enabled.
-  dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t){ 1.0, 0.0, 1.0, 0.0, 1 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
-  module->default_enabled = 0;
-}
-
-/** init, cleanup, commit to pipeline */
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_colorcontrast_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_colorcontrast_params_t));
-  // our module is disabled by default
-  module->default_enabled = 0;
-  // we are pretty late in the pipe:
-  module->params_size = sizeof(dt_iop_colorcontrast_params_t);
-  module->gui_data = NULL;
-  // init defaults:
-  dt_iop_colorcontrast_params_t tmp = (dt_iop_colorcontrast_params_t){ 1.0, 0.0, 1.0, 0.0, 1 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_colorcontrast_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 /** commit is the synch point between core and gui, so it copies params to pipe data. */
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -349,7 +311,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_colorcontrast_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -358,33 +319,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
   piece->data = NULL;
 }
 
-/** put your local callbacks here, be sure to make them static so they won't be visible outside this file! */
-static void a_slider_callback(GtkRange *range, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
-  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
-  p->a_steepness = dt_bauhaus_slider_get(g->a_scale);
-  // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void b_slider_callback(GtkRange *range, dt_iop_module_t *self)
-{
-  // this is important to avoid cycles!
-  if(darktable.gui->reset) return;
-  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
-  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
-  p->b_steepness = dt_bauhaus_slider_get(g->b_scale);
-  // let core know of the changes
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-/** gui callbacks, these are needed. */
 void gui_update(dt_iop_module_t *self)
 {
-  // let gui slider match current parameters:
   dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
   dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
   dt_bauhaus_slider_set(g->a_scale, p->a_steepness);
@@ -393,37 +329,14 @@ void gui_update(dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  // init the slider (more sophisticated layouts are possible with gtk tables and boxes):
-  self->gui_data = malloc(sizeof(dt_iop_colorcontrast_gui_data_t));
-  dt_iop_colorcontrast_gui_data_t *g = (dt_iop_colorcontrast_gui_data_t *)self->gui_data;
-  dt_iop_colorcontrast_params_t *p = (dt_iop_colorcontrast_params_t *)self->params;
+  dt_iop_colorcontrast_gui_data_t *g = IOP_GUI_ALLOC(colorcontrast);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  g->a_scale = dt_bauhaus_slider_from_params(self, "a_steepness");
+  gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab\nlower values desaturate greens and magenta while higher saturate them"));
 
-  /* a scale */
-  g->a_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->a_steepness, 2);
-  dt_bauhaus_widget_set_label(g->a_scale, NULL, _("green vs magenta"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->a_scale), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->a_scale, _("steepness of the a* curve in Lab"));
-  g_signal_connect(G_OBJECT(g->a_scale), "value-changed", G_CALLBACK(a_slider_callback), self);
-
-
-  /* b scale */
-  g->b_scale = dt_bauhaus_slider_new_with_range(self, 0.0, 5.0, 0.01, p->b_steepness, 2);
-  dt_bauhaus_widget_set_label(g->b_scale, NULL, _("blue vs yellow"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->b_scale), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab"));
-  g_signal_connect(G_OBJECT(g->b_scale), "value-changed", G_CALLBACK(b_slider_callback), self);
+  g->b_scale = dt_bauhaus_slider_from_params(self, "b_steepness");
+  gtk_widget_set_tooltip_text(g->b_scale, _("steepness of the b* curve in Lab\nlower values desaturate blues and yellows while higher saturate them"));
 }
-
-void gui_cleanup(dt_iop_module_t *self)
-{
-  // nothing else necessary, gtk will clean up the sliders.
-  free(self->gui_data);
-  self->gui_data = NULL;
-}
-
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011-2012 Henrik Andersson, ulrich pegelow.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -24,19 +24,23 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
 #include <inttypes.h>
+#if defined(__SSE__)
+#include <xmmintrin.h>
+#endif
 
 #define MAX_RADIUS 16
-#define BOX_ITERATIONS 8
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 #define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
@@ -45,15 +49,13 @@ DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
 typedef struct dt_iop_highpass_params_t
 {
-  float sharpness;
-  float contrast;
+  float sharpness; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
+  float contrast;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "contrast boost"
 } dt_iop_highpass_params_t;
 
 typedef struct dt_iop_highpass_gui_data_t
 {
-  GtkBox *vbox1, *vbox2;
-  GtkWidget *label1, *label2; // sharpness,contrast
-  GtkWidget *scale1, *scale2; // sharpness,contrast
+  GtkWidget *sharpness, *contrast;
 } dt_iop_highpass_gui_data_t;
 
 typedef struct dt_iop_highpass_data_t
@@ -76,6 +78,15 @@ const char *name()
   return _("highpass");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("isolate high frequencies in the image"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, scene-referred"),
+                                      _("frequential, Lab"),
+                                      _("special, Lab, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -83,30 +94,13 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
 }
-
-#if 0 // BAUHAUS doesn't support keyaccels yet...
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "sharpness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast boost"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_highpass_gui_data_t *g =
-    (dt_iop_highpass_gui_data_t*)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "sharpness", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "contrast boost", GTK_WIDGET(g->scale2));
-}
-#endif
 
 void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
                      const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
@@ -281,25 +275,30 @@ error:
 }
 #endif
 
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   dt_iop_highpass_data_t *data = (dt_iop_highpass_data_t *)piece->data;
-  float *in = (float *)ivoid;
+  const float *const in = (float *)ivoid;
   float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  const int ch = 4;
+
+  /* the blend code at the end assumes at least 4 channels, and we never get more than four */
+  assert(piece->colors == ch);
 
 /* create inverted image and then blur */
+/* since we use only the L channel, pack the values together instead of every fourth float */
+/* to reduce cache pressure and memory bandwidth during the blur operation */
+  const size_t npixels = (size_t)roi_out->height * roi_out->width;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
-  shared(in, out) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(in) \
+  shared(out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
-    out[ch * k] = 100.0f - LCLIP(in[ch * k]); // only L in Lab space
-
+  for(size_t k = 0; k < (size_t)npixels; k++)
+    out[k] = 100.0f - LCLIP(in[4 * k]); // only L in Lab space
 
   const int rad = MAX_RADIUS * (fmin(100.0, data->sharpness + 1) / 100.0);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
@@ -308,104 +307,42 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *scanline = calloc(size, sizeof(float));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      float L = 0;
-      int hits = 0;
-      size_t index = (size_t)y * roi_out->width;
-      for(int x = -hr; x < roi_out->width; x++)
-      {
-        int op = x - hr - 1;
-        int np = x + hr;
-        if(op >= 0)
-        {
-          L -= out[(index + op) * ch];
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L += out[(index + np) * ch];
-          hits++;
-        }
-        if(x >= 0) scanline[x] = L / hits;
-      }
-
-      for(int x = 0; x < roi_out->width; x++) out[(index + x) * ch] = scanline[x];
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(hr + 1) * roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      float L = 0;
-      int hits = 0;
-      size_t index = (size_t)x - hr * roi_out->width;
-      for(int y = -hr; y < roi_out->height; y++)
-      {
-        const int op = y - hr - 1;
-        const int np = y + hr;
-        if(op >= 0)
-        {
-          L -= out[(index + opoffs) * ch];
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L += out[(index + npoffs) * ch];
-          hits++;
-        }
-        if(y >= 0) scanline[y] = L / hits;
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++) out[((size_t)y * roi_out->width + x) * ch] = scanline[y];
-    }
-  }
-
-  free(scanline);
+  dt_box_mean(out, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
   const float contrast_scale = ((data->contrast / 100.0) * 7.5);
+  /* Blend the inverted blurred L channel with the original input.  Because we packed the L values */
+  /* and are inserting the result in the same buffer containing the L values, we need to work in */
+  /* reverse order */
+  /* We can only do the final 3/4 in parallel here, because updating the first quarter in one thread */
+  /* would clobber values still needed by other threads. */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, contrast_scale, roi_out) \
-  shared(in, out, data) \
+  dt_omp_firstprivate(ch, contrast_scale, npixels) \
+  dt_omp_sharedconst(in) \
+  shared(out, data) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = npixels - 1; k > npixels/4; k--)
   {
     size_t index = ch * k;
     // Mix out and in
-    out[index] = out[index] * 0.5 + in[index] * 0.5;
-    out[index] = LCLIP(50.0f + ((out[index] - 50.0f) * contrast_scale));
+    const float L = out[k] * 0.5 + in[index] * 0.5;
+    out[index] = LCLIP(50.0f + ((L - 50.0f) * contrast_scale));
     out[index + 1] = out[index + 2] = 0.0f; // desaturate a and b in Lab space
-    out[index + 3] = in[index + 3];
+    out[index + 3] = in[index + 3]; // copy the alpha channel in case it is in use
   }
-}
+  /* process the final quarter of the pixels */
+  for(ssize_t k = npixels/4; k >= 0; k--)
+  {
+    size_t index = ch * k;
+    // Mix out and in
+    const float L = out[k] * 0.5 + in[index] * 0.5;
+    out[index] = LCLIP(50.0f + ((L - 50.0f) * contrast_scale));
+    out[index + 1] = out[index + 2] = 0.0f; // desaturate a and b in Lab space
+    out[index + 3] = in[index + 3]; // copy the alpha channel in case it is in use
+  }
 
-static void sharpness_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
-  p->sharpness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
-
-static void contrast_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
-  p->contrast = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -420,7 +357,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_highpass_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -431,23 +367,10 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)module->params;
-  dt_bauhaus_slider_set(g->scale1, p->sharpness);
-  dt_bauhaus_slider_set(g->scale2, p->contrast);
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_highpass_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_highpass_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_highpass_params_t);
-  module->gui_data = NULL;
-  dt_iop_highpass_params_t tmp = (dt_iop_highpass_params_t){ 50, 50 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_highpass_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_highpass_params_t));
+  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
+  dt_bauhaus_slider_set(g->sharpness, p->sharpness);
+  dt_bauhaus_slider_set(g->contrast, p->contrast);
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -460,15 +383,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_highpass_hblur = dt_opencl_create_kernel(program, "highpass_hblur");
   gd->kernel_highpass_vblur = dt_opencl_create_kernel(program, "highpass_vblur");
   gd->kernel_highpass_mix = dt_opencl_create_kernel(program, "highpass_mix");
-}
-
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -485,34 +399,15 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_highpass_gui_data_t));
-  dt_iop_highpass_gui_data_t *g = (dt_iop_highpass_gui_data_t *)self->gui_data;
-  dt_iop_highpass_params_t *p = (dt_iop_highpass_params_t *)self->params;
+  dt_iop_highpass_gui_data_t *g = IOP_GUI_ALLOC(highpass);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  g->sharpness = dt_bauhaus_slider_from_params(self, N_("sharpness"));
+  dt_bauhaus_slider_set_format(g->sharpness, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->sharpness, _("the sharpness of highpass filter"));
 
-  /* sharpness */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->sharpness, 2);
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("sharpness"));
-  dt_bauhaus_slider_set_format(g->scale1, "%.0f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->scale1, _("the sharpness of highpass filter"));
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(sharpness_callback), self);
-
-  /* contrast boost */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 0.5, p->contrast, 2);
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("contrast boost"));
-  dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_widget_set_tooltip_text(g->scale2, _("the contrast of highpass filter"));
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(contrast_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
+  g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
+  dt_bauhaus_slider_set_format(g->contrast, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->contrast, _("the contrast of highpass filter"));
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

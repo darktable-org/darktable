@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2015 Jeremy Rosen
+   Copyright (C) 2015-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -44,13 +44,13 @@ extern dt_lua_widget_type_t widget_type;
 
 
 
-/** pop a function from the top of the stack, 
+/** pop a function from the top of the stack,
     register as a callback named "name" for the object (not type) at index index
     */
 void dt_lua_widget_set_callback(lua_State *L,int index,const char* name);
 /** push the callback for name "name" on the stack, or nil if not available */
 void dt_lua_widget_get_callback(lua_State *L,int index,const char* name);
-/** triggers a callback for the object, 
+/** triggers a callback for the object,
   * first param : the lua_storage to trigger
   * second param : the name of the event to fire
   * other params : passed to the callback
@@ -64,7 +64,7 @@ int dt_lua_widget_trigger_callback(lua_State *L);
 /* wrapper to automatically implement a callback on a GTK signal */
 #define dt_lua_widget_register_gtk_callback(L,widget_type,signal_name,lua_name,callback) \
   dt_lua_widget_register_gtk_callback_type(L,luaA_type_find(L, #widget_type),signal_name,lua_name,callback)
-void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,const char* signal_name, const char* lua_name,GCallback callback); 
+void dt_lua_widget_register_gtk_callback_type(lua_State *L,luaA_Type type_id,const char* signal_name, const char* lua_name,GCallback callback);
 
 
 #define dt_lua_init_widget_type(L, widget_type,lua_type,gtk_type)  \
@@ -73,7 +73,7 @@ luaA_Type dt_lua_init_widget_type_type(lua_State *L, dt_lua_widget_type_t* widge
 
 /**
   Bind a lua widget, i.e prevent it from being destroyed by the lua GC.
-  after that, the lua object is guaranteed to exist until it is unbound or 
+  after that, the lua object is guaranteed to exist until it is unbound or
   the associated GtkWidget is destroyed
 
   You want to call that on widget you add to the UI so they stay alive.

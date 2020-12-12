@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -34,6 +34,21 @@ const gchar *dt_database_get_path(const struct dt_database_t *db);
 gboolean dt_database_get_lock_acquired(const struct dt_database_t *db);
 /** show an error popup. this has to be postponed until after we tried using dbus to reach another instance */
 void dt_database_show_error(const struct dt_database_t *db);
+/** perform pre-db-close optimizations (always call when quiting darktable) */
+void dt_database_optimize(const struct dt_database_t *);
+/** conditionally perfrom db maintenance */
+gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time);
+void dt_database_perform_maintenance(const struct dt_database_t *db);
+/** cleanup busy statements on closing dt, just before performing maintenance */
+void dt_database_cleanup_busy_statements(const struct dt_database_t *db);
+/** simply create db snapshot of both library and data */
+gboolean dt_database_snapshot(const struct dt_database_t *db);
+/** check if creating database snapshot is recommended */
+gboolean dt_database_maybe_snapshot(const struct dt_database_t *db);
+/** get list of snapshot files to remove after successful snapshot */
+char **dt_database_snaps_to_remove(const struct dt_database_t *db);
+/** get possibly the freshest snapshot to restore */
+gchar *dt_database_get_most_recent_snap(const char* db_filename);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

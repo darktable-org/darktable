@@ -19,12 +19,13 @@
     <para>
       Most changes in the lighttable are recorded and can be
       reverted. This includes modifications to color labels, ratings,
-      geo-localization, tags, metadata, copy/paste of history, or
-      applying a style.  Thanks to this recording, it is possible to
-      undo changes or redo them to recover a previous state. Note that
-      this undo/redo facility is unlimited in the number of steps
-      while in the lighttable, but it is reset each time the view is
-      switched (going to the darkroom for example).
+      geo-localization, tags, metadata, orientation, copy/paste of
+      history, or application of a style.  Thanks to this recording,
+      it is possible to undo changes or redo them to recover a
+      previous state. Note that this undo/redo facility is unlimited
+      in the number of steps while in the lighttable, but it is reset
+      each time the view is switched (going to the darkroom for
+      example).
     </para>
 
     <para>

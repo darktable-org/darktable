@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -162,8 +162,7 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
     // get lib*.so
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
-    plugin_name[strlen(d_name) - name_end] = '\0';
+    g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
     module = (dt_imageio_module_format_t *)malloc(sizeof(dt_imageio_module_format_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_format(module, libname, plugin_name))
@@ -172,9 +171,9 @@ static int dt_imageio_load_modules_format(dt_imageio_t *iio)
       continue;
     }
     module->gui_data = NULL;
-    if(darktable.gui) darktable.gui->reset = 1;
+    if(darktable.gui) ++darktable.gui->reset;
     module->gui_init(module);
-    if(darktable.gui) darktable.gui->reset = 0;
+    if(darktable.gui) --darktable.gui->reset;
     if(module->widget) g_object_ref(module->widget);
     g_free(libname);
     res = g_list_insert_sorted(res, module, dt_imageio_sort_modules_format);
@@ -300,8 +299,7 @@ static int dt_imageio_load_modules_storage(dt_imageio_t *iio)
     // get lib*.so
     if(!g_str_has_prefix(d_name, SHARED_MODULE_PREFIX)) continue;
     if(!g_str_has_suffix(d_name, SHARED_MODULE_SUFFIX)) continue;
-    strncpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end);
-    plugin_name[strlen(d_name) - name_end] = '\0';
+    g_strlcpy(plugin_name, d_name + name_offset, strlen(d_name) - name_end + 1);
     module = (dt_imageio_module_storage_t *)malloc(sizeof(dt_imageio_module_storage_t));
     gchar *libname = g_module_build_path(plugindir, (const gchar *)plugin_name);
     if(dt_imageio_load_module_storage(module, libname, plugin_name))
@@ -436,7 +434,48 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
 {
   darktable.imageio->plugins_storage
       = g_list_insert_sorted(darktable.imageio->plugins_storage, storage, dt_imageio_sort_modules_storage);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+}
+
+gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)
+{
+  double _num, _denum;
+  gchar *scale_str = dt_conf_get_string("plugins/lighttable/export/resizing_factor");
+
+  char sep[4] = "";
+  snprintf( sep, 4, "%g", (double) 3/2);
+  int i = -1;
+  while(scale_str[++i])
+  {
+      if ((scale_str[i] == '.') || (scale_str[i] == ',')) scale_str[i] = sep[1];
+  }
+
+  gchar *pdiv = strchr(scale_str, '/');
+
+  if (pdiv == NULL)
+  {
+    _num = atof(scale_str);
+    _denum = 1;
+  }
+  else if (pdiv-scale_str == 0)
+  {
+    _num = 1;
+    _denum = atof(pdiv + 1);
+}
+  else
+{
+    _num = atof(scale_str);
+    _denum = atof(pdiv+1);
+  }
+
+  if (_num == 0.0) _num = 1.0;
+  if (_denum == 0.0) _denum = 1.0;
+
+  *num = _num;
+  *denum = _denum;
+
+  dt_conf_set_string("plugins/lighttable/export/resizing_factor", scale_str);
+  return scale_str;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

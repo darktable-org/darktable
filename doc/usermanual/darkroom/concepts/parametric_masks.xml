@@ -80,23 +80,34 @@
     <sect5 id="parametric_mask_usage_tabs">
       <title>Channel tabs</title>
       <para>
-        Each tab selects a data channel&nbsp;&ndash; real or virtual. Modules acting in Lab
+        Each tab selects a data channel&nbsp;&ndash; real or virtual. Blending performed in Lab
         color space have data channels for L, a, b, C (chroma of LCh) and h (hue of LCh).
-        Modules acting in RGB color space have data channels for g (gray), R, G, B, H (hue of
-        HSL), S (saturation of HSL), and L (lightness of HSL). Consult for example
-        <ulink url="http://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
-        spaces</ulink> for a deeper look.
+        Blending performed in (display referred) RGB color space have data channels for g
+        (gray), R, G, B, H (hue of HSL), S (saturation of HSL), and L (lightness of HSL).
+        Blending performed in (scene referred) RGB color space have data channels for g (gray),
+        R, G, B, Jz (luminance component of JzCzhz), Cz (chrominance component of JzCzhz) and
+        hz (hue component of JzCzhz). Consult for example <ulink
+          url="http://en.wikipedia.org/wiki/Color_space"> Wikipedia's article on color
+          spaces</ulink> for a deeper look.
       </para>
       <para>
-        Each tab provides two sliders for its data channels: one for the input data that the
+        Each tab may provide two sliders for its data channels: one for the input data that the
         module receives and one for the output data that the module produces prior to blending.
+        The slider for the output data is hidden by default and can be shown using the
+        <quote>show output channels</quote> menu item in the blending menu.
+      </para>
+      <para>
+        The <quote>boost factor</quote> slider allows to extend the range of values that may be
+        targetted by the parametric mask sliders. It may be used in scene referred editing
+        where luminance values may go beyond 100% to target highlights. This slider is only
+        available for channels where it is meaningful.
       </para>
       <para>
         You can inspect the image data corresponding to an individual color channel by holding
         down the <emphasis>Shift</emphasis> key while entering the respective slider with the
         mouse cursor. The center image changes to display the selected color channel either in
         graycale values or in false colors, depending on the corresponding preference setting in
-        <quote>GUI options</quote> (see <xref linkend="gui_options"/>). You may additionally
+        <quote>darkroom options</quote> (see <xref linkend="darkroom_options"/>). You may additionally
         hold down the <emphasis>ctrl</emphasis> key which lets you see the resulting mask
         overlaid to the image. When leaving the slider the image goes back to normal after a
         short delay.

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 christian tellefsen
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -93,15 +93,11 @@ static gboolean on_match_select(GtkEntryCompletion *widget, GtkTreeModel *model,
 static gboolean on_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
                               gpointer user_data)
 {
-  gchar *item = NULL;
-  gchar *normalized_string;
-  gchar *case_normalized_string;
   gboolean ret = FALSE;
-  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
 
   GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
   gint cur_pos = gtk_editable_get_position(e); /* returns 1..* */
-  gint var_start;
+  gint var_start = 0;
   gboolean var_present = FALSE;
 
   for(gint p = cur_pos; p >= 0; p--)
@@ -121,17 +117,19 @@ static gboolean on_match_func(GtkEntryCompletion *completion, const gchar *key, 
   {
     gchar *varname = gtk_editable_get_chars(e, var_start, cur_pos);
 
+    GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+    gchar *item = NULL;
     gtk_tree_model_get(model, iter, COMPL_VARNAME, &item, -1);
 
     if(item != NULL)
     {
       // Do utf8-safe case insensitive string compare.
       // Shamelessly stolen from GtkEntryCompletion.
-      normalized_string = g_utf8_normalize(item, -1, G_NORMALIZE_ALL);
+      gchar *normalized_string = g_utf8_normalize(item, -1, G_NORMALIZE_ALL);
 
       if(normalized_string != NULL)
       {
-        case_normalized_string = g_utf8_casefold(normalized_string, -1);
+        gchar *case_normalized_string = g_utf8_casefold(normalized_string, -1);
 
         if(!g_ascii_strncasecmp(varname, case_normalized_string, strlen(varname))) ret = TRUE;
 
@@ -140,8 +138,8 @@ static gboolean on_match_func(GtkEntryCompletion *completion, const gchar *key, 
       g_free(normalized_string);
     }
     g_free(varname);
+    g_free(item);
   }
-  g_free(item);
 
   return ret;
 }
@@ -188,6 +186,8 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "FILE_NAME", N_("$(FILE_NAME) - basename of the input image") },
           { "FILE_EXTENSION", N_("$(FILE_EXTENSION) - extension of the input image") },
           { "VERSION", N_("$(VERSION) - duplicate version") },
+          { "VERSION_IF_MULTI", N_("$(VERSION_IF_MULTI) - same as $(VERSION) but null string if only one version exists") },
+          { "VERSION_NAME", N_("$(VERSION_NAME) - version name from metadata") },
           { "SEQUENCE", N_("$(SEQUENCE) - sequence number") },
           { "MAX_WIDTH", N_("$(MAX_WIDTH) - maximum image export width") },
           { "MAX_HEIGHT", N_("$(MAX_HEIGHT) - maximum image export height") },
@@ -204,18 +204,27 @@ const dt_gtkentry_completion_spec *dt_gtkentry_get_default_path_compl_list()
           { "EXIF_MINUTE", N_("$(EXIF_MINUTE) - EXIF minute") },
           { "EXIF_SECOND", N_("$(EXIF_SECOND) - EXIF second") },
           { "EXIF_ISO", N_("$(EXIF_ISO) - ISO value") },
-          { "MAKER", N_("$(MAKER) - camera maker") },
-          { "MODEL", N_("$(MODEL) - camera model") },
+          { "EXIF_EXPOSURE", N_("$(EXIF_EXPOSURE) - EXIF exposure") },
+          { "EXIF_EXPOSURE_BIAS", N_("$(EXIF_EXPOSURE_BIAS) - EXIF exposure bias") },
+          { "EXIF_APERTURE", N_("$(EXIF_APERTURE) - EXIF aperture") },
+          { "EXIF_FOCAL_LENGTH", N_("$(EXIF_FOCAL_LENGTH) - EXIF focal length") },
+          { "EXIF_FOCUS_DISTANCE", N_("$(EXIF_FOCUS_DISTANCE) - EXIF focal distance") },
+          { "LONGITUDE", N_("$(LONGITUDE) - longitude") },
+          { "LATITUDE", N_("$(LATITUDE) - latitude") },
+          { "ELEVATION", N_("$(ELEVATION) - elevation") },
           { "STARS", N_("$(STARS) - star rating") },
           { "LABELS", N_("$(LABELS) - colorlabels") },
-          { "PICTURES_FOLDER", N_("$(PICTURES_FOLDER) - pictures folder") },
-          { "HOME", N_("$(HOME) - home folder") },
-          { "DESKTOP", N_("$(DESKTOP) - desktop folder") },
+          { "MAKER", N_("$(MAKER) - camera maker") },
+          { "MODEL", N_("$(MODEL) - camera model") },
+          { "LENS", N_("$(LENS) - lens") },
           { "TITLE", N_("$(TITLE) - title from metadata") },
           { "DESCRIPTION", N_("$(DESCRIPTION) - description from metadata") },
           { "CREATOR", N_("$(CREATOR) - creator from metadata") },
           { "PUBLISHER", N_("$(PUBLISHER) - publisher from metadata") },
           { "RIGHTS", N_("$(RIGHTS) - rights from metadata") },
+          { "PICTURES_FOLDER", N_("$(PICTURES_FOLDER) - pictures folder") },
+          { "HOME", N_("$(HOME) - home folder") },
+          { "DESKTOP", N_("$(DESKTOP) - desktop folder") },
           { "OPENCL", N_("$(OPENCL_ACTIVATED) - whether OpenCL is activated") },
           { "CATEGORY", N_("$(CATEGORY0(category)) - subtag of level 0 in hierarchical tags") },
           { "TAGS", N_("$(TAGS) - tags as set in metadata settings") },

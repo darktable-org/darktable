@@ -1,5 +1,5 @@
 #  This file is part of darktable,
-#  copyright (c) 2013-2014 tobias ellinghaus.
+#  copyright (c) 2013-2020 tobias ellinghaus.
 #
 #  darktable is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -65,13 +65,13 @@ sub parse_dt_module_introspection
 
 sub parse_comments
 {
-  my $lineno = 0;
-  foreach(@comments)
+  foreach my $filename (keys(%comments))
   {
-    if(defined($_))
+    foreach (@{$comments{$filename}})
     {
+      next unless defined($_);
       my $joined_line = "";
-      foreach(@{$_->{raw}})
+      foreach(@{%{$_}{raw}})
       {
         $joined_line .= $_;
       }
@@ -81,7 +81,6 @@ sub parse_comments
       if($joined_line =~ /\$DESCRIPTION[\s]*:[\s]*"([^"]+)"/) { $_->{description} = $1; }
       elsif($joined_line =~ /\$DESCRIPTION[\s]*:[\s]*([^"\s,]+)/) { $_->{description} = $1; }
     }
-    $lineno++;
   }
 }
 
@@ -272,9 +271,11 @@ sub parse_enumerator_list
   my @enumerator_list;
   while(!isrightcurly(@token))
   {
+    # we have to add a copy of token, otherwise we will store a reference and overwrite it again!
+    my @id_token = [@token];
     my $id = parse_id();
     return if(!defined($id));
-    push(@enumerator_list, $id);
+    push(@enumerator_list, [$id, \@id_token]);
     if(isequal(@token))
     {
       # TODO: for now skip everything until a ',' or '}' is found

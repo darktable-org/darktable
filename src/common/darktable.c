@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2012 johannes hanika.
-    copyright (c) 2010--2012 henrik andersson.
-    copyright (c) 2010--2012 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -88,6 +86,8 @@
 
 #ifdef HAVE_GRAPHICSMAGICK
 #include <magick/api.h>
+#elif defined HAVE_IMAGEMAGICK
+#include <MagickWand/MagickWand.h>
 #endif
 
 #include "dbus.h"
@@ -119,8 +119,15 @@ static int usage(const char *argv0)
   printf("  --cachedir <user cache directory>\n");
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
-  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,input,lighttable,\n");
-  printf("      lua, masks,memory,nan,opencl,perf,pwstorage,print,sql,ioporder}\n");
+  printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
+  printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,\n");
+  printf("      pwstorage,print,signal,sql,undo}\n");
+  printf("  --d-signal <signal> \n");
+  printf("  --d-signal-act <all,raise,connect,disconnect");
+#ifdef DT_HAVE_SIGNAL_TRACE
+  printf(",print-trace");
+#endif
+  printf(">\n");
   printf("  --datadir <data directory>\n");
 #ifdef HAVE_OPENCL
   printf("  --disable-opencl\n");
@@ -174,8 +181,6 @@ static void strip_semicolons_from_keymap(const char *path)
   char pathtmp[PATH_MAX] = { 0 };
   FILE *fin = g_fopen(path, "rb");
   FILE *fout;
-  int i;
-  int c = '\0';
 
   if(!fin) return;
 
@@ -188,22 +193,30 @@ static void strip_semicolons_from_keymap(const char *path)
     return;
   }
 
+  int c = '\0';
   // First ignoring the first three lines
-  for(i = 0; i < 3; i++)
+  for(int i = 0; i < 3; i++)
   {
     while(c != '\n' && c != '\r' && c != EOF) c = fgetc(fin);
     while(c == '\n' || c == '\r') c = fgetc(fin);
+    ungetc(c, fin);
   }
 
   // Then ignore the first two characters of each line, copying the rest out
   while(c != EOF)
   {
     fseek(fin, 2, SEEK_CUR);
-    do
+    while(c != '\n' && c != '\r' && c != EOF)
     {
       c = fgetc(fin);
-      if(c != EOF) fputc(c, fout);
-    } while(c != '\n' && c != '\r' && c != EOF);
+      if(c != '\n' && c != '\r' && c != EOF) fputc(c, fout);
+    }
+    while(c == '\n' || c == '\r')
+    {
+      fputc(c, fout);
+      c = fgetc(fin);
+    }
+    ungetc(c, fin);
   }
 
   fclose(fin);
@@ -234,8 +247,6 @@ int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean 
   if(g_file_test(filename, G_FILE_TEST_IS_DIR))
   {
     // import a directory into a film roll
-    unsigned int last_char = strlen(filename) - 1;
-    if(filename[last_char] == '/') filename[last_char] = '\0';
     id = dt_film_import(filename);
     if(id)
     {
@@ -374,56 +385,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   // make sure that stack/frame limits are good (musl)
   dt_set_rlimits();
 
-  // we have to have our share dir in XDG_DATA_DIRS,
-  // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
-  {
-    const gchar *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
-    gchar *new_xdg_data_dirs = NULL;
-    gboolean set_env = TRUE;
-    if(xdg_data_dirs != NULL && *xdg_data_dirs != '\0')
-    {
-      // check if DARKTABLE_SHAREDIR is already in there
-      gboolean found = FALSE;
-      gchar **tokens = g_strsplit(xdg_data_dirs, G_SEARCHPATH_SEPARATOR_S, 0);
-      // xdg_data_dirs is neither NULL nor empty => tokens != NULL
-      for(char **iter = tokens; *iter != NULL; iter++)
-        if(!strcmp(DARKTABLE_SHAREDIR, *iter))
-        {
-          found = TRUE;
-          break;
-        }
-      g_strfreev(tokens);
-      if(found)
-        set_env = FALSE;
-      else
-        new_xdg_data_dirs = g_strjoin(G_SEARCHPATH_SEPARATOR_S, DARKTABLE_SHAREDIR, xdg_data_dirs, NULL);
-    }
-    else
-    {
-#ifndef _WIN32
-      // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a
-      // default
-      if(!g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share")
-         || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/local/share/")
-         || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share") || !g_strcmp0(DARKTABLE_SHAREDIR, "/usr/share/"))
-        new_xdg_data_dirs = g_strdup("/usr/local/share/" G_SEARCHPATH_SEPARATOR_S "/usr/share/");
-      else
-        new_xdg_data_dirs = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/" G_SEARCHPATH_SEPARATOR_S
-                                            "/usr/share/", DARKTABLE_SHAREDIR);
-#else
-      set_env = FALSE;
-#endif
-    }
-
-    if(set_env) g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
-    g_free(new_xdg_data_dirs);
-  }
-
-  setlocale(LC_ALL, "");
-  bindtextdomain(GETTEXT_PACKAGE, DARKTABLE_LOCALEDIR);
-  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-  textdomain(GETTEXT_PACKAGE);
-
   // init all pointers to 0:
   memset(&darktable, 0, sizeof(darktable_t));
 
@@ -545,6 +506,12 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
                "  GraphicsMagick support disabled\n"
 #endif
 
+#ifdef HAVE_IMAGEMAGICK
+               "  ImageMagick support enabled\n"
+#else
+               "  ImageMagick support disabled\n"
+#endif
+
 #ifdef HAVE_OPENEXR
                "  OpenEXR support enabled\n"
 #else
@@ -600,7 +567,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
       else if(!strcmp(argv[k], "--localedir") && argc > k + 1)
       {
         localedir_from_command = argv[++k];
-        bindtextdomain(GETTEXT_PACKAGE, localedir_from_command);
         argv[k-1] = NULL;
         argv[k] = NULL;
       }
@@ -642,8 +608,99 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_CAMERA_SUPPORT; // camera support warnings are reported on console
         else if(!strcmp(argv[k + 1], "ioporder"))
           darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
+        else if(!strcmp(argv[k + 1], "imageio"))
+          darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting mesages on console
+        else if(!strcmp(argv[k + 1], "undo"))
+          darktable.unmuted |= DT_DEBUG_UNDO; // undo/redo
+        else if(!strcmp(argv[k + 1], "signal"))
+          darktable.unmuted |= DT_DEBUG_SIGNAL; // signal information on console
+        else if(!strcmp(argv[k + 1], "params"))
+          darktable.unmuted |= DT_DEBUG_PARAMS; // iop module params checks on console
         else
           return usage(argv[0]);
+        k++;
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--d-signal-act") && argc > k + 1)
+      {
+        if(!strcmp(argv[k + 1], "all"))
+          darktable.unmuted_signal_dbg_acts = 0xffffffff; // enable all signal debug information
+        else if(!strcmp(argv[k + 1], "raise"))
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_RAISE; // enable debugging for signal raising
+        else if(!strcmp(argv[k + 1], "connect"))
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_CONNECT; // enable debugging for signal connection
+        else if(!strcmp(argv[k + 1], "disconnect"))
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_DISCONNECT; // enable debugging for signal disconnection
+        else if(!strcmp(argv[k + 1], "print-trace"))
+        {
+#ifdef DT_HAVE_SIGNAL_TRACE
+          darktable.unmuted_signal_dbg_acts |= DT_DEBUG_SIGNAL_ACT_PRINT_TRACE; // enable printing of signal tracing
+#else
+          fprintf(stderr, "[signal] print-trace not available, skipping\n");
+#endif
+        }
+        else
+          return usage(argv[0]);
+        k++;
+        argv[k-1] = NULL;
+        argv[k] = NULL;
+      }
+      else if(!strcmp(argv[k], "--d-signal") && argc > k + 1)
+      {
+        gchar *str = g_ascii_strup(argv[k+1], -1);
+
+        #define CHKSIGDBG(sig) else if(!g_strcmp0(str, #sig)) do {darktable.unmuted_signal_dbg[sig] = TRUE;} while (0)
+        if(!g_strcmp0(str, "ALL"))
+        {
+          for(int sig=0; sig<DT_SIGNAL_COUNT; sig++)
+            darktable.unmuted_signal_dbg[sig] = TRUE;
+        }
+        CHKSIGDBG(DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_REDRAW_ALL);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_REDRAW_CENTER);
+        CHKSIGDBG(DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE);
+        CHKSIGDBG(DT_SIGNAL_COLLECTION_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_SELECTION_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_TAG_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_METADATA_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_IMAGE_INFO_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_STYLE_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_IMAGES_ORDER_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_FILMROLLS_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_FILMROLLS_IMPORTED);
+        CHKSIGDBG(DT_SIGNAL_FILMROLLS_REMOVED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_INITIALIZE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_MIPMAP_UPDATED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_MODULE_REMOVE);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_MODULE_MOVED);
+        CHKSIGDBG(DT_SIGNAL_DEVELOP_IMAGE_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED);
+        CHKSIGDBG(DT_SIGNAL_IMAGE_IMPORT);
+        CHKSIGDBG(DT_SIGNAL_IMAGE_EXPORT_TMPFILE);
+        CHKSIGDBG(DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_PREFERENCES_CHANGE);
+        CHKSIGDBG(DT_SIGNAL_CAMERA_DETECTED);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_LOG_REDRAW);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_TOAST_REDRAW);
+        CHKSIGDBG(DT_SIGNAL_CONTROL_PICKERDATA_READY);
+        CHKSIGDBG(DT_SIGNAL_METADATA_UPDATE);
+        else
+        {
+          fprintf(stderr, "unknown signal name: '%s'. use 'ALL' to enable debug for all or use full signal name\n", str);
+          return usage(argv[0]);
+        }
+        g_free(str);
+        #undef CHKSIGDBG
         k++;
         argv[k-1] = NULL;
         argv[k] = NULL;
@@ -733,11 +790,70 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
     }
   }
 
+  // get valid directories
+  dt_loc_init(datadir_from_command, moduledir_from_command, localedir_from_command, configdir_from_command, cachedir_from_command, tmpdir_from_command);
+
   if(darktable.unmuted & DT_DEBUG_MEMORY)
   {
     fprintf(stderr, "[memory] at startup\n");
     dt_print_mem_usage();
   }
+
+  char sharedir[PATH_MAX] = { 0 };
+  dt_loc_get_sharedir(sharedir, sizeof(sharedir));
+
+  // we have to have our share dir in XDG_DATA_DIRS,
+  // otherwise GTK+ won't find our logo for the about screen (and maybe other things)
+  {
+    const gchar *xdg_data_dirs = g_getenv("XDG_DATA_DIRS");
+    gchar *new_xdg_data_dirs = NULL;
+    gboolean set_env = TRUE;
+    if(xdg_data_dirs != NULL && *xdg_data_dirs != '\0')
+    {
+      // check if sharedir is already in there
+      gboolean found = FALSE;
+      gchar **tokens = g_strsplit(xdg_data_dirs, G_SEARCHPATH_SEPARATOR_S, 0);
+      // xdg_data_dirs is neither NULL nor empty => tokens != NULL
+      for(char **iter = tokens; *iter != NULL; iter++)
+        if(!strcmp(sharedir, *iter))
+        {
+          found = TRUE;
+          break;
+        }
+      g_strfreev(tokens);
+      if(found)
+        set_env = FALSE;
+      else
+        new_xdg_data_dirs = g_strjoin(G_SEARCHPATH_SEPARATOR_S, sharedir, xdg_data_dirs, NULL);
+    }
+    else
+    {
+#ifndef _WIN32
+      // see http://standards.freedesktop.org/basedir-spec/latest/ar01s03.html for a reason to use those as a
+      // default
+      if(!g_strcmp0(sharedir, "/usr/local/share")
+         || !g_strcmp0(sharedir, "/usr/local/share/")
+         || !g_strcmp0(sharedir, "/usr/share") || !g_strcmp0(sharedir, "/usr/share/"))
+        new_xdg_data_dirs = g_strdup("/usr/local/share/" G_SEARCHPATH_SEPARATOR_S "/usr/share/");
+      else
+        new_xdg_data_dirs = g_strdup_printf("%s" G_SEARCHPATH_SEPARATOR_S "/usr/local/share/" G_SEARCHPATH_SEPARATOR_S
+                                            "/usr/share/", sharedir);
+#else
+      set_env = FALSE;
+#endif
+    }
+
+    if(set_env) g_setenv("XDG_DATA_DIRS", new_xdg_data_dirs, 1);
+    dt_print(DT_DEBUG_DEV, "new_xdg_data_dirs: %s\n", new_xdg_data_dirs);
+    g_free(new_xdg_data_dirs);
+  }
+
+  setlocale(LC_ALL, "");
+  char localedir[PATH_MAX] = { 0 };
+  dt_loc_get_localedir(localedir, sizeof(localedir));
+  bindtextdomain(GETTEXT_PACKAGE, localedir);
+  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+  textdomain(GETTEXT_PACKAGE);
 
   if(init_gui)
   {
@@ -751,16 +867,6 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 #ifdef _OPENMP
   omp_set_num_threads(darktable.num_openmp_threads);
 #endif
-  dt_loc_init_datadir(datadir_from_command);
-  dt_loc_init_plugindir(moduledir_from_command);
-  dt_loc_init_localedir(localedir_from_command);
-  if(dt_loc_init_tmp_dir(tmpdir_from_command))
-  {
-    fprintf(stderr, "error: invalid temporary directory: %s\n", darktable.tmpdir);
-    return usage(argv[0]);
-  }
-  dt_loc_init_user_config_dir(configdir_from_command);
-  dt_loc_init_user_cache_dir(cachedir_from_command);
 
 #ifdef USE_LUA
   dt_lua_init_early(L);
@@ -856,10 +962,15 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
       if(!image_loaded_elsewhere) dt_database_show_error(darktable.db);
     }
+    fprintf(stderr, "ERROR: can't acquire database lock, aborting.\n");
     return 1;
   }
 
-  dt_ioppr_check_db_integrity();
+  //db maintenance on startup (if configured to do so)
+  if(dt_database_maybe_maintenance(darktable.db, init_gui, FALSE))
+  {
+    dt_database_perform_maintenance(darktable.db);
+  }
 
   // Initialize the signal system
   darktable.signals = dt_control_signal_init();
@@ -908,6 +1019,9 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // *SIGH*
   dt_set_signal_handlers();
+#elif defined HAVE_IMAGEMAGICK
+  /* ImageMagick init */
+  MagickWandGenesis();
 #endif
 
   darktable.opencl = (dt_opencl_t *)calloc(1, sizeof(dt_opencl_t));
@@ -935,7 +1049,11 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     darktable.gui = (dt_gui_gtk_t *)calloc(1, sizeof(dt_gui_gtk_t));
-    if(dt_gui_gtk_init(darktable.gui)) return 1;
+    if(dt_gui_gtk_init(darktable.gui))
+    {
+      fprintf(stderr, "ERROR: can't init gui, aborting.\n");
+      return 1;
+    }
     dt_bauhaus_init();
   }
   else
@@ -945,19 +1063,36 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   dt_view_manager_init(darktable.view_manager);
 
   // check whether we were able to load darkroom view. if we failed, we'll crash everywhere later on.
-  if(!darktable.develop) return 1;
+  if(!darktable.develop)
+  {
+    fprintf(stderr, "ERROR: can't init develop system, aborting.\n");
+    return 1;
+  }
 
   darktable.imageio = (dt_imageio_t *)calloc(1, sizeof(dt_imageio_t));
   dt_imageio_init(darktable.imageio);
 
-  // load iop order
-  darktable.iop_order_list = dt_ioppr_get_iop_order_list(NULL);
+  // load default iop order
+  darktable.iop_order_list = dt_ioppr_get_iop_order_list(0, FALSE);
   // load iop order rules
   darktable.iop_order_rules = dt_ioppr_get_iop_order_rules();
   // load the darkroom mode plugins once:
   dt_iop_load_modules_so();
   // check if all modules have a iop order assigned
-  if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list)) return 1;
+  if(dt_ioppr_check_so_iop_order(darktable.iop, darktable.iop_order_list))
+  {
+    fprintf(stderr, "ERROR: iop order looks bad, aborting.\n");
+    return 1;
+  }
+
+  // set up memory.darktable_iop_names table
+  dt_iop_set_darktable_iop_table();
+
+  // set up the list of exiv2 metadata
+  dt_exif_set_exiv2_taglist();
+
+  // init metadata flags
+  dt_metadata_init();
 
   if(init_gui)
   {
@@ -1011,6 +1146,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
   if(init_gui)
   {
     const char *mode = "lighttable";
+#ifdef HAVE_GAME
     // april 1st: you have to earn using dt first! or know that you can switch views with keyboard shortcuts
     time_t now;
     time(&now);
@@ -1027,6 +1163,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         mode = "knight";
       }
     }
+#endif
     // we have to call dt_ctl_switch_mode_to() here already to not run into a lua deadlock.
     // having another call later is ok
     dt_ctl_switch_mode_to(mode);
@@ -1076,6 +1213,16 @@ void dt_cleanup()
 {
   const int init_gui = (darktable.gui != NULL);
 
+  // last chance to ask user for any input...
+
+  const gboolean perform_maintenance = dt_database_maybe_maintenance(darktable.db, init_gui, TRUE);
+  const gboolean perform_snapshot = dt_database_maybe_snapshot(darktable.db);
+  gchar **snaps_to_remove = NULL;
+  if(perform_snapshot)
+  {
+    snaps_to_remove = dt_database_snaps_to_remove(darktable.db);
+  }
+
 #ifdef HAVE_PRINT
   dt_printers_abort_discovery();
 #endif
@@ -1083,8 +1230,14 @@ void dt_cleanup()
 #ifdef USE_LUA
   dt_lua_finalize_early();
 #endif
+
+  // anything that asks user for input should be placed before this line
+
   if(init_gui)
   {
+    // hide main window and do rest of the cleanup in the background
+    gtk_widget_hide(dt_ui_main_window(darktable.gui->ui));
+
     dt_ctl_switch_mode_to("");
     dt_dbus_destroy(darktable.dbus);
 
@@ -1128,15 +1281,45 @@ void dt_cleanup()
   free(darktable.opencl);
 #ifdef HAVE_GPHOTO2
   dt_camctl_destroy((dt_camctl_t *)darktable.camctl);
+  darktable.camctl = NULL;
 #endif
   dt_pwstorage_destroy(darktable.pwstorage);
 
 #ifdef HAVE_GRAPHICSMAGICK
   DestroyMagick();
+#elif defined HAVE_IMAGEMAGICK
+  MagickWandTerminus();
 #endif
 
   dt_guides_cleanup(darktable.guides);
 
+  if(perform_maintenance)
+  {
+    dt_database_cleanup_busy_statements(darktable.db);
+    dt_database_perform_maintenance(darktable.db);
+  }
+
+  dt_database_optimize(darktable.db);
+  if(perform_snapshot)
+  {
+    if(dt_database_snapshot(darktable.db) && snaps_to_remove)
+    {
+      int i = 0;
+      while(snaps_to_remove[i])
+      {
+        // make file to remove writable, mostly problem on windows.
+        g_chmod(snaps_to_remove[i], S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH);
+
+        dt_print(DT_DEBUG_SQL, "[db backup] removing old snap: %s... ", snaps_to_remove[i]);
+        const int retunlink = g_remove(snaps_to_remove[i++]);
+        dt_print(DT_DEBUG_SQL, "%s\n", retunlink == 0 ? "success" : "failed!");
+      }
+    }
+  }
+  if(snaps_to_remove)
+  {
+    g_strfreev(snaps_to_remove);
+  }
   dt_database_destroy(darktable.db);
 
   if(init_gui)
@@ -1276,6 +1459,7 @@ void dt_configure_performance()
     if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
+    dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem > (2lu << 20) && threads >= 4 && atom_cores == 0)
   {
@@ -1289,6 +1473,7 @@ void dt_configure_performance()
     if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
+    dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem < (1lu << 20) || threads <= 2 || atom_cores > 0)
   {
@@ -1300,6 +1485,7 @@ void dt_configure_performance()
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", TRUE);
+    dt_conf_set_bool("ui/performance", TRUE);
   }
   else
   {
@@ -1311,6 +1497,7 @@ void dt_configure_performance()
     dt_conf_set_int("singlebuffer_limit", 16);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
     dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
+    dt_conf_set_bool("ui/performance", FALSE);
   }
 
   g_free(demosaic_quality);

@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2012-2015 tobias ellinghaus.
+ *    Copyright (C) 2012-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -54,21 +54,21 @@ static void dt_guides_draw_grid(cairo_t *cr, const float x, const float y, const
   cairo_set_line_width(cr, 1.0 / zoom_scale);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  cairo_set_source_rgba(cr, .2, .2, .2, .3);
+  dt_draw_set_color_overlay(cr, 0.2, 0.3);
   dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
   cairo_set_dash(cr, &dashes, 1, dashes);
-  cairo_set_source_rgba(cr, .8, .8, .8, .3);
+  dt_draw_set_color_overlay(cr, 0.8, 0.3);
   dt_draw_horizontal_lines(cr, (1+data->horizontal) * (1+data->subdiv), x, y, right, bottom);
   dt_draw_vertical_lines(cr, (1+data->vertical) * (1+data->subdiv), x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, 0);
-  cairo_set_source_rgba(cr, .2, .2, .2, .5);
+  dt_draw_set_color_overlay(cr, 0.2, 0.5);
   dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
 
   cairo_set_dash(cr, &dashes, 1, dashes);
-  cairo_set_source_rgba(cr, .8, .8, .8, .5);
+  dt_draw_set_color_overlay(cr, 0.8, 0.5);
   dt_draw_horizontal_lines(cr, 1+data->horizontal, x, y, right, bottom);
   dt_draw_vertical_lines(cr, 1+data->vertical, x, y, right, bottom);
 }
@@ -105,21 +105,21 @@ static GtkWidget *_guides_gui_grid(dt_iop_module_t *self, void *user_data)
 
   GtkWidget *grid_horizontal = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->horizontal, 0);
   dt_bauhaus_slider_set_hard_max(grid_horizontal, 36);
-  dt_bauhaus_widget_set_label(grid_horizontal, NULL, _("horizontal lines"));
+  dt_bauhaus_widget_set_label(grid_horizontal, NULL, N_("horizontal lines"));
   gtk_widget_set_tooltip_text(grid_horizontal, _("number of horizontal guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_horizontal), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(grid_horizontal), "value-changed", G_CALLBACK(_grid_horizontal_changed), user_data);
 
   GtkWidget *grid_vertical = dt_bauhaus_slider_new_with_range(self, 0, 12, 1, data->vertical, 0);
   dt_bauhaus_slider_set_hard_max(grid_vertical, 36);
-  dt_bauhaus_widget_set_label(grid_vertical, NULL, _("vertical lines"));
+  dt_bauhaus_widget_set_label(grid_vertical, NULL, N_("vertical lines"));
   gtk_widget_set_tooltip_text(grid_vertical, _("number of vertical guide lines"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_vertical), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(grid_vertical), "value-changed", G_CALLBACK(_grid_vertical_changed), user_data);
 
   GtkWidget *grid_subdiv = dt_bauhaus_slider_new_with_range(self, 0, 10, 1, data->subdiv, 0);
   dt_bauhaus_slider_set_hard_max(grid_subdiv, 30);
-  dt_bauhaus_widget_set_label(grid_subdiv, NULL, _("subdivisions"));
+  dt_bauhaus_widget_set_label(grid_subdiv, NULL, N_("subdivisions"));
   gtk_widget_set_tooltip_text(grid_subdiv, _("number of subdivisions per grid rectangle"));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(grid_subdiv), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(grid_subdiv), "value-changed", G_CALLBACK(_grid_subdiv_changed), user_data);
@@ -437,7 +437,7 @@ static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data
 {
   _golden_mean_t *data = (_golden_mean_t *)user_data;
   GtkWidget *golden_extras = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(golden_extras, NULL, _("extra"));
+  dt_bauhaus_widget_set_label(golden_extras, NULL, N_("extra"));
   dt_bauhaus_combobox_add(golden_extras, _("golden sections"));
   dt_bauhaus_combobox_add(golden_extras, _("golden spiral sections"));
   dt_bauhaus_combobox_add(golden_extras, _("golden spiral"));
@@ -453,7 +453,8 @@ static GtkWidget *_guides_gui_golden_mean(dt_iop_module_t *self, void *user_data
 static void _guides_add_guide(GList **list, const char *name,
                               dt_guides_draw_callback draw,
                               dt_guides_widget_callback widget,
-                              void *user_data, GDestroyNotify free)
+                              void *user_data, GDestroyNotify free,
+                              gboolean support_flip)
 {
   dt_guides_t *guide = (dt_guides_t *)malloc(sizeof(dt_guides_t));
   g_strlcpy(guide->name, name, sizeof(guide->name));
@@ -461,12 +462,13 @@ static void _guides_add_guide(GList **list, const char *name,
   guide->widget = widget;
   guide->user_data = user_data;
   guide->free = free;
+  guide->support_flip = support_flip;
   *list = g_list_append(*list, guide);
 }
 
 void dt_guides_add_guide(const char *name, dt_guides_draw_callback draw, dt_guides_widget_callback widget, void *user_data, GDestroyNotify free)
 {
-  _guides_add_guide(&darktable.guides, name, draw, widget, user_data, free);
+  _guides_add_guide(&darktable.guides, name, draw, widget, user_data, free, TRUE);
 }
 
 GList *dt_guides_init()
@@ -478,17 +480,17 @@ GList *dt_guides_init()
     user_data->horizontal = dt_conf_key_exists("plugins/darkroom/clipping/grid_horizontal") ? dt_conf_get_int("plugins/darkroom/clipping/grid_horizontal") : 3;
     user_data->vertical = dt_conf_key_exists("plugins/darkroom/clipping/grid_vertical") ? dt_conf_get_int("plugins/darkroom/clipping/grid_vertical") : 3;
     user_data->subdiv = dt_conf_key_exists("plugins/darkroom/clipping/grid_subdiv") ? dt_conf_get_int("plugins/darkroom/clipping/grid_subdiv") : 3;
-    _guides_add_guide(&guides, _("grid"), _guides_draw_grid, _guides_gui_grid, user_data, free);
+    _guides_add_guide(&guides, _("grid"), _guides_draw_grid, _guides_gui_grid, user_data, free, FALSE);
   }
-  _guides_add_guide(&guides, _("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL);
-  _guides_add_guide(&guides, _("metering"), _guides_draw_metering, NULL, NULL, NULL);
-  _guides_add_guide(&guides, _("perspective"), _guides_draw_perspective, NULL, NULL, NULL); // TODO: make the number of lines configurable with a slider?
-  _guides_add_guide(&guides, _("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL);
-  _guides_add_guide(&guides, _("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL);
+  _guides_add_guide(&guides, _("rules of thirds"), _guides_draw_rules_of_thirds, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, _("metering"), _guides_draw_metering, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, _("perspective"), _guides_draw_perspective, NULL, NULL, NULL, FALSE); // TODO: make the number of lines configurable with a slider?
+  _guides_add_guide(&guides, _("diagonal method"), _guides_draw_diagonal_method, NULL, NULL, NULL, FALSE);
+  _guides_add_guide(&guides, _("harmonious triangles"), _guides_draw_harmonious_triangles, NULL, NULL, NULL, TRUE);
   {
     _golden_mean_t *user_data = (_golden_mean_t *)malloc(sizeof(_golden_mean_t));
     _golden_mean_set_data(user_data, dt_conf_get_int("plugins/darkroom/clipping/golden_extras"));
-    _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, user_data, free);
+    _guides_add_guide(&guides, _("golden mean"), _guides_draw_golden_mean, _guides_gui_golden_mean, user_data, free, TRUE);
   }
 
   return guides;

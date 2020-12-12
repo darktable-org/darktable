@@ -42,7 +42,7 @@ _darktable()
   # the possible options
   opts="--cachedir --conf --configdir -d --datadir --disable-opencl -h --help --library --localedir --luacmd --moduledir --noiseprofiles -t --tmpdir --version"
   # the possible debug print flags
-  dopts="all cache camctl camsupport control dev fswatch input lighttable lua masks memory nan opencl perf pwstorage print sql"
+  dopts="all cache camctl camsupport control dev fswatch imageio input ioporder lighttable lua masks memory nan opencl params perf pwstorage print signal sql undo"
 
   case "${prev}" in
     --cachedir|--configdir|--datadir|--localedir|--moduledir|--tmpdir)

@@ -23,6 +23,8 @@
 
   <xi:include href="image_information.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="scripts_installer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
 <!-- Right panel -->
 
   <xi:include href="select.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>

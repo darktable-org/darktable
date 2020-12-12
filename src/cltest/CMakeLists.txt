@@ -1,5 +1,4 @@
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/..)
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
+include_directories(${DARKTABLE_BINDIR})
 add_executable(darktable-cltest main.c)
 
 set_target_properties(darktable-cltest PROPERTIES LINKER_LANGUAGE C)
@@ -17,7 +16,8 @@ else()
     endif()
     set_target_properties(darktable-cltest
                           PROPERTIES
-                          INSTALL_RPATH ${RPATH_DT}/../${CMAKE_INSTALL_LIBDIR}/darktable)
+                          INSTALL_RPATH ${CMAKE_INSTALL_LIBDIR_RPATH}
+                          RUNTIME_OUTPUT_DIRECTORY ${DARKTABLE_BINDIR})
 endif(WIN32)
 
 install(TARGETS darktable-cltest DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT DTApplication)

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 johannes hanika.
+    Copyright (C) 2012-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 // (and we hope newer gpus will all do that)
 static const char *nvidia_gpus[] = {
   // clang-format off
-  
+
   "Tesla C2075", "2.0",
   "Tesla C2050/C2070", "2.0",
   "Tesla C1060", "1.3",
@@ -251,7 +251,7 @@ static const char *nvidia_gpus[] = {
   "GeForce G 103M", "1.1",
   "ION", "1.0",
   NULL, NULL
-  
+
   // clang-format on
 };
 #endif

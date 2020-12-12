@@ -204,6 +204,17 @@ laplacian_assemble(
   int lo = hi-1;
   // const float a = fmin(fmax((v - gamma[lo])/(gamma[hi]-gamma[lo]), 0.0f), 1.0f);
   const float a = fmin(fmax(v*num_gamma - ((float)lo+.5f), 0.0f), 1.0f);
+#ifdef AMD
+  // See #3756 for further information why this is necessary on AMD using both
+  // AMDGPU-Pro and ROCm drivers.
+  float r;
+  r = select(r, laplacian(buf_g0_l1, buf_g0_l0, x, y, i, j, pw, ph) * (1.0f-a) + laplacian(buf_g1_l1, buf_g1_l0, x, y, i, j, pw, ph) * a, lo == 0);
+  r = select(r, laplacian(buf_g1_l1, buf_g1_l0, x, y, i, j, pw, ph) * (1.0f-a) + laplacian(buf_g2_l1, buf_g2_l0, x, y, i, j, pw, ph) * a, lo == 1);
+  r = select(r, laplacian(buf_g2_l1, buf_g2_l0, x, y, i, j, pw, ph) * (1.0f-a) + laplacian(buf_g3_l1, buf_g3_l0, x, y, i, j, pw, ph) * a, lo == 2);
+  r = select(r, laplacian(buf_g3_l1, buf_g3_l0, x, y, i, j, pw, ph) * (1.0f-a) + laplacian(buf_g4_l1, buf_g4_l0, x, y, i, j, pw, ph) * a, lo == 3);
+  r = select(r, laplacian(buf_g4_l1, buf_g4_l0, x, y, i, j, pw, ph) * (1.0f-a) + laplacian(buf_g5_l1, buf_g5_l0, x, y, i, j, pw, ph) * a, lo >= 4);
+  pixel.x += r;
+#else
   float l0, l1;
   switch(lo)
   { // oh man, this sucks:
@@ -237,6 +248,7 @@ laplacian_assemble(
     //   break;
   }
   pixel.x += l0 * (1.0f-a) + l1 * a;
+#endif
   write_imagef (output0, (int2)(x, y), pixel);
 }
 

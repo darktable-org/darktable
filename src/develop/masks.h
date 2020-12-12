@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2012 aldric renaudin.
+    Copyright (C) 2013-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 
 #include <assert.h>
 
-#define DEVELOP_MASKS_VERSION (4)
+#define DEVELOP_MASKS_VERSION (6)
 
 /**forms types */
 typedef enum dt_masks_type_t
@@ -59,6 +59,12 @@ typedef enum dt_masks_points_states_t
   DT_MASKS_POINT_STATE_NORMAL = 1,
   DT_MASKS_POINT_STATE_USER = 2
 } dt_masks_points_states_t;
+
+typedef enum dt_masks_gradient_states_t
+{
+  DT_MASKS_GRADIENT_STATE_LINEAR = 1,
+  DT_MASKS_GRADIENT_STATE_SIGMOIDAL = 2
+} dt_masks_gradient_states_t;
 
 typedef enum dt_masks_edit_mode_t
 {
@@ -137,6 +143,8 @@ typedef struct dt_masks_point_gradient_t
   float rotation;
   float compression;
   float steepness;
+  float curvature;
+  dt_masks_gradient_states_t state;
 } dt_masks_point_gradient_t;
 
 /** structure used to store all forms's id for a group */
@@ -215,6 +223,7 @@ typedef struct dt_masks_form_gui_t
   gboolean source_dragging;
   gboolean form_rotating;
   gboolean border_toggling;
+  gboolean gradient_toggling;
   int point_dragging;
   int feather_dragging;
   int seg_dragging;
@@ -370,11 +379,11 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
 
   if(a != NULL)
   {
-    strncpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
-    a->tag[sizeof(a->tag)-1] = '\0';
+    g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
-    a->size = size;
-    a->buffer = (float *)malloc(size * sizeof(float));
+    const size_t bufsize = dt_round_size(size * sizeof(float), 64);
+    a->size = bufsize / sizeof(float);
+    a->buffer = (float *)dt_alloc_align(64, bufsize);
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
              (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
@@ -397,9 +406,7 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
     float *oldbuffer = a->buffer;
     size_t oldsize = a->size;
     a->size *= 2;
-    a->buffer = (float *)realloc(a->buffer, a->size * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer, oldbuffer);
+    a->buffer = (float *)dt_alloc_align(64, a->size * sizeof(float));
     if(a->buffer == NULL)
     {
       // not much we can do here except of emitting an error message
@@ -409,9 +416,44 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
       a->buffer = oldbuffer;
       return;
     }
+    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
+    dt_free_align(oldbuffer);
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
+             (unsigned long)a->size, a->buffer, oldbuffer);
   }
   a->buffer[a->pos++] = value;
 }
+
+static inline
+void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(a->pos + n >= a->size)
+  {
+    if(a->size == 0) return;
+    float *oldbuffer = a->buffer;
+    size_t oldsize = a->size;
+    while(a->pos + n >= a->size) a->size *= 2;
+    a->buffer = (float *)dt_alloc_align(64, a->size * sizeof(float));
+    if(a->buffer == NULL)
+    {
+      // not much we can do here except of emitting an error message
+      fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
+              (unsigned long)a->size);
+      a->size = oldsize;
+      a->buffer = oldbuffer;
+      return;
+    }
+    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
+    dt_free_align(oldbuffer);
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
+             (unsigned long)a->size, a->buffer, oldbuffer);
+  }
+  memcpy(a->buffer + a->pos, values, n * sizeof(float));
+  a->pos += n;
+}
+
 
 static inline
 float dt_masks_dynbuf_get(dt_masks_dynbuf_t *a, int offset)
@@ -471,9 +513,18 @@ void dt_masks_dynbuf_free(dt_masks_dynbuf_t *a)
   if(a == NULL) return;
   dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] freed (was %p)\n", a->tag,
           a->buffer);
-  free(a->buffer);
+  dt_free_align(a->buffer);
   free(a);
 }
+
+static inline
+int dt_masks_roundup(int num, int mult)
+{
+  const int rem = num % mult;
+
+  return (rem == 0) ? num : num + mult - rem;
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

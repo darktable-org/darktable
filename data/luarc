@@ -19,4 +19,236 @@ ipairs = function(t)
   end
   end
 
+-- script installer
+
+local _scripts_install = {}
+
+_scripts_install.module_installed = false
+_scripts_install.event_registered = false
+
+_scripts_install.dt = require 'darktable'
+
+-- check for gui so that we don't hang darktable-cli
+
+if _scripts_install.dt.configuration.has_gui  then
+
+
+  _scripts_install.dt.preferences.register(
+    "_scripts_install",
+    "dont_show",
+    "bool",
+    _scripts_install.dt.gettext.gettext("lua scripts installer dont show again"),
+    _scripts_install.dt.gettext.gettext("do not show scripts_installer if lua scripts are not installed"),
+    false
+  )
+
+  if not _scripts_install.dt.preferences.read("_scripts_install", "dont_show", "bool") then
+    -- _scripts_install.dt.print_log("dont show not set")
+
+    if _scripts_install.dt.preferences.read("_scripts_install", "remind", "bool") then
+      -- _scripts_install.dt.print_log("remind set")
+      if _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") < 4 then
+        _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer") + 1)
+        -- _scripts_install.dt.print_log("retries set to " .. _scripts_install.dt.preferences.read("_scripts_install", "restarts", "integer"))
+        return
+      else
+        _scripts_install.dt.preferences.write("_scripts_install", "restarts", "integer", 0)
+      end
+    end
+
+    _scripts_install.not_installed = true
+    --_scripts_install.dt.print_log("checking for lua directory")
+
+    -- check for lua scripts directory 
+    if _scripts_install.dt.configuration.running_os == "windows" then
+      _scripts_install.dir_cmd = "dir /b "
+      _scripts_install.which_cmd = "where "
+    else
+      _scripts_install.dir_cmd = "ls "
+      _scripts_install.which_cmd = "which "
+    end
+
+    -- check for the scripts directory
+    -- _scripts_install.dt.print_log("checking for scripts")
+
+    _scripts_install.p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+    for line in _scripts_install.p:lines() do 
+      -- _scripts_install.dt.print_log("line is " .. line)
+      if string.match(line, "^lua$") then
+        _scripts_install.not_installed = false
+       -- _scripts_install. dt.print_log("scripts found")
+      end
+    end
+    _scripts_install.p:close()
+
+    local gettext = _scripts_install.dt.gettext
+
+    local function _(msg)
+      return gettext.gettext(msg)
+    end
+
+    if _scripts_install.not_installed then
+      -- _scripts_install.dt.print_log("scripts not installed")
+      _scripts_install.widgets = {}
+
+        -- check for a luarc file and move it
+      function _scripts_install.backup_luarc()
+        local p = io.popen(_scripts_install.dir_cmd .. _scripts_install.dt.configuration.config_dir)
+        for line in p:lines() do 
+          if string.match(line, "^luarc$") then
+            if _scripts_install.dt.configuration.running_os == "windows" then
+              os.execute("rename " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+            else
+              os.execute("mv " .. _scripts_install.dt.configuration.config_dir .. "/luarc " .. _scripts_install.dt.configuration.config_dir .. "/luarc.old")
+            end
+          end
+        end
+        p:close()
+      end
+
+      function _scripts_install.minimize_lib()
+        --hide the library
+        _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = false
+      end
+
+      function _scripts_install.installer()
+       -- _scripts_install.dt.print_log("running installer")
+
+        if _scripts_install.widgets.choice.value == _("don't show again") then
+          _scripts_install.dt.preferences.write("_scripts_install", "dont_show", "bool", true)
+          _scripts_install.dt.preferences.write("_scripts_install", "remind", "bool", false)
+          _scripts_install.dt.print(_("Installer won't be shown when darktable starts"))
+          _scripts_install.minimize_lib()
+        elseif _scripts_install.widgets.choice.value == _("remind me later") then
+          _scripts_install.dt.preferences.write("_scripts_install", "dont_show", "bool", false)
+          _scripts_install.dt.preferences.write("_scripts_install", "remind", "bool", true)
+          _scripts_install.dt.preferences.write("_scripts_install", "retries", "integer", 0)
+          _scripts_install.dt.print(_("Installer will be shown every 5th time darktable starts"))
+          _scripts_install.minimize_lib()
+        else
+          _scripts_install.dt.preferences.write("_scripts_install", "remind", "bool", false)
+          _scripts_install.dt.preferences.write("_scripts_install", "dont_show", "bool", false)
+
+            -- check for git executable
+          if _scripts_install.dt.configuration.running_os == "windows" then
+            _scripts_install.which_cmd = "where "
+            _scripts_install.git_cmd = "git.exe"
+          else
+            _scripts_install.which_cmd = "which "
+            _scripts_install.git_cmd = "git"
+          end
+
+          _scripts_install.git_bin = nil
+          -- _scripts_install.dt.print_log("checking for git")
+          -- _scripts_install.dt.print_log("with command " .. _scripts_install.which_cmd .. _scripts_install.git_cmd)
+
+          _scripts_install.p = io.popen(_scripts_install.which_cmd .. _scripts_install.git_cmd)
+          for line in _scripts_install.p:lines() do 
+            if string.match(line, _scripts_install.git_cmd) then
+              -- _scripts_install.dt.print_log("got a match")
+              _scripts_install.git_bin = line
+              -- _scripts_install.dt.print_log("git bin is " .. _scripts_install.git_bin)
+            end
+          end
+          _scripts_install.p:close()
+
+          if not _scripts_install.git_bin then
+            _scripts_install.dt.print(_("Please install git and make sure it is in your path"))
+            return
+          end
+
+          _scripts_install.require_string = "require \"tools/script_manager\""
+          if _scripts_install.dt.configuration.running_os ~= "windows" then
+            _scripts_install.require_string = "'" .. _scripts_install.require_string .. "'"
+          end
+          
+          _scripts_install.backup_luarc()
+          _scripts_install.dt.print(_("lua scripts installing"))
+          os.execute("\"" .. _scripts_install.git_bin .. "\" " .. "clone https://github.com/darktable-org/lua-scripts.git " .. _scripts_install.dt.configuration.config_dir .. "/lua")
+          os.execute("echo " .. _scripts_install.require_string .. " > " .. _scripts_install.dt.configuration.config_dir .. "/luarc")
+          _scripts_install.dt.print(_("lua scripts are installed"))
+          require "tools/script_manager"
+          _scripts_install.dt.gui.libs["script_manager"].visible = true
+        end
+        _scripts_install.minimize_lib()
+      end
+
+      function _scripts_install.install_module()
+        if not _scripts_install.module_installed then
+          _scripts_install.dt.register_lib(
+            "lua_scripts_installer",
+            _("lua scripts installer"),
+            true,
+            false,
+            {[_scripts_install.dt.gui.views.lighttable] = {"DT_UI_CONTAINER_PANEL_LEFT_BOTTOM", 900}},
+            _scripts_install.dt.new_widget("box"){
+              orientation = "vertical",
+              table.unpack(_scripts_install.display_widgets)
+            },
+            nil,
+            nil
+          )
+          _scripts_install.module_installed = true
+          if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
+           _scripts_install.dt.gui.libs["lua_scripts_installer"].visible = true
+           _scripts_install.dt.preferences.write("_scripts_install", "initialized", "bool", true)
+         end
+        end
+      end
+
+      -- _scripts_install.dt.print_log("building widgets")
+
+      _scripts_install.display_widgets = {}
+
+      if not _scripts_install.dt.preferences.read("_scripts_install", "initialized", "bool") then
+
+        _scripts_install.widgets["message"] = _scripts_install.dt.new_widget("text_view"){
+          text = _("Choose an action below.\n\n'install scripts' installs the lua scripts from\nthe darktable ") .. 
+          _("lua-scripts repository\n\n'remind me later' will cause this module to\nreappear every 5th ") ..
+          _("darktable is restarted\n\n'dont show again' will cause this module to\nnot be shown again ") ..
+          _("for those who do\nnot wish to install the scripts\n\n"),
+          editable = false,
+       }
+       table.insert(_scripts_install.display_widgets, _scripts_install.widgets["message"])
+     end
+
+      _scripts_install.widgets["choice"] = _scripts_install.dt.new_widget("combobox"){
+        label = _("select action"),
+        tooltip = _("select action to perform"),
+        selected = 1,
+        _("install scripts"), 
+        _("remind me later"), 
+        _("don't show again"),
+      }
+      table.insert(_scripts_install.display_widgets, _scripts_install.widgets["choice"])
+
+      _scripts_install.widgets["execute"] = _scripts_install.dt.new_widget("button"){
+        label = _("execute"),
+        clicked_callback = function(this)
+          _scripts_install.installer()
+        end
+      }
+      table.insert(_scripts_install.display_widgets, _scripts_install.widgets["execute"])
+
+      -- _scripts_install.dt.print_log("installing library")
+
+      if _scripts_install.dt.gui.current_view().id == "lighttable" then
+        _scripts_install.install_module()
+      else
+        if not _scripts_install.event_registered then
+          _scripts_install.dt.register_event(
+            "view-changed",
+            function(event, old_view, new_view)
+              if new_view.name == "lighttable" and old_view.name == "darkroom" then
+                _scripts_install.install_module()
+               end
+            end
+          )
+          _scripts_install.event_registered = true
+        end
+      end
+    end
+  end
+end
+
 -- vim: shiftwidth=2 expandtab tabstop=2 cindent syntax=lua

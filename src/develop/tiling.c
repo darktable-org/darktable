@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011--2014 Ulrich Pegelow.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -2031,7 +2031,7 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   if((self->flags() & IOP_FLAGS_TILING_FULL_ROI) == IOP_FLAGS_TILING_FULL_ROI) tiling->overlap = 4;
 
-  if(self->iop_order > dt_ioppr_get_iop_order(piece->pipe->iop_order_list, "demosaic")) return;
+  if(self->iop_order > dt_ioppr_get_iop_order(piece->pipe->iop_order_list, "demosaic", 0)) return;
 
   // all operations that work with mosaiced data should respect pattern size!
 

@@ -35,7 +35,7 @@ _status() {
         success) local -n nameref_color='green'; title='[DARKTABLE CI] SUCCESS:' ;;
         message) local -n nameref_color='cyan';  title='[DARKTABLE CI]'
     esac
-    printf "\n${nameref_color}${title}${normal} ${status}\n\n"
+    printf "%s" "\n${nameref_color}${title}${normal} ${status}\n\n"
 }
 
 # Run command with status
@@ -43,21 +43,21 @@ execute(){
     local status="${1}"
     local command="${2}"
     local arguments=("${@:3}")
-    cd "${package:-.}"
+    cd "${package:-.}" || exit "$?"
     message "${status}"
     if [[ "${command}" != *:* ]]
-        then ${command} ${arguments[@]}
-        else ${command%%:*} | ${command#*:} ${arguments[@]}
+        then "${command}" "${arguments[@]}"
+        else "${command%%:*}" | "${command#*:}" "${arguments[@]}"
     fi || failure "${status} failed"
     cd - > /dev/null
 }
 
 # Build
 build_darktable() {
-    cd $(cygpath ${APPVEYOR_BUILD_FOLDER})
+    cd "$(cygpath "${APPVEYOR_BUILD_FOLDER}")" || exit "$?"
 
-    mkdir build && cd build
-    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$(cygpath ${APPVEYOR_BUILD_FOLDER})/build $(cygpath ${APPVEYOR_BUILD_FOLDER})
+    mkdir build && cd build || exit "$?"
+    cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$(cygpath "${APPVEYOR_BUILD_FOLDER}")"/build "$(cygpath "${APPVEYOR_BUILD_FOLDER}")"
     cmake --build .
     cmake --build . --target package
 }
@@ -82,6 +82,10 @@ cat > "$FONTCONFIG_FILE" <<EOF
 EOF
 
 execute 'Installing base-devel and toolchain'  pacman -S --needed --noconfirm mingw-w64-x86_64-{toolchain,clang,cmake}
-execute 'Installing dependencies' pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
+execute 'Installing dependencies' pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,lensfun}
+
 execute 'Updating lensfun databse' lensfun-update-data
+
+execute 'Installing additional OpenMP library for clang' pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
+
 execute 'Building darktable' build_darktable

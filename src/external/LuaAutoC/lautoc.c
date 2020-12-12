@@ -6,22 +6,22 @@ void luaA_open(lua_State* L) {
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_ids");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_names");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_sizes");
-  
+
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_push");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_to");
-  
+
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_newtable(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
-  
+
   lua_newuserdata(L, LUAA_RETURN_STACK_SIZE); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_stk");
   lua_newuserdata(L, LUAA_ARGUMENT_STACK_SIZE); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_stk");
   lua_pushinteger(L, 0); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_ptr");
   lua_pushinteger(L, 0); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_ptr");
-  
+
   // compiler does weird macro expansion with "bool" so no magic macro for you
   luaA_conversion_type(L, luaA_type_add(L,"bool",sizeof(bool)), luaA_push_bool, luaA_to_bool);
   luaA_conversion_type(L, luaA_type_add(L,"_Bool",sizeof(bool)), luaA_push_bool, luaA_to_bool);
@@ -39,7 +39,7 @@ void luaA_open(lua_State* L) {
   luaA_conversion(L, float, luaA_push_float, luaA_to_float);
   luaA_conversion(L, double, luaA_push_double, luaA_to_double);
   luaA_conversion(L, long double, luaA_push_long_double, luaA_to_long_double);
-  
+
   luaA_conversion_push_type(L, luaA_type_add(L,"const bool",sizeof(bool)), luaA_push_bool);
   luaA_conversion_push_type(L, luaA_type_add(L,"const _Bool",sizeof(bool)), luaA_push_bool);
   luaA_conversion_push(L, const char, luaA_push_char);
@@ -56,13 +56,13 @@ void luaA_open(lua_State* L) {
   luaA_conversion_push(L, const float, luaA_push_float);
   luaA_conversion_push(L, const double, luaA_push_double);
   luaA_conversion_push(L, const long double, luaA_push_long_double);
-  
+
   luaA_conversion(L, char*, luaA_push_char_ptr, luaA_to_char_ptr);
   luaA_conversion(L, const char*, luaA_push_const_char_ptr, luaA_to_const_char_ptr);
   luaA_conversion(L, void*, luaA_push_void_ptr, luaA_to_void_ptr);
-  
+
   luaA_conversion_push(L, void, luaA_push_void);
-  
+
 }
 
 void luaA_close(lua_State* L) {
@@ -71,22 +71,22 @@ void luaA_close(lua_State* L) {
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_ids");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_names");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_sizes");
-  
+
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_push");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_to");
-  
+
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
-  
+
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_stk");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_stk");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_ptr");
   lua_pushnil(L); lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_ptr");
-  
+
 }
 
 /*
@@ -94,84 +94,84 @@ void luaA_close(lua_State* L) {
 */
 
 luaA_Type luaA_type_add(lua_State* L, const char* type, size_t size) {
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_ids");
   lua_getfield(L, -1, type);
-  
+
   if (lua_isnumber(L, -1)) {
-  
+
     luaA_Type id = lua_tointeger(L, -1);
     lua_pop(L, 2);
     return id;
-  
+
   } else {
-  
+
     lua_pop(L, 2);
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_index");
-    
+
     luaA_Type id = lua_tointeger(L, -1);
     lua_pop(L, 1);
     id++;
 
     lua_pushinteger(L, id);
     lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_index");
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_ids");
     lua_pushinteger(L, id);
     lua_setfield(L, -2, type);
     lua_pop(L, 1);
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_names");
     lua_pushinteger(L, id);
     lua_pushstring(L, type);
     lua_settable(L, -3);
     lua_pop(L, 1);
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_sizes");
     lua_pushinteger(L, id);
     lua_pushinteger(L, size);
     lua_settable(L, -3);
     lua_pop(L, 1);
-    
+
     return id;
-    
+
   }
-  
+
 }
 
 luaA_Type luaA_type_find(lua_State* L, const char* type) {
-  
-  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_ids");  
+
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_ids");
   lua_getfield(L, -1, type);
-  
+
   luaA_Type id = lua_isnil(L, -1) ? LUAA_INVALID_TYPE : lua_tointeger(L, -1);
   lua_pop(L, 2);
-  
+
   return id;
 }
 
 const char* luaA_typename(lua_State* L, luaA_Type id) {
-  
-  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_names");  
+
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_names");
   lua_pushinteger(L, id);
   lua_gettable(L, -2);
-  
+
   const char* type = lua_isnil(L, -1) ? "LUAA_INVALID_TYPE" : lua_tostring(L, -1);
   lua_pop(L, 2);
-  
+
   return type;
 }
 
 size_t luaA_typesize(lua_State* L, luaA_Type id) {
 
-  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_sizes");  
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "type_sizes");
   lua_pushinteger(L, id);
   lua_gettable(L, -2);
-  
+
   size_t size = lua_isnil(L, -1) ? -1 : lua_tointeger(L, -1);
   lua_pop(L, 2);
-  
+
   return size;
 }
 
@@ -180,59 +180,59 @@ size_t luaA_typesize(lua_State* L, luaA_Type id) {
 */
 
 int luaA_push_type(lua_State* L, luaA_Type type_id, const void* c_in) {
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_push");
   lua_pushinteger(L, type_id);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
     luaA_Pushfunc func = lua_touserdata(L, -1);
     lua_pop(L, 2);
     return func(L, type_id, c_in);
   }
-  
+
   lua_pop(L, 2);
-  
+
   if (luaA_struct_registered_type(L, type_id)) {
     return luaA_struct_push_type(L, type_id, c_in);
   }
-  
+
   if (luaA_enum_registered_type(L, type_id)) {
     return luaA_enum_push_type(L, type_id, c_in);
   }
-  
+
   lua_pushfstring(L, "luaA_push: conversion to Lua object from type '%s' not registered!", luaA_typename(L, type_id));
   lua_error(L);
   return 0;
 }
 
 void luaA_to_type(lua_State* L, luaA_Type type_id, void* c_out, int index) {
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_to");
   lua_pushinteger(L, type_id);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
     luaA_Tofunc func = lua_touserdata(L, -1);
     lua_pop(L, 2);
     func(L, type_id, c_out, index);
     return;
   }
-  
+
   lua_pop(L, 2);
-  
+
   if (luaA_struct_registered_type(L, type_id)) {
     luaA_struct_to_type(L, type_id, c_out, index);
     return;
   }
-  
+
   if (luaA_enum_registered_type(L, type_id)) {
     luaA_enum_to_type(L, type_id, c_out, index);
     return;
   }
-  
+
   lua_pushfstring(L, "luaA_to: conversion from Lua object to type '%s' not registered!", luaA_typename(L, type_id));
-  lua_error(L);  
+  lua_error(L);
 }
 
 void luaA_conversion_type(lua_State* L, luaA_Type type_id, luaA_Pushfunc push_func, luaA_Tofunc to_func) {
@@ -430,22 +430,22 @@ bool luaA_conversion_registered_type(lua_State* L, luaA_Type type_id) {
 
 bool luaA_conversion_push_registered_type(lua_State* L, luaA_Type type_id) {
 
-  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_push");  
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_push");
   lua_pushinteger(L, type_id);
   lua_gettable(L, -2);
-  
+
   bool reg = !lua_isnil(L, -1);
   lua_pop(L, 2);
-  
+
   return reg;
 }
 
 bool luaA_conversion_to_registered_type(lua_State* L, luaA_Type type_id) {
 
-  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_to");  
+  lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "stack_to");
   lua_pushinteger(L, type_id);
   lua_gettable(L, -2);
-  
+
   bool reg = !lua_isnil(L, -1);
   lua_pop(L, 2);
 
@@ -457,34 +457,34 @@ bool luaA_conversion_to_registered_type(lua_State* L, luaA_Type type_id) {
 */
 
 int luaA_struct_push_member_offset_type(lua_State* L, luaA_Type type, size_t offset, const void* c_in) {
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_pushinteger(L, offset);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "type");
       luaA_Type stype = lua_tointeger(L, -1);
       lua_pop(L, 4);
       return luaA_push_type(L, stype, c_in + offset);
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_struct_push_member: Member offset '%d' not registered for struct '%s'!", offset, luaA_typename(L, type));
     lua_error(L);
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_push_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
   return 0;
-  
+
 }
 
 int luaA_struct_push_member_name_type(lua_State* L, luaA_Type type, const char* member, const void* c_in) {
@@ -492,11 +492,11 @@ int luaA_struct_push_member_name_type(lua_State* L, luaA_Type type, const char* 
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_getfield(L, -1, member);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "type");
       luaA_Type stype = lua_tointeger(L, -1);
@@ -506,13 +506,13 @@ int luaA_struct_push_member_name_type(lua_State* L, luaA_Type type, const char* 
       lua_pop(L, 4);
       return luaA_push_type(L, stype, c_in + offset);
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_struct_push_member: Member name '%s' not registered for struct '%s'!", member, luaA_typename(L, type));
     lua_error(L);
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_push_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -524,12 +524,12 @@ void luaA_struct_to_member_offset_type(lua_State* L, luaA_Type type, size_t offs
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_pushinteger(L, offset);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "type");
       luaA_Type stype = lua_tointeger(L, -1);
@@ -537,17 +537,17 @@ void luaA_struct_to_member_offset_type(lua_State* L, luaA_Type type, size_t offs
       luaA_to_type(L, stype, c_out + offset, index);
       return;
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_struct_to_member: Member offset '%d' not registered for struct '%s'!", offset, luaA_typename(L, type));
     lua_error(L);
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_to_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
-  
+
 }
 
 void luaA_struct_to_member_name_type(lua_State* L, luaA_Type type, const char* member, void* c_out, int index) {
@@ -555,12 +555,12 @@ void luaA_struct_to_member_name_type(lua_State* L, luaA_Type type, const char* m
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_pushstring(L, member);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "type");
       luaA_Type stype = lua_tointeger(L, -1);
@@ -571,17 +571,17 @@ void luaA_struct_to_member_name_type(lua_State* L, luaA_Type type, const char* m
       luaA_to_type(L, stype, c_out + offset, index);
       return;
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_struct_to_member: Member name '%s' not registered for struct '%s'!", member, luaA_typename(L, type));
     lua_error(L);
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_to_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
-  
+
 }
 
 bool luaA_struct_has_member_offset_type(lua_State* L, luaA_Type type, size_t offset) {
@@ -589,27 +589,27 @@ bool luaA_struct_has_member_offset_type(lua_State* L, luaA_Type type, size_t off
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_pushinteger(L, offset);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_pop(L, 3);
       return true;
     }
-    
+
     lua_pop(L, 3);
     return false;
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_has_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
   return false;
-  
+
 }
 
 bool luaA_struct_has_member_name_type(lua_State* L, luaA_Type type, const char* member) {
@@ -617,27 +617,27 @@ bool luaA_struct_has_member_name_type(lua_State* L, luaA_Type type, const char* 
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_pushstring(L, member);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_pop(L, 3);
       return true;
     }
-    
+
     lua_pop(L, 3);
     return false;
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_has_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
   return false;
-  
+
 }
 
 luaA_Type luaA_struct_typeof_member_offset_type(lua_State* L, luaA_Type type,  size_t offset) {
@@ -645,30 +645,30 @@ luaA_Type luaA_struct_typeof_member_offset_type(lua_State* L, luaA_Type type,  s
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_pushinteger(L, offset);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "type");
       luaA_Type stype = lua_tointeger(L, -1);
       lua_pop(L, 4);
       return stype;
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_struct_typeof_member: Member offset '%d' not registered for struct '%s'!", offset, luaA_typename(L, type));
     lua_error(L);
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_typeof_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
   return 0;
-  
+
 }
 
 luaA_Type luaA_struct_typeof_member_name_type(lua_State* L, luaA_Type type,  const char* member) {
@@ -676,30 +676,30 @@ luaA_Type luaA_struct_typeof_member_name_type(lua_State* L, luaA_Type type,  con
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_pushstring(L, member);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "type");
       luaA_Type t = lua_tointeger(L, -1);
       lua_pop(L, 4);
       return t;
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_struct_typeof_member: Member name '%s' not registered for struct '%s'!", member, luaA_typename(L, type));
     lua_error(L);
 
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_typeof_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
   return 0;
-  
+
 }
 
 void luaA_struct_type(lua_State* L, luaA_Type type) {
@@ -708,7 +708,7 @@ void luaA_struct_type(lua_State* L, luaA_Type type) {
   lua_newtable(L);
   lua_settable(L, -3);
   lua_pop(L, 1);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
   lua_pushinteger(L, type);
   lua_newtable(L);
@@ -721,17 +721,17 @@ void luaA_struct_member_type(lua_State* L, luaA_Type type, const char* member, l
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_newtable(L);
-    
+
     lua_pushinteger(L, mtype);  lua_setfield(L, -2, "type");
     lua_pushinteger(L, offset); lua_setfield(L, -2, "offset");
     lua_pushstring(L, member);  lua_setfield(L, -2, "name");
-    
+
     lua_setfield(L, -2, member);
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs_offset");
     lua_pushinteger(L, type);
     lua_gettable(L, -2);
@@ -742,7 +742,7 @@ void luaA_struct_member_type(lua_State* L, luaA_Type type, const char* member, l
     lua_pop(L, 4);
     return;
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -753,10 +753,10 @@ bool luaA_struct_registered_type(lua_State* L, luaA_Type type) {
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   bool reg = !lua_isnil(L, -1);
   lua_pop(L, 2);
-  
+
   return reg;
 }
 
@@ -767,12 +767,12 @@ int luaA_struct_push_type(lua_State* L, luaA_Type type, const void* c_in) {
   lua_gettable(L, -2);
 
   if (!lua_isnil(L, -1)) {
-    lua_remove(L, -2);    
+    lua_remove(L, -2);
     lua_newtable(L);
 
     lua_pushnil(L);
     while (lua_next(L, -3)) {
-      
+
       if (lua_type(L, -2) == LUA_TSTRING) {
         lua_getfield(L, -1, "name");
         const char* name = lua_tostring(L, -1);
@@ -793,11 +793,11 @@ int luaA_struct_push_type(lua_State* L, luaA_Type type, const void* c_in) {
       }
 
     }
-    
+
     lua_remove(L, -2);
     return 1;
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "lua_struct_push: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -805,14 +805,14 @@ int luaA_struct_push_type(lua_State* L, luaA_Type type, const void* c_in) {
 }
 
 void luaA_struct_to_type(lua_State* L, luaA_Type type, void* c_out, int index) {
-  
+
   lua_pushnil(L);
   while (lua_next(L, index-1)) {
-    
+
     if (lua_type(L, -2) == LUA_TSTRING) {
       luaA_struct_to_member_name_type(L, type, lua_tostring(L, -2), c_out, -1);
     }
-    
+
     lua_pop(L, 1);
   }
 
@@ -823,7 +823,7 @@ const char* luaA_struct_next_member_name_type(lua_State* L, luaA_Type type, cons
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "structs");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if(!lua_isnil(L,-1)) {
 
     if(!member) {
@@ -839,7 +839,7 @@ const char* luaA_struct_next_member_name_type(lua_State* L, luaA_Type type, cons
     lua_pop(L,4);
     return result;
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_struct_next_member: Struct '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -851,25 +851,25 @@ const char* luaA_struct_next_member_name_type(lua_State* L, luaA_Type type, cons
 */
 
 int luaA_enum_push_type(lua_State *L, luaA_Type type, const void* value) {
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
     lua_pushinteger(L, type);
     lua_gettable(L, -2);
     size_t size = lua_tointeger(L, -1);
     lua_pop(L, 2);
-    
+
     lua_Integer lvalue =0;
     memcpy(&lvalue, value, size);
-    
+
     lua_pushinteger(L, lvalue);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "name");
       lua_remove(L, -2);
@@ -877,39 +877,39 @@ int luaA_enum_push_type(lua_State *L, luaA_Type type, const void* value) {
       lua_remove(L, -2);
       return 1;
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_enum_push: Enum '%s' value %d not registered!", luaA_typename(L, type), lvalue);
     lua_error(L);
     return 0;
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_enum_push: Enum '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
   return 0;
-  
+
 }
 
 void luaA_enum_to_type(lua_State* L, luaA_Type type, void* c_out, int index) {
 
   const char* name = lua_tostring(L, index);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
     lua_pushinteger(L, type);
     lua_gettable(L, -2);
     size_t size = lua_tointeger(L, -1);
     lua_pop(L, 2);
-    
+
     lua_pushstring(L, name);
     lua_gettable(L, -2);
-    
+
     if (!lua_isnil(L, -1)) {
       lua_getfield(L, -1, "value");
       lua_Integer value = lua_tointeger(L, -1);
@@ -917,13 +917,13 @@ void luaA_enum_to_type(lua_State* L, luaA_Type type, void* c_out, int index) {
       memcpy(c_out, &value, size);
       return;
     }
-    
+
     lua_pop(L, 3);
     lua_pushfstring(L, "luaA_enum_to: Enum '%s' field '%s' not registered!", luaA_typename(L, type), name);
     lua_error(L);
     return;
   }
-  
+
   lua_pop(L, 3);
   lua_pushfstring(L, "luaA_enum_to: Enum '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -935,21 +935,21 @@ bool luaA_enum_has_value_type(lua_State* L, luaA_Type type, const void* value) {
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
     lua_pushinteger(L, type);
     lua_gettable(L, -2);
     size_t size = lua_tointeger(L, -1);
     lua_pop(L, 2);
-    
+
     lua_Integer lvalue = 0;
     memcpy(&lvalue, value, size);
-    
+
     lua_pushinteger(L, lvalue);
     lua_gettable(L, -2);
-    
+
     if (lua_isnil(L, -1)) {
       lua_pop(L, 3);
       return false;
@@ -957,9 +957,9 @@ bool luaA_enum_has_value_type(lua_State* L, luaA_Type type, const void* value) {
       lua_pop(L, 3);
       return true;
     }
-    
+
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_enum_has_value: Enum '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -970,11 +970,11 @@ bool luaA_enum_has_name_type(lua_State* L, luaA_Type type, const char* name) {
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-    
+
     lua_getfield(L, -1, name);
-    
+
     if (lua_isnil(L, -1)) {
       lua_pop(L, 3);
       return false;
@@ -982,9 +982,9 @@ bool luaA_enum_has_name_type(lua_State* L, luaA_Type type, const char* name) {
       lua_pop(L, 3);
       return true;
     }
-    
+
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_enum_has_name: Enum '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -997,13 +997,13 @@ void luaA_enum_type(lua_State *L, luaA_Type type, size_t size) {
   lua_newtable(L);
   lua_settable(L, -3);
   lua_pop(L, 1);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
   lua_pushinteger(L, type);
   lua_newtable(L);
   lua_settable(L, -3);
   lua_pop(L, 1);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
   lua_pushinteger(L, type);
   lua_pushinteger(L, size);
@@ -1012,30 +1012,30 @@ void luaA_enum_type(lua_State *L, luaA_Type type, size_t size) {
 }
 
 void luaA_enum_value_type(lua_State *L, luaA_Type type, const void* value, const char* name) {
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if (!lua_isnil(L, -1)) {
-  
+
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_sizes");
     lua_pushinteger(L, type);
     lua_gettable(L, -2);
     size_t size = lua_tointeger(L, -1);
     lua_pop(L, 2);
-    
+
     lua_newtable(L);
-    
+
     lua_Integer lvalue=0;
     memcpy(&lvalue, value, size);
-    
+
     lua_pushinteger(L, lvalue);
     lua_setfield(L, -2, "value");
-    
+
     lua_pushstring(L, name);
     lua_setfield(L, -2, "name");
-    
+
     lua_setfield(L, -2, name);
 
     lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums_values");
@@ -1044,12 +1044,12 @@ void luaA_enum_value_type(lua_State *L, luaA_Type type, const void* value, const
     lua_pushinteger(L, lvalue);
     lua_getfield(L, -4, name);
     lua_settable(L, -3);
-    
+
     lua_pop(L, 4);
     return;
-    
+
   }
-    
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_enum_value: Enum '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -1069,7 +1069,7 @@ const char* luaA_enum_next_value_name_type(lua_State* L, luaA_Type type, const c
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "enums");
   lua_pushinteger(L, type);
   lua_gettable(L, -2);
-  
+
   if(!lua_isnil(L,-1)) {
 
     if(!member) {
@@ -1085,7 +1085,7 @@ const char* luaA_enum_next_value_name_type(lua_State* L, luaA_Type type, const c
     lua_pop(L,4);
     return result;
   }
-  
+
   lua_pop(L, 2);
   lua_pushfstring(L, "luaA_enum_next_enum_name_type: Enum '%s' not registered!", luaA_typename(L, type));
   lua_error(L);
@@ -1097,19 +1097,19 @@ const char* luaA_enum_next_value_name_type(lua_State* L, luaA_Type type, const c
 */
 
 static int luaA_call_entry(lua_State* L) {
-  
+
   /* Get return size */
-  
+
   lua_getfield(L, -1, "ret_type");
   luaA_Type ret_type = lua_tointeger(L, -1);
   lua_pop(L, 1);
-  
+
   size_t ret_size = luaA_typesize(L, ret_type);
-  
+
   /* Get total arguments sizes */
-  
+
   lua_getfield(L, -1, "arg_types");
-  
+
   size_t arg_size = 0;
   size_t arg_num  = lua_rawlen(L, -1);
   for (int i = 0; i < arg_num; i++) {
@@ -1119,35 +1119,35 @@ static int luaA_call_entry(lua_State* L) {
     lua_pop(L, 1);
     arg_size += luaA_typesize(L, arg_type);
   }
-  
+
   lua_pop(L, 1);
-  
+
   /* Test to see if using heap */
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_stk");
   void* ret_stack = lua_touserdata(L, -1);
   lua_pop(L, 1);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_stk");
   void* arg_stack = lua_touserdata(L, -1);
   lua_pop(L, 1);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_ptr");
   lua_Integer ret_ptr = lua_tointeger(L, -1);
   lua_pop(L, 1);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_ptr");
   lua_Integer arg_ptr = lua_tointeger(L, -1);
   lua_pop(L, 1);
 
   void* ret_data = ret_stack + ret_ptr;
   void* arg_data = arg_stack + arg_ptr;
-  
+
   /* If fixed allocation exhausted use heap instead */
-  
+
   bool ret_heap = false;
   bool arg_heap = false;
-  
+
   if (ret_ptr + ret_size > LUAA_RETURN_STACK_SIZE) {
     ret_heap = true;
     ret_data = malloc(ret_size);
@@ -1157,7 +1157,7 @@ static int luaA_call_entry(lua_State* L) {
       return 0;
     }
   }
-  
+
   if (arg_ptr + arg_size > LUAA_ARGUMENT_STACK_SIZE) {
     arg_heap = true;
     arg_data = malloc(arg_size);
@@ -1170,21 +1170,21 @@ static int luaA_call_entry(lua_State* L) {
       return 0;
     }
   }
-  
+
   /* If not using heap update stack pointers */
-  
+
   if (!ret_heap) {
     lua_pushinteger(L, ret_ptr + ret_size);
     lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_ptr");
   }
-  
+
   if (!arg_heap) {
     lua_pushinteger(L, arg_ptr + arg_size);
     lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_arg_ptr");
   }
-  
+
   /* Pop args and place in memory */
-  
+
   lua_getfield(L, -1, "arg_types");
 
   void* arg_pos = arg_data;
@@ -1196,41 +1196,41 @@ static int luaA_call_entry(lua_State* L) {
     luaA_to_type(L, arg_type, arg_pos, -arg_num+i-2);
     arg_pos += luaA_typesize(L, arg_type);
   }
-  
+
   lua_pop(L, 1);
-  
+
   /* Pop arguments from stack */
-  
+
   for (int i = 0; i < arg_num; i++) {
-    lua_remove(L, -2);  
+    lua_remove(L, -2);
   }
-  
+
   /* Get Function Pointer and Call */
-  
+
   lua_getfield(L, -1, "auto_func");
   luaA_Func auto_func = lua_touserdata(L, -1);
   lua_pop(L, 2);
-  
+
   auto_func(ret_data, arg_data);
-  
+
   int count = luaA_push_type(L, ret_type, ret_data);
-  
+
   /* Either free heap data or reduce stack pointers */
-  
+
   if (!ret_heap) {
     lua_pushinteger(L, ret_ptr);
     lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "call_ret_ptr");
   } else {
     free(ret_data);
   }
-  
+
   if (!arg_heap) {
     lua_pushinteger(L, arg_ptr);
     lua_setfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "argument_ptr");
   } else {
-    free(arg_data); 
+    free(arg_data);
   }
-  
+
   return count;
 }
 
@@ -1239,9 +1239,9 @@ int luaA_call(lua_State* L, void* func_ptr) {
   lua_pushlightuserdata(L, func_ptr);
   lua_gettable(L, -2);
   lua_remove(L, -2);
-  
+
   if (!lua_isnil(L, -1)) { return luaA_call_entry(L); }
-  
+
   lua_pop(L, 1);
   lua_pushfstring(L, "luaA_call: Function with address '%p' is not registered!", func_ptr);
   lua_error(L);
@@ -1253,9 +1253,9 @@ int luaA_call_name(lua_State* L, const char* func_name) {
   lua_pushstring(L, func_name);
   lua_gettable(L, -2);
   lua_remove(L, -2);
-  
+
   if (!lua_isnil(L, -1)) { return luaA_call_entry(L); }
-  
+
   lua_pop(L, 1);
   lua_pushfstring(L, "luaA_call_name: Function '%s' is not registered!", func_name);
   lua_error(L);
@@ -1263,21 +1263,21 @@ int luaA_call_name(lua_State* L, const char* func_name) {
 }
 
 void luaA_function_register_type(lua_State* L, void* src_func, luaA_Func auto_func, const char* name, luaA_Type ret_t, int num_args, ...) {
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
   lua_pushstring(L, name);
 
   lua_newtable(L);
-  
+
   lua_pushlightuserdata(L, src_func);  lua_setfield(L, -2, "src_func");
   lua_pushlightuserdata(L, auto_func); lua_setfield(L, -2, "auto_func");
-  
+
   lua_pushinteger(L, ret_t);
   lua_setfield(L, -2, "ret_type");
-  
+
   lua_pushstring(L, "arg_types");
   lua_newtable(L);
-  
+
   va_list va;
   va_start(va, num_args);
   for (int i = 0; i < num_args; i++) {
@@ -1286,19 +1286,19 @@ void luaA_function_register_type(lua_State* L, void* src_func, luaA_Func auto_fu
     lua_settable(L, -3);
   }
   va_end(va);
-  
+
   lua_settable(L, -3);
   lua_settable(L, -3);
   lua_pop(L, 1);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
   lua_pushlightuserdata(L, src_func);
-  
+
   lua_getfield(L, LUA_REGISTRYINDEX, LUAA_REGISTRYPREFIX "functions");
   lua_getfield(L, -1, name);
   lua_remove(L, -2);
-  
+
   lua_settable(L, -3);
   lua_pop(L, 1);
-  
+
 }

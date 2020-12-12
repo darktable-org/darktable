@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2015 Jeremy Rosen
+   Copyright (C) 2015-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,7 +18,24 @@
 #include "lua/types.h"
 #include "lua/widget/common.h"
 
-static dt_lua_widget_type_t button_type = {
+/*
+  we can't guarantee the order of label and ellipsize calls so
+  sometimes we have to store the ellipsize mode until the
+  label is created.
+*/
+struct dt_lua_ellipsize_mode_info
+{
+  gboolean used;
+  dt_lua_ellipsize_mode_t mode;
+};
+
+static struct dt_lua_ellipsize_mode_info ellipsize_store =
+{
+  .used = FALSE
+};
+
+static dt_lua_widget_type_t button_type =
+{
   .name = "button",
   .gui_init = NULL,
   .gui_cleanup = NULL,
@@ -35,16 +52,42 @@ static void clicked_callback(GtkButton *widget, gpointer user_data)
       LUA_ASYNC_DONE);
 }
 
-
-
+static int ellipsize_member(lua_State *L)
+{
+  lua_button button;
+  luaA_to(L, lua_button, &button, 1);
+  dt_lua_ellipsize_mode_t ellipsize;
+  if(lua_gettop(L) > 2)
+  {
+    luaA_to(L, dt_lua_ellipsize_mode_t, &ellipsize, 3);
+    // check for label before trying to ellipsize it
+    if(gtk_button_get_label(GTK_BUTTON(button->widget)))
+      gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))), ellipsize);
+    else
+    {
+      ellipsize_store.mode = ellipsize;
+      ellipsize_store.used = TRUE;
+    }
+    return 0;
+  }
+  ellipsize = gtk_label_get_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))));
+  luaA_push(L, dt_lua_ellipsize_mode_t, &ellipsize);
+  return 1;
+}
 
 static int label_member(lua_State *L)
 {
   lua_button button;
   luaA_to(L,lua_button,&button,1);
-  if(lua_gettop(L) > 2) {
+  if(lua_gettop(L) > 2)
+  {
     const char * label = luaL_checkstring(L,3);
     gtk_button_set_label(GTK_BUTTON(button->widget),label);
+    if(ellipsize_store.used)
+    {
+      gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button->widget))), ellipsize_store.mode);
+      ellipsize_store.used = FALSE;
+    }
     return 0;
   }
   lua_pushstring(L,gtk_button_get_label(GTK_BUTTON(button->widget)));
@@ -72,6 +115,9 @@ int dt_lua_init_widget_button(lua_State* L)
   lua_pushcfunction(L,label_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_button, "label");
+  lua_pushcfunction(L,ellipsize_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_button, "ellipsize");
   dt_lua_widget_register_gtk_callback(L,lua_button,"clicked","clicked_callback",G_CALLBACK(clicked_callback));
 
   return 0;

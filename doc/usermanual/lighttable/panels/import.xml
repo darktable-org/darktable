@@ -31,12 +31,12 @@
       <tbody>
         <row>
           <entry>
-            This panel is for importing images into film rolls. You can either import a complete
-            folder, by pressing <quote>folder</quote>, or a single image with
-            <quote>image</quote>. You can also cause darktable to search for connected cameras
-            by pressing <quote>scan for devices</quote>. If a supported camera is connected you
-            can import directly from that camera or control the camera from within darktable in
-            tethering mode.
+            This panel is for importing images into film rolls. You
+            can either import a complete folder, by pressing
+            <quote>folder</quote>, or a single image with
+            <quote>image</quote>. If a supported camera is connected
+            you can import directly from that camera or control the
+            camera from within darktable in tethering mode.
           </entry>
           <entry>
             <graphic fileref="lighttable/images/panel_import_1.png" scalefit="1" width="80%" align="center" />
@@ -77,8 +77,8 @@
     </para>
 
     <para>
-      As the name implies, checking <quote>import directories recursively</quote> will import
-      images in the currently selected directory, and all subdirectories. It is not recommended,
+      As the name implies, checking <quote>import folders recursively</quote> will import
+      images in the currently selected folder, and all subfolders. It is not recommended,
       and wastes resources, to do this on an exhaustive list of images. darktable would generate
       thumbnails for all of them, but in the end only keep the recent ones in its cache. It is
       better to import images in smaller chunks, making logical film rolls.
@@ -118,8 +118,8 @@
         <tbody>
           <row>
             <entry>
-              When a camera is detected, it will show up in the device panel after pressing
-              <quote>scan for devices</quote>. If you hover your mouse over the camera tab
+              When a camera is detected, it will automatically show up
+              in the device panel. If you hover your mouse over the camera tab
               label, a tooltip will pop up with information about the camera, such as model,
               firmware version, and more. Depending on the camera's support, buttons with
               actions will be available such as <quote>import from camera</quote> and
@@ -143,8 +143,8 @@
       </para>
 
       <para>
-        You define the base directory for storing imported images and the naming pattern of sub
-        directories and individual images in the preferences dialog (see
+        You define the base folder for storing imported images and the naming pattern of subfolders
+        and individual images in the preferences dialog (see
         <xref linkend="session_options"/>).
       </para>
 

@@ -41,7 +41,7 @@
 
     <sect4 id="history_stack_usage_copy">
 
-      <title>copy</title>
+      <title>copy parts...</title>
 
       <para>
         Copy the history stack of the selected image. You will be prompted for which items are
@@ -55,7 +55,7 @@
 
     <sect4 id="history_stack_usage_copy_all">
 
-      <title>copy all</title>
+      <title>copy</title>
 
       <para>
         Copy the complete history stack of the first selected image; all items will be included.
@@ -78,7 +78,7 @@
 
     <sect4 id="history_stack_usage_paste">
 
-      <title>paste</title>
+      <title>paste parts...</title>
 
       <para>
         Paste a previously copied history stack onto all selected images. You will be prompted
@@ -90,7 +90,7 @@
 
     <sect4 id="history_stack_usage_paste_all">
 
-      <title>paste all</title>
+      <title>paste</title>
 
       <para>
         Paste all previously copied items of a history stack onto all selected images. This
@@ -189,7 +189,7 @@
       <para>
         By default darktable generates and updates sidecar files automatically whenever you work
         on an image and change the history stack. You can disable automatic sidecar file
-        generation in the preferences dialog (see <xref linkend="core_options"/>). However, this
+        generation in the preferences dialog (see <xref linkend="storage"/>). However, this
         is not recommended.
       </para>
 

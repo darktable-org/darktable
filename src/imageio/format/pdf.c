@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2015 tobias ellinghaus.
+ *    Copyright (C) 2015-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -234,7 +234,8 @@ static int _paper_size(dt_imageio_pdf_params_t *d, float *page_width, float *pag
 
 int write_image(dt_imageio_module_data_t *data, const char *filename, const void *in,
                 dt_colorspaces_color_profile_type_t over_type, const char *over_filename,
-                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe)
+                void *exif, int exif_len, int imgid, int num, int total, struct dt_dev_pixelpipe_t *pipe,
+                const gboolean export_masks)
 {
   dt_imageio_pdf_t *d = (dt_imageio_pdf_t *)data;
 
@@ -603,7 +604,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   d->size = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_combobox_set_editable(d->size, 1);
-  dt_bauhaus_widget_set_label(d->size, NULL, _("paper size"));
+  dt_bauhaus_widget_set_label(d->size, NULL, N_("paper size"));
   for(int i = 0; dt_pdf_paper_sizes[i].name; i++)
     dt_bauhaus_combobox_add(d->size, _(dt_pdf_paper_sizes[i].name));
   gtk_grid_attach(grid, GTK_WIDGET(d->size), 0, ++line, 2, 1);
@@ -618,7 +619,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // orientation
 
   d->orientation = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->orientation, NULL, _("page orientation"));
+  dt_bauhaus_widget_set_label(d->orientation, NULL, N_("page orientation"));
   dt_bauhaus_combobox_add(d->orientation, _("portrait"));
   dt_bauhaus_combobox_add(d->orientation, _("landscape"));
   gtk_grid_attach(grid, GTK_WIDGET(d->orientation), 0, ++line, 2, 1);
@@ -665,7 +666,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // rotate images yes|no
 
   d->rotate = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->rotate, NULL, _("rotate images"));
+  dt_bauhaus_widget_set_label(d->rotate, NULL, N_("rotate images"));
   dt_bauhaus_combobox_add(d->rotate, _("no"));
   dt_bauhaus_combobox_add(d->rotate, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->rotate), 0, ++line, 2, 1);
@@ -677,7 +678,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // pages all|single images|contact sheet
 
   d->pages = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pages, NULL, _("TODO: pages"));
+  dt_bauhaus_widget_set_label(d->pages, NULL, N_("TODO: pages"));
   dt_bauhaus_combobox_add(d->pages, _("all"));
   dt_bauhaus_combobox_add(d->pages, _("single images"));
   dt_bauhaus_combobox_add(d->pages, _("contact sheet"));
@@ -690,7 +691,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // embedded icc profile yes|no
 
   d->icc = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->icc, NULL, _("embed icc profiles"));
+  dt_bauhaus_widget_set_label(d->icc, NULL, N_("embed icc profiles"));
   dt_bauhaus_combobox_add(d->icc, _("no"));
   dt_bauhaus_combobox_add(d->icc, _("yes"));
   gtk_grid_attach(grid, GTK_WIDGET(d->icc), 0, ++line, 2, 1);
@@ -701,7 +702,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // bpp
 
   d->bpp = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->bpp, NULL, _("bit depth"));
+  dt_bauhaus_widget_set_label(d->bpp, NULL, N_("bit depth"));
   int sel = 0;
   int bpp = dt_conf_get_int("plugins/imageio/format/pdf/bpp");
   for(int i = 0; _pdf_bpp[i].name; i++)
@@ -717,7 +718,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // compression
 
   d->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->compression, NULL, _("compression"));
+  dt_bauhaus_widget_set_label(d->compression, NULL, N_("compression"));
   dt_bauhaus_combobox_add(d->compression, _("uncompressed"));
   dt_bauhaus_combobox_add(d->compression, _("deflate"));
   gtk_grid_attach(grid, GTK_WIDGET(d->compression), 0, ++line, 2, 1);
@@ -730,7 +731,7 @@ void gui_init(dt_imageio_module_format_t *self)
   // image mode normal|draft|debug
 
   d->mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->mode, NULL, _("image mode"));
+  dt_bauhaus_widget_set_label(d->mode, NULL, N_("image mode"));
   dt_bauhaus_combobox_add(d->mode, _("normal"));
   dt_bauhaus_combobox_add(d->mode, _("draft"));
   dt_bauhaus_combobox_add(d->mode, _("debug"));

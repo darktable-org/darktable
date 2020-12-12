@@ -1,7 +1,7 @@
 #pragma once
 /*
     This file is part of darktable,
-    copyright (c) 2016 johannes hanika.
+    Copyright (C) 2016-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -37,6 +37,7 @@ typedef struct dt_local_laplacian_cl_t
   int num_levels;
   float sigma, highlights, shadows, clarity;
   int blocksize, blockwd, blockht;
+  int max_supp;
   size_t bwidth, bheight;
 
   // pyramid of padded monochrome input buffer

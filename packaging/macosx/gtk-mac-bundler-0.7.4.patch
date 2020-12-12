@@ -61,3 +61,12 @@ diff -uNr gtk-mac-bundler-0.7.4-orig/bundler/bundler.py gtk-mac-bundler-0.7.4/bu
          self.create_gtk_immodules_setup()
          self.create_gdk_pixbuf_loaders_setup()
  
+diff -uNr gtk-mac-bundler-0.7.4-orig/gtk-mac-bundler.in gtk-mac-bundler-0.7.4/gtk-mac-bundler.in
+--- gtk-mac-bundler-0.7.4-orig/gtk-mac-bundler.in	2014-11-06 22:34:11.000000000 +0300
++++ gtk-mac-bundler-0.7.4/gtk-mac-bundler.in	2020-08-30 15:03:21.000000000 +0300
+@@ -1,4 +1,4 @@
+-#!/usr/bin/env python
++#!/usr/bin/env python2
+ import sys
+ sys.path.insert(0, '@PATH@')
+ 

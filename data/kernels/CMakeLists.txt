@@ -2,7 +2,7 @@
 # install opencl kernel source files
 #
 FILE(GLOB DT_OPENCL_KERNELS "*.cl" "common.h")
-FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "rgb_norms.h")
+FILE(GLOB DT_OPENCL_EXTRA "programs.conf" "rgb_norms.h" "noise_generator.h")
 
 add_custom_target(testcompile_opencl_kernels ALL)
 
@@ -31,10 +31,15 @@ macro (testcompile_opencl_kernel IN)
 endmacro (testcompile_opencl_kernel)
 
 if (TESTBUILD_OPENCL_PROGRAMS)
-  foreach(IN ${DT_OPENCL_KERNELS})
-    testcompile_opencl_kernel(${IN})
+  foreach(KERNEL IN ITEMS ${DT_OPENCL_KERNELS})
+    testcompile_opencl_kernel(${KERNEL})
   endforeach()
 endif()
 
 install(FILES ${DT_OPENCL_KERNELS} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/kernels COMPONENT DTApplication)
+# Need to copy to have kernels all in one path like after installing
+file(COPY ${DT_OPENCL_KERNELS} DESTINATION ${DARKTABLE_DATADIR}/kernels)
+
 install(FILES ${DT_OPENCL_EXTRA} DESTINATION ${CMAKE_INSTALL_DATAROOTDIR}/darktable/kernels COMPONENT DTApplication)
+# Need to copy to have kernels all in one path like after installing
+file(COPY ${DT_OPENCL_EXTRA} DESTINATION ${DARKTABLE_DATADIR}/kernels)

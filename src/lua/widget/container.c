@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2015 Jeremy Rosen
+   Copyright (C) 2015-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -142,7 +142,7 @@ static int container_numindex(lua_State*L)
       luaA_to(L, lua_widget,&widget,3);
       gtk_container_add(GTK_CONTAINER(container->widget),widget->widget);
       // the following lines add the widget to the container's user_value to guarantee it's referenced on the lua side
-      // they should be done by child_added, but 
+      // they should be done by child_added, but
       // there can be a race with lua's GC, so do it now.
       // child_added doing it a second time is harmless
       lua_getuservalue(L,1);

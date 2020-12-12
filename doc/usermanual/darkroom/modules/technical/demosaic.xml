@@ -1,0 +1,143 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="demosaic">
+
+  <title>Demosaic</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>demosaic</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>demosaic</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module allows you to control how the demosaic is processed.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/demosaic.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      Demosaic is an essential step of any raw image development process.
+    </para>
+
+    <para>
+      A detailed description would be beyond the scope of this manual. In a nutshell, the sensor
+      cells of a digital camera are only able to record different levels of lightness, not
+      different color. In order to get a color image, each cell is covered by a color filter,
+      either in red, green or blue. Due to the color sensitivity of the human vision, there are
+      two times more green cells than red or blue. Filters are arranged in a certain mosaic,
+      called Bayer pattern. Therefore each pixel of your image originally only has information
+      about one color channel. Demosaic reconstructs the missing color channels by interpolation
+      with data of the neighboring pixels. For further reading see the Wikipedia article on the
+      <ulink url="http://en.wikipedia.org/wiki/Bayer_filter">Bayer filter</ulink>.
+    </para>
+
+    <para>
+      As interpolation is prone to produce artifacts, various different demosaic algorithms have
+      been developed in the past. Artifacts would typically be visible as moir&eacute;-like
+      patterns when you strongly zoom into your image. Currently darktable supports PPG, AMAZE,
+      and VNG4. All these algorithms produce high quality output with a low tendency to
+      artifacts. AMAZE is reported to sometimes give slightly better results. However, as AMAZE
+      is significantly slower, darktable uses PPG as a default. VNG4 produces the softest
+      results of the three algorithms, but if you see "maze" artifacts, try VNG4 to eliminate
+      them.
+    </para>
+
+    <para>
+      There are a few cameras whose sensors do not use a Bayer filter. Cameras with an "X-Trans"
+      sensor have their own set of demosaicing algorithms. The default algorithm for X-Trans
+      sensors is Markesteijn 1-pass, which produces fairly good results. For a bit better
+      quality (at the cost of much slower processing), choose Markesteijn 3-pass. Though VNG
+      demosaic is faster than Markesteijn 1-pass on certain computers, it is more prone to
+      demosaicing artifacts.
+    </para>
+
+    <para>
+      Additionally, darktable supports a special demosaicing algorithm&nbsp;&ndash; passthrough
+      (monochrome). It is not a general-purpose algorithm that is useful for all the images. It
+      is only useful for cameras with the color filter array physically removed from the sensor,
+      e.g. physically scratched off. Normally, demosaic reconstructs the missing color channels
+      by interpolation with data of the neighboring pixels. But since the color filter array is
+      not present, there is nothing to interpolate, so this algorithm simply sets all the color
+      channels to the same value, which results in pixels being gray, thus producing a
+      monochrome image. This method guarantees that there are no interpolation artifacts that
+      would otherwise be present should one of the standard demosaicing algorithm be used.
+    </para>
+
+    <para>
+      Some further parameters of this module can activate additional averaging and smoothing
+      steps. They might help to reduce remaining artifacts in special cases.
+    </para>
+
+    <para>
+      Demosaic is always applied when exporting images. Demosaic is done on monitor display only
+      when zoom is greater than 50% or when the according preference setting <quote>demosaicing
+      for zoomed out darkroom mode</quote> (see <xref linkend="darkroom_options"/>) is set
+      accordingly. Else color channels are taken from neighboring pixels without an expensive
+      interpolation.
+    </para>
+
+    <sect5>
+      <title>method</title>
+      <para>
+        Set the demosaic method. darktable currently supports PPG, AMAZE, and VNG4 for Bayer
+        sensors. For X-Trans sensors darktable supports VNG, Markesteijn 1-pass, and Markesteijn
+        3-pass.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>edge threshold</title>
+      <para>
+        Set the threshold for an additional median pass. Defaults to <quote>0</quote> which
+        disables median filtering. This option is not shown for X-Trans sensors.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>color smoothing</title>
+      <para>
+        Activates a number of additional color smoothing passes. Defaults to <quote>off</quote>.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>match greens</title>
+      <para>
+        In some cameras the green filters have slightly varying properties. This parameter adds
+        an additional equalization step to suppress artifacts. Available options are
+        <quote>disabled</quote>, <quote>local average</quote>, <quote>full average</quote> and
+        <quote>full and local average</quote>. This option is not shown for X-Trans sensors.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

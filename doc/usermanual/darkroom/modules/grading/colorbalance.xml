@@ -1,0 +1,344 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+    <!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+    %darktable_dtd;
+    ]>
+<sect3 status="final" id="color_balance">
+
+  <title>Color balance</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>color balance</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>color balance</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module offers a versatile tool for adjusting an image's color balance.
+              It can be used to revert parasite color casts or to enhance the visual
+              atmosphere of a picture using color grading, a popular technique in the cinema
+              industry.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/colorbalance.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      The color balance allows you to shift colors selectively by luminance range: shadows,
+      mid-tones, and highlights. It does so using two different methods:
+
+      <itemizedlist>
+
+        <listitem><para>
+          <emphasis>lift, gamma, gain</emphasis>, the classic way, that allows a more
+          separated control of shadows versus highlights,
+        </para></listitem>
+
+        <listitem><para>
+          <emphasis>slope, offset, power</emphasis>, the new standard defined by the
+          American Society of Cinematographers Color Decision List <emphasis>(ASC CDL)</emphasis>,
+          more suited for scene-referred editing.
+        </para></listitem>
+
+      </itemizedlist>
+
+      Three different control layouts can be accessed by clicking on
+      the shadows label: A <emphasis>vertical</emphasis> view as shown
+      on the screenshot above, a <emphasis>tabulated</emphasis> view
+      presenting one of the three group at a single time and a
+      <emphasis>columned</emphasis> view displaying all controls
+      horizontally.
+    </para>
+
+    <para>
+      The master settings affect the whole image. They are not available in
+      <emphasis>lift, gamma, gain (sRGB)</emphasis> mode. The slider ranges are limited
+      to usual values ([50%; 150%] for saturations, [-50%; 50%] for contrast), but higher and lower
+      values can be defined from keyboard inputs after a right-click on the corresponding
+      slider.
+    </para>
+
+    <para>
+      Side note: although this module acts on RGB colors its location in pixelpipe puts it into
+      the Lab color space. Accordingly the modules converts from Lab to RGB, does its color
+      adjustments, and then converts back to Lab.
+    </para>
+
+    <sect5>
+      <title>Mode</title>
+
+      <para>
+        <itemizedlist>
+
+          <listitem><para>
+            <emphasis>lift, gamma, gain (sRGB)</emphasis> is the legacy mode from darktable
+            2.4 and previous. In this mode, the color transformations are applied in sRGB
+            color space encoded with the sRGB gamma (average gamma of 2.2).
+          </para></listitem>
+
+          <listitem><para>
+            <emphasis>lift, gamma, gain (ProPhotoRGB)</emphasis> is the same as the previous
+            but works in ProPhoto RGB space, encoded linearly. In this mode, the RGB parameters
+            are corrected in XYZ luminance (Y channel) internally so they affect only the color,
+            and only the <quote>factors</quote> adjust the luminance.
+          </para></listitem>
+
+          <listitem><para>
+            <emphasis>slope, offset, power (ProPhotoRGB)</emphasis> applies the <emphasis>ASC CDL</emphasis>
+            in ProPhoto RGB space, encoded linearly. Similarly to the previous mode, the RGB
+            parameters are corrected in XYZ luminance internally. In this mode, the slope
+            parameter acts as an exposure compensation, the offset acts as a black level
+            correction, and the power acts as a gamma correction. All parameters will have some
+            impact on the whole luminance range, but the slope will mostly affect the highlights,
+            the offset will mostly affect the shadows, and the power will mostly affect the
+            mid-tones.
+          </para></listitem>
+
+        </itemizedlist>
+      </para>
+
+      <para>
+        For better efficiency, in <emphasis>slope, offset, power</emphasis>, it is recommended
+        to set the slope first, then the offset, and finally the power, in this order. The
+        name of the mode can be use as a mnemonic to remember the order.
+      </para>
+
+      <para>
+        In <emphasis>slope, offset, power</emphasis> mode, the shadows parameter has a far heavier
+        effect than in <emphasis>lift, gamma, gain</emphasis>. Switching from the former to
+        the latter, you should adapt the saturation in shadows, dividing by around 10.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>Color control sliders</title>
+
+      <para>
+        These parameters affect the user interface used for the shadows, mid-tones and highlights
+        controls.
+      </para>
+
+      <para>
+        The <emphasis>RGBL</emphasis> controls allow direct access of the RGB parameters
+        that will be sent to the algorithm and internally adjusted in XYZ luminance,
+        depending on the <emphasis>mode</emphasis> used. They are the only ones stored in darktable's
+        development history.
+      </para>
+
+      <para>
+        The <emphasis>HSL</emphasis> controls allow a more intuitive control, but are only
+        an interface: the hues and saturations are computed dynamically from and to the RGB
+        parameters and never stored. During the HSL to RGB conversion, the HSL lightness is always
+        assumed to be 50%, so the RGB parameters are always balanced to avoid lightness
+        changes. However, during the RGB to HSL conversion, the HSL lightness is not corrected.
+      </para>
+
+      <para>
+        As a consequence, editing in RGB, then in HSL, then again in RGB will not retain
+        the original RGB parameters, but will normalize them so their HSL lightness is 50%.
+        The difference is barely noticeable in most cases, especially using the
+        modes that already correct the RGB parameters internally in XYZ luminance.
+      </para>
+
+      <para>
+        In both modes, additional <quote>factor</quote> sliders act on all RGB channels at
+        once. Their effect is similar to the controls of the <emphasis>levels</emphasis>
+        module (see <xref linkend="levels"/>) and affect only the luminance.
+      </para>
+
+    </sect5>
+
+    <sect5>
+      <title>Input saturation</title>
+      <para>
+        The input saturation is a saturation correction applied before the color balance.
+        It can be used to dampen colors before adjusting the balance, to make difficult
+        pictures easier to process.
+        When you desaturate entirely the image, it creates a luminance-based monochrome
+        picture that can be used as a luminance mask, to create color filters with the
+        color balance settings, like split-toning or sepia effect
+        (you might want to use blending modes then).
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>Output saturation</title>
+      <para>
+        The output saturation is a saturation correction applied just after the color balance.
+        It is useful once you have found a proper hue balance but find the
+        effect too heavy, so you can adjust the global saturation at once instead of editing
+        each channel saturation separately at the expense of possibly messing the colors.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>Contrast and Contrast fulcrum</title>
+      <para>
+        The contrast slider allows to increase the luminance separation. The fulcrum value
+        defines the luminance value that will not be affected by the contrast correction,
+        so the contrast will roll over the fulcrum. Luminance values above the fulcrum
+        will be amplified almost linearly. Luminance values below the fulcrum value will
+        be compressed with a power function (creating a toe). This correction comes after
+        the output saturation and is applied on all RGB channels separately, so hues and saturations
+        might not be preserved in case of dramatic settings (shadows might be resaturated,
+        highlights might be desaturated, and some color shift is to be expected).
+      </para>
+    </sect5>
+
+
+    <sect5>
+      <title>Shadows, Mid-tones, Highlights</title>
+      <para>
+        Depending on the mode set, the shadows settings will control either the lift or the offset,
+        the mid-tones ones will control either the gamma or the power, and the highlights
+        ones will control either the gain or the slope. Parameters are transferred as is
+        when you change the mode.
+      </para>
+
+      <para>
+        In RGBL mode, the RGB sliders range is limited to [-0.5; 0.5]. In HSL mode, the
+        saturation sliders range is limited to [0%; 25%]. Values outside of these bounds
+        can be defined from keyboard input after right-click on the slider.
+      </para>
+    </sect5>
+
+
+    <sect5>
+      <title>Optimize luma</title>
+      <para>
+        The color-picker close to the <emphasis>optimize luma</emphasis> label will
+        select the whole image and optimize the <emphasis>factors</emphasis> for shadows,
+        mid-tones and highlights so the average luminance of the picture is 50% Lab,
+        the maximum is 100% and the minimum is 0%, at the output of this module. This
+        is essentially an histogram normalization, similar to what the levels module can
+        achieve. The optimizer is accurate only when used in <emphasis>slope, offset, power</emphasis>
+        mode. It works only fairly in the other modes.
+      </para>
+
+      <para>
+        In case you want more control, you can define three control patches using the color-pickers
+        in front of each factor slider, to sample luminance in selected areas. The shadows
+        color-picker samples the minimum luminance, the mid-tones one samples the average,
+        and the highlights one samples the maximum luminance.
+        The most sensitive parameter is the mid-tones factor,
+        since selecting a slightly different area can lead to dramatic parameter changes.
+        Using the factors color-pickers alone, without triggering the luma optimization,
+        will allow to perform adjustments without general optimization, but each parameter is always
+        computed accounting from the two others. Once patches are selected, the label becomes
+        <quote>optimize luma from patches</quote>. To reset one patch, you can just redo the
+        selection. Patches are not saved in the parameters and are kept only during the current
+        session.
+      </para>
+
+      <para>
+        It is important no note that the luminance adjustment performed targets only the
+        output of the color balance module and does not account for other luminance adjustments
+        performed in modules coming later in the pixelpipe (filmic, tone curve, color zones,
+        levels, global tonemapping, etc.). Using the color balance to remap the luminance
+        globally on the image is not recommended because it does not preserve the original colors,
+        and modules such as tone curves or filmic are better suited for this purpose.
+        Luminance adjustments in color balance are better suited for local correction,
+        in combination with color adjustments, for color-grading with masks.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>Neutralize colors</title>
+      <para>
+        In an image where some areas are exposed to direct sunlight and some areas are
+        exposed to reflected light (shadows), or when several artificial light sources are present
+        simultaneously, shadows and highlights often have different color temperatures.
+        These images are particularly difficult to correct since no general white balance will
+        match all the colors at once. The color neutralization optimizer aims at helping you find
+        the complementary color for shadows, midtones, and highlights so all the color casts
+        are reverted, and the average color of the picture is a neutral grey.
+      </para>
+
+      <para>
+        Similarly to the luma optimization, the color-picker next to the <emphasis>neutralize colors</emphasis>
+        label will trigger a general optimization over the whole picture. This works fairly in
+        landscape photography, or any photography with a full spectrum of colors and
+        luminances. For night and events photography, this will most likely fail and you will
+        need to input manually the sampling areas with the color-pickers in front of each hue slider.
+        For the highlights sample, use a color exposed to spotlights that should be neutral
+        white or light grey. For the shadows sample, use a color exposed to ambient light
+        that should be neutral black or dark grey. For the mid-tones sample, use a color exposed
+        by both ambient and spot lights.
+      </para>
+
+      <para>
+        The success of the optimization depends on the quality of the samples. Not every
+        set of samples will converge to a good solution, you need to ensure the color
+        patches you choose are really neutral color in real life. In many cases the optimizer
+        will output the correct hue but an excessive saturation that will need some extra tweaking.
+        In some cases, no valid optimization will be delivered and you will need to reset
+        the saturation parameters and start over, or simply stop after the patches selection.
+        Notice that in the auto-optimization the maximum saturation is 25% which might
+        not be enough in very few cases but will avoid inconsistent results in most.
+      </para>
+
+      <para>
+        If you select color patches from the hues color-pickers, without triggering the optimization,
+        the software will only perform one round of optimization and stop so it allows you
+        to control each luminance range separately and avoid divergence of the solution in corner cases.
+        The hue and saturation corrections are computed accounting for the two other
+        luminance ranges and the three factors, and will always output the complementary color
+        of the selected area. If you want to reinforce the color of the area instead, you can then add 180°
+        to the computed hue. Once patches are selected the label becomes
+        <quote>neutralize colors from patches</quote>. To reset one patch you can just redo the
+        selection. Patches are not saved in the parameters and are kept only during the current
+        session. The parameters found by the automatic neutralization are accurate only in
+        <emphasis>slope, offset, power</emphasis> mode, but can work to some extent in
+        <emphasis>lift, gamma, gain</emphasis> too.
+      </para>
+    </sect5>
+
+  </sect4>
+
+  <sect4>
+    <title>Examples</title>
+
+    <para>
+      Several presets are provided in the module to help you understand how it can be used.
+    </para>
+
+    <para>
+      The teal/orange color-grading preset is a very popular look in cinema and a good showcase model.
+      It is meant to be used with two instances and masks: the first instance will exclude
+      skin tones and will shift neutral colors toward teal blue. The second will partially revert
+      the first one and add more vibrance on skin tones only. Together they will help creating
+      separation between subjects and backgrounds. The masking and blending parameters will
+      need to be tweaked to suit every picture, though.
+    </para>
+
+    <para>
+      Other presets provide Kodak film emulations. In the same way you can recreate any film
+      look you like with color balance.
+    </para>
+
+  </sect4>
+
+</sect3>

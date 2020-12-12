@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2011--2013 ulrich pegelow.
+  Copyright (C) 2011-2020 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -48,8 +49,8 @@ DT_MODULE_INTROSPECTION(4, dt_iop_lowpass_params_t)
 
 typedef enum dt_iop_lowpass_algo_t
 {
-  LOWPASS_ALGO_GAUSSIAN,
-  LOWPASS_ALGO_BILATERAL
+  LOWPASS_ALGO_GAUSSIAN, // $DESCRIPTION: "gaussian"
+  LOWPASS_ALGO_BILATERAL // $DESCRIPTION: "bilateral filter"
 } dt_iop_lowpass_algo_t;
 
 /* legacy version 1 params */
@@ -82,13 +83,13 @@ typedef struct dt_iop_lowpass_params3_t
 
 typedef struct dt_iop_lowpass_params_t
 {
-  dt_gaussian_order_t order;
-  float radius;
-  float contrast;
-  float brightness;
-  float saturation;
-  dt_iop_lowpass_algo_t lowpass_algo;
-  int unbound;
+  dt_gaussian_order_t order; // $DEFAULT: 0
+  float radius;     // $MIN: 0.1 $MAX: 500.0 $DEFAULT: 10.0
+  float contrast;   // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
+  float brightness; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 0.0
+  float saturation; // $MIN: -3.0 $MAX: 3.0 $DEFAULT: 1.0
+  dt_iop_lowpass_algo_t lowpass_algo; // $DEFAULT: LOWPASS_ALGO_GAUSSIAN $DESCRIPTION: "soften with"
+  int unbound; // $DEFAULT: 1
 } dt_iop_lowpass_params_t;
 
 
@@ -128,6 +129,15 @@ const char *name()
   return _("lowpass");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("isolate low frequencies in the image"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, scene-referred"),
+                                      _("frequential, Lab"),
+                                      _("special, Lab, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
@@ -135,7 +145,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -189,24 +199,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
   return 1;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "contrast", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->brightness));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
 }
 
 
@@ -445,58 +437,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-
-static void radius_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->radius = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void lowpass_algo_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->lowpass_algo = dt_bauhaus_combobox_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void contrast_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->contrast = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void brightness_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->brightness = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void saturation_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
-  p->saturation = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 #if 0 // gaussian order not user selectable
 static void
 order_changed (GtkComboBox *combo, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
+  if(darktable.gui->reset) return;
   dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
   p->order = gtk_combo_box_get_active(combo);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
@@ -584,7 +530,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 {
   dt_iop_lowpass_data_t *d = (dt_iop_lowpass_data_t *)calloc(1, sizeof(dt_iop_lowpass_data_t));
   piece->data = (void *)d;
-  self->commit_params(self, self->default_params, pipe, piece);
   for(int k = 0; k < 0x10000; k++) d->ctable[k] = d->ltable[k] = 100.0f * k / 0x10000; // identity
 }
 
@@ -596,27 +541,14 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)module->params;
+  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
   dt_bauhaus_slider_set(g->radius, p->radius);
   dt_bauhaus_combobox_set(g->lowpass_algo, p->lowpass_algo);
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->brightness, p->brightness);
   dt_bauhaus_slider_set(g->saturation, p->saturation);
   // gtk_combo_box_set_active(g->order, p->order);
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_lowpass_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_lowpass_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_lowpass_params_t);
-  module->gui_data = NULL;
-  dt_iop_lowpass_params_t tmp = (dt_iop_lowpass_params_t){ 0, 10.0f, 1.0f, 0.0f, 1.0f, LOWPASS_ALGO_GAUSSIAN, 1 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_lowpass_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_lowpass_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -634,17 +566,9 @@ void init_presets(dt_iop_module_so_t *self)
 
   dt_gui_presets_add_generic(_("local contrast mask"), self->op, self->version(),
                              &(dt_iop_lowpass_params_t){ 0, 50.0f, -1.0f, 0.0f, 0.0f, LOWPASS_ALGO_GAUSSIAN, 1 },
-                             sizeof(dt_iop_lowpass_params_t), 1);
+                             sizeof(dt_iop_lowpass_params_t), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *module)
@@ -655,70 +579,27 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lowpass_gui_data_t));
-  dt_iop_lowpass_gui_data_t *g = (dt_iop_lowpass_gui_data_t *)self->gui_data;
-  dt_iop_lowpass_params_t *p = (dt_iop_lowpass_params_t *)self->params;
+  dt_iop_lowpass_gui_data_t *g = IOP_GUI_ALLOC(lowpass);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
+  dt_bauhaus_slider_set_step(g->radius, 0.1);
+  g->lowpass_algo = dt_bauhaus_combobox_from_params(self, "lowpass_algo");
+  g->contrast = dt_bauhaus_slider_from_params(self, N_("contrast"));
+  g->brightness = dt_bauhaus_slider_from_params(self, N_("brightness"));
+  g->saturation = dt_bauhaus_slider_from_params(self, N_("saturation"));
 
-#if 0 // gaussian is order not user selectable here, as it does not make much sense for a lowpass filter
-  GtkBox *hbox  = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), FALSE, FALSE, 0);
-  GtkWidget *label = dtgtk_reset_label_new(_("filter order"), self, &p->order, sizeof(float));
-  gtk_box_pack_start(hbox, label, FALSE, FALSE, 0);
-  g->order = GTK_COMBO_BOX(gtk_combo_box_text_new());
-  gtk_combo_box_text_append_text(g->order, _("0th order"));
-  gtk_combo_box_text_append_text(g->order, _("1st order"));
-  gtk_combo_box_text_append_text(g->order, _("2nd order"));
-  gtk_widget_set_tooltip_text(g->order, _("filter order of gaussian blur"));
-  gtk_box_pack_start(hbox, GTK_WIDGET(g->order), TRUE, TRUE, 0);
-#endif
-
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 0.1, p->radius, 2);
-  g->contrast = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, 0.01, p->contrast, 2);
-  g->brightness = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, 0.01, p->brightness, 2);
-  g->saturation = dt_bauhaus_slider_new_with_range(self, -3.0, 3.0, 0.01, p->saturation, 2);
-
-  dt_bauhaus_widget_set_label(g->radius, NULL, _("radius"));
-  dt_bauhaus_widget_set_label(g->contrast, NULL, _("contrast"));
-  dt_bauhaus_widget_set_label(g->brightness, NULL, C_("lowpass", "brightness"));
-  dt_bauhaus_widget_set_label(g->saturation, NULL, _("saturation"));
-
-  g->lowpass_algo = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->lowpass_algo, NULL, _("soften with"));
-  dt_bauhaus_combobox_add(g->lowpass_algo, _("gaussian"));
-  dt_bauhaus_combobox_add(g->lowpass_algo, _("bilateral filter"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->lowpass_algo, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->contrast, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->brightness, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->saturation, TRUE, TRUE, 0);
   gtk_widget_set_tooltip_text(g->radius, _("radius of gaussian/bilateral blur"));
   gtk_widget_set_tooltip_text(g->contrast, _("contrast of lowpass filter"));
   gtk_widget_set_tooltip_text(g->brightness, _("brightness adjustment of lowpass filter"));
   gtk_widget_set_tooltip_text(g->saturation, _("color saturation of lowpass filter"));
   gtk_widget_set_tooltip_text(g->lowpass_algo, _("which filter to use for blurring"));
 
-  g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->lowpass_algo), "value-changed", G_CALLBACK(lowpass_algo_callback), self);
-  g_signal_connect(G_OBJECT(g->contrast), "value-changed", G_CALLBACK(contrast_callback), self);
-  g_signal_connect(G_OBJECT(g->brightness), "value-changed", G_CALLBACK(brightness_callback), self);
-  g_signal_connect(G_OBJECT(g->saturation), "value-changed", G_CALLBACK(saturation_callback), self);
 #if 0 // gaussian order not user selectable
   g_signal_connect (G_OBJECT (g->order), "changed",
                     G_CALLBACK (order_changed), self);
 #endif
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

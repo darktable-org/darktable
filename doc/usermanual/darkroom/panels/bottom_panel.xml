@@ -25,8 +25,13 @@
     <para>
       Clicking the
       <inlinegraphic fileref="&icon_module_presets;"  scalefit="1" width="2%" align="center"/>
-      icon opens a combobox that gives you quick access to your favorite module's presets. Click
+      icon opens a menu that gives you quick access to your favorite presets. Click
       on the preset name to apply it to the image.
+    </para>
+
+    <para>
+      You can define the list of your favorite presets by using the last menu entry
+      <emphasis>manage quick presets list...</emphasis>
     </para>
 
   </sect3>
@@ -247,8 +252,8 @@
     <para>
       Sets the color profile for the display. The option <quote>system display profile</quote>
       is the preferred setting when working with a calibrated display; the profile is taken
-      either from your system's color manager or from your X display server. In <emphasis>GUI
-      options</emphasis> (see <xref linkend="gui_options"/>) you can specify which method to
+      either from your system's color manager or from your X display server. In <emphasis>miscellaneous
+      options</emphasis> (see <xref linkend="miscellaneous"/>) you can specify which method to
       use. For more information see <xref linkend="display_profile"/>.
     </para>
 
@@ -282,6 +287,24 @@
       are the same as for the soft proof option (see <xref linkend="softproof"/>).
     </para>
 
+  </sect3>
+
+  <sect3 status="final" id="overlaycolor">
+
+    <title>Line overlay color</title>
+
+    <indexterm>
+      <primary>darkroom panels</primary>
+      <secondary>overlay color</secondary>
+    </indexterm>
+
+    <para>
+      Clicking the
+      <inlinegraphic fileref="&icon_module_overlaycolor;" scalefit="1" width="2%" align="center" />
+      icon to select a color for the control lines that overlay the
+      image. You can also cycle through the different colors with the
+      keyboard shortcut <quote>Ctrl+O</quote>.
+    </para>
   </sect3>
 
   <sect3 status="final" id="darkroom_filmstrip">

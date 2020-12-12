@@ -1,6 +1,6 @@
 /*
   This file is part of darktable,
-  copyright (c) 2012--2015 Ulrich Pegelow.
+  Copyright (C) 2012-2020 darktable developers.
 
   darktable is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/togglebutton.h"
 #include "gui/accelerators.h"
@@ -64,8 +65,8 @@ DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 
 typedef enum dt_iop_shadhi_algo_t
 {
-  SHADHI_ALGO_GAUSSIAN,
-  SHADHI_ALGO_BILATERAL
+  SHADHI_ALGO_GAUSSIAN, // $DESCRIPTION: "gaussian"
+  SHADHI_ALGO_BILATERAL // $DESCRIPTION: "bilateral filter"
 } dt_iop_shadhi_algo_t;
 
 /* legacy version 1 params */
@@ -125,18 +126,18 @@ typedef struct dt_iop_shadhi_params4_t
 
 typedef struct dt_iop_shadhi_params_t
 {
-  dt_gaussian_order_t order;
-  float radius;
-  float shadows;
-  float whitepoint;
-  float highlights;
+  dt_gaussian_order_t order; // $DEFAULT: DT_IOP_GAUSSIAN_ZERO
+  float radius;     // $MIN: 0.1 $MAX: 500.0 $DEFAULT: 100.0
+  float shadows;    // $MIN: -100.0 $MAX: 100.0 $DEFAULT: 50.0
+  float whitepoint; // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "white point adjustment"
+  float highlights; // $MIN: -100.0 $MAX: 100.0 $DEFAULT: -50.0
   float reserved2;
-  float compress;
-  float shadows_ccorrect;
-  float highlights_ccorrect;
-  unsigned int flags;
-  float low_approximation;
-  dt_iop_shadhi_algo_t shadhi_algo;
+  float compress;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0
+  float shadows_ccorrect;    // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 100.0 $DESCRIPTION: "shadows color adjustment"
+  float highlights_ccorrect; // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 50.0 $DESCRIPTION: "highlights color adjustment"
+  unsigned int flags;        // $DEFAULT: UNBOUND_DEFAULT
+  float low_approximation;   // $DEFAULT: 0.000001
+  dt_iop_shadhi_algo_t shadhi_algo; // $DEFAULT: SHADHI_ALGO_GAUSSIAN $DESCRIPTION: "soften with" $DEFAULT: 0
 } dt_iop_shadhi_params_t;
 
 typedef struct dt_iop_shadhi_gui_data_t
@@ -184,12 +185,22 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("modify the tonal range of the shadows and highlights\n"
+                                        "of an image by enhancing local contrast."),
+                                      _("corrective and creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -271,32 +282,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 }
 
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point adjustment"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "compress"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "shadows color correction"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "highlights color correction"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "shadows", GTK_WIDGET(g->shadows));
-  dt_accel_connect_slider_iop(self, "highlights", GTK_WIDGET(g->highlights));
-  dt_accel_connect_slider_iop(self, "white point adjustment", GTK_WIDGET(g->whitepoint));
-  dt_accel_connect_slider_iop(self, "radius", GTK_WIDGET(g->radius));
-  dt_accel_connect_slider_iop(self, "compress", GTK_WIDGET(g->compress));
-  dt_accel_connect_slider_iop(self, "shadows color correction", GTK_WIDGET(g->shadows_ccorrect));
-  dt_accel_connect_slider_iop(self, "highlights color correction", GTK_WIDGET(g->highlights_ccorrect));
-}
-
-
-
 static inline void _Lab_scale(const float *i, float *o)
 {
   o[0] = i[0] / 100.0f;
@@ -317,13 +302,15 @@ static inline float sign(float x)
   return (x < 0 ? -1.0f : 1.0f);
 }
 
-
+#ifdef _OPENMP
+#pragma omp declare simd aligned(ivoid, ovoid : 64)
+#endif
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_shadhi_data_t *data = (dt_iop_shadhi_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
+  const dt_iop_shadhi_data_t *const restrict data = (dt_iop_shadhi_data_t *)piece->data;
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
   const int width = roi_out->width;
   const int height = roi_out->height;
   const int ch = piece->colors;
@@ -375,20 +362,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_bilateral_free(b);
   }
 
-// invert and desaturate
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out) \
-  shared(out) \
-  schedule(static)
-#endif
-  for(size_t j = 0; j < (size_t)roi_out->width * roi_out->height * 4; j += 4)
-  {
-    out[j + 0] = 100.0f - out[j + 0];
-    out[j + 1] = 0.0f;
-    out[j + 2] = 0.0f;
-  }
-
   const float max[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
   const float min[4] = { 0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
@@ -403,13 +376,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                       highlights, highlights_ccorrect, lmax, lmin, \
                       low_approximation, max, min,  shadows, \
                       shadows_ccorrect, unbound_mask, whitepoint, width) \
-  shared(in, out) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)width * height * ch; j += ch)
   {
     float ta[3], tb[3];
     _Lab_scale(&in[j], ta);
+    // invert and desaturate the blurred output pixel
+    out[j + 0] = 100.0f - out[j + 0];
+    out[j + 1] = 0.0f;
+    out[j + 2] = 0.0f;
     _Lab_scale(&out[j], tb);
 
     ta[0] = ta[0] > 0.0f ? ta[0] / whitepoint : ta[0];
@@ -417,19 +394,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     // overlay highlights
     float highlights2 = highlights * highlights;
-    float highlights_xform = CLAMP_RANGE(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
+    const float highlights_xform = CLAMP_RANGE(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
 
     while(highlights2 > 0.0f)
     {
-      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(-highlights) * sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
-      float href = copysignf(
+      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      const float href = copysignf(
           fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
-      float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
-      float optrans = chunk * highlights_xform;
+      const float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
+      const float optrans = chunk * highlights_xform;
       highlights2 -= 1.0f;
 
       ta[0] = la * (1.0 - optrans)
@@ -438,35 +415,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
-      ta[1] = ta[1] * (1.0f - optrans)
-              + (ta[1] + tb[1]) * (ta[0] * lref * (1.0f - highlights_ccorrect)
-                                   + (1.0f - ta[0]) * href * highlights_ccorrect) * optrans;
-
+      const float chroma_factor = (ta[0] * lref * (1.0f - highlights_ccorrect)
+                                   + (1.0f - ta[0]) * href * highlights_ccorrect);
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
       ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
 
-      ta[2] = ta[2] * (1.0f - optrans)
-              + (ta[2] + tb[2]) * (ta[0] * lref * (1.0f - highlights_ccorrect)
-                                   + (1.0f - ta[0]) * href * highlights_ccorrect) * optrans;
-
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
       ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
     }
 
     // overlay shadows
     float shadows2 = shadows * shadows;
-    float shadows_xform = CLAMP_RANGE(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
+    const float shadows_xform = CLAMP_RANGE(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
 
     while(shadows2 > 0.0f)
     {
-      float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(shadows) * sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
-      float href = copysignf(
+      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      const float href = copysignf(
           fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
 
-      float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
-      float optrans = chunk * shadows_xform;
+      const float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
+      const float optrans = chunk * shadows_xform;
       shadows2 -= 1.0f;
 
       ta[0] = la * (1.0 - optrans)
@@ -475,16 +448,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
 
-      ta[1] = ta[1] * (1.0f - optrans)
-              + (ta[1] + tb[1]) * (ta[0] * lref * shadows_ccorrect
-                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect)) * optrans;
-
+      const float chroma_factor = (ta[0] * lref * shadows_ccorrect
+                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect));
+      ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
       ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
 
-      ta[2] = ta[2] * (1.0f - optrans)
-              + (ta[2] + tb[2]) * (ta[0] * lref * shadows_ccorrect
-                                   + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect)) * optrans;
-
+      ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
       ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
     }
 
@@ -652,81 +621,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   return;
 }
 
-
-
-static void radius_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->radius = copysignf(dt_bauhaus_slider_get(slider), p->radius);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void shadhi_algo_callback(GtkWidget *widget, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->shadhi_algo = dt_bauhaus_combobox_get(widget);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void shadows_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->shadows = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void highlights_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->highlights = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void whitepoint_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->whitepoint = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void compress_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->compress = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void shadows_ccorrect_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->shadows_ccorrect = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void highlights_ccorrect_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
-  p->highlights_ccorrect = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -754,7 +648,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_shadhi_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -765,9 +658,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)module->params;
+  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
   dt_bauhaus_slider_set(g->shadows, p->shadows);
   dt_bauhaus_slider_set(g->highlights, p->highlights);
   dt_bauhaus_slider_set(g->whitepoint, p->whitepoint);
@@ -776,20 +668,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->compress, p->compress);
   dt_bauhaus_slider_set(g->shadows_ccorrect, p->shadows_ccorrect);
   dt_bauhaus_slider_set(g->highlights_ccorrect, p->highlights_ccorrect);
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_shadhi_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_shadhi_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_shadhi_params_t);
-  module->gui_data = NULL;
-  dt_iop_shadhi_params_t tmp
-      = (dt_iop_shadhi_params_t){ DT_IOP_GAUSSIAN_ZERO, 100.0f, 50.0f, 0.0f, -50.0f, 0.0f, 50.0f, 100.0f,
-                                  50.0f, UNBOUND_DEFAULT, 0.000001f, SHADHI_ALGO_GAUSSIAN };
-  memcpy(module->params, &tmp, sizeof(dt_iop_shadhi_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_shadhi_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -801,15 +679,6 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_shadows_highlights_mix = dt_opencl_create_kernel(program, "shadows_highlights_mix");
 }
 
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
-}
-
 void cleanup_global(dt_iop_module_so_t *module)
 {
   dt_iop_shadhi_global_data_t *gd = (dt_iop_shadhi_global_data_t *)module->data;
@@ -818,50 +687,21 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_shadhi_gui_data_t));
-  dt_iop_shadhi_gui_data_t *g = (dt_iop_shadhi_gui_data_t *)self->gui_data;
-  dt_iop_shadhi_params_t *p = (dt_iop_shadhi_params_t *)self->params;
+  dt_iop_shadhi_gui_data_t *g = IOP_GUI_ALLOC(shadhi);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g->shadows = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->shadows, 2);
-  g->highlights = dt_bauhaus_slider_new_with_range(self, -100.0, 100.0, 2., p->highlights, 2);
-  g->whitepoint = dt_bauhaus_slider_new_with_range(self, -10.0, 10.0, .2, p->whitepoint, 2);
-  g->shadhi_algo = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->shadhi_algo, NULL, _("soften with"));
-  dt_bauhaus_combobox_add(g->shadhi_algo, _("gaussian"));
-  dt_bauhaus_combobox_add(g->shadhi_algo, _("bilateral filter"));
-  g->radius = dt_bauhaus_slider_new_with_range(self, 0.1, 500.0, 2., p->radius, 2);
-  g->compress = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->compress, 2);
-  g->shadows_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->shadows_ccorrect, 2);
-  g->highlights_ccorrect = dt_bauhaus_slider_new_with_range(self, 0, 100.0, 2., p->highlights_ccorrect, 2);
-  dt_bauhaus_widget_set_label(g->shadows, NULL, _("shadows"));
-  dt_bauhaus_widget_set_label(g->highlights, NULL, _("highlights"));
-  dt_bauhaus_widget_set_label(g->whitepoint, NULL, _("white point adjustment"));
-  dt_bauhaus_widget_set_label(g->radius, NULL, _("radius"));
-  dt_bauhaus_widget_set_label(g->compress, NULL, _("compress"));
-  dt_bauhaus_widget_set_label(g->shadows_ccorrect, NULL, _("shadows color adjustment"));
-  dt_bauhaus_widget_set_label(g->highlights_ccorrect, NULL, _("highlights color adjustment"));
-  dt_bauhaus_slider_set_format(g->shadows, "%.02f");
-  dt_bauhaus_slider_set_format(g->highlights, "%.02f");
-  dt_bauhaus_slider_set_format(g->whitepoint, "%.02f");
-  dt_bauhaus_slider_set_format(g->radius, "%.02f");
+  g->shadows = dt_bauhaus_slider_from_params(self, N_("shadows"));
+  g->highlights = dt_bauhaus_slider_from_params(self, N_("highlights"));
+  g->whitepoint = dt_bauhaus_slider_from_params(self, "whitepoint");
+  g->shadhi_algo = dt_bauhaus_combobox_from_params(self, "shadhi_algo");
+  g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
+  g->compress = dt_bauhaus_slider_from_params(self, N_("compress"));
   dt_bauhaus_slider_set_format(g->compress, "%.02f%%");
+  g->shadows_ccorrect = dt_bauhaus_slider_from_params(self, "shadows_ccorrect");
   dt_bauhaus_slider_set_format(g->shadows_ccorrect, "%.02f%%");
+  g->highlights_ccorrect = dt_bauhaus_slider_from_params(self, "highlights_ccorrect");
   dt_bauhaus_slider_set_format(g->highlights_ccorrect, "%.02f%%");
-
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shadows, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->whitepoint, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shadhi_algo, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->radius, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->compress, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->shadows_ccorrect, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->highlights_ccorrect, TRUE, TRUE, 0);
 
   gtk_widget_set_tooltip_text(g->shadows, _("correct shadows"));
   gtk_widget_set_tooltip_text(g->highlights, _("correct highlights"));
@@ -871,21 +711,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->compress, _("compress the effect on shadows/highlights and\npreserve midtones"));
   gtk_widget_set_tooltip_text(g->shadows_ccorrect, _("adjust saturation of shadows"));
   gtk_widget_set_tooltip_text(g->highlights_ccorrect, _("adjust saturation of highlights"));
-
-  g_signal_connect(G_OBJECT(g->shadows), "value-changed", G_CALLBACK(shadows_callback), self);
-  g_signal_connect(G_OBJECT(g->highlights), "value-changed", G_CALLBACK(highlights_callback), self);
-  g_signal_connect(G_OBJECT(g->whitepoint), "value-changed", G_CALLBACK(whitepoint_callback), self);
-  g_signal_connect(G_OBJECT(g->radius), "value-changed", G_CALLBACK(radius_callback), self);
-  g_signal_connect(G_OBJECT(g->shadhi_algo), "value-changed", G_CALLBACK(shadhi_algo_callback), self);
-  g_signal_connect(G_OBJECT(g->compress), "value-changed", G_CALLBACK(compress_callback), self);
-  g_signal_connect(G_OBJECT(g->shadows_ccorrect), "value-changed", G_CALLBACK(shadows_ccorrect_callback), self);
-  g_signal_connect(G_OBJECT(g->highlights_ccorrect), "value-changed", G_CALLBACK(highlights_ccorrect_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

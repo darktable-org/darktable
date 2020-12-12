@@ -1,6 +1,5 @@
 // This file is part of darktable
-// Copyright (c) 2010 Tobias Ellinghaus <houz@gmx.de>.
-
+//
 // darktable is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
 // the Free Software Foundation, either version 3 of the License, or
@@ -118,7 +117,6 @@ static gboolean check_error(GError *error)
     dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_kwallet] ERROR: failed to complete kwallet call: %s\n",
              error->message);
     g_error_free(error);
-    error = NULL;
     return TRUE;
   }
   return FALSE;
@@ -152,7 +150,6 @@ static gboolean start_kwallet(backend_kwallet_context_t *context)
 
   if(check_error(error))
   {
-    g_variant_unref(ret);
     return FALSE;
   }
 

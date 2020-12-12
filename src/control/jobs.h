@@ -1,8 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2014 tobias ellinghaus.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -94,6 +92,7 @@ int32_t dt_control_get_threadid();
 
 #ifdef HAVE_GPHOTO2
 #include "control/jobs/camera_jobs.h"
+#include "common/camera_control.h"
 #endif
 #include "control/jobs/control_jobs.h"
 #include "control/jobs/develop_jobs.h"

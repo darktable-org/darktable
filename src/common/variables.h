@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 henrik andersson.
-    copyright (c) 2010--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -38,6 +37,9 @@ typedef struct dt_variables_params_t
 
   /** internal variables data */
   struct dt_variables_data_t *data;
+
+  /** do we need to escape variables text for markup ? */
+  gboolean escape_markup;
 
 } dt_variables_params_t;
 

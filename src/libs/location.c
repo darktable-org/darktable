@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 henrik andersson.
-    copyright (c) 2016 tobias ellinghaus.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -154,11 +153,31 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+static void _set_flag(GtkWidget *w, GtkStateFlags flag, gboolean over)
+{
+  int flags = gtk_widget_get_state_flags(w);
+  if(over)
+    flags |= flag;
+  else
+    flags &= ~flag;
+
+  gtk_widget_set_state_flags(w, flags, TRUE);
+}
+
+static gboolean _event_box_enter_leave(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
+{
+  _set_flag(widget, GTK_STATE_FLAG_PRELIGHT, (event->type == GDK_ENTER_NOTIFY));
+  return FALSE;
+}
+
 static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_location_result_t *place)
 {
-  GtkWidget *eb, *hb, *vb, *w;
+  GtkWidget *eb, *vb, *w;
   eb = gtk_event_box_new();
-  hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(eb, "dt-map-location");
+  g_signal_connect(G_OBJECT(eb), "enter-notify-event", G_CALLBACK(_event_box_enter_leave), NULL);
+  g_signal_connect(G_OBJECT(eb), "leave-notify-event", G_CALLBACK(_event_box_enter_leave), NULL);
+
   vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
   /* add name */
@@ -180,14 +199,8 @@ static GtkWidget *_lib_location_place_widget_new(dt_lib_location_t *lib, _lib_lo
   gtk_widget_set_halign(w, GTK_ALIGN_START);
   gtk_box_pack_start(GTK_BOX(vb), w, FALSE, FALSE, 0);
 
-  /* type icon */
-  GtkWidget *icon = dtgtk_icon_new(dtgtk_cairo_paint_triangle, CPF_DIRECTION_LEFT, NULL);
-  gtk_widget_set_size_request(icon, DT_PIXEL_APPLY_DPI(10), -1);
-
   /* setup layout */
-  gtk_box_pack_start(GTK_BOX(hb), icon, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(hb), vb, FALSE, FALSE, 0);
-  gtk_container_add(GTK_CONTAINER(eb), hb);
+  gtk_container_add(GTK_CONTAINER(eb), vb);
 
   gtk_widget_show_all(eb);
 

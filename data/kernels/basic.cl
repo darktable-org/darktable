@@ -1992,9 +1992,19 @@ borders_fill (write_only image2d_t out, const int left, const int top, const int
 
 
 /* kernel for the overexposed plugin. */
+typedef enum dt_clipping_preview_mode_t
+{
+  DT_CLIPPING_PREVIEW_GAMUT = 0,
+  DT_CLIPPING_PREVIEW_ANYRGB = 1,
+  DT_CLIPPING_PREVIEW_LUMINANCE = 2,
+  DT_CLIPPING_PREVIEW_SATURATION = 3
+} dt_clipping_preview_mode_t;
+
 kernel void
 overexposed (read_only image2d_t in, write_only image2d_t out, read_only image2d_t tmp, const int width, const int height,
-             const float lower, const float upper, const float4 lower_color, const float4 upper_color)
+             const float lower, const float upper, const float4 lower_color, const float4 upper_color,
+             constant dt_colorspaces_iccprofile_info_cl_t *profile_info,
+            read_only image2d_t lut, const int use_work_profile, dt_clipping_preview_mode_t mode)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -2004,13 +2014,68 @@ overexposed (read_only image2d_t in, write_only image2d_t out, read_only image2d
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
   float4 pixel_tmp = read_imagef(tmp, sampleri, (int2)(x, y));
 
-  if(pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
+  if(mode == DT_CLIPPING_PREVIEW_ANYRGB)
   {
-    pixel.xyz = upper_color.xyz;
+    if(pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
+      pixel.xyz = upper_color.xyz;
+
+    else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)
+      pixel.xyz = lower_color.xyz;
+
   }
-  else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)
+  else if(mode == DT_CLIPPING_PREVIEW_GAMUT && use_work_profile)
   {
-    pixel.xyz = lower_color.xyz;
+    const float luminance = get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
+
+    if(luminance >= upper)
+    {
+      pixel.xyz = upper_color.xyz;
+    }
+    else if(luminance <= lower)
+    {
+      pixel.xyz = lower_color.xyz;
+    }
+    else
+    {
+      float4 saturation = { 0.f, 0.f, 0.f, 0.f};
+      saturation = pixel_tmp - (float4)luminance;
+      saturation = native_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
+
+      if(saturation.x > upper || saturation.y > upper || saturation.z > upper ||
+         pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
+        pixel.xyz = upper_color.xyz;
+
+      else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)
+        pixel.xyz = lower_color.xyz;
+    }
+  }
+  else if(mode == DT_CLIPPING_PREVIEW_LUMINANCE && use_work_profile)
+  {
+    const float luminance = get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
+
+    if(luminance >= upper)
+      pixel.xyz = upper_color.xyz;
+
+    else if(luminance <= lower)
+      pixel.xyz = lower_color.xyz;
+  }
+  else if(mode == DT_CLIPPING_PREVIEW_SATURATION && use_work_profile)
+  {
+    const float luminance = get_rgb_matrix_luminance(pixel, profile_info, profile_info->matrix_in, lut);
+
+    if(luminance < upper && luminance > lower)
+    {
+      float4 saturation = { 0.f, 0.f, 0.f, 0.f};
+      saturation = pixel_tmp - (float4)luminance;
+      saturation = native_sqrt(saturation * saturation / ((float4)(luminance * luminance) + pixel_tmp * pixel_tmp));
+
+      if(saturation.x > upper || saturation.y > upper || saturation.z > upper ||
+         pixel_tmp.x >= upper || pixel_tmp.y >= upper || pixel_tmp.z >= upper)
+        pixel.xyz = upper_color.xyz;
+
+      else if(pixel_tmp.x <= lower && pixel_tmp.y <= lower && pixel_tmp.z <= lower)
+        pixel.xyz = lower_color.xyz;
+    }
   }
 
   write_imagef (out, (int2)(x, y), pixel);

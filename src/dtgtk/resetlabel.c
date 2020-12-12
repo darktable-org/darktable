@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c)2010 johannes hanika.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -54,6 +54,7 @@ GtkWidget *dtgtk_reset_label_new(const gchar *text, dt_iop_module_t *module, voi
 
   label->lb = GTK_LABEL(gtk_label_new(text));
   gtk_widget_set_halign(GTK_WIDGET(label->lb), GTK_ALIGN_START);
+  gtk_label_set_ellipsize(GTK_LABEL(label->lb), PANGO_ELLIPSIZE_END);
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(label), FALSE);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("double-click to reset"));
   gtk_container_add(GTK_CONTAINER(label), GTK_WIDGET(label->lb));

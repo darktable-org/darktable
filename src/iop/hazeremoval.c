@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2017-2019 Heiko Bauke.
+    Copyright (C) 2017-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -36,11 +36,14 @@
 #endif
 
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/darktable.h"
 #include "common/guided_filter.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "gui/gtk.h"
+#include "gui/accelerators.h"
 #include "iop/iop_api.h"
 
 #ifdef HAVE_OPENCL
@@ -63,8 +66,8 @@ typedef float rgb_pixel[3];
 
 typedef struct dt_iop_hazeremoval_params_t
 {
-  float strength;
-  float distance;
+  float strength; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.2
+  float distance; // $MIN:  0.0 $MAX: 1.0 $DEFAULT: 0.2
 } dt_iop_hazeremoval_params_t;
 
 // types  dt_iop_hazeremoval_params_t and dt_iop_hazeremoval_data_t are
@@ -98,6 +101,20 @@ const char *name()
 }
 
 
+const char *aliases()
+{
+  return _("dehaze|defog|smoke|smog");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("remove fog and atmospheric hazing from pictures"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("frequential, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -106,7 +123,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 
@@ -119,7 +136,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_hazeremoval_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 
@@ -158,46 +174,6 @@ void cleanup_global(dt_iop_module_so_t *self)
 }
 
 
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_hazeremoval_params_t));
-  self->default_enabled = 0;
-  self->params_size = sizeof(dt_iop_hazeremoval_params_t);
-  self->gui_data = NULL;
-  dt_iop_hazeremoval_params_t tmp = (dt_iop_hazeremoval_params_t){ 0.2f, 0.2f };
-  memcpy(self->params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_hazeremoval_params_t));
-}
-
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
-}
-
-
-static void strength_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_hazeremoval_params_t *p = self->params;
-  p->strength = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
-static void distance_callback(GtkWidget *w, dt_iop_module_t *self)
-{
-  if(self->dt->gui->reset) return;
-  dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
-  p->distance = dt_bauhaus_slider_get(w);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-
 void gui_update(struct dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
@@ -217,9 +193,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_hazeremoval_gui_data_t));
-  dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
-  dt_iop_hazeremoval_params_t *p = (dt_iop_hazeremoval_params_t *)self->params;
+  dt_iop_hazeremoval_gui_data_t *g = IOP_GUI_ALLOC(hazeremoval);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->distance_max = NAN;
@@ -228,20 +202,13 @@ void gui_init(dt_iop_module_t *self)
   g->A0[2] = NAN;
   g->hash = 0;
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-
-  g->strength = dt_bauhaus_slider_new_with_range(self, -1, 1, 0.01, p->strength, 2);
-  dt_bauhaus_widget_set_label(g->strength, NULL, _("strength"));
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
   gtk_widget_set_tooltip_text(g->strength, _("amount of haze reduction"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->strength), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->strength), "value-changed", G_CALLBACK(strength_callback), self);
 
-  g->distance = dt_bauhaus_slider_new_with_range(self, 0, 1, 0.005, p->distance, 3);
-  dt_bauhaus_widget_set_label(g->distance, NULL, _("distance"));
+  g->distance = dt_bauhaus_slider_from_params(self, N_("distance"));
+  dt_bauhaus_slider_set_step(g->distance, 0.005);
+  dt_bauhaus_slider_set_digits(g->distance, 3);
   gtk_widget_set_tooltip_text(g->distance, _("limit haze removal up to a specific spatial depth"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->distance), TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(g->distance), "value-changed", G_CALLBACK(distance_callback), self);
 }
 
 
@@ -249,8 +216,8 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 //----------------------------------------------------------------------
@@ -277,47 +244,6 @@ typedef struct const_rgb_image
 } const_rgb_image;
 
 
-typedef struct gray_image
-{
-  float *data;
-  int width, height;
-} gray_image;
-
-
-// allocate space for 1-component image of size width x height
-static inline gray_image new_gray_image(int width, int height)
-{
-  return (gray_image){ dt_alloc_align(64, sizeof(float) * width * height), width, height };
-}
-
-
-// free space for 1-component image
-static inline void free_gray_image(gray_image *img_p)
-{
-  dt_free_align(img_p->data);
-  img_p->data = NULL;
-}
-
-
-// copy 1-component image img1 to img2
-static inline void copy_gray_image(gray_image img1, gray_image img2)
-{
-  memcpy(img2.data, img1.data, sizeof(float) * img1.width * img1.height);
-}
-
-
-// minimum of two integers
-static inline int min_i(int a, int b)
-{
-  return a < b ? a : b;
-}
-
-
-// maximum of two integers
-static inline int max_i(int a, int b)
-{
-  return a > b ? a : b;
-}
 
 
 // swap the two floats that the pointers point to
@@ -326,164 +252,6 @@ static inline void pointer_swap_f(float *a, float *b)
   float t = *a;
   *a = *b;
   *b = t;
-}
-
-
-// calculate the one-dimensional moving maximum over a window of size 2*w+1
-// input array x has stride 1, output array y has stride stride_y
-static inline void box_max_1d(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float m = -(INFINITY);
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fmaxf(x[i], m);
-  for(int i = 0; i < N; i++)
-  {
-    y[i * stride_y] = m;
-    if(i - w >= 0 && x[i - w] == m)
-    {
-      m = -(INFINITY);
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fmaxf(x[j], m);
-    }
-    if(i + w + 1 < N) m = fmaxf(x[i + w + 1], m);
-  }
-}
-
-
-// calculate the two-dimensional moving maximum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-static void box_max(const gray_image img1, const gray_image img2, const int w)
-{
-  gray_image img2_bak;
-  if(img1.data == img2.data)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-      img2_bak = new_gray_image(img2.width, 1);
-#ifdef _OPENMP
-#pragma omp for
-#endif
-      for(int i1 = 0; i1 < img2.height; i1++)
-      {
-        memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-        box_max_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
-      }
-      free_gray_image(&img2_bak);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-#ifdef _OPENMP
-#pragma omp for
-#endif
-      for(int i1 = 0; i1 < img1.height; i1++)
-        box_max_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    }
-  }
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(img1, img2, w) \
-  private(img2_bak)
-#endif
-  {
-    img2_bak = new_gray_image(1, img2.height);
-#ifdef _OPENMP
-#pragma omp for
-#endif
-    for(int i0 = 0; i0 < img1.width; i0++)
-    {
-      for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-      box_max_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-    }
-    free_gray_image(&img2_bak);
-  }
-}
-
-
-// calculate the one-dimensional moving minimum over a window of size 2*w+1
-// input array x has stride 1, output array y has stride stride_y
-static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
-{
-  float m = INFINITY;
-  for(int i = 0, i_end = min_i(w + 1, N); i < i_end; i++) m = fminf(x[i], m);
-  for(int i = 0; i < N; i++)
-  {
-    y[i * stride_y] = m;
-    if(i - w >= 0 && x[i - w] == m)
-    {
-      m = INFINITY;
-      for(int j = max_i(i - w + 1, 0), j_end = min_i(i + w + 2, N); j < j_end; j++) m = fminf(x[j], m);
-    }
-    if(i + w + 1 < N) m = fminf(x[i + w + 1], m);
-  }
-}
-
-
-// calculate the two-dimensional moving minimum over a box of size (2*w+1) x (2*w+1)
-// does the calculation in-place if input and output images are identical
-static void box_min(const gray_image img1, const gray_image img2, const int w)
-{
-  gray_image img2_bak;
-  if(img1.data == img2.data)
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-      img2_bak = new_gray_image(img2.width, 1);
-#ifdef _OPENMP
-#pragma omp for
-#endif
-      for(int i1 = 0; i1 < img2.height; i1++)
-      {
-        memcpy(img2_bak.data, img2.data + (size_t)i1 * img2.width, sizeof(float) * img2.width);
-        box_min_1d(img2.width, img2_bak.data, img2.data + (size_t)i1 * img2.width, 1, w);
-      }
-      free_gray_image(&img2_bak);
-    }
-  }
-  else
-  {
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-    dt_omp_firstprivate(img1, img2, w) \
-    private(img2_bak)
-#endif
-    {
-#ifdef _OPENMP
-#pragma omp for
-#endif
-      for(int i1 = 0; i1 < img1.height; i1++)
-        box_min_1d(img1.width, img1.data + (size_t)i1 * img1.width, img2.data + (size_t)i1 * img2.width, 1, w);
-    }
-  }
-#ifdef _OPENMP
-#pragma omp parallel default(none) \
-  dt_omp_firstprivate(img1, img2, w) \
-  private(img2_bak)
-#endif
-  {
-    img2_bak = new_gray_image(1, img2.height);
-#ifdef _OPENMP
-#pragma omp for schedule(static)
-#endif
-    for(int i0 = 0; i0 < img1.width; i0++)
-    {
-      for(int i1 = 0; i1 < img1.height; i1++) img2_bak.data[i1] = img2.data[i0 + (size_t)i1 * img2.width];
-      box_min_1d(img1.height, img2_bak.data, img2.data + i0, img1.width, w);
-    }
-    free_gray_image(&img2_bak);
-  }
 }
 
 
@@ -504,7 +272,7 @@ static void dark_channel(const const_rgb_image img1, const gray_image img2, cons
     m = fminf(pixel[2], m);
     img2.data[i] = m;
   }
-  box_min(img2, img2, w);
+  dt_box_min(img2.data, img2.height, img2.width, 1, w);
 }
 
 
@@ -526,7 +294,7 @@ static void transition_map(const const_rgb_image img1, const gray_image img2, co
     m = fminf(pixel[2] / A0[2], m);
     img2.data[i] = 1.f - m * strength;
   }
-  box_max(img2, img2, w);
+  dt_box_max(img2.data, img2.height, img2.width, 1, w);
 }
 
 
@@ -693,7 +461,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_pthread_mutex_lock(&g->lock);
     const uint64_t hash = g->hash;
@@ -718,7 +486,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
@@ -735,7 +503,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   transition_map(img_in, trans_map, w1, A0, strength);
 
   // refine the transition map
-  box_min(trans_map, trans_map, w1);
+  dt_box_min(trans_map.data, trans_map.height, trans_map.width, 1, w1);
   gray_image trans_map_filtered = new_gray_image(width, height);
   // apply guided filter with no clipping
   guided_filter(img_in.data, trans_map.data, trans_map_filtered.data, width, height, ch, w2, eps, 1.f, -FLT_MAX,
@@ -743,7 +511,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // finally, calculate the haze-free image
   const float t_min
-      = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
+      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   const float *const c_A0 = A0;
   const gray_image c_trans_map_filtered = trans_map_filtered;
 #ifdef _OPENMP
@@ -945,7 +713,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // only see part of the image (region of interest).  Therefore, we
   // try to get A0 and distance_max from the PREVIEW pixelpipe which
   // luckily stores it for us.
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
     dt_pthread_mutex_lock(&g->lock);
     const uint64_t hash = g->hash;
@@ -970,7 +738,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light_cl(self, devid, img_in, w1, &A0);
   // PREVIEW pixelpipe stores values.
-  if(self->dev->gui_attached && g && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+  if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
     dt_pthread_mutex_lock(&g->lock);
@@ -994,7 +762,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // finally, calculate the haze-free image
   const float t_min
-      = fmaxf(expf(-distance * distance_max), 1.f / 1024); // minimum allowed value for transition map
+      = fminf(fmaxf(expf(-distance * distance_max), 1.f / 1024), 1.f); // minimum allowed value for transition map
   dehaze_cl(self, devid, img_in, trans_map_filtered, img_out, t_min, A0);
 
   dt_opencl_release_mem_object(trans_map);

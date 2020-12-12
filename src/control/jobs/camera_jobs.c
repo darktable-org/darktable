@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010 -- 2014 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -126,7 +126,8 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
   for(uint32_t i = 0; i < params->count; i++)
   {
     // Delay if active
-    if(params->delay) g_usleep(params->delay * G_USEC_PER_SEC);
+    if(params->delay && !params->brackets) // delay between brackets
+      g_usleep(params->delay * G_USEC_PER_SEC);
 
     for(uint32_t b = 0; b < (params->brackets * 2) + 1; b++)
     {
@@ -143,6 +144,9 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
         }
         else
         {
+          if(params->delay) // delay after previous bracket (no delay for 1st bracket)
+            g_usleep(params->delay * G_USEC_PER_SEC);
+
           // Step up with (steps)
           for(uint32_t s = 0; s < params->steps; s++)
             if(g_list_previous(current_value)) current_value = g_list_previous(current_value);
@@ -163,6 +167,9 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
     // lets reset to original value before continue
     if(params->brackets)
     {
+      if(params->delay) // delay after final bracket
+        g_usleep(params->delay * G_USEC_PER_SEC);
+
       current_value = g_list_find(values, original_value);
       dt_camctl_camera_set_property_string(darktable.camctl, NULL, "shutterspeed", current_value->data);
     }
@@ -286,6 +293,15 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
 
   dt_control_job_set_progress(t->job, t->fraction);
 
+  if(t->import_count + 1 == g_list_length(t->images))
+  {
+    // only redraw at the end, to not spam the cpu with exposure events
+    dt_control_queue_redraw_center();
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
+                            dt_import_session_film_id(t->shared.session));
+  }
   t->import_count++;
 }
 
@@ -295,13 +311,12 @@ static const char *_camera_request_image_filename(const dt_camera_t *camera, con
   const gchar *file;
   struct dt_camera_shared_t *shared;
   shared = (dt_camera_shared_t *)data;
+  const gboolean use_filename = dt_conf_get_bool("session/use_filename");
 
-  /* update import session with original filename so that $(FILE_EXTENSION)
-   *     and alikes can be expanded. */
   dt_import_session_set_filename(shared->session, filename);
   if(exif_time)
     dt_import_session_set_exif_time(shared->session, *exif_time);
-  file = dt_import_session_filename(shared->session, FALSE);
+  file = dt_import_session_filename(shared->session, use_filename);
 
   if(file == NULL) return NULL;
 

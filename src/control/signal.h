@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -33,6 +33,11 @@ typedef enum dt_signal_t
    */
   DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
 
+  /** \brief This signal is raised when image shown in the main view change
+      no param, no returned value
+   */
+  DT_SIGNAL_ACTIVE_IMAGES_CHANGE,
+
   /** \brief This signal is raised when dt_control_queue_redraw() is called.
     no param, no returned value
   */
@@ -51,20 +56,21 @@ typedef enum dt_signal_t
   DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
 
   /** \bief This signal is raised when a thumb is doubleclicked in
-    no param, no returned value
-      filmstrip module.
+    thumbtable (filemananger, filmstrip)
+    1 : int the imageid of the thumbnail
+    no returned value
    */
-  DT_SIGNAL_VIEWMANAGER_FILMSTRIP_ACTIVATE,
+  DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE,
 
-  /** \brief This signal is raised when collection changed
-  no param, no returned value
+  /** \brief This signal is raised when collection changed. To avoid leaking the list,
+    dt_collection_t is connected to this event and responsible of that.
+    1 : dt_collection_change_t the reason why the collection has changed
+    2 : GList of imageids that have changed (can be null if it's a global change)
+    3 : next untouched imgid in the list (-1 if no list)
+    no returned value
     */
+  /** image list not to be freed by the caller, automatically freed */
   DT_SIGNAL_COLLECTION_CHANGED,
-
-  /** \brief This signal is raised when collection query is changed
-  no param, no returned value
-    */
-  DT_SIGNAL_COLLECTION_QUERY_CHANGED,
 
   /** \brief This signal is raised when the selection is changed
   no param, no returned value
@@ -74,8 +80,25 @@ typedef enum dt_signal_t
   /** \brief This signal is raised when a tag is added/deleted/changed  */
   DT_SIGNAL_TAG_CHANGED,
 
+  /** \brief This signal is raised when a geotag is added/deleted/changed  */
+  // when imgs <> NULL these images have some geotag changes
+  // when imgs == NULL locations have changed
+  // if locid <> 0 it the new selected location on map
+  DT_SIGNAL_GEOTAG_CHANGED,
+
+  /** \brief This signal is raised when metadata status (shown/hidden) or value has changed */
+  DT_SIGNAL_METADATA_CHANGED,
+
+  /** \brief This signal is raised when any of image info has changed  */
+  /** image list not to be freed by the caller, automatically freed */
+  // TODO check if tag and metadata could be included there
+  DT_SIGNAL_IMAGE_INFO_CHANGED,
+
   /** \brief This signal is raised when a style is added/deleted/changed  */
   DT_SIGNAL_STYLE_CHANGED,
+
+  /** \brief This signal is raised to request image order change */
+  DT_SIGNAL_IMAGES_ORDER_CHANGE,
 
   /** \brief This signal is raised when a filmroll is deleted/changed but not imported
       \note when a filmroll is imported, use DT_SIGNALS_FILMOLLS_IMPORTED, as the gui
@@ -101,7 +124,8 @@ typedef enum dt_signal_t
   DT_SIGNAL_DEVELOP_INITIALIZE,
 
   /** \brief This signal is raised when a mipmap has been generated and flushed to cache
-  no param, no returned value
+    1 :  int the imgid of the mipmap
+    no returned value
     */
   DT_SIGNAL_DEVELOP_MIPMAP_UPDATED,
 
@@ -122,7 +146,8 @@ typedef enum dt_signal_t
 
   /** \brief This signal is raised when develop history is about to be changed
     1 : GList *  the current history
-    1 : uint32_t the correpsing history end
+    2 : uint32_t the correpsing history end
+    3 : GList *  the current iop-order list
   no returned value
     */
   DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
@@ -137,6 +162,9 @@ typedef enum dt_signal_t
     no returned value
     */
   DT_SIGNAL_DEVELOP_MODULE_REMOVE,
+
+  /** \brief This signal is raised when order of modules in pipeline is changed */
+  DT_SIGNAL_DEVELOP_MODULE_MOVED,
 
   /** \brief This signal is raised when image is changed in darkroom */
   DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
@@ -193,6 +221,16 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_NAVIGATION_REDRAW,
 
+  /** \brief This signal is raised when dt_control_log_redraw() is called.
+    no param, no returned value
+  */
+  DT_SIGNAL_CONTROL_LOG_REDRAW,
+
+  /** \brief This signal is raised when dt_control_toast_redraw() is called.
+    no param, no returned value
+  */
+  DT_SIGNAL_CONTROL_TOAST_REDRAW,
+
   /** \brief This signal is raised when new color picker data are available in the pixelpipe.
     1 module
     2 piece
@@ -200,9 +238,21 @@ typedef enum dt_signal_t
   */
   DT_SIGNAL_CONTROL_PICKERDATA_READY,
 
+  /* \brief This signal is raised when metadata view needs update */
+  DT_SIGNAL_METADATA_UPDATE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
+
+typedef enum dt_debug_signal_action_t
+{
+  // powers of two, masking
+  DT_DEBUG_SIGNAL_ACT_RAISE       = 1 << 0,
+  DT_DEBUG_SIGNAL_ACT_CONNECT     = 1 << 1,
+  DT_DEBUG_SIGNAL_ACT_DISCONNECT  = 1 << 2,
+  DT_DEBUG_SIGNAL_ACT_PRINT_TRACE = 1 << 3,
+} dt_debug_signal_action_t;
 
 /* inititialize the signal framework */
 struct dt_control_signal_t *dt_control_signal_init();
@@ -217,6 +267,37 @@ void dt_control_signal_disconnect(const struct dt_control_signal_t *ctlsig, GCal
 void dt_control_signal_block_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
 /* unblocks a callback */
 void dt_control_signal_unblock_by_func(const struct dt_control_signal_t *ctlsig, GCallback cb, gpointer user_data);
+
+#define DT_DEBUG_CONTROL_SIGNAL_RAISE(ctlsig, signal, ...)                                                                       \
+  do                                                                                                                             \
+  {                                                                                                                              \
+    if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_RAISE) && darktable.unmuted_signal_dbg[signal])                 \
+    {                                                                                                                            \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function %s(): raise signal %s\n", __FILE__, __LINE__, __FUNCTION__, #signal);  \
+    }                                                                                                                            \
+    dt_control_signal_raise(ctlsig, signal, ##__VA_ARGS__);                                                                      \
+  } while (0)
+
+#define DT_DEBUG_CONTROL_SIGNAL_CONNECT(ctlsig, signal, cb, user_data)                                                           \
+  do                                                                                                                             \
+  {                                                                                                                              \
+    if((darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_CONNECT) && darktable.unmuted_signal_dbg[signal])                \
+    {                                                                                                                            \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function: %s() connect handler %s to signal %s\n", __FILE__, __LINE__,          \
+               __FUNCTION__, #cb, #signal);                                                                                      \
+    }                                                                                                                            \
+    dt_control_signal_connect(ctlsig, signal, cb, user_data);                                                                    \
+  } while (0)
+
+#define DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(ctlsig, cb, user_data)                                                                \
+  do                                                                                                                             \
+  {                                                                                                                              \
+    if(darktable.unmuted_signal_dbg_acts & DT_DEBUG_SIGNAL_ACT_DISCONNECT)                                                       \
+    {                                                                                                                            \
+      dt_print(DT_DEBUG_SIGNAL, "[signal] %s:%d, function: %s() disconnect handler %s\n", __FILE__, __LINE__, __FUNCTION__, #cb);\
+    }                                                                                                                            \
+    dt_control_signal_disconnect(ctlsig, cb, user_data);                                                                         \
+  } while (0)
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

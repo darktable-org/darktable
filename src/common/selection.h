@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -48,6 +48,8 @@ void dt_selection_select_filmroll(struct dt_selection_t *selection);
 void dt_selection_select_unaltered(struct dt_selection_t *selection);
 /** selects a set of images from a list. the list is unaltered */
 void dt_selection_select_list(struct dt_selection_t *selection, GList *list);
+/** selects a set of images from a list. the list is unaltered */
+const struct dt_collection_t *dt_selection_get_collection(struct dt_selection_t *selection);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

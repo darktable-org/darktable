@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Aurélien Pierre.
+    Copyright (C) 2019-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -393,8 +393,8 @@ static inline int pseudo_solve(float *const restrict A,
     return valid;
   }
 
-  float *const restrict A_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n * n);
-  float *const restrict y_square DT_ALIGNED_ARRAY = dt_alloc_sse_ps(n);
+  float *const restrict A_square = dt_alloc_sse_ps(n * n);
+  float *const restrict y_square = dt_alloc_sse_ps(n);
 
   if(!A_square || !y_square)
   {

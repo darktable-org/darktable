@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
+    Copyright (C) 2009-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -26,14 +26,15 @@
 
 typedef enum dt_dev_pixelpipe_type_t
 {
-  DT_DEV_PIXELPIPE_NONE = 0,
-  DT_DEV_PIXELPIPE_EXPORT = 1 << 0,
-  DT_DEV_PIXELPIPE_FULL = 1 << 1,
-  DT_DEV_PIXELPIPE_PREVIEW = 1 << 2,
+  DT_DEV_PIXELPIPE_NONE      = 0,
+  DT_DEV_PIXELPIPE_EXPORT    = 1 << 0,
+  DT_DEV_PIXELPIPE_FULL      = 1 << 1,
+  DT_DEV_PIXELPIPE_PREVIEW   = 1 << 2,
   DT_DEV_PIXELPIPE_THUMBNAIL = 1 << 3,
-  DT_DEV_PIXELPIPE_PREVIEW2 = 1 << 4,
-  DT_DEV_PIXELPIPE_ANY = DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
-                         | DT_DEV_PIXELPIPE_THUMBNAIL | DT_DEV_PIXELPIPE_PREVIEW2
+  DT_DEV_PIXELPIPE_PREVIEW2  = 1 << 4,
+  DT_DEV_PIXELPIPE_ANY       = DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_PREVIEW
+                               | DT_DEV_PIXELPIPE_THUMBNAIL | DT_DEV_PIXELPIPE_PREVIEW2,
+  DT_DEV_PIXELPIPE_FAST      = 1 << 8
 } dt_dev_pixelpipe_type_t;
 
 /** when to collect histogram */

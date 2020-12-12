@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2010 johannes hanika.
-    copyright (c) 2011--2017 tobias ellinghaus.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -60,7 +59,7 @@ static const cmsCIExyYTRIPLE sRGB_Primaries = {
 
 // D65:
 static const cmsCIExyYTRIPLE Rec2020_Primaries = {
-  {0.7000, 0.2920, 1.0}, // red
+  {0.7080, 0.2920, 1.0}, // red
   {0.1700, 0.7970, 1.0}, // green
   {0.1310, 0.0460, 1.0}  // blue
 };
@@ -77,6 +76,13 @@ static const cmsCIExyYTRIPLE Adobe_Primaries = {
   {0.6400, 0.3300, 1.0}, // red
   {0.2100, 0.7100, 1.0}, // green
   {0.1500, 0.0600, 1.0}  // blue
+};
+
+// D65:
+static const cmsCIExyYTRIPLE P3_Primaries = {
+  {0.680, 0.320, 1.0}, // red
+  {0.265, 0.690, 1.0}, // green
+  {0.150, 0.060, 1.0}  // blue
 };
 
 // https://en.wikipedia.org/wiki/ProPhoto_RGB_color_space
@@ -330,7 +336,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsMLUsetASCII(mlu3, "en", "US", dmdd);
   cmsWriteTag(profile, cmsSigDeviceModelDescTag, mlu3);
 
-  cmsMLUsetASCII(mlu4, "en", "US", "Darktable");
+  cmsMLUsetASCII(mlu4, "en", "US", "darktable");
   cmsWriteTag(profile, cmsSigDeviceMfgDescTag, mlu4);
 
   cmsMLUfree(mlu1);
@@ -339,6 +345,74 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsMLUfree(mlu4);
 
   return profile;
+}
+
+// https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.2100-2-201807-I!!PDF-F.pdf
+// Perceptual Quantization / SMPTE standard ST.2084
+static double _PQ_fct(double x)
+{
+  static const double M1 = 2610.0 / 16384.0;
+  static const double M2 = (2523.0 / 4096.0) * 128.0;
+  static const double C1 = 3424.0 / 4096.0;
+  static const double C2 = (2413.0 / 4096.0) * 32.0;
+  static const double C3 = (2392.0 / 4096.0) * 32.0;
+
+  if (x == 0.0) return 0.0;
+  const double sign = x;
+  x = fabs(x);
+
+  const double xpo = pow(x, 1.0 / M2);
+  const double num = MAX(xpo - C1, 0.0);
+  const double den = C2 - C3 * xpo;
+  const double res = pow(num / den, 1.0 / M1);
+
+  return copysign(res, sign);
+}
+
+// https://www.itu.int/dms_pubrec/itu-r/rec/bt/R-REC-BT.2100-2-201807-I!!PDF-F.pdf
+// Hybrid Log-Gamma
+static double _HLG_fct(double x)
+{
+  static const double Beta  = 0.04;
+  static const double RA    = 5.591816309728916; // 1.0 / A where A = 0.17883277
+  static const double B     = 0.28466892; // 1.0 - 4.0 * A
+  static const double C     = 0.5599107295; // 0,5 –aln(4a)
+
+  double e = MAX(x * (1.0 - Beta) + Beta, 0.0);
+
+  if (e == 0.0) return 0.0;
+
+  const double sign = e;
+  e = fabs(e);
+
+  double res = 0.0;
+
+  if (e <= 0.5)
+  {
+    res = e * e / 3.0;
+  }
+  else
+  {
+    res = (exp((e - C) * RA) + B) / 12.0;
+  }
+
+  return copysign(res, sign);
+}
+
+static cmsToneCurve* _colorspaces_create_transfer(int32_t size, double (*fct)(double))
+{
+  float *values = g_malloc(size * sizeof(float));
+
+  for (int32_t i = 0; i < size; ++i)
+  {
+    const double x = (float)i / (size - 1);
+    const double y = MIN(fct(x), 1.0f);
+    values[i] = (float)y;
+  }
+
+  cmsToneCurve* result = cmsBuildTabulatedToneCurveFloat(NULL, size, values);
+  g_free(values);
+  return result;
 }
 
 static cmsHPROFILE _colorspaces_create_srgb_profile(gboolean v2)
@@ -607,7 +681,7 @@ cmsHPROFILE dt_colorspaces_create_darktable_profile(const char *makermodel)
   if(hp == NULL) return NULL;
 
   char name[512];
-  snprintf(name, sizeof(name), "Darktable profiled %s", makermodel);
+  snprintf(name, sizeof(name), "darktable profiled %s", makermodel);
   cmsSetProfileVersion(hp, 2.1);
   cmsMLU *mlu0 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu0, "en", "US", "(dt internal)");
@@ -640,7 +714,7 @@ static cmsHPROFILE dt_colorspaces_create_xyz_profile(void)
   cmsMLU *mlu1 = cmsMLUalloc(NULL, 1);
   cmsMLUsetASCII(mlu1, "en", "US", "linear XYZ");
   cmsMLU *mlu2 = cmsMLUalloc(NULL, 1);
-  cmsMLUsetASCII(mlu2, "en", "US", "Darktable linear XYZ");
+  cmsMLUsetASCII(mlu2, "en", "US", "darktable linear XYZ");
   cmsWriteTag(hXYZ, cmsSigDeviceMfgDescTag, mlu0);
   cmsWriteTag(hXYZ, cmsSigDeviceModelDescTag, mlu1);
   // this will only be displayed when the embedded profile is read by for example GIMP
@@ -676,6 +750,54 @@ static cmsHPROFILE dt_colorspaces_create_linear_rec2020_rgb_profile(void)
   return profile;
 }
 
+static cmsHPROFILE dt_colorspaces_create_pq_rec2020_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _PQ_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("PQ Rec2020 RGB", "PQ Rec2020 RGB",
+                                             &D65xyY, &Rec2020_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_hlg_rec2020_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _HLG_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("HLG Rec2020 RGB", "HLG Rec2020 RGB",
+                                             &D65xyY, &Rec2020_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_pq_p3_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _PQ_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("PQ P3 RGB", "PQ P3 RGB",
+                                             &D65xyY, &P3_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
+static cmsHPROFILE dt_colorspaces_create_hlg_p3_rgb_profile(void)
+{
+  cmsToneCurve *transferFunction = _colorspaces_create_transfer(4096, _HLG_fct);
+
+  cmsHPROFILE profile = _create_lcms_profile("HLG P3 RGB", "HLG P3 RGB",
+                                             &D65xyY, &P3_Primaries, transferFunction, TRUE);
+
+  cmsFreeToneCurve(transferFunction);
+
+  return profile;
+}
+
 static cmsHPROFILE dt_colorspaces_create_linear_prophoto_rgb_profile(void)
 {
   cmsToneCurve *transferFunction = cmsBuildGamma(NULL, 1.0);
@@ -695,12 +817,62 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
   // linear rgb with r and b swapped:
   cmsCIExyYTRIPLE BGR_Primaries = { sRGB_Primaries.Blue, sRGB_Primaries.Green, sRGB_Primaries.Red };
 
-  cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR", "Darktable Linear Infrared BGR",
+  cmsHPROFILE profile = _create_lcms_profile("Linear Infrared BGR", "darktable Linear Infrared BGR",
                                              &D65xyY, &BGR_Primaries, transferFunction, FALSE);
 
   cmsFreeToneCurve(transferFunction);
 
   return profile;
+}
+
+const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid)
+{
+  // find the colorin module -- the pointer stays valid until darktable shuts down
+  static dt_iop_module_so_t *colorin = NULL;
+  if(colorin == NULL)
+  {
+    GList *modules = g_list_first(darktable.iop);
+    while(modules)
+    {
+      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      if(!strcmp(module->op, "colorin"))
+      {
+        colorin = module;
+        break;
+      }
+      modules = g_list_next(modules);
+    }
+  }
+
+  const dt_colorspaces_color_profile_t *p = NULL;
+
+  if(colorin && colorin->get_p)
+  {
+    // get the profile assigned from colorin
+    // FIXME: does this work when using JPEG thumbs and the image was never opened?
+    sqlite3_stmt *stmt;
+    DT_DEBUG_SQLITE3_PREPARE_V2(
+      dt_database_get(darktable.db),
+      "SELECT op_params FROM main.history WHERE imgid=?1 AND operation='colorin' ORDER BY num DESC LIMIT 1", -1,
+      &stmt, NULL);
+    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+    if(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      // use introspection to get the profile name from the binary params blob
+      const void *params = sqlite3_column_blob(stmt, 0);
+      dt_colorspaces_color_profile_type_t *type = colorin->get_p(params, "type_work");
+      char *filename = colorin->get_p(params, "filename_work");
+
+      if(type && filename) p = dt_colorspaces_get_profile(*type, filename,
+                                                          DT_PROFILE_DIRECTION_WORK);
+    }
+    sqlite3_finalize(stmt);
+  }
+
+  // if all else fails -> fall back to linear Rec2020 RGB
+  if(!p) p = dt_colorspaces_get_profile(DT_COLORSPACE_LIN_REC2020, "", DT_PROFILE_DIRECTION_WORK);
+
+  return p;
 }
 
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const int imgid,
@@ -938,15 +1110,16 @@ error:
 void rgb2hsl(const float rgb[3], float *h, float *s, float *l)
 {
   const float r = rgb[0], g = rgb[1], b = rgb[2];
-  float pmax = fmax(r, fmax(g, b));
-  float pmin = fmin(r, fmin(g, b));
-  float delta = (pmax - pmin);
+  const float pmax = fmaxf(r, fmax(g, b));
+  const float pmin = fminf(r, fmin(g, b));
+  const float delta = (pmax - pmin);
 
   float hv = 0, sv = 0, lv = (pmin + pmax) / 2.0;
 
-  if(pmax != pmin)
+  if(delta != 0.0f)
   {
-    sv = lv < 0.5 ? delta / (pmax + pmin) : delta / (2.0 - pmax - pmin);
+    sv = lv < 0.5 ? delta / fmaxf(pmax + pmin, 1.52587890625e-05f)
+                  : delta / fmaxf(2.0 - pmax - pmin, 1.52587890625e-05f);
 
     if(pmax == r)
       hv = (g - b) / delta;
@@ -996,28 +1169,6 @@ void hsl2rgb(float rgb[3], float h, float s, float l)
   rgb[1] = hue2rgb(m1, m2, h);
   rgb[2] = hue2rgb(m1, m2, h - (1.0 / 3.0));
 }
-
-static const char *_profile_names[]
-    = { "",         // 0th entry is a dummy for DT_COLORSPACE_FILE and not used
-        N_("sRGB"), // this is only used in error messages, no need for the (...) description
-        N_("Adobe RGB (compatible)"),
-        N_("linear Rec709 RGB"),
-        N_("linear Rec2020 RGB"),
-        N_("linear XYZ"),
-        N_("Lab"),
-        N_("linear infrared BGR"),
-        N_("system display profile"),
-        N_("embedded ICC profile"),
-        N_("embedded matrix"),
-        N_("standard color matrix"),
-        N_("enhanced color matrix"),
-        N_("vendor color matrix"),
-        N_("alternate color matrix"),
-        N_("BRG (experimental)"),
-        N_("export profile"),
-        N_("softproof profile"),
-        N_("work profile"),
-        N_("system display profile") };
 
 static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_profile_type_t type,
                                                        cmsHPROFILE profile, const char *name, int in_pos,
@@ -1325,6 +1476,26 @@ dt_colorspaces_t *dt_colorspaces_init()
                                      ++work_pos, ++display2_pos));
 
   res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_PQ_REC2020, dt_colorspaces_create_pq_rec2020_rgb_profile(),
+                                     _("PQ Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_HLG_REC2020, dt_colorspaces_create_hlg_rec2020_rgb_profile(),
+                                     _("HLG Rec2020 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_PQ_P3, dt_colorspaces_create_pq_p3_rgb_profile(),
+                                     _("PQ P3 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
+      res->profiles, _create_profile(DT_COLORSPACE_HLG_P3, dt_colorspaces_create_hlg_p3_rgb_profile(),
+                                     _("HLG P3 RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
+                                     ++work_pos, ++display2_pos));
+
+  res->profiles = g_list_append(
      res->profiles, _create_profile(DT_COLORSPACE_PROPHOTO_RGB, dt_colorspaces_create_linear_prophoto_rgb_profile(),
                                     _("linear prophoto RGB"), ++in_pos, ++out_pos, ++display_pos, ++category_pos,
                                     ++work_pos, ++display2_pos));
@@ -1469,14 +1640,70 @@ void dt_colorspaces_cleanup(dt_colorspaces_t *self)
   free(self);
 }
 
-const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type, const char *filename)
+const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
+                                    const char *filename)
 {
-  if(type == DT_COLORSPACE_NONE)
-    return NULL;
-  else if(type != DT_COLORSPACE_FILE)
-    return _(_profile_names[type]);
-  else
-    return filename;
+  switch (type)
+  {
+     case DT_COLORSPACE_NONE:
+       return NULL;
+     case DT_COLORSPACE_FILE:
+       return filename;
+     case DT_COLORSPACE_SRGB:
+       return _("sRGB");
+     case DT_COLORSPACE_ADOBERGB:
+       return _("Adobe RGB (compatible)");
+     case DT_COLORSPACE_LIN_REC709:
+       return _("linear Rec709 RGB");
+     case DT_COLORSPACE_LIN_REC2020:
+       return _("linear Rec2020 RGB");
+     case DT_COLORSPACE_XYZ:
+       return _("linear XYZ");
+     case DT_COLORSPACE_LAB:
+       return _("Lab");
+     case DT_COLORSPACE_INFRARED:
+       return _("linear infrared BGR");
+     case DT_COLORSPACE_DISPLAY:
+       return _("system display profile");
+     case DT_COLORSPACE_EMBEDDED_ICC:
+       return _("embedded ICC profile");
+     case DT_COLORSPACE_EMBEDDED_MATRIX:
+       return _("embedded matrix");
+     case DT_COLORSPACE_STANDARD_MATRIX:
+       return _("standard color matrix");
+     case DT_COLORSPACE_ENHANCED_MATRIX:
+       return _("enhanced color matrix");
+     case DT_COLORSPACE_VENDOR_MATRIX:
+       return _("vendor color matrix");
+     case DT_COLORSPACE_ALTERNATE_MATRIX:
+       return _("alternate color matrix");
+     case DT_COLORSPACE_BRG:
+       return _("BRG (experimental)");
+     case DT_COLORSPACE_EXPORT:
+       return _("export profile");
+     case DT_COLORSPACE_SOFTPROOF:
+       return _("softproof profile");
+     case DT_COLORSPACE_WORK:
+       return _("work profile");
+     case DT_COLORSPACE_DISPLAY2:
+       return _("system display profile");
+     case DT_COLORSPACE_REC709:
+       return _("gamma22 Rec709");
+     case DT_COLORSPACE_PROPHOTO_RGB:
+       return _("ProPhoto RGB");
+     case DT_COLORSPACE_PQ_REC2020:
+       return _("PQ Rec2020");
+     case DT_COLORSPACE_HLG_REC2020:
+       return _("HLG Rec2020");
+     case DT_COLORSPACE_PQ_P3:
+       return _("PQ P3");
+     case DT_COLORSPACE_HLG_P3:
+       return _("HLG P3");
+     case DT_COLORSPACE_LAST:
+       break;
+  }
+
+  return NULL;
 }
 
 #ifdef USE_COLORDGTK
@@ -1549,7 +1776,7 @@ static void dt_colorspaces_get_display_profile_colord_callback(GObject *source, 
 
   pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
 
-  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
 }
 #endif
 
@@ -1732,7 +1959,7 @@ void dt_colorspaces_set_display_profile(const dt_colorspaces_color_profile_type_
     g_free(buffer);
   }
   pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-  if(profile_changed) dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
+  if(profile_changed) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_CHANGED);
   g_free(profile_source);
 }
 
@@ -1765,7 +1992,7 @@ gboolean dt_colorspaces_is_profile_equal(const char *fullname, const char *filen
   // basename as recorded in an iop.
   return _colorspaces_is_base_name(filename)
     ? !strcmp(_colorspaces_get_base_name(fullname), filename)
-    : !strcmp(fullname, filename);
+    : !strcmp(_colorspaces_get_base_name(fullname), _colorspaces_get_base_name(filename));
 }
 
 static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,
@@ -1801,7 +2028,7 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_profile(dt_colorspaces_
 // Copied from dcraw's pseudoinverse()
 static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int size)
 {
-  double work[3][6], num;
+  double work[3][6];
 
   for(int i = 0; i < 3; i++) {
     for(int j = 0; j < 6; j++)
@@ -1811,7 +2038,7 @@ static void dt_colorspaces_pseudoinverse(double (*in)[3], double (*out)[3], int 
         work[i][j] += in[k][i] * in[k][j];
   }
   for(int i = 0; i < 3; i++) {
-    num = work[i][i];
+    double num = work[i][i];
     for(int j = 0; j < 6; j++)
       work[i][j] /= num;
     for(int k = 0; k < 3; k++) {
@@ -1864,13 +2091,38 @@ int dt_colorspaces_conversion_matrices_xyz(const char *name, float in_XYZ_to_CAM
 }
 
 // Converted from dcraw's cam_xyz_coeff()
-int dt_colorspaces_conversion_matrices_rgb(const char *name, double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4], double mul[4])
+int dt_colorspaces_conversion_matrices_rgb(const char *name,
+                                           double out_RGB_to_CAM[4][3], double out_CAM_to_RGB[3][4],
+                                           const float *embedded_matrix,
+                                           double mul[4])
 {
   double RGB_to_CAM[4][3];
 
   float XYZ_to_CAM[4][3];
   XYZ_to_CAM[0][0] = NAN;
-  dt_dcraw_adobe_coeff(name, (float(*)[12])XYZ_to_CAM);
+
+  if(embedded_matrix == NULL || isnan(embedded_matrix[0]))
+  {
+    dt_dcraw_adobe_coeff(name, (float(*)[12])XYZ_to_CAM);
+  }
+  else
+  {
+    // keep in sync with reload_defaults from colorin.c
+    // embedded matrix is used with higher priority than standard one
+    XYZ_to_CAM[0][0] = embedded_matrix[0];
+    XYZ_to_CAM[0][1] = embedded_matrix[1];
+    XYZ_to_CAM[0][2] = embedded_matrix[2];
+
+    XYZ_to_CAM[1][0] = embedded_matrix[3];
+    XYZ_to_CAM[1][1] = embedded_matrix[4];
+    XYZ_to_CAM[1][2] = embedded_matrix[5];
+
+    XYZ_to_CAM[2][0] = embedded_matrix[6];
+    XYZ_to_CAM[2][1] = embedded_matrix[7];
+    XYZ_to_CAM[2][2] = embedded_matrix[8];
+  }
+
+
   if(isnan(XYZ_to_CAM[0][0]))
     return FALSE;
 

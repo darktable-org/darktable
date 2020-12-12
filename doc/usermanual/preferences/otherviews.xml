@@ -1,0 +1,67 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="other_views">
+
+  <title>Other views</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>other views</secondary>
+  </indexterm>
+
+  <para>
+    These options control the other views: map and slideshow.
+  </para>
+
+  <sect2 id="map">
+
+    <title>map/geolocalisation</title>
+
+    <bridgehead renderas="sect5">only draw images on map that are currently collected and filtered</bridgehead>
+
+    <para>
+      Use the current filter settings to select the geotagged images drawn in the map view. This
+      limits the images drawn to those currently shown in the filmstrip and thus reduces the time
+      needed (default off).
+    </para>
+
+    <bridgehead renderas="sect5">maximum number of images drawn on map</bridgehead>
+
+    <para>
+      The maximum number of geotagged images drawn on the map. Increasing this number can slow
+      down the drawing of the map. Needs a restart if changed (default 100).
+    </para>
+
+    <bridgehead renderas="sect5">pretty print the image location</bridgehead>
+
+    <para>
+      Show a more readable representation of the geo location in the image information module
+      (default on).
+    </para>
+
+  </sect2>
+
+  <sect2 id="slideshow">
+
+    <title>slideshow</title>
+
+    <bridgehead renderas="sect5">waiting time before each picture in slideshow</bridgehead>
+
+    <para>
+      The number of seconds before displaying the next image (default 5).
+    </para>
+    
+    <bridgehead renderas="sect5">do high quality processing for slideshow</bridgehead>
+
+    <para>
+      Controls how images are processed for the slideshow view. It this option is enabled, the
+      image will first be processed in full resolution, and downscaled at the very end. This can
+      result in better quality sometimes, but will always be slower (default on).
+    </para>
+
+  </sect2>
+
+</sect1>

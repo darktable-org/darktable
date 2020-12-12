@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2011 Henrik Andersson.
-    copyright (c) 2014 tobias ellinghaus.
+    Copyright (C) 2011-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -240,7 +239,7 @@ static gboolean _cancellable_gui_thread(gpointer user_data)
   _cancellable_gui_thread_t *params = (_cancellable_gui_thread_t *)user_data;
 
   GtkBox *hbox = GTK_BOX(params->instance->hbox);
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_backgroundjobs_cancel_callback_new), params->progress);
   gtk_box_pack_start(hbox, GTK_WIDGET(button), FALSE, FALSE, 0);
   gtk_widget_show_all(button);

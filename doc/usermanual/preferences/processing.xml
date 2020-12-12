@@ -1,0 +1,105 @@
+<!DOCTYPE sect1 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect1 status="final" id="processing">
+
+  <title>Processing</title>
+
+  <indexterm>
+    <primary>preferences and settings</primary>
+    <secondary>processing</secondary>
+  </indexterm>
+
+  <para>
+    These options control some of the internals processing of darktable.
+  </para>
+
+  <bridgehead renderas="sect5">always use LittleCMS 2 to apply output color profile</bridgehead>
+
+  <para>
+    If this option is activated, darktable will use system library LittleCMS 2 instead of its
+    own routines. This is significantly slower than the default but might give more accurate
+    results in some cases (default off).
+  </para>
+
+  <para>
+    Note that if the given ICC is LUT-based or contains both, a LUT and a matrix, darktable will
+    use LittleCMS 2 to render the colors regardless of this configuration parameter's value.
+  </para>
+
+  <bridgehead renderas="sect5">pixel interpolator</bridgehead>
+
+  <para>
+    Pixel interpolator used in rotation, lens correction, up-and-down scaling; options are
+    <quote>bilinear</quote>, <quote>bicubic</quote>, <quote>lanczos2</quote>,
+    <quote>lanczos3</quote> (default).
+  </para>
+
+  <bridgehead renderas="sect5">3D lut root folder</bridgehead>
+
+  <para>
+    Set folder that contains Lut files used by lut 3D module. (need a restart)
+  </para>
+  
+  <bridgehead renderas="sect5">auto-apply pixel workflow defaults</bridgehead>
+
+  <para>
+    With that setting, you can define which default workflow to work on. Two workflows are available:
+    <itemizedlist>
+
+      <listitem><para><emphasis>Scene-referred workflow</emphasis> is based on linear modules and will auto-apply filmic and exposure.
+      This workflow consist of adding, by default, +0,5 EV of exposure (in exposure module), to adjust the global
+      brightness and mid-grey to a similar value to that used by most JPEGs produced by SLR cameras.
+      The interest of filmic is to apply a tone mapping curve at the end of the pipeline, allowing a physically
+      realistic retouching on RGB values encoded linearly before, but also to manage color consistency through the
+      tone mapping, in order to preserve hues as much as possible and to avoid gamut overruns.
+      </para>
+
+      <para>
+      This default +0,5 EV value can be overridden using an auto-apply preset if it is found the images from
+      a particular camera are consistently too dark.
+      </para>
+      
+      <para>
+      The scene-referred workflow also enables by default the "compensate camera exposure" option in the exposure module,
+      to adjust the global brightness appropriately in cases where the camera's exposure compensation dial was used to
+      protect highlights in the image or Expose To The Right (ETTR) to optimally make use of the sensor's dynamic range.
+      </para></listitem>
+      
+      <listitem><para><emphasis>Display-referred workflow</emphasis>, used by default, is based on Lab modules and will auto-apply
+      base curve and the legacy module pipe order (darktable 2.6 and older). It will apply the non-linear
+      transformation at the beginning of the pipeline, and all editing will then be done on non-linear RGB.
+      </para></listitem>
+
+    </itemizedlist>
+  </para>
+
+  <para>
+      A third option is available to not use any workflow and so deactivate all automatic modules. That allow you
+      to manage your pipeline manually.
+  </para>
+
+  <bridgehead renderas="sect5">auto-apply per camera basecurve presets</bridgehead>
+
+  <para>
+    Use the per-camera basecurve by default instead of the generic manufacturer one if there is
+    one available. For more details see <xref linkend="base_curve"/> (default off).
+  </para>
+
+  <bridgehead renderas="sect5">auto-apply sharpen</bridgehead>
+
+  <para>
+   This added sharpen is not recommended on cameras without a low-pass filter.
+   The default is to not add any sharpening automatically as most recent cameras have no low-pass filter. (need a restart)
+  </para>
+
+  <bridgehead renderas="sect5">detect monochrome previews</bridgehead>
+
+  <para>
+   If switched on, darktable analyses the preview image available via exif data during import or refreshing exif for being monochrome
+   and sets the darktable|mode|monochrome tag accordingly. As this reduces performance it is turned off by default.
+   Turn on for better monochrome image workflow support.
+  </para>
+</sect1>

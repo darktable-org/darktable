@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2010-2012 Henrik Andersson.
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,11 +19,13 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -36,7 +38,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define BOX_ITERATIONS 8
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
 
 #define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
@@ -45,16 +46,14 @@ DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
 
 typedef struct dt_iop_bloom_params_t
 {
-  float size;
-  float threshold;
-  float strength;
+  float size;       // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 20.0
+  float threshold;  // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 90.0
+  float strength;   // $MIN: 0.0 $MAX: 100.0 $DEFAULT: 25.0
 } dt_iop_bloom_params_t;
 
 typedef struct dt_iop_bloom_gui_data_t
 {
-  GtkBox *vbox;
-  GtkWidget *label1, *label2, *label3; // size,threshold,strength
-  GtkWidget *scale1, *scale2, *scale3; // size,threshold,strength
+  GtkWidget *size, *threshold, *strength; // size,threshold,strength
 } dt_iop_bloom_gui_data_t;
 
 typedef struct dt_iop_bloom_data_t
@@ -77,6 +76,16 @@ const char *name()
   return _("bloom");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("apply Orton effect for a dreamy aetherical look"),
+                                      _("creative"),
+                                      _("non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -84,27 +93,12 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "strength"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  const dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
-  dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->scale1));
-  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->scale2));
-  dt_accel_connect_slider_iop(self, "strength", GTK_WIDGET(g->scale3));
 }
 
 #define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
@@ -113,14 +107,16 @@ void connect_key_accels(dt_iop_module_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_bloom_data_t *data = (dt_iop_bloom_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
+  assert(piece->colors == 4);	//final blend code requires at least three channels
+
+  const float *const restrict in = (float *)ivoid;
+  float *const restrict out = (float *)ovoid;
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
   /* gather light by threshold */
-  float *blurlightness = calloc((size_t)roi_out->width * roi_out->height, sizeof(float));
-  memcpy(out, in, (size_t)roi_out->width * roi_out->height * ch * sizeof(float));
+  float *const restrict blurlightness = dt_alloc_align(64, npixels * sizeof(float));
+//  memcpy(out, in, npixels * 4 * sizeof(float));  //TODO: do we need this?
 
   const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
@@ -131,119 +127,40 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, ivoid, roi_out, scale) \
-  shared(data, blurlightness) \
+  dt_omp_firstprivate(in, npixels, scale) \
+  dt_omp_sharedconst(data, blurlightness) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-    float *inp = ((float *)ivoid) + ch * k;
-    const float L = inp[0] * scale;
-    if(L > data->threshold) blurlightness[k] = L;
+    const float L = in[4*k] * scale;
+    blurlightness[k] = (L > data->threshold) ? L : 0.0f;
   }
-
 
   /* horizontal blur into memchannel lightness */
   const int range = 2 * radius + 1;
   const int hr = range / 2;
 
-  const size_t size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-  float *const scanline_buf = malloc(size * dt_get_num_threads() * sizeof(float));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(hr, roi_out, scanline_buf, size) \
-    shared(blurlightness) \
-    schedule(static)
-#endif
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      float *scanline = scanline_buf + size * dt_get_thread_num();
-      float L = 0;
-      int hits = 0;
-      const size_t index = (size_t)y * roi_out->width;
-      for(int x = -hr; x < roi_out->width; x++)
-      {
-        int op = x - hr - 1;
-        int np = x + hr;
-        if(op >= 0)
-        {
-          L -= blurlightness[index + op];
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L += blurlightness[index + np];
-          hits++;
-        }
-        if(x >= 0) scanline[x] = L / hits;
-      }
-
-      for(int x = 0; x < roi_out->width; x++) blurlightness[index + x] = scanline[x];
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(hr + 1) * roi_out->width;
-    const int npoffs = (hr)*roi_out->width;
-
-
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(hr, npoffs, opoffs, roi_out, size, scanline_buf) \
-    shared(blurlightness) \
-    schedule(static)
-#endif
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      float *scanline = scanline_buf + size * dt_get_thread_num();
-      float L = 0;
-      int hits = 0;
-      size_t index = (size_t)x - hr * roi_out->width;
-      for(int y = -hr; y < roi_out->height; y++)
-      {
-        int op = y - hr - 1;
-        int np = y + hr;
-
-        if(op >= 0)
-        {
-          L -= blurlightness[index + opoffs];
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L += blurlightness[index + npoffs];
-          hits++;
-        }
-        if(y >= 0) scanline[y] = L / hits;
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++) blurlightness[y * roi_out->width + x] = scanline[y];
-    }
-  }
-  free(scanline_buf);
+  dt_box_mean(blurlightness, roi_out->height, roi_out->width, 1, hr, BOX_ITERATIONS);
 
 /* screen blend lightness with original */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, roi_out) \
-  shared(in, out, data, blurlightness) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(in, out, blurlightness) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < npixels; k++)
   {
-    float *inp = in + ch * k;
-    float *outp = out + ch * k;
-    outp[0] = 100.0f - (((100.0f - inp[0]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
-    outp[1] = inp[1];
-    outp[2] = inp[2];
+    out[4*k+0] = 100.0f - (((100.0f - in[4*k]) * (100.0f - blurlightness[k])) / 100.0f); // Screen blend
+    out[4*k+1] = in[4*k+1];
+    out[4*k+2] = in[4*k+2];
+    out[4*k+3] = in[4*k+3];
   }
+  dt_free_align(blurlightness);
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
-
-  free(blurlightness);
+//  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+//    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -437,33 +354,6 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
-static void strength_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->strength = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void threshold_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->threshold = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void size_callback(GtkWidget *slider, gpointer user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(self->dt->gui->reset) return;
-  dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
-  p->size = dt_bauhaus_slider_get(slider);
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
@@ -478,7 +368,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_bloom_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -489,74 +378,28 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  const dt_iop_module_t *module = (dt_iop_module_t *)self;
-  const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)module->params;
+  const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
   dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
-  dt_bauhaus_slider_set(g->scale1, p->size);
-  dt_bauhaus_slider_set(g->scale2, p->threshold);
-  dt_bauhaus_slider_set(g->scale3, p->strength);
-}
-
-void init(dt_iop_module_t *module)
-{
-  module->params = calloc(1, sizeof(dt_iop_bloom_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_bloom_params_t));
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_bloom_params_t);
-  module->gui_data = NULL;
-  dt_iop_bloom_params_t tmp = (dt_iop_bloom_params_t){ 20, 90, 25 };
-  memcpy(module->params, &tmp, sizeof(dt_iop_bloom_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_bloom_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  dt_bauhaus_slider_set(g->size, p->size);
+  dt_bauhaus_slider_set(g->threshold, p->threshold);
+  dt_bauhaus_slider_set(g->strength, p->strength);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_bloom_gui_data_t));
-  dt_iop_bloom_gui_data_t *g = (dt_iop_bloom_gui_data_t *)self->gui_data;
-  const dt_iop_bloom_params_t *p = (dt_iop_bloom_params_t *)self->params;
+  dt_iop_bloom_gui_data_t *g = IOP_GUI_ALLOC(bloom);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
+  g->size = dt_bauhaus_slider_from_params(self, N_("size"));
+  dt_bauhaus_slider_set_format(g->size, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->size, _("the size of bloom"));
 
-  /* size */
-  g->scale1 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->size, 0);
-  dt_bauhaus_slider_set_format(g->scale1, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale1, NULL, _("size"));
-  gtk_widget_set_tooltip_text(g->scale1, _("the size of bloom"));
+  g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
+  dt_bauhaus_slider_set_format(g->threshold, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->threshold, _("the threshold of light"));
 
-  /* threshold */
-  g->scale2 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->threshold, 0);
-  dt_bauhaus_slider_set_format(g->scale2, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale2, NULL, _("threshold"));
-  gtk_widget_set_tooltip_text(g->scale2, _("the threshold of light"));
-
-  /* strength */
-  g->scale3 = dt_bauhaus_slider_new_with_range(self, 0.0, 100.0, 1.0, p->strength, 0);
-  dt_bauhaus_slider_set_format(g->scale3, "%.0f%%");
-  dt_bauhaus_widget_set_label(g->scale3, NULL, _("strength"));
-  gtk_widget_set_tooltip_text(g->scale3, _("the strength of bloom"));
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale1), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale2), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->scale3), TRUE, TRUE, 0);
-
-  g_signal_connect(G_OBJECT(g->scale1), "value-changed", G_CALLBACK(size_callback), self);
-  g_signal_connect(G_OBJECT(g->scale2), "value-changed", G_CALLBACK(threshold_callback), self);
-  g_signal_connect(G_OBJECT(g->scale3), "value-changed", G_CALLBACK(strength_callback), self);
-}
-
-void gui_cleanup(struct dt_iop_module_t *self)
-{
-  free(self->gui_data);
-  self->gui_data = NULL;
+  g->strength = dt_bauhaus_slider_from_params(self, N_("strength"));
+  dt_bauhaus_slider_set_format(g->strength, "%.0f%%");
+  gtk_widget_set_tooltip_text(g->strength, _("the strength of bloom"));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

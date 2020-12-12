@@ -9,7 +9,7 @@
 #define PACKAGE_NAME "@CMAKE_PROJECT_NAME@"
 #define PACKAGE_BUGREPORT "darktable-dev@lists.darktable.org"
 
-// these will be defined in build/src/version_gen.c
+// these will be defined in build/bin/version_gen.c
 extern const char darktable_package_version[];
 extern const char darktable_package_string[];
 extern const char darktable_last_commit_year[];
@@ -17,11 +17,11 @@ extern const char darktable_last_commit_year[];
 static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUPPORTED_EXTENSIONS_STRING@", NULL};
 
 #define GETTEXT_PACKAGE "darktable"
-#define DARKTABLE_LOCALEDIR "@CMAKE_INSTALL_FULL_LOCALEDIR@"
 
-#define DARKTABLE_LIBDIR "@CMAKE_INSTALL_FULL_LIBDIR@/darktable"
-#define DARKTABLE_DATADIR "@CMAKE_INSTALL_FULL_DATAROOTDIR@/darktable"
-#define DARKTABLE_SHAREDIR "@CMAKE_INSTALL_FULL_DATAROOTDIR@"
+#cmakedefine DARKTABLE_LOCALEDIR "@REL_BIN_TO_LOCALEDIR@"
+#cmakedefine DARKTABLE_LIBDIR    "@REL_BIN_TO_LIBDIR@"
+#cmakedefine DARKTABLE_DATADIR   "@REL_BIN_TO_DATADIR@"
+#cmakedefine DARKTABLE_SHAREDIR  "@REL_BIN_TO_SHAREDIR@"
 
 #define SHARED_MODULE_PREFIX "@CMAKE_SHARED_MODULE_PREFIX@"
 #define SHARED_MODULE_SUFFIX "@CMAKE_SHARED_MODULE_SUFFIX@"
@@ -29,8 +29,8 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 #define WANTED_STACK_SIZE (@WANTED_STACK_SIZE@)
 #define WANTED_THREADS_STACK_SIZE (@WANTED_THREADS_STACK_SIZE@)
 
-#define ISO_CODES_LOCATION "@ISO_CODES_LOCATION@"
-#define ISO_CODES_LOCALEDIR "@ISO_CODES_LOCALEDIR@"
+#define ISO_CODES_LOCATION "@IsoCodes_LOCATION@"
+#define ISO_CODES_LOCALEDIR "@IsoCodes_LOCALEDIR@"
 
 // clang-format on
 
@@ -66,7 +66,14 @@ static const char *dt_supported_extensions[] __attribute__((unused)) = {"@DT_SUP
 #define ASAN_UNPOISON_MEMORY_REGION(addr, size) ((void)(addr), (void)(size))
 #endif
 
+#cmakedefine HAVE_CPUID_H 1
+#cmakedefine HAVE___GET_CPUID 1
+
 #cmakedefine HAVE_OMP_FIRSTPRIVATE_WITH_CONST 1
+
+#cmakedefine HAVE_THREAD_RWLOCK_ARCH_T_READERS 1
+
+#cmakedefine HAVE_THREAD_RWLOCK_ARCH_T_NR_READERS 1
 
 /******************************************************************************
  * OpenCL target settings

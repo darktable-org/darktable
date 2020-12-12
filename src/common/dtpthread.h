@@ -1,7 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2009--2014 johannes hanika.
-    copyright (c) 2015 LebedevRI
+    Copyright (C) 2010-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,7 +18,7 @@
 
 #pragma once
 
-#include "ThreadSafetyAnalysis.h"
+#include "external/ThreadSafetyAnalysis.h"
 #include <assert.h>
 #include <errno.h>
 #include <float.h>

@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2014 LebedevRI.
+    Copyright (C) 2014-2020 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -78,12 +78,13 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
+    | IOP_FLAGS_UNSAFE_COPY;
 }
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -94,6 +95,12 @@ int operation_tags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
+                    "you should not touch values here !"));
 }
 
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
@@ -319,7 +326,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rotatepixels_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -330,61 +336,33 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_rotatepixels_params_t tmp = { 0 };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  dt_iop_rotatepixels_params_t *d = self->default_params;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
+  *d = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
 
-  self->default_enabled = ((tmp.rx != 0u) || (tmp.ry != 0u));
+  self->default_enabled = ((d->rx != 0u) || (d->ry != 0u));
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
 
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
+  if(self->widget)
+    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
+                       ? _("automatic pixel rotation")
+                       : _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(!self->widget) return;
-  if(self->default_enabled)
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation only works for the sensors that need it."));
 }
-
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  self->gui_data = &dummy;
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
-}
-
 void gui_init(dt_iop_module_t *self)
 {
-  self->widget = gtk_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->op));
-}
+  IOP_GUI_ALLOC(rotatepixels);
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
+  self->widget = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

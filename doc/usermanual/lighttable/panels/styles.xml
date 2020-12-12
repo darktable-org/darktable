@@ -43,11 +43,15 @@
     <para>
       This panel displays a list of all available styles. A search field above the list allows
       you to input a text string which is compared against the styles' names and descriptions,
-      thus limiting the list to the matching ones.
+      thus limiting the list to the matching ones. You can choose <emphasis>append</emphasis> or
+      <emphasis>overwrite</emphasis>  mode to control the way the style is applied.
     </para>
 
     <para>
-      Double clicking on a style name applies the style to all selected images.
+      Double clicking on a style name applies the style to all
+      selected images. The style can be applied by replacing the
+      history (<emphasis>overwrite</emphasis> mode) or by appending to the history (
+      <emphasis>append</emphasis> mode) of the target images.
     </para>
 
     <sect4 id="styles_usage_duplicate">

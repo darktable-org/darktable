@@ -1,9 +1,9 @@
-include_directories(${CMAKE_CURRENT_BINARY_DIR}/..)
-add_executable(darktable-cmstest main.c ${CMAKE_BINARY_DIR}/src/version_gen.c)
+include_directories(${DARKTABLE_BINDIR})
+add_executable(darktable-cmstest main.c ${DARKTABLE_BINDIR}/version_gen.c)
 
 # cmake implicitly sets GENERATED on the source file in the directory of the custom command
 # since this isn't the same directory we do have to manually set it
-set_source_files_properties(${CMAKE_BINARY_DIR}/src/version_gen.c PROPERTIES GENERATED TRUE)
+set_source_files_properties(${DARKTABLE_BINDIR}/version_gen.c PROPERTIES GENERATED TRUE)
 add_dependencies(darktable-cmstest generate_version)
 
 target_link_libraries(darktable-cmstest ${LCMS2_LIBRARIES})
@@ -25,18 +25,20 @@ if(X11_FOUND AND X11_Xrandr_FOUND)
   add_definitions("-DHAVE_X11")
 endif(X11_FOUND AND X11_Xrandr_FOUND)
 
-if(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
+if(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
   message(STATUS "building darktable-cmstest with colord support. nice.")
-  target_link_libraries(darktable-cmstest ${COLORD_LIBRARIES})
-  include_directories(SYSTEM ${COLORD_INCLUDE_DIRS})
-  add_definitions(${COLORD_DEFINITIONS})
+  target_link_libraries(darktable-cmstest ${Colord_LIBRARIES})
+  include_directories(SYSTEM ${Colord_INCLUDE_DIRS})
+  add_definitions(${Colord_DEFINITIONS})
   add_definitions("-DHAVE_COLORD")
-else(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
+else(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
   message(STATUS "no colord support for darktable-cmstest. not cool.")
-endif(COLORD_FOUND AND NOT ${COLORD_VERSION} VERSION_LESS "0.1.32")
+endif(Colord_FOUND AND NOT ${Colord_VERSION} VERSION_LESS "0.1.32")
 
 
-set_target_properties(darktable-cmstest PROPERTIES LINKER_LANGUAGE C)
+set_target_properties(darktable-cmstest 
+                     PROPERTIES LINKER_LANGUAGE C
+                     RUNTIME_OUTPUT_DIRECTORY ${DARKTABLE_BINDIR})
 
 if (WIN32)
   _detach_debuginfo (darktable-cmstest bin)

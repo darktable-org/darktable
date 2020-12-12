@@ -1,5 +1,5 @@
 #  This file is part of darktable,
-#  copyright (c) 2013-2014 tobias ellinghaus.
+#  copyright (c) 2013-2020 tobias ellinghaus.
 #
 #  darktable is free software: you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ use ast;
 
 package code_gen;
 
-my $DT_INTROSPECTION_VERSION = 7;
+my $DT_INTROSPECTION_VERSION = 8;
 
 my $is_old_gplusplus = "defined(__cplusplus) && !defined(__clang__) && defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) <= 406)";
 my $is_not_old_gplusplus = "!( defined(__cplusplus) && !defined(__clang__) && defined(__GNUC__) && ((__GNUC__*100 + __GNUC_MINOR__) <= 406) )";
@@ -32,6 +32,8 @@ sub print_fallback
  * this code is auto generated. do not edit. change the sources in tools/introspection/ instead.
  * there were errors when generating this code. giving up
  */
+#warning "could not generate introspection for $input_file"
+
 #include "$input_file"
 
 #ifdef __cplusplus

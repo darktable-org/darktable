@@ -125,7 +125,7 @@
       experience long delays when switching between images or if you intend to quickly advance
       in your collection consider to disable the option <quote>do high quality processing for
       slideshow</quote> which gives a much higher processing speed at the expense of a possible
-      slight loss in quality (see <xref linkend="gui_options"/>).
+      slight loss in quality (see <xref linkend="slideshow"/>).
     </para>
 
   </sect1>

@@ -1,6 +1,6 @@
 /*
  *    This file is part of darktable,
- *    copyright (c) 2016 tobias ellinghaus.
+ *    Copyright (C) 2019-2020 darktable developers.
  *
  *    darktable is free software: you can redistribute it and/or modify
  *    it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ void draw_cross(cairo_t *cr, point_t center)
   cairo_line_to(cr, center.x, center.y + 10);
 }
 
-void draw_box(cairo_t *cr, box_t box, point_t *bb)
+void draw_box(cairo_t *cr, box_t box, const double *homography)
 {
   point_t p[4];
   p[TOP_LEFT] = p[TOP_RIGHT] = p[BOTTOM_RIGHT] = p[BOTTOM_LEFT] = box.p;
@@ -55,7 +55,7 @@ void draw_box(cairo_t *cr, box_t box, point_t *bb)
   p[BOTTOM_RIGHT].y += box.h;
   p[BOTTOM_LEFT].y += box.h;
 
-  for(int i = 0; i < 4; i++) p[i] = transform_coords(p[i], bb);
+  for(int i = 0; i < 4; i++) p[i] = apply_homography(p[i], homography);
 
   //   cairo_new_sub_path(cr);
   cairo_move_to(cr, p[TOP_LEFT].x, p[TOP_LEFT].y);
@@ -89,7 +89,7 @@ void draw_boundingbox(cairo_t *cr, point_t *bb)
   for(int i = 0; i < 4; i++) draw_line(cr, bb[i], bb[(i + 1) % 4]);
 }
 
-void draw_f_boxes(cairo_t *cr, point_t *bb, chart_t *chart)
+void draw_f_boxes(cairo_t *cr, const double *homography, chart_t *chart)
 {
   GList *iter = chart->f_list;
   while(iter)
@@ -97,14 +97,14 @@ void draw_f_boxes(cairo_t *cr, point_t *bb, chart_t *chart)
     f_line_t *f = iter->data;
     for(int i = 0; i < 4; i++)
     {
-      point_t p = transform_coords(f->p[i], bb);
+      point_t p = apply_homography(f->p[i], homography);
       draw_cross(cr, p);
     }
     iter = g_list_next(iter);
   }
 }
 
-static void _draw_boxes(cairo_t *cr, point_t *bb, GHashTable *table)
+static void _draw_boxes(cairo_t *cr, const double *homography, GHashTable *table)
 {
   GHashTableIter table_iter;
   gpointer key, value;
@@ -113,21 +113,22 @@ static void _draw_boxes(cairo_t *cr, point_t *bb, GHashTable *table)
   while(g_hash_table_iter_next(&table_iter, &key, &value))
   {
     box_t *box = (box_t *)value;
-    draw_box(cr, *box, bb);
+    draw_box(cr, *box, homography);
   }
 }
 
-void draw_d_boxes(cairo_t *cr, point_t *bb, chart_t *chart)
+void draw_d_boxes(cairo_t *cr, const double *homography, chart_t *chart)
 {
-  _draw_boxes(cr, bb, chart->d_table);
+  _draw_boxes(cr, homography, chart->d_table);
 }
 
-void draw_color_boxes_outline(cairo_t *cr, point_t *bb, chart_t *chart)
+void draw_color_boxes_outline(cairo_t *cr, const double *homography, chart_t *chart)
 {
-  _draw_boxes(cr, bb, chart->box_table);
+  _draw_boxes(cr, homography, chart->box_table);
 }
 
-void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float shrink, float line_width, gboolean colored)
+void draw_color_boxes_inside(cairo_t *cr, const double *homography, chart_t *chart, float shrink, float line_width,
+                               gboolean colored)
 {
   GHashTableIter table_iter;
   gpointer key, value;
@@ -146,7 +147,7 @@ void draw_color_boxes_inside(cairo_t *cr, point_t *bb, chart_t *chart, float shr
     inner_box.p.y += y_shrink;
     inner_box.w -= 2.0 * x_shrink;
     inner_box.h -= 2.0 * y_shrink;
-    draw_box(cr, inner_box, bb);
+    draw_box(cr, inner_box, homography);
 
     if(colored) cairo_set_source_rgb(cr, box->rgb[0], box->rgb[1], box->rgb[2]);
 

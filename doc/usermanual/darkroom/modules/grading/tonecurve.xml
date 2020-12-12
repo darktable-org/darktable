@@ -1,0 +1,272 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+    <!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+    %darktable_dtd;
+    ]>
+<sect3 status="final" id="tone_curve">
+
+  <title>Tone curve</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>tone curve</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>tone curve</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              This module is a classic digital photography tool. darktable's tone curve
+              can work in three different color spaces: RGB, XYZ or Lab.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/tonecurve.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <indexterm>
+      <primary>color picker</primary>
+    </indexterm>
+
+    <para>
+      In its default state, curves will be straight lines, defined by few anchor nodes. You can
+      move the nodes to modify the curve. You can generate new nodes by
+      <emphasis>clicking</emphasis> on the curve. With <emphasis>Ctrl+click</emphasis> you
+      generate a new node at the x-location of the mouse pointer and the corresponding
+      y-location of the current curve&nbsp;&ndash; this adds a node without risking to
+      accidentally modify the curve. Up to 20 nodes per curve can be defined. To remove a node,
+      move it out of the widget area.
+    </para>
+
+    <para>
+      A color picker is activated by pressing
+      <inlinegraphic fileref="&icon_module_picker;" scalefit="1" width="2%" align="center" />
+      and will show the picked values in the graph. You can use an area
+      sampling mode using with
+      <emphasis>Ctrl+click</emphasis>. Numerical Lab values of input
+      and output (see below) at the selected spot or area are shown on top left of the widget.
+    </para>
+
+    <sect5>
+      <title>color spaces</title>
+      <para>
+        Depending on the desired intent, you can apply the tone curve in four different color spaces:
+        <itemizedlist>
+          <listitem><para>Lab, linked channels,</para></listitem>
+          <listitem><para>Lab, separated channels,</para></listitem>
+          <listitem><para>XYZ, linked channels,</para></listitem>
+          <listitem><para>RGB, linked channels.</para></listitem>
+        </itemizedlist>
+      </para>
+
+      <para>
+        Lab is a perceptual color space that is designed to approximate the way human beings
+        perceive colors and lightness, and representing the color information independently
+        of the the lightness information.
+        In <quote>Lab, separated channels</quote>, you get a fully independent control
+        over the chrominance (a/b-channels) and the luminance (L-channel).
+        In <quote>Lab, linked channels</quote>, only the luminance (L-channel) control is
+        available. The color saturation correction will be automatically computed, for each pixel,
+        from the contrast correction applied to the luminance channel.
+        This works better in cases where a subtle contrast correction is applied,
+        but gives increasingly inaccurate saturation correction as the contrast gets more
+        dramatically enhanced.
+      </para>
+
+      <para>
+        XYZ is a linear technical color space designed to link the physiologic light response
+        of human eyes to RGB spaces. As Lab, it separates the lightness from the color
+        information, but it does so in a way that does not account for the role of the brain
+        correction in human perception.
+        The <quote>XYZ, linked channels,</quote> mode offers an alternative for
+        <quote>Lab, linked channels</quote>.
+        It works by applying the L-channel curve to all three channels in the XYZ
+        color space. Look at blend mode <quote>coloradjustment</quote> if you want to tune
+        the strength of automatic chroma scaling (see <xref linkend="blending_operators"/>).
+        This mode is known to produce a slight hue shift towards yellow.
+      </para>
+
+      <para>
+        RGB spaces are linear color spaces designed to capture and display images in additive
+        synthesis. They are related to capture and display media and do not isolate
+        color and lightness information.
+        The <quote>RGB, linked channels,</quote> works in ProPhoto RGB and applies the L-channel
+        curve to all three channels in the RGB color space. Adding contrast in RGB space
+        is known to desaturate highlights and boost saturation in lowlights, but this has proven to
+        be the most reliable way to edit contrast, and is the standard way to do it in most
+        software. This mode makes the tone curve module behave the same way as the
+        basecurve (see <xref linkend="base_curve"/>), except the latter one works in camera RGB space.
+      </para>
+
+      <para>
+        Notice that the interface is controlled in Lab in all cases. This means that the middle gray
+        coordinate is always 50% in the graph, no matter what color space is used. The same applies to
+        the inset histogram displayed in the background of the curve. The
+        controls are converted to the relevant color space before the corrections are applied&nbsp;&ndash;
+        in RGB and XYZ, the middle-gray is therefore remapped from 50% to 18%.
+      </para>
+
+    </sect5>
+
+    <sect5>
+      <title>L-channel curve</title>
+      <para>
+        The tone curve in L-channel works on Lightness. For a better overview a lightness
+        histogram is displayed in the diagram. When working in <quote>Lab, linked channels</quote>,
+        <quote>RGB, linked channels</quote> or <quote>XYZ, linked channels</quote>, the L-channel
+        curve is the only one available.
+      </para>
+      <para>
+        The horizontal line represents the input image pixels' lightness. The vertical line
+        represents the lightness of the output image pixels. A straight line does not change
+        anything. A point above the default diagonal increases the lightness, whereas a point
+        under decreases it. Shifting the center of the curve upwards will lighten the image,
+        shifting it downwards will darken the image. An S-like curve will enhance the contrast
+        of the image.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>a/b-channel curves</title>
+      <para>
+        The curves in the a and b channels work on color values and are available only in
+        <quote>Lab, separated channels</quote> color space.
+        The horizontal line represents the color channel value of the
+        input image pixels. The vertical line represents the color channel value of the output
+        image pixels. Positive a-values correspond to more magenta colors; negative a-values
+        correspond to more greenish colors. Positive b-values correspond to more yellowish
+        colors; negative b-values correspond to more blueish colors.
+      </para>
+      <para>
+        A straight line does not change anything. Shifting the center of the curve will give the
+        image a color tint: shifting a-channel upwards gives a magenta tint; shifting b-channel
+        upwards gives a yellow tint; shifting a-channel downwards gives a green tint; shifting
+        b-channel downwards gives a blue tint.
+      </para>
+      <para>
+        Increasing/decreasing the steepness of the curves, without shifting its center, will
+        increase/decrease the color saturation of the respective channel. With properly defined
+        curves you can exert fine control on color saturation, depending on the input pixel's
+        colors.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>interpolation method</title>
+      <para>
+        The interpolation is the process by which a continuous curve is derived from a few
+        punctual nodes. As this process is never perfect, several methods are offered that
+        can alleviate the potential issues you may encounter with some nodes setups.
+      </para>
+      <para>
+        Arguably, the most visually pleasing method is the <quote>cubic spline</quote>. Since
+        it gives smooth curves, the contrast in the image is better enhanced. However, this
+        method is very sensitive to the nodes position, and can produce cusps and oscillations
+        when the nodes are too close to each other, or when there are too many of them.
+        This method works best when there are only 4 to 5 nodes, evenly spaced.
+      </para>
+      <para>
+        The <quote>centripetal spline</quote> is a method designed specifically to avoid
+        cusps and oscillations, but as a drawback it will follow the nodes more loosely.
+        It is very robust, no matter the number of nodes and their spacing, but will produce
+        a more faded and dull contrast.
+      </para>
+      <para>
+        The <quote>monotonic spline</quote> is a method designed specifically to give a monotonic
+        interpolation, meaning that there will be none of the oscillations the cubic spline may
+        produce. This method is very suitable when you try to build an analytical function
+        from a node interpolation (for example: exponential, logarithm, power, etc.). Such
+        functions are provided as presets. It is a good trade-off between the two
+        aforementioned methods.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>scale</title>
+      <para>
+        The scale allows you to distort the graph display so that certain graphical
+        properties emerge to help you draw meaningful curves. Notice that the scaling
+        option only affects the curve display, not the actual parameters.
+      </para>
+      <para>
+        By default, the <quote>linear</quote> scale is used. This scale uses evenly spaced
+        abscissa and ordinates axes.
+      </para>
+      <para>
+        The <quote>log</quote> scale will compress the high values and dilate
+        the low values, on both the abcissa and the axis of ordinates, so that the nodes in lowlights
+        get more space on the graph and can be controlled more clearly.
+      </para>
+      <para>
+        When using the logarithmic scale, a <quote>base of the logarithm</quote> slider appears
+        that lets you control the amount of compression/dilatation operated by the scale.
+        If you draw purely exponential or logarithmic functions from identity lines,
+        setting this values defines the base of such functions.
+      </para>
+    </sect5>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Examples</title>
+
+    <para>
+      <informaltable frame="none">
+        <tgroup cols="2" colsep="0" rowsep="0">
+          <colspec colwidth="4*"/>
+          <colspec colwidth="6*"/>
+          <tbody>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/tonecurve_ex1.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Original image
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/tonecurve_ex2.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Tone curve settings. Please note how the center node of our b-curve was shifted
+                down to negative values. This gives the image its blue tint.
+              </entry>
+            </row>
+            <row>
+              <entry>
+                <graphic fileref="darkroom/modules/images/tonecurve_ex3.png" scalefit="1" width="90%" align="center" />
+              </entry>
+              <entry>
+                Resulting image
+              </entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+    </para>
+
+  </sect4>
+
+</sect3>

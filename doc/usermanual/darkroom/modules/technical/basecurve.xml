@@ -1,0 +1,129 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+		<!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+		%darktable_dtd;
+		]>
+<sect3 status="final" id="base_curve">
+
+  <title>Base curve</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>base curve</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>base curve</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>exposure fusion</primary>
+  </indexterm>
+
+  <indexterm>
+    <primary>exposure bias</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <informaltable frame="none">
+      <tgroup cols="2" colsep="0" rowsep="0">
+        <colspec colwidth="6*"/>
+        <colspec colwidth="4*"/>
+        <tbody>
+          <row>
+            <entry>
+              Camera sensors provide data in linear RGB format, the original image appears flat
+              and dull. That's the reason why camera manufacturers apply their characteristic
+              base curves to the raw data when they generate in-camera JPEG images with better
+              colors and contrast.
+            </entry>
+            <entry>
+              <graphic fileref="darkroom/modules/images/basecurve.png" scalefit="1" width="80%" align="center" />
+            </entry>
+          </row>
+        </tbody>
+      </tgroup>
+    </informaltable>
+
+  </sect4>
+
+  <sect4>
+
+    <title>Usage</title>
+
+    <para>
+      darktable comes with base curve presets that mimic the curves of various manufacturers.
+      These are automatically applied to raw images according to the manufacturer ID found in
+      Exif data. For several camera models darktable comes with base curves adapted for that
+      specific model. A configuration option in the processing tab in preferences dialog (see
+      <xref linkend="processing"/>) defines whether darktable by default should apply the
+      per-camera base curve or the manufacturer one.
+    </para>
+
+    <para>
+      You can adjust an existing base curve or create a new one. The base curve is defined by
+      two or more nodes. You can move any node to modify the curve. You can also create
+      additional nodes by <emphasis>clicking</emphasis> on a curve segment between two nodes.
+      With <emphasis>Ctrl+click</emphasis> you generate a new node at the x-location of the
+      mouse pointer and the corresponding y-location of the current curve&nbsp;&ndash; this adds
+      a node without risking to accidentally modify the curve. In order to remove a node move it
+      outside of the widget area.
+    </para>
+
+    <para>
+      Tip: If you intend to take full manual control of the tonal values with the <emphasis>tone
+      curve</emphasis> module or the <emphasis>zone system</emphasis> module (see
+      <xref linkend="tone_curve"/> and <xref linkend="zone_system"/>) it may be easier to leave
+      the image in linear RGB. Disable the <emphasis>base curve</emphasis> module in this case.
+    </para>
+
+    <sect5>
+      <title>scale</title>
+      <para>
+        This combobox toggles between <quote>linear</quote> and <quote>logarithmic</quote> view.
+        In the logarithmic view more space is given to the lower values allowing a more
+        fine-grained adjustment of the shadows.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>fusion</title>
+      <para>
+        This control triggers the
+        <ulink url="https://en.wikipedia.org/wiki/Exposure_Fusion"><emphasis>exposure
+        fusion</emphasis></ulink> feature. You can choose to merge the image with one or two
+        copies of itself after applying the current base curve and boosting its exposure by a
+        selectable number of ev units. The resulting image is thus a combination of two or three
+        different exposures of the original image. Use this to compress dynamic range for
+        extremely underexposed images or for true HDR input. For best results, use the exposure
+        module (see <xref linkend="exposure"/>) to apply a suitable adjustment for correctly
+        exposed highlights.
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>exposure shift</title>
+      <para>
+        This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is
+        activated. It allows you to set the exposure difference between the merged images in ev
+        units (default 1).
+      </para>
+    </sect5>
+
+    <sect5>
+      <title>exposure bias</title>
+      <para>
+        This slider is only visible if the <emphasis>exposure fusion</emphasis> feature is
+        activated. It allows you to chose how the multiple exposures are computed. With a bias
+        of 1 (the default), the image is fused with overexposed copies of itself. With a bias of
+        -1, it is fused with underexposed copies. A bias of 0 tries to preserve the overall
+        lightness of the image by combining both over and under-exposed copies of the image.
+      </para>
+    </sect5>
+
+  </sect4>
+
+</sect3>

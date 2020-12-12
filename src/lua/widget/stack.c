@@ -1,6 +1,6 @@
 /*
    This file is part of darktable,
-   copyright (c) 2015 Jeremy Rosen
+   Copyright (C) 2015-2020 darktable developers.
 
    darktable is free software: you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -57,10 +57,37 @@ static int active_member(lua_State*L)
     return 0;
   }
   GtkWidget * child = gtk_stack_get_visible_child(GTK_STACK(stack->widget));
-  if(child) 
+  if(child)
     luaA_push(L,lua_widget,&child);
-  else 
+  else
     lua_pushnil(L);
+  return 1;
+}
+
+static int h_size_fixed_member(lua_State *L)
+{
+  lua_stack stack;
+  luaA_to(L, lua_stack, &stack, 1);
+  if(lua_gettop(L) > 2) {
+    gboolean resize = lua_toboolean(L,3);
+    gtk_stack_set_hhomogeneous(GTK_STACK(stack->widget), resize);
+    return 0;
+  }
+  lua_pushboolean(L,gtk_stack_get_hhomogeneous(GTK_STACK(stack->widget)));
+  return 1;
+}
+
+
+static int v_size_fixed_member(lua_State *L)
+{
+  lua_stack stack;
+  luaA_to(L, lua_stack, &stack, 1);
+  if(lua_gettop(L) > 2) {
+    gboolean resize = lua_toboolean(L,3);
+    gtk_stack_set_vhomogeneous(GTK_STACK(stack->widget), resize);
+    return 0;
+  }
+  lua_pushboolean(L,gtk_stack_get_vhomogeneous(GTK_STACK(stack->widget)));
   return 1;
 }
 
@@ -71,6 +98,12 @@ int dt_lua_init_widget_stack(lua_State* L)
   lua_pushcfunction(L,active_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_stack, "active");
+  lua_pushcfunction(L,h_size_fixed_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_stack, "h_size_fixed");
+  lua_pushcfunction(L,v_size_fixed_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_stack, "v_size_fixed");
   return 0;
 }
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
