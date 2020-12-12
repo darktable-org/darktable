@@ -1063,7 +1063,9 @@ static inline void wavelets_detail_level(const float *const restrict detail, con
   {
     for(size_t c = 0; c < 4; ++c) HF[4*k + c] = detail[4*k + c] - LF[4*k + c];
 
-    texture[k] = fminabsf(fminabsf(HF[4*k], HF[4*k + 1]), HF[4*k + 2]);
+    float min = fabsf(HF[4*k]) < fabsf(HF[4*k + 1]) ? HF[4*k] : HF[4*k + 1];
+    min = fabsf(min) < fabsf(HF[4*k + 2]) ? min : HF[4*k + 2];
+    texture[k] = isnan(min) ? 0.f : min;
   }
 }
 
