@@ -37,6 +37,7 @@
 #include "gui/gtk.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "gaussian_elimination.h"
 
 #include <assert.h>
 #include <gtk/gtk.h>
@@ -89,6 +90,17 @@ typedef struct dt_iop_channelmixer_rgb_params_t
 } dt_iop_channelmixer_rgb_params_t;
 
 
+typedef enum dt_solving_strategy_t
+{
+  DT_SOLVE_OPTIMIZE_NONE = 0,
+  DT_SOLVE_OPTIMIZE_LOW_SAT = 1,
+  DT_SOLVE_OPTIMIZE_HIGH_SAT = 2,
+  DT_SOLVE_OPTIMIZE_SKIN = 3,
+  DT_SOLVE_OPTIMIZE_FOLIAGE = 4,
+  DT_SOLVE_OPTIMIZE_SKY = 5
+} dt_solving_strategy_t;
+
+
 typedef struct dt_iop_channelmixer_rgb_gui_data_t
 {
   GtkNotebook *notebook;
@@ -107,21 +119,25 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
 
   point_t box[4];           // the current coordinates, possibly non rectangle, of the bounding box for the color checker
   point_t ideal_box[4];     // the desired coordinates of the perfect rectangle bounding box for the color checker
+  point_t center_box;       // the barycenter of both boxes
   gboolean active_node[4];  // true if the cursor is close to a node (node = corner of the bounding box)
   gboolean is_cursor_close; // do we have the cursor close to a node ?
   gboolean drag_drop;       // are we currently dragging and dropping a node ?
   point_t click_start;      // the coordinates where the drag and drop started
   point_t click_end;        // the coordinates where the drag and drop started
   dt_color_checker_t *checker;
-
+  dt_solving_strategy_t optimization;
+  float safety_margin;
 
   double homography[9*9];   // the perspective correction matrix
-  gboolean run_profile;
+  gboolean run_profile;     // order a profiling at next pipeline recompute
+  gboolean profile_ready;   // notify that a profile is ready to be applied
+  float mix[3][4];
 
   GtkWidget *start_profiling;
   gboolean is_profiling_started;
   GtkWidget *collapsible;
-  GtkWidget *checkers_list, *label_delta_E, *button_profile, *button_commit;
+  GtkWidget *checkers_list, *optimize, *safety, *label_delta_E, *button_profile, *button_commit;
 
   float *delta_E_in;
 } dt_iop_channelmixer_rgb_gui_data_t;
@@ -990,33 +1006,117 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
   }
 }
 
+#define DEG_TO_RAD(x) (x * M_PI / 180.f)
+
 static inline void compute_patches_delta_E(const float *const restrict patches, const dt_color_checker_t *const checker,
-                                           float *const restrict delta_E, float *const restrict avg_delta_E)
+                                           float *const restrict delta_E, float *const restrict avg_delta_E, float *const restrict max_delta_E)
 {
   // Compute the delta E
 
   float dE = 0.f;
+  float max_dE = 0.f;
+
   for(size_t k = 0; k < checker->patches; k++)
   {
     // Convert to Lab
-    float Lab[4];
-    dt_XYZ_to_Lab(patches + k * 4, Lab);
+    float Lab_test[4];
+    dt_XYZ_to_Lab(patches + k * 4, Lab_test);
+    const float *const restrict Lab_ref = checker->values[k].Lab;
 
-    //fprintf(stdout, "patch %s : Lab ref \t= \t%.3f \t%.3f \t%.3f \n", checker->values[k].name, checker->values[k].Lab[0], checker->values[k].Lab[1], checker->values[k].Lab[2]);
-    //fprintf(stdout, "patch %s : Lab mes \t= \t%.3f \t%.3f \t%.3f \n", checker->values[k].name, Lab[0], Lab[1], Lab[2]);
+    // Compute delta E 2000 to make your computer heat
+    // ref: https://en.wikipedia.org/wiki/Color_difference#CIEDE2000
+    // note : it will only be luck if I didn't mess-up the computation somewhere
+    const float DL = Lab_ref[0] - Lab_test[0];
+    const float L_avg = (Lab_ref[0] + Lab_test[0]) / 2.f;
+    const float C_ref = hypotf(Lab_ref[1], Lab_ref[2]);
+    const float C_test = hypotf(Lab_test[1], Lab_test[2]);
+    const float C_avg = (C_ref + C_test) / 2.f;
+    float C_avg_7 = C_avg * C_avg; // C_avg²
+    C_avg_7 *= C_avg_7;            // C_avg⁴
+    C_avg_7 *= C_avg_7;            // C_avg⁸
+    C_avg_7 /= C_avg;              // C_avg⁷
+    const float C_avg_7_ratio_sqrt = sqrtf(C_avg_7 / (C_avg_7 + 6103515625.f)); // 25⁷ = 6103515625
+    const float a_ref_prime = Lab_ref[1] + Lab_ref[1] / 2.f * (1.f - C_avg_7_ratio_sqrt);
+    const float a_test_prime = Lab_test[1] + Lab_test[1] / 2.f * (1.f - C_avg_7_ratio_sqrt);
+    const float C_test_prime = hypotf(a_ref_prime, Lab_ref[2]);
+    const float C_ref_prime = hypotf(a_test_prime, Lab_test[2]);
+    const float DC_prime = C_ref_prime - C_test_prime;
+    const float C_avg_prime = (C_ref_prime + C_test_prime) / 2.f;
+    float h_ref_prime = atan2f(Lab_ref[2], a_ref_prime);
+    float h_test_prime = atan2f(Lab_test[2], a_test_prime);
 
-    // Compute delta E
-    for(size_t c = 0; c < 3; c++) Lab[c] = sqf(Lab[c] - checker->values[k].Lab[c]);
-    const float DE = sqrtf(Lab[0] +  Lab[1] + Lab[2]);
+    // Get the hue angles from [-pi ; pi] back to [0 ; 2 pi]
+    if(h_ref_prime < 0.f) h_ref_prime = 2.f * M_PI - h_ref_prime;
+    if(h_test_prime < 0.f) h_test_prime = 2.f * M_PI - h_test_prime;
 
+    float Dh_prime = h_test_prime - h_ref_prime;
+    const float Dh_prime_abs = fabsf(Dh_prime);
+    if(C_test_prime == 0.f || C_ref_prime == 0.f)
+      Dh_prime = 0.f;
+    else if(Dh_prime_abs <= M_PI)
+      ;
+    else if(Dh_prime_abs > M_PI && (h_test_prime <= h_ref_prime))
+      Dh_prime += 2.f * M_PI;
+    else if(Dh_prime_abs > M_PI && (h_test_prime > h_ref_prime))
+      Dh_prime -= 2.f * M_PI;
+
+    const float DH_prime = 2.f * sqrtf(C_test_prime * C_ref_prime) * sinf(Dh_prime / 2.f);
+    float H_avg_prime = h_ref_prime + h_test_prime;
+    if(C_test_prime == 0.f || C_ref_prime == 0.f)
+      ;
+    else if(Dh_prime_abs <= M_PI)
+      H_avg_prime /= 2.f;
+    else if(Dh_prime_abs > M_PI && (H_avg_prime < 2.f * M_PI))
+      H_avg_prime = (H_avg_prime + 2.f * M_PI) / 2.f;
+    else if(Dh_prime_abs > M_PI && (H_avg_prime >= 2.f * M_PI))
+      H_avg_prime = (H_avg_prime - 2.f * M_PI) / 2.f;
+
+    const float T = 1.f
+                    - 0.17f * cosf(H_avg_prime - M_PI / 6.f)
+                    + 0.24f * cosf(2.f * H_avg_prime)
+                    + 0.32f * cosf(3.f * H_avg_prime + DEG_TO_RAD(6.f))
+                    - 0.20f * cosf(4.f * H_avg_prime - DEG_TO_RAD(63.f));
+
+    const float S_L = 1.f + (0.015f * sqf(L_avg - 50.f)) / sqrtf(20.f + sqf(L_avg - 50.f));
+    const float S_C = 1.f + 0.045f * C_avg_prime;
+    const float S_H = 1.f + 0.015f * C_avg_prime * T;
+    const float R_T = -2.f * C_avg_7_ratio_sqrt
+                      * sinf(M_PI / 3.f * expf(-sqf((H_avg_prime - DEG_TO_RAD(275.f)) / DEG_TO_RAD(25.f))));
+
+    // roll the drum, here goes the Delta E, finally…
+    const float DE = sqrtf(sqf(DL / S_L) + sqf(DC_prime / S_C) + sqf(DH_prime / S_H)
+                           + R_T * (DC_prime / S_C) * (DH_prime / S_H));
+
+    // Delta E 1976 for reference :
+    //float DE = sqrtf(sqf(Lab_test[0] - Lab_ref[0]) + sqf(Lab_test[1] - Lab_ref[1]) + sqf(Lab_test[2] - Lab_ref[2]));
+
+    //fprintf(stdout, "patch %s : Lab ref \t= \t%.3f \t%.3f \t%.3f \n", checker->values[k].name, Lab_ref[0], Lab_ref[1], Lab_ref[2]);
+    //fprintf(stdout, "patch %s : Lab mes \t= \t%.3f \t%.3f \t%.3f \n", checker->values[k].name, Lab_test[0], Lab_test[1], Lab_test[2]);
     //fprintf(stdout, "patch %s : dE mes \t= \t%.3f \n", checker->values[k].name, DE);
 
     delta_E[k] = DE;
-    dE += DE;
+    dE += DE / (float)checker->patches;
+    if(DE > max_dE) max_dE = DE;
   }
 
-  *avg_delta_E = dE / (float)checker->patches;
+  *avg_delta_E = dE;
+  *max_delta_E = max_dE;
 }
+
+#define GET_WEIGHT                                                \
+      float hue = atan2f(reference[2], reference[1]);             \
+      const float chroma = hypotf(reference[2], reference[1]);    \
+      float delta_hue = hue - ref_hue;                            \
+      if(chroma == 0.f)                                           \
+        delta_hue = 0.f;                                          \
+      else if(fabsf(delta_hue) <= M_PI)                           \
+        ;                                                         \
+      else if(fabsf(delta_hue) > M_PI && (hue <= ref_hue))        \
+        delta_hue += 2.f * M_PI;                                  \
+      else if(fabsf(delta_hue) > M_PI && (hue > ref_hue))         \
+        delta_hue -= 2.f * M_PI;                                  \
+      w = expf(-sqf(delta_hue) / 2.f);
+
 
 void extract_color_checker(const float *const restrict in, float *const restrict out,
                            const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
@@ -1026,8 +1126,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   const size_t height = roi_in->height;
 
   float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
-  const float safety_margin = 0.707f;
-  const float radius = g->checker->radius * hypotf(width, height) * safety_margin;
+  const float radius = g->checker->radius * hypotf(width, height) * g->safety_margin;
 
   if(g->delta_E_in == NULL)
     g->delta_E_in = dt_alloc_sse_ps(g->checker->patches);
@@ -1066,6 +1165,10 @@ void extract_color_checker(const float *const restrict in, float *const restrict
         for(size_t c = 0; c < 3; c++)
         {
           patches[k * 4 + c] += in[(j * width + i) * 4 + c];
+
+          // Debug : inpaint a black square in the preview to ensure the coordanites of
+          // overlay drawings and actual pixel processing match
+          // out[(j * width + i) * 4 + c] = 0.f;
         }
         num_elem++;
       }
@@ -1075,8 +1178,31 @@ void extract_color_checker(const float *const restrict in, float *const restrict
     // Convert to XYZ
     float XYZ[3];
     dot_product(patches + k * 4, RGB_to_XYZ, XYZ);
+    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
+  }
 
-    // normalize luminance - if shooting close to the light source, the exposure might not be uniform over the surface
+  /* match global exposure */
+  // white exposure depends on camera settings and raw white point,
+  // we want our profile to be independant from that
+  float XYZ_white_ref[4];
+  float *XYZ_white_test = patches + g->checker->white * 4;
+  dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
+  const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
+
+  // black point is evaluated by rawspeed on each picture using the dark pixels
+  // we want our profile to be also independant from its discrepancies
+  float XYZ_black_ref[4];
+  float *XYZ_black_test = patches + g->checker->black * 4;
+  dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
+  const float black = XYZ_black_test[1] * exposure - XYZ_black_ref[1];
+
+  for(size_t k = 0; k < g->checker->patches; k++)
+  {
+    // compensate global exposure
+    float XYZ[3];
+    for(size_t c = 0; c < 3; c++) XYZ[c] = exposure * patches[k * 4 + c] - black;
+
+    // normalize patch exposure - if shooting close to the light source, the exposure might not be uniform over the surface
     // we don't want the color calibration to try fighting exposure discrepancies, so pretend the exposure is spot-on.
     const float Y = XYZ[1];
     float DT_ALIGNED_PIXEL XYZ_ref[4];
@@ -1086,7 +1212,8 @@ void extract_color_checker(const float *const restrict in, float *const restrict
 
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &pre_wb_delta_E);
+  float pre_wb_max_delta_E = 0.f;
+  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
 
   /* find the scene illuminant */
 
@@ -1105,8 +1232,11 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // normalize luminances - note : illuminant is normalized by definition
   const float Y_test = XYZ_grey_test[1];
   const float Y_ref = XYZ_grey_ref[1];
-  downscale_vector(XYZ_grey_ref, Y_ref);
-  downscale_vector(XYZ_grey_test, Y_test);
+  for(size_t c = 0; c < 3; c++)
+  {
+    XYZ_grey_ref[c] /= Y_ref;
+    XYZ_grey_test[c] /= Y_test;
+  }
 
   // convert XYZ to LMS
   float LMS_grey_ref[4], LMS_grey_test[4], D50_LMS[4];
@@ -1125,12 +1255,14 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
   dt_XYZ_to_xyY(illuminant_XYZ, illuminant_xyY);
 
-  float Lch[3];
-  dt_xyY_to_Lch(illuminant_xyY, Lch);
-  fprintf(stdout, "illuminant: %f, %f, %f \n", illuminant[0], illuminant[1], illuminant[2]);
-  fprintf(stdout, "illuminant: %f, %f, %f \n", illuminant_XYZ[0], illuminant_XYZ[1], illuminant_XYZ[2]);
-  fprintf(stdout, "illuminant: %f, %f, %f \n", illuminant_xyY[0], illuminant_xyY[1], illuminant_xyY[2]);
-  fprintf(stdout, "illuminant: %f, %f \n", Lch[2] / M_PI * 180.f, Lch[1]);
+  // save the illuminant in GUI struct for commit
+  g->xy[0] = illuminant_xyY[0];
+  g->xy[1] = illuminant_xyY[1];
+
+  // and recompute back the LMS to be sure we use the parameters that will be computed later
+  illuminant_xy_to_XYZ(illuminant_xyY[0], illuminant_xyY[1], illuminant_XYZ);
+  convert_any_XYZ_to_LMS(illuminant_XYZ, illuminant, kind);
+  const float p = powf(0.818155f / illuminant[2], 0.0834f);
 
   /* White-balance the patches */
   for(size_t k = 0; k < g->checker->patches; k++)
@@ -1149,7 +1281,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
     {
       case DT_ADAPTATION_FULL_BRADFORD:
       {
-        bradford_adapt_D50(LMS, illuminant, 1.f, TRUE, temp);
+        bradford_adapt_D50(LMS, illuminant, p, TRUE, temp);
         break;
       }
       case DT_ADAPTATION_LINEAR_BRADFORD:
@@ -1171,23 +1303,180 @@ void extract_color_checker(const float *const restrict in, float *const restrict
       case DT_ADAPTATION_LAST:
       {
         // No white balance.
+        for(size_t c = 0; c < 3; ++c) temp[c] = LMS[c];
         break;
       }
     }
 
     convert_any_LMS_to_XYZ(temp, sample, kind);
     upscale_vector(sample, Y);
-
   }
 
   // Compute the delta E
   float post_wb_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &post_wb_delta_E);
+  float post_wb_max_delta_E = 0.f;
+  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &post_wb_delta_E, &post_wb_max_delta_E);
+
+  /* Compute the matrix of mix */
+  double *const restrict Y = dt_alloc_align(64, g->checker->patches * 3 * sizeof(double));
+  double *const restrict A = dt_alloc_align(64, g->checker->patches * 3 * 9 * sizeof(double));
+
+  for(size_t k = 0; k < g->checker->patches; k++)
+  {
+    float *const sample = patches + k * 4;
+    float LMS_test[4];
+    convert_any_XYZ_to_LMS(sample, LMS_test, kind);
+
+    float *const reference = g->checker->values[k].Lab;
+    float XYZ_ref[4], LMS_ref[4];
+    dt_Lab_to_XYZ(reference, XYZ_ref);
+    convert_any_XYZ_to_LMS(XYZ_ref, LMS_ref, kind);
+
+    // get the optimization weights
+    float w = 1.f;
+    if(g->optimization == DT_SOLVE_OPTIMIZE_NONE)
+      w = sqrtf(1.f / (float)g->checker->patches);
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_HIGH_SAT)
+      w = sqrtf(hypotf(reference[1] / 128.f, reference[2] / 128.f));
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_LOW_SAT)
+      w = sqrtf(1.f - hypotf(reference[1] / 128.f, reference[2] / 128.f));
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_SKIN)
+    {
+      // average skin hue angle is 1.0 rad, hue range is [0.75 ; 1.25]
+      const float ref_hue = 1.f;
+      GET_WEIGHT;
+    }
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_FOLIAGE)
+    {
+      // average foliage hue angle is 2.23 rad, hue range is [1.94 ; 2.44]
+      const float ref_hue = 2.23f;
+      GET_WEIGHT;
+    }
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_SKY)
+    {
+      // average sky/water hue angle is -1.93 rad, hue range is [-1.64 ; -2.41]
+      const float ref_hue = -1.93f;
+      GET_WEIGHT;
+    }
+
+
+    // fill 3 rows of the y column vector
+    for(size_t c = 0; c < 3; c++) Y[k * 3 + c] = w * LMS_ref[c];
+
+    // fill line one of the A matrix
+    A[k * 3 * 9 + 0] = w * LMS_test[0];
+    A[k * 3 * 9 + 1] = w * LMS_test[1];
+    A[k * 3 * 9 + 2] = w * LMS_test[2];
+    A[k * 3 * 9 + 3] = 0.f;
+    A[k * 3 * 9 + 4] = 0.f;
+    A[k * 3 * 9 + 5] = 0.f;
+    A[k * 3 * 9 + 6] = 0.f;
+    A[k * 3 * 9 + 7] = 0.f;
+    A[k * 3 * 9 + 8] = 0.f;
+
+    // fill line two of the A matrix
+    A[k * 3 * 9 + 9 + 0] = 0.f;
+    A[k * 3 * 9 + 9 + 1] = 0.f;
+    A[k * 3 * 9 + 9 + 2] = 0.f;
+    A[k * 3 * 9 + 9 + 3] = w * LMS_test[0];
+    A[k * 3 * 9 + 9 + 4] = w * LMS_test[1];
+    A[k * 3 * 9 + 9 + 5] = w * LMS_test[2];
+    A[k * 3 * 9 + 9 + 6] = 0.f;
+    A[k * 3 * 9 + 9 + 7] = 0.f;
+    A[k * 3 * 9 + 9 + 8] = 0.f;
+
+    // fill line three of the A matrix
+    A[k * 3 * 9 + 18 + 0] = 0.f;
+    A[k * 3 * 9 + 18 + 1] = 0.f;
+    A[k * 3 * 9 + 18 + 2] = 0.f;
+    A[k * 3 * 9 + 18 + 3] = 0.f;
+    A[k * 3 * 9 + 18 + 4] = 0.f;
+    A[k * 3 * 9 + 18 + 5] = 0.f;
+    A[k * 3 * 9 + 18 + 6] = w * LMS_test[0];
+    A[k * 3 * 9 + 18 + 7] = w * LMS_test[1];
+    A[k * 3 * 9 + 18 + 8] = w * LMS_test[2];
+  }
+
+  fprintf(stdout, "optimize: %i\n", g->optimization);
+
+  pseudo_solve_gaussian(A, Y, g->checker->patches * 3, 9, TRUE);
+
+  // repack the matrix
+  for(size_t i = 0; i < 3; i++)
+    for(size_t j = 0; j < 3; j++)
+      g->mix[i][j] = Y[3 * i + j];
+
+  g->mix[0][3] = g->mix[1][3] = g->mix[2][3] = 0.f;
+
+  dt_free_align(Y);
+  dt_free_align(A);
+
+  // apply the matrix mix
+  for(size_t k = 0; k < g->checker->patches; k++)
+  {
+    float *const sample = patches + k * 4;
+    float LMS_test[4], temp[4];
+
+    convert_any_XYZ_to_LMS(sample, LMS_test, kind);
+      dot_product(LMS_test, g->mix, temp);
+    convert_any_LMS_to_XYZ(temp, sample, kind);
+  }
+
+  // Compute the delta E
+  float post_mix_delta_E = 0.f;
+  float post_mix_max_delta_E = 0.f;
+  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &post_mix_delta_E, &post_mix_max_delta_E);
+
+  // get the temperature
+  float temperature;
+  dt_illuminant_t test_illuminant;
+  float x = illuminant_xyY[0];
+  float y = illuminant_xyY[1];
+  check_if_close_to_daylight(x, y, &temperature, &test_illuminant, NULL);
+  gchar *string;
+  if(test_illuminant == DT_ILLUMINANT_D)
+    string = "(daylight)";
+  else if(test_illuminant == DT_ILLUMINANT_BB)
+    string = "(black body)";
+  else
+    string = "(invalid)";
+
+  gchar *diagnostic;
+  if(post_mix_delta_E <= 1.2f)
+    diagnostic = _("very good");
+  else if(post_mix_delta_E <= 2.3f)
+    diagnostic = _("good");
+  else if(post_mix_delta_E <= 3.4f)
+    diagnostic = _("passable");
+  else
+    diagnostic = _("bad");
+
+  g->profile_ready = TRUE;
 
   // Update GUI label
-  gchar *text = g_strdup_printf("pre-CAT ΔE 76: \t%.2f\n"
-                                "post-CAT ΔE 76: \t%.2f", pre_wb_delta_E, post_wb_delta_E);
-  gtk_label_set_text(GTK_LABEL(g->label_delta_E), text);
+  gchar *text = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
+                                  "input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+                                  "WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+                                  "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
+                                  "<b>Profile data</b>\n"
+                                  "illuminant :  \t%.0f K \t%s \n"
+                                  "matrix in adaptation space:\n"
+                                  "<tt>%+.4f \t%+.4f \t%+.4f\n"
+                                  "%+.4f \t%+.4f \t%+.4f\n"
+                                  "%+.4f \t%+.4f \t%+.4f</tt>\n\n"
+                                  "<b>Normalization values</b>\n"
+                                  "black offset : \t%+.4f\n"
+                                  "exposure compensation : \t%+.2f EV"),
+                                diagnostic,
+                                pre_wb_delta_E, pre_wb_max_delta_E,
+                                post_wb_delta_E, post_wb_max_delta_E,
+                                post_mix_delta_E, post_mix_max_delta_E,
+                                temperature, string,
+                                g->mix[0][0], g->mix[0][1], g->mix[0][2],
+                                g->mix[1][0], g->mix[1][1], g->mix[1][2],
+                                g->mix[2][0], g->mix[2][1], g->mix[2][2],
+                                black, log2f(exposure));
+  gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
 
   dt_free_align(patches);
 }
@@ -1231,8 +1520,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       extract_color_checker(in, out, roi_in, g, RGB_to_XYZ, XYZ_to_RGB, data->adaptation);
       g->run_profile = FALSE;
       dt_pthread_mutex_unlock(&g->lock);
-
-      dt_control_log(_("color checker values extracted"));
       return;
     }
 
@@ -1332,6 +1619,72 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   }
 }
 
+
+static inline void update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
+                                       const float x_increment, const float y_increment,
+                                       const float width, const float height)
+{
+  // update box nodes
+  for(size_t k = 0; k < 4; k++)
+  {
+    if(g->active_node[k])
+    {
+      g->box[k].x += x_increment;
+      g->box[k].y += y_increment;
+    }
+  }
+
+  // update barycenter
+  const float north = fmaxf(g->box[0].y, g->box[1].y);
+  const float south = fminf(g->box[2].y, g->box[3].y);
+  const float west = fmaxf(g->box[0].x, g->box[3].x);
+  const float east = fminf(g->box[1].x, g->box[2].x);
+  g->center_box.x = (west + east) / 2.f;
+  g->center_box.y = (north + south) / 2.f;
+
+  // update ideal box bounds
+  float y = height / 2.f;
+  float x = width / 2.f;
+  float x_center = x + (x - g->center_box.x) / width;
+  float y_center = y + (y - g->center_box.y) / height;
+  float ratio_y = 1.f;
+  float ratio_x = 1.f;
+
+  g->ideal_box[0].x = x_center - x * ratio_x;
+  g->ideal_box[0].y = y_center - y * ratio_y;
+  g->ideal_box[1].x = x_center + x * ratio_x;
+  g->ideal_box[1].y = y_center - y * ratio_y;
+  g->ideal_box[2].x = x_center + x * ratio_x;
+  g->ideal_box[2].y = y_center + y * ratio_y;
+  g->ideal_box[3].x = x_center - x * ratio_x;
+  g->ideal_box[3].y = y_center + y * ratio_y;
+
+  // update the homography
+  get_homography(g->ideal_box, g->box, g->homography);
+}
+
+static inline void init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g, const float width, const float height)
+{
+  // top left
+  g->box[0].x = g->box[0].y = 10.;
+
+  // top right
+  g->box[1].x = (width - 10.);
+  g->box[1].y = g->box[0].y;
+
+  // bottom right
+  g->box[2].x = g->box[1].x;
+  g->box[2].y = (width - 10.) * g->checker->ratio;
+
+  // bottom left
+  g->box[3].x = g->box[0].x;
+  g->box[3].y = g->box[2].y;
+
+  update_bounding_box(g, 0.f, 0.f, width, height);
+}
+
+
+
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   if(!self->enabled) return 0;
@@ -1361,17 +1714,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     g->click_end.x = pzx;
     g->click_end.y = pzy;
 
-    for(size_t k = 0; k < 4; k++)
-    {
-      if(g->active_node[k])
-      {
-        g->box[k].x += g->click_end.x - g->click_start.x;
-        g->box[k].y += g->click_end.y - g->click_start.y;
-      }
-    }
-
-    // init the homography, although it's useless for now
-    get_homography(g->ideal_box, g->box, g->homography);
+    update_bounding_box(g, g->click_end.x - g->click_start.x, g->click_end.y - g->click_start.y, wd, ht);
 
     g->click_start.x = pzx;
     g->click_start.y = pzy;
@@ -1473,18 +1816,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   g->drag_drop = FALSE;
   g->click_end.x = pzx;
   g->click_end.y = pzy;
-
-  for(size_t k = 0; k < 4; k++)
-  {
-    if(g->active_node[k])
-    {
-      g->box[k].x += g->click_end.x - g->click_start.x;
-      g->box[k].y += g->click_end.y - g->click_start.y;
-    }
-  }
-
-  get_homography(g->ideal_box, g->box, g->homography);
-
+  update_bounding_box(g, g->click_end.x - g->click_start.x, g->click_end.y - g->click_start.y, wd, ht);
   dt_pthread_mutex_unlock(&g->lock);
 
   dt_control_queue_redraw_center();
@@ -1516,9 +1848,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_scale(cr, zoom_scale, zoom_scale);
   cairo_translate(cr, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-  cairo_set_line_width(cr, 2.0);
-  const double origin = 8.;
-  const double destination = 16.;
+  cairo_set_line_width(cr, 2.0 / zoom_scale);
+  const double origin = 9. / zoom_scale;
+  const double destination = 18. / zoom_scale;
 
   for(size_t k = 0; k < 4; k++)
   {
@@ -1544,17 +1876,46 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
     // draw outline circle
     cairo_set_source_rgba(cr, 1., 1., 1., 1.);
-    cairo_arc(cr, g->box[k].x, g->box[k].y, 7., 0, 2. * M_PI);
+    cairo_arc(cr, g->box[k].x, g->box[k].y, 8. / zoom_scale, 0, 2. * M_PI);
     cairo_stroke(cr);
 
     // draw black dot
     cairo_set_source_rgba(cr, 0., 0., 0., 1.);
-    cairo_arc(cr, g->box[k].x, g->box[k].y, 1.5, 0, 2. * M_PI);
+    cairo_arc(cr, g->box[k].x, g->box[k].y, 1.5 / zoom_scale, 0, 2. * M_PI);
     cairo_fill(cr);
   }
 
-  const float safety_margin = 0.707f;
-  const float radius = g->checker->radius * hypotf(wd, ht) * safety_margin;
+  // draw symmetry axes
+  cairo_set_line_width(cr, 1.5 / zoom_scale);
+  cairo_set_source_rgba(cr, 1., 1., 1., 1.);
+  const float x_top = (g->box[0].x + g->box[1].x) / 2.f;
+  const float x_bottom = (g->box[2].x + g->box[3].x) / 2.f;
+  const float y_top = (g->box[0].y + g->box[1].y) / 2.f;
+  const float y_bottom = (g->box[2].y + g->box[3].y) / 2.f;
+  cairo_move_to(cr, x_top, y_top);
+  cairo_line_to(cr, x_bottom, y_bottom);
+  cairo_stroke(cr);
+
+  const float x_left = (g->box[0].x + g->box[3].x) / 2.f;
+  const float x_right = (g->box[1].x + g->box[2].x) / 2.f;
+  const float y_left = (g->box[0].y + g->box[3].y) / 2.f;
+  const float y_right = (g->box[1].y + g->box[2].y) / 2.f;
+  cairo_move_to(cr, x_left, y_left);
+  cairo_line_to(cr, x_right, y_right);
+  cairo_stroke(cr);
+
+  /* For debug : display center of the image and center of the ideal target
+  point_t new_target_center = apply_homography(target_center, g->homography);
+  cairo_set_source_rgba(cr, 1., 1., 1., 1.);
+  cairo_arc(cr, new_target_center.x, new_target_center.y, 7., 0, 2. * M_PI);
+  cairo_stroke(cr);
+
+  cairo_set_source_rgba(cr, 0., 1., 1., 1.);
+  cairo_arc(cr, 0.5 * wd, 0.5 * ht, 7., 0, 2. * M_PI);
+  cairo_stroke(cr);
+  */
+
+  const float radius = g->checker->radius * hypotf(wd, ht) * g->safety_margin;
 
   for(size_t k = 0; k < g->checker->patches; k++)
   {
@@ -1584,13 +1945,13 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     if(g->delta_E_in)
     {
       // draw delta E feedback
-      if(g->delta_E_in[k] > 3.f)
+      if(g->delta_E_in[k] > 2.3f)
       {
         // one diagonal if delta E > 3
         cairo_move_to(cr, new_corners[0].x, new_corners[0].y);
         cairo_line_to(cr, new_corners[2].x, new_corners[2].y);
       }
-      if(g->delta_E_in[k] > 6.f)
+      if(g->delta_E_in[k] > 4.6f)
       {
         // the other diagonal if delta E > 6
         cairo_move_to(cr, new_corners[1].x, new_corners[1].y);
@@ -1598,9 +1959,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
       }
     }
 
-    cairo_set_line_width(cr, 3.0);
+    cairo_set_line_width(cr, 5.0 / zoom_scale);
     cairo_stroke_preserve(cr);
-    cairo_set_line_width(cr, 1.0);
+    cairo_set_line_width(cr, 2.0 / zoom_scale);
     cairo_set_source_rgba(cr, 1., 1., 1., 1.);
     cairo_stroke(cr);
 
@@ -1616,6 +1977,52 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     cairo_fill(cr);
   }
 }
+
+static void optimize_changed_callback(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  const int i = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("darkroom/modules/channelmixerrgb/optimization", i);
+  g->optimization = i;
+}
+
+static void checker_changed_callback(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  const int i = dt_bauhaus_combobox_get(widget);
+  dt_conf_set_int("darkroom/modules/channelmixerrgb/colorchecker", i);
+  g->checker = dt_get_color_checker(i);
+
+  dt_develop_t *dev = self->dev;
+  const float wd = dev->preview_pipe->backbuf_width;
+  const float ht = dev->preview_pipe->backbuf_height;
+  if(wd == 0.f || ht == 0.f) return;
+
+  dt_pthread_mutex_lock(&g->lock);
+  g->profile_ready = FALSE;
+  init_bounding_box(g, wd, ht);
+  dt_pthread_mutex_unlock(&g->lock);
+
+  dt_control_queue_redraw_center();
+}
+
+static void safety_changed_callback(GtkWidget *widget, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  g->safety_margin = dt_bauhaus_slider_get(widget);
+  dt_conf_set_float("darkroom/modules/channelmixerrgb/safety", g->safety_margin);
+  dt_control_queue_redraw_center();
+}
+
 
 static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *self)
 {
@@ -1639,37 +2046,11 @@ static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *s
 
   // init bounding box
   dt_pthread_mutex_lock(&g->lock);
-
-  // top left
-  g->box[0].x = g->box[0].y = 10.;
-
-  // top right
-  g->box[1].x = (wd - 10.);
-  g->box[1].y = g->box[0].y;
-
-  // bottom right
-  g->box[2].x = g->box[1].x;
-  g->box[2].y = (wd - 10.) * g->checker->ratio;
-
-  // bottom left
-  g->box[3].x = g->box[0].x;
-  g->box[3].y = g->box[2].y;
-
-  // init the ideal box that defines a perfectly rectangle color checker
-  // we will possibly need to compute an homography to get there
-  for(size_t k = 0; k < 4; k++)
-  {
-    g->ideal_box[k].x = g->box[k].x;
-    g->ideal_box[k].y = g->box[k].y;
-  }
-
-  // init the homography, although it's useless for now
-  get_homography(g->ideal_box, g->box, g->homography);
-
+  g->profile_ready = FALSE;
+  init_bounding_box(g, wd, ht);
   dt_pthread_mutex_unlock(&g->lock);
 
   dt_control_queue_redraw_center();
-
 }
 
 static void run_profile_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -1683,6 +2064,61 @@ static void run_profile_callback(GtkWidget *widget, GdkEventButton *event, gpoin
   dt_pthread_mutex_unlock(&g->lock);
 
   dt_dev_reprocess_all(self->dev);
+}
+
+static void commit_profile_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+
+  if(!g->profile_ready) return;
+
+  p->x = g->xy[0];
+  p->y = g->xy[1];
+  p->illuminant = DT_ILLUMINANT_CUSTOM;
+  check_if_close_to_daylight(p->x, p->y, &p->temperature, NULL, NULL);
+
+  p->red[0] = g->mix[0][0];
+  p->red[1] = g->mix[0][1];
+  p->red[2] = g->mix[0][2];
+
+  p->green[0] = g->mix[1][0];
+  p->green[1] = g->mix[1][1];
+  p->green[2] = g->mix[1][2];
+
+  p->blue[0] = g->mix[2][0];
+  p->blue[1] = g->mix[2][1];
+  p->blue[2] = g->mix[2][2];
+
+  ++darktable.gui->reset;
+  dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
+  dt_bauhaus_slider_set(g->temperature, p->temperature);
+
+  float xyY[3] = { p->x, p->y, 1.f };
+  float Lch[3] = { 0 };
+  dt_xyY_to_Lch(xyY, Lch);
+  dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+  dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
+
+  dt_bauhaus_slider_set_soft(g->scale_red_R, p->red[0]);
+  dt_bauhaus_slider_set_soft(g->scale_red_G, p->red[1]);
+  dt_bauhaus_slider_set_soft(g->scale_red_B, p->red[2]);
+
+  dt_bauhaus_slider_set_soft(g->scale_green_R, p->green[0]);
+  dt_bauhaus_slider_set_soft(g->scale_green_G, p->green[1]);
+  dt_bauhaus_slider_set_soft(g->scale_green_B, p->green[2]);
+
+  dt_bauhaus_slider_set_soft(g->scale_blue_R, p->blue[0]);
+  dt_bauhaus_slider_set_soft(g->scale_blue_G, p->blue[1]);
+  dt_bauhaus_slider_set_soft(g->scale_blue_B, p->blue[2]);
+
+  --darktable.gui->reset;
+
+  gui_changed(self, NULL, NULL);
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -2442,7 +2878,19 @@ void gui_update(struct dt_iop_module_t *self)
 
   gui_changed(self, NULL, NULL);
 
-  g->checker = dt_get_color_checker(COLOR_CHECKER_SPYDER_48);
+  const int i = dt_conf_get_int("darkroom/modules/channelmixerrgb/colorchecker");
+  dt_bauhaus_combobox_set(g->checkers_list, i);
+  g->checker = dt_get_color_checker(i);
+
+  const int j = dt_conf_get_int("darkroom/modules/channelmixerrgb/optimization");
+  dt_bauhaus_combobox_set(g->optimize, j);
+  g->optimization = j;
+
+  g->safety_margin = 0.5f;
+  if(dt_conf_key_exists("darkroom/modules/channelmixerrgb/safety"))
+    g->safety_margin = dt_conf_get_float("darkroom/modules/channelmixerrgb/safety");
+  dt_bauhaus_slider_set_soft(g->safety, g->safety_margin);
+
   gtk_widget_hide(g->collapsible);
 }
 
@@ -2727,6 +3175,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->drag_drop = FALSE;
   g->is_profiling_started = FALSE;
   g->run_profile = FALSE;
+  g->profile_ready = FALSE;
   g->delta_E_in = NULL;
 
   g->XYZ[0] = NAN;
@@ -2875,20 +3324,51 @@ void gui_init(struct dt_iop_module_t *self)
   g->collapsible = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->checkers_list = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->checkers_list, NULL, _("chart"));
   dt_bauhaus_combobox_add(g->checkers_list, _("Xrite Color Checker 24"));
   dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor Spyder Checkr 48"));
+  g_signal_connect(G_OBJECT(g->checkers_list), "value-changed", G_CALLBACK(checker_changed_callback), self);
+  gtk_widget_set_tooltip_text(g->checkers_list, _("choose the vendor and the type of your chart"));
   gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
+
+  g->optimize = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->optimize, NULL, _("optimize for"));
+  dt_bauhaus_combobox_add(g->optimize, _("none"));
+  dt_bauhaus_combobox_add(g->optimize, _("neutral colors"));
+  dt_bauhaus_combobox_add(g->optimize, _("saturated colors"));
+  dt_bauhaus_combobox_add(g->optimize, _("skin and soil colors"));
+  dt_bauhaus_combobox_add(g->optimize, _("foliage colors"));
+  dt_bauhaus_combobox_add(g->optimize, _("sky and water colors"));
+  g_signal_connect(G_OBJECT(g->optimize), "value-changed", G_CALLBACK(optimize_changed_callback), self);
+  gtk_widget_set_tooltip_text(g->optimize, _("choose the colors that will be optimized with higher priority.\n"
+                                             "neutral colors gives the lowest average delta E but a high maximum delta E\n"
+                                             "saturated colors gives the lowest maximum delta E but a high average delta E\n"
+                                             "none is a trade-off between both\n"
+                                             "the others are special behaviours to protect some hues"));
+  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->optimize), TRUE, TRUE, 0);
+
+  g->safety = dt_bauhaus_slider_new_with_range_and_feedback(self, 0., 1., 0.1, 0.5, 3, TRUE);
+  dt_bauhaus_widget_set_label(g->safety, NULL, _("patch scale"));
+  gtk_widget_set_tooltip_text(g->safety, _("reduce the radius of the patches to select the more or less central part.\n"
+                                           "useful when the perspective correction is sloppy or\n"
+                                           "the patches frame cast a shadows on the edges of the patch." ));
+  g_signal_connect(G_OBJECT(g->safety), "value-changed", G_CALLBACK(safety_changed_callback), self);
+  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->safety), TRUE, TRUE, 0);
+
+  g->label_delta_E = dt_ui_label_new("");
+  gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->label_delta_E), TRUE, TRUE, 0);
+  gtk_widget_set_tooltip_text(g->label_delta_E, _("the delta E is using the CIE 2000 formula."));
 
   GtkWidget *toolbar = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_BAUHAUS_SPACE);
 
-  g->label_delta_E = dt_ui_label_new("");
-  gtk_box_pack_start(GTK_BOX(toolbar), GTK_WIDGET(g->label_delta_E), TRUE, TRUE, 0);
-
   g->button_commit = dtgtk_button_new(dtgtk_cairo_paint_check_mark, CPF_STYLE_BOX, NULL);
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_commit), FALSE, FALSE, 0);
+  gtk_widget_set_tooltip_text(g->button_commit, _("accept the computed profile and set it in the module"));
+  g_signal_connect(G_OBJECT(g->button_commit), "button-press-event", G_CALLBACK(commit_profile_callback), (gpointer)self);
 
   g->button_profile = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_BOX, NULL);
   g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
+  gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);

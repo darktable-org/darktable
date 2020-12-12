@@ -146,11 +146,11 @@ static inline int transpose_dot_vector(double *const restrict A, // input
 
 
 static inline int pseudo_solve_gaussian(double *const restrict A,
-                                 double *const restrict y,
-                                 const size_t m, const size_t n, const int checks)
+                                        double *const restrict y,
+                                        const size_t m, const size_t n, const int checks)
 {
-  // Solve the linear problem A x = y with the over-constrained rectanguler matrice A
-  // of dimension m × n (m >= n) by the least squares method
+  // Solve the weighted linear problem w A'A x = w A' y with the over-constrained rectanguler matrice A
+  // of dimension m × n (m >= n) and w a vector of weights, by the least squares method
   int valid = 1;
 
   if(m < n)
