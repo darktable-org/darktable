@@ -262,7 +262,7 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
     col_sums[col] = sum;
   }
   // clear out any columns where the patch column would be outside the RoI, as well as our overrun area
-  for (int col = col_max; col < chunk_right + radius; col++)
+  for (int col = MAX(col_min,col_max); col < chunk_right + radius; col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS
@@ -572,7 +572,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
           {
             SIMD_FOR(size_t c = 0; c < 4; c++)
             {
-              out[4*col+c] /= out[3];
+              out[4*col+c] /= out[4*col+3];
             }
           }
         }
