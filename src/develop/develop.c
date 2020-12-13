@@ -145,6 +145,7 @@ void dt_dev_cleanup(dt_develop_t *dev)
   dt_pthread_mutex_destroy(&dev->preview_pipe_mutex);
   dt_pthread_mutex_destroy(&dev->preview2_pipe_mutex);
   dev->proxy.chroma_adaptation = NULL;
+  dev->proxy.wb_coeffs[0] = 0.f;
   if(dev->pipe)
   {
     dt_dev_pixelpipe_cleanup(dev->pipe);
@@ -941,10 +942,7 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
-  if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(dev);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -984,7 +982,8 @@ void _dev_add_history_item(dt_develop_t *dev, dt_iop_module_t *module, gboolean 
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
+
     if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
     /* redraw */
@@ -1035,10 +1034,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, g
 {
   if(!darktable.gui || darktable.gui->reset) return;
 
-  if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(dev);
 
   dt_pthread_mutex_lock(&dev->history_mutex);
 
@@ -1054,7 +1050,7 @@ void dt_dev_add_masks_history_item(dt_develop_t *dev, dt_iop_module_t *module, g
   if(dev->gui_attached)
   {
     /* signal that history has changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
 
     /* recreate mask list */
     dt_dev_masks_list_change(dev);
@@ -1594,7 +1590,8 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
   sqlite3_stmt *stmt;
 
   // count what we found:
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT COUNT(*) FROM memory.history", -1,
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT COUNT(*) FROM memory.history", -1,
                               &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
@@ -1602,9 +1599,12 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
     const int cnt = sqlite3_column_int(stmt, 0);
     sqlite3_finalize(stmt);
 
-    // workaround a sqlite3 "feature". The above statement to insert items into memory.history is complex and in
-    // this case sqlite does not give rowid a linear increment. But the following code really expect that the rowid in
-    // this table starts from 0 and increment one by one. So in the following code we rewrite the num values.
+    // workaround a sqlite3 "feature". The above statement to insert
+    // items into memory.history is complex and in this case sqlite
+    // does not give rowid a linear increment. But the following code
+    // really expect that the rowid in this table starts from 0 and
+    // increment one by one. So in the following code we rewrite the
+    // "num" values from 0 to cnt-1.
 
     if(cnt > 0)
     {
@@ -1612,7 +1612,8 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       GList *rowids = NULL;
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT rowid FROM memory.history ORDER BY rowid ASC", -1, &stmt, NULL);
+                                  "SELECT rowid FROM memory.history ORDER BY rowid ASC",
+                                  -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
         rowids = g_list_append(rowids, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
       sqlite3_finalize(stmt);
@@ -1621,7 +1622,8 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       int v = 0;
 
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE memory.history SET num=?1 WHERE rowid=?2", -1, &stmt, NULL);
+                                  "UPDATE memory.history SET num=?1 WHERE rowid=?2",
+                                  -1, &stmt, NULL);
 
       // let's wrap this into a transaction, it might make it a little faster.
       sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
@@ -1640,36 +1642,42 @@ static void _dev_merge_history(dt_develop_t *dev, const int imgid)
       sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 
       g_list_free(rowids);
-    }
 
-    // advance the current history by cnt amount, that is, make space for the preset/default iops that will be
-    // *prepended* into the history.
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.history SET num=num+?1 WHERE imgid=?2", -1, &stmt, NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-
-    if(sqlite3_step(stmt) == SQLITE_DONE)
-    {
-      sqlite3_finalize(stmt);
+      // advance the current history by cnt amount, that is, make space
+      // for the preset/default iops that will be *prepended* into the
+      // history.
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "UPDATE main.images SET history_end=history_end+?1 WHERE id=?2",
+                                  "UPDATE main.history SET num=num+?1 WHERE imgid=?2",
                                   -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
 
       if(sqlite3_step(stmt) == SQLITE_DONE)
       {
-        // and finally prepend the rest with increasing numbers (starting at 0)
         sqlite3_finalize(stmt);
-        DT_DEBUG_SQLITE3_PREPARE_V2(
-          dt_database_get(darktable.db),
-          "INSERT INTO main.history"
-          " SELECT imgid, num, module, operation, op_params, enabled, "
-          "        blendop_params, blendop_version, multi_priority, multi_name FROM memory.history",
-          -1, &stmt, NULL);
-        sqlite3_step(stmt);
-        sqlite3_finalize(stmt);
+        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                    "UPDATE main.images"
+                                    " SET history_end=history_end+?1"
+                                    " WHERE id=?2",
+                                    -1, &stmt, NULL);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, cnt);
+        DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
+
+        if(sqlite3_step(stmt) == SQLITE_DONE)
+        {
+          // and finally prepend the rest with increasing numbers (starting at 0)
+          sqlite3_finalize(stmt);
+          DT_DEBUG_SQLITE3_PREPARE_V2(
+            dt_database_get(darktable.db),
+            "INSERT INTO main.history"
+            " SELECT imgid, num, module, operation, op_params, enabled, "
+            "        blendop_params, blendop_version, multi_priority,"
+            "        multi_name"
+            " FROM memory.history",
+            -1, &stmt, NULL);
+          sqlite3_step(stmt);
+          sqlite3_finalize(stmt);
+        }
       }
     }
   }
@@ -1704,12 +1712,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
 
   dt_lock_image(imgid);
 
-  if(dev->gui_attached)
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+  dt_dev_undo_start_record(dev);
 
-  int history_end_current = 0;
   int auto_apply_modules = 0;
   gboolean first_run = FALSE;
   gboolean legacy_params = FALSE;
@@ -1748,7 +1752,11 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   sqlite3_stmt *stmt;
 
   // Get the end of the history - What's that ???
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
+
+  int history_end_current = 0;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT history_end FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
@@ -1963,7 +1971,8 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
   dt_ioppr_resync_modules_order(dev);
 
   // find the new history end
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT history_end FROM main.images WHERE id = ?1",
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT history_end FROM main.images WHERE id = ?1",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   if(sqlite3_step(stmt) == SQLITE_ROW) // seriously, this should never fail
@@ -1984,7 +1993,7 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
     dt_dev_invalidate_all(dev);
 
     /* signal history changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
   }
   dt_dev_masks_list_change(dev);
 
@@ -2412,11 +2421,10 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   // if(darktable.gui->reset) return;
   dt_pthread_mutex_lock(&dev->history_mutex);
   int del = 0;
+
   if(dev->gui_attached)
   {
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
-                            dt_history_duplicate(darktable.develop->history), darktable.develop->history_end,
-                            dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list));
+    dt_dev_undo_start_record(dev);
 
     GList *elem = g_list_first(dev->history);
     while(elem != NULL)
@@ -2455,7 +2463,8 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   if(dev->gui_attached && del)
   {
     /* signal that history has changed */
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+    dt_dev_undo_end_record(dev);
+
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_REMOVE, module);
     /* redraw */
     dt_control_queue_redraw_center();
@@ -3014,6 +3023,32 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
 
   if(boxww) *boxww = boxw;
   if(boxhh) *boxhh = boxh;
+}
+
+void dt_dev_undo_start_record(dt_develop_t *dev)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  /* record current history state : before change (needed for undo) */
+  if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE
+      (darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_WILL_CHANGE,
+       dt_history_duplicate(dev->history),
+       dev->history_end,
+       dt_ioppr_iop_order_copy_deep(dev->iop_order_list));
+  }
+}
+
+void dt_dev_undo_end_record(dt_develop_t *dev)
+{
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+
+  /* record current history state : after change (needed for undo) */
+  if(dev->gui_attached && cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

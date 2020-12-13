@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-07 16:16+0100\n"
+"PO-Revision-Date: 2020-12-12 18:19+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -11684,7 +11684,7 @@ msgstr "% Anzeige"
 
 #: ../src/iop/filmicrgb.c:3078
 msgid "EV scene"
-msgstr "EV Szene"
+msgstr "EV Aufnahme"
 
 #: ../src/iop/filmicrgb.c:3082
 #, no-c-format
@@ -11704,7 +11704,7 @@ msgstr "(%)"
 #. Page SCENE
 #: ../src/iop/filmicrgb.c:3136 ../src/iop/filmicrgb.c:3631
 msgid "scene"
-msgstr "Szene"
+msgstr "Aufnahme"
 
 #. axis legend
 #: ../src/iop/filmicrgb.c:3145

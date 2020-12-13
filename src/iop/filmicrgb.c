@@ -1059,11 +1059,13 @@ static inline void wavelets_detail_level(const float *const restrict detail, con
     schedule(simd                                                                                                 \
              : static) aligned(HF, LF, detail, texture : 64)
 #endif
-  for(size_t k = 0; k < 4 * height * width; k += 4)
+  for(size_t k = 0; k < height * width; k++)
   {
-    for(size_t c = 0; c < 4; ++c) HF[k + c] = detail[k + c] - LF[k + c];
+    for(size_t c = 0; c < 4; ++c) HF[4*k + c] = detail[4*k + c] - LF[4*k + c];
 
-    texture[k / 4] = fminabsf(fminabsf(HF[k], HF[k + 1]), HF[k + 2]);
+    float min = fabsf(HF[4*k]) < fabsf(HF[4*k + 1]) ? HF[4*k] : HF[4*k + 1];
+    min = fabsf(min) < fabsf(HF[4*k + 2]) ? min : HF[4*k + 2];
+    texture[k] = isnan(min) ? 0.f : min;
   }
 }
 
