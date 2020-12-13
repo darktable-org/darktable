@@ -652,9 +652,13 @@ void dt_bauhaus_init()
 void dt_bauhaus_cleanup()
 {
   // TODO: destroy popup window and resources
-  // TODO: destroy keymap hash table!
   g_list_free_full(darktable.bauhaus->key_mod, (GDestroyNotify)g_free);
   g_list_free_full(darktable.bauhaus->key_val, (GDestroyNotify)g_free);
+  if(darktable.bauhaus->keymap)
+  {
+    g_hash_table_destroy(darktable.bauhaus->keymap);
+    darktable.bauhaus->keymap = NULL;
+  }
 }
 
 // fwd declare a few callbacks
@@ -925,6 +929,8 @@ void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, co
         darktable.bauhaus->key_val
             = g_list_insert_sorted(darktable.bauhaus->key_val, g_strdup(path), (GCompareFunc)strcmp);
       }
+      else
+        g_free(mod);
     }
     // might free an old path
     g_hash_table_replace(darktable.bauhaus->keymap, path, w);
