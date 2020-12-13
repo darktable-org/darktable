@@ -1379,22 +1379,27 @@ int dt_opencl_lock_device(const int pipetype)
   switch(pipetype)
   {
     case DT_DEV_PIXELPIPE_FULL:
+    case (DT_DEV_PIXELPIPE_FULL | DT_DEV_PIXELPIPE_FAST):
       memcpy(priority, cl->dev_priority_image, prio_size);
       mandatory = cl->mandatory[0];
       break;
     case DT_DEV_PIXELPIPE_PREVIEW:
+    case (DT_DEV_PIXELPIPE_PREVIEW | DT_DEV_PIXELPIPE_FAST):
       memcpy(priority, cl->dev_priority_preview, prio_size);
       mandatory = cl->mandatory[1];
       break;
     case DT_DEV_PIXELPIPE_EXPORT:
+    case (DT_DEV_PIXELPIPE_EXPORT | DT_DEV_PIXELPIPE_FAST):
       memcpy(priority, cl->dev_priority_export, prio_size);
       mandatory = cl->mandatory[2];
       break;
     case DT_DEV_PIXELPIPE_THUMBNAIL:
+    case (DT_DEV_PIXELPIPE_THUMBNAIL | DT_DEV_PIXELPIPE_FAST):
       memcpy(priority, cl->dev_priority_thumbnail, prio_size);
       mandatory = cl->mandatory[3];
       break;
     case DT_DEV_PIXELPIPE_PREVIEW2:
+    case (DT_DEV_PIXELPIPE_PREVIEW2 | DT_DEV_PIXELPIPE_FAST):
       memcpy(priority, cl->dev_priority_preview2, prio_size);
       mandatory = cl->mandatory[4];
       break;
