@@ -131,13 +131,14 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
 
   double homography[9*9];   // the perspective correction matrix
   gboolean run_profile;     // order a profiling at next pipeline recompute
+  gboolean run_validation;  // order a profile validation at next pipeline recompute
   gboolean profile_ready;   // notify that a profile is ready to be applied
   float mix[3][4];
 
   GtkWidget *start_profiling;
   gboolean is_profiling_started;
   GtkWidget *collapsible;
-  GtkWidget *checkers_list, *optimize, *safety, *label_delta_E, *button_profile, *button_commit;
+  GtkWidget *checkers_list, *optimize, *safety, *label_delta_E, *button_profile, *button_validate, *button_commit;
 
   float *delta_E_in;
 } dt_iop_channelmixer_rgb_gui_data_t;
@@ -1481,6 +1482,126 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   dt_free_align(patches);
 }
 
+void validate_color_checker(const float *const restrict in,
+                            const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
+                            const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4])
+{
+  const size_t width = roi_in->width;
+  const size_t height = roi_in->height;
+
+  float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
+  const float radius = g->checker->radius * hypotf(width, height) * g->safety_margin;
+
+  if(g->delta_E_in == NULL)
+    g->delta_E_in = dt_alloc_sse_ps(g->checker->patches);
+
+  /* Get the average color over each patch */
+  for(size_t k = 0; k < g->checker->patches; k++)
+  {
+    // center of the patch in the ideal reference
+    const point_t center = { g->checker->values[k].x * width, g->checker->values[k].y * height };
+
+    // corners of the patch in the ideal reference
+    const point_t corners[4] = { {center.x - radius, center.y - radius},
+                                 {center.x + radius, center.y - radius},
+                                 {center.x + radius, center.y + radius},
+                                 {center.x - radius, center.y + radius} };
+
+    // apply patch coordinates transform depending on perspective
+    point_t new_corners[4];
+    for(size_t c = 0; c < 4; c++) new_corners[c] = apply_homography(corners[c], g->homography);
+
+    // find the orthogonal bounding box inside the patch
+    const size_t x_min = CLAMP((size_t)floorf(fmaxf(new_corners[0].x, new_corners[3].x)), 0, width - 1);
+    const size_t x_max = CLAMP((size_t)ceilf(fminf(new_corners[1].x, new_corners[2].x)), 0, width - 1);
+    const size_t y_min = CLAMP((size_t)floorf(fmaxf(new_corners[0].y, new_corners[1].y)), 0, height - 1);
+    const size_t y_max = CLAMP((size_t)ceilf(fminf(new_corners[2].y, new_corners[3].y)), 0, height - 1);
+
+    // Get the average color on the patch
+    patches[k * 4] = patches[k * 4 + 1] = patches[k * 4 + 2] = patches[k * 4 + 3] = 0.f;
+    size_t num_elem = 0;
+
+    for(size_t j = y_min; j < y_max; j++)
+      for(size_t i = x_min; i < x_max; i++)
+      {
+        for(size_t c = 0; c < 3; c++)
+        {
+          patches[k * 4 + c] += in[(j * width + i) * 4 + c];
+
+          // Debug : inpaint a black square in the preview to ensure the coordanites of
+          // overlay drawings and actual pixel processing match
+          // out[(j * width + i) * 4 + c] = 0.f;
+        }
+        num_elem++;
+      }
+
+    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] /= (float)num_elem;
+
+    // Convert to XYZ
+    float XYZ[3];
+    dot_product(patches + k * 4, RGB_to_XYZ, XYZ);
+    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
+  }
+
+  /* match global exposure */
+  // white exposure depends on camera settings and raw white point,
+  // we want our profile to be independant from that
+  float XYZ_white_ref[4];
+  float *XYZ_white_test = patches + g->checker->white * 4;
+  dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
+  const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
+
+  // black point is evaluated by rawspeed on each picture using the dark pixels
+  // we want our profile to be also independant from its discrepancies
+  float XYZ_black_ref[4];
+  float *XYZ_black_test = patches + g->checker->black * 4;
+  dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
+  const float black = XYZ_black_test[1] * exposure - XYZ_black_ref[1];
+
+  for(size_t k = 0; k < g->checker->patches; k++)
+  {
+    // compensate global exposure
+    float XYZ[3];
+    for(size_t c = 0; c < 3; c++) XYZ[c] = exposure * patches[k * 4 + c] - black;
+
+    // normalize patch exposure - if shooting close to the light source, the exposure might not be uniform over the surface
+    // we don't want the color calibration to try fighting exposure discrepancies, so pretend the exposure is spot-on.
+    const float Y = XYZ[1];
+    float DT_ALIGNED_PIXEL XYZ_ref[4];
+    dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
+    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c] * XYZ_ref[1] / Y;
+  }
+
+  // Compute the delta E
+  float pre_wb_delta_E = 0.f;
+  float pre_wb_max_delta_E = 0.f;
+  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
+
+  gchar *diagnostic;
+  if(pre_wb_delta_E <= 1.2f)
+    diagnostic = _("very good");
+  else if(pre_wb_delta_E <= 2.3f)
+    diagnostic = _("good");
+  else if(pre_wb_delta_E <= 3.4f)
+    diagnostic = _("passable");
+  else
+    diagnostic = _("bad");
+
+  // Update GUI label
+  gchar *text = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
+                                  "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
+                                  "<b>Normalization values</b>\n"
+                                  "black offset : \t%+.4f\n"
+                                  "exposure compensation : \t%+.2f EV"),
+                                diagnostic,
+                                pre_wb_delta_E, pre_wb_max_delta_E,
+                                black, log2f(exposure));
+  gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
+
+  dt_free_align(patches);
+}
+
+
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid, void *const restrict ovoid,
@@ -1617,6 +1738,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       break;
     }
   }
+
+  // run dE validation at output
+  if(self->dev->gui_attached && g)
+    if(g->run_validation && piece->pipe->type == DT_DEV_PIXELPIPE_PREVIEW)
+    {
+      validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB);
+      g->run_validation = FALSE;
+    }
+
+  declare_cat_on_pipe(self, FALSE);
 }
 
 
@@ -2061,6 +2192,19 @@ static void run_profile_callback(GtkWidget *widget, GdkEventButton *event, gpoin
 
   dt_pthread_mutex_lock(&g->lock);
   g->run_profile = TRUE;
+  dt_pthread_mutex_unlock(&g->lock);
+
+  dt_dev_reprocess_all(self->dev);
+}
+
+static void run_validation_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
+{
+  if(darktable.gui->reset) return;
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  dt_pthread_mutex_lock(&g->lock);
+  g->run_validation = TRUE;
   dt_pthread_mutex_unlock(&g->lock);
 
   dt_dev_reprocess_all(self->dev);
@@ -3175,6 +3319,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->drag_drop = FALSE;
   g->is_profiling_started = FALSE;
   g->run_profile = FALSE;
+  g->run_validation = FALSE;
   g->profile_ready = FALSE;
   g->delta_E_in = NULL;
 
@@ -3325,8 +3470,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->checkers_list = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->checkers_list, NULL, _("chart"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite Color Checker 24"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor Spyder Checkr 48"));
+  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker Passport 24"));
+  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker 24"));
+  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor SpyderCheckr 48"));
   g_signal_connect(G_OBJECT(g->checkers_list), "value-changed", G_CALLBACK(checker_changed_callback), self);
   gtk_widget_set_tooltip_text(g->checkers_list, _("choose the vendor and the type of your chart"));
   gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(g->checkers_list), TRUE, TRUE, 0);
@@ -3370,6 +3516,11 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->button_profile), "button-press-event", G_CALLBACK(run_profile_callback), (gpointer)self);
   gtk_widget_set_tooltip_text(g->button_profile, _("recompute the profile"));
   gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_profile), FALSE, FALSE, 0);
+
+  g->button_validate = dtgtk_button_new(dtgtk_cairo_paint_softproof, CPF_STYLE_BOX, NULL);
+  g_signal_connect(G_OBJECT(g->button_validate), "button-press-event", G_CALLBACK(run_validation_callback), (gpointer)self);
+  gtk_widget_set_tooltip_text(g->button_validate, _("check the output delta E"));
+  gtk_box_pack_end(GTK_BOX(toolbar), GTK_WIDGET(g->button_validate), FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(g->collapsible), GTK_WIDGET(toolbar), FALSE, FALSE, 0);
 
