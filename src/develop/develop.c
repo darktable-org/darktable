@@ -1420,7 +1420,12 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean auto_apply_cat = has_matrix && is_modern_chroma;
   const gboolean auto_apply_sharpen = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
 
-  if(auto_apply_filmic || auto_apply_sharpen || auto_apply_cat)
+  // Check if the history has been inited
+  GList *history = dt_history_get_items(imgid, TRUE);
+  const gboolean empty_history = (history == NULL);
+  g_free(history);
+
+  if(empty_history && (auto_apply_filmic || auto_apply_sharpen || auto_apply_cat))
   {
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
