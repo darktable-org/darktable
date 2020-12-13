@@ -239,7 +239,7 @@ static void init_column_sums(float *const col_sums, const patch_t *const patch, 
   const int srow = patch->rows;
   const int rmin = row - MIN(radius,MIN(row,row+srow));
   const int rmax = row + MIN(radius,MIN(height-1-row,height-1-(row+srow)));
-  for (int col = chunk_left-radius-1; col < col_min; col++)
+  for (int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS
@@ -292,7 +292,7 @@ static void init_column_sums_sse2(float *const col_sums, const patch_t *const pa
   const int srow = patch->rows;
   const int rmin = row - MIN(radius,MIN(row,row+srow));
   const int rmax = row + MIN(radius,MIN(height-1-row,height-1-(row+srow)));
-  for (int col = chunk_left-radius-1; col < col_min; col++)
+  for (int col = chunk_left-radius-1; col < MIN(col_min,chunk_right+radius); col++)
   {
     col_sums[col] = 0;
 #ifdef CACHE_PIXDIFFS_SSE
