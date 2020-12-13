@@ -2129,7 +2129,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   ++darktable.gui->reset;
 
-  check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
+  check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, NULL);
 
   dt_bauhaus_slider_set(g->temperature, p->temperature);
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);
