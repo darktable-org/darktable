@@ -1327,6 +1327,12 @@ void dt_cleanup()
     dt_bauhaus_cleanup();
   }
 
+  if (darktable.noiseprofile_parser)
+  {
+    g_object_unref(darktable.noiseprofile_parser);
+    darktable.noiseprofile_parser = NULL;
+  }
+
   dt_capabilities_cleanup();
 
   for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
