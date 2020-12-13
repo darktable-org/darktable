@@ -2036,11 +2036,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(self->enabled && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
   {
     // this module instance is doing chromatic adaptation
-    dt_iop_order_entry_t *CAT_instance = self->dev->proxy.chroma_adaptation;
-    dt_iop_order_entry_t *current_instance
-        = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
-
-    if(CAT_instance && CAT_instance->o.iop_order != current_instance->o.iop_order)
+    if(!is_module_cat_on_pipe(self))
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
       dt_iop_set_module_in_trouble(self, TRUE);
