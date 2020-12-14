@@ -1225,8 +1225,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   // reference illuminant is hard-set D50 for darktable's pipeline
   // test illuminant is user params
   d->p = powf(0.818155f / d->illuminant[2], 0.0834f);
-
-  declare_cat_on_pipe(self, FALSE);
 }
 
 
@@ -2031,6 +2029,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     update_G_colors(self);
     update_B_colors(self);
   }
+
+  declare_cat_on_pipe(self, FALSE);
 
   if(self->enabled && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
   {
