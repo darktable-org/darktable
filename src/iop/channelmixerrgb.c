@@ -564,19 +564,14 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-
-        // Normalize by Y
         Y = temp_one[1];
-        downscale_vector(temp_one, Y);
-
-        // Convert from XYZ to LMS
-        convert_XYZ_to_bradford_LMS(temp_one, temp_two);
 
         // Do white balance in LMS
-        bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
-
-        // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
-        dot_product(temp_one, MIX, temp_two);
+        downscale_vector(temp_one, Y);
+          convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+            bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
+          convert_bradford_LMS_to_XYZ(temp_one, temp_two);
+        upscale_vector(temp_two, Y);
 
         break;
       }
@@ -584,19 +579,14 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-
-         // Normalize by Y
         Y = temp_one[1];
-        downscale_vector(temp_one, Y);
-
-        // Convert from XYZ to LMS
-        convert_XYZ_to_bradford_LMS(temp_one, temp_two);
 
         // Do white balance in LMS
-        bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
-
-        // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
-        dot_product(temp_one, MIX, temp_two);
+        downscale_vector(temp_one, Y);
+          convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+            bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
+          convert_bradford_LMS_to_XYZ(temp_one, temp_two);
+        upscale_vector(temp_two, Y);
 
         break;
       }
@@ -604,19 +594,14 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-
-         // Normalize by Y
         Y = temp_one[1];
-        downscale_vector(temp_one, Y);
-
-        // Convert from XYZ to LMS
-        convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
 
         // Do white balance in LMS
-        CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one); // force full-adaptation
-
-        // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
-        dot_product(temp_one, MIX, temp_two);
+        downscale_vector(temp_one, Y);
+          convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
+            CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one); // force full-adaptation
+          convert_CAT16_LMS_to_XYZ(temp_one, temp_two);
+        upscale_vector(temp_two, Y);
 
         break;
       }
@@ -624,42 +609,33 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-
-         // Normalize by Y
         Y = temp_one[1];
-        downscale_vector(temp_one, Y);
 
         // Do white balance in XYZ
-        XYZ_adapt_D50(temp_one, illuminant, temp_two);
-
-        // Compute the 3D mix in XYZ - this is a rotation + homothety of the vector base
-        dot_product(temp_two, MIX, temp_one);
-        dt_simd_memcpy(temp_one, temp_two, 4);
+        downscale_vector(temp_one, Y);
+          XYZ_adapt_D50(temp_one, illuminant, temp_two);
+        upscale_vector(temp_two, Y);
 
         break;
       }
       case DT_ADAPTATION_RGB:
       case DT_ADAPTATION_LAST:
       {
-        // No white balance.
-        // Compute the 3D mix in RGB - this is a rotation + homothety of the vector base
-        dot_product(temp_two, MIX, temp_one);
-
         // Convert from RGB to XYZ
-        dot_product(temp_one, RGB_to_XYZ, temp_two);
-
-        // Normalize by Y
-        Y = temp_one[1];
-        downscale_vector(temp_two, Y);
+        dot_product(temp_two, RGB_to_XYZ, temp_one);
+        dt_simd_memcpy(temp_one, temp_two, 4);
+        // No white balance.
         break;
       }
     }
 
-    // Gamut mapping happens in XYZ space no matter what
+    // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
+    convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
+      dot_product(temp_one, MIX, temp_two);
     convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
-      upscale_vector(temp_one, Y);
-        gamut_mapping(temp_one, gamut, clip, temp_two);
-      downscale_vector(temp_two, Y);
+
+    // Gamut mapping happens in XYZ space no matter what
+    gamut_mapping(temp_one, gamut, clip, temp_two);
     convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
 
     // Clip in LMS
@@ -671,13 +647,11 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     // Clip in LMS
     if(clip) for(size_t c = 0; c < 3; c++) temp_two[c] = fmaxf(temp_two[c], 0.0f);
 
-    // Convert back LMS to XYZ to RGB
+    // Convert back LMS to XYZ
     convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
 
     // Clip in XYZ
     if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
-
-    upscale_vector(temp_one, Y);
 
     // Save
     if(apply_grey)
@@ -2062,11 +2036,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   if(self->enabled && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
   {
     // this module instance is doing chromatic adaptation
-    dt_iop_order_entry_t *CAT_instance = self->dev->proxy.chroma_adaptation;
-    dt_iop_order_entry_t *current_instance
-        = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
-
-    if(CAT_instance && CAT_instance->o.iop_order != current_instance->o.iop_order)
+    if(!is_module_cat_on_pipe(self))
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
       dt_iop_set_module_in_trouble(self, TRUE);
@@ -2155,7 +2125,7 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
   ++darktable.gui->reset;
 
-  check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
+  check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, NULL);
 
   dt_bauhaus_slider_set(g->temperature, p->temperature);
   dt_bauhaus_combobox_set(g->illuminant, p->illuminant);

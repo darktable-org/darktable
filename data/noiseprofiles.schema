@@ -20,10 +20,11 @@
             "type": "string",
             "pattern": "^[a-zA-Z ]+$",
             "minLength": 3,
-            "maxLength": 13,
+            "maxLength": 14,
             "enum": [
               "Canon",
               "Fujifilm",
+              "Hasselblad",
               "LGE",
               "Leica",
               "Minolta",
@@ -120,8 +121,8 @@
         ],
         "additionalProperties": false
       },
-      "minItems": 13,
-      "maxItems": 13
+      "minItems": 14,
+      "maxItems": 14
     }
   },
   "required": [
