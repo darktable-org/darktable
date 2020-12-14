@@ -77,6 +77,17 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
   }
   fprintf(stderr, "[ImageMagick_open] image `%s' loading\n", img->filename);
 
+  ColorspaceType colorspace;
+
+  colorspace = MagickGetImageColorspace(image);
+
+  if((colorspace == CMYColorspace) || (colorspace == CMYKColorspace))
+  {
+    fprintf(stderr, "[ImageMagick_open] error: CMY(K) images are not supported.\n");
+    err =  DT_IMAGEIO_FILE_CORRUPTED;
+    goto error;
+  }
+
   img->width = MagickGetImageWidth(image);
   img->height = MagickGetImageHeight(image);
 
