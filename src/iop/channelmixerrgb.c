@@ -2294,7 +2294,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_pthread_mutex_destroy(&g->lock);
   
   if(is_module_cat_on_pipe(self))
-    dev->proxy.chroma_adaptation = NULL;
+    self->dev->proxy.chroma_adaptation = NULL;
 
   IOP_GUI_FREE;
 }
