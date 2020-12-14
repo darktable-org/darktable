@@ -1423,7 +1423,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // Check if the history has been inited
   GList *history = dt_history_get_items(imgid, TRUE);
   const gboolean empty_history = (history == NULL);
-  g_free(history);
+  g_list_free_full(history, dt_history_item_free);
 
   if(empty_history && (auto_apply_filmic || auto_apply_sharpen || auto_apply_cat))
   {
