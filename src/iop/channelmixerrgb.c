@@ -2292,6 +2292,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page", gtk_notebook_get_current_page (g->notebook));
   dt_pthread_mutex_destroy(&g->lock);
+  
+  if(is_module_cat_on_pipe(self))
+    dev->proxy.chroma_adaptation = NULL;
 
   IOP_GUI_FREE;
 }
