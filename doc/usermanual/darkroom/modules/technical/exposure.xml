@@ -136,7 +136,12 @@
         Automatically remove the camera exposure bias (only available in <quote>manual</quote> mode).
         The camera exposure bias is the EV compensation of the camera lightmeter, commonly used to
         prevent highlight clipping, for photographers who expose to the right of the histogram. This
-        feature relies on reading the EXIF field <programlisting>ExposureBiasValue</programlisting>
+        feature relies on reading the EXIF field
+      </para>
+      <para>
+	<programlisting>ExposureBiasValue</programlisting>
+      </para>
+      <para>
         which must be correctly filled in the RAW file by the camera for it to work.
       </para>
 

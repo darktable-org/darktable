@@ -236,8 +236,8 @@
         ones you can do so by including a line of the form
       </para>
       <para>
-<programlisting>plugins/darkroom/clipping/extra_aspect_ratios/foo=x:y
-</programlisting>
+	<programlisting>plugins/darkroom/clipping/extra_aspect_ratios/foo=x:y
+	</programlisting>
       </para>
       <para>
         into darktable's configuration file
