@@ -24,6 +24,7 @@
             "enum": [
               "Canon",
               "Fujifilm",
+              "Hasselblad",
               "LGE",
               "Leica",
               "Minolta",
