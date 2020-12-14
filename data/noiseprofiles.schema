@@ -20,7 +20,7 @@
             "type": "string",
             "pattern": "^[a-zA-Z ]+$",
             "minLength": 3,
-            "maxLength": 13,
+            "maxLength": 14,
             "enum": [
               "Canon",
               "Fujifilm",
