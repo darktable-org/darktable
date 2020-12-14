@@ -315,17 +315,9 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsToneCurve *out_curves[3] = { trc, trc, trc };
   cmsHPROFILE profile = cmsCreateRGBProfile(whitepoint, primaries, out_curves);
 
+  if(v2) cmsSetProfileVersion(profile, 2.1);
 
-  if(v2)
-  {
-    cmsSetProfileVersion(profile, 2.1);
-    const cmsCIEXYZ black = { 0, 0, 0 };
-    cmsWriteTag(profile, cmsSigMediaBlackPointTag, &black);
-    cmsWriteTag(profile, cmsSigMediaWhitePointTag, whitepoint);
-    cmsSetDeviceClass(profile, cmsSigDisplayClass);
-  }
-
-  cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue | cmsUseAnywhere);
+  cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue);
 
   cmsMLUsetASCII(mlu1, "en", "US", "Public Domain");
   cmsWriteTag(profile, cmsSigCopyrightTag, mlu1);
