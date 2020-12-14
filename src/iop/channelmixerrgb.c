@@ -1116,7 +1116,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       break;
     }
   }
-  declare_cat_on_pipe(self, FALSE);
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
