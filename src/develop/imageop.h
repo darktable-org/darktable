@@ -652,8 +652,13 @@ dt_iop_module_t *dt_iop_get_module(const char *op);
     if multi_priority == -1 do not checl for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
 /** returns module with op + multi_name or NULL if not found on the list,
-    if multi_name == NULL do not checl for it */
+    if multi_name == NULL do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
+/** count instances of a module **/
+int dt_iop_count_instances(dt_iop_module_so_t *module);
+
+/** returns true if module is the first instance of this operation in the pipe */
+gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
 
 
 /** get module flags, works in dev and lt mode */
@@ -688,9 +693,6 @@ void dt_iop_connect_accels_all();
 
 /** get the module that accelerators are attached to for the current so */
 dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
-
-/** count instances of a module **/
-int dt_iop_count_instances(dt_iop_module_so_t *module);
 
 /** queue a refresh of the center (FULL), preview, or second-preview windows, rerunning the pixelpipe from */
 /** the given module */

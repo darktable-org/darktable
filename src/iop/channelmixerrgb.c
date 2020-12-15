@@ -876,10 +876,6 @@ static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
   // Advertise to the pipeline that we are doing chromatic adaptation here
   // preset = TRUE allows to capture the CAT a priori at init time
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  dt_iop_order_entry_t *this
-      = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
-
-  if(this == NULL) return; // there is no point then
 
   if((self->enabled && !(p->adaptation == DT_ADAPTATION_RGB || p->illuminant == DT_ILLUMINANT_PIPE)) || preset)
   {
@@ -887,14 +883,17 @@ static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
     if(self->dev->proxy.chroma_adaptation == NULL)
     {
       // We are the first to try to register, let's go !
-      self->dev->proxy.chroma_adaptation = this;
+      self->dev->proxy.chroma_adaptation = self;
+    }
+    else if(self->dev->proxy.chroma_adaptation == self)
+    {
     }
     else
     {
       // Another instance already registered.
       // If we are lower in the pipe than it, register in its place.
-      if(this->o.iop_order < self->dev->proxy.chroma_adaptation->o.iop_order)
-        self->dev->proxy.chroma_adaptation = this;
+      if(dt_iop_is_first_instance(self->dev->iop, self))
+        self->dev->proxy.chroma_adaptation = self;
     }
   }
   else
@@ -903,7 +902,7 @@ static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
     {
       // We do NOT do CAT here.
       // Deregister this instance as CAT-handler if it previously registered
-      if(self->dev->proxy.chroma_adaptation == this)
+      if(self->dev->proxy.chroma_adaptation == self)
         self->dev->proxy.chroma_adaptation = NULL;
     }
   }
@@ -911,13 +910,9 @@ static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
 
 static inline gboolean is_module_cat_on_pipe(struct dt_iop_module_t *self)
 {
-  // Check on the pipeline that we are doing chromatic adaptation here
-  dt_iop_order_entry_t *this
-      = dt_ioppr_get_iop_order_entry(self->dev->iop_order_list, "channelmixerrgb", self->multi_priority);
-
-  if(this == NULL) return FALSE; // there is no point then
-
-  return (self->dev->proxy.chroma_adaptation == this);
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  if(!g) return FALSE;
+  return self->dev->proxy.chroma_adaptation == self;
 }
 
 
@@ -1863,7 +1858,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
 
   gui_changed(self, NULL, NULL);
-
 }
 
 void init(dt_iop_module_t *module)
@@ -1893,9 +1887,11 @@ void reload_defaults(dt_iop_module_t *module)
   // try to register the CAT here
   declare_cat_on_pipe(module, is_modern);
   // check if we could register
-  gboolean CAT_already_applied = !is_module_cat_on_pipe(module);
-  module->default_enabled = FALSE;
+  gboolean CAT_already_applied =
+    (module->dev->proxy.chroma_adaptation != NULL)       // CAT exists
+    && (module->dev->proxy.chroma_adaptation != module); // and it is not us
 
+  module->default_enabled = FALSE;
 
   const dt_image_t *img = &module->dev->image_storage;
 
@@ -2080,7 +2076,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 
   --darktable.gui->reset;
-
 }
 
 
