@@ -3087,6 +3087,24 @@ int dt_iop_count_instances(dt_iop_module_so_t *module)
   return inst_count;
 }
 
+gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module)
+{
+  gboolean is_first = TRUE;
+  GList *iop = modules;
+  while(iop)
+  {
+    dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+    if(!strcmp(m->op, module->op))
+    {
+      is_first = (m == module);
+      break;
+    }
+    iop = g_list_next(iop);
+  }
+
+  return is_first;
+}
+
 void dt_iop_refresh_center(dt_iop_module_t *module)
 {
   if(darktable.gui->reset) return;

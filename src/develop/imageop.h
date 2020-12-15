@@ -657,6 +657,9 @@ dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *
 /** count instances of a module **/
 int dt_iop_count_instances(dt_iop_module_so_t *module);
 
+/** returns true if module is the first instance of this operation in the pipe */
+gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
+
 
 /** get module flags, works in dev and lt mode */
 int get_module_flags(const char *op);
