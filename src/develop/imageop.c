@@ -1204,10 +1204,8 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
     {
       module->enabled = 0;
 
-      //if current module is set as the CAT instance, remove that setting
-      dt_iop_order_entry_t *CAT_instance = module->dev->proxy.chroma_adaptation;
-
-      if(CAT_instance != NULL && CAT_instance->o.iop_order == module->iop_order)
+      //  if current module is set as the CAT instance, remove that setting
+      if(module->dev->proxy.chroma_adaptation == module)
         module->dev->proxy.chroma_adaptation = NULL;
 
       dt_iop_set_module_in_trouble(module, FALSE);
@@ -3085,6 +3083,24 @@ int dt_iop_count_instances(dt_iop_module_so_t *module)
     iop_mods = g_list_previous(iop_mods);
   }
   return inst_count;
+}
+
+gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module)
+{
+  gboolean is_first = TRUE;
+  GList *iop = modules;
+  while(iop)
+  {
+    dt_iop_module_t *m = (dt_iop_module_t *)iop->data;
+    if(!strcmp(m->op, module->op))
+    {
+      is_first = (m == module);
+      break;
+    }
+    iop = g_list_next(iop);
+  }
+
+  return is_first;
 }
 
 void dt_iop_refresh_center(dt_iop_module_t *module)
