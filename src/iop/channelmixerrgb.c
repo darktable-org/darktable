@@ -1863,7 +1863,6 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
 
   gui_changed(self, NULL, NULL);
-
 }
 
 void init(dt_iop_module_t *module)
@@ -2080,7 +2079,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 
   --darktable.gui->reset;
-
 }
 
 
