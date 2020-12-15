@@ -150,8 +150,7 @@ darktable.print_log("Hello World !")</programlisting>
       </para>
 
       <para>
-<programlisting language="lua">
-local darktable = require "darktable"
+<programlisting language="lua">local darktable = require "darktable"
 local debug = require "darktable.debug"
 print(darktable.debug.dump(darktable.database[1]))</programlisting>
       </para>
@@ -253,8 +252,7 @@ toplevel (userdata,dt_lua_image_t) : /images/100.JPG
       </para>
 
       <para>
-<programlisting language="lua">
-darktable = require "darktable"
+<programlisting language="lua">darktable = require "darktable"
 for _,v in ipairs(darktable.database) do
   if v.red then
     print(tostring(v))
@@ -310,8 +308,7 @@ end</programlisting>
       </para>
 
       <para>
-<programlisting language="lua">
-darktable = require "darktable"
+<programlisting language="lua">darktable = require "darktable"
 
 local function hello_shortcut(event, shortcut)
 darktable.print("Hello, I just received '"..event..
@@ -319,8 +316,7 @@ darktable.print("Hello, I just received '"..event..
 end
 
 darktable.register_event("shortcut",hello_shortcut,
-       "A shortcut that print its parameters")
-      </programlisting>
+       "A shortcut that print its parameters")</programlisting>
       </para>
 
       <para>
@@ -355,16 +351,14 @@ darktable.register_event("shortcut",hello_shortcut,
       </para>
 
       <para>
-<programlisting language="lua">
-darktable = require "darktable"
+<programlisting language="lua">darktable = require "darktable"
 
 darktable.register_event("shortcut",function(event,shortcut)
     local images = darktable.gui.action_images
     for _,v in pairs(images) do
       v.rating = v.rating + 1
     end
-  end,"Increase the rating of an image")
-      </programlisting>
+    end,"Increase the rating of an image")      </programlisting>
       </para>
 
       <para>
@@ -426,8 +420,7 @@ stack traceback:
       </para>
 
       <para>
-<programlisting language="lua">
-darktable.register_event("shortcut",function(event,shortcut)
+<programlisting language="lua">darktable.register_event("shortcut",function(event,shortcut)
     local images = darktable.gui.action_images
     for _,v in pairs(images) do
       result,message = pcall(function()
@@ -473,8 +466,7 @@ end,"Increase the rating of an image")</programlisting>
       </para>
 
       <para>
-<programlisting language="lua">
-darktable = require "darktable"
+<programlisting language="lua">darktable = require "darktable"
 
 darktable.preferences.register("scp_export","export_path",
   "string","target SCP path",
@@ -575,15 +567,13 @@ end)</programlisting>
         view with a simple label
       </para>
 
-<programlisting language="lua">
-local my_label = darktable.new_widget("label")
-my_label.label = "Hello, world !"
+      <programlisting language="lua">local my_label = darktable.new_widget("label")
+      my_label.label = "Hello, world !"
 
 
 dt.register_lib("test","test",false,{
     [dt.gui.views.lighttable] = {"DT_UI_CONTAINER_PANEL_LEFT_CENTER",20},
-    },my_label)
-    </programlisting>
+    },my_label)    </programlisting>
 
       <para>
         There is a nice syntactic trick to make UI element code easier to read and write. You
@@ -592,20 +582,17 @@ dt.register_lib("test","test",false,{
         sub-widgets. A label and a text entry field.
       </para>
 
-<programlisting language="lua">
-	local my_widget = darktable.new_widget("box"){
+<programlisting language="lua">	local my_widget = darktable.new_widget("box"){
 		orientation = "horizontal",
 		darktable.new_widget("label"){ label = "here => " },
 		darktable.new_widget("entry"){ tooltip = "please enter text here" }
-	}
-</programlisting>
+	}</programlisting>
 
       <para>
         Now that we know that, let's improve our script a bit.
       </para>
 
-<programlisting language="lua">
-darktable = require "darktable"
+<programlisting language="lua">darktable = require "darktable"
 
 local scp_path = darktable.new_widget("entry"){
   tooltip ="Complete path to copy to. Can include user and hostname",
@@ -630,8 +617,7 @@ darktable.register_storage("scp_export","Export via scp",
     orientation ="horizontal",
     darktable.new_widget("label"){label = "target SCP PATH "},
     scp_path,
-})
-</programlisting>
+})</programlisting>
 
     </sect2>
 
@@ -647,8 +633,7 @@ darktable.register_storage("scp_export","Export via scp",
       </para>
 
       <para>
-<programlisting language="lua">
---[[
+<programlisting language="lua">--[[
 SCP STORAGE
 a simple storage to export images via scp
 
@@ -696,8 +681,7 @@ darktable.register_storage("scp_export","Export via scp",
     orientation ="horizontal",
     darktable.new_widget("label"){label = "target SCP PATH "},
     scp_path,
-})
-</programlisting>
+})</programlisting>
       </para>
 
       <para>
@@ -802,8 +786,7 @@ require("darktable.debug")
 
 for k,v in ipairs(dt.database) do
 	print(tostring(v))
-end
-</programlisting>
+end</programlisting>
       </para>
 
       <para>

@@ -60,8 +60,7 @@
       </para>
 
       <para>
-<programlisting>env LANG=C gphoto2 --port usb: --capture-image-and-download
-</programlisting>
+<programlisting>env LANG=C gphoto2 --port usb: --capture-image-and-download</programlisting>
       </para></listitem>
 
       <listitem><para>
@@ -76,8 +75,7 @@
       </para>
 
       <para>
-<programlisting>env LANG=C gphoto2 --port usb: --capture-tethered
-</programlisting>
+<programlisting>env LANG=C gphoto2 --port usb: --capture-tethered</programlisting>
       </para></listitem>
 
     </orderedlist>
@@ -97,8 +95,7 @@
     </para>
 
     <para>
-<programlisting>--debug --debug-file gphoto2_debug.log
-</programlisting>
+<programlisting>--debug --debug-file gphoto2_debug.log</programlisting>
     </para>
 
     <para>
@@ -110,8 +107,7 @@
     </para>
 
     <para>
-<programlisting>darktable -d camctl 2&gt;1 &gt;camctl.log
-</programlisting>
+<programlisting>darktable -d camctl 2&gt;1 &gt;camctl.log</programlisting>
     </para>
 
   </sect2>

@@ -245,8 +245,14 @@
     </para>
 
     <para>
-      In the case of the waveform and RGB parade scopes, the colorspace depends on the
-      <programlisting>cache_color_managed</programlisting> configuration variable. In its
+      In the case of the waveform and RGB parade scopes, the colorspace depends
+      on the
+    </para>
+    <para>
+      <programlisting>cache_color_managed</programlisting>
+    </para>
+    <para>
+      configuration variable. In its
       default (<emphasis>true</emphasis>) setting, these scopes are calculated in the
       <quote>Adobe RGB (compatible)</quote> colorspace. Otherwise, they are calculated in the
       display colorspace.

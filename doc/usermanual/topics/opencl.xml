@@ -283,8 +283,7 @@
 
     <para>
 <programlisting>nvidia
-nvidia_uvm
-</programlisting>
+nvidia_uvm</programlisting>
     </para>
 
     <para>
@@ -295,8 +294,7 @@ nvidia_uvm
     <para>
 <programlisting>crw-rw-rw- 1 root root 195,   0 Jul 28 21:13 /dev/nvidia0
 crw-rw-rw- 1 root root 195, 255 Jul 28 21:13 /dev/nvidiactl
-crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
-</programlisting>
+crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm</programlisting>
     </para>
 
     <para>
@@ -328,8 +326,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-<programlisting>darktable -d opencl
-</programlisting>
+<programlisting>darktable -d opencl</programlisting>
     </para>
 
     <para>
@@ -522,8 +519,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-<programlisting>darktable -d opencl -d perf
-</programlisting>
+<programlisting>darktable -d opencl -d perf</programlisting>
     </para>
 
     <para>
@@ -780,8 +776,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-<programlisting>a,b,c.../k,l,m.../o,p,q.../x,y,z...
-</programlisting>
+<programlisting>a,b,c.../k,l,m.../o,p,q.../x,y,z...</programlisting>
     </para>
 
     <para>
@@ -830,8 +825,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-<programlisting>*/!0,*/*/*
-</programlisting>
+<programlisting>*/!0,*/*/*</programlisting>
     </para>
 
     <para>
@@ -862,8 +856,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
                           OpenCL devices available to darktable:
 [opencl_init]           0       'GeForce GTS 450'
 [opencl_init]           1       'Tahiti'
-[opencl_init] FINALLY: opencl is AVAILABLE on this system.
-</programlisting>
+[opencl_init] FINALLY: opencl is AVAILABLE on this system.</programlisting>
     </para>
 
     <para>
@@ -879,8 +872,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-<programlisting>!GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*
-</programlisting>
+<programlisting>!GeForce GTS450,*/!Tahiti,*/Tahiti,*/Tahiti,*</programlisting>
     </para>
 
     <para>
@@ -920,8 +912,7 @@ crw-rw-rw- 1 root root 250,   0 Jul 28 21:13 /dev/nvidia-uvm
     </para>
 
     <para>
-<programlisting>darktable --disable-opencl
-</programlisting>
+<programlisting>darktable --disable-opencl</programlisting>
     </para>
 
     <para>
