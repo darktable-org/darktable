@@ -652,7 +652,7 @@ dt_iop_module_t *dt_iop_get_module(const char *op);
     if multi_priority == -1 do not checl for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
 /** returns module with op + multi_name or NULL if not found on the list,
-    if multi_name == NULL do not checl for it */
+    if multi_name == NULL do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
 
 
