@@ -73,7 +73,8 @@
     For example, if you want to change main text color, let's say to apply a pure white color, just copy/paste 
     line 76 from darktable.css to define a @grey_100 which is a pure white color set in same css file. That way, 
     you will have that line in CSS editor:
-    
+  </para>
+    <para>
     <programlisting>@define-color fg_color @grey_100;</programlisting>
   </para>
 
