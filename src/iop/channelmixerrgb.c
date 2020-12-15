@@ -623,7 +623,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        dt_simd_memcpy(temp_one, temp_two, 4);
+        for(size_t c = 0; c < 3; ++c) temp_two[c] = temp_one[c];
         // No white balance.
         break;
       }
