@@ -78,8 +78,8 @@ msgstr ""
 "Project-Id-Version: darktable 3.1.0+2497-g5e79abff2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-06 14:57+0100\n"
-"PO-Revision-Date: 2020-12-06 17:11+0100\n"
-"Last-Translator: Matjaž Jeran <matjaz.jeran@amis.net>\n"
+"PO-Revision-Date: 2020-12-14 23:06+0100\n"
+"Last-Translator: Matjaž Jeran <jurka.jeran@amis.net>\n"
 "Language-Team: Slovenian <lugos-slo@lugos.si>\n"
 "Language: sl\n"
 "MIME-Version: 1.0\n"
@@ -118,7 +118,7 @@ msgstr "pomik lečja (horizontalno)"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:132
 #: ../build/lib/darktable/plugins/introspection_ashift.c:253
 msgid "shear"
-msgstr "ostriži"
+msgstr "prireži"
 
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:138
@@ -142,7 +142,7 @@ msgstr "odvisnost objektiva"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:156
 #: ../build/lib/darktable/plugins/introspection_ashift.c:269
 msgid "aspect adjust"
-msgstr "prilagoditev razmerja proporcev"
+msgstr "prilagoditev razmerja stranic"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:162
 #: ../build/lib/darktable/plugins/introspection_ashift.c:273
@@ -1167,7 +1167,7 @@ msgstr "gostota"
 #: ../build/lib/darktable/plugins/introspection_watermark.c:235
 #: ../src/iop/ashift.c:4732
 msgid "rotation"
-msgstr "vrtenje"
+msgstr "zasuk"
 
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:81
 #: ../build/lib/darktable/plugins/introspection_graduatednd.c:148
@@ -2613,7 +2613,7 @@ msgid ""
 "pixel interpolator used in rotation and lens correction (bilinear, bicubic, "
 "lanczos2, lanczos3)."
 msgstr ""
-"uporabljena interpolacija pikslov in rotacij ter popravkov leč (bilinearna, "
+"uporabljena interpolacija pikslov pri zasuku ter popravkov leč (bilinearna, "
 "bikubična, anczos2, lanczos3)."
 
 #: ../build/bin/preferences_gen.h:4681
@@ -6114,11 +6114,11 @@ msgstr "[PATH] spremeni velikost peresa"
 
 #: ../src/develop/masks/masks.c:221
 msgid "[GRADIENT on pivot] rotate shape"
-msgstr "[GRADIENT on pivot] zavrti obliko"
+msgstr "[GRADIENT on pivot] zasukaj obliko"
 
 #: ../src/develop/masks/masks.c:226
 msgid "[GRADIENT creation] set rotation"
-msgstr "[GRADIENT creation] nastavi vrtenje"
+msgstr "[GRADIENT creation] nastavi zasuk"
 
 #: ../src/develop/masks/masks.c:231
 msgid "[GRADIENT] change curvature"
@@ -6146,7 +6146,7 @@ msgstr "[ELLIPSE] preklopi način rabe mehčanja"
 
 #: ../src/develop/masks/masks.c:268
 msgid "[ELLIPSE] rotate shape"
-msgstr "[ELLIPSE] zavrti obliko"
+msgstr "[ELLIPSE] zasukaj obliko"
 
 #: ../src/develop/masks/masks.c:275
 msgid "[BRUSH creation] change size"
@@ -6241,7 +6241,7 @@ msgid ""
 "shift+click to switch feathering mode, ctrl+click to rotate\n"
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"
 msgstr ""
-"shift+klik za preklop rabe mehčanja, ctrl+klik za rotacijo\n"
+"shift+klik za preklop rabe mehčanja, ctrl+klik za zasuk\n"
 "shift+scroll za določanje velikosti peresa, ctrl+scroll za določanje "
 "neprosojnosti oblike (%d%%),"
 
@@ -8676,7 +8676,7 @@ msgid ""
 "shift+click to only fit lens shift"
 msgstr ""
 "avtomatično popravi popačenja vertikalne perspektive\n"
-"ctrl-click samo za prilagajanje rotacije\n"
+"ctrl-click samo za prilagajanje zasuka\n"
 "shift-click samo za prilagajanje zamika lečja"
 
 #: ../src/iop/ashift.c:4837
@@ -8686,7 +8686,7 @@ msgid ""
 "shift+click to only fit lens shift"
 msgstr ""
 "avtomatično popravljanje popačenja horizontalne perspektive\n"
-"ctrl-click samo za prilagajanje rotacije\n"
+"ctrl-click samo za prilagajanje zasuka\n"
 "shift-click samo za prilagajanje zamika lečja"
 
 #: ../src/iop/ashift.c:4840
@@ -8698,10 +8698,10 @@ msgid ""
 "ctrl+shift+click to only fit rotation and lens shift"
 msgstr ""
 "avtomatično popravljanje popačenj vertikalne in horizontalne perspektive; "
-"prilagajanje rotacije, zamika lečja v obeh smereh in striženja\n"
-"ctrl-click samo za prilagajanje rotacije\n"
+"prilagajanje zasuka, zamika lečja v obeh smereh in pristriženja\n"
+"ctrl-click samo za prilagajanje zasuka\n"
 "shift-click samo za prilagajanje zamika lečja ctrl-shift-click samo za "
-"prilagajanje rotacije in zamika lečja"
+"prilagajanje zasuka in zamika lečja"
 
 #: ../src/iop/ashift.c:4846
 msgid ""
@@ -9379,7 +9379,7 @@ msgstr "debelina roba v odstotkih od celotne slike"
 
 #: ../src/iop/borders.c:1034 ../src/iop/clipping.c:2282
 msgid "aspect"
-msgstr "vidik"
+msgstr "razmerje stranic"
 
 #: ../src/iop/borders.c:1038
 msgid "select the aspect ratio or right click and type your own (w:h)"
@@ -10072,7 +10072,7 @@ msgstr "[%s on borders] razmerje obreze"
 #: ../src/iop/clipping.c:3493
 #, c-format
 msgid "[%s] define/rotate horizon"
-msgstr "[%s] določi/zavrti horizont"
+msgstr "[%s] določi/zasukaj horizont"
 
 #: ../src/iop/colisa.c:79
 msgid "contrast brightness saturation"
@@ -12043,7 +12043,7 @@ msgstr "avtomatska detekcija"
 
 #: ../src/iop/flip.c:410
 msgid "no rotation"
-msgstr "brez rotacije"
+msgstr "brez zasuka"
 
 #: ../src/iop/flip.c:414
 msgid "flip horizontally"
@@ -12180,7 +12180,7 @@ msgstr ""
 
 #: ../src/iop/graduatednd.c:1159
 msgid "rotation of filter -180 to 180 degrees"
-msgstr "vrtenje filtra od 180 do 180 stopinj"
+msgstr "zasuk filtra od 180 do 180 stopinj"
 
 #: ../src/iop/graduatednd.c:1170
 msgid "select the hue tone of filter"
@@ -12193,7 +12193,7 @@ msgstr "izberite nasičenje filtra"
 #: ../src/iop/graduatednd.c:1189
 #, c-format
 msgid "[%s on nodes] change line rotation"
-msgstr "[%s on nodes] zamenjaj vrtenje črte"
+msgstr "[%s on nodes] zamenjaj zasuk črte"
 
 #: ../src/iop/graduatednd.c:1194
 #, c-format
@@ -12515,11 +12515,11 @@ msgstr "katere popravke izvesti"
 
 #: ../src/iop/lens.cc:2345
 msgid "target geometry"
-msgstr "geometria cilja"
+msgstr "geometrija cilja"
 
 #: ../src/iop/lens.cc:2346
 msgid "rectilinear"
-msgstr "pravokotno"
+msgstr "pravokotna"
 
 #: ../src/iop/lens.cc:2347
 msgid "fish-eye"
@@ -12527,7 +12527,7 @@ msgstr "ribje oko"
 
 #: ../src/iop/lens.cc:2348
 msgid "panoramic"
-msgstr "panoramsko"
+msgstr "panoramska"
 
 #: ../src/iop/lens.cc:2349
 msgid "equirectangular"
@@ -13838,7 +13838,7 @@ msgid ""
 "automatic pixel rotation\n"
 "only works for the sensors that need it."
 msgstr ""
-"avtomatična rotacija pikslov\n"
+"avtomatično sukanje pikslov\n"
 "deluje samo za senzorje, ki to potrebujejo."
 
 #: ../src/iop/scalepixels.c:54
@@ -14807,7 +14807,7 @@ msgstr "merilo vodnega znaka"
 
 #: ../src/iop/watermark.c:1489
 msgid "the rotation of the watermark"
-msgstr "vrtenje vodnega znaka"
+msgstr "zasuk vodnega znaka"
 
 #: ../src/iop/zonesystem.c:117
 msgid "zone system"
@@ -18759,7 +18759,7 @@ msgid ""
 "guides etc.)"
 msgstr ""
 "nastavite barvo črt, ki prekrivajo sliko (narisane maske, vodniki obrezovanja "
-"in vrtenja, itd.)"
+"in sukanja, itd.)"
 
 #: ../src/views/darkroom.c:2512
 msgid "overlay color"
