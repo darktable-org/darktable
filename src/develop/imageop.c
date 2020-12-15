@@ -1204,10 +1204,8 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
     {
       module->enabled = 0;
 
-      //if current module is set as the CAT instance, remove that setting
-      dt_iop_order_entry_t *CAT_instance = module->dev->proxy.chroma_adaptation;
-
-      if(CAT_instance != NULL && CAT_instance->o.iop_order == module->iop_order)
+      //  if current module is set as the CAT instance, remove that setting
+      if(module->dev->proxy.chroma_adaptation == module)
         module->dev->proxy.chroma_adaptation = NULL;
 
       dt_iop_set_module_in_trouble(module, FALSE);
