@@ -165,6 +165,8 @@
         <listitem><para>
           You can hold down the <emphasis>Shift</emphasis> key increasing the stepsize by a
           factor of 10. You can change this multiplier:
+	</para>
+	<para>
 <programlisting>darkroom/ui/scale_rough_step_multiplier=10.0
 </programlisting>
         </para></listitem>
@@ -172,6 +174,8 @@
         <listitem><para>
           You can hold <emphasis>Ctrl</emphasis> key decreasing the stepsize by a factor of 10.
           You can change this multiplier:
+	</para>
+	<para>
 <programlisting>darkroom/ui/scale_precise_step_multiplier=0.1
 </programlisting>
         </para></listitem>
