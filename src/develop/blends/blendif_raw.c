@@ -28,20 +28,13 @@
 #include "common/math.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/openmp_maths.h"
 #include <math.h>
 
 
 typedef void(_blend_row_func)(const float *const restrict a, float *const restrict b,
                               const float *const restrict mask, const size_t stride);
 
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float x)
-{
-  return fminf(fmaxf(x, 0.0f), 1.0f);
-}
 
 void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const restrict a,
                                       const float *const restrict b, const struct dt_iop_roi_t *const roi_in,

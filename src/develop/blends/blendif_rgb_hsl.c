@@ -29,6 +29,7 @@
 #include "common/math.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/openmp_maths.h"
 #include <math.h>
 
 #define DT_BLENDIF_RGB_CH 4
@@ -38,14 +39,6 @@
 typedef void(_blend_row_func)(const float *const restrict a, float *const restrict b,
                               const float *const restrict mask, const size_t stride);
 
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float x)
-{
-  return fminf(fmaxf(x, 0.0f), 1.0f);
-}
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ: 16)
