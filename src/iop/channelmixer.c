@@ -27,6 +27,7 @@
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -202,14 +203,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     return 0;
   }
   return 1;
-}
-
-#ifdef _OPENMT
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float value)
-{
-  return fmaxf(0.0f, fminf(1.0f, value));
 }
 
 static void process_hsl_v1(dt_dev_pixelpipe_iop_t *piece, const float *const restrict in,
