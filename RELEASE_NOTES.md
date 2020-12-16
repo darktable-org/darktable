@@ -53,7 +53,7 @@ you are strongly advised to take a backup first.
   of modules. A number of pre-defined module groups are included as presets
   (default, minimal, scene-referred, display-referred,
   all modules) as well as a new default module group tab layout (technical / grading / effects),
-  which beter organizes the modules according to their purpose.
+  which better organizes the modules according to their purpose.
 
 - Module masking is now enhanced for use with scene-referred workflows. A new masking implementation
   has been added, with fully unbounded blending modes, which allows parametric masking
@@ -81,11 +81,12 @@ you are strongly advised to take a backup first.
   along with the traditional color-picker for manual sampling of neutral colors.
 
   Color calibration internally implements gamut-mapping and gamut-clipping,
-  which attempts to preserve the hue and luminance of pixels while avoiding imaginary and
-  out-of-gamut colors at the beginning of the pipeline, to improve the robustness of
+  which attempt to preserve the hue and luminance of pixels while avoiding imaginary and
+  out-of-gamut colors at the beginning of the pipeline, in order to improve the robustness of
   color-grading modules inside the pipeline. This is made necessary because
   white balancing will only push input out-of-gamut colors farther away,
-  and will noticeably help dealing with artifical colored lights (LED, stage lighting, etc.).
+  and gamut-mapping and -clipping will noticeably help dealing with artifical colored
+  lights (LED, stage lighting, etc.).
 
   A new workflow setting "chromatic adaptation defaults", in processing preferences,
   allows users to choose to keep using the white balance module
@@ -93,7 +94,10 @@ you are strongly advised to take a backup first.
   or to use the new color calibration instead ("modern" workflow).
   The modern workflow still uses the usual white balance module, although
   with different default settings, because input color profiles and
-  demosaicing need at least a rough white balancing early in the pipe.
+  demosaicing need at least a rough white balancing early in the pipe. The new color
+  calibration necessitates the use of the standard color matrix as the
+  input color profile, and the use of the 'camera referred' setting in the white
+  balance module.
 
 - Map view has evolved. Images close to each other are now grouped and a count of
   grouped images is displayed on the bottom-left corner. This provides better performance
