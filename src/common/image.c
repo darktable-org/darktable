@@ -1078,7 +1078,7 @@ void dt_image_remove(const int32_t imgid)
 
   sqlite3_stmt *stmt;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  int old_group_id = img->group_id;
+  const int old_group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
 
   // make sure we remove from the cache first, or else the cache will look for imgid in sql
@@ -1319,8 +1319,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   int rc;
   uint32_t id = 0;
   // select from images; if found => return
-  gchar *imgfname;
-  imgfname = g_path_get_basename(normalized_filename);
+  gchar *imgfname = g_path_get_basename(normalized_filename);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
