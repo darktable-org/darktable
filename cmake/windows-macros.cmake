@@ -250,6 +250,24 @@ if (WIN32 AND NOT BUILD_MSYS2_INSTALL)
       RENAME curl-ca-bundle.crt
       COMPONENT DTApplication)
 
+  # Add libavif files
+  if(libavif_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #LIBAVIF
+      ${MINGW_PATH}/libavif*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif(libavif_FOUND)
+
+  # Add rsvg2 files
+  if(Rsvg2_FOUND)
+    file(GLOB TMP_SYSTEM_RUNTIME_LIBS
+      #RSVG2
+      ${MINGW_PATH}/librsvg*.dll
+    )
+    list(APPEND CMAKE_INSTALL_SYSTEM_RUNTIME_LIBS ${TMP_SYSTEM_RUNTIME_LIBS})
+  endif(Rsvg2_FOUND)
+
 endif(WIN32 AND NOT BUILD_MSYS2_INSTALL)
 
 endfunction()
