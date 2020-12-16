@@ -58,6 +58,10 @@
 #define INLINE inline
 #endif
 
+#ifdef __SSE__
+#include <x86intrin.h>
+#endif
+
 #define FCRCD(row, col) (cfarray[(((row) & 1)<<1) | ((col) & 1)])
 
 #define RCD_BORDER 9          // must be at least 9 to avoid tile-overlap errors
