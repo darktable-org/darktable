@@ -4,7 +4,7 @@ name: CI
 
 on:
   push:
-    branches: 
+    branches:
       - master
       - darktable-**
     paths-ignore:
@@ -19,7 +19,7 @@ on:
         - "data/watermarks/**"
         - "**.md"
   pull_request:
-    branches: 
+    branches:
       - master
     paths-ignore:
         - "po/**"
@@ -41,7 +41,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        os: 
+        os:
           - { label: ubuntu-20.04, code: focal }
           #- { label: ubuntu-18.04, code: bionic }
         compiler:
@@ -51,7 +51,7 @@ jobs:
           #- { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
           - { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
           #- { compiler: LLVM11, CC: clang-11, CXX: clang++-11, packages: clang-11 libomp-11-dev libclang-common-11-dev llvm-11-dev clang++-11 libc++-11-dev lld-11}
-        btype: 
+        btype:
           - RelWithDebInfo
           - Release
         target:
@@ -62,10 +62,6 @@ jobs:
             btype: Debug
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
             target: skiptest
-          - os: { label: ubuntu-18.04, code: bionic }
-            btype: Release
-            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 default-jdk-headless default-jre-headless docbook docbook-xml docbook-xsl docbook-xsl-saxon fop gnome-doc-utils imagemagick libsaxon-java xsltproc }
-            target: usermanual
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -147,7 +143,6 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}";
           ./src/.ci/ci-script.sh;
       - name: Check if it runs
-        if: ${{ matrix.target != 'usermanual' }}
         run: |
           ${INSTALL_PREFIX}/bin/darktable --version || true
           ${INSTALL_PREFIX}/bin/darktable-cli \
@@ -161,7 +156,6 @@ jobs:
                  --conf plugins/lighttable/export/force_lcms2=FALSE \
                  --conf plugins/lighttable/export/iccintent=0
       - name: Run Integration test suite
-        #if: ${{ matrix.target != 'usermanual' }}
         #integration test can get "stuck" plus there are couple of errors here, so it needs to be addressed first
         if: ${{ false }}
         run: |
