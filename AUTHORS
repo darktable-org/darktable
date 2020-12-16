@@ -1,86 +1,86 @@
 * developers:
 Pascal Obry
-Aldric Renaudin
 Aurélien PIERRE
-Tobias Ellinghaus
-Roman Lebedev
-Ulrich Pegelow
+Aldric Renaudin
 parafin
-Alexandre Prokoudine
+Roman Lebedev
+Tobias Ellinghaus
 
 * translators:
+Jeronimo Pellegrini
 Pascal Obry
 EdgarLux
-jpellegrini
 Heiko Bauke
+Martin Straeten
 Timur Davletshin
-Jeronimo Pellegrini
-Jakub Filipowicz
-mepi0011
-Nicolas Auffray
-Ger Siemerink
 Matjaž Jeran
-Maurizio Paglia
-lkarcz
-Laurent Guillier
-Matteo Mardegan
-Michael Moese
-Michel Leblond
-Tobias Ellinghaus
-Tomasz Golinski
-Ulrich Pegelow
-hanno@schwalm-bremen.de
-igmerti
-jakubfi
-shlomi braitbart
 thisnamewasnottaken
-zerng07
+vertama
+Arch Ont
+Bernhard
+Báthory Péter
+Nicolas Auffray
+jpellegrini
+Alejandro Criado-Pérez
+Cyril Richard
+DWXXX
+Denny Biasiolli
+Diederik ter Rahe
+Jakub Filipowicz
+Marko Vertainen
+Matteo Mardegan
+Michel Leblond
+Miroslav Fikar
+criadoperez
+mrleemon
+shlomi braitbart
+Łukasz Karcz
 
 * contributors (at least 4 commits):
-Chris.Elston
-Diederik ter Rahe
-Philippe Weyland
+ralfbrown
 Hubert Kowalski
-EdgarLux
-Heiko Bauke
-hanno@schwalm-bremen.de
+Diederik ter Rahe
+Jeronimo Pellegrini
 Dan Torop
-Nicolas Auffray
-Andreas Schneider
-Ger Siemerink
-GrahamByrnes
-rawfiner
-jpellegrini
+Chris.Elston
+Philippe Weyland
+hanno@schwalm-bremen.de
+Heiko Bauke
+EdgarLux
+Harold le Clément de Saint-Marcq
 Mark-64
 Bill Ferguson
-ralfbrown
-Marco
-Vasyl Tretiakov
-U-DESKTOP-HQME86Jmarco
-Martin Burri
-Victor Engmark
-Jakub Filipowicz
+Nicolas Auffray
+David-Tillmann Schaefer
+Miloš Komarčević
+rawfiner
+darkelectron
+Matt Maguire
+Ralf Brown
+Alexis Mousset
+dterrahe
+Andreas Schneider
+Martin Straeten
 Hanno Schwalm
-Jeronimo Pellegrini
 Timur Davletshin
-elstoc
-mepi0011
-JP Verrue
-Matthieu Volat
-Sam Smith
-Will Bennett
+Chris Elston
+matt-maguire
 
 * Sub-module rawspeed contributors (at least 1 commit):
 Roman Lebedev
-David-Tillmann Schaefer
-Hubert Kowalski
-Marcel Bollmann
-Martin Straeten
-Tino H. Seifert
-hanno@schwalm-bremen.de
+Bill Ferguson
+Josef Raschen
+Matt Maguire
+Philipp Normann
+Zanhard
+frantic1048
+parafin
+ponkotuy
 
 * Sub-module OpenCL contributors (at least 1 commit):
 
 * Sub-module libxcf contributors (at least 1 commit):
+
+* Sub-module whereami contributors (at least 1 commit):
 
 And all those of you that made previous releases possible

@@ -315,16 +315,37 @@ you are strongly advised to take a backup first.
 ## RawSpeed changes
 
 
-## Camera support, compared to 3.2.0
+## Camera support, compared to 3.2.1
 
 ### Base Support
 
+- Canon EOS REBEL T7i
+- Nikon Z 5 (14bit-compressed, 12bit-compressed)
+- Olympus E-M10 Mark IV
+- Panasonic DC-GX7MK3 (4:3)
+- Panasonic DC-S5 (3:2)
+- Sony ILCE-7C
+- Sony ZV-1
 
 ### White Balance Presets
 
+- Canon EOS 200D
+- Canon EOS Kiss X9
+- Canon EOS Rebel SL2
+- Canon EOS M5
+- Canon EOS M6
+- Nikon 1 V2
+- Nikon Z 50
+- Sony ILCE-6600
 
 ### Noise Profiles
 
+- Panasonic DC-G90
+- Panasonic DC-G91
+- Panasonic DC-G95
+- Panasonic DC-G99
+- Ricoh GR II
+- Sony NEX-5T
 
 ## Translations
 
