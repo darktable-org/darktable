@@ -28,6 +28,7 @@
 #include "common/illuminants.h"
 #include "common/iop_profile.h"
 #include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
@@ -392,24 +393,6 @@ static inline float scalar_product(const float v_1[4], const float v_2[4])
   float DT_ALIGNED_PIXEL premul[4] = { 0.f };
   for(size_t c = 0; c < 3; c++) premul[c] = v_1[c] * v_2[c];
   return premul[0] + premul[1] + premul[2];
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float sqf(const float x)
-{
-  return x * x;
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float x)
-{
-  return fminf(fmaxf(x, 0.0f), 1.0f);
 }
 
 
