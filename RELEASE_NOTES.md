@@ -349,18 +349,17 @@ you are strongly advised to take a backup first.
 
 ## Translations
 
-- Catalan
+- Afrikaans
 - Czech
-- Danish
 - German
 - European Spanish
+- Finnish
 - French
 - Hebrew
 - Hungarian
 - Italian
-- Japanese
-- Norwegian Bokmål
-- Dutch
 - Polish
+- Brazilian Portuguese
 - Russian
+- Slovak
 - Slovenian
