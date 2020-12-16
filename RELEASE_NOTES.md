@@ -31,7 +31,8 @@ you are strongly advised to take a backup first.
   release. Note that this user manual is also the last version as a
   new project has taken over the lead on this. The goal is to have
   an up-to-date user manual by using a simpler format
-  to write text for contributors.
+  to write text for contributors. Feedback or contributions for the
+  new format are welcome at https://github.com/darktable-org/dtdocs.
 
   Current manual (multilingual):
 
