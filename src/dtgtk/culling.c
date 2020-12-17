@@ -1549,7 +1549,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       }
       l = g_list_next(l);
     }
-    if(!in_list)
+    if(!in_list && table->list && g_list_length(table->list) > 0)
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
       dt_control_set_mouse_over_id(thumb->imgid);
