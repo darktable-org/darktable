@@ -299,17 +299,17 @@ failed:
 
 static void _warning_error_handler(const char *type, const char* module, const char* fmt, va_list ap)
 {
-  if(!g_strcmp0(type, "error") || ( !g_strcmp0(type, "warning") && (darktable.unmuted & DT_DEBUG_IMAGEIO)))
-  {
-    fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
-    vfprintf(stderr, fmt, ap);
-    fprintf(stderr, "\n");
-  }
+  fprintf(stderr, "[tiff_open] %s: %s: ", type, module);
+  vfprintf(stderr, fmt, ap);
+  fprintf(stderr, "\n");
 }
 
 static void _warning_handler(const char* module, const char* fmt, va_list ap)
 {
-  _warning_error_handler("warning", module, fmt, ap);
+  if(darktable.unmuted & DT_DEBUG_IMAGEIO)
+  {
+    _warning_error_handler("warning", module, fmt, ap);
+  }
 }
 
 static void _error_handler(const char* module, const char* fmt, va_list ap)
