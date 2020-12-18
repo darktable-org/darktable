@@ -72,7 +72,7 @@ typedef struct dt_iop_colorbalancergb_params_t
   float chroma_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
   float chroma_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
   float saturation_offset; // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation offset"
-  float saturation_factor; // $MIN: -0.5 $MAX: 0.5 $DEFAULT: 0.0 $DESCRIPTION: "saturation factor"
+  float saturation_factor; // $MIN: -1. $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation factor"
   float hue_angle;         // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
 } dt_iop_colorbalancergb_params_t;
 
@@ -649,7 +649,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("chroma grading")), FALSE, FALSE, 0);
 
   g->chroma_global = dt_bauhaus_slider_from_params(self, "chroma_global");
-  dt_bauhaus_slider_set_soft_range(g->chroma_global, -0.5, 0.5);
+  dt_bauhaus_slider_set_soft_range(g->chroma_global, 0., 0.005);
   dt_bauhaus_slider_set_digits(g->chroma_global, 4);
   dt_bauhaus_slider_set_factor(g->chroma_global, 100.0f);
   dt_bauhaus_slider_set_format(g->chroma_global, "%.2f %%");
@@ -699,7 +699,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->global_H), TRUE, TRUE, 0);
 
   g->global_C = dt_bauhaus_slider_from_params(self, "global_C");
-  dt_bauhaus_slider_set_soft_range(g->global_C, 0., 0.02);
+  dt_bauhaus_slider_set_soft_range(g->global_C, 0., 0.005);
   dt_bauhaus_slider_set_digits(g->global_C, 4);
   dt_bauhaus_slider_set_factor(g->global_C, 100.0f);
   dt_bauhaus_slider_set_format(g->global_C, "%.2f %%");
@@ -725,7 +725,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->shadows_H), TRUE, TRUE, 0);
 
   g->shadows_C = dt_bauhaus_slider_from_params(self, "shadows_C");
-  dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.2);
+  dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.1);
   dt_bauhaus_slider_set_step(g->shadows_C, 0.01);
   dt_bauhaus_slider_set_digits(g->shadows_C, 4);
   dt_bauhaus_slider_set_factor(g->shadows_C, 100.0f);
@@ -744,7 +744,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("midtones")), FALSE, FALSE, 0);
 
   g->midtones_Y = dt_bauhaus_slider_from_params(self, "midtones_Y");
-  dt_bauhaus_slider_set_soft_range(g->midtones_Y, -0.5, 0.5);
+  dt_bauhaus_slider_set_soft_range(g->midtones_Y, -0.25, 0.25);
   dt_bauhaus_slider_set_factor(g->midtones_Y, 100.0f);
   dt_bauhaus_slider_set_digits(g->midtones_Y, 4);
   dt_bauhaus_slider_set_format(g->midtones_Y, "%.2f %%");
@@ -760,7 +760,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->midtones_H), TRUE, TRUE, 0);
 
   g->midtones_C = dt_bauhaus_slider_from_params(self, "midtones_C");
-  dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.10);
+  dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.02);
   dt_bauhaus_slider_set_step(g->midtones_C, 0.005);
   dt_bauhaus_slider_set_digits(g->midtones_C, 4);
   dt_bauhaus_slider_set_factor(g->midtones_C, 100.0f);
@@ -795,7 +795,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->highlights_H), TRUE, TRUE, 0);
 
   g->highlights_C = dt_bauhaus_slider_from_params(self, "highlights_C");
-  dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.2);
+  dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.05);
   dt_bauhaus_slider_set_step(g->shadows_C, 0.01);
   dt_bauhaus_slider_set_digits(g->highlights_C, 4);
   dt_bauhaus_slider_set_factor(g->highlights_C, 100.0f);
