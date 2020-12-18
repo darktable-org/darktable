@@ -114,6 +114,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {31.0f }, "equalizer", 0},
   { {32.0f }, "vibrance", 0},
   { {33.0f }, "colorbalance", 0},
+  { {33.5f }, "colorbalancergb", 0},
   { {34.0f }, "colorize", 0},
   { {35.0f }, "colortransfer", 0},
   { {36.0f }, "colormapping", 0},
@@ -216,6 +217,7 @@ const dt_iop_order_entry_t v30_order[] = {
                                   //    very good in scene-referred workflow
   { {40.0f }, "basicadj", 0},        // module mixing view/model/control at once, usage should be discouraged
   { {41.0f }, "colorbalance", 0},    // scene-referred color manipulation
+  { {41.5f }, "colorbalancergb", 0},    // scene-referred color manipulation
   { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
   { {43.0f }, "rgblevels", 0},       // same
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
@@ -660,6 +662,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "nlmeans", "negadoctor");
           _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
           _insert_before(iop_order_list, "negadoctor", "censorize");
+          _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
