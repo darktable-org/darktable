@@ -36,8 +36,6 @@
 /* some notes about the algorithm
   - the calculated data at the borders are not stable for tiling if we don't use
     a RCD_BORDER of at least 9. The bordersize is the overlapping region for tiles.
-  - RCD_INTERPOLATE can be 6, we take the better data from rcd algorithm and only
-    border_interpolate the missing 4 and wrong 2 outermost rcd pixels for outer tiles.
   - Is it safe to use -Ofast? Yes
 */
 
@@ -65,7 +63,6 @@
 #define FCRCD(row, col) (cfarray[(((row) & 1)<<1) | ((col) & 1)])
 
 #define RCD_BORDER 9          // must be at least 9 to avoid tile-overlap errors
-#define RCD_INTERPOLATE 6     // we don't have to approximate the whole border
 #define RCD_TILEVALID (RCD_TILESIZE - 2 * RCD_BORDER)
 #define w1 RCD_TILESIZE
 #define w2 (2 * RCD_TILESIZE)
@@ -607,14 +604,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             }
           }
         }
-        const int row_end = rowEnd - (tile_vertical == num_vertical - 1 ? RCD_INTERPOLATE : RCD_BORDER);
-        for(int row = rowStart + (tile_vertical == 0 ? RCD_INTERPOLATE : RCD_BORDER); row < row_end; row++)
+        for(int row = rowStart + RCD_BORDER; row < rowEnd - RCD_BORDER; row++)
         {
-          int col = colStart + (tile_horizontal == 0 ? RCD_INTERPOLATE : RCD_BORDER);
+          int col = colStart + RCD_BORDER;
           int o_idx = (row * width + col) * 4;
-          const int col_end = colEnd - (tile_horizontal == num_horizontal -1 ? RCD_INTERPOLATE : RCD_BORDER);
           int idx = (row - rowStart) * RCD_TILESIZE + col - colStart;
-          for(; col < col_end ; col++, o_idx += 4, idx++)
+          for(; col < colEnd - RCD_BORDER ; col++, o_idx += 4, idx++)
           {
             out[o_idx]   = scaler * limit01(rgb[0][idx]);
             out[o_idx+1] = scaler * limit01(rgb[1][idx]);
@@ -630,12 +625,11 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     dt_free_align(PQ_Dir);
   }
 
-  rcd_border_interpolate(out, in, cfarray, width, height, RCD_INTERPOLATE);
+  rcd_border_interpolate(out, in, cfarray, width, height, RCD_BORDER);
 }
 
 #undef FCRCD
 #undef RCD_BORDER
-#undef RCD_INTERPOLATE
 #undef RCD_TILEVALID
 #undef w1
 #undef w2
