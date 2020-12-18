@@ -80,7 +80,7 @@ dt_imageio_retval_t dt_imageio_open_gm(dt_image_t *img, const char *filename, dt
     goto error;
   }
 
-  fprintf(stderr, "[GraphicsMagick_open] image `%s' loading\n", img->filename);
+  dt_print(DT_DEBUG_IMAGEIO, "[GraphicsMagick_open] image `%s' loading\n", img->filename);
 
   width = image->columns;
   height = image->rows;
