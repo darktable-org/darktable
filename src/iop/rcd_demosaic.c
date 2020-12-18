@@ -76,6 +76,8 @@
 #define epssq 1e-10
 
 /* Some macros and inline functions taken from amaze_demosaic_RT */
+// Only include the vector macros/functions for SSE
+#ifdef __SSE2__
 typedef __m128i vmask;
 typedef __m128 vfloat;
 
@@ -160,15 +162,13 @@ static INLINE vfloat vminf(vfloat x, vfloat y)
 {
   return _mm_min_ps(x, y);
 }
+#endif
 
 static INLINE float limit01(float a)
 {
   return a > 1.0f ? 1.0f : (a > 0.0f ? a : 0.0f);
 }
-static INLINE float fmul2(float a)
-{
-  return a + a;
-} 
+
 static INLINE float intp(float a, float b, float c)
 {
     // calculate a * b + (1 - a) * c
@@ -375,7 +375,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
           for(int col = 4, indx = row * RCD_TILESIZE + col; col < tileCols - 4; col++, indx++)
           {
             const float V_Stat = fmaxf(epssq,
-               -fmul2(cfa[indx]) * (9.f * (cfa[indx - w1] + cfa[indx + w1] - cfa[indx - w3] - cfa[indx + w3] + fmul2(cfa[indx - w2] + cfa[indx + w2]) ) + cfa[indx - w4] + cfa[indx + w4] - 19.f * cfa[indx])
+               -2.0f * (cfa[indx]) * (9.f * (cfa[indx - w1] + cfa[indx + w1] - cfa[indx - w3] - cfa[indx + w3] + 2.0f * (cfa[indx - w2] + cfa[indx + w2]) ) + cfa[indx - w4] + cfa[indx + w4] - 19.f * cfa[indx])
               - 70.f * cfa[indx - w1] * cfa[indx + w1]
               - 12.f * (cfa[indx - w1] * cfa[indx - w2] - cfa[indx - w1] * cfa[indx - w4] + cfa[indx + w1] * cfa[indx + w2] - cfa[indx + w1] * cfa[indx + w4] + cfa[indx - w2] * cfa[indx + w3] + cfa[indx + w2] * cfa[indx - w3])
               + 24.f * (cfa[indx - w1] * cfa[indx + w2] + cfa[indx + w1] * cfa[indx - w2])
@@ -384,7 +384,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
               + 46.f * (cfa[indx - w1] * cfa[indx - w1] + cfa[indx + w1] * cfa[indx + w1])
               - 38.f * (cfa[indx + w1] * cfa[indx + w3] + cfa[indx - w1] * cfa[indx - w3])
               + 14.f * cfa[indx - w2] * cfa[indx + w2]
-              - fmul2((cfa[indx - w2] - cfa[indx + w2]) * (cfa[indx - w4] - cfa[indx + w4]) - cfa[indx - w3] * cfa[indx + w3])
+              - 2.0f * ((cfa[indx - w2] - cfa[indx + w2]) * (cfa[indx - w4] - cfa[indx + w4]) - cfa[indx - w3] * cfa[indx + w3])
               + 11.f * (cfa[indx - w2] * cfa[indx - w2] + cfa[indx + w2] * cfa[indx + w2])
               + 10.f * (cfa[indx - w3] * cfa[indx - w3] + cfa[indx + w3] * cfa[indx + w3])
               + cfa[indx - w4] * cfa[indx - w4]
@@ -393,13 +393,13 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 
             const float cfai = cfa[indx];
             const float H_Stat = fmaxf(epssq,
-                -18.f * cfai * (cfa[indx -  1] + cfa[indx +  1] + fmul2(cfa[indx -  2] + cfa[indx +  2]) - cfa[indx -  3] - cfa[indx +  3])
-                -fmul2(cfai) * (cfa[indx -  4] + cfa[indx +  4] - 19.f * cfai)
-                - cfa[indx -  1] * (70.f * cfa[indx +  1] + 12.f * (cfa[indx -  2] - cfa[indx -  4] - fmul2(cfa[indx +  2])) + 38.f * cfa[indx -  3] - 16.f * cfa[indx +  3] + 6.f * cfa[indx +  4] - 46.f * cfa[indx -  1])
+                -18.f * cfai * (cfa[indx -  1] + cfa[indx +  1] + 2.0f * (cfa[indx -  2] + cfa[indx +  2]) - cfa[indx -  3] - cfa[indx +  3])
+                - 2.0f * cfai * (cfa[indx -  4] + cfa[indx +  4] - 19.f * cfai)
+                - cfa[indx -  1] * (70.f * cfa[indx +  1] + 12.f * (cfa[indx -  2] - cfa[indx -  4] - 2.0f * cfa[indx +  2]) + 38.f * cfa[indx -  3] - 16.f * cfa[indx +  3] + 6.f * cfa[indx +  4] - 46.f * cfa[indx -  1])
                 + cfa[indx +  1] * (24.f * cfa[indx -  2] + 12.f * (cfa[indx +  4] - cfa[indx +  2]) + 16.f * cfa[indx -  3] - 38.f * cfa[indx +  3] -  6.f * cfa[indx -  4] + 46.f * cfa[indx +  1])
-                + cfa[indx -  2] * (14.f * cfa[indx +  2] - 12.f * cfa[indx +  3] -fmul2(cfa[indx -  4]) + fmul2(cfa[indx +  4]) + 11.f * cfa[indx -  2])
-                + cfa[indx +  2] * (-12.f * cfa[indx -  3] + fmul2(cfa[indx -  4] - cfa[indx +  4]) + 11.f * cfa[indx +  2])
-                + cfa[indx -  3] * (fmul2(cfa[indx +  3]) - 6.f * cfa[indx -  4] + 10.f * cfa[indx -  3])
+                + cfa[indx -  2] * (14.f * cfa[indx +  2] - 12.f * cfa[indx +  3] - 2.0f * cfa[indx -  4] + 2.0f * cfa[indx +  4] + 11.f * cfa[indx -  2])
+                + cfa[indx +  2] * (-12.f * cfa[indx -  3] + 2.0f * (cfa[indx -  4] - cfa[indx +  4]) + 11.f * cfa[indx +  2])
+                + cfa[indx -  3] * (2.0f * cfa[indx +  3] - 6.f * cfa[indx -  4] + 10.f * cfa[indx -  3])
                 + cfa[indx +  3] * (-6.f * cfa[indx +  4] + 10.f * cfa[indx +  3])
                 + cfa[indx -  4] * cfa[indx -  4]
                 + cfa[indx +  4] * cfa[indx +  4]);
@@ -409,11 +409,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 
         // STEP 2: Calculate the low pass filter
         // Step 2.1: Low pass filter incorporating green, red and blue local samples from the raw data
+        // as an index>>1 access breaks proper vectorizing we use an extra index for the lpf results
         for(int row = 2; row < tileRows - 2; row++)
         {
-          for(int col = 2 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col; col < tileCols - 2; col += 2, indx +=2)
+          for(int col = 2 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, lp_indx = indx / 2; col < tileCols - 2; col += 2, indx +=2, lp_indx++)
           {
-            lpf[indx>>1] = 0.25f * cfa[indx]
+            lpf[lp_indx] = 0.25f * cfa[indx]
                         + 0.125f * (cfa[indx - w1] + cfa[indx + w1] + cfa[indx - 1] + cfa[indx + 1])
                        + 0.0625f * (cfa[indx - w1 - 1] + cfa[indx - w1 + 1] + cfa[indx + w1 - 1] + cfa[indx + w1 + 1]);
           }
@@ -425,14 +426,14 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         {
           int col = 4 + (FCRCD(row, 0) & 1);
           int indx = row * RCD_TILESIZE + col;
-          // There has been quite some performance testing for the generic vs. SSE2 loop, even if we unroll and disable the
-          // low-pass-filter index>>1 trick the generated code (-O3)is not as fast as Ingos SSE2 specific code (~6% loss)
-          // so we keep it.
+          int lp_indx = indx / 2;
+          // There has been quite some performance testing for the generic vs. SSE2 optimized loop, as the generated generic code (-O3)
+          // is not as fast as Ingos optmized code (~4% loss) we keep the SSE2 specific path.
 #ifdef __SSE2__
           const vfloat zd5v = F2V(0.5f);
           const vfloat zd25v = F2V(0.25f);
           const vfloat epsv = F2V(eps);
-          for (; col < tileCols - 7; col += 8, indx += 8)
+          for (; col < tileCols - 7; col += 8, indx += 8, lp_indx +=4)
           {
             // Cardinal gradients
             const vfloat cfai = LC2VFU(&cfa[indx]);
@@ -442,11 +443,11 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             const vfloat E_Grad = epsv + (vabsf(LC2VFU(&cfa[indx +  1]) - LC2VFU(&cfa[indx -  1])) + vabsf(cfai - LC2VFU(&cfa[indx +  2]))) + (vabsf(LC2VFU(&cfa[indx +  1]) - LC2VFU(&cfa[indx +  3])) + vabsf(LC2VFU(&cfa[indx +  2]) - LC2VFU(&cfa[indx +  4])));
 
             // Cardinal pixel estimations
-            const vfloat lpfi = LVFU(lpf[indx>>1]);
-            const vfloat N_Est = LC2VFU(&cfa[indx - w1]) + (LC2VFU(&cfa[indx - w1]) * (lpfi - LVFU(lpf[(indx - w2)>>1])) / (epsv + lpfi + LVFU(lpf[(indx - w2)>>1])));
-            const vfloat S_Est = LC2VFU(&cfa[indx + w1]) + (LC2VFU(&cfa[indx + w1]) * (lpfi - LVFU(lpf[(indx + w2)>>1])) / (epsv + lpfi + LVFU(lpf[(indx + w2)>>1])));
-            const vfloat W_Est = LC2VFU(&cfa[indx -  1]) + (LC2VFU(&cfa[indx -  1]) * (lpfi - LVFU(lpf[(indx -  2)>>1])) / (epsv + lpfi + LVFU(lpf[(indx -  2)>>1])));
-            const vfloat E_Est = LC2VFU(&cfa[indx +  1]) + (LC2VFU(&cfa[indx +  1]) * (lpfi - LVFU(lpf[(indx +  2)>>1])) / (epsv + lpfi + LVFU(lpf[(indx +  2)>>1])));
+            const vfloat lpfi = LVFU(lpf[lp_indx]);
+            const vfloat N_Est = LC2VFU(&cfa[indx - w1]) + (LC2VFU(&cfa[indx - w1]) * (lpfi - LVFU(lpf[lp_indx - w1])) / (epsv + lpfi + LVFU(lpf[lp_indx - w1])));
+            const vfloat S_Est = LC2VFU(&cfa[indx + w1]) + (LC2VFU(&cfa[indx + w1]) * (lpfi - LVFU(lpf[lp_indx + w1])) / (epsv + lpfi + LVFU(lpf[lp_indx + w1])));
+            const vfloat W_Est = LC2VFU(&cfa[indx -  1]) + (LC2VFU(&cfa[indx -  1]) * (lpfi - LVFU(lpf[lp_indx -  1])) / (epsv + lpfi + LVFU(lpf[lp_indx -  1])));
+            const vfloat E_Est = LC2VFU(&cfa[indx +  1]) + (LC2VFU(&cfa[indx +  1]) * (lpfi - LVFU(lpf[lp_indx +  1])) / (epsv + lpfi + LVFU(lpf[lp_indx +  1])));
 
             // Vertical and horizontal estimations
             const vfloat V_Est = (S_Grad * N_Est + N_Grad * S_Est) / (N_Grad + S_Grad);
@@ -462,7 +463,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             STC2VFU(rgb[1][indx], result);
           }
 #endif
-          for(; col < tileCols - 4; col += 2, indx +=2)
+          for(; col < tileCols - 4; col += 2, indx +=2, lp_indx++)
           {
             const float cfai = cfa[indx];
 
@@ -472,12 +473,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             const float W_Grad = eps + fabs(cfa[indx -  1] - cfa[indx +  1]) + fabs(cfai - cfa[indx -  2]) + fabs(cfa[indx -  1] - cfa[indx -  3]) + fabs(cfa[indx -  2] - cfa[indx -  4]);
             const float E_Grad = eps + fabs(cfa[indx +  1] - cfa[indx -  1]) + fabs(cfai - cfa[indx +  2]) + fabs(cfa[indx +  1] - cfa[indx +  3]) + fabs(cfa[indx +  2] - cfa[indx +  4]);
 
-            const float lpfi = lpf[indx>>1];
+            const float lpfi = lpf[lp_indx];
             // Cardinal pixel estimations
-            const float N_Est = cfa[indx - w1] + (cfa[indx - w1] * (lpfi - lpf[(indx - w2)>>1]) / (eps + lpfi + lpf[(indx - w2)>>1]));
-            const float S_Est = cfa[indx + w1] + (cfa[indx + w1] * (lpfi - lpf[(indx + w2)>>1]) / (eps + lpfi + lpf[(indx + w2)>>1]));
-            const float W_Est = cfa[indx -  1] + (cfa[indx -  1] * (lpfi - lpf[(indx -  2)>>1]) / (eps + lpfi + lpf[(indx -  2)>>1]));
-            const float E_Est = cfa[indx +  1] + (cfa[indx +  1] * (lpfi - lpf[(indx +  2)>>1]) / (eps + lpfi + lpf[(indx +  2)>>1]));
+            const float N_Est = cfa[indx - w1] + (cfa[indx - w1] * (lpfi - lpf[lp_indx - w1]) / (eps + lpfi + lpf[lp_indx - w1]));
+            const float S_Est = cfa[indx + w1] + (cfa[indx + w1] * (lpfi - lpf[lp_indx + w1]) / (eps + lpfi + lpf[lp_indx + w1]));
+            const float W_Est = cfa[indx -  1] + (cfa[indx -  1] * (lpfi - lpf[lp_indx -  1]) / (eps + lpfi + lpf[lp_indx -  1]));
+            const float E_Est = cfa[indx +  1] + (cfa[indx +  1] * (lpfi - lpf[lp_indx +  1]) / (eps + lpfi + lpf[lp_indx +  1]));
 
             // Vertical and horizontal estimations
             const float V_Est = (S_Grad * N_Est + N_Grad * S_Est) / (N_Grad + S_Grad);
@@ -502,24 +503,24 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             const float cfai = cfa[indx];
 
             const float P_Stat = fmaxf(epssq,
-                - 18.f * cfai * (cfa[indx - w1 - 1] + cfa[indx + w1 + 1] + fmul2(cfa[indx - w2 - 2] + cfa[indx + w2 + 2]) - cfa[indx - w3 - 3] - cfa[indx + w3 + 3])
-                - fmul2(cfai) * (cfa[indx - w4 - 4] + cfa[indx + w4 + 4] - 19.f * cfai)
-                - cfa[indx - w1 - 1] * (70.f * cfa[indx + w1 + 1] + 12.f * (cfa[indx - w4 - 4] - cfa[indx - w2 - 2] + fmul2(cfa[indx + w2 + 2])) - 38.f * cfa[indx - w3 - 3] + 16.f * cfa[indx + w3 + 3] - 6.f * cfa[indx + w4 + 4] + 46.f * cfa[indx - w1 - 1])
+                - 18.f * cfai * (cfa[indx - w1 - 1] + cfa[indx + w1 + 1] + 2.0f * (cfa[indx - w2 - 2] + cfa[indx + w2 + 2]) - cfa[indx - w3 - 3] - cfa[indx + w3 + 3])
+                - 2.0f * cfai * (cfa[indx - w4 - 4] + cfa[indx + w4 + 4] - 19.f * cfai)
+                - cfa[indx - w1 - 1] * (70.f * cfa[indx + w1 + 1] + 12.f * (cfa[indx - w4 - 4] - cfa[indx - w2 - 2] + 2.0f * cfa[indx + w2 + 2]) - 38.f * cfa[indx - w3 - 3] + 16.f * cfa[indx + w3 + 3] - 6.f * cfa[indx + w4 + 4] + 46.f * cfa[indx - w1 - 1])
                 + cfa[indx + w1 + 1] * (24.f * cfa[indx - w2 - 2] + 12.f * (cfa[indx + w4 + 4] - cfa[indx + w2 + 2]) + 16.f * cfa[indx - w3 - 3] - 38.f * cfa[indx + w3 + 3] - 6.f * cfa[indx - w4 - 4] + 46.f * cfa[indx + w1 + 1])
-                + cfa[indx - w2 - 2] * (14.f * cfa[indx + w2 + 2] - 12.f * cfa[indx + w3 + 3] - fmul2(cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx - w2 - 2])
-                - cfa[indx + w2 + 2] * (12.f * cfa[indx - w3 - 3] + fmul2(cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx + w2 + 2])
-                + cfa[indx - w3 - 3] * (fmul2(cfa[indx + w3 + 3]) - 6.f * cfa[indx - w4 - 4] + 10.f * cfa[indx - w3 - 3])
+                + cfa[indx - w2 - 2] * (14.f * cfa[indx + w2 + 2] - 12.f * cfa[indx + w3 + 3] - 2.0f * (cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx - w2 - 2])
+                - cfa[indx + w2 + 2] * (12.f * cfa[indx - w3 - 3] + 2.0f * (cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx + w2 + 2])
+                + cfa[indx - w3 - 3] * (2.0f * cfa[indx + w3 + 3] - 6.f * cfa[indx - w4 - 4] + 10.f * cfa[indx - w3 - 3])
                 - cfa[indx + w3 + 3] * (6.f * cfa[indx + w4 + 4] + 10.f * cfa[indx + w3 + 3])
                 + cfa[indx - w4 - 4] * cfa[indx - w4 - 4] + cfa[indx + w4 + 4] * cfa[indx + w4 + 4]);
 
             const float Q_Stat = fmaxf(epssq,
-               - 18.f * cfai * (cfa[indx + w1 - 1] + cfa[indx - w1 + 1] + fmul2(cfa[indx + w2 - 2] + cfa[indx - w2 + 2]) - cfa[indx + w3 - 3] - cfa[indx - w3 + 3])
-               - fmul2(cfai) * (cfa[indx + w4 - 4] + cfa[indx - w4 + 4] - 19.f * cfai)
-               - cfa[indx + w1 - 1] * (70.f * cfa[indx - w1 + 1] + 12.f * (cfa[indx + w4 - 4] - cfa[indx + w2 - 2] + fmul2(cfa[indx - w2 + 2])) - 38.f * cfa[indx + w3 - 3] + 16.f * cfa[indx - w3 + 3] - 6.f * cfa[indx - w4 + 4] + 46.f * cfa[indx + w1 - 1])
+               - 18.f * cfai * (cfa[indx + w1 - 1] + cfa[indx - w1 + 1] + 2.0f * (cfa[indx + w2 - 2] + cfa[indx - w2 + 2]) - cfa[indx + w3 - 3] - cfa[indx - w3 + 3])
+               - 2.0f * cfai * (cfa[indx + w4 - 4] + cfa[indx - w4 + 4] - 19.f * cfai)
+               - cfa[indx + w1 - 1] * (70.f * cfa[indx - w1 + 1] + 12.f * (cfa[indx + w4 - 4] - cfa[indx + w2 - 2] + 2.0f * cfa[indx - w2 + 2]) - 38.f * cfa[indx + w3 - 3] + 16.f * cfa[indx - w3 + 3] - 6.f * cfa[indx - w4 + 4] + 46.f * cfa[indx + w1 - 1])
                + cfa[indx - w1 + 1] * (24.f * cfa[indx + w2 - 2] + 12.f * (cfa[indx - w4 + 4] - cfa[indx - w2 + 2]) + 16.f * cfa[indx + w3 - 3] - 38.f * cfa[indx - w3 + 3] - 6.f * cfa[indx + w4 - 4] + 46.f * cfa[indx - w1 + 1])
-               + cfa[indx + w2 - 2] * (14.f * cfa[indx - w2 + 2] - 12.f * cfa[indx - w3 + 3] - fmul2(cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx + w2 - 2])
-               - cfa[indx - w2 + 2] * (12.f * cfa[indx + w3 - 3] + fmul2(cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx - w2 + 2])
-               + cfa[indx + w3 - 3] * (fmul2(cfa[indx - w3 + 3]) - 6.f * cfa[indx + w4 - 4] + 10.f * cfa[indx + w3 - 3])
+               + cfa[indx + w2 - 2] * (14.f * cfa[indx - w2 + 2] - 12.f * cfa[indx - w3 + 3] - 2.0f * (cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx + w2 - 2])
+               - cfa[indx - w2 + 2] * (12.f * cfa[indx + w3 - 3] + 2.0f * (cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx - w2 + 2])
+               + cfa[indx + w3 - 3] * (2.0f * cfa[indx - w3 + 3] - 6.f * cfa[indx + w4 - 4] + 10.f * cfa[indx + w3 - 3])
                - cfa[indx - w3 + 3] * (6.f * cfa[indx - w4 + 4] + 10.f * cfa[indx - w3 + 3])
                + cfa[indx + w4 - 4] * cfa[indx + w4 - 4] + cfa[indx - w4 + 4] * cfa[indx - w4 + 4]);
 
