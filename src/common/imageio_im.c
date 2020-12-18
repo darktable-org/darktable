@@ -75,7 +75,7 @@ dt_imageio_retval_t dt_imageio_open_im(dt_image_t *img, const char *filename, dt
     err = DT_IMAGEIO_FILE_NOT_FOUND;
     goto error;
   }
-  fprintf(stderr, "[ImageMagick_open] image `%s' loading\n", img->filename);
+  dt_print(DT_DEBUG_IMAGEIO, "[ImageMagick_open] image `%s' loading\n", img->filename);
 
   img->width = MagickGetImageWidth(image);
   img->height = MagickGetImageHeight(image);
