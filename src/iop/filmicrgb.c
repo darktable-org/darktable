@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
+#include "common/dwt.h"
 #include "common/image.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
@@ -825,24 +826,6 @@ inline static void sparse_scalar_product(const float *const buf, const size_t in
       acc += filter[k] * buf[indices[k] + c];
     result[c] = acc;
   }
-}
-
-//TODO: consolidate with the copy of this code in src/common/dwt.c
-static inline int dwt_interleave_rows(const int rowid, const int height, const int scale)
-{
-  // to make this algorithm as cache-friendly as possible, we want to interleave the actual processing of rows
-  // such that the next iteration processes the row 'scale' pixels below the current one, which will already
-  // be in L2 cache (if not L1) from having been accessed on this iteration so if vscale is 16, we want to
-  // process rows 0, 16, 32, ..., then 1, 17, 33, ..., 2, 18, 34, ..., etc.
-  if (height <= scale)
-    return rowid;
-  const int per_pass = ((height + scale - 1) / scale);
-  const int long_passes = height % scale;
-  // adjust for the fact that we have some passes with one fewer iteration when height is not a multiple of scale
-  if (long_passes == 0 || rowid < long_passes * per_pass)
-    return (rowid / per_pass) + scale * (rowid % per_pass);
-  const int rowid2 = rowid - long_passes * per_pass;
-  return long_passes + (rowid2 / (per_pass-1)) + scale * (rowid2 % (per_pass-1));
 }
 
 #ifdef _OPENMP
