@@ -250,7 +250,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float max_saturation_h = (Y == 0.f) ? 0.f : atan2f(max_chroma_h, Y);
     float C = fminf(Ych[1], max_chroma_h);
     float S = (Y == 0.f) ? 0.f : atan2f(C, Y);
-    const float radius = hypotf(C, Y);
+    const float radius = (Y == 0.f) ? 0.f : hypotf(C, Y);
 
     // Opacities for luma masks
     const float alpha = expf(- Y * d->shadows_weight);         // opacity of shadows
@@ -258,7 +258,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float gamma = expf(-3.0f * (alpha - beta) * (alpha - beta)); // opacity of midtones
     const float alpha_comp = 1.f - alpha;
     const float beta_comp = 1.f - beta;
-    // const float sum_of_masks = alpha + beta + gamma;
+    //const float sum_of_masks = alpha + beta + gamma;
 
     // Saturation : mix of chroma and luminance
     const float boost_shadows_sat = alpha * d->saturation_shadows;
@@ -276,7 +276,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     chroma_boost = fmaxf(chroma_boost, 0.f);
 
     // Repack
-    Ych[0] = fmaxf(radius * cosf(S), 0.f);
+    Ych[0] = radius * fmaxf(cosf(S), 0.f);
     Ych[1] = fminf(chroma_boost * radius * sinf(S), max_chroma_h);
     Ych_to_gradingRGB(Ych, RGB);
 
