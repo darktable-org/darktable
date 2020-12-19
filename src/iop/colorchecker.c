@@ -17,6 +17,7 @@
 */
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/exif.h"
 #include "control/control.h"
@@ -417,25 +418,6 @@ static inline v4sf kerneldist4(const float *x, const float *y)
   return r2 * fastlog(MAX(1e-8f,r2));
 }
 #endif
-
-static inline float
-fastlog2 (float x)
-{
-  union { float f; uint32_t i; } vx = { x };
-  union { uint32_t i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
-  float y = vx.i;
-  y *= 1.1920928955078125e-7f;
-
-  return y - 124.22551499f
-    - 1.498030302f * mx.f
-    - 1.72587999f / (0.3520887068f + mx.f);
-}
-
-static inline float
-fastlog (float x)
-{
-  return 0.69314718f * fastlog2 (x);
-}
 
 // static inline float
 // fasterlog(float x)
