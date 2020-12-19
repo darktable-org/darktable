@@ -1029,8 +1029,8 @@ static inline void Ych_to_LMS(const float Ych[3], float LMS[4])
   gradingRGB_to_LMS(rgb, lms);
   for(size_t c = 0; c < 4; c++) lms[c] = fmaxf(lms[c], 0.f);
 
-  const float a = Ych[0] / (0.68990272f * lms[0] + 0.34832189f * lms[1]);
-  for(size_t c = 0; c < 3; c++) LMS[c] = lms[c] * a;
+  const float a = 0.68990272f * lms[0] + 0.34832189f * lms[1];
+  for(size_t c = 0; c < 3; c++) LMS[c] = (a == 0.f) ? 0.f : lms[c] * Ych[0] / a;
 }
 
 
@@ -1087,8 +1087,8 @@ static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3])
   RGB[1] = Ych[1] * sinf(Ych[2]) + 0.5847461f;
   RGB[2] = fmaxf(1.f - RGB[0] - RGB[1], 0.f);
 
-  const float a = Ych[0] / (0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2]);
-  for(size_t c = 0; c < 3; ++c) RGB[c] *= a;
+  const float a = (0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2]);
+  for(size_t c = 0; c < 3; ++c) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
 }
 
 
