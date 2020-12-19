@@ -258,13 +258,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float gamma = expf(-3.0f * (alpha - beta) * (alpha - beta)); // opacity of midtones
     const float alpha_comp = 1.f - alpha;
     const float beta_comp = 1.f - beta;
-    const float sum_of_masks = alpha + beta + gamma;
+    // const float sum_of_masks = alpha + beta + gamma;
 
     // Saturation : mix of chroma and luminance
     const float boost_shadows_sat = alpha * d->saturation_shadows;
     const float boost_highlights_sat = beta * d->saturation_highlights;
     const float boost_midtones_sat = gamma * d->saturation_midtones;
-    const float boost_sat = 1.f + Y * (boost_shadows_sat + boost_midtones_sat + boost_highlights_sat) / sum_of_masks;
+    const float boost_sat = 1.f + Y * (boost_shadows_sat + boost_midtones_sat + boost_highlights_sat);
     S = S * boost_sat + d->saturation_global;
     S = fminf(fmaxf(S, 0.f), max_saturation_h);
 
@@ -272,7 +272,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float boost_shadows_chroma = alpha * d->chroma_shadows;
     const float boost_highlights_chroma = beta * d->chroma_highlights;
     const float boost_midtones_chroma = gamma * d->chroma_midtones;
-    float chroma_boost = 1.f + d->chroma_global + (boost_shadows_chroma + boost_highlights_chroma + boost_midtones_chroma) * max_chroma_h / d->max_chroma / sum_of_masks;
+    float chroma_boost = 1.f + d->chroma_global + (boost_shadows_chroma + boost_highlights_chroma + boost_midtones_chroma) * max_chroma_h / d->max_chroma;
     chroma_boost = fmaxf(chroma_boost, 0.f);
 
     // Repack
