@@ -26,7 +26,8 @@
 enum
 {
   DND_TARGET_IMGID,
-  DND_TARGET_URI
+  DND_TARGET_URI,
+  DND_TARGET_TAG
 };
 
 /* drag & drop for internal image ids */
@@ -41,6 +42,13 @@ static const guint n_targets_external = G_N_ELEMENTS(target_list_external);
 static const GtkTargetEntry target_list_all[]
     = { { "image-id", 0, DND_TARGET_IMGID }, { "text/uri-list", 0, DND_TARGET_URI } };
 static const guint n_targets_all = G_N_ELEMENTS(target_list_all);
+
+static const GtkTargetEntry target_list_tags[] = { { "tags-dnd", GTK_TARGET_SAME_WIDGET, DND_TARGET_TAG } };
+static const guint n_targets_tags = G_N_ELEMENTS(target_list_tags);
+
+static const GtkTargetEntry target_list_tags_dest[]
+    = { { "image-id", 0, DND_TARGET_IMGID }, { "tags-dnd", GTK_TARGET_SAME_WIDGET, DND_TARGET_TAG } };
+static const guint n_targets_tags_dest = G_N_ELEMENTS(target_list_tags_dest);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
