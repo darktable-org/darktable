@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -368,45 +369,6 @@ void init_presets(dt_iop_module_so_t *self)
   p.black_point_source = -11.55f;
   dt_gui_presets_add_generic(_("18 EV (HDR++)"), self->op,
                              self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
-}
-
-static inline float Log2(float x)
-{
-  if(x > 0.0f)
-  {
-    return logf(x) / logf(2.0f);
-  }
-  else
-  {
-    return x;
-  }
-}
-
-static inline float Log2Thres(float x, float Thres)
-{
-  if(x > Thres)
-  {
-    return logf(x) / logf(2.f);
-  }
-  else
-  {
-    return logf(Thres) / logf(2.f);
-  }
-}
-
-
-// From data/kernels/extended.cl
-static inline float fastlog2(float x)
-{
-  union { float f; unsigned int i; } vx = { x };
-  union { unsigned int i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
-  float y = vx.i;
-
-  y *= 1.1920928955078125e-7f;
-
-  return y - 124.22551499f
-    - 1.498030302f * mx.f
-    - 1.72587999f / (0.3520887068f + mx.f);
 }
 
 static inline float gaussian(float x, float std)
