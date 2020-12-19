@@ -49,6 +49,7 @@
 #endif
 
 #include "pdf.h"
+#include "common/utility.h"
 
 #define CLAMP_FLT(A) ((A) > (0.0f) ? ((A) < (1.0f) ? (A) : (1.0f)) : (0.0f))
 
@@ -308,33 +309,16 @@ static size_t _pdf_write_stream(dt_pdf_t *pdf, dt_pdf_stream_encoder_t encoder, 
 
 int dt_pdf_add_icc(dt_pdf_t *pdf, const char *filename)
 {
-  FILE *in = g_fopen(filename, "rb");
-  if(!in) return 0;
-
-  fseek(in, 0, SEEK_END);
-  ssize_t file_size = ftell(in);
-  fseek(in, 0, SEEK_SET);
-
-  if(file_size < 0)
+  size_t len;
+  unsigned char *data = (unsigned char *)dt_read_file(filename, &len);
+  if (data)
   {
-    fclose(in);
-    return 0;
-  }
-
-  unsigned char *data = (unsigned char *)malloc(file_size);
-  size_t len = fread(data, 1, file_size, in);
-  fclose(in);
-  if(len != file_size)
-  {
+    int icc_id = dt_pdf_add_icc_from_data(pdf, data, len);
     free(data);
-    return 0;
+    return icc_id;
   }
-
-  int icc_id = dt_pdf_add_icc_from_data(pdf, data, len);
-
-  free(data);
-
-  return icc_id;
+  else
+    return 0;
 }
 
 int dt_pdf_add_icc_from_data(dt_pdf_t *pdf, const unsigned char *data, size_t size)
