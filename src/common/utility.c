@@ -764,6 +764,34 @@ char *dt_util_format_exposure(const float exposuretime)
   return result;
 }
 
+void dt_copy_resource_file(const char *src, const char *dst)
+{
+  char share[PATH_MAX] = { 0 };
+  dt_loc_get_datadir(share, sizeof(share));
+  gchar *sourcefile = g_build_filename(share, src, NULL);
+  char *content = NULL;
+  FILE *fin = g_fopen(sourcefile, "rb");
+  FILE *fout = g_fopen(dst, "wb");
+
+  if(fin && fout)
+  {
+    fseek(fin, 0, SEEK_END);
+    size_t end = ftell(fin);
+    rewind(fin);
+    content = (char *)g_malloc_n(end, sizeof(char));
+    if(content == NULL) goto END;
+    if(fread(content, sizeof(char), end, fin) != end) goto END;
+    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
+  }
+
+END:
+  if(fout != NULL) fclose(fout);
+  if(fin != NULL) fclose(fin);
+
+  g_free(content);
+  g_free(sourcefile);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
