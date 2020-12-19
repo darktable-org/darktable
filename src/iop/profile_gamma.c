@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -185,30 +186,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-static inline float Log2(float x)
-{
-  if(x > 0.)
-  {
-    return logf(x) / logf(2.f);
-  }
-  else
-  {
-    return x;
-  }
-}
-
-static inline float Log2Thres(float x, float Thres)
-{
-  if(x > Thres)
-  {
-    return logf(x) / logf(2.f);
-  }
-  else
-  {
-    return logf(Thres) / logf(2.f);
-  }
-}
-
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
@@ -277,21 +254,6 @@ error:
   return FALSE;
 }
 #endif
-
-// From data/kernels/extended.cl
-static inline float fastlog2(float x)
-{
-  union { float f; unsigned int i; } vx = { x };
-  union { unsigned int i; float f; } mx = { (vx.i & 0x007FFFFF) | 0x3f000000 };
-
-  float y = vx.i;
-
-  y *= 1.1920928955078125e-7f;
-
-  return y - 124.22551499f
-    - 1.498030302f * mx.f
-    - 1.72587999f / (0.3520887068f + mx.f);
-}
 
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
