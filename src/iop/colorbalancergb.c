@@ -249,7 +249,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float max_chroma_h = gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
     const float max_saturation_h = (Y == 0.f) ? 0.f : atan2f(max_chroma_h, Y);
     float C = fminf(Ych[1], max_chroma_h);
-    float S = (Y == 0.f) ? 0.f : atan2f(C, Y);
+    float S = fminf(atan2f(C, Y), max_saturation_h);
     const float radius = (Y == 0.f) ? 0.f : hypotf(C, Y);
 
     // Opacities for luma masks
