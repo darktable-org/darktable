@@ -1746,8 +1746,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       validate_color_checker(out, roi_out, g, RGB_to_XYZ, XYZ_to_RGB);
       g->run_validation = FALSE;
     }
-
-  declare_cat_on_pipe(self, FALSE);
 }
 
 
@@ -3470,8 +3468,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->checkers_list = dt_bauhaus_combobox_new(self);
   dt_bauhaus_widget_set_label(g->checkers_list, NULL, _("chart"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker Passport 24"));
-  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker 24"));
+  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker 24 pre-2014"));
+  dt_bauhaus_combobox_add(g->checkers_list, _("Xrite ColorChecker 24 post-2014"));
+  dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor SpyderCheckr 24"));
   dt_bauhaus_combobox_add(g->checkers_list, _("Datacolor SpyderCheckr 48"));
   g_signal_connect(G_OBJECT(g->checkers_list), "value-changed", G_CALLBACK(checker_changed_callback), self);
   gtk_widget_set_tooltip_text(g->checkers_list, _("choose the vendor and the type of your chart"));
