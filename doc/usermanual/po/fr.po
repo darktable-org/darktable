@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-12-14 23:56+0100\n"
-"PO-Revision-Date: 2020-12-19 00:40+0100\n"
+"PO-Revision-Date: 2020-12-19 23:38+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -8426,7 +8426,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:20443(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:21339(title)
 msgid "Examples"
-msgstr "Exemples"
+msgstr "Exemple"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:6563(title)
 msgid "Texturing an image"
@@ -14627,7 +14627,7 @@ msgstr ""
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11406(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13415(title)
 msgid "patch size"
-msgstr "taille du patch"
+msgstr "taille"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11407(para)
 msgid "The radius of the patch for similarity evaluation."
@@ -15411,9 +15411,8 @@ msgstr ""
 "fonctionnalité repose sur la lecture du champ EXIF"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12053(programlisting)
-#, fuzzy
 msgid "ExposureBiasValue"
-msgstr "biais d'exposition"
+msgstr "ExposureBiasValue"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12055(para)
 msgid ""
@@ -15581,7 +15580,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12187(title)
 msgid "flip (main tab)"
-msgstr ""
+msgstr "symétrie miroir (onglet principal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12188(para)
 msgid ""
@@ -15592,7 +15591,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12194(title)
 msgid "angle (main tab)"
-msgstr ""
+msgstr "rotation (onglet principal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12195(para)
 msgid ""
@@ -15612,7 +15611,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12205(title)
 msgid "keystone (main tab)"
-msgstr ""
+msgstr "perspective (onglet principal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12206(para)
 msgid ""
@@ -15645,7 +15644,7 @@ msgstr "si vous désirez limiter la correction aux lignes horizontales"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12235(emphasis)
 msgid "full"
-msgstr ""
+msgstr "les deux"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12237(entry)
 msgid "if you want to correct horizontal and vertical lines"
@@ -15686,9 +15685,8 @@ msgstr ""
 "quote> dans la zone de liste déroulante."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12286(title)
-#, fuzzy
 msgid "automatic cropping (main tab)"
-msgstr "recadrage"
+msgstr "recadrage (onglet principal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12287(para)
 msgid ""
@@ -15699,9 +15697,8 @@ msgstr ""
 "images. Utile lorsque vous pivoter l’image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12294(title)
-#, fuzzy
 msgid "aspect (main tab)"
-msgstr "ajustement aspect"
+msgstr "aspect (onglet principal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12295(para)
 msgid ""
@@ -15777,7 +15774,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12361(title)
 msgid "guides (main tab)"
-msgstr ""
+msgstr "guides (onglet principal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12362(para)
 msgid ""
@@ -15787,9 +15784,8 @@ msgstr ""
 "à composer votre image."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12368(title)
-#, fuzzy
 msgid "guides flip (main tab)"
-msgstr "guides"
+msgstr "retourne les guides (onglet principal)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12369(para)
 msgid ""
@@ -15801,9 +15797,8 @@ msgstr ""
 "par rapport à l'axe vertical ou par rapport aux deux."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12376(title)
-#, fuzzy
 msgid "margins tab"
-msgstr "marges"
+msgstr "onglet marges"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12377(para)
 msgid ""
@@ -15813,6 +15808,11 @@ msgid ""
 "values will be updated if you move or resize the crop rectangle with the "
 "mouse."
 msgstr ""
+"Dans l'onglet marges, vous pouvez définir directement la distance entre la "
+"bordure de l'image non recadrée et le rectangle de recadrage pour les quatre "
+"marges. Les valeurs sont spécifiées en pourcentage de la largeur / hauteur "
+"de l'image non recadrée. Ces valeurs seront mises à jour si vous déplacez ou "
+"redimensionnez le rectangle de recadrage avec la souris."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12401(entry)
 msgid ""
@@ -16235,7 +16235,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12770(title)
 msgid "Automatic haze removal"
-msgstr "Suppression automatique de la brume"
+msgstr "Suppression de la brume"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12774(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12778(primary)
@@ -16542,7 +16542,7 @@ msgid ""
 msgstr ""
 "Cette zone de liste déroulante vous permet de choisir les corrections que "
 "darktable va appliquer (parmi distorsion, TCA et vignettage). Modifiez la "
-"valeur par défaut <quote>tous</quote>, si votre appareil effectue déjà "
+"valeur par défaut <quote>tout</quote>, si votre appareil effectue déjà "
 "certaines corrections internes (par exemple le vignettage), ou si vous "
 "désirez effectuer certaines corrections avec un autre logiciel."
 
@@ -16565,7 +16565,7 @@ msgstr ""
 "<quote>fish-eye</quote>, <quote>panoramique</quote>, "
 "<quote>équirectangulaire</quote>, <quote>orthographique</quote>, "
 "<quote>stéréographique</quote>, <quote>angle solide constant</quote>, "
-"<quote>thoby fish-eye</quote>."
+"<quote>fish-eye</quote>."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13055(para)
 msgid ""
@@ -16591,7 +16591,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13072(title)
 msgid "TCA red"
-msgstr "TCA rouge"
+msgstr "AC rouge"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13073(para)
 msgid ""
@@ -16609,7 +16609,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13082(title)
 msgid "TCA blue"
-msgstr "TCA bleue"
+msgstr "AC bleu"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13083(para)
 msgid ""
@@ -16693,7 +16693,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13210(title)
 msgid "Denoise – bilateral"
-msgstr "Réduction du bruit (bilatéral)"
+msgstr "Flou de surface"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13214(secondary)
 msgid "denoise – bilateral"
@@ -16712,7 +16712,7 @@ msgid ""
 msgstr ""
 "Ce module est utilisé pour réduire le bruit des images prises en sensibilité "
 "ISO élevée. Il est signalé comme étant un module lent en raison de sa grande "
-"consommation de ressources, à la fois en termes de cycles CPU  et en termes "
+"consommation de ressources, à la fois en termes de cycles CPU et en termes "
 "d’utilisation de la mémoire. Contrairement à ce que l'on pourrait "
 "intuitivement croire, plus la valeur des curseurs augmente, plus la "
 "consommation des ressources diminue."
@@ -16958,7 +16958,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13426(title)
 msgid "search radius"
-msgstr "rayon de recherche"
+msgstr "rayon"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13427(para)
 msgid ""
@@ -16981,7 +16981,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13438(title)
 msgid "scattering"
-msgstr "diffusion"
+msgstr "dispersion"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13439(para)
 msgid ""
@@ -17136,7 +17136,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13533(title)
 msgid "adjust autoset parameters"
-msgstr "ajuster les paramètres définis automatiquement"
+msgstr "ajuster les paramètres auto"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13534(para)
 msgid ""
@@ -17774,9 +17774,8 @@ msgstr ""
 "niveau de blanc seront considérés comme blancs."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14143(title)
-#, fuzzy
 msgid "Grading group"
-msgstr "Groupe des modules de base"
+msgstr "Groupe des modules d'étalonnage couleur"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14145(para)
 msgid ""
@@ -17784,6 +17783,10 @@ msgid ""
 "color and tones corrective and creative work (including chromatic "
 "adaptation / white balance)"
 msgstr ""
+"Le groupe étalonnage couleur contient tous les modules à tendance "
+"artistique. Ces modules permettent aussi de faire un travail de correction "
+"et de création de couleurs et de tons (y compris l'adaptation chromatique / "
+"la balance des blancs)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14152(title)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14156(secondary)
@@ -17794,7 +17797,6 @@ msgid "split-toning"
 msgstr "virage partiel"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14173(entry)
-#, fuzzy
 msgid ""
 "darktable's split-toning method creates a two color linear toning effect "
 "where the shadows and highlights are represented by two different colors. In "
@@ -17802,15 +17804,14 @@ msgid ""
 "one where a split-toning effect is applied with blue in shadows and a "
 "yellowish color in highlights."
 msgstr ""
-"La méthode de virage partiel de darktable crée un effet de virage linéaire "
-"bicolore où les ombres et les hautes lumières sont représentées par deux "
-"couleurs différentes. Dans l’exemple qui suit, vous pouvez voir une image "
-"originale en noir et blanc, puis une image à laquelle un effet de virage "
-"partiel a été appliqué avec du bleu dans les ombres et une couleur jaunâtre "
-"dans les hautes lumières."
+"La méthode de virage partiel de darktable crée un effet de virage linéaire à "
+"deux couleurs où les ombres et les hautes lumières sont représentées par "
+"deux couleurs différentes. Dans l’exemple d'image ci-dessous, vous pouvez "
+"voir une image originale en noir et blanc, puis une image à laquelle un "
+"effet de virage partiel a été appliqué avec du bleu dans les ombres et une "
+"couleur jaunâtre dans les hautes lumières."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14188(para)
-#, fuzzy
 msgid ""
 "Compared to traditional split-toning our module has more parameters to "
 "influence its behavior. We have parameter <quote>balance</quote>, which "
@@ -17822,7 +17823,7 @@ msgid ""
 msgstr ""
 "Comparé au virage partiel traditionnel, notre module propose plus de "
 "paramètres pour influencer son comportement. Nous avons le paramètre "
-"<quote>répartition</quote>, qui  – selon votre choix – décale le niveau gris "
+"<quote>répartition</quote>, qui – selon votre choix – décale le niveau gris "
 "50% de votre image plus vers les ombres ou plus vers les hautes lumières. De "
 "plus, avec le paramètre <quote>seuil</quote>, vous pouvez compresser le "
 "virage dans les ombres et les hautes lumières et laisser un intervalle de "
@@ -17848,7 +17849,6 @@ msgid "shadows and highlights color"
 msgstr "couleur pour les ombres et les hautes lumières"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14212(para)
-#, fuzzy
 msgid ""
 "These controls are used to set the color of the split-toning effect, you "
 "select the desired color and saturation for both shadows and highlights. "
@@ -17856,12 +17856,12 @@ msgid ""
 "offers you a choice of commonly used colors, or allows to define a color in "
 "RGB color space."
 msgstr ""
-"Ces paramètres sont utilisés pour définir les couleurs du virage partiel. "
-"Sélectionnez la teinte et la saturation désirées tant pour les ombres que "
-"pour les hautes lumières. Cliquer sur l'une des pastilles de couleur ouvre "
-"une boîte de dialogue qui vous offre un choix de couleurs couramment "
-"utilisées ou vous permet de définir une couleur dans l'espace colorimétrique "
-"RGB."
+"Ces paramètres sont utilisés pour définir la couleur de l'effet du virage "
+"partiel. Sélectionnez la teinte et la saturation désirées tant pour les "
+"ombres que pour les hautes lumières. Cliquer sur l'une des pastilles de "
+"couleur ouvre une boîte de dialogue qui vous offre un choix de couleurs "
+"couramment utilisées ou vous permet de définir une couleur dans l'espace "
+"colorimétrique RGB."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14221(title)
 msgid "balance"
@@ -17884,7 +17884,6 @@ msgid "compression"
 msgstr "seuil"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14231(para)
-#, fuzzy
 msgid ""
 "Compression is a percentage of total lightness range that is not affected by "
 "color toning. Default value is set to 33%; this is not the default behavior "
@@ -17892,8 +17891,8 @@ msgid ""
 "as a default is to invite you experimenting with these parameters and how it "
 "extends the original split-toning method."
 msgstr ""
-"Le seuil est le pourcentage de la plage de clarté totale qui ne sera pas "
-"affecté par le virage de couleur. La valeur par défaut est définie à 33% ; "
+"Le seuil est le pourcentage de la plage totale de clarté qui ne sera pas "
+"affecté par le virage de couleur. La valeur par défaut est définie à 33% ; "
 "ce n'est pas le comportement par défaut du virage partiel original qui "
 "aurait un seuil à 0%. Ce choix de 33% comme valeur par défaut est une "
 "invitation à l'expérimentation de ces paramètres et à découvrir comment ce "
@@ -18041,6 +18040,14 @@ msgid ""
 "a <emphasis>Ctrl+Click+Drag</emphasis> will create a positive curve for the "
 "sampled area and a <emphasis>Shift+Click+Drag</emphasis> a negative curve."
 msgstr ""
+"Une deuxième pipette à couleurs peut être utilisée pour modifier directement "
+"la courbe en fonction de la zone échantillonnée. Un <emphasis>Cliquez </"
+"emphasis> sur <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_action_picker.png\" scalefit = \"1\" width = \"2%\" "
+"align = \"center\"/> activera la pipette à couleur. Ensuite, sur l'image, un "
+"<emphasis>Ctrl + Clic + Glisser</emphasis> créera une courbe positive pour "
+"la zone échantillonnée et un <emphasis>Maj + Clic + Glisser</emphasis> "
+"créera une courbe négative."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14430(title)
 msgid "tabbed controls"
