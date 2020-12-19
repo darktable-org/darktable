@@ -52,28 +52,30 @@ DT_MODULE_INTROSPECTION(1, dt_iop_colorbalancergb_params_t)
 
 typedef struct dt_iop_colorbalancergb_params_t
 {
-  float shadows_Y;          // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-  float shadows_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-  float shadows_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-  float midtones_Y;           // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-  float midtones_C;           // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-  float midtones_H;           // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-  float highlights_Y;           // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-  float highlights_C;           // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-  float highlights_H;           // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-  float global_Y;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
-  float global_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
-  float global_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
-  float shadows_weight;    // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
-  float midtones_weight;   // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
-  float highlights_weight; // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
-  float chroma_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
-  float chroma_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
-  float chroma_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
-  float chroma_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
-  float saturation_offset; // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation offset"
-  float saturation_factor; // $MIN: -1. $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation factor"
-  float hue_angle;         // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
+  float shadows_Y;             // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+  float shadows_C;             // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+  float shadows_H;             // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+  float midtones_Y;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+  float midtones_C;            // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+  float midtones_H;            // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+  float highlights_Y;          // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+  float highlights_C;          // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+  float highlights_H;          // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+  float global_Y;              // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "luminance"
+  float global_C;              // $MIN:  0.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "chroma"
+  float global_H;              // $MIN:  0.0 $MAX: 360.0 $DEFAULT: 0.0 $DESCRIPTION: "hue"
+  float shadows_weight;        // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
+  float midtones_weight;       // $MIN: -6.0 $MAX:   6.0 $DEFAULT: 0.0 $DESCRIPTION: "fulcrum"
+  float highlights_weight;     // $MIN: -1.0 $MAX:   1.0 $DEFAULT: 0.0 $DESCRIPTION: "tonal weight"
+  float chroma_shadows;        // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
+  float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
+  float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+  float chroma_midtones;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
+  float saturation_global;     // $MIN: -10.0 $MAX: 10.0 $DEFAULT: 0.0 $DESCRIPTION: "saturation global"
+  float saturation_highlights; // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
+  float saturation_midtones;   // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
+  float saturation_shadows;    // $MIN: -2.0 $MAX: 2.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
+  float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
 } dt_iop_colorbalancergb_params_t;
 
 
@@ -84,7 +86,8 @@ typedef struct dt_iop_colorbalancergb_gui_data_t
   GtkWidget *shadows_Y, *midtones_Y, *highlights_Y, *global_Y;
   GtkWidget *shadows_weight, *midtones_weight, *highlights_weight;
   GtkWidget *chroma_highlights, *chroma_global, *chroma_shadows, *chroma_midtones;
-  GtkWidget *saturation_offset, *saturation_factor, *hue_angle;
+  GtkWidget *saturation_global, *saturation_highlights, *saturation_midtones, *saturation_shadows;
+  GtkWidget *hue_angle;
   GtkNotebook *notebook;
 } dt_iop_colorbalancergb_gui_data_t;
 
@@ -96,7 +99,8 @@ typedef struct dt_iop_colorbalancergb_data_t
   float midtones[4];
   float midtones_Y;
   float chroma_highlights, chroma_global, chroma_shadows, chroma_midtones;
-  float saturation_offset, saturation_factor, hue_angle;
+  float saturation_global, saturation_highlights, saturation_midtones, saturation_shadows;
+  float hue_angle;
   float shadows_weight, midtones_weight, highlights_weight;
   float *gamut_LUT;
   float max_chroma;
@@ -216,10 +220,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
+  const float *const restrict gamut_LUT = __builtin_assume_aligned(((const float *const restrict)d->gamut_LUT), 64);
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) aligned(in, out: 64)\
-      dt_omp_firstprivate(in, out, roi_in, roi_out, d, input_matrix, output_matrix) schedule(static)
+      dt_omp_firstprivate(in, out, roi_in, roi_out, d, input_matrix, output_matrix, gamut_LUT) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)4 * roi_in->width * roi_out->height; k += 4)
   {
@@ -235,32 +240,44 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     gradingRGB_to_Ych(RGB, Ych);
 
     // Sanitize input : no negative luminance
-    float Y = fmaxf(Ych[0], 0.000244140625f); // -12 EV
+    float Y = fmaxf(Ych[0], 0.f);
 
     // Hue shift - do it now because we need the gamut limit at output hue right after
     Ych[2] += d->hue_angle;
 
     // Get max allowed chroma in working RGB gamut at current output hue
-    float max_chroma_h = d->gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
+    const float max_chroma_h = gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
+    const float max_saturation_h = (Y == 0.f) ? 0.f : atan2f(max_chroma_h, Y);
     float C = fminf(Ych[1], max_chroma_h);
+    float S = (Y == 0.f) ? 0.f : atan2f(C, Y);
+    const float radius = hypotf(C, Y);
+
+    // Opacities for luma masks
+    const float alpha = expf(- Y * d->shadows_weight);         // opacity of shadows
+    const float beta = 1.f - expf(- Y * d->highlights_weight); // opacity of highlights
+    const float gamma = expf(-3.0f * (alpha - beta) * (alpha - beta)); // opacity of midtones
+    const float alpha_comp = 1.f - alpha;
+    const float beta_comp = 1.f - beta;
+    const float sum_of_masks = alpha + beta + gamma;
 
     // Saturation : mix of chroma and luminance
-    const float radius = hypotf(C, Ych[0]);
-    float saturation = (Ych[0] <= 0.f ) ? 0.f : atan2f(C, Y);
-    saturation += saturation * d->saturation_factor * Y + d->saturation_offset;
-    saturation = fminf(fmaxf(saturation, 0.f), M_PI_2);
+    const float boost_shadows_sat = alpha * d->saturation_shadows;
+    const float boost_highlights_sat = beta * d->saturation_highlights;
+    const float boost_midtones_sat = gamma * d->saturation_midtones;
+    const float boost_sat = 1.f + Y * (boost_shadows_sat + boost_midtones_sat + boost_highlights_sat) / sum_of_masks;
+    S = S * boost_sat + d->saturation_global;
+    S = fminf(fmaxf(S, 0.f), max_saturation_h);
 
     // Chroma : distance to white at constant luminance
-    const float boost_shadows = 0.25f * ((1.f / Y - 1.f / 1.1845f) * d->chroma_shadows + 1.f / 1.1845f - 1.f / Y);
-    const float boost_highlights = Y * d->chroma_highlights;
-    const float boost_midtones = 4.f * (powf(Y, d->chroma_midtones) - Y);
-    float chroma_boost = 1.f + d->chroma_global + (boost_shadows + boost_highlights + boost_midtones) * max_chroma_h / d->max_chroma;
+    const float boost_shadows_chroma = alpha * d->chroma_shadows;
+    const float boost_highlights_chroma = beta * d->chroma_highlights;
+    const float boost_midtones_chroma = gamma * d->chroma_midtones;
+    float chroma_boost = 1.f + d->chroma_global + (boost_shadows_chroma + boost_highlights_chroma + boost_midtones_chroma) * max_chroma_h / d->max_chroma / sum_of_masks;
     chroma_boost = fmaxf(chroma_boost, 0.f);
 
     // Repack
-    Ych[0] = fmaxf(radius * cosf(saturation), 0.f);
-    Ych[1] = fminf(chroma_boost * radius * sinf(saturation), max_chroma_h);
-    Y = Ych[0];
+    Ych[0] = fmaxf(radius * cosf(S), 0.f);
+    Ych[1] = fminf(chroma_boost * radius * sinf(S), max_chroma_h);
     Ych_to_gradingRGB(Ych, RGB);
 
     /* Color balance */
@@ -270,11 +287,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(size_t c = 0; c < 4; ++c) RGB[c] = fmaxf(RGB[c] + global[c], 0.f);
 
     // 3 ways : shadows, highlights, midtones
-    const float alpha = expf(- Y * d->shadows_weight);
-    const float beta = 1.f - expf(- Y * d->highlights_weight);
-    const float alpha_comp = 1.f - alpha;
-    const float beta_comp = 1.f - beta;
-
     const float *const restrict highlights = __builtin_assume_aligned(d->highlights, 16);
     const float *const restrict shadows = __builtin_assume_aligned(d->shadows, 16);
     const float *const restrict midtones = __builtin_assume_aligned(d->midtones, 16);
@@ -290,8 +302,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Ych[0] = powf(fmaxf(Ych[0] / d->midtones_weight, 0.f), d->midtones_Y) * d->midtones_weight;
 
     // Gamut mapping
-    max_chroma_h = d->gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
-    Ych[1] = fminf(Ych[1], max_chroma_h);
+    const float out_max_chroma_h = gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
+    Ych[1] = fminf(Ych[1], out_max_chroma_h);
 
     Ych_to_gradingRGB(Ych, RGB);
     for(size_t c = 0; c < 4; ++c) RGB[c] = fmaxf(RGB[c], 0.f);
@@ -330,12 +342,16 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)p1;
 
   d->chroma_global = p->chroma_global;
-  d->chroma_highlights = p->chroma_highlights * 4.f;
-  d->chroma_midtones = fminf(1.f / (1.f + p->chroma_midtones), 8.f);
-  d->chroma_shadows = 1.f + p->chroma_shadows;
+  d->chroma_highlights = p->chroma_highlights;
+  d->chroma_midtones = p->chroma_midtones;
+  d->chroma_shadows = p->chroma_shadows;
 
-  d->saturation_offset = M_PI * p->saturation_offset / 180.f;
-  d->saturation_factor = (p->saturation_factor);
+  d->saturation_global = M_PI * p->saturation_global / 180.f;
+
+  d->saturation_highlights = p->saturation_highlights;
+  d->saturation_midtones = p->saturation_midtones;
+  d->saturation_shadows = p->saturation_shadows;
+
   d->hue_angle = M_PI * p->hue_angle / 180.f;
 
   // measure the grading RGB of a pure white
@@ -372,7 +388,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     Ych_to_gradingRGB(Ych, d->midtones);
     for(size_t c = 0; c < 4; c++) d->midtones[c] = 1.f / (1.f + (d->midtones[c] - RGB_norm[c]));
     d->midtones_Y = 1.f / (1.f + p->midtones_Y);
-    d->midtones_weight = fmaxf(1.f + p->midtones_weight, 0.0001f);
+    d->midtones_weight = exp2f(p->midtones_weight);
   }
 
   // Check if the RGB working profile has changed in pipe
@@ -573,13 +589,17 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_colorbalancergb_gui_data_t *g = (dt_iop_colorbalancergb_gui_data_t *)self->gui_data;
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)self->params;
 
-  dt_bauhaus_slider_set_soft(g->chroma_highlights, p->chroma_highlights);
+  dt_bauhaus_slider_set_soft(g->hue_angle, p->hue_angle);
+
   dt_bauhaus_slider_set_soft(g->chroma_global, p->chroma_global);
+  dt_bauhaus_slider_set_soft(g->chroma_highlights, p->chroma_highlights);
   dt_bauhaus_slider_set_soft(g->chroma_midtones, p->chroma_midtones);
   dt_bauhaus_slider_set_soft(g->chroma_shadows, p->chroma_shadows);
-  dt_bauhaus_slider_set_soft(g->saturation_offset, p->saturation_offset);
-  dt_bauhaus_slider_set_soft(g->saturation_factor, p->saturation_factor);
-  dt_bauhaus_slider_set_soft(g->hue_angle, p->hue_angle);
+
+  dt_bauhaus_slider_set_soft(g->saturation_global, p->saturation_global);
+  dt_bauhaus_slider_set_soft(g->saturation_highlights, p->saturation_highlights);
+  dt_bauhaus_slider_set_soft(g->saturation_midtones, p->saturation_midtones);
+  dt_bauhaus_slider_set_soft(g->saturation_shadows, p->saturation_shadows);
 
   dt_bauhaus_slider_set_soft(g->global_C, p->global_C);
   dt_bauhaus_slider_set_soft(g->global_H, p->global_H);
@@ -622,23 +642,6 @@ void gui_init(dt_iop_module_t *self)
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, _("master"), _("global grading"));
 
-  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("saturation and hue")), FALSE, FALSE, 0);
-
-  g->saturation_offset = dt_bauhaus_slider_from_params(self, "saturation_offset");
-  dt_bauhaus_slider_set_soft_range(g->saturation_offset, -5., 5.);
-  dt_bauhaus_slider_set_digits(g->saturation_offset, 4);
-  dt_bauhaus_slider_set_step(g->saturation_offset, .5);
-  dt_bauhaus_slider_set_format(g->saturation_offset, "%.2f °");
-  gtk_widget_set_tooltip_text(g->saturation_offset, _("add or remove saturation by an absolute amount"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_offset), TRUE, TRUE, 0);
-
-  g->saturation_factor = dt_bauhaus_slider_from_params(self, "saturation_factor");
-  dt_bauhaus_slider_set_digits(g->saturation_factor, 4);
-  dt_bauhaus_slider_set_factor(g->saturation_factor, 100.0f);
-  dt_bauhaus_slider_set_format(g->saturation_factor, "%.2f %%");
-  gtk_widget_set_tooltip_text(g->saturation_factor, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_factor), TRUE, TRUE, 0);
-
   g->hue_angle = dt_bauhaus_slider_from_params(self, "hue_angle");
   dt_bauhaus_slider_set_digits(g->hue_angle, 4);
   dt_bauhaus_slider_set_step(g->hue_angle, 1.);
@@ -646,10 +649,41 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->hue_angle, _("rotate all hues by an angle, at the same luminance"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hue_angle), TRUE, TRUE, 0);
 
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("saturation grading")), FALSE, FALSE, 0);
+
+  g->saturation_global = dt_bauhaus_slider_from_params(self, "saturation_global");
+  dt_bauhaus_slider_set_soft_range(g->saturation_global, -5., 5.);
+  dt_bauhaus_slider_set_digits(g->saturation_global, 4);
+  dt_bauhaus_slider_set_step(g->saturation_global, .5);
+  dt_bauhaus_slider_set_format(g->saturation_global, "%.2f °");
+  gtk_widget_set_tooltip_text(g->saturation_global, _("add or remove saturation by an absolute amount"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_global), TRUE, TRUE, 0);
+
+  g->saturation_shadows = dt_bauhaus_slider_from_params(self, "saturation_shadows");
+  dt_bauhaus_slider_set_digits(g->saturation_shadows, 4);
+  dt_bauhaus_slider_set_factor(g->saturation_shadows, 100.0f);
+  dt_bauhaus_slider_set_format(g->saturation_shadows, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->saturation_shadows, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_shadows), TRUE, TRUE, 0);
+
+  g->saturation_midtones= dt_bauhaus_slider_from_params(self, "saturation_midtones");
+  dt_bauhaus_slider_set_digits(g->saturation_midtones, 4);
+  dt_bauhaus_slider_set_factor(g->saturation_midtones, 100.0f);
+  dt_bauhaus_slider_set_format(g->saturation_midtones, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->saturation_midtones, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_midtones), TRUE, TRUE, 0);
+
+  g->saturation_highlights = dt_bauhaus_slider_from_params(self, "saturation_highlights");
+  dt_bauhaus_slider_set_digits(g->saturation_highlights, 4);
+  dt_bauhaus_slider_set_factor(g->saturation_highlights, 100.0f);
+  dt_bauhaus_slider_set_format(g->saturation_highlights, "%.2f %%");
+  gtk_widget_set_tooltip_text(g->saturation_highlights, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_highlights), TRUE, TRUE, 0);
+
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("chroma grading")), FALSE, FALSE, 0);
 
   g->chroma_global = dt_bauhaus_slider_from_params(self, "chroma_global");
-  dt_bauhaus_slider_set_soft_range(g->chroma_global, 0., 0.005);
+  dt_bauhaus_slider_set_soft_range(g->chroma_global, -0.5, 0.5);
   dt_bauhaus_slider_set_digits(g->chroma_global, 4);
   dt_bauhaus_slider_set_factor(g->chroma_global, 100.0f);
   dt_bauhaus_slider_set_format(g->chroma_global, "%.2f %%");
@@ -769,11 +803,11 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->midtones_C), TRUE, TRUE, 0);
 
   g->midtones_weight = dt_bauhaus_slider_from_params(self, "midtones_weight");
+  dt_bauhaus_slider_set_soft_range(g->midtones_weight, -2., +2.);
   dt_bauhaus_slider_set_step(g->midtones_weight, 0.1);
   dt_bauhaus_slider_set_digits(g->midtones_weight, 4);
-  dt_bauhaus_slider_set_format(g->midtones_weight, "%.2f %%");
-  dt_bauhaus_slider_set_factor(g->midtones_weight, 100.0f);
-  gtk_widget_set_tooltip_text(g->midtones_weight, _("weight of the midtones over the whole tonal range"));
+  dt_bauhaus_slider_set_format(g->midtones_weight, "%.2f EV");
+  gtk_widget_set_tooltip_text(g->midtones_weight, _("peak white luminance value used to normalize the power function"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->midtones_weight), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("highlights")), FALSE, FALSE, 0);
