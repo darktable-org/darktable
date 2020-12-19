@@ -1349,20 +1349,30 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version,
                                const char *maker, const char *model, const char *lens)
 {
-  char tmp[1024];
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "UPDATE data.presets"
-      " SET maker=?1, model=?2, lens=?3"
+      " SET maker='%' || ?1 || '%', model=?2, lens=?3"
       " WHERE operation=?4 AND op_version=?5 AND name=?6", -1,
       &stmt, NULL);
-  snprintf(tmp, sizeof(tmp), "%%%s%%", maker);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, tmp, -1, SQLITE_TRANSIENT);
-  snprintf(tmp, sizeof(tmp), "%%%s%%", model);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, tmp, -1, SQLITE_TRANSIENT);
-  snprintf(tmp, sizeof(tmp), "%%%s%%", lens);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, tmp, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, maker, -1, SQLITE_TRANSIENT);
+  if (*model)
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, model, -1, SQLITE_TRANSIENT);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, "%", -1, SQLITE_TRANSIENT);
+  }
+  if (*lens)
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, lens, -1, SQLITE_TRANSIENT);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, "%", -1, SQLITE_TRANSIENT);
+  }
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, name, -1, SQLITE_TRANSIENT);
