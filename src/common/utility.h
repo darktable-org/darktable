@@ -75,6 +75,13 @@ gchar *dt_util_normalize_path(const gchar *input);
 // format exposure time string
 gchar *dt_util_format_exposure(const float exposuretime);
 
+// read the contents of the given file into a malloc'ed buffer
+// returns NULL if unable to read file or alloc memory; sets filesize to the number of bytes returned
+char *dt_read_file(const char *filename, size_t *filesize);
+
+// copy the contents of the given file to a new file
+void dt_copy_file(const char *src, const char *dst);
+
 // copy the contents of a file in dt's data directory to a new file
 void dt_copy_resource_file(const char *src, const char *dst);
 
