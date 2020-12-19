@@ -75,6 +75,9 @@ gchar *dt_util_normalize_path(const gchar *input);
 // format exposure time string
 gchar *dt_util_format_exposure(const float exposuretime);
 
+// copy the contents of a file in dt's data directory to a new file
+void dt_copy_resource_file(const char *src, const char *dst);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
