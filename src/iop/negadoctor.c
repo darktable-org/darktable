@@ -76,8 +76,8 @@ DT_MODULE_INTROSPECTION(2, dt_iop_negadoctor_params_t)
 typedef enum dt_iop_negadoctor_filmstock_t
 {
   // What kind of emulsion are we working on ?
-  DT_FILMSTOCK_NB = 0,   // $DESCRIPTION: "black and white"
-  DT_FILMSTOCK_COLOR = 1 // $DESCRIPTION: "color"
+  DT_FILMSTOCK_NB = 0,   // $DESCRIPTION: "black and white film"
+  DT_FILMSTOCK_COLOR = 1 // $DESCRIPTION: "color film"
 } dt_iop_negadoctor_filmstock_t;
 
 
