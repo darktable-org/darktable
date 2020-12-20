@@ -135,6 +135,8 @@ static int flp2(int i)
 
 void init(dt_imageio_module_format_t *self)
 {
+  const char *codecName = avifCodecName(AVIF_CODEC_CHOICE_AUTO,
+                                        AVIF_CODEC_FLAG_CAN_ENCODE);
   if (codecName == NULL)
   {
     dt_print(DT_DEBUG_IMAGEIO,
