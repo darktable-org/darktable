@@ -334,7 +334,7 @@ int write_image(struct dt_imageio_module_data_t *data,
     break;
   }
   default:
-    dt_control_log(_("Invalid AVIF bit depth!"));
+    dt_control_log(_("invalid AVIF bit depth!"));
     rc = 1;
     goto out;
   }
@@ -841,7 +841,7 @@ void gui_init(dt_imageio_module_format_t *self)
   dt_bauhaus_combobox_set(gui->color_mode, color_mode);
 
   gtk_widget_set_tooltip_text(gui->color_mode,
-          _("Saving as grayscale will reduce the size for black & white images"));
+          _("saving as grayscale will reduce the size for black & white images"));
 
   gtk_box_pack_start(GTK_BOX(self->widget),
                      gui->color_mode,
@@ -916,8 +916,8 @@ void gui_init(dt_imageio_module_format_t *self)
             "pixelformat based on quality:\n"
             "\n"
             "    91% - 100% -> YUV444\n"
-            "    81% -  90% => YUV422\n"
-            "     5% -  80% => YUV420\n"));
+            "    81% -  90% -> YUV422\n"
+            "     5% -  80% -> YUV420\n"));
 
   if (quality > 0 && quality <= 100) {
       dt_bauhaus_slider_set(gui->quality, quality);
