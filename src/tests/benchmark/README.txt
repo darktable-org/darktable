@@ -89,11 +89,11 @@ If you specified the number of threads to use (for example, to check
 whether hyperthreading helps or hinders performance), that number will
 be included in the report
 
-      darktable 3.3.0+2017~g366f5b623 ::: benchmark v3.4 ::: image mire1.cr2
+      darktable 3.3.0+2208~gaf5eaafb6 ::: benchmark v3.4 ::: image mire1.cr2
       Number of threads used:                    32
-      Average pixelpipe processing time:      5.381 seconds
-      Average overall processing time:        5.583 seconds
-      Throughput rating (higher is better):   644.8 (CPU only)
+      Average pixelpipe processing time:      5.182 seconds
+      Average overall processing time:        5.396 seconds
+      Throughput rating (higher is better):   667.1 (CPU only)
 
 
 
