@@ -406,6 +406,101 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
   dt_free_align(scanlines);
 }
 
+// moved here from common/fast_guided_filter.h   TODO: optimize like the other N-channel versions
+__DT_CLONE_TARGETS__
+static inline void box_average(float *const restrict in,
+                               const size_t width, const size_t height, const size_t ch,
+                               const int radius)
+{
+  // Compute in-place a box average (filter) on a multi-channel image over a window of size 2*radius + 1
+  // We make use of the separable nature of the filter kernel to speed-up the computation
+  // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
+
+  assert(ch <= 4);
+
+  const size_t Ndim = width * height * ch;
+  float *const restrict temp = dt_alloc_sse_ps(Ndim);
+
+  // Convolve box average along columns
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, temp, width, height, ch, radius) \
+  schedule(simd:static) collapse(2)
+#endif
+  for(size_t j = 0; j < width; j++)
+  {
+    for(size_t i = 0; i < height; i++)
+    {
+      const size_t begin_convol = (i < radius) ? 0 : i - radius;
+      size_t end_convol = i + radius;
+      end_convol = (end_convol < height) ? end_convol : height - 1;
+      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
+      const size_t index = (i * width + j) * ch;
+
+      float w[4] DT_ALIGNED_PIXEL = { 0.0f };
+
+      // Convolve
+      for(size_t c = begin_convol; c <= end_convol; c++)
+      {
+        const size_t index_c = (c * width + j) * ch;
+#ifdef _OPENMP
+#pragma omp simd aligned(in:64) aligned(w:16) reduction(+:w)
+#endif
+        for(size_t k = 0; k < ch; ++k)
+          w[k] += in[index_c + k];
+      }
+
+    // Normalize and Save
+#ifdef _OPENMP
+#pragma omp simd aligned(temp:64) aligned(w:16)
+#endif
+      for(size_t k = 0; k < ch; ++k)
+        temp[index + k] = w[k] / num_elem;
+    }
+  }
+
+  // Convolve box average along rows and output result
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, temp, width, height, ch, radius) \
+  schedule(simd:static) collapse(2)
+#endif
+  for(size_t i = 0; i < height; i++)
+  {
+    for(size_t j = 0; j < width; j++)
+    {
+      const size_t begin_convol = (j < radius) ? 0 : j - radius;
+      size_t end_convol = j + radius;
+      end_convol = (end_convol < width) ? end_convol : width - 1;
+      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
+      const size_t stride = i * width;
+      const size_t index = (stride + j) * ch;
+
+      float w[4] DT_ALIGNED_PIXEL = { 0.0f };
+
+      // Convolve
+      for(size_t c = begin_convol; c <= end_convol; c++)
+      {
+        const size_t index_c = (stride + c) * ch;
+#ifdef _OPENMP
+#pragma omp simd aligned(temp:64) aligned(w:16) reduction(+:w)
+#endif
+        for(size_t k = 0; k < ch; ++k)
+          w[k] += temp[index_c + k];
+      }
+
+      // Normalize and Save
+#ifdef _OPENMP
+#pragma omp simd aligned(w:16) aligned(in:64)
+#endif
+      for(size_t k = 0; k < ch; ++k)
+        in[index + k] = w[k] / num_elem;
+    }
+  }
+
+  if(temp != NULL) dt_free_align(temp);
+}
+
 void dt_box_mean(float *const buf, const int height, const int width, const int ch,
                  const int radius, const int iterations)
 {
@@ -417,8 +512,11 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
   {
     dt_box_mean_4ch(buf,height,width,radius,iterations);
   }
+  else if (ch == 2) // used by fast_guided_filter.h
+  {
+    box_average(buf, width, height, ch, radius);
+  }
 }
-
 
 
 // calculate the one-dimensional moving maximum over a window of size 2*w+1
