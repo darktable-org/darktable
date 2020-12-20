@@ -611,7 +611,7 @@ int main(int argc, char *arg[])
     if(ext && strlen(ext) > DT_MAX_OUTPUT_EXT_LENGTH)
     {
       // too long ext, no point in wasting time
-      fprintf(stderr, _("too long output file extention: %s\n"), ext);
+      fprintf(stderr, _("too long output file extension: %s\n"), ext);
       usage(arg[0]);
       g_free(output_filename);
       exit(1);
@@ -619,7 +619,7 @@ int main(int argc, char *arg[])
     else if(!ext || strlen(ext) <= 1)
     {
       // no ext or empty ext, no point in wasting time
-      fprintf(stderr, _("no output file extention given\n"));
+      fprintf(stderr, _("no output file extension given\n"));
       usage(arg[0]);
       g_free(output_filename);
       exit(1);
