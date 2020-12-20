@@ -1,6 +1,6 @@
 How to make disk image with darktable application bundle (64 bit Intel only):
 
-1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
+1). Install MacPorts (instructions and prerequisites can be found on official website, use Xcode version less than 12.2), please use default installation path (/opt/local).
     They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
      macosx_deployment_target 10.7
