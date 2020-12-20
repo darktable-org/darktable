@@ -894,19 +894,8 @@ static void build_round_stamp(float complex **pstamp,
     (strength * STAMP_RELOCATION) : strength;
   const float abs_strength = cabs(strength);
 
-  float complex *restrict stamp = malloc(sizeof(float complex)
-                                         * stamp_extent->width * stamp_extent->height);
-
-  // clear memory
-  #ifdef _OPENMP
-  #pragma omp parallel for schedule (static) default (shared)
-  #endif
-
-  for(int i = 0; i < stamp_extent->height; i++)
-  {
-    float complex *row = stamp + i * stamp_extent->width;
-    memset(row, 0, sizeof(float complex) * stamp_extent->width);
-  }
+  float complex *restrict stamp =
+    calloc(sizeof(float complex), stamp_extent->width * stamp_extent->height);
 
   // lookup table: map of distance from center point => warp
   const int table_size = iradius * LOOKUP_OVERSAMPLE;
