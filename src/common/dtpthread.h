@@ -112,10 +112,7 @@ static inline int dt_pthread_mutex_lock_with_caller(dt_pthread_mutex_t *mutex, c
 {
   const double t0 = dt_pthread_get_wtime();
   const int ret = pthread_mutex_lock(&(mutex->mutex));
-#ifndef __APPLE__
-  //FIXME: figure out why some Macs get an error return
   assert(!ret);
-#endif
   mutex->time_locked = dt_pthread_get_wtime();
   double wait = mutex->time_locked - t0;
   mutex->time_sum_wait += wait;
@@ -195,10 +192,7 @@ static inline int dt_pthread_mutex_unlock_with_caller(dt_pthread_mutex_t *mutex,
 
   // need to unlock last, to shield our internal data.
   const int ret = pthread_mutex_unlock(&(mutex->mutex));
-#ifndef __APPLE__
-  //FIXME: figure out why some Macs get an error return
   assert(!ret);
-#endif
   return ret;
 }
 
