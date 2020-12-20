@@ -56,6 +56,13 @@ def locate_program(program):
             return build+program
          if VERBOSE:
             print(f'  did not find {program} in build/bin')
+      # are we in a sibling of the source tree?
+      if os.path.exists('../darktable/src/tests/benchmark'):
+         build = '../darktable/build/bin/'
+         if os.path.exists(build+program):
+            return build+program
+         if VERBOSE:
+            print(f'  did not find {program} in {build}')
       # last location: check if on search path
       onpath = which(program)
       if onpath:
@@ -103,7 +110,10 @@ def locate_image(image):
       img = os.getcwd() + '/src/tests/integration/images/mire1.cr2'
       if os.path.exists(img):
          return img
-
+      # fifth: we are in a sibling of the darktable source tree
+      candidate = os.getcwd() + '/../darktable/src/tests/integration/images/mire1.cr2'
+      if os.path.exists(candidate):
+         return candidate
    # finally: give up
    print(f'Unable to locate {image}')
    exit(1)
