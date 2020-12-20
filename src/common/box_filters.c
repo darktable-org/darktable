@@ -406,6 +406,91 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
   dt_free_align(scanlines);
 }
 
+static void dt_box_mean_4ch_sse(float *const buf, const int height, const int width, const int radius,
+                                const int iterations)
+{
+  //TODO: rewrite with optimizations like the non-SSE version above
+  const int size = width > height ? width : height;
+
+  __m128 *const scanline_buf = dt_alloc_align(64, size * dt_get_num_threads() * sizeof(__m128));
+
+  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
+  {
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(radius, width, height, scanline_buf, size)   \
+  dt_omp_sharedconst(buf) \
+    schedule(static)
+#endif
+    /* horizontal blur buf into buf */
+    for(int y = 0; y < height; y++)
+    {
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
+      size_t index = (size_t)y * width;
+      __m128 L = _mm_setzero_ps();
+      int hits = 0;
+      for(int x = -radius; x < width; x++)
+      {
+        int op = x - radius - 1;
+        int np = x + radius;
+        if(op >= 0)
+        {
+          L = _mm_sub_ps(L, _mm_load_ps(&buf[(index + op) * 4]));
+          hits--;
+        }
+        if(np < width)
+        {
+          L = _mm_add_ps(L, _mm_load_ps(&buf[(index + np) * 4]));
+          hits++;
+        }
+        if(x >= 0) scanline[x] = _mm_div_ps(L, _mm_set_ps1(hits));
+      }
+
+      for(int x = 0; x < width; x++) _mm_store_ps(&buf[(index + x) * 4], scanline[x]);
+    }
+
+    /* vertical pass on blurlightness */
+    const int opoffs = -(radius + 1) * width;
+    const int npoffs = (radius)*width;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npoffs, opoffs, radius, height, width, scanline_buf, size) \
+  dt_omp_sharedconst(buf) \
+  schedule(static)
+#endif
+    for(int x = 0; x < width; x++)
+    {
+      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
+      __m128 L = _mm_setzero_ps();
+      int hits = 0;
+      size_t index = (size_t)x - radius * width;
+      for(int y = -radius; y < height; y++)
+      {
+        int op = y - radius - 1;
+        int np = y + radius;
+
+        if(op >= 0)
+        {
+          L = _mm_sub_ps(L, _mm_load_ps(&buf[(index + opoffs) * 4]));
+          hits--;
+        }
+        if(np < height)
+        {
+          L = _mm_add_ps(L, _mm_load_ps(&buf[(index + npoffs) * 4]));
+          hits++;
+        }
+        if(y >= 0) scanline[y] = _mm_div_ps(L, _mm_set_ps1(hits));
+        index += width;
+      }
+
+      for(int y = 0; y < height; y++)
+        _mm_store_ps(&buf[((size_t)y * width + x) * 4], scanline[y]);
+    }
+  }
+
+  dt_free_align(scanline_buf);
+}
+
 // moved here from common/fast_guided_filter.h   TODO: optimize like the other N-channel versions
 __DT_CLONE_TARGETS__
 static inline void box_average(float *const restrict in,
@@ -510,7 +595,14 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
   }
   else if (ch == 4)
   {
-    dt_box_mean_4ch(buf,height,width,radius,iterations);
+#ifdef __SSE__
+    if (darktable.codepath.SSE2)
+    {
+      dt_box_mean_4ch_sse(buf,height,width,radius,iterations);
+    }
+    else
+#endif
+      dt_box_mean_4ch(buf,height,width,radius,iterations);
   }
   else if (ch == 2) // used by fast_guided_filter.h
   {
