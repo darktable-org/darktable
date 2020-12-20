@@ -135,6 +135,14 @@ static int flp2(int i)
 
 void init(dt_imageio_module_format_t *self)
 {
+  if (codecName == NULL)
+  {
+    dt_print(DT_DEBUG_IMAGEIO,
+             "libavif doesn't offer encoding support!\n");
+    self->ready = FALSE;
+    return;
+  }
+
 #ifdef USE_LUA
   /* bit depth */
   dt_lua_register_module_member(darktable.lua_state.state,
