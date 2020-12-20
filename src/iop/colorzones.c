@@ -984,7 +984,7 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
                              const int select_by_picker, const int width, const int height,
                              const float *picked_color)
 {
-  const float normalize_C = (16.f * sqrtf(2.f));
+  const float normalize_C = (64.f * sqrtf(2.f));
 
   const int cellsi = DT_COLORZONES_CELLSI;
   const int cellsj = DT_COLORZONES_CELLSJ;
@@ -1012,7 +1012,7 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
           break;
         case DT_IOP_COLORZONES_C:
           LCh[0] = 50.0f;
-          LCh[1] = picked_color[1] * 0.25f * ii;
+          LCh[1] = picked_color[1] * ii;
           LCh[2] = picked_color[2];
           break;
         default: // DT_IOP_COLORZONES_h
