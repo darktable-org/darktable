@@ -3959,20 +3959,12 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
       // from different computers. sample use case: images on NAS, several computers using them NOT AT THE SAME TIME and
       // the xmp crawler is used to find changed sidecars.
       errno = 0;
-      FILE *fd = g_fopen(filename, "rb");
-      if(fd)
+      size_t end;
+      unsigned char *content = (unsigned char*)dt_read_file(filename, &end);
+      if(content)
       {
-        fseek(fd, 0, SEEK_END);
-        size_t end = ftell(fd);
-        rewind(fd);
-        unsigned char *content = (unsigned char *)malloc(end * sizeof(char));
-        if(content)
-        {
-          if(fread(content, sizeof(unsigned char), end, fd) == end)
-            checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, content, end);
-          free(content);
-        }
-        fclose(fd);
+        checksum_old = g_compute_checksum_for_data(G_CHECKSUM_MD5, content, end);
+        free(content);
       }
       else
       {
