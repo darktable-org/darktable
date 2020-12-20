@@ -69,6 +69,9 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
 {
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
+  // Can by set by the module function to false if something went wrong.
+  module->ready = TRUE;
+
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   dt_print(DT_DEBUG_CONTROL, "[imageio_load_module] loading format module `%s' from %s\n", plugin_name, libname);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
@@ -130,6 +133,11 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
     dt_lua_register_format_type(darktable.lua_state.state, module, my_type);
 #endif
     module->init(module);
+    if (!module->ready)
+    {
+      goto error;
+    }
+
 #ifdef USE_LUA
     lua_pushcfunction(darktable.lua_state.state, dt_lua_type_member_luaautoc);
     dt_lua_type_register_struct_type(darktable.lua_state.state, my_type);
