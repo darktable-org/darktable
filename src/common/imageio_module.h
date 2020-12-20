@@ -131,6 +131,7 @@ typedef struct dt_imageio_module_format_t
   int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
   luaA_Type parameter_lua_type;
 
+  gboolean ready;
 } dt_imageio_module_format_t;
 
 
