@@ -88,6 +88,71 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
   return;
 }
 
+static void blur_horizontal_2ch(float *const restrict buf, const int height, const int width, const int radius,
+                                float *const restrict scanlines)
+{
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(radius, height, width) \
+  dt_omp_sharedconst(buf, scanlines) \
+  schedule(static)
+#endif
+  for(int y = 0; y < height; y++)
+  {
+    float *const restrict scanline = scanlines + 2 * dt_get_thread_num() * width;
+    float L1 = 0.0f, L2 = 0.0f;
+    int hits = 0;
+    const size_t index = (size_t)2 * y * width;
+    // add up the left half of the window
+    for (int x = 0; x < radius && x < width ; x++)
+    {
+      hits++;
+      L1 += buf[index + 2*x];
+      L2 += buf[index + 2*x + 1];
+    }
+    // process the blur up to the point where we start removing values
+    int x;
+    for (x = 0; x <= radius && x < width; x++)
+    {
+      const int np = x + radius;
+      if(np < width)
+      {
+        hits++;
+        L1 += buf[index + 2*np];
+        L2 += buf[index + 2*np + 1];
+      }
+      scanline[2*x] = L1 / hits;
+      scanline[2*x+1] = L2 / hits;
+    }
+    // process the blur for the bulk of the scan line
+    for(; x + radius < width; x++)
+    {
+      const int op = x - radius - 1;
+      const int np = x + radius;
+      L1 = L1 - buf[index + 2*op] + buf[index + 2*np];
+      L2 = L2 - buf[index + 2*op + 1] + buf[index + 2*np + 1];
+      scanline[2*x] = L1 / hits;
+      scanline[2*x+1] = L2 / hits;
+    }
+    // process the right end where we have no more values to add to the running sum
+    for(; x < width; x++)
+    {
+      const int op = x - radius - 1;
+      hits--;
+      L1 -= buf[index + 2*op];
+      L2 -= buf[index + 2*op + 1];
+      scanline[2*x] = L1 / hits;
+      scanline[2*x+1] = L2 / hits;
+    }
+    // copy blurred values back to original location in buffer
+    for(x = 0; x < 2*width; x++)
+    {
+      buf[index + x] = scanline[x];
+    }
+  }
+  return;
+}
+
 static void blur_horizontal_4ch(float *const restrict buf, const int height, const int width, const int radius,
                                 float *const restrict scanlines)
 {
@@ -526,64 +591,23 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
 }
 #endif /* __SSE2__ */
 
-// moved here from common/fast_guided_filter.h   TODO: optimize like the other N-channel versions
 __DT_CLONE_TARGETS__
 static inline void box_mean_2ch(float *const restrict in, const size_t height, const size_t width,
-                                const int radius)
+                                const int radius, const int iterations)
 {
   // Compute in-place a box average (filter) on a multi-channel image over a window of size 2*radius + 1
   // We make use of the separable nature of the filter kernel to speed-up the computation
   // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
 
-  size_t ch = 2;
-
-  const size_t Ndim = width * height * ch;
-  float *const restrict temp = dt_alloc_align_float(Ndim);
+  const size_t Ndim = 2 * MAX(width,height);
+  float *const restrict temp = dt_alloc_align_float(Ndim * dt_get_num_threads());
   if (temp == NULL) return;
 
-  // Convolve box average along rows and output result
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, temp, width, height, ch, radius) \
-  schedule(simd:static)
-#endif
-  for(size_t i = 0; i < height; i++)
+  for (int iteration = 0; iteration < iterations; iteration++)
   {
-    for(size_t j = 0; j < width; j++)
-    {
-      const size_t begin_convol = (j < radius) ? 0 : j - radius;
-      size_t end_convol = j + radius;
-      end_convol = (end_convol < width) ? end_convol : width - 1;
-      const float num_elem = (float)end_convol - (float)begin_convol + 1.0f;
-      const size_t stride = i * width;
-      const size_t index = (stride + j) * ch;
-
-      float w[4] DT_ALIGNED_PIXEL = { 0.0f };
-
-      // Convolve
-      for(size_t c = begin_convol; c <= end_convol; c++)
-      {
-        const size_t index_c = (stride + c) * ch;
-#ifdef _OPENMP
-#pragma omp simd aligned(in:64) aligned(w:16) reduction(+:w)
-#endif
-        for(size_t k = 0; k < ch; ++k)
-          w[k] += in[index_c + k];
-      }
-
-      // Normalize and Save
-#ifdef _OPENMP
-#pragma omp simd aligned(w:16) aligned(in:64)
-#endif
-      for(size_t k = 0; k < ch; ++k)
-        temp[index + k] = w[k] / num_elem;
-    }
-    for (size_t k = 0; k < ch * width; k++)
-      in[ch * i * width + k] = temp[ch * i * width + k];
+    blur_horizontal_2ch(in, height, width, radius, temp);
+    blur_vertical_1ch(in, height, 2*width, radius, temp);
   }
-
-  blur_vertical_1ch(in, height, 2*width, radius, temp);
-
   dt_free_align(temp);
 }
 
@@ -607,7 +631,7 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
   }
   else if (ch == 2) // used by fast_guided_filter.h
   {
-    box_mean_2ch(buf,height,width,radius);
+    box_mean_2ch(buf,height,width,radius,iterations);
   }
 }
 
