@@ -817,26 +817,7 @@ void dt_copy_resource_file(const char *src, const char *dst)
   char share[PATH_MAX] = { 0 };
   dt_loc_get_datadir(share, sizeof(share));
   gchar *sourcefile = g_build_filename(share, src, NULL);
-  char *content = NULL;
-  FILE *fin = g_fopen(sourcefile, "rb");
-  FILE *fout = g_fopen(dst, "wb");
-
-  if(fin && fout)
-  {
-    fseek(fin, 0, SEEK_END);
-    size_t end = ftell(fin);
-    rewind(fin);
-    content = (char *)g_malloc_n(end, sizeof(char));
-    if(content == NULL) goto END;
-    if(fread(content, sizeof(char), end, fin) != end) goto END;
-    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
-  }
-
-END:
-  if(fout != NULL) fclose(fout);
-  if(fin != NULL) fclose(fin);
-
-  g_free(content);
+  dt_copy_file(sourcefile, dst);
   g_free(sourcefile);
 }
 
