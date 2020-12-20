@@ -45,6 +45,7 @@ typedef struct dt_undo_history_t
   int before_end, after_end;
   GList *before_iop_order_list, *after_iop_order_list;
   dt_masks_edit_mode_t mask_edit_mode;
+  dt_dev_pixelpipe_display_mask_t request_mask_display;
 } dt_undo_history_t;
 
 typedef struct dt_lib_history_t
@@ -649,7 +650,14 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
 
     if(dev->gui_module)
+    {
       dt_masks_set_edit_mode(dev->gui_module, hist->mask_edit_mode);
+      darktable.develop->gui_module->request_mask_display = hist->request_mask_display;
+      dt_iop_gui_update_blendif(darktable.develop->gui_module);
+      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)(dev->gui_module->blend_data);
+      dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask),
+                              hist->request_mask_display == DT_DEV_PIXELPIPE_DISPLAY_MASK);
+    }
   }
 }
 
@@ -1042,9 +1050,16 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     hist->after_end = darktable.develop->history_end;
     hist->after_iop_order_list = dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
 
-    hist->mask_edit_mode = darktable.develop->gui_module
-      ? dt_masks_get_edit_mode(darktable.develop->gui_module)
-      : DT_MASKS_EDIT_OFF;
+    if(darktable.develop->gui_module)
+    {
+      hist->mask_edit_mode = dt_masks_get_edit_mode(darktable.develop->gui_module);
+      hist->request_mask_display = darktable.develop->gui_module->request_mask_display;
+    }
+    else
+    {
+      hist->mask_edit_mode = DT_MASKS_EDIT_OFF;
+      hist->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    }
 
     dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);
