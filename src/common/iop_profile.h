@@ -280,10 +280,10 @@ static inline void _apply_trc_out(const float rgb_in[3], float rgb_out[3],
 static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
                                                    const float matrix[9])
 {
-  for(int c = 0; c < 3; c++) xyz[c] = 0.0f;
+  for(size_t c = 0; c < 3; c++) xyz[c] = 0.0f;
 
-  for(int c = 0; c < 3; c++)
-    for(int i = 0; i < 3; i++)
+  for(size_t c = 0; c < 3; c++)
+    for(size_t i = 0; i < 3; i++)
       xyz[c] += matrix[3 * c + i] * rgb[i];
 }
 
@@ -296,10 +296,10 @@ static inline void _ioppr_linear_rgb_matrix_to_xyz(const float rgb[3], float xyz
 static inline void _ioppr_xyz_to_linear_rgb_matrix(const float xyz[3], float rgb[3],
                                                    const float matrix[9])
 {
-  for(int c = 0; c < 3; c++) rgb[c] = 0.0f;
+  for(size_t c = 0; c < 3; c++) rgb[c] = 0.0f;
 
-  for(int c = 0; c < 3; c++)
-    for(int i = 0; i < 3; i++)
+  for(size_t c = 0; c < 3; c++)
+    for(size_t i = 0; i < 3; i++)
       rgb[c] += matrix[3 * c + i] * xyz[i];
 }
 
@@ -384,7 +384,7 @@ static inline void dt_ioppr_lab_to_rgb_matrix(const float lab[3], float rgb[3],
                                               const float unbounded_coeffs_out[3][3],
                                               const int lutsize, const int nonlinearlut)
 {
-  float xyz[3] DT_ALIGNED_PIXEL;
+  float xyz[3] DT_ALIGNED_PIXEL = { 0.f };
   dt_Lab_to_XYZ(lab, xyz);
 
   if(nonlinearlut)
@@ -410,7 +410,7 @@ static inline void dt_ioppr_rgb_matrix_to_lab(const float rgb[3], float lab[3],
                                               const float unbounded_coeffs_in[3][3],
                                               const int lutsize, const int nonlinearlut)
 {
-  float xyz[3] DT_ALIGNED_PIXEL;
+  float xyz[3] DT_ALIGNED_PIXEL = { 0.f };
   dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, matrix_in, lut_in, unbounded_coeffs_in, lutsize, nonlinearlut);
   dt_XYZ_to_Lab(xyz, lab);
 }
