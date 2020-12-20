@@ -19,6 +19,7 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/imageio_module.h"
+#include "common/utility.h"
 #include "imageio/format/imageio_format_api.h"
 #include <glib/gstdio.h>
 #include <inttypes.h>
@@ -38,9 +39,6 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   char sourcefile[PATH_MAX];
   char *targetfile = NULL;
   char *xmpfile = NULL;
-  char *content = NULL;
-  FILE *fin = NULL;
-  FILE *fout = NULL;
 
   dt_image_full_path(imgid, sourcefile, sizeof(sourcefile), &from_cache);
 
@@ -50,18 +48,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 
   if(!strcmp(sourcefile, targetfile)) goto END;
 
-  fin = g_fopen(sourcefile, "rb");
-  fout = g_fopen(targetfile, "wb");
-  if(fin == NULL || fout == NULL) goto END;
-
-  fseek(fin, 0, SEEK_END);
-  size_t end = ftell(fin);
-  rewind(fin);
-
-  content = (char *)g_malloc_n(end, sizeof(char));
-  if(content == NULL) goto END;
-  if(fread(content, sizeof(char), end, fin) != end) goto END;
-  if(fwrite(content, sizeof(char), end, fout) != end) goto END;
+  dt_copy_file(sourcefile, targetfile);
 
   // we got a copy of the file, now write the xmp data
   xmpfile = g_strconcat(targetfile, ".xmp", NULL);
@@ -76,9 +63,6 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
 END:
   g_free(targetfile);
   g_free(xmpfile);
-  g_free(content);
-  if(fin) fclose(fin);
-  if(fout) fclose(fout);
   return status;
 }
 
