@@ -402,34 +402,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
   return 0;
 }
 
-static void copy_res(const char *src, const char *dst)
-{
-  char share[PATH_MAX] = { 0 };
-  dt_loc_get_datadir(share, sizeof(share));
-  gchar *sourcefile = g_build_filename(share, src, NULL);
-  char *content = NULL;
-  FILE *fin = g_fopen(sourcefile, "rb");
-  FILE *fout = g_fopen(dst, "wb");
-
-  if(fin && fout)
-  {
-    fseek(fin, 0, SEEK_END);
-    size_t end = ftell(fin);
-    rewind(fin);
-    content = (char *)g_malloc_n(end, sizeof(char));
-    if(content == NULL) goto END;
-    if(fread(content, sizeof(char), end, fin) != end) goto END;
-    if(fwrite(content, sizeof(char), end, fout) != end) goto END;
-  }
-
-END:
-  if(fout != NULL) fclose(fout);
-  if(fin != NULL) fclose(fin);
-
-  g_free(content);
-  g_free(sourcefile);
-}
-
 void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *dd)
 {
   dt_imageio_gallery_t *d = (dt_imageio_gallery_t *)dd;
@@ -441,31 +413,31 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
   sprintf(c, "/style");
   g_mkdir_with_parents(filename, 0755);
   sprintf(c, "/style/style.css");
-  copy_res("/style/style.css", filename);
+  dt_copy_resource_file("/style/style.css", filename);
   sprintf(c, "/style/favicon.ico");
-  copy_res("/style/favicon.ico", filename);
+  dt_copy_resource_file("/style/favicon.ico", filename);
 
   // create subdir pswp for photoswipe scripts
   sprintf(c, "/pswp/default-skin/");
   g_mkdir_with_parents(filename, 0755);
   sprintf(c, "/pswp/photoswipe.js");
-  copy_res("/pswp/photoswipe.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe.js", filename);
   sprintf(c, "/pswp/photoswipe.min.js");
-  copy_res("/pswp/photoswipe.min.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe.min.js", filename);
   sprintf(c, "/pswp/photoswipe-ui-default.js");
-  copy_res("/pswp/photoswipe-ui-default.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe-ui-default.js", filename);
   sprintf(c, "/pswp/photoswipe.css");
-  copy_res("/pswp/photoswipe.css", filename);
+  dt_copy_resource_file("/pswp/photoswipe.css", filename);
   sprintf(c, "/pswp/photoswipe-ui-default.min.js");
-  copy_res("/pswp/photoswipe-ui-default.min.js", filename);
+  dt_copy_resource_file("/pswp/photoswipe-ui-default.min.js", filename);
   sprintf(c, "/pswp/default-skin/default-skin.css");
-  copy_res("/pswp/default-skin/default-skin.css", filename);
+  dt_copy_resource_file("/pswp/default-skin/default-skin.css", filename);
   sprintf(c, "/pswp/default-skin/default-skin.png");
-  copy_res("/pswp/default-skin/default-skin.png", filename);
+  dt_copy_resource_file("/pswp/default-skin/default-skin.png", filename);
   sprintf(c, "/pswp/default-skin/default-skin.svg");
-  copy_res("/pswp/default-skin/default-skin.svg", filename);
+  dt_copy_resource_file("/pswp/default-skin/default-skin.svg", filename);
   sprintf(c, "/pswp/default-skin/preloader.gif");
-  copy_res("/pswp/default-skin/preloader.gif", filename);
+  dt_copy_resource_file("/pswp/default-skin/preloader.gif", filename);
 
   sprintf(c, "/index.html");
 
