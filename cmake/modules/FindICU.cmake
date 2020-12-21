@@ -12,10 +12,11 @@ include(LibFindMacros)
 libfind_pkg_check_modules(ICU_PKGCONF icu-i18n)
 
 # Find the libraries
-find_library(ICU_LIBRARY
-  NAMES icui18n
-  HINTS ${ICU_PKGCONF_LIBRARY_DIRS}
-)
+foreach(i ${ICU_PKGCONF_LIBRARIES})
+  find_library(_ICU_LIBRARY NAMES ${i} HINTS ${ICU_PKGCONF_LIBRARY_DIRS})
+  LIST(APPEND ICU_LIBRARY ${_ICU_LIBRARY})
+  unset(_ICU_LIBRARY CACHE)
+endforeach(i)
 
 if(ICU_LIBRARY)
   set(ICU_PROCESS_LIBS ${ICU_LIBRARY})
