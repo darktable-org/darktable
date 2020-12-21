@@ -80,6 +80,7 @@ typedef struct dt_lib_modulegroups_basic_item_t
   gchar *module_op;
   gchar *widget_name; // translated
   GtkWidget *widget;
+  GtkWidget *temp_widget;
   GtkWidget *old_parent;
   dt_lib_modulegroups_basic_item_parent_t old_parent_type;
   dt_lib_modulegroups_basic_item_type_t widget_type;
@@ -423,7 +424,9 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
   }
   // cleanup item
   if(item->box) gtk_widget_destroy(item->box);
+  if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
   item->box = NULL;
+  item->temp_widget = NULL;
   item->widget = NULL;
   item->old_parent = NULL;
   item->module = NULL;
@@ -606,6 +609,27 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
     item->sensitive = gtk_widget_get_sensitive(item->widget);
     item->tooltip = g_strdup(gtk_widget_get_tooltip_text(item->widget));
+
+    // we put the temporary widget at the place of the real widget in the module
+    // this avoid order mismatch when putting back the real widget
+    item->temp_widget = gtk_label_new("temp widget");
+    if(GTK_IS_CONTAINER(item->old_parent))
+    {
+      if(item->old_parent_type == BOX)
+      {
+        if(item->packtype == GTK_PACK_START)
+          gtk_box_pack_start(GTK_BOX(item->old_parent), item->temp_widget, item->expand, item->fill, item->padding);
+        else
+          gtk_box_pack_end(GTK_BOX(item->old_parent), item->temp_widget, item->expand, item->fill, item->padding);
+
+        gtk_box_reorder_child(GTK_BOX(item->old_parent), item->temp_widget, item->old_pos);
+      }
+      else if(item->old_parent_type == GRID)
+      {
+        gtk_grid_attach(GTK_GRID(item->old_parent), item->temp_widget, item->grid_x, item->grid_y, item->grid_w,
+                        item->grid_h);
+      }
+    }
 
     // disable widget if needed (multiinstance)
     if(dt_iop_count_instances(item->module->so) > 1)
