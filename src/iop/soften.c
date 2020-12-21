@@ -126,7 +126,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 /* create overexpose image and then blur */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(brightness, in, out, npixels, saturation) \
+  dt_omp_firstprivate(brightness, npixels, saturation) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(size_t k = 0; k < 4 * npixels; k += 4)
@@ -152,7 +153,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(amount, amount_1, in, out, npixels) \
-  schedule(static) aligned(in, out) \
+  schedule(simd:static) aligned(in, out : 64) \
   collapse(2)
 #endif
   for(size_t k = 0; k < 4 * npixels; k += 4)
@@ -168,28 +169,30 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_soften_data_t *data = (dt_iop_soften_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  dt_iop_soften_data_t *const data = (dt_iop_soften_data_t *)piece->data;
+  assert(piece->colors == 4);
 
   const float brightness = 1.0 / exp2f(-data->brightness);
   const float saturation = data->saturation / 100.0;
+
+  const float *const restrict in = (const float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
+
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
 /* create overexpose image and then blur */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, brightness, roi_out, saturation) \
-  shared(in, out) \
+  dt_omp_firstprivate(npixels, brightness, saturation) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
-    size_t index = ch * k;
     float h, s, l;
-    rgb2hsl(&in[index], &h, &s, &l);
+    rgb2hsl(&in[k], &h, &s, &l);
     s *= saturation;
     l *= brightness;
-    hsl2rgb(&out[index], h, CLIP(s), CLIP(l));
+    hsl2rgb(&out[k], h, CLIP(s), CLIP(l));
   }
 
   const float w = piece->iwidth * piece->iscale;
@@ -198,99 +201,19 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   int rad = mrad * (fmin(100.0, data->size + 1) / 100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-
-  __m128 *const scanline_buf = dt_alloc_align(64, size * dt_get_num_threads() * sizeof(__m128));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, radius, roi_out, scanline_buf, size) \
-    shared(out) \
-    schedule(static)
-#endif
-    /* horizontal blur out into out */
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
-      size_t index = (size_t)y * roi_out->width;
-      __m128 L = _mm_setzero_ps();
-      int hits = 0;
-      for(int x = -radius; x < roi_out->width; x++)
-      {
-        int op = x - radius - 1;
-        int np = x + radius;
-        if(op >= 0)
-        {
-          L = _mm_sub_ps(L, _mm_load_ps(&out[(index + op) * ch]));
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L = _mm_add_ps(L, _mm_load_ps(&out[(index + np) * ch]));
-          hits++;
-        }
-        if(x >= 0) scanline[x] = _mm_div_ps(L, _mm_set_ps1(hits));
-      }
-
-      for(int x = 0; x < roi_out->width; x++) _mm_store_ps(&out[(index + x) * ch], scanline[x]);
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(radius + 1) * roi_out->width;
-    const int npoffs = (radius)*roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, npoffs, opoffs, radius, roi_out, scanline_buf, size) \
-    shared(out) \
-    schedule(static)
-#endif
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
-      __m128 L = _mm_setzero_ps();
-      int hits = 0;
-      size_t index = (size_t)x - radius * roi_out->width;
-      for(int y = -radius; y < roi_out->height; y++)
-      {
-        int op = y - radius - 1;
-        int np = y + radius;
-
-        if(op >= 0)
-        {
-          L = _mm_sub_ps(L, _mm_load_ps(&out[(index + opoffs) * ch]));
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L = _mm_add_ps(L, _mm_load_ps(&out[(index + npoffs) * ch]));
-          hits++;
-        }
-        if(y >= 0) scanline[y] = _mm_div_ps(L, _mm_set_ps1(hits));
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++)
-        _mm_store_ps(&out[((size_t)y * roi_out->width + x) * ch], scanline[y]);
-    }
-  }
-
-  dt_free_align(scanline_buf);
+  dt_box_mean(out, roi_out->height, roi_out->width, 4, radius, BOX_ITERATIONS);
 
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, amount, amount_1, roi_out) \
-  shared(in, out, data) \
+  dt_omp_firstprivate(npixels, amount, amount_1, roi_out) \
+  dt_omp_sharedconst(in, out, data) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
-    int index = ch * k;
-    _mm_store_ps(&out[index], _mm_add_ps(_mm_mul_ps(_mm_load_ps(&in[index]), amount_1),
-                                         _mm_mul_ps(MM_CLIP_PS(_mm_load_ps(&out[index])), amount)));
+    _mm_store_ps(&out[k], ((_mm_load_ps(&in[k]) * amount_1) + (MM_CLIP_PS(_mm_load_ps(&out[k])) * amount)));
   }
 }
 #endif
