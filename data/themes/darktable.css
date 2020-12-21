@@ -479,8 +479,7 @@ overshoot.right
 
 #iop-plugin-ui-main,
 #lib-plugin-ui-main,
-#blending-box,
-#basics-widget
+#blending-box
 {
   padding: 0.75em;
 }
@@ -493,13 +492,24 @@ overshoot.right
 
 #basics-widget
 {
-  padding-top: 0.5em;
-  padding-bottom: 0;
+  padding: 0.5em 0 0 0;
+  margin: 0 0.75em 0.5em 0.75em;
+}
+
+.basics-widget_group_start
+{
+  border-top: 0.5px solid  @section_label;
 }
 
 #basics-iop_name
 {
-  padding-right: 0.25em;
+  padding-left: 0.25em;
+}
+
+#basics-widget #bauhaus-combobox + #dt-button,
+#basics-widget #bauhaus-slider + #dt-button
+{
+  margin-left: 0.5em;
 }
 
 #modulgroups-basics-pop-title *

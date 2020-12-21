@@ -568,7 +568,8 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
   }
 }
 
-static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, DtBauhausWidget *bw)
+static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, DtBauhausWidget *bw,
+                               gboolean new_group)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
@@ -591,16 +592,14 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     // create new basic widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(item->box, "basics-widget");
+    if(new_group)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(item->box);
+      gtk_style_context_add_class(context, "basics-widget_group_start");
+    }
 
     // we create a new button linked with the real one
     // because it create too much pb to remove the button from the expander
-    GtkWidget *evb = gtk_event_box_new();
-    GtkWidget *lb = gtk_label_new(item->module->name());
-    gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
-    gtk_widget_set_name(lb, "basics-iop_name");
-    gtk_container_add(GTK_CONTAINER(evb), lb);
-    g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_basics_on_off_callback2), item);
-    gtk_box_pack_start(GTK_BOX(item->box), evb, FALSE, TRUE, 0);
     GtkWidget *btn
         = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, item->module);
     gtk_widget_set_name(btn, "module-enable-button");
@@ -608,6 +607,13 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
                                  gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->widget)));
     g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_basics_on_off_callback), item);
     gtk_box_pack_start(GTK_BOX(item->box), btn, FALSE, FALSE, 0);
+    GtkWidget *evb = gtk_event_box_new();
+    GtkWidget *lb = gtk_label_new(item->module->name());
+    gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
+    gtk_widget_set_name(lb, "basics-iop_name");
+    gtk_container_add(GTK_CONTAINER(evb), lb);
+    g_signal_connect(G_OBJECT(evb), "button-press-event", G_CALLBACK(_basics_on_off_callback2), item);
+    gtk_box_pack_start(GTK_BOX(item->box), evb, FALSE, TRUE, 0);
 
     // disable widget if needed (multiinstance)
     if(dt_iop_count_instances(item->module->so) > 1)
@@ -677,6 +683,11 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     // create new basic widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(item->box, "basics-widget");
+    if(new_group)
+    {
+      GtkStyleContext *context = gtk_widget_get_style_context(item->box);
+      gtk_style_context_add_class(context, "basics-widget_group_start");
+    }
     gtk_widget_show(item->box);
 
     // we reparent the iop widget here
@@ -727,10 +738,13 @@ static void _basics_show(dt_lib_module_t *self)
     gtk_widget_set_name(d->vbox_basic, "basics-box");
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, d->vbox_basic);
   }
+  int pos = 0;
   GList *modules = g_list_last(darktable.develop->iop);
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    gboolean new_module = TRUE;      // we record if it's a new module or not to set css class
+    if(pos == 0) new_module = FALSE; // except for the first one as we don't want top separator
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->iop_order != INT_MAX)
     {
       // add all wanted widget from this module
@@ -743,7 +757,9 @@ static void _basics_show(dt_lib_module_t *self)
           if(item->widget_type == WIDGET_TYPE_ACTIVATE_BTN)
           {
             item->module = module;
-            _basics_add_widget(self, item, NULL);
+            _basics_add_widget(self, item, NULL, new_module);
+            new_module = FALSE;
+            pos++;
           }
           else
           {
@@ -758,7 +774,9 @@ static void _basics_show(dt_lib_module_t *self)
                 if(ww->module == module)
                 {
                   item->module = module;
-                  _basics_add_widget(self, item, ww);
+                  _basics_add_widget(self, item, ww, new_module);
+                  new_module = FALSE;
+                  pos++;
                   g_free(tx);
                   break;
                 }
