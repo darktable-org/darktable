@@ -1330,7 +1330,7 @@ static gchar *_preset_to_string(dt_lib_module_t *self, gboolean edition)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   gchar *res = NULL;
   const gboolean show_search = edition ? d->edit_show_search : d->show_search;
-  res = dt_util_dstrcat(res, "%dꬹ1", show_search ? 1 : 0);
+  res = dt_util_dstrcat(res, "%d", show_search ? 1 : 0);
 
   const gboolean basics_show = edition ? d->edit_basics_show : d->basics_show;
   GList *basics = edition ? d->edit_basics : d->basics;
@@ -2817,7 +2817,6 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   if(d->edit_preset) g_free(d->edit_preset);
   d->edit_groups = NULL;
   d->edit_preset = NULL;
-  int ro = 0;
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
@@ -2855,21 +2854,21 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   d->preset_name = gtk_entry_new();
   gtk_widget_set_tooltip_text(d->preset_name, _("preset name"));
   gtk_entry_set_text(GTK_ENTRY(d->preset_name), preset);
-  if(ro) gtk_widget_set_sensitive(d->preset_name, FALSE);
+  gtk_widget_set_sensitive(d->preset_name, !d->edit_ro);
   gtk_box_pack_start(GTK_BOX(hb1), d->preset_name, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
   // show search checkbox
   d->edit_search_cb = gtk_check_button_new_with_label(_("show search line"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->edit_search_cb), d->edit_show_search);
-  if(ro) gtk_widget_set_sensitive(d->edit_search_cb, FALSE);
+  gtk_widget_set_sensitive(d->edit_search_cb, !d->edit_ro);
   gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
 
   // show basics checkbox
   d->basics_chkbox = gtk_check_button_new_with_label(_("show basics widgets group"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basics_chkbox), d->edit_basics_show);
   g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
-  if(ro) gtk_widget_set_sensitive(d->basics_chkbox, FALSE);
+  gtk_widget_set_sensitive(d->basics_chkbox, !d->edit_ro);
   gtk_box_pack_start(GTK_BOX(vb), d->basics_chkbox, FALSE, TRUE, 0);
 
   hb1 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
