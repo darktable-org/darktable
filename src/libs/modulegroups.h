@@ -24,7 +24,8 @@
 typedef enum dt_lib_modulegroup_t
 {
   DT_MODULEGROUP_NONE = -1,
-  DT_MODULEGROUP_ACTIVE_PIPE = 0
+  DT_MODULEGROUP_ACTIVE_PIPE = 0,
+  DT_MODULEGROUP_BASICS = 9999
 } dt_lib_modulegroup_t;
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
