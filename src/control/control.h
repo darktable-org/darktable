@@ -140,7 +140,7 @@ typedef struct dt_control_accels_t
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 5000
 #define DT_CTL_TOAST_SIZE 10
-#define DT_CTL_TOAST_MSG_SIZE 200
+#define DT_CTL_TOAST_MSG_SIZE 300
 #define DT_CTL_TOAST_TIMEOUT 1500
 /**
  * this manages everything time-consuming.
