@@ -984,7 +984,13 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
                              const int select_by_picker, const int width, const int height,
                              const float *picked_color)
 {
-  const float normalize_C = (64.f * sqrtf(2.f));
+  float bg_sat_factor = dt_conf_get_float("plugins/darkroom/colorzones/bg_sat_factor");
+  if (bg_sat_factor == 0) {
+    bg_sat_factor = 0.5;
+    dt_conf_set_float("plugins/darkroom/colorzones/bg_sat_factor", bg_sat_factor);
+  }
+  
+  const float normalize_C = (128.f * bg_sat_factor * sqrtf(2.f));
 
   const int cellsi = DT_COLORZONES_CELLSI;
   const int cellsj = DT_COLORZONES_CELLSJ;
@@ -1012,7 +1018,7 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
           break;
         case DT_IOP_COLORZONES_C:
           LCh[0] = 50.0f;
-          LCh[1] = picked_color[1] * ii;
+          LCh[1] = picked_color[1] * 2.f * bg_sat_factor * ii;
           LCh[2] = picked_color[2];
           break;
         default: // DT_IOP_COLORZONES_h
