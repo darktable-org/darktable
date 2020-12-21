@@ -2088,6 +2088,7 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   if(darktable.gui->reset) return 1;
   if(!self->enabled) return 0;
   if(g == NULL) return 0;
+  if(!g->has_focus) return 0;
 
   // add an option to allow skip mouse events while editing masks
   if(darktable.develop->darkroom_skip_mouse_events || in_mask_editing(self)) return 0;
