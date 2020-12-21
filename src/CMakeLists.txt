@@ -478,6 +478,15 @@ if(USE_GMIC)
   endif(GMIC_FOUND)
 endif(USE_GMIC)
 
+if(USE_ICU)
+  find_package(ICU)
+  if(ICU_FOUND)
+    add_definitions(-DHAVE_ICU -DSQLITE_CORE -DSQLITE_ENABLE_ICU)
+    list(APPEND LIBS ${ICU_LIBRARIES})
+    set(SOURCES ${SOURCES} "common/sqliteicu.c")
+  endif(ICU_FOUND)
+endif(USE_ICU)
+
 #
 # Add HAVE_xxx defines used by darktable
 #
