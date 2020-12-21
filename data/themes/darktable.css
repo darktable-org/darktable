@@ -492,12 +492,12 @@ overshoot.right
 
 #basics-widget
 {
-  padding: 0.5em 0 0 0;
   margin: 0 0.75em 0.5em 0.75em;
 }
 
-.basics-widget_group_start
+#basics-widget.basics-widget_group_start
 {
+  padding-top: 0.5em;
   border-top: 0.5px solid  @section_label;
 }
 
