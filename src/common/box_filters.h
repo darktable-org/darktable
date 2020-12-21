@@ -21,6 +21,7 @@
 // default number of iterations to run for dt_box_mean
 #define BOX_ITERATIONS 8
 
+// ch = number of channels per pixel.  Supported values: 1 and 4
 void dt_box_mean(float *const buf, const int height, const int width, const int ch,
                  const int radius, const int interations);
 
