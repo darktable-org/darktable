@@ -318,7 +318,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #endif
   { 
     float *VH_Dir = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *VH_Dir);
-    float *PQ_Dir = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *PQ_Dir);
+    float *PQ_Dir = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE / 2 * sizeof *PQ_Dir);
     float *cfa = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *cfa);
     float (*rgb)[RCD_TILESIZE * RCD_TILESIZE] = (float (*)[RCD_TILESIZE * RCD_TILESIZE])dt_alloc_align(64, 3 * sizeof *rgb);
 
@@ -495,61 +495,43 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 4.1: Calculate P/Q diagonal local discrimination
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col; col < tileCols - 4; col += 2, indx +=2)
+          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, pqindx = indx / 2; col < tileCols - 4; col += 2, indx += 2, pqindx++)
           {
             const float cfai = cfa[indx];
 
-            const float P_Stat = fmaxf(epssq,
-                - 18.f * cfai * (cfa[indx - w1 - 1] + cfa[indx + w1 + 1] + 2.0f * (cfa[indx - w2 - 2] + cfa[indx + w2 + 2]) - cfa[indx - w3 - 3] - cfa[indx + w3 + 3])
-                - 2.0f * cfai * (cfa[indx - w4 - 4] + cfa[indx + w4 + 4] - 19.f * cfai)
-                - cfa[indx - w1 - 1] * (70.f * cfa[indx + w1 + 1] + 12.f * (cfa[indx - w4 - 4] - cfa[indx - w2 - 2] + 2.0f * cfa[indx + w2 + 2]) - 38.f * cfa[indx - w3 - 3] + 16.f * cfa[indx + w3 + 3] - 6.f * cfa[indx + w4 + 4] + 46.f * cfa[indx - w1 - 1])
-                + cfa[indx + w1 + 1] * (24.f * cfa[indx - w2 - 2] + 12.f * (cfa[indx + w4 + 4] - cfa[indx + w2 + 2]) + 16.f * cfa[indx - w3 - 3] - 38.f * cfa[indx + w3 + 3] - 6.f * cfa[indx - w4 - 4] + 46.f * cfa[indx + w1 + 1])
-                + cfa[indx - w2 - 2] * (14.f * cfa[indx + w2 + 2] - 12.f * cfa[indx + w3 + 3] - 2.0f * (cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx - w2 - 2])
-                - cfa[indx + w2 + 2] * (12.f * cfa[indx - w3 - 3] + 2.0f * (cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx + w2 + 2])
-                + cfa[indx - w3 - 3] * (2.0f * cfa[indx + w3 + 3] - 6.f * cfa[indx - w4 - 4] + 10.f * cfa[indx - w3 - 3])
-                - cfa[indx + w3 + 3] * (6.f * cfa[indx + w4 + 4] + 10.f * cfa[indx + w3 + 3])
-                + cfa[indx - w4 - 4] * cfa[indx - w4 - 4] + cfa[indx + w4 + 4] * cfa[indx + w4 + 4]);
+            float P_Stat = fmaxf(epssq, - 18.f * cfai * (cfa[indx - w1 - 1] + cfa[indx + w1 + 1] + 2.f * (cfa[indx - w2 - 2] + cfa[indx + w2 + 2]) - cfa[indx - w3 - 3] - cfa[indx + w3 + 3]) - 2.f * cfai * (cfa[indx - w4 - 4] + cfa[indx + w4 + 4] - 19.f * cfai) - cfa[indx - w1 - 1] * (70.f * cfa[indx + w1 + 1] - 12.f * cfa[indx - w2 - 2] + 24.f * cfa[indx + w2 + 2] - 38.f * cfa[indx - w3 - 3] + 16.f * cfa[indx + w3 + 3] + 12.f * cfa[indx - w4 - 4] - 6.f * cfa[indx + w4 + 4] + 46.f * cfa[indx - w1 - 1]) + cfa[indx + w1 + 1] * (24.f * cfa[indx - w2 - 2] - 12.f * cfa[indx + w2 + 2] + 16.f * cfa[indx - w3 - 3] - 38.f * cfa[indx + w3 + 3] - 6.f * cfa[indx - w4 - 4] + 12.f * cfa[indx + w4 + 4] + 46.f * cfa[indx + w1 + 1]) + cfa[indx - w2 - 2] * (14.f * cfa[indx + w2 + 2] - 12.f * cfa[indx + w3 + 3] - 2.f * (cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx - w2 - 2]) - cfa[indx + w2 + 2] * (12.f * cfa[indx - w3 - 3] + 2.f * (cfa[indx - w4 - 4] - cfa[indx + w4 + 4]) + 11.f * cfa[indx + w2 + 2]) + cfa[indx - w3 - 3] * (2.f * cfa[indx + w3 + 3] - 6.f * cfa[indx - w4 - 4] + 10.f * cfa[indx - w3 - 3]) - cfa[indx + w3 + 3] * (6.f * cfa[indx + w4 + 4] + 10.f * cfa[indx + w3 + 3]) + cfa[indx - w4 - 4] * cfa[indx - w4 - 4] + cfa[indx + w4 + 4] * cfa[indx + w4 + 4]);
+            float Q_Stat = fmaxf(epssq, - 18.f * cfai * (cfa[indx + w1 - 1] + cfa[indx - w1 + 1] + 2.f * (cfa[indx + w2 - 2] + cfa[indx - w2 + 2]) - cfa[indx + w3 - 3] - cfa[indx - w3 + 3]) - 2.f * cfai * (cfa[indx + w4 - 4] + cfa[indx - w4 + 4] - 19.f * cfai) - cfa[indx + w1 - 1] * (70.f * cfa[indx - w1 + 1] - 12.f * cfa[indx + w2 - 2] + 24.f * cfa[indx - w2 + 2] - 38.f * cfa[indx + w3 - 3] + 16.f * cfa[indx - w3 + 3] + 12.f * cfa[indx + w4 - 4] - 6.f * cfa[indx - w4 + 4] + 46.f * cfa[indx + w1 - 1]) + cfa[indx - w1 + 1] * (24.f * cfa[indx + w2 - 2] - 12.f * cfa[indx - w2 + 2] + 16.f * cfa[indx + w3 - 3] - 38.f * cfa[indx - w3 + 3] - 6.f * cfa[indx + w4 - 4] + 12.f * cfa[indx - w4 + 4] + 46.f * cfa[indx - w1 + 1]) + cfa[indx + w2 - 2] * (14.f * cfa[indx - w2 + 2] - 12.f * cfa[indx - w3 + 3] - 2.f * (cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx + w2 - 2]) - cfa[indx - w2 + 2] * (12.f * cfa[indx + w3 - 3] + 2.f * (cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx - w2 + 2]) + cfa[indx + w3 - 3] * (2.f * cfa[indx - w3 + 3] - 6.f * cfa[indx + w4 - 4] + 10.f * cfa[indx + w3 - 3]) - cfa[indx - w3 + 3] * (6.f * cfa[indx - w4 + 4] + 10.f * cfa[indx - w3 + 3]) + cfa[indx + w4 - 4] * cfa[indx + w4 - 4] + cfa[indx - w4 + 4] * cfa[indx - w4 + 4]);
 
-            const float Q_Stat = fmaxf(epssq,
-               - 18.f * cfai * (cfa[indx + w1 - 1] + cfa[indx - w1 + 1] + 2.0f * (cfa[indx + w2 - 2] + cfa[indx - w2 + 2]) - cfa[indx + w3 - 3] - cfa[indx - w3 + 3])
-               - 2.0f * cfai * (cfa[indx + w4 - 4] + cfa[indx - w4 + 4] - 19.f * cfai)
-               - cfa[indx + w1 - 1] * (70.f * cfa[indx - w1 + 1] + 12.f * (cfa[indx + w4 - 4] - cfa[indx + w2 - 2] + 2.0f * cfa[indx - w2 + 2]) - 38.f * cfa[indx + w3 - 3] + 16.f * cfa[indx - w3 + 3] - 6.f * cfa[indx - w4 + 4] + 46.f * cfa[indx + w1 - 1])
-               + cfa[indx - w1 + 1] * (24.f * cfa[indx + w2 - 2] + 12.f * (cfa[indx - w4 + 4] - cfa[indx - w2 + 2]) + 16.f * cfa[indx + w3 - 3] - 38.f * cfa[indx - w3 + 3] - 6.f * cfa[indx + w4 - 4] + 46.f * cfa[indx - w1 + 1])
-               + cfa[indx + w2 - 2] * (14.f * cfa[indx - w2 + 2] - 12.f * cfa[indx - w3 + 3] - 2.0f * (cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx + w2 - 2])
-               - cfa[indx - w2 + 2] * (12.f * cfa[indx + w3 - 3] + 2.0f * (cfa[indx + w4 - 4] - cfa[indx - w4 + 4]) + 11.f * cfa[indx - w2 + 2])
-               + cfa[indx + w3 - 3] * (2.0f * cfa[indx - w3 + 3] - 6.f * cfa[indx + w4 - 4] + 10.f * cfa[indx + w3 - 3])
-               - cfa[indx - w3 + 3] * (6.f * cfa[indx - w4 + 4] + 10.f * cfa[indx - w3 + 3])
-               + cfa[indx + w4 - 4] * cfa[indx + w4 - 4] + cfa[indx - w4 + 4] * cfa[indx - w4 + 4]);
-
-            PQ_Dir[indx] = P_Stat / (P_Stat + Q_Stat);
+            PQ_Dir[pqindx] = P_Stat / (P_Stat + Q_Stat);
           }
         }
 
         // Step 4.2: Populate the red and blue channels at blue and red CFA positions
         for(int row = 4; row < tileRows - 4; row++)
         {
-          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, c = 2 - FCRCD(row, col); col < tileCols - 4; col += 2, indx +=2)
+          for(int col = 4 + (FCRCD(row, 0) & 1), indx = row * RCD_TILESIZE + col, c = 2 - FCRCD(row, col), pqindx = indx / 2, pqindx2 = (indx - w1 - 1) / 2, pqindx3 = (indx + w1 - 1) / 2; col < tileCols - 4; col += 2, indx += 2, pqindx++, pqindx2++, pqindx3++)
           {
             // Refined P/Q diagonal local discrimination
-            const float PQ_Central_Value = PQ_Dir[indx];
-            const float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[indx - w1 - 1] + PQ_Dir[indx - w1 + 1] + PQ_Dir[indx + w1 - 1] + PQ_Dir[indx + w1 + 1]);
-            const float PQ_Disc = (fabs(0.5f - PQ_Central_Value) < fabs(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
+            float PQ_Central_Value   = PQ_Dir[pqindx];
+            float PQ_Neighbourhood_Value = 0.25f * (PQ_Dir[pqindx2] + PQ_Dir[pqindx2 + 1] + PQ_Dir[pqindx3] + PQ_Dir[pqindx3 + 1]);
+
+            float PQ_Disc = (fabs(0.5f - PQ_Central_Value) < fabs(0.5f - PQ_Neighbourhood_Value)) ? PQ_Neighbourhood_Value : PQ_Central_Value;
 
             // Diagonal gradients
-            const float NW_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx - w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 - 2]);
-            const float NE_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx - w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 + 2]);
-            const float SW_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx + w1 - 1] - rgb[c][indx + w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 - 2]);
-            const float SE_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx + w1 + 1] - rgb[c][indx + w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 + 2]);
+            float NW_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx - w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 - 2]);
+            float NE_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx - w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx - w2 + 2]);
+            float SW_Grad = eps + fabs(rgb[c][indx - w1 + 1] - rgb[c][indx + w1 - 1]) + fabs(rgb[c][indx + w1 - 1] - rgb[c][indx + w3 - 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 - 2]);
+            float SE_Grad = eps + fabs(rgb[c][indx - w1 - 1] - rgb[c][indx + w1 + 1]) + fabs(rgb[c][indx + w1 + 1] - rgb[c][indx + w3 + 3]) + fabs(rgb[1][indx] - rgb[1][indx + w2 + 2]);
 
             // Diagonal colour differences
-            const float NW_Est = rgb[c][indx - w1 - 1] - rgb[1][indx - w1 - 1];
-            const float NE_Est = rgb[c][indx - w1 + 1] - rgb[1][indx - w1 + 1];
-            const float SW_Est = rgb[c][indx + w1 - 1] - rgb[1][indx + w1 - 1];
-            const float SE_Est = rgb[c][indx + w1 + 1] - rgb[1][indx + w1 + 1];
+            float NW_Est = rgb[c][indx - w1 - 1] - rgb[1][indx - w1 - 1];
+            float NE_Est = rgb[c][indx - w1 + 1] - rgb[1][indx - w1 + 1];
+            float SW_Est = rgb[c][indx + w1 - 1] - rgb[1][indx + w1 - 1];
+            float SE_Est = rgb[c][indx + w1 + 1] - rgb[1][indx + w1 + 1];
 
             // P/Q estimations
-            const float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
-            const float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
+            float P_Est = (NW_Grad * SE_Est + SE_Grad * NW_Est) / (NW_Grad + SE_Grad);
+            float Q_Est = (NE_Grad * SW_Est + SW_Grad * NE_Est) / (NE_Grad + SW_Grad);
 
             // R@B and B@R interpolation
             rgb[c][indx] = rgb[1][indx] + intp(PQ_Disc, Q_Est, P_Est);
