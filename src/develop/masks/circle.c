@@ -867,7 +867,7 @@ static int dt_circle_get_area(const dt_iop_module_t *const restrict module,
   return 1;
 }
 
-/*static*/ int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
+static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
                               const dt_dev_pixelpipe_iop_t *const restrict piece,
                               dt_masks_form_t *const restrict form,
                               float **buffer, int *width, int *height, int *posx, int *posy)
