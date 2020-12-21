@@ -470,7 +470,8 @@ overshoot.right
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
 #lib-plugin-ui,
-#iop-plugin-ui
+#iop-plugin-ui,
+#basics-box
 {
   color: @plugin_fg_color;
   background-color: @plugin_bg_color;
@@ -478,9 +479,32 @@ overshoot.right
 
 #iop-plugin-ui-main,
 #lib-plugin-ui-main,
-#blending-box
+#blending-box,
+#basics-widget
 {
   padding: 0.75em;
+}
+
+#basics-box
+{
+  padding-top: 0.5em;
+  padding-bottom: 0.75em;
+}
+
+#basics-widget
+{
+  padding-top: 0.5em;
+  padding-bottom: 0;
+}
+
+#basics-iop_name
+{
+  padding-right: 0.25em;
+}
+
+#modulgroups-basics-pop-title *
+{
+  padding-left: 2em;
 }
 
 /* icon buttons in modules main body */
@@ -492,7 +516,8 @@ overshoot.right
 #blending-box #dt-button,
 #blending-box #dt-toggle-button,
 #blending-box #show_mask_button,
-#blending-box #keep-active
+#blending-box #keep-active,
+#basics-widget #dt-button
 {
   min-height: 1.3em;
   min-width: 1.3em;
