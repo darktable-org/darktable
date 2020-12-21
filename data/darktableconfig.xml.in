@@ -337,7 +337,7 @@
     </type>
     <default>insensitive</default>
     <shortdescription>in collect module, tags case sensitivity</shortdescription>
-    <longdescription>in collect module, tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 21 latin letters</longdescription>
+    <longdescription>in collect module, tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
   </dtconfig>
   <dtconfig prefs="cpugpu" capability="opencl">
     <name>opencl</name>
