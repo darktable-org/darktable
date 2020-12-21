@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-21 15:56+0100\n"
-"PO-Revision-Date: 2020-12-21 16:06+0100\n"
+"POT-Creation-Date: 2020-12-21 17:33+0100\n"
+"PO-Revision-Date: 2020-12-21 17:34+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -593,7 +593,7 @@ msgstr "couleurs saturées"
 #: ../src/develop/blend_gui.c:1878 ../src/iop/channelmixer.c:622
 #: ../src/iop/channelmixerrgb.c:2203 ../src/iop/colorbalance.c:2025
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1289
-#: ../src/iop/colorzones.c:2362 ../src/iop/splittoning.c:474
+#: ../src/iop/colorzones.c:2363 ../src/iop/splittoning.c:474
 msgid "hue"
 msgstr "teinte"
 
@@ -618,7 +618,7 @@ msgstr "mode"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1810 ../src/iop/channelmixer.c:624
 #: ../src/iop/colorchecker.c:1331 ../src/iop/colorize.c:363
-#: ../src/iop/colorzones.c:2360
+#: ../src/iop/colorzones.c:2361
 msgid "lightness"
 msgstr "clarté"
 
@@ -633,7 +633,7 @@ msgstr "clarté"
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:317
 #: ../src/iop/colorbalance.c:2042 ../src/iop/colorchecker.c:1349
 #: ../src/iop/colorcontrast.c:93 ../src/iop/colorcorrection.c:272
-#: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2361
+#: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2362
 #: ../src/iop/lowpass.c:591 ../src/iop/soften.c:474
 #: ../src/iop/splittoning.c:486 ../src/iop/velvia.c:89 ../src/iop/vibrance.c:70
 #: ../src/iop/vignette.c:993
@@ -3235,11 +3235,11 @@ msgstr "insensible"
 #: ../build/bin/preferences_gen.h:6530
 msgid ""
 "in collect module, tags case sensitivity. without the Sqlite ICU extension, "
-"insensivity works only for English letters"
+"insensivity works only for the 21 latin letters"
 msgstr ""
 "sensibilité à la casse des mots-clés dans le module de gestion des "
 "collections. sans l'extension ICU de sqlite, l'insensibilité à la casse ne "
-"fonctionne que pour les lettres latin-1 non accentuées."
+"fonctionne que pour les lettres latin non accentuées."
 
 #: ../build/bin/preferences_gen.h:6539
 msgid "keyboard shortcuts with multiple instances"
@@ -5594,7 +5594,7 @@ msgstr ""
 msgid "reset blend mask settings"
 msgstr "réinitialise les paramètres de fusion conditionnelle"
 
-#: ../src/develop/blend_gui.c:1993 ../src/iop/colorzones.c:2372
+#: ../src/develop/blend_gui.c:1993 ../src/iop/colorzones.c:2373
 #: ../src/iop/rgbcurve.c:1392 ../src/iop/tonecurve.c:1184
 msgid ""
 "pick GUI color from image\n"
@@ -8921,7 +8921,7 @@ msgstr ""
 "change les halos de contour à chaque niveau de détail\n"
 "change uniquement les résultats des sections luma et chroma"
 
-#: ../src/iop/atrous.c:1396 ../src/iop/colorzones.c:2429
+#: ../src/iop/atrous.c:1396 ../src/iop/colorzones.c:2430
 msgid "make effect stronger or weaker"
 msgstr "rend l'effet plus fort ou plus faible"
 
@@ -8995,7 +8995,7 @@ msgstr "similaire nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:273 ../src/iop/colorzones.c:2458
+#: ../src/iop/basecurve.c:273 ../src/iop/colorzones.c:2459
 #: ../src/iop/rgbcurve.c:1435 ../src/iop/tonecurve.c:1215
 msgid "cubic spline"
 msgstr "spline cubique"
@@ -10900,13 +10900,13 @@ msgstr "film noir & blanc"
 msgid "HSL base setting"
 msgstr "TSL neutre"
 
-#: ../src/iop/colorzones.c:2206 ../src/iop/retouch.c:1721
+#: ../src/iop/colorzones.c:2207 ../src/iop/retouch.c:1721
 #: ../src/iop/toneequal.c:1837
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "impossible d'afficher les masques lorsque les masques de fusion sont affichés"
 
-#: ../src/iop/colorzones.c:2379 ../src/iop/rgbcurve.c:1399
+#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1399
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -10919,42 +10919,42 @@ msgstr ""
 "shift-clic pour créer une courbe négative"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2401
+#: ../src/iop/colorzones.c:2402
 msgid "edit by area"
 msgstr "éditer par zone"
 
-#: ../src/iop/colorzones.c:2404
+#: ../src/iop/colorzones.c:2405
 msgid "edit the curve nodes by area"
 msgstr "édition de la courbe par zone"
 
-#: ../src/iop/colorzones.c:2411
+#: ../src/iop/colorzones.c:2412
 msgid "display selection"
 msgstr "afficher la sélection"
 
-#: ../src/iop/colorzones.c:2421
+#: ../src/iop/colorzones.c:2422
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "critère de sélection; correspond à l’abscisse du graphique"
 
-#: ../src/iop/colorzones.c:2424
+#: ../src/iop/colorzones.c:2425
 msgid "choose between a smoother or stronger effect"
 msgstr "choisir entre un effet prononcé ou plus doux"
 
-#: ../src/iop/colorzones.c:2457 ../src/iop/rgbcurve.c:1434
+#: ../src/iop/colorzones.c:2458 ../src/iop/rgbcurve.c:1434
 #: ../src/iop/tonecurve.c:1214
 msgid "interpolation method"
 msgstr "interpolation"
 
-#: ../src/iop/colorzones.c:2459 ../src/iop/rgbcurve.c:1436
+#: ../src/iop/colorzones.c:2460 ../src/iop/rgbcurve.c:1436
 #: ../src/iop/tonecurve.c:1216
 msgid "centripetal spline"
 msgstr "spline centripète"
 
-#: ../src/iop/colorzones.c:2460 ../src/iop/rgbcurve.c:1437
+#: ../src/iop/colorzones.c:2461 ../src/iop/rgbcurve.c:1437
 #: ../src/iop/tonecurve.c:1217
 msgid "monotonic spline"
 msgstr "spline monotone"
 
-#: ../src/iop/colorzones.c:2463 ../src/iop/rgbcurve.c:1440
+#: ../src/iop/colorzones.c:2464 ../src/iop/rgbcurve.c:1440
 #: ../src/iop/tonecurve.c:1219
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -11859,11 +11859,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3627 ../src/iop/filmicrgb.c:3637
 #: ../src/iop/filmicrgb.c:3670 ../src/iop/filmicrgb.c:3680
-#: ../src/iop/toneequal.c:3080 ../src/iop/toneequal.c:3084
-#: ../src/iop/toneequal.c:3088 ../src/iop/toneequal.c:3092
-#: ../src/iop/toneequal.c:3096 ../src/iop/toneequal.c:3100
-#: ../src/iop/toneequal.c:3104 ../src/iop/toneequal.c:3108
-#: ../src/iop/toneequal.c:3112 ../src/libs/metadata_view.c:509
+#: ../src/iop/toneequal.c:3081 ../src/iop/toneequal.c:3085
+#: ../src/iop/toneequal.c:3089 ../src/iop/toneequal.c:3093
+#: ../src/iop/toneequal.c:3097 ../src/iop/toneequal.c:3101
+#: ../src/iop/toneequal.c:3105 ../src/iop/toneequal.c:3109
+#: ../src/iop/toneequal.c:3113 ../src/libs/metadata_view.c:509
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f IL"
@@ -14508,7 +14508,7 @@ msgstr "l'interpolation est instable, diminuer le lissage de la courbe"
 msgid "wait for the preview to finish recomputing"
 msgstr "attendez que la pré-visualisation soit mise à jour"
 
-#: ../src/iop/toneequal.c:1905 ../src/iop/toneequal.c:2371
+#: ../src/iop/toneequal.c:1905 ../src/iop/toneequal.c:2372
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -14522,81 +14522,81 @@ msgid "some parameters are out-of-bounds"
 msgstr "certains paramètres sont hors bornes"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2328
+#: ../src/iop/toneequal.c:2329
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f IL"
 
-#: ../src/iop/toneequal.c:2987
+#: ../src/iop/toneequal.c:2988
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sur l'image] changer exposition tonalité"
 
-#: ../src/iop/toneequal.c:2993
+#: ../src/iop/toneequal.c:2994
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sur l'image] changer exposition tonalité (grossièrement)"
 
-#: ../src/iop/toneequal.c:2999
+#: ../src/iop/toneequal.c:3000
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sur l'image] changer exposition tonalité (finement)"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3076
+#: ../src/iop/toneequal.c:3077
 msgid "simple"
 msgstr "simple"
 
-#: ../src/iop/toneequal.c:3115
+#: ../src/iop/toneequal.c:3116
 msgid "-8 EV"
 msgstr "-8 IL"
 
-#: ../src/iop/toneequal.c:3116
+#: ../src/iop/toneequal.c:3117
 msgid "-7 EV"
 msgstr "-7 IL"
 
-#: ../src/iop/toneequal.c:3117
+#: ../src/iop/toneequal.c:3118
 msgid "-6 EV"
 msgstr "-6 IL"
 
-#: ../src/iop/toneequal.c:3118
+#: ../src/iop/toneequal.c:3119
 msgid "-5 EV"
 msgstr "-5 IL"
 
-#: ../src/iop/toneequal.c:3119
+#: ../src/iop/toneequal.c:3120
 msgid "-4 EV"
 msgstr "-4 IL"
 
-#: ../src/iop/toneequal.c:3120
+#: ../src/iop/toneequal.c:3121
 msgid "-3 EV"
 msgstr "-3 IL"
 
-#: ../src/iop/toneequal.c:3121
+#: ../src/iop/toneequal.c:3122
 msgid "-2 EV"
 msgstr "-2 IL"
 
-#: ../src/iop/toneequal.c:3122
+#: ../src/iop/toneequal.c:3123
 msgid "-1 EV"
 msgstr "-1 IL"
 
-#: ../src/iop/toneequal.c:3123
+#: ../src/iop/toneequal.c:3124
 msgid "+0 EV"
 msgstr "+0 IL"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3128
+#: ../src/iop/toneequal.c:3129
 msgid "advanced"
 msgstr "avancé"
 
-#: ../src/iop/toneequal.c:3143
+#: ../src/iop/toneequal.c:3144
 msgid "double-click to reset the curve"
 msgstr "double-cliquer pour réinitialiser la courbe"
 
-#: ../src/iop/toneequal.c:3150
+#: ../src/iop/toneequal.c:3151
 msgid "curve smoothing"
 msgstr "lissage de la courbe"
 
-#: ../src/iop/toneequal.c:3151
+#: ../src/iop/toneequal.c:3152
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -14611,11 +14611,11 @@ msgstr ""
 "endommagé."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3160
+#: ../src/iop/toneequal.c:3161
 msgid "masking"
 msgstr "masque"
 
-#: ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3165
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -14624,15 +14624,15 @@ msgstr ""
 "contraste le plus important entre les zones à éclaircir et les zones à "
 "assombrir"
 
-#: ../src/iop/toneequal.c:3167
+#: ../src/iop/toneequal.c:3168
 msgid "details"
 msgstr "détail"
 
-#: ../src/iop/toneequal.c:3168
+#: ../src/iop/toneequal.c:3169
 msgid "preserve details"
 msgstr "préserver détails"
 
-#: ../src/iop/toneequal.c:3169
+#: ../src/iop/toneequal.c:3170
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -14657,7 +14657,7 @@ msgstr ""
 "lumières)\n"
 "« moyenne eigf » est une moyenne géométrique des méthodes « non » et « eigf »"
 
-#: ../src/iop/toneequal.c:3177
+#: ../src/iop/toneequal.c:3178
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -14665,7 +14665,7 @@ msgstr ""
 "nombre de passe du filtre guidé à appliquer\n"
 "aide à diffuser les bords du filtre mais dégrade les performances"
 
-#: ../src/iop/toneequal.c:3183
+#: ../src/iop/toneequal.c:3184
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -14675,7 +14675,7 @@ msgstr ""
 "attention : une grande valeur peut ralentir conséquemment la\n"
 "prévisualisation si le module de réduction du bruit par profil est utilisé."
 
-#: ../src/iop/toneequal.c:3190
+#: ../src/iop/toneequal.c:3191
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -14690,11 +14690,11 @@ msgstr ""
 "adoucissement\n"
 "mais peut alors créer des bords peu précis et des halos"
 
-#: ../src/iop/toneequal.c:3196
+#: ../src/iop/toneequal.c:3197
 msgid "mask post-processing"
 msgstr "post-traitement masque"
 
-#: ../src/iop/toneequal.c:3203
+#: ../src/iop/toneequal.c:3204
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -14704,7 +14704,7 @@ msgstr ""
 "la ligne centrale montre la moyenne. des bars oranges apparaissent aux "
 "extrémités si troncatures."
 
-#: ../src/iop/toneequal.c:3210
+#: ../src/iop/toneequal.c:3211
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -14715,7 +14715,7 @@ msgstr ""
 " à produire des zones plus lisse lors de l'utilisation de grandes valeurs "
 "d'adoucissement"
 
-#: ../src/iop/toneequal.c:3217
+#: ../src/iop/toneequal.c:3218
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -14726,7 +14726,7 @@ msgstr ""
 "pour un meilleur contrôle de la correction d'exposition.\n"
 "la pipette ajustera automatiquement l'exposition moyenne à -4 IL."
 
-#: ../src/iop/toneequal.c:3227
+#: ../src/iop/toneequal.c:3228
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -14738,7 +14738,7 @@ msgstr ""
 "ceci permet d'étaler l'histogramme d'exposition à travers plus de canaux\n"
 "pour un meilleur contrôle de la correction d'exposition."
 
-#: ../src/iop/toneequal.c:3246 ../src/iop/toneequal.c:3250
+#: ../src/iop/toneequal.c:3247 ../src/iop/toneequal.c:3251
 msgid "display exposure mask"
 msgstr "affiche le masque d'exposition"
 
