@@ -2212,6 +2212,16 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
         else dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
       }
     }
+    else if(item == DT_COLLECTION_PROP_FILMROLL && event->state & GDK_SHIFT_MASK)
+    {
+      // go to corresponding folder collection
+      _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FOLDERS);
+    }
+    else if(item == DT_COLLECTION_PROP_FOLDERS && event->state & GDK_SHIFT_MASK)
+    {
+      // go to corresponding filmroll collection
+      _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FILMROLL);
+    }
   }
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
