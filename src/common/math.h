@@ -21,6 +21,18 @@
 #include <math.h>
 #include <stdint.h>
 
+// work around missing standard math.h symbols
+/** ln(10) */
+#ifndef M_LN10
+#define M_LN10 2.30258509299404568402
+#endif /* !M_LN10 */
+
+/** PI */
+#ifndef M_PI
+#define M_PI   3.14159265358979323846
+#endif /* !M_PI */
+
+
 #define DT_M_PI_F (3.14159265358979324f)
 #define DT_M_PI (3.14159265358979324)
 
