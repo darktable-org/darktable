@@ -101,6 +101,9 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
         $ cmake --build . --target install
 
     After this darktable will be installed in /opt/darktable directory and can be started by typing /opt/darktable/bin/darktable.exe in MSYS2 MINGW64 terminal.
+    NOTE: If you are using the Lua scripts, build the installer and install darktable.  The Lua scripts check the operating system and see windows and expect a
+          windows shell when executing system commands. Running darktable from the MSYS2 MINGW64 terminal gives a bash shell and therefore the commands will not 
+          work.
 
     For building the usermanual either add -DBUILD_USERMANUAL=ON flag to the first cmake command line, or if you want to build only the usermanual (and not the application) use:
         $ cmake --build . --target usermanual
