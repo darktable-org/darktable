@@ -984,12 +984,7 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
                              const int select_by_picker, const int width, const int height,
                              const float *picked_color)
 {
-  float bg_sat_factor = dt_conf_get_float("plugins/darkroom/colorzones/bg_sat_factor");
-  if (bg_sat_factor == 0) {
-    bg_sat_factor = 0.5;
-    dt_conf_set_float("plugins/darkroom/colorzones/bg_sat_factor", bg_sat_factor);
-  }
-  
+  const float bg_sat_factor = dt_conf_get_float("plugins/darkroom/colorzones/bg_sat_factor");
   const float normalize_C = (128.f * bg_sat_factor * sqrtf(2.f));
 
   const int cellsi = DT_COLORZONES_CELLSI;
