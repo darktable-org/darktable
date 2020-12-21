@@ -40,7 +40,7 @@ you are strongly advised to take a backup first.
 
   New manual (English only):
 
-  https://darktable-org.github.io/dtdocs/
+  https://www.darktable.org/usermanual/en/
 
 - The tethering view has been reworked and is now more stable.
 
