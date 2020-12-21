@@ -33,6 +33,7 @@ option(BUILD_NOISE_TOOLS "Build tools for generating noise proifles" OFF)
 option(BUILD_CURVE_TOOLS "Build tools for generating base and tone curves" OFF)
 option(USE_LENSFUN "Enable LensFun support" ON)
 option(USE_GMIC "Use G'MIC image processing framework." ON)
+option(USE_ICU "Use ICU - International Components for Unicode." ON)
 option(USE_GAME "Build 1st April easter egg game" ON)
 option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." OFF)
 
