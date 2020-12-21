@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-21 14:25-0300\n"
-"PO-Revision-Date: 2020-12-21 14:31-0300\n"
+"POT-Creation-Date: 2020-12-21 18:20-0300\n"
+"PO-Revision-Date: 2020-12-21 18:57-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -598,7 +598,7 @@ msgstr "cores saturadas"
 #: ../src/develop/blend_gui.c:1878 ../src/iop/channelmixer.c:622
 #: ../src/iop/channelmixerrgb.c:2203 ../src/iop/colorbalance.c:2025
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1289
-#: ../src/iop/colorzones.c:2362 ../src/iop/splittoning.c:474
+#: ../src/iop/colorzones.c:2363 ../src/iop/splittoning.c:474
 msgid "hue"
 msgstr "matiz"
 
@@ -623,7 +623,7 @@ msgstr "modo de processo"
 #: ../build/lib/darktable/plugins/introspection_colorzones.c:255
 #: ../src/develop/blend_gui.c:1810 ../src/iop/channelmixer.c:624
 #: ../src/iop/colorchecker.c:1331 ../src/iop/colorize.c:363
-#: ../src/iop/colorzones.c:2360
+#: ../src/iop/colorzones.c:2361
 msgid "lightness"
 msgstr "luminosidade"
 
@@ -638,7 +638,7 @@ msgstr "luminosidade"
 #: ../src/iop/channelmixer.c:623 ../src/iop/colisa.c:317
 #: ../src/iop/colorbalance.c:2042 ../src/iop/colorchecker.c:1349
 #: ../src/iop/colorcontrast.c:93 ../src/iop/colorcorrection.c:272
-#: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2361
+#: ../src/iop/colorize.c:358 ../src/iop/colorzones.c:2362
 #: ../src/iop/lowpass.c:591 ../src/iop/soften.c:474
 #: ../src/iop/splittoning.c:486 ../src/iop/velvia.c:89 ../src/iop/vibrance.c:70
 #: ../src/iop/vignette.c:993
@@ -3217,17 +3217,20 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6457
 msgid "in collect module, do not set the 'uncategorized' entry for tags"
-msgstr "no módulo de seleção, não ligar a entrada 'não-categorizada' para etiquetas"
+msgstr ""
+"no módulo de seleção, não ligar a entrada 'não-categorizada' para etiquetas"
 
 #: ../build/bin/preferences_gen.h:6471
 msgid ""
 "in collect module, do not set the 'uncategorized' entry for tags which do "
 "not have children"
-msgstr "no módulo de seleção, não ligar a entrada 'não-categorizada' para etiquetas que não tem filhas"
+msgstr ""
+"no módulo de seleção, não ligar a entrada 'não-categorizada' para etiquetas "
+"que não tem filhas"
 
 #: ../build/bin/preferences_gen.h:6492
 msgid "in collect module, tags case sensitivity"
-msgstr ""
+msgstr "no módulo de seleção, sensibilidade das etiquetas a caixa alta/baixa"
 
 #: ../build/bin/preferences_gen.h:6503
 msgctxt "preferences"
@@ -3243,7 +3246,7 @@ msgstr "não sensível"
 msgid ""
 "in collect module, tags case sensitivity. without the Sqlite ICU extension, "
 "insensivity works only for English letters"
-msgstr ""
+msgstr "no módulo de seleção, sensibilidade das etiquetas a caixa alta/baixa. sem a extensão Sqlite ICU, não-sensível funciona apenas para letras do alfabeto Inglês"
 
 #: ../build/bin/preferences_gen.h:6539
 msgid "keyboard shortcuts with multiple instances"
@@ -5585,7 +5588,7 @@ msgstr ""
 msgid "reset blend mask settings"
 msgstr "redefine configurações da mascara de mesclagem"
 
-#: ../src/develop/blend_gui.c:1993 ../src/iop/colorzones.c:2372
+#: ../src/develop/blend_gui.c:1993 ../src/iop/colorzones.c:2373
 #: ../src/iop/rgbcurve.c:1392 ../src/iop/tonecurve.c:1184
 msgid ""
 "pick GUI color from image\n"
@@ -7899,7 +7902,8 @@ msgstr "tons de cinza"
 
 #: ../src/imageio/format/avif.c:846
 msgid "saving as grayscale will reduce the size for black & white images"
-msgstr "gravar como tons de cinza reduzirá o tamanho para imagens em preto e branco"
+msgstr ""
+"gravar como tons de cinza reduzirá o tamanho para imagens em preto e branco"
 
 #: ../src/imageio/format/avif.c:859
 msgid "tiling"
@@ -7912,6 +7916,9 @@ msgid ""
 "makes encoding faster. the impact on quality reduction is negligible, but "
 "increases the file size."
 msgstr ""
+"quabra a imagem em segmentos.\n"
+"\n"
+"torna a codificação mais rápida. o impacto na redução da qualidade é desprezível, mas aumenta o tamanho do arquivo."
 
 #: ../src/imageio/format/avif.c:884 ../src/imageio/format/webp.c:325
 msgid "compression type"
@@ -7944,6 +7951,15 @@ msgid ""
 "    81% -  90% -> YUV422\n"
 "     5% -  80% -> YUV420\n"
 msgstr ""
+"a qualidade da imagem, menos qualidade significa menos detalhes.\n"
+"\n"
+"a tabela a seguir se aplica somente à configuração com perda\n"
+"\n"
+"pixelformat baseado em qualidade:\n"
+"\n"
+"    91% - 100% -> YUV444\n"
+"    81% -  90% -> YUV422\n"
+"     5% -  80% -> YUV420\n"
 
 #: ../src/imageio/format/copy.c:108 ../src/libs/copy_history.c:332
 #: ../src/libs/image.c:544
@@ -8894,7 +8910,7 @@ msgstr ""
 "mudar halos das bordas em cada tamanho de característica\n"
 "só muda resultado das abas de luma e croma"
 
-#: ../src/iop/atrous.c:1396 ../src/iop/colorzones.c:2429
+#: ../src/iop/atrous.c:1396 ../src/iop/colorzones.c:2430
 msgid "make effect stronger or weaker"
 msgstr "torna efeito mais forte ou fraco"
 
@@ -8968,7 +8984,7 @@ msgstr "similar a nokia"
 
 #. clang-format off
 #. smoother cubic spline curve
-#: ../src/iop/basecurve.c:273 ../src/iop/colorzones.c:2458
+#: ../src/iop/basecurve.c:273 ../src/iop/colorzones.c:2459
 #: ../src/iop/rgbcurve.c:1435 ../src/iop/tonecurve.c:1215
 msgid "cubic spline"
 msgstr "spline cúbica"
@@ -10844,13 +10860,13 @@ msgstr "filme preto & branco"
 msgid "HSL base setting"
 msgstr "configuração de base HSL"
 
-#: ../src/iop/colorzones.c:2206 ../src/iop/retouch.c:1721
+#: ../src/iop/colorzones.c:2207 ../src/iop/retouch.c:1721
 #: ../src/iop/toneequal.c:1837
 msgid "cannot display masks when the blending mask is displayed"
 msgstr ""
 "não é possível mostrar máscaras quando a máscara de mesclagem é mostrada"
 
-#: ../src/iop/colorzones.c:2379 ../src/iop/rgbcurve.c:1399
+#: ../src/iop/colorzones.c:2380 ../src/iop/rgbcurve.c:1399
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -10863,42 +10879,42 @@ msgstr ""
 "shift+arraste para criar uma curva negativa"
 
 #. edit by area
-#: ../src/iop/colorzones.c:2401
+#: ../src/iop/colorzones.c:2402
 msgid "edit by area"
 msgstr "editar por área"
 
-#: ../src/iop/colorzones.c:2404
+#: ../src/iop/colorzones.c:2405
 msgid "edit the curve nodes by area"
 msgstr "editar os nós da curva pela área"
 
-#: ../src/iop/colorzones.c:2411
+#: ../src/iop/colorzones.c:2412
 msgid "display selection"
 msgstr "mostra seleção"
 
-#: ../src/iop/colorzones.c:2421
+#: ../src/iop/colorzones.c:2422
 msgid "choose selection criterion, will be the abscissa in the graph"
 msgstr "escolher o critério de seleção, será a abscissa no gráfico"
 
-#: ../src/iop/colorzones.c:2424
+#: ../src/iop/colorzones.c:2425
 msgid "choose between a smoother or stronger effect"
 msgstr "escolha entre um efeito mais suave ou mais forte"
 
-#: ../src/iop/colorzones.c:2457 ../src/iop/rgbcurve.c:1434
+#: ../src/iop/colorzones.c:2458 ../src/iop/rgbcurve.c:1434
 #: ../src/iop/tonecurve.c:1214
 msgid "interpolation method"
 msgstr "modo de interpolação"
 
-#: ../src/iop/colorzones.c:2459 ../src/iop/rgbcurve.c:1436
+#: ../src/iop/colorzones.c:2460 ../src/iop/rgbcurve.c:1436
 #: ../src/iop/tonecurve.c:1216
 msgid "centripetal spline"
 msgstr "spline centrípeta"
 
-#: ../src/iop/colorzones.c:2460 ../src/iop/rgbcurve.c:1437
+#: ../src/iop/colorzones.c:2461 ../src/iop/rgbcurve.c:1437
 #: ../src/iop/tonecurve.c:1217
 msgid "monotonic spline"
 msgstr "spline monotônica"
 
-#: ../src/iop/colorzones.c:2463 ../src/iop/rgbcurve.c:1440
+#: ../src/iop/colorzones.c:2464 ../src/iop/rgbcurve.c:1440
 #: ../src/iop/tonecurve.c:1219
 msgid ""
 "change this method if you see oscillations or cusps in the curve\n"
@@ -11793,11 +11809,11 @@ msgstr ""
 
 #: ../src/iop/filmicrgb.c:3627 ../src/iop/filmicrgb.c:3637
 #: ../src/iop/filmicrgb.c:3670 ../src/iop/filmicrgb.c:3680
-#: ../src/iop/toneequal.c:3080 ../src/iop/toneequal.c:3084
-#: ../src/iop/toneequal.c:3088 ../src/iop/toneequal.c:3092
-#: ../src/iop/toneequal.c:3096 ../src/iop/toneequal.c:3100
-#: ../src/iop/toneequal.c:3104 ../src/iop/toneequal.c:3108
-#: ../src/iop/toneequal.c:3112 ../src/libs/metadata_view.c:509
+#: ../src/iop/toneequal.c:3081 ../src/iop/toneequal.c:3085
+#: ../src/iop/toneequal.c:3089 ../src/iop/toneequal.c:3093
+#: ../src/iop/toneequal.c:3097 ../src/iop/toneequal.c:3101
+#: ../src/iop/toneequal.c:3105 ../src/iop/toneequal.c:3109
+#: ../src/iop/toneequal.c:3113 ../src/libs/metadata_view.c:509
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -14412,7 +14428,7 @@ msgstr "a interpolação está instável, diminua a suavização da curva"
 msgid "wait for the preview to finish recomputing"
 msgstr "aguardar a pré-visualização para terminar de recomputar"
 
-#: ../src/iop/toneequal.c:1905 ../src/iop/toneequal.c:2371
+#: ../src/iop/toneequal.c:1905 ../src/iop/toneequal.c:2372
 msgid ""
 "scroll over image to change tone exposure\n"
 "shift+scroll for large steps; ctrl+scroll for small steps"
@@ -14426,81 +14442,81 @@ msgid "some parameters are out-of-bounds"
 msgstr "alguns parâmetros estão fora dos limites"
 
 #. Build text object
-#: ../src/iop/toneequal.c:2328
+#: ../src/iop/toneequal.c:2329
 #, c-format
 msgid "%+.1f EV"
 msgstr "%+.1f EV"
 
-#: ../src/iop/toneequal.c:2987
+#: ../src/iop/toneequal.c:2988
 #, c-format
 msgid "[%s over image] change tone exposure"
 msgstr "[%s sobre a imagem] mudar exposição do tom"
 
-#: ../src/iop/toneequal.c:2993
+#: ../src/iop/toneequal.c:2994
 #, c-format
 msgid "[%s over image] change tone exposure in large steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos largos"
 
-#: ../src/iop/toneequal.c:2999
+#: ../src/iop/toneequal.c:3000
 #, c-format
 msgid "[%s over image] change tone exposure in small steps"
 msgstr "[%s sobre a imagem] mudar exposição do tom em passos curtos"
 
 #. Simple view
-#: ../src/iop/toneequal.c:3076
+#: ../src/iop/toneequal.c:3077
 msgid "simple"
 msgstr "simples"
 
-#: ../src/iop/toneequal.c:3115
+#: ../src/iop/toneequal.c:3116
 msgid "-8 EV"
 msgstr "-8 EV"
 
-#: ../src/iop/toneequal.c:3116
+#: ../src/iop/toneequal.c:3117
 msgid "-7 EV"
 msgstr "-7 EV"
 
-#: ../src/iop/toneequal.c:3117
+#: ../src/iop/toneequal.c:3118
 msgid "-6 EV"
 msgstr "-6 EV"
 
-#: ../src/iop/toneequal.c:3118
+#: ../src/iop/toneequal.c:3119
 msgid "-5 EV"
 msgstr "-5 EV"
 
-#: ../src/iop/toneequal.c:3119
+#: ../src/iop/toneequal.c:3120
 msgid "-4 EV"
 msgstr "-4 EV"
 
-#: ../src/iop/toneequal.c:3120
+#: ../src/iop/toneequal.c:3121
 msgid "-3 EV"
 msgstr "-3 EV"
 
-#: ../src/iop/toneequal.c:3121
+#: ../src/iop/toneequal.c:3122
 msgid "-2 EV"
 msgstr "-2 EV"
 
-#: ../src/iop/toneequal.c:3122
+#: ../src/iop/toneequal.c:3123
 msgid "-1 EV"
 msgstr "-1 EV"
 
-#: ../src/iop/toneequal.c:3123
+#: ../src/iop/toneequal.c:3124
 msgid "+0 EV"
 msgstr "+0 EV"
 
 #. Advanced view
-#: ../src/iop/toneequal.c:3128
+#: ../src/iop/toneequal.c:3129
 msgid "advanced"
 msgstr "avançado"
 
-#: ../src/iop/toneequal.c:3143
+#: ../src/iop/toneequal.c:3144
 msgid "double-click to reset the curve"
 msgstr "clique duplo para redefinir curva"
 
-#: ../src/iop/toneequal.c:3150
+#: ../src/iop/toneequal.c:3151
 msgid "curve smoothing"
 msgstr "suavização de curva"
 
-#: ../src/iop/toneequal.c:3151
+#: ../src/iop/toneequal.c:3152
 msgid ""
 "positive values will produce more progressive tone transitions\n"
 "but the curve might become oscillatory in some settings.\n"
@@ -14513,11 +14529,11 @@ msgstr ""
 "mas podem produzir transições de tons brutais e danificar o contraste local."
 
 #. Masking options
-#: ../src/iop/toneequal.c:3160
+#: ../src/iop/toneequal.c:3161
 msgid "masking"
 msgstr "máscaras"
 
-#: ../src/iop/toneequal.c:3164
+#: ../src/iop/toneequal.c:3165
 msgid ""
 "preview the mask and chose the estimator that gives you the\n"
 "higher contrast between areas to dodge and areas to burn"
@@ -14525,15 +14541,15 @@ msgstr ""
 "pré-visualiza a máscara e escolhe o estimador que te dá o\n"
 "maior contraste entre áreas a aclarar e áreas a escurecer"
 
-#: ../src/iop/toneequal.c:3167
+#: ../src/iop/toneequal.c:3168
 msgid "details"
 msgstr "detalhes"
 
-#: ../src/iop/toneequal.c:3168
+#: ../src/iop/toneequal.c:3169
 msgid "preserve details"
 msgstr "preservar detalhes"
 
-#: ../src/iop/toneequal.c:3169
+#: ../src/iop/toneequal.c:3170
 msgid ""
 "'no' affects global and local contrast (safe if you only add contrast)\n"
 "'guided filter' only affects global contrast and tries to preserve local "
@@ -14557,7 +14573,7 @@ msgstr ""
 "contrário do filtro guiado que suaviza menos os realces)\n"
 "'averaged eigf' é uma mędia geométrica dos métodos 'não' e 'eigf'"
 
-#: ../src/iop/toneequal.c:3177
+#: ../src/iop/toneequal.c:3178
 msgid ""
 "number of passes of guided filter to apply\n"
 "helps diffusing the edges of the filter at the expense of speed"
@@ -14565,7 +14581,7 @@ msgstr ""
 "número de passos do filtro guiado a aplicar\n"
 "ajuda a dispersão das bordas do filtro, mas é lento"
 
-#: ../src/iop/toneequal.c:3183
+#: ../src/iop/toneequal.c:3184
 msgid ""
 "diameter of the blur in percent of the largest image size\n"
 "warning: big values of this parameter can make the darkroom\n"
@@ -14575,7 +14591,7 @@ msgstr ""
 "atenção: valores altos deste parâmetro podem fazer a pré-visualização\n"
 "do darkroom muito mais lenta se o módulo de redução de ruído é usado."
 
-#: ../src/iop/toneequal.c:3190
+#: ../src/iop/toneequal.c:3191
 msgid ""
 "precision of the feathering :\n"
 "higher values force the mask to follow edges more closely\n"
@@ -14589,11 +14605,11 @@ msgstr ""
 "valores baixos dão gradientes mais suaves e melhor suavização\n"
 "mas podem levar a arestas imprecisas e halos"
 
-#: ../src/iop/toneequal.c:3196
+#: ../src/iop/toneequal.c:3197
 msgid "mask post-processing"
 msgstr "pós-processamento de máscara"
 
-#: ../src/iop/toneequal.c:3203
+#: ../src/iop/toneequal.c:3204
 msgid ""
 "mask histogram span between the first and last deciles.\n"
 "the central line shows the average. orange bars appear at extrema if "
@@ -14603,7 +14619,7 @@ msgstr ""
 "a linha central mostra a média. as barras laranja aparecem nos extremos se "
 "houver corte."
 
-#: ../src/iop/toneequal.c:3210
+#: ../src/iop/toneequal.c:3211
 msgid ""
 "0 disables the quantization.\n"
 "higher values posterize the luminance mask to help the guiding\n"
@@ -14614,7 +14630,7 @@ msgstr ""
 "para produzir áreas mais suaves quando valores altos de enevoamento são "
 "usados"
 
-#: ../src/iop/toneequal.c:3217
+#: ../src/iop/toneequal.c:3218
 msgid ""
 "use this to slide the mask average exposure along channels\n"
 "for a better control of the exposure correction with the available nodes.\n"
@@ -14624,7 +14640,7 @@ msgstr ""
 "para melhor controle da correção de exposição com os nós disponíveis.\n"
 "o seletor ajustará automaticamente a exposição média em -4EV."
 
-#: ../src/iop/toneequal.c:3227
+#: ../src/iop/toneequal.c:3228
 msgid ""
 "use this to counter the averaging effect of the guided filter\n"
 "and dilate the mask contrast around -4EV\n"
@@ -14636,7 +14652,7 @@ msgstr ""
 "isto permite espalhar o histograma de exposição sobre mais canais\n"
 "para um controle melhor da correção de exposição."
 
-#: ../src/iop/toneequal.c:3246 ../src/iop/toneequal.c:3250
+#: ../src/iop/toneequal.c:3247 ../src/iop/toneequal.c:3251
 msgid "display exposure mask"
 msgstr "mostrar máscara de exposição"
 
@@ -15387,20 +15403,25 @@ msgstr "escreve arquivo associado"
 msgid "duplicate manager"
 msgstr "gerenciar duplicatas"
 
-#: ../src/libs/duplicate.c:537 ../src/libs/history.c:1023
+#: ../src/libs/duplicate.c:264
+#, c-format
+msgid "preview is only possible for zoom lower than 200%%..."
+msgstr "pré-visualização só é possível para zoom menor que 200%%..."
+
+#: ../src/libs/duplicate.c:543 ../src/libs/history.c:1023
 #: ../src/libs/snapshots.c:457
 msgid "original"
 msgstr "original"
 
-#: ../src/libs/duplicate.c:537
+#: ../src/libs/duplicate.c:543
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "cria uma duplicata da imagem sem nenhum desenvolvimento"
 
-#: ../src/libs/duplicate.c:540 ../src/libs/image.c:462
+#: ../src/libs/duplicate.c:546 ../src/libs/image.c:462
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/libs/duplicate.c:540
+#: ../src/libs/duplicate.c:546
 msgid "create a duplicate of the image with same history stack"
 msgstr "cria uma duplicata da imagem com o memso histórico"
 
