@@ -487,8 +487,17 @@ static void view_popup_menu_onRemove(GtkWidget *menuitem, gpointer userdata)
     if (dt_control_remove_images())
     {
       gtk_tree_model_filter_convert_iter_to_child_iter(GTK_TREE_MODEL_FILTER(model), &model_iter, &iter);
-      gtk_tree_store_remove(GTK_TREE_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model))),
-                            &model_iter);
+
+      if (gtk_tree_model_get_flags(model) == GTK_TREE_MODEL_LIST_ONLY)
+      {
+        gtk_list_store_remove(GTK_LIST_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model))),
+                              &model_iter);
+      }
+      else
+      {
+        gtk_tree_store_remove(GTK_TREE_STORE(gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model))),
+                              &model_iter);
+      }
     }
 
     g_free(fullq);
@@ -523,7 +532,8 @@ static void view_popup_menu(GtkWidget *treeview, GdkEventButton *event, dt_lib_c
 
 static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event, dt_lib_collect_t *d)
 {
-  if((d->view_rule == DT_COLLECTION_PROP_FOLDERS && event->type == GDK_BUTTON_PRESS && event->button == 3)
+  if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
+      && event->type == GDK_BUTTON_PRESS && event->button == 3)
      || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1))
   {
@@ -562,10 +572,16 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     }
 
     /* single click on folder with the right mouse button? */
-    if(d->view_rule == DT_COLLECTION_PROP_FOLDERS && (event->type == GDK_BUTTON_PRESS && event->button == 3))
-      view_popup_menu(treeview, event, d);
-    else
+    if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS) || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
+       && (event->type == GDK_BUTTON_PRESS && event->button == 3))
+    {
       row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+      view_popup_menu(treeview, event, d);
+    }
+    else
+    {
+      row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
+    }
 
     gtk_tree_path_free(path);
 
@@ -586,7 +602,10 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
 
 static gboolean view_onPopupMenu(GtkWidget *treeview, dt_lib_collect_t *d)
 {
-  if(d->view_rule != DT_COLLECTION_PROP_FOLDERS) return FALSE;
+  if(d->view_rule != DT_COLLECTION_PROP_FOLDERS)
+  {
+    return FALSE;
+  }
 
   view_popup_menu(treeview, NULL, d);
 
@@ -1816,6 +1835,13 @@ static void list_view(dt_lib_collect_rule_t *dr)
                            escaped_text, DT_LIB_COLLECT_COL_PATH, value, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
                            DT_LIB_COLLECT_COL_COUNT, count,
                            -1);
+
+        if(property == DT_COLLECTION_PROP_FILMROLL)
+        {
+          gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+                             DT_LIB_COLLECT_COL_UNREACHABLE, !(g_file_test(value, G_FILE_TEST_IS_DIR)), -1);
+        }
+
         g_free(text);
         g_free(escaped_text);
       }
