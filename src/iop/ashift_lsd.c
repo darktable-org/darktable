@@ -140,20 +140,9 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <limits.h>
 #include <float.h>
-//#include "lsd.h"
-
-/** ln(10) */
-#ifndef M_LN10
-#define M_LN10 2.30258509299404568402
-#endif /* !M_LN10 */
-
-/** PI */
-#ifndef M_PI
-#define M_PI   3.14159265358979323846
-#endif /* !M_PI */
+#include "common/math.h"
 
 #ifndef FALSE
 #define FALSE 0
