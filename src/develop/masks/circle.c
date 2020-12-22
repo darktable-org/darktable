@@ -894,6 +894,7 @@ static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
   const float pos_y = *posy;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
+  dt_omp_firstprivate(h, w) \
   dt_omp_sharedconst(points, pos_x, pos_y) \
   schedule(static) if(h*w > 50000) num_threads(MIN(darktable.num_openmp_threads,(h*w)/20000))
 #endif
