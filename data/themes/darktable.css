@@ -580,7 +580,6 @@ overshoot.right
 #module-reset-button,
 #module-enable-button,
 #module-instance-button,
-#module-enable-button,
 #module-collapse-button,
 #module-always-enabled-button,
 #module-always-disabled-button
@@ -1418,6 +1417,12 @@ margin: 0 2px;
 {
   padding-top: 0.5em;
   padding-bottom: 0.75em;
+}
+
+#basics-box #module-enable-button
+{
+  min-height: 1em;
+  min-width: 1em;
 }
 
 #basics-widget
