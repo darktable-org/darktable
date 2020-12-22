@@ -2976,6 +2976,7 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
     const void *blob = sqlite3_column_blob(stmt, 1);
     _preset_from_string(self, (char *)blob, TRUE);
     d->preset_groups_box = NULL; // ensure we don't have any destroyed widget remaining
+    d->edit_basics_box = NULL;
     _basics_cleanup_list(self, TRUE);
     d->edit_preset = g_strdup(preset);
     sqlite3_finalize(stmt);
