@@ -641,8 +641,11 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
 static inline void box_max_1d(int N, const float *const restrict x, float *const restrict y, size_t stride_y, int w)
 {
   float m = -(INFINITY);
+#ifdef _OPENMP
+#pragma omp simd reduction(max : m)
+#endif
   for(int i = 0; i < MIN(w + 1, N); i++)
-    m = MAX(x[i], m);
+    m = fmaxf(x[i], m);
   for(int i = 0; i < N; i++)
   {
     // store maximum of current window at center position
@@ -653,11 +656,11 @@ static inline void box_max_1d(int N, const float *const restrict x, float *const
     {
       m = -(INFINITY);
       for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-        m = MAX(x[j], m);
+        m = fmaxf(x[j], m);
     }
     // if the window has not yet exceeded the end of the row/column, update the maximum value
     if(i + w + 1 < N)
-      m = MAX(x[i + w + 1], m);
+      m = fmaxf(x[i + w + 1], m);
   }
 }
 
@@ -676,7 +679,7 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
 #pragma omp simd aligned(m, x)
 #endif
     for (int c = 0; c < 16; c++)
-      m[c] = MAX(x[16*i + c], m[c]);
+      m[c] = fmaxf(x[16*i + c], m[c]);
   for(int i = 0; i < N; i++)
   {
     // store maximum of current window at center position
@@ -698,7 +701,7 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
         {
           m[c] = -(INFINITY);
           for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-            m[c] = MAX(x[16*j+c], m[c]);
+            m[c] = fmaxf(x[16*j+c], m[c]);
         }
       }
     }
@@ -709,7 +712,7 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
 #pragma omp simd aligned(m, x)
 #endif
       for (int c = 0; c < 16; c++)
-        m[c] = MAX(x[16 * (i + w + 1) + c], m[c]);
+        m[c] = fmaxf(x[16 * (i + w + 1) + c], m[c]);
     }
   }
 }
@@ -769,8 +772,11 @@ void dt_box_max(float *const buf, const int height, const int width, const int c
 static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
 {
   float m = INFINITY;
+#ifdef _OPENMP
+#pragma omp simd reduction(min : m)
+#endif
   for(int i = 0; i < MIN(w + 1, N); i++)
-    m = MIN(x[i], m);
+    m = fminf(x[i], m);
   for(int i = 0; i < N; i++)
   {
     y[i * stride_y] = m;
@@ -778,10 +784,10 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
     {
       m = INFINITY;
       for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-        m = MIN(x[j], m);
+        m = fminf(x[j], m);
     }
     if(i + w + 1 < N)
-      m = MIN(x[i + w + 1], m);
+      m = fminf(x[i + w + 1], m);
   }
 }
 
@@ -800,7 +806,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
 #pragma omp simd aligned(m, x)
 #endif
     for (int c = 0; c < 16; c++)
-      m[c] = MIN(x[16*i + c], m[c]);
+      m[c] = fminf(x[16*i + c], m[c]);
   for(int i = 0; i < N; i++)
   {
     // store minimum of current window at center position
@@ -822,7 +828,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
         {
           m[c] = -(INFINITY);
           for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-            m[c] = MIN(x[16*j+c], m[c]);
+            m[c] = fminf(x[16*j+c], m[c]);
         }
       }
     }
@@ -833,7 +839,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
 #pragma omp simd aligned(m, x)
 #endif
       for (int c = 0; c < 16; c++)
-        m[c] = MIN(x[16 * (i + w + 1) + c], m[c]);
+        m[c] = fminf(x[16 * (i + w + 1) + c], m[c]);
     }
   }
 }
