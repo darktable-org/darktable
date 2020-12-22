@@ -1946,6 +1946,13 @@ void dt_masks_reset_show_masks_icons(void)
   }
 }
 
+dt_masks_edit_mode_t dt_masks_get_edit_mode(struct dt_iop_module_t *module)
+{
+  return darktable.develop->form_gui
+    ? darktable.develop->form_gui->edit_mode
+    : DT_MASKS_EDIT_OFF;
+}
+
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value)
 {
   if(!module) return;
@@ -1968,6 +1975,9 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
     dt_dev_masks_selection_change(darktable.develop, form->formid, FALSE);
   else
     dt_dev_masks_selection_change(darktable.develop, 0, FALSE);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
+                               value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
 
   dt_control_queue_redraw_center();
 }
