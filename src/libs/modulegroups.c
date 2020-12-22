@@ -1920,7 +1920,7 @@ static void _manage_direct_save(dt_lib_module_t *self)
     dt_lib_presets_apply((gchar *)C_("modulegroup", FALLBACK_PRESET_NAME), self->plugin_name, self->version());
 }
 
-static void _manage_direct_module_toggle(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _manage_direct_module_toggle(GtkWidget *widget, dt_lib_module_t *self)
 {
   gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
@@ -1936,8 +1936,6 @@ static void _manage_direct_module_toggle(GtkWidget *widget, GdkEventButton *even
     gr->modules = g_list_delete_link(gr->modules, found_item);
   }
 
-  GtkWidget *pop = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "popup");
-  gtk_widget_destroy(pop);
   _manage_direct_save(self);
 }
 
@@ -2003,7 +2001,7 @@ static void _manage_editor_basics_add(GtkWidget *widget, dt_lib_module_t *self)
   }
 }
 
-static void _manage_editor_module_add(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+static void _manage_editor_module_add(GtkWidget *widget, dt_lib_module_t *self)
 {
   gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
@@ -2013,8 +2011,6 @@ static void _manage_editor_module_add(GtkWidget *widget, GdkEventButton *event, 
   {
     gr->modules = g_list_append(gr->modules, g_strdup(module));
     _manage_editor_module_update_list(self, gr);
-    GtkWidget *pop = (GtkWidget *)g_object_get_data(G_OBJECT(widget), "popup");
-    gtk_widget_destroy(pop);
   }
 }
 
@@ -2053,19 +2049,12 @@ static int _manage_editor_module_so_add_sort(gconstpointer a, gconstpointer b)
 static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_group_t *gr, GCallback callback,
                                      gpointer data, gboolean toggle)
 {
-  GtkWidget *pop = gtk_popover_new(widget);
-  gtk_widget_set_name(pop, "modulegroups-iop-popup");
-  GtkWidget *sw = gtk_scrolled_window_new(NULL, NULL);
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sw), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *vb0 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *vb1 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *vb2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  GtkWidget *lb = NULL;
+  GtkWidget *pop = gtk_menu_new();
+  gtk_widget_set_name(pop, "modulegroups-popup");
 
-  int rec_nb = 0;
-  int other_nb = 0;
-  int in_nb = 0;
+  int nbr = 0; // nb of recommended items
+  int nba = 0; // nb of already present items
+  int nbo = 0; // nb of other items
 
   GList *m2 = g_list_copy(g_list_first(darktable.iop));
   GList *modules = g_list_sort(m2, _manage_editor_module_so_add_sort);
@@ -2077,18 +2066,13 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
     {
       if(!g_list_find_custom(gr->modules, module->op, _iop_compare))
       {
-        GtkWidget *bt;
-        bt = gtk_button_new_with_label(module->name());
-        gtk_widget_set_name(bt, "modulegroups-iop-popup-name");
-        gtk_widget_set_tooltip_text(bt, _("click to add this module"));
-        g_object_set_data(G_OBJECT(bt), "module_op", module->op);
-        g_object_set_data(G_OBJECT(bt), "group", gr);
-        g_object_set_data(G_OBJECT(bt), "popup", pop);
-        gtk_label_set_xalign(GTK_LABEL(gtk_bin_get_child(GTK_BIN(bt))), 1.0);
-        g_signal_connect(G_OBJECT(bt), "button-press-event", callback, data);
+        GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
+        gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("click to add this module"));
+        g_object_set_data(G_OBJECT(smi), "module_op", module->op);
+        g_object_set_data(G_OBJECT(smi), "group", gr);
+        g_signal_connect(G_OBJECT(smi), "activate", callback, data);
 
         // does it belong to recommended modules ?
-        GtkWidget *vbc = vb2;
         if(((module->default_group() & IOP_GROUP_BASIC) && g_strcmp0(gr->name, _("base")) == 0)
            || ((module->default_group() & IOP_GROUP_COLOR) && g_strcmp0(gr->name, _("color")) == 0)
            || ((module->default_group() & IOP_GROUP_CORRECT) && g_strcmp0(gr->name, _("correct")) == 0)
@@ -2100,71 +2084,69 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
            || ((module->default_group() & IOP_GROUP_EFFECTS)
                && g_strcmp0(gr->name, C_("modulegroup", "effects")) == 0))
         {
-          vbc = vb1;
-          rec_nb++;
+          gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(smi), nba);
+          nbr++;
         }
         else
-          other_nb++;
-
-        gtk_box_pack_start(GTK_BOX(vbc), bt, FALSE, TRUE, 0);
+        {
+          gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(smi), nba + nbr);
+          nbo++;
+        }
       }
       else if(toggle)
       {
-        GtkWidget *bt = gtk_button_new_with_label(module->name());
-        gtk_widget_set_name(bt, "modulegroups-iop-popup-name");
-        gtk_widget_set_tooltip_text(bt, _("click to remove this module"));
-        g_object_set_data(G_OBJECT(bt), "module_op", module->op);
-        g_object_set_data(G_OBJECT(bt), "group", gr);
-        g_object_set_data(G_OBJECT(bt), "popup", pop);
-        gtk_label_set_xalign(GTK_LABEL(gtk_bin_get_child(GTK_BIN(bt))), 1.0);
-        g_signal_connect(G_OBJECT(bt), "button-press-event", callback, data);
-        gtk_box_pack_start(GTK_BOX(vb0), bt, FALSE, TRUE, 0);
-        in_nb++;
+        GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
+        gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("click to remove this module"));
+        g_object_set_data(G_OBJECT(smi), "module_op", module->op);
+        g_object_set_data(G_OBJECT(smi), "group", gr);
+        g_signal_connect(G_OBJECT(smi), "activate", callback, data);
+        gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(smi), 0);
+        nba++;
       }
     }
     modules = g_list_next(modules);
   }
   g_list_free(m2);
 
-  if(in_nb > 0)
+  if((toggle && nba > 0) || nbr > 0)
   {
-    // we show the list of modules already present
-    lb = gtk_label_new(ngettext("already present module", "already present modules", in_nb));
-    gtk_label_set_xalign(GTK_LABEL(lb), 0);
-    gtk_widget_set_name(lb, "modulegroups_iop_title");
-    gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vb), vb0, FALSE, TRUE, 0);
+    GtkWidget *smt = gtk_menu_item_new_with_label(ngettext("other", "others", nbo));
+    gtk_widget_set_name(smt, "modulegroups-popup-title");
+    gtk_widget_set_sensitive(smt, FALSE);
+    gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, nba + nbr);
+    if(nba + nbr > 0) gtk_menu_shell_insert(GTK_MENU_SHELL(pop), gtk_separator_menu_item_new(), nba + nbr);
   }
-  if(rec_nb > 0)
+  if(nbr > 0)
   {
-    // we show the list of recommended modules
-    lb = gtk_label_new(ngettext("recommended module", "recommended modules", rec_nb));
-    gtk_label_set_xalign(GTK_LABEL(lb), 0);
-    gtk_widget_set_name(lb, "modulegroups_iop_title");
-    gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
-    gtk_box_pack_start(GTK_BOX(vb), vb1, FALSE, TRUE, 0);
+    GtkWidget *smt = gtk_menu_item_new_with_label(ngettext("recommended module", "recommended modules", nbr));
+    gtk_widget_set_name(smt, "modulegroups-popup-title");
+    gtk_widget_set_sensitive(smt, FALSE);
+    gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, nba);
+    if(nba > 0) gtk_menu_shell_insert(GTK_MENU_SHELL(pop), gtk_separator_menu_item_new(), nba);
   }
-  if(in_nb > 0 || rec_nb > 0)
+  if(toggle && nba > 0)
   {
-    // we show the title for the other modules
-    lb = gtk_label_new(ngettext("other", "others", other_nb));
-    gtk_label_set_xalign(GTK_LABEL(lb), 0);
-    gtk_widget_set_name(lb, "modulegroups_iop_title");
-    gtk_box_pack_start(GTK_BOX(vb), lb, FALSE, TRUE, 0);
+    GtkWidget *smt
+        = gtk_menu_item_new_with_label(ngettext("already present module", "already present modules", nba));
+    gtk_widget_set_name(smt, "modulegroups-popup-title");
+    gtk_widget_set_sensitive(smt, FALSE);
+    gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, 0);
   }
-  // we now show all other modules
-  gtk_box_pack_start(GTK_BOX(vb), vb2, FALSE, TRUE, 0);
-  gtk_widget_set_size_request(sw, 250, 450);
-  gtk_container_add(GTK_CONTAINER(sw), vb);
-  gtk_container_add(GTK_CONTAINER(pop), sw);
+
   gtk_widget_show_all(pop);
+
+#if GTK_CHECK_VERSION(3, 22, 0)
+  gtk_menu_popup_at_pointer(GTK_MENU(pop), NULL);
+#else
+  gtk_menu_popup(GTK_MENU(pop), NULL, NULL, NULL, NULL, 0, 0);
+#endif
 }
 
 static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_lib_module_t *self, gboolean toggle)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   GtkWidget *pop = gtk_menu_new();
-  gtk_widget_set_name(pop, "modulegroups-basics-pop");
+  gtk_widget_set_name(pop, "modulegroups-popup");
 
   int nbr = 0; // nb of recommended items
   int nba = 0; // nb of already present items
@@ -2316,22 +2298,24 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
   if((toggle && nba > 0) || nbr > 0)
   {
     GtkWidget *smt = gtk_menu_item_new_with_label(ngettext("other", "others", nbo));
-    gtk_widget_set_name(smt, "modulgroups-basics-pop-title");
+    gtk_widget_set_name(smt, "modulegroups-popup-title");
     gtk_widget_set_sensitive(smt, FALSE);
     gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, nba + nbr);
+    if(nba + nbr > 0) gtk_menu_shell_insert(GTK_MENU_SHELL(pop), gtk_separator_menu_item_new(), nba + nbr);
   }
   if(nbr > 0)
   {
-    GtkWidget *smt = gtk_menu_item_new_with_label(ngettext("recommended module", "recommended modules", nbr));
-    gtk_widget_set_name(smt, "modulgroups-basics-pop-title");
+    GtkWidget *smt = gtk_menu_item_new_with_label(ngettext("recommended widget", "recommended widgets", nbr));
+    gtk_widget_set_name(smt, "modulegroups-popup-title");
     gtk_widget_set_sensitive(smt, FALSE);
     gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, nba);
+    if(nba > 0) gtk_menu_shell_insert(GTK_MENU_SHELL(pop), gtk_separator_menu_item_new(), nba);
   }
   if(toggle && nba > 0)
   {
     GtkWidget *smt
-        = gtk_menu_item_new_with_label(ngettext("already present module", "already present modules", nba));
-    gtk_widget_set_name(smt, "modulgroups-basics-pop-title");
+        = gtk_menu_item_new_with_label(ngettext("already present widget", "already present widgets", nba));
+    gtk_widget_set_name(smt, "modulegroups-popup-title");
     gtk_widget_set_sensitive(smt, FALSE);
     gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, 0);
   }
