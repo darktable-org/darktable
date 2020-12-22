@@ -1735,17 +1735,17 @@ static void import_preset(GtkButton *button, gpointer data)
 
   if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
-      GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(chooser));
-      g_slist_foreach(filenames, (GFunc)_import_preset_from_file, NULL);
-      g_slist_free_full(filenames, g_free);
+    GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(chooser));
+    g_slist_foreach(filenames, (GFunc)_import_preset_from_file, NULL);
+    g_slist_free_full(filenames, g_free);
 
-      GtkTreeStore *tree_store = GTK_TREE_STORE(model);
-      gtk_tree_store_clear(tree_store);
-      tree_insert_presets(tree_store);
+    GtkTreeStore *tree_store = GTK_TREE_STORE(model);
+    gtk_tree_store_clear(tree_store);
+    tree_insert_presets(tree_store);
 
-      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-      dt_conf_set_string("ui_last/import_path", folder);
-      g_free(folder);
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
+    dt_conf_set_string("ui_last/import_path", folder);
+    g_free(folder);
   }
   gtk_widget_destroy(chooser);
 }
