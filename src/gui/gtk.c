@@ -290,9 +290,9 @@ static gboolean toggle_tooltip_visibility(GtkAccelGroup *accel_group, GObject *a
     gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
     dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
     if(tooltip_hidden)
-      dt_toast_log(_("tooltips off"));
+      dt_toast_log(FALSE, _("tooltips off"));
     else
-      dt_toast_log(_("tooltips on"));
+      dt_toast_log(FALSE, _("tooltips on"));
   }
   else
   {
@@ -2621,7 +2621,7 @@ static void _ui_log_redraw_callback(gpointer instance, GtkWidget *widget)
   if(darktable.control->log_ack != darktable.control->log_pos)
   {
     if(strcmp(darktable.control->log_message[darktable.control->log_ack], gtk_label_get_text(GTK_LABEL(widget))))
-      gtk_label_set_text(GTK_LABEL(widget), darktable.control->log_message[darktable.control->log_ack]);
+      gtk_label_set_markup(GTK_LABEL(widget), darktable.control->log_message[darktable.control->log_ack]);
     if(!gtk_widget_get_visible(widget))
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
@@ -2643,7 +2643,7 @@ static void _ui_toast_redraw_callback(gpointer instance, GtkWidget *widget)
   if(darktable.control->toast_ack != darktable.control->toast_pos)
   {
     if(strcmp(darktable.control->toast_message[darktable.control->toast_ack], gtk_label_get_text(GTK_LABEL(widget))))
-      gtk_label_set_text(GTK_LABEL(widget), darktable.control->toast_message[darktable.control->toast_ack]);
+      gtk_label_set_markup(GTK_LABEL(widget), darktable.control->toast_message[darktable.control->toast_ack]);
     if(!gtk_widget_get_visible(widget))
     {
       const int h = gtk_widget_get_allocated_height(dt_ui_center_base(darktable.gui->ui));
