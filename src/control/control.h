@@ -57,7 +57,7 @@ int dt_control_key_released(guint key, guint state);
 int dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
-void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_toast_log(const gboolean markup, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_control_log_busy_enter();
 void dt_control_toast_busy_enter();
 void dt_control_log_busy_leave();
