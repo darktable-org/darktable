@@ -3787,11 +3787,11 @@ static gboolean change_slider_accel_precision(GtkAccelGroup *accel_group, GObjec
   dt_conf_set_int("accel/slider_precision", new_precision);
 
   if(new_precision == DT_IOP_PRECISION_FINE)
-    dt_toast_log(FALSE, _("keyboard shortcut slider precision: fine"));
+    dt_toast_log(_("keyboard shortcut slider precision: fine"));
   else if(new_precision == DT_IOP_PRECISION_NORMAL)
-    dt_toast_log(FALSE, _("keyboard shortcut slider precision: normal"));
+    dt_toast_log(_("keyboard shortcut slider precision: normal"));
   else
-    dt_toast_log(FALSE, _("keyboard shortcut slider precision: coarse"));
+    dt_toast_log(_("keyboard shortcut slider precision: coarse"));
 
   return TRUE;
 }
