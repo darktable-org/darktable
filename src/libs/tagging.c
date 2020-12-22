@@ -1848,7 +1848,9 @@ static gboolean _apply_rename_path(GtkWidget *dialog, const char *tagname,
       GtkWidget *win;
       if(!dialog)
         win = dt_ui_main_window(darktable.gui->ui);
-      else win = dialog;
+      else
+        win = dialog;
+
       GtkWidget *warning_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL,
                       GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
                       _("at least one new tagname (%s) already exists, aborting."), new_tagname);
@@ -1898,8 +1900,8 @@ static void _pop_menu_dictionary_rename_path(GtkWidget *menuitem, dt_lib_module_
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &tagname,
           DT_LIB_TAGGING_COL_ID, &tagid, -1);
 
-  gint tag_count;
-  gint img_count;
+  gint tag_count = 0;
+  gint img_count = 0;
   dt_tag_count_tags_images(tagname, &tag_count, &img_count);
   if (tag_count == 0) return;
 
@@ -2722,6 +2724,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
       char *name;
       GtkTreeModel *model = gtk_tree_view_get_model(tree);
       GtkTreeIter iter;
+
       gtk_tree_model_get_iter(model, &iter, path);
       gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &name, -1);
       _dnd_clear_root(self);
@@ -2730,6 +2733,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
       if(leave) leave++;
       name = dt_util_dstrcat(name, "%s%s", root ? "" : "|", leave ? leave : d->drag.tagname);
       _apply_rename_path(NULL, d->drag.tagname, name, self);
+
       g_free(name);
       g_free(d->drag.tagname);
       d->drag.tagname = NULL;
@@ -2742,7 +2746,7 @@ static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint
     const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(uint32_t);
     if(imgs_nb && gtk_tree_view_get_path_at_pos(tree, x, y, &path, NULL, NULL, NULL))
     {
-      uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
+      const uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
       GList *imgs = NULL;
       for(int i = 0; i < imgs_nb; i++)
       {
