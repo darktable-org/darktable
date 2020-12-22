@@ -489,14 +489,16 @@ void dt_control_log(const char *msg, ...)
 static void _toast_log(const gboolean markup, const char *msg, va_list ap)
 {
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
-  char tmp_msg[DT_CTL_TOAST_MSG_SIZE];
-  vsnprintf(tmp_msg, DT_CTL_TOAST_MSG_SIZE, msg, ap);
+
   // if we don't want markup, we escape <>&... so they are not interpreted later
   if(markup)
-    snprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, "%s", tmp_msg);
+    vsnprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, msg, ap);
   else
-    snprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, "%s",
-             g_markup_escape_text(tmp_msg, DT_CTL_TOAST_MSG_SIZE));
+  {
+    char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
+    g_strlcpy(darktable.control->toast_message[darktable.control->toast_pos], escaped_msg, DT_CTL_TOAST_MSG_SIZE);
+    g_free(escaped_msg);
+  }
 
   if(darktable.control->toast_message_timeout_id) g_source_remove(darktable.control->toast_message_timeout_id);
   darktable.control->toast_ack = darktable.control->toast_pos;
