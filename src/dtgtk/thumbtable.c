@@ -2027,19 +2027,19 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
 
         // translate in human readable value
         if(r == DT_VIEW_REJECT)
-          dt_toast_log(FALSE, _("image rejected"));
+          dt_toast_log(_("image rejected"));
         else if(r == 1)
-          dt_toast_log(FALSE, _("image rated to %s"), "★");
+          dt_toast_log(_("image rated to %s"), "★");
         else if(r == 2)
-          dt_toast_log(FALSE, _("image rated to %s"), "★★");
+          dt_toast_log(_("image rated to %s"), "★★");
         else if(r == 3)
-          dt_toast_log(FALSE, _("image rated to %s"), "★★★");
+          dt_toast_log(_("image rated to %s"), "★★★");
         else if(r == 4)
-          dt_toast_log(FALSE, _("image rated to %s"), "★★★★");
+          dt_toast_log(_("image rated to %s"), "★★★★");
         else if(r == 5)
-          dt_toast_log(FALSE, _("image rated to %s"), "★★★★★");
+          dt_toast_log(_("image rated to %s"), "★★★★★");
         else if(r == 0)
-          dt_toast_log(FALSE, _("image rated to 0 star"));
+          dt_toast_log(_("image rated to 0 star"));
       }
     }
   }
@@ -2093,9 +2093,9 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
       }
       g_list_free(res);
       if(result)
-        dt_toast_log(TRUE, _("colorlabels set to : %s"), result);
+        dt_toast_markup_log(_("colorlabels set to %s"), result);
       else
-        dt_toast_log(FALSE, _("all colorlabels removed"));
+        dt_toast_log(_("all colorlabels removed"));
       g_free(result);
     }
   }
