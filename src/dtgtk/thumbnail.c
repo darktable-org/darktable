@@ -1098,10 +1098,13 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     {
       const float ar = img->aspect_ratio;
       dt_image_cache_read_release(darktable.image_cache, img);
-      if(ar < 0)
-        iw = ih * ar;
-      else
-        ih = iw / ar;
+      if(ar > 0.0001)
+      {
+        if(ar < 1.0)
+          iw = ih * ar;
+        else
+          ih = iw / ar;
+      }
     }
     gtk_widget_set_size_request(thumb->w_image, iw, ih);
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
