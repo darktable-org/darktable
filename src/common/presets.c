@@ -194,6 +194,9 @@ static int get_preset_element_float(xmlDocPtr doc, gchar *name)
 int dt_presets_import_from_file(const char *preset_path)
 {
   xmlDocPtr doc = xmlParseFile(preset_path);
+  if(!doc)
+    return FALSE;
+  
   gchar *name = get_preset_element(doc, "name");
   gchar *description = get_preset_element(doc, "description");
   gchar *operation = get_preset_element(doc, "operation");
