@@ -2027,9 +2027,19 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
 
         // translate in human readable value
         if(r == DT_VIEW_REJECT)
-          dt_toast_log(_("image rejected"));
-        else
-          dt_toast_log(ngettext("image rated to %d star", "image rated to %d stars", r), r);
+          dt_toast_log(FALSE, _("image rejected"));
+        else if(r == 1)
+          dt_toast_log(FALSE, _("image rated to %s"), "★");
+        else if(r == 2)
+          dt_toast_log(FALSE, _("image rated to %s"), "★★");
+        else if(r == 3)
+          dt_toast_log(FALSE, _("image rated to %s"), "★★★");
+        else if(r == 4)
+          dt_toast_log(FALSE, _("image rated to %s"), "★★★★");
+        else if(r == 5)
+          dt_toast_log(FALSE, _("image rated to %s"), "★★★★★");
+        else if(r == 0)
+          dt_toast_log(FALSE, _("image rated to 0 star"));
       }
     }
   }
@@ -2061,31 +2071,31 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
           const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
           if(g_strcmp0(lb, "red") == 0)
           {
-            result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⚫ </span>");
+            result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⬤ </span>");
           }
           else if(g_strcmp0(lb, "yellow") == 0)
           {
-            result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⚫ </span>");
+            result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⬤ </span>");
           }
           else if(g_strcmp0(lb, "green") == 0)
           {
-            result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⚫ </span>");
+            result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⬤ </span>");
           }
           else if(g_strcmp0(lb, "blue") == 0)
           {
-            result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⚫ </span>");
+            result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⬤ </span>");
           }
           else if(g_strcmp0(lb, "purple") == 0)
           {
-            result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⚫ </span>");
+            result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⬤ </span>");
           }
         } while((res = g_list_next(res)) != NULL);
       }
       g_list_free(res);
       if(result)
-        dt_toast_log(_("colorlabels set to : %s"), result);
+        dt_toast_log(TRUE, _("colorlabels set to : %s"), result);
       else
-        dt_toast_log(_("all colorlabels removed"));
+        dt_toast_log(FALSE, _("all colorlabels removed"));
       g_free(result);
     }
   }
