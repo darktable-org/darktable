@@ -512,9 +512,17 @@ overshoot.right
   margin-left: 0.5em;
 }
 
+#modulegroups-basics-pop *
+{
+ padding-top: 0.2em;
+ margin-top : 0;
+}
+
 #modulgroups-basics-pop-title *
 {
   padding-left: 2em;
+  font-weight: bold;
+  color: @plugin_label_color;
 }
 
 /* icon buttons in modules main body */
