@@ -290,9 +290,9 @@ static gboolean toggle_tooltip_visibility(GtkAccelGroup *accel_group, GObject *a
     gboolean tooltip_hidden = !dt_conf_get_bool("ui/hide_tooltips");
     dt_conf_set_bool("ui/hide_tooltips", tooltip_hidden);
     if(tooltip_hidden)
-      dt_toast_log(FALSE, _("tooltips off"));
+      dt_toast_log(_("tooltips off"));
     else
-      dt_toast_log(FALSE, _("tooltips on"));
+      dt_toast_log(_("tooltips on"));
   }
   else
   {
