@@ -53,6 +53,9 @@ you are strongly advised to take a backup first.
 - Fix base curve preset matching. The match for the model was not
   strict enough and could select an invalid entry in the database.
 
+- Fix possible crash when using a non-conform or corrupted user CSS
+  file.
+
 ## Notes
 
 ## Lua
