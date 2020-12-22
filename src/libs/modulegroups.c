@@ -1141,6 +1141,7 @@ static gchar *_preset_retrieve_old_layout(char *list, char *list_fav)
     // group name and icon
     if(i == 0)
     {
+      // we don't have to care about "modern" worflow for temperature as it's more recent than this layout
       ret = dt_util_dstrcat(ret, "ꬹ1|||%s",
                             "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
                             "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
@@ -1411,10 +1412,17 @@ void init_presets(dt_lib_module_t *self)
             echo ${BN:0:16} ; done | xargs echo | sed 's/ /|/g'
   */
 
+  // we define here specific sequences which depends of user prefs
+  gchar *basic_temp = NULL;
+  if(g_strcmp0(dt_conf_get_string("plugins/darkroom/chromatic-adaptation"), "modern") == 0)
+    basic_temp = dt_util_dstrcat(NULL, "channelmixerrgb/temperature");
+  else
+    basic_temp = dt_util_dstrcat(NULL, "temperature/temperature|temperature/tint");
+
   // all modules
   gchar *tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s",
-                       "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
+  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
+                       "exposure/exposure|colorbalance/contrast"
                        "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
@@ -1439,9 +1447,7 @@ void init_presets(dt_lib_module_t *self)
 
   // minimal / 3 tabs
   tx = NULL;
-  tx = dt_util_dstrcat(
-      tx, "ꬹ1|||%s",
-      "exposure/exposure|temperature/temperature|temperature/tint|clipping/angle|denoiseprofile|lens");
+  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp, "exposure/exposure|clipping/angle|denoiseprofile|lens");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "basicadj|ashift|basecurve|clipping"
                        "|denoiseprofile|exposure|flip|lens|temperature");
@@ -1455,8 +1461,8 @@ void init_presets(dt_lib_module_t *self)
 
   // display referred
   tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s",
-                       "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
+  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
+                       "exposure/exposure|colorbalance/contrast"
                        "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "basecurve|toneequal|clipping|flip|exposure|temperature"
@@ -1473,8 +1479,8 @@ void init_presets(dt_lib_module_t *self)
 
   // scene referred
   tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s",
-                       "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
+  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
+                       "exposure/exposure|colorbalance/contrast"
                        "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
                        "filmicrgb|toneequal|clipping|flip|exposure|temperature|bilat");
@@ -1490,8 +1496,8 @@ void init_presets(dt_lib_module_t *self)
 
   // default / 3 tabs based on Aurélien's proposal
   tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s",
-                       "exposure/exposure|temperature/temperature|temperature/tint|colorbalance/contrast"
+  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
+                       "exposure/exposure|colorbalance/contrast"
                        "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "technical"), "technical",
                        "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
