@@ -1222,6 +1222,8 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   /* lets zero mem */
   memset(gui, 0, sizeof(dt_gui_gtk_t));
 
+  dt_pthread_mutex_init(&gui->mutex, NULL);
+
   // force gtk3 to use normal scroll bars instead of the popup thing. they get in the way of controls
   // the alternative would be to gtk_scrolled_window_set_overlay_scrolling(..., FALSE); every single widget
   // that might have scroll bars
