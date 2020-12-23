@@ -1081,9 +1081,9 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  const float gain = exp((float)expcomp * log(2.f));
+  const float gain = expf((float)expcomp * log(2.f));
 
-  const float corr = sqrt(gain * scale / rawmax);
+  const float corr = sqrtf(gain * scale / rawmax);
   black = shc * corr;
 
   // now tune hlcompr to bring back rawmax to 65535
@@ -1096,7 +1096,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
 
   // now find brightness if gain didn't bring ave to midgray using
   // the envelope of the actual 'control cage' brightness curve for simplicity
-  const float midtmp = gain * sqrt(median * ave) / scale;
+  const float midtmp = gain * sqrtf(median * ave) / scale;
 
   if(midtmp < 0.1f)
   {
@@ -1580,7 +1580,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(process_saturation_vibrance)
     {
       const float average = (out[k] + out[k+1] + out[k+2]) / 3;
-      const float delta = sqrt( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
+      const float delta = sqrtf( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
       const float P = vibrance * (1 - powf(delta, fabsf(vibrance)));
 
       for(size_t c = 0; c < 3; c++)

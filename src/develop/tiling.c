@@ -645,8 +645,8 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
     }
     else
     {
-      width = floorf(width * sqrt(scale));
-      height = floorf(height * sqrt(scale));
+      width = floorf(width * sqrtf(scale));
+      height = floorf(height * sqrtf(scale));
     }
   }
 
@@ -853,7 +853,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
 
-  float fullscale = fmax(roi_in->scale / roi_out->scale, sqrt(((float)roi_in->width * roi_in->height)
+  float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
 
   /* inaccuracy for roi_in elements in roi_out -> roi_in calculations */
@@ -912,8 +912,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
     }
     else
     {
-      width = floorf(width * sqrt(scale));
-      height = floorf(height * sqrt(scale));
+      width = floorf(width * sqrtf(scale));
+      height = floorf(height * sqrtf(scale));
     }
   }
 
@@ -1255,8 +1255,8 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     }
     else
     {
-      width = floorf(width * sqrt(scale));
-      height = floorf(height * sqrt(scale));
+      width = floorf(width * sqrtf(scale));
+      height = floorf(height * sqrtf(scale));
     }
   }
 
@@ -1573,7 +1573,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
 
-  float fullscale = fmax(roi_in->scale / roi_out->scale, sqrt(((float)roi_in->width * roi_in->height)
+  float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
 
   /* inaccuracy for roi_in elements in roi_out -> roi_in calculations */
@@ -1623,8 +1623,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
     }
     else
     {
-      width = floorf(width * sqrt(scale));
-      height = floorf(height * sqrt(scale));
+      width = floorf(width * sqrtf(scale));
+      height = floorf(height * sqrtf(scale));
     }
   }
 

@@ -237,7 +237,7 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
   for(unsigned int i = 0; i < 0x10000; i++)
   {
     float percentage = (float)i / (float)0x10000ul;
-    d->lut[i] = 100.0f * pow(percentage, d->in_inv_gamma);
+    d->lut[i] = 100.0f * powf(percentage, d->in_inv_gamma);
   }
 }
 
@@ -395,7 +395,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       const float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
       // Within the expected input range we can use the lookup table, else we need to compute from scratch
-      L_out = percentage < 1.0f ? d->lut[(int)(percentage * 0x10000ul)] : 100.0f * pow(percentage, d->in_inv_gamma);
+      L_out = percentage < 1.0f ? d->lut[(int)(percentage * 0x10000ul)] : 100.0f * powf(percentage, d->in_inv_gamma);
     }
 
     // Preserving contrast

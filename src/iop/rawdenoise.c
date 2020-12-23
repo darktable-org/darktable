@@ -278,8 +278,8 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
         float avg = ( window[0][col-1] + window[0][col+1] +
                       window[2][col-1] + window[2][col+1] - blk[~row & 1]*4 )
                     * mul[row & 1] + (window[1][col] + blk[row & 1]) * 0.5;
-        avg = avg < 0 ? 0 : sqrt(avg);
-        float diff = sqrt(BAYER(row,col)) - avg;
+        avg = avg > 0 ? sqrtf(avg) : 0;
+        float diff = sqrtf(BAYER(row,col)) - avg;
         if      (diff < -thold) diff += thold;
         else if (diff >  thold) diff -= thold;
         else diff = 0;

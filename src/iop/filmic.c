@@ -1571,7 +1571,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
      * Use double precision locally to avoid cancellation effect on
      * the "+ d" operation.
      */
-    const float x = (rescale) ? pow(2.0, (double)a * nodes_data->x[k] + b) + d : nodes_data->x[k];
+    const float x = (rescale) ? powf(2.0f, (double)a * nodes_data->x[k] + b) + d : nodes_data->x[k];
     const float y = powf(nodes_data->y[k], 1.0f / gamma);
 
     cairo_arc(cr, x * width, (1.0 - y) * (double)height, DT_PIXEL_APPLY_DPI(3), 0, 2. * M_PI);
@@ -1593,7 +1593,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
      * Use double precision locally to avoid cancellation effect on
      * the "+ d" operation.
      */
-    const float x = (rescale) ? pow(2.0, (double)a * k / 255.0 + b) + d : k / 255.0;
+    const float x = (rescale) ? powf(2.0f, (double)a * k / 255.0f + b) + d : k / 255.0f;
     const float y = powf(c->table[k], 1.0f / gamma);
     cairo_line_to(cr, x * width, (double)height * (1.0 - y));
   }
