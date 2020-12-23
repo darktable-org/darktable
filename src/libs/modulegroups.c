@@ -92,6 +92,7 @@ typedef struct dt_lib_modulegroups_basic_item_t
   GtkPackType packtype;
   gboolean sensitive;
   gchar *tooltip;
+  gchar *label;
   int grid_x, grid_y, grid_w, grid_h;
 
 
@@ -421,6 +422,14 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
     }
     g_free(item->tooltip);
     item->tooltip = NULL;
+    // put back label
+    if(item->label && DT_IS_BAUHAUS_WIDGET(item->widget))
+    {
+      DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
+      snprintf(bw->label, sizeof(bw->label), "%s", item->label);
+      g_free(item->label);
+      item->label = NULL;
+    }
   }
   // cleanup item
   if(item->box) gtk_widget_destroy(item->box);
@@ -496,7 +505,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
   {
     // on-off widgets
     item->widget = GTK_WIDGET(item->module->off);
-    item->module = item->module;
     item->sensitive = gtk_widget_get_sensitive(item->widget);
     item->tooltip = g_strdup(gtk_widget_get_tooltip_text(item->widget));
 
@@ -586,6 +594,11 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       return;
     }
 
+    // save old values
+    item->sensitive = gtk_widget_get_sensitive(item->widget);
+    item->tooltip = g_strdup(gtk_widget_get_tooltip_text(item->widget));
+    item->label = g_strdup(bw->label);
+
     // create new basic widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(item->box, "basics-widget");
@@ -597,8 +610,8 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gtk_box_pack_start(GTK_BOX(item->box), item->widget, TRUE, TRUE, 0);
     g_object_unref(item->widget);
 
-    item->sensitive = gtk_widget_get_sensitive(item->widget);
-    item->tooltip = g_strdup(gtk_widget_get_tooltip_text(item->widget));
+    // change the widget label to integrate section name
+    snprintf(bw->label, sizeof(bw->label), "%s", item->widget_name);
 
     // we put the temporary widget at the place of the real widget in the module
     // this avoid order mismatch when putting back the real widget
