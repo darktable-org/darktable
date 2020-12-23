@@ -97,7 +97,7 @@ __DT_CLONE_TARGETS__
 static inline float fast_clamp(const float value, const float bottom, const float top)
 {
   // vectorizable clamping between bottom and top values
-  return fmax(fmin(value, top), bottom);
+  return fmaxf(fminf(value, top), bottom);
 }
 
 
