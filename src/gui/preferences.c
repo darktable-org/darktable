@@ -139,6 +139,7 @@ static void restore_defaults(GtkButton *button, gpointer data);
 static gint compare_rows_accels(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer data);
 static gint compare_rows_presets(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, gpointer data);
 static void import_preset(GtkButton *button, gpointer data);
+static void export_preset(GtkButton *button, gpointer data);
 
 // Signal handlers
 static void tree_row_activated_accels(GtkTreeView *tree, GtkTreePath *path, GtkTreeViewColumn *column,
@@ -847,11 +848,15 @@ static void init_tab_presets(GtkWidget *stack)
 
   // Adding the import/export buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(hbox, "preset_controls");
 
   GtkWidget *button = gtk_button_new_with_label(C_("preferences", "import..."));
-  gtk_widget_set_name(hbox, "preset_controls");
   gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(import_preset), (gpointer)model);
+
+  button = gtk_button_new_with_label(C_("preferences", "export..."));
+  gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, TRUE, 0);
+  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(export_preset), (gpointer)model);
 
   gtk_box_pack_start(GTK_BOX(container), hbox, FALSE, FALSE, 0);
 
@@ -1685,6 +1690,14 @@ static void restore_defaults(GtkButton *button, gpointer data)
   gtk_widget_destroy(message);
 }
 
+static void _import_preset_from_file(const gchar* filename)
+{
+  if(!dt_presets_import_from_file(filename))
+  {
+    dt_control_log(_("failed to import preset %s"), filename);
+  }
+}
+
 static void import_preset(GtkButton *button, gpointer data)
 {
   GtkTreeModel *model = (GtkTreeModel *)data;
@@ -1705,27 +1718,81 @@ static void import_preset(GtkButton *button, gpointer data)
     gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), import_path);
     g_free(import_path);
   }
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(chooser), TRUE);
+
+  GtkFileFilter *filter;
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*.dtpreset");
+  gtk_file_filter_add_pattern(filter, "*.DTPRESET");
+  gtk_file_filter_set_name(filter, _("darktable style files"));
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
+
+  filter = GTK_FILE_FILTER(gtk_file_filter_new());
+  gtk_file_filter_add_pattern(filter, "*");
+  gtk_file_filter_set_name(filter, _("all files"));
+
+  gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(chooser), filter);
+
   if(gtk_dialog_run(GTK_DIALOG(chooser)) == GTK_RESPONSE_ACCEPT)
   {
-    if(g_file_test(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser)), G_FILE_TEST_EXISTS))
-    {
-      if(dt_presets_import_from_file(gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser))))
-      {
-        dt_control_log(_("failed to import preset"));
-      }
-      else
-      {
-        GtkTreeStore *tree_store = GTK_TREE_STORE(model);
-        gtk_tree_store_clear(tree_store);
-        tree_insert_presets(tree_store);
-      }
+    GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(chooser));
+    g_slist_foreach(filenames, (GFunc)_import_preset_from_file, NULL);
+    g_slist_free_full(filenames, g_free);
 
-      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
-      dt_conf_set_string("ui_last/import_path", folder);
-      g_free(folder);
-    }
+    GtkTreeStore *tree_store = GTK_TREE_STORE(model);
+    gtk_tree_store_clear(tree_store);
+    tree_insert_presets(tree_store);
+
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(chooser));
+    dt_conf_set_string("ui_last/import_path", folder);
+    g_free(folder);
   }
   gtk_widget_destroy(chooser);
+}
+
+static void export_preset(GtkButton *button, gpointer data)
+{
+  GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+  GtkWidget *filechooser = gtk_file_chooser_dialog_new(
+      _("select directory"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      GTK_RESPONSE_CANCEL, _("_save"), GTK_RESPONSE_ACCEPT, (char *)NULL);
+#ifdef GDK_WINDOWING_QUARTZ
+  dt_osx_disallow_fullscreen(filechooser);
+#endif
+  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
+  gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
+
+  if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
+  {
+    gchar *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    sqlite3_stmt *stmt;
+
+    // we have n+1 selects for saving presets, using single transaction for whole process saves us microlocks
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                "SELECT rowid, name, operation FROM data.presets WHERE writeprotect = 0",
+                                -1, &stmt, NULL);
+
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      const gint rowid = sqlite3_column_int(stmt, 0);
+      const gchar *name = (gchar *)sqlite3_column_text(stmt, 1);
+      const gchar *operation = (gchar *)sqlite3_column_text(stmt, 2);
+      gchar* preset_name = g_strdup_printf("%s_%s", operation, name);
+
+      dt_presets_save_to_file(rowid, preset_name, filedir);
+
+      g_free(preset_name);
+    }
+
+    sqlite3_finalize(stmt);
+
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
+
+    g_free(filedir);
+  }
+  gtk_widget_destroy(filechooser);
 }
 
 // Custom sort function for TreeModel entries for accels list
