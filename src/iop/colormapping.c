@@ -296,9 +296,9 @@ static void kmeans(const float *col, const int width, const int height, const in
   const int nit = 40;                       // number of iterations
   const int samples = width * height * 0.2; // samples: only a fraction of the buffer.
 
-  float2 *const mean = malloc(n * sizeof(float2));
-  float2 *const var = malloc(n * sizeof(float2));
-  int *const cnt = malloc(n * sizeof(int));
+  float2 *const mean = malloc(sizeof(float2) * n);
+  float2 *const var = malloc(sizeof(float2) * n);
+  int *const cnt = malloc(sizeof(int) * n);
   int count;
 
   float a_min = FLT_MAX, b_min = FLT_MAX, a_max = FLT_MIN, b_max = FLT_MIN;
@@ -612,7 +612,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_pthread_mutex_lock(&g->lock);
     free(g->buffer);
 
-    g->buffer = malloc(width * height * ch * sizeof(float));
+    g->buffer = malloc(sizeof(float) * ch * width * height);
     g->width = width;
     g->height = height;
     g->ch = ch;
@@ -964,13 +964,13 @@ static void process_clusters(gpointer instance, gpointer user_data)
   const int width = g->width;
   const int height = g->height;
   const int ch = g->ch;
-  float *buffer = malloc(width * height * ch * sizeof(float));
+  float *buffer = malloc(sizeof(float) * ch * width * height);
   if(!buffer)
   {
     dt_pthread_mutex_unlock(&g->lock);
     return;
   }
-  memcpy(buffer, g->buffer, width * height * ch * sizeof(float));
+  memcpy(buffer, g->buffer, sizeof(float) * ch * width * height);
   dt_pthread_mutex_unlock(&g->lock);
 
   if(p->flag & GET_SOURCE)

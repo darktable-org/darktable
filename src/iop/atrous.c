@@ -244,7 +244,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   // lead to out of bounds memory access
   if(width < 2 * max_mult || height < 2 * max_mult)
   {
-    memcpy(o, i, width * height * 4 * sizeof(float));
+    memcpy(o, i, sizeof(float) * 4 * width * height);
     return;
   }
 

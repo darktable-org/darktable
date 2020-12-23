@@ -183,7 +183,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
       break;
     }
 
-    *buffer = malloc((*width) * (*height) * 4 * sizeof(uint8_t));
+    *buffer = malloc(sizeof(uint8_t) * (*width) * (*height) * 4);
     if (*buffer == NULL) goto error_im;
 
     mret = MagickExportImagePixels(image, 0, 0, *width, *height, "RGBP", CharPixel, *buffer);

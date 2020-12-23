@@ -152,7 +152,7 @@ static int write_image(dt_imageio_module_data_t *data, const char *filename, con
 {
   dt_print_format_t *d = (dt_print_format_t *)data;
 
-  d->params->buf = (uint16_t *)malloc(d->head.width * d->head.height * 3 * (d->bpp == 8?1:2));
+  d->params->buf = (uint16_t *)malloc((size_t)3 * (d->bpp == 8?1:2) * d->head.width * d->head.height);
 
   if (d->bpp == 8)
   {

@@ -251,9 +251,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float2 *const mean = malloc(n * sizeof(float2));
-  float2 *const var = malloc(n * sizeof(float2));
-  int *const cnt = malloc(n * sizeof(int));
+  float2 *const mean = malloc(sizeof(float2) * n);
+  float2 *const var = malloc(sizeof(float2) * n);
+  int *const cnt = malloc(sizeof(int) * n);
 
   // init n clusters for a, b channels at random
   for(int k = 0; k < n; k++)
