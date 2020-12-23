@@ -1419,10 +1419,12 @@ margin: 0 2px;
   padding-bottom: 0.75em;
 }
 
-#basics-box #module-enable-button
+#basics-box #module-enable-button,
+#basics-link
 {
   min-height: 1em;
   min-width: 1em;
+  border: none;
 }
 
 #basics-widget
