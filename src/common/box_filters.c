@@ -521,7 +521,7 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
 #endif
     for (int col = 0; col < width; col++)
     {
-      float *const restrict scanline = scanlines + 4 * dt_get_thread_num() * height; 
+      float *const restrict scanline = scanlines + 4 * dt_get_thread_num() * height;
       // we need to multiply width by 4 to get the correct stride for the vertical blur
       blur_vertical_4wide(buf + 4 * col, height, 4*width, radius, scanline);
     }
@@ -551,7 +551,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
 #endif
     for (int col = 0; col < (width & ~3); col += 4)
     {
-      __m128 *const restrict scanline = scanline_buf + 4 * dt_get_thread_num() * height; 
+      __m128 *const restrict scanline = scanline_buf + 4 * dt_get_thread_num() * height;
       blur_vertical_4ch_sse(buf + 4 * col, height, width, radius, scanline);
     }
     // finish up the leftover 0-3 columns of pixels
