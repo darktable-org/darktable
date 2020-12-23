@@ -471,7 +471,8 @@ overshoot.right
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
 #lib-plugin-ui,
 #iop-plugin-ui,
-#basics-box
+#basics-box,
+#basics-box-labels
 {
   color: @plugin_fg_color;
   background-color: @plugin_bg_color;
@@ -1413,13 +1414,19 @@ margin: 0 2px;
   padding: 0.45em;
 }
 
-#basics-box
+#basics-box,
+#basics-box-labels
 {
-  padding-top: 0.5em;
   padding-bottom: 0.75em;
 }
 
+#basics-box
+{
+  padding-top: 0.5em;
+}
+
 #basics-box #module-enable-button,
+#basics-box-labels #module-enable-button,
 #basics-link
 {
   min-height: 1em;
@@ -1427,15 +1434,26 @@ margin: 0 2px;
   border: none;
 }
 
-#basics-widget
+#basics-box-labels #basics-widget,
+#basics-box-labels #section_label
+{
+  margin: 0 0.75em 0.25em 0.75em;
+}
+
+#basics-box #basics-widget
 {
   margin: 0 0.75em 0.5em 0.75em;
+}
+
+#basics-box-labels #section_label
+{
+  margin-top: 1em;
 }
 
 #basics-widget.basics-widget_group_start
 {
   padding-top: 0.5em;
-  border-top: 0.5px solid  @section_label;
+  border-top: 0.5px solid @section_label;
 }
 
 #basics-iop_name
