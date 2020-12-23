@@ -268,7 +268,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   jpg.dest.empty_output_buffer = dt_imageio_jpeg_empty_output_buffer;
   jpg.dest.term_destination = dt_imageio_jpeg_term_destination;
   jpg.dest.next_output_byte = (JOCTET *)out;
-  jpg.dest.free_in_buffer = 4 * width * height * sizeof(uint8_t);
+  jpg.dest.free_in_buffer = sizeof(uint8_t) * 4 * width * height;
 
   jpg.cinfo.err = jpeg_std_error(&jerr.pub);
   jerr.pub.error_exit = dt_imageio_jpeg_error_exit;
@@ -303,7 +303,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   jpeg_finish_compress(&(jpg.cinfo));
   dt_free_align(row);
   jpeg_destroy_compress(&(jpg.cinfo));
-  return 4 * width * height * sizeof(uint8_t) - jpg.dest.free_in_buffer;
+  return sizeof(uint8_t) * 4 * width * height - jpg.dest.free_in_buffer;
 }
 
 

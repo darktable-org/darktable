@@ -832,7 +832,7 @@ main(int argc, char** argv)
     }
   }
 
-  raw_buff_f = calloc(1, 3*raw_width*raw_height*sizeof(float));
+  raw_buff_f = calloc(1, sizeof(float)*3*raw_width*raw_height);
   if (!raw_buff_f) {
     fprintf(stderr, "error: failed allocating raw file float buffer\n");
     goto exit;
@@ -845,7 +845,7 @@ main(int argc, char** argv)
   free(raw_buff);
   raw_buff = NULL;
 
-  jpeg_buff_f = calloc(1, 3*jpeg_width*jpeg_height*sizeof(float));
+  jpeg_buff_f = calloc(1, sizeof(float)*3*jpeg_width*jpeg_height);
   if (!jpeg_buff_f) {
     fprintf(stderr, "error: failed allocating JPEG file float buffer\n");
     goto exit;
