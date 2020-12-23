@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-12-23 15:40+0100\n"
-"PO-Revision-Date: 2020-12-23 11:42+0100\n"
+"PO-Revision-Date: 2020-12-23 23:24+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12850,11 +12850,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10181(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -20015,10 +20015,10 @@ msgid ""
 "Shadows/Highlights module, and the Zone System module. It allows us to "
 "brighten or darken up to 9 different ranges of luminosity within our image."
 msgstr ""
-"Le module égaliseur de ton est conçu pour remplacer le module courbe de "
-"base, le module ombres et hautes lumières et le module Zone System. Il nous "
-"permet d'éclaircir ou d'assombrir jusqu'à 9 plages de luminosité différentes "
-"dans notre image."
+"Le module égaliseur de ton est conçu pour remplacer le module courbe de base "
+"et le module ombres et hautes lumières et le module zone (déprécié). Il nous "
+"permet d'éclaircir ou d'assombrir jusqu'à neuf plages de luminosité "
+"différentes dans notre image."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16355(para)
 msgid ""
@@ -20138,20 +20138,24 @@ msgid ""
 "positive or negative adjustment has been made for any given tonal range "
 "under the mouse at its current location."
 msgstr ""
+"Vous remarquerez également qu'il y a un arc qui monte ou descend du réticule "
+"gauche. C'est une autre façon de vous montrer si un ajustement positif ou "
+"négatif a été effectué pour la plage tonale située sous le curseur de la "
+"souris."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16459(para)
 msgid ""
 "There is also a text box near the right side cross hair which also shows "
 "what adjustments have been made, but in numeric text form."
 msgstr ""
+"Il y a aussi une zone de texte près du réticule droit qui montre également "
+"quels ajustements ont été effectués, mais sous forme de texte numérique."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16466(title)
-#, fuzzy
 msgid "display exposure mask"
-msgstr "afficher le masque"
+msgstr "afficher le masque d'exposition"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16468(para)
-#, fuzzy
 msgid ""
 "At the bottom of the module, you'll see Display Exposure Mask and to the "
 "right of that, an icon <inlinegraphic fileref=\"images/"
@@ -20159,10 +20163,11 @@ msgid ""
 ">. <emphasis>Click</emphasis> on this icon to see the mask which the Tone "
 "Equalizer has generated for your image."
 msgstr ""
-"Si vous souhaitez que la fenêtre de raccourcis reste ouverte, il y a le "
-"bouton <inlinegraphic fileref=\"images/darkroom_module_icon_instances.png\" "
-"scalefit=\"1\" width=\"2%\" align=\"center\"/> situé en haut à droite de la "
-"fenêtre."
+"Au bas du module, vous verrez afficher le masque d'exposition et à droite de "
+"celui-ci, une icône <inlinegraphic fileref=\"images/"
+"darkroom_module_icon_mask.png\" scalefit=\"1\" width=\"2%\" align=\"center\"/"
+">. <emphasis> Cliquez </emphasis> sur cette icône pour voir le masque que "
+"l'égaliseur de ton a généré pour votre image."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16475(para)
 msgid ""
@@ -20171,11 +20176,15 @@ msgid ""
 "well defined edges for high contrast areas of the image. Having this mask "
 "displayed will assist in understanding the follow parameters:"
 msgstr ""
+"L'idée derrière ce masque est de créer des transitions douces entre les "
+"plages tonales, afin d'éviter de créer des halos. Pourtant, le masque est "
+"également capable de créer des contours bien définis pour les zones à "
+"contraste élevé de l'image. L'affichage de ce masque vous aidera à "
+"comprendre les paramètres suivants :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16485(title)
-#, fuzzy
 msgid "preserve details mode"
-msgstr "préserver les ombres"
+msgstr "préserver détails"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16487(para)
 msgid ""
@@ -20190,6 +20199,19 @@ msgid ""
 "will not be as preserved as without the average, but the averaging will "
 "reduce halos."
 msgstr ""
+"Il existe plusieurs filtres différents qui peuvent être utilisés pour lisser "
+"le masque. Si la conservation des détails est désactivée, le masque n'est "
+"pas lissé. Le <emphasis>filtre guidé</emphasis> brouille le masque en "
+"lissant davantage les ombres que les hautes lumières, ce qui est parfois "
+"souhaitable si vous éclaircissez beaucoup les ombres, mais peut entraîner "
+"une perte de contraste local dans les hautes lumières si vous les "
+"assombrissez. Le filtre<emphasis>Eigf</emphasis> brouille le masque d'une "
+"manière indépendante de l'exposition: les hautes lumières et les ombres "
+"seront flous plus uniformément. Les filtres <emphasis>guidé moyenné</"
+"emphasis> et <emphasis>eigf moyenné</emphasis> effectueront la moyenne "
+"géométrique du résultat du filtre et du masque d'origine : les détails ne "
+"seront pas aussi bien préservés que sans la moyenne, mais le moyennage "
+"réduira les halos."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16500(para)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16517(para)
@@ -20199,21 +20221,26 @@ msgid ""
 "only one instance of the mask. Progressively higher values will diffuse the "
 "mask even further."
 msgstr ""
+"Si vous augmentez cette valeur à 2, un deuxième masque est calculé en "
+"utilisant le premier masque comme entrée. En conséquence, le nouveau masque "
+"est plus flou que lorsqu'il n'y avait qu'une seule instance du masque. Des "
+"valeurs progressivement plus élevées diffuseront encore plus le masque."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16510(title)
-#, fuzzy
 msgid "filter diffusion"
-msgstr "filtrage"
+msgstr "diffusion du filtre"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16512(para)
 msgid ""
 "This defaults to a value of 1, meaning there is one instance of the mask "
 "generated."
 msgstr ""
+"La valeur par défaut est 1, ce qui signifie que n'est générée qu'une seule "
+"instance du masque."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16527(title)
 msgid "smoothing diameter"
-msgstr ""
+msgstr "diamètre adoucissement"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16529(para)
 msgid ""
@@ -20221,10 +20248,13 @@ msgid ""
 "areas of the mask will be more pronounced. As this value is increased, those "
 "transitions become smoother/softer."
 msgstr ""
+"Avec des valeurs plus faibles, la transition entre les zones sombres et les "
+"zones plus claires du masque sera plus prononcée. À mesure que cette valeur "
+"augmente, ces transitions deviennent plus fluides / plus douces."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16538(title)
 msgid "edge refinement/feathering"
-msgstr ""
+msgstr "raffinement / respect des bords"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16540(para)
 msgid ""
@@ -20232,11 +20262,13 @@ msgid ""
 "closely. Lower values will give smoother gradients, but may introduce some "
 "halos."
 msgstr ""
+"Des valeurs plus élevées forceront le masque à suivre au plus près les bords "
+"à contraste élevé. Des valeurs plus basses donneront des dégradés plus "
+"lisses, mais peuvent introduire des halos."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16551(title)
-#, fuzzy
 msgid "Compress shadows/highlights presets"
-msgstr "couleur pour les ombres et les hautes lumières"
+msgstr "Préréglages compresser ombres / hautes lumières"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16553(para)
 msgid ""
@@ -20247,6 +20279,13 @@ msgid ""
 "presets preserve middle-grey so that you do not have to adjust global "
 "exposure before and after toneequalizer."
 msgstr ""
+"Le module est livré avec plusieurs préréglages pour compresser les ombres et "
+"les  hautes lumières. Pour chacun de ces préréglages, deux variantes sont "
+"proposées, une avec filtre guidé (gf) et une avec filtre guidé indépendant "
+"de l'exposition (eigf). Selon l'image, l'une ou l'autre peut donner de "
+"meilleurs résultats. Dans les deux cas, ces préréglages conservent le gris "
+"moyen afin que vous n'ayez pas à régler l'exposition globale avant et après "
+"application de l'égaliseur de ton."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16569(title)
 msgid "Tonemapping"
@@ -20425,9 +20464,10 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16767(title)
 msgid "Notes"
-msgstr ""
+msgstr "Remarques"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16768(para)
+#, fuzzy
 msgid ""
 "The history in the database and associated XMP file, and in a style, does "
 "not contain the temperature and tint. Instead it holds values related to the "
@@ -20438,6 +20478,16 @@ msgid ""
 "different temp/tint, and your image might look different to what you "
 "expected. Consider doing all white balancing explicitly in the module."
 msgstr ""
+"L'historique dans la base de données et dans le fichier XMP associé, et dans "
+"un style, ne contient pas la température et la teinte. Au lieu de cela, il "
+"contient des valeurs liées aux trois coefficients RVB qui peuvent être "
+"définis dans le module de balance des blancs. La relation entre ces deux "
+"ensembles de valeurs - RVB et température / teinte - dépend des "
+"caractéristiques de la caméra. Par conséquent, appliquer la balance des "
+"blancs dans un style réalisé avec un modèle d'appareil photo à un autre "
+"modèle d'appareil photo donnera en général une température / une teinte "
+"différente, et votre image peut sembler différente de ce que vous attendiez. "
+"Pensez à faire tout l'équilibrage des blancs explicitement dans le module."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16781(para)
 msgid ""

@@ -39,8 +39,6 @@
 
   <xi:include href="toneequalizer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-  <xi:include href="tonemapping.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
   <xi:include href="whitebalance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
 </sect2>
