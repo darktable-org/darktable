@@ -480,7 +480,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // going from (0,0) to (1,100) or (0,100) to (1,0), respectively
     const float boost = 5.0f;
     const float contrastm1sq = boost * (fabs(d->contrast) - 1.0f) * (fabs(d->contrast) - 1.0f);
-    const float contrastscale = copysign(sqrt(1.0f + contrastm1sq), d->contrast);
+    const float contrastscale = copysign(sqrtf(1.0f + contrastm1sq), d->contrast);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(contrastm1sq, contrastscale) \

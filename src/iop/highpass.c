@@ -111,7 +111,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
   tiling->factor = 3.0f; // in + out + tmp
@@ -145,7 +145,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
    * unproven. ask me if you need details. ulrich */
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   const size_t mat_size = (size_t)wd * sizeof(float);

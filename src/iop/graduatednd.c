@@ -304,7 +304,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
 {
   // we get the extremities of the line
   const float v = (-rotation / 180) * M_PI;
-  const float sinv = sin(v);
+  const float sinv = sinf(v);
   float pts[4];
 
   dt_dev_pixelpipe_iop_t *piece = dt_dev_distort_get_iop_pipe(self->dev, self->dev->preview_pipe, self);
@@ -346,7 +346,7 @@ static int set_points_from_grad(struct dt_iop_module_t *self, float *xa, float *
   else
   {
     // otherwise we determine the extremities
-    const float cosv = cos(v);
+    const float cosv = cosf(v);
     float xx1 = (sinv - cosv + 1.0f - offset / 50.0f) * wp * 0.5f / sinv;
     float xx2 = (sinv + cosv + 1.0f - offset / 50.0f) * wp * 0.5f / sinv;
     float yy1 = 0.0f;
@@ -519,7 +519,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 
   // the extremities
   float x1, y1, x2, y2;
-  const float l = sqrt((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
+  const float l = sqrtf((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
   const float ext = wd * 0.01f / zoom_scale;
   x1 = xa + (xb - xa) * ext / l;
   y1 = ya + (yb - ya) * ext / l;
@@ -737,15 +737,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int iy = (roi_in->y);
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
-  const float hw = iw / 2.0;
-  const float hh = ih / 2.0;
-  const float hw_inv = 1.0 / hw;
-  const float hh_inv = 1.0 / hh;
+  const float hw = iw / 2.0f;
+  const float hh = ih / 2.0f;
+  const float hw_inv = 1.0f / hw;
+  const float hh_inv = 1.0f / hh;
   const float v = (-data->rotation / 180) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
-  const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0 * 2;
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
+  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
+  const float offset = data->offset / 100.0f * 2.0f;
 
 #if 1
   const float filter_hardness
@@ -868,15 +868,15 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int iy = (roi_in->y);
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
-  const float hw = iw / 2.0;
-  const float hh = ih / 2.0;
-  const float hw_inv = 1.0 / hw;
-  const float hh_inv = 1.0 / hh;
+  const float hw = iw / 2.0f;
+  const float hh = ih / 2.0f;
+  const float hw_inv = 1.0f / hw;
+  const float hh_inv = 1.0f / hh;
   const float v = (-data->rotation / 180) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
-  const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0 * 2;
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
+  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
+  const float offset = data->offset / 100.0f * 2;
 
 #if 1
   const float filter_hardness = 1.0 / filter_radie
@@ -1011,15 +1011,15 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int iy = (roi_in->y);
   const float iw = piece->buf_in.width * roi_out->scale;
   const float ih = piece->buf_in.height * roi_out->scale;
-  const float hw = iw / 2.0;
-  const float hh = ih / 2.0;
-  const float hw_inv = 1.0 / hw;
-  const float hh_inv = 1.0 / hh;
+  const float hw = iw / 2.0f;
+  const float hh = ih / 2.0f;
+  const float hw_inv = 1.0f / hw;
+  const float hh_inv = 1.0f / hh;
   const float v = (-data->rotation / 180) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
-  const float filter_radie = sqrt((hh * hh) + (hw * hw)) / hh;
-  const float offset = data->offset / 100.0 * 2;
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
+  const float filter_radie = sqrtf((hh * hh) + (hw * hw)) / hh;
+  const float offset = data->offset / 100.0f * 2;
   const float density = data->density;
 
 #if 1
