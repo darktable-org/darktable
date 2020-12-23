@@ -544,7 +544,7 @@ static inline void vec3prodn(float *dst, const float *const v1, const float *con
   const float l3 = v1[0] * v2[1] - v1[1] * v2[0];
 
   // normalize so that l1^2 + l2^2 + l3^3 = 1
-  const float sq = sqrt(l1 * l1 + l2 * l2 + l3 * l3);
+  const float sq = sqrtf(l1 * l1 + l2 * l2 + l3 * l3);
 
   const float f = sq > 0.0f ? 1.0f / sq : 1.0f;
 
@@ -557,7 +557,7 @@ static inline void vec3prodn(float *dst, const float *const v1, const float *con
 // dst and v may be the same
 static inline void vec3norm(float *dst, const float *const v)
 {
-  const float sq = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+  const float sq = sqrtf(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
 
   // special handling for an all-zero vector
   const float f = sq > 0.0f ? 1.0f / sq : 1.0f;
@@ -572,7 +572,7 @@ static inline void vec3norm(float *dst, const float *const v)
 // dst and v may be the same
 static inline void vec3lnorm(float *dst, const float *const v)
 {
-  const float sq = sqrt(v[0] * v[0] + v[1] * v[1]);
+  const float sq = sqrtf(v[0] * v[0] + v[1] * v[1]);
 
   // special handling for a point vector of the image center
   const float f = sq > 0.0f ? 1.0f / sq : 1.0f;
@@ -658,27 +658,27 @@ static void homography(float *homograph, const float angle, const float shift_v,
   const float v = height;
 
   const float phi = M_PI * angle / 180.0f;
-  const float cosi = cos(phi);
-  const float sini = sin(phi);
-  const float ascale = sqrt(aspect);
+  const float cosi = cosf(phi);
+  const float sini = sinf(phi);
+  const float ascale = sqrtf(aspect);
 
   // most of this comes from ShiftN
   const float f_global = f_length_kb;
   const float horifac = 1.0f - orthocorr / 100.0f;
-  const float exppa_v = exp(shift_v);
+  const float exppa_v = expf(shift_v);
   const float fdb_v = f_global / (14.4f + (v / u - 1) * 7.2f);
   const float rad_v = fdb_v * (exppa_v - 1.0f) / (exppa_v + 1.0f);
-  const float alpha_v = CLAMP(atan(rad_v), -1.5f, 1.5f);
-  const float rt_v = sin(0.5f * alpha_v);
-  const float r_v = fmax(0.1f, 2.0f * (horifac - 1.0f) * rt_v * rt_v + 1.0f);
+  const float alpha_v = CLAMP(atanf(rad_v), -1.5f, 1.5f);
+  const float rt_v = sinf(0.5f * alpha_v);
+  const float r_v = fmaxf(0.1f, 2.0f * (horifac - 1.0f) * rt_v * rt_v + 1.0f);
 
   const float vertifac = 1.0f - orthocorr / 100.0f;
-  const float exppa_h = exp(shift_h);
+  const float exppa_h = expf(shift_h);
   const float fdb_h = f_global / (14.4f + (u / v - 1) * 7.2f);
   const float rad_h = fdb_h * (exppa_h - 1.0f) / (exppa_h + 1.0f);
-  const float alpha_h = CLAMP(atan(rad_h), -1.5f, 1.5f);
-  const float rt_h = sin(0.5f * alpha_h);
-  const float r_h = fmax(0.1f, 2.0f * (vertifac - 1.0f) * rt_h * rt_h + 1.0f);
+  const float alpha_h = CLAMP(atanf(rad_h), -1.5f, 1.5f);
+  const float rt_h = sinf(0.5f * alpha_h);
+  const float r_h = fmaxf(0.1f, 2.0f * (vertifac - 1.0f) * rt_h * rt_h + 1.0f);
 
 
   // three intermediate buffers for matrix calculation ...
@@ -1485,7 +1485,7 @@ static int line_detect(float *in, const int width, const int height, const int x
       ashift_lines[lct].weight = weight;
 
 
-      const float angle = atan2(py2 - py1, px2 - px1) / M_PI * 180.0f;
+      const float angle = atan2f(py2 - py1, px2 - px1) / M_PI * 180.0f;
       const int vertical = fabs(fabs(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
       const int horizontal = fabs(fabs(fabs(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
 
@@ -1696,7 +1696,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
 
   // hurdle value epsilon for rejecting a line as an outlier will be self-tuning
   // in a number of dry runs
-  float epsilon = pow(10.0f, -RANSAC_EPSILON);
+  float epsilon = powf(10.0f, -RANSAC_EPSILON);
   float epsilon_step = RANSAC_EPSILON_STEP;
   // some accounting variables for self-tuning
   int lines_eliminated = 0;
@@ -1808,9 +1808,9 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
         float ratio = 100.0f * (float)lines_eliminated / ((float)set_count * valid_runs);
         // adjust epsilon accordingly
         if(ratio < RANSAC_ELIMINATION_RATIO)
-          epsilon = pow(10.0f, log10(epsilon) - epsilon_step);
+          epsilon = powf(10.0f, log10(epsilon) - epsilon_step);
         else if(ratio > RANSAC_ELIMINATION_RATIO)
-          epsilon = pow(10.0f, log10(epsilon) + epsilon_step);
+          epsilon = powf(10.0f, log10(epsilon) + epsilon_step);
 #ifdef ASHIFT_DEBUG
         printf(" (elimination ratio %f) -> %f\n", ratio, epsilon);
 #endif
@@ -2404,8 +2404,8 @@ static double crop_fitness(double *params, void *data)
   P[2] = 1.0f;
 
   // two auxiliary points (some arbitrary distance away from P) to construct the diagonals
-  const float Pa[2][3] = { { P[0] + 10.0f * cos(alpha), P[1] + 10.0f * sin(alpha), 1.0f },
-                           { P[0] + 10.0f * cos(alpha), P[1] - 10.0f * sin(alpha), 1.0f } };
+  const float Pa[2][3] = { { P[0] + 10.0f * cosf(alpha), P[1] + 10.0f * sinf(alpha), 1.0f },
+                           { P[0] + 10.0f * cosf(alpha), P[1] - 10.0f * sinf(alpha), 1.0f } };
 
   // the two diagonals: D = P x Pa
   float D[2][3];
@@ -2446,7 +2446,7 @@ static double crop_fitness(double *params, void *data)
     }
 
   // calculate the area of the rectangle
-  const float A = 2.0f * d2min * sin(2.0f * alpha);
+  const float A = 2.0f * d2min * sinf(2.0f * alpha);
 
 #ifdef ASHIFT_DEBUG
   printf("crop fitness with x %f, y %f, angle %f -> distance %f, area %f\n",
@@ -2536,7 +2536,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   {
     params[0] = 0.5;
     params[1] = 0.5;
-    params[2] = atan2((float)cropfit.height, (float)cropfit.width);
+    params[2] = atan2f((float)cropfit.height, (float)cropfit.width);
     cropfit.x = NAN;
     cropfit.y = NAN;
     cropfit.alpha = NAN;
@@ -2548,7 +2548,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
     params[1] = 0.5;
     cropfit.x = NAN;
     cropfit.y = NAN;
-    cropfit.alpha = atan2((float)cropfit.height, (float)cropfit.width);
+    cropfit.alpha = atan2f((float)cropfit.height, (float)cropfit.width);
     pcount = 2;
   }
 
@@ -2571,7 +2571,7 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
 
   // we need the half diagonal of that rectangle (this is in output image dimensions);
   // no need to check for division by zero here as this case implies A == 0.0f, caught above
-  const float d = sqrt(A / (2.0f * sin(2.0f * cropfit.alpha)));
+  const float d = sqrtf(A / (2.0f * sinf(2.0f * cropfit.alpha)));
 
   // the rectangle's center in input image (homogeneous) coordinates
   const float Pc[3] = { cropfit.x * wd, cropfit.y * ht, 1.0f };
@@ -2583,10 +2583,10 @@ static void do_crop(dt_iop_module_t *module, dt_iop_ashift_params_t *p)
   P[1] /= P[2];
 
   // calculate clipping margins relative to output image dimensions
-  g->cl = CLAMP((P[0] - d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-  g->cr = CLAMP((P[0] + d * cos(cropfit.alpha)) / owd, 0.0f, 1.0f);
-  g->ct = CLAMP((P[1] - d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
-  g->cb = CLAMP((P[1] + d * sin(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  g->cl = CLAMP((P[0] - d * cosf(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  g->cr = CLAMP((P[0] + d * cosf(cropfit.alpha)) / owd, 0.0f, 1.0f);
+  g->ct = CLAMP((P[1] - d * sinf(cropfit.alpha)) / oht, 0.0f, 1.0f);
+  g->cb = CLAMP((P[1] + d * sinf(cropfit.alpha)) / oht, 0.0f, 1.0f);
 
   // final sanity check
   if(g->cr - g->cl <= 0.0f || g->cb - g->ct <= 0.0f) goto failed;
@@ -2632,7 +2632,7 @@ static void crop_adjust(dt_iop_module_t *module, const dt_iop_ashift_params_t *c
   const float wd = g->buf_width;
   const float ht = g->buf_height;
 
-  const float alpha = atan2(ht, wd);
+  const float alpha = atan2f(ht, wd);
 
   float homograph[3][3];
   homography((float *)homograph, rotation, lensshift_v, lensshift_h, shear, f_length_kb,
@@ -2674,8 +2674,8 @@ static void crop_adjust(dt_iop_module_t *module, const dt_iop_ashift_params_t *c
   const float P[3] = { newx * owd, newy * oht, 1.0f };
 
   // two auxiliary points (some arbitrary distance away from P) to construct the diagonals
-  const float Pa[2][3] = { { P[0] + 10.0f * cos(alpha), P[1] + 10.0f * sin(alpha), 1.0f },
-                           { P[0] + 10.0f * cos(alpha), P[1] - 10.0f * sin(alpha), 1.0f } };
+  const float Pa[2][3] = { { P[0] + 10.0f * cosf(alpha), P[1] + 10.0f * sinf(alpha), 1.0f },
+                           { P[0] + 10.0f * cosf(alpha), P[1] - 10.0f * sinf(alpha), 1.0f } };
 
   // the two diagonals: D = P x Pa
   float D[2][3];
@@ -2715,17 +2715,17 @@ static void crop_adjust(dt_iop_module_t *module, const dt_iop_ashift_params_t *c
       d2min = MIN(d2min, d2);
     }
 
-  const float d = sqrt(d2min);
+  const float d = sqrtf(d2min);
 
   // do not allow crop area to drop below 1% of input image area
-  const float A = 2.0f * d * d * sin(2.0f * alpha);
+  const float A = 2.0f * d * d * sinf(2.0f * alpha);
   if(A < 0.01f * wd * ht) return;
 
   // calculate clipping margins relative to output image dimensions
-  g->cl = CLAMP((P[0] - d * cos(alpha)) / owd, 0.0f, 1.0f);
-  g->cr = CLAMP((P[0] + d * cos(alpha)) / owd, 0.0f, 1.0f);
-  g->ct = CLAMP((P[1] - d * sin(alpha)) / oht, 0.0f, 1.0f);
-  g->cb = CLAMP((P[1] + d * sin(alpha)) / oht, 0.0f, 1.0f);
+  g->cl = CLAMP((P[0] - d * cosf(alpha)) / owd, 0.0f, 1.0f);
+  g->cr = CLAMP((P[0] + d * cosf(alpha)) / owd, 0.0f, 1.0f);
+  g->ct = CLAMP((P[1] - d * sinf(alpha)) / oht, 0.0f, 1.0f);
+  g->cb = CLAMP((P[1] + d * sinf(alpha)) / oht, 0.0f, 1.0f);
 
 #ifdef ASHIFT_DEBUG
   printf("margins after crop adjustment: x %f, y %f, angle %f, crop area (%f %f %f %f), width %f, height %f\n",
@@ -2869,14 +2869,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // origin of image and opposite corner as reference points
     float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
     float ivec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+    float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+    float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
 
     // angle between input vector and output vector
     float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
@@ -3003,14 +3003,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // origin of image and opposite corner as reference points
     float points[4] = { 0.0f, 0.0f, (float)piece->buf_in.width, (float)piece->buf_in.height };
     float ivec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ivecl = sqrt(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
+    float ivecl = sqrtf(ivec[0] * ivec[0] + ivec[1] * ivec[1]);
 
     // where do they go?
     dt_dev_distort_backtransform_plus(self->dev, self->dev->preview_pipe, self->iop_order,
                                       DT_DEV_TRANSFORM_DIR_FORW_EXCL, points, 2);
 
     float ovec[2] = { points[2] - points[0], points[3] - points[1] };
-    float ovecl = sqrt(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
+    float ovecl = sqrtf(ovec[0] * ovec[0] + ovec[1] * ovec[1]);
 
     // angle between input vector and output vector
     float alpha = acos(CLAMP((ivec[0] * ovec[0] + ivec[1] * ovec[1]) / (ivecl * ovecl), -1.0f, 1.0f));
