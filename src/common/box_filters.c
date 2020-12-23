@@ -791,10 +791,10 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
 static inline void box_min_vert_16wide(const int N, const float *const restrict x, float *const restrict y,
                                       const int stride_y, const int w)
 {
-  float DT_ALIGNED_PIXEL m[16] = { -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
-                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
-                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
-                                   -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY) };
+  float DT_ALIGNED_PIXEL m[16] = { INFINITY, INFINITY, INFINITY, INFINITY,
+                                   INFINITY, INFINITY, INFINITY, INFINITY,
+                                   INFINITY, INFINITY, INFINITY, INFINITY,
+                                   INFINITY, INFINITY, INFINITY, INFINITY };
   for(int i = 0; i < MIN(w + 1, N); i++)
 #ifdef _OPENMP
 #pragma omp simd aligned(m, x)
@@ -820,7 +820,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
       {
 //        if(x[16 * (i - w) + c] == m[c]) //prevents vectorization
         {
-          m[c] = -(INFINITY);
+          m[c] = INFINITY;
           for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
             m[c] = MIN(x[16*j+c], m[c]);
         }
