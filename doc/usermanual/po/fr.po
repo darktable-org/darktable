@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-12-22 23:06+0100\n"
-"PO-Revision-Date: 2020-12-22 22:33+0100\n"
+"PO-Revision-Date: 2020-12-23 11:42+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -16,9 +16,8 @@ msgstr ""
 "X-Poedit-Bookmarks: 2169,1480,-1,416,182,458,465,290,-1,1846\n"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:4(title)
-#, fuzzy
 msgid "darktable 3.4"
-msgstr "darktable 3.2"
+msgstr "darktable 3.4"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10(para)
 msgid "The founder of the darktable project is Johannes Hanika."
@@ -3137,7 +3136,7 @@ msgstr ""
 "mémoire. Si darktable manque de mémoire quand il génère une miniature il "
 "vous prévient et affiche une tête de mort – ceci peut se produire si "
 "darktable est exécuté avec des paramètres non optimaux, notamment sur un "
-"système 32 bits.  Vous êtes invité à consulter la <xref linkend="
+"système 32 bits. Vous êtes invité à consulter la <xref linkend="
 "\"darktable_and_memory\"/> pour plus d'informations."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:2312(title)
@@ -12006,9 +12005,8 @@ msgid ""
 "Show no groups except the active one. For those who use only the search "
 "feature."
 msgstr ""
-"N'affiche aucun groupe sauf ceux qui sont actifsN'afficher aucun groupe sauf "
-"celui actif. Pour ceux qui n'utilisent que la fonction de recherche.. Pour "
-"ceux qui n'utilisent que la fonction de recherche."
+"N'affiche aucun groupe sauf ceux qui sont actifs. Pour ceux qui n'utilisent "
+"que la fonction de recherche."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9451(title)
 msgid "modules: deprecated"
@@ -12856,11 +12854,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10181(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -20305,9 +20303,8 @@ msgstr ""
 "appareil photo, recherchez <quote>compensation de l’exposition</quote>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16700(title)
-#, fuzzy
 msgid "Tone equalizer"
-msgstr "égaliseur"
+msgstr "Égaliseur de ton"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16704(secondary)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16708(primary)
@@ -20331,6 +20328,9 @@ msgid ""
 "<quote>Advanced</quote>, <quote>Masking</quote>) before attempting to use "
 "the Tone Equalizer module."
 msgstr ""
+"Il est recommandé de regarder les trois onglets (<quote>simple</quote>, "
+"<quote>avancé</quote>, <quote>masque</quote>) avant d'essayer d'utiliser le "
+"module égaliseur de ton."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16749(para)
 msgid ""
@@ -20338,16 +20338,17 @@ msgid ""
 "correlate to the 9 control points which appear across the centre of the "
 "graph on the <quote>Advanced</quote> tab."
 msgstr ""
+"Les neuf curseurs de l'onglet <quote>simple</quote> (voir la capture d'écran "
+"ci-dessus) correspondent aux neuf points de contrôle qui apparaissent au "
+"centre du graphique sur l'onglet <quote>avancé</quote>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16765(quote)
-#, fuzzy
 msgid "Advanced"
-msgstr "Vibrance"
+msgstr "avancé"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16767(emphasis)
-#, fuzzy
 msgid "mask"
-msgstr "masques"
+msgstr "masque"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16763(entry)
 msgid ""
@@ -20357,11 +20358,16 @@ msgid ""
 "understand. The aim is to get that histogram extended as far as possible to "
 "the left and right sides of the graph."
 msgstr ""
+"L'histogramme qui apparaît dans l'onglet <placeholder-1/> <emphasis>ne "
+"représente pas</emphasis> votre image. Il représente le <placeholder-3/> que "
+"l'égaliseur de ton est en train de créer pour votre image. C'est une "
+"distinction importante à comprendre. Le but est d'étendre cet histogramme "
+"aussi loin que possible aux côtés gauche et droit du graphique."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16790(quote)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20576(title)
 msgid "Masking"
-msgstr "Masques"
+msgstr "masque"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16789(entry)
 msgid ""
@@ -20371,6 +20377,13 @@ msgid ""
 "values for you. Having done that, check the histogram in the Advanced tab "
 "again. It should now be fairly evenly distributed across the graph."
 msgstr ""
+"Pour ce faire, nous allons dans l'onglet <placeholder-1/> et nous ajustons "
+"les curseurs de <quote>compensation exposition masque</quote> et "
+"<quote>compensation contraste masque</quote>. La sélection de chaque compte-"
+"gouttes permettra au module égaliseur de ton de sélectionner les valeurs les "
+"plus appropriées pour vous. Après avoir fait cela, vérifiez à nouveau "
+"l'histogramme dans l'onglet avancé. Il devrait maintenant être distribué de "
+"manière assez uniforme sur le graphique."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16806(para)
 msgid ""
@@ -20381,11 +20394,18 @@ msgid ""
 "darken highlight tones. Alternatively, you can use the Simple tab and "
 "control the adjustment through the use of your mouse wheel over the image."
 msgstr ""
+"Maintenant, vous pouvez <emphasis>Cliquer + faire glisser</emphasis> les "
+"points de contrôle (de l'onglet <quote>avancé</quote>) pour augmenter ou "
+"diminuer n'importe quelle partie de la plage tonale de votre image. Ajustez "
+"les points de contrôle sur le côté gauche pour éclaircir / assombrir les "
+"tons d'ombre. Ajustez les points de contrôle sur le côté droit pour "
+"éclaircir / assombrir les tons clairs. Vous pouvez également utiliser "
+"l'onglet <quote>simple</quote> et contrôler le réglage en utilisant la "
+"molette de votre souris sur l'image."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16817(title)
-#, fuzzy
 msgid "the cursor"
-msgstr "La vue courante."
+msgstr "Le curseur"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16823(para)
 msgid ""
@@ -20400,6 +20420,18 @@ msgid ""
 "of the tonal range of the image. If the inner circle is darker than the "
 "outer circle, then that tonal range has been darkened."
 msgstr ""
+"Le curseur de l'égaliseur de tonalité contient de nombreuses informations. "
+"Vous verrez des réticules, avec ce qui semble être un seul cercle gris au "
+"milieu. Mais ce n'est pas un seul cercle. Ce sont deux cercles "
+"concentriques. Le cercle extérieur représentera <emphasis>toujours</"
+"emphasis> la valeur tonale sous le pointeur de la souris, comme il était "
+"avant tout ajustement. Le cercle intérieur affichera la valeur tonale sous "
+"le pointeur de la souris <emphasis>après</emphasis> que chaque ajustement a "
+"été effectué. Ainsi, si le cercle intérieur est plus clair que le cercle "
+"extérieur, cela signifie qu'un ajustement d'éclaircissement a été effectué "
+"sur cette partie de la plage tonale de l'image. Si le cercle intérieur est "
+"plus sombre que le cercle extérieur, alors cette plage tonale a été "
+"assombrie."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16839(para)
 msgid ""
