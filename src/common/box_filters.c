@@ -591,7 +591,6 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
 }
 #endif /* __SSE2__ */
 
-__DT_CLONE_TARGETS__
 static inline void box_mean_2ch(float *const restrict in, const size_t height, const size_t width,
                                 const int radius, const int iterations)
 {
