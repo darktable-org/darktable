@@ -35,8 +35,6 @@
 
   <xi:include href="colorbalance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-  <xi:include href="channelmixer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
   <xi:include href="graduatedneutraldensity.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="toneequalizer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
