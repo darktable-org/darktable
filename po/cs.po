@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: darktable 1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-01 21:15+0100\n"
-"PO-Revision-Date: 2020-12-12 12:12+0100\n"
+"PO-Revision-Date: 2020-12-21 12:21+0100\n"
 "Last-Translator: Milan Knížek <knizek@volny.cz>\n"
 "Language-Team: Czech <kde-i18n-doc@kde.org>\n"
 "Language: cs_CZ\n"
@@ -159,7 +159,7 @@ msgstr "zachovat barvy"
 #: ../src/libs/live_view.c:345 ../src/libs/live_view.c:370
 #: ../src/libs/live_view.c:379 ../src/libs/print_settings.c:1475
 msgid "none"
-msgstr "žádný"
+msgstr "žádné"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:263
 #: ../build/lib/darktable/plugins/introspection_basicadj.c:250
@@ -463,7 +463,7 @@ msgstr "XYZ "
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:537
 msgid "none (bypass)"
-msgstr "žádný (bypass)"
+msgstr "žádná (bypass)"
 
 #: ../build/lib/darktable/plugins/introspection_clipping.c:142
 #: ../build/lib/darktable/plugins/introspection_clipping.c:303
@@ -1310,7 +1310,7 @@ msgstr "bezpečnostní faktor"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:184
 msgid "logarithmic"
-msgstr "logaritmická"
+msgstr "logaritmický"
 
 #: ../build/lib/darktable/plugins/introspection_profile_gamma.c:185
 #: ../src/iop/profile_gamma.c:684
@@ -2205,7 +2205,7 @@ msgstr "většinou PPG (rozumné)"
 #: ../build/bin/preferences_gen.h:3824
 msgctxt "preferences"
 msgid "full (possibly slow)"
-msgstr "plný (dost možná pomalé)"
+msgstr "úplná (dost možná pomalé)"
 
 #: ../build/bin/preferences_gen.h:3846
 msgid ""
@@ -2216,7 +2216,7 @@ msgid ""
 "as middle ground."
 msgstr ""
 "interpolace použitá při prohlížení mimo 1:1 v režimu fotokomory: bilineární "
-"je nejrychlejší, ale ne tak ostrá. prostřední základ je PPG + níže "
+"je nejrychlejší, ale ne tak ostrá. rozumný základ je většinou PPG + níže "
 "specifikované interpolační metody (volba interpolátor pixelů, záložka "
 "zpracování), plná použije stejné nastavení jako pro export v plné velikosti. "
 "Senzory X-Trans použijí přednostně VNG spíše než PPG jako prostřední základ."
@@ -3341,7 +3341,7 @@ msgstr "výchozí hodnocení všech při načítání rolí filmu"
 
 #: ../build/bin/preferences_gen.h:7006
 msgid "session options"
-msgstr "volby sezení"
+msgstr "možnosti sezení"
 
 #: ../build/bin/preferences_gen.h:7026
 msgid "base directory naming pattern"
@@ -3777,7 +3777,7 @@ msgstr "pracovní profil"
 #: ../src/common/colorspaces.c:1433 ../src/common/colorspaces.c:1683
 #: ../src/iop/colorout.c:881
 msgid "export profile"
-msgstr "exportní profil"
+msgstr "porfil pro export"
 
 #: ../src/common/colorspaces.c:1437 ../src/common/colorspaces.c:1685
 #: ../src/views/darkroom.c:2390
@@ -3787,7 +3787,7 @@ msgstr "profil pro softproof"
 #: ../src/common/colorspaces.c:1443 ../src/common/colorspaces.c:1446
 #: ../src/common/colorspaces.c:1667 ../src/common/colorspaces.c:1689
 msgid "system display profile"
-msgstr "syst. profil displeje"
+msgstr "syst. profil obrazovky"
 
 #: ../src/common/colorspaces.c:1452
 msgid "sRGB (e.g. JPG)"
@@ -4422,7 +4422,7 @@ msgstr "kvůli pomalé hardwarové akceleraci GPU bylo deaktivováno opencl."
 #: ../src/common/opencl.c:799
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
-msgstr "zjištěno více jednotek GPU - plánovácí profil OpenCL byl změněn."
+msgstr "zjištěno více jednotek GPU - plánovací profil OpenCL byl změněn."
 
 #: ../src/common/opencl.c:806
 msgid ""
@@ -5534,7 +5534,7 @@ msgid ""
 "pick GUI color from image\n"
 "ctrl+click to select an area"
 msgstr ""
-"vybrat barvu GUI ze snímku\n"
+"ukázat barvu kapátkem ze snímku\n"
 "ctrl + kliknutí pro výběr oblasti"
 
 #: ../src/develop/blend_gui.c:2000
@@ -5891,14 +5891,14 @@ msgstr ""
 #: ../src/develop/imageop.c:2508 ../src/gui/preferences.c:791
 #: ../src/libs/lib.c:1238 ../src/libs/modulegroups.c:278
 msgid "presets"
-msgstr "předvolené hodnoty"
+msgstr "předvolby"
 
 #: ../src/develop/imageop.c:2510
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
 msgstr ""
-"přednastavení\n"
+"předvolby\n"
 "kliknutí prostředním tlačítkem vytvoří novou instanci"
 
 #: ../src/develop/imageop.c:2807 ../src/develop/imageop.c:2833
@@ -6584,7 +6584,7 @@ msgstr "chyba: ujistěte se, že min_mip <= max_mip\n"
 #: ../src/generate-cache/main.c:252
 #, c-format
 msgid "creating complete lighttable thumbnail cache\n"
-msgstr "vytváření všech náhledů pro režim prosvětlovacího stollku\n"
+msgstr "vytváření všech náhledů pro režim prosvětlovacího stolku\n"
 
 #: ../src/gui/accelerators.c:91
 msgctxt "accel"
@@ -8004,7 +8004,7 @@ msgstr "vložit profily ICC"
 
 #: ../src/imageio/format/pdf.c:699
 msgid "images can be tagged with their icc profile"
-msgstr "snímky mohou být oštítkovány jejich profilem icc"
+msgstr "snímky mohou být oštítkovány jejich profilem ICC"
 
 #: ../src/imageio/format/pdf.c:705 ../src/imageio/format/png.c:525
 #: ../src/imageio/format/tiff.c:810
@@ -8648,12 +8648,12 @@ msgstr "hrubý"
 
 #: ../src/iop/atrous.c:1077
 msgid "denoise & sharpen"
-msgstr "odšumět & doostřit"
+msgstr "dostranění šumu & doostření"
 
 #: ../src/iop/atrous.c:1092
 msgctxt "atrous"
 msgid "sharpen"
-msgstr "doostřit"
+msgstr "doostření"
 
 #: ../src/iop/atrous.c:1107
 msgid "denoise chroma"
@@ -8661,7 +8661,7 @@ msgstr "odšumět chroma"
 
 #: ../src/iop/atrous.c:1122 ../src/iop/equalizer.c:331
 msgid "denoise"
-msgstr "odšumět"
+msgstr "odstranění šumu"
 
 #: ../src/iop/atrous.c:1138 ../src/iop/bloom.c:76
 msgid "bloom"
@@ -9744,7 +9744,7 @@ msgstr "síla účinku"
 
 #: ../src/iop/clipping.c:316
 msgid "crop and rotate"
-msgstr "oříznout a otočit"
+msgstr "ořez a otočení"
 
 #: ../src/iop/clipping.c:321
 msgid "reframe|perspective|keystone|distortion"
@@ -10355,7 +10355,7 @@ msgstr "nastavit globální sytost"
 
 #: ../src/iop/colorin.c:126
 msgid "input color profile"
-msgstr "vstupní barevný profil"
+msgstr "vstupní barvový profil"
 
 #: ../src/iop/colorin.c:131
 msgid ""
@@ -10402,7 +10402,7 @@ msgstr "nepodporovaný typ vstupního profilu byl nahrazen lineárním Rec709 RG
 
 #: ../src/iop/colorin.c:2098
 msgid "input profile"
-msgstr "vstupní profil"
+msgstr "profil pro import"
 
 #: ../src/iop/colorin.c:2102
 msgid "working profile"
@@ -10420,11 +10420,11 @@ msgstr "vtěsnat hodnoty Lab do gamutu barvového prostoru RGB"
 
 #: ../src/iop/colorize.c:84
 msgid "colorize"
-msgstr "obarvení"
+msgstr "barevné tónování"
 
 #: ../src/iop/colorize.c:104
 msgid "overlay a solid color on the image"
-msgstr "zobrazit překryv plnou barvou na snímku"
+msgstr "tónovat snímek do barevného odstínu"
 
 #: ../src/iop/colorize.c:356 ../src/iop/splittoning.c:483
 msgid "select the hue tone"
@@ -10495,7 +10495,7 @@ msgstr "úroveň vyrovnání histogramu"
 
 #: ../src/iop/colorout.c:81
 msgid "output color profile"
-msgstr "výstupní barevný profil"
+msgstr "výstupní barvový profil"
 
 #: ../src/iop/colorout.c:87
 msgid ""
@@ -10511,11 +10511,11 @@ msgstr "lineární nebo nelineární, RGB nebo Lab, dle obrazovky"
 
 #: ../src/iop/colorout.c:673
 msgid "missing output profile has been replaced by sRGB!"
-msgstr "chybějící výstupní profil byl nahrazen srgb!"
+msgstr "chybějící výstupní profil byl nahrazen sRGB!"
 
 #: ../src/iop/colorout.c:695
 msgid "missing softproof profile has been replaced by sRGB!"
-msgstr "chybějící profil náhledu byl nahrazen sRGB!"
+msgstr "chybějící profil pro softproof byl nahrazen sRGB!"
 
 #: ../src/iop/colorout.c:739
 msgid "unsupported output profile has been replaced by sRGB!"
@@ -10556,7 +10556,7 @@ msgstr "abs. kolorimetrický"
 
 #: ../src/iop/colorout.c:889
 msgid "rendering intent"
-msgstr "záměr transformace"
+msgstr "záměr"
 
 #: ../src/iop/colorreconstruction.c:129
 msgid "color reconstruction"
@@ -10691,10 +10691,10 @@ msgid ""
 "ctrl+drag to create a positive curve\n"
 "shift+drag to create a negative curve"
 msgstr ""
-"vytvořit křivku dle oblasti na snímku.\n"
-"přetažení pro vytvoření ploché křivky\n"
-"ctrl + přetažení pro vytvoření pozitivní křivky\n"
-"shift + přetažení pro vytvoření negativní křivky"
+"vytvořit rozsah na křivce dle oblasti na snímku.\n"
+"tažení pro vytvoření přímé křivky\n"
+"ctrl + tažení pro vytvoření pozitivní křivky\n"
+"shift + tažení pro vytvoření negativní křivky"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2401
@@ -10711,11 +10711,11 @@ msgstr "zobrazit výběr"
 
 #: ../src/iop/colorzones.c:2421
 msgid "choose selection criterion, will be the abscissa in the graph"
-msgstr "zvolte kritérium výběru, bude hodnotou na ose x v grafu"
+msgstr "zvolit kritérium výběru, bude hodnotou na ose x v grafu"
 
 #: ../src/iop/colorzones.c:2424
 msgid "choose between a smoother or stronger effect"
-msgstr "vyberte mezi hladším či silnějším efektem"
+msgstr "vybrat mezi hladším či výraznější efektem"
 
 #: ../src/iop/colorzones.c:2457 ../src/iop/rgbcurve.c:1434
 #: ../src/iop/tonecurve.c:1214
@@ -10856,11 +10856,11 @@ msgstr "vlnková: pouze chroma"
 
 #: ../src/iop/denoiseprofile.c:627
 msgid "denoise (profiled)"
-msgstr "odšumění (s profily)"
+msgstr "odstranění šumu (s profily)"
 
 #: ../src/iop/denoiseprofile.c:633
 msgid "denoise using noise statistics profiled on sensors."
-msgstr "odšumět pomocí statistik šumu profilovaných na sensorech."
+msgstr "odstranit šum pomocí statistik šumu profilovaných na sensorech."
 
 #: ../src/iop/denoiseprofile.c:2994
 #, c-format
@@ -11147,7 +11147,7 @@ msgstr "doostřit (silně)"
 #: ../src/iop/equalizer.c:315
 msgctxt "equalizer"
 msgid "sharpen"
-msgstr "doostřit"
+msgstr "doostření"
 
 #: ../src/iop/equalizer.c:321
 msgid "null"
@@ -12159,7 +12159,7 @@ msgstr ""
 
 #: ../src/iop/highpass.c:78
 msgid "highpass"
-msgstr "highpass"
+msgstr "high-pass"
 
 #: ../src/iop/highpass.c:83
 msgid "isolate high frequencies in the image"
@@ -12183,11 +12183,11 @@ msgstr "ostrost"
 
 #: ../src/iop/highpass.c:406
 msgid "the sharpness of highpass filter"
-msgstr "ostrost filtru highpass"
+msgstr "ostrost filtru high-pass"
 
 #: ../src/iop/highpass.c:410
 msgid "the contrast of highpass filter"
-msgstr "kontrast filtru highpass"
+msgstr "kontrast filtru high-pass"
 
 #: ../src/iop/hotpixels.c:66
 msgid "hot pixels"
@@ -12696,7 +12696,7 @@ msgstr "míra modré ve stínech"
 
 #: ../src/iop/lowpass.c:129
 msgid "lowpass"
-msgstr "lowpass"
+msgstr "low-pass"
 
 #: ../src/iop/lowpass.c:134
 msgid "isolate low frequencies in the image"
@@ -12712,15 +12712,15 @@ msgstr "poloměr gaussovského/bilaterálního rozostření"
 
 #: ../src/iop/lowpass.c:594
 msgid "contrast of lowpass filter"
-msgstr "kontrast lowpass filtru"
+msgstr "kontrast low-pass filtru"
 
 #: ../src/iop/lowpass.c:595
 msgid "brightness adjustment of lowpass filter"
-msgstr "úprava jasu lowpass filtru"
+msgstr "úprava jasu low-pass filtru"
 
 #: ../src/iop/lowpass.c:596
 msgid "color saturation of lowpass filter"
-msgstr "sytost barev lowpass filtru"
+msgstr "sytost barev low-pass filtru"
 
 #: ../src/iop/lowpass.c:597
 msgid "which filter to use for blurring"
@@ -13164,7 +13164,7 @@ msgstr "přepnout zap/vyp ovládání barev"
 
 #: ../src/iop/nlmeans.c:88
 msgid "astrophoto denoise"
-msgstr "odšumění astrofotografie"
+msgstr "odstranění šumu astrofotografie"
 
 #: ../src/iop/nlmeans.c:93
 msgid "denoise (non-local means)"
@@ -13192,7 +13192,7 @@ msgstr "přeexpozice"
 
 #: ../src/iop/profile_gamma.c:94
 msgid "unbreak input profile"
-msgstr "upravit vstupní profil"
+msgstr "oprava vstupního profilu"
 
 #: ../src/iop/profile_gamma.c:99
 msgid "correct input color profiles meant to be applied on non-linear RGB"
@@ -13268,11 +13268,11 @@ msgstr "metoda mapování tónů"
 
 #: ../src/iop/rawdenoise.c:122
 msgid "raw denoise"
-msgstr "odšumět raw"
+msgstr "odstranění šumu raw"
 
 #: ../src/iop/rawdenoise.c:127
 msgid "denoise the raw picture early in the pipeline"
-msgstr "odšumět snímek raw na začátku pipeline"
+msgstr "odstranit šum snímku raw na začátku pipeline"
 
 #: ../src/iop/rawdenoise.c:1102
 msgid ""
@@ -13389,7 +13389,7 @@ msgstr "šíře oblasti přisvětlení definovaná v zónách"
 
 #: ../src/iop/retouch.c:195
 msgid "retouch"
-msgstr "retušovat"
+msgstr "retuš"
 
 #: ../src/iop/retouch.c:200
 msgid "split-frequency|healing|cloning|stamp"
@@ -13772,7 +13772,7 @@ msgstr "upravit sytost světel"
 #: ../src/iop/sharpen.c:75
 msgctxt "modulename"
 msgid "sharpen"
-msgstr "doostřit"
+msgstr "doostření"
 
 #: ../src/iop/sharpen.c:95
 msgid "sharpen the details in the image using a standard UnSharp Mask (USM)"
@@ -13790,7 +13790,7 @@ msgstr "kvazi-lineární, Lab, dle obrazovky nebo scény"
 #. restrict to raw images
 #: ../src/iop/sharpen.c:106 ../src/iop/sharpen.c:110
 msgid "sharpen"
-msgstr "doostřit"
+msgstr "doostření"
 
 #: ../src/iop/sharpen.c:731
 msgid "spatial extent of the unblurring"
@@ -13806,7 +13806,7 @@ msgstr "práh pro aktivaci doostření"
 
 #: ../src/iop/soften.c:85
 msgid "soften"
-msgstr "změkčit"
+msgstr "snová fotografie"
 
 #: ../src/iop/soften.c:105
 msgid "create a softened image using the Orton effect"
@@ -13960,7 +13960,7 @@ msgstr "selhalo čtení informace z \"%s\" o vyvážení bílé dle fotoaparátu
 #: ../src/iop/temperature.c:1585
 msgctxt "white balance"
 msgid "as shot"
-msgstr "jak vyfoceno"
+msgstr "dle fotoaparátu"
 
 #. old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
 #: ../src/iop/temperature.c:1586
@@ -13977,7 +13977,7 @@ msgstr "změněno uživatelem"
 #: ../src/iop/temperature.c:1588
 msgctxt "white balance"
 msgid "camera reference"
-msgstr "dle fotoaparátu"
+msgstr "referenční"
 
 #: ../src/iop/temperature.c:1866 ../src/iop/temperature.c:1884
 msgid "green channel coefficient"
@@ -15444,7 +15444,7 @@ msgstr "hotovo"
 
 #: ../src/libs/export_metadata.c:170
 msgid "list filter"
-msgstr "seznam filtrů"
+msgstr "filtr seznamu"
 
 #: ../src/libs/export_metadata.c:181
 msgid ""
@@ -17279,7 +17279,7 @@ msgstr "správa barev v tiskovém ovladači"
 #: ../src/libs/print_settings.c:1235
 #, c-format
 msgid "printer ICC profiles in %s or %s"
-msgstr "tiskové profily ICC v %s nebo %s"
+msgstr "profily ICC pro tiskárny v %s nebo %s"
 
 #: ../src/libs/print_settings.c:1257
 msgid "black point compensation"
@@ -18323,7 +18323,7 @@ msgstr "dvojitým kliknutím obnovíte \"%f\""
 
 #: ../src/lua/preferences.c:800
 msgid "lua options"
-msgstr "volby lua"
+msgstr "možnosti lua"
 
 #: ../src/views/darkroom.c:442
 #, c-format
@@ -18546,7 +18546,7 @@ msgid ""
 "toggle softproofing\n"
 "right click for profile options"
 msgstr ""
-"přepnout náhled softproof\n"
+"přepnout softproof\n"
 "klikněte pravým tlačítkem pro volbu profilu"
 
 #: ../src/views/darkroom.c:2335
@@ -18559,43 +18559,43 @@ msgstr ""
 
 #: ../src/views/darkroom.c:2363 ../src/views/lighttable.c:1400
 msgid "display intent"
-msgstr "záměr pro displej"
+msgstr "záměr pro obrazovku"
 
 #: ../src/views/darkroom.c:2371 ../src/views/lighttable.c:1408
 msgid "preview display intent"
-msgstr "náhled záměru pro displej"
+msgstr "záměr pro obrazovku (náhledy)"
 
 #: ../src/views/darkroom.c:2391 ../src/views/lighttable.c:1416
 msgid "display profile"
-msgstr "profil displeje"
+msgstr "profil obrazovky"
 
 #: ../src/views/darkroom.c:2392 ../src/views/lighttable.c:1420
 msgid "preview display profile"
-msgstr "náhled profilu obrazovky"
+msgstr "profil obrazovky (náhledy)"
 
 #: ../src/views/darkroom.c:2393
 msgid "histogram profile"
-msgstr "histogram profilu"
+msgstr "profil pro histogram"
 
 #: ../src/views/darkroom.c:2447 ../src/views/lighttable.c:1450
 #, c-format
 msgid "display ICC profiles in %s or %s"
-msgstr "profily ICC displeje v %s nebo %s"
+msgstr "profily ICC pro obrazovku v %s nebo %s"
 
 #: ../src/views/darkroom.c:2450 ../src/views/lighttable.c:1453
 #, c-format
 msgid "preview display ICC profiles in %s or %s"
-msgstr "náhled profilů ICC displeje v %s nebo %s"
+msgstr "profily ICC pro obrazovku (náhledy) v %s nebo %s"
 
 #: ../src/views/darkroom.c:2453
 #, c-format
 msgid "softproof ICC profiles in %s or %s"
-msgstr "profily ICC náhledu tisku v %s nebo %s"
+msgstr "profily ICC pro softproof v %s nebo %s"
 
 #: ../src/views/darkroom.c:2456
 #, c-format
 msgid "histogram and color picker ICC profiles in %s or %s"
-msgstr "histogram a pipeta barev profilů ICC v %s nebo %s"
+msgstr "profily ICC pro histogram a kapátko výběru barev v %s nebo %s"
 
 #: ../src/views/darkroom.c:2491
 msgid ""
