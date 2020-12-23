@@ -163,7 +163,7 @@ static void dt_guides_draw_rules_of_thirds(cairo_t *cr, const float left, const 
 static void dt_guides_draw_harmonious_triangles(cairo_t *cr, const float left, const float top, const float width,
                                                 const float height/*, const float dst*/)
 {
-  int dst = (int)((height * cos(atan(width / height)) / (cos(atan(height / width)))));
+  int dst = (int)((height * cosf(atanf(width / height)) / (cosf(atanf(height / width)))));
 
   dt_draw_line(cr, -width / 2, -height / 2, width / 2, height / 2);
   dt_draw_line(cr, -width / 2 + dst, -height / 2, -width / 2, height / 2);
