@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/iop_profile.h"
 #include "control/control.h"
@@ -35,7 +36,6 @@
 
 #include <assert.h>
 #include <gmodule.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
