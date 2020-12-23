@@ -1102,7 +1102,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else  // no clut
   {
-    memcpy(obuf, ibuf, width * height * ch * sizeof(float));
+    memcpy(obuf, ibuf, sizeof(float) * ch * width * height);
   }
 }
 

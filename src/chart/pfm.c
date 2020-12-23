@@ -113,9 +113,9 @@ float *read_pfm(const char *filename, int *wd, int *ht)
   float *line = (float *)calloc(3 * width, sizeof(float));
   for(size_t j = 0; j < height / 2; j++)
   {
-    memcpy(line, image + width * j * 3, 3 * sizeof(float) * width);
-    memcpy(image + width * j * 3, image + width * (height - 1 - j) * 3, 3 * sizeof(float) * width);
-    memcpy(image + width * (height - 1 - j) * 3, line, 3 * sizeof(float) * width);
+    memcpy(line, image + width * j * 3, sizeof(float) * width * 3);
+    memcpy(image + width * j * 3, image + width * (height - 1 - j) * 3, sizeof(float) * width * 3);
+    memcpy(image + width * (height - 1 - j) * 3, line, sizeof(float) * width * 3);
   }
   free(line);
   fclose(f);
