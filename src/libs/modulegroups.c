@@ -503,11 +503,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     // create new basic widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(item->box, "basics-widget");
-    if(new_group)
-    {
-      GtkStyleContext *context = gtk_widget_get_style_context(item->box);
-      gtk_style_context_add_class(context, "basics-widget_group_start");
-    }
 
     // we create a new button linked with the real one
     // because it create too much pb to remove the button from the expander
@@ -594,11 +589,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     // create new basic widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(item->box, "basics-widget");
-    if(new_group)
-    {
-      GtkStyleContext *context = gtk_widget_get_style_context(item->box);
-      gtk_style_context_add_class(context, "basics-widget_group_start");
-    }
     gtk_widget_show(item->box);
 
     // we reparent the iop widget here
@@ -646,6 +636,25 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     }
   }
 
+  // if it's the first widget of a module, we want to show a separation
+  if(new_group)
+  {
+    if(dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
+    {
+      // we add the section label
+      GtkWidget *sect = dt_ui_section_label_new(item->module->name());
+      gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
+      gtk_box_pack_start(GTK_BOX(d->vbox_basic), sect, FALSE, FALSE, 0);
+      gtk_widget_show_all(sect);
+    }
+    else
+    {
+      // we just add a thin line on top of the widget to show delimitation
+      GtkStyleContext *context = gtk_widget_get_style_context(item->box);
+      gtk_style_context_add_class(context, "basics-widget_group_start");
+    }
+  }
+
   // and we add the link to the full iop
   GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
   gchar *tt = dt_util_dstrcat(NULL, _("go to full version of module %s"), item->module->name());
@@ -668,16 +677,21 @@ static void _basics_show(dt_lib_module_t *self)
   if(!d->vbox_basic)
   {
     d->vbox_basic = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-    gtk_widget_set_name(d->vbox_basic, "basics-box");
     dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, d->vbox_basic);
   }
+  if(dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
+    gtk_widget_set_name(d->vbox_basic, "basics-box-labels");
+  else
+    gtk_widget_set_name(d->vbox_basic, "basics-box");
+
   int pos = 0;
   GList *modules = g_list_last(darktable.develop->iop);
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     gboolean new_module = TRUE;      // we record if it's a new module or not to set css class
-    if(pos == 0) new_module = FALSE; // except for the first one as we don't want top separator
+    if(pos == 0 && !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
+      new_module = FALSE; // except for the first one as we don't want top separator
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->iop_order != INT_MAX)
     {
       // add all wanted widget from this module
