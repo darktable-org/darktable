@@ -1131,7 +1131,7 @@ static int _write_image(dt_imageio_module_data_t *data, const char *filename, co
                         const gboolean export_masks)
 {
   _dummy_data_t *d = (_dummy_data_t *)data;
-  memcpy(d->buf, in, data->width * data->height * sizeof(uint32_t));
+  memcpy(d->buf, in, sizeof(uint32_t) * data->width * data->height);
   return 0;
 }
 
