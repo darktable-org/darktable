@@ -1266,7 +1266,8 @@ dialog scrollbar
   margin-left: 5px;
 }
 
-#preferences_box #shortcut_controls button
+#preferences_box #shortcut_controls button,
+#preferences_box #preset_controls button
 {
 margin: 0 2px;
 }
