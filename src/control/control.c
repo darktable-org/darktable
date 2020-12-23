@@ -474,7 +474,9 @@ void dt_control_log(const char *msg, ...)
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   va_list ap;
   va_start(ap, msg);
-  vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
+  char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
+  g_strlcpy(darktable.control->log_message[darktable.control->log_pos], escaped_msg, DT_CTL_LOG_MSG_SIZE);
+  g_free(escaped_msg);
   va_end(ap);
   if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
   darktable.control->log_ack = darktable.control->log_pos;
