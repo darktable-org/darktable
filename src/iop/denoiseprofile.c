@@ -903,8 +903,8 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
       {
         const float x = MAX(buf2[c], 0.0f);
         const float delta = x * x + bias;
-        const float denominator = 4.0f / (sqrt(a) * (2.0f - p[c]));
-        const float z1 = (x + sqrt(MAX(delta, 0.0f))) / denominator;
+        const float denominator = 4.0f / (sqrtf(a) * (2.0f - p[c]));
+        const float z1 = (x + sqrtf(MAX(delta, 0.0f))) / denominator;
         buf2[c] = powf(z1, 1.0f / (1.0f - p[c] / 2.0f)) - b;
         buf2[c] *= wb[c];
       }
@@ -917,9 +917,9 @@ static inline void precondition_Y0U0V0(const float *const in, float *const buf, 
                                        const float a, const float p[3], const float b, const float toY0U0V0[9])
 {
   const float expon[3] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1 };
-  const float scale[3] = { 2.0f / ((-p[0] + 2) * sqrt(a)),
-                           2.0f / ((-p[1] + 2) * sqrt(a)),
-                           2.0f / ((-p[2] + 2) * sqrt(a)) };
+  const float scale[3] = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
+                           2.0f / ((-p[1] + 2) * sqrtf(a)),
+                           2.0f / ((-p[2] + 2) * sqrtf(a)) };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0, expon, scale)       \
@@ -951,9 +951,9 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
 {
   const float bias_wb[3] = { bias * wb[0], bias * wb[1], bias * wb[2] };
   const float expon[3] = {  1.0f / (1.0f - p[0] / 2.0f),  1.0f / (1.0f - p[1] / 2.0f),  1.0f / (1.0f - p[2] / 2.0f) };
-  const float scale[3] = { (sqrt(a) * (2.0f - p[0])) / 4.0f,
-                           (sqrt(a) * (2.0f - p[1])) / 4.0f,
-                           (sqrt(a) * (2.0f - p[2])) / 4.0f };
+  const float scale[3] = { (sqrtf(a) * (2.0f - p[0])) / 4.0f,
+                           (sqrtf(a) * (2.0f - p[1])) / 4.0f,
+                           (sqrtf(a) * (2.0f - p[2])) / 4.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(buf, ht, wd, b, bias_wb, toRGB, expon, scale)  \
@@ -975,7 +975,7 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
     {
       const float x = MAX(rgb[c], 0.0f);
       const float delta = x * x + bias_wb[c];
-      const float z1 = (x + sqrt(MAX(delta, 0.0f))) * scale[c];
+      const float z1 = (x + sqrtf(MAX(delta, 0.0f))) * scale[c];
       buf2[c] = powf(z1, expon[c]) - b;
     }
   }
@@ -1071,7 +1071,7 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   // we then normalize the line so that variance becomes equal to 1:
   // var(Y0) = 1/9 * (var(R) + var(G) + var(B)) = 1/3
   // var(sqrt(3)Y0) = 1
-  sum_invwb *= sqrt(3);
+  sum_invwb *= sqrtf(3);
   toY0U0V0[0] = sum_invwb / wb[0];
   toY0U0V0[1] = sum_invwb / wb[1];
   toY0U0V0[2] = sum_invwb / wb[2];
@@ -1081,8 +1081,8 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   // apart of the normalization: these coefficients do differences of RGB channels
   // to try to reduce or cancel the signal. If we change these depending on white
   // balance, we will not reduce/cancel the signal anymore.
-  const float stddevU0 = sqrt(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
-  const float stddevV0 = sqrt(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
+  const float stddevU0 = sqrtf(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
+  const float stddevV0 = sqrtf(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
   toY0U0V0[3] /= stddevU0;
   toY0U0V0[4] /= stddevU0;
   toY0U0V0[5] /= stddevU0;
@@ -1093,7 +1093,7 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   if(!is_invertible)
   {
     // use standard form if whitebalance adapted matrix is not invertible
-    float stddevY0 = sqrt(1.0f / 9.0f * (wb[0] * wb[0] + wb[1] * wb[1] + wb[2] * wb[2]));
+    float stddevY0 = sqrtf(1.0f / 9.0f * (wb[0] * wb[0] + wb[1] * wb[1] + wb[2] * wb[2]));
     toY0U0V0[0] = 1.0f / (3.0f * stddevY0);
     toY0U0V0[1] = 1.0f / (3.0f * stddevY0);
     toY0U0V0[2] = 1.0f / (3.0f * stddevY0);

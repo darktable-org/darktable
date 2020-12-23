@@ -183,9 +183,9 @@ static void dt_ellipse_draw_shape(cairo_t *cr, double *dashed, const int selecte
 {
   if(points_count <= 10) return;
 
-  const float r = atan2(points[3] - points[1], points[2] - points[0]);
-  const float sinr = sin(r);
-  const float cosr = cos(r);
+  const float r = atan2f(points[3] - points[1], points[2] - points[0]);
+  const float sinr = sinf(r);
+  const float cosr = cosf(r);
 
   float x = 0.0f;
   float y = 0.0f;
@@ -225,9 +225,9 @@ static void dt_ellipse_draw_border(cairo_t *cr, double *dashed, const float len,
 {
   if(border_count <= 10) return;
 
-  const float r = atan2(border[3] - border[1], border[2] - border[0]);
-  const float sinr = sin(r);
-  const float cosr = cos(r);
+  const float r = atan2f(border[3] - border[1], border[2] - border[0]);
+  const float sinr = sinf(r);
+  const float cosr = cosf(r);
 
   float x = 0.0f;
   float y = 0.0f;
@@ -309,15 +309,15 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
   const float x = (*points)[0] = xx * wd;
   const float y = (*points)[1] = yy * ht;
 
-  (*points)[2] = x + a * cos(v);
-  (*points)[3] = y + a * sin(v);
-  (*points)[4] = x - a * cos(v);
-  (*points)[5] = y - a * sin(v);
+  (*points)[2] = x + a * cosf(v);
+  (*points)[3] = y + a * sinf(v);
+  (*points)[4] = x - a * cosf(v);
+  (*points)[5] = y - a * sinf(v);
 
-  (*points)[6] = x + b * cos(v - M_PI / 2.0f);
-  (*points)[7] = y + b * sin(v - M_PI / 2.0f);
-  (*points)[8] = x - b * cos(v - M_PI / 2.0f);
-  (*points)[9] = y - b * sin(v - M_PI / 2.0f);
+  (*points)[6] = x + b * cosf(v - M_PI / 2.0f);
+  (*points)[7] = y + b * sinf(v - M_PI / 2.0f);
+  (*points)[8] = x - b * cosf(v - M_PI / 2.0f);
+  (*points)[9] = y - b * sinf(v - M_PI / 2.0f);
 
 
   for(int i = 5; i < l + 5; i++)
@@ -865,7 +865,7 @@ static int dt_ellipse_events_button_released(struct dt_iop_module_t *module, flo
     float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 4);
 
-    const float dv = atan2(pts[3] - pts[1], pts[2] - pts[0]) - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
+    const float dv = atan2f(pts[3] - pts[1], pts[2] - pts[0]) - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
 
     ellipse->rotation += dv / M_PI * 180.0f;
     ellipse->rotation = fmodf(ellipse->rotation, 360.0f);
@@ -1172,9 +1172,9 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
 
   if(!gpt) return;
 
-  const float r = atan2(gpt->points[3] - gpt->points[1], gpt->points[2] - gpt->points[0]);
-  const float sinr = sin(r);
-  const float cosr = cos(r);
+  const float r = atan2f(gpt->points[3] - gpt->points[1], gpt->points[2] - gpt->points[0]);
+  const float sinr = sinf(r);
+  const float cosr = cosf(r);
 
   xref = gpt->points[0];
   yref = gpt->points[1];
@@ -1197,9 +1197,9 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
   }
   else if((gui->group_selected == index) && gui->form_rotating)
   {
-    const float v = atan2(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
-    sinv = sin(v);
-    cosv = cos(v);
+    const float v = atan2f(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
+    sinv = sinf(v);
+    cosv = cosf(v);
   }
   else if((gui->group_selected == index) && (gui->point_dragging >= 1))
   {
@@ -1284,7 +1284,7 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
     if(cdx != 0.0 && cdy != 0.0)
     {
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float cangle = atan(cdx / cdy);
+      float cangle = atanf(cdx / cdy);
 
       if(cdy > 0)
         cangle = (M_PI / 2) - cangle;
@@ -1317,8 +1317,8 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       // is not recorded anywhere. Let's use a stupid search to find the closest
       // point on the border where to attach the arrow.
 
-      const float cosc = cos(cangle);
-      const float sinc = sin(cangle);
+      const float cosc = cosf(cangle);
+      const float sinc = sinf(cangle);
       const float step = r / 259.f;
 
       float dist = FLT_MAX;
@@ -1354,11 +1354,11 @@ static void dt_ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_mask
       // then draw to line for the arrow itself
       const float arrow_scale = 6.0 * pr_d;
 
-      cairo_move_to(cr, arrowx + arrow_scale * cos(cangle + (0.4)),
-                    arrowy + arrow_scale * sin(cangle + (0.4)));
+      cairo_move_to(cr, arrowx + arrow_scale * cosf(cangle + (0.4)),
+                    arrowy + arrow_scale * sinf(cangle + (0.4)));
       cairo_line_to(cr, arrowx, arrowy);
-      cairo_line_to(cr, arrowx + arrow_scale * cos(cangle - (0.4)),
-                    arrowy + arrow_scale * sin(cangle - (0.4)));
+      cairo_line_to(cr, arrowx + arrow_scale * cosf(cangle - (0.4)),
+                    arrowy + arrow_scale * sinf(cangle - (0.4)));
 
       cairo_set_dash(cr, dashed, 0, 0);
       if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))
@@ -1447,15 +1447,15 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
   const float x = points[0] = ellipse->center[0] * wd;
   const float y = points[1] = ellipse->center[1] * ht;
 
-  points[2] = x + a * cos(v);
-  points[3] = y + a * sin(v);
-  points[4] = x - a * cos(v);
-  points[5] = y - a * sin(v);
+  points[2] = x + a * cosf(v);
+  points[3] = y + a * sinf(v);
+  points[4] = x - a * cosf(v);
+  points[5] = y - a * sinf(v);
 
-  points[6] = x + b * cos(v - M_PI / 2.0f);
-  points[7] = y + b * sin(v - M_PI / 2.0f);
-  points[8] = x - b * cos(v - M_PI / 2.0f);
-  points[9] = y - b * sin(v - M_PI / 2.0f);
+  points[6] = x + b * cosf(v - M_PI / 2.0f);
+  points[7] = y + b * sinf(v - M_PI / 2.0f);
+  points[8] = x - b * cosf(v - M_PI / 2.0f);
+  points[9] = y - b * sinf(v - M_PI / 2.0f);
 
   for(int i = 1; i < l + 5; i++)
   {
@@ -1533,15 +1533,15 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   const float x = points[0] = ellipse->center[0] * wd;
   const float y = points[1] = ellipse->center[1] * ht;
 
-  points[2] = x + a * cos(v);
-  points[3] = y + a * sin(v);
-  points[4] = x - a * cos(v);
-  points[5] = y - a * sin(v);
+  points[2] = x + a * cosf(v);
+  points[3] = y + a * sinf(v);
+  points[4] = x - a * cosf(v);
+  points[5] = y - a * sinf(v);
 
-  points[6] = x + b * cos(v - M_PI / 2.0f);
-  points[7] = y + b * sin(v - M_PI / 2.0f);
-  points[8] = x - b * cos(v - M_PI / 2.0f);
-  points[9] = y - b * sin(v - M_PI / 2.0f);
+  points[6] = x + b * cosf(v - M_PI / 2.0f);
+  points[7] = y + b * sinf(v - M_PI / 2.0f);
+  points[8] = x - b * cosf(v - M_PI / 2.0f);
+  points[9] = y - b * sinf(v - M_PI / 2.0f);
 
   for(int i = 5; i < l + 5; i++)
   {
@@ -1662,9 +1662,9 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
     {
       float x = points[(i * w + j) * 2] - center[0];
       float y = points[(i * w + j) * 2 + 1] - center[1];
-      float v = atan2(y, x) - alpha;
-      float cosv = cos(v);
-      float sinv = sin(v);
+      float v = atan2f(y, x) - alpha;
+      float cosv = cosf(v);
+      float sinv = sinf(v);
       float radius2 = a * a * b * b / (a * a * sinv * sinv + b * b * cosv * cosv);
       float total2 = ta * ta * tb * tb / (ta * ta * sinv * sinv + tb * tb * cosv * cosv);
       float l2 = x * x + y * y;

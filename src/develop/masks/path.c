@@ -246,8 +246,8 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
                                             dt_masks_dynbuf_t *dborder, gboolean clockwise)
 {
   // we want to find the start and end angles
-  double a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
-  double a2 = atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]);
+  double a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  double a2 = atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]);
   if(a1 == a2) return;
 
   // we have to be sure that we turn in the correct direction

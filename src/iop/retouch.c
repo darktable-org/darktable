@@ -2809,7 +2809,7 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float delta = (right - left) / 2.0f;
   const float mid = left + delta;
   const float tmp = (middle - mid) / delta;
-  const float in_inv_gamma = pow(10, tmp);
+  const float in_inv_gamma = powf(10, tmp);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \

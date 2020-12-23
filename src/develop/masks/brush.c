@@ -331,8 +331,8 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
                                              gboolean clockwise)
 {
   // we want to find the start and end angles
-  float a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
-  float a2 = atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]);
+  float a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  float a2 = atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]);
 
   if(a1 == a2) return;
 
@@ -380,8 +380,8 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
                                                    dt_masks_dynbuf_t *dpoints, dt_masks_dynbuf_t *dborder)
 {
   // we want to find the start and end angles
-  float a1 = fmodf(atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
-  float a2 = fmodf(atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
+  float a1 = fmodf(atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
+  float a2 = fmodf(atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
 
   if(a1 == a2) return;
 
@@ -419,7 +419,7 @@ static void _brush_points_stamp(float *cmax, float *bmin, dt_masks_dynbuf_t *dpo
                                 gboolean clockwise)
 {
   // we want to find the start angle
-  float a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  float a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
 
   // we determine the radius too
   float rad = sqrtf((bmin[1] - cmax[1]) * (bmin[1] - cmax[1]) + (bmin[0] - cmax[0]) * (bmin[0] - cmax[0]));
