@@ -598,7 +598,7 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
   // We make use of the separable nature of the filter kernel to speed-up the computation
   // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
 
-  const size_t Ndim = 2 * MAX(width,height);
+  const size_t Ndim = 2 * 2 *MAX(width,height);
   float *const restrict temp = dt_alloc_align_float(Ndim * dt_get_num_threads());
   if (temp == NULL) return;
 
