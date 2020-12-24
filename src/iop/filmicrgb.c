@@ -833,7 +833,7 @@ inline static void sparse_scalar_product(const float *const buf, const size_t in
 #endif
 inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
                                    float *const restrict tempbuf,
-                                   const size_t width, const size_t height, const size_t mult)
+                                   const size_t width, const size_t height, const int mult)
 {
   // À-trous B-spline interpolation/blur shifted by mult
   #ifdef _OPENMP
@@ -855,7 +855,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
     // over the row
     for(size_t ii = 0; ii < FSIZE; ++ii)
     {
-      const size_t r = CLAMP(mult * (ii - (FSIZE - 1) / 2) + i, 0, height - 1);
+      const size_t r = CLAMP(mult * (int)(ii - (FSIZE - 1) / 2) + (int)i, (int)0, (int)height - 1);
       indices[ii] = 4 * r * width;
     }
     for(size_t j = 0; j < width; j++)
@@ -870,7 +870,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
       // the row, we need to recompute for each pixel
       for(size_t jj = 0; jj < FSIZE; ++jj)
       {
-        const size_t col = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
+        const size_t col = CLAMP(mult * (int)(jj - (FSIZE - 1) / 2) + (int)j, (int)0, (int)width - 1);
         indices[jj] = 4 * col;
       }
       // Compute the horizonal blur of the already vertically-blurred pixel and store the result at the proper
