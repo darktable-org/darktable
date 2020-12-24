@@ -431,7 +431,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
       // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
       for (int i = chunk_top; i < chunk_bot; i++)
       {
-        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', (chunk_right-chunk_left) * 4 * sizeof(float));
+        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', sizeof(float) * 4 * (chunk_right-chunk_left));
       }
       // cycle through all of the patches over our slice of the image
       for (int p = 0; p < num_patches; p++)
@@ -657,7 +657,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
       // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
       for (int i = chunk_top; i < chunk_bot; i++)
       {
-        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', (chunk_right-chunk_left) * 4 * sizeof(float));
+        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', sizeof(float) * 4 * (chunk_right-chunk_left));
       }
       // cycle through all of the patches over our slice of the image
       for (int p = 0; p < num_patches; p++)
