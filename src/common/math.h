@@ -44,6 +44,24 @@
 
 #define DT_M_LN2f (0.6931471805599453f)
 
+// clip channel value to be between 0 and 1
+// NaN-safe: NaN compares false and will result in 0.0
+// also does not force promotion of floats to doubles, but will use the type of its argument
+#define CLIP(x) (((x) >= 0) ? ((x) <= 1 ? (x) : 1) : 0)
+#define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
+
+// clip luminance values to be between 0 and 100
+#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
+
+// clamp value to lie between mn and mx
+// Nan-safe: NaN compares false and will result in mn
+#define CLAMPF(a, mn, mx) ((a) >= (mn) ? ((a) <= (mx) ? (a) : (mx)) : (mn))
+//#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
+
+#if defined(__SSE__)
+#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
+#endif
+
 static inline float clamp_range_f(const float x, const float low, const float high)
 {
   return x > high ? high : (x < low ? low : x);
@@ -51,26 +69,12 @@ static inline float clamp_range_f(const float x, const float low, const float hi
 
 static inline float Log2(float x)
 {
-  if(x > 0.0f)
-  {
-    return logf(x) / logf(2.0f);
-  }
-  else
-  {
-    return x;
-  }
+  return (x > 0.0f) ? (logf(x) / DT_M_LN2f) : x;
 }
 
 static inline float Log2Thres(float x, float Thres)
 {
-  if(x > Thres)
-  {
-    return logf(x) / logf(2.0f);
-  }
-  else
-  {
-    return logf(Thres) / logf(2.0f);
-  }
+  return logf(MAX(x,Thres)) / DT_M_LN2f;
 }
 
 // ensure that any changes here are synchronized with data/kernels/extended.cl
@@ -92,7 +96,7 @@ static inline float fastlog2(float x)
 static inline float
 fastlog (float x)
 {
-  return 0.69314718f * fastlog2 (x);
+  return DT_M_LN2f * fastlog2(x);
 }
 
 // multiply 3x3 matrix with 3x1 vector

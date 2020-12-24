@@ -32,7 +32,6 @@
 
 #define _XOPEN_SOURCE 700
 #include <errno.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -49,8 +48,8 @@
 #endif
 
 #include "pdf.h"
-
-#define CLAMP_FLT(A) ((A) > (0.0f) ? ((A) < (1.0f) ? (A) : (1.0f)) : (0.0f))
+#include "common/math.h"
+#include "common/utility.h"
 
 #define SKIP_SPACES(s)  {while(*(s) == ' ')(s)++;}
 
@@ -903,7 +902,7 @@ int main(int argc, char *argv[])
   #pragma omp parallel for schedule(static) default(none) shared(image, data, width, height)
 #endif
     for(int i = 0; i < width * height * 3; i++)
-      data[i] = CLAMP_FLT(image[i]) * 65535;
+      data[i] = CLIP(image[i]) * 65535;
 
     images[i] = dt_pdf_add_image(pdf, (unsigned char *)data, width, height, 16, icc_id, border);
     free(image);
