@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/math.h"
 #include "common/matrices.h"
 
 /** inverts the given 3x3 matrix */
@@ -49,28 +50,6 @@ int mat3inv(float *const dst, const float *const src)
   return 0;
 }
 
-static void mat3mulv(float *dst, const float *const mat, const float *const v)
-{
-  for(int k = 0; k < 3; k++)
-  {
-    float x = 0.0f;
-    for(int i = 0; i < 3; i++) x += mat[3 * k + i] * v[i];
-    dst[k] = x;
-  }
-}
-
-static void mat3mul(float *dst, const float *const m1, const float *const m2)
-{
-  for(int k = 0; k < 3; k++)
-  {
-    for(int i = 0; i < 3; i++)
-    {
-      float x = 0.0f;
-      for(int j = 0; j < 3; j++) x += m1[3 * k + j] * m2[3 * j + i];
-      dst[3 * k + i] = x;
-    }
-  }
-}
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

@@ -21,13 +21,13 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/math.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <math.h>
 #include <stdlib.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rotatepixels_params_t)
@@ -49,12 +49,6 @@ typedef struct dt_iop_rotatepixels_data_t
 } dt_iop_rotatepixels_data_t;
 
 dt_iop_rotatepixels_gui_data_t dummy;
-
-static void mul_mat_vec_2(const float *m, const float *p, float *o)
-{
-  o[0] = p[0] * m[0] + p[1] * m[1];
-  o[1] = p[0] * m[2] + p[1] * m[3];
-}
 
 // helper to count corners in for loops:
 static void get_corner(const float *aabb, const int i, float *p)
