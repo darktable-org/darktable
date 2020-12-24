@@ -2729,7 +2729,7 @@ void dt_opencl_events_reset(const int devid)
     (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);
   }
 
-  memset(*eventtags, 0, *maxevents * sizeof(dt_opencl_eventtag_t));
+  memset(*eventtags, 0, sizeof(dt_opencl_eventtag_t) * *maxevents);
   *numevents = 0;
   *eventsconsolidated = 0;
   *lostevents = 0;

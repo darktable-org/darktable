@@ -147,13 +147,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *dest = dest_buf + destbuf_size * dt_get_thread_num();
 
     /* initially fill histogram */
-    memset(hist, 0, (BINS + 1) * sizeof(int));
+    memset(hist, 0, sizeof(int) * (BINS + 1));
     for(int yi = yMin; yi < yMax; ++yi)
       for(int xi = xMin0; xi < xMax0; ++xi)
         ++hist[ROUND_POSISTIVE(luminance[(size_t)yi * roi_in->width + xi] * (float)BINS)];
 
     // Destination row
-    memset(dest, 0, roi_out->width * sizeof(float));
+    memset(dest, 0, sizeof(float) * roi_out->width);
     float *ld = dest;
 
     for(int i = 0; i < roi_out->width; i++)
