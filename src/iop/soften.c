@@ -26,6 +26,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
 #include "common/colorspaces.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -44,9 +45,6 @@
 #endif
 
 #define MAX_RADIUS 32
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
 
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
 
