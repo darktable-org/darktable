@@ -690,14 +690,14 @@ static void homography(float *homograph, const float angle, const float shift_v,
   float (*moutput)[3] = m3;
 
   // Step 1: flip x and y coordinates (see above)
-  memset(minput, 0, 9 * sizeof(float));
+  memset(minput, 0, sizeof(float) * 9);
   minput[0][1] = 1.0f;
   minput[1][0] = 1.0f;
   minput[2][2] = 1.0f;
 
 
   // Step 2: rotation of image around its center
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = cosi;
   mwork[0][1] = -sini;
   mwork[1][0] = sini;
@@ -711,7 +711,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 3: apply shearing
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[0][1] = shear;
   mwork[1][1] = 1.0f;
@@ -725,7 +725,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 4: apply vertical lens shift effect
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = exppa_v;
   mwork[1][0] = 0.5f * ((exppa_v - 1.0f) * u) / v;
   mwork[1][1] = 2.0f * exppa_v / (exppa_v + 1.0f);
@@ -740,7 +740,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 5: horizontal compression
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_v;
   mwork[1][2] = 0.5f * u * (1.0f - r_v);
@@ -753,7 +753,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 6: flip x and y back again
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][1] = 1.0f;
   mwork[1][0] = 1.0f;
   mwork[2][2] = 1.0f;
@@ -767,7 +767,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // from here output vectors would be in (x : y : 1) format
 
   // Step 7: now we can apply horizontal lens shift with the same matrix format as above
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = exppa_h;
   mwork[1][0] = 0.5f * ((exppa_h - 1.0f) * v) / u;
   mwork[1][1] = 2.0f * exppa_h / (exppa_h + 1.0f);
@@ -782,7 +782,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 8: vertical compression
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_h;
   mwork[1][2] = 0.5f * v * (1.0f - r_h);
@@ -795,7 +795,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 9: apply aspect ratio scaling
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f * ascale;
   mwork[1][1] = 1.0f / ascale;
   mwork[2][2] = 1.0f;
@@ -823,7 +823,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
       vmin = fmin(vmin, po[1] / po[2]);
     }
 
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[1][1] = 1.0f;
   mwork[2][2] = 1.0f;
@@ -841,7 +841,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   if(dir == ASHIFT_HOMOGRAPH_FORWARD)
   {
     // we have what we need -> copy it to the right place
-    memcpy(homograph, moutput, 9 * sizeof(float));
+    memcpy(homograph, moutput, sizeof(float) * 9);
   }
   else
   {
@@ -849,11 +849,11 @@ static void homography(float *homograph, const float angle, const float shift_v,
     if(mat3inv((float *)homograph, (float *)moutput))
     {
       // in case of error we set to unity matrix
-      memset(mwork, 0, 9 * sizeof(float));
+      memset(mwork, 0, sizeof(float) * 9);
       mwork[0][0] = 1.0f;
       mwork[1][1] = 1.0f;
       mwork[2][2] = 1.0f;
-      memcpy(homograph, mwork, 9 * sizeof(float));
+      memcpy(homograph, mwork, sizeof(float) * 9);
     }
   }
 }

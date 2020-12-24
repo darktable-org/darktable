@@ -275,7 +275,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
     printf("not enough memory for wavelet decomposition");
     goto cleanup;
   }
-  memset(layers, 0, p->width * p->height * p->ch * sizeof(float));
+  memset(layers, 0, sizeof(float) * p->ch * p->width * p->height);
 
   if(p->merge_from_scale > 0)
   {
@@ -285,7 +285,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
       printf("not enough memory for wavelet decomposition");
       goto cleanup;
     }
-    memset(merged_layers, 0, p->width * p->height * p->ch * sizeof(float));
+    memset(merged_layers, 0, sizeof(float) * p->ch * p->width * p->height);
   }
 
   // iterate over wavelet scales
@@ -537,7 +537,7 @@ void dwt_denoise(float *const img, const int width, const int height, const int 
   float *const interm = details + width * height;	// temporary storage for use during each pass
 
   // zero the accumulator
-  memset(details, 0, width * height * sizeof(float));
+  memset(details, 0, sizeof(float) * width * height);
 
   for(int lev = 0; lev < bands; lev++)
   {

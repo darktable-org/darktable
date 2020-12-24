@@ -142,7 +142,7 @@ void connect_key_accels(dt_iop_module_t *self)
 static void capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 {
   // build separate histogram
-  memset(hist, 0, HISTN * sizeof(int));
+  memset(hist, 0, sizeof(int) * HISTN);
   for(int k = 0; k < roi->height; k++)
     for(int i = 0; i < roi->width; i++)
     {

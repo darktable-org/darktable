@@ -1116,7 +1116,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
   // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
   float complex *map = dt_alloc_align(64, sizeof(float complex) * mapsize);
-  memset(map, 0, mapsize * sizeof(float complex));
+  memset(map, 0, sizeof(float complex) * mapsize);
 
   // build map
   for(GList *i = interpolated; i != NULL; i = i->next)
@@ -1132,7 +1132,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
   if(inverted)
   {
     float complex * const imap = dt_alloc_align(64, sizeof(float complex) * mapsize);
-    memset(imap, 0, mapsize * sizeof(float complex));
+    memset(imap, 0, sizeof(float complex) * mapsize);
 
     // copy map into imap(inverted map).
     // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
