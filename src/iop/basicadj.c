@@ -26,6 +26,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/math.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -866,7 +867,7 @@ static inline float hlcurve(const float level, const float hlcomp, const float h
     }
 
     float R = hlrange / (val * hlcomp);
-    return log1p(Y) * R;
+    return log1pf(Y) * R;
   }
   else
   {
@@ -969,14 +970,14 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   }
 
   // if very overxposed image
-  if(octile[6] > log1p((float)imax) / log2(2.f))
+  if(octile[6] > log1pf((float)imax) / log2(2.f))  //*** Is this correct?  log2(2) == 1
   {
     octile[6] = 1.5f * octile[5] - 0.5f * octile[4];
     overex = 2;
   }
 
   // if overexposed
-  if(octile[7] > log1p((float)imax) / log2(2.f))
+  if(octile[7] > log1pf((float)imax) / log2(2.f))  //*** Is this correct?  log2(2) == 1
   {
     octile[7] = 1.5f * octile[6] - 0.5f * octile[5];
     overex = 1;
@@ -1060,28 +1061,28 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   // compute exposure compensation as geometric mean of the amount that
   // sets the mean or median at middle gray, and the amount that sets the estimated top
   // of the histogram at or near clipping.
-  const float expcomp1 = (log(midgray * scale / (ave - shc + midgray * shc))) / log(2.f);
+  const float expcomp1 = (logf(midgray * scale / (ave - shc + midgray * shc))) / DT_M_LN2f;
   float expcomp2;
 
   if(overex == 0) // image is not overexposed
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + log(scale / rawmax) / log(2.f));
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + logf(scale / rawmax) / DT_M_LN2f);
   }
   else
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + log(scale / rawmax) / log(2.f));
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + logf(scale / rawmax) / DT_M_LN2f);
   }
 
-  if(fabs(expcomp1) - fabs(expcomp2) > 1.f) // for great expcomp
+  if(fabsf(expcomp1) - fabsf(expcomp2) > 1.f) // for great expcomp
   {
-    expcomp = (expcomp1 * fabs(expcomp2) + expcomp2 * fabs(expcomp1)) / (fabs(expcomp1) + fabs(expcomp2));
+    expcomp = (expcomp1 * fabsf(expcomp2) + expcomp2 * fabsf(expcomp1)) / (fabsf(expcomp1) + fabsf(expcomp2));
   }
   else
   {
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  const float gain = expf((float)expcomp * log(2.f));
+  const float gain = expf(expcomp * DT_M_LN2f);
 
   const float corr = sqrtf(gain * scale / rawmax);
   black = shc * corr;

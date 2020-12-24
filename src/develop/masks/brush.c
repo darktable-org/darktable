@@ -688,7 +688,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
     }
 
     // 1st. special case: render abrupt transitions between different opacity and/or hardness values
-    if((fabs(p1[5] - p2[5]) > 0.05f || fabs(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2 * nb - 1))
+    if((fabsf(p1[5] - p2[5]) > 0.05f || fabsf(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2 * nb - 1))
     {
       if(n == 0)
       {
@@ -714,7 +714,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
     }
 
     // 2nd. special case: render transition point between different brush sizes
-    if(fabs(p1[4] - p2[4]) > 0.0001f && n > 0)
+    if(fabsf(p1[4] - p2[4]) > 0.0001f && n > 0)
     {
       if(dborder)
       {
