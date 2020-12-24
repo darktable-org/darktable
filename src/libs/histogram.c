@@ -280,7 +280,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     {
       const dt_iop_order_iccprofile_info_t *const profile_info_to =
         dt_ioppr_add_profile_info_to_list(dev, out_profile_type, out_profile_filename, DT_INTENT_PERCEPTUAL);
-      img_display = dt_alloc_align(64, sizeof(float) * 4 * width * height);
+      img_display = dt_alloc_align_float((size_t)4 * width * height);
       if(!img_display) return;
       dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height, profile_info_from,
                                               profile_info_to, "final histogram");
@@ -1235,10 +1235,10 @@ void gui_init(dt_lib_module_t *self)
   // be scaled. 175 rows is reasonable CPU usage and represents plenty
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
-  d->waveform_height = 175;
-  d->waveform_linear = dt_alloc_align(64, sizeof(float) * d->waveform_height * d->waveform_max_width * 4);
-  d->waveform_display = dt_alloc_align(64, sizeof(float) * d->waveform_height * d->waveform_max_width * 4);
-  d->waveform_8bit = dt_alloc_align(64, sizeof(uint8_t) * d->waveform_height * d->waveform_max_width * 4);
+  d->waveform_height  = 175;
+  d->waveform_linear  = dt_alloc_align_float((size_t)4 * d->waveform_height * d->waveform_max_width);
+  d->waveform_display = dt_alloc_align_float((size_t)4 * d->waveform_height * d->waveform_max_width);
+  d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 4 * d->waveform_height * d->waveform_max_width);
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram

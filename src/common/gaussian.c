@@ -136,7 +136,7 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
     g->min[k] = min[k];
   }
 
-  g->buf = dt_alloc_align(64, (size_t)width * height * channels * sizeof(float));
+  g->buf = dt_alloc_align_float((size_t)channels * width * height);
   if(!g->buf) goto error;
 
   return g;

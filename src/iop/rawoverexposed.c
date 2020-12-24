@@ -190,7 +190,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   // acquire temp memory for distorted pixel coords
   const size_t coordbufsize = (size_t)roi_out->width * 2;
-  float *coordbuf = dt_alloc_align(64, coordbufsize * sizeof(float) * dt_get_num_threads());
+  float *coordbuf = dt_alloc_align_float(coordbufsize * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \

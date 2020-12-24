@@ -1394,7 +1394,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
   else
   {
     // no matrix, call lcms2
-    src_buffer = dt_alloc_align(64, sizeof(float) * width * height * ch);
+    src_buffer = dt_alloc_align_float((size_t) ch * width * height);
     if(src_buffer == NULL)
     {
       fprintf(stderr, "[dt_ioppr_transform_image_colorspace_cl] error allocating memory for color transformation 1\n");
@@ -1604,8 +1604,8 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
   else
   {
     // no matrix, call lcms2
-    src_buffer_in  = dt_alloc_align(64, sizeof(float) * width * height * ch);
-    src_buffer_out = dt_alloc_align(64, sizeof(float) * width * height * ch);
+    src_buffer_in  = dt_alloc_align_float((size_t) ch * width * height);
+    src_buffer_out = dt_alloc_align_float((size_t) ch * width * height);
     if(src_buffer_in == NULL || src_buffer_out == NULL)
     {
       fprintf(stderr,

@@ -1147,8 +1147,8 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *tmp = NULL;
   float *buf1 = NULL, *buf2 = NULL;
   for(int k = 0; k < max_scale; k++)
-    buf[k] = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
-  tmp = dt_alloc_align(64, (size_t)4 * sizeof(float) * npixels);
+    buf[k] = dt_alloc_align_float((size_t)4 * npixels);
+  tmp = dt_alloc_align_float((size_t)4 * npixels);
 
   float wb[3];
   const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
@@ -1525,7 +1525,7 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
-  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+  float *in = dt_alloc_align_float((size_t)4 * roi_in->width * roi_in->height);
 
   float wb[3];
   float p[3];
@@ -1645,7 +1645,7 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     return;
   }
 
-  float *in = dt_alloc_align(64, (size_t)4 * sizeof(float) * roi_in->width * roi_in->height);
+  float *in = dt_alloc_align_float((size_t)4 * roi_in->width * roi_in->height);
 
   float wb[3];
   const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };
@@ -2135,7 +2135,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 4 * sizeof(float));
   if(dev_r == NULL) goto error;
 
-  sumsum = dt_alloc_align(64, (size_t)reducesize * 4 * sizeof(float));
+  sumsum = dt_alloc_align_float((size_t)4 * reducesize);
   if(sumsum == NULL) goto error;
 
   dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));

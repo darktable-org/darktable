@@ -816,12 +816,12 @@ static float complex point_at_arc_length(const float complex points[], const int
 
 static float *build_lookup_table(const int distance, const float control1, const float control2)
 {
-  float complex *clookup = dt_alloc_align(64, (distance + 2) * sizeof(float complex));
+  float complex *clookup = dt_alloc_align(64, sizeof(float complex) * (distance + 2));
 
   interpolate_cubic_bezier(I, control1 + I, control2, 1.0, clookup, distance + 2);
 
   // reparameterize bezier by x and keep only y values
-  float *lookup = dt_alloc_align(64, (distance + 2) * sizeof(float));
+  float *lookup = dt_alloc_align_float((size_t)(distance + 2));
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
   const float complex *cptr_end = cptr + distance;
@@ -1115,7 +1115,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 {
   // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
-  float complex *map = dt_alloc_align(64, mapsize * sizeof(float complex));
+  float complex *map = dt_alloc_align(64, sizeof(float complex) * mapsize);
   memset(map, 0, mapsize * sizeof(float complex));
 
   // build map
@@ -1131,7 +1131,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 
   if(inverted)
   {
-    float complex * const imap = dt_alloc_align(64, mapsize * sizeof(float complex));
+    float complex * const imap = dt_alloc_align(64, sizeof(float complex) * mapsize);
     memset(imap, 0, mapsize * sizeof(float complex));
 
     // copy map into imap(inverted map).
