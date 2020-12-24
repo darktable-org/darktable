@@ -908,7 +908,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   *points_count = 3;
 
   // we set the line point
-  const float xstart = fabs(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
+  const float xstart = fabsf(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
   const float xdelta = -2.0f * xstart / (count - 3);
 
   int in_frame = FALSE;
