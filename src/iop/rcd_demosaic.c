@@ -317,14 +317,14 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   dt_omp_firstprivate(width, height, cfarray, out, in, scaler, revscaler)
 #endif
   { 
-    float *VH_Dir = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *VH_Dir);
-    float *PQ_Dir = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE / 2 * sizeof *PQ_Dir);
-    float *cfa = (float*) dt_alloc_align(64, RCD_TILESIZE * RCD_TILESIZE * sizeof *cfa);
-    float (*rgb)[RCD_TILESIZE * RCD_TILESIZE] = (float (*)[RCD_TILESIZE * RCD_TILESIZE])dt_alloc_align(64, 3 * sizeof *rgb);
+    float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
+    float *const cfa =    dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
 
     // No overlapping use so re-use same buffer; also note we use divide-by-2 index for lower mem pressure
     // this divide-by-2 also allows slightly faster sse2 specific code.
-    float *lpf = PQ_Dir;
+    float *const lpf = PQ_Dir;
 
     // There has been a discussion about the schedule strategy, at least on the tested machines the
     // dynamic scheduling seems to be slightly faster.
