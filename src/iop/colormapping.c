@@ -170,17 +170,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-//TODO: refactor by moving into a common header and consolidating with copy in color_picker.c
-static void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
-{
-  const size_t alloc_size = n * objsize;
-  const size_t cache_lines = (alloc_size+63)/64;
-  *padded_size = 64 * cache_lines / objsize;
-  return dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads());
-}
-#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
-#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
-
 static void capture_histogram(const float *col, const int width, const int height, int *hist)
 {
   // build separate histogram
