@@ -18,6 +18,7 @@
 
 #pragma once
 
+#if defined(__SSE__)
 #ifdef __PPC64__
 #ifdef NO_WARN_X86_INTRINSICS
 #include <xmmintrin.h>
@@ -29,6 +30,7 @@
 #else
 #include <xmmintrin.h>
 #endif // __PPC64__
+#endif
 
 #include "common/darktable.h"
 #include "common/opencl.h"
