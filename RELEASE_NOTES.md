@@ -347,6 +347,7 @@ you are strongly advised to take a backup first.
 - Panasonic DC-G99
 - Ricoh GR II
 - Sony NEX-5T
+- Hasselblad L1D-20c (a.k.a. DJI Mavic 2)
 
 ## Translations
 
