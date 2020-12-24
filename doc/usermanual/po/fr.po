@@ -3,8 +3,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
-"POT-Creation-Date: 2020-12-24 09:57+0100\n"
-"PO-Revision-Date: 2020-12-24 08:35+0100\n"
+"POT-Creation-Date: 2020-12-24 14:47+0100\n"
+"PO-Revision-Date: 2020-12-24 17:55+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -12842,11 +12842,11 @@ msgstr ""
 "correctement interpréter ses couleurs."
 
 #. <para>
-#.         Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
-#.         by their specification. However, there is an established de-facto standard to embed
-#.         profiles which darktable adheres to. Beware that some applications might fail to correctly
-#.         handle those profiles and render colors incorrectly.
-#.       </para>
+#. Some file formats&nbsp;&ndash; namely PNG&nbsp;&ndash; do not support embedded profiles
+#. by their specification. However, there is an established de-facto standard to embed
+#. profiles which darktable adheres to. Beware that some applications might fail to correctly
+#. handle those profiles and render colors incorrectly.
+#. </para>
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:10181(para)
 msgid ""
 "As not all applications, e.g. image viewers, are aware of color profiles, a "
@@ -22852,7 +22852,6 @@ msgstr ""
 "de droite."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:19559(para)
-#, fuzzy
 msgid ""
 "It is possible to change the way the points of the curve are linked together "
 "by using Ctrl+click on the center. There are four modes which correspond to "
@@ -23571,7 +23570,6 @@ msgstr ""
 "carte."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20263(para)
-#, fuzzy
 msgid ""
 "Images that already have geo location attributes in their metadata are "
 "displayed as small icons on the map. Images close to each other are grouped "
@@ -23612,28 +23610,36 @@ msgid ""
 "white number means that all images of the group are exactly at the same "
 "location. Otherwise the number is yellow."
 msgstr ""
+"Des images proches les unes aux autres sont regroupées en une seule. "
+"Consultez les paramètres de la carte pour contrôler le regroupement si "
+"nécessaire. Le nombre affiché en bas à gauche de la miniature donne le "
+"nombre d'images à l'intérieur du groupe. Un nombre blanc signifie que toutes "
+"les images du groupe sont exactement au même endroit. Sinon, le nombre est "
+"jaune."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20289(para)
 msgid ""
 "Mouse <emphasis>Scroll</emphasis> over a group of images scrolls through "
 "these images."
 msgstr ""
+"Un <emphasis>défilement</emphasis> de la souris sur un groupe d'images fait "
+"défiler ces images."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20293(para)
 msgid ""
 "Normally images have a black border. The border is white when at least one "
 "image of the group is selected."
 msgstr ""
+"Normalement, les images ont une bordure noire. La bordure est blanche "
+"lorsqu'au moins une image du groupe est sélectionnée."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20298(para)
-#, fuzzy
 msgid ""
 "<emphasis>Click</emphasis> and drag an image to adjust its position. "
 "<emphasis>Ctrl-click</emphasis> to move the complete group."
 msgstr ""
-"<emphasis> Ctrl + défilement </emphasis> pour zoomer / dézoomer les images. "
-"<emphasis> faites un clic gauche / glisser </emphasis> pour pan in des "
-"images zoomées."
+"<emphasis> Cliquez</emphasis> et faites glisser une image pour ajuster sa "
+"position. <emphasis> Ctrl-clic </emphasis> pour déplacer le groupe complet."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20303(para)
 msgid ""
@@ -23734,14 +23740,12 @@ msgstr ""
 "emplacement sur la carte. La localisation GPS sera incorporée à l’image."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20440(title)
-#, fuzzy
 msgid "Locations"
-msgstr "location"
+msgstr "Localisations"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20444(secondary)
-#, fuzzy
 msgid "locations"
-msgstr "location"
+msgstr "localisations"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20454(para)
 msgid ""
@@ -23749,6 +23753,10 @@ msgid ""
 "locations and organize them as hierarchical tags. The pipe <quote>|</quote> "
 "character can be used to insert a new level, i.e. a group of locations."
 msgstr ""
+"Dans le panneau <emphasis>localisations</emphasis>, vous pouvez créer des "
+"zones ou des localisations et les organiser sous forme de balises "
+"hiérarchiques. Le trait-vertical <quote>|</quote> peut être utilisé pour "
+"insérer un nouveau niveau, c'est-à-dire un groupe de localisations."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20459(para)
 msgid ""
@@ -23756,49 +23764,65 @@ msgid ""
 "of circle, ellipse, square or rectangle. Each location is an entry of "
 "<emphasis>geotagging</emphasis> collection under <emphasis>tagged</emphasis>."
 msgstr ""
+"Une localisation s'affiche sur la carte lorsqu'elle est sélectionnée. Une "
+"localisation peut avoir la forme d'un cercle, d'une ellipse, d'un carré ou "
+"d'un rectangle. Chaque localisation est une entrée de la collection "
+"<emphasis>géolocalisation</emphasis> sous <emphasis>mots-clés</emphasis>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20482(para)
 msgid ""
 "The circle or rectangle symbol selects the shape to be used for the new "
 "locations."
 msgstr ""
+"Le symbole cercle ou rectangle sélectionne la forme à utiliser pour les "
+"nouveaux emplacements."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20490(title)
 msgid "new location / new sub-location"
-msgstr ""
+msgstr "nouvelle localisation / nouvelle sous-localisation"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20492(para)
 msgid ""
 "When no location is selected the button <emphasis>new location</emphasis> "
 "lets you create a location at root level."
 msgstr ""
+"Lorsqu'aucune localisation n'est sélectionnée, le bouton <emphasis>nouvelle "
+"localisation</emphasis> vous permet de créer une localisation au niveau "
+"racine."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20497(para)
 msgid ""
 "When a location is selected the button <emphasis>new sub-location</emphasis> "
 "lets you create a location below the selected one."
 msgstr ""
+"Quand une localisation est sélectionnée le bouton <emphasis>nouvelle sous-"
+"localisation</emphasis> vous permet de créer une localisation sous celle qui "
+"est sélectionnée."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20506(title)
-#, fuzzy
 msgid "show all"
-msgstr "tout copier"
+msgstr "tout montrer"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20508(para)
 msgid ""
 "When selected, all locations whose the centre is on the visible map are "
 "shown."
 msgstr ""
+"Lorsque coché, toutes les localisations dont le centre est sur la carte "
+"visible sont affichées."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20516(title)
 msgid "Actions on locations list"
-msgstr ""
+msgstr "Actions sur la liste des localisations"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20518(para)
 msgid ""
 "<emphasis>Left-Click</emphasis> selects / unselects the location. If the "
 "location is not visible on the map the map is centred on it."
 msgstr ""
+"<emphasis>Clic-gauche</emphasis> sélectionne / désélectionne la "
+"localisation. Si la localisation n'est pas visible sur la carte, la carte "
+"est centrée dessus."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20523(para)
 msgid ""
@@ -23806,36 +23830,40 @@ msgid ""
 "<emphasis>Escape</emphasis> to terminate without change. Press "
 "<emphasis>Enter</emphasis> to save changes."
 msgstr ""
+"<emphasis>Ctrl-clic-gauche </emphasis> entre dans le mode édition du nom de "
+"la localisation. Appuyez sur <emphasis>Echap</emphasis> pour terminer sans "
+"changement. Appuyez sur <emphasis>Entrée</emphasis> pour enregistrer les "
+"modifications."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20529(para)
-#, fuzzy
 msgid "<emphasis>Right-Click</emphasis> shows the submenu:"
-msgstr "<emphasis>Ctrl+Z</emphasis> : annule le dernier mouvement"
+msgstr "<emphasis>Clic-droit</emphasis> montre le sous-menu :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20535(para)
-#, fuzzy
 msgid "Edit location."
-msgstr "Trouver la localisation"
+msgstr "Éditer la localisation."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20539(para)
-#, fuzzy
 msgid "Delete location."
-msgstr "sélectionner une action"
+msgstr "Supprimer la localisation."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20543(para)
 msgid "Update filmstrip. Filmstrip is populated with the location's images."
 msgstr ""
+"Mettre à jour la pellicule. La pellicule est remplie avec les images de la "
+"localisation."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20547(para)
 msgid ""
 "Go to collection (lighttable). Moves to lighttable and opens the "
 "corresponding collection."
 msgstr ""
+"Aller à la collection (table lumineuse). Se déplace vers la table lumineuse "
+"et ouvre la collection correspondante."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20556(title)
-#, fuzzy
 msgid "Actions on locations on the map"
-msgstr "la géolocalisation de l'image"
+msgstr "Actions sur les localisations sur la carte"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20558(para)
 msgid ""
@@ -23843,6 +23871,10 @@ msgid ""
 "place. <emphasis>Ctrl-Click</emphasis> or <emphasis>Ctrl-Shift-Left-Click</"
 "emphasis> to move an image or a group of images inside a location shape."
 msgstr ""
+"<emphasis>Cliquez gauche</emphasis> et faites glisser la forme de la "
+"localisation pour ajuster sa place. <emphasis>Ctrl-clic</emphasis> ou "
+"<emphasis>Ctrl-Maj-clic gauche</emphasis> pour déplacer une image ou un "
+"groupe d'images à l'intérieur d'une forme de localisation."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20564(para)
 msgid ""
@@ -23853,12 +23885,20 @@ msgid ""
 "emphasis> or <emphasis>Ctrl-Scroll-Down</emphasis> to decrease or increase "
 "its height."
 msgstr ""
+"À l'intérieur de la forme (mais pas sur une image), <emphasis>Défiler vers "
+"le haut</emphasis> ou <emphasis>Défiler vers le bas </emphasis>pour diminuer "
+"ou augmenter sa taille. <emphasis>Maj+défiler vers le haut</emphasis> ou "
+"<emphasis> Maj+défiler vers le bas</emphasis> pour diminuer ou augmenter sa "
+"largeur. <emphasis>Ctrl+défiler vers le haut</emphasis> ou <emphasis>Ctrl"
+"+défiler vers le bas</emphasis> pour diminuer ou augmenter sa hauteur."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20572(para)
 msgid ""
 "<emphasis>Left-Click</emphasis> on location different of the selected one "
 "(with show all) selects this location."
 msgstr ""
+"Un <emphasis>Clic-gauche</emphasis> sur une localisation différente de celle "
+"qui est sélectionnée (avec montrer tout) sélectionne cette localisation."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20583(title)
 msgid "Map settings"
@@ -23881,18 +23921,19 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20617(title)
 msgid "show OSD"
-msgstr ""
+msgstr "afficher contrôles"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20619(para)
 msgid ""
 "This option lets you choose whether to display the OSD controls on top-left "
 "of the center view."
 msgstr ""
+"Cette option vous permet de choisir d'afficher ou non les contrôles en haut "
+"à gauche de la vue centrale."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20628(title)
-#, fuzzy
 msgid "filtered images"
-msgstr "images sélectionnées"
+msgstr "images filtrées"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20630(para)
 msgid ""
@@ -23900,23 +23941,26 @@ msgid ""
 "view. If not selected all images of the current library are displayed as "
 "long as the corresponding images have GPS data associated."
 msgstr ""
+"Lorsque cette option est sélectionnée, seules les images de la pellicule "
+"s'affichent dans la vue centrale. Si elle n'est pas sélectionnée, toutes les "
+"images de la bibliothèque actuelle sont affichées si les images "
+"correspondantes sont associées à des données GPS."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20641(title)
-#, fuzzy
 msgid "group size factor"
-msgstr "facteur de cadrage"
+msgstr "facteur de taille du groupe"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20643(para)
 msgid "Increases or decreases the area of influence of the images grouping."
-msgstr ""
+msgstr "Augmente ou diminue la zone d'influence du regroupement d'images."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20650(title)
 msgid "min images per group"
-msgstr ""
+msgstr "minimum d'images par groupe"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20652(para)
 msgid "Sets the minimum of images to create a group of images."
-msgstr ""
+msgstr "Définit le nombre minimum d'images pour créer un groupe."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20672(para)
 msgid ""
@@ -24019,7 +24063,6 @@ msgstr ""
 "lumineuse view </entry></row></tbody></tgroup></informaltable>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:20810(para)
-#, fuzzy
 msgid ""
 "Depending on the complexity of the history stack and the power of your "
 "hardware, processing an image with high resolution can take a significant "
@@ -24414,13 +24457,12 @@ msgid "The preferences window"
 msgstr "La fenêtre des préférences"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21119(title)
-#, fuzzy
 msgid "General"
-msgstr "Fonctionnalités générales"
+msgstr "Général"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21123(secondary)
 msgid "general"
-msgstr ""
+msgstr "général"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21126(para)
 msgid "These options control the look and feel of darktable."
@@ -24431,12 +24473,11 @@ msgid "interface language"
 msgstr "langue pour l'interface"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21132(para)
-#, fuzzy
 msgid ""
 "Set the language of the user interface. the system default is marked with an "
 "* (needs a restart)."
 msgstr ""
-"définit la langue de l'interface utilisateur. La langue système par défaut "
+"Définit la langue de l'interface utilisateur. La langue système par défaut "
 "est marquée d'un * (nécessite un redémarrage)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21136(bridgehead)
@@ -24444,35 +24485,38 @@ msgid "theme"
 msgstr "thème"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21138(para)
-#, fuzzy
 msgid "Set the theme for the user interface."
-msgstr "définir le thème de l'interface utilisateur"
+msgstr "Définit le thème de l'interface utilisateur."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21142(bridgehead)
-#, fuzzy
 msgid "use system font"
-msgstr "Mois de l’heure système actuelle"
+msgstr "utiliser la police système"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21144(para)
 msgid ""
 "Select this option to use the font size defined by your system. If "
 "unchecked, you may enter a custom font size in the box below (default on)."
 msgstr ""
+"Sélectionnez cette option pour utiliser la taille de police définie par "
+"votre système. Si elle n'est pas cochée, vous pouvez saisir une taille de "
+"police personnalisée dans la case ci-dessous (activée par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21149(bridgehead)
 msgid "font size in points"
-msgstr ""
+msgstr "taille de la police en points"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21151(para)
 msgid ""
 "If the “use system font size” option is switched off, enter a font size (in "
 "points) for darktable to use. The font size will be changed immediately."
 msgstr ""
+"Si l'option «utiliser la police système» est désactivée, entrez la taille de "
+"police (en points) que darktable doit utiliser. La taille de la police sera "
+"modifiée immédiatement."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21156(bridgehead)
-#, fuzzy
 msgid "performance mode"
-msgstr "processus"
+msgstr "favoriser la performance à la qualité"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21158(para)
 msgid ""
@@ -24480,10 +24524,13 @@ msgid ""
 "lower quality but 4 times faster. Use this while working on a slower "
 "computer."
 msgstr ""
+"Si le mode performances est activé, les miniatures et les aperçus sont "
+"rendus avec une qualité inférieure mais quatre fois plus rapide. Utilisez "
+"ceci lorsque vous travaillez sur un ordinateur plus lent."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21163(bridgehead)
 msgid "GUI control and text DPI"
-msgstr ""
+msgstr "contrôles et texte DPI"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21165(para)
 msgid ""
@@ -24492,21 +24539,28 @@ msgid ""
 "-1 to use the system-defined global resolution. Default is 96 DPI on most "
 "systems. This needs a restart to apply changes."
 msgstr ""
+"Ajustez la résolution globale de l'interface graphique pour redimensionner "
+"les contrôles, les boutons, les étiquettes, etc. Augmentez pour une "
+"interface graphique agrandie, diminuez pour adapter plus de contenu dans la "
+"fenêtre. Définissez sur -1 pour utiliser la résolution globale définie par "
+"le système. La valeur par défaut est 96 PPP sur la plupart des systèmes. "
+"Cela nécessite un redémarrage pour appliquer les modifications."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21169(bridgehead)
 msgid "modify selected theme with CSS tweaks below"
-msgstr ""
+msgstr "modifier le thème via les ajustements CSS ci-dessous"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21171(para)
 msgid ""
 "Allow to apply tweaks added in text box below or not on selected theme in "
 "theme setting above."
 msgstr ""
+"Permet d'appliquer ou non, au thème sélectionné dans le paramètre de thème "
+"ci-dessus, les ajustements ajoutés dans la zone de texte ci-dessous."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21175(bridgehead)
-#, fuzzy
 msgid "CSS text editor"
-msgstr "entrée texte"
+msgstr "éditeur de texte CSS"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21177(para)
 msgid ""
@@ -24515,9 +24569,13 @@ msgid ""
 "tweak the look-and-feel of darktable. A text entry box is provided for this "
 "purpose. You can just take what you want to change from default CSS files."
 msgstr ""
+"En plus de sélectionner un thème prédéfini à appliquer à darktable dans son "
+"ensemble (ci-dessus), vous pouvez également saisir des personnalisations CSS "
+"supplémentaires pour modifier l'apparence de darktable. Une zone de saisie "
+"de texte est prévue à cet effet. Vous pouvez simplement choisir cette "
+"personnalisation dans les fichiers CSS proposés."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21183(para)
-#, fuzzy
 msgid ""
 "For example, if you want to change main text color, let's say to apply a "
 "pure white color, just copy/paste line 76 from darktable.css to define a "
@@ -24528,8 +24586,7 @@ msgstr ""
 "pour appliquer une couleur blanche pure, copiez / collez simplement la ligne "
 "76 de darktable.css pour définir un @ grey_100 qui est une couleur blanche "
 "pure définie dans le même fichier css. De cette façon, vous aurez cette "
-"ligne dans l'éditeur CSS: <programlisting format = \"linespecific\"> @ "
-"define-color fg_color @ grey_100; </programlisting>"
+"ligne dans l'éditeur CSS :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21189(programlisting)
 msgid "@define-color fg_color @grey_100;"
@@ -24541,6 +24598,10 @@ msgid ""
 "apply’ button, which will save the tweaks to a file ($HOME/.config/darktable/"
 "user.css) and immediately apply them to the current darktable session."
 msgstr ""
+"Lorsque vous avez fini de saisir vos ajustements CSS, cliquez sur le bouton "
+"«sauvegarder et appliquer», qui enregistrera les ajustements dans un fichier "
+"($ HOME / .config / darktable / user.css) et les appliquera immédiatement à "
+"la session darktable actuelle."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21197(para)
 msgid ""
@@ -24551,12 +24612,22 @@ msgid ""
 "ready to retry. This will automatically re-check the “modify selected theme "
 "with CSS tweaks below” checkbox and apply the new CSS."
 msgstr ""
+"S'il y a des problèmes avec les ajustements saisis, vous pouvez décocher la "
+"case «modifier le thème via les ajustements CSS ci-dessous». Cela restaurera "
+"immédiatement le thème de base mais laissera vos réglages dans l'éditeur "
+"afin que vous puissiez éditer et réessayer. Appuyez simplement sur "
+"«sauvegarder et appliquer» à nouveau lorsque vous êtes prêt à réessayer. "
+"Cela revérifiera automatiquement la case à cocher «modifier le thème via les "
+"ajustements CSS ci-dessous» et appliquera le nouveau CSS."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21204(para)
 msgid ""
 "If you have any issues with darktable please retry with this option "
 "unchecked to be certain that they were not caused by any of your changes."
 msgstr ""
+"Si vous rencontrez des problèmes avec darktable, veuillez réessayer avec "
+"cette option décochée pour être certain qu'ils n'ont pas été causés par une "
+"de vos modifications."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21221(para)
 msgid "Set here all your import options."
