@@ -175,9 +175,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         float *in = (float *)in_void + (size_t)4 * y * d->global.width;
         for(int x = 1; x < d->global.width-1; x++, in += 4)
         {
-          if((fabs(fmax(in[0], 0.001f) / fmax(in[1], 0.001f)) > 1.01f) ||
-             (fabs(fmax(in[0], 0.001f) / fmax(in[2], 0.001f)) > 1.01f) ||
-             (fabs(fmax(in[1], 0.001f) / fmax(in[2], 0.001f)) > 1.01f))
+          if((fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[1], 0.001f)) > 1.01f) ||
+             (fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f) ||
+             (fabsf(fmaxf(in[1], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f))
           {
             layers = 3;
             goto checkdone;

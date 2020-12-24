@@ -392,7 +392,7 @@ static inline int _blendif_print_digits_default(float value)
 static inline int _blendif_print_digits_ab(float value)
 {
   int digits;
-  if(fabs(value) < 10.0f) digits = 1;
+  if(fabsf(value) < 10.0f) digits = 1;
   else digits = 0;
 
   return digits;
