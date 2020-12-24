@@ -47,7 +47,6 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);

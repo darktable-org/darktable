@@ -45,8 +45,6 @@
 
 DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
 
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
 {

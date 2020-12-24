@@ -26,6 +26,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -43,8 +44,6 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-
-#define CLIP(x) ((x < 0.0f) ? 0.0f : (x > 1.0f) ? 1.0f : x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_graduatednd_params_t)
 
@@ -782,7 +781,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (data->density * CLIP(0.5f + length) / 8.0f);
+        const float t = DT_M_LN2f * (data->density * CLIP(0.5f + length) / 8.0f);
         const float d1 = t * t * 0.5f;
         const float d2 = d1 * t * 0.333333333f;
         const float d3 = d2 * t * 0.25f;
@@ -831,7 +830,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP(0.5f - length) / 8.0f);
+        const float t = DT_M_LN2f * (-data->density * CLIP(0.5f - length) / 8.0f);
         const float d1 = t * t * 0.5f;
         const float d2 = d1 * t * 0.333333333f;
         const float d3 = d2 * t * 0.25f;
@@ -916,7 +915,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         // for input x = (data->density * CLIP( 0.5+length ), calculate 2^x as (e^(ln2*x/8))^8
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (data->density * CLIP(0.5f + length) / 8.0f);
+        const float t = DT_M_LN2f * (data->density * CLIP(0.5f + length) / 8.0f);
         const float d1 = t * t * 0.5f;
         const float d2 = d1 * t * 0.333333333f;
         const float d3 = d2 * t * 0.25f;
@@ -967,7 +966,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
         // for input x = (-data->density * CLIP( 0.5-length ), calculate 2^x as (e^(ln2*x/8))^8
         // use exp2f approximation to calculate e^(ln2*x/8)
         // in worst case - density==-8,CLIP(0.5-length) == 1.0 it gives 0.6% of error
-        const float t = 0.693147181f /* ln2 */ * (-data->density * CLIP(0.5f - length) / 8.0f);
+        const float t = DT_M_LN2f * (-data->density * CLIP(0.5f - length) / 8.0f);
         const float d1 = t * t * 0.5f;
         const float d2 = d1 * t * 0.333333333f;
         const float d3 = d2 * t * 0.25f;

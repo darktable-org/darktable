@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/imageio.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/tea.h"
 #include "control/control.h"
@@ -34,7 +35,6 @@
 #include "gui/presets.h"
 #include "iop/iop_api.h"
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -43,8 +43,6 @@
 #if defined(__SSE__)
 #include <xmmintrin.h>
 #endif
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
