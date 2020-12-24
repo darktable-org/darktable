@@ -2689,8 +2689,8 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 //   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  const size_t bufsize = (size_t)(*width) * (*height)  * sizeof(float);
-  *buffer = dt_alloc_align(64, bufsize);
+  const size_t bufsize = (size_t)(*width) * (*height);
+  *buffer = dt_alloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);

@@ -1050,8 +1050,8 @@ static inline void gauss_blur(
     const size_t ht)
 {
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
-  float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
-  memset(tmp, 0, 4*wd*ht*sizeof(float));
+  float *tmp = dt_alloc_align_float((size_t)4 * wd * ht);
+  memset(tmp, 0, (size_t)4 * wd * ht * sizeof(float));
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, w, wd) \
@@ -1133,7 +1133,7 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  float *blurred = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  float *blurred = dt_alloc_align_float((size_t)4 * wd * ht);
   gauss_blur(input, blurred, wd, ht);
   for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
@@ -1168,8 +1168,8 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   for(int k = 0; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    col[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
-    comb[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
+    col[k]  = dt_alloc_align_float((size_t)4 * w * h);
+    comb[k] = dt_alloc_align_float((size_t)4 * w * h);
     memset(comb[k], 0, sizeof(float) * 4 * w * h);
     w = (w - 1) / 2 + 1;
     h = (h - 1) / 2 + 1;

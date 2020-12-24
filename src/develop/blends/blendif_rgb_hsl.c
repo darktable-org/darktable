@@ -317,7 +317,7 @@ void dt_develop_blendif_rgb_hsl_make_mask(struct dt_dev_pixelpipe_iop_t *piece, 
     const dt_iop_order_iccprofile_info_t *profile = use_profile ? &blend_profile : NULL;
 
     // allocate space for a temporary mask buffer to split the computation of every channel
-    float *const restrict temp_mask = dt_alloc_align(64, buffsize * sizeof(float));
+    float *const restrict temp_mask = dt_alloc_align_float(buffsize);
     if(!temp_mask)
     {
       return;

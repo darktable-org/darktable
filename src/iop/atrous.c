@@ -253,7 +253,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *buf2 = NULL;
   float *buf1 = NULL;
 
-  tmp = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
+  tmp = (float *)dt_alloc_align_float((size_t)4 * width * height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[atrous] failed to allocate coarse buffer!\n");
@@ -262,7 +262,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   for(int k = 0; k < max_scale; k++)
   {
-    detail[k] = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
+    detail[k] = (float *)dt_alloc_align_float((size_t)4 * width * height);
     if(detail[k] == NULL)
     {
       fprintf(stderr, "[atrous] failed to allocate one of the detail buffers!\n");
