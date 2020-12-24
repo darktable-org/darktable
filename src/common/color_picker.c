@@ -29,18 +29,6 @@ static inline size_t _box_size(const int *const box)
   return (size_t)((box[3] - box[1]) * (box[2] - box[0]));
 }
 
-//TODO: move into a common header so others can use this function and macros if needed
-static void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
-{
-  const size_t alloc_size = n * objsize;
-  const size_t cache_lines = (alloc_size+63)/64;
-  *padded_size = 64 * cache_lines / objsize;
-  return dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads());
-}
-#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
-#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
-
-
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, JzCzhz: 16) uniform(profile)
 #endif
@@ -120,9 +108,9 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
   const int numthreads = dt_get_num_threads();
 
   size_t allocsize;
-  float *const mean = dt_alloc_perthread(3, sizeof(float), &allocsize);
-  float *const mmin = dt_alloc_perthread(3, sizeof(float), &allocsize);
-  float *const mmax = dt_alloc_perthread(3, sizeof(float), &allocsize);
+  float *const restrict mean = dt_alloc_perthread_float(3, &allocsize);
+  float *const restrict mmin = dt_alloc_perthread_float(3, &allocsize);
+  float *const restrict mmax = dt_alloc_perthread_float(3, &allocsize);
 
   for(int n = 0; n < allocsize * numthreads; n++)
   {
@@ -136,9 +124,9 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
   dt_omp_firstprivate(w, cst_to, pixel, width, box, mean, mmin, mmax, profile, allocsize)
 #endif
   {
-    float *const tmean = dt_get_perthread(mean,allocsize);
-    float *const tmmin = dt_get_perthread(mmin,allocsize);
-    float *const tmmax = dt_get_perthread(mmax,allocsize);
+    float *const restrict tmean = dt_get_perthread(mean,allocsize);
+    float *const restrict tmmin = dt_get_perthread(mmin,allocsize);
+    float *const restrict tmmax = dt_get_perthread(mmax,allocsize);
 
 #ifdef _OPENMP
 #pragma omp for schedule(static) collapse(2)
