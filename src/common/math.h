@@ -68,7 +68,7 @@ static inline float Log2(float x)
 
 static inline float Log2Thres(float x, float Thres)
 {
-  return logf(MAX(x,Thres)) / DT_M_LN2f;
+  return logf(x > Thres ? x : Thres) / DT_M_LN2f;
 }
 
 // ensure that any changes here are synchronized with data/kernels/extended.cl
