@@ -475,7 +475,7 @@ gchar *dt_util_latitude_str(float latitude)
 
   if(latitude < 0)
   {
-    latitude = fabs(latitude);
+    latitude = fabsf(latitude);
     c = OSD_COORDINATES_CHR_S;
   }
 
@@ -493,7 +493,7 @@ gchar *dt_util_longitude_str(float longitude)
 
   if(longitude < 0)
   {
-    longitude = fabs(longitude);
+    longitude = fabsf(longitude);
     c = OSD_COORDINATES_CHR_W;
   }
 
@@ -510,7 +510,7 @@ gchar *dt_util_elevation_str(float elevation)
 
   if(elevation < 0)
   {
-    elevation = fabs(elevation);
+    elevation = fabsf(elevation);
     c = OSD_ELEVATION_BSL;
   }
 

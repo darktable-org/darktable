@@ -404,7 +404,7 @@ static inline void dt_draw_histogram_8_zoomed(cairo_t *cr, const uint32_t *hist,
   {
     const float value = ((float)hist[channels * k + channel] - zoom_offset_y) * zoom_factor;
     const float hist_value = value < 0 ? 0.f : value;
-    cairo_line_to(cr, ((float)k - zoom_offset_x) * zoom_factor, linear ? hist_value : log(1.0f + hist_value));
+    cairo_line_to(cr, ((float)k - zoom_offset_x) * zoom_factor, linear ? hist_value : logf(1.0f + hist_value));
   }
   cairo_line_to(cr, (255.f - zoom_offset_x), -zoom_offset_y * zoom_factor);
   cairo_close_path(cr);

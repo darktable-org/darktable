@@ -619,7 +619,7 @@ static inline float vec3scalar(const float *const v1, const float *const v2)
 static inline int vec3isnull(const float *const v)
 {
   const float eps = 1e-10f;
-  return (fabs(v[0]) < eps && fabs(v[1]) < eps && fabs(v[2]) < eps);
+  return (fabsf(v[0]) < eps && fabsf(v[1]) < eps && fabsf(v[2]) < eps);
 }
 
 #ifdef ASHIFT_DEBUG
@@ -1469,10 +1469,10 @@ static int line_detect(float *in, const int width, const int height, const int x
       // check for lines running along image borders and skip them.
       // these would likely be false-positives which could result
       // from any kind of processing artifacts
-      if((fabs(x1 - x2) < 1 && fmax(x1, x2) < 2) ||
-         (fabs(x1 - x2) < 1 && fmin(x1, x2) > width - 3) ||
-         (fabs(y1 - y2) < 1 && fmax(y1, y2) < 2) ||
-         (fabs(y1 - y2) < 1 && fmin(y1, y2) > height - 3))
+      if((fabsf(x1 - x2) < 1 && fmaxf(x1, x2) < 2) ||
+         (fabsf(x1 - x2) < 1 && fminf(x1, x2) > width - 3) ||
+         (fabsf(y1 - y2) < 1 && fmaxf(y1, y2) < 2) ||
+         (fabsf(y1 - y2) < 1 && fminf(y1, y2) > height - 3))
         continue;
 
       // line position in absolute coordinates
@@ -1512,8 +1512,8 @@ static int line_detect(float *in, const int width, const int height, const int x
 
 
       const float angle = atan2f(py2 - py1, px2 - px1) / M_PI * 180.0f;
-      const int vertical = fabs(fabs(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
-      const int horizontal = fabs(fabs(fabs(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
+      const int vertical = fabsf(fabsf(angle) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
+      const int horizontal = fabsf(fabsf(fabsf(angle) - 90.0f) - 90.0f) < MAX_TANGENTIAL_DEVIATION ? 1 : 0;
 
       const int relevant = ashift_lines[lct].length > MIN_LINE_LENGTH ? 1 : 0;
 
@@ -1764,7 +1764,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
     // a) L1 and L2 are identical -> V is NULL -> no valid vantage point
     // b) vantage point lies inside image frame (no chance to correct for this case)
     if(vec3isnull(V) ||
-       (fabs(V[2]) > 0.0f &&
+       (fabsf(V[2]) > 0.0f &&
         V[0]/V[2] >= xmin &&
         V[1]/V[2] >= ymin &&
         V[0]/V[2] <= xmax &&
@@ -1796,7 +1796,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
         // of the "distance" between point and line. Note that this is not the real euclidean
         // distance but - with the given normalization - just a pragmatically selected number
         // that goes to zero if V lies on L and increases the more V and L are apart
-        const float d = fabs(vec3scalar(V, L3));
+        const float d = fabsf(vec3scalar(V, L3));
 
         // depending on d we either include or exclude the point from the set
         inout[n] = (d < epsilon) ? 1 : 0;
