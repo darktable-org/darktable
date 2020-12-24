@@ -671,42 +671,49 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>ignore JPEG images when importing film rolls</shortdescription>
     <longdescription>when having raw+JPEG images together in one directory it makes no sense to import both. with this flag one can ignore all JPEGs found.</longdescription>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
+    <name>ui_last/import_apply_metadata</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>apply metadata on import</shortdescription>
+    <longdescription>apply some metadata to all newly imported images.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/import_recursive</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>recursive directory traversal when importing filmrolls</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_creator</name>
     <type>string</type>
     <default/>
     <shortdescription>creator to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_publisher</name>
     <type>string</type>
     <default/>
     <shortdescription>publisher to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_rights</name>
     <type>string</type>
     <default/>
     <shortdescription>rights to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_tags</name>
     <type>string</type>
     <default/>
@@ -720,7 +727,7 @@
     <shortdescription>last opened directory.</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_initial_rating</name>
     <type min="0" max="5">int</type>
     <default>1</default>
@@ -1546,7 +1553,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>always show thumbnail overlays</shortdescription>
-    <longdescription>show overlays (rating stars, "edited" mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
+    <longdescription>show overlays (rating stars, 'edited' mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/single_module</name>

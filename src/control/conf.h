@@ -44,6 +44,8 @@ typedef struct dt_confgen_value_t
   char *min;
   char *max;
   char *enum_values;
+  char *shortdesc;
+  char *longdesc;
 } dt_confgen_value_t;
 
 typedef struct dt_conf_t
@@ -106,6 +108,9 @@ int64_t dt_confgen_get_int64(const char *name, dt_confgen_value_kind_t kind);
 gboolean dt_confgen_get_bool(const char *name, dt_confgen_value_kind_t kind);
 float dt_confgen_get_float(const char *name, dt_confgen_value_kind_t kind);
 const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind);
+
+const char *dt_confgen_get_label(const char *name);
+const char *dt_confgen_get_tooltip(const char *name);
 
 gboolean dt_conf_is_default(const char *name);
 
