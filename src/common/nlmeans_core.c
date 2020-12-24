@@ -123,7 +123,7 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
     n_patches = (n_patches + 1) / 2;
   *num_patches = n_patches ;
   // allocate a cacheline-aligned buffer
-  struct patch_t* patches = dt_alloc_align(64,n_patches*sizeof(struct patch_t));
+  struct patch_t* patches = dt_alloc_align(64, sizeof(struct patch_t) * n_patches);
   // set up the patch offsets
   int patch_num = 0;
   int shift = 0;
@@ -406,7 +406,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
 #endif /* CACHE_PIXDIFFS */
   const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
   const int numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
+  float *scratch_buf = dt_alloc_align_float((size_t)numthreads * padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
@@ -632,7 +632,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
 #endif /* CACHE_PIXDIFFS_SSE */
   const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
   const int numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
+  float *scratch_buf = dt_alloc_align_float((size_t)numthreads * padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP

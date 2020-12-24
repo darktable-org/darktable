@@ -572,7 +572,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
     }
   }
 
-  float *border_init = dt_alloc_align(64, (size_t)6 * nb * sizeof(float));
+  float *border_init = dt_alloc_align_float((size_t)6 * nb);
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
 
@@ -2238,7 +2238,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
-  *buffer = dt_alloc_align(64, bufsize * sizeof(float));
+  *buffer = dt_alloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);
@@ -2753,14 +2753,14 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if(path_in_roi)
   {
     // second copy of path which we can modify when cropping to roi
-    float *cpoints = dt_alloc_align(64, 2 * points_count * sizeof(float));
+    float *cpoints = dt_alloc_align_float((size_t)2 * points_count);
     if(cpoints == NULL)
     {
       dt_free_align(points);
       dt_free_align(border);
       return 0;
     }
-    memcpy(cpoints, points, 2 * points_count * sizeof(float));
+    memcpy(cpoints, points, (size_t)2 * points_count * sizeof(float));
 
     // now we clip cpoints to roi -> catch special case when roi lies completely within path.
     // dirty trick: we allow path to extend one pixel beyond height-1. this avoids need of special handling

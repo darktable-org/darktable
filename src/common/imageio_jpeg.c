@@ -173,7 +173,7 @@ static int decompress_jsc(dt_imageio_jpeg_t *jpg, uint8_t *out)
 static int decompress_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)dt_alloc_align(64, jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, (size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -613,7 +613,7 @@ static int read_jsc(dt_imageio_jpeg_t *jpg, uint8_t *out)
 static int read_plain(dt_imageio_jpeg_t *jpg, uint8_t *out)
 {
   JSAMPROW row_pointer[1];
-  row_pointer[0] = (uint8_t *)dt_alloc_align(64, jpg->dinfo.output_width * jpg->dinfo.num_components);
+  row_pointer[0] = (uint8_t *)dt_alloc_align(64, (size_t)jpg->dinfo.output_width * jpg->dinfo.num_components);
   uint8_t *tmp = out;
   while(jpg->dinfo.output_scanline < jpg->dinfo.image_height)
   {
@@ -737,7 +737,7 @@ dt_imageio_retval_t dt_imageio_open_jpeg(dt_image_t *img, const char *filename, 
   img->width = jpg.width;
   img->height = jpg.height;
 
-  uint8_t *tmp = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * jpg.width * jpg.height * 4);
+  uint8_t *tmp = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * 4 * jpg.width * jpg.height);
   if(dt_imageio_jpeg_read(&jpg, tmp))
   {
     dt_free_align(tmp);

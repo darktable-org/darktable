@@ -165,7 +165,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = 4;
   assert(piece->colors == ch);
 
-  float *const img_tmp = dt_alloc_align(64, sizeof(float) * ch * roi_out->width * roi_out->height);
+  float *const img_tmp = dt_alloc_align_float((size_t) ch * roi_out->width * roi_out->height);
   if(img_tmp == NULL)
   {
     fprintf(stderr, "[overexposed process] can't alloc temp image\n");

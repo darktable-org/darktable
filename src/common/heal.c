@@ -180,7 +180,7 @@ static void dt_heal_laplace_loop(float *pixels, const int width, const int heigh
   int nmask = 0;
   int nmask2 = 0;
 
-  float *Adiag = dt_alloc_align(64, sizeof(float) * width * height);
+  float *Adiag = dt_alloc_align_float((size_t)width * height);
   int *Aidx = dt_alloc_align(64, sizeof(int) * 5 * width * height);
 
   if((Adiag == NULL) || (Aidx == NULL))
@@ -269,7 +269,7 @@ cleanup:
 void dt_heal(const float *const src_buffer, float *dest_buffer, const float *const mask_buffer, const int width,
              const int height, const int ch, const int use_sse)
 {
-  float *diff_buffer = dt_alloc_align(64, sizeof(float) * width * (height + 1) * ch);
+  float *diff_buffer = dt_alloc_align_float((size_t)ch * width * (height + 1));
 
   if(diff_buffer == NULL)
   {
@@ -337,7 +337,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
   float *src_buffer = NULL;
   float *dest_buffer = NULL;
 
-  src_buffer = dt_alloc_align(64, sizeof(float) * width * height * ch);
+  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
@@ -345,7 +345,7 @@ cl_int dt_heal_cl(heal_params_cl_t *p, cl_mem dev_src, cl_mem dev_dest, const fl
     goto cleanup;
   }
 
-  dest_buffer = dt_alloc_align(64, sizeof(float) * width * height * ch);
+  dest_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(dest_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
