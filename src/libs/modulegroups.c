@@ -707,7 +707,7 @@ static void _basics_show(dt_lib_module_t *self)
       new_module = FALSE; // except for the first one as we don't want top separator
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->iop_order != INT_MAX)
     {
-      // add all wanted widget from this module
+      // first, we add on-off buttons if any
       GList *l = d->basics;
       while(l)
       {
@@ -721,17 +721,31 @@ static void _basics_show(dt_lib_module_t *self)
             new_module = FALSE;
             pos++;
           }
-          else
+        }
+        l = g_list_next(l);
+      }
+
+      // and we add all other widgets
+      gchar *pre = dt_util_dstrcat(NULL, "<Darktable>/image operations/%s/", module->op);
+      GList *la = g_list_last(darktable.control->accelerator_list);
+      while(la)
+      {
+        dt_accel_t *accel = (dt_accel_t *)la->data;
+        if(accel && accel->closure && accel->closure->data && g_str_has_prefix(accel->path, pre)
+           && g_str_has_suffix(accel->path, "/dynamic") && DT_IS_BAUHAUS_WIDGET(accel->closure->data))
+        {
+          DtBauhausWidget *ww = DT_BAUHAUS_WIDGET(accel->closure->data);
+          if(ww->module == module)
           {
-            GSList *la = darktable.control->accelerator_list;
-            while(la)
+            l = d->basics;
+            while(l)
             {
-              dt_accel_t *accel = (dt_accel_t *)la->data;
-              gchar *tx = dt_util_dstrcat(NULL, "<Darktable>/image operations/%s/dynamic", item->id);
-              if(accel && accel->closure && accel->closure->data && !strcmp(accel->path, tx))
+              dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
+              if(!item->module && g_strcmp0(item->module_op, module->op) == 0
+                 && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
               {
-                DtBauhausWidget *ww = DT_BAUHAUS_WIDGET(accel->closure->data);
-                if(ww->module == module)
+                gchar *tx = dt_util_dstrcat(NULL, "<Darktable>/image operations/%s/dynamic", item->id);
+                if(!strcmp(accel->path, tx))
                 {
                   item->module = module;
                   _basics_add_widget(self, item, ww, new_module);
@@ -740,14 +754,15 @@ static void _basics_show(dt_lib_module_t *self)
                   g_free(tx);
                   break;
                 }
+                g_free(tx);
               }
-              g_free(tx);
-              la = g_slist_next(la);
+              l = g_list_next(l);
             }
           }
         }
-        l = g_list_next(l);
+        la = g_list_previous(la);
       }
+      g_free(pre);
     }
     modules = g_list_previous(modules);
   }
@@ -2230,26 +2245,26 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
               nba++;
             }
           }
-          else if(strstr(RECOMMENDED_BASICS, ws))
-          {
-            GtkMenuItem *mi;
-            gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
-            mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
-            g_free(tx);
-            gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
-            g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
-            g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-            gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba + nbr);
-            nbr++;
-          }
           else
           {
-            GtkMenuItem *mi;
-            mi = (GtkMenuItem *)gtk_menu_item_new_with_label(_("on-off"));
-            gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
-            g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
-            g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-            gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mi));
+            if(strstr(RECOMMENDED_BASICS, ws))
+            {
+              GtkMenuItem *mi;
+              gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
+              mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
+              g_free(tx);
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
+              g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
+              g_signal_connect(G_OBJECT(mi), "activate", callback, self);
+              gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba + nbr);
+              nbr++;
+            }
+            GtkMenuItem *mii;
+            mii = (GtkMenuItem *)gtk_menu_item_new_with_label(_("on-off"));
+            gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("click to add the widget"));
+            g_object_set_data(G_OBJECT(mii), "widget_id", module->op);
+            g_signal_connect(G_OBJECT(mii), "activate", callback, self);
+            gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
             nb++;
             nbo++;
           }
@@ -2257,7 +2272,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
         }
 
         // let's go throught all widgets from this module
-        GSList *la = darktable.control->accelerator_list;
+        GList *la = g_list_last(darktable.control->accelerator_list);
         while(la)
         {
           dt_accel_t *accel = (dt_accel_t *)la->data;
@@ -2284,26 +2299,26 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
                 nba++;
               }
             }
-            else if(strstr(RECOMMENDED_BASICS, ws))
-            {
-              GtkMenuItem *mi;
-              gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
-              mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
-              g_free(tx);
-              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
-              g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
-              g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-              gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba + nbr);
-              nbr++;
-            }
             else
             {
-              GtkMenuItem *mi;
-              mi = (GtkMenuItem *)gtk_menu_item_new_with_label(wn);
-              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
-              g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
-              g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-              gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mi));
+              if(strstr(RECOMMENDED_BASICS, ws))
+              {
+                GtkMenuItem *mi;
+                gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
+                mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
+                g_free(tx);
+                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
+                g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
+                g_signal_connect(G_OBJECT(mi), "activate", callback, self);
+                gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba + nbr);
+                nbr++;
+              }
+              GtkMenuItem *mii;
+              mii = (GtkMenuItem *)gtk_menu_item_new_with_label(wn);
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("click to add the widget"));
+              g_object_set_data_full(G_OBJECT(mii), "widget_id", g_strdup(wid), g_free);
+              g_signal_connect(G_OBJECT(mii), "activate", callback, self);
+              gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
               nb++;
               nbo++;
             }
@@ -2312,7 +2327,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
             g_free(ws);
           }
           g_free(pre);
-          la = g_slist_next(la);
+          la = g_list_previous(la);
         }
         // add submenu to main menu if we got any widgets
         if(nb > 0) gtk_menu_shell_append(GTK_MENU_SHELL(pop), GTK_WIDGET(smi));
