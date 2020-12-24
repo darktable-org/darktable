@@ -128,19 +128,26 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorcorrection_data_t *const d = (dt_iop_colorcorrection_data_t *)piece->data;
-  const float *const in = (float *)i;
-  float *out = (float *)o;
-  const int ch = piece->colors;
+  const float *const restrict in = (float *)i;
+  float *const restrict out = (float *)o;
+  assert(piece->colors == 4);
+  // unpack the structure so that the compiler can keep the individual elements in registers instead of dereferencing
+  // 'd' every time
+  const float saturation = d->saturation;
+  const float a_scale = d->a_scale;
+  const float a_base = d->a_base;
+  const float b_scale = d->b_scale;
+  const float b_base = d->b_base;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(roi_out, d, in, out, ch) \
-  schedule(static)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(roi_out, saturation, a_scale, a_base, b_scale, b_base, in, out) \
+  schedule(simd:static) aligned(in, out : 64)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * ch; k += ch)
+  for(size_t k = 0; k < (size_t)4 * roi_out->width * roi_out->height; k += 4)
   {
     out[k] = in[k];
-    out[k+1] = d->saturation * (in[k+1] + in[k+0] * d->a_scale + d->a_base);
-    out[k+2] = d->saturation * (in[k+2] + in[k+0] * d->b_scale + d->b_base);
+    out[k+1] = saturation * (in[k+1] + in[k+0] * a_scale + a_base);
+    out[k+2] = saturation * (in[k+2] + in[k+0] * b_scale + b_base);
     out[k+3] = in[k+3];
   }
 }
