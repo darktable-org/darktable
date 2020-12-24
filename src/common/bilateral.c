@@ -148,7 +148,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->numslices = darktable.num_openmp_threads;
   b->sliceheight = (height + b->numslices - 1) / b->numslices;
   b->slicerows = (b->size_y + b->numslices - 1) / b->numslices + 2;
-  b->buf = dt_alloc_align(64, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));
+  b->buf = dt_alloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
   if (b->buf)
   {
     memset(b->buf, 0, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));

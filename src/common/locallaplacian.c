@@ -283,7 +283,7 @@ static inline float *ll_pad_input(
   const int stride = 4;
   *wd2 = 2*max_supp + wd;
   *ht2 = 2*max_supp + ht;
-  float *const out = dt_alloc_align(64, *wd2**ht2*sizeof(*out));
+  float *const out = dt_alloc_align_float((size_t) *wd2 * *ht2);
 
   if(b && b->mode == 2)
   { // pad by preview buffer
@@ -589,12 +589,12 @@ void local_laplacian_internal(
 
   // allocate pyramid pointers for padded input
   for(int l=1;l<=last_level;l++)
-    padded[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
   for(int l=0;l<=last_level;l++)
-    output[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    output[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
 #if defined(__SSE2__)
@@ -620,7 +620,7 @@ void local_laplacian_internal(
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
-    buf[k][l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
 
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,

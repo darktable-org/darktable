@@ -2937,7 +2937,7 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   const int x_to = roi_mask_scaled->width + roi_mask_scaled->x;
   const int y_to = roi_mask_scaled->height + roi_mask_scaled->y;
 
-  mask_tmp = dt_alloc_align(64, sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height);
+  mask_tmp = dt_alloc_align_float((size_t)roi_mask_scaled->width * roi_mask_scaled->height);
   if(mask_tmp == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");
@@ -3151,7 +3151,7 @@ static void retouch_clone(float *const in, dt_iop_roi_t *const roi_in, const int
                           const int use_sse)
 {
   // alloc temp image to avoid issues when areas self-intersects
-  float *img_src = dt_alloc_align(64, sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
+  float *img_src = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_src == NULL)
   {
     fprintf(stderr, "retouch_clone: error allocating memory for cloning\n");
@@ -3179,7 +3179,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
   float *img_dest = NULL;
 
   // alloc temp image to blur
-  img_dest = dt_alloc_align(64, sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
+  img_dest = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_dest == NULL)
   {
     fprintf(stderr, "retouch_blur: error allocating memory for blurring\n");
@@ -3253,8 +3253,8 @@ static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, const int 
   float *img_dest = NULL;
 
   // alloc temp images for source and destination
-  img_src = dt_alloc_align(64, sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
-  img_dest = dt_alloc_align(64, sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
+  img_src  = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
+  img_dest = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if((img_src == NULL) || (img_dest == NULL))
   {
     fprintf(stderr, "retouch_heal: error allocating memory for healing\n");
@@ -3477,7 +3477,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
-  in_retouch = dt_alloc_align(64, sizeof(float) * ch * roi_rt->width * roi_rt->height);
+  in_retouch = dt_alloc_align_float((size_t)ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL) goto cleanup;
 
   memcpy(in_retouch, ivoid, sizeof(float) * ch * roi_rt->width * roi_rt->height);
@@ -3612,7 +3612,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   float *src_buffer = NULL;
 
-  src_buffer = dt_alloc_align(64, sizeof(float) * ch * width * height);
+  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
@@ -3651,7 +3651,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   float *src_buffer = NULL;
 
-  src_buffer = dt_alloc_align(64, sizeof(float) * ch * width * height);
+  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");

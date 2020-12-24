@@ -493,7 +493,7 @@ static void dt_box_mean_1ch(float *const buf, const int height, const int width,
                             const int iterations)
 {
   const int size = MAX(width,height);
-  float *const restrict scanlines = dt_alloc_align(64, 4 * size * sizeof(float) * dt_get_num_threads());
+  float *const restrict scanlines = dt_alloc_align_float((size_t)4 * size * dt_get_num_threads());
 
   for(int iteration = 0; iteration < iterations; iteration++)
   {
@@ -508,7 +508,7 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
                             const int iterations)
 {
   const int size = MAX(width,height);
-  float *const restrict scanlines = dt_alloc_align(64, 4 * size * sizeof(float) * dt_get_num_threads());
+  float *const restrict scanlines = dt_alloc_align_float((size_t)4 * size * dt_get_num_threads());
 
   for(int iteration = 0; iteration < iterations; iteration++)
   {
@@ -536,7 +536,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
 {
   const int size = MAX(width,height);
 
-  __m128 *const scanline_buf = dt_alloc_align(64, size * dt_get_num_threads() * 4 * sizeof(__m128));
+  __m128 *const scanline_buf = dt_alloc_align(64, sizeof(__m128) * 4 * size * dt_get_num_threads());
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {

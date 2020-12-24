@@ -252,7 +252,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   // we create a new buffer
   const int wt = piece->iwidth;
   const int ht = piece->iheight;
-  float *buf = dt_alloc_align(64, (size_t)ht * wt * sizeof(float));
+  float *buf = dt_alloc_align_float((size_t)ht * wt);
 
   // we fill this buffer
   for(int yy = 0; yy < MIN(*posy, ht); yy++)
@@ -340,7 +340,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *height = b - t;
 
   // we allocate the buffer
-  *buffer = dt_alloc_align(64, sizeof(float) * (r - l) * (b - t));
+  *buffer = dt_alloc_align_float((size_t)(r - l) * (b - t));
 
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
@@ -456,7 +456,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   const int height = roi->height;
 
   // we need to allocate a temporary buffer for intermediate creation of individual shapes
-  float *bufs = dt_alloc_align(64, (size_t)width * height * sizeof(float));
+  float *bufs = dt_alloc_align_float((size_t)width * height);
   if(bufs == NULL) return 0;
 
   // empty the output buffer

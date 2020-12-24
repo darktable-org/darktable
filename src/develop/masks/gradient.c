@@ -884,9 +884,9 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   const float sinv = sinf(v);
 
   const int count = sqrtf(wd * wd + ht * ht) + 3;
-  *points = dt_alloc_align(64, 2 * count * sizeof(float));
+  *points = dt_alloc_align_float((size_t)2 * count);
   if(*points == NULL) return 0;
-  memset(*points, 0, 2 * count * sizeof(float));
+  memset(*points, 0, (size_t)2 * count * sizeof(float));
 
 
   // we set the anchor point
@@ -980,7 +980,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   if(r1 && r2 && points_count1 > 4 && points_count2 > 4)
   {
     int k = 0;
-    *points = dt_alloc_align(64, 2 * ((points_count1 - 3) + (points_count2 - 3) + 1) * sizeof(float));
+    *points = dt_alloc_align_float((size_t)2 * ((points_count1 - 3) + (points_count2 - 3) + 1));
     if(*points == NULL) goto end;
     *points_count = (points_count1 - 3) + (points_count2 - 3) + 1;
     for(int i = 3; i < points_count1; i++)
@@ -1003,7 +1003,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r1 && points_count1 > 4)
   {
     int k = 0;
-    *points = dt_alloc_align(64, 2 * ((points_count1 - 3)) * sizeof(float));
+    *points = dt_alloc_align_float((size_t)2 * ((points_count1 - 3)));
     if(*points == NULL) goto end;
     *points_count = points_count1 - 3;
     for(int i = 3; i < points_count1; i++)
@@ -1018,7 +1018,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r2 && points_count2 > 4)
   {
     int k = 0;
-    *points = dt_alloc_align(64, 2 * ((points_count2 - 3)) * sizeof(float));
+    *points = dt_alloc_align_float((size_t)2 * ((points_count2 - 3)));
     if(*points == NULL) goto end;
     *points_count = points_count2 - 3;
 
@@ -1103,7 +1103,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const int gw = (w + grid - 1) / grid + 1;
   const int gh = (h + grid - 1) / grid + 1;
 
-  float *points = dt_alloc_align(64, gw * gh * 2 * sizeof(float));
+  float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1156,7 +1156,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
   const int lutmax = ceilf(4 * compression * ihwscale);
   const int lutsize = 2 * lutmax + 2;
-  float *lut = dt_alloc_align(64, lutsize * sizeof(float));
+  float *lut = dt_alloc_align_float((size_t)lutsize);
   if(lut == NULL)
   {
     dt_free_align(points);
@@ -1212,13 +1212,13 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   dt_free_align(lut);
 
   // we allocate the buffer
-  *buffer = dt_alloc_align(64, w * h * sizeof(float));
+  *buffer = dt_alloc_align_float((size_t)w * h);
   if(*buffer == NULL)
   {
     dt_free_align(points);
     return 0;
   }
-  memset(*buffer, 0, w * h * sizeof(float));
+  memset(*buffer, 0, (size_t)w * h * sizeof(float));
 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
@@ -1274,7 +1274,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const int gw = (w + grid - 1) / grid + 1;
   const int gh = (h + grid - 1) / grid + 1;
 
-  float *points = dt_alloc_align(64, (size_t)gw * gh * 2 * sizeof(float));
+  float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1330,7 +1330,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 
   const int lutmax = ceilf(4 * compression * ihwscale);
   const int lutsize = 2 * lutmax + 2;
-  float *lut = dt_alloc_align(64, lutsize * sizeof(float));
+  float *lut = dt_alloc_align_float((size_t)lutsize);
   if(lut == NULL)
   {
     dt_free_align(points);

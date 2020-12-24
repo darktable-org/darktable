@@ -280,7 +280,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
 
   // allocate space for blend mask
-  float *const restrict _mask = dt_alloc_align(64, buffsize * sizeof(float));
+  float *const restrict _mask = dt_alloc_align_float(buffsize);
   if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
@@ -419,7 +419,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         default:
           assert(0);
       }
-      float *const restrict mask_bak = dt_alloc_align(64, sizeof(*mask_bak) * buffsize);
+      float *const restrict mask_bak = dt_alloc_align_float(buffsize);
       if(mask_bak)
       {
         memcpy(mask_bak, mask, sizeof(*mask_bak) * buffsize);
@@ -427,7 +427,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
                                                                       : (float *const restrict)ovoid;
         if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
         {
-          float *const restrict guide_tmp = dt_alloc_align(64, sizeof(*guide_tmp) * buffsize * ch);
+          float *const restrict guide_tmp = dt_alloc_align_float(buffsize * ch);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(ch, guide_tmp, ivoid, iwidth, oheight, owidth, xoffs, yoffs)
@@ -601,7 +601,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
 
   // allocate space for blend mask
-  float *_mask = dt_alloc_align(64, buffsize * sizeof(float));
+  float *_mask = dt_alloc_align_float(buffsize);
   if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));

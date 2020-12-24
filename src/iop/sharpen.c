@@ -294,7 +294,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
   }
 
-  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
+  float *const tmp = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
@@ -304,8 +304,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int wd = 2 * rad + 1;
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
-  const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(64, mat_size);
+  const size_t mat_size = (size_t)4 * wd4;
+  float *const mat = dt_alloc_align_float(mat_size);
   memset(mat, 0, mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
@@ -488,7 +488,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     return;
   }
 
-  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
+  float *const tmp = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
@@ -498,8 +498,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int wd = 2 * rad + 1;
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
-  const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(64, mat_size);
+  const size_t mat_size = (size_t)4 * wd4;
+  float *const mat = dt_alloc_align_float(mat_size);
   memset(mat, 0, mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)

@@ -271,7 +271,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       }
 
       // process live view histogram
-      float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
+      float *const tmp_f = dt_alloc_align_float((size_t)4 * pw * ph);
       if(tmp_f)
       {
         dt_develop_t *dev = darktable.develop;
