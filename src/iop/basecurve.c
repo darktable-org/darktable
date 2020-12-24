@@ -1051,7 +1051,7 @@ static inline void gauss_blur(
 {
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
   float *tmp = dt_alloc_align_float((size_t)4 * wd * ht);
-  memset(tmp, 0, (size_t)4 * wd * ht * sizeof(float));
+  memset(tmp, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, w, wd) \
@@ -1073,7 +1073,7 @@ static inline void gauss_blur(
       for(int ii=-2;ii<=2;ii++)
         tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
   }
-  memset(output, 0, 4*wd*ht*sizeof(float));
+  memset(output, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, output, w, wd) \
@@ -1103,7 +1103,7 @@ static inline void gauss_expand(
 {
   const size_t cw = (wd-1)/2+1;
   // fill numbers in even pixels, zero odd ones
-  memset(fine, 0, 4*wd*ht*sizeof(float));
+  memset(fine, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(cw, fine, ht, input, wd) \

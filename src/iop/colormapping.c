@@ -173,7 +173,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 static void capture_histogram(const float *col, const int width, const int height, int *hist)
 {
   // build separate histogram
-  memset(hist, 0, HISTN * sizeof(int));
+  memset(hist, 0, sizeof(int) * HISTN);
   for(int k = 0; k < height; k++)
     for(int i = 0; i < width; i++)
     {
