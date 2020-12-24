@@ -587,6 +587,30 @@ const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
   return "";
 }
 
+const char *dt_confgen_get_label(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->shortdesc;
+  }
+
+  return "";
+}
+
+const char *dt_confgen_get_tooltip(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->longdesc;
+  }
+
+  return "";
+}
+
 int dt_confgen_get_int(const char *name, dt_confgen_value_kind_t kind)
 {
   if(!dt_confgen_value_exists(name, kind))

@@ -95,20 +95,7 @@ static void _metadata_presets_changed(GtkWidget *widget, dt_import_metadata_t *m
 void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
 {
   // default metadata
-  GtkWidget *apply_metadata = gtk_check_button_new_with_label(_("apply metadata on import"));
-  gtk_widget_set_tooltip_text(apply_metadata, _("apply some metadata to all newly imported images."));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(apply_metadata),
-                               dt_conf_get_bool("ui_last/import_apply_metadata"));
-  gtk_box_pack_start(GTK_BOX(metadata->box), apply_metadata, FALSE, FALSE, 0);
-  metadata->apply_metadata = apply_metadata;
-  GValue value = {
-    0,
-  };
-  g_value_init(&value, G_TYPE_INT);
-  gtk_widget_style_get_property(apply_metadata, "indicator-size", &value);
-  gtk_widget_style_get_property(apply_metadata, "indicator-spacing", &value);
-  g_value_unset(&value);
-
+  GtkWidget *apply_metadata = metadata->apply_metadata;
   GtkWidget *grid = gtk_grid_new();
   gtk_box_pack_start(GTK_BOX(metadata->box), grid, FALSE, FALSE, 0);
 
@@ -257,8 +244,6 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
 
 void dt_import_metadata_evaluate(dt_import_metadata_t *metadata)
 {
-  dt_conf_set_bool("ui_last/import_apply_metadata",
-                   gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(metadata->apply_metadata)));
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     if(metadata->metadata[i])

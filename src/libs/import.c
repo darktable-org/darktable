@@ -35,6 +35,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/import_metadata.h"
+#include "gui/preferences.h"
 #include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GPHOTO2
 #include "gui/camera_import_dialog.h"
@@ -70,8 +71,6 @@ typedef struct dt_lib_import_t
   dt_camctl_listener_t camctl_listener;
 #endif
   GtkWidget *frame;
-  GtkWidget *recursive;
-  GtkWidget *ignore_jpeg;
   GtkWidget *expander;
   GtkButton *import_file;
   GtkButton *import_directory;
@@ -356,12 +355,6 @@ static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
 }
 #endif
 
-static void _check_button_callback(GtkWidget *widget, gpointer data)
-{
-    dt_conf_set_bool("ui_last/import_ignore_jpegs",
-                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
-}
-
 static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_metadata_t *metadata,
                                                gboolean import_folder)
 {
@@ -384,28 +377,19 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
   GtkWidget *extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(opts), extra, TRUE, TRUE, DT_PIXEL_APPLY_DPI(50));
 
-  GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
-  if(import_folder == TRUE)
+  GtkWidget *grid = gtk_grid_new();
+  if(import_folder)
   {
     // recursive opening.
-    recursive = gtk_check_button_new_with_label(_("import folders recursively"));
-    gtk_widget_set_tooltip_text(recursive,
-                                _("recursively import subfolders. Each folder goes into a new film roll."));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(recursive), dt_conf_get_bool("ui_last/import_recursive"));
-    gtk_box_pack_start(GTK_BOX(main_box), recursive, FALSE, FALSE, 0);
-
+    dt_preferences_dialog_bool(grid, "ui_last/import_recursive");
     // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-    ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
-    gtk_widget_set_tooltip_text(ignore_jpeg, _("do not load files with an extension of .jpg or .jpeg. this "
-                                               "can be useful when there are raw+JPEG in a directory."));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_jpeg),
-                                 dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-    gtk_box_pack_start(GTK_BOX(main_box), ignore_jpeg, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(ignore_jpeg), "clicked",
-                   G_CALLBACK(_check_button_callback), ignore_jpeg);
+    dt_preferences_dialog_bool(grid, "ui_last/import_ignore_jpegs");
   }
-  d->recursive = recursive;
-  d->ignore_jpeg = ignore_jpeg;
+  // initial rating
+  dt_preferences_dialog_int(grid, "ui_last/import_initial_rating");
+  // apply metadata
+  metadata->apply_metadata = dt_preferences_dialog_bool(grid, "ui_last/import_apply_metadata");
+  gtk_box_pack_start(GTK_BOX(main_box), grid, FALSE, FALSE, 0);
 
   metadata->box = extra;
   dt_import_metadata_dialog_new(metadata);
@@ -420,16 +404,8 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
   return frame;
 }
 
-static void _lib_import_evaluate_extra_widget(dt_lib_import_t *d, dt_import_metadata_t *metadata,
-                                              gboolean import_folder)
+static void _lib_import_evaluate_extra_widget(dt_lib_import_t *d, dt_import_metadata_t *metadata)
 {
-  if(import_folder == TRUE)
-  {
-    dt_conf_set_bool("ui_last/import_recursive",
-                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)));
-    dt_conf_set_bool("ui_last/import_ignore_jpegs",
-                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->ignore_jpeg)));
-  }
   dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER(d->expander)));
 
   dt_import_metadata_evaluate(metadata);
@@ -610,7 +586,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_import_t
     dt_conf_set_string("ui_last/import_last_directory", folder);
     g_free(folder);
 
-    _lib_import_evaluate_extra_widget(d, &metadata, FALSE);
+    _lib_import_evaluate_extra_widget(d, &metadata);
 
     char *filename = NULL;
     dt_film_t film;
@@ -694,7 +670,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
     dt_conf_set_string("ui_last/import_last_directory", folder);
     g_free(folder);
 
-    _lib_import_evaluate_extra_widget(d, &metadata, TRUE);
+    _lib_import_evaluate_extra_widget(d, &metadata);
 
     char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
@@ -704,6 +680,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
     dt_view_filter_reset(darktable.view_manager, TRUE);
 
     /* for each selected folder add import job */
+    const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
     while(it)
     {
       filename = (char *)it->data;
@@ -711,7 +688,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
       if(!first_filename)
       {
         first_filename = g_strdup(filename);
-        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)))
+        if(recursive)
           first_filename = dt_util_dstrcat(first_filename, "%%");
       }
       g_free(filename);
