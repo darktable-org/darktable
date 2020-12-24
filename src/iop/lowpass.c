@@ -24,6 +24,7 @@
 #include "common/bilateralcl.h"
 #include "common/debug.h"
 #include "common/gaussian.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -37,13 +38,10 @@
 #include "iop/iop_api.h"
 #include <assert.h>
 #include <gtk/gtk.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <inttypes.h>
-
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 DT_MODULE_INTROSPECTION(4, dt_iop_lowpass_params_t)
 
