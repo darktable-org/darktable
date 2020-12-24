@@ -129,32 +129,4 @@
 
   </sect3>
 
-  <sect3 status="final">
-
-    <title>The sophisticated way: channel mixer module</title>
-
-    <para>
-      To perform the conversion we use the <emphasis>channel mixer</emphasis> module
-      (<xref linkend="channel_mixer"/>).
-    </para>
-
-    <orderedlist>
-
-      <listitem><para>
-        Activate the channel mixer module
-      </para></listitem>
-
-      <listitem><para>
-        Select the gray output channel
-      </para></listitem>
-
-      <listitem><para>
-        Set the proportion of each color, the sum having to equal 1 if you want to keep your
-        global lightness.
-      </para></listitem>
-
-    </orderedlist>
-
-  </sect3>
-
 </sect2>

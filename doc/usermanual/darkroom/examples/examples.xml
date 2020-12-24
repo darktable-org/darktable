@@ -9,10 +9,4 @@
 
   <xi:include href="blackandwhite.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
-  <xi:include href="crossprocessing.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-  <xi:include href="cyantone.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
-  <xi:include href="red_eyes.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
-
 </sect1>
