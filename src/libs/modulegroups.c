@@ -93,6 +93,7 @@ typedef struct dt_lib_modulegroups_basic_item_t
   gboolean sensitive;
   gchar *tooltip;
   gchar *label;
+  gboolean visible;
   int grid_x, grid_y, grid_w, grid_h;
 
 
@@ -414,10 +415,11 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 
       g_object_unref(item->widget);
     }
-    // put back sensitivity and tooltip
+    // put back sensitivity, visibility and tooltip
     if(GTK_IS_WIDGET(item->widget))
     {
       gtk_widget_set_sensitive(item->widget, item->sensitive);
+      gtk_widget_set_visible(item->widget, item->visible);
       gtk_widget_set_tooltip_text(item->widget, item->tooltip);
     }
     g_free(item->tooltip);
@@ -598,6 +600,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     item->sensitive = gtk_widget_get_sensitive(item->widget);
     item->tooltip = g_strdup(gtk_widget_get_tooltip_text(item->widget));
     item->label = g_strdup(bw->label);
+    item->visible = gtk_widget_get_visible(item->widget);
 
     // create new basic widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -640,6 +643,13 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       gtk_widget_set_sensitive(item->widget, FALSE);
       gtk_widget_set_tooltip_text(item->widget, _("This basic widget is disabled as there's multiple instances "
                                                   "for this module. You need to use the full module..."));
+    }
+    else if(!item->visible)
+    {
+      gtk_widget_show_all(item->widget);
+      gtk_widget_set_sensitive(item->widget, FALSE);
+      gtk_widget_set_tooltip_text(item->widget, _("This basic widget is disabled as it's hidden in the actual "
+                                                  "module configuration. You need to use the full module..."));
     }
     else
     {
