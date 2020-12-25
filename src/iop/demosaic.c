@@ -2159,7 +2159,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
   // COLORB TOT_WEIGHT
   // COLORPIX                   # color of center pixel
 
-  int(*const lookup)[16][32] = malloc((size_t)16 * 16 * 32 * sizeof(int));
+  int(*const lookup)[16][32] = malloc(sizeof(int) * 16 * 16 * 32);
 
   const int size = (filters == 9) ? 6 : 16;
   for(int row = 0; row < size; row++)
@@ -2614,7 +2614,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
 
       // write using MOVNTPS (write combine omitting caches)
       // _mm_stream_ps(buf, col);
-      memcpy(buf, color, 4 * sizeof(float));
+      memcpy(buf, color, sizeof(float) * 4);
       buf += 4;
       buf_in++;
     }
@@ -2706,7 +2706,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
         }
       }
       // _mm_stream_ps(buf, col);
-      memcpy(buf, color, 4 * sizeof(float));
+      memcpy(buf, color, sizeof(float) * 4);
       buf += 4;
     }
   }
@@ -3008,7 +3008,7 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   cl_int err = -999;
 
-  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dt_opencl_local_buffer_t locopt
@@ -3280,7 +3280,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     // need to reserve scaled auxiliary buffer or use dev_out
     if(scaled)
     {
-      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(dev_aux == NULL) goto error;
       width = roi_in->width;
       height = roi_in->height;
@@ -3326,7 +3326,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
         dev_in = dev_aux;
       }
 
-      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(dev_tmp == NULL) goto error;
 
       {
@@ -3671,7 +3671,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // need to reserve scaled auxiliary buffer or use dev_out
     if(scaled)
     {
-      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(dev_aux == NULL) goto error;
       width = roi_in->width;
       height = roi_in->height;
@@ -3679,7 +3679,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     else
       dev_aux = dev_out;
 
-    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto error;
 
     {
@@ -4420,7 +4420,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     }
 
     // need to get another temp buffer for the output image (may use the space of dev_drv[] freed earlier)
-    dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, 4 * sizeof(float));
+    dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, sizeof(float) * 4);
     if(dev_tmptmp == NULL) goto error;
 
     cl_mem dev_t1 = dev_tmp;
@@ -4536,7 +4536,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       if(dev_edge_in == NULL) goto error;
 
       // reserve output buffer for VNG processing of edge
-      dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
+      dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float) * 4);
       if(dev_edge_out == NULL) goto error;
 
       // copy edge to input buffer

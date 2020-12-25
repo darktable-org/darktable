@@ -650,7 +650,7 @@ void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double
 {
   cairo_set_line_width(cr, lw);
 
-  double *portions = malloc((1 + nb_steps) * sizeof(double));
+  double *portions = malloc(sizeof(double) * (1 + nb_steps));
 
   // note: cairo angles seems to be shifted by M_PI relatively to the unit circle
   angle_from = angle_from + M_PI;
