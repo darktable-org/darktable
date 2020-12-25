@@ -1305,8 +1305,26 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
         {
           setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", name);
           str = dt_conf_get_string(setting);
-          if(str != NULL && str[0] != '\0') dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE);
-          g_free(str);
+          if(str && str[0])
+          {
+            // calculated metadata
+            dt_variables_params_t *params;
+            dt_variables_params_init(&params);
+            params->filename = img->filename;
+            params->jobcode = "import";
+            params->sequence = 0;
+            params->imgid = img->id;
+            params->img = (void *)img;
+            // at this time only exif info are available
+            gchar *result = dt_variables_expand(params, str, FALSE);
+            if(result && result[0])
+            {
+              g_free(str);
+              str = result;
+            }
+            dt_metadata_set(img->id, dt_metadata_get_key(i), str, FALSE);
+            g_free(str);
+          }
           g_free(setting);
         }
       }
@@ -4018,7 +4036,7 @@ int dt_exif_xmp_write(const int imgid, const char *filename)
         fprintf(stderr, "cannot write xmp file '%s': '%s'\n", filename, strerror(errno));
         dt_control_log(_("cannot write xmp file '%s': '%s'"), filename, strerror(errno));
       }
-      
+
     }
 
     return 0;
