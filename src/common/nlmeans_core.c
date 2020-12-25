@@ -400,13 +400,13 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
   const int radius = params->patch_radius;
 #if defined(CACHE_PIXDIFFS)
-  const int scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
+  const size_t scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
 #else
-  const int scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
+  const size_t scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
 #endif /* CACHE_PIXDIFFS */
-  const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
-  const int numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align_float((size_t)numthreads * padded_scratch_size);
+  const size_t padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
+  const size_t numthreads = dt_get_num_threads() ;
+  float *scratch_buf = dt_alloc_align_float(numthreads * padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
@@ -626,12 +626,12 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
   const int radius = params->patch_radius;
 #if defined(CACHE_PIXDIFFS_SSE)
-  const int scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
+  const size_t scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
 #else
-  const int scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
+  const size_t scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
 #endif /* CACHE_PIXDIFFS_SSE */
-  const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
-  const int numthreads = dt_get_num_threads() ;
+  const size_t padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
+  const size_t numthreads = dt_get_num_threads() ;
   float *scratch_buf = dt_alloc_align_float((size_t)numthreads * padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);

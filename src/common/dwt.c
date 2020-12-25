@@ -253,7 +253,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   float *merged_layers = NULL;
   float *buffer[2] = { 0, 0 };
   int bcontinue = 1;
-  const int size = p->width * p->height * p->ch;
+  const size_t size = (size_t)p->width * p->height * p->ch;
 
   assert(p->ch == 4);
 
@@ -266,7 +266,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
   /* temporary storage */
   buffer[1] = dt_alloc_align_float(size);
   // buffer to reconstruct the image
-  layers = dt_alloc_align_float(4 * p->width * p->height);
+  layers = dt_alloc_align_float((size_t)4 * p->width * p->height);
   // scratch buffer for decomposition
   temp = dt_alloc_align_float(dt_get_num_threads() * 4 * p->width);
 

@@ -415,10 +415,11 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
 /** \brief check if file is a supported image */
 gboolean dt_supported_image(const gchar *filename);
 
-static inline int dt_get_num_threads()
+static inline size_t dt_get_num_threads()
 {
 #ifdef _OPENMP
-  return omp_get_num_procs();
+  // we can safely assume omp_get_num_procs is > 0
+  return (size_t)omp_get_num_procs();
 #else
   return 1;
 #endif

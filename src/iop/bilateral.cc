@@ -115,7 +115,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   sigma[4] = data->sigma[4];
   if(fmaxf(sigma[0], sigma[1]) < .1)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
     return;
   }
 
@@ -124,7 +124,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(rad <= 6 && ((piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
   }
   else if(rad <= 6)
   {
@@ -142,7 +142,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 
-    float *const weights_buf = (float *)malloc(weights_size * dt_get_num_threads() * sizeof(float));
+    float *const weights_buf = (float *)malloc(dt_get_num_threads() * weights_size * sizeof(float));
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
