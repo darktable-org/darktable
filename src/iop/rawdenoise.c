@@ -21,6 +21,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
+#include "common/imagebuf.h"
 #include "common/dwt.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -473,14 +474,11 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_rawdenoise_data_t *d = (dt_iop_rawdenoise_data_t *)piece->data;
-
-  const int width = roi_in->width;
-  const int height = roi_in->height;
+  const dt_iop_rawdenoise_data_t *const restrict d = (dt_iop_rawdenoise_data_t *)piece->data;
 
   if(!(d->threshold > 0.0f))
   {
-    memcpy(ovoid, ivoid, sizeof(float)*width*height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_in->width, roi_in->height, piece->colors);
   }
   else
   {

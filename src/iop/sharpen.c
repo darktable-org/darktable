@@ -22,6 +22,7 @@
 #include <xmmintrin.h>
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -282,7 +283,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   if(rad == 0)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -290,7 +291,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // avoids handling of all kinds of border cases below
   if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -476,7 +477,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   if(rad == 0)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -484,7 +485,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   // avoids handling of all kinds of border cases below
   if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
