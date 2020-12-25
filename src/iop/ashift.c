@@ -959,7 +959,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
-    memcpy(out, in, (size_t)roi_out->width * roi_out->height * sizeof(float));
+    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
     return;
   }
 
@@ -2918,7 +2918,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
-    memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * ch * sizeof(float));
+    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
     return;
   }
 

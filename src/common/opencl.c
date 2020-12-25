@@ -2680,8 +2680,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
       free(neweventtags);
       return NULL;
     }
-    memcpy(neweventlist, *eventlist, *maxevents * sizeof(cl_event));
-    memcpy(neweventtags, *eventtags, *maxevents * sizeof(dt_opencl_eventtag_t));
+    memcpy(neweventlist, *eventlist, sizeof(cl_event) * *maxevents);
+    memcpy(neweventtags, *eventtags, sizeof(dt_opencl_eventtag_t) * *maxevents);
     free(*eventlist);
     free(*eventtags);
     *eventlist = neweventlist;

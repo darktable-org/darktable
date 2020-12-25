@@ -280,7 +280,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
 
   // The processing loop should output only a few pixels, so just copy everything first
-  memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  memcpy(ovoid, ivoid, sizeof(float) * roi_out->width * roi_out->height);
 
   int fixed;
   if(piece->pipe->dsc.filters == 9u)

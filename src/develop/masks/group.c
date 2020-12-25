@@ -460,7 +460,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   if(bufs == NULL) return 0;
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  memset(buffer, 0, sizeof(float) * width * height);
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);

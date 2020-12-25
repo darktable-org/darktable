@@ -55,10 +55,10 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       float *out = (float *)buf_line;
       for(int i = 0; i < pfm->width; i++, in += 4, out += 3)
       {
-        memcpy(out, in, (size_t)3 * sizeof(float));
+        memcpy(out, in, sizeof(float) * 3);
       }
       // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
-      int cnt = fwrite(buf_line, 3 * sizeof(float), pfm->width, f);
+      int cnt = fwrite(buf_line, sizeof(float) * 3, pfm->width, f);
       if(cnt != pfm->width)
         status = 1;
       else

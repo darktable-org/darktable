@@ -1138,7 +1138,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // lead to out of bounds memory access
   if(width < 2 * max_mult || height < 2 * max_mult)
   {
-    memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+    memcpy(ovoid, ivoid, sizeof(float) * 4 * npixels);
     return;
   }
 
@@ -1639,7 +1639,7 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const int width = roi_in->width, height = roi_in->height;
   size_t npixels = (size_t)width * height;
 
-  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+  memcpy(ovoid, ivoid, sizeof(float) * 4 * npixels);
   if(((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW) || (g == NULL))
   {
     return;
@@ -1681,7 +1681,7 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   g->variance_G = var[1];
   g->variance_B = var[2];
 
-  memcpy(ovoid, ivoid, npixels * 4 * sizeof(float));
+  memcpy(ovoid, ivoid, sizeof(float) * 4 * npixels);
 }
 
 #if defined(HAVE_OPENCL) && !USE_NEW_IMPL_CL

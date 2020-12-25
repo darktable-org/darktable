@@ -185,7 +185,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
 
       /* clip histogram and redistribute clipped entries */
-      memcpy(clippedhist, hist, (BINS + 1) * sizeof(int));
+      memcpy(clippedhist, hist, sizeof(int) * (BINS + 1));
       int ce = 0, ceb = 0;
       do
       {
