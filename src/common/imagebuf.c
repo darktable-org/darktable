@@ -41,16 +41,6 @@ void dt_iop_image_copy(float *const __restrict__ out, const float *const __restr
   memcpy(out, in, nfloats * sizeof(float));
 }
 
-// Copy an image buffer, specifying its dimensions and number of channels.  Use of this function is to be
-// preferred over a bare memcpy both because it helps document the purpose of the code and because it gives us
-// a single point where we can optimize performance on different architectures.
-void dt_iop_image_copy_by_size(float *const __restrict__ out, const float *const __restrict__ in,
-                               const size_t width, const size_t height, const size_t ch)
-{
-  const size_t nfloats = ch * width * height; 
-  dt_iop_image_copy(out, in, nfloats);
-}
-
 // Copy an image buffer, specifying the regions of interest.  The output RoI may be larger than the input RoI,
 // in which case the result is optionally padded with zeros.  If the output RoI is smaller than the input RoI,
 // only a portion of the input buffer will be copied.
