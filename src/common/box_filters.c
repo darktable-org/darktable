@@ -493,7 +493,7 @@ static void dt_box_mean_1ch(float *const buf, const int height, const int width,
                             const int iterations)
 {
   const int size = MAX(width,height);
-  float *const restrict scanlines = dt_alloc_align_float((size_t)4 * size * dt_get_num_threads());
+  float *const restrict scanlines = dt_alloc_align_float(dt_get_num_threads() * size * 4);
 
   for(int iteration = 0; iteration < iterations; iteration++)
   {
@@ -508,7 +508,7 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
                             const int iterations)
 {
   const int size = MAX(width,height);
-  float *const restrict scanlines = dt_alloc_align_float((size_t)4 * size * dt_get_num_threads());
+  float *const restrict scanlines = dt_alloc_align_float(dt_get_num_threads() * size * 4);
 
   for(int iteration = 0; iteration < iterations; iteration++)
   {
@@ -536,7 +536,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
 {
   const int size = MAX(width,height);
 
-  __m128 *const scanline_buf = dt_alloc_align(64, sizeof(__m128) * 4 * size * dt_get_num_threads());
+  __m128 *const scanline_buf = dt_alloc_align(64, dt_get_num_threads() * size * sizeof(__m128) * 4);
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {
@@ -598,7 +598,7 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
   // We make use of the separable nature of the filter kernel to speed-up the computation
   // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
 
-  const size_t Ndim = 2 * 2 *MAX(width,height);
+  const size_t Ndim = MAX(width,height) * 2 * 2;
   float *const restrict temp = dt_alloc_align_float(Ndim * dt_get_num_threads());
   if (temp == NULL) return;
 
@@ -717,7 +717,7 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
 // does the calculation in-place if input and output images are identical
 static void box_max_1ch(float *const buf, const int height, const int width, const int w)
 {
-  float *const restrict scratch_buffers = dt_alloc_align_float(MAX(width,16*height) * dt_get_num_threads());
+  float *const restrict scratch_buffers = dt_alloc_align_float(dt_get_num_threads() * MAX(width,16*height));
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(w, width, height, buf)    \
@@ -842,7 +842,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
 // does the calculation in-place if input and output images are identical
 static void box_min_1ch(float *const buf, const int height, const int width, const int w)
 {
-  float *const restrict scratch_buffers = dt_alloc_align_float(MAX(width,16*height) * dt_get_num_threads());
+  float *const restrict scratch_buffers = dt_alloc_align_float(dt_get_num_threads() * MAX(width,16*height));
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(w, width, height, buf)    \

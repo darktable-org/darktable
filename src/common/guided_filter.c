@@ -234,7 +234,7 @@ static inline void box_mean_1d_9ch(int N, const float *x, float *y, size_t strid
 static void box_mean_4ch(color_image img, int w)
 {
   const size_t size = 4 * max_i(img.width, img.height);
-  float *img_bak = dt_alloc_align_float((size_t)size * dt_get_num_threads());
+  float *img_bak = dt_alloc_align_float(dt_get_num_threads() * size);
   const size_t width = 4 * img.width;
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) dt_omp_firstprivate(w, size, width, img_bak) shared(img)
@@ -316,7 +316,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
   color_image variance = new_color_image(width, height, 9);
   const size_t img_dimen = max_i(mean.width, mean.height);
   const size_t img_bak_sz = 13 * img_dimen;
-  float *img_bak = dt_alloc_align_float(img_bak_sz * dt_get_num_threads());
+  float *img_bak = dt_alloc_align_float(dt_get_num_threads() * img_bak_sz);
 #ifdef _OPENMP
 #pragma omp parallel for schedule(static) default(none) shared(img, imgg, mean, variance, img_bak) \
   dt_omp_firstprivate(img_bak_sz, img_dimen, w, guide_weight) dt_omp_sharedconst(source)

@@ -24,7 +24,7 @@
 // cutting throughput by a factor equal to the number of threads sharing a cache line (8 with a 64-byte cache
 // line and 32-bit ints)
 #define TEA_STATE_SIZE (MAX(64, 2*sizeof(unsigned int)))
-static inline unsigned int* alloc_tea_states(int numthreads)
+static inline unsigned int* alloc_tea_states(size_t numthreads)
 {
   unsigned int* states = dt_alloc_align(64, numthreads * TEA_STATE_SIZE);
   if (states) memset(states, 0, numthreads * TEA_STATE_SIZE);
