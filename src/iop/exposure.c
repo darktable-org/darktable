@@ -473,37 +473,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
 }
 
-//TODO: remove this code path, as the plain C version vectorizes to the equivalent of this code
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i,
-                  void *const o, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  const dt_iop_exposure_data_t *const d = (const dt_iop_exposure_data_t *const)piece->data;
-
-  process_common_setup(self, piece);
-
-  assert(piece->colors == 4);
-  const float *const restrict in = (float*)i;
-  float *const restrict out = (float*)o;
-  const __m128 blackv = _mm_set1_ps(d->black);
-  const __m128 scalev = _mm_set1_ps(d->scale);
-  const size_t npixels= roi_out->width *roi_out->height;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out, npixels, blackv, scalev) \
-  schedule(static)
-#endif
-  for(int k = 0; k < npixels; k++)
-  {
-    _mm_store_ps(out+4*k, (_mm_load_ps(in+4*k) - blackv) * scalev);
-  }
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, roi_out->width, roi_out->height);
-
-  for(int k = 0; k < 3; k++) piece->pipe->dsc.processed_maximum[k] *= d->scale;
-}
-#endif
-
 
 static float get_exposure_bias(const struct dt_iop_module_t *self)
 {
