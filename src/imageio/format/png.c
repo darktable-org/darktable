@@ -174,7 +174,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      char *buf = malloc(len * sizeof(char));
+      char *buf = malloc(sizeof(char) * len);
       char name[512] = { 0 };
       cmsSaveProfileToMem(out_profile, buf, &len);
       dt_colorspaces_get_profile_name(out_profile, "en", "US", name, sizeof(name));
@@ -201,7 +201,7 @@ int write_image(dt_imageio_module_data_t *p_tmp, const char *filename, const voi
    */
   png_set_filler(png_ptr, 0, PNG_FILLER_AFTER);
 
-  png_bytep *row_pointers = dt_alloc_align(64, (size_t)height * sizeof(png_bytep));
+  png_bytep *row_pointers = dt_alloc_align(64, sizeof(png_bytep) * height);
 
   if(p->bpp > 8)
   {

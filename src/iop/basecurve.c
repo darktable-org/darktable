@@ -547,20 +547,20 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
   int num_levels = num_levels_max;
 
-  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp1 == NULL) goto error;
 
-  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp2 == NULL) goto error;
 
   // allocate buffers for wavelet transform and blending
   for(int k = 0, step = 1, w = width, h = height; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    dev_col[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_col[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_col[k] == NULL) goto error;
 
-    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_comb[k] == NULL) goto error;
 
     size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
@@ -1160,8 +1160,8 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
   int num_levels = 8;
-  float **col = malloc(num_levels * sizeof(float *));
-  float **comb = malloc(num_levels * sizeof(float *));
+  float **col = malloc(sizeof(float *) * num_levels);
+  float **comb = malloc(sizeof(float *) * num_levels);
   int w = wd, h = ht;
   const int rad = MIN(wd, (int)ceilf(256 * roi_in->scale / piece->iscale));
   int step = 1;

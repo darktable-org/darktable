@@ -557,7 +557,7 @@ static void _distort_paths(const struct dt_iop_module_t *module,
 
   // create buffer with all points
 
-  float *buffer = malloc(2 * sizeof(float) * len);
+  float *buffer = malloc(sizeof(float) * 2 * len);
   float *b = buffer;
 
   for(int k = 0; k < MAX_NODES; k++)
@@ -1493,25 +1493,25 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
      case DT_INTERPOLATION_BILINEAR:
        kdesc.size = 1;
        kdesc.resolution = 1;
-       k = malloc(2 * sizeof(float));
+       k = malloc(sizeof(float) * 2);
        k[0] = 1.0f;
        k[1] = 0.0f;
        break;
      case DT_INTERPOLATION_BICUBIC:
        kdesc.size = 2;
-       k = malloc((kdesc.size * kdesc.resolution + 1) * sizeof(float));
+       k = malloc(sizeof(float) * ((size_t)kdesc.size * kdesc.resolution + 1));
        for(int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
          k[i] = bicubic(0.5f, (float) i / kdesc.resolution);
        break;
      case DT_INTERPOLATION_LANCZOS2:
        kdesc.size = 2;
-       k = malloc((kdesc.size * kdesc.resolution + 1) * sizeof(float));
+       k = malloc(sizeof(float) * ((size_t)kdesc.size * kdesc.resolution + 1));
        for(int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
          k[i] = lanczos(2, (float) i / kdesc.resolution);
        break;
      case DT_INTERPOLATION_LANCZOS3:
        kdesc.size = 3;
-       k = malloc((kdesc.size * kdesc.resolution + 1) * sizeof(float));
+       k = malloc(sizeof(float) * ((size_t)kdesc.size * kdesc.resolution + 1));
        for(int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
          k[i] = lanczos(3, (float) i / kdesc.resolution);
        break;
@@ -1793,7 +1793,7 @@ static GList *interpolate_paths(dt_iop_liquify_params_t *p)
 
     if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
     {
-      float complex *buffer = malloc(INTERPOLATION_POINTS * sizeof(float complex));
+      float complex *buffer = malloc(sizeof(float complex) * INTERPOLATION_POINTS);
       interpolate_cubic_bezier(*p1,
                                 data->node.ctrl1,
                                 data->node.ctrl2,
@@ -2345,10 +2345,10 @@ static void smooth_path_linsys(size_t n,
                                 const int *equation)
 {
   --n;
-  float *a = malloc(n * sizeof(float)); // subdiagonal
-  float *b = malloc(n * sizeof(float)); // main diagonal
-  float *c = malloc(n * sizeof(float)); // superdiagonal
-  float complex *d = malloc(n * sizeof(float complex)); // right hand side
+  float *a = malloc(sizeof(float) * n); // subdiagonal
+  float *b = malloc(sizeof(float) * n); // main diagonal
+  float *c = malloc(sizeof(float) * n); // superdiagonal
+  float complex *d = malloc(sizeof(float complex) * n); // right hand side
 
   // Build the tridiagonal matrix.
 

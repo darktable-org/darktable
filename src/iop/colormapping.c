@@ -455,12 +455,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_pthread_mutex_lock(&g->lock);
     if(g->buffer) free(g->buffer);
 
-    g->buffer = malloc((size_t)4 * width * height  * sizeof(float));
+    g->buffer = malloc(sizeof(float) * 4 * width * height);
     g->width = width;
     g->height = height;
     g->ch = 4;
 
-    if(g->buffer) memcpy(g->buffer, in, (size_t)4 * width * height * sizeof(float));
+    if(g->buffer) memcpy(g->buffer, in, sizeof(float) * 4 * width * height);
 
     dt_pthread_mutex_unlock(&g->lock);
   }
@@ -474,12 +474,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float equalization = data->equalization / 100.0f;
 
     // get mapping from input clusters to target clusters
-    int *const mapio = malloc(data->n * sizeof(int));
+    int *const mapio = malloc(sizeof(int) * data->n);
 
     get_cluster_mapping(data->n, data->target_mean, data->target_weight, data->source_mean,
                         data->source_weight, dominance, mapio);
 
-    float2 *const var_ratio = malloc(data->n * sizeof(float2));
+    float2 *const var_ratio = malloc(sizeof(float2) * data->n);
 
     for(int i = 0; i < data->n; i++)
     {
@@ -643,7 +643,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
           = (data->target_var[i][1] > 0.0f) ? data->source_var[mapio[i]][1] / data->target_var[i][1] : 0.0f;
     }
 
-    dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto error;
 
     dev_target_hist = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * HISTN, data->target_hist);

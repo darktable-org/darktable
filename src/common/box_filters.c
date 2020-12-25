@@ -536,7 +536,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
 {
   const int size = MAX(width,height);
 
-  __m128 *const scanline_buf = dt_alloc_align(64, dt_get_num_threads() * size * sizeof(__m128) * 4);
+  __m128 *const scanline_buf = dt_alloc_align(64, sizeof(__m128) * dt_get_num_threads() * size * 4);
 
   for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
   {

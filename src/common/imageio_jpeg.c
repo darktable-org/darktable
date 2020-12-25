@@ -289,7 +289,7 @@ int dt_imageio_jpeg_compress(const uint8_t *in, uint8_t *out, const int width, c
   if(quality > 90) jpg.cinfo.comp_info[0].v_samp_factor = 1;
   if(quality > 92) jpg.cinfo.comp_info[0].h_samp_factor = 1;
   jpeg_start_compress(&(jpg.cinfo), TRUE);
-  uint8_t *row = dt_alloc_align(64, (size_t)3 * width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, sizeof(uint8_t) * 3 * width);
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {
@@ -529,7 +529,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char *buf = dt_alloc_align(64, (size_t)len * sizeof(unsigned char));
+      unsigned char *buf = dt_alloc_align(64, sizeof(unsigned char) * len);
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg.cinfo), buf, len);
       dt_free_align(buf);
@@ -538,7 +538,7 @@ int dt_imageio_jpeg_write_with_icc_profile(const char *filename, const uint8_t *
 
   if(exif && exif_len > 0 && exif_len < 65534) jpeg_write_marker(&(jpg.cinfo), JPEG_APP0 + 1, exif, exif_len);
 
-  uint8_t *row = dt_alloc_align(64, (size_t)3 * width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, sizeof(uint8_t) * 3 * width);
   const uint8_t *buf;
   while(jpg.cinfo.next_scanline < jpg.cinfo.image_height)
   {

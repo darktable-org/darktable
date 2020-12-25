@@ -438,7 +438,7 @@ void init(dt_view_t *self)
     d->bunker_buf[i] = (uint8_t *)g_list_last(d->bufs)->data;
   }
   // font
-  d->letters = (cairo_pattern_t **)malloc(n_letters * sizeof(cairo_pattern_t *));
+  d->letters = (cairo_pattern_t **)malloc(sizeof(cairo_pattern_t *) * n_letters);
   for(int i = 0; i < n_letters; i++)
     d->letters[i]
         = _new_sprite(font[i], FONT_WIDTH, FONT_HEIGHT, NULL, &(d->bufs), &(d->surfaces), &(d->patterns));

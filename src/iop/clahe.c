@@ -91,7 +91,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
-  float *luminance = (float *)malloc(((size_t)roi_out->width * roi_out->height) * sizeof(float));
+  float *luminance = (float *)malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
 // double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -122,7 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float slope = data->slope;
 
   const size_t destbuf_size = roi_out->width;
-  float *const dest_buf = malloc(destbuf_size * sizeof(float) * dt_get_num_threads());
+  float *const dest_buf = malloc(sizeof(float) * dt_get_num_threads() * destbuf_size);
 
 // CLAHE
 #ifdef _OPENMP
