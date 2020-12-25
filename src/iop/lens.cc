@@ -403,7 +403,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-      void *buf = dt_alloc_align(64, bufsize * dt_get_num_threads() * sizeof(float));
+
+      // TODO: Should this be migrated to dt_alloc__perthread_float?
+      void *buf = dt_alloc_align_float(bufsize * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -507,7 +509,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t buf2size = (size_t)roi_out->width * 2 * 3;
-      void *buf2 = dt_alloc_align(64, buf2size * sizeof(float) * dt_get_num_threads());
+      void *buf2 = dt_alloc_align_float(buf2size * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -951,7 +953,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-  float *buf = (float *)dt_alloc_align(64, bufsize * sizeof(float) * dt_get_num_threads());
+  float *buf = (float *)dt_alloc_align_float(bufsize * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
