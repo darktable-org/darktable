@@ -702,7 +702,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   /* image buffers */
   buffer[0] = img;
   /* temporary storage */
-  buffer[1] = dt_opencl_alloc_device_buffer(devid, (size_t)p->width * p->height * p->ch * sizeof(float));
+  buffer[1] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
   if(buffer[1] == NULL)
   {
     printf("not enough memory for wavelet decomposition");
@@ -711,7 +711,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
   }
 
   // buffer to reconstruct the image
-  layers = dt_opencl_alloc_device_buffer(devid, (size_t)p->width * p->height * p->ch * sizeof(float));
+  layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
   if(layers == NULL)
   {
     printf("not enough memory for wavelet decomposition");
@@ -735,7 +735,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
 
   if(p->merge_from_scale > 0)
   {
-    merged_layers = dt_opencl_alloc_device_buffer(devid, (size_t)p->width * p->height * p->ch * sizeof(float));
+    merged_layers = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
     if(merged_layers == NULL)
     {
       printf("not enough memory for wavelet decomposition");
@@ -767,7 +767,7 @@ static cl_int dwt_wavelet_decompose_cl(cl_mem img, dwt_params_cl_t *const p, _dw
 
     // when (*layer_func) uses too much memory I get a -4 error, so alloc and free for each scale
     // setup a temp buffer
-    temp = dt_opencl_alloc_device_buffer(devid, (size_t)p->width * p->height * p->ch * sizeof(float));
+    temp = dt_opencl_alloc_device_buffer(devid, sizeof(float) * p->ch * p->width * p->height);
     if(temp == NULL)
     {
       printf("not enough memory for wavelet decomposition");
