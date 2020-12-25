@@ -298,7 +298,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   dt_omp_sharedconst(d, width, height) \
   shared(xy_small, xy_avg) \
   firstprivate(thresh, avg_edge_chroma) \
-  schedule(dynamic)
+  schedule(dynamic,3)
 #endif
   for(int v = 0; v < height; v++)
   {
