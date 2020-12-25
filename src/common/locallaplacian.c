@@ -777,7 +777,7 @@ size_t local_laplacian_memory_use(const int width,     // width of input image
   size_t memory_use = 0;
 
   for(int l=0;l<num_levels;l++)
-    memory_use += (size_t)(2 + num_gamma) * dl(paddwd, l) * dl(paddht, l) * sizeof(float);
+    memory_use += sizeof(float) * (2 + num_gamma) * dl(paddwd, l) * dl(paddht, l);
 
   return memory_use;
 }
@@ -790,5 +790,5 @@ size_t local_laplacian_singlebuffer_size(const int width,     // width of input 
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
-  return (size_t)dl(paddwd, 0) * dl(paddht, 0) * sizeof(float);
+  return sizeof(float) * dl(paddwd, 0) * dl(paddht, 0);
 }

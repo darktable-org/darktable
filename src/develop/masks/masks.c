@@ -1404,7 +1404,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     const int nb_points = sqlite3_column_int(stmt, 6);
-    memcpy(form->source, sqlite3_column_blob(stmt, 7), 2 * sizeof(float));
+    memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 2);
 
     // and now we "read" the blob
     if(form->type & DT_MASKS_CIRCLE)
@@ -2674,7 +2674,7 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
   pos += sizeof(int);
   memcpy(str + pos, &form->version, sizeof(int));
   pos += sizeof(int);
-  memcpy(str + pos, &form->source, 2 * sizeof(float));
+  memcpy(str + pos, &form->source, sizeof(float) * 2);
   pos += 2 * sizeof(float);
 
   GList *forms = g_list_first(form->points);
