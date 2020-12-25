@@ -17,16 +17,14 @@
 */
 
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "common/darktable.h"
+#include "common/math.h"
 #include "develop/develop.h"
 #include "gradientslider.h"
 #include "gui/gtk.h"
-
-#define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX 50
 #define DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN 10
@@ -71,7 +69,7 @@ static gboolean _gradient_slider_postponed_value_change(gpointer data)
   if(!DTGTK_GRADIENT_SLIDER(data)->is_dragging) DTGTK_GRADIENT_SLIDER(data)->timeout_handle = 0;
   else
   {
-    int delay = CLAMP_RANGE(darktable.develop->average_delay * 3 / 2,
+    int delay = CLAMP(darktable.develop->average_delay * 3 / 2,
                             DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN,
                             DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
     DTGTK_GRADIENT_SLIDER(data)->timeout_handle = g_timeout_add(delay, _gradient_slider_postponed_value_change, data);
@@ -118,7 +116,7 @@ static inline gdouble _get_position_from_screen(GtkWidget *widget, const gdouble
 {
   GtkDarktableGradientSlider *gslider = DTGTK_GRADIENT_SLIDER(widget);
   gdouble position = roundf(_screen_to_scale(widget, x) / gslider->increment) * gslider->increment;
-  return CLAMP_RANGE(position, 0., 1.);
+  return CLAMP(position, 0., 1.);
 }
 
 static inline gint _get_active_marker(GtkDarktableGradientSlider *gslider)
@@ -199,7 +197,7 @@ static gdouble _slider_move(GtkWidget *widget, gint k, gdouble value, gint direc
       const double vmin = ((k == 0) ? 0.0f : gslider->position[0]);
       const double vmax = ((k == gslider->positions - 1) ? 1.0f : gslider->position[gslider->positions - 1]);
 
-      newvalue = CLAMP_RANGE(value, vmin + ms * k, vmax - ms * (gslider->positions - 1 - k));
+      newvalue = CLAMP(value, vmin + ms * k, vmax - ms * (gslider->positions - 1 - k));
       const double rl = (newvalue - gslider->position[0]) / (gslider->position[k] - gslider->position[0]);
       const double rh = (gslider->position[gslider->positions - 1] - newvalue) /
                         (gslider->position[gslider->positions - 1] - gslider->position[k]);
@@ -312,7 +310,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
       gslider->is_changed = TRUE;
       gslider->is_dragging = TRUE;
       // timeout_handle should always be zero here, but check just in case
-      int delay = CLAMP_RANGE(darktable.develop->average_delay * 3 / 2,
+      int delay = CLAMP(darktable.develop->average_delay * 3 / 2,
                               DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MIN,
                               DTGTK_GRADIENT_SLIDER_VALUE_CHANGED_DELAY_MAX);
       if(!gslider->timeout_handle)
@@ -595,9 +593,9 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   // do we have a picker value to draw?
   if(!isnan(gslider->picker[0]))
   {
-    int vx_min = _scale_to_screen(widget, CLAMP_RANGE(gslider->picker[1], 0.0, 1.0));
-    int vx_max = _scale_to_screen(widget, CLAMP_RANGE(gslider->picker[2], 0.0, 1.0));
-    int vx_avg = _scale_to_screen(widget, CLAMP_RANGE(gslider->picker[0], 0.0, 1.0));
+    int vx_min = _scale_to_screen(widget, CLAMP(gslider->picker[1], 0.0, 1.0));
+    int vx_max = _scale_to_screen(widget, CLAMP(gslider->picker[2], 0.0, 1.0));
+    int vx_avg = _scale_to_screen(widget, CLAMP(gslider->picker[0], 0.0, 1.0));
 
     cairo_set_source_rgba(cr, color.red, color.green, color.blue, 0.33);
 
@@ -784,7 +782,7 @@ void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gsli
 {
   assert(pos <= gslider->positions);
 
-  gslider->position[pos] = CLAMP_RANGE(gslider->scale_callback((GtkWidget *)gslider, value, GRADIENT_SLIDER_SET), 0.0, 1.0);
+  gslider->position[pos] = CLAMP(gslider->scale_callback((GtkWidget *)gslider, value, GRADIENT_SLIDER_SET), 0.0, 1.0);
   gslider->selected = gslider->positions == 1 ? 0 : -1;
   if(!darktable.gui->reset) g_signal_emit_by_name(G_OBJECT(gslider), "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(gslider));
@@ -793,7 +791,7 @@ void dtgtk_gradient_slider_multivalue_set_value(GtkDarktableGradientSlider *gsli
 void dtgtk_gradient_slider_multivalue_set_values(GtkDarktableGradientSlider *gslider, gdouble *values)
 {
   for(int k = 0; k < gslider->positions; k++)
-    gslider->position[k] = CLAMP_RANGE(gslider->scale_callback((GtkWidget *)gslider, values[k], GRADIENT_SLIDER_SET), 0.0, 1.0);
+    gslider->position[k] = CLAMP(gslider->scale_callback((GtkWidget *)gslider, values[k], GRADIENT_SLIDER_SET), 0.0, 1.0);
   gslider->selected = gslider->positions == 1 ? 0 : -1;
   if(!darktable.gui->reset) g_signal_emit_by_name(G_OBJECT(gslider), "value-changed");
   gtk_widget_queue_draw(GTK_WIDGET(gslider));

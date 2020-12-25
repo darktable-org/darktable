@@ -99,9 +99,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-// try without clipping for now, usually it should be fine
-//#define CLIP(x,y,z)  if (x < y) x = y; if (x > z) x = z;
-
 // Verify before actually using this
 /*
 void tiling_callback  (dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, const dt_iop_roi_t *roi_in,

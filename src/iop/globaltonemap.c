@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -32,7 +33,6 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -41,8 +41,6 @@
 
 #define REDUCESIZE 64
 
-// NaN-safe clip: NaN compares false and will result in 0.0
-#define CLIP(x) (((x) >= 0.0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
 DT_MODULE_INTROSPECTION(3, dt_iop_global_tonemap_params_t)
 
 typedef enum _iop_operator_t

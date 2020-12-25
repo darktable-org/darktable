@@ -19,12 +19,12 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "common/darktable.h"
 #include "common/gaussian.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -49,7 +49,6 @@
 #endif
 
 
-#define CLIP(x) (((x) >= 0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
 DT_MODULE_INTROSPECTION(1, dt_iop_zonesystem_params_t)
 #define MAX_ZONE_SYSTEM_SIZE 24
 
