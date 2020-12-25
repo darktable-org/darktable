@@ -41,6 +41,9 @@ typedef struct dt_variables_params_t
   /** do we need to escape variables text for markup ? */
   gboolean escape_markup;
 
+  /** img cache already controlled */
+  void *img;
+
 } dt_variables_params_t;
 
 /** allocate and initializes a dt_variables_params_t. */

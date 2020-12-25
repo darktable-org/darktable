@@ -111,7 +111,8 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->elevation = 0.0f;
   if(params->imgid)
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+    const dt_image_t *img = params->img ? (dt_image_t *)params->img
+                                        : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
       &params->data->exif_tm.tm_mday, &params->data->exif_tm.tm_hour, &params->data->exif_tm.tm_min, &params->data->exif_tm.tm_sec) == 6)
     {
@@ -139,7 +140,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
 
     params->data->flags = img->flags;
 
-    dt_image_cache_read_release(darktable.image_cache, img);
+    if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
   }
   else if (params->data->exif_time) {
     localtime_r(&params->data->exif_time, &params->data->exif_tm);
