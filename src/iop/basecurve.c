@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/rgb_norms.h"
 #include "control/control.h"
@@ -39,7 +40,6 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 

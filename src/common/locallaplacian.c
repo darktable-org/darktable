@@ -18,13 +18,13 @@
 
 #include "common/darktable.h"
 #include "common/locallaplacian.h"
+#include "common/math.h"
 
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#include <math.h>
 #if defined(__SSE2__)
 #include <xmmintrin.h>
 #endif
