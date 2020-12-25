@@ -40,6 +40,8 @@ schedule(simd:static) aligned(in, out:64)
     out[k] = in[k];
 }
 
+// Allocate a 64-byte aligned buffer for an image of the given dimensions and channels.
+// The return value must be freed with dt_free_align().
 static inline float *__restrict__ dt_iop_image_alloc(const size_t width, const size_t height, const size_t ch)
 {
   return dt_alloc_align_float(width * height * ch);
@@ -53,8 +55,11 @@ void dt_iop_image_copy(float *const __restrict__ out, const float *const __restr
 // Copy an image buffer, specifying its dimensions and number of channels.  Use of this function is to be
 // preferred over a bare memcpy both because it helps document the purpose of the code and because it gives us
 // a single point where we can optimize performance on different architectures.
-void dt_iop_image_copy_by_size(float *const __restrict__ out, const float *const __restrict__ in,
-                               const size_t width, const size_t height, const size_t ch);
+static inline void dt_iop_image_copy_by_size(float *const __restrict__ out, const float *const __restrict__ in,
+                                             const size_t width, const size_t height, const size_t ch)
+{
+  dt_iop_image_copy(out, in, width * height * ch);
+}
 
 // Copy an image buffer, specifying the region of interest.  The output RoI may be larger than the input RoI,
 // in which case the result is optionally padded with zeros.  If the output RoI is smaller than the input RoI,
