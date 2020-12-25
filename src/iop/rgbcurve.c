@@ -108,6 +108,9 @@ typedef struct dt_iop_rgbcurve_data_t
   char filename_work[DT_IOP_COLOR_ICC_LEN];
 } dt_iop_rgbcurve_data_t;
 
+typedef float (*_curve_table_ptr)[0x10000];
+typedef float (*_coeffs_table_ptr)[3];
+
 typedef struct dt_iop_rgbcurve_global_data_t
 {
   int kernel_rgbcurve;
@@ -1761,8 +1764,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
 
-  const int ch = piece->colors;
-  dt_iop_rgbcurve_data_t *d = (dt_iop_rgbcurve_data_t *)(piece->data);
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  assert(piece->colors == 4);
+
+  dt_iop_rgbcurve_data_t *const restrict d = (dt_iop_rgbcurve_data_t *)(piece->data);
 
   _generate_curve_lut(piece->pipe, d);
 
@@ -1772,63 +1778,56 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int width = roi_out->width;
   const int height = roi_out->height;
+  const size_t npixels = (size_t)width * height;
   const int autoscale = d->params.curve_autoscale;
+  const _curve_table_ptr restrict table = d->table;
+  const _coeffs_table_ptr restrict unbounded_coeffs = d->unbounded_coeffs;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(autoscale, ch, height, ivoid, ovoid, work_profile, xm_b, \
-                      xm_g, xm_L, width) \
-  shared(d) \
+  dt_omp_firstprivate(autoscale, npixels, work_profile, xm_b, xm_g, xm_L) \
+  dt_omp_sharedconst(in, out, table, unbounded_coeffs, d) \
   schedule(static)
 #endif
-  for(int y = 0; y < height; y++)
+  for(int y = 0; y < 4*npixels; y += 4)
   {
-    float *in = ((float *)ivoid) + (size_t)y * ch * width;
-    float *out = ((float *)ovoid) + (size_t)y * ch * width;
-
-    for(int x = 0; x < width; x++, in += ch, out += ch)
+    if(autoscale == DT_S_SCALE_MANUAL_RGB)
     {
-      if(autoscale == DT_S_SCALE_MANUAL_RGB)
-      {
-        int c = 0;
-        out[c] = (in[c] < xm_L) ? d->table[DT_IOP_RGBCURVE_R][CLAMP((int)(in[c] * 0x10000ul), 0, 0xffff)]
-                                : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], in[c]);
-        c = 1;
-        out[c] = (in[c] < xm_g) ? d->table[DT_IOP_RGBCURVE_G][CLAMP((int)(in[c] * 0x10000ul), 0, 0xffff)]
-                                : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_G], in[c]);
-        c = 2;
-        out[c] = (in[c] < xm_b) ? d->table[DT_IOP_RGBCURVE_B][CLAMP((int)(in[c] * 0x10000ul), 0, 0xffff)]
-                                : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_B], in[c]);
-      }
-      else if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
-      {
-        if(d->params.preserve_colors == DT_RGB_NORM_NONE)
-        {
-          for(int c = 0; c < 3; c++)
-          {
-            out[c] = (in[c] < xm_L) ? d->table[DT_IOP_RGBCURVE_R][CLAMP((int)(in[c] * 0x10000ul), 0, 0xffff)]
-                                    : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], in[c]);
-          }
-        }
-        else
-        {
-          float ratio = 1.f;
-          const float lum = dt_rgb_norm(in, d->params.preserve_colors, work_profile);
-          if(lum > 0.f)
-          {
-            const float curve_lum = (lum < xm_L)
-                                        ? d->table[DT_IOP_RGBCURVE_R][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
-                                        : dt_iop_eval_exp(d->unbounded_coeffs[DT_IOP_RGBCURVE_R], lum);
-            ratio = curve_lum / lum;
-          }
-          for(size_t c = 0; c < 3; c++)
-          {
-            out[c] = (ratio * in[c]);
-          }
-        }
-      }
-      out[3] = in[3];
+      out[y+0] = (in[y+0] < xm_L) ? table[DT_IOP_RGBCURVE_R][CLAMP((int)(in[y+0] * 0x10000ul), 0, 0xffff)]
+                                  : dt_iop_eval_exp(unbounded_coeffs[DT_IOP_RGBCURVE_R], in[y+0]);
+      out[y+1] = (in[y+1] < xm_g) ? table[DT_IOP_RGBCURVE_G][CLAMP((int)(in[y+1] * 0x10000ul), 0, 0xffff)]
+                                  : dt_iop_eval_exp(unbounded_coeffs[DT_IOP_RGBCURVE_G], in[y+1]);
+      out[y+2] = (in[y+2] < xm_b) ? table[DT_IOP_RGBCURVE_B][CLAMP((int)(in[y+2] * 0x10000ul), 0, 0xffff)]
+                                  : dt_iop_eval_exp(unbounded_coeffs[DT_IOP_RGBCURVE_B], in[y+2]);
     }
+    else if(autoscale == DT_S_SCALE_AUTOMATIC_RGB)
+    {
+      if(d->params.preserve_colors == DT_RGB_NORM_NONE)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          out[y+c] = (in[y+c] < xm_L) ? table[DT_IOP_RGBCURVE_R][CLAMP((int)(in[y+c] * 0x10000ul), 0, 0xffff)]
+            : dt_iop_eval_exp(unbounded_coeffs[DT_IOP_RGBCURVE_R], in[y+c]);
+        }
+      }
+      else
+      {
+        float ratio = 1.f;
+        const float lum = dt_rgb_norm(in + 4*y, d->params.preserve_colors, work_profile);
+        if(lum > 0.f)
+        {
+          const float curve_lum = (lum < xm_L)
+            ? table[DT_IOP_RGBCURVE_R][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
+            : dt_iop_eval_exp(unbounded_coeffs[DT_IOP_RGBCURVE_R], lum);
+          ratio = curve_lum / lum;
+        }
+        for(size_t c = 0; c < 3; c++)
+        {
+          out[y+c] = (ratio * in[y+c]);
+        }
+      }
+    }
+    out[y+3] = in[y+3];
   }
 }
 
