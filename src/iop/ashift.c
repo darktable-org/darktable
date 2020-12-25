@@ -23,6 +23,7 @@
 #include "common/bilateral.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "common/interpolation.h"
 #include "common/math.h"
 #include "common/opencl.h"
@@ -959,7 +960,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
-    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
     return;
   }
 
@@ -1575,7 +1576,7 @@ static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhanc
     // create a temporary buffer to hold image data
     buffer = malloc(sizeof(float) * 4 * (size_t)width * height);
     if(buffer != NULL)
-      memcpy(buffer, g->buf, sizeof(float) * 4 * width * height);
+      dt_iop_image_copy_by_size(buffer, g->buf, width, height, 4);
   }
   dt_pthread_mutex_unlock(&g->lock);
 
@@ -2902,7 +2903,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
-      memcpy(g->buf, ivoid, sizeof(float) * ch * width * height);
+      dt_iop_image_copy_by_size(g->buf, ivoid, width, height, ch);
 
       g->buf_width = width;
       g->buf_height = height;
@@ -2918,7 +2919,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
