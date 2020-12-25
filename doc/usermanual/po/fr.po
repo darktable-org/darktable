@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-12-24 14:47+0100\n"
-"PO-Revision-Date: 2020-12-24 17:55+0100\n"
+"PO-Revision-Date: 2020-12-25 22:28+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -24631,7 +24631,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21221(para)
 msgid "Set here all your import options."
-msgstr ""
+msgstr "Définissez ici toutes vos options d'importation."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21229(bridgehead)
 msgid "ignore JPEG images when importing film rolls"
@@ -24698,8 +24698,7 @@ msgstr ""
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21264(bridgehead)
 msgid "comma separated tags to be applied when importing"
 msgstr ""
-"liste de mots-clés (séparés par une virgule) à appliquer lors de "
-"l’importation"
+"liste de mots-clés séparés par des virgules à appliquer lors de l’importation"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21266(para)
 msgid ""
@@ -25069,23 +25068,25 @@ msgstr ""
 "commençant par la droite (1 par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21552(bridgehead)
-#, fuzzy
 msgid "sort film rolls by"
-msgstr "pellicules"
+msgstr "trier les pellicules par"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21554(para)
 msgid "Set the collection list order for film rolls."
-msgstr ""
+msgstr "Définissez l'ordre de la liste des collections de pellicules."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21558(bridgehead)
 msgid "sort collection recent to older"
-msgstr ""
+msgstr "trier les collections de la plus récente à la plus ancienne."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21560(para)
 msgid ""
 "Changes the default collections list for folders, times and dates to run "
 "from recent to older."
 msgstr ""
+"Modifie l'ordre par défaut de la liste des collections fondé sur l'ordre des "
+"dossiers (dates et heures) et les trier de la plus récente à la plus "
+"ancienne."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21564(bridgehead)
 msgid "high quality thumb processing from size"
@@ -25103,7 +25104,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21571(bridgehead)
 msgid "delimiters for sizes categories"
-msgstr ""
+msgstr "séparateurs de catégorie des tailles"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21573(para)
 msgid ""
@@ -25111,16 +25112,21 @@ msgid ""
 "values depending of the size of the thumbnail. Set here thumbnails sizes "
 "delimiters, separated by \"|\""
 msgstr ""
+"Les catégories de tailles sont utilisées pour pouvoir définir différentes "
+"superpositions et valeurs css en fonction de la taille de la miniature. "
+"Définissez ici des délimiteurs de tailles de miniatures, séparés par \"|\""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21577(para)
 msgid ""
 "For example, \"120|400\" means 3 categories of thumbnails : 0px-&gt;120px, "
 "120px-&gt;400px and &gt;400px"
 msgstr ""
+"Par exemple, \"120 | 400\" signifie trois catégories de miniatures : 0 px à "
+"120 px, 120 px à 400 px et strictement supérieur à 400 px."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21582(bridgehead)
 msgid "pattern for the thumbnail extended overlay text"
-msgstr ""
+msgstr "patron pour les surimpressions des miniatures"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21584(para)
 msgid ""
@@ -25134,7 +25140,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21589(bridgehead)
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr ""
+msgstr "patron pour les infobulles des miniatures (vide pour désactiver)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21591(para)
 msgid ""
@@ -25143,6 +25149,11 @@ msgid ""
 "as placeholders. See <xref linkend=\"darktable_variables\"/> for an "
 "exhaustive list of available variables."
 msgstr ""
+"Définissez le modèle de l'infobulle des miniatures. Videz-le pour désactiver "
+"l'infobulle des miniatures. Comme pour le modèle précédent, plusieurs "
+"variables prédéfinies peuvent être utilisées. Voir <xref linkend="
+"\"darktable_variables\"/> pour une liste exhaustive des variables "
+"disponibles."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21597(bridgehead)
 msgid "use single-click in the collect panel"
@@ -25208,17 +25219,15 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21628(bridgehead)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21722(bridgehead)
-#, fuzzy
 msgid "show scrollbars for central view"
 msgstr "afficher les barres de défilement pour la vue centrale"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21630(para)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21724(para)
-#, fuzzy
 msgid "Defines whether scrollbars should be display in central view."
 msgstr ""
-"Définit dans quels modes les barres de défilement doivent être affichées "
-"(table lumineuse par défaut)."
+"Définit si les barres de défilement doivent être affichées dans la vue "
+"centrale."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21642(bridgehead)
 msgid "pen pressure control for brush masks"
@@ -25273,13 +25282,16 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21668(bridgehead)
 msgid "pattern for the image infos line"
-msgstr "motif pour la ligne d'informations de l'image"
+msgstr "format de la ligne d'informations sur l'image"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21670(para)
 msgid ""
 "Defines pattern for the image infos line in darkroom. See <xref linkend="
 "\"session_options\"/> for available values."
 msgstr ""
+"Définit le modèle de la ligne d'informations sur l'image dans la chambre "
+"noire. Voir <xref linkend=\"session_options\" /> pour les valeurs "
+"disponibles."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21675(bridgehead)
 msgid "position of the image info line"
@@ -25298,10 +25310,9 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21683(bridgehead)
 msgid "expand a single darkroom module at a time"
-msgstr "déplier un seul module de la chambre noire à la fois"
+msgstr "déplier un seul module de développement à la fois"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21685(para)
-#, fuzzy
 msgid ""
 "Controls how darkroom modules are expanded. If this option is enabled, "
 "expanding a module by <emphasis>clicking</emphasis> collapses any other "
@@ -25310,17 +25321,17 @@ msgid ""
 "option inverts the meaning of <emphasis>click</emphasis> and <emphasis>Shift"
 "+click</emphasis> (default on)."
 msgstr ""
-"Contrôle la manière dont les contrôles des modules de la chambre noire sont "
-"dépliés. Si cette option est activée, déplier un module par un "
-"<emphasis>Clic</emphasis> replie tout module actuellement déplié. Si vous "
-"désirez déplier un module sans replier les autres, vous pouvez le faire avec "
-"un <emphasis>Maj+clic</emphasis>. Désactiver cette option inverse le "
-"comportement de <emphasis>Clic</emphasis> et de <emphasis>Maj+clic</"
-"emphasis> (actif par défaut)."
+"Contrôle comment les contrôles des modules de la chambre noire sont dépliés. "
+"Si cette option est activée, déplier un module par un <emphasis>Clic</"
+"emphasis> replie tout module actuellement déplié. Si vous désirez déplier un "
+"module sans replier les autres, vous pouvez le faire avec un <emphasis>Maj"
+"+clic</emphasis>. Désactiver cette option inverse le comportement de "
+"<emphasis>Clic</emphasis> et de <emphasis>Maj+clic</emphasis> (actif par "
+"défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21693(bridgehead)
 msgid "only collapse modules in current group"
-msgstr ""
+msgstr "replier les modules du groupe actuel seulement"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21695(para)
 msgid ""
@@ -25329,6 +25340,11 @@ msgid ""
 "visible group. Disable this option to ensure that modules in non-visible "
 "groups are also collapsed (default on)."
 msgstr ""
+"Lorsque vous choisissez d'étendre un seul module de chambre noire à la fois "
+"(en utilisant la logique définie dans le paramètre précédent), ne réduit que "
+"les autres modules du groupe visible actuel. Désactivez cette option pour "
+"vous assurer que les modules des groupes non visibles sont également repliés "
+"(activé par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21701(bridgehead)
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -25391,9 +25407,8 @@ msgstr ""
 "(raisonnable)</quote> par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21737(bridgehead)
-#, fuzzy
 msgid "reduce resolution of preview image"
-msgstr "la géolocalisation de l'image"
+msgstr "réduire la résolution de la pré-visualisation"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21739(para)
 msgid ""
@@ -25403,31 +25418,40 @@ msgid ""
 "borrowed from the preview, so it may rarely be useful to return to full "
 "scale."
 msgstr ""
+"Cela réduit la résolution de la fenêtre de pré-visualisation en haut à "
+"gauche de l'écran. Par conséquent, les calculs pour redessiner cette fenêtre "
+"sont réduits à 1/4, 1/9 ou 1/16 de ceux de la fenêtre principale. Parfois, "
+"les coordonnées des poignées sont empruntées à l'aperçu, il peut donc être "
+"rarement utile de revenir à la pleine échelle."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21747(bridgehead)
-#, fuzzy
 msgid "white balance slider colors"
-msgstr "Balance des blancs"
+msgstr "contrôles colorés de la balance des blancs"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21749(para)
 msgid ""
 "Select one of the mode (<quote>effect emulation</quote> or <quote>illuminant "
 "color</quote>) for the white balance slider controls or no color at all."
 msgstr ""
+"Sélectionnez l'un des modes (<quote>sans couleur</quote>, <quote>émulation "
+"d'effet</quote> ou <quote>couleur de l'illuminant</quote>) pour les "
+"contrôles du curseur de balance des blancs."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21755(bridgehead)
 msgid "colorbalance slider block layout"
-msgstr ""
+msgstr "disposition des contrôles du module balance des couleurs"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21757(para)
 msgid ""
 "One of the layout for the colorbalance controls. A vertical list, a "
 "tabulated or columned view."
 msgstr ""
+"Une des dispositions pour les contrôles de balance des couleurs. Une liste "
+"verticale, une vue tabulée ou en colonnes."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21762(bridgehead)
 msgid "show right-side buttons in darkroom module headers"
-msgstr ""
+msgstr "affichage des boutons sur la droite des modules de développement"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21764(para)
 msgid ""
@@ -25442,27 +25466,33 @@ msgid ""
 "<quote>smooth</quote> (gradually dim), <quote>glide</quote> (dim individual "
 "buttons)"
 msgstr ""
+"Choisissez d'afficher ou non les trois boutons sur le côté droit des en-"
+"têtes de module. Les boutons multi-instance, réinitialisation et "
+"préréglages, apparaîtront toujours lorsque la souris est sur le module lui-"
+"même. À d'autres moments, ils peuvent être cachés dans diverses situations ; "
+"en particulier lorsqu'une largeur de panneau étroite rendrait le nom du "
+"module difficile à lire. Indépendamment de la largeur du panneau ou de la "
+"longueur du nom ; <quote>toujours</quote> (afficher), <quote>actif</quote> "
+"(masquer), <quote>atténué</quote> (afficher en grisé). Panneau étroit : "
+"<quote>auto</quote>, <quote>estompé</quote> (afficher en dégradé de gris). "
+"Long nom : <quote>ajusté</quote>, <quote>doux</quote> (graduellement "
+"atténué), <quote>glisser</quote> (atténuer les boutons individuels)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21783(title)
-#, fuzzy
 msgid "Other views"
-msgstr "Présentation générale"
+msgstr "Autres vues"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21787(secondary)
-#, fuzzy
 msgid "other views"
-msgstr "présentation générale"
+msgstr "autres vues"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21790(para)
-#, fuzzy
 msgid "These options control the other views: map and slideshow."
-msgstr ""
-"Ces options contrôlent une partie du fonctionnement interne de darktable."
+msgstr "Ces options contrôlent les autres vues : carte et diaporama."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21796(title)
-#, fuzzy
 msgid "map/geolocalisation"
-msgstr "Carte / géolocalisation"
+msgstr "carte / géolocalisation"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21798(bridgehead)
 msgid "only draw images on map that are currently collected and filtered"
@@ -25507,7 +25537,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21826(bridgehead)
 msgid "waiting time before each picture in slideshow"
-msgstr "temps d'attente entre les images dans le diaporama"
+msgstr "temporisation entre chaque image du diaporama"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21828(para)
 msgid "The number of seconds before displaying the next image (default 5)."
@@ -25532,20 +25562,16 @@ msgstr ""
 "défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21848(title)
-#, fuzzy
 msgid "Processing"
-msgstr "Processus"
+msgstr "Traitement"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21852(secondary)
-#, fuzzy
 msgid "processing"
-msgstr "processus"
+msgstr "traitement"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21855(para)
-#, fuzzy
 msgid "These options control some of the internals processing of darktable."
-msgstr ""
-"Ces options contrôlent une partie du fonctionnement interne de darktable."
+msgstr "Ces options contrôlent certains des traitements internes de darktable."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21859(bridgehead)
 msgid "always use LittleCMS 2 to apply output color profile"
@@ -25590,19 +25616,18 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21880(bridgehead)
 msgid "3D lut root folder"
-msgstr "dossier racine de 3D lut"
+msgstr "répertoire 3D lut racine"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21882(para)
-#, fuzzy
 msgid ""
 "Set folder that contains Lut files used by lut 3D module. (need a restart)"
 msgstr ""
-"Ce dossier (et ses sous-dossiers) contient les fichiers Lut utilisés par les "
-"modules lut3d. (nécessite un redémarrage)"
+"Définissez le répertoire qui contient les fichiers lut utilisés par le "
+"module lut 3d. (nécessite un redémarrage)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21886(bridgehead)
 msgid "auto-apply pixel workflow defaults"
-msgstr ""
+msgstr "flux de travail par défaut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21892(para)
 msgid ""
@@ -25616,12 +25641,26 @@ msgid ""
 "through the tone mapping, in order to preserve hues as much as possible and "
 "to avoid gamut overruns."
 msgstr ""
+"Le <emphasis>flux de travail relatif à la scène</emphasis> est basé sur des "
+"modules linéaires et appliquera automatiquement les modules filmic et "
+"exposition. Ce flux de travail consiste à ajouter, par défaut, +0,5 EV "
+"d'exposition (dans le module exposition), pour ajuster la luminosité globale "
+"et le gris moyen à une valeur similaire à celle utilisée par la plupart des "
+"JPEG produits par les appareils photo reflex. L'intérêt du module filmic est "
+"d'appliquer une courbe de tone mapping en fin de pipeline graphique, "
+"permettant une retouche physiquement réaliste des valeurs RVB encodées "
+"linéairement auparavant, mais aussi de gérer la cohérence des couleurs grâce "
+"au tone mapping, afin de préserver au maximum les teintes et pour éviter les "
+"dépassements de gamut."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21900(para)
 msgid ""
 "This default +0,5 EV value can be overridden using an auto-apply preset if "
 "it is found the images from a particular camera are consistently too dark."
 msgstr ""
+"S'il s'avère que les images d'une caméra particulière sont systématiquement "
+"trop sombres, cette valeur par défaut de +0,5 EV peut être remplacée à "
+"l'aide d'un préréglage qui s'appliquera automatiquement ."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21905(para)
 msgid ""
@@ -25631,6 +25670,12 @@ msgid ""
 "used to protect highlights in the image or Expose To The Right (ETTR) to "
 "optimally make use of the sensor's dynamic range."
 msgstr ""
+"Le flux de travail relatif à la scène active également par défaut l'option "
+"«compenser exposition boîtier (+0.0 IL)» dans le module exposition, pour "
+"régler la luminosité globale de manière appropriée si la molette de "
+"compensation d'exposition de la caméra a été utilisée pour protéger les "
+"hautes lumières de l'image ou si l'exposition à droite (ETTR ) a été "
+"utilisée pour exploiter au mieux la plage dynamique du capteur."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21911(para)
 msgid ""
@@ -25640,18 +25685,29 @@ msgid ""
 "the beginning of the pipeline, and all editing will then be done on non-"
 "linear RGB."
 msgstr ""
+"Le <emphasis>flux de travail relatif à l'affichage</emphasis>, utilisé par "
+"défaut, est basé sur les modules de Lab et appliquera automatiquement la "
+"courbe de base et l'ordre originel du pipeline graphique (darktable 2.6 et "
+"versions antérieures). Il appliquera la transformation non linéaire au début "
+"du pipeline graphique, et toutes les modifications seront ensuite effectuées "
+"dans l'espace colorimétrique RVB non linéaire."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21888(para)
 msgid ""
 "With that setting, you can define which default workflow to work on. Two "
 "workflows are available: <placeholder-1/>"
 msgstr ""
+"Avec ce paramètre, vous pouvez définir le flux de travail par défaut. Deux "
+"flux de travail sont disponibles : <placeholder-1/>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21919(para)
 msgid ""
 "A third option is available to not use any workflow and so deactivate all "
 "automatic modules. That allow you to manage your pipeline manually."
 msgstr ""
+"Une troisième option est disponible pour n'utiliser aucun flux de travail et "
+"ainsi désactiver toute application automatique de modules. Cela vous permet "
+"de gérer votre pipeline graphique manuellement."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21924(bridgehead)
 msgid "auto-apply per camera basecurve presets"
@@ -25669,7 +25725,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21931(bridgehead)
 msgid "auto-apply sharpen"
-msgstr "application automatique du module netteté"
+msgstr "applique automatiquement de la netteté"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21933(para)
 msgid ""
@@ -25684,7 +25740,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21938(bridgehead)
 msgid "detect monochrome previews"
-msgstr ""
+msgstr "détecter les miniatures monochromes"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21940(para)
 msgid ""
@@ -25693,20 +25749,24 @@ msgid ""
 "mode|monochrome tag accordingly. As this reduces performance it is turned "
 "off by default. Turn on for better monochrome image workflow support."
 msgstr ""
+"S'il est activé, darktable analyse l'image d'aperçu disponible via les "
+"données exif pendant l'importation ou l'actualisation d'exif pour la rendre "
+"monochrome. Il définit en conséquence le mot-clé <emphasis>darktable | mode "
+"| monochrome</emphasis>. Comme cela réduit les performances, il est "
+"désactivé par défaut. Activez pour une meilleure prise en charge du flux de "
+"travail d'image monochrome."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21951(title)
 msgid "Security"
 msgstr "Sécurité"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21955(secondary)
-#, fuzzy
 msgid "security"
-msgstr "Sécurité"
+msgstr "sécurité"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21958(para)
-#, fuzzy
 msgid "These options control the most secure use of darktable."
-msgstr "Ces options contrôlent l’aspect et les réactions de darktable."
+msgstr "Ces options contrôlent l'utilisation la plus sécurisée de darktable."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21962(bridgehead)
 msgid "ask before removing images from database"
@@ -25722,7 +25782,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21968(bridgehead)
 msgid "ask before erasing images from disk"
-msgstr "demander avant de supprimer des images"
+msgstr "demander avant de supprimer des images du disque"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21970(para)
 msgid "Always ask the user before any image file is deleted (default on)."
@@ -25735,13 +25795,12 @@ msgid "ask before discarding history stack"
 msgstr "demander avant de supprimer l'historique"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21976(para)
-#, fuzzy
 msgid ""
 "Always ask the user before history stack is discarding on any image (default "
 "on)."
 msgstr ""
-"Toujours demander à l’utilisateur avant de supprimer un mot-clé d’une image "
-"(actif par défaut)."
+"Toujours demander à l’utilisateur avant de supprimer l'historique d’une "
+"image (actif par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21980(bridgehead)
 msgid "send files to trash when erasing images"
@@ -25752,7 +25811,7 @@ msgid ""
 "Instead of physically deleting images from disk put them into the system's "
 "trash bin (default on)."
 msgstr ""
-"Au lieu de supprimer physiquement les images du disque placez-les dans la "
+"Au lieu de supprimer physiquement les images du disque les place dans la "
 "poubelle du système (actif par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21987(bridgehead)
@@ -25777,7 +25836,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21999(bridgehead)
 msgid "ask before removing empty folders"
-msgstr "demander avant de supprimer les dossiers vides"
+msgstr "demander avant de supprimer les répertoires vides"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22001(para)
 msgid ""
@@ -25793,7 +25852,6 @@ msgid "ask before deleting a tag"
 msgstr "demander avant de supprimer un mot-clé"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22007(para)
-#, fuzzy
 msgid "Always ask the user before deleting a tag from an image (default on)."
 msgstr ""
 "Toujours demander à l’utilisateur avant de supprimer un mot-clé d’une image "
@@ -25804,24 +25862,21 @@ msgid "ask before deleting a style"
 msgstr "demander avant de supprimer un style"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22013(para)
-#, fuzzy
 msgid "Always ask the user before deleting a style (default on)."
 msgstr ""
 "Toujours demander à l’utilisateur avant de supprimer un style (actif par "
 "défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22017(bridgehead)
-#, fuzzy
 msgid "ask before deleting a preset"
-msgstr "demander avant de supprimer un style"
+msgstr "demander avant de supprimer un préréglage"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22019(para)
-#, fuzzy
 msgid ""
 "Always ask the user before deleting or overwritting a preset (default on)."
 msgstr ""
-"Toujours demander à l’utilisateur avant de supprimer un style (actif par "
-"défaut)."
+"Toujours demander à l’utilisateur avant de supprimer ou d'écraser un "
+"préréglage (actif par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22029(title)
 msgid "Cpu / gpu / memory"
@@ -25832,9 +25887,10 @@ msgid "cpu / gpu / memory"
 msgstr "cpu /gpu / mémoire"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22036(para)
-#, fuzzy
 msgid "These options control how darktable use your system resources."
-msgstr "Ces options contrôlent l’aspect et les réactions de darktable."
+msgstr ""
+"Ces options contrôlent comment darktable utilise les ressources de votre "
+"système."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22040(bridgehead)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23770(term)
@@ -25873,7 +25929,8 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22057(bridgehead)
 msgid "enable disk backend for full preview cache"
-msgstr "activer le disque pour le cache des prévisualisations complètes"
+msgstr ""
+"utilisation du disque pour le cache des prévisualisations complètes (100%)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22059(para)
 msgid ""
@@ -26001,33 +26058,36 @@ msgid "storage"
 msgstr "stockage"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22126(para)
-#, fuzzy
 msgid "These options control storage used by darktable."
-msgstr "Ces options contrôlent l’aspect et les réactions de darktable."
+msgstr "Ces options contrôlent le stockage utilisé par darktable."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22132(title)
 msgid "database"
-msgstr "database"
+msgstr "base de données"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22134(bridgehead)
 msgid "check for database maintenance"
-msgstr ""
+msgstr "vérifier pour la maintenance de la base de données"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22136(para)
 msgid ""
 "This option indicates when to check database fragmentation and perform "
 "maintenance."
 msgstr ""
+"Cette option indique quand il faut vérifier la fragmentation de la base de "
+"données et effectuer la maintenance."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22140(bridgehead)
 msgid "database fragmentation ratio treshold"
-msgstr ""
+msgstr "seuil de fragmentation de la base de données"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22142(para)
 msgid ""
 "Fragmentation ratio above which to ask or carry out automatically database "
 "maintenance."
 msgstr ""
+"Taux de fragmentation au-dessus duquel demander ou effectuer automatiquement "
+"la maintenance de la base de données."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22150(title)
 msgid "xmp"
@@ -26076,7 +26136,6 @@ msgid "look for updated xmp files on startup"
 msgstr "vérifie les fichiers XMP modifiés au démarrage"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22172(para)
-#, fuzzy
 msgid ""
 "Check file modification times of all XMP files on startup to find out if any "
 "got updated in the meantime by some other software. If updated XMP files are "
@@ -26088,17 +26147,16 @@ msgid ""
 "sidecar over zoomed images</quote> in <xref linkend=\"lighttable_options\"/> "
 "(default off)."
 msgstr ""
-"Vérifier au démarrage les dates de modification de tous les fichiers XMP "
-"pour déterminer ceux qui ont été modifiés dans l'intervalle par un autre "
-"logiciel. Si des fichiers XMP modifiés ont été trouvés un menu s'ouvre pour "
-"que l'utilisateur puisse décider quels fichiers XMP doivent être rechargés – "
-"en remplaçant les entrées de la base de données de darktable par les "
-"contenus du fichier XMP – et quels fichiers XMP doivent être remplacés en "
-"utilisant la base de données de darktable. Activer cette option entraîne "
-"aussi la recherche par darktable des fichiers texte liés qui ont été ajoutés "
-"après l'importation  – voyez l'option <quote>superposer le txt aux images "
-"agrandies</quote> dans <xref linkend=\"lighttable_options\"/> (désactivé par "
-"défaut)."
+"Vérifiez au démarrage les dates de modification de tous les fichiers XMP "
+"pour savoir si certains ont été mis à jour depuis la dernière session. Si de "
+"tels fichiers XMP sont trouvés, un menu s'ouvre pour que l'utilisateur "
+"décide lesquels de ces fichiers XMP sont à recharger - en remplaçant les "
+"entrées de la base de données de darktable par le contenu du fichier XMP - "
+"et lesquels de ces fichiers XMP sont à écraser par la base de données de "
+"darktable. L'activation de cette option amène également darktable à "
+"rechercher les fichiers XMP qui ont été ajoutés après l'importation - voir "
+"l'option <quote>superposer le fichier lié sur les images agrandies</quote> "
+"dans <xref linkend=\"lighttable_options\" /> (désactivé par défaut)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22191(title)
 msgid "Miscellaneous"
