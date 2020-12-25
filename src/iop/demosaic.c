@@ -22,6 +22,7 @@
 #include "common/interpolation.h"
 #include "common/opencl.h"
 #include "common/image_cache.h"
+#include "common/imagebuf.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -280,7 +281,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
 static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, const uint32_t filters,
                          const int num_passes, const float threshold)
 {
-  memcpy(out, in, sizeof(float) * roi->width * roi->height);
+  dt_iop_image_copy_by_size(out, in, roi->width, roi->height, 1);
 
   // now green:
   const int lim[5] = { 0, 1, 2, 1, 0 };
@@ -405,7 +406,7 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
   if(FC(oj + y, oi + x, filters) != 1) oi++;
   if(FC(oj + y, oi + x, filters) != 1) oj--;
 
-  memcpy(out, in, sizeof(float) * height * width);
+  dt_iop_image_copy_by_size(out, in, width, height, 1);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -455,7 +456,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
   if((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
-  memcpy(out, in, sizeof(float) * height * width);
+  dt_iop_image_copy_by_size(out, in, width, height, 1);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(g2_offset, height, in, width) \
