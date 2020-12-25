@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/colormatrices.c"
 #include "common/colorspaces.h"
@@ -1025,7 +1026,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * 4 * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
   else if(!isnan(d->cmatrix[0]))
   {
@@ -1421,7 +1422,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * 4 * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
   }
   else if(!isnan(d->cmatrix[0]))
   {
