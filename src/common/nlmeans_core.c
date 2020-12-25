@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"

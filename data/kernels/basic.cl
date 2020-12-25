@@ -759,6 +759,7 @@ interpolation_func_lanczos(float width, float t)
 float
 sinf_fast(float t)
 {
+  /***** if you change this function, you must also change the copy in src/common/math.h *****/
   const float a = 4.0f/(M_PI_F*M_PI_F);
   const float p = 0.225f;
 
