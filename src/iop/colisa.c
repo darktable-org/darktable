@@ -220,7 +220,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // sigmoidal curve for d->contrast above 1
     const float boost = 20.0f;
     const float contrastm1sq = boost * (d->contrast - 1.0f) * (d->contrast - 1.0f);
-    const float contrastscale = sqrt(1.0f + contrastm1sq);
+    const float contrastscale = sqrtf(1.0f + contrastm1sq);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(contrastm1sq, contrastscale) \

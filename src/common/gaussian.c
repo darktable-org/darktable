@@ -37,8 +37,8 @@ static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, f
                                  float *a2, float *a3, float *b1, float *b2, float *coefp, float *coefn)
 {
   const float alpha = 1.695f / sigma;
-  const float ema = exp(-alpha);
-  const float ema2 = exp(-2.0f * alpha);
+  const float ema = expf(-alpha);
+  const float ema2 = expf(-2.0f * alpha);
   *b1 = -2.0f * ema;
   *b2 = ema2;
   *a0 = 0.0f;

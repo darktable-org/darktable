@@ -365,7 +365,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float max[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
   const float min[4] = { 0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
-  const float lmax = max[0] + fabs(min[0]);
+  const float lmax = max[0] + fabsf(min[0]);
   const float halfmax = lmax / 2.0;
   const float doublemax = lmax * 2.0;
 
@@ -401,9 +401,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(-highlights) * sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      const float lref = copysignf(fabsf(la) > low_approximation ? 1.0f / fabsf(la) : 1.0f / low_approximation, la);
       const float href = copysignf(
-          fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
+          fabsf(1.0f - la) > low_approximation ? 1.0f / fabsf(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
       const float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
       const float optrans = chunk * highlights_xform;
@@ -433,9 +433,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(shadows) * sign(lmax - la) + halfmax;
       lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      const float lref = copysignf(fabsf(la) > low_approximation ? 1.0f / fabsf(la) : 1.0f / low_approximation, la);
       const float href = copysignf(
-          fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
+          fabsf(1.0f - la) > low_approximation ? 1.0f / fabsf(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
 
       const float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
