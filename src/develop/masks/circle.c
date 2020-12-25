@@ -663,7 +663,7 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
     if(cdx != 0.0 && cdy != 0.0)
     {
       cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-      float cangle = atan(cdx / cdy);
+      float cangle = atanf(cdx / cdy);
 
       if(cdy > 0)
         cangle = (M_PI / 2) - cangle;
@@ -672,18 +672,18 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
 
       // (arrowx,arrowy) is the point of intersection, we move it (factor 1.11) a bit farther than the
       // inner circle to avoid superposition.
-      const float arrowx = gpt->points[0] + 1.11 * radius * cos(cangle) + dx;
-      const float arrowy = gpt->points[1] + 1.11 * radius * sin(cangle) + dy;
+      const float arrowx = gpt->points[0] + 1.11 * radius * cosf(cangle) + dx;
+      const float arrowy = gpt->points[1] + 1.11 * radius * sinf(cangle) + dy;
 
       cairo_move_to(cr, gpt->source[0] + dxs, gpt->source[1] + dys); // source center
       cairo_line_to(cr, arrowx, arrowy);                             // dest border
       // then draw to line for the arrow itself
-      const float arrow_scale = 6.0 * pr_d;
-      cairo_move_to(cr, arrowx + arrow_scale * cos(cangle + (0.4)),
-                    arrowy + arrow_scale * sin(cangle + (0.4)));
+      const float arrow_scale = 6.0f * pr_d;
+      cairo_move_to(cr, arrowx + arrow_scale * cosf(cangle + (0.4f)),
+                    arrowy + arrow_scale * sinf(cangle + (0.4f)));
       cairo_line_to(cr, arrowx, arrowy);
-      cairo_line_to(cr, arrowx + arrow_scale * cos(cangle - (0.4)),
-                    arrowy + arrow_scale * sin(cangle - (0.4)));
+      cairo_line_to(cr, arrowx + arrow_scale * cosf(cangle - (0.4f)),
+                    arrowy + arrow_scale * sinf(cangle - (0.4f)));
 
       cairo_set_dash(cr, dashed, 0, 0);
       if((gui->group_selected == index) && (gui->form_selected || gui->form_dragging))

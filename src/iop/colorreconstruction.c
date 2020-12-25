@@ -206,7 +206,7 @@ static inline float hue_conversion(const float HSL_Hue)
   dt_XYZ_to_Lab(XYZ, Lab);
 
   // Hue from LCH color space in [-pi, +pi] interval
-  float LCH_hue = atan2(Lab[2], Lab[1]);
+  float LCH_hue = atan2f(Lab[2], Lab[1]);
 
   return LCH_hue;
 }
@@ -381,14 +381,14 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
       switch(precedence)
       {
         case COLORRECONSTRUCT_PRECEDENCE_CHROMA:
-          weight = sqrt(ain * ain + bin * bin);
+          weight = sqrtf(ain * ain + bin * bin);
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_HUE:
-          m = atan2(bin, ain) - params[0];
+          m = atan2f(bin, ain) - params[0];
           // readjust m into [-pi, +pi] interval
           m = m > M_PI ? m - 2*M_PI : (m < -M_PI ? m + 2*M_PI : m);
-          weight = exp(-m*m/params[1]);
+          weight = expf(-m*m/params[1]);
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_NONE:
