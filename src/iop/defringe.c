@@ -22,6 +22,7 @@
 #include "common/darktable.h"
 #include "common/gaussian.h"
 #include "common/imagebuf.h"
+#include "common/math.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
@@ -29,7 +30,6 @@
 #include "gui/accelerators.h"
 #include "iop/iop_api.h"
 #include <gtk/gtk.h>
-#include <math.h>
 #include <stdlib.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_defringe_params_t)
@@ -173,7 +173,6 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
   // save the fibonacci lattices in them later
   int *xy_avg = NULL;
-  int *xy_artifact = NULL;
   int *xy_small = NULL;
 
   if(roi_out->width < 2 * radius + 1 || roi_out->height < 2 * radius + 1) goto ERROR_EXIT;
@@ -256,12 +255,13 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
     xy_small[2*u+1] = dy;
   }
 
+  const float use_global_average = MODE_GLOBAL_AVERAGE == d->op_mode;
 #ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, out) \
-  dt_omp_sharedconst(d, width, height) \
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in, out, use_global_average) \
+  dt_omp_sharedconst(width, height) \
   reduction(+ : avg_edge_chroma) \
-  schedule(static)
+  schedule(simd:static)
 #endif
   for(size_t j = 0; j < height * width * 4; j += 4)
   {
@@ -274,11 +274,11 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
     // save local edge chroma in out[.. +3] , this is later compared with threshold
     out[j + 3] = edge;
     // the average chroma of the edge-layer in the roi
-    if(MODE_GLOBAL_AVERAGE == d->op_mode) avg_edge_chroma += edge;
+    avg_edge_chroma += edge * use_global_average;
   }
 
   float thresh;
-  if(MODE_GLOBAL_AVERAGE == d->op_mode)
+  if(use_global_average)
   {
     avg_edge_chroma = avg_edge_chroma / (width * height) + 10.0 * FLT_EPSILON;
     thresh = fmax(0.1f, 4.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
@@ -296,12 +296,15 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, in, out, samples_avg, samples_small) \
   dt_omp_sharedconst(d, width, height) \
-  shared(xy_small, xy_avg, xy_artifact) \
+  shared(xy_small, xy_avg) \
   firstprivate(thresh, avg_edge_chroma) \
-  schedule(guided, 32)
+  schedule(dynamic)
 #endif
   for(int v = 0; v < height; v++)
   {
+    const size_t row_above = (size_t)MAX(0, (v-1)) * width * ch;
+    const size_t curr_row = (size_t)v * width * ch;
+    const size_t row_below = (size_t)MIN((height-1), (v+1)) * width * ch;
     for(int t = 0; t < width; t++)
     {
       const size_t index = ch * ((size_t)v * width + t);
@@ -315,9 +318,9 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
         {
           const int dx = xy_avg[2*u];
           const int dy = xy_avg[2*u+1];
-          const int x = MAX(0, MIN(width - 1, t + dx));
-          const int y = MAX(0, MIN(height - 1, v + dy));
-          local_avg += out[(size_t)y * width * ch + x * ch + 3];
+          const int x = CLAMP(t + dx, 0, width - 1);
+          const int y = CLAMP(v + dy, 0, height - 1);
+          local_avg += out[((size_t)y * width + x) * ch + 3];
         }
         avg_edge_chroma = fmax(0.01f, (float)local_avg / samples_avg);
         local_thresh = fmax(0.1f, 4.0 * d->thresh * avg_edge_chroma / MAGIC_THRESHOLD_COEFF);
@@ -325,15 +328,14 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
 
       if(out[index + 3] > local_thresh
          // reduces artifacts ("region growing by 1 pixel"):
-         || out[(size_t)MAX(0, (v - 1)) * width * ch + MAX(0, (t - 1)) * ch + 3] > local_thresh
-         || out[(size_t)MAX(0, (v - 1)) * width * ch + t * ch + 3] > local_thresh
-         || out[(size_t)MAX(0, (v - 1)) * width * ch + MIN(width - 1, (t + 1)) * ch + 3] > local_thresh
-         || out[(size_t)v * width * ch + MAX(0, (t - 1)) * ch + 3] > local_thresh
-         || out[(size_t)v * width * ch + MIN(width - 1, (t + 1)) * ch + 3] > local_thresh
-         || out[(size_t)MIN(height - 1, (v + 1)) * width * ch + MAX(0, (t - 1)) * ch + 3] > local_thresh
-         || out[(size_t)MIN(height - 1, (v + 1)) * width * ch + t * ch + 3] > local_thresh
-         || out[(size_t)MIN(height - 1, (v + 1)) * width * ch + MIN(width - 1, (t + 1)) * ch + 3]
-            > local_thresh)
+         || out[row_above + MAX(0, (t - 1)) * ch + 3] > local_thresh
+         || out[row_above + t * ch + 3] > local_thresh
+         || out[row_above + MIN(width - 1, (t + 1)) * ch + 3] > local_thresh
+         || out[curr_row + MAX(0, (t - 1)) * ch + 3] > local_thresh
+         || out[curr_row + MIN(width - 1, (t + 1)) * ch + 3] > local_thresh
+         || out[row_below + MAX(0, (t - 1)) * ch + 3] > local_thresh
+         || out[row_below + t * ch + 3] > local_thresh
+         || out[row_below + MIN(width - 1, (t + 1)) * ch + 3] > local_thresh)
       {
         float atot = 0, btot = 0;
         float norm = 0;
@@ -349,8 +351,8 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
         {
           const int dx = xy_small[2*u];
           const int dy = xy_small[2*u+1];
-          const int x = MAX(0, MIN(width - 1, t + dx));
-          const int y = MAX(0, MIN(height - 1, v + dy));
+          const int x = CLAMP(t + dx, 0, width - 1);
+          const int y = CLAMP(v + dy, 0, height - 1);
           const size_t idx = ch * ((size_t)y * width + x);
           // inverse chroma weighted average of neighbouring pixels inside window
           // also taking average edge chromaticity into account (either global or local average)
@@ -372,9 +374,14 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
       }
       else
       {
-        out[index] = in[index];
-        out[index + 1] = in[index + 1];
-        out[index + 2] = in[index + 2];
+        #ifdef _OPENMP
+        #pragma omp simd aligned(in, out)
+        #endif
+        // we can't copy the alpha channel here because it contains info needed by neighboring pixels!
+        for(int c = 0; c < 3; c++)
+        {
+          out[index+c] = in[index+c];
+        }
       }
     }
   }
@@ -388,7 +395,6 @@ ERROR_EXIT:
   dt_iop_image_copy_by_size(o, i, roi_out->width, roi_out->height, ch);
 
 FINISH_PROCESS:
-  free(xy_artifact);
   free(xy_small);
   free(xy_avg);
 }
