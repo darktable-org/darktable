@@ -1813,7 +1813,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       else
       {
         float ratio = 1.f;
-        const float lum = dt_rgb_norm(in + 4*y, d->params.preserve_colors, work_profile);
+        const float lum = dt_rgb_norm(in + y, d->params.preserve_colors, work_profile);
         if(lum > 0.f)
         {
           const float curve_lum = (lum < xm_L)
