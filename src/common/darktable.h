@@ -178,10 +178,6 @@ static inline int dt_version()
 #endif
 }
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846F
-#endif
-
 // Golden number (1+sqrt(5))/2
 #ifndef PHI
 #define PHI 1.61803398874989479F
@@ -435,63 +431,6 @@ static inline int dt_get_thread_num()
 #else
   return 0;
 #endif
-}
-
-static inline float dt_log2f(const float f)
-{
-#ifdef __GLIBC__
-  return log2f(f);
-#else
-  return logf(f) / logf(2.0f);
-#endif
-}
-
-static inline float dt_fast_expf(const float x)
-{
-  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
-  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
-  const int i1 = 0x3f800000u;
-  // e^x, the comment would be 2^x
-  const int i2 = 0x402DF854u; // 0x40000000u;
-  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster):
-  const int k0 = i1 + x * (i2 - i1);
-  union {
-      float f;
-      int k;
-  } u;
-  u.k = k0 > 0 ? k0 : 0;
-  return u.f;
-}
-
-// fast approximation of 2^-x for 0<x<126
-static inline float dt_fast_mexp2f(const float x)
-{
-  const int i1 = 0x3f800000; // bit representation of 2^0
-  const int i2 = 0x3f000000; // bit representation of 2^-1
-  const int k0 = i1 + (int)(x * (i2 - i1));
-  union {
-    float f;
-    int i;
-  } k;
-  k.i = k0 >= 0x800000 ? k0 : 0;
-  return k.f;
-}
-
-// The below version is incorrect, suffering from reduced precision.
-// It is used by the non-local means code in both nlmeans.c and
-// denoiseprofile.c, and fixing it would cause a change in output.
-static inline float fast_mexp2f(const float x)
-{
-  const float i1 = (float)0x3f800000u; // 2^0
-  const float i2 = (float)0x3f000000u; // 2^-1
-  const float k0 = i1 + x * (i2 - i1);
-  union {
-    float f;
-    int i;
-  } k;
-  k.i = k0 >= (float)0x800000u ? k0 : 0;
-  return k.f;
 }
 
 static inline void dt_print_mem_usage()
