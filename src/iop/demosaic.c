@@ -539,6 +539,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   const int ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
+  //TODO: should this use dt_alloc_align_float or _perthread_float?
   char *const all_buffers = (char *)dt_alloc_align(64, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {

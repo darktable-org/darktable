@@ -580,8 +580,8 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
-  const int nthreads = dt_get_num_threads();
-  float *squared_sums = dt_alloc_align_float((size_t)3 * nthreads);
+  const size_t nthreads = dt_get_num_threads();
+  float *squared_sums = dt_alloc_align_float(nthreads * 3);
   for(int i = 0; i < 3*nthreads; i++)
     squared_sums[i] = 0.0f;
 
@@ -686,8 +686,8 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
-  const int nthreads = dt_get_num_threads();
-  __m128 *squared_sums = dt_alloc_align(64, sizeof(__m128) * nthreads);
+  const size_t nthreads = dt_get_num_threads();
+  __m128 *squared_sums = dt_alloc_align(64, nthreads * sizeof(__m128));
   for(int i = 0; i < nthreads; i++)
     squared_sums[i] = _mm_setzero_ps();
 
