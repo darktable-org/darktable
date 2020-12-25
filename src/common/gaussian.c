@@ -23,13 +23,8 @@
 #include <xmmintrin.h>
 #endif
 #include "common/gaussian.h"
+#include "common/math.h"
 #include "common/opencl.h"
-
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
-#if defined(__SSE__)
-#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
-#endif
 
 #define BLOCKSIZE (1 << 6)
 

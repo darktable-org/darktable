@@ -19,12 +19,12 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -41,9 +41,6 @@
 #endif
 
 #define MAX_RADIUS 16
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
