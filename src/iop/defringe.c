@@ -397,7 +397,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   goto FINISH_PROCESS;
 
 ERROR_EXIT:
-  memcpy(o, i, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+  memcpy(o, i, sizeof(float) * ch * roi_out->width * roi_out->height);
 
 FINISH_PROCESS:
   free(xy_artifact);

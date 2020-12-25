@@ -140,7 +140,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int k = 1; k < numl_cap; k++)
   {
     const int wd = (int)(1 + (width >> (k - 1))), ht = (int)(1 + (height >> (k - 1)));
-    tmp[k] = (float *)malloc((size_t)sizeof(float) * wd * ht);
+    tmp[k] = (float *)malloc(sizeof(float) * wd * ht);
   }
 
   for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(ovoid, tmp, level, width, height);
