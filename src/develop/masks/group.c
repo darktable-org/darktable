@@ -647,7 +647,6 @@ static int dt_group_get_mask_roi(dt_iop_module_t *const restrict module,
   // and we get all masks
   GList *fpts = g_list_first(form->points);
 
-  double start2 = dt_get_wtime();//DEBUG
   while(fpts)
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
@@ -706,7 +705,6 @@ static int dt_group_get_mask_roi(dt_iop_module_t *const restrict module,
     }
     fpts = g_list_next(fpts);
   }
-  fprintf(stderr,"***** groupmask %g msec ****\n",1000.0*(dt_get_wtime()-start2));//DEBUG
   // and we free the intermediate buffer
   dt_free_align(bufs);
 
