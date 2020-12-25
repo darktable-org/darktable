@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/imagebuf.h"
 #include "common/points.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -360,7 +361,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
       p->flag = ACQUIRE2;
     }
-    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   }
   else if(data->flag == APPLY)
   {
@@ -438,7 +439,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   }
 }
 
