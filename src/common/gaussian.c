@@ -588,9 +588,9 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   g->bheight = bheight;
 
   // get intermediate vector buffers with read-write access
-  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp1) goto error;
-  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp2) goto error;
 
   return g;

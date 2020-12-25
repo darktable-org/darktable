@@ -3125,7 +3125,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     const int bufsize = (bwidth / flocopt.sizex) * (bheight / flocopt.sizey);
 
-    dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * 2 * sizeof(float));
+    dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * bufsize);
     if(dev_m == NULL) goto error;
 
     size_t fsizes[3] = { bwidth, bheight, 1 };
@@ -3153,7 +3153,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
-    dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 2 * sizeof(float));
+    dev_r = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * reducesize);
     if(dev_r == NULL) goto error;
 
     size_t ssizes[3] = { reducesize * slocopt.sizex, 1, 1 };
@@ -3991,20 +3991,20 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     for(int n = 0; n < ndir; n++)
     {
-      dev_rgbv[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+      dev_rgbv[n] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
       if(dev_rgbv[n] == NULL) goto error;
     }
 
-    dev_gminmax = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 2 * sizeof(float));
+    dev_gminmax = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * width * height);
     if(dev_gminmax == NULL) goto error;
 
-    dev_aux = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+    dev_aux = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
     if(dev_aux == NULL) goto error;
 
     if(scaled)
     {
       // need to scale to right res
-      dev_tmp = dt_opencl_alloc_device(devid, (size_t)width, height, 4 * sizeof(float));
+      dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
       if(dev_tmp == NULL) goto error;
     }
     else
@@ -4246,7 +4246,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     // prepare derivatives buffers
     for(int n = 0; n < ndir; n++)
     {
-      dev_drv[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
+      dev_drv[n] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
       if(dev_drv[n] == NULL) goto error;
     }
 
@@ -4291,10 +4291,10 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     // reserve buffers for homogeneity maps and sum maps
     for(int n = 0; n < ndir; n++)
     {
-      dev_homo[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(unsigned char));
+      dev_homo[n] = dt_opencl_alloc_device_buffer(devid, sizeof(unsigned char) * width * height);
       if(dev_homo[n] == NULL) goto error;
 
-      dev_homosum[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(unsigned char));
+      dev_homosum[n] = dt_opencl_alloc_device_buffer(devid, sizeof(unsigned char) * width * height);
       if(dev_homosum[n] == NULL) goto error;
     }
 
