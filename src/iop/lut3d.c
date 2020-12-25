@@ -21,6 +21,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_png.h"
+#include "common/imagebuf.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
@@ -1102,7 +1103,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else  // no clut
   {
-    memcpy(obuf, ibuf, sizeof(float) * ch * width * height);
+    dt_iop_image_copy_by_size(obuf, ibuf, width, height, ch);
   }
 }
 
