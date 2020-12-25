@@ -22,11 +22,13 @@
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
 #include "common/colorspaces.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "common/points.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
+#include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
@@ -455,12 +457,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_pthread_mutex_lock(&g->lock);
     if(g->buffer) free(g->buffer);
 
-    g->buffer = malloc(sizeof(float) * 4 * width * height);
+    g->buffer = dt_iop_image_alloc(width, height, 4);
     g->width = width;
     g->height = height;
     g->ch = 4;
 
-    if(g->buffer) memcpy(g->buffer, in, sizeof(float) * 4 * width * height);
+    if(g->buffer) dt_iop_image_copy_by_size(g->buffer, in, width, height, 4);
 
     dt_pthread_mutex_unlock(&g->lock);
   }
@@ -569,7 +571,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // incomplete parameter set -> do nothing
   else
   {
-    memcpy(out, in, sizeof(float) * 4 * width * height);
+    dt_iop_image_copy_by_size(out, in, width, height, 4);
   }
 }
 
@@ -610,7 +612,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
     dt_pthread_mutex_lock(&g->lock);
-    free(g->buffer);
+    dt_free_align(g->buffer);
 
     g->buffer = malloc(sizeof(float) * ch * width * height);
     g->width = width;
@@ -964,13 +966,13 @@ static void process_clusters(gpointer instance, gpointer user_data)
   const int width = g->width;
   const int height = g->height;
   const int ch = g->ch;
-  float *buffer = malloc(sizeof(float) * ch * width * height);
+  float *const restrict buffer = dt_iop_image_alloc(width, height, ch);
   if(!buffer)
   {
     dt_pthread_mutex_unlock(&g->lock);
     return;
   }
-  memcpy(buffer, g->buffer, sizeof(float) * ch * width * height);
+  dt_iop_image_copy_by_size(buffer, g->buffer, width, height, ch);
   dt_pthread_mutex_unlock(&g->lock);
 
   if(p->flag & GET_SOURCE)
@@ -1004,7 +1006,7 @@ static void process_clusters(gpointer instance, gpointer user_data)
     dt_control_queue_redraw_widget(g->target_area);
   }
 
-  free(buffer);
+  dt_free_align(buffer);
 
   if(new_source_clusters)
   {
