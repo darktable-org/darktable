@@ -3927,7 +3927,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   const int ch = 4;
 
   const cl_mem dev_dest =
-    dt_opencl_alloc_device(devid, roi_mask_scaled->width, roi_mask_scaled->height, ch * sizeof(float));
+    dt_opencl_alloc_device(devid, roi_mask_scaled->width, roi_mask_scaled->height, sizeof(float) * ch);
   if(dev_dest == NULL)
   {
     fprintf(stderr, "retouch_blur_cl error 2\n");

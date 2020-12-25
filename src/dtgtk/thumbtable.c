@@ -1422,7 +1422,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
       const int imgs_nb = g_list_length(table->drag_list);
       if(imgs_nb)
       {
-        uint32_t *imgs = malloc(imgs_nb * sizeof(uint32_t));
+        uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
         GList *l = table->drag_list;
         for(int i = 0; i < imgs_nb; i++)
         {

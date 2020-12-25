@@ -838,7 +838,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       cl_mem guide = d->feathering_guide == DEVELOP_MASK_GUIDE_IN ? dev_in : dev_out;
       if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
       {
-        dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
+        dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
         if(dev_guide == NULL) goto error;
         guide = dev_guide;
         size_t origin_1[] = { xoffs, yoffs, 0 };
@@ -908,7 +908,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   }
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
-  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);

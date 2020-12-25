@@ -763,10 +763,10 @@ static void _get_auto_exp_histogram(const float *const img, const int width, con
   uint32_t *histogram = NULL;
   const float mul = hist_size;
 
-  histogram = dt_alloc_align(64, hist_size * sizeof(uint32_t));
+  histogram = dt_alloc_align(64, sizeof(uint32_t) * hist_size);
   if(histogram == NULL) goto cleanup;
 
-  memset(histogram, 0, hist_size * sizeof(uint32_t));
+  memset(histogram, 0, sizeof(uint32_t) * hist_size);
 
   if(box_area[2] > box_area[0] && box_area[3] > box_area[1])
   {

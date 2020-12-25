@@ -1724,7 +1724,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   // allocate a buffer for a preconditioned copy of the image
   const int devid = piece->pipe->devid;
-  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_denoiseprofile] couldn't allocate GPU buffer\n");
@@ -1845,7 +1845,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
   const int devid = piece->pipe->devid;
-  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   cl_mem dev_U2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
@@ -2138,7 +2138,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   sumsum = dt_alloc_align_float((size_t)4 * reducesize);
   if(sumsum == NULL) goto error;
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
@@ -2151,7 +2151,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   for(int k = 0; k < max_scale; k++)
   {
-    dev_detail[k] = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    dev_detail[k] = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     if(dev_detail[k] == NULL) goto error;
   }
 

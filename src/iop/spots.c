@@ -566,7 +566,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         const int dy = posy - posy_source;
         const int fw = 2 * rad, fh = 2 * rad;
 
-        float *filter = malloc((2 * rad + 1) * sizeof(float));
+        float *filter = malloc(sizeof(float) * (2 * rad + 1));
 
         if(rad > 0)
         {

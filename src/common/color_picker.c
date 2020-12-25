@@ -234,10 +234,10 @@ static void color_picker_helper_bayer_parallel(const dt_iop_buffer_dsc_t *const 
   const size_t numthreads = dt_get_num_threads();
 
   //TODO: convert to use dt_alloc_perthread
-  float *const msum = malloc(numthreads * sizeof(float) * 4);
-  float *const mmin = malloc(numthreads * sizeof(float) * 4);
-  float *const mmax = malloc(numthreads * sizeof(float) * 4);
-  uint32_t *const cnt = malloc(numthreads * sizeof(uint32_t) * 4);
+  float *const msum = malloc(sizeof(float) * numthreads * 4);
+  float *const mmin = malloc(sizeof(float) * numthreads * 4);
+  float *const mmax = malloc(sizeof(float) * numthreads * 4);
+  uint32_t *const cnt = malloc(sizeof(uint32_t) * numthreads * 4);
 
   for(int n = 0; n < 4 * numthreads; n++)
   {
@@ -363,10 +363,10 @@ static void color_picker_helper_xtrans_parallel(const dt_iop_buffer_dsc_t *const
   const size_t numthreads = dt_get_num_threads();
 
   //TODO: convert to use dt_alloc_perthread
-  float *const mmin = malloc(numthreads * sizeof(float) * 3);
-  float *const msum = malloc(numthreads * sizeof(float) * 3);
-  float *const mmax = malloc(numthreads * sizeof(float) * 3);
-  uint32_t *const cnt = malloc(numthreads * sizeof(uint32_t) * 3);
+  float *const mmin = malloc(sizeof(float) * numthreads * 3);
+  float *const msum = malloc(sizeof(float) * numthreads * 3);
+  float *const mmax = malloc(sizeof(float) * numthreads * 3);
+  uint32_t *const cnt = malloc(sizeof(uint32_t) * numthreads * 3);
 
   for(int n = 0; n < 3 * numthreads; n++)
   {

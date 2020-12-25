@@ -765,7 +765,7 @@ main(int argc, char** argv)
     opt.num_nodes = 20;
   }
 
-  curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*6);
+  curve = calloc(1, sizeof(float) * 6 * CURVE_RESOLUTION);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     ret = -1;
@@ -774,7 +774,7 @@ main(int argc, char** argv)
   curve_base = curve;
   curve_tone = curve + 3*CURVE_RESOLUTION;
 
-  hist = calloc(1, CURVE_RESOLUTION*sizeof(uint32_t)*6);
+  hist = calloc(1, sizeof(uint32_t) * 6 * CURVE_RESOLUTION);
   if (!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
     ret = -1;

@@ -523,7 +523,7 @@ int write_image(struct dt_imageio_module_data_t *data,
 
       cmsSaveProfileToMem(out_profile, 0, &icc_profile_len);
       if (icc_profile_len > 0) {
-        icc_profile_data = malloc(icc_profile_len * sizeof(uint8_t));
+        icc_profile_data = malloc(sizeof(uint8_t) * icc_profile_len);
         if (icc_profile_data == NULL) {
           rc = 1;
           goto out;

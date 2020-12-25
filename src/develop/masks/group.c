@@ -290,13 +290,13 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
   float **bufs = calloc(nb, sizeof(float *));
-  int *w = malloc(nb * sizeof(int));
-  int *h = malloc(nb * sizeof(int));
-  int *px = malloc(nb * sizeof(int));
-  int *py = malloc(nb * sizeof(int));
-  int *ok = malloc(nb * sizeof(int));
-  int *states = malloc(nb * sizeof(int));
-  float *op = malloc(nb * sizeof(float));
+  int *w = malloc(sizeof(int) * nb);
+  int *h = malloc(sizeof(int) * nb);
+  int *px = malloc(sizeof(int) * nb);
+  int *py = malloc(sizeof(int) * nb);
+  int *ok = malloc(sizeof(int) * nb);
+  int *states = malloc(sizeof(int) * nb);
+  float *op = malloc(sizeof(float) * nb);
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);

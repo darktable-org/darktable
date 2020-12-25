@@ -245,7 +245,7 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   cl_int err = -666;
   cl_mem tmp = NULL;
 
-  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, 4 * sizeof(float));
+  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
   if(tmp == NULL) goto error;
 
   size_t origin[] = { 0, 0, 0 };

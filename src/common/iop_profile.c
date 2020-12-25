@@ -1175,7 +1175,7 @@ void dt_ioppr_get_profile_info_cl(const dt_iop_order_iccprofile_info_t *const pr
 
 cl_float *dt_ioppr_get_trc_cl(const dt_iop_order_iccprofile_info_t *const profile_info)
 {
-  cl_float *trc = malloc(profile_info->lutsize * 6 * sizeof(cl_float));
+  cl_float *trc = malloc(sizeof(cl_float) * 6 * profile_info->lutsize);
   if(trc)
   {
     int x = 0;
@@ -1224,7 +1224,7 @@ cl_int dt_ioppr_build_iccprofile_params_cl(const dt_iop_order_iccprofile_info_t 
   }
   else
   {
-    profile_lut_cl = malloc(1 * 6 * sizeof(cl_float));
+    profile_lut_cl = malloc(sizeof(cl_float) * 1 * 6);
 
     dev_profile_lut = dt_opencl_copy_host_to_device(devid, profile_lut_cl, 1, 1 * 6, sizeof(float));
     if(dev_profile_lut == NULL)
@@ -1330,7 +1330,7 @@ int dt_ioppr_transform_image_colorspace_cl(struct dt_iop_module_t *self, const i
 
     if(in_place)
     {
-      dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+      dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
       if(dev_tmp == NULL)
       {
         fprintf(stderr,
@@ -1506,7 +1506,7 @@ int dt_ioppr_transform_image_colorspace_rgb_cl(const int devid, cl_mem dev_img_i
 
     if(in_place)
     {
-      dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+      dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
       if(dev_tmp == NULL)
       {
         fprintf(

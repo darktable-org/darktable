@@ -1063,7 +1063,7 @@ static char **split_path(const char *path)
   // there are size + 1 elements in tokens -- the final NULL! we want to ignore it.
   const unsigned int size = g_strv_length(tokens);
 
-  result = malloc(size * sizeof(char *));
+  result = malloc(sizeof(char *) * size);
   for(unsigned int i = 0; i < size; i++)
     result[i] = tokens[i + 1];
 

@@ -357,14 +357,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* allocate space for a temporary buffer. we don't want to use dev_in in the buffer ping-pong below, as we
      need to keep it for blendops */
-  dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   /* allocate space to store detail information. Requires a number of additional buffers, each with full image
    * size */
   for(int k = 0; k < max_scale; k++)
   {
-    dev_detail[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4 * sizeof(float));
+    dev_detail[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float) * 4);
     if(dev_detail[k] == NULL) goto error;
   }
 

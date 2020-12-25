@@ -243,10 +243,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       switch(mode)
       {
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
-          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], 4 * sizeof(float));
+          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
-          memcpy(out + pout, color, 4 * sizeof(float));
+          memcpy(out + pout, color, sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR:
           out[pout + c] = 0.0;
