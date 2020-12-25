@@ -17,6 +17,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/tags.h"
 #include "common/variables.h"
 #include "control/control.h"
@@ -877,7 +878,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   gchar *svgdoc = _watermark_get_svgdoc(self, data, &piece->pipe->image);
   if(!svgdoc)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -892,7 +893,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -907,7 +908,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     cairo_surface_destroy(surface);
     g_free(image);
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     fprintf(stderr, "[watermark] error processing svg file: %s\n", error->message);
     g_error_free(error);
@@ -1022,7 +1023,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     g_object_unref(svg);
     g_free(image);
     g_free(image_two);
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     return;
   }

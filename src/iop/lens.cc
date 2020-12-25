@@ -382,7 +382,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -460,11 +460,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
     else
     {
-<<<<<<< HEAD
-      memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
-=======
-      dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
->>>>>>> switch memcpy to dt_iop_image_copy_by_size
+      dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     }
 
     if(modflags & LF_MODIFY_VIGNETTING)

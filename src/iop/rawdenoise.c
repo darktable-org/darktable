@@ -297,8 +297,9 @@ static inline float vstransform(const float value)
   return sqrtf(MAX(0.0f, value));
 }
 
-static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_iop_roi_t *const roi,
-                                   dt_iop_rawdenoise_data_t *data, const uint8_t (*const xtrans)[6])
+static void wavelet_denoise_xtrans(const float *const restrict in, float *const restrict out,
+                                   const dt_iop_roi_t *const restrict roi,
+                                   const dt_iop_rawdenoise_data_t *const data, const uint8_t (*const xtrans)[6])
 {
   const int width = roi->width;
   const int height = roi->height;
@@ -451,8 +452,8 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
     // undo the original transform
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(height, fimg, roi, width, xtrans) \
-    shared(c, out) \
+    dt_omp_firstprivate(height, fimg, roi, width, xtrans, c) \
+    dt_omp_sharedconst(out) \
     schedule(static)
 #endif
     for(int row = 0; row < height; row++)
