@@ -386,13 +386,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float2 *const mean = malloc(data->n * sizeof(float2));
-    float2 *const var = malloc(data->n * sizeof(float2));
+    float2 *const mean = malloc(sizeof(float2) * data->n);
+    float2 *const var = malloc(sizeof(float2) * data->n);
 
     kmeans(in, roi_in, data->n, mean, var);
 
     // get mapping from input clusters to target clusters
-    int *const mapio = malloc(data->n * sizeof(int));
+    int *const mapio = malloc(sizeof(int) * data->n);
 
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 

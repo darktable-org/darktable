@@ -516,7 +516,7 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
 
   if(!pixel) return;
 
-  cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4 * sizeof(float));
+  cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4);
   if(err != CL_SUCCESS)
   {
     if(tmpbuf) dt_free_align(tmpbuf);
@@ -2408,11 +2408,11 @@ restart:
       g_free(pipe->output_backbuf);
       pipe->output_backbuf_width = pipe->backbuf_width;
       pipe->output_backbuf_height = pipe->backbuf_height;
-      pipe->output_backbuf = g_malloc0((size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+      pipe->output_backbuf = g_malloc0(sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
     }
 
     if(pipe->output_backbuf)
-      memcpy(pipe->output_backbuf, pipe->backbuf, (size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+      memcpy(pipe->output_backbuf, pipe->backbuf, sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
     pipe->output_imgid = pipe->image.id;
   }
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);

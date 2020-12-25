@@ -774,7 +774,7 @@ char *dt_read_file(const char *const filename, size_t *filesize)
   size_t end = ftell(fd);
   rewind(fd);
 
-  char *content = (char *)malloc(end * sizeof(char));
+  char *content = (char *)malloc(sizeof(char) * end);
   if(!content) return NULL;
 
   size_t count = fread(content, sizeof(char), end, fd);
