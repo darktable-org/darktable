@@ -161,10 +161,9 @@ static INLINE vfloat vminf(vfloat x, vfloat y)
 }
 #endif
 
-static INLINE float limit01(float a)
-{
-  return a > 1.0f ? 1.0f : (a > 0.0f ? a : 0.0f);
-}
+#ifndef CLIP
+  #define CLIP(x) (((x) >= 0) ? ((x) <= 1 ? (x) : 1) : 0)
+#endif
 
 static INLINE float intp(float a, float b, float c)
 {
@@ -185,7 +184,7 @@ static INLINE void approxit(float *out, const float *cfa, const float *sum, cons
   if(c == 1)
   {
     rgb[idx][0] = (sum[0] / sum[3]);
-    rgb[idx][1] = limit01(cfa[idx]);
+    rgb[idx][1] = CLIP(cfa[idx]);
     rgb[idx][2] = (sum[2] / sum[5]);
   }
   else
@@ -193,13 +192,13 @@ static INLINE void approxit(float *out, const float *cfa, const float *sum, cons
     rgb[idx][1] =  (sum[1] / sum[4]);
     if (c == 0)
     {
-      rgb[idx][0] = limit01(cfa[idx]);
+      rgb[idx][0] = CLIP(cfa[idx]);
       rgb[idx][2] = (sum[2] / sum[5]);
     }
     else
     {
       rgb[idx][0] = (sum[0] / sum[3]);
-      rgb[idx][2] = limit01(cfa[idx]);
+      rgb[idx][2] = CLIP(cfa[idx]);
     }
   }
 }
@@ -219,7 +218,7 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += limit01(cfa[i1 * width + j1]);
+            sum[c] += CLIP(cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
@@ -237,7 +236,7 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height ) && (j1 < width))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += limit01(cfa[i1 * width + j1]);
+            sum[c] += CLIP(cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
@@ -258,7 +257,7 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += limit01(cfa[i1 * width + j1]);
+            sum[c] += CLIP(cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
@@ -279,7 +278,7 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 < width))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += limit01(cfa[i1 * width + j1]);
+            sum[c] += CLIP(cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
@@ -356,12 +355,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 
           for(; col < colEnd - 1; col+=2, indx+=2, in_indx+=2)
           {
-            cfa[indx]     = rgb[c0][indx]     = limit01(in[in_indx] * revscaler);
-            cfa[indx + 1] = rgb[c1][indx + 1] = limit01(in[in_indx+1] * revscaler);
+            cfa[indx]     = rgb[c0][indx]     = CLIP(in[in_indx] * revscaler);
+            cfa[indx + 1] = rgb[c1][indx + 1] = CLIP(in[in_indx+1] * revscaler);
           }
           if(col < colEnd)
           {
-            cfa[indx] = rgb[c0][indx] = limit01(in[indx] * revscaler);
+            cfa[indx] = rgb[c0][indx] = CLIP(in[indx] * revscaler);
           }
         }
 
@@ -593,9 +592,9 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
           int idx = (row - rowStart) * RCD_TILESIZE + col - colStart;
           for(; col < colEnd - RCD_BORDER ; col++, o_idx += 4, idx++)
           {
-            out[o_idx]   = scaler * limit01(rgb[0][idx]);
-            out[o_idx+1] = scaler * limit01(rgb[1][idx]);
-            out[o_idx+2] = scaler * limit01(rgb[2][idx]);
+            out[o_idx]   = scaler * CLIP(rgb[0][idx]);
+            out[o_idx+1] = scaler * CLIP(rgb[1][idx]);
+            out[o_idx+2] = scaler * CLIP(rgb[2][idx]);
           }
         }
       }

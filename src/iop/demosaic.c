@@ -22,6 +22,7 @@
 #include "common/interpolation.h"
 #include "common/opencl.h"
 #include "common/image_cache.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -35,16 +36,10 @@
 
 #include <complex.h>
 #include <glib.h>
-#include <math.h>
 #include <memory.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-
-// we assume people have -msee support.
-#if defined(__SSE__)
-#include <xmmintrin.h>
-#endif
 
 #define DEMOSAIC_TIMING 0 // Bitmask to help demosaicer debugging/tuning
                           // 01 --> print more precise timing info
