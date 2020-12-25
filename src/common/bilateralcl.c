@@ -120,7 +120,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
   // alloc grid buffer:
   b->dev_grid
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
     dt_bilateral_free_cl(b);
@@ -129,7 +129,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
   // alloc temporary grid buffer
   b->dev_grid_tmp
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
     dt_bilateral_free_cl(b);
