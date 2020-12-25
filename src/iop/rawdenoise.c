@@ -480,7 +480,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(!(d->threshold > 0.0f))
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float)*width*height);
+    memcpy(ovoid, ivoid, sizeof(float)*width*height);
   }
   else
   {

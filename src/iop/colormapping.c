@@ -569,7 +569,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // incomplete parameter set -> do nothing
   else
   {
-    memcpy(out, in, (size_t)sizeof(float) * 4 * width * height);
+    memcpy(out, in, sizeof(float) * 4 * width * height);
   }
 }
 
