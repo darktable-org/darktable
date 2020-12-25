@@ -163,7 +163,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int colorscheme = dev->rawoverexposed.colorscheme;
   const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
 
-  memcpy(ovoid, ivoid, (size_t)ch * roi_out->width * roi_out->height * sizeof(float));
+  memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');

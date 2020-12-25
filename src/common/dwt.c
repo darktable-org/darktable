@@ -128,7 +128,7 @@ static void dwt_add_layer(const float *const restrict img, float *const restrict
 
 static void dwt_get_image_layer(float *const layer, dwt_params_t *const p)
 {
-  if(p->image != layer) memcpy(p->image, layer, p->width * p->height * p->ch * sizeof(float));
+  if(p->image != layer) memcpy(p->image, layer, sizeof(float) * p->width * p->height * p->ch);
 }
 
 // first, "vertical" pass of wavelet decomposition
@@ -232,7 +232,7 @@ static void dwt_decompose_horiz(float *const restrict out, float *const restrict
     }
     // now that we're done with the row of pixels, we can overwrite the intermediate result from the
     // first pass with the final decomposition
-    memcpy(coarse, temprow, 4 * width * sizeof(float));
+    memcpy(coarse, temprow, sizeof(float) * 4 * width);
   }
 }
 

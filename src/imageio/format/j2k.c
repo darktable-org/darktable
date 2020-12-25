@@ -367,7 +367,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     const int w = j2k->global.width, h = j2k->global.height;
 
     opj_image_cmptparm_t cmptparm[4]; /* RGBA: max. 4 components */
-    memset(&cmptparm[0], 0, numcomps * sizeof(opj_image_cmptparm_t));
+    memset(&cmptparm[0], 0, sizeof(opj_image_cmptparm_t) * numcomps);
 
     for(int i = 0; i < numcomps; i++)
     {

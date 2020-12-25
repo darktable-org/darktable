@@ -1664,7 +1664,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     memcpy(new_params + first_half, &fversion, sizeof(int32_t));
     memcpy(new_params + first_half + sizeof(int32_t), &sversion, sizeof(int32_t));
     // copy the rest of the old params over
-    memcpy(new_params + first_half + 2 * sizeof(int32_t), buf, old_params_size - first_half);
+    memcpy(new_params + first_half + sizeof(int32_t) * 2, buf, old_params_size - first_half);
 
     *new_size = new_params_size;
     *new_version = 2;
@@ -1676,8 +1676,8 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t new_params_size = old_params_size + sizeof(int32_t);
     void *new_params = calloc(1, new_params_size);
 
-    memcpy(new_params, old_params, 2 * sizeof(int32_t));
-    memcpy(new_params + 3 * sizeof(int32_t), old_params + 2 * sizeof(int32_t), old_params_size - 2 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 2);
+    memcpy(new_params + sizeof(int32_t) * 3, old_params + sizeof(int32_t) * 2, old_params_size - sizeof(int32_t) * 2);
 
     *new_size = new_params_size;
     *new_version = 3;
@@ -1723,7 +1723,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
     void *new_params = calloc(1, new_params_size);
     size_t pos = 0;
-    memcpy(new_params, old_params, 4 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 4);
     pos += 4 * sizeof(int32_t);
     memcpy(new_params + pos, &icctype, sizeof(int32_t));
     pos += sizeof(int32_t);
@@ -1753,9 +1753,9 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     void *new_params = calloc(1, new_params_size);
 
     size_t pos = 0;
-    memcpy(new_params, old_params, 3 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 3);
     pos += 4 * sizeof(int32_t);
-    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - 3 * sizeof(int32_t));
+    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 3);
 
     *new_size = new_params_size;
     *new_version = 5;
@@ -1781,11 +1781,11 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t new_params_size = old_params_size + flags_size;
     void *new_params = calloc(1, new_params_size);
     size_t pos = 0;
-    memcpy(new_params, old_params, 6 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 6);
     pos += 6 * sizeof(int32_t);
     memcpy(new_params + pos, flags, flags_size);
     pos += flags_size;
-    memcpy(new_params + pos, old_params + pos - flags_size, old_params_size - 6 * sizeof(int32_t));
+    memcpy(new_params + pos, old_params + pos - flags_size, old_params_size - sizeof(int32_t) * 6);
 
     g_free(flags);
     *new_size = new_params_size;
@@ -1807,9 +1807,9 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     void *new_params = calloc(1, new_params_size);
 
     size_t pos = 0;
-    memcpy(new_params, old_params, 4 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 4);
     pos += 5 * sizeof(int32_t);
-    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - 4 * sizeof(int32_t));
+    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 4);
 
     *new_size = new_params_size;
     *new_version = 7;

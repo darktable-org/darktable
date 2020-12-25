@@ -141,9 +141,9 @@ void write_pfm(const char *filename, int width, int height, float *data)
       float *out = (float *)buf_line;
       for(int i = 0; i < width; i++, in += 3, out += 3)
       {
-        memcpy(out, in, 3 * sizeof(float));
+        memcpy(out, in, sizeof(float) * 3);
       }
-      int cnt = fwrite(buf_line, 3 * sizeof(float), width, f);
+      int cnt = fwrite(buf_line, sizeof(float) * 3, width, f);
       if(cnt != width) break;
     }
     dt_free_align(buf_line);

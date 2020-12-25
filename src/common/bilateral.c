@@ -151,7 +151,7 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->buf = dt_alloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
   if (b->buf)
   {
-    memset(b->buf, 0, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));
+    memset(b->buf, 0, sizeof(float) * b->size_x * b->size_z * b->numslices * b->slicerows);
   }
   else
   {

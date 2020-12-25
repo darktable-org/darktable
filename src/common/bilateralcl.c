@@ -59,7 +59,7 @@ size_t dt_bilateral_memory_use2(const int width,
                                 const float sigma_s,
                                 const float sigma_r)
 {
-  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r) + (size_t)width * height * 4 * sizeof(float);
+  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r) + sizeof(float) * 4 * width * height;
 }
 
 // modules that want to use dt_bilateral_slice_to_output_cl() ought to take this one;
@@ -69,7 +69,7 @@ size_t dt_bilateral_singlebuffer_size2(const int width,
                                        const float sigma_s,
                                        const float sigma_r)
 {
-  return MAX(dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r), (size_t)width * height * 4 * sizeof(float));
+  return MAX(dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r), sizeof(float) * 4 * width * height);
 }
 
 
