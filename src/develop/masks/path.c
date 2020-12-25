@@ -2245,7 +2245,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     dt_free_align(border);
     return 0;
   }
-  memset(*buffer, 0, bufsize * sizeof(float));
+  memset(*buffer, 0, sizeof(float) * bufsize);
 
   // we write all the point around the path into the buffer
   int nbp = border_count;
@@ -2625,7 +2625,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   start = start2 = dt_get_wtime();
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  memset(buffer, 0, sizeof(float) * width * height);
 
   guint nb_corner = g_list_length(form->points);
 
@@ -2760,7 +2760,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       dt_free_align(border);
       return 0;
     }
-    memcpy(cpoints, points, (size_t)2 * points_count * sizeof(float));
+    memcpy(cpoints, points, sizeof(float) * 2 * points_count);
 
     // now we clip cpoints to roi -> catch special case when roi lies completely within path.
     // dirty trick: we allow path to extend one pixel beyond height-1. this avoids need of special handling

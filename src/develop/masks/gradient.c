@@ -886,7 +886,7 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   const int count = sqrtf(wd * wd + ht * ht) + 3;
   *points = dt_alloc_align_float((size_t)2 * count);
   if(*points == NULL) return 0;
-  memset(*points, 0, (size_t)2 * count * sizeof(float));
+  memset(*points, 0, sizeof(float) * 2 * count);
 
 
   // we set the anchor point
@@ -1218,7 +1218,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     dt_free_align(points);
     return 0;
   }
-  memset(*buffer, 0, (size_t)w * h * sizeof(float));
+  memset(*buffer, 0, sizeof(float) * w * h);
 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP

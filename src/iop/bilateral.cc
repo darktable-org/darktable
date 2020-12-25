@@ -142,7 +142,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 
-    float *const weights_buf = (float *)malloc(dt_get_num_threads() * weights_size * sizeof(float));
+    float *const weights_buf = (float *)malloc(sizeof(float) * dt_get_num_threads() * weights_size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \

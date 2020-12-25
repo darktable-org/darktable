@@ -662,10 +662,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       float pd[7] = { point3->corner[0] * wd - dx, point3->corner[1] * ht - dy, point3->ctrl1[0] * wd - dx,
                       point3->ctrl1[1] * ht - dy, point3->border[0] * MIN(wd, ht), point3->hardness,
                       point3->density };
-      memcpy(p1, pa, 7 * sizeof(float));
-      memcpy(p2, pb, 7 * sizeof(float));
-      memcpy(p3, pc, 7 * sizeof(float));
-      memcpy(p4, pd, 7 * sizeof(float));
+      memcpy(p1, pa, sizeof(float) * 7);
+      memcpy(p2, pb, sizeof(float) * 7);
+      memcpy(p3, pc, sizeof(float) * 7);
+      memcpy(p4, pd, sizeof(float) * 7);
     }
     else
     {
@@ -681,10 +681,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       float pd[7] = { point3->corner[0] * wd - dx, point3->corner[1] * ht - dy, point3->ctrl2[0] * wd - dx,
                       point3->ctrl2[1] * ht - dy, point3->border[0] * MIN(wd, ht), point3->hardness,
                       point3->density };
-      memcpy(p1, pa, 7 * sizeof(float));
-      memcpy(p2, pb, 7 * sizeof(float));
-      memcpy(p3, pc, 7 * sizeof(float));
-      memcpy(p4, pd, 7 * sizeof(float));
+      memcpy(p1, pa, sizeof(float) * 7);
+      memcpy(p2, pb, sizeof(float) * 7);
+      memcpy(p3, pc, sizeof(float) * 7);
+      memcpy(p4, pd, sizeof(float) * 7);
     }
 
     // 1st. special case: render abrupt transitions between different opacity and/or hardness values
@@ -2799,7 +2799,7 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   start = start2 = dt_get_wtime();
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  memset(buffer, 0, sizeof(float) * width * height);
 
   const guint nb_corner = g_list_length(form->points);
 

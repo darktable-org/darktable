@@ -1003,7 +1003,7 @@ static int dt_circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
   // initialize output buffer with zero
-  memset(buffer, 0, (size_t)w * h * sizeof(float));
+  memset(buffer, 0, sizeof(float) * w * h);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle init took %0.04f sec\n", form->name, dt_get_wtime() - start2);

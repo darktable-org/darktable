@@ -280,7 +280,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
 static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, const uint32_t filters,
                          const int num_passes, const float threshold)
 {
-  memcpy(out, in, (size_t)roi->width * roi->height * sizeof(float));
+  memcpy(out, in, sizeof(float) * roi->width * roi->height);
 
   // now green:
   const int lim[5] = { 0, 1, 2, 1, 0 };
@@ -405,7 +405,7 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
   if(FC(oj + y, oi + x, filters) != 1) oi++;
   if(FC(oj + y, oi + x, filters) != 1) oj--;
 
-  memcpy(out, in, height * width * sizeof(float));
+  memcpy(out, in, sizeof(float) * height * width);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -455,7 +455,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
   if((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
-  memcpy(out, in, (size_t)height * width * sizeof(float));
+  memcpy(out, in, sizeof(float) * height * width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(g2_offset, height, in, width) \
@@ -751,7 +751,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         {
           // if on second pass, copy rgb[0] to [3] into rgb[4] to [7],
           // and process that second set of buffers
-          memcpy(rgb + 4, rgb, (size_t)4 * sizeof(*rgb));
+          memcpy(rgb + 4, rgb, sizeof(*rgb) * 4);
           rgb += 4;
         }
 
@@ -920,7 +920,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       }
 
       /* Build homogeneity maps from the derivatives:                   */
-      memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
+      memset(homo, 0, sizeof(uint8_t) * ndir * TS * TS);
       const int pad_homo = (passes == 1) ? 10 : 15;
       for(int row = pad_homo; row < mrow - pad_homo; row++)
         for(int col = pad_homo; col < mcol - pad_homo; col++)
@@ -1915,7 +1915,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
       }
 
       /* Build homogeneity maps from the derivatives:                   */
-      memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
+      memset(homo, 0, sizeof(uint8_t) * ndir * TS * TS);
       const int pad_homo = 10;
       for(int row = pad_homo; row < mrow - pad_homo; row++)
         for(int col = pad_homo; col < mcol - pad_homo; col++)
@@ -2070,9 +2070,9 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
             float temp[5];
             float tempf;
             // load the window into temp
-            memcpy(&temp[0], fdc_chroma + chrm * TS * TS + (row - 1) * TS + (col), 1 * sizeof(float));
-            memcpy(&temp[1], fdc_chroma + chrm * TS * TS + (row)*TS + (col - 1), 3 * sizeof(float));
-            memcpy(&temp[4], fdc_chroma + chrm * TS * TS + (row + 1) * TS + (col), 1 * sizeof(float));
+            memcpy(&temp[0], fdc_chroma + chrm * TS * TS + (row - 1) * TS + (col), sizeof(float) * 1);
+            memcpy(&temp[1], fdc_chroma + chrm * TS * TS + (row)*TS + (col - 1),   sizeof(float) * 3);
+            memcpy(&temp[4], fdc_chroma + chrm * TS * TS + (row + 1) * TS + (col), sizeof(float) * 1);
             PIX_SORT(temp[0], temp[1]);
             PIX_SORT(temp[3], temp[4]);
             PIX_SORT(temp[0], temp[3]);
@@ -2358,7 +2358,7 @@ static void vng_interpolate(float *out, const float *const in,
       }
       if(gmax == 0)
       {
-        memcpy(brow[2][col], pix, (size_t)4 * sizeof(*out));
+        memcpy(brow[2][col], pix, sizeof(*out) * 4);
         continue;
       }
       float thold = gmin + (gmax * 0.5f);
@@ -2385,13 +2385,13 @@ static void vng_interpolate(float *out, const float *const in,
       }
     }
     if(row > 3) /* Write buffer to image */
-      memcpy(out + 4 * ((row - 2) * width + 2), brow[0] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
+      memcpy(out + 4 * ((row - 2) * width + 2), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
     // rotate ring buffer
     for(int g = 0; g < 4; g++) brow[(g - 1) & 3] = brow[g];
   }
   // copy the final two rows to the image
-  memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
-  memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
+  memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
+  memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, sizeof(*out) * 4 * (width - 4));
   dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE

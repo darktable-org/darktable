@@ -116,7 +116,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(ovoid, ivoid, (size_t)chs * sizeof(float) * width * height);
+  memcpy(ovoid, ivoid, sizeof(float) * chs * width * height);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");

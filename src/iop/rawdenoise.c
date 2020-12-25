@@ -308,7 +308,7 @@ static void wavelet_denoise_xtrans(const float *const in, float *out, const dt_i
   if (!img)
   {
     // we ran out of memory, so just pass through the image without denoising
-    memcpy(out, in, size * sizeof(float));
+    memcpy(out, in, sizeof(float) * size);
     return;
   }
   float *const fimg = img + width;	// point at the actual color channel contents in the buffer

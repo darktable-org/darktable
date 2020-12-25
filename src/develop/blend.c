@@ -1177,7 +1177,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
     return 0;
   }
@@ -1199,7 +1199,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
     return 0;
   }
@@ -1224,7 +1224,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     // bit no. 32 in blendif.
     n->blendif = (o->blendif & (1u << DEVELOP_BLENDIF_active) ? o->blendif | 31 : o->blendif)
                  & ~(1u << DEVELOP_BLENDIF_active);
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
     return 0;
   }
@@ -1244,7 +1244,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     return 0;
   }
 
@@ -1263,7 +1263,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     return 0;
   }
 
@@ -1286,7 +1286,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->blur_radius;
     n->contrast = o->contrast;
     n->brightness = o->brightness;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     return 0;
   }
 
@@ -1309,7 +1309,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->blur_radius;
     n->contrast = o->contrast;
     n->brightness = o->brightness;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     memcpy(n->raster_mask_source, o->raster_mask_source, sizeof(n->raster_mask_source));
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_id;
