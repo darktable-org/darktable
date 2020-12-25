@@ -21,6 +21,7 @@
 #include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 #include "develop/pixelpipe_hb.h"
@@ -30,8 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <tiffio.h>
-
-#define CLAMP_FLT(A) ((A) > (0.0f) ? ((A) < (1.0f) ? (A) : (1.0f)) : (0.0f))
 
 // it would be nice to save space by storing the masks as single channel float data,
 // but at least GIMP can't open TIFF files where not all layers have the same format.
@@ -463,7 +462,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             for(int x = 0; x < w; x++, out += layers)
             {
               for(int c = 0; c < layers; c++)
-                out[c] = CLAMP_FLT(in[x]) * 65535.0f + 0.5f;
+                out[c] = CLIP(in[x]) * 65535.0f + 0.5f;
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -483,7 +482,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             for(int x = 0; x < w; x++, out += layers)
             {
               for(int c = 0; c < layers; c++)
-                out[c] = CLAMP_FLT(in[x]) * 255.0f + 0.5f;
+                out[c] = CLIP(in[x]) * 255.0f + 0.5f;
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
