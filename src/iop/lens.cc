@@ -879,7 +879,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
         modifier->ApplySubpixelGeometryDistortion(p1, p2, 1, 1, buf);
         const float dist1 = points[i]     - buf[0];
         const float dist2 = points[i + 1] - buf[3];
-        if(fabs(dist1) < .5f && fabs(dist2) < .5f) break; // we have converged
+        if(fabsf(dist1) < .5f && fabsf(dist2) < .5f) break; // we have converged
         p1 += dist1;
         p2 += dist2;
       }
