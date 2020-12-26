@@ -684,7 +684,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *const restrict module,
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for simd default(none) \
-          dt_omp_firstprivate(npixels, op) \
+          dt_omp_firstprivate(npixels, op, inverted) \
           dt_omp_sharedconst(buffer, bufs) schedule(simd:static) aligned(buffer, bufs : 64)
 #else
 #pragma omp parallel for shared(bufs, buffer)
