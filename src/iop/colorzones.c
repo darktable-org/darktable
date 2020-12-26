@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -385,7 +386,7 @@ void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
 
   const dt_iop_colorzones_channel_t display_channel = g->channel;
 
-  memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)                                                           \
