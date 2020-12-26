@@ -327,6 +327,25 @@
     <shortdescription>disable the entry completion</shortdescription>
     <longdescription>the entry completion is useful for those who enter tags from keyboard only. for others the entry completion can be embarrassing. need to restart darktable.</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="tags">
+    <name>plugins/lighttable/tagging/no_uncategorized</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>in collect module, do not set the 'uncategorized' entry for tags</shortdescription>
+    <longdescription>in collect module, do not set the 'uncategorized' entry for tags which do not have children</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="tags">
+    <name>plugins/lighttable/tagging/case_sensitivity</name>
+    <type>
+      <enum>
+        <option>sensitive</option>
+        <option>insensitive</option>
+      </enum>
+    </type>
+    <default>insensitive</default>
+    <shortdescription>in collect module, tags case sensitivity</shortdescription>
+    <longdescription>in collect module, tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 21 latin letters</longdescription>
+  </dtconfig>
   <dtconfig prefs="cpugpu" capability="opencl">
     <name>opencl</name>
     <type>bool</type>

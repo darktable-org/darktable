@@ -146,10 +146,12 @@ static int orientation_member(lua_State *L)
     return 0;
   }
 }
+#endif // USE_LUA
 
 
 void init(dt_imageio_module_format_t *self)
 {
+#ifdef USE_LUA
   lua_State* L = darktable.lua_state.state ;
 
   luaA_enum(L, _pdf_pages_t);
@@ -180,13 +182,8 @@ void init(dt_imageio_module_format_t *self)
 
   lua_pushcfunction(L, orientation_member);
   dt_lua_type_register_type(L, self->parameter_lua_type, "orientation");
-}
-#else // USE_LUA
-void init(dt_imageio_module_format_t *self)
-{
-  // we need an empty init, even when compiled without Lua
-}
 #endif // USE_LUA
+}
 
 void cleanup(dt_imageio_module_format_t *self)
 {

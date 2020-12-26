@@ -102,6 +102,14 @@ typedef enum dt_mouse_action_type_t
   DT_MOUSE_ACTION_RIGHT_DRAG
 } dt_mouse_action_type_t;
 
+// flags that a view can set in flags()
+typedef enum dt_view_surface_value_t
+{
+  DT_VIEW_SURFACE_OK = 0,
+  DT_VIEW_SURFACE_KO,
+  DT_VIEW_SURFACE_SMALLER
+} dt_view_surface_value_t;
+
 typedef struct dt_mouse_action_t
 {
   GtkAccelKey key;
@@ -196,8 +204,9 @@ int dt_view_get_image_to_act_on();
 
 /** returns an uppercase string of file extension **plus** some flag information **/
 char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow);
-/** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality);
+/** expose an image and return a cair0_surface. */
+dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+                                                  const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
