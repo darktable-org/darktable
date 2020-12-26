@@ -517,9 +517,10 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_stroke(cr);
 
   // the extremities
+  const float pr_d = darktable.develop->preview_downsampling;
   float x1, y1, x2, y2;
   const float l = sqrtf((xb - xa) * (xb - xa) + (yb - ya) * (yb - ya));
-  const float ext = wd * 0.01f / zoom_scale;
+  const float ext = wd * 0.01f / pr_d / zoom_scale;
   x1 = xa + (xb - xa) * ext / l;
   y1 = ya + (yb - ya) * ext / l;
   x2 = (xa + x1) / 2.0;
@@ -568,9 +569,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressure, int which)
 {
   dt_iop_graduatednd_gui_data_t *g = (dt_iop_graduatednd_gui_data_t *)self->gui_data;
-  dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
-  int closeup = dt_control_get_dev_closeup();
-  float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
+  const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
+  const int closeup = dt_control_get_dev_closeup();
+  const float zoom_scale = dt_dev_get_zoom_scale(self->dev, zoom, 1<<closeup, 1);
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(self->dev, x, y, &pzx, &pzy);
   pzx += 0.5f;
@@ -604,8 +605,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   }
   else
   {
+    const float pr_d = darktable.develop->preview_downsampling;
     g->selected = 0;
-    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / zoom_scale;
+    const float ext = DT_PIXEL_APPLY_DPI(0.02f) / pr_d / zoom_scale;
     // are we near extermity ?
     if(pzy > g->ya - ext && pzy < g->ya + ext && pzx > g->xa - ext && pzx < g->xa + ext)
     {
