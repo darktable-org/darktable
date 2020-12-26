@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-12-24 14:47+0100\n"
-"PO-Revision-Date: 2020-12-25 22:28+0100\n"
+"PO-Revision-Date: 2020-12-26 19:33+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -7003,6 +7003,12 @@ msgid ""
 "is named after the module and contains a black and white image representing "
 "the opacity mask as created by darktable."
 msgstr ""
+"S'applique uniquement au format <emphasis>TIFF</emphasis>. S'il est défini "
+"sur <quote>oui</quote> darktable crée un calque TIFF pour chaque module à "
+"l'aide d'un masque (<quote>dessiné</quote>, <quote> paramétrique </quote> ou "
+"<quote> raster </quote>) . Chaque calque de masque porte le nom du module et "
+"contient une image en noir et blanc représentant le masque d'opacité créé "
+"par darktable."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:5592(title)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11836(title)
@@ -7708,7 +7714,7 @@ msgid ""
 "darktable's innovative input method: for both coarse and fine value "
 "adjustments in a single control element combined with keyboard input."
 msgstr ""
-"Méthode d’entrée innovante de darktable : constituée d'un seul élément de "
+"Méthode d’entrée innovante de darktable : constituée d'un seul élément de "
 "contrôle combiné avec une entrée clavier, elle permet à la fois les "
 "ajustements grossiers et précis des valeurs."
 
@@ -11792,7 +11798,8 @@ msgstr "originel"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9258(entry)
 msgid "This is the legacy module order used by by darktable up to version 2.6."
-msgstr "C'est l'ordre des modules utilisé par darktable jusqu'à la version 2.6"
+msgstr ""
+"C'est l'ordre des modules utilisé par darktable jusqu'à la version 2.6."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9263(entry)
 msgid "v3.0 (default)"
@@ -11984,7 +11991,7 @@ msgstr "modules : tous"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9440(para)
 msgid "Show all available modules ordered in 5 groups."
-msgstr "Affiche tous les modules disponibles classés en cinq groupes"
+msgstr "Affiche tous les modules disponibles classés en cinq groupes."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:9445(title)
 msgid "search only"
@@ -14549,7 +14556,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11357(title)
 msgid "Denoise – non local means"
-msgstr "Réduction du bruit (non local)"
+msgstr "Réduction du bruit - moyennes non locales"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:11361(secondary)
 msgid "denoise – non local means"
@@ -17340,7 +17347,6 @@ msgstr ""
 "l’image."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13731(para)
-#, fuzzy
 msgid ""
 "The noise of an image is usually not only fine grain, but also more or less "
 "coarse grain. These curves allow to denoise more or less depending on the "
@@ -17354,20 +17360,18 @@ msgid ""
 "supposed to change a lot on fine grain scales: this will help especially if "
 "you see some isolated pixel left undenoised."
 msgstr ""
-"Ces courbes sont seulement disponibles quand le mode <placeholder-1/> est "
-"sélectionné. Généralement, le bruit d'une image n'est pas seulement à grains "
-"fins, mais il peut aussi être à grains plus ou moins gros. Ces courbes "
-"permettent de réduire plus ou moins le bruit en fonction de la granularité "
-"du bruit visible. La partie gauche de la courbe agira sur le bruit à grains "
-"très gros, alors que sa partie droite agira sur le bruit à grains très fins. "
-"Pousser la courbe vers le haut donnera plus de lissage, la tirer vers le bas "
-"en donnera moins. Par exemple, vous pouvez préserver le bruit à grains très "
-"fins en tirant vers le bas le point à l'extrême droite de la courbe jusqu'à "
-"la position la plus basse possible. Autre exemple, si vous vous attaquez au "
-"bruit de la chrominance en mode fusion, vous pouvez pousser vers le haut la "
-"partie droite de la courbe, car les couleurs ne sont pas censées changer "
-"beaucoup dans les échelles à grains fins : cela vous aidera surtout si vous "
-"voyez quelques pixels isolés laissés non débruités."
+"Le bruit d'une image n'est généralement pas seulement un grain fin, mais "
+"aussi un grain plus ou moins gros. Ces courbes permettent de réduire plus ou "
+"moins le bruit en fonction de la grossièreté du bruit visible. La gauche de "
+"la courbe agira sur le bruit de grain très gros, tandis que la droite de la "
+"courbe agira sur le bruit de grain très fin. Pousser la courbe vers le haut "
+"se traduira par plus de lissage, la tirer vers le bas entraînera moins de "
+"lissage. Par exemple, vous pouvez conserver un bruit de grain très fin en "
+"abaissant le point le plus à droite de la courbe jusqu'à la valeur minimale. "
+"Comme autre exemple, si vous vous attaquez au bruit de chrominance avec un "
+"mode de fusion, vous pouvez remonter la partie droite de la courbe, car les "
+"couleurs ne sont pas censées changer beaucoup sur des échelles à grain fin : "
+"cela aidera surtout si vous voyez un pixel isolé laissé sans bruit."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:13750(title)
 msgid "Hotpixels"
@@ -17684,7 +17688,7 @@ msgstr ""
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14083(secondary)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14087(primary)
 msgid "split-toning"
-msgstr "Virage partiel"
+msgstr "virage partiel"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:14100(entry)
 msgid ""
@@ -19992,7 +19996,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16362(quote)
 msgid "Advanced"
-msgstr "avancé"
+msgstr "Avancé"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16364(emphasis)
 msgid "mask"
@@ -20014,7 +20018,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16387(quote)
 msgid "Masking"
-msgstr "masque"
+msgstr "Masque"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16386(entry)
 msgid ""
@@ -20052,7 +20056,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16414(title)
 msgid "the cursor"
-msgstr "Le curseur"
+msgstr "le curseur"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16420(para)
 msgid ""
@@ -20356,7 +20360,6 @@ msgid "Notes"
 msgstr "Remarques"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16681(para)
-#, fuzzy
 msgid ""
 "The history in the database and associated XMP file, and in a style, does "
 "not contain the temperature and tint. Instead it holds values related to the "
@@ -20388,17 +20391,27 @@ msgid ""
 "image previously made using the RGB sliders may give odd results, at least "
 "if high temperature values are involved."
 msgstr ""
+"La relation mathématique entre les deux ensembles de valeurs n'est pas "
+"simple. Les équilibres de couleurs peuvent être réglés à l'aide des curseurs "
+"RVB qui n'ont pas de réglage correspondant en termes de température et de "
+"teinte (cela se produit principalement lorsque des valeurs de température "
+"très élevées sont calculées à partir des valeurs des curseurs). Par "
+"conséquent, sachez que la modification de la balance des blancs à l'aide de "
+"température / teinte sur une image précédemment réalisée à l'aide des "
+"curseurs RVB peut donner des résultats étranges, du moins si des valeurs de "
+"température élevées sont impliquées."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16714(title)
-#, fuzzy
 msgid "Effects group"
-msgstr "Groupe des modules d'effets"
+msgstr "Groupe des modules effets"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16716(para)
 msgid ""
 "The effects group contain the weird kids (local contrast, sharpness, high/"
 "low-freq, retouch, liquify, etc.)"
 msgstr ""
+"Le groupe effets contient les enfants étranges (contraste local, netteté, "
+"haute / basse fréquence, retouche, liquéfaction, etc.)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16723(title)
 msgid "Watermark"
@@ -20448,7 +20461,6 @@ msgstr ""
 "filigranes disponibles."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:16769(para)
-#, fuzzy
 msgid ""
 "Here follows a list of available variable strings that is supported for "
 "substitution within the svg document. Beside this list you can also use the "
@@ -24530,7 +24542,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21163(bridgehead)
 msgid "GUI control and text DPI"
-msgstr "contrôles et texte DPI"
+msgstr "contrôles de l'interface graphique et texte DPI"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21165(para)
 msgid ""
@@ -24590,7 +24602,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21189(programlisting)
 msgid "@define-color fg_color @grey_100;"
-msgstr ""
+msgstr "@define-color fg_color @grey_100;"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:21192(para)
 msgid ""
@@ -26163,15 +26175,12 @@ msgid "Miscellaneous"
 msgstr "Divers"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22195(title)
-#, fuzzy
 msgid "interface"
-msgstr "Interface utilisateur"
+msgstr "interface utilisateur"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22197(bridgehead)
 msgid "mouse wheel scrolls modules side panel by default"
-msgstr ""
-"par défaut la molette de la souris fait défiler le panneau latéral des "
-"modules"
+msgstr "déplacement des panneaux latéraux avec la molette"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22199(para)
 msgid ""
@@ -26185,7 +26194,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22204(bridgehead)
 msgid "always show panels scrollbars"
-msgstr "affiche toujours les barres de défilement des panneaux"
+msgstr "toujours montrer les ascenseurs des panneaux"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22206(para)
 msgid ""
@@ -26218,31 +26227,27 @@ msgstr ""
 "méthode spécifique si la méthode alternative donne de mauvais résultats."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22227(bridgehead)
-#, fuzzy
 msgid "omit hierarchy in simple tag list"
 msgstr "ignore la hiérarchie des mots-clés"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22229(para)
-#, fuzzy
 msgid ""
 "When creating XMP file, the hierarchical tags are also added as a simple "
 "list of non-hierarchical ones to make them visible to some other programs. "
 "When this option is checked darktable will only include their last part and "
 "ignore the rest, so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
-"Lors de l'exportation des images, les hiérarchies de mots-clés sont ajoutées "
-"sous forme de simples listes de mots-clés permettant ainsi à leurs mots-clés "
-"d'être visibles par d'autres programmes. Si cette option est cochée "
-"darktable inclura uniquement leur dernier élément, ignorant tous les autres. "
-"Ainsi pour la hiérarchie <quote>foo|bar|baz</quote>, seul le mot-clé "
-"<quote>baz</quote> sera ajouté."
+"Lors de la création d'un fichier XMP, les mots-clés hiérarchiques sont "
+"également ajoutés sous la forme d'une simple liste de mots-clés non "
+"hiérarchiques pour les rendre visibles à d'autres programmes. Lorsque cette "
+"option est cochée, darktable n'inclura que leur dernière partie et ignorera "
+"le reste, donc 'foo | bar | baz' ajoutera uniquement 'baz'."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22235(bridgehead)
 msgid "disable the entry completion"
-msgstr "désactive la complétion des entrées"
+msgstr "désactive l'auto-complétion"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22237(para)
-#, fuzzy
 msgid ""
 "The entry completion is useful for those who enter tags from keyboard only. "
 "For others, the entry completion can be embarrassing. (need to restart "
@@ -26250,12 +26255,11 @@ msgid ""
 msgstr ""
 "La complétion des entrées est utile à ceux qui entrent les mots-clés "
 "uniquement au clavier. Pour les autres la complétion des entrées peut être "
-"embarrassante (désactivée par défaut). (nécessite un redémarrage) "
+"embarrassante (nécessite un redémarrage)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22246(title)
-#, fuzzy
 msgid "keyboard shortcuts with multiple instances"
-msgstr "instances multiples"
+msgstr "raccourcis clavier avec instances multiples"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22248(para)
 msgid ""
@@ -26263,90 +26267,90 @@ msgid ""
 "that are applied (in order) to decide which module instance keyboard "
 "shortcuts will be applied to."
 msgstr ""
+"Lorsque plusieurs instances d'un module sont présentes, ces préférences "
+"permettent de contrôler l'ordre des règles pour le choix de l'instance qui "
+"recevra le raccourci clavier."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22253(bridgehead)
-#, fuzzy
 msgid "prefer expanded instances"
-msgstr "préférences et paramètres"
+msgstr "préférence aux instances dépliées"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22255(para)
 msgid "If instances of the module are expanded, ignore collapsed instances."
 msgstr ""
+"Si des instances du module sont dépliées, ignore les instances repliées."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22259(bridgehead)
-#, fuzzy
 msgid "prefer enabled instances"
-msgstr "préférences"
+msgstr "préférence aux instances actives"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22261(para)
 msgid ""
 "After applying the above rule, if instances of the module are active, ignore "
 "inactive instances."
 msgstr ""
+"Après avoir appliqué la règle ci-dessus, si des instances du module sont "
+"actives, ignorez les instances inactives."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22265(bridgehead)
-#, fuzzy
 msgid "prefer unmasked instances"
-msgstr "préférences"
+msgstr "préférences aux instances visibles"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22267(para)
 msgid ""
 "After applying the above rule, if instances are unmasked, ignore masked "
 "instances."
 msgstr ""
+"Après avoir appliqué la règle ci-dessus, si des instances sont visibles, "
+"ignorez les instances cachées."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22271(bridgehead)
-#, fuzzy
 msgid "selection order"
-msgstr "selection"
+msgstr "ordre de sélection"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22273(para)
 msgid ""
 "After applying the above rule, apply the shortcut based on its position in "
 "pixelpipe."
 msgstr ""
+"Après avoir appliqué la règle ci-dessus, applique le raccourci en fonction "
+"de sa position dans pipeline graphique."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22281(title)
 msgid "other"
-msgstr ""
+msgstr "autre"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22283(bridgehead)
 msgid "do not show april 1st game"
 msgstr "ne pas afficher le jeu du 1er avril"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22285(para)
-#, fuzzy
 msgid "Select it to hide april 1st game."
-msgstr "ne pas afficher le jeu du 1er avril"
+msgstr "Sélectionner pour cacher le jeu du 1er avril."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22289(bridgehead)
-#, fuzzy
 msgid "password backend to use"
 msgstr "stockage à utiliser pour les mots de passe"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22291(para)
-#, fuzzy
 msgid ""
 "The storage backend for password storage to use: auto, none, libsecret, "
 "kwallet."
 msgstr ""
-"Outil de sauvegarde des mots de passe. Options: <quote>auto</quote> "
-"(défaut), <quote>aucun</quote>, <quote>libsecret</quote>, <quote>kwallet</"
-"quote>."
+"L'outil de sauvegarde des mots de passe : <quote>auto</quote> (défaut), "
+"<quote>aucun</quote>, <quote>libsecret</quote>, <quote>kwallet</quote>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22295(bridgehead)
 msgid "executable for playing audio files"
 msgstr "exécutable pour jouer les fichiers audio"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22297(para)
-#, fuzzy
 msgid ""
 "This external program is used to play audio files some cameras record to "
 "keep notes for images."
 msgstr ""
-"Définit le programme externe qui sera utilisé dans la vue table lumineuse "
-"pour jouer les fichiers audio que certains appareils photo enregistrent pour "
-"annoter les images (<quote>aplay</quote>). "
+"Ce programme externe sera utilisé pour jouer les fichiers audio que certains "
+"appareils photo enregistrent pour annoter les images."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22309(title)
 msgid "Shortcuts"
@@ -26366,16 +26370,23 @@ msgid ""
 "modified with one or more of <emphasis>Shift</emphasis>, <emphasis>Ctrl</"
 "emphasis> or <emphasis>Alt</emphasis>."
 msgstr ""
+"Une grande partie des fonctionnalités de darktable est accessible via des "
+"raccourcis utilisant le clavier ou des combinaisons clavier / souris. Ces "
+"raccourcis sont configurables par l'utilisateur via l'onglet "
+"<emphasis>raccourcis</emphasis> des préférences. La plupart des raccourcis "
+"clavier sont fournis avec des valeurs par défaut, mais la plupart doivent "
+"être configurés par l'utilisateur. N'importe quelle touche peut être "
+"utilisée pour un raccourci clavier et peut être modifiée avec un ou "
+"plusieurs des éléments suivants : <emphasis>Maj</emphasis>, <emphasis>Ctrl</"
+"emphasis> ou <emphasis>Alt</emphasis>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22327(title)
-#, fuzzy
 msgid "Adjusting Keyboard Shortcuts"
-msgstr "Ajustement des valeurs tonales"
+msgstr "Ajustement des raccourcis clavier"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22331(title)
-#, fuzzy
 msgid "Add/Amend Shortcut"
-msgstr "Ajout d'un raccourci simple"
+msgstr "Ajouter / modifier un raccourci"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22333(para)
 msgid ""
@@ -26383,6 +26394,9 @@ msgid ""
 "change and double-click on it. You will be prompted to press the new key "
 "combination to be mapped to the selected action."
 msgstr ""
+"Pour ajouter ou modifier un raccourci, accédez d'abord à l'action que vous "
+"souhaitez modifier et double-cliquez dessus. Vous serez invité à appuyer sur "
+"la nouvelle combinaison de touches à associer à l'action sélectionnée."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22339(para)
 msgid ""
@@ -26392,21 +26406,27 @@ msgid ""
 "may be used for one action in the lighttable view and another in the "
 "darkroom view."
 msgstr ""
+"Si un conflit est détecté, vous aurez la possibilité de conserver le "
+"raccourci existant ou de le remplacer. Selon le contexte, il est possible "
+"d'utiliser le même raccourci clavier pour plusieurs actions. Par exemple, la "
+"même combinaison de touches peut être utilisée pour une action dans la vue "
+"de la table lumineuse et une autre dans la vue de la chambre noire."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22350(title)
-#, fuzzy
 msgid "Remove Shortcut"
-msgstr "Raccourcis"
+msgstr "Supprimer un raccourci"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22352(para)
 msgid ""
 "To remove a keyboard shortcut, single-click on the action you wish to remove "
 "and press the backspace key."
 msgstr ""
+"Pour supprimer un raccourci clavier, cliquez une fois sur l'action que vous "
+"souhaitez supprimer et appuyez sur la touche de retour arrière."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22361(title)
 msgid "Search"
-msgstr ""
+msgstr "Rechercher"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22363(para)
 msgid ""
@@ -26414,14 +26434,20 @@ msgid ""
 "you wish to search for and press enter or click the search button. Pressing "
 "enter or search multiple times will cycle through all matching actions."
 msgstr ""
+"Un champ de recherche s'affiche en bas de l'onglet des raccourcis. Entrez le "
+"texte que vous souhaitez rechercher et appuyez sur entrée ou cliquez sur le "
+"bouton de rechercher. Appuyez plusieurs fois sur entrée ou rechercher pour "
+"parcourir toutes les actions correspondantes."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22375(title)
 msgid "Import/Export/Reset"
-msgstr ""
+msgstr "exporter / importer / défaut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22377(para)
 msgid "You can export your shortcut mappings to a file or import from a file."
 msgstr ""
+"Vous pouvez exporter vos définitions de raccourcis vers un fichier ou les "
+"importer à partir d'un fichier."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22381(para)
 msgid ""
@@ -26429,11 +26455,14 @@ msgid ""
 "when using this option as it is not possible to restore back to a previous "
 "state unless you have first exported existing shortcuts to a file."
 msgstr ""
+"Appuyez sur «défaut» pour réinitialiser tous les raccourcis à leur état par "
+"défaut. Faites attention lorsque vous utilisez cette option, car il n'est "
+"pas possible de restaurer un état antérieur à moins que vous n'ayez d'abord "
+"exporté les raccourcis existants vers un fichier."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22391(title)
-#, fuzzy
 msgid "Shortcut Categories"
-msgstr "Raccourcis"
+msgstr "Catégories de raccourci"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22393(para)
 msgid ""
@@ -26441,30 +26470,35 @@ msgid ""
 "following sections summarize these categories and also list some additional "
 "options that are specific to certain categories."
 msgstr ""
+"Les raccourcis clavier sont classés par catégories de manière à pouvoir être "
+"trouvés facilement. Les sections suivantes résument ces catégories et "
+"répertorient également certaines options supplémentaires spécifiques à "
+"certaines catégories."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22401(title)
-#, fuzzy
 msgid "global"
-msgstr "options globales/quittter"
+msgstr "global"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22403(para)
 msgid "Shortcuts in this section are applicable to all darktable views."
 msgstr ""
+"Les raccourcis de cette section s'appliquent à toutes les vues de darktable."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22411(title)
 msgid "views"
-msgstr "views"
+msgstr "vues"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22413(para)
 msgid ""
 "A single section is provided for each darktable view. Shortcuts are only "
 "applicable to the selected view."
 msgstr ""
+"Une seule section est fournie pour chaque vue de darktable. Les raccourcis "
+"ne s'appliquent qu'à la vue sélectionnée."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22422(title)
-#, fuzzy
 msgid "processing modules"
-msgstr "processus"
+msgstr "modules de traitement"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22424(para)
 msgid ""
@@ -26473,21 +26507,26 @@ msgid ""
 "below the histogram and above the ‘module order’ module). A section is "
 "provided for each processing module."
 msgstr ""
+"Les raccourcis de cette section ne s'appliquent qu'aux modules de "
+"«traitement» dans la vue darktable (c'est-à-dire les modules à droite de "
+"l'image modifiée sous l'histogramme et au-dessus du module «ordre des "
+"modules»). Une section est fournie pour chaque module de traitement."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22430(bridgehead)
-#, fuzzy
 msgid "common shortcuts"
-msgstr "raccourcis"
+msgstr "raccourcis courants"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22432(para)
 msgid "Every processing module provides the following shortcuts by default"
-msgstr ""
+msgstr "Chaque module de traitement fournit les raccourcis suivants par défaut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22437(para)
 msgid ""
 "<emphasis>enable module</emphasis> - enable or disable the module, "
 "regardless of whether it is currently visible"
 msgstr ""
+"<emphasis>activer le module</emphasis> - active ou désactive le module, "
+"qu'il soit actuellement visible ou non"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22441(para)
 msgid ""
@@ -26495,11 +26534,16 @@ msgid ""
 "module is not currently displayed on the screen, darktable will switch to an "
 "appropriate module group (if applicable) before displaying it"
 msgstr ""
+"<emphasis>afficher le module</emphasis> - développer ou réduire le module. "
+"Si le module n'est pas actuellement affiché à l'écran, darktable basculera "
+"vers un groupe de modules approprié (le cas échéant) avant de l'afficher"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22446(para)
 msgid ""
 "<emphasis>focus module</emphasis> - cause the module to receive or lose focus"
 msgstr ""
+"<emphasis>module focus</emphasis> - fait que le module reçoive ou perde le "
+"focus"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22449(para)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22577(para)
@@ -26507,12 +26551,16 @@ msgid ""
 "<emphasis>reset module parameters</emphasis> - reset the module to its "
 "default state"
 msgstr ""
+"<emphasis>réinitialiser les paramètres</emphasis> - réinitialiser le module "
+"à son état par défaut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22452(para)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22580(para)
 msgid ""
 "<emphasis>show preset menu</emphasis> - show the presets menu for the module"
 msgstr ""
+"<emphasis>afficher le menu des préréglages</emphasis> - afficher le menu des "
+"préréglages pour le module"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22457(para)
 msgid ""
@@ -26520,6 +26568,9 @@ msgid ""
 "sliders, some standard shortcuts are available, as described in the "
 "following sections."
 msgstr ""
+"Des raccourcis peuvent être présents pour toute opération de module. Pour "
+"les listes déroulantes et les curseurs, certains raccourcis standard sont "
+"disponibles, comme décrit dans les sections suivantes."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22464(para)
 msgid ""
@@ -26527,12 +26578,17 @@ msgid ""
 "(regardless of whether the module is currently shown or enabled). The "
 "following actions are provided:"
 msgstr ""
+"Tous les curseurs des modules de traitement peuvent être modifiés via des "
+"raccourcis clavier (indépendamment du fait que le module soit actuellement "
+"affiché ou activé). Les actions suivantes sont fournies :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22470(para)
 msgid ""
 "<emphasis>increase/decrease</emphasis> - separate shortcuts which allow you "
 "to increase or decrease the slider by a single step"
 msgstr ""
+"<emphasis>augmenter / diminuer</emphasis> - raccourcis séparés qui vous "
+"permettent d'augmenter ou de diminuer la valeur du curseur d'un seul pas"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22474(para)
 msgid ""
@@ -26540,18 +26596,24 @@ msgid ""
 "combination with the mouse scroll wheel to increase and decrease slider "
 "values"
 msgstr ""
+"<emphasis>dynamique</emphasis> - un seul raccourci qui peut être utilisé en "
+"combinaison avec la molette de défilement de la souris pour augmenter et "
+"diminuer les valeurs des curseurs"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22478(para)
 msgid ""
 "<emphasis>edit</emphasis> -a shortcut to bring up the slider edit dialog "
 "within which you may key a value directly or modify the slider with the mouse"
 msgstr ""
+"<emphasis>modifier</emphasis> - un raccourci pour faire apparaître la boîte "
+"de dialogue d'édition du curseur dans laquelle vous pouvez saisir une valeur "
+"directement ou modifier le curseur avec la souris"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22482(para)
-#, fuzzy
 msgid "<emphasis>reset</emphasis> - reset the slider to its default value"
 msgstr ""
-"Une fonction pour réinitialiser la bibliothèque à ses valeurs par défaut."
+"<emphasis>réinitialiser</emphasis> - réinitialise le curseur à sa valeur par "
+"défaut"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22487(para)
 msgid ""
@@ -26559,6 +26621,9 @@ msgid ""
 "decrease operations with a <emphasis>global</emphasis> keyboard shortcut. "
 "You can choose between fine, normal and coarse."
 msgstr ""
+"De plus, il est possible de modifier la précision des opérations "
+"d'augmentation / diminution avec un raccourci clavier <emphasis>global</"
+"emphasis>. Vous pouvez choisir entre fin, normal et grossier."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22492(para)
 msgid ""
@@ -26566,18 +26631,28 @@ msgid ""
 "module is not currently shown, a toast message will appear over the image to "
 "indicate the current value of the slider being adjusted."
 msgstr ""
+"Lors de l'exécution d'opérations d'augmentation / diminution et dynamiques "
+"sur les curseurs, si le module n'est pas actuellement affiché, un message "
+"apparaîtra sur l'image pour indiquer la valeur actuelle du curseur en cours "
+"de réglage."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22500(para)
 msgid ""
 "As with sliders, all comboboxes in processing modules can be edited via "
 "keyboard shortcuts. The following actions are provided:"
 msgstr ""
+"Comme pour les curseurs, toutes les zones de liste déroulante des modules de "
+"traitement peuvent être modifiées via des raccourcis clavier. Les actions "
+"suivantes sont fournies :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22506(para)
 msgid ""
 "<emphasis>next/previous</emphasis> - separate shortcuts which allow you to "
 "change to the next or previous entry in the combobox"
 msgstr ""
+"<emphasis>suivant / précédent</emphasis> - raccourcis séparés qui vous "
+"permettent de passer à l'entrée suivante ou précédente dans la liste "
+"déroulante"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22510(para)
 msgid ""
@@ -26585,6 +26660,9 @@ msgid ""
 "combination with the mouse scroll wheel to change to the next/previous entry "
 "in the combobox"
 msgstr ""
+"<emphasis>dynamique</emphasis> - un seul raccourci qui peut être utilisé en "
+"combinaison avec la molette de défilement de la souris pour passer à "
+"l'entrée suivante / précédente dans la zone de liste déroulante"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22516(para)
 msgid ""
@@ -26592,17 +26670,22 @@ msgid ""
 "back to the beginning of the list. Similarly, if the beginning of values is "
 "reached it will cycle to the end."
 msgstr ""
+"Si la fin des valeurs de la zone de liste déroulante est atteinte, ces "
+"raccourcis reviendront au début de la liste. De même, si le début des "
+"valeurs est atteint, il passera à la fin."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22521(para)
 msgid ""
 "If the module is not currently shown, a toast message will appear over the "
 "image to indicate the current value of the combobox being adjusted."
 msgstr ""
+"Si le module n'est pas actuellement affiché, un message apparaîtra sur "
+"l'image pour indiquer la valeur actuelle de la zone de liste déroulante en "
+"cours de réglage."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22526(bridgehead)
-#, fuzzy
 msgid "handling multiple module instances"
-msgstr "instances multiples"
+msgstr "gestion de plusieurs instances d'un module"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22528(para)
 msgid ""
@@ -26613,41 +26696,60 @@ msgid ""
 "that are applied (in order) to decide which module instance keyboard "
 "shortcuts will be applied to."
 msgstr ""
+"Il est possible de créer plusieurs instances de nombreux modules de "
+"traitement. Dans ce scénario, il n'est pas toujours évident de savoir quelle "
+"instance doit être contrôlée par des opérations de raccourci clavier. "
+"Certaines options supplémentaires sont présentes dans l'onglet divers des "
+"préférences. Ces options contrôlent les règles qui sont appliquées (dans "
+"l'ordre) pour décider à quelle instance d'un module les raccourcis clavier "
+"seront appliqués."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22537(para)
 msgid ""
 "<emphasis>prefer expanded instances</emphasis> - if instances of the module "
 "are expanded, ignore collapsed instances"
 msgstr ""
+"<emphasis>préférence aux instances dépliées</emphasis> - si les instances du "
+"module sont dépliées, ignore les instances repliées"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22540(para)
 msgid ""
 "<emphasis>prefer enabled instances</emphasis> - after applying the above "
 "rule, if instances of the module are active, ignore inactive instances"
 msgstr ""
+"<emphasis> préférence aux instances actives</emphasis> - après avoir "
+"appliqué la règle ci-dessus, si les instances du module sont actives, ignore "
+"les instances inactives"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22544(para)
 msgid ""
 "<emphasis>prefer unmasked instances</emphasis> - after applying the above "
 "rules, if instances of the module are unmasked, ignore masked instances"
 msgstr ""
+"<emphasis>préférence aux instances visibles </emphasis> - après avoir "
+"appliqué les règles ci-dessus, si les instances du module sont visibles, "
+"ignore les instances cachées"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22548(para)
 msgid ""
 "<emphasis>selection order</emphasis> - after applying the above rules, apply "
 "the shortcut to the first or last instance remaining"
 msgstr ""
+"<emphasis>ordre de sélection</emphasis> - après avoir appliqué les règles ci-"
+"dessus, appliquez le raccourci à la première ou à la dernière instance "
+"restante"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22553(para)
 msgid ""
 "These rules are also used when clicking and dragging on the histogram to "
 "change exposure."
 msgstr ""
+"Ces règles sont également utilisées lorsque vous cliquez et faites glisser "
+"sur l'histogramme pour modifier l'exposition."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22562(title)
-#, fuzzy
 msgid "utility modules"
-msgstr "Tous les modules"
+msgstr "modules utilitaires"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22564(para)
 msgid ""
@@ -26655,19 +26757,27 @@ msgid ""
 "for image processing, may appear on either side of the screen and may apply "
 "to one or more views."
 msgstr ""
+"Les raccourcis de la section des modules utilitaires qui s'appliquent aux "
+"modules qui ne sont pas utilisés pour le traitement d'image, peuvent "
+"apparaître de chaque côté de l'écran et peuvent s'appliquer à une ou "
+"plusieurs vues."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22569(para)
 msgid "As with processing modules, some shortcuts are provided by default:"
 msgstr ""
+"Comme pour les modules de traitement, certains raccourcis sont fournis par "
+"défaut :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22574(para)
-#, fuzzy
 msgid "<emphasis>show module</emphasis> - expand or collapse the module"
-msgstr "<emphasis>Ctrl+Z</emphasis> : annule le dernier mouvement"
+msgstr ""
+"<emphasis>afficher le module </emphasis> - développer ou réduire le module"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22585(para)
 msgid "Some of the above options may not be applicable to all modules."
 msgstr ""
+"Certaines des options ci-dessus peuvent ne pas s'appliquer à tous les "
+"modules."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22608(para)
 msgid ""
@@ -26813,28 +26923,28 @@ msgstr ""
 "se trouve dans la plage indiquée (de 0 à 1000)."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22704(title)
-#, fuzzy
 msgid "Lua options"
-msgstr "options"
+msgstr "options lua"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22708(secondary)
-#, fuzzy
 msgid "lua options"
-msgstr "options"
+msgstr "options lua"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22711(para)
 msgid "This option control lua scripts installator."
-msgstr ""
+msgstr "Cette option contrôle l'installateur des scripts lua."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22715(bridgehead)
 msgid "lua scripts installer don't show again"
-msgstr ""
+msgstr "ne pas remontrer l'installeur de scripts lua"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22717(para)
 msgid ""
 "Choose to show again, or not, the lua scripts installer in lighttable left "
 "panel."
 msgstr ""
+"Choisir de remontrer ou non le programme d'installation des scripts lua dans "
+"le panneau gauche de la table lumineuse."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22731(keyword)
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22743(primary)
@@ -26897,17 +27007,16 @@ msgstr ""
 "programmes commerciaux et pour la programmation de jeux."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22777(para)
-#, fuzzy
 msgid ""
 "darktable uses Lua version 5.3. Describing the principles and syntax of Lua "
 "is beyond the scope of this usermanual. For a detailed introduction see the "
 "<ulink url=\"http://www.lua.org/manual/5.3/manual.html\">Lua reference "
 "manual</ulink>."
 msgstr ""
-"darktable utilise Lua version 5.2. La description des principes et de la "
+"darktable utilise Lua version 5.3. La description des principes et de la "
 "syntaxe de Lua n'entre pas dans le cadre de ce manuel utilisateur. Pour une "
-"introduction détaillée voyez le <ulink url=\"http://www.lua.org/manual/5.2/"
-"manual.html\">Manuel de référence de Lua</ulink>."
+"introduction détaillée voyez le <ulink url=\"http://www.lua.org/manual/5.3/"
+"manual.html\">manuel de référence de Lua</ulink>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22785(title)
 msgid "Basic principles"
@@ -26973,7 +27082,6 @@ msgid "print(\"Hello World !\")"
 msgstr "print(\"Hello World !\")"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22830(para)
-#, fuzzy
 msgid ""
 "Start darktable and you will see the sentence <emphasis>Hello World !</"
 "emphasis> printed on the console. Nothing fancy but it's a start..."
@@ -27002,16 +27110,14 @@ msgstr ""
 "référence de l'API Lua de darktable."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22848(programlisting)
-#, fuzzy
 msgid ""
 "local darktable = require \"darktable\" darktable.print_log(\"Hello World !"
 "\")"
 msgstr ""
-"local darktable = require \"darktable\" darktable.print_error(\"Hello World !"
+"local darktable = require \"darktable\" darktable.print_log(\"Hello World !"
 "\")"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:22852(para)
-#, fuzzy
 msgid ""
 "Run the script ... and nothing happens. The function <code>darktable."
 "print_log</code> is just like print but will only print the message if you "
@@ -27020,7 +27126,7 @@ msgid ""
 "lua script."
 msgstr ""
 "Lancez le script ... et il ne se passe rien. La fonction <code>darktable."
-"print_error</code> est identique à la fonction <code>print</code> mais elle "
+"print_log</code> est identique à la fonction <code>print</code> mais elle "
 "affichera le message seulement si vous avez activé les traces Lua avec la "
 "commande <command moreinfo=\"none\">-d lua</command> sur la ligne de "
 "commande. C'est ce qui est recommandé pour activer les traces dans un script "
@@ -27184,7 +27290,7 @@ msgid ""
 "store values that we don't care about."
 msgstr ""
 "Le parcours itératif de la table va retourner à la fois les clés et les "
-"valeurs utilisées. En Lua Il est conventionnel d'utiliser une variable "
+"valeurs utilisées. En lua il est conventionnel d'utiliser une variable "
 "nommée <quote><code>_</code></quote> pour stocker des valeurs dont nous ne "
 "nous soucions pas."
 
@@ -27243,19 +27349,17 @@ msgstr ""
 "hello_shortcut, \"A shortcut that print its parameters\")"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23043(para)
-#, fuzzy
 msgid ""
 "Now start darktable, go to <code> preferences =&gt; shortcut =&gt; lua =&gt; "
 "A shortcut that prints its parameters </code> assign a shortcut and try it. "
 "You should have a nice message printed on the screen."
 msgstr ""
-"Démarrez maintenant darktable, aller à <code> preferences =&gt; shortcut "
-"=&gt; lua =&gt; A shortcut that print its parameters </code> pour assigner "
-"un raccourci et essayez-le. Vous devriez avoir un message sympa imprimé à "
+"Démarrez maintenant darktable, aller à <code>préférences =&gt; shortcut "
+"=&gt; lua =&gt; A shortcut that print its parameters</code> pour assigner un "
+"raccourci et essayez-le. Vous devriez avoir un message sympa imprimé à "
 "l'écran."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23049(para)
-#, fuzzy
 msgid ""
 "Let's look at the code in detail. We first define a function with two "
 "parameters. These parameters are strings. The first one is the type of event "
@@ -27267,10 +27371,9 @@ msgstr ""
 "Regardons le code en détail. Tout d'abord nous définissons une fonction à "
 "deux paramètres. Ces paramètres sont des chaînes de caractères. Le premier "
 "est le type de l'événement qui est déclenché ( <code>\"shortcut\"</code> ) "
-"et le second est précisément ce raccourci ( <code>\"A shortcut that print "
-"its parameters\"</code> ). La fonction appelle elle-même <code>darktable."
-"print</code> qui affichera le message en surimpression dans la fenêtre "
-"principale."
+"et le second est précisément ce raccourci (<code>\"A shortcut that print its "
+"parameters\"</code>). La fonction appelle elle-même <code>darktable.print</"
+"code> qui affichera le message en surimpression dans la fenêtre principale."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23060(para)
 msgid ""
@@ -27289,7 +27392,6 @@ msgstr ""
 "raccourci dans la fenêtre des préférences."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23068(para)
-#, fuzzy
 msgid ""
 "Let's try a shortcut that is a little more interactive. This one will look "
 "at the images the user is currently interested in (selected or moused-over) "
@@ -27348,7 +27450,7 @@ msgid ""
 "of notes: <placeholder-1/>"
 msgstr ""
 "À ce stade, la plupart de ce code doit être compréhensible en soi. Juste "
-"quelques notes : <placeholder-1/>"
+"quelques remarques : <placeholder-1/>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23112(para)
 msgid ""
@@ -27416,7 +27518,6 @@ msgid "Exporting images with Lua"
 msgstr "Exportation d'images avec Lua"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23175(para)
-#, fuzzy
 msgid ""
 "We have learned to use lua to adapt darktable to our particular workflow, "
 "now let's look at how to use lua to easily export images. darktable can "
@@ -27426,11 +27527,10 @@ msgid ""
 msgstr ""
 "Nous avons appris à utiliser Lua pour adapter darktable à notre propre flux "
 "de travail, regardons comment utiliser Lua pour exporter facilement des "
-"images. darktable peut facilement exporter des images vers un bon nombre de "
-"services en ligne mais il y en a toujours plus. Si vous êtes en mesure de "
-"télécharger une image vers un service via la ligne de commande alors vous "
-"pouvez utiliser Lua pour intégrer ceci dans l'interface utilisateur de "
-"darktable."
+"images. darktable peut facilement exporter des images vers certains services "
+"en ligne mais il y en a toujours plus. Si vous êtes en mesure de télécharger "
+"une image vers un service via la ligne de commande alors vous pouvez "
+"utiliser Lua pour intégrer ceci dans l'interface utilisateur de darktable."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23183(para)
 msgid ""
@@ -27444,7 +27544,6 @@ msgstr ""
 "cible distante via le mécanisme de copie par ssh."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23190(programlisting)
-#, fuzzy
 msgid ""
 "darktable = require \"darktable\" darktable.preferences.register(\"scp_export"
 "\",\"export_path\", \"string\",\"target SCP path\", \"Complete path to copy "
@@ -27459,13 +27558,12 @@ msgstr ""
 "\",\"export_path\", \"string\",\"target SCP path\", \"Complete path to copy "
 "to. Can include user and hostname\",\"\") darktable."
 "register_storage(\"scp_export\",\"Export via scp\", function( storage, "
-"image, format, filename, number, total, high_quality, extra_data) if "
-"coroutine.yield(\"RUN_COMMAND\",\"scp \"..filename..\" \".. darktable."
-"preferences.read(\"scp_export\", \"export_path\",\"string\")) then darktable."
+"image, format, filename, number, total, high_quality, extra_data) if not "
+"darktable.control.execute(\"scp \"..filename..\" \".. darktable.preferences."
+"read(\"scp_export\", \"export_path\",\"string\")) then darktable."
 "print_error(\"scp failed for \"..tostring(image)) end end)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23207(para)
-#, fuzzy
 msgid ""
 "<code>darktable.preferences.register</code> will add a new preference to "
 "darktable's preference menu. <code>scp_export</code> and <code>export_path</"
@@ -27513,7 +27611,7 @@ msgid ""
 msgstr ""
 "Nous utilisons les préférences pour configurer le chemin cible. Il serait "
 "plus agréable d'ajouter un élément à l'interface d'exportation de darktable. "
-"Dans la prochaine section nous expliquerons en détail comment faire cela"
+"Dans la prochaine section nous expliquerons en détail comment faire cela."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23243(para)
 msgid ""
@@ -27531,7 +27629,7 @@ msgid ""
 msgstr ""
 "Ce script ne peut pas lire une entrée de l'utilisateur. Le scp distant doit "
 "utiliser un mode de copie sans mot de passe. Scp ne peut pas recevoir "
-"aisément un mot de passe, nous allons donc le laisser ainsi"
+"aisément un mot de passe, nous allons donc le laisser ainsi."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23253(para)
 msgid ""
@@ -27543,15 +27641,14 @@ msgstr ""
 "est terminé."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23258(para)
-#, fuzzy
 msgid ""
 "We use <code>darktable.control.execute</code> to call an external program. "
 "The normal <code>os.execute</code> would block other lua codes from "
 "happening."
 msgstr ""
-"Nous utilisons <code>coroutine.yield</code> pour appeler un programme "
-"externe. Le code normal <code>os.execute</code> bloquerait l'exécution "
-"d'autres codes Lua."
+"Nous utilisons <code>darktable.control.execute</code> pour appeler un "
+"programme externe. Le code normal <code>os.execute</code> bloquerait "
+"l'exécution d'autres codes Lua."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23233(para)
 msgid ""
@@ -27632,7 +27729,6 @@ msgid "Now that we know that, let's improve our script a bit."
 msgstr "Maintenant que nous connaissons cela améliorons un peu notre script."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23316(programlisting)
-#, fuzzy
 msgid ""
 "darktable = require \"darktable\" local scp_path = darktable."
 "new_widget(\"entry\"){ tooltip =\"Complete path to copy to. Can include user "
@@ -27650,7 +27746,7 @@ msgstr ""
 "and hostname\", text = \"\", reset_callback = function(self) self.text = "
 "\"\" end } darktable.register_storage(\"scp_export\",\"Export via scp\", "
 "function( storage, image, format, filename, number, total, high_quality, "
-"extra_data) if coroutine.yield(\"RUN_COMMAND\",\"scp \"..filename..\" \".. "
+"extra_data) if not darktable.control.execute(\"scp \"..filename..\" \".. "
 "scp_path.text ) then darktable.print_error(\"scp failed for \".."
 "tostring(image)) end end, nil, --finalize nil, --supported nil, --initialize "
 "darktable.new_widget(\"box\") { orientation =\"horizontal\", darktable."
@@ -27674,7 +27770,6 @@ msgstr ""
 "(<command moreinfo=\"none\">scp-storage.lua</command> dans notre cas) :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23357(programlisting)
-#, fuzzy
 msgid ""
 "--[[ SCP STORAGE a simple storage to export images via scp AUTHOR Jérémy "
 "Rosen (jeremy.rosen@enst-bretagne.fr) INSTALLATION * copy this file in "
@@ -27704,12 +27799,11 @@ msgstr ""
 "to. Can include user and hostname\", text = \"\", reset_callback = "
 "function(self) self.text = \"\" end } darktable.register_storage(\"scp_export"
 "\",\"Export via scp\", function( storage, image, format, filename, number, "
-"total, high_quality, extra_data) if coroutine.yield(\"RUN_COMMAND\",\"scp "
-"\"..filename..\" \".. scp_path.text ) then darktable.print_error(\"scp "
-"failed for \"..tostring(image)) end end, nil, --finalize nil, --supported "
-"nil, --initialize darktable.new_widget(\"box\") { orientation =\"horizontal"
-"\", darktable.new_widget(\"label\"){label = \"target SCP PATH \"}, "
-"scp_path, })"
+"total, high_quality, extra_data) if darktable.control.execute(\"scp \".."
+"filename..\" \".. scp_path.text ) then darktable.print_error(\"scp failed "
+"for \"..tostring(image)) end end, nil, --finalize nil, --supported nil, --"
+"initialize darktable.new_widget(\"box\") { orientation =\"horizontal\", "
+"darktable.new_widget(\"label\"){label = \"target SCP PATH \"}, scp_path, })"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23417(para)
 msgid ""
@@ -27734,14 +27828,13 @@ msgstr ""
 "de ne pas polluer l'espace général de nommage."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23434(para)
-#, fuzzy
 msgid ""
 "Make sure you do not leave debug prints in your code. <code>darktable."
 "print_log</code> in particular allows you to leave debug prints in your "
 "final code without disturbing the console."
 msgstr ""
 "Assurez-vous de ne pas laisser dans votre code des affichages de débogage. "
-"En particulier <code>darktable.print_error</code> vous permet de laisser des "
+"En particulier <code>darktable.print_log</code> vous permet de laisser des "
 "affichages de débogage dans votre code final sans qu'ils perturbent la "
 "console."
 
@@ -27755,7 +27848,6 @@ msgstr ""
 "GPLv2."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23408(para)
-#, fuzzy
 msgid ""
 "darktable will look for scripts (following the normal lua rules) in the "
 "standard directories plus <code>$CONFIGDIR/lua/?.lua</code> . So our script "
@@ -27771,8 +27863,8 @@ msgstr ""
 "\"scp-storage\"</code> dans le fichier <emphasis>luarc</emphasis>. Quelques "
 "notes supplémentaires ... <placeholder-1/> Une fois que vous aurez rempli "
 "tous les champs, testé votre code, vous pourrez le télécharger sur notre "
-"page de scripts <ulink url=\"http://darktable.org/redmine/projects/darktable/"
-"wiki/LuaScripts\">ici</ulink>."
+"page de scripts <ulink url=\"https://github.com/darktable-org/lua-scripts"
+"\">ici</ulink>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23456(title)
 msgid "Calling Lua from DBus"
@@ -27897,7 +27989,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23557(keyword)
 msgid "topics"
-msgstr "sujets"
+msgstr "élément"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:23558(keyword)
 msgid "special"
@@ -29665,7 +29757,7 @@ msgid ""
 "darktable's default setting for <quote>opencl_device_priority</quote> is:"
 msgstr ""
 "Le paramétrage par défaut de darktable pour <quote>opencl_device_priority</"
-"quote> est :"
+"quote> est :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24680(programlisting)
 msgid "*/!0,*/*/*"
@@ -29984,7 +30076,7 @@ msgstr ""
 "<filename moreinfo=\"none\">darktable-chart</filename> prend le même que "
 "celui défini dans <quote>source image</quote>. De nouveau vous n'avez qu'à "
 "aligner la grille et l'image et qu'à potentiellement ajuster le curseur "
-"<quote>taille</quote>.\t"
+"<quote>taille</quote>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:24914(para)
 msgid ""
@@ -30251,35 +30343,44 @@ msgid ""
 "darktable supports variable substitution in a number of modules and "
 "preference settings. For example:"
 msgstr ""
+"darktable prend en charge la substitution de variables dans un certain "
+"nombre de modules et de paramètres de préférences. Par exemple :"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25091(para)
 msgid ""
 "Defining file names in the export selected lighttable module. See <xref "
 "linkend=\"export_selected_usage_filename\"/>"
 msgstr ""
+"Définition des noms de fichiers dans le module exporter de table lumineuse. "
+"Voir <xref linkend=\"export_selected_usage_filename\"/>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25094(para)
 msgid ""
 "Displaying image information in the darkroom’s image information line. See "
 "<xref linkend=\"infoline\"/>"
 msgstr ""
+"Affichage des informations de l'image dans la ligne <emphasis>informations "
+"de l'image</emphasis> de la chambre noire. Voir <xref linkend=\"infoline\"/>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25097(para)
 msgid ""
 "Displaying image information in the lighttable’s overlays and tooltips. See "
 "<xref linkend=\"lighttable_options\"/>"
 msgstr ""
+"Affichage des informations de l'image dans les superpositions et les info-"
+"bulles de la table lumineuse. Voir <xref linkend=\"lighttable_options\"/>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25104(title)
-#, fuzzy
 msgid "available variables"
-msgstr "Voir pour les valeurs disponibles."
+msgstr "variables disponibles"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25106(para)
 msgid ""
 "Due to the specifities of some context, some variables are not available "
 "everywhere."
 msgstr ""
+"En raison de la spécificité de certains contextes, certaines variables ne "
+"sont pas disponibles partout."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25115(code)
 msgid "$(ROLL_NAME)"
@@ -30345,7 +30446,7 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25189(entry)
 msgid "internal code of current job"
-msgstr ""
+msgstr "code interne du travail courant"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25213(entry)
 msgid "year at date of export"
@@ -30389,7 +30490,7 @@ msgstr "heure EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25293(entry)
 msgid "Exif minute"
-msgstr "minute EXIF "
+msgstr "minute EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25301(entry)
 msgid "Exif second"
@@ -30405,7 +30506,7 @@ msgstr "$(EXIF_EXPOSURE)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25317(entry)
 msgid "Exif exposure"
-msgstr "Exposition EXIF"
+msgstr "exposition EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25323(code)
 msgid "$(EXIF_EXPOSURE_BIAS)"
@@ -30413,7 +30514,7 @@ msgstr "$(EXIF_EXPOSURE_BIAS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25325(entry)
 msgid "Exif exposure bias"
-msgstr "Biais d'exposition EXIF"
+msgstr "biais d'exposition EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25331(code)
 msgid "$(EXIF_APERTURE)"
@@ -30421,7 +30522,7 @@ msgstr "$(EXIF_APERTURE)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25333(entry)
 msgid "Exif aperture"
-msgstr "Ouverture EXIF"
+msgstr "ouverture EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25339(code)
 msgid "$(EXIF_FOCAL_LENGTH)"
@@ -30429,7 +30530,7 @@ msgstr "$(EXIF_FOCAL_LENGTH)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25341(entry)
 msgid "Exif focal length"
-msgstr "Longueur focale EXIF"
+msgstr "longueur focale EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25347(code)
 msgid "$(EXIF_FOCUS_DISTANCE)"
@@ -30437,7 +30538,7 @@ msgstr "$(EXIF_FOCUS_DISTANCE)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25349(entry)
 msgid "Exif focus distance"
-msgstr "Distance focale EXIF"
+msgstr "distance focale EXIF"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25355(code)
 msgid "$(LONGITUDE)"
@@ -30445,7 +30546,7 @@ msgstr "$(LONGITUDE)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25357(entry)
 msgid "Longitude"
-msgstr "Longitude"
+msgstr "longitude"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25363(code)
 msgid "$(LATITUDE)"
@@ -30453,7 +30554,7 @@ msgstr "$(LATITUDE)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25365(entry)
 msgid "Latitude"
-msgstr "Latitude"
+msgstr "latitude"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25371(code)
 msgid "$(ELEVATION)"
@@ -30461,52 +30562,47 @@ msgstr "$(ELEVATION)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25373(entry)
 msgid "Elevation"
-msgstr "Élévation"
+msgstr "élévation"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25379(code)
 msgid "$(STARS)"
 msgstr "$(STARS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25381(entry)
-#, fuzzy
 msgid "star rating (number)"
-msgstr "étoiles de l’évaluation"
+msgstr "évaluation par étoiles (nombres)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25387(code)
 msgid "$(RATING_ICONS)"
-msgstr ""
+msgstr "$(RATING_ICONS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25389(entry)
-#, fuzzy
 msgid "star rating with stars chars"
-msgstr "évaluation par étoiles"
+msgstr "évaluation par étoiles avec des caractères étoiles"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25395(code)
 msgid "$(LABELS)"
 msgstr "$(LABELS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25397(entry)
-#, fuzzy
 msgid "colorlabels (text only)"
-msgstr "labels de couleur"
+msgstr "étiquettes de couleur (texte seulement)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25403(code)
-#, fuzzy
 msgid "$(LABELS_ICONS)"
-msgstr "$(LABELS)"
+msgstr "$(LABELS_ICONS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25405(entry)
 msgid "colorlabels with bullets colored chars"
-msgstr ""
+msgstr "étiquettes de couleur avec des puces caractères colorés"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25411(code)
-#, fuzzy
 msgid "$(LABELS_COLORICONS)"
-msgstr "$(LABELS)"
+msgstr "$(LABELS_COLORICONS)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25413(entry)
 msgid "colorlabels with colored icons"
-msgstr ""
+msgstr "étiquettes de couleur avec des icônes colorées"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25419(code)
 msgid "$(MAKER)"
@@ -30581,14 +30677,12 @@ msgid "desktop folder"
 msgstr "dossier <quote>bureau</quote>"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25509(entry)
-#, fuzzy
 msgid "user name as defined by the OS"
-msgstr "le répertoire personnel défini par le système"
+msgstr "nom du répertoire personnel défini par le système"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25515(code)
-#, fuzzy
 msgid "$(OPENCL_ACTIVATED)"
-msgstr "$(OPENCL)"
+msgstr "$(OPENCL_ACTIVATED)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25517(entry)
 msgid "whether OpenCL is activated"
@@ -30613,25 +30707,23 @@ msgstr ""
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25539(code)
 msgid "$(SIDECAR_TXT)"
-msgstr ""
+msgstr "$(SIDECAR_TXT)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25541(entry)
 msgid "content of the sidecar textfile if any"
-msgstr ""
+msgstr "contenu du fichier texte du fichier lié s'il existe"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25547(code)
 msgid "$(NL)"
-msgstr ""
+msgstr "$(NL)"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25549(entry)
-#, fuzzy
 msgid "add a new line"
-msgstr "draw_line"
+msgstr "ajouter une nouvelle ligne"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25560(title)
-#, fuzzy
 msgid "variables substitutions"
-msgstr "position verticale"
+msgstr "substitutions de variables"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25562(para)
 msgid ""
@@ -30649,9 +30741,9 @@ msgstr ""
 "caractères. Il n'y a pas de support des expressions régulières. Vous pouvez "
 "par exemple faire la chose suivante : <code>$(ROLL_NAME/search/replace)</"
 "code>. Ce qui signifie que si le nom de votre pellicule est par exemple "
-"<emphasis>1970-01-01_RAW_Time-Begins</emphasis> et si vous utilisez <code>"
+"<emphasis>1970-01-01_RAW_date-début</emphasis> et si vous utilisez <code>"
 "$(ROLL_NAME/RAW/JPG)</code> alors le nom résultant de la pellicule sera : "
-"<emphasis>1970-01-01_JPG_Time-Begins</emphasis>"
+"<emphasis>1970-01-01_JPG_date-début</emphasis>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25578(code)
 msgid "$(var-default)"
@@ -30861,7 +30953,7 @@ msgstr "Met en minuscule tous les caractères de <placeholder-1/>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25774(title)
 msgid "pango markup"
-msgstr ""
+msgstr "langage markup pango"
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25776(para)
 msgid ""
@@ -30870,6 +30962,11 @@ msgid ""
 "gnome.org/pygtk/stable/pango-markup-language.html\"><emphasis>The Pango "
 "Markup Language</emphasis></ulink>"
 msgstr ""
+"Si vous utilisez des variables dans le contexte de l'interface graphique "
+"(panneaux), vous pouvez également utiliser le langage markup pour définir "
+"comment afficher les textes. Voir <ulink url=\"https://developer.gnome.org/"
+"pygtk/stable/pango-markup-language.html\"><emphasis>The Pango Markup "
+"Language</emphasis></ulink>."
 
 #: /home/michel/darktable_ml/build/doc/usermanual/po/darktable-usermanual_profiled.xml:25789(title)
 msgid "Index"
