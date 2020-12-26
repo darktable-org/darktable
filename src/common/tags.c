@@ -1320,15 +1320,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
     gchar **entry = tokens;
     while (*entry)
     {
-      // remove leading and trailing spaces
-      char *e = *entry + strlen(*entry) - 1;
-      while(*e == ' ' && e > *entry)
-      {
-        *e = '\0';
-        e--;
-      }
-      e = *entry;
-      while(*e == ' ') e++;
+      char *e = g_strstrip(*entry);
       if(*e)
       {
         synonyms = dt_util_dstrcat(synonyms, "%s, ", e);
