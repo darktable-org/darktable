@@ -124,7 +124,7 @@ int read_image(dt_imageio_png_t *png, void *out)
     return 1;
   }
 
-  png_bytep *row_pointers = malloc((size_t)png->height * sizeof(png_bytep));
+  png_bytep *row_pointers = malloc(sizeof(png_bytep) * png->height);
 
   png_bytep row_pointer = (png_bytep)out;
   const size_t rowbytes = png_get_rowbytes(png->png_ptr, png->info_ptr);

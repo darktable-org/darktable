@@ -173,7 +173,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 static void capture_histogram(const float *col, const int width, const int height, int *hist)
 {
   // build separate histogram
-  memset(hist, 0, HISTN * sizeof(int));
+  memset(hist, 0, sizeof(int) * HISTN);
   for(int k = 0; k < height; k++)
     for(int i = 0; i < width; i++)
     {
@@ -296,9 +296,9 @@ static void kmeans(const float *col, const int width, const int height, const in
   const int nit = 40;                       // number of iterations
   const int samples = width * height * 0.2; // samples: only a fraction of the buffer.
 
-  float2 *const mean = malloc(n * sizeof(float2));
-  float2 *const var = malloc(n * sizeof(float2));
-  int *const cnt = malloc(n * sizeof(int));
+  float2 *const mean = malloc(sizeof(float2) * n);
+  float2 *const var = malloc(sizeof(float2) * n);
+  int *const cnt = malloc(sizeof(int) * n);
   int count;
 
   float a_min = FLT_MAX, b_min = FLT_MAX, a_max = FLT_MIN, b_max = FLT_MIN;
@@ -455,12 +455,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_pthread_mutex_lock(&g->lock);
     if(g->buffer) free(g->buffer);
 
-    g->buffer = malloc((size_t)4 * width * height  * sizeof(float));
+    g->buffer = malloc(sizeof(float) * 4 * width * height);
     g->width = width;
     g->height = height;
     g->ch = 4;
 
-    if(g->buffer) memcpy(g->buffer, in, (size_t)4 * width * height * sizeof(float));
+    if(g->buffer) memcpy(g->buffer, in, sizeof(float) * 4 * width * height);
 
     dt_pthread_mutex_unlock(&g->lock);
   }
@@ -474,12 +474,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float equalization = data->equalization / 100.0f;
 
     // get mapping from input clusters to target clusters
-    int *const mapio = malloc(data->n * sizeof(int));
+    int *const mapio = malloc(sizeof(int) * data->n);
 
     get_cluster_mapping(data->n, data->target_mean, data->target_weight, data->source_mean,
                         data->source_weight, dominance, mapio);
 
-    float2 *const var_ratio = malloc(data->n * sizeof(float2));
+    float2 *const var_ratio = malloc(sizeof(float2) * data->n);
 
     for(int i = 0; i < data->n; i++)
     {
@@ -569,7 +569,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // incomplete parameter set -> do nothing
   else
   {
-    memcpy(out, in, (size_t)sizeof(float) * 4 * width * height);
+    memcpy(out, in, sizeof(float) * 4 * width * height);
   }
 }
 
@@ -612,7 +612,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_pthread_mutex_lock(&g->lock);
     free(g->buffer);
 
-    g->buffer = malloc(width * height * ch * sizeof(float));
+    g->buffer = malloc(sizeof(float) * ch * width * height);
     g->width = width;
     g->height = height;
     g->ch = ch;
@@ -643,7 +643,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
           = (data->target_var[i][1] > 0.0f) ? data->source_var[mapio[i]][1] / data->target_var[i][1] : 0.0f;
     }
 
-    dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+    dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto error;
 
     dev_target_hist = dt_opencl_copy_host_to_device_constant(devid, sizeof(int) * HISTN, data->target_hist);
@@ -964,13 +964,13 @@ static void process_clusters(gpointer instance, gpointer user_data)
   const int width = g->width;
   const int height = g->height;
   const int ch = g->ch;
-  float *buffer = malloc(width * height * ch * sizeof(float));
+  float *buffer = malloc(sizeof(float) * ch * width * height);
   if(!buffer)
   {
     dt_pthread_mutex_unlock(&g->lock);
     return;
   }
-  memcpy(buffer, g->buffer, width * height * ch * sizeof(float));
+  memcpy(buffer, g->buffer, sizeof(float) * ch * width * height);
   dt_pthread_mutex_unlock(&g->lock);
 
   if(p->flag & GET_SOURCE)

@@ -2283,10 +2283,10 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
         if(lib->selected_images)
         {
           // drag & drop of images
-          const int imgs_nb = g_list_length(lib->selected_images);
+          const guint imgs_nb = g_list_length(lib->selected_images);
           if(imgs_nb)
           {
-            uint32_t *imgs = malloc(imgs_nb * sizeof(uint32_t));
+            uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
             GList *l = lib->selected_images;
             for(int i = 0; i < imgs_nb; i++)
             {

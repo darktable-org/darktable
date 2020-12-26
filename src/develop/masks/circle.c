@@ -731,10 +731,10 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
 
   // how many points do we need ?
   float r = radius * MIN(wd, ht);
-  int l = MAX(100, (int)(2.0 * M_PI * r));
+  const size_t l = MAX(100, (size_t)(2.0 * M_PI * r));
 
   // buffer allocations
-  *points = dt_alloc_align_float(2 * (l + 1));
+  *points = dt_alloc_align_float((l + 1) * 2);
   if(*points == NULL)
   {
     *points_count = 0;
@@ -769,10 +769,10 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
-  float r = (circle->radius + circle->border) * MIN(wd, ht);
-  int l = (int)(2.0 * M_PI * r);
+  const float r = (circle->radius + circle->border) * MIN(wd, ht);
+  const size_t l = (size_t)(2.0 * M_PI * r);
   // buffer allocations
-  float *const restrict points = dt_alloc_align_float(2 * (l + 1));
+  float *const restrict points = dt_alloc_align_float((l + 1) * 2);
   if(points == NULL)
     return 0;
 
@@ -822,10 +822,10 @@ static int dt_circle_get_area(const dt_iop_module_t *const restrict module,
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
-  float r = (circle->radius + circle->border) * MIN(wd, ht);
-  int l = (int)(2.0 * M_PI * r);
+  const float r = (circle->radius + circle->border) * MIN(wd, ht);
+  const size_t l = (size_t)(2.0 * M_PI * r);
   // buffer allocations
-  float *const restrict points = dt_alloc_align_float(2 * (l + 1));
+  float *const restrict points = dt_alloc_align_float((l + 1) * 2);
   if(points == NULL)
     return 0;
 
@@ -1003,7 +1003,7 @@ static int dt_circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
   // initialize output buffer with zero
-  memset(buffer, 0, (size_t)w * h * sizeof(float));
+  memset(buffer, 0, sizeof(float) * w * h);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] circle init took %0.04f sec\n", form->name, dt_get_wtime() - start2);

@@ -272,7 +272,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *mask = NULL;
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(piece->module, mask_id))
   {
-    mask = (float *)dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
+    mask = (float *)dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
     memset(mask, 0, sizeof(float) * roi_out->width * roi_out->height);
   }
   else

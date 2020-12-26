@@ -34,14 +34,16 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
   const int wd = (int)(1 + (width >> (l - 1))), ht = (int)(1 + (height >> (l - 1)));
   int ch = 0;
   // store weights for luma channel only, chroma uses same basis.
-  memset(weight_a[l], 0, (size_t)sizeof(float) * wd * ht);
+  memset(weight_a[l], 0, sizeof(float) * wd * ht);
   for(int j = 0; j < ht - 1; j++)
     for(int i = 0; i < wd - 1; i++) weight_a[l][(size_t)j * wd + i] = gbuf(buf, i << (l - 1), j << (l - 1));
 
   const int step = 1 << l;
   const int st = step / 2;
 
-  float *const tmp_width_buf = (float *)malloc(width * dt_get_num_threads() * sizeof(float));
+  const size_t numthreads = dt_get_num_threads();
+
+  float *const tmp_width_buf = (float *)malloc(numthreads * sizeof(float) * width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, l, st, step, tmp_width_buf, wd, width) \
@@ -75,7 +77,7 @@ static void dt_iop_equalizer_wtf(float *buf, float **weight_a, const int l, cons
 
   free((void *)tmp_width_buf);
 
-  float *const tmp_height_buf = (float *)malloc(height * dt_get_num_threads() * sizeof(float));
+  float *const tmp_height_buf = (float *)malloc(numthreads * sizeof(float) * height);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, l, st, step, tmp_height_buf, wd, width) \
@@ -116,7 +118,9 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
   const int st = step / 2;
   const int wd = (int)(1 + (width >> (l - 1)));
 
-  float *const tmp_height_buf = (float *)malloc(height * dt_get_num_threads() * sizeof(float));
+  const size_t numthreads = dt_get_num_threads();
+
+  float *const tmp_height_buf = (float *)malloc(numthreads * sizeof(float) * height);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, l, st, step, tmp_height_buf, wd, width) \
@@ -148,7 +152,7 @@ static void dt_iop_equalizer_iwtf(float *buf, float **weight_a, const int l, con
 
   free((void *)tmp_height_buf);
 
-  float *const tmp_width_buf = (float *)malloc(width * dt_get_num_threads() * sizeof(float));
+  float *const tmp_width_buf = (float *)malloc(numthreads * sizeof(float) * width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, l, st, step, tmp_width_buf, wd, width) \

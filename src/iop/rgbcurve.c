@@ -1578,7 +1578,7 @@ static void _generate_curve_lut(dt_dev_pixelpipe_t *pipe, dt_iop_rgbcurve_data_t
   {
     for(int ch = 0; ch < DT_IOP_RGBCURVE_MAX_CHANNELS; ch++)
     {
-      memcpy(curve_nodes[ch], d->params.curve_nodes[ch], DT_IOP_RGBCURVE_MAXNODES * sizeof(dt_iop_rgbcurve_node_t));
+      memcpy(curve_nodes[ch], d->params.curve_nodes[ch], sizeof(dt_iop_rgbcurve_node_t) * DT_IOP_RGBCURVE_MAXNODES);
     }
   }
 
