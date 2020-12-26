@@ -2809,7 +2809,7 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float delta = (right - left) / 2.0f;
   const float mid = left + delta;
   const float tmp = (middle - mid) / delta;
-  const float in_inv_gamma = pow(10, tmp);
+  const float in_inv_gamma = powf(10, tmp);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3172,7 +3172,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
 {
-  if(fabs(blur_radius) <= 0.1f) return;
+  if(fabsf(blur_radius) <= 0.1f) return;
 
   const float sigma = blur_radius * roi_in->scale / piece->iscale;
 
@@ -3189,7 +3189,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
   // copy source image so we blur just the mask area (at least the smallest rect that covers it)
   rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, ch, 0, 0);
 
-  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabs(blur_radius) > 0.1f)
+  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
     float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
     float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
@@ -3205,7 +3205,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
       dt_gaussian_free(g);
     }
   }
-  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabs(blur_radius) > 0.1f)
+  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabsf(blur_radius) > 0.1f)
   {
     const float sigma_r = 100.0f; // does not depend on scale
     const float sigma_s = sigma;
@@ -3921,7 +3921,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
 {
   cl_int err = CL_SUCCESS;
 
-  if(fabs(blur_radius) <= 0.1f) return err;
+  if(fabsf(blur_radius) <= 0.1f) return err;
 
   const float sigma = blur_radius * roi_layer->scale / piece->iscale;
   const int ch = 4;
@@ -3955,7 +3955,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
     goto cleanup;
   }
 
-  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabs(blur_radius) > 0.1f)
+  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
     float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
     float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
@@ -3969,7 +3969,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
       if(err != CL_SUCCESS) goto cleanup;
     }
   }
-  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabs(blur_radius) > 0.1f)
+  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabsf(blur_radius) > 0.1f)
   {
     const float sigma_r = 100.0f; // does not depend on scale
     const float sigma_s = sigma;
