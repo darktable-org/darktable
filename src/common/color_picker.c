@@ -167,9 +167,9 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
     }
   }
 
-  free(mmax);
-  free(mmin);
-  free(mean);
+  dt_free_align(mmax);
+  dt_free_align(mmin);
+  dt_free_align(mean);
 }
 
 static void color_picker_helper_4ch(const dt_iop_buffer_dsc_t *dsc, const float *const pixel,
