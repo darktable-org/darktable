@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/interpolation.h"
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "common/opencl.h"
 #include "control/conf.h"
@@ -572,18 +573,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, roi_out) \
-    shared(d) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *_in = in + (size_t)roi_out->width * j;
-      float *_out = out + (size_t)roi_out->width * j;
-      memcpy(_out, _in, sizeof(float) * roi_out->width);
-    }
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
   }
   else
   {
@@ -608,7 +598,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
     for(int j = 0; j < roi_out->height; j++)
     {
       float *_out = out + (size_t)j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, _out++)
+      for(int i = 0; i < roi_out->width; i++)
       {
         float pi[2] = { 0.0f }, po[2] = { 0.0f };
 
@@ -637,8 +627,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
         po[0] -= roi_in->x + 0.5f;
         po[1] -= roi_in->y + 0.5f;
 
-        *_out = dt_interpolation_compute_sample(interpolation, in, po[0], po[1], roi_in->width, roi_in->height, 1,
-                                                roi_in->width);
+        _out[i] = dt_interpolation_compute_sample(interpolation, in, po[0], po[1], roi_in->width, roi_in->height, 1,
+                                                  roi_in->width);
       }
     }
   }
@@ -953,23 +943,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width
      && roi_in->height == roi_out->height)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
-    shared(d) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
-      float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        for(int c = 0; c < 4; c++) out[c] = in[c];
-        out += ch;
-        in += ch;
-      }
-    }
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
   }
   else
   {
@@ -994,7 +968,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int j = 0; j < roi_out->height; j++)
     {
       float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, out += ch)
+      for(int i = 0; i < roi_out->width; i++)
       {
         float pi[2], po[2];
 
@@ -1023,7 +997,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         po[0] -= roi_in->x + 0.5f;
         po[1] -= roi_in->y + 0.5f;
 
-        dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width,
+        dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out + ch*i, po[0], po[1], roi_in->width,
                                          roi_in->height, ch_width);
       }
     }
