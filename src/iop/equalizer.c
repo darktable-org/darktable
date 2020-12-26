@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -116,7 +117,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(ovoid, ivoid, sizeof(float) * chs * width * height);
+  dt_iop_image_copy_by_size(ovoid, ivoid, width, height, chs);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");

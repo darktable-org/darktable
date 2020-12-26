@@ -324,9 +324,9 @@ void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
 
 void *dt_alloc_align(size_t alignment, size_t size);
-static inline void * dt_alloc_align_float(size_t pixels)
+static inline float *dt_alloc_align_float(size_t pixels)
 {
-  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+  return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
 }
 size_t dt_round_size(const size_t size, const size_t alignment);
 size_t dt_round_size_sse(const size_t size);
