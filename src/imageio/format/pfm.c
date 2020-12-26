@@ -46,7 +46,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     while((len + 1 + off) & 0xf) off++;
     while(off-- > 0) fprintf(f, "0");
     fprintf(f, "\n");
-    void *buf_line = dt_alloc_align(64, 3 * sizeof(float) * pfm->width);
+    void *buf_line = dt_alloc_align_float((size_t)3 * pfm->width);
     for(int j = 0; j < pfm->height; j++)
     {
       // NOTE: pfm has rows in reverse order
@@ -55,10 +55,10 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       float *out = (float *)buf_line;
       for(int i = 0; i < pfm->width; i++, in += 4, out += 3)
       {
-        memcpy(out, in, 3 * sizeof(float));
+        memcpy(out, in, sizeof(float) * 3);
       }
       // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
-      int cnt = fwrite(buf_line, 3 * sizeof(float), pfm->width, f);
+      int cnt = fwrite(buf_line, sizeof(float) * 3, pfm->width, f);
       if(cnt != pfm->width)
         status = 1;
       else

@@ -252,7 +252,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   // we create a new buffer
   const int wt = piece->iwidth;
   const int ht = piece->iheight;
-  float *buf = dt_alloc_align(64, (size_t)ht * wt * sizeof(float));
+  float *buf = dt_alloc_align_float((size_t)ht * wt);
 
   // we fill this buffer
   for(int yy = 0; yy < MIN(*posy, ht); yy++)
@@ -290,13 +290,13 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
   float **bufs = calloc(nb, sizeof(float *));
-  int *w = malloc(nb * sizeof(int));
-  int *h = malloc(nb * sizeof(int));
-  int *px = malloc(nb * sizeof(int));
-  int *py = malloc(nb * sizeof(int));
-  int *ok = malloc(nb * sizeof(int));
-  int *states = malloc(nb * sizeof(int));
-  float *op = malloc(nb * sizeof(float));
+  int *w = malloc(sizeof(int) * nb);
+  int *h = malloc(sizeof(int) * nb);
+  int *px = malloc(sizeof(int) * nb);
+  int *py = malloc(sizeof(int) * nb);
+  int *ok = malloc(sizeof(int) * nb);
+  int *states = malloc(sizeof(int) * nb);
+  float *op = malloc(sizeof(float) * nb);
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);
@@ -340,7 +340,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *height = b - t;
 
   // we allocate the buffer
-  *buffer = dt_alloc_align(64, sizeof(float) * (r - l) * (b - t));
+  *buffer = dt_alloc_align_float((size_t)(r - l) * (b - t));
 
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
@@ -456,11 +456,11 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   const int height = roi->height;
 
   // we need to allocate a temporary buffer for intermediate creation of individual shapes
-  float *bufs = dt_alloc_align(64, (size_t)width * height * sizeof(float));
+  float *bufs = dt_alloc_align_float((size_t)width * height);
   if(bufs == NULL) return 0;
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  memset(buffer, 0, sizeof(float) * width * height);
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);

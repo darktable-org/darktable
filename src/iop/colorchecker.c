@@ -770,8 +770,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   default:
   {
     // setup linear system of equations
-    double *A = malloc(N4 * N4 * sizeof(*A));
-    double *b = malloc(N4 * sizeof(*b));
+    double *A = malloc(sizeof(*A) * N4 * N4);
+    double *b = malloc(sizeof(*b) * N4);
     // coefficients from nonlinear radial kernel functions
     for(int j=0;j<N;j++)
       for(int i=j;i<N;i++)
@@ -786,7 +786,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
       for(int i=N;i<N4;i++)
         A[j*N4+i] = 0;
     // make coefficient matrix triangular
-    int *pivot = malloc(N4 * sizeof(*pivot));
+    int *pivot = malloc(sizeof(*pivot) * N4);
     if (gauss_make_triangular(A, pivot, N4))
     {
       // calculate coefficients for L channel

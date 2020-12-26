@@ -308,7 +308,7 @@ static ntuple_list new_ntuple_list(unsigned int dim)
   n_tuple->dim = dim;
 
   /* get memory for tuples */
-  n_tuple->values = (double *) malloc( dim*n_tuple->max_size * sizeof(double) );
+  n_tuple->values = (double *) malloc(sizeof(double) * dim * n_tuple->max_size);
   if( n_tuple->values == NULL ) error("not enough memory.");
 
   return n_tuple;

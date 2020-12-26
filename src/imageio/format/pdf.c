@@ -288,7 +288,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
       cmsSaveProfileToMem(profile->profile, 0, &len);
       if(len > 0)
       {
-        unsigned char *buf = malloc(len * sizeof(unsigned char));
+        unsigned char *buf = malloc(sizeof(unsigned char) * len);
         cmsSaveProfileToMem(profile->profile, buf, &len);
         icc_id = dt_pdf_add_icc_from_data(d->pdf, buf, len);
         free(buf);
@@ -309,7 +309,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   {
     if(d->params.bpp == 8)
     {
-      image_data = dt_alloc_align(64, data->width * data->height * 3);
+      image_data = dt_alloc_align(64, (size_t)3 * data->width * data->height);
       const uint8_t *in_ptr = (const uint8_t *)in;
       uint8_t *out_ptr = (uint8_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -320,7 +320,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     }
     else
     {
-      image_data = dt_alloc_align(64, data->width * data->height * 3 * sizeof(uint16_t));
+      image_data = dt_alloc_align(64, sizeof(uint16_t) * 3 * data->width * data->height);
       const uint16_t *in_ptr = (const uint16_t *)in;
       uint16_t *out_ptr = (uint16_t *)image_data;
       for(int y = 0; y < data->height; y++)
@@ -345,7 +345,7 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
   if(num == total)
   {
     int n_images = g_list_length(d->images);
-    dt_pdf_page_t **pages = malloc(n_images * sizeof(dt_pdf_page_t *));
+    dt_pdf_page_t **pages = malloc(sizeof(dt_pdf_page_t *) * n_images);
 
     gboolean outline_mode = d->params.mode != MODE_NORMAL;
     gboolean show_bb = d->params.mode == MODE_DEBUG;

@@ -280,7 +280,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
 
   // allocate space for blend mask
-  float *const restrict _mask = dt_alloc_align(64, buffsize * sizeof(float));
+  float *const restrict _mask = dt_alloc_align_float(buffsize);
   if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
@@ -419,7 +419,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
         default:
           assert(0);
       }
-      float *const restrict mask_bak = dt_alloc_align(64, sizeof(*mask_bak) * buffsize);
+      float *const restrict mask_bak = dt_alloc_align_float(buffsize);
       if(mask_bak)
       {
         memcpy(mask_bak, mask, sizeof(*mask_bak) * buffsize);
@@ -427,7 +427,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
                                                                       : (float *const restrict)ovoid;
         if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
         {
-          float *const restrict guide_tmp = dt_alloc_align(64, sizeof(*guide_tmp) * buffsize * ch);
+          float *const restrict guide_tmp = dt_alloc_align_float(buffsize * ch);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(ch, guide_tmp, ivoid, iwidth, oheight, owidth, xoffs, yoffs)
@@ -601,7 +601,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   const float opacity = fminf(fmaxf(0.0f, (d->opacity / 100.0f)), 1.0f);
 
   // allocate space for blend mask
-  float *_mask = dt_alloc_align(64, buffsize * sizeof(float));
+  float *_mask = dt_alloc_align_float(buffsize);
   if(!_mask)
   {
     dt_control_log(_("could not allocate buffer for blending"));
@@ -838,7 +838,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       cl_mem guide = d->feathering_guide == DEVELOP_MASK_GUIDE_IN ? dev_in : dev_out;
       if(!rois_equal && d->feathering_guide == DEVELOP_MASK_GUIDE_IN)
       {
-        dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
+        dev_guide = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
         if(dev_guide == NULL) goto error;
         guide = dev_guide;
         size_t origin_1[] = { xoffs, yoffs, 0 };
@@ -908,7 +908,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
   }
 
   // get temporary buffer for output image to overcome readonly/writeonly limitation
-  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, owidth, oheight, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   err = dt_opencl_enqueue_copy_image(devid, dev_out, dev_tmp, origin, origin, region);
@@ -1177,7 +1177,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
     return 0;
   }
@@ -1199,7 +1199,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
     return 0;
   }
@@ -1224,7 +1224,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     // bit no. 32 in blendif.
     n->blendif = (o->blendif & (1u << DEVELOP_BLENDIF_active) ? o->blendif | 31 : o->blendif)
                  & ~(1u << DEVELOP_BLENDIF_active);
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
 
     return 0;
   }
@@ -1244,7 +1244,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     return 0;
   }
 
@@ -1263,7 +1263,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
     n->blendif = o->blendif;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     return 0;
   }
 
@@ -1286,7 +1286,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->blur_radius;
     n->contrast = o->contrast;
     n->brightness = o->brightness;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     return 0;
   }
 
@@ -1309,7 +1309,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->blur_radius;
     n->contrast = o->contrast;
     n->brightness = o->brightness;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
     memcpy(n->raster_mask_source, o->raster_mask_source, sizeof(n->raster_mask_source));
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_id;

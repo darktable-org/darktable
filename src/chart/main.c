@@ -820,20 +820,20 @@ static void add_hdr_patches(int *N, double **target_L, double **target_a, double
 
   if(n_extra_patches > 0)
   {
-    *target_L = realloc(*target_L, (*N + n_extra_patches + 4) * sizeof(double));
-    *target_a = realloc(*target_a, (*N + n_extra_patches + 4) * sizeof(double));
-    *target_b = realloc(*target_b, (*N + n_extra_patches + 4) * sizeof(double));
-    *colorchecker_Lab = realloc(*colorchecker_Lab, 3 * (*N + n_extra_patches) * sizeof(double));
+    *target_L = realloc(*target_L, sizeof(double) * (*N + n_extra_patches + 4));
+    *target_a = realloc(*target_a, sizeof(double) * (*N + n_extra_patches + 4));
+    *target_b = realloc(*target_b, sizeof(double) * (*N + n_extra_patches + 4));
+    *colorchecker_Lab = realloc(*colorchecker_Lab, sizeof(double) * 3 * (*N + n_extra_patches));
 
-    memmove(&(*target_L)[n_extra_patches], *target_L, *N * sizeof(double));
-    memmove(&(*target_a)[n_extra_patches], *target_a, *N * sizeof(double));
-    memmove(&(*target_b)[n_extra_patches], *target_b, *N * sizeof(double));
-    memmove(&(*colorchecker_Lab)[3 * n_extra_patches], *colorchecker_Lab, 3 * *N * sizeof(double));
+    memmove(&(*target_L)[n_extra_patches], *target_L, sizeof(double) * *N);
+    memmove(&(*target_a)[n_extra_patches], *target_a, sizeof(double) * *N);
+    memmove(&(*target_b)[n_extra_patches], *target_b, sizeof(double) * *N);
+    memmove(&(*colorchecker_Lab)[3 * n_extra_patches], *colorchecker_Lab, sizeof(double) * 3 * *N);
 
-    memcpy(*target_L, extra_target_L, n_extra_patches * sizeof(double));
-    memcpy(*target_a, extra_target_a, n_extra_patches * sizeof(double));
-    memcpy(*target_b, extra_target_b, n_extra_patches * sizeof(double));
-    memcpy(*colorchecker_Lab, extra_colorchecker_Lab, 3 * n_extra_patches * sizeof(double));
+    memcpy(*target_L, extra_target_L, sizeof(double) * n_extra_patches);
+    memcpy(*target_a, extra_target_a, sizeof(double) * n_extra_patches);
+    memcpy(*target_b, extra_target_b, sizeof(double) * n_extra_patches);
+    memcpy(*colorchecker_Lab, extra_colorchecker_Lab, sizeof(double) * 3 * n_extra_patches);
 
     *N += n_extra_patches;
   }
@@ -1049,11 +1049,11 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 #endif
 
   const double *target[3] = { target_L, target_a, target_b };
-  double *coeff_L = malloc((N + 4) * sizeof(double));
-  double *coeff_a = malloc((N + 4) * sizeof(double));
-  double *coeff_b = malloc((N + 4) * sizeof(double));
+  double *coeff_L = malloc(sizeof(double) * (N + 4) );
+  double *coeff_a = malloc(sizeof(double) * (N + 4) );
+  double *coeff_b = malloc(sizeof(double) * (N + 4) );
   double *coeff[] = { coeff_L, coeff_a, coeff_b };
-  int *perm = malloc((N + 4) * sizeof(int));
+  int *perm = malloc(sizeof(int) * (N + 4));
   double avgerr, maxerr;
   sparsity = thinplate_match(&tonecurve, 3, N, colorchecker_Lab, target, sparsity, perm, coeff, &avgerr, &maxerr);
 
@@ -1107,7 +1107,7 @@ static void process_button_clicked_callback(GtkButton *button, gpointer user_dat
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
   double *target_a = (double *)calloc(sizeof(double), (N + 4));
   double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *colorchecker_Lab = (double *)calloc(3 * sizeof(double), N);
+  double *colorchecker_Lab = (double *)calloc(sizeof(double) * 3, N);
 
   GHashTableIter table_iter;
   gpointer set_key, value;
@@ -1793,7 +1793,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
   double *target_L = (double *)calloc(sizeof(double), (N + 4));
   double *target_a = (double *)calloc(sizeof(double), (N + 4));
   double *target_b = (double *)calloc(sizeof(double), (N + 4));
-  double *source_Lab = (double *)calloc(3 * sizeof(double), N);
+  double *source_Lab = (double *)calloc(sizeof(double) * 3, N);
   *target_L_ptr = target_L;
   *target_a_ptr = target_a;
   *target_b_ptr = target_b;

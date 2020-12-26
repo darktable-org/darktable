@@ -763,10 +763,10 @@ static void _get_auto_exp_histogram(const float *const img, const int width, con
   uint32_t *histogram = NULL;
   const float mul = hist_size;
 
-  histogram = dt_alloc_align(64, hist_size * sizeof(uint32_t));
+  histogram = dt_alloc_align(64, sizeof(uint32_t) * hist_size);
   if(histogram == NULL) goto cleanup;
 
-  memset(histogram, 0, hist_size * sizeof(uint32_t));
+  memset(histogram, 0, sizeof(uint32_t) * hist_size);
 
   if(box_area[2] > box_area[0] && box_area[3] > box_area[1])
   {
@@ -1307,7 +1307,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_pthread_mutex_unlock(&g->lock);
 
       // get the image, this works only in C
-      src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+      src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
         fprintf(stderr, "[basicadj process_cl] error allocating memory for color transformation 1\n");

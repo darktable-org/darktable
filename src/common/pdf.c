@@ -199,7 +199,7 @@ static void _pdf_set_offset(dt_pdf_t *pdf, int id, size_t offset)
   if(id >= pdf->n_offsets)
   {
     pdf->n_offsets = MAX(pdf->n_offsets * 2, id);
-    pdf->offsets = realloc(pdf->offsets, pdf->n_offsets * sizeof(size_t));
+    pdf->offsets = realloc(pdf->offsets, sizeof(size_t) * pdf->n_offsets);
   }
   pdf->offsets[id] = offset;
 }
@@ -417,7 +417,7 @@ dt_pdf_image_t *dt_pdf_add_image(dt_pdf_t *pdf, const unsigned char *image, int 
   );
 
   // the stream
-  stream_size = _pdf_write_stream(pdf, pdf->default_encoder, image, width * height * 3 * (bpp / 8));
+  stream_size = _pdf_write_stream(pdf, pdf->default_encoder, image, (size_t)3 * (bpp / 8) * width * height);
   if(stream_size == 0)
   {
     free(pdf_image);
@@ -874,7 +874,7 @@ int main(int argc, char *argv[])
     int width, height;
     float *image = read_ppm(argv[i + 1], &width, &height);
     if(!image) exit(1);
-    uint16_t *data = (uint16_t *)malloc(width * height * 3 * sizeof(uint16_t));
+    uint16_t *data = (uint16_t *)malloc(sizeof(uint16_t) * 3 * width * height);
     if(!data)
     {
       free(image);

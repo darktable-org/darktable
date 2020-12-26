@@ -105,7 +105,7 @@ static void color_picker_helper_4ch_parallel(const dt_iop_buffer_dsc_t *const ds
 
   const float w = 1.0f / (float)size;
 
-  const int numthreads = dt_get_num_threads();
+  const size_t numthreads = dt_get_num_threads();
 
   size_t allocsize;
   float *const restrict mean = dt_alloc_perthread_float(3, &allocsize);
@@ -231,13 +231,13 @@ static void color_picker_helper_bayer_parallel(const dt_iop_buffer_dsc_t *const 
 
   uint32_t weights[4] = { 0u, 0u, 0u, 0u };
 
-  const int numthreads = dt_get_num_threads();
+  const size_t numthreads = dt_get_num_threads();
 
   //TODO: convert to use dt_alloc_perthread
-  float *const msum = malloc((size_t)4 * numthreads * sizeof(float));
-  float *const mmin = malloc((size_t)4 * numthreads * sizeof(float));
-  float *const mmax = malloc((size_t)4 * numthreads * sizeof(float));
-  uint32_t *const cnt = malloc((size_t)4 * numthreads * sizeof(uint32_t));
+  float *const msum = malloc(sizeof(float) * numthreads * 4);
+  float *const mmin = malloc(sizeof(float) * numthreads * 4);
+  float *const mmax = malloc(sizeof(float) * numthreads * 4);
+  uint32_t *const cnt = malloc(sizeof(uint32_t) * numthreads * 4);
 
   for(int n = 0; n < 4 * numthreads; n++)
   {
@@ -360,13 +360,13 @@ static void color_picker_helper_xtrans_parallel(const dt_iop_buffer_dsc_t *const
 
   uint32_t weights[3] = { 0u, 0u, 0u };
 
-  const int numthreads = dt_get_num_threads();
+  const size_t numthreads = dt_get_num_threads();
 
   //TODO: convert to use dt_alloc_perthread
-  float *const msum = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmin = malloc((size_t)3 * numthreads * sizeof(float));
-  float *const mmax = malloc((size_t)3 * numthreads * sizeof(float));
-  uint32_t *const cnt = malloc((size_t)3 * numthreads * sizeof(uint32_t));
+  float *const mmin = malloc(sizeof(float) * numthreads * 3);
+  float *const msum = malloc(sizeof(float) * numthreads * 3);
+  float *const mmax = malloc(sizeof(float) * numthreads * 3);
+  uint32_t *const cnt = malloc(sizeof(uint32_t) * numthreads * 3);
 
   for(int n = 0; n < 3 * numthreads; n++)
   {

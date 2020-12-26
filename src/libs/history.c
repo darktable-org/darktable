@@ -942,7 +942,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         const float oboost = exp2f(old_blend->blendif_boost_factors[ch]);
         const float nboost = exp2f(hitem->blend_params->blendif_boost_factors[ch]);
 
-        if((oactive || nactive) && (memcmp(of, nf, 4 * sizeof(float)) || opolarity != npolarity))
+        if((oactive || nactive) && (memcmp(of, nf, sizeof(float) * 4) || opolarity != npolarity))
         {
           if(first)
           {

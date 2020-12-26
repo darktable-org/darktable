@@ -264,7 +264,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
       for(int x = 0; x < d->global.width; x++, in += 4, out += layers)
       {
-        memcpy(out, in, layers * sizeof(float));
+        memcpy(out, in, sizeof(float) * layers);
       }
 
       if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -283,7 +283,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
       for(int x = 0; x < d->global.width; x++, in += 4, out += layers)
       {
-        memcpy(out, in, layers * sizeof(uint16_t));
+        memcpy(out, in, sizeof(uint16_t) * layers);
       }
 
       if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -302,7 +302,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
       for(int x = 0; x < d->global.width; x++, in += 4, out += layers)
       {
-        memcpy(out, in, layers * sizeof(uint8_t));
+        memcpy(out, in, sizeof(uint8_t) * layers);
       }
 
       if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)

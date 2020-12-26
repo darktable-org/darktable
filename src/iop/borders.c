@@ -281,7 +281,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   {
     float *outb = out + (size_t)(j + border_in_y) * roi_out->width + border_in_x;
     const float *inb = in + (size_t)j * roi_in->width;
-    memcpy(outb, inb, roi_in->width * sizeof(float));
+    memcpy(outb, inb, sizeof(float) * roi_in->width);
   }
 }
 

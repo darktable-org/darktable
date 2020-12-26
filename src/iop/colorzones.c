@@ -385,7 +385,7 @@ void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
 
   const dt_iop_colorzones_channel_t display_channel = g->channel;
 
-  memcpy(ovoid, ivoid, roi_out->width * roi_out->height * ch * sizeof(float));
+  memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)                                                           \

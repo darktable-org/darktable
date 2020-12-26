@@ -82,7 +82,7 @@ static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
                                    const int buf_width, const int buf_height)
 {
   float *const restrict luma =  dt_alloc_sse_ps(buf_width * buf_height);
-  uint8_t *const restrict focus_peaking = dt_alloc_align(64, 4 * buf_width * buf_height * sizeof(uint8_t));
+  uint8_t *const restrict focus_peaking = dt_alloc_align(64, sizeof(uint8_t) * buf_width * buf_height * 4);
 
   // Create a luma buffer as the euclidian norm of RGB channels
 #ifdef _OPENMP

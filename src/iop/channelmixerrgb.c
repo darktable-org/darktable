@@ -1011,7 +1011,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       }
 
       // passthrough pixels
-      dt_simd_memcpy(in, out, roi_in->width * roi_in->height * ch);
+      dt_simd_memcpy(in, out, ch * roi_in->width * roi_in->height);
 
       dt_control_log(_("auto-detection of white balance completed"));
       return;

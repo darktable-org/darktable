@@ -165,7 +165,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = 4;
   assert(piece->colors == ch);
 
-  float *const img_tmp = dt_alloc_align(64, ch * roi_out->width * roi_out->height * sizeof(float));
+  float *const img_tmp = dt_alloc_align_float((size_t) ch * roi_out->width * roi_out->height);
   if(img_tmp == NULL)
   {
     fprintf(stderr, "[overexposed process] can't alloc temp image\n");
@@ -456,7 +456,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_out->height;
 
   // display mask using histogram profile as output
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, ch * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * ch);
   if(dev_tmp == NULL)
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;

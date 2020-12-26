@@ -148,10 +148,10 @@ dt_bilateral_t *dt_bilateral_init(const int width,     // width of input image
   b->numslices = darktable.num_openmp_threads;
   b->sliceheight = (height + b->numslices - 1) / b->numslices;
   b->slicerows = (b->size_y + b->numslices - 1) / b->numslices + 2;
-  b->buf = dt_alloc_align(64, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));
+  b->buf = dt_alloc_align_float(b->size_x * b->size_z * b->numslices * b->slicerows);
   if (b->buf)
   {
-    memset(b->buf, 0, b->size_x * b->size_z * b->numslices * b->slicerows * sizeof(float));
+    memset(b->buf, 0, sizeof(float) * b->size_x * b->size_z * b->numslices * b->slicerows);
   }
   else
   {
@@ -252,7 +252,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       // clear elements in the part of the buffer which holds the final result now that we've read the partial result,
       // since we'll be adding to those locations later
       if (j < b->size_y)
-        memset(buf + j*oy, '\0', oy*sizeof(float));
+        memset(buf + j*oy, '\0', sizeof(float) * oy);
     }
   }
 }

@@ -406,11 +406,11 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
       // get new surface with preview image
       const int buf_width = dev->preview_pipe->output_backbuf_width;
       const int buf_height = dev->preview_pipe->output_backbuf_height;
-      uint8_t *rgbbuf = g_malloc0((size_t)buf_width * buf_height * 4 * sizeof(unsigned char));
+      uint8_t *rgbbuf = g_malloc0(sizeof(unsigned char) * 4 * buf_width * buf_height);
 
       dt_pthread_mutex_t *mutex = &dev->preview_pipe->backbuf_mutex;
       dt_pthread_mutex_lock(mutex);
-      memcpy(rgbbuf, dev->preview_pipe->output_backbuf, (size_t)buf_width * buf_height * 4 * sizeof(unsigned char));
+      memcpy(rgbbuf, dev->preview_pipe->output_backbuf, sizeof(unsigned char) * 4 * buf_width * buf_height);
       dt_pthread_mutex_unlock(mutex);
 
       const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, buf_width);

@@ -110,7 +110,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
   /* gather light by threshold */
-  float *const restrict blurlightness = dt_alloc_align(64, npixels * sizeof(float));
+  float *const restrict blurlightness = dt_alloc_align_float(npixels);
 //  memcpy(out, in, npixels * 4 * sizeof(float));  //TODO: do we need this?
 
   const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);

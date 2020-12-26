@@ -690,14 +690,14 @@ static void homography(float *homograph, const float angle, const float shift_v,
   float (*moutput)[3] = m3;
 
   // Step 1: flip x and y coordinates (see above)
-  memset(minput, 0, 9 * sizeof(float));
+  memset(minput, 0, sizeof(float) * 9);
   minput[0][1] = 1.0f;
   minput[1][0] = 1.0f;
   minput[2][2] = 1.0f;
 
 
   // Step 2: rotation of image around its center
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = cosi;
   mwork[0][1] = -sini;
   mwork[1][0] = sini;
@@ -711,7 +711,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 3: apply shearing
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[0][1] = shear;
   mwork[1][1] = 1.0f;
@@ -725,7 +725,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 4: apply vertical lens shift effect
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = exppa_v;
   mwork[1][0] = 0.5f * ((exppa_v - 1.0f) * u) / v;
   mwork[1][1] = 2.0f * exppa_v / (exppa_v + 1.0f);
@@ -740,7 +740,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 5: horizontal compression
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_v;
   mwork[1][2] = 0.5f * u * (1.0f - r_v);
@@ -753,7 +753,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 6: flip x and y back again
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][1] = 1.0f;
   mwork[1][0] = 1.0f;
   mwork[2][2] = 1.0f;
@@ -767,7 +767,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   // from here output vectors would be in (x : y : 1) format
 
   // Step 7: now we can apply horizontal lens shift with the same matrix format as above
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = exppa_h;
   mwork[1][0] = 0.5f * ((exppa_h - 1.0f) * v) / u;
   mwork[1][1] = 2.0f * exppa_h / (exppa_h + 1.0f);
@@ -782,7 +782,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 8: vertical compression
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[1][1] = r_h;
   mwork[1][2] = 0.5f * v * (1.0f - r_h);
@@ -795,7 +795,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 
   // Step 9: apply aspect ratio scaling
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f * ascale;
   mwork[1][1] = 1.0f / ascale;
   mwork[2][2] = 1.0f;
@@ -823,7 +823,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
       vmin = fmin(vmin, po[1] / po[2]);
     }
 
-  memset(mwork, 0, 9 * sizeof(float));
+  memset(mwork, 0, sizeof(float) * 9);
   mwork[0][0] = 1.0f;
   mwork[1][1] = 1.0f;
   mwork[2][2] = 1.0f;
@@ -841,7 +841,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
   if(dir == ASHIFT_HOMOGRAPH_FORWARD)
   {
     // we have what we need -> copy it to the right place
-    memcpy(homograph, moutput, 9 * sizeof(float));
+    memcpy(homograph, moutput, sizeof(float) * 9);
   }
   else
   {
@@ -849,11 +849,11 @@ static void homography(float *homograph, const float angle, const float shift_v,
     if(mat3inv((float *)homograph, (float *)moutput))
     {
       // in case of error we set to unity matrix
-      memset(mwork, 0, 9 * sizeof(float));
+      memset(mwork, 0, sizeof(float) * 9);
       mwork[0][0] = 1.0f;
       mwork[1][1] = 1.0f;
       mwork[2][2] = 1.0f;
-      memcpy(homograph, mwork, 9 * sizeof(float));
+      memcpy(homograph, mwork, sizeof(float) * 9);
     }
   }
 }
@@ -959,7 +959,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
-    memcpy(out, in, (size_t)roi_out->width * roi_out->height * sizeof(float));
+    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
     return;
   }
 
@@ -1241,10 +1241,10 @@ static int edge_enhance(const double *in, double *out, const int width, const in
   double *Gx = NULL;
   double *Gy = NULL;
 
-  Gx = malloc((size_t)width * height * sizeof(double));
+  Gx = malloc(sizeof(double) * width * height);
   if(Gx == NULL) goto error;
 
-  Gy = malloc((size_t)width * height * sizeof(double));
+  Gy = malloc(sizeof(double) * width * height);
   if(Gy == NULL) goto error;
 
   // perform edge enhancement in both directions
@@ -1403,7 +1403,7 @@ static int line_detect(float *in, const int width, const int height, const int x
   }
 
   // allocate intermediate buffers
-  greyscale = malloc((size_t)width * height * sizeof(double));
+  greyscale = malloc(sizeof(double) * width * height);
   if(greyscale == NULL) goto error;
 
   // convert to greyscale image
@@ -1430,7 +1430,7 @@ static int line_detect(float *in, const int width, const int height, const int x
   if(lines_count > 0)
   {
     // aggregate lines data into our own structures
-    ashift_lines = (dt_iop_ashift_line_t *)malloc((size_t)lines_count * sizeof(dt_iop_ashift_line_t));
+    ashift_lines = (dt_iop_ashift_line_t *)malloc(sizeof(dt_iop_ashift_line_t) * lines_count);
     if(ashift_lines == NULL) goto error;
 
     for(int n = 0; n < lines_count; n++)
@@ -1573,9 +1573,9 @@ static int get_structure(dt_iop_module_t *module, dt_iop_ashift_enhance_t enhanc
     scale = g->buf_scale;
 
     // create a temporary buffer to hold image data
-    buffer = malloc((size_t)width * height * 4 * sizeof(float));
+    buffer = malloc(sizeof(float) * 4 * (size_t)width * height);
     if(buffer != NULL)
-      memcpy(buffer, g->buf, (size_t)width * height * 4 * sizeof(float));
+      memcpy(buffer, g->buf, sizeof(float) * 4 * width * height);
   }
   dt_pthread_mutex_unlock(&g->lock);
 
@@ -1708,7 +1708,7 @@ static void ransac(const dt_iop_ashift_line_t *lines, int *index_set, int *inout
   const int riter = (set_count > RANSAC_HURDLE) ? RANSAC_RUNS : fact(set_count);
 
   // some data needed for quickperm
-  int *perm = malloc((set_count + 1) * sizeof(int));
+  int *perm = malloc(sizeof(int) * (set_count + 1));
   for(int n = 0; n < set_count + 1; n++) perm[n] = n;
   int piter = 1;
 
@@ -1866,9 +1866,9 @@ static int remove_outliers(dt_iop_module_t *module)
   const int ymax = ymin + height;
 
   // holds the index set of lines we want to work on
-  int *lines_set = malloc(g->lines_count * sizeof(int));
+  int *lines_set = malloc(sizeof(int) * g->lines_count);
   // holds the result of ransac
-  int *inout_set = malloc(g->lines_count * sizeof(int));
+  int *inout_set = malloc(sizeof(int) * g->lines_count);
 
   // some accounting variables
   int vnb = 0, vcount = 0;
@@ -2896,13 +2896,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer available or old buffer does not fit in terms of size
-      g->buf = malloc((size_t)width * height * 4 * sizeof(float));
+      g->buf = malloc(sizeof(float) * 4 * width * height);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
-      memcpy(g->buf, ivoid, (size_t)width * height * ch * sizeof(float));
+      memcpy(g->buf, ivoid, sizeof(float) * ch * width * height);
 
       g->buf_width = width;
       g->buf_height = height;
@@ -2918,7 +2918,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
   {
-    memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * ch * sizeof(float));
+    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
     return;
   }
 
@@ -3030,13 +3030,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       // if needed allocate buffer
       free(g->buf); // a no-op if g->buf is NULL
       // only get new buffer if no old buffer or old buffer does not fit in terms of size
-      g->buf = malloc((size_t)iwidth * iheight * 4 * sizeof(float));
+      g->buf = malloc(sizeof(float) * 4 * iwidth * iheight);
     }
 
     if(g->buf /* && hash != g->buf_hash */)
     {
       // copy data
-      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, iwidth, iheight, 4 * sizeof(float));
+      err = dt_opencl_copy_device_to_host(devid, g->buf, dev_in, iwidth, iheight, sizeof(float) * 4);
 
       g->buf_width = iwidth;
       g->buf_height = iheight;
@@ -3285,7 +3285,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   const int isflipped = g->isflipped;
 
   // allocate new index array
-  my_points_idx = (dt_iop_ashift_points_idx_t *)malloc(lines_count * sizeof(dt_iop_ashift_points_idx_t));
+  my_points_idx = (dt_iop_ashift_points_idx_t *)malloc(sizeof(dt_iop_ashift_points_idx_t) * lines_count);
   if(my_points_idx == NULL) goto error;
 
   // account for total number of points
@@ -3321,7 +3321,7 @@ static int get_points(struct dt_iop_module_t *self, const dt_iop_ashift_line_t *
   }
 
   // now allocate new points buffer
-  my_points = (float *)malloc((size_t)2 * total_points * sizeof(float));
+  my_points = (float *)malloc(sizeof(float) * 2 * total_points);
   if(my_points == NULL) goto error;
 
   // second step: generate points for each line

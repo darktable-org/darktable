@@ -350,7 +350,7 @@ static inline cairo_pattern_t *_new_sprite(const uint8_t *data, const int width,
 {
   const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
   uint8_t *buf = (uint8_t *)malloc(stride * height);
-  for(int y = 0; y < height; y++) memcpy(&buf[y * stride], &(data[y * width]), width * sizeof(uint8_t));
+  for(int y = 0; y < height; y++) memcpy(&buf[y * stride], &(data[y * width]), sizeof(uint8_t) * width);
   cairo_surface_t *surface = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_A8, width, height, stride);
   cairo_pattern_t *pattern = cairo_pattern_create_for_surface(surface);
   cairo_pattern_set_filter(pattern, CAIRO_FILTER_NEAREST);
@@ -438,7 +438,7 @@ void init(dt_view_t *self)
     d->bunker_buf[i] = (uint8_t *)g_list_last(d->bufs)->data;
   }
   // font
-  d->letters = (cairo_pattern_t **)malloc(n_letters * sizeof(cairo_pattern_t *));
+  d->letters = (cairo_pattern_t **)malloc(sizeof(cairo_pattern_t *) * n_letters);
   for(int i = 0; i < n_letters; i++)
     d->letters[i]
         = _new_sprite(font[i], FONT_WIDTH, FONT_HEIGHT, NULL, &(d->bufs), &(d->surfaces), &(d->patterns));

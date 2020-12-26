@@ -59,7 +59,7 @@ size_t dt_bilateral_memory_use2(const int width,
                                 const float sigma_s,
                                 const float sigma_r)
 {
-  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r) + (size_t)width * height * 4 * sizeof(float);
+  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r) + sizeof(float) * 4 * width * height;
 }
 
 // modules that want to use dt_bilateral_slice_to_output_cl() ought to take this one;
@@ -69,7 +69,7 @@ size_t dt_bilateral_singlebuffer_size2(const int width,
                                        const float sigma_s,
                                        const float sigma_r)
 {
-  return MAX(dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r), (size_t)width * height * 4 * sizeof(float));
+  return MAX(dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r), sizeof(float) * 4 * width * height);
 }
 
 
@@ -120,7 +120,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
   // alloc grid buffer:
   b->dev_grid
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
     dt_bilateral_free_cl(b);
@@ -129,7 +129,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
   // alloc temporary grid buffer
   b->dev_grid_tmp
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
     dt_bilateral_free_cl(b);
@@ -245,7 +245,7 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   cl_int err = -666;
   cl_mem tmp = NULL;
 
-  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, 4 * sizeof(float));
+  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
   if(tmp == NULL) goto error;
 
   size_t origin[] = { 0, 0, 0 };

@@ -372,7 +372,7 @@ static double _HLG_fct(double x)
 
 static cmsToneCurve* _colorspaces_create_transfer(int32_t size, double (*fct)(double))
 {
-  float *values = g_malloc(size * sizeof(float));
+  float *values = g_malloc(sizeof(float) * size);
 
   for (int32_t i = 0; i < size; ++i)
   {
@@ -1338,7 +1338,7 @@ static GList *load_profile_from_dir(const char *subdir)
         if(!icc_content) goto icc_loading_done;
 
         // TODO: add support for grayscale profiles, then remove _ensure_rgb_profile() from here
-        cmsHPROFILE tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, end * sizeof(char)));
+        cmsHPROFILE tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, sizeof(char) * end));
         if(tmpprof)
         {
           dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
