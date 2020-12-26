@@ -1957,6 +1957,7 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
 {
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  if(!bd) return;
 
   dt_masks_form_t *grp = NULL;
   dt_masks_form_t *form = dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
