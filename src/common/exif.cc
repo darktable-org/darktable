@@ -2202,7 +2202,7 @@ static GList *read_history_v1(const std::string &xmpPacket, const char *filename
     doc.select_node("//darktable:multi_priority/rdf:Seq");
   pugi::xpath_node multi_name      = superold ?
     doc.select_node("//darktable:multi_name/rdf:Bag"):
-    doc.select_node("//darktable:multi_name/rdf:Bag");
+    doc.select_node("//darktable:multi_name/rdf:Seq");
 #else
   pugi::xpath_node modversion      = superold ?
     doc.select_single_node("//darktable:history_modversion/rdf:Bag"):
@@ -2227,7 +2227,7 @@ static GList *read_history_v1(const std::string &xmpPacket, const char *filename
     doc.select_single_node("//darktable:multi_priority/rdf:Seq");
   pugi::xpath_node multi_name      = superold ?
     doc.select_single_node("//darktable:multi_name/rdf:Bag"):
-    doc.select_single_node("//darktable:multi_name/rdf:Bag");
+    doc.select_single_node("//darktable:multi_name/rdf:Seq");
 #endif
 
   // fill the list of history entries. we are iterating over history_operation as we know that it's there.
