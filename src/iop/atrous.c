@@ -18,6 +18,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/eaw.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -244,7 +245,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   // lead to out of bounds memory access
   if(width < 2 * max_mult || height < 2 * max_mult)
   {
-    memcpy(o, i, sizeof(float) * 4 * width * height);
+    dt_iop_image_copy_by_size(o, i, width, height, 4);
     return;
   }
 

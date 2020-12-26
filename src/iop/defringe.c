@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/darktable.h"
 #include "common/gaussian.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
@@ -397,7 +398,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   goto FINISH_PROCESS;
 
 ERROR_EXIT:
-  memcpy(o, i, sizeof(float) * ch * roi_out->width * roi_out->height);
+  dt_iop_image_copy_by_size(o, i, roi_out->width, roi_out->height, ch);
 
 FINISH_PROCESS:
   free(xy_artifact);

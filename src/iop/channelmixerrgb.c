@@ -26,6 +26,7 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "common/illuminants.h"
+#include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "develop/imageop_math.h"
 #include "develop/openmp_maths.h"
@@ -1011,7 +1012,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       }
 
       // passthrough pixels
-      dt_simd_memcpy(in, out, ch * roi_in->width * roi_in->height);
+      dt_iop_image_copy_by_size(out, in, roi_in->width, roi_in->height, ch);
 
       dt_control_log(_("auto-detection of white balance completed"));
       return;

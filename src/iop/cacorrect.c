@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
@@ -312,7 +313,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int width = roi_in->width;
   const int height = roi_in->height;
   const uint32_t filters = piece->pipe->dsc.filters;
-  memcpy(out, in2, sizeof(float) * width * height);
+  dt_iop_image_copy_by_size(out, in2, width, height, 1);
   const float *const in = out;
   const double cared = 0, cablue = 0;
   const double caautostrength = 4;
