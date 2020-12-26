@@ -87,9 +87,9 @@ size_t dt_gaussian_memory_use(const int width,    // width of input image
 {
   size_t mem_use;
 #ifdef HAVE_OPENCL
-  mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float) * 2;
+  mem_use = sizeof(float) * channels * (width + BLOCKSIZE) * (height + BLOCKSIZE) * 2;
 #else
-  mem_use = (size_t)width * height * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * width * height;
 #endif
   return mem_use;
 }
@@ -100,9 +100,9 @@ size_t dt_gaussian_singlebuffer_size(const int width,    // width of input image
 {
   size_t mem_use;
 #ifdef HAVE_OPENCL
-  mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * (width + BLOCKSIZE) * (height + BLOCKSIZE);
 #else
-  mem_use = (size_t)width * height * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * width * height;
 #endif
   return mem_use;
 }
@@ -136,7 +136,7 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
     g->min[k] = min[k];
   }
 
-  g->buf = dt_alloc_align(64, (size_t)width * height * channels * sizeof(float));
+  g->buf = dt_alloc_align_float((size_t)channels * width * height);
   if(!g->buf) goto error;
 
   return g;
@@ -588,9 +588,9 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   g->bheight = bheight;
 
   // get intermediate vector buffers with read-write access
-  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp1) goto error;
-  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp2) goto error;
 
   return g;

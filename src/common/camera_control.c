@@ -340,7 +340,7 @@ static void _camera_process_job(const dt_camctl_t *c, const dt_camera_t *camera,
           // dt_colorspaces_color_profile_type_t color_space = dt_imageio_jpeg_read_color_space(&jpg);
           //if(color_space == DT_COLORSPACE_DISPLAY)
           //  color_space = DT_COLORSPACE_SRGB;            // no embedded colorspace, assume is sRGB
-          uint8_t *const buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+          uint8_t *const buffer = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * 4 * jpg.width * jpg.height);
           if(!buffer)
           {
             dt_print(DT_DEBUG_CAMCTL, "[camera_control] live view could not allocate image buffer\n");

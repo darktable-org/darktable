@@ -1100,14 +1100,14 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  float *const restrict LF_even = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch); // low-frequencies RGB
-  float *const restrict LF_odd = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // low-frequencies RGB
-  float *const restrict HF_RGB = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // high-frequencies RGB
+  float *const restrict LF_even = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height); // low-frequencies RGB
+  float *const restrict LF_odd = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);  // low-frequencies RGB
+  float *const restrict HF_RGB = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);  // high-frequencies RGB
   float *const restrict HF_grey
-      = dt_alloc_sse_ps(roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
+      = dt_alloc_sse_ps((size_t)roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * dt_get_num_threads() * ch);
+  float *const restrict temp = dt_alloc_sse_ps(dt_get_num_threads() * ch * roi_out->width);
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -1579,13 +1579,13 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float)); // low-frequencies RGB
-  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));  // low-frequencies RGB
-  cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));  // high-frequencies RGB
+  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // low-frequencies RGB
+  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // low-frequencies RGB
+  cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // high-frequencies RGB
   cl_mem HF_grey = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float)); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));;
+  cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);;
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -1807,7 +1807,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     // Inpaint noise
     const float noise_level = d->noise_level / scale;
-    inpainted = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));
+    inpainted = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 0, sizeof(cl_mem), (void *)&in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 1, sizeof(cl_mem), (void *)&mask);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 2, sizeof(cl_mem), (void *)&inpainted);
@@ -1820,7 +1820,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto error;
 
     // first step of highlight reconstruction in RGB
-    reconstructed = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));
+    reconstructed = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
     err = reconstruct_highlights_cl(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, gd, d, piece, roi_in);
     if(err != CL_SUCCESS) goto error;
     dt_opencl_release_mem_object(inpainted);
@@ -1828,7 +1828,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     if(d->high_quality_reconstruction > 0)
     {
-      ratios = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));
+      ratios = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
       norms = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
 
       if(norms && ratios)

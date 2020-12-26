@@ -78,7 +78,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
-  memcpy(o, i, (size_t)ch * roi_out->width * roi_out->height * sizeof(float));
+  memcpy(o, i, sizeof(float) * ch * roi_out->width * roi_out->height);
 }
 
 #ifdef HAVE_OPENCL

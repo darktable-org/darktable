@@ -397,10 +397,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       size_t sizes[3];
       size_t local[3];
 
-      dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * sizeof(float));
+      dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * bufsize);
       if(dev_m == NULL) goto error;
 
-      dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * sizeof(float));
+      dev_r = dt_opencl_alloc_device_buffer(devid, sizeof(float) * reducesize);
       if(dev_r == NULL) goto error;
 
       sizes[0] = bwidth;
@@ -430,7 +430,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
-      maximum = dt_alloc_align(64, reducesize * sizeof(float));
+      maximum = dt_alloc_align_float((size_t)reducesize);
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             (size_t)reducesize * sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;

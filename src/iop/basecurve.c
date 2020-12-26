@@ -547,20 +547,20 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
   int num_levels = num_levels_max;
 
-  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp1 == NULL) goto error;
 
-  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp2 == NULL) goto error;
 
   // allocate buffers for wavelet transform and blending
   for(int k = 0, step = 1, w = width, h = height; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    dev_col[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_col[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_col[k] == NULL) goto error;
 
-    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_comb[k] == NULL) goto error;
 
     size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
@@ -1050,8 +1050,8 @@ static inline void gauss_blur(
     const size_t ht)
 {
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
-  float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
-  memset(tmp, 0, 4*wd*ht*sizeof(float));
+  float *tmp = dt_alloc_align_float((size_t)4 * wd * ht);
+  memset(tmp, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, w, wd) \
@@ -1073,7 +1073,7 @@ static inline void gauss_blur(
       for(int ii=-2;ii<=2;ii++)
         tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
   }
-  memset(output, 0, 4*wd*ht*sizeof(float));
+  memset(output, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, output, w, wd) \
@@ -1103,7 +1103,7 @@ static inline void gauss_expand(
 {
   const size_t cw = (wd-1)/2+1;
   // fill numbers in even pixels, zero odd ones
-  memset(fine, 0, 4*wd*ht*sizeof(float));
+  memset(fine, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(cw, fine, ht, input, wd) \
@@ -1133,7 +1133,7 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  float *blurred = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  float *blurred = dt_alloc_align_float((size_t)4 * wd * ht);
   gauss_blur(input, blurred, wd, ht);
   for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
@@ -1160,16 +1160,16 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
   int num_levels = 8;
-  float **col = malloc(num_levels * sizeof(float *));
-  float **comb = malloc(num_levels * sizeof(float *));
+  float **col = malloc(sizeof(float *) * num_levels);
+  float **comb = malloc(sizeof(float *) * num_levels);
   int w = wd, h = ht;
   const int rad = MIN(wd, (int)ceilf(256 * roi_in->scale / piece->iscale));
   int step = 1;
   for(int k = 0; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    col[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
-    comb[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
+    col[k]  = dt_alloc_align_float((size_t)4 * w * h);
+    comb[k] = dt_alloc_align_float((size_t)4 * w * h);
     memset(comb[k], 0, sizeof(float) * 4 * w * h);
     w = (w - 1) / 2 + 1;
     h = (h - 1) / 2 + 1;

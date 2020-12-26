@@ -2937,13 +2937,13 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   const int x_to = roi_mask_scaled->width + roi_mask_scaled->x;
   const int y_to = roi_mask_scaled->height + roi_mask_scaled->y;
 
-  mask_tmp = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
+  mask_tmp = dt_alloc_align_float((size_t)roi_mask_scaled->width * roi_mask_scaled->height);
   if(mask_tmp == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");
     goto cleanup;
   }
-  memset(mask_tmp, 0, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
+  memset(mask_tmp, 0, sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3151,7 +3151,7 @@ static void retouch_clone(float *const in, dt_iop_roi_t *const roi_in, const int
                           const int use_sse)
 {
   // alloc temp image to avoid issues when areas self-intersects
-  float *img_src = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+  float *img_src = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_src == NULL)
   {
     fprintf(stderr, "retouch_clone: error allocating memory for cloning\n");
@@ -3179,7 +3179,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
   float *img_dest = NULL;
 
   // alloc temp image to blur
-  img_dest = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+  img_dest = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_dest == NULL)
   {
     fprintf(stderr, "retouch_blur: error allocating memory for blurring\n");
@@ -3253,8 +3253,8 @@ static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, const int 
   float *img_dest = NULL;
 
   // alloc temp images for source and destination
-  img_src = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
-  img_dest = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+  img_src  = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
+  img_dest = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if((img_src == NULL) || (img_dest == NULL))
   {
     fprintf(stderr, "retouch_heal: error allocating memory for healing\n");
@@ -3477,10 +3477,10 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
-  in_retouch = dt_alloc_align(64, roi_rt->width * roi_rt->height * ch * sizeof(float));
+  in_retouch = dt_alloc_align_float((size_t)ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL) goto cleanup;
 
-  memcpy(in_retouch, ivoid, roi_rt->width * roi_rt->height * ch * sizeof(float));
+  memcpy(in_retouch, ivoid, sizeof(float) * ch * roi_rt->width * roi_rt->height);
 
   // user data passed from the decompose routine to the one that process each scale
   usr_data.self = self;
@@ -3612,7 +3612,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   float *src_buffer = NULL;
 
-  src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
@@ -3630,7 +3630,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   // just call the CPU version for now
   rt_process_stats(self, piece, src_buffer, width, height, ch, levels, 1);
 
-  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, width * height * ch * sizeof(float), TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
@@ -3651,7 +3651,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   float *src_buffer = NULL;
 
-  src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
@@ -3669,7 +3669,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   // just call the CPU version for now
   rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels, 1);
 
-  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, width * height * ch * sizeof(float), TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
@@ -3739,7 +3739,7 @@ static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop
   }
 
   const cl_mem dev_mask_scaled
-      = dt_opencl_alloc_device_buffer(devid, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
+      = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_mask_scaled == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask_cl error 2\n");
@@ -3748,7 +3748,7 @@ static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop
   }
 
   err = dt_opencl_write_buffer_to_device(devid, *mask_scaled, dev_mask_scaled, 0,
-                                         roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float), TRUE);
+                                         sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height, TRUE);
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "rt_build_scaled_mask_cl error 4\n");
@@ -3844,7 +3844,7 @@ static cl_int retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
 
   // alloc source temp image to avoid issues when areas self-intersects
   const cl_mem dev_src = dt_opencl_alloc_device_buffer(devid,
-                                          roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+                                          sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_src == NULL)
   {
     fprintf(stderr, "retouch_clone_cl error 2\n");
@@ -3927,7 +3927,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   const int ch = 4;
 
   const cl_mem dev_dest =
-    dt_opencl_alloc_device(devid, roi_mask_scaled->width, roi_mask_scaled->height, ch * sizeof(float));
+    dt_opencl_alloc_device(devid, roi_mask_scaled->width, roi_mask_scaled->height, sizeof(float) * ch);
   if(dev_dest == NULL)
   {
     fprintf(stderr, "retouch_blur_cl error 2\n");
@@ -4024,7 +4024,7 @@ static cl_int retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
 
   cl_mem dev_dest = NULL;
   cl_mem dev_src = dt_opencl_alloc_device_buffer(devid,
-                                          roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+                                          sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_src == NULL)
   {
     fprintf(stderr, "retouch_heal_cl: error allocating memory for healing\n");
@@ -4033,7 +4033,7 @@ static cl_int retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   }
 
   dev_dest = dt_opencl_alloc_device_buffer(devid,
-                                           roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+                                           sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_dest == NULL)
   {
     fprintf(stderr, "retouch_heal_cl: error allocating memory for healing\n");
@@ -4311,7 +4311,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
-  const cl_mem in_retouch = dt_opencl_alloc_device_buffer(devid, roi_rt->width * roi_rt->height * ch * sizeof(float));
+  const cl_mem in_retouch = dt_opencl_alloc_device_buffer(devid, sizeof(float) * ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL)
   {
     fprintf(stderr, "process_internal: error allocating memory for wavelet decompose\n");

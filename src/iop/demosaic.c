@@ -280,7 +280,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
 static void pre_median_b(float *out, const float *const in, const dt_iop_roi_t *const roi, const uint32_t filters,
                          const int num_passes, const float threshold)
 {
-  memcpy(out, in, (size_t)roi->width * roi->height * sizeof(float));
+  memcpy(out, in, sizeof(float) * roi->width * roi->height);
 
   // now green:
   const int lim[5] = { 0, 1, 2, 1, 0 };
@@ -405,7 +405,7 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
   if(FC(oj + y, oi + x, filters) != 1) oi++;
   if(FC(oj + y, oi + x, filters) != 1) oj--;
 
-  memcpy(out, in, height * width * sizeof(float));
+  memcpy(out, in, sizeof(float) * height * width);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -455,7 +455,7 @@ static void green_equilibration_favg(float *out, const float *const in, const in
 
   if((FC(oj + y, oi + x, filters) & 1) != 1) oi++;
   const int g2_offset = oi ? -1 : 1;
-  memcpy(out, in, (size_t)height * width * sizeof(float));
+  memcpy(out, in, sizeof(float) * height * width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(g2_offset, height, in, width) \
@@ -539,6 +539,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
   const int ndir = 4 << (passes > 1);
 
   const size_t buffer_size = (size_t)TS * TS * (ndir * 4 + 3) * sizeof(float);
+  //TODO: should this use dt_alloc_align_float or _perthread_float?
   char *const all_buffers = (char *)dt_alloc_align(64, dt_get_num_threads() * buffer_size);
   if(!all_buffers)
   {
@@ -750,7 +751,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         {
           // if on second pass, copy rgb[0] to [3] into rgb[4] to [7],
           // and process that second set of buffers
-          memcpy(rgb + 4, rgb, (size_t)4 * sizeof(*rgb));
+          memcpy(rgb + 4, rgb, sizeof(*rgb) * 4);
           rgb += 4;
         }
 
@@ -919,7 +920,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
       }
 
       /* Build homogeneity maps from the derivatives:                   */
-      memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
+      memset(homo, 0, sizeof(uint8_t) * ndir * TS * TS);
       const int pad_homo = (passes == 1) ? 10 : 15;
       for(int row = pad_homo; row < mrow - pad_homo; row++)
         for(int col = pad_homo; col < mcol - pad_homo; col++)
@@ -1914,7 +1915,7 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
       }
 
       /* Build homogeneity maps from the derivatives:                   */
-      memset(homo, 0, (size_t)ndir * TS * TS * sizeof(uint8_t));
+      memset(homo, 0, sizeof(uint8_t) * ndir * TS * TS);
       const int pad_homo = 10;
       for(int row = pad_homo; row < mrow - pad_homo; row++)
         for(int col = pad_homo; col < mcol - pad_homo; col++)
@@ -2069,9 +2070,9 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
             float temp[5];
             float tempf;
             // load the window into temp
-            memcpy(&temp[0], fdc_chroma + chrm * TS * TS + (row - 1) * TS + (col), 1 * sizeof(float));
-            memcpy(&temp[1], fdc_chroma + chrm * TS * TS + (row)*TS + (col - 1), 3 * sizeof(float));
-            memcpy(&temp[4], fdc_chroma + chrm * TS * TS + (row + 1) * TS + (col), 1 * sizeof(float));
+            memcpy(&temp[0], fdc_chroma + chrm * TS * TS + (row - 1) * TS + (col), sizeof(float) * 1);
+            memcpy(&temp[1], fdc_chroma + chrm * TS * TS + (row)*TS + (col - 1),   sizeof(float) * 3);
+            memcpy(&temp[4], fdc_chroma + chrm * TS * TS + (row + 1) * TS + (col), sizeof(float) * 1);
             PIX_SORT(temp[0], temp[1]);
             PIX_SORT(temp[3], temp[4]);
             PIX_SORT(temp[0], temp[3]);
@@ -2158,7 +2159,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
   // COLORB TOT_WEIGHT
   // COLORPIX                   # color of center pixel
 
-  int(*const lookup)[16][32] = malloc((size_t)16 * 16 * 32 * sizeof(int));
+  int(*const lookup)[16][32] = malloc(sizeof(int) * 16 * 16 * 32);
 
   const int size = (filters == 9) ? 6 : 16;
   for(int row = 0; row < size; row++)
@@ -2275,14 +2276,14 @@ static void vng_interpolate(float *out, const float *const in,
   if(only_vng_linear) return;
 
   char *buffer
-      = (char *)dt_alloc_align(64, (size_t)sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
+      = (char *)dt_alloc_align(64, sizeof(**brow) * width * 3 + sizeof(*ip) * prow * pcol * 320);
   if(!buffer)
   {
     fprintf(stderr, "[demosaic] not able to allocate VNG buffer\n");
     return;
   }
   for(int row = 0; row < 3; row++) brow[row] = (float(*)[4])buffer + row * width;
-  ip = (int *)(buffer + (size_t)sizeof(**brow) * width * 3);
+  ip = (int *)(buffer + sizeof(**brow) * width * 3);
 
   for(int row = 0; row < prow; row++) /* Precalculate for VNG */
     for(int col = 0; col < pcol; col++)
@@ -2357,7 +2358,7 @@ static void vng_interpolate(float *out, const float *const in,
       }
       if(gmax == 0)
       {
-        memcpy(brow[2][col], pix, (size_t)4 * sizeof(*out));
+        memcpy(brow[2][col], pix, sizeof(*out) * 4);
         continue;
       }
       float thold = gmin + (gmax * 0.5f);
@@ -2384,13 +2385,13 @@ static void vng_interpolate(float *out, const float *const in,
       }
     }
     if(row > 3) /* Write buffer to image */
-      memcpy(out + 4 * ((row - 2) * width + 2), brow[0] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
+      memcpy(out + 4 * ((row - 2) * width + 2), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
     // rotate ring buffer
     for(int g = 0; g < 4; g++) brow[(g - 1) & 3] = brow[g];
   }
   // copy the final two rows to the image
-  memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
-  memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, (size_t)(width - 4) * 4 * sizeof(*out));
+  memcpy(out + (4 * ((height - 4) * width + 2)), brow[0] + 2, sizeof(*out) * 4 * (width - 4));
+  memcpy(out + (4 * ((height - 3) * width + 2)), brow[1] + 2, sizeof(*out) * 4 * (width - 4));
   dt_free_align(buffer);
 
   if(filters != 9 && !FILTERS_ARE_4BAYER(filters)) // x-trans or CYGM/RGBE
@@ -2534,7 +2535,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
   const float *input = in;
   if(median)
   {
-    float *med_in = (float *)dt_alloc_align(64, (size_t)roi_in->height * roi_in->width * sizeof(float));
+    float *med_in = (float *)dt_alloc_align_float((size_t)roi_in->height * roi_in->width);
     pre_median(med_in, in, roi_in, filters, 1, thrs);
     input = med_in;
   }
@@ -2613,7 +2614,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
 
       // write using MOVNTPS (write combine omitting caches)
       // _mm_stream_ps(buf, col);
-      memcpy(buf, color, 4 * sizeof(float));
+      memcpy(buf, color, sizeof(float) * 4);
       buf += 4;
       buf_in++;
     }
@@ -2705,7 +2706,7 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
         }
       }
       // _mm_stream_ps(buf, col);
-      memcpy(buf, color, 4 * sizeof(float));
+      memcpy(buf, color, sizeof(float) * 4);
       buf += 4;
     }
   }
@@ -2901,7 +2902,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.width = roi_in->width;
       roo.height = roi_in->height;
       roo.scale = 1.0f;
-      tmp = (float *)dt_alloc_align(64, (size_t)roo.width * roo.height * 4 * sizeof(float));
+      tmp = (float *)dt_alloc_align_float((size_t)4 * roo.width * roo.height);
     }
 
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
@@ -2929,7 +2930,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO)
       {
-        in = (float *)dt_alloc_align(64, (size_t)roi_in->height * roi_in->width * sizeof(float));
+        in = (float *)dt_alloc_align_float((size_t)roi_in->height * roi_in->width);
         switch(data->green_eq)
         {
           case DT_IOP_GREEN_EQ_FULL:
@@ -2941,7 +2942,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                      roi_in->x, roi_in->y, threshold);
             break;
           case DT_IOP_GREEN_EQ_BOTH:
-            aux = dt_alloc_align(64, (size_t)roi_in->height * roi_in->width * sizeof(float));
+            aux = dt_alloc_align_float((size_t)roi_in->height * roi_in->width);
             green_equilibration_favg(aux, pixels, roi_in->width, roi_in->height, piece->pipe->dsc.filters,
                                      roi_in->x, roi_in->y);
             green_equilibration_lavg(in, aux, roi_in->width, roi_in->height, piece->pipe->dsc.filters, roi_in->x,
@@ -3007,7 +3008,7 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   cl_int err = -999;
 
-  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dt_opencl_local_buffer_t locopt
@@ -3124,7 +3125,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     const int bufsize = (bwidth / flocopt.sizex) * (bheight / flocopt.sizey);
 
-    dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * 2 * sizeof(float));
+    dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * bufsize);
     if(dev_m == NULL) goto error;
 
     size_t fsizes[3] = { bwidth, bheight, 1 };
@@ -3152,7 +3153,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     const int reducesize = MIN(REDUCESIZE, ROUNDUP(bufsize, slocopt.sizex) / slocopt.sizex);
 
-    dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * 2 * sizeof(float));
+    dev_r = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * reducesize);
     if(dev_r == NULL) goto error;
 
     size_t ssizes[3] = { reducesize * slocopt.sizex, 1, 1 };
@@ -3165,7 +3166,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
                                                  slocal);
     if(err != CL_SUCCESS) goto error;
 
-    sumsum = dt_alloc_align(64, (size_t)reducesize * 2 * sizeof(float));
+    sumsum = dt_alloc_align_float((size_t)2 * reducesize);
     if(sumsum == NULL) goto error;
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
                                             (size_t)reducesize * 2 * sizeof(float), CL_TRUE);
@@ -3279,7 +3280,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     // need to reserve scaled auxiliary buffer or use dev_out
     if(scaled)
     {
-      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(dev_aux == NULL) goto error;
       width = roi_in->width;
       height = roi_in->height;
@@ -3325,7 +3326,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
         dev_in = dev_aux;
       }
 
-      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(dev_tmp == NULL) goto error;
 
       {
@@ -3670,7 +3671,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // need to reserve scaled auxiliary buffer or use dev_out
     if(scaled)
     {
-      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+      dev_aux = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
       if(dev_aux == NULL) goto error;
       width = roi_in->width;
       height = roi_in->height;
@@ -3678,7 +3679,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     else
       dev_aux = dev_out;
 
-    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+    dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
     if(dev_tmp == NULL) goto error;
 
     {
@@ -3990,20 +3991,20 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
 
     for(int n = 0; n < ndir; n++)
     {
-      dev_rgbv[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+      dev_rgbv[n] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
       if(dev_rgbv[n] == NULL) goto error;
     }
 
-    dev_gminmax = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 2 * sizeof(float));
+    dev_gminmax = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * width * height);
     if(dev_gminmax == NULL) goto error;
 
-    dev_aux = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * 4 * sizeof(float));
+    dev_aux = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 4 * width * height);
     if(dev_aux == NULL) goto error;
 
     if(scaled)
     {
       // need to scale to right res
-      dev_tmp = dt_opencl_alloc_device(devid, (size_t)width, height, 4 * sizeof(float));
+      dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
       if(dev_tmp == NULL) goto error;
     }
     else
@@ -4245,7 +4246,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     // prepare derivatives buffers
     for(int n = 0; n < ndir; n++)
     {
-      dev_drv[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
+      dev_drv[n] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
       if(dev_drv[n] == NULL) goto error;
     }
 
@@ -4290,10 +4291,10 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     // reserve buffers for homogeneity maps and sum maps
     for(int n = 0; n < ndir; n++)
     {
-      dev_homo[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(unsigned char));
+      dev_homo[n] = dt_opencl_alloc_device_buffer(devid, sizeof(unsigned char) * width * height);
       if(dev_homo[n] == NULL) goto error;
 
-      dev_homosum[n] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(unsigned char));
+      dev_homosum[n] = dt_opencl_alloc_device_buffer(devid, sizeof(unsigned char) * width * height);
       if(dev_homosum[n] == NULL) goto error;
     }
 
@@ -4419,7 +4420,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     }
 
     // need to get another temp buffer for the output image (may use the space of dev_drv[] freed earlier)
-    dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, 4 * sizeof(float));
+    dev_tmptmp = dt_opencl_alloc_device(devid, (size_t)width, height, sizeof(float) * 4);
     if(dev_tmptmp == NULL) goto error;
 
     cl_mem dev_t1 = dev_tmp;
@@ -4535,7 +4536,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       if(dev_edge_in == NULL) goto error;
 
       // reserve output buffer for VNG processing of edge
-      dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], 4 * sizeof(float));
+      dev_edge_out = dt_opencl_alloc_device(devid, edges[n][2], edges[n][3], sizeof(float) * 4);
       if(dev_edge_out == NULL) goto error;
 
       // copy edge to input buffer

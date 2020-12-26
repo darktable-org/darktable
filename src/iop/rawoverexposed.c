@@ -163,7 +163,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   const int colorscheme = dev->rawoverexposed.colorscheme;
   const float *const color = dt_iop_rawoverexposed_colors[colorscheme];
 
-  memcpy(ovoid, ivoid, (size_t)ch * roi_out->width * roi_out->height * sizeof(float));
+  memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
 
   dt_mipmap_buffer_t buf;
   dt_mipmap_cache_get(darktable.mipmap_cache, &buf, image->id, DT_MIPMAP_FULL, DT_MIPMAP_BLOCKING, 'r');
@@ -190,7 +190,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   // acquire temp memory for distorted pixel coords
   const size_t coordbufsize = (size_t)roi_out->width * 2;
-  float *coordbuf = dt_alloc_align(64, coordbufsize * sizeof(float) * dt_get_num_threads());
+  float *coordbuf = dt_alloc_align_float(coordbufsize * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
@@ -243,10 +243,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       switch(mode)
       {
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_CFA:
-          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], 4 * sizeof(float));
+          memcpy(out + pout, dt_iop_rawoverexposed_colors[c], sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_MARK_SOLID:
-          memcpy(out + pout, color, 4 * sizeof(float));
+          memcpy(out + pout, color, sizeof(float) * 4);
           break;
         case DT_DEV_RAWOVEREXPOSED_MODE_FALSECOLOR:
           out[pout + c] = 0.0;
