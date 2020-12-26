@@ -1354,6 +1354,31 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
   _iop_gui_update_header(module);
 }
 
+void dt_iop_set_module_trouble_message(dt_iop_module_t *const module, GtkWidget *label_widget,
+                                       char* const trouble_msg, const char* const trouble_tooltip)
+{
+  if (trouble_msg && *trouble_msg)
+  {
+    // set the module's trouble flag
+    dt_iop_set_module_in_trouble(module, TRUE);
+    // set the warning message in the module's message area just below the header
+    char *msg = dt_iop_warning_message(trouble_msg);
+    gtk_label_set_text(GTK_LABEL(label_widget), msg);
+    g_free(msg);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
+    gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
+  }
+  else
+  {
+    // no trouble, so clear the trouble flag and hide the message area
+    dt_iop_set_module_in_trouble(module, FALSE);
+    gtk_label_set_text(GTK_LABEL(label_widget), "");
+    gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), "");
+    gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
+  }
+}
+
+
 static void _iop_gui_update_label(dt_iop_module_t *module)
 {
   if(!module->header) return;
