@@ -41,6 +41,7 @@ FILE(GLOB SOURCE_FILES
   "common/image.c"
   "common/image_cache.c"
   "common/image_compression.c"
+  "common/imagebuf.c"
   "common/imageio.c"
   "common/imageio_jpeg.c"
   "common/imageio_png.c"

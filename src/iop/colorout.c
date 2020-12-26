@@ -22,6 +22,7 @@
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
+#include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
 #include "control/conf.h"
@@ -403,7 +404,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
   }
   else if(!isnan(d->cmatrix[0]))
   {
@@ -477,7 +478,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   if(d->type == DT_COLORSPACE_LAB)
   {
-    memcpy(ovoid, ivoid, sizeof(float)*4*roi_out->width*roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
   }
   else if(!isnan(d->cmatrix[0]))
   {

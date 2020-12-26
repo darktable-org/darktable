@@ -26,6 +26,7 @@
 #include "common/dwt.h"
 #include "common/gaussian.h"
 #include "common/heal.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "develop/blend.h"
 #include "develop/imageop_math.h"
@@ -3480,7 +3481,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   in_retouch = dt_alloc_align_float((size_t)ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL) goto cleanup;
 
-  memcpy(in_retouch, ivoid, sizeof(float) * ch * roi_rt->width * roi_rt->height);
+  dt_iop_image_copy_by_size(in_retouch, ivoid, roi_rt->width, roi_rt->height, ch);
 
   // user data passed from the decompose routine to the one that process each scale
   usr_data.self = self;

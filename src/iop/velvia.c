@@ -24,6 +24,7 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -134,7 +135,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   // Apply velvia saturation
   if(strength <= 0.0)
-    memcpy(ovoid, ivoid, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
   else
   {
 #ifdef _OPENMP
@@ -182,7 +183,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   // Apply velvia saturation
   if(strength <= 0.0)
-    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   else
   {
 #ifdef _OPENMP
