@@ -297,7 +297,7 @@ static int dt_ellipse_get_points(dt_develop_t *dev, float xx, float yy, float ra
                   * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda)))) / n));
 
   // buffer allocations
-  *points = dt_alloc_align(64, 2 * (l + 5) * sizeof(float));
+  *points = dt_alloc_align_float((size_t)2 * (l + 5));
   if(*points == NULL)
   {
     *points_count = 0;
@@ -1439,7 +1439,7 @@ static int dt_ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_
                       * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
 
   // buffer allocations
-  float *points = dt_alloc_align(64, 2 * (l + 5) * sizeof(float));
+  float *points = dt_alloc_align_float((size_t) 2 * (l + 5));
   if(points == NULL)
     return 0;
 
@@ -1525,7 +1525,7 @@ static int dt_ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
                       * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
 
   // buffer allocations
-  float *points = dt_alloc_align(64, 2 * (l + 5) * sizeof(float));
+  float *points = dt_alloc_align_float((size_t)2 * (l + 5));
   if(points == NULL)
     return 0;
 
@@ -1595,7 +1595,7 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
 
   // we create a buffer of points with all points in the area
   int w = *width, h = *height;
-  float *points = dt_alloc_align(64, w * h * 2 * sizeof(float));
+  float *points = dt_alloc_align_float((size_t)2 * w * h);
   if(points == NULL)
     return 0;
 
@@ -1623,13 +1623,13 @@ static int dt_ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *
   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = dt_alloc_align(64, w * h * sizeof(float));
+  *buffer = dt_alloc_align_float((size_t)w * h);
   if(*buffer == NULL)
   {
     dt_free_align(points);
     return 0;
   }
-  memset(*buffer, 0, w * h * sizeof(float));
+  memset(*buffer, 0, sizeof(float) * w * h);
 
   // we populate the buffer
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
@@ -1753,7 +1753,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   const int gh = (h + grid - 1) / grid + 1;  // grid dimension of total roi
 
   // initialize output buffer with zero
-  memset(buffer, 0, (size_t)w * h * sizeof(float));
+  memset(buffer, 0, sizeof(float) * w * h);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] ellipse init took %0.04f sec\n", form->name, dt_get_wtime() - start2);
@@ -1764,7 +1764,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
   const float lambda = (ta - tb) / (ta + tb);
   const int l = (int)(M_PI * (ta + tb) * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
   const size_t ellpts = MIN(360, l);
-  float *ell = dt_alloc_align(64, ellpts * 2 * sizeof(float));
+  float *ell = dt_alloc_align_float(ellpts * 2);
   if(ell == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1845,7 +1845,7 @@ static int dt_ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     return 1;
 
 
-  float *points = dt_alloc_align(64, (size_t)bbw * bbh * 2 * sizeof(float));
+  float *points = dt_alloc_align_float((size_t)2 * bbw * bbh);
   if(points == NULL) return 0;
 
   // we populate the grid points in module coordinates

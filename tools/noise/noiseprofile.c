@@ -82,7 +82,7 @@ read_histogram(const char *filename, int *bins)
   }
   fseek(f, 0, SEEK_SET);
   // second round, alloc and read
-  float *hist = (float *)malloc(3*sizeof(float)*(*bins));
+  float *hist = (float *)malloc(sizeof(float) * 3 * (*bins));
   int k=0;
   while(!feof(f))
   {
@@ -202,7 +202,7 @@ int main(int argc, char *arg[])
   {
     int bins = 0;
     float *hist = read_histogram(arg[3], &bins);
-    float *inv_hist = (float *)malloc(3*sizeof(float)*bins);
+    float *inv_hist = (float *)malloc(sizeof(float) * 3 * bins);
     invert_histogram(hist, inv_hist, bins);
 #if 1
     // output curves and their inverse:

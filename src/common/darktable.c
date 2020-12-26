@@ -1445,12 +1445,12 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
 void dt_configure_performance()
 {
   const int atom_cores = dt_get_num_atom_cores();
-  const int threads = dt_get_num_threads();
+  const size_t threads = dt_get_num_threads();
   const size_t mem = dt_get_total_memory();
   const size_t bits = CHAR_BIT * sizeof(void *);
   gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
 
-  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %d cores (%d atom based)\n",
+  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores (%d atom based)\n",
           bits, mem, threads, atom_cores);
   if(mem >= (8lu << 20) && threads > 4 && atom_cores == 0)
   {

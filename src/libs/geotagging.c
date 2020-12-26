@@ -703,7 +703,7 @@ static GList *_lib_geotagging_get_timezones(void)
                        NULL,
                        NULL) == ERROR_SUCCESS)
     {
-      wchar_t *subkeyname = (wchar_t *)malloc((max_subkey_len + 1) * sizeof(wchar_t));
+      wchar_t *subkeyname = (wchar_t *)malloc(sizeof(wchar_t) * (max_subkey_len + 1));
 
       for(DWORD i = 1; i < n_subkeys; i++)
       {
