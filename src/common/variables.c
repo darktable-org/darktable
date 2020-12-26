@@ -943,6 +943,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
   localtime_r(&now, &(*params)->data->time);
   (*params)->data->exif_time = 0;
   (*params)->sequence = -1;
+  (*params)->img = NULL;
 }
 
 void dt_variables_params_destroy(dt_variables_params_t *params)
