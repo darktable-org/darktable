@@ -4937,7 +4937,7 @@ msgstr "retourner les images"
 
 #: ../src/control/jobs/control_jobs.c:1476
 msgid "set monochrome images"
-msgstr "indique comme images monchromes"
+msgstr "indique comme images monochromes"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1483
@@ -16405,7 +16405,7 @@ msgstr ""
 
 #: ../src/libs/image.c:574
 msgid "set selection as color images"
-msgstr "indique la sélection comme images monochromes"
+msgstr "enregistre la sélection comme images couleur"
 
 #: ../src/libs/image.c:617
 msgctxt "accel"
