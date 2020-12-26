@@ -21,6 +21,12 @@
 
   <xi:include href="colorcorrection.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="filllight.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="global_tonemap.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="zonesystem.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="shadhi.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="levels.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
@@ -35,9 +41,13 @@
 
   <xi:include href="colorbalance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
+  <xi:include href="channelmixer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
   <xi:include href="graduatedneutraldensity.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="toneequalizer.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
+
+  <xi:include href="tonemapping.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
   <xi:include href="whitebalance.xml" xmlns:xi="http://www.w3.org/2001/XInclude"/>
 
