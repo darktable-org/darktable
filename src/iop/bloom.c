@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -34,14 +35,11 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
 
 typedef struct dt_iop_bloom_params_t

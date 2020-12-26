@@ -434,11 +434,7 @@ static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const s
 {
   dt_XYZ_to_sRGB(XYZ, sRGB);
 
-#define CLIP(a) ((a) < 0 ? 0 : (a) > 1 ? 1 : (a))
-
   for(int i = 0; i < 3; i++) sRGB[i] = CLIP(sRGB[i]);
-
-#undef CLIP
 }
 
 
