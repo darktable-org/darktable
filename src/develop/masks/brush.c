@@ -2698,7 +2698,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     dt_free_align(payload);
     return 0;
   }
-  memset(*buffer, 0, bufsize);
+  memset(*buffer, 0, sizeof(float) * bufsize);
 
   // now we fill the falloff
   int p0[2], p1[2];
