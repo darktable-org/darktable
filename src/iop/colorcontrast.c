@@ -145,7 +145,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  assert(piece->colors == 4);
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
   const float *const restrict in = (const float *const)ivoid;
   float *const restrict out = (float *const)ovoid;
@@ -197,7 +199,9 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const dt_iop_colorcontrast_params_t *const d = (dt_iop_colorcontrast_params_t *)piece->data;
 
   // how many colors in our buffer?
-  assert(piece->colors == 4);
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
   const __m128 scale = _mm_set_ps(1.0f, d->b_steepness, d->a_steepness, 1.0f);
   const __m128 offset = _mm_set_ps(0.0f, d->b_offset, d->a_offset, 0.0f);

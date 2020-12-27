@@ -3307,11 +3307,15 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
     // copy the input buffer to the output
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     // set trouble message
-    dt_iop_set_module_trouble_message(module, warn_label, _("unsupported input"),
-                                      _("You have placed this module at\n"
-                                        "a position in the pipeline where\n"
-                                        "the data format does not match\n"
-                                        "its requirements."));
+    if (module)
+      dt_iop_set_module_trouble_message(module, warn_label, _("unsupported input"),
+                                        _("You have placed this module at\n"
+                                          "a position in the pipeline where\n"
+                                          "the data format does not match\n"
+                                          "its requirements."));
+    // and print an error message to the console
+    const char *name = module ? module->name() : "?";
+    fprintf(stderr,"[%s] unsupported data format\n",name);
     return FALSE;
   }
 }

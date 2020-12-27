@@ -272,7 +272,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // most modules only support a single type of input data, so we can check whether that format has been supplied
   // and simply pass along the data if not (setting a trouble flag to inform the user)
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          g ? g->warning_label : NULL,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
