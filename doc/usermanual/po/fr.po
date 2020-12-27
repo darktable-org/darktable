@@ -4,7 +4,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Darktable 1.6\n"
 "POT-Creation-Date: 2020-12-26 23:31+0100\n"
-"PO-Revision-Date: 2020-12-27 01:00+0100\n"
+"PO-Revision-Date: 2020-12-27 10:18+0100\n"
 "Last-Translator: Nicolas Auffray <nicolasauffray@aol.fr>\n"
 "Language-Team: Jean-Luc Coulon, Victor Lamoine, Michel Leblond\n"
 "Language: fr\n"
@@ -5132,8 +5132,8 @@ msgid ""
 msgstr ""
 "Lorsque darktable est redémarré, ce module ne sera plus actif. Si "
 "l'utilisateur change d'avis et souhaite utiliser le module, il peut accéder "
-"à \"montrer les préférences globales -&gt; options de lua\" et décocher la "
-"case \"ne plus montrer l'installeur de scripts lua\"."
+"à \"montrer les préférences globales -&gt; options de Lua\" et décocher la "
+"case \"ne plus montrer l'installeur de scripts Lua\"."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:3996(title)
 msgid "execute"
@@ -5813,7 +5813,7 @@ msgstr ""
 "Le panneau prend en charge une vue hiérarchique, cela signifie que vous "
 "pouvez créer des catégories à l'aide du symbole de pipe <quote>|</quote> en "
 "tant que séparateur. Par exemple, <quote>imprimer|courbe de tonalités +0.5 "
-"EV</quote> créera une catégorie d'impression."
+"IL</quote> créera une catégorie d'impression."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:4608(title)
 msgid "edit"
@@ -11507,7 +11507,7 @@ msgstr "parade RVB"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8980(primary)
 msgid "scopes"
-msgstr ""
+msgstr "portées"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:8994(para)
 msgid ""
@@ -13402,7 +13402,7 @@ msgid ""
 "it is pure white, and sets the white exposure parameter to remap the reading "
 "to 100% luminance."
 msgstr ""
-"L'exposition relative du blanc est le nombre de stops (EV) entre le blanc "
+"L'exposition relative du blanc est le nombre de stops (IL) entre le blanc "
 "pur et le gris moyen. C'est la limite droite de la plage dynamique. Elle "
 "doit être ajustée afin d'éviter tout écrêtage des hautes lumières. La "
 "pipette d'exposition relative du blanc permet de lire la luminance maximum, "
@@ -13417,8 +13417,8 @@ msgid ""
 "0EV."
 msgstr ""
 "Lorsque le gris est réglé sur 18%, l'exposition au blanc sera toujours "
-"d'environ 2,45 EV. Lorsque le gris est défini sur 100%, l'exposition du "
-"blanc doit être définie sur 0 EV."
+"d'environ 2,45 IL. Lorsque le gris est défini sur 100%, l'exposition du "
+"blanc doit être définie sur 0 IL."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10568(title)
 msgid ""
@@ -13440,7 +13440,7 @@ msgid ""
 "the black exposure at -16EV, it is a sign that the measure failed and you "
 "need to adjust it manually."
 msgstr ""
-"L'exposition relative du noir est le nombre de stops (EV) entre le noir pur "
+"L'exposition relative du noir est le nombre de stops (IL) entre le noir pur "
 "et le gris moyen. C'est la limite gauche de la plage dynamique. La pipette à "
 "couleurs de l'exposition relative du noir permet de lire la luminance "
 "minimum, dans l'espace RVB, à l'intérieur de la zone dessinée, supposant "
@@ -13449,8 +13449,8 @@ msgstr ""
 "pipette à couleurs est très sensible au bruit, et ne peut pas identifier si "
 "la luminance minimum est du noir pur ou seulement du bruit. Elle travaille "
 "mieux sur des images à ISO bas et avec une haute qualité de dématriçage. "
-"Lorsque la pipette à couleurs définit l'exposition du noir à -16EV, c'est un "
-"signe que la mesure a échouée et qu'il vous faut l'ajuster manuellement."
+"Lorsque la pipette à couleurs définit l'exposition du noir à -16 IL, c'est "
+"un signe que la mesure a échouée et qu'il vous faut l'ajuster manuellement."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10581(para)
 msgid ""
@@ -13475,7 +13475,7 @@ msgstr ""
 "\"><emphasis>DPreview</emphasis></ulink>), la plage dynamique logicielle "
 "dans filmique RVB (plage dynamique = exposition du blanc - exposition du "
 "noir) ne devrait pas en général être plus grande que la plage dynamique "
-"physique du capteur (10 à 14 EV dans la plupart des cas). Remarquez que la "
+"physique du capteur (10 à 14 IL dans la plupart des cas). Remarquez que la "
 "plage dynamique de la scène peut être plus basse que celle de l'appareil, "
 "particulièrement en intérieur."
 
@@ -13993,7 +13993,7 @@ msgid ""
 "absolute EV values."
 msgstr ""
 "La latitude est maintenant exprimée en pourcentage de la plage dynamique au "
-"lieu de l'être en valeurs EV absolues."
+"lieu de l'être en valeurs IL absolues."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:10889(para)
 msgid ""
@@ -14582,7 +14582,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11357(title)
 msgid "Denoise – non local means"
-msgstr "Réduction du bruit - moyennes non locales (déprécié dans 3.4)"
+msgstr "Réduction du bruit - moyennes non locales (déprécié)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:11361(secondary)
 msgid "denoise – non local means"
@@ -15408,7 +15408,7 @@ msgid ""
 msgstr ""
 "Supprimez automatiquement le biais d'exposition de l'appareil photo "
 "(disponible uniquement en mode <quote>manuel</quote>). Le biais d'exposition "
-"de l'appareil photo est la compensation EV du photomètre de l'appareil "
+"de l'appareil photo est la compensation IL du photomètre de l'appareil "
 "photo, couramment utilisé pour empêcher l'écrêtage des hautes lumières, pour "
 "les photographes qui exposent à droite de l'histogramme. Cette "
 "fonctionnalité repose sur la lecture du champ EXIF"
@@ -15429,8 +15429,8 @@ msgid ""
 "Note: for Fuji RAWs, it will be necessary to add aditional +0.75 EV, for an "
 "overall correction of +1.25 EV, to compensate for their native underexposure."
 msgstr ""
-"Remarque: pour les RAW Fuji, il sera nécessaire d'ajouter +0,75 EV "
-"supplémentaire, pour une correction globale de +1,25 EV, pour compenser leur "
+"Remarque: pour les RAW Fuji, il sera nécessaire d'ajouter +0,75 IL "
+"supplémentaire, pour une correction globale de +1,25 IL, pour compenser leur "
 "sous-exposition native."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:12067(para)
@@ -17157,7 +17157,7 @@ msgstr ""
 "si votre image est fortement sous-exposée et que vous avez augmenté "
 "l'exposition, vous devrez augmenter ce paramètre pour obtenir une réduction "
 "de bruit correcte. Ce paramètre doit refléter l'amplification du bruit que "
-"vous ajoutez à votre image : si vous ajoutez 1 EV d'exposition, le signal "
+"vous ajoutez à votre image : si vous ajoutez 1 IL d'exposition, le signal "
 "est multiplié par 2, ce paramètre doit donc être défini à 2."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:13550(title)
@@ -17683,7 +17683,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14019(title)
 msgid "Invert"
-msgstr "Inverser (déprécié dans 3.4)"
+msgstr "Inverser (déprécié)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14023(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14027(primary)
@@ -18354,7 +18354,7 @@ msgstr "Utilisez le curseur de saturation pour corriger la saturation globale."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14759(title)
 msgid "Fill light"
-msgstr "Lumière d'appoint (déprécié dans 3.4)"
+msgstr "Lumière d'appoint (déprécié)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14763(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14767(primary)
@@ -18420,7 +18420,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14839(title)
 msgid "Global tonemap"
-msgstr "Mappage global des tonalités (déprécié dans 3.4)"
+msgstr "Mappage global des tonalités (déprécié)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14843(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14847(primary)
@@ -18529,7 +18529,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14933(title)
 msgid "Zone system"
-msgstr "Zones (déprécié dans 3.4)"
+msgstr "Zones (déprécié)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14937(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:14941(primary)
@@ -20106,7 +20106,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16345(title)
 msgid "Channel mixer"
-msgstr "Mixeur de canaux (déprécié dans 3.4)"
+msgstr "Mixeur de canaux (déprécié)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16349(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:16353(primary)
@@ -20904,7 +20904,7 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17292(title)
 msgid "Tonemapping"
-msgstr "Mappage des tonalités (déprécié dans 3.4)"
+msgstr "Mappage des tonalités (déprécié)"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17296(secondary)
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:17300(primary)
@@ -26826,7 +26826,7 @@ msgid ""
 msgstr ""
 "Le <emphasis>flux de travail relatif à la scène</emphasis> est basé sur des "
 "modules linéaires et appliquera automatiquement les modules filmic et "
-"exposition. Ce flux de travail consiste à ajouter, par défaut, +0,5 EV "
+"exposition. Ce flux de travail consiste à ajouter, par défaut, +0,5 IL "
 "d'exposition (dans le module exposition), pour ajuster la luminosité globale "
 "et le gris moyen à une valeur similaire à celle utilisée par la plupart des "
 "JPEG produits par les appareils photo reflex. L'intérêt du module filmic est "
@@ -26842,7 +26842,7 @@ msgid ""
 "it is found the images from a particular camera are consistently too dark."
 msgstr ""
 "S'il s'avère que les images d'une caméra particulière sont systématiquement "
-"trop sombres, cette valeur par défaut de +0,5 EV peut être remplacée à "
+"trop sombres, cette valeur par défaut de +0,5 IL peut être remplacée à "
 "l'aide d'un préréglage qui s'appliquera automatiquement ."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:23249(para)
@@ -28095,26 +28095,26 @@ msgstr ""
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24048(title)
 msgid "Lua options"
-msgstr "options lua"
+msgstr "options Lua"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24052(secondary)
 msgid "lua options"
-msgstr "options lua"
+msgstr "options Lua"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24055(para)
 msgid "This option control lua scripts installator."
-msgstr "Cette option contrôle l'installateur des scripts lua."
+msgstr "Cette option contrôle l'installateur des scripts Lua."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24059(bridgehead)
 msgid "lua scripts installer don't show again"
-msgstr "ne pas remontrer l'installeur de scripts lua"
+msgstr "ne pas remontrer l'installeur de scripts Lua"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24061(para)
 msgid ""
 "Choose to show again, or not, the lua scripts installer in lighttable left "
 "panel."
 msgstr ""
-"Choisir de remontrer ou non le programme d'installation des scripts lua dans "
+"Choisir de remontrer ou non le programme d'installation des scripts Lua dans "
 "le panneau gauche de la table lumineuse."
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24075(keyword)
@@ -28124,7 +28124,7 @@ msgstr "créer des scripts"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24076(keyword)
 msgid "lua"
-msgstr "lua"
+msgstr "Lua"
 
 #: ../build/doc/usermanual/po/darktable-usermanual_profiled.xml:24080(title)
 msgid "Scripting with Lua"
@@ -28461,7 +28461,7 @@ msgid ""
 "store values that we don't care about."
 msgstr ""
 "Le parcours itératif de la table va retourner à la fois les clés et les "
-"valeurs utilisées. En lua il est conventionnel d'utiliser une variable "
+"valeurs utilisées. En Lua il est conventionnel d'utiliser une variable "
 "nommée <quote><code>_</code></quote> pour stocker des valeurs dont nous ne "
 "nous soucions pas."
 
