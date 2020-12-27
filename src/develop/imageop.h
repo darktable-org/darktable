@@ -729,6 +729,13 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
 /* return a warning message, prefixed by the special character ⚠ */
 char *dt_iop_warning_message(char *message);
 
+/** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
+ ** output buffer, set the module's trouble message, and return FALSE */
+gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_module_t *const module,
+                                           const int actual_pipe_ch, GtkWidget *warnlabel,
+                                           const void *const __restrict__ ivoid, void *const __restrict__ ovoid,
+                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

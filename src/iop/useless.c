@@ -92,6 +92,7 @@ typedef struct dt_iop_useless_gui_data_t
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
   GtkWidget *scale, *factor, *check, *method, *extra; // this is needed by gui_update
+  GtkWidget *warning_label;
 } dt_iop_useless_gui_data_t;
 
 typedef struct dt_iop_useless_global_data_t
@@ -267,6 +268,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float scale = piece->iscale / roi_in->scale;
   // how many colors in our buffer?
   const int ch = piece->colors;
+
+  // most modules only support a single type of input data, so we can check whether that format has been supplied
+  // and simply pass along the data if not (setting a trouble flag to inform the user)
+  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece,
+                                         g ? g->warning_label : NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
 
   // we create a raster mask as an example
   float *mask = NULL;
@@ -566,6 +575,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->extra), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);
+
+  // set up a box for the warnings from dt_iop_have_required_input_format and the like
+  GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+
+  g->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(box_enabled), g->warning_label, FALSE, FALSE, 4);
+  
 }
 
 void gui_cleanup(dt_iop_module_t *self)

@@ -21,6 +21,7 @@
 #include "common/debug.h"
 #include "common/exif.h"
 #include "common/dtpthread.h"
+#include "common/imagebuf.h"
 #include "common/imageio_rawspeed.h"
 #include "common/interpolation.h"
 #include "common/iop_group.h"
@@ -3288,6 +3289,31 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, con
 
 #undef P_TAB
 #undef TAB_SIZE
+}
+
+gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_module_t *const module,
+                                           const int ch, GtkWidget *warn_label,
+                                           const void *const restrict ivoid, void *const restrict ovoid,
+                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+{
+  if (!module) return FALSE;
+  if (ch == req_ch)
+  {
+    dt_iop_set_module_trouble_message(module, warn_label, NULL, NULL);
+    return TRUE;
+  }
+  else
+  {
+    // copy the input buffer to the output
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    // set trouble message
+    dt_iop_set_module_trouble_message(module, warn_label, _("unsupported input"),
+                                      _("You have placed this module at\n"
+                                        "a position in the pipeline where\n"
+                                        "the data format does not match\n"
+                                        "its requirements."));
+    return FALSE;
+  }
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
