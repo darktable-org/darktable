@@ -871,6 +871,7 @@ static void grow_buffer(char **result, char **result_iter, size_t *result_length
 static char *expand(dt_variables_params_t *params, char **source, char extra_stop)
 {
   char *result = g_strdup("");
+  if(!*source) return result;
   char *result_iter = result;
   size_t result_length = 0;
   char *source_iter = *source;
