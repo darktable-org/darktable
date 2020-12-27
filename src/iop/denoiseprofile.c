@@ -1517,7 +1517,7 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   assert(piece->colors == 4);
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(NULL, NULL, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if (!dt_iop_alloc_image_buffers(piece->module, NULL, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   // adjust to zoom size:
