@@ -1289,6 +1289,8 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
 {
+  if (!module->header)                  /* some modules such as overexposed don't actually have a header */
+    return;
   GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
 
   /* get the enable button and button */
@@ -1361,20 +1363,26 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module, GtkWidget 
   {
     // set the module's trouble flag
     dt_iop_set_module_in_trouble(module, TRUE);
-    // set the warning message in the module's message area just below the header
-    char *msg = dt_iop_warning_message(trouble_msg);
-    gtk_label_set_text(GTK_LABEL(label_widget), msg);
-    g_free(msg);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
-    gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
+    if (label_widget)
+    {
+      // set the warning message in the module's message area just below the header
+      char *msg = dt_iop_warning_message(trouble_msg);
+      gtk_label_set_text(GTK_LABEL(label_widget), msg);
+      g_free(msg);
+      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
+      gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
+    }
   }
   else
   {
     // no trouble, so clear the trouble flag and hide the message area
     dt_iop_set_module_in_trouble(module, FALSE);
-    gtk_label_set_text(GTK_LABEL(label_widget), "");
-    gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), "");
-    gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
+    if (label_widget)
+    {
+      gtk_label_set_text(GTK_LABEL(label_widget), "");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), "");
+      gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
+    }
   }
 }
 
