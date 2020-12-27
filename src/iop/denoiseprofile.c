@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/eaw.h"
 #include "common/exif.h"
+#include "common/imagebuf.h"
 #include "common/nlmeans_core.h"
 #include "common/noiseprofiles.h"
 #include "common/opencl.h"
@@ -1515,6 +1516,10 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   const dt_iop_denoiseprofile_data_t *const d = (dt_iop_denoiseprofile_data_t *)piece->data;
   assert(piece->colors == 4);
 
+  float *restrict in;
+  if (!dt_iop_alloc_image_buffers(piece->module, NULL, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+    return;
+
   // adjust to zoom size:
   const float scale = fminf(roi_in->scale, 2.0f) / fmaxf(piece->iscale, 1.0f);
   const int P = ceilf(d->radius * scale); // pixel filter size
@@ -1524,8 +1529,6 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   const float central_pixel_weight = d->central_pixel_weight * scale;
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
-
-  float *in = dt_alloc_align_float((size_t)4 * roi_in->width * roi_in->height);
 
   float wb[3];
   float p[3];
@@ -1645,7 +1648,9 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     return;
   }
 
-  float *in = dt_alloc_align_float((size_t)4 * roi_in->width * roi_in->height);
+  float *restrict in;
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+    return;
 
   float wb[3];
   const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };

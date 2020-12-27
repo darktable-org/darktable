@@ -23,6 +23,39 @@
 
 #include "develop/imageop.h" // for dt_iop_roi_t
 
+// Allocate a 64-byte aligned buffer for an image of the given dimensions and channels.
+// The return value must be freed with dt_free_align().
+static inline float *__restrict__ dt_iop_image_alloc(const size_t width, const size_t height, const size_t ch)
+{
+  return dt_alloc_align_float(width * height * ch);
+}
+
+// Allocate one or more buffers as detailed in the given parameters.  If any allocation fails, free all of them,
+// set the module's trouble flag, and return FALSE.
+//  The variable arguments take the form  SIZE, PTR-to-floatPTR, SIZE, PTR-to-floatPTR, etc. except that if the SIZE
+//  indicates a per-thread allocation, a second pointer is passed: SIZE, PTR-to-floatPTR, PTR-to-size_t, SIZE, etc.
+//  SIZE is the number of floats per pixel, ORed with appropriate flags from the list following below
+gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWidget *warning_label,
+                                    const struct dt_iop_roi_t *const roi_in,
+                                    const struct dt_iop_roi_t *const roi_out, ...);
+// Optional flags to add to size request.  Default is to allocate N channels per pixel according to
+// the dimensions of roi_out
+#define DT_IMGSZ_CH_MASK    0x000FFFF  // isolate just the number of floats per pixel
+
+#define DT_IMGSZ_ROI_MASK   0x0100000  // isolate just input/output selection
+#define DT_IMGSZ_OUTPUT     0x0000000  // read image dimensions from roi_out
+#define DT_IMGSZ_INPUT      0x0100000  // read image dimensions from roi_in
+
+#define DT_IMGSZ_PERTHREAD  0x0200000  // allocate a separate buffer for each thread
+#define DT_IMGSZ_CLEARBUF   0x0400000  // zero the allocated buffer
+
+#define DT_IMGSZ_DIM_MASK   0x00F0000  // isolate the requested image dimension(s)
+#define DT_IMGSZ_FULL       0x0000000  // full height times width
+#define DT_IMGSZ_HEIGHT     0x0010000  // buffer equal to one column of the image
+#define DT_IMGSZ_WIDTH      0x0020000  // buffer equal to one row of the image
+#define DT_IMGSZ_LONGEST    0x0030000  // buffer equal to larger of one row/one column
+
+
 __DT_CLONE_TARGETS__
 static inline void dt_simd_memcpy(const float *const __restrict__ in,
                                   float *const __restrict__ out,
@@ -38,13 +71,6 @@ schedule(simd:static) aligned(in, out:64)
 #endif
   for(size_t k = 0; k < num_elem; k++)
     out[k] = in[k];
-}
-
-// Allocate a 64-byte aligned buffer for an image of the given dimensions and channels.
-// The return value must be freed with dt_free_align().
-static inline float *__restrict__ dt_iop_image_alloc(const size_t width, const size_t height, const size_t ch)
-{
-  return dt_alloc_align_float(width * height * ch);
 }
 
 // Copy an image buffer, specifying the number of floats it contains.  Use of this function is to be preferred
