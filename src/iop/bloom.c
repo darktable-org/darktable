@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -34,14 +35,11 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
 
 typedef struct dt_iop_bloom_params_t
@@ -101,9 +99,6 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-#define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
-
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -115,7 +110,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
   /* gather light by threshold */
-  float *const restrict blurlightness = dt_alloc_align(64, npixels * sizeof(float));
+  float *const restrict blurlightness = dt_alloc_align_float(npixels);
 //  memcpy(out, in, npixels * 4 * sizeof(float));  //TODO: do we need this?
 
   const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);

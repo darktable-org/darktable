@@ -23,6 +23,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -115,7 +116,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   sigma[4] = data->sigma[4];
   if(fmaxf(sigma[0], sigma[1]) < .1)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -124,7 +125,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(rad <= 6 && ((piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
   }
   else if(rad <= 6)
   {
@@ -142,7 +143,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 
-    float *const weights_buf = (float *)malloc(weights_size * dt_get_num_threads() * sizeof(float));
+    float *const weights_buf = (float *)malloc(sizeof(float) * dt_get_num_threads() * weights_size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \

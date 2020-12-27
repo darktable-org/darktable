@@ -22,6 +22,7 @@
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
 #include "common/colorspaces.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -35,7 +36,6 @@
 #include "gui/accelerators.h"
 #include "iop/iop_api.h"
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -242,7 +242,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float detail = -1.0f; // bilateral base layer
 
   cl_mem dev_tmp = NULL;
-  dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, roi_in->width, roi_in->height, sizeof(float) * 4);
 
   dt_bilateral_cl_t *b = dt_bilateral_init_cl(devid, roi_in->width, roi_in->height, sigma_s, sigma_r);
   if(!b) goto error;

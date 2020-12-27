@@ -24,6 +24,7 @@
 #include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
+#include "gui/drag_and_drop.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
 #include "views/view.h"
@@ -60,6 +61,13 @@ typedef struct dt_lib_tagging_t
   char *collection;
   GtkEntryCompletion *completion;
   char *last_tag;
+  struct
+  {
+    gchar *tagname;
+    GtkTreePath *path, *lastpath;
+    int expand_timeout, scroll_timeout, last_y;
+    gboolean root, tag_source;
+  } drag;
 } dt_lib_tagging_t;
 
 typedef struct dt_tag_op_t
@@ -896,6 +904,33 @@ static gboolean _update_tag_name_per_name(GtkTreeModel *model, GtkTreePath *path
   return FALSE;
 }
 
+static void _update_attached_count(const int tagid, GtkTreeView *view, const gboolean tree_flag)
+{
+  const guint count = dt_tag_images_count(tagid);
+  GtkTreeModel *model = gtk_tree_view_get_model(view);
+  GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
+  GtkTreeIter iter;
+  if(gtk_tree_model_get_iter_first(store, &iter))
+  {
+    if (_find_tag_iter_tagid(store, &iter, tagid))
+    {
+      if (tree_flag)
+      {
+        gtk_tree_store_set(GTK_TREE_STORE(store), &iter,
+                           DT_LIB_TAGGING_COL_COUNT, count,
+                           DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
+        _calculate_sel_on_tree(GTK_TREE_MODEL(store), &iter);
+      }
+      else
+      {
+        gtk_list_store_set(GTK_LIST_STORE(store), &iter,
+                           DT_LIB_TAGGING_COL_COUNT, count,
+                           DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
+      }
+    }
+  }
+}
+
 void init_presets(dt_lib_module_t *self)
 {
 
@@ -929,9 +964,6 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   const char *buf = (char *)params;
   if (buf && buf[0])
   {
-    GtkTreeModel *model = gtk_tree_view_get_model(d->dictionary_view);
-    GtkTreeModel *store = gtk_tree_model_filter_get_model(GTK_TREE_MODEL_FILTER(model));
-    GtkTreeIter iter;
     gchar **tokens = g_strsplit(buf, ",", 0);
     if(tokens)
     {
@@ -944,26 +976,8 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
         const gboolean attached = dt_tag_attach(tagid, -1, TRUE, TRUE);
         if(attached) some_attached = TRUE;
 
-        const guint count = dt_tag_images_count(tagid);
-        if(gtk_tree_model_get_iter_first(store, &iter))
-        {
-          if (_find_tag_iter_tagid(store, &iter, tagid))
-          {
-            if (d->tree_flag)
-            {
-              gtk_tree_store_set(GTK_TREE_STORE(store), &iter,
-                                 DT_LIB_TAGGING_COL_COUNT, count,
-                                 DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
-              _calculate_sel_on_tree(GTK_TREE_MODEL(store), &iter);
-            }
-            else
-            {
-              gtk_list_store_set(GTK_LIST_STORE(store), &iter,
-                                 DT_LIB_TAGGING_COL_COUNT, count,
-                                 DT_LIB_TAGGING_COL_SEL, DT_TS_ALL_IMAGES, -1);
-            }
-          }
-        }
+        _update_attached_count(tagid, d->dictionary_view, d->tree_flag);
+
         entry++;
       }
       g_strfreev(tokens);
@@ -1812,6 +1826,62 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
   g_free(tagname);
 }
 
+static gboolean _apply_rename_path(GtkWidget *dialog, const char *tagname,
+                                    const char *newtag, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+
+  gboolean success = FALSE;
+  GList *tag_family = NULL;
+  GList *tagged_images = NULL;
+  dt_tag_get_tags_images(tagname, &tag_family, &tagged_images);
+
+  // check if one of the new tagnames already exists.
+  const int tagname_len = strlen(tagname);
+  gboolean tagname_exists = FALSE;
+  for(GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
+  {
+    char *new_tagname = g_strconcat(newtag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
+    tagname_exists = dt_tag_exists(new_tagname, NULL);
+    if(tagname_exists)
+    {
+      GtkWidget *win;
+      if(!dialog)
+        win = dt_ui_main_window(darktable.gui->ui);
+      else
+        win = dialog;
+
+      GtkWidget *warning_dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_MODAL,
+                      GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
+                      _("at least one new tagname (%s) already exists, aborting."), new_tagname);
+      gtk_dialog_run(GTK_DIALOG(warning_dialog));
+      gtk_widget_destroy(warning_dialog);
+    }
+    g_free(new_tagname);
+  }
+
+  if(!tagname_exists)
+  {
+    for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
+    {
+      char *new_tagname = g_strconcat(newtag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
+      dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
+      g_free(new_tagname);
+    }
+    _init_treeview(self, 0);
+    _init_treeview(self, 1);
+    dt_image_synch_xmps(tagged_images);
+    _raise_signal_tag_changed(self);
+    _show_tag_on_view(d->dictionary_view, newtag);
+    success = TRUE;
+  }
+  dt_tag_free_result(&tag_family);
+  g_list_free(tagged_images);
+
+  return success;
+}
+
+
 // rename path allows the user to redefine a hierarchy
 static void _pop_menu_dictionary_rename_path(GtkWidget *menuitem, dt_lib_module_t *self)
 {
@@ -1830,8 +1900,8 @@ static void _pop_menu_dictionary_rename_path(GtkWidget *menuitem, dt_lib_module_
   gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &tagname,
           DT_LIB_TAGGING_COL_ID, &tagid, -1);
 
-  gint tag_count;
-  gint img_count;
+  gint tag_count = 0;
+  gint img_count = 0;
   dt_tag_count_tags_images(tagname, &tag_count, &img_count);
   if (tag_count == 0) return;
 
@@ -1890,44 +1960,7 @@ static void _pop_menu_dictionary_rename_path(GtkWidget *menuitem, dt_lib_module_
       g_free(tagname);
       return;
     }
-    GList *tag_family = NULL;
-    GList *tagged_images = NULL;
-    dt_tag_get_tags_images(tagname, &tag_family, &tagged_images);
-
-    // check if one of the new tagnames already exists.
-    const int tagname_len = strlen(tagname);
-    gboolean tagname_exists = FALSE;
-    for (GList *taglist = tag_family; taglist && !tagname_exists; taglist = g_list_next(taglist))
-    {
-      char *new_tagname = g_strconcat(newtag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
-      tagname_exists = dt_tag_exists(new_tagname, NULL);
-      if (tagname_exists)
-      {
-        GtkWidget *warning_dialog = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_MODAL,
-                        GTK_MESSAGE_INFO, GTK_BUTTONS_CLOSE,
-                        _("at least one new tagname (%s) already exists, aborting."), new_tagname);
-        gtk_dialog_run(GTK_DIALOG(warning_dialog));
-        gtk_widget_destroy(warning_dialog);
-      };
-      g_free(new_tagname);
-    }
-
-    if (!tagname_exists)
-    {
-      for (GList *taglist = tag_family; taglist; taglist = g_list_next(taglist))
-      {
-        char *new_tagname = g_strconcat(newtag, &((dt_tag_t *)taglist->data)->tag[tagname_len], NULL);
-        dt_tag_rename(((dt_tag_t *)taglist->data)->id, new_tagname);
-        g_free(new_tagname);
-      }
-      _init_treeview(self, 0);
-      _init_treeview(self, 1);
-      dt_image_synch_xmps(tagged_images);
-      _raise_signal_tag_changed(self);
-      _show_tag_on_view(view, newtag);
-    }
-    dt_tag_free_result(&tag_family);
-    g_list_free(tagged_images);
+    _apply_rename_path(dialog, tagname, newtag, self);
   }
   gtk_widget_destroy(dialog);
   g_free(tagname);
@@ -2110,31 +2143,50 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
 
   if((event->type == GDK_BUTTON_PRESS && event->button == 3)
     || (d->tree_flag && event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_SHIFT_MASK)
-    || (event->type == GDK_2BUTTON_PRESS && event->button == 1))
+    || (event->type == GDK_2BUTTON_PRESS && event->button == 1)
+    || (event->type == GDK_BUTTON_PRESS && event->button == 1))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
     GtkTreePath *path = NULL;
     // Get tree path for row that was clicked
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y, &path, NULL, NULL, NULL))
     {
-      gtk_tree_selection_select_path(selection, path);
-      _update_atdetach_buttons(self);
-      if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+      if(event->type == GDK_BUTTON_PRESS && event->button == 1)
       {
-        _pop_menu_dictionary(view, event, self);
-        gtk_tree_path_free(path);
-        return TRUE;
+        GtkTreeModel *model = gtk_tree_view_get_model(d->dictionary_view);
+        GtkTreeIter iter;
+        gtk_tree_model_get_iter(model, &iter, path);
+        char *tagname;
+        gtk_tree_model_get(model, &iter,
+                           DT_LIB_TAGGING_COL_PATH, &tagname, -1);
+        if(d->drag.tagname) g_free(d->drag.tagname);
+        d->drag.tagname = tagname;
+        if(d->drag.path) gtk_tree_path_free(d->drag.path);
+        d->drag.path = path;
+        d->drag.lastpath = NULL;
+        return FALSE;
       }
-      else if(d->tree_flag && event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_SHIFT_MASK)
+      else
       {
-        gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
-        return TRUE;
-      }
-      else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
-      {
-        _attach_selected_tag(self, d);
-        gtk_tree_path_free(path);
-        return TRUE;
+        gtk_tree_selection_select_path(selection, path);
+        _update_atdetach_buttons(self);
+        if(event->type == GDK_BUTTON_PRESS && event->button == 3)
+        {
+          _pop_menu_dictionary(view, event, self);
+          gtk_tree_path_free(path);
+          return TRUE;
+        }
+        else if(d->tree_flag && event->type == GDK_BUTTON_PRESS && event->button == 1 && event->state & GDK_SHIFT_MASK)
+        {
+          gtk_tree_view_expand_row(GTK_TREE_VIEW(view), path, TRUE);
+          return TRUE;
+        }
+        else if(event->type == GDK_2BUTTON_PRESS && event->button == 1)
+        {
+          _attach_selected_tag(self, d);
+          gtk_tree_path_free(path);
+          return TRUE;
+        }
       }
     }
     gtk_tree_path_free(path);
@@ -2361,6 +2413,13 @@ static void _update_layout(dt_lib_module_t *self)
     }
     gtk_widget_set_sensitive(GTK_WIDGET(d->toggle_suggestion_button), TRUE);
   }
+
+  // drag & drop
+  if(d->tree_flag)
+    gtk_drag_source_set(GTK_WIDGET(d->dictionary_view), GDK_BUTTON1_MASK,
+                        target_list_tags, n_targets_tags, GDK_ACTION_MOVE);
+  else
+    gtk_drag_source_unset(GTK_WIDGET(d->dictionary_view));
 
   const gboolean active_c = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->toggle_sort_button));
   d->sort_count_flag = dt_conf_get_bool("plugins/lighttable/tagging/listsortedbycount");
@@ -2603,6 +2662,215 @@ static void _tree_selection_changed(GtkTreeSelection *treeselection, gpointer da
   _update_atdetach_buttons((dt_lib_module_t *)data);
 }
 
+static void _dnd_clear_root(dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  if(!d->drag.root) return;
+  GtkTreeModel *model = GTK_TREE_MODEL(d->dictionary_treestore);
+  GtkTreeIter iter;
+  gtk_tree_model_get_iter_first(model, &iter);
+  char *name;
+  gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &name, -1);
+  if(name && name[0] == '\0')
+    gtk_tree_store_remove(d->dictionary_treestore, &iter);
+  g_free(name);
+  d->drag.root = FALSE;
+}
+
+static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  GtkTreeView *tree = GTK_TREE_VIEW(widget);
+
+  if(d->drag.path)
+  {
+    cairo_surface_t *row_pix = gtk_tree_view_create_row_drag_icon(tree, d->drag.path);
+    // FIXME: try to put the anchor point on left bottom corner as for images
+//    cairo_surface_set_device_offset(row_pix,
+//                                    // the + 1 is for the black border in the icon
+//                                     - (double)(cairo_image_surface_get_width(row_pix) + 1),
+//                                     - (double)(cairo_image_surface_get_height(row_pix)+ 1));
+    gtk_drag_set_icon_surface(context, row_pix);
+    cairo_surface_destroy(row_pix);
+    gtk_tree_path_free(d->drag.path);
+    d->drag.path = NULL;
+    d->drag.tag_source = TRUE;
+  }
+}
+
+static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelectionData *selection_data,
+                           const guint target_type, const guint time, dt_lib_module_t *self)
+{
+  if(target_type == DND_TARGET_TAG)
+    gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
+                           _DWORD, NULL, 0);
+}
+
+static void _event_dnd_received(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
+                                GtkSelectionData *selection_data, guint target_type, guint time,
+                                dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  GtkTreeView *tree = GTK_TREE_VIEW(widget);
+  // disable the deault handler
+  g_signal_stop_emission_by_name(tree, "drag-data-received");
+  gboolean success = FALSE;
+
+  if(target_type == DND_TARGET_TAG)
+  {
+    GtkTreePath *path = NULL;
+    if (gtk_tree_view_get_path_at_pos(tree, x, y, &path, NULL, NULL, NULL))
+    {
+      char *name;
+      GtkTreeModel *model = gtk_tree_view_get_model(tree);
+      GtkTreeIter iter;
+
+      gtk_tree_model_get_iter(model, &iter, path);
+      gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &name, -1);
+      _dnd_clear_root(self);
+      const gboolean root = (name && name[0] == '\0');
+      char *leave = g_strrstr(d->drag.tagname, "|");
+      if(leave) leave++;
+      name = dt_util_dstrcat(name, "%s%s", root ? "" : "|", leave ? leave : d->drag.tagname);
+      _apply_rename_path(NULL, d->drag.tagname, name, self);
+
+      g_free(name);
+      g_free(d->drag.tagname);
+      d->drag.tagname = NULL;
+      success = TRUE;
+    }
+  }
+  else if((target_type == DND_TARGET_IMGID) && (selection_data != NULL))
+  {
+    GtkTreePath *path = NULL;
+    const int imgs_nb = gtk_selection_data_get_length(selection_data) / sizeof(uint32_t);
+    if(imgs_nb && gtk_tree_view_get_path_at_pos(tree, x, y, &path, NULL, NULL, NULL))
+    {
+      const uint32_t *imgt = (uint32_t *)gtk_selection_data_get_data(selection_data);
+      GList *imgs = NULL;
+      for(int i = 0; i < imgs_nb; i++)
+      {
+        imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgt[i]));
+      }
+      GtkTreeModel *model = gtk_tree_view_get_model(tree);
+      GtkTreeIter iter;
+      gtk_tree_model_get_iter(model, &iter, path);
+      gint tagid;
+      gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_ID, &tagid, -1);
+      if(tagid)
+        dt_tag_attach_images(tagid, imgs, TRUE);
+      g_list_free(imgs);
+      _update_attached_count(tagid, d->dictionary_view, d->tree_flag);
+      _init_treeview(self, 0);
+      _raise_signal_tag_changed(self);
+      dt_image_synch_xmp(-1);
+      success = TRUE;
+    }
+  }
+  gtk_drag_finish(context, success, FALSE, time);
+}
+
+static gboolean _dnd_expand_timeout(dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  if(d->drag.lastpath)
+  {
+    gtk_tree_view_expand_row(d->dictionary_view, d->drag.lastpath, FALSE);
+  }
+  return FALSE;
+}
+
+static gboolean _dnd_scroll_timeout(dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  if(d->drag.scroll_timeout)
+  {
+    GdkRectangle visible;
+    gtk_tree_view_get_visible_rect(d->dictionary_view, &visible);
+    gint top_ty;
+    gtk_tree_view_convert_bin_window_to_tree_coords(d->dictionary_view,
+                                                    0, 0, NULL, &top_ty);
+
+    // temporary drop root
+    if(d->drag.tag_source && !d->drag.root && d->drag.last_y < 5 && top_ty < 1)
+    {
+      GtkTreeIter iter;
+      gtk_tree_store_prepend(d->dictionary_treestore, &iter, NULL);
+      gtk_tree_store_set(d->dictionary_treestore, &iter,
+                        DT_LIB_TAGGING_COL_TAG, _("drop to root"),
+                        DT_LIB_TAGGING_COL_ID, 0,
+                        DT_LIB_TAGGING_COL_PATH, "",
+                        DT_LIB_TAGGING_COL_COUNT, 0,
+                        DT_LIB_TAGGING_COL_SEL, 0,
+                        DT_LIB_TAGGING_COL_FLAGS, 0,
+                        DT_LIB_TAGGING_COL_VISIBLE, TRUE,
+                        -1);
+      d->drag.root = TRUE;
+    }
+    else if(d->drag.root && d->drag.last_y >= 20)
+      _dnd_clear_root(self);
+
+    if(d->drag.last_y < 5)
+    {
+      // scroll up
+      gtk_tree_view_scroll_to_point(d->dictionary_view, 0, top_ty - 25 < 0 ? 0 : top_ty - 25);
+    }
+    else if (d->drag.last_y > visible.height - 5)
+      // scroll down
+      gtk_tree_view_scroll_to_point(d->dictionary_view, 0, top_ty + 25);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+static gboolean _event_dnd_motion(GtkWidget *widget, GdkDragContext *context,
+                                  gint x, gint y, guint time, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  GtkTreeView *tree = GTK_TREE_VIEW(widget);
+  GtkTreePath *path = NULL;
+
+  if(gtk_tree_view_get_path_at_pos(tree, x, y, &path, NULL, NULL, NULL))
+  {
+    if(!d->drag.lastpath || ((d->drag.lastpath) && gtk_tree_path_compare(d->drag.lastpath, path) != 0))
+    {
+      if (!gtk_tree_view_row_expanded(tree, path))
+        d->drag.expand_timeout = g_timeout_add(500, (GSourceFunc)_dnd_expand_timeout, self);
+    }
+
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(d->dictionary_view);
+    gtk_tree_selection_select_path(selection, path);
+    d->drag.last_y = y;
+    if(d->drag.scroll_timeout == 0)
+    {
+      d->drag.scroll_timeout = g_timeout_add(100, (GSourceFunc)_dnd_scroll_timeout, self);
+    }
+  }
+
+  // FIXME - no row highlihted... workartound with selection above
+//  gtk_tree_view_set_drag_dest_row(tree, path, GTK_TREE_VIEW_DROP_INTO_OR_BEFORE);
+
+  if (d->drag.lastpath)
+    gtk_tree_path_free(d->drag.lastpath);
+  d->drag.lastpath = path;
+
+  return TRUE;
+}
+
+static void _event_dnd_end(GtkWidget *widget, GdkDragContext *context, dt_lib_module_t *self)
+{
+  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
+  // FIXME (see gtk_tree_view_set_drag_dest_row above)
+//  gtk_tree_view_set_drag_dest_row(d->dictionary_view, NULL, GTK_TREE_VIEW_DROP_BEFORE);
+  GtkTreeSelection *selection = gtk_tree_view_get_selection(d->dictionary_view);
+  gtk_tree_selection_unselect_all(selection);
+  if(d->drag.scroll_timeout)
+    g_source_remove(d->drag.scroll_timeout);
+  d->drag.scroll_timeout = 0;
+  d->drag.tag_source = FALSE;
+  _dnd_clear_root(self);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_tagging_t *d = (dt_lib_tagging_t *)malloc(sizeof(dt_lib_tagging_t));
@@ -2798,6 +3066,23 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), (gpointer)self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
 
+  // drag & drop
+  {
+    d->drag.path = NULL;
+    d->drag.tagname = NULL;
+    d->drag.scroll_timeout = 0;
+    d->drag.expand_timeout = 0;
+    d->drag.root = FALSE;
+    d->drag.tag_source = FALSE;
+    gtk_drag_dest_set(GTK_WIDGET(d->dictionary_view), GTK_DEST_DEFAULT_ALL,
+                      target_list_tags_dest, n_targets_tags_dest, GDK_ACTION_MOVE);
+    g_signal_connect(d->dictionary_view, "drag-data-get", G_CALLBACK(_event_dnd_get), self);
+    g_signal_connect(d->dictionary_view, "drag-data-received", G_CALLBACK(_event_dnd_received), self);
+    g_signal_connect_after(d->dictionary_view, "drag-begin", G_CALLBACK(_event_dnd_begin), self);
+    g_signal_connect_after(d->dictionary_view, "drag-end", G_CALLBACK(_event_dnd_end), self);
+    g_signal_connect(d->dictionary_view, "drag-motion", G_CALLBACK(_event_dnd_motion), self);
+  }
+
   // buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
@@ -2873,6 +3158,8 @@ void gui_cleanup(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_lib_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
   g_free(d->collection);
+  if(d->drag.tagname) g_free(d->drag.tagname);
+  if(d->drag.path) gtk_tree_path_free(d->drag.path);
   free(self->data);
   self->data = NULL;
 }

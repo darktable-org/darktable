@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/colorspaces.h"
+#include "common/imagebuf.h"
 #include "common/points.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -142,7 +143,7 @@ void connect_key_accels(dt_iop_module_t *self)
 static void capture_histogram(const float *col, const dt_iop_roi_t *roi, int *hist)
 {
   // build separate histogram
-  memset(hist, 0, HISTN * sizeof(int));
+  memset(hist, 0, sizeof(int) * HISTN);
   for(int k = 0; k < roi->height; k++)
     for(int i = 0; i < roi->width; i++)
     {
@@ -251,9 +252,9 @@ static void kmeans(const float *col, const dt_iop_roi_t *const roi, const int n,
   const int nit = 10;                                 // number of iterations
   const int samples = roi->width * roi->height * 0.2; // samples: only a fraction of the buffer.
 
-  float2 *const mean = malloc(n * sizeof(float2));
-  float2 *const var = malloc(n * sizeof(float2));
-  int *const cnt = malloc(n * sizeof(int));
+  float2 *const mean = malloc(sizeof(float2) * n);
+  float2 *const var = malloc(sizeof(float2) * n);
+  int *const cnt = malloc(sizeof(int) * n);
 
   // init n clusters for a, b channels at random
   for(int k = 0; k < n; k++)
@@ -360,7 +361,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_iop_colortransfer_params_t *p = (dt_iop_colortransfer_params_t *)self->params;
       p->flag = ACQUIRE2;
     }
-    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   }
   else if(data->flag == APPLY)
   {
@@ -386,13 +387,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
 
     // cluster input buffer
-    float2 *const mean = malloc(data->n * sizeof(float2));
-    float2 *const var = malloc(data->n * sizeof(float2));
+    float2 *const mean = malloc(sizeof(float2) * data->n);
+    float2 *const var = malloc(sizeof(float2) * data->n);
 
     kmeans(in, roi_in, data->n, mean, var);
 
     // get mapping from input clusters to target clusters
-    int *const mapio = malloc(data->n * sizeof(int));
+    int *const mapio = malloc(sizeof(int) * data->n);
 
     get_cluster_mapping(data->n, mean, data->mean, mapio);
 
@@ -438,7 +439,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    memcpy(out, in, sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, ch);
   }
 }
 

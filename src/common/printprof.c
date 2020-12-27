@@ -65,7 +65,7 @@ int dt_apply_printer_profile(void **in, uint32_t width, uint32_t height, int bpp
     return 1;
   }
 
-  void *out = (void *)malloc(width*height*3);
+  void *out = (void *)malloc((size_t)3 * width * height);
 
   if (bpp == 8)
   {

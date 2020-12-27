@@ -82,9 +82,9 @@ void dtgtk_cairo_paint_triangle(cairo_t *cr, gint x, int y, gint w, gint h, gint
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
-  C = flags & CPF_DIRECTION_DOWN ? cos(-(M_PI * 1.5)) : C;
-  S = flags & CPF_DIRECTION_DOWN ? sin(-(M_PI * 1.5)) : S;
+  double C = cosf(-(M_PI / 2.0f)), S = sinf(-(M_PI / 2.0f)); // -90 degrees
+  C = flags & CPF_DIRECTION_DOWN ? cosf(-(M_PI * 1.5f)) : C;
+  S = flags & CPF_DIRECTION_DOWN ? sinf(-(M_PI * 1.5f)) : S;
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -112,9 +112,9 @@ void dtgtk_cairo_paint_solid_triangle(cairo_t *cr, gint x, int y, gint w, gint h
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
-  C = flags & CPF_DIRECTION_DOWN ? cos(-(M_PI * 1.5)) : C;
-  S = flags & CPF_DIRECTION_DOWN ? sin(-(M_PI * 1.5)) : S;
+  double C = cosf(-(M_PI / 2.0f)), S = sinf(-(M_PI / 2.0f)); // -90 degrees
+  C = flags & CPF_DIRECTION_DOWN ? cosf(-(M_PI * 1.5f)) : C;
+  S = flags & CPF_DIRECTION_DOWN ? sinf(-(M_PI * 1.5f)) : S;
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -143,9 +143,9 @@ void dtgtk_cairo_paint_arrow(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
-  C = flags & CPF_DIRECTION_UP ? cos(-(M_PI * 1.5)) : C;
-  S = flags & CPF_DIRECTION_UP ? sin(-(M_PI * 1.5)) : S;
+  double C = cosf(-(M_PI / 2.0)), S = sinf(-(M_PI / 2.0)); // -90 degrees
+  C = flags & CPF_DIRECTION_UP ? cosf(-(M_PI * 1.5f)) : C;
+  S = flags & CPF_DIRECTION_UP ? sinf(-(M_PI * 1.5f)) : S;
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -170,9 +170,9 @@ void dtgtk_cairo_paint_solid_arrow(cairo_t *cr, gint x, int y, gint w, gint h, g
   cairo_matrix_t hflip_matrix;
   cairo_matrix_init(&hflip_matrix, -1, 0, 0, 1, 1, 0);
 
-  double C = cos(-(M_PI / 2.0)), S = sin(-(M_PI / 2.0)); // -90 degrees
-  C = flags & CPF_DIRECTION_DOWN ? cos(-(M_PI * 1.5)) : C;
-  S = flags & CPF_DIRECTION_DOWN ? sin(-(M_PI * 1.5)) : S;
+  double C = cosf(-(M_PI / 2.0f)), S = sinf(-(M_PI / 2.0f)); // -90 degrees
+  C = flags & CPF_DIRECTION_DOWN ? cosf(-(M_PI * 1.5f)) : C;
+  S = flags & CPF_DIRECTION_DOWN ? sinf(-(M_PI * 1.5f)) : S;
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -194,7 +194,7 @@ void dtgtk_cairo_paint_flip(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 {
   PREAMBLE(1, 0, 0)
 
-  double C = cos(-1.570796327), S = sin(-1.570796327);
+  double C = cosf(-1.570796327f), S = sinf(-1.570796327f);
   cairo_matrix_t rotation_matrix;
   cairo_matrix_init(&rotation_matrix, C, S, -S, C, 0.5 - C * 0.5 + S * 0.5, 0.5 - S * 0.5 - C * 0.5);
 
@@ -650,7 +650,7 @@ void _gradient_arc(cairo_t *cr, double lw, int nb_steps, double x_center, double
 {
   cairo_set_line_width(cr, lw);
 
-  double *portions = malloc((1 + nb_steps) * sizeof(double));
+  double *portions = malloc(sizeof(double) * (1 + nb_steps));
 
   // note: cairo angles seems to be shifted by M_PI relatively to the unit circle
   angle_from = angle_from + M_PI;

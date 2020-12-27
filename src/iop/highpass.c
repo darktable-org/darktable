@@ -19,12 +19,12 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -41,9 +41,6 @@
 #endif
 
 #define MAX_RADIUS 16
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 
 DT_MODULE_INTROSPECTION(1, dt_iop_highpass_params_t)
 
@@ -111,7 +108,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int rad = MAX_RADIUS * (fmin(100.0f, d->sharpness + 1) / 100.0f);
   const int radius = MIN(MAX_RADIUS, ceilf(rad * roi_in->scale / piece->iscale));
 
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
   tiling->factor = 3.0f; // in + out + tmp
@@ -145,7 +142,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
    * unproven. ask me if you need details. ulrich */
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   const size_t mat_size = (size_t)wd * sizeof(float);
@@ -191,7 +188,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[3];
   size_t local[3];
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, mat_size, mat);

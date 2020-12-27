@@ -271,7 +271,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
       }
 
       // process live view histogram
-      float *const tmp_f = dt_alloc_align(64, sizeof(float) * pw * ph * 4);
+      float *const tmp_f = dt_alloc_align_float((size_t)4 * pw * ph);
       if(tmp_f)
       {
         dt_develop_t *dev = darktable.develop;
@@ -334,9 +334,9 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
   {
     // FIXME: every time the mouse moves over the center view this redraws, which isn't necessary
     cairo_surface_t *surf = NULL;
-    const int res = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f), height - (MARGIN * 2.0f),
-                                              &surf, FALSE);
-    if(res)
+    const dt_view_surface_value_t res = dt_view_image_get_surface(lib->image_id, width - (MARGIN * 2.0f),
+                                                                  height - (MARGIN * 2.0f), &surf, FALSE);
+    if(res != DT_VIEW_SURFACE_OK)
     {
       // if the image is missing, we reload it again
       g_timeout_add(250, _expose_again, NULL);

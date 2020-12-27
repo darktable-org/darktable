@@ -121,7 +121,7 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
   // map every thing to y = y0*(x/x0)^g
   // and fix (x0,y0) as the last point.
   // assume (x,y) pairs are ordered by ascending x, so this is the last point:
-  float x0 = x[num - 1], y0 = y[num - 1];
+  const float x0 = x[num - 1], y0 = y[num - 1];
 
   float g = 0.0f;
   int cnt = 0;
@@ -134,7 +134,7 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
     const float yy = y[k] / y0, xx = x[k] / x0;
     if(yy > 0.0f && xx > 0.0f)
     {
-      const float gg = logf(y[k] / y0) / log(x[k] / x0);
+      const float gg = logf(y[k] / y0) / logf(x[k] / x0);
       g += gg;
       cnt++;
     }
@@ -146,24 +146,6 @@ static inline void dt_iop_estimate_exp(const float *const x, const float *const 
   coeff[0] = 1.0f / x0;
   coeff[1] = y0;
   coeff[2] = g;
-}
-
-
-__DT_CLONE_TARGETS__
-static inline void dt_simd_memcpy(const float *const __restrict__ in,
-                                  float *const __restrict__ out,
-                                  const size_t num_elem)
-{
-  // Perform a parallel vectorized memcpy on 64-bits aligned
-  // contiguous buffers. This is several times faster than the original memcpy
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, out, num_elem) \
-schedule(simd:static) aligned(in, out:64)
-#endif
-  for(size_t k = 0; k < num_elem; k++)
-    out[k] = in[k];
 }
 
 

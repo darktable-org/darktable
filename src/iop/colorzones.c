@@ -23,6 +23,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/iop_profile.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -385,7 +386,7 @@ void process_display(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece
 
   const dt_iop_colorzones_channel_t display_channel = g->channel;
 
-  memcpy(ovoid, ivoid, roi_out->width * roi_out->height * ch * sizeof(float));
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) schedule(static)                                                           \
@@ -984,7 +985,8 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
                              const int select_by_picker, const int width, const int height,
                              const float *picked_color)
 {
-  const float normalize_C = (128.f * sqrtf(2.f));
+  const float bg_sat_factor = dt_conf_get_float("plugins/darkroom/colorzones/bg_sat_factor");
+  const float normalize_C = (128.f * bg_sat_factor * sqrtf(2.f));
 
   const int cellsi = DT_COLORZONES_CELLSI;
   const int cellsj = DT_COLORZONES_CELLSJ;
@@ -1012,7 +1014,7 @@ static void _draw_background(cairo_t *cr, dt_iop_colorzones_params_t *p, dt_iop_
           break;
         case DT_IOP_COLORZONES_C:
           LCh[0] = 50.0f;
-          LCh[1] = picked_color[1] * 2.f * ii;
+          LCh[1] = picked_color[1] * 2.f * bg_sat_factor * ii;
           LCh[2] = picked_color[2];
           break;
         default: // DT_IOP_COLORZONES_h

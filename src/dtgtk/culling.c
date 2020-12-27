@@ -411,8 +411,12 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
       // we center the zoom around cursor position
       if(posx >= 0.0f && posy >= 0.0f)
       {
-        const int iw = gtk_widget_get_allocated_width(th->w_image_box);
-        const int ih = gtk_widget_get_allocated_height(th->w_image_box);
+        const int iw = gtk_widget_get_allocated_width(th->w_image);
+        const int ih = gtk_widget_get_allocated_height(th->w_image);
+        // we take in account that the image may be smaller that the imagebox
+        posx -= (gtk_widget_get_allocated_width(th->w_image_box) - iw) / 2;
+        posy -= (gtk_widget_get_allocated_height(th->w_image_box) - ih) / 2;
+        // we change the value and samitize them
         th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, posx - (posx - th->zoomx) * z_ratio));
         th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, posy - (posy - th->zoomy) * z_ratio));
       }
@@ -619,7 +623,7 @@ static gboolean _event_motion_notify(GtkWidget *widget, GdkEventMotion *event, g
       dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
       int iw = 0;
       int ih = 0;
-      gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
+      gtk_widget_get_size_request(th->w_image, &iw, &ih);
       const int mindx = iw * darktable.gui->ppd_thb - th->img_width;
       const int mindy = ih * darktable.gui->ppd_thb - th->img_height;
       if(th->zoomx > 0) th->zoomx = 0;
@@ -1131,7 +1135,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     else
     {
       // we create a completly new thumb
-      dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE, table->show_tooltips);
+      dt_thumbnail_t *thumb = dt_thumbnail_new(40, 40, nid, nrow, table->overlays, TRUE, table->show_tooltips);
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
       double aspect_ratio = sqlite3_column_double(stmt, 2);
@@ -1549,7 +1553,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       }
       l = g_list_next(l);
     }
-    if(!in_list)
+    if(!in_list && table->list && g_list_length(table->list) > 0)
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
       dt_control_set_mouse_over_id(thumb->imgid);

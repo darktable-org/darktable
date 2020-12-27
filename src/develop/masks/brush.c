@@ -331,8 +331,8 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
                                              gboolean clockwise)
 {
   // we want to find the start and end angles
-  float a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
-  float a2 = atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]);
+  float a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  float a2 = atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]);
 
   if(a1 == a2) return;
 
@@ -380,8 +380,8 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
                                                    dt_masks_dynbuf_t *dpoints, dt_masks_dynbuf_t *dborder)
 {
   // we want to find the start and end angles
-  float a1 = fmodf(atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
-  float a2 = fmodf(atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
+  float a1 = fmodf(atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
+  float a2 = fmodf(atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
 
   if(a1 == a2) return;
 
@@ -419,7 +419,7 @@ static void _brush_points_stamp(float *cmax, float *bmin, dt_masks_dynbuf_t *dpo
                                 gboolean clockwise)
 {
   // we want to find the start angle
-  float a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  float a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
 
   // we determine the radius too
   float rad = sqrtf((bmin[1] - cmax[1]) * (bmin[1] - cmax[1]) + (bmin[0] - cmax[0]) * (bmin[0] - cmax[0]));
@@ -662,10 +662,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       float pd[7] = { point3->corner[0] * wd - dx, point3->corner[1] * ht - dy, point3->ctrl1[0] * wd - dx,
                       point3->ctrl1[1] * ht - dy, point3->border[0] * MIN(wd, ht), point3->hardness,
                       point3->density };
-      memcpy(p1, pa, 7 * sizeof(float));
-      memcpy(p2, pb, 7 * sizeof(float));
-      memcpy(p3, pc, 7 * sizeof(float));
-      memcpy(p4, pd, 7 * sizeof(float));
+      memcpy(p1, pa, sizeof(float) * 7);
+      memcpy(p2, pb, sizeof(float) * 7);
+      memcpy(p3, pc, sizeof(float) * 7);
+      memcpy(p4, pd, sizeof(float) * 7);
     }
     else
     {
@@ -681,14 +681,14 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       float pd[7] = { point3->corner[0] * wd - dx, point3->corner[1] * ht - dy, point3->ctrl2[0] * wd - dx,
                       point3->ctrl2[1] * ht - dy, point3->border[0] * MIN(wd, ht), point3->hardness,
                       point3->density };
-      memcpy(p1, pa, 7 * sizeof(float));
-      memcpy(p2, pb, 7 * sizeof(float));
-      memcpy(p3, pc, 7 * sizeof(float));
-      memcpy(p4, pd, 7 * sizeof(float));
+      memcpy(p1, pa, sizeof(float) * 7);
+      memcpy(p2, pb, sizeof(float) * 7);
+      memcpy(p3, pc, sizeof(float) * 7);
+      memcpy(p4, pd, sizeof(float) * 7);
     }
 
     // 1st. special case: render abrupt transitions between different opacity and/or hardness values
-    if((fabs(p1[5] - p2[5]) > 0.05f || fabs(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2 * nb - 1))
+    if((fabsf(p1[5] - p2[5]) > 0.05f || fabsf(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2 * nb - 1))
     {
       if(n == 0)
       {
@@ -714,7 +714,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
     }
 
     // 2nd. special case: render transition point between different brush sizes
-    if(fabs(p1[4] - p2[4]) > 0.0001f && n > 0)
+    if(fabsf(p1[4] - p2[4]) > 0.0001f && n > 0)
     {
       if(dborder)
       {
@@ -2689,8 +2689,8 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
 //   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  const size_t bufsize = (size_t)(*width) * (*height)  * sizeof(float);
-  *buffer = dt_alloc_align(64, bufsize);
+  const size_t bufsize = (size_t)(*width) * (*height);
+  *buffer = dt_alloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);
@@ -2799,7 +2799,7 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   start = start2 = dt_get_wtime();
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  memset(buffer, 0, sizeof(float) * width * height);
 
   const guint nb_corner = g_list_length(form->points);
 

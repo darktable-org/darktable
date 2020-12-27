@@ -557,7 +557,7 @@ static void _distort_paths(const struct dt_iop_module_t *module,
 
   // create buffer with all points
 
-  float *buffer = malloc(2 * sizeof(float) * len);
+  float *buffer = malloc(sizeof(float) * 2 * len);
   float *b = buffer;
 
   for(int k = 0; k < MAX_NODES; k++)
@@ -816,12 +816,12 @@ static float complex point_at_arc_length(const float complex points[], const int
 
 static float *build_lookup_table(const int distance, const float control1, const float control2)
 {
-  float complex *clookup = dt_alloc_align(64, (distance + 2) * sizeof(float complex));
+  float complex *clookup = dt_alloc_align(64, sizeof(float complex) * (distance + 2));
 
   interpolate_cubic_bezier(I, control1 + I, control2, 1.0, clookup, distance + 2);
 
   // reparameterize bezier by x and keep only y values
-  float *lookup = dt_alloc_align(64, (distance + 2) * sizeof(float));
+  float *lookup = dt_alloc_align_float((size_t)(distance + 2));
   float *ptr = lookup;
   float complex *cptr = clookup + 1;
   const float complex *cptr_end = cptr + distance;
@@ -894,19 +894,8 @@ static void build_round_stamp(float complex **pstamp,
     (strength * STAMP_RELOCATION) : strength;
   const float abs_strength = cabs(strength);
 
-  float complex *restrict stamp = malloc(sizeof(float complex)
-                                         * stamp_extent->width * stamp_extent->height);
-
-  // clear memory
-  #ifdef _OPENMP
-  #pragma omp parallel for schedule (static) default (shared)
-  #endif
-
-  for(int i = 0; i < stamp_extent->height; i++)
-  {
-    float complex *row = stamp + i * stamp_extent->width;
-    memset(row, 0, sizeof(float complex) * stamp_extent->width);
-  }
+  float complex *restrict stamp =
+    calloc(sizeof(float complex), stamp_extent->width * stamp_extent->height);
 
   // lookup table: map of distance from center point => warp
   const int table_size = iradius * LOOKUP_OVERSAMPLE;
@@ -919,7 +908,8 @@ static void build_round_stamp(float complex **pstamp,
   // circle in quadrants and doing only the inside we have to calculate
   // hypotf only for PI / 16 = 0.196 of the stamp area.
   // We don't do octants to avoid false sharing of cache lines between threads.
-  #ifdef _OPENMP
+  // doesn't work for OSX see issue #7349
+  #if defined(_OPENMP) && !defined(__APPLE__)
   #pragma omp parallel for schedule(static) default(none) \
     dt_omp_firstprivate(iradius, strength, abs_strength, table_size)   \
     dt_omp_sharedconst(center, warp, stamp_extent, lookup_table, LOOKUP_OVERSAMPLE)
@@ -1115,8 +1105,8 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 {
   // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
-  float complex *map = dt_alloc_align(64, mapsize * sizeof(float complex));
-  memset(map, 0, mapsize * sizeof(float complex));
+  float complex *map = dt_alloc_align(64, sizeof(float complex) * mapsize);
+  memset(map, 0, sizeof(float complex) * mapsize);
 
   // build map
   for(GList *i = interpolated; i != NULL; i = i->next)
@@ -1131,8 +1121,8 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 
   if(inverted)
   {
-    float complex * const imap = dt_alloc_align(64, mapsize * sizeof(float complex));
-    memset(imap, 0, mapsize * sizeof(float complex));
+    float complex * const imap = dt_alloc_align(64, sizeof(float complex) * mapsize);
+    memset(imap, 0, sizeof(float complex) * mapsize);
 
     // copy map into imap(inverted map).
     // imap [ n + dx(map[n]) , n + dy(map[n]) ] = -map[n]
@@ -1493,25 +1483,25 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
      case DT_INTERPOLATION_BILINEAR:
        kdesc.size = 1;
        kdesc.resolution = 1;
-       k = malloc(2 * sizeof(float));
+       k = malloc(sizeof(float) * 2);
        k[0] = 1.0f;
        k[1] = 0.0f;
        break;
      case DT_INTERPOLATION_BICUBIC:
        kdesc.size = 2;
-       k = malloc((kdesc.size * kdesc.resolution + 1) * sizeof(float));
+       k = malloc(sizeof(float) * ((size_t)kdesc.size * kdesc.resolution + 1));
        for(int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
          k[i] = bicubic(0.5f, (float) i / kdesc.resolution);
        break;
      case DT_INTERPOLATION_LANCZOS2:
        kdesc.size = 2;
-       k = malloc((kdesc.size * kdesc.resolution + 1) * sizeof(float));
+       k = malloc(sizeof(float) * ((size_t)kdesc.size * kdesc.resolution + 1));
        for(int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
          k[i] = lanczos(2, (float) i / kdesc.resolution);
        break;
      case DT_INTERPOLATION_LANCZOS3:
        kdesc.size = 3;
-       k = malloc((kdesc.size * kdesc.resolution + 1) * sizeof(float));
+       k = malloc(sizeof(float) * ((size_t)kdesc.size * kdesc.resolution + 1));
        for(int i = 0; i <= kdesc.size * kdesc.resolution; ++i)
          k[i] = lanczos(3, (float) i / kdesc.resolution);
        break;
@@ -1793,7 +1783,7 @@ static GList *interpolate_paths(dt_iop_liquify_params_t *p)
 
     if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
     {
-      float complex *buffer = malloc(INTERPOLATION_POINTS * sizeof(float complex));
+      float complex *buffer = malloc(sizeof(float complex) * INTERPOLATION_POINTS);
       interpolate_cubic_bezier(*p1,
                                 data->node.ctrl1,
                                 data->node.ctrl2,
@@ -2345,10 +2335,10 @@ static void smooth_path_linsys(size_t n,
                                 const int *equation)
 {
   --n;
-  float *a = malloc(n * sizeof(float)); // subdiagonal
-  float *b = malloc(n * sizeof(float)); // main diagonal
-  float *c = malloc(n * sizeof(float)); // superdiagonal
-  float complex *d = malloc(n * sizeof(float complex)); // right hand side
+  float *a = malloc(sizeof(float) * n); // subdiagonal
+  float *b = malloc(sizeof(float) * n); // main diagonal
+  float *c = malloc(sizeof(float) * n); // superdiagonal
+  float complex *d = malloc(sizeof(float complex) * n); // right hand side
 
   // Build the tridiagonal matrix.
 

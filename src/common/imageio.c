@@ -91,7 +91,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     // Decompress the JPG into our own memory format
     dt_imageio_jpeg_t jpg;
     if(dt_imageio_jpeg_decompress_header(buf, bufsize, &jpg)) goto error;
-    *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * jpg.width * jpg.height * 4);
+    *buffer = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * 4 * jpg.width * jpg.height);
     if(!*buffer) goto error;
 
     *width = jpg.width;
@@ -131,7 +131,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
     *height = image->rows;
     *color_space = DT_COLORSPACE_SRGB; // FIXME: this assumes that embedded thumbnails are always srgb
 
-    *buffer = (uint8_t *)dt_alloc_align(64, (size_t)sizeof(uint8_t) * image->columns * image->rows * 4);
+    *buffer = (uint8_t *)dt_alloc_align(64, sizeof(uint8_t) * 4 * image->columns * image->rows);
     if(!*buffer) goto error_gm;
 
     for(uint32_t row = 0; row < image->rows; row++)
@@ -183,7 +183,7 @@ int dt_imageio_large_thumbnail(const char *filename, uint8_t **buffer, int32_t *
       break;
     }
 
-    *buffer = malloc((*width) * (*height) * 4 * sizeof(uint8_t));
+    *buffer = malloc(sizeof(uint8_t) * (*width) * (*height) * 4);
     if (*buffer == NULL) goto error_im;
 
     mret = MagickExportImagePixels(image, 0, 0, *width, *height, "RGBP", CharPixel, *buffer);
@@ -661,9 +661,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   dt_dev_init(&dev, 0);
   dt_dev_load_image(&dev, imgid);
 
-  const int buf_is_downscaled
-      = (thumbnail_export && dt_conf_get_bool("plugins/lighttable/low_quality_thumbnails"));
-
+  const gboolean buf_is_downscaled = (thumbnail_export && dt_conf_get_bool("ui/performance"));
   dt_mipmap_buffer_t buf;
   if(buf_is_downscaled)
     dt_mipmap_cache_get(darktable.mipmap_cache, &buf, imgid, DT_MIPMAP_F, DT_MIPMAP_BLOCKING, 'r');

@@ -1404,7 +1404,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     const int nb_points = sqlite3_column_int(stmt, 6);
-    memcpy(form->source, sqlite3_column_blob(stmt, 7), 2 * sizeof(float));
+    memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 2);
 
     // and now we "read" the blob
     if(form->type & DT_MASKS_CIRCLE)
@@ -1946,10 +1946,18 @@ void dt_masks_reset_show_masks_icons(void)
   }
 }
 
+dt_masks_edit_mode_t dt_masks_get_edit_mode(struct dt_iop_module_t *module)
+{
+  return darktable.develop->form_gui
+    ? darktable.develop->form_gui->edit_mode
+    : DT_MASKS_EDIT_OFF;
+}
+
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value)
 {
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  if(!bd) return;
 
   dt_masks_form_t *grp = NULL;
   dt_masks_form_t *form = dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
@@ -1968,6 +1976,9 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
     dt_dev_masks_selection_change(darktable.develop, form->formid, FALSE);
   else
     dt_dev_masks_selection_change(darktable.develop, 0, FALSE);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
+                               value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
 
   dt_control_queue_redraw_center();
 }
@@ -2181,7 +2192,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
   // we determine a higher approx of the entry number
   guint nbe = 5 + g_list_length(darktable.develop->forms) + g_list_length(darktable.develop->iop);
   free(bd->masks_combo_ids);
-  bd->masks_combo_ids = malloc(nbe * sizeof(int));
+  bd->masks_combo_ids = malloc( sizeof(int) *nbe);
 
   int *cids = bd->masks_combo_ids;
   GtkWidget *combo = bd->masks_combo;
@@ -2663,7 +2674,7 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
   pos += sizeof(int);
   memcpy(str + pos, &form->version, sizeof(int));
   pos += sizeof(int);
-  memcpy(str + pos, &form->source, 2 * sizeof(float));
+  memcpy(str + pos, &form->source, sizeof(float) * 2);
   pos += 2 * sizeof(float);
 
   GList *forms = g_list_first(form->points);

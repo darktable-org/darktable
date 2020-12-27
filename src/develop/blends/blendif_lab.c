@@ -29,6 +29,7 @@
 #include "common/math.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/openmp_maths.h"
 #include <math.h>
 
 #define DT_BLENDIF_LAB_CH 4
@@ -39,14 +40,6 @@ typedef void(_blend_row_func)(const float *const restrict a, float *const restri
                               const float *const restrict mask, const size_t stride,
                               const float *const restrict min, const float *const restrict max);
 
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float x)
-{
-  return fminf(fmaxf(x, 0.0f), 1.0f);
-}
 
 #ifdef _OPENMP
 #pragma omp declare simd
@@ -273,7 +266,7 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
     dt_develop_blendif_process_parameters(parameters, d);
 
     // allocate space for a temporary mask buffer to split the computation of every channel
-    float *const restrict temp_mask = dt_alloc_align(64, buffsize * sizeof(float));
+    float *const restrict temp_mask = dt_alloc_align_float(buffsize);
     if(!temp_mask)
     {
       return;

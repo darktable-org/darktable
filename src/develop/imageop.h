@@ -614,7 +614,7 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const struct dt_develop
 /** make sure the raster mask is advertised if available */
 void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
-GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+void dt_iop_gui_set_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
 /** get the eventbox of plugin ui in expander */
@@ -711,6 +711,12 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
 
 /** show in iop module header that the module is in trouble */
 void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
+
+/** set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
+ ** or NULL, clear the trouble flag.  Because we don't necessarily know where to get the widget for the
+ ** message area, have the caller pass it in **/
+void dt_iop_set_module_trouble_message(dt_iop_module_t *module, GtkWidget *label_widget,
+                                       char *const trouble_msg, const char *const trouble_tooltip);
 
 // format modules description going in tooltips
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,

@@ -19,12 +19,12 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "common/darktable.h"
 #include "common/gaussian.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -49,7 +49,6 @@
 #endif
 
 
-#define CLIP(x) (((x) >= 0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
 DT_MODULE_INTROSPECTION(1, dt_iop_zonesystem_params_t)
 #define MAX_ZONE_SYSTEM_SIZE 24
 
@@ -173,8 +172,6 @@ static inline void _iop_zonesystem_calculate_zonemap(struct dt_iop_zonesystem_pa
     }
   }
 }
-
-#define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
 
 static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                  const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,

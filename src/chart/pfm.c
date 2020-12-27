@@ -58,7 +58,7 @@ float *read_pfm(const char *filename, int *wd, int *ht)
   float scale_factor = g_ascii_strtod(scale_factor_string, NULL);
   int swap_byte_order = (scale_factor >= 0.0) ^ (G_BYTE_ORDER == G_BIG_ENDIAN);
 
-  float *image = (float *)dt_alloc_align(64, sizeof(float) * width * height * 3);
+  float *image = (float *)dt_alloc_align_float((size_t)3 * width * height);
   if(!image)
   {
     fprintf(stderr, "error allocating memory\n");
@@ -113,9 +113,9 @@ float *read_pfm(const char *filename, int *wd, int *ht)
   float *line = (float *)calloc(3 * width, sizeof(float));
   for(size_t j = 0; j < height / 2; j++)
   {
-    memcpy(line, image + width * j * 3, 3 * sizeof(float) * width);
-    memcpy(image + width * j * 3, image + width * (height - 1 - j) * 3, 3 * sizeof(float) * width);
-    memcpy(image + width * (height - 1 - j) * 3, line, 3 * sizeof(float) * width);
+    memcpy(line, image + width * j * 3, sizeof(float) * width * 3);
+    memcpy(image + width * j * 3, image + width * (height - 1 - j) * 3, sizeof(float) * width * 3);
+    memcpy(image + width * (height - 1 - j) * 3, line, sizeof(float) * width * 3);
   }
   free(line);
   fclose(f);
@@ -132,7 +132,7 @@ void write_pfm(const char *filename, int width, int height, float *data)
   {
     // INFO: per-line fwrite call seems to perform best. LebedevRI, 18.04.2014
     (void)fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-    void *buf_line = dt_alloc_align(64, 3 * sizeof(float) * width);
+    void *buf_line = dt_alloc_align_float((size_t)3 * width);
     for(int j = 0; j < height; j++)
     {
       // NOTE: pfm has rows in reverse order
@@ -141,9 +141,9 @@ void write_pfm(const char *filename, int width, int height, float *data)
       float *out = (float *)buf_line;
       for(int i = 0; i < width; i++, in += 3, out += 3)
       {
-        memcpy(out, in, 3 * sizeof(float));
+        memcpy(out, in, sizeof(float) * 3);
       }
-      int cnt = fwrite(buf_line, 3 * sizeof(float), width, f);
+      int cnt = fwrite(buf_line, sizeof(float) * 3, width, f);
       if(cnt != width) break;
     }
     dt_free_align(buf_line);

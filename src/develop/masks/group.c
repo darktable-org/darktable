@@ -252,7 +252,7 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   // we create a new buffer
   const int wt = piece->iwidth;
   const int ht = piece->iheight;
-  float *buf = dt_alloc_align(64, (size_t)ht * wt * sizeof(float));
+  float *buf = dt_alloc_align_float((size_t)ht * wt);
 
   // we fill this buffer
   for(int yy = 0; yy < MIN(*posy, ht); yy++)
@@ -290,13 +290,13 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   const guint nb = g_list_length(form->points);
   if(nb == 0) return 0;
   float **bufs = calloc(nb, sizeof(float *));
-  int *w = malloc(nb * sizeof(int));
-  int *h = malloc(nb * sizeof(int));
-  int *px = malloc(nb * sizeof(int));
-  int *py = malloc(nb * sizeof(int));
-  int *ok = malloc(nb * sizeof(int));
-  int *states = malloc(nb * sizeof(int));
-  float *op = malloc(nb * sizeof(float));
+  int *w = malloc(sizeof(int) * nb);
+  int *h = malloc(sizeof(int) * nb);
+  int *px = malloc(sizeof(int) * nb);
+  int *py = malloc(sizeof(int) * nb);
+  int *ok = malloc(sizeof(int) * nb);
+  int *states = malloc(sizeof(int) * nb);
+  float *op = malloc(sizeof(float) * nb);
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);
@@ -340,7 +340,7 @@ static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   *height = b - t;
 
   // we allocate the buffer
-  *buffer = dt_alloc_align(64, sizeof(float) * (r - l) * (b - t));
+  *buffer = dt_alloc_align_float((size_t)(r - l) * (b - t));
 
   // and we copy each buffer inside, row by row
   for(int i = 0; i < nb; i++)
@@ -444,8 +444,189 @@ error:
   return 0;
 }
 
-static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                 dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
+static void _combine_masks_union(float *const restrict dest, float *const restrict newmask, const size_t npixels,
+                                 const float opacity, const int inverted)
+{
+  if (inverted)
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      dest[index] = MAX(dest[index], mask);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      dest[index] = MAX(dest[index], mask);
+    }
+  }
+}
+
+static void _combine_masks_intersect(float *const restrict dest, float *const restrict newmask, const size_t npixels,
+                                     const float opacity, const int inverted)
+{
+  if (inverted)
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      dest[index] = MIN(MAX(dest[index], 0.0f), MAX(mask, 0.0f));
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      dest[index] = MIN(MAX(dest[index], 0.0f), MAX(mask, 0.0f));
+    }
+  }
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline int both_positive(const float val1, const float val2)
+{
+  // this needs to be a separate inline function to convince the compiler to vectorize
+  return (val1 > 0.0f) && (val2 > 0.0f);
+}
+
+static void _combine_masks_difference(float *const restrict dest, float *const restrict newmask, const size_t npixels,
+                                      const float opacity, const int inverted)
+{
+  if (inverted)
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      dest[index] *= (1.0f - mask * both_positive(dest[index],mask));
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      dest[index] *= (1.0f - mask * both_positive(dest[index],mask));
+    }
+  }
+}
+
+static void _combine_masks_exclusion(float *const restrict dest, float *const restrict newmask, const size_t npixels,
+                                     const float opacity, const int inverted)
+{
+  if (inverted)
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * (1.0f - newmask[index]);
+      const float pos = both_positive(dest[index], mask);
+      const float neg = (1.0f - pos);
+      const float b1 = dest[index];
+      dest[index] = pos * MAX((1.0f - b1) * mask, b1 * (1.0f - mask)) + neg * MAX(b1, mask);
+    }
+  }
+  else
+  {
+#ifdef _OPENMP
+#if !defined(__SUNOS__) && !defined(__NetBSD__)
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(npixels, opacity) \
+  dt_omp_sharedconst(dest, newmask) aligned(dest, newmask : 64) \
+  schedule(simd:static)
+#else
+#pragma omp parallel for shared(dest, newmask)
+#endif
+#endif
+    for(int index = 0; index < npixels; index++)
+    {
+      const float mask = opacity * newmask[index];
+      const float pos = both_positive(dest[index], mask);
+      const float neg = (1.0f - pos);
+      const float b1 = dest[index];
+      dest[index] = pos * MAX((1.0f - b1) * mask, b1 * (1.0f - mask)) + neg * MAX(b1, mask);
+    }
+  }
+}
+
+static int dt_group_get_mask_roi(dt_iop_module_t *const restrict module,
+                                 dt_dev_pixelpipe_iop_t *const restrict piece,
+                                 dt_masks_form_t *const form, const dt_iop_roi_t *const roi,
+                                 float *const restrict buffer)
 {
   double start = dt_get_wtime();
   const guint nb = g_list_length(form->points);
@@ -454,13 +635,14 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
 
   const int width = roi->width;
   const int height = roi->height;
+  const size_t npixels = (size_t)width * height;
 
   // we need to allocate a temporary buffer for intermediate creation of individual shapes
-  float *bufs = dt_alloc_align(64, (size_t)width * height * sizeof(float));
+  float *const restrict bufs = dt_alloc_align_float(npixels);
   if(bufs == NULL) return 0;
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  memset(buffer, 0, sizeof(float) * npixels);
 
   // and we get all masks
   GList *fpts = g_list_first(form->points);
@@ -479,126 +661,39 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
       if(ok)
       {
         // first see if we need to invert this shape
-        if(state & DT_MASKS_STATE_INVERSE)
-        {
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-          dt_omp_firstprivate(width, height) \
-	  shared(bufs) collapse(2)
-#else
-#pragma omp parallel for shared(bufs)
-#endif
-#endif
-          for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++)
-            {
-              const size_t index = (size_t)y * width + x;
-              bufs[index] = 1.0f - bufs[index];
-            }
-        }
+        const int inverted = (state & DT_MASKS_STATE_INVERSE);
 
         if(state & DT_MASKS_STATE_UNION)
         {
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-          dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs) collapse(2)
-#else
-#pragma omp parallel for shared(bufs, buffer)
-#endif
-#endif
-          for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++)
-            {
-              const size_t index = (size_t)y * width + x;
-              buffer[index] = MAX(buffer[index], bufs[index] * op);
-            }
+          _combine_masks_union(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_INTERSECTION)
         {
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-            dt_omp_firstprivate(width, height, op) \
-            shared(buffer, bufs) collapse(2)
-#else
-#pragma omp parallel for shared(bufs, buffer)
-#endif
-#endif
-          for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++)
-            {
-              const size_t index = (size_t)y * width + x;
-              const float b1 = buffer[index];
-              const float b2 = bufs[index];
-              if(b1 > 0.0f && b2 > 0.0f)
-                buffer[index] = MIN(b1, b2 * op);
-              else
-                buffer[index] = 0.0f;
-            }
+          _combine_masks_intersect(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_DIFFERENCE)
         {
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-          dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs) collapse(2)
-#else
-#pragma omp parallel for shared(bufs, buffer)
-#endif
-#endif
-          for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++)
-            {
-              const size_t index = (size_t)y * width + x;
-              const float b1 = buffer[index];
-              const float b2 = bufs[index] * op;
-              if(b1 > 0.0f && b2 > 0.0f) buffer[index] = b1 * (1.0f - b2);
-            }
+          _combine_masks_difference(buffer, bufs, npixels, op, inverted);
         }
         else if(state & DT_MASKS_STATE_EXCLUSION)
         {
-#ifdef _OPENMP
-#if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-          dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs) collapse(2)
-#else
-#pragma omp parallel for shared(bufs, buffer)
-#endif
-#endif
-          for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++)
-            {
-              const size_t index = (size_t)y * width + x;
-              const float b1 = buffer[index];
-              const float b2 = bufs[index] * op;
-              if(b1 > 0.0f && b2 > 0.0f)
-                buffer[index] = MAX((1.0f - b1) * b2, b1 * (1.0f - b2));
-              else
-                buffer[index] = MAX(b1, b2);
-            }
+          _combine_masks_exclusion(buffer, bufs, npixels, op, inverted);
         }
         else // if we are here, this mean that we just have to copy the shape and null other parts
         {
 #ifdef _OPENMP
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
-#pragma omp parallel for default(none) \
-          dt_omp_firstprivate(width, height, op) \
-          shared(buffer, bufs) collapse(2)
+#pragma omp parallel for simd default(none) \
+          dt_omp_firstprivate(npixels, op, inverted) \
+          dt_omp_sharedconst(buffer, bufs) schedule(simd:static) aligned(buffer, bufs : 64)
 #else
 #pragma omp parallel for shared(bufs, buffer)
 #endif
 #endif
-          for(int y = 0; y < height; y++)
-            for(int x = 0; x < width; x++)
-            {
-              const size_t index = (size_t)y * width + x;
-              buffer[index] = bufs[index] * op;
-            }
+          for(int index = 0; index < npixels; index++)
+          {
+            buffer[index] = op * (inverted ? (1.0f - bufs[index]) : bufs[index]);
+          }
         }
 
         if(darktable.unmuted & DT_DEBUG_PERF)
@@ -610,7 +705,6 @@ static int dt_group_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
     }
     fpts = g_list_next(fpts);
   }
-
   // and we free the intermediate buffer
   dt_free_align(bufs);
 

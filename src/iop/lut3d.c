@@ -21,6 +21,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_png.h"
+#include "common/imagebuf.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
@@ -458,7 +459,7 @@ uint8_t calculate_clut_compressed(dt_iop_lut3d_params_t *const p, const char *co
 
   get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
-  lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
+  lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
   if(!lclut)
   {
     fprintf(stderr, "[lut3d] error allocating buffer for gmz lut\n");
@@ -558,7 +559,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu floats for png lut - level %d\n", buf_size_lut, level);
-  float *lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
+  float *lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
   if(!lclut)
   {
     fprintf(stderr, "[lut3d] error - allocating buffer for png lut\n");
@@ -788,7 +789,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
-        lclut = dt_alloc_align(16, buf_size * sizeof(float));
+        lclut = dt_alloc_align(16, sizeof(float) * buf_size);
         if(!lclut)
         {
           fprintf(stderr, "[lut3d] error - allocating buffer for cube lut\n");
@@ -900,7 +901,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
             }
             buf_size = level * level * level * 3;
             dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
-            lclut = dt_alloc_align(16, buf_size * sizeof(float));
+            lclut = dt_alloc_align(16, sizeof(float) * buf_size);
             if(!lclut)
             {
               fprintf(stderr, "[lut3d] error - allocating buffer for cube lut\n");
@@ -1102,7 +1103,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else  // no clut
   {
-    memcpy(obuf, ibuf, width * height * ch * sizeof(float));
+    dt_iop_image_copy_by_size(obuf, ibuf, width, height, ch);
   }
 }
 

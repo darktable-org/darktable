@@ -313,8 +313,8 @@ static float deg2rad(float deg)
 
 static int latlon2zoom(int pix_height, int pix_width, float lat1, float lat2, float lon1, float lon2)
 {
-  float lat1_m = atanh(sin(lat1));
-  float lat2_m = atanh(sin(lat2));
+  float lat1_m = atanh(sinf(lat1));
+  float lat2_m = atanh(sinf(lat2));
   int zoom_lon = LOG2((double)(2 * pix_width * M_PI) / (TILESIZE * (lon2 - lon1)));
   int zoom_lat = LOG2((double)(2 * pix_height * M_PI) / (TILESIZE * (lat2_m - lat1_m)));
   return MIN(zoom_lon, zoom_lat);
@@ -2283,10 +2283,10 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
         if(lib->selected_images)
         {
           // drag & drop of images
-          const int imgs_nb = g_list_length(lib->selected_images);
+          const guint imgs_nb = g_list_length(lib->selected_images);
           if(imgs_nb)
           {
-            uint32_t *imgs = malloc(imgs_nb * sizeof(uint32_t));
+            uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
             GList *l = lib->selected_images;
             for(int i = 0; i < imgs_nb; i++)
             {

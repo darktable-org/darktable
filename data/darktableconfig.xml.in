@@ -320,6 +320,25 @@
     <shortdescription>disable the entry completion</shortdescription>
     <longdescription>the entry completion is useful for those who enter tags from keyboard only. for others the entry completion can be embarrassing. need to restart darktable.</longdescription>
   </dtconfig>
+  <dtconfig prefs="misc" section="tags">
+    <name>plugins/lighttable/tagging/no_uncategorized</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>in collect module, do not set the 'uncategorized' entry for tags</shortdescription>
+    <longdescription>in collect module, do not set the 'uncategorized' entry for tags which do not have children</longdescription>
+  </dtconfig>
+  <dtconfig prefs="misc" section="tags">
+    <name>plugins/lighttable/tagging/case_sensitivity</name>
+    <type>
+      <enum>
+        <option>sensitive</option>
+        <option>insensitive</option>
+      </enum>
+    </type>
+    <default>insensitive</default>
+    <shortdescription>in collect module, tags case sensitivity</shortdescription>
+    <longdescription>in collect module, tags case sensitivity. without the Sqlite ICU extension, insensivity works only for the 26 latin letters</longdescription>
+  </dtconfig>
   <dtconfig prefs="cpugpu" capability="opencl">
     <name>opencl</name>
     <type>bool</type>
@@ -645,42 +664,49 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>ignore JPEG images when importing film rolls</shortdescription>
     <longdescription>when having raw+JPEG images together in one directory it makes no sense to import both. with this flag one can ignore all JPEGs found.</longdescription>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
+    <name>ui_last/import_apply_metadata</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>apply metadata on import</shortdescription>
+    <longdescription>apply some metadata to all newly imported images.</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>ui_last/import_recursive</name>
     <type>bool</type>
     <default>false</default>
     <shortdescription>recursive directory traversal when importing filmrolls</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_creator</name>
     <type>string</type>
     <default/>
     <shortdescription>creator to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_publisher</name>
     <type>string</type>
     <default/>
     <shortdescription>publisher to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_rights</name>
     <type>string</type>
     <default/>
     <shortdescription>rights to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_last_tags</name>
     <type>string</type>
     <default/>
@@ -694,7 +720,7 @@
     <shortdescription>last opened directory.</shortdescription>
     <longdescription/>
   </dtconfig>
-  <dtconfig prefs="import" section="import">
+  <dtconfig>
     <name>ui_last/import_initial_rating</name>
     <type min="0" max="5">int</type>
     <default>1</default>
@@ -875,13 +901,6 @@
     <default>0</default>
     <shortdescription>last timeline zoom.</shortdescription>
     <longdescription/>
-  </dtconfig>
-  <dtconfig> <!-- this option is not exposed in the gui because there might be crashy synchronisation issues when it's updated on the fly -->
-    <name>plugins/lighttable/low_quality_thumbnails</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>low quality thumbnails</shortdescription>
-    <longdescription>if set to true, thumbnails will be processed by first downscaling rather than demosaicing the full image. this can result in much faster processing times and blurrier images, especially when you cropped a lot.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
@@ -1527,7 +1546,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>always show thumbnail overlays</shortdescription>
-    <longdescription>show overlays (rating stars, "edited" mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
+    <longdescription>show overlays (rating stars, 'edited' mark, etc) for all thumbnails in file manager, not only hovered one</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/single_module</name>
@@ -2487,6 +2506,13 @@
     <default>true</default>
     <shortdescription>arange buttons as bar below temp/tint sliders</shortdescription>
     <longdescription>if enabled, the buttons in white balance module will be aranged below temp/tint sliders, otherwise they'll be shown in a grid to the right of temp/tint sliders</longdescription>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/colorzones/bg_sat_factor</name>
+    <type min="0.1" max="1.0">float</type>
+    <default>0.5</default>
+    <shortdescription>saturation factor of the color zones background</shortdescription>
+    <longdescription>higher value means more saturated backgrounds in color zones</longdescription>
   </dtconfig>
   <dtconfig prefs="darkroom" section="modules">
     <name>plugins/darkroom/colorbalance/layout</name>

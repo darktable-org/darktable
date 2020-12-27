@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/darktable.h"
+#include "common/dwt.h"
 #include "common/image.h"
 #include "common/iop_profile.h"
 #include "common/opencl.h"
@@ -827,30 +828,12 @@ inline static void sparse_scalar_product(const float *const buf, const size_t in
   }
 }
 
-//TODO: consolidate with the copy of this code in src/common/dwt.c
-static inline int dwt_interleave_rows(const int rowid, const int height, const int scale)
-{
-  // to make this algorithm as cache-friendly as possible, we want to interleave the actual processing of rows
-  // such that the next iteration processes the row 'scale' pixels below the current one, which will already
-  // be in L2 cache (if not L1) from having been accessed on this iteration so if vscale is 16, we want to
-  // process rows 0, 16, 32, ..., then 1, 17, 33, ..., 2, 18, 34, ..., etc.
-  if (height <= scale)
-    return rowid;
-  const int per_pass = ((height + scale - 1) / scale);
-  const int long_passes = height % scale;
-  // adjust for the fact that we have some passes with one fewer iteration when height is not a multiple of scale
-  if (long_passes == 0 || rowid < long_passes * per_pass)
-    return (rowid / per_pass) + scale * (rowid % per_pass);
-  const int rowid2 = rowid - long_passes * per_pass;
-  return long_passes + (rowid2 / (per_pass-1)) + scale * (rowid2 % (per_pass-1));
-}
-
 #ifdef _OPENMP
 #pragma omp declare simd aligned(in, out:64) aligned(tempbuf:16)
 #endif
 inline static void blur_2D_Bspline(const float *const restrict in, float *const restrict out,
                                    float *const restrict tempbuf,
-                                   const size_t width, const size_t height, const size_t mult)
+                                   const size_t width, const size_t height, const int mult)
 {
   // À-trous B-spline interpolation/blur shifted by mult
   #ifdef _OPENMP
@@ -872,7 +855,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
     // over the row
     for(size_t ii = 0; ii < FSIZE; ++ii)
     {
-      const size_t r = CLAMP(mult * (ii - (FSIZE - 1) / 2) + i, 0, height - 1);
+      const size_t r = CLAMP(mult * (int)(ii - (FSIZE - 1) / 2) + (int)i, (int)0, (int)height - 1);
       indices[ii] = 4 * r * width;
     }
     for(size_t j = 0; j < width; j++)
@@ -887,7 +870,7 @@ inline static void blur_2D_Bspline(const float *const restrict in, float *const 
       // the row, we need to recompute for each pixel
       for(size_t jj = 0; jj < FSIZE; ++jj)
       {
-        const size_t col = CLAMP(mult * (jj - (FSIZE - 1) / 2) + j, 0, width - 1);
+        const size_t col = CLAMP(mult * (int)(jj - (FSIZE - 1) / 2) + (int)j, (int)0, (int)width - 1);
         indices[jj] = 4 * col;
       }
       // Compute the horizonal blur of the already vertically-blurred pixel and store the result at the proper
@@ -1100,14 +1083,14 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  float *const restrict LF_even = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch); // low-frequencies RGB
-  float *const restrict LF_odd = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // low-frequencies RGB
-  float *const restrict HF_RGB = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // high-frequencies RGB
+  float *const restrict LF_even = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height); // low-frequencies RGB
+  float *const restrict LF_odd = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);  // low-frequencies RGB
+  float *const restrict HF_RGB = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);  // high-frequencies RGB
   float *const restrict HF_grey
-      = dt_alloc_sse_ps(roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
+      = dt_alloc_sse_ps((size_t)roi_out->width * roi_out->height); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp = dt_alloc_sse_ps(roi_out->width * dt_get_num_threads() * ch);
+  float *const restrict temp = dt_alloc_sse_ps(dt_get_num_threads() * ch * roi_out->width);
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -1579,13 +1562,13 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
   const int scales = get_scales(roi_in, piece);
 
   // wavelets scales buffers
-  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float)); // low-frequencies RGB
-  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));  // low-frequencies RGB
-  cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));  // high-frequencies RGB
+  cl_mem LF_even = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4); // low-frequencies RGB
+  cl_mem LF_odd = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // low-frequencies RGB
+  cl_mem HF_RGB = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);  // high-frequencies RGB
   cl_mem HF_grey = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float)); // max(high-frequencies RGB) grey
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));;
+  cl_mem temp = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);;
 
   if(!LF_even || !LF_odd || !HF_RGB || !HF_grey || !temp)
   {
@@ -1807,7 +1790,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     // Inpaint noise
     const float noise_level = d->noise_level / scale;
-    inpainted = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));
+    inpainted = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 0, sizeof(cl_mem), (void *)&in);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 1, sizeof(cl_mem), (void *)&mask);
     dt_opencl_set_kernel_arg(devid, gd->kernel_filmic_inpaint_noise, 2, sizeof(cl_mem), (void *)&inpainted);
@@ -1820,7 +1803,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(err != CL_SUCCESS) goto error;
 
     // first step of highlight reconstruction in RGB
-    reconstructed = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));
+    reconstructed = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
     err = reconstruct_highlights_cl(inpainted, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RGB, gd, d, piece, roi_in);
     if(err != CL_SUCCESS) goto error;
     dt_opencl_release_mem_object(inpainted);
@@ -1828,7 +1811,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
     if(d->high_quality_reconstruction > 0)
     {
-      ratios = dt_opencl_alloc_device(devid, sizes[0], sizes[1], 4 * sizeof(float));
+      ratios = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float) * 4);
       norms = dt_opencl_alloc_device(devid, sizes[0], sizes[1], sizeof(float));
 
       if(norms && ratios)

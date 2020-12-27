@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/iop_profile.h"
 #include "control/control.h"
@@ -35,12 +36,10 @@
 
 #include <assert.h>
 #include <gmodule.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
-#define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 #define NEUTRAL_GRAY 0.5
 
 const dt_develop_name_value_t dt_develop_blend_mode_names[]
@@ -297,9 +296,9 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data, dt_iop_colorspace_type
   switch(cst)
   {
     case iop_cs_Lab:
-      out[0] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 0, in_out)) / 100.0f, 0.0f, 1.0f);
-      out[1] = CLAMP_RANGE(((in[1] / _get_boost_factor(data, 1, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
-      out[2] = CLAMP_RANGE(((in[2] / _get_boost_factor(data, 2, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
+      out[0] = CLAMP((in[0] / _get_boost_factor(data, 0, in_out)) / 100.0f, 0.0f, 1.0f);
+      out[1] = CLAMP(((in[1] / _get_boost_factor(data, 1, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
+      out[2] = CLAMP(((in[2] / _get_boost_factor(data, 2, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
       break;
     case iop_cs_rgb:
       if(work_profile == NULL)
@@ -310,24 +309,24 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data, dt_iop_colorspace_type
                                                        work_profile->unbounded_coeffs_in,
                                                        work_profile->lutsize,
                                                        work_profile->nonlinearlut);
-      out[0] = CLAMP_RANGE((out[0] / _get_boost_factor(data, 0, in_out)), 0.0f, 1.0f);
-      out[1] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 1, in_out)), 0.0f, 1.0f);
-      out[2] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 2, in_out)), 0.0f, 1.0f);
-      out[3] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 3, in_out)), 0.0f, 1.0f);
+      out[0] = CLAMP((out[0] / _get_boost_factor(data, 0, in_out)), 0.0f, 1.0f);
+      out[1] = CLAMP((in[0] / _get_boost_factor(data, 1, in_out)), 0.0f, 1.0f);
+      out[2] = CLAMP((in[1] / _get_boost_factor(data, 2, in_out)), 0.0f, 1.0f);
+      out[3] = CLAMP((in[2] / _get_boost_factor(data, 3, in_out)), 0.0f, 1.0f);
       break;
     case iop_cs_LCh:
-      out[3] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 3, in_out)) / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
-      out[4] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
+      out[3] = CLAMP((in[1] / _get_boost_factor(data, 3, in_out)) / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+      out[4] = CLAMP((in[2] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
       break;
     case iop_cs_HSL:
-      out[4] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
-      out[5] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
-      out[6] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
+      out[4] = CLAMP((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
+      out[5] = CLAMP((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
+      out[6] = CLAMP((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
       break;
     case iop_cs_JzCzhz:
-      out[4] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
-      out[5] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
-      out[6] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
+      out[4] = CLAMP((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
+      out[5] = CLAMP((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
+      out[6] = CLAMP((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
       break;
     default:
       out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
@@ -392,7 +391,7 @@ static inline int _blendif_print_digits_default(float value)
 static inline int _blendif_print_digits_ab(float value)
 {
   int digits;
-  if(fabs(value) < 10.0f) digits = 1;
+  if(fabsf(value) < 10.0f) digits = 1;
   else digits = 0;
 
   return digits;
@@ -710,10 +709,10 @@ static float log10_scale_callback(GtkWidget *self, float inval, int dir)
   switch(dir)
   {
     case GRADIENT_SLIDER_SET:
-      outval = (log10(CLAMP_RANGE(inval, 0.0001f, 1.0f)) + 4.0f) / 4.0f;
+      outval = (log10(CLAMP(inval, 0.0001f, 1.0f)) + 4.0f) / 4.0f;
       break;
     case GRADIENT_SLIDER_GET:
-      outval = CLAMP_RANGE(exp(M_LN10 * (4.0f * inval - 4.0f)), 0.0f, 1.0f);
+      outval = CLAMP(exp(M_LN10 * (4.0f * inval - 4.0f)), 0.0f, 1.0f);
       if(outval <= tiny) outval = 0.0f;
       if(outval >= 1.0f - tiny) outval = 1.0f;
       break;
@@ -736,12 +735,12 @@ static float magnifier_scale_callback(GtkWidget *self, float inval, int dir)
   switch(dir)
   {
     case GRADIENT_SLIDER_SET:
-      outval = (invscale * tanh(range * (CLAMP_RANGE(inval, 0.0f, 1.0f) - 0.5f)) + 1.0f) * 0.5f;
+      outval = (invscale * tanh(range * (CLAMP(inval, 0.0f, 1.0f) - 0.5f)) + 1.0f) * 0.5f;
       if(outval <= tiny) outval = 0.0f;
       if(outval >= 1.0f - tiny) outval = 1.0f;
       break;
     case GRADIENT_SLIDER_GET:
-      outval = invrange * atanh((2.0f * CLAMP_RANGE(inval, eps, 1.0f - eps) - 1.0f) * scale) + 0.5f;
+      outval = invrange * atanh((2.0f * CLAMP(inval, eps, 1.0f - eps) - 1.0f) * scale) + 0.5f;
       if(outval <= tiny) outval = 0.0f;
       if(outval >= 1.0f - tiny) outval = 1.0f;
       break;

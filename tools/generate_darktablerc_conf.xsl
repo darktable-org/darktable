@@ -98,6 +98,38 @@ static void _insert_type(const char *name, const char *value)
   else                              item->type = DT_STRING;
 }
 
+static void _insert_shortdescription(const char *name, const char *value)
+{
+  dt_confgen_value_t *item = (dt_confgen_value_t *)g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+     g_free(item->shortdesc);
+  }
+  else
+  {
+     item = (dt_confgen_value_t *)g_malloc0(sizeof(dt_confgen_value_t));
+     g_hash_table_insert(darktable.conf->x_confgen, g_strdup(name), item);
+  }
+  item->shortdesc = g_strdup(value);
+}
+
+static void _insert_longdescription(const char *name, const char *value)
+{
+  dt_confgen_value_t *item = (dt_confgen_value_t *)g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+     g_free(item->longdesc);
+  }
+  else
+  {
+     item = (dt_confgen_value_t *)g_malloc0(sizeof(dt_confgen_value_t));
+     g_hash_table_insert(darktable.conf->x_confgen, g_strdup(name), item);
+  }
+  item->longdesc = g_strdup(value);
+}
+
 void dt_confgen_init()
 {
 ]]></xsl:text>
@@ -106,6 +138,8 @@ void dt_confgen_init()
     <xsl:variable name="default" select="default"/>
     <xsl:variable name="name" select="name"/>
     <xsl:variable name="type" select="type"/>
+		<xsl:variable name="shortdescription" select="shortdescription"/>
+		<xsl:variable name="longdescription" select="longdescription"/>
 
     <xsl:text>   // </xsl:text><xsl:value-of select="$name" />
     <xsl:text>&#xA;</xsl:text>
@@ -115,6 +149,10 @@ void dt_confgen_init()
     <xsl:text>&#xA;</xsl:text>
 
     <xsl:apply-templates select="type"/>
+
+		<xsl:apply-templates select="shortdescription"/>
+
+		<xsl:apply-templates select="longdescription"/>
 
     <xsl:text>&#xA;</xsl:text>
   </xsl:for-each>
@@ -157,6 +195,20 @@ void dt_confgen_init()
     <xsl:text>");</xsl:text>
     <xsl:text>&#xA;</xsl:text>
   </xsl:if>
+</xsl:template>
+
+<xsl:template match="shortdescription">
+	<xsl:text>   _insert_shortdescription("</xsl:text><xsl:value-of select="../name" />
+	<xsl:text>", "</xsl:text><xsl:value-of select="."/>
+	<xsl:text>");</xsl:text>
+	<xsl:text>&#xA;</xsl:text>
+</xsl:template>
+
+<xsl:template match="longdescription">
+	<xsl:text>   _insert_longdescription("</xsl:text><xsl:value-of select="../name" />
+	<xsl:text>", "</xsl:text><xsl:value-of select="."/>
+	<xsl:text>");</xsl:text>
+	<xsl:text>&#xA;</xsl:text>
 </xsl:template>
 
 <xsl:template match="default">

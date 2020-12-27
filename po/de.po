@@ -4947,7 +4947,7 @@ msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
 msgstr[0] "Soll %d Bild aus der Sammlung entfernt werden?"
 msgstr[1] ""
-"Sollen wirklich %d ausgewählte Bilder aus der Sammlung entfernt werden?"
+"Sollen %d ausgewählte Bilder aus der Sammlung entfernt werden?"
 
 #: ../src/control/jobs/control_jobs.c:1507
 msgid "remove images?"
@@ -4965,7 +4965,7 @@ msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
 msgstr[0] "Soll %d Bild in den Papierkorb verschoben werden?"
 msgstr[1] ""
-"Soll wirklich %d ausgewähltes Bild in den Papierkorb verschoben werden?"
+"Sollen %d ausgewählte Bilder in den Papierkorb verschoben werden?"
 
 #: ../src/control/jobs/control_jobs.c:1545
 #, c-format
@@ -4973,7 +4973,7 @@ msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "Soll %d Bild physisch von der Festplatte gelöscht werden?"
 msgstr[1] ""
-"Soll wirklich %d ausgewähltes Bild physisch von der Festplatte gelöscht "
+"Sollen %d ausgewählte Bilder physisch von der Festplatte gelöscht "
 "werden?"
 
 #: ../src/control/jobs/control_jobs.c:1552
@@ -19291,6 +19291,11 @@ msgstr[1] "Diashow-Wartezeit auf %d Sekunden gesetzt"
 msgctxt "accel"
 msgid "start and stop"
 msgstr "Start und Stop"
+
+#: ../src/views/slideshow.c:630
+msgctxt "accel"
+msgid "exit slideshow"
+msgstr "Diashow beenden"
 
 #: ../src/views/slideshow.c:643
 msgid "go to next image"

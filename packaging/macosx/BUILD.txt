@@ -1,6 +1,6 @@
 How to make disk image with darktable application bundle (64 bit Intel only):
 
-1). Install MacPorts (instructions and prerequisites can be found on official website), please use default installation path (/opt/local).
+1). Install MacPorts (instructions and prerequisites can be found on official website, use Xcode version less than 12.2), please use default installation path (/opt/local).
     They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
      macosx_deployment_target 10.7
@@ -10,13 +10,15 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      +no_gnome +no_x11 +quartz -x11 -gnome
     You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, pugixml, librsvg and gmic
     (all fixes except for gmic are required due to set deployment target, gmic patch removes extra dependencies):
-     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python37/files ~/ports/lang/python38/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
+     $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
      $ curl -Lo ~/ports/devel/gnutls/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gnutls-disable-connectx.diff
      $ cp -R "$(port dir python37)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python37/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python36-stack_size.diff
      $ cp -R "$(port dir python38)" ~/ports/lang
      $ curl -Lo ~/ports/lang/python38/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
+     $ cp -R "$(port dir python39)" ~/ports/lang
+     $ curl -Lo ~/ports/lang/python39/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/python38-stack_size.diff
      $ cp -R "$(port dir GraphicsMagick)" ~/ports/graphics
      $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
      $ cp -R "$(port dir ImageMagick)" ~/ports/graphics

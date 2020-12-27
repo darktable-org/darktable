@@ -26,8 +26,10 @@
 #include "common/colorspaces_inline_conversions.h"
 #include "common/opencl.h"
 #include "common/illuminants.h"
+#include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "develop/imageop_math.h"
+#include "develop/openmp_maths.h"
 #include "gui/accelerators.h"
 #include "gui/color_picker_proxy.h"
 #include "gui/gtk.h"
@@ -392,24 +394,6 @@ static inline float scalar_product(const float v_1[4], const float v_2[4])
   float DT_ALIGNED_PIXEL premul[4] = { 0.f };
   for(size_t c = 0; c < 3; c++) premul[c] = v_1[c] * v_2[c];
   return premul[0] + premul[1] + premul[2];
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float sqf(const float x)
-{
-  return x * x;
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float x)
-{
-  return fminf(fmaxf(x, 0.0f), 1.0f);
 }
 
 
@@ -1028,7 +1012,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       }
 
       // passthrough pixels
-      dt_simd_memcpy(in, out, roi_in->width * roi_in->height * ch);
+      dt_iop_image_copy_by_size(out, in, roi_in->width, roi_in->height, ch);
 
       dt_control_log(_("auto-detection of white balance completed"));
       return;
@@ -2034,45 +2018,29 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(!is_module_cat_on_pipe(self))
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
-      dt_iop_set_module_in_trouble(self, TRUE);
-      char *wmes = dt_iop_warning_message(_("double CAT applied"));
-      gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
-      g_free(wmes);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
-                                  _("you have 2 instances or more of color calibration,\n"
-                                    "all performing chromatic adaptation.\n"
-                                    "this can lead to inconsistencies, unless you\n"
-                                    "use them with masks or know what you are doing."));
-      gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
+      dt_iop_set_module_trouble_message(self, g->warning_label,_("double CAT applied"),
+                                        _("you have 2 instances or more of color calibration,\n"
+                                          "all performing chromatic adaptation.\n"
+                                          "this can lead to inconsistencies, unless you\n"
+                                          "use them with masks or know what you are doing."));
     }
     else if(!self->dev->proxy.wb_is_D65)
     {
       // our first and biggest problem : white balance module is being clever with WB coeffs
-      dt_iop_set_module_in_trouble(self, TRUE);
-      char *wmes = dt_iop_warning_message(_("white balance module error"));
-      gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
-      g_free(wmes);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
-                                  _("the white balance module is not using the camera\n"
-                                    "reference illuminant, which will cause issues here\n"
-                                    "with chromatic adaptation. either set it to reference\n"
-                                    "or disable chromatic adaptation here."));
-      gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
+      dt_iop_set_module_trouble_message(self, g->warning_label,_("white balance module error"),
+                                        _("the white balance module is not using the camera\n"
+                                          "reference illuminant, which will cause issues here\n"
+                                          "with chromatic adaptation. either set it to reference\n"
+                                          "or disable chromatic adaptation here."));
     }
     else
     {
-      dt_iop_set_module_in_trouble(self, FALSE);
-      gtk_label_set_text(GTK_LABEL(g->warning_label), "");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
-      gtk_widget_set_visible(GTK_WIDGET(g->warning_label), FALSE);
+      dt_iop_set_module_trouble_message(self, g->warning_label, NULL, NULL);
     }
   }
   else
   {
-    dt_iop_set_module_in_trouble(self, FALSE);
-    gtk_label_set_text(GTK_LABEL(g->warning_label), "");
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
-    gtk_widget_set_visible(GTK_WIDGET(g->warning_label), FALSE);
+    dt_iop_set_module_trouble_message(self, g->warning_label, NULL, NULL);
   }
 
   --darktable.gui->reset;

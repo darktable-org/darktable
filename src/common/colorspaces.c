@@ -21,7 +21,9 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
+#include "common/math.h"
 #include "common/srgb_tone_curve_values.h"
+#include "common/utility.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -138,29 +140,6 @@ generate_mat3inv_body(double, A, B)
 #undef A
 #undef generate_mat3inv_body
 
-
-static void mat3mulv(float *dst, const float *const mat, const float *const v)
-{
-  for(int k = 0; k < 3; k++)
-  {
-    float x = 0.0f;
-    for(int i = 0; i < 3; i++) x += mat[3 * k + i] * v[i];
-    dst[k] = x;
-  }
-}
-
-static void mat3mul(float *dst, const float *const m1, const float *const m2)
-{
-  for(int k = 0; k < 3; k++)
-  {
-    for(int i = 0; i < 3; i++)
-    {
-      float x = 0.0f;
-      for(int j = 0; j < 3; j++) x += m1[3 * k + j] * m2[3 * j + i];
-      dst[3 * k + i] = x;
-    }
-  }
-}
 
 static const dt_colorspaces_color_profile_t *_get_profile(dt_colorspaces_t *self,
                                                           dt_colorspaces_color_profile_type_t type,
@@ -315,7 +294,7 @@ static cmsHPROFILE _create_lcms_profile(const char *desc, const char *dmdd,
   cmsToneCurve *out_curves[3] = { trc, trc, trc };
   cmsHPROFILE profile = cmsCreateRGBProfile(whitepoint, primaries, out_curves);
 
-  if(v2) cmsSetProfileVersion(profile, 2.1);
+  if(v2) cmsSetProfileVersion(profile, 2.4);
 
   cmsSetHeaderFlags(profile, cmsEmbeddedProfileTrue);
 
@@ -393,7 +372,7 @@ static double _HLG_fct(double x)
 
 static cmsToneCurve* _colorspaces_create_transfer(int32_t size, double (*fct)(double))
 {
-  float *values = g_malloc(size * sizeof(float));
+  float *values = g_malloc(sizeof(float) * size);
 
   for (int32_t i = 0; i < size; ++i)
   {
@@ -1354,22 +1333,12 @@ static GList *load_profile_from_dir(const char *subdir)
         ;
       if(!g_ascii_strcasecmp(cc, ".icc") || !g_ascii_strcasecmp(cc, ".icm"))
       {
-        // TODO: add support for grayscale profiles, then remove _ensure_rgb_profile() from here
-        char *icc_content = NULL;
-        cmsHPROFILE tmpprof;
-
-        FILE *fd = g_fopen(filename, "rb");
-        if(!fd) goto icc_loading_done;
-
-        fseek(fd, 0, SEEK_END);
-        size_t end = ftell(fd);
-        rewind(fd);
-
-        icc_content = (char *)malloc(end * sizeof(char));
+        size_t end;
+        char *icc_content = dt_read_file(filename, &end);
         if(!icc_content) goto icc_loading_done;
-        if(fread(icc_content, sizeof(char), end, fd) != end) goto icc_loading_done;
 
-        tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, end * sizeof(char)));
+        // TODO: add support for grayscale profiles, then remove _ensure_rgb_profile() from here
+        cmsHPROFILE tmpprof = _ensure_rgb_profile(cmsOpenProfileFromMem(icc_content, sizeof(char) * end));
         if(tmpprof)
         {
           dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)calloc(1, sizeof(dt_colorspaces_color_profile_t));
@@ -1389,8 +1358,7 @@ static GList *load_profile_from_dir(const char *subdir)
         }
 
 icc_loading_done:
-        if(fd) fclose(fd);
-        free(icc_content);
+        if(icc_content) free(icc_content);
       }
       g_free(filename);
     }

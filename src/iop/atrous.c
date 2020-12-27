@@ -18,6 +18,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/eaw.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -244,7 +245,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   // lead to out of bounds memory access
   if(width < 2 * max_mult || height < 2 * max_mult)
   {
-    memcpy(o, i, width * height * 4 * sizeof(float));
+    dt_iop_image_copy_by_size(o, i, width, height, 4);
     return;
   }
 
@@ -253,7 +254,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
   float *buf2 = NULL;
   float *buf1 = NULL;
 
-  tmp = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
+  tmp = (float *)dt_alloc_align_float((size_t)4 * width * height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[atrous] failed to allocate coarse buffer!\n");
@@ -262,7 +263,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 
   for(int k = 0; k < max_scale; k++)
   {
-    detail[k] = (float *)dt_alloc_align(64, (size_t)sizeof(float) * 4 * width * height);
+    detail[k] = (float *)dt_alloc_align_float((size_t)4 * width * height);
     if(detail[k] == NULL)
     {
       fprintf(stderr, "[atrous] failed to allocate one of the detail buffers!\n");
@@ -357,14 +358,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* allocate space for a temporary buffer. we don't want to use dev_in in the buffer ping-pong below, as we
      need to keep it for blendops */
-  dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   /* allocate space to store detail information. Requires a number of additional buffers, each with full image
    * size */
   for(int k = 0; k < max_scale; k++)
   {
-    dev_detail[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, 4 * sizeof(float));
+    dev_detail[k] = dt_opencl_alloc_device(devid, roi_out->width, roi_out->height, sizeof(float) * 4);
     if(dev_detail[k] == NULL) goto error;
   }
 

@@ -58,9 +58,6 @@
   (UNBOUND_SHADOWS_L | UNBOUND_SHADOWS_A | UNBOUND_SHADOWS_B | UNBOUND_HIGHLIGHTS_L | UNBOUND_HIGHLIGHTS_A   \
    | UNBOUND_HIGHLIGHTS_B | UNBOUND_GAUSSIAN)
 
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-#define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
-
 DT_MODULE_INTROSPECTION(5, dt_iop_shadhi_params_t)
 
 typedef enum dt_iop_shadhi_algo_t
@@ -365,7 +362,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float max[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
   const float min[4] = { 0.0f, -1.0f, -1.0f, 0.0f };
   const float lmin = 0.0f;
-  const float lmax = max[0] + fabs(min[0]);
+  const float lmax = max[0] + fabsf(min[0]);
   const float halfmax = lmax / 2.0;
   const float doublemax = lmax * 2.0;
 
@@ -394,16 +391,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     // overlay highlights
     float highlights2 = highlights * highlights;
-    const float highlights_xform = CLAMP_RANGE(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
+    const float highlights_xform = CLAMP(1.0f - tb[0] / (1.0f - compress), 0.0f, 1.0f);
 
     while(highlights2 > 0.0f)
     {
-      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(-highlights) * sign(lmax - la) + halfmax;
-      lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      lb = unbound_mask ? lb : CLAMP(lb, lmin, lmax);
+      const float lref = copysignf(fabsf(la) > low_approximation ? 1.0f / fabsf(la) : 1.0f / low_approximation, la);
       const float href = copysignf(
-          fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
+          fabsf(1.0f - la) > low_approximation ? 1.0f / fabsf(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
       const float chunk = highlights2 > 1.0f ? 1.0f : highlights2;
       const float optrans = chunk * highlights_xform;
@@ -413,29 +410,29 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb) : doublemax * la
                                                                                            * lb) * optrans;
 
-      ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      ta[0] = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
 
       const float chroma_factor = (ta[0] * lref * (1.0f - highlights_ccorrect)
                                    + (1.0f - ta[0]) * href * highlights_ccorrect);
       ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
-      ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
+      ta[1] = (flags & UNBOUND_HIGHLIGHTS_A) ? ta[1] : CLAMP(ta[1], min[1], max[1]);
 
       ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
-      ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
+      ta[2] = (flags & UNBOUND_HIGHLIGHTS_B) ? ta[2] : CLAMP(ta[2], min[2], max[2]);
     }
 
     // overlay shadows
     float shadows2 = shadows * shadows;
-    const float shadows_xform = CLAMP_RANGE(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
+    const float shadows_xform = CLAMP(tb[0] / (1.0f - compress) - compress / (1.0f - compress), 0.0f, 1.0f);
 
     while(shadows2 > 0.0f)
     {
-      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      const float la = (flags & UNBOUND_HIGHLIGHTS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
       float lb = (tb[0] - halfmax) * sign(shadows) * sign(lmax - la) + halfmax;
-      lb = unbound_mask ? lb : CLAMP_RANGE(lb, lmin, lmax);
-      const float lref = copysignf(fabs(la) > low_approximation ? 1.0f / fabs(la) : 1.0f / low_approximation, la);
+      lb = unbound_mask ? lb : CLAMP(lb, lmin, lmax);
+      const float lref = copysignf(fabsf(la) > low_approximation ? 1.0f / fabsf(la) : 1.0f / low_approximation, la);
       const float href = copysignf(
-          fabs(1.0f - la) > low_approximation ? 1.0f / fabs(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
+          fabsf(1.0f - la) > low_approximation ? 1.0f / fabsf(1.0f - la) : 1.0f / low_approximation, 1.0f - la);
 
 
       const float chunk = shadows2 > 1.0f ? 1.0f : shadows2;
@@ -446,15 +443,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
               + (la > halfmax ? lmax - (lmax - doublemax * (la - halfmax)) * (lmax - lb) : doublemax * la
                                                                                            * lb) * optrans;
 
-      ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP_RANGE(ta[0], lmin, lmax);
+      ta[0] = (flags & UNBOUND_SHADOWS_L) ? ta[0] : CLAMP(ta[0], lmin, lmax);
 
       const float chroma_factor = (ta[0] * lref * shadows_ccorrect
                                    + (1.0f - ta[0]) * href * (1.0f - shadows_ccorrect));
       ta[1] = ta[1] * (1.0f - optrans) + (ta[1] + tb[1]) * chroma_factor * optrans;
-      ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP_RANGE(ta[1], min[1], max[1]);
+      ta[1] = (flags & UNBOUND_SHADOWS_A) ? ta[1] : CLAMP(ta[1], min[1], max[1]);
 
       ta[2] = ta[2] * (1.0f - optrans) + (ta[2] + tb[2]) * chroma_factor * optrans;
-      ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP_RANGE(ta[2], min[2], max[2]);
+      ta[2] = (flags & UNBOUND_SHADOWS_B) ? ta[2] : CLAMP(ta[2], min[2], max[2]);
     }
 
     _Lab_rescale(ta, &out[j]);
@@ -538,7 +535,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     b = NULL; // make sure we don't clean it up twice
   }
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   size_t origin[] = { 0, 0, 0 };

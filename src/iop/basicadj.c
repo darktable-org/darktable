@@ -26,6 +26,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/math.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -762,10 +763,10 @@ static void _get_auto_exp_histogram(const float *const img, const int width, con
   uint32_t *histogram = NULL;
   const float mul = hist_size;
 
-  histogram = dt_alloc_align(64, hist_size * sizeof(uint32_t));
+  histogram = dt_alloc_align(64, sizeof(uint32_t) * hist_size);
   if(histogram == NULL) goto cleanup;
 
-  memset(histogram, 0, hist_size * sizeof(uint32_t));
+  memset(histogram, 0, sizeof(uint32_t) * hist_size);
 
   if(box_area[2] > box_area[0] && box_area[3] > box_area[1])
   {
@@ -866,7 +867,7 @@ static inline float hlcurve(const float level, const float hlcomp, const float h
     }
 
     float R = hlrange / (val * hlcomp);
-    return log1p(Y) * R;
+    return log1pf(Y) * R;
   }
   else
   {
@@ -969,14 +970,14 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   }
 
   // if very overxposed image
-  if(octile[6] > log1p((float)imax) / log2(2.f))
+  if(octile[6] > log1pf((float)imax) / log2(2.f))  //*** Is this correct?  log2(2) == 1
   {
     octile[6] = 1.5f * octile[5] - 0.5f * octile[4];
     overex = 2;
   }
 
   // if overexposed
-  if(octile[7] > log1p((float)imax) / log2(2.f))
+  if(octile[7] > log1pf((float)imax) / log2(2.f))  //*** Is this correct?  log2(2) == 1
   {
     octile[7] = 1.5f * octile[6] - 0.5f * octile[5];
     overex = 1;
@@ -1060,30 +1061,30 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   // compute exposure compensation as geometric mean of the amount that
   // sets the mean or median at middle gray, and the amount that sets the estimated top
   // of the histogram at or near clipping.
-  const float expcomp1 = (log(midgray * scale / (ave - shc + midgray * shc))) / log(2.f);
+  const float expcomp1 = (logf(midgray * scale / (ave - shc + midgray * shc))) / DT_M_LN2f;
   float expcomp2;
 
   if(overex == 0) // image is not overexposed
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + log(scale / rawmax) / log(2.f));
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + logf(scale / rawmax) / DT_M_LN2f);
   }
   else
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + log(scale / rawmax) / log(2.f));
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + logf(scale / rawmax) / DT_M_LN2f);
   }
 
-  if(fabs(expcomp1) - fabs(expcomp2) > 1.f) // for great expcomp
+  if(fabsf(expcomp1) - fabsf(expcomp2) > 1.f) // for great expcomp
   {
-    expcomp = (expcomp1 * fabs(expcomp2) + expcomp2 * fabs(expcomp1)) / (fabs(expcomp1) + fabs(expcomp2));
+    expcomp = (expcomp1 * fabsf(expcomp2) + expcomp2 * fabsf(expcomp1)) / (fabsf(expcomp1) + fabsf(expcomp2));
   }
   else
   {
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  const float gain = exp((float)expcomp * log(2.f));
+  const float gain = expf(expcomp * DT_M_LN2f);
 
-  const float corr = sqrt(gain * scale / rawmax);
+  const float corr = sqrtf(gain * scale / rawmax);
   black = shc * corr;
 
   // now tune hlcompr to bring back rawmax to 65535
@@ -1096,7 +1097,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
 
   // now find brightness if gain didn't bring ave to midgray using
   // the envelope of the actual 'control cage' brightness curve for simplicity
-  const float midtmp = gain * sqrt(median * ave) / scale;
+  const float midtmp = gain * sqrtf(median * ave) / scale;
 
   if(midtmp < 0.1f)
   {
@@ -1306,7 +1307,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_pthread_mutex_unlock(&g->lock);
 
       // get the image, this works only in C
-      src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+      src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
         fprintf(stderr, "[basicadj process_cl] error allocating memory for color transformation 1\n");
@@ -1580,7 +1581,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(process_saturation_vibrance)
     {
       const float average = (out[k] + out[k+1] + out[k+2]) / 3;
-      const float delta = sqrt( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
+      const float delta = sqrtf( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
       const float P = vibrance * (1 - powf(delta, fabsf(vibrance)));
 
       for(size_t c = 0; c < 3; c++)

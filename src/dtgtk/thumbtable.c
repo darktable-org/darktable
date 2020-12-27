@@ -21,6 +21,7 @@
 #include "common/colorlabels.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/selection.h"
 #include "control/control.h"
@@ -1421,7 +1422,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
       const int imgs_nb = g_list_length(table->drag_list);
       if(imgs_nb)
       {
-        uint32_t *imgs = malloc(imgs_nb * sizeof(uint32_t));
+        uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
         GList *l = table->drag_list;
         for(int i = 0; i < imgs_nb; i++)
         {
@@ -2009,6 +2010,40 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
 {
   GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE));
   dt_ratings_apply_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
+
+  // if we are in darkroom we show a message as there might be no other indication
+  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+  if(v->view(v) == DT_VIEW_DARKROOM && g_list_length(imgs) == 1 && darktable.develop->preview_pipe)
+  {
+    // we verify that the image is the active one
+    const int id = GPOINTER_TO_INT(g_list_nth_data(imgs, 0));
+    if(id == darktable.develop->preview_pipe->output_imgid)
+    {
+      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
+      if(img)
+      {
+        const int r = img->flags & DT_IMAGE_REJECTED ? DT_VIEW_REJECT : (img->flags & DT_VIEW_RATINGS_MASK);
+        dt_image_cache_read_release(darktable.image_cache, img);
+
+        // translate in human readable value
+        if(r == DT_VIEW_REJECT)
+          dt_toast_log(_("image rejected"));
+        else if(r == 1)
+          dt_toast_log(_("image rated to %s"), "★");
+        else if(r == 2)
+          dt_toast_log(_("image rated to %s"), "★★");
+        else if(r == 3)
+          dt_toast_log(_("image rated to %s"), "★★★");
+        else if(r == 4)
+          dt_toast_log(_("image rated to %s"), "★★★★");
+        else if(r == 5)
+          dt_toast_log(_("image rated to %s"), "★★★★★");
+        else if(r == 0)
+          dt_toast_log(_("image rated to 0 star"));
+      }
+    }
+  }
+
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }
@@ -2017,6 +2052,54 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
 {
   GList *imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(FALSE, TRUE));
   dt_colorlabels_toggle_label_on_list(imgs, GPOINTER_TO_INT(data), TRUE);
+
+  // if we are in darkroom we show a message as there might be no other indication
+  const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+  if(v->view(v) == DT_VIEW_DARKROOM && g_list_length(imgs) == 1 && darktable.develop->preview_pipe)
+  {
+    // we verify that the image is the active one
+    const int id = GPOINTER_TO_INT(g_list_nth_data(imgs, 0));
+    if(id == darktable.develop->preview_pipe->output_imgid)
+    {
+      GList *res = dt_metadata_get(id, "Xmp.darktable.colorlabels", NULL);
+      res = g_list_first(res);
+      gchar *result = NULL;
+      if(res != NULL)
+      {
+        do
+        {
+          const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
+          if(g_strcmp0(lb, "red") == 0)
+          {
+            result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⬤ </span>");
+          }
+          else if(g_strcmp0(lb, "yellow") == 0)
+          {
+            result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⬤ </span>");
+          }
+          else if(g_strcmp0(lb, "green") == 0)
+          {
+            result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⬤ </span>");
+          }
+          else if(g_strcmp0(lb, "blue") == 0)
+          {
+            result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⬤ </span>");
+          }
+          else if(g_strcmp0(lb, "purple") == 0)
+          {
+            result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⬤ </span>");
+          }
+        } while((res = g_list_next(res)) != NULL);
+      }
+      g_list_free(res);
+      if(result)
+        dt_toast_markup_log(_("colorlabels set to %s"), result);
+      else
+        dt_toast_log(_("all colorlabels removed"));
+      g_free(result);
+    }
+  }
+
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
   return TRUE;
 }

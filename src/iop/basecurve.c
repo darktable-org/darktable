@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/rgb_norms.h"
 #include "control/control.h"
@@ -39,7 +40,6 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -260,7 +260,7 @@ static const basecurve_preset_t basecurve_camera_presets[] = {
   // contributed by Edouard Gomez
   {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.011702, 0.012659}, {0.122918, 0.289973}, {0.153642, 0.342731}, {0.246855, 0.510114}, {0.448958, 0.733820}, {0.666759, 0.894290}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
   // contributed by Pascal Obry
-  { "Nikon D800", "NIKON", "D800", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Nikon D800", "NIKON", "NIKON D800", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
   // contributed by Lukas Schrangl
   {"Olympus OM-D E-M10 II", "OLYMPUS CORPORATION    ", "E-M10MarkII     ", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.005707, 0.004764}, {0.018944, 0.024456}, {0.054501, 0.129992}, {0.075665, 0.211873}, {0.119641, 0.365771}, {0.173148, 0.532024}, {0.247979, 0.668989}, {0.357597, 0.780138}, {0.459003, 0.839829}, {0.626844, 0.904426}, {0.769425, 0.948541}, {0.820429, 0.964715}, {1.000000, 1.000000}}}, {14}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
   // clang-format on
@@ -273,14 +273,14 @@ static const basecurve_preset_t basecurve_presets[] = {
   { N_("cubic spline"), "", "", 0, FLT_MAX, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { neutral,         "", "",                      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
   { canon_eos,       "Canon", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { canon_eos_alt,   "Canon", "EOS 5D Mark",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { canon_eos_alt,   "Canon", "EOS 5D Mark%",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { nikon,           "NIKON", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.036532 }, { 0.120968, 0.228226 }, { 0.459677, 0.759678 }, { 0.858871, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { nikon_alt,       "NIKON", "D____",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { nikon_alt,       "NIKON", "%D____%",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { sony_alpha,      "SONY", "",                  0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.031949, 0.036532 }, { 0.105431, 0.228226 }, { 0.434505, 0.759678 }, { 0.855738, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { pentax,          "PENTAX", "",                0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032258, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { ricoh,           "RICOH", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032259, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { olympus,         "OLYMPUS", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.033962, 0.028226 }, { 0.249057, 0.439516 }, { 0.501887, 0.798387 }, { 0.750943, 0.955645 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { olympus_alt,     "OLYMPUS", "E-M",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { olympus_alt,     "OLYMPUS", "E-M%",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { panasonic,       "Panasonic", "",             0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { leica,           "Leica", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036291, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.044355, 0.020967 }, { 0.133065, 0.154322 }, { 0.209677, 0.300301 }, { 0.572581, 0.753477 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
@@ -547,20 +547,20 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
   int num_levels = num_levels_max;
 
-  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp1 == NULL) goto error;
 
-  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp2 == NULL) goto error;
 
   // allocate buffers for wavelet transform and blending
   for(int k = 0, step = 1, w = width, h = height; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    dev_col[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_col[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_col[k] == NULL) goto error;
 
-    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_comb[k] == NULL) goto error;
 
     size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
@@ -1050,8 +1050,8 @@ static inline void gauss_blur(
     const size_t ht)
 {
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
-  float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
-  memset(tmp, 0, 4*wd*ht*sizeof(float));
+  float *tmp = dt_alloc_align_float((size_t)4 * wd * ht);
+  memset(tmp, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, w, wd) \
@@ -1073,7 +1073,7 @@ static inline void gauss_blur(
       for(int ii=-2;ii<=2;ii++)
         tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
   }
-  memset(output, 0, 4*wd*ht*sizeof(float));
+  memset(output, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, output, w, wd) \
@@ -1103,7 +1103,7 @@ static inline void gauss_expand(
 {
   const size_t cw = (wd-1)/2+1;
   // fill numbers in even pixels, zero odd ones
-  memset(fine, 0, 4*wd*ht*sizeof(float));
+  memset(fine, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(cw, fine, ht, input, wd) \
@@ -1133,7 +1133,7 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  float *blurred = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  float *blurred = dt_alloc_align_float((size_t)4 * wd * ht);
   gauss_blur(input, blurred, wd, ht);
   for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
@@ -1160,16 +1160,16 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
   int num_levels = 8;
-  float **col = malloc(num_levels * sizeof(float *));
-  float **comb = malloc(num_levels * sizeof(float *));
+  float **col = malloc(sizeof(float *) * num_levels);
+  float **comb = malloc(sizeof(float *) * num_levels);
   int w = wd, h = ht;
   const int rad = MIN(wd, (int)ceilf(256 * roi_in->scale / piece->iscale));
   int step = 1;
   for(int k = 0; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    col[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
-    comb[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
+    col[k]  = dt_alloc_align_float((size_t)4 * w * h);
+    comb[k] = dt_alloc_align_float((size_t)4 * w * h);
     memset(comb[k], 0, sizeof(float) * 4 * w * h);
     w = (w - 1) / 2 + 1;
     h = (h - 1) / 2 + 1;

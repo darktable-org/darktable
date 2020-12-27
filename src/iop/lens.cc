@@ -24,6 +24,7 @@ extern "C" {
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/file_location.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -381,7 +382,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
-    memcpy(ovoid, ivoid, (size_t)ch * sizeof(float) * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -403,7 +404,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-      void *buf = dt_alloc_align(64, bufsize * dt_get_num_threads() * sizeof(float));
+
+      // TODO: Should this be migrated to dt_alloc__perthread_float?
+      void *buf = dt_alloc_align_float(bufsize * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -457,7 +460,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
     else
     {
-      memcpy(ovoid, ivoid, (size_t)ch * sizeof(float) * roi_out->width * roi_out->height);
+      dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     }
 
     if(modflags & LF_MODIFY_VIGNETTING)
@@ -507,7 +510,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t buf2size = (size_t)roi_out->width * 2 * 3;
-      void *buf2 = dt_alloc_align(64, buf2size * sizeof(float) * dt_get_num_threads());
+      void *buf2 = dt_alloc_align_float(buf2size * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -645,7 +648,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   tmpbuf = (float *)dt_alloc_align(64, tmpbuflen);
   if(tmpbuf == NULL) goto error;
 
-  dev_tmp = (cl_mem)dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = (cl_mem)dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_tmpbuf = (cl_mem)dt_opencl_alloc_device_buffer(devid, tmpbuflen);
@@ -867,7 +870,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    float *buf = (float *)malloc(2 * 3 * sizeof(float));
+    float *buf = (float *)malloc(sizeof(float) * 2 * 3);
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
       float p1 = points[i];
@@ -879,7 +882,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
         modifier->ApplySubpixelGeometryDistortion(p1, p2, 1, 1, buf);
         const float dist1 = points[i]     - buf[0];
         const float dist2 = points[i + 1] - buf[3];
-        if(fabs(dist1) < .5f && fabs(dist2) < .5f) break; // we have converged
+        if(fabsf(dist1) < .5f && fabsf(dist2) < .5f) break; // we have converged
         p1 += dist1;
         p2 += dist2;
       }
@@ -907,7 +910,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    float *buf = (float *)malloc(2 * 3 * sizeof(float));
+    float *buf = (float *)malloc(sizeof(float) * 2 * 3);
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
       modifier->ApplySubpixelGeometryDistortion(points[i], points[i + 1], 1, 1, buf);
@@ -929,7 +932,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
-    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
     return;
   }
 
@@ -942,7 +945,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   if(!(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE)))
   {
-    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
     delete modifier;
     return;
   }
@@ -951,7 +954,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-  float *buf = (float *)dt_alloc_align(64, bufsize * sizeof(float) * dt_get_num_threads());
+  float *buf = (float *)dt_alloc_align_float(bufsize * dt_get_num_threads());
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -1018,7 +1021,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
     const size_t nbpoints = 2 * awidth + 2 * aheight;
 
-    float *const buf = (float *)dt_alloc_align(64, nbpoints * 2 * 3 * sizeof(float));
+    float *const buf = (float *)dt_alloc_align(64, sizeof(float) * nbpoints * 2 * 3);
 
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
@@ -1469,7 +1472,7 @@ static int ptr_array_insert_sorted(GPtrArray *array, const void *item, GCompareF
   if(r == m) m++;
 
 done:
-  memmove(root + m + 1, root + m, (length - m) * sizeof(void *));
+  memmove(root + m + 1, root + m, sizeof(void *) * (length - m));
   root[m] = item;
   return m;
 }
@@ -1509,7 +1512,7 @@ static void ptr_array_insert_index(GPtrArray *array, const void *item, int index
   int length = array->len;
   g_ptr_array_set_size(array, length + 1);
   root = (const void **)array->pdata;
-  memmove(root + index + 1, root + index, (length - index) * sizeof(void *));
+  memmove(root + index + 1, root + index, sizeof(void *) * (length - index));
   root[index] = item;
 }
 

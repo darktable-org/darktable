@@ -178,10 +178,6 @@ static inline int dt_version()
 #endif
 }
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846F
-#endif
-
 // Golden number (1+sqrt(5))/2
 #ifndef PHI
 #define PHI 1.61803398874989479F
@@ -328,9 +324,9 @@ void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
 
 void *dt_alloc_align(size_t alignment, size_t size);
-static inline void * dt_alloc_align_float(size_t pixels)
+static inline float *dt_alloc_align_float(size_t pixels)
 {
-  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+  return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
 }
 size_t dt_round_size(const size_t size, const size_t alignment);
 size_t dt_round_size_sse(const size_t size);
@@ -419,10 +415,11 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
 /** \brief check if file is a supported image */
 gboolean dt_supported_image(const gchar *filename);
 
-static inline int dt_get_num_threads()
+static inline size_t dt_get_num_threads()
 {
 #ifdef _OPENMP
-  return omp_get_num_procs();
+  // we can safely assume omp_get_num_procs is > 0
+  return (size_t)omp_get_num_procs();
 #else
   return 1;
 #endif
@@ -437,62 +434,28 @@ static inline int dt_get_thread_num()
 #endif
 }
 
-static inline float dt_log2f(const float f)
+// Allocate a buffer for 'n' objects each of size 'objsize' bytes for each of the program's threads.
+// Ensures that there is no false sharing among threads by aligning and rounding up the allocation to
+// a multiple of the cache line size.  Returns a pointer to the allocated pool and the adjusted number
+// of objects in each thread's buffer.  Use dt_get_perthread or dt_get_bythread (see below) to access
+// a specific thread's buffer.
+static inline void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
 {
-#ifdef __GLIBC__
-  return log2f(f);
-#else
-  return logf(f) / logf(2.0f);
-#endif
+  const size_t alloc_size = n * objsize;
+  const size_t cache_lines = (alloc_size+63)/64;
+  *padded_size = 64 * cache_lines / objsize;
+  return __builtin_assume_aligned(dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads()), 64);
 }
-
-static inline float dt_fast_expf(const float x)
+// Same as dt_alloc_perthread, but the object is a float.
+static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_size)
 {
-  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
-  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
-  const int i1 = 0x3f800000u;
-  // e^x, the comment would be 2^x
-  const int i2 = 0x402DF854u; // 0x40000000u;
-  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster):
-  const int k0 = i1 + x * (i2 - i1);
-  union {
-      float f;
-      int k;
-  } u;
-  u.k = k0 > 0 ? k0 : 0;
-  return u.f;
+  return (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
 }
-
-// fast approximation of 2^-x for 0<x<126
-static inline float dt_fast_mexp2f(const float x)
-{
-  const int i1 = 0x3f800000; // bit representation of 2^0
-  const int i2 = 0x3f000000; // bit representation of 2^-1
-  const int k0 = i1 + (int)(x * (i2 - i1));
-  union {
-    float f;
-    int i;
-  } k;
-  k.i = k0 >= 0x800000 ? k0 : 0;
-  return k.f;
-}
-
-// The below version is incorrect, suffering from reduced precision.
-// It is used by the non-local means code in both nlmeans.c and
-// denoiseprofile.c, and fixing it would cause a change in output.
-static inline float fast_mexp2f(const float x)
-{
-  const float i1 = (float)0x3f800000u; // 2^0
-  const float i2 = (float)0x3f000000u; // 2^-1
-  const float k0 = i1 + x * (i2 - i1);
-  union {
-    float f;
-    int i;
-  } k;
-  k.i = k0 >= (float)0x800000u ? k0 : 0;
-  return k.f;
-}
+// Given the buffer and object count returned by dt_alloc_perthread, return the current thread's private buffer.
+#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
+// Given the buffer and object count returned by dt_alloc_perthread and a thread count in 0..dt_get_num_threads(),
+// return a pointer to the indicated thread's private buffer.
+#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
 
 static inline void dt_print_mem_usage()
 {

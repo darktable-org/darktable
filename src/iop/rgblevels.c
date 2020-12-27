@@ -1220,7 +1220,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
           else if(L_in >= d->params.levels[c][2])
           {
             const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
-            out[c] = pow(percentage, d->inv_gamma[c]);
+            out[c] = powf(percentage, d->inv_gamma[c]);
           }
           else
           {
@@ -1242,7 +1242,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
           if(lum >= d->params.levels[ch_levels][2])
           {
             const float percentage = (lum - d->params.levels[ch_levels][0]) * mult[ch_levels];
-            curve_lum = pow(percentage, d->inv_gamma[ch_levels]);
+            curve_lum = powf(percentage, d->inv_gamma[ch_levels]);
           }
           else
           {
@@ -1315,7 +1315,7 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       dt_pthread_mutex_unlock(&g->lock);
 
       // get the image, this works only in C
-      src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+      src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
         fprintf(stderr, "[rgblevels process_cl] error allocating memory for temp table 1\n");

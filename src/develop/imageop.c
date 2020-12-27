@@ -922,15 +922,14 @@ dt_iop_module_t *dt_iop_gui_duplicate(dt_iop_module_t *base, gboolean copy_param
     dt_iop_gui_init(module);
 
     /* add module to right panel */
-    GtkWidget *expander = dt_iop_gui_get_expander(module);
-    dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+    dt_iop_gui_set_expander(module);
     GValue gv = { 0, { { 0 } } };
     g_value_init(&gv, G_TYPE_INT);
     gtk_container_child_get_property(
         GTK_CONTAINER(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER)),
         base->expander, "position", &gv);
     gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER),
-                          expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
+                          module->expander, g_value_get_int(&gv) + pos_base - pos_module + 1);
     dt_iop_gui_set_expanded(module, TRUE, FALSE);
 
     dt_iop_reload_defaults(module); // some modules like profiled denoise update the gui in reload_defaults
@@ -1354,6 +1353,31 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
 
   _iop_gui_update_header(module);
 }
+
+void dt_iop_set_module_trouble_message(dt_iop_module_t *const module, GtkWidget *label_widget,
+                                       char* const trouble_msg, const char* const trouble_tooltip)
+{
+  if (trouble_msg && *trouble_msg)
+  {
+    // set the module's trouble flag
+    dt_iop_set_module_in_trouble(module, TRUE);
+    // set the warning message in the module's message area just below the header
+    char *msg = dt_iop_warning_message(trouble_msg);
+    gtk_label_set_text(GTK_LABEL(label_widget), msg);
+    g_free(msg);
+    gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
+    gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
+  }
+  else
+  {
+    // no trouble, so clear the trouble flag and hide the message area
+    dt_iop_set_module_in_trouble(module, FALSE);
+    gtk_label_set_text(GTK_LABEL(label_widget), "");
+    gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), "");
+    gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
+  }
+}
+
 
 static void _iop_gui_update_label(dt_iop_module_t *module)
 {
@@ -2450,7 +2474,7 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
   return TRUE;
 }
 
-GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
+void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
   char tooltip[512];
 
@@ -2547,8 +2571,6 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
     if(hw[i]) gtk_box_pack_end(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
 
-  dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
-
   dt_gui_add_help_link(header, "interacting.html");
 
   gtk_widget_set_halign(hw[IOP_MODULE_LABEL], GTK_ALIGN_START);
@@ -2583,7 +2605,8 @@ GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module)
   dt_iop_connect_common_accels(module);
   if(module->connect_key_accels) module->connect_key_accels(module);
 
-  return module->expander;
+  dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+  dt_iop_show_hide_header_buttons(header, NULL, FALSE, FALSE);
 }
 
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module)

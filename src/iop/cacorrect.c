@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
@@ -312,7 +313,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int width = roi_in->width;
   const int height = roi_in->height;
   const uint32_t filters = piece->pipe->dsc.filters;
-  memcpy(out, in2, width * height * sizeof(float));
+  dt_iop_image_copy_by_size(out, in2, width, height, 1);
   const float *const in = out;
   const double cared = 0, cablue = 0;
   const double caautostrength = 4;
@@ -347,7 +348,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   float *Gtmp = (float(*))calloc((height) * (width), sizeof *Gtmp);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  float *RawDataTmp = (float *)malloc(height * width * sizeof(float) / 2 + 4);
+  float *RawDataTmp = (float *)malloc(sizeof(float) * height * width / 2 + 4);
 
   float blockave[2][2] = { { 0, 0 }, { 0, 0 } }, blocksqave[2][2] = { { 0, 0 }, { 0, 0 } },
         blockdenom[2][2] = { { 0, 0 }, { 0, 0 } }, blockvar[2][2];
@@ -363,7 +364,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int vblsz = ceil((float)(height + border2) / (ts - border2) + 2 + vz1);
   const int hblsz = ceil((float)(width + border2) / (ts - border2) + 2 + hz1);
 
-  char *buffer1 = (char *)calloc(vblsz * hblsz * (2 * 2 + 1), sizeof(float));
+  char *buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
 
   // block CA shift values and weight assigned to block
   float *blockwt = (float *)buffer1;

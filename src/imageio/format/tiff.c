@@ -21,6 +21,7 @@
 #include "common/exif.h"
 #include "common/imageio.h"
 #include "common/imageio_module.h"
+#include "common/math.h"
 #include "control/conf.h"
 #include "imageio/format/imageio_format_api.h"
 #include "develop/pixelpipe_hb.h"
@@ -30,8 +31,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <tiffio.h>
-
-#define CLAMP_FLT(A) ((A) > (0.0f) ? ((A) < (1.0f) ? (A) : (1.0f)) : (0.0f))
 
 // it would be nice to save space by storing the masks as single channel float data,
 // but at least GIMP can't open TIFF files where not all layers have the same format.
@@ -95,7 +94,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     }
   }
 
-  int n_pages = 1;
+  uint16_t n_pages = 1;
   // only when masks are to be stored we check for extra pages!
   if(export_masks && pipe)
   {
@@ -116,6 +115,15 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     goto exit;
   }
 
+  if(n_pages > 1)
+  {
+    TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
+    TIFFSetField(tif, TIFFTAG_PAGENAME, _("image"));
+    TIFFSetField(tif, TIFFTAG_PAGENUMBER, 0, n_pages);
+  }
+  else
+    TIFFSetField(tif, TIFFTAG_SUBFILETYPE, 0);
+
   TIFFSetField(tif, TIFFTAG_DOCUMENTNAME, filename);
 
   // http://partners.adobe.com/public/developer/en/tiff/TIFFphotoshop.pdf (dated 2002)
@@ -127,25 +135,20 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   // http://www.awaresystems.be/imaging/tiff/tifftags/predictor.html
   if(d->compress == 1)
   {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
-    TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_NONE);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_NONE);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
   }
   else if(d->compress == 2)
   {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
+    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
     if(d->bpp == 32)
-      TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_FLOATINGPOINT);
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_FLOATINGPOINT);
     else
-      TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
+      TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
     TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
   }
-  else // (d->compress == 0)
-  {
-    TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
-  }
 
-  TIFFSetField(tif, TIFFTAG_FILLORDER, (uint16_t)FILLORDER_MSB2LSB);
   if(profile != NULL)
   {
     TIFFSetField(tif, TIFFTAG_ICCPROFILE, (uint32_t)profile_len, profile);
@@ -157,15 +160,14 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
    it's safe to assume a grayscale.
    As there might be pipeline errors at the border we leave them alone.
    After these checks layers can be used later on.
-   Exporting using masks currently does not support grayscale images.
 */
-  int layers = 3;  // default are rgb images
+  uint16_t layers = 3;  // default are rgb images
 
   int shortmode = 0;
   if(dt_conf_key_exists("plugins/imageio/format/tiff/shortfile"))
     shortmode = dt_conf_get_int("plugins/imageio/format/tiff/shortfile");
 
-  if((d->global.height > 4) && (d->global.width > 4) && (n_pages == 1) && shortmode)
+  if((d->global.height > 4) && (d->global.width > 4) && shortmode)
   {
     layers = 1;    // let's now assume a grayscale
     if(d->bpp == 32)
@@ -175,9 +177,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         float *in = (float *)in_void + (size_t)4 * y * d->global.width;
         for(int x = 1; x < d->global.width-1; x++, in += 4)
         {
-          if((fabs(fmax(in[0], 0.001f) / fmax(in[1], 0.001f)) > 1.01f) ||
-             (fabs(fmax(in[0], 0.001f) / fmax(in[2], 0.001f)) > 1.01f) ||
-             (fabs(fmax(in[1], 0.001f) / fmax(in[2], 0.001f)) > 1.01f))
+          if((fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[1], 0.001f)) > 1.01f) ||
+             (fabsf(fmaxf(in[0], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f) ||
+             (fabsf(fmaxf(in[1], 0.001f) / fmaxf(in[2], 0.001f)) > 1.01f))
           {
             layers = 3;
             goto checkdone;
@@ -225,26 +227,25 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   if(layers == 1)
     dt_control_log(_("will export as a grayscale image"));
 
-  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)layers);
+  TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
   TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
-  TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
+  TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (d->bpp == 32) ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT);
   TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)d->global.width);
   TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)d->global.height);
   if(layers == 3)
-    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
   else
-    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
+    TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
 
-  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
-  TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
 
   int resolution = dt_conf_get_int("metadata/resolution");
   if(resolution > 0)
   {
     TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
     TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
-    TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
+    TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
   }
 
   const size_t rowsize = (d->global.width * layers) * d->bpp / 8;
@@ -263,7 +264,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
       for(int x = 0; x < d->global.width; x++, in += 4, out += layers)
       {
-        memcpy(out, in, layers * sizeof(float));
+        memcpy(out, in, sizeof(float) * layers);
       }
 
       if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -282,7 +283,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
       for(int x = 0; x < d->global.width; x++, in += 4, out += layers)
       {
-        memcpy(out, in, layers * sizeof(uint16_t));
+        memcpy(out, in, sizeof(uint16_t) * layers);
       }
 
       if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -301,7 +302,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
       for(int x = 0; x < d->global.width; x++, in += 4, out += layers)
       {
-        memcpy(out, in, layers * sizeof(uint8_t));
+        memcpy(out, in, sizeof(uint8_t) * layers);
       }
 
       if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -315,10 +316,6 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   rc = 0;
 
   // close the file before adding exif data
-  TIFFSetField(tif, TIFFTAG_PAGENAME, _("image"));
-  TIFFSetField(tif, TIFFTAG_SUBFILETYPE, FILETYPE_PAGE);
-  TIFFSetField(tif, TIFFTAG_PAGENUMBER, 0, n_pages);
-
   if(tif)
   {
     TIFFClose(tif);
@@ -357,7 +354,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
                                          0.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0,
                                          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
     static const size_t missing_raster_mask_w = 8, missing_raster_mask_h = 8;
-    int page = 1;
+    uint16_t page = 1;
     for(GList *iter = pipe->nodes; iter; iter = g_list_next(iter))
     {
       dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)iter->data;
@@ -393,48 +390,47 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
 
         if(d->compress == 1)
         {
-          TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
-          TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_NONE);
+          TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
+          TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_NONE);
           TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
         }
         else if(d->compress == 2)
         {
-          TIFFSetField(tif, TIFFTAG_COMPRESSION, (uint16_t)COMPRESSION_ADOBE_DEFLATE);
+          TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_ADOBE_DEFLATE);
           if(d->bpp == 32)
-            TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_FLOATINGPOINT);
+            TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_FLOATINGPOINT);
           else
-            TIFFSetField(tif, TIFFTAG_PREDICTOR, (uint16_t)PREDICTOR_HORIZONTAL);
+            TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_HORIZONTAL);
           TIFFSetField(tif, TIFFTAG_ZIPQUALITY, (uint16_t)d->compresslevel);
         }
-        else // (d->compress == 0)
-        {
-          TIFFSetField(tif, TIFFTAG_COMPRESSION, COMPRESSION_NONE);
-        }
-
-        TIFFSetField(tif, TIFFTAG_FILLORDER, (uint16_t)FILLORDER_MSB2LSB);
 
         if(resolution > 0)
         {
           TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
           TIFFSetField(tif, TIFFTAG_YRESOLUTION, (float)resolution);
-          TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, (uint16_t)RESUNIT_INCH);
+          TIFFSetField(tif, TIFFTAG_RESOLUTIONUNIT, RESUNIT_INCH);
         }
 
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);
-        TIFFSetField(tif, TIFFTAG_PLANARCONFIG, (uint16_t)PLANARCONFIG_CONTIG);
-        TIFFSetField(tif, TIFFTAG_ORIENTATION, (uint16_t)ORIENTATION_TOPLEFT);
+        TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
 
 #ifdef MASKS_USE_SAME_FORMAT
-        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)3);
+        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
         TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)d->bpp);
-        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)(d->bpp == 32 ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT));
-        TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_RGB);
+        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (d->bpp == 32) ? SAMPLEFORMAT_IEEEFP : SAMPLEFORMAT_UINT);
+        if(layers == 3)
+          TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_RGB);
+        else
+          TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
         TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
-        free(rowdata);
-        const size_t _rowsize = (w * 3) * d->bpp / 8;
-        rowdata = malloc(_rowsize);
+        if(w != d->global.width)
+        {
+          free(rowdata);
+          const size_t _rowsize = (w * layers) * d->bpp / 8;
+          rowdata = malloc(_rowsize);
+        }
 
         if(d->bpp == 32)
         {
@@ -443,9 +439,9 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             const float *in = raster_mask + (size_t)y * w;
             float *out = (float *)rowdata;
 
-            for(int x = 0; x < w; x++, out += 3)
+            for(int x = 0; x < w; x++, out += layers)
             {
-              for(int c = 0; c < 3; c++)
+              for(int c = 0; c < layers; c++)
                 out[c] = in[x];
             }
 
@@ -463,10 +459,10 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             const float *in = raster_mask + (size_t)y * w;
             uint16_t *out = (uint16_t *)rowdata;
 
-            for(int x = 0; x < w; x++, out += 3)
+            for(int x = 0; x < w; x++, out += layers)
             {
-              for(int c = 0; c < 3; c++)
-                out[c] = CLAMP_FLT(in[x]) * 65535;
+              for(int c = 0; c < layers; c++)
+                out[c] = CLIP(in[x]) * 65535.0f + 0.5f;
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -483,10 +479,10 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
             const float *in = raster_mask + (size_t)y * w;
             uint8_t *out = (uint8_t *)rowdata;
 
-            for(int x = 0; x < w; x++, out += 3)
+            for(int x = 0; x < w; x++, out += layers)
             {
-              for(int c = 0; c < 3; c++)
-                out[c] = CLAMP_FLT(in[x]) * 255;
+              for(int c = 0; c < layers; c++)
+                out[c] = CLIP(in[x]) * 255.0f + 0.5f;
             }
 
             if(TIFFWriteScanline(tif, rowdata, y, 0) == -1)
@@ -497,10 +493,12 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
           }
         }
 #else // MASKS_USE_SAME_FORMAT
-        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, (uint16_t)1);
-        TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, (uint16_t)32);
-        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, (uint16_t)SAMPLEFORMAT_IEEEFP);
-        TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, (uint16_t)PHOTOMETRIC_MINISBLACK);
+        TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, 1);
+        TIFFSetField(tif, TIFFTAG_BITSPERSAMPLE, 32);
+        TIFFSetField(tif, TIFFTAG_SAMPLEFORMAT, SAMPLEFORMAT_IEEEFP);
+        if(d->compress == 2) // override predictor set above assuming MASKS_USE_SAME_FORMAT
+            TIFFSetField(tif, TIFFTAG_PREDICTOR, PREDICTOR_FLOATINGPOINT);
+        TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
         TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
         for(int y = 0; y < h; y++)
@@ -523,14 +521,16 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
       } // for all raster masks
     } // for all pipe nodes
 
-    TIFFClose(tif);
-    tif = NULL;
+    // success
+    rc = 0;
   } // if more than 1 page, i.e., there are masks
 
-  // success
-  rc = 0;
-
 exit:
+  if(tif)
+  {
+    TIFFClose(tif);
+    tif = NULL;
+  }
   free(profile);
   profile = NULL;
   free(rowdata);

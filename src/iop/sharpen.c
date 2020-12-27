@@ -22,6 +22,7 @@
 #include <xmmintrin.h>
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -148,7 +149,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return TRUE;
   }
 
-  mat = malloc(wd * sizeof(float));
+  mat = malloc(sizeof(float) * wd);
 
   // init gaussian kernel
   float *m = mat + rad;
@@ -187,7 +188,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[3];
   size_t local[3];
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * wd, mat);
@@ -282,7 +283,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   if(rad == 0)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -290,11 +291,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // avoids handling of all kinds of border cases below
   if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
-  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
+  float *const tmp = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
@@ -304,8 +305,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int wd = 2 * rad + 1;
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
-  const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(64, mat_size);
+  const size_t mat_size = (size_t)4 * wd4;
+  float *const mat = dt_alloc_align_float(mat_size);
   memset(mat, 0, mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
@@ -476,7 +477,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
   if(rad == 0)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -484,11 +485,11 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   // avoids handling of all kinds of border cases below
   if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
-  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
+  float *const tmp = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
   if(tmp == NULL)
   {
     fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
@@ -498,8 +499,8 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   const int wd = 2 * rad + 1;
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
-  const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(64, mat_size);
+  const size_t mat_size = (size_t)4 * wd4;
+  float *const mat = dt_alloc_align_float(mat_size);
   memset(mat, 0, mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)

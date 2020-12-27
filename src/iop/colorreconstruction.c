@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -206,7 +207,7 @@ static inline float hue_conversion(const float HSL_Hue)
   dt_XYZ_to_Lab(XYZ, Lab);
 
   // Hue from LCH color space in [-pi, +pi] interval
-  float LCH_hue = atan2(Lab[2], Lab[1]);
+  float LCH_hue = atan2f(Lab[2], Lab[1]);
 
   return LCH_hue;
 }
@@ -265,7 +266,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->scale = iscale / roi->scale;
   b->sigma_s = MAX(roi->height / (b->size_y - 1.0f), roi->width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  b->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(!b->buf)
   {
     fprintf(stderr, "[color reconstruction] not able to allocate buffer (b)\n");
@@ -273,7 +274,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
     return NULL;
   }
 
-  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  memset(b->buf, 0, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
 #if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
@@ -303,10 +304,10 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  bf->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(bf->buf && b->buf)
   {
-    memcpy(bf->buf, b->buf, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+    memcpy(bf->buf, b->buf, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   }
   else
   {
@@ -339,10 +340,10 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   b->scale = bf->scale;
   b->sigma_s = bf->sigma_s;
   b->sigma_r = bf->sigma_r;
-  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  b->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(b->buf && bf->buf)
   {
-    memcpy(b->buf, bf->buf, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+    memcpy(b->buf, bf->buf, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   }
   else
   {
@@ -381,14 +382,14 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
       switch(precedence)
       {
         case COLORRECONSTRUCT_PRECEDENCE_CHROMA:
-          weight = sqrt(ain * ain + bin * bin);
+          weight = sqrtf(ain * ain + bin * bin);
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_HUE:
-          m = atan2(bin, ain) - params[0];
+          m = atan2f(bin, ain) - params[0];
           // readjust m into [-pi, +pi] interval
           m = m > M_PI ? m - 2*M_PI : (m < -M_PI ? m + 2*M_PI : m);
-          weight = exp(-m*m/params[1]);
+          weight = expf(-m*m/params[1]);
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_NONE:
@@ -667,7 +668,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 error:
   dt_control_log(_("module `color reconstruction' failed"));
   dt_iop_colorreconstruct_bilateral_free(b);
-  memcpy(ovoid, ivoid, (size_t)sizeof(float) * piece->colors * roi_out->width * roi_out->height);
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
 }
 
 #ifdef HAVE_OPENCL
@@ -755,7 +756,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc grid buffer:
   b->dev_grid
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (b)\n");
@@ -765,7 +766,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc temporary grid buffer
   b->dev_grid_tmp
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (c)\n");
@@ -817,12 +818,12 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  bf->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(bf->buf && b->dev_grid)
   {
     // read bilateral grid from device memory to host buffer (blocking)
     cl_int err = dt_opencl_read_buffer_from_device(b->devid, bf->buf, b->dev_grid, 0,
-                                    b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t), TRUE);
+                                    sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z, TRUE);
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
@@ -896,7 +897,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc grid buffer:
   b->dev_grid
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (g)\n");
@@ -906,7 +907,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc temporary grid buffer
   b->dev_grid_tmp
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (h)\n");
@@ -1282,10 +1283,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   dt_bauhaus_slider_set_step(g->threshold, 0.1f);
-  g->spatial = dt_bauhaus_slider_from_params(self, "spatial");
-  g->range = dt_bauhaus_slider_from_params(self, "range");
+  g->spatial = dt_bauhaus_slider_from_params(self, N_("spatial"));
+  g->range = dt_bauhaus_slider_from_params(self, N_("range"));
   dt_bauhaus_slider_set_step(g->range, 0.1f);
-  g->precedence = dt_bauhaus_combobox_from_params(self, "precedence");
+  g->precedence = dt_bauhaus_combobox_from_params(self, N_("precedence"));
   g->hue = dt_bauhaus_slider_from_params(self, N_("hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_stop(g->hue, 0.0f,   1.0f, 0.0f, 0.0f);

@@ -44,6 +44,8 @@ typedef struct dt_undo_history_t
   GList *before_snapshot, *after_snapshot;
   int before_end, after_end;
   GList *before_iop_order_list, *after_iop_order_list;
+  dt_masks_edit_mode_t mask_edit_mode;
+  dt_dev_pixelpipe_display_mask_t request_mask_display;
 } dt_undo_history_t;
 
 typedef struct dt_lib_history_t
@@ -297,8 +299,7 @@ static void _add_module_expander(GList *iop_list, dt_iop_module_t *module)
   if(!dt_iop_is_hidden(module) && !module->expander)
   {
       /* add module to right panel */
-      GtkWidget *expander = dt_iop_gui_get_expander(module);
-      dt_ui_container_add_widget(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER, expander);
+      dt_iop_gui_set_expander(module);
       dt_iop_gui_set_expanded(module, TRUE, FALSE);
       dt_iop_gui_update_blending(module);
   }
@@ -647,6 +648,16 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
     dt_ioppr_resync_modules_order(dev);
 
     dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
+
+    if(dev->gui_module)
+    {
+      dt_masks_set_edit_mode(dev->gui_module, hist->mask_edit_mode);
+      darktable.develop->gui_module->request_mask_display = hist->request_mask_display;
+      dt_iop_gui_update_blendif(darktable.develop->gui_module);
+      dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)(dev->gui_module->blend_data);
+      dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask),
+                              hist->request_mask_display == DT_DEV_PIXELPIPE_DISPLAY_MASK);
+    }
   }
 }
 
@@ -931,7 +942,7 @@ static gboolean _changes_tooltip_callback(GtkWidget *widget, gint x, gint y, gbo
         const float oboost = exp2f(old_blend->blendif_boost_factors[ch]);
         const float nboost = exp2f(hitem->blend_params->blendif_boost_factors[ch]);
 
-        if((oactive || nactive) && (memcmp(of, nf, 4 * sizeof(float)) || opolarity != npolarity))
+        if((oactive || nactive) && (memcmp(of, nf, sizeof(float) * 4) || opolarity != npolarity))
         {
           if(first)
           {
@@ -1038,6 +1049,17 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
     hist->after_snapshot = dt_history_duplicate(darktable.develop->history);
     hist->after_end = darktable.develop->history_end;
     hist->after_iop_order_list = dt_ioppr_iop_order_copy_deep(darktable.develop->iop_order_list);
+
+    if(darktable.develop->gui_module)
+    {
+      hist->mask_edit_mode = dt_masks_get_edit_mode(darktable.develop->gui_module);
+      hist->request_mask_display = darktable.develop->gui_module->request_mask_display;
+    }
+    else
+    {
+      hist->mask_edit_mode = DT_MASKS_EDIT_OFF;
+      hist->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
+    }
 
     dt_undo_record(darktable.undo, self, DT_UNDO_HISTORY, (dt_undo_data_t)hist,
                    _pop_undo, _history_undo_data_free);

@@ -246,8 +246,8 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
                                             dt_masks_dynbuf_t *dborder, gboolean clockwise)
 {
   // we want to find the start and end angles
-  double a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
-  double a2 = atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]);
+  double a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  double a2 = atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]);
   if(a1 == a2) return;
 
   // we have to be sure that we turn in the correct direction
@@ -385,9 +385,9 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
   const size_t ss = (size_t)hb * wb;
   if(ss < 10 || hb < 0 || wb < 0) return 0;
 
-  int *binter = dt_alloc_align(64, ss * sizeof(int));
+  int *binter = dt_alloc_align(64, sizeof(int) * ss);
   if(binter == NULL) return 0;
-  memset(binter, 0, ss * sizeof(int));
+  memset(binter, 0, sizeof(int) * ss);
 
   dt_masks_dynbuf_t *extra = dt_masks_dynbuf_init(100000, "path extra");
   if(extra == NULL)
@@ -572,7 +572,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
     }
   }
 
-  float *border_init = dt_alloc_align(64, (size_t)6 * nb * sizeof(float));
+  float *border_init = dt_alloc_align_float((size_t)6 * nb);
   int cw = _path_is_clockwise(form);
   if(cw == 0) cw = -1;
 
@@ -2238,14 +2238,14 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
-  *buffer = dt_alloc_align(64, bufsize * sizeof(float));
+  *buffer = dt_alloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);
     dt_free_align(border);
     return 0;
   }
-  memset(*buffer, 0, bufsize * sizeof(float));
+  memset(*buffer, 0, sizeof(float) * bufsize);
 
   // we write all the point around the path into the buffer
   int nbp = border_count;
@@ -2625,7 +2625,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   start = start2 = dt_get_wtime();
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  memset(buffer, 0, sizeof(float) * width * height);
 
   guint nb_corner = g_list_length(form->points);
 
@@ -2753,14 +2753,14 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if(path_in_roi)
   {
     // second copy of path which we can modify when cropping to roi
-    float *cpoints = dt_alloc_align(64, 2 * points_count * sizeof(float));
+    float *cpoints = dt_alloc_align_float((size_t)2 * points_count);
     if(cpoints == NULL)
     {
       dt_free_align(points);
       dt_free_align(border);
       return 0;
     }
-    memcpy(cpoints, points, 2 * points_count * sizeof(float));
+    memcpy(cpoints, points, sizeof(float) * 2 * points_count);
 
     // now we clip cpoints to roi -> catch special case when roi lies completely within path.
     // dirty trick: we allow path to extend one pixel beyond height-1. this avoids need of special handling
@@ -2866,7 +2866,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   // deal with feather if it does not lie outside of roi
   if(!path_encircles_roi)
   {
-    int *dpoints = dt_alloc_align(64, 4 * border_count * sizeof(int));
+    int *dpoints = dt_alloc_align(64, sizeof(int) * 4 * border_count);
     if(dpoints == NULL)
     {
       dt_free_align(points);

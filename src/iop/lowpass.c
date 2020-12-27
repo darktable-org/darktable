@@ -24,6 +24,7 @@
 #include "common/bilateralcl.h"
 #include "common/debug.h"
 #include "common/gaussian.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -37,13 +38,10 @@
 #include "iop/iop_api.h"
 #include <assert.h>
 #include <gtk/gtk.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include <inttypes.h>
-
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 DT_MODULE_INTROSPECTION(4, dt_iop_lowpass_params_t)
 
@@ -269,7 +267,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     b = NULL; // make sure we don't clean it up twice
   }
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_cm = dt_opencl_copy_host_to_device(devid, d->ctable, 256, 256, sizeof(float));
@@ -480,7 +478,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // going from (0,0) to (1,100) or (0,100) to (1,0), respectively
     const float boost = 5.0f;
     const float contrastm1sq = boost * (fabs(d->contrast) - 1.0f) * (fabs(d->contrast) - 1.0f);
-    const float contrastscale = copysign(sqrt(1.0f + contrastm1sq), d->contrast);
+    const float contrastscale = copysign(sqrtf(1.0f + contrastm1sq), d->contrast);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
     dt_omp_firstprivate(contrastm1sq, contrastscale) \

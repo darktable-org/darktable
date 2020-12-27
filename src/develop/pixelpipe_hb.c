@@ -111,7 +111,7 @@ static char *_pipe_type_to_str(int pipe_type)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
@@ -120,14 +120,14 @@ int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_
 
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 0);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
@@ -512,11 +512,11 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
   if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, (size_t)roi->width * roi->height * 4 * sizeof(float));
+    pixel = tmpbuf = dt_alloc_align_float((size_t)4 * roi->width * roi->height);
 
   if(!pixel) return;
 
-  cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4 * sizeof(float));
+  cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4);
   if(err != CL_SUCCESS)
   {
     if(tmpbuf) dt_free_align(tmpbuf);
@@ -2160,7 +2160,7 @@ post_process_collect_info:
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available? when this iop's result is pulled in from cache?
-        float *const buf = dt_alloc_align(64, roi_out->width * roi_out->height * 4 * sizeof(float));
+        float *const buf = dt_alloc_align_float((size_t)4 * roi_out->width * roi_out->height);
         if(buf)
         {
           const uint8_t *in = (uint8_t *)(*output);
@@ -2408,11 +2408,11 @@ restart:
       g_free(pipe->output_backbuf);
       pipe->output_backbuf_width = pipe->backbuf_width;
       pipe->output_backbuf_height = pipe->backbuf_height;
-      pipe->output_backbuf = g_malloc0((size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+      pipe->output_backbuf = g_malloc0(sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
     }
 
     if(pipe->output_backbuf)
-      memcpy(pipe->output_backbuf, pipe->backbuf, (size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+      memcpy(pipe->output_backbuf, pipe->backbuf, sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
     pipe->output_imgid = pipe->image.id;
   }
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
@@ -2504,9 +2504,8 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
                     && module->processed_roi_in.width == 0
                     && module->processed_roi_in.height == 0))
             {
-              float *transformed_mask = dt_alloc_align(64, sizeof(float)
-                                                          * module->processed_roi_out.width
-                                                          * module->processed_roi_out.height);
+              float *transformed_mask = dt_alloc_align_float((size_t)module->processed_roi_out.width
+                                                              * module->processed_roi_out.height);
               module->module->distort_mask(module->module,
                                           module,
                                           raster_mask,

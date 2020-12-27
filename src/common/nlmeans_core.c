@@ -18,6 +18,7 @@
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -122,7 +123,7 @@ define_patches(const dt_nlmeans_param_t *const params, const int stride, int *nu
     n_patches = (n_patches + 1) / 2;
   *num_patches = n_patches ;
   // allocate a cacheline-aligned buffer
-  struct patch_t* patches = dt_alloc_align(64,n_patches*sizeof(struct patch_t));
+  struct patch_t* patches = dt_alloc_align(64, sizeof(struct patch_t) * n_patches);
   // set up the patch offsets
   int patch_num = 0;
   int shift = 0;
@@ -399,13 +400,13 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
   // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
   const int radius = params->patch_radius;
 #if defined(CACHE_PIXDIFFS)
-  const int scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
+  const size_t scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
 #else
-  const int scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
+  const size_t scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
 #endif /* CACHE_PIXDIFFS */
-  const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
-  const int numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
+  const size_t padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
+  const size_t numthreads = dt_get_num_threads() ;
+  float *scratch_buf = dt_alloc_align_float(numthreads * padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
@@ -430,7 +431,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
       // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
       for (int i = chunk_top; i < chunk_bot; i++)
       {
-        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', (chunk_right-chunk_left) * 4 * sizeof(float));
+        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', sizeof(float) * 4 * (chunk_right-chunk_left));
       }
       // cycle through all of the patches over our slice of the image
       for (int p = 0; p < num_patches; p++)
@@ -625,13 +626,13 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
   // allocate scratch space, including an overrun area on each end so we don't need a boundary check on every access
   const int radius = params->patch_radius;
 #if defined(CACHE_PIXDIFFS_SSE)
-  const int scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
+  const size_t scratch_size = (2*radius+3)*(SLICE_WIDTH + 2*radius + 1);
 #else
-  const int scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
+  const size_t scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
 #endif /* CACHE_PIXDIFFS_SSE */
-  const int padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
-  const int numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align(64,numthreads * padded_scratch_size * sizeof(float));
+  const size_t padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
+  const size_t numthreads = dt_get_num_threads() ;
+  float *scratch_buf = dt_alloc_align_float((size_t)numthreads * padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
@@ -656,7 +657,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
       // we want to incrementally sum results (especially weights in col[3]), so clear the output buffer to zeros
       for (int i = chunk_top; i < chunk_bot; i++)
       {
-        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', (chunk_right-chunk_left) * 4 * sizeof(float));
+        memset(outbuf + 4*(i*roi_out->width+chunk_left), '\0', sizeof(float) * 4 * (chunk_right-chunk_left));
       }
       // cycle through all of the patches over our slice of the image
       for (int p = 0; p < num_patches; p++)
@@ -930,7 +931,7 @@ int nlmeans_denoise_cl(const dt_nlmeans_param_t *const params, const int devid,
   unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
     if(buckets[k] == NULL) goto error;
   }
 
@@ -1026,7 +1027,7 @@ int nlmeans_denoiseprofile_cl(const dt_nlmeans_param_t *const params, const int 
   unsigned int state = 0;
   for(int k = 0; k < NUM_BUCKETS; k++)
   {
-    buckets[k] = dt_opencl_alloc_device_buffer(devid, (size_t)width * height * sizeof(float));
+    buckets[k] = dt_opencl_alloc_device_buffer(devid, sizeof(float) * width * height);
     if(buckets[k] == NULL) goto error;
   }
 

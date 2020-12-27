@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/darktable.h"
+#include "common/math.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -31,11 +32,8 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 
 #define ROUND_POSISTIVE(f) ((unsigned int)((f)+0.5))
 
@@ -93,7 +91,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = piece->colors;
 
   // PASS1: Get a luminance map of image...
-  float *luminance = (float *)malloc(((size_t)roi_out->width * roi_out->height) * sizeof(float));
+  float *luminance = (float *)malloc(sizeof(float) * ((size_t)roi_out->width * roi_out->height));
 // double lsmax=0.0,lsmin=1.0;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -124,7 +122,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float slope = data->slope;
 
   const size_t destbuf_size = roi_out->width;
-  float *const dest_buf = malloc(destbuf_size * sizeof(float) * dt_get_num_threads());
+  float *const dest_buf = malloc(sizeof(float) * dt_get_num_threads() * destbuf_size);
 
 // CLAHE
 #ifdef _OPENMP
@@ -149,13 +147,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float *dest = dest_buf + destbuf_size * dt_get_thread_num();
 
     /* initially fill histogram */
-    memset(hist, 0, (BINS + 1) * sizeof(int));
+    memset(hist, 0, sizeof(int) * (BINS + 1));
     for(int yi = yMin; yi < yMax; ++yi)
       for(int xi = xMin0; xi < xMax0; ++xi)
         ++hist[ROUND_POSISTIVE(luminance[(size_t)yi * roi_in->width + xi] * (float)BINS)];
 
     // Destination row
-    memset(dest, 0, roi_out->width * sizeof(float));
+    memset(dest, 0, sizeof(float) * roi_out->width);
     float *ld = dest;
 
     for(int i = 0; i < roi_out->width; i++)
@@ -187,7 +185,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
 
       /* clip histogram and redistribute clipped entries */
-      memcpy(clippedhist, hist, (BINS + 1) * sizeof(int));
+      memcpy(clippedhist, hist, sizeof(int) * (BINS + 1));
       int ce = 0, ceb = 0;
       do
       {

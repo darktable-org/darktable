@@ -58,6 +58,7 @@ int dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_busy_enter();
 void dt_control_toast_busy_enter();
 void dt_control_log_busy_leave();
@@ -140,7 +141,7 @@ typedef struct dt_control_accels_t
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 5000
 #define DT_CTL_TOAST_SIZE 10
-#define DT_CTL_TOAST_MSG_SIZE 200
+#define DT_CTL_TOAST_MSG_SIZE 300
 #define DT_CTL_TOAST_TIMEOUT 1500
 /**
  * this manages everything time-consuming.

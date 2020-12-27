@@ -258,11 +258,18 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const float min_scale = dt_dev_get_zoom_scale(dev, DT_ZOOM_FIT, 1 << closeup, 0);
     const float cur_scale = dt_dev_get_zoom_scale(dev, zoom, 1 << closeup, 0);
+    // if cur_scale is >=2.0f (200%) we disable preview as it can hit cairo size limits without warnings
+    if(cur_scale >= 2.0f)
+    {
+      /* xgettext:no-c-format */
+      dt_control_log(_("preview is only possible for zoom lower than 200%%..."));
+      return;
+    }
     nz = cur_scale / min_scale;
   }
 
   // if not cached, load or reload a mipmap
-  int res = 0;
+  dt_view_surface_value_t res = DT_VIEW_SURFACE_OK;
   if(d->preview_id != d->imgid || d->preview_zoom != nz * zoom_ratio || !d->preview_surf
      || d->preview_width != width || d->preview_height != height)
   {
@@ -271,7 +278,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
 
     res = dt_view_image_get_surface(d->imgid, img_wd * nz, img_ht * nz, &d->preview_surf, TRUE);
 
-    if(!res)
+    if(res == DT_VIEW_SURFACE_OK)
     {
       d->preview_id = d->imgid;
       d->preview_zoom = nz * zoom_ratio; //  only to check validity of mipmap cache size
@@ -342,7 +349,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cri, int32_t width, int32_t
     cairo_restore(cri);
   }
 
-  if(res)
+  if(res != DT_VIEW_SURFACE_OK)
   {
     if(!d->busy)
     {

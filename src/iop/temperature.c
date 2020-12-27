@@ -1159,25 +1159,17 @@ static void display_wb_error(struct dt_iop_module_t *self)
 
   if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65)
   {
-    // our second biggest problem : another channelmixerrgb instance is doing CAT
-    // earlier in the pipe
-    dt_iop_set_module_in_trouble(self, TRUE);
-    char *wmes = dt_iop_warning_message(_("white balance applied twice"));
-    gtk_label_set_text(GTK_LABEL(g->warning_label), wmes);
-    g_free(wmes);
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label),
-                                _("the color calibration module is enabled,\n"
-                                  "and performing chromatic adaptation.\n"
-                                  "set the white balance here to camera reference (D65)\n"
-                                  "or disable chromatic adaptation in color calibration."));
-    gtk_widget_set_visible(GTK_WIDGET(g->warning_label), TRUE);
+    // our second biggest problem : another module is doing CAT elsewhere in the pipe
+    dt_iop_set_module_trouble_message(self, g->warning_label, _("white balance applied twice"),
+                                      _("the color calibration module is enabled,\n"
+                                        "and performing chromatic adaptation.\n"
+                                        "set the white balance here to camera reference (D65)\n"
+                                        "or disable chromatic adaptation in color calibration."));
   }
   else
   {
-    dt_iop_set_module_in_trouble(self, FALSE);
-    gtk_label_set_text(GTK_LABEL(g->warning_label), "");
-    gtk_widget_set_tooltip_text(GTK_WIDGET(g->warning_label), "");
-    gtk_widget_set_visible(GTK_WIDGET(g->warning_label), FALSE);
+    // no longer in trouble
+    dt_iop_set_module_trouble_message(self, g->warning_label, NULL, NULL);
   }
 
   --darktable.gui->reset;

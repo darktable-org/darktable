@@ -19,11 +19,11 @@
 #include "config.h"
 #endif
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/tea.h"
 #include "control/control.h"
@@ -40,8 +40,6 @@
 #include <inttypes.h>
 
 DT_MODULE_INTROSPECTION(4, dt_iop_vignette_params_t)
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 
 typedef enum dt_iop_dither_t
 {
@@ -751,7 +749,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(weight > 0)
       {
         // Then apply falloff vignette
-        float falloff = (data->brightness < 0) ? (1.0 + (weight * data->brightness))
+        float falloff = (data->brightness < 0) ? (1.0f + (weight * data->brightness))
                                                : (weight * data->brightness);
         col0 = data->brightness < 0 ? col0 * falloff + dith : col0 + falloff + dith;
         col1 = data->brightness < 0 ? col1 * falloff + dith : col1 + falloff + dith;
@@ -762,7 +760,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         col2 = unbound ? col2 : CLIP(col2);
 
         // apply saturation
-        float mv = (col0 + col1 + col2) / 3.0;
+        float mv = (col0 + col1 + col2) / 3.0f;
         float wss = weight * data->saturation;
         col0 = col0 - ((mv - col0) * wss);
         col1 = col1 - ((mv - col1) * wss);

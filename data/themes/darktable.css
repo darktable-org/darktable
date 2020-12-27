@@ -1266,7 +1266,8 @@ dialog scrollbar
   margin-left: 5px;
 }
 
-#preferences_box #shortcut_controls button
+#preferences_box #shortcut_controls button,
+#preferences_box #preset_controls button
 {
 margin: 0 2px;
 }
@@ -1329,7 +1330,8 @@ margin: 0 2px;
 #modulegroups-header #dt-button,
 #modulegroups-preset #dt-button,
 #modulegroups-preset-activated #dt-button,
-#modulegroups-iop-popup-name
+#modulegroups-iop-popup-name,
+#modulegroups-iop-popup-cb
 {
   border: 0;
 }
@@ -1338,6 +1340,11 @@ margin: 0 2px;
 #modulegroups-iop-popup-name
 {
    padding: 0.2em 0.5em;
+}
+
+#modulegroups-iop-popup-cb
+{
+  margin-left: 2em;
 }
 
 #modulegroups-groups-title
