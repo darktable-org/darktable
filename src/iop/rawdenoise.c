@@ -190,6 +190,8 @@ static void wavelet_denoise(const float *const restrict in, float *const restric
 {
   const size_t size = (size_t)(roi->width / 2 + 1) * (roi->height / 2 + 1);
   float *const restrict fimg = dt_alloc_align_float(size);
+  if (!fimg)
+    return;
 
   const int nc = 4;
   for(int c = 0; c < nc; c++) /* denoise R,G1,B,G3 individually */
