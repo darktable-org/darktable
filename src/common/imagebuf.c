@@ -105,7 +105,8 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
   // finally, check whether successful and clean up if something went wrong
   if (success)
   {
-    dt_iop_set_module_trouble_message(module, warn_label, NULL, NULL);
+    if (module)
+      dt_iop_set_module_trouble_message(module, warn_label, NULL, NULL);
   }
   else
   {
@@ -123,11 +124,12 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
     }
     va_end(args);
     // set the module's trouble flag
-    dt_iop_set_module_trouble_message(module, warn_label, _("insufficient memory"),
-                                      _("This module was unable to allocate\n"
-                                        "all of the memory required to process\n"
-                                        "the image.  Some or all processing\n"
-                                        "has been skipped."));
+    if (module)
+      dt_iop_set_module_trouble_message(module, warn_label, _("insufficient memory"),
+                                        _("This module was unable to allocate\n"
+                                          "all of the memory required to process\n"
+                                          "the image.  Some or all processing\n"
+                                          "has been skipped."));
     // and print an error message to the console
     const char *name = module ? module->name() : "?";
     fprintf(stderr,"[%s] unable to allocate working memory\n",name);
