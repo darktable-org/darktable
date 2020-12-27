@@ -476,7 +476,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
               const float wt = gh(distortion * sharpness);
               const float *const inpx = in+4*col;
               const float pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
-              SIMD_FOR (size_t c = 0; c < 4; c++)
+              for (size_t c = 0; c < 4; c++)
               {
                 out[4*col+c] += pixel[c] * wt;
               }
