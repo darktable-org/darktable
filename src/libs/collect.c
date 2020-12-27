@@ -241,6 +241,25 @@ void *legacy_params(struct dt_lib_module_t *self,
 
 void init_presets(dt_lib_module_t *self)
 {
+  dt_lib_collect_params_t params;
+
+  memset(&params, 0, sizeof(params));
+
+  params.rules = 1;
+  params.rule[0].item = DT_COLLECTION_PROP_ASPECT_RATIO;
+  params.rule[0].mode = 0;
+  g_strlcpy(params.rule[0].string, "= 1", PARAM_STRING_SIZE);
+
+  dt_lib_presets_add(_("square"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  g_strlcpy(params.rule[0].string, "> 1", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  g_strlcpy(params.rule[0].string, "< 1", PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
 }
 
 /* Update the params struct with active ruleset */
