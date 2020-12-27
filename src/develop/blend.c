@@ -1408,6 +1408,14 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 1 && new_version == 11)
   {
+    /** blend legacy parameters version 1 */
+    typedef struct dt_develop_blend_params1_t
+    {
+      uint32_t mode;
+      float opacity;
+      uint32_t mask_id;
+    } dt_develop_blend_params1_t;
+
     if(length != sizeof(dt_develop_blend_params1_t)) return 1;
 
     dt_develop_blend_params1_t *o = (dt_develop_blend_params1_t *)old_params;
@@ -1423,6 +1431,21 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 2 && new_version == 11)
   {
+    /** blend legacy parameters version 2 */
+    typedef struct dt_develop_blend_params2_t
+    {
+      /** blending mode */
+      uint32_t mode;
+      /** mixing opacity */
+      float opacity;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** blendif parameters */
+      float blendif_parameters[4 * 8];
+    } dt_develop_blend_params2_t;
+
     if(length != sizeof(dt_develop_blend_params2_t)) return 1;
 
     dt_develop_blend_params2_t *o = (dt_develop_blend_params2_t *)old_params;
@@ -1446,6 +1469,21 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 3 && new_version == 11)
   {
+    /** blend legacy parameters version 3 */
+    typedef struct dt_develop_blend_params3_t
+    {
+      /** blending mode */
+      uint32_t mode;
+      /** mixing opacity */
+      float opacity;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+    } dt_develop_blend_params3_t;
+
     if(length != sizeof(dt_develop_blend_params3_t)) return 1;
 
     dt_develop_blend_params3_t *o = (dt_develop_blend_params3_t *)old_params;
@@ -1467,6 +1505,23 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 4 && new_version == 11)
   {
+    /** blend legacy parameters version 4 */
+    typedef struct dt_develop_blend_params4_t
+    {
+      /** blending mode */
+      uint32_t mode;
+      /** mixing opacity */
+      float opacity;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** blur radius */
+      float radius;
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+    } dt_develop_blend_params4_t;
+
     if(length != sizeof(dt_develop_blend_params4_t)) return 1;
 
     dt_develop_blend_params4_t *o = (dt_develop_blend_params4_t *)old_params;
@@ -1489,6 +1544,29 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 5 && new_version == 11)
   {
+    /** blend legacy parameters version 5 (identical to version 6)*/
+    typedef struct dt_develop_blend_params5_t
+    {
+      /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+      uint32_t mask_mode;
+      /** blending mode */
+      uint32_t blend_mode;
+      /** mixing opacity */
+      float opacity;
+      /** how masks are combined */
+      uint32_t mask_combine;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** blur radius */
+      float radius;
+      /** some reserved fields for future use */
+      uint32_t reserved[4];
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+    } dt_develop_blend_params5_t;
+
     if(length != sizeof(dt_develop_blend_params5_t)) return 1;
 
     dt_develop_blend_params5_t *o = (dt_develop_blend_params5_t *)old_params;
@@ -1514,6 +1592,29 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 6 && new_version == 11)
   {
+    /** blend legacy parameters version 6 (identical to version 7) */
+    typedef struct dt_develop_blend_params6_t
+    {
+      /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+      uint32_t mask_mode;
+      /** blending mode */
+      uint32_t blend_mode;
+      /** mixing opacity */
+      float opacity;
+      /** how masks are combined */
+      uint32_t mask_combine;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** blur radius */
+      float radius;
+      /** some reserved fields for future use */
+      uint32_t reserved[4];
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+    } dt_develop_blend_params6_t;
+
     if(length != sizeof(dt_develop_blend_params6_t)) return 1;
 
     dt_develop_blend_params6_t *o = (dt_develop_blend_params6_t *)old_params;
@@ -1533,6 +1634,29 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 7 && new_version == 11)
   {
+    /** blend legacy parameters version 7 */
+    typedef struct dt_develop_blend_params7_t
+    {
+      /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+      uint32_t mask_mode;
+      /** blending mode */
+      uint32_t blend_mode;
+      /** mixing opacity */
+      float opacity;
+      /** how masks are combined */
+      uint32_t mask_combine;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** blur radius */
+      float radius;
+      /** some reserved fields for future use */
+      uint32_t reserved[4];
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+    } dt_develop_blend_params7_t;
+
     if(length != sizeof(dt_develop_blend_params7_t)) return 1;
 
     dt_develop_blend_params7_t *o = (dt_develop_blend_params7_t *)old_params;
@@ -1552,6 +1676,37 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 8 && new_version == 11)
   {
+    /** blend legacy parameters version 8 */
+    typedef struct dt_develop_blend_params8_t
+    {
+      /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask */
+      uint32_t mask_mode;
+      /** blending mode */
+      uint32_t blend_mode;
+      /** mixing opacity */
+      float opacity;
+      /** how masks are combined */
+      uint32_t mask_combine;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** feathering radius */
+      float feathering_radius;
+      /** feathering guide */
+      uint32_t feathering_guide;
+      /** blur radius */
+      float blur_radius;
+      /** mask contrast enhancement */
+      float contrast;
+      /** mask brightness adjustment */
+      float brightness;
+      /** some reserved fields for future use */
+      uint32_t reserved[4];
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+    } dt_develop_blend_params8_t;
+
     if(length != sizeof(dt_develop_blend_params8_t)) return 1;
 
     dt_develop_blend_params8_t *o = (dt_develop_blend_params8_t *)old_params;
@@ -1575,6 +1730,42 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 9 && new_version == 11)
   {
+    /** blend legacy parameters version 9 */
+    typedef struct dt_develop_blend_params9_t
+    {
+      /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
+       *  or raster mask */
+      uint32_t mask_mode;
+      /** blending mode */
+      uint32_t blend_mode;
+      /** mixing opacity */
+      float opacity;
+      /** how masks are combined */
+      uint32_t mask_combine;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** feathering radius */
+      float feathering_radius;
+      /** feathering guide */
+      uint32_t feathering_guide;
+      /** blur radius */
+      float blur_radius;
+      /** mask contrast enhancement */
+      float contrast;
+      /** mask brightness adjustment */
+      float brightness;
+      /** some reserved fields for future use */
+      uint32_t reserved[4];
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+      dt_dev_operation_t raster_mask_source;
+      int raster_mask_instance;
+      int raster_mask_id;
+      gboolean raster_mask_invert;
+    } dt_develop_blend_params9_t;
+
     if(length != sizeof(dt_develop_blend_params9_t)) return 1;
 
     dt_develop_blend_params9_t *o = (dt_develop_blend_params9_t *)old_params;
@@ -1602,6 +1793,47 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
   if(old_version == 10 && new_version == 11)
   {
+    /** blend legacy parameters version 10 */
+    typedef struct dt_develop_blend_params10_t
+    {
+      /** what kind of masking to use: off, non-mask (uniformly), hand-drawn mask and/or conditional mask
+       *  or raster mask */
+      uint32_t mask_mode;
+      /** blending color space type */
+      int32_t blend_cst;
+      /** blending mode */
+      uint32_t blend_mode;
+      /** parameter for the blending */
+      float blend_parameter;
+      /** mixing opacity */
+      float opacity;
+      /** how masks are combined */
+      uint32_t mask_combine;
+      /** id of mask in current pipeline */
+      uint32_t mask_id;
+      /** blendif mask */
+      uint32_t blendif;
+      /** feathering radius */
+      float feathering_radius;
+      /** feathering guide */
+      uint32_t feathering_guide;
+      /** blur radius */
+      float blur_radius;
+      /** mask contrast enhancement */
+      float contrast;
+      /** mask brightness adjustment */
+      float brightness;
+      /** some reserved fields for future use */
+      uint32_t reserved[4];
+      /** blendif parameters */
+      float blendif_parameters[4 * DEVELOP_BLENDIF_SIZE];
+      float blendif_boost_factors[DEVELOP_BLENDIF_SIZE];
+      dt_dev_operation_t raster_mask_source;
+      int raster_mask_instance;
+      int raster_mask_id;
+      gboolean raster_mask_invert;
+    } dt_develop_blend_params10_t;
+
     if(length != sizeof(dt_develop_blend_params10_t)) return 1;
 
     dt_develop_blend_params10_t *o = (dt_develop_blend_params10_t *)old_params;
@@ -1621,8 +1853,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     n->blur_radius = o->blur_radius;
     n->contrast = o->contrast;
     n->brightness = o->brightness;
-    memcpy(n->blendif_parameters, o->blendif_parameters, 4 * DEVELOP_BLENDIF_SIZE * sizeof(float));
-    memcpy(n->blendif_boost_factors, o->blendif_boost_factors, DEVELOP_BLENDIF_SIZE * sizeof(float));
+    memcpy(n->blendif_parameters, o->blendif_parameters, sizeof(float) * 4 * DEVELOP_BLENDIF_SIZE);
+    memcpy(n->blendif_boost_factors, o->blendif_boost_factors, sizeof(float) * DEVELOP_BLENDIF_SIZE);
     memcpy(n->raster_mask_source, o->raster_mask_source, sizeof(n->raster_mask_source));
     n->raster_mask_instance = o->raster_mask_instance;
     n->raster_mask_id = o->raster_mask_id;
