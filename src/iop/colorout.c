@@ -442,7 +442,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 // fprintf(stderr,"Using xform codepath\n");
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, d, gamutcheck, ivoid, ovoid, roi_out) \
+    dt_omp_firstprivate(ch, d, gamutcheck, ivoid, out, roi_out) \
     schedule(static)
 #endif
     for(int k = 0; k < roi_out->height; k++)
