@@ -249,60 +249,67 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
     return;
   }
 
-  float *detail[MAX_NUM_SCALES] = { NULL };
-  float *tmp = NULL;
-  float *buf2 = NULL;
-  float *buf1 = NULL;
+  float *const restrict out = (float*)o;
+  float *restrict detail = NULL;
+  float *restrict tmp = NULL;
+  float *restrict tmp2 = NULL;
 
-  tmp = (float *)dt_alloc_align_float((size_t)4 * width * height);
-  if(tmp == NULL)
+#if PR7484_MERGED
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out,
+                                  4, &tmp, 4, &tmp2, 4, &detail, 0))
   {
-    fprintf(stderr, "[atrous] failed to allocate coarse buffer!\n");
+    dt_iop_copy_image_roi(out, i, piece->colors, roi_in, roi_out, TRUE);
+    return;
+  }
+#else
+  tmp = (float *)dt_alloc_align_float((size_t)4 * width * height);
+  tmp2 = (float *)dt_alloc_align_float((size_t)4 * width * height);
+  if(tmp == NULL || tmp2 == NULL)
+  {
+    fprintf(stderr, "[atrous] failed to allocate one of the coarse buffers!\n");
     goto error;
   }
 
-  for(int k = 0; k < max_scale; k++)
+  detail = (float *)dt_alloc_align_float((size_t)4 * width * height);
+  if(detail == NULL)
   {
-    detail[k] = (float *)dt_alloc_align_float((size_t)4 * width * height);
-    if(detail[k] == NULL)
-    {
-      fprintf(stderr, "[atrous] failed to allocate one of the detail buffers!\n");
-      goto error;
-    }
+    fprintf(stderr, "[atrous] failed to allocate the detail buffer!\n");
+    goto error;
   }
+#endif
 
-  buf1 = (float *)i;
-  buf2 = tmp;
+  float *buf1 = (float *)i;
+  float *buf2 = tmp;
 
+  // clear the output buffer, which will be accumulating all of the detail scales
+  memset(out, 0, sizeof(float) * 4 * width * height);
+
+  // now do the wavelet decomposition, immediately synthesizing the detail scale into the final output so
+  // that we don't need to store it past the current scale's iteration
   for(int scale = 0; scale < max_scale; scale++)
   {
-    decompose(buf2, buf1, detail[scale], scale, sharp[scale], width, height);
-    if(scale == 0) buf1 = (float *)o; // now switch to (float *)o for buffer ping-pong between buf1 and buf2
+    decompose(buf2, buf1, detail, scale, sharp[scale], width, height);
+    synthesize(out, out, detail, thrs[scale], boost[scale], width, height);
+    if(scale == 0) buf1 = (float *)tmp2; // now switch to second scratch for buffer ping-pong between buf1 and buf2
     float *buf3 = buf2;
     buf2 = buf1;
     buf1 = buf3;
   }
 
-  for(int scale = max_scale - 1; scale >= 0; scale--)
-  {
-    synthesize(buf2, buf1, detail[scale], thrs[scale], boost[scale], width, height);
-    float *buf3 = buf2;
-    buf2 = buf1;
-    buf1 = buf3;
-  }
-  /* due to symmetric processing, output will be left in (float *)o */
+  // add in the final residue
+#ifdef _OPENMP
+#pragma omp simd aligned(buf1, out : 64)
+#endif
+  for (size_t k = 0; k < 4 * width * height; k++)
+    out[k] += buf1[k];
 
-  for(int k = 0; k < max_scale; k++) dt_free_align(detail[k]);
-  dt_free_align(tmp);
-
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(i, o, width, height);
-
-  return;
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(i, o, width, height);
 
 error:
-  for(int k = 0; k < max_scale; k++)
-    if(detail[k] != NULL) dt_free_align(detail[k]);
+  if(detail != NULL) dt_free_align(detail);
   if(tmp != NULL) dt_free_align(tmp);
+  if(tmp2 != NULL) dt_free_align(tmp2);
   return;
 }
 
@@ -473,7 +480,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int max_scale = get_scales(thrs, boost, sharp, d, roi_in, piece);
   const int max_filter_radius = 2 * (1 << max_scale); // 2 * 2^max_scale
 
-  tiling->factor = 3.0f + max_scale; //TODO: reduce to 5.0f after merging PR7485
+  tiling->factor = 5.0f;                // in + out + 2*tmp + details
   tiling->factor_cl = 3.0f + max_scale; // in + out + tmp + scale buffers
   tiling->maxbuf = 1.0f;
   tiling->maxbuf_cl = 1.0f;
