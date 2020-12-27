@@ -712,6 +712,12 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
 /** show in iop module header that the module is in trouble */
 void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
 
+/** set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
+ ** or NULL, clear the trouble flag.  Because we don't necessarily know where to get the widget for the
+ ** message area, have the caller pass it in **/
+void dt_iop_set_module_trouble_message(dt_iop_module_t *module, GtkWidget *label_widget,
+                                       char *const trouble_msg, const char *const trouble_tooltip);
+
 // format modules description going in tooltips
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
                              const char *purpose, const char *input,
