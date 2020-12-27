@@ -2266,7 +2266,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3996
 msgid "show right-side buttons in processing module headers"
-msgstr "affichage des buttons sur la droite des modules de développement"
+msgstr "affichage des boutons sur la droite des modules de développement"
 
 #: ../build/bin/preferences_gen.h:4012
 msgctxt "preferences"
