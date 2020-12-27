@@ -281,24 +281,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
   const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
-  if(rad == 0)
+  // Special case handling: very small image with one or two dimensions below 2*rad+1 treat as no sharpening and just
+  // pass through.  This avoids handling of all kinds of border cases below.
+  if(rad == 0 ||
+     (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
-  // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening
-  // avoids handling of all kinds of border cases below
-  if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
+  float *restrict tmp;
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, 1, &tmp, 0))
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-    return;
-  }
-
-  float *const tmp = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
-  if(tmp == NULL)
-  {
-    fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     return;
   }
 
@@ -472,27 +467,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+  const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
   const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
-  if(rad == 0)
+  // Special case handling: very small image with one or two dimensions below 2*rad+1 treat as no sharpening and just
+  // pass through.  This avoids handling of all kinds of border cases below.
+  if(rad == 0 ||
+     (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
   {
     dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
-  // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening
-  // avoids handling of all kinds of border cases below
-  if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
+  float *restrict tmp;
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, 1, &tmp, 0))
   {
-    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
-    return;
-  }
-
-  float *const tmp = dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
-  if(tmp == NULL)
-  {
-    fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     return;
   }
 
@@ -638,7 +628,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
-  shared(data) \
+  dt_omp_sharedconst(data) \
   schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to original image
