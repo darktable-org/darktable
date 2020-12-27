@@ -25,6 +25,7 @@
 #include <cairo.h>
 
 #include "common/opencl.h"
+#include "common/imagebuf.h"
 #include "common/iop_profile.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -165,11 +166,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int ch = 4;
   assert(piece->colors == ch);
 
-  float *const img_tmp = dt_alloc_align_float((size_t) ch * roi_out->width * roi_out->height);
-  if(img_tmp == NULL)
+  float *restrict img_tmp;
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, ch, &img_tmp, 0))
   {
-    fprintf(stderr, "[overexposed process] can't alloc temp image\n");
-    goto cleanup;
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    return;
   }
 
   const float lower = exp2f(fminf(dev->overexposed.lower, -4.f));   // in EV
@@ -412,10 +413,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     _MM_SET_FLUSH_ZERO_MODE(oldMode);
   #endif
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 
-cleanup:
-  if(img_tmp) dt_free_align(img_tmp);
+  dt_free_align(img_tmp);
 }
 
 #ifdef HAVE_OPENCL
