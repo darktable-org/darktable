@@ -31,7 +31,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
   va_start(args,roi_out);
   while (TRUE)
   {
-    int size = va_arg(args,int);
+    const int size = va_arg(args,int);
     float **bufptr = va_arg(args,float**);
     if (size & DT_IMGSZ_PERTHREAD)
       (void)va_arg(args,size_t*);    // skip the extra pointer for per-thread allocations
@@ -45,7 +45,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
   va_start(args,roi_out);
   while (success)
   {
-    int size = va_arg(args,int);
+    const int size = va_arg(args,int);
     float **bufptr = va_arg(args,float**);
     size_t *paddedsize = (size & DT_IMGSZ_PERTHREAD) ? va_arg(args,size_t*) : NULL;
     if (size == 0 || !bufptr)
@@ -113,7 +113,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
     va_start(args,roi_out);
     while (TRUE)
     {
-      int size = va_arg(args,int);
+      const int size = va_arg(args,int);
       float **bufptr = va_arg(args,float**);
       if (size & DT_IMGSZ_PERTHREAD)
         (void)va_arg(args,size_t*);  // skip the extra pointer for per-thread allocations
