@@ -307,7 +307,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const size_t mat_size = (size_t)4 * wd4;
   float *const mat = dt_alloc_align_float(mat_size);
-  memset(mat, 0, mat_size);
+  memset(mat, 0, sizeof(float) * mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
@@ -501,7 +501,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 
   const size_t mat_size = (size_t)4 * wd4;
   float *const mat = dt_alloc_align_float(mat_size);
-  memset(mat, 0, mat_size);
+  memset(mat, 0, sizeof(float) * mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
