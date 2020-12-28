@@ -655,8 +655,9 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       darktable.develop->gui_module->request_mask_display = hist->request_mask_display;
       dt_iop_gui_update_blendif(darktable.develop->gui_module);
       dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)(dev->gui_module->blend_data);
-      dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask),
-                              hist->request_mask_display == DT_DEV_PIXELPIPE_DISPLAY_MASK);
+      if(bd)
+        dtgtk_button_set_active(DTGTK_BUTTON(bd->showmask),
+                                hist->request_mask_display == DT_DEV_PIXELPIPE_DISPLAY_MASK);
     }
   }
 }
