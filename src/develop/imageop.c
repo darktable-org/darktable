@@ -2768,7 +2768,6 @@ static gboolean enable_module_callback(GtkAccelGroup *accel_group, GObject *acce
 
 void dt_iop_connect_common_accels(dt_iop_module_t *module)
 {
-
   GClosure *closure = NULL;
   if(module->flags() & IOP_FLAGS_DEPRECATED) return;
   // Connecting the (optional) module show accelerator
