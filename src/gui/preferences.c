@@ -2234,6 +2234,8 @@ _dialog_bool_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
+    const char *name = gtk_widget_get_name(widget);
+    const gboolean default_value = dt_confgen_get_bool(name, DT_DEFAULT);
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), FALSE);
     return TRUE;
   }
@@ -2273,8 +2275,7 @@ _dialog_int_changed_callback(GtkWidget *widget, gpointer user_data)
 {
   const char *name = gtk_widget_get_name(widget);
   set_widget_label_default(widget, name, GTK_WIDGET(user_data));
-  const float factor = 1.0f;
-  dt_conf_set_int(name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)) / factor);
+  dt_conf_set_int(name, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
 }
 
 static gboolean
@@ -2284,8 +2285,7 @@ _dialog_int_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
   {
     const char *name = gtk_widget_get_name(widget);
     const int default_value = dt_confgen_get_int(name, DT_DEFAULT);
-    const float factor = 1.0f;
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), 1 * factor);
+    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), default_value);
     return TRUE;
   }
   return FALSE;
