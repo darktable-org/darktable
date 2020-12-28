@@ -245,6 +245,8 @@ void init_presets(dt_lib_module_t *self)
 
   memset(&params, 0, sizeof(params));
 
+  // based on aspect-ratio
+
   params.rules = 1;
   params.rule[0].item = DT_COLLECTION_PROP_ASPECT_RATIO;
   params.rule[0].mode = 0;
@@ -259,6 +261,38 @@ void init_presets(dt_lib_module_t *self)
 
   g_strlcpy(params.rule[0].string, "< 1", PARAM_STRING_SIZE);
   dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  // based on date/time
+  const time_t now = time(NULL);
+  struct tm tt;
+  char datetime[100] = { 0 };
+
+  (void)localtime_r(&now, &tt);
+  strftime(datetime, 100, "%Y:%m:%d", &tt);
+
+  params.rule[0].item = DT_COLLECTION_PROP_IMPORT_TIMESTAMP;
+  g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("today"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  const time_t ONE_DAY = (24 * 60 * 60);
+  const time_t last24h = now - ONE_DAY;
+  (void)localtime_r(&last24h, &tt);
+  strftime(datetime, 100, "> %Y:%m:%d %H:%M", &tt);
+
+  params.rule[0].item = DT_COLLECTION_PROP_IMPORT_TIMESTAMP;
+  g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("last 24h"), self->plugin_name, self->version(),
+                       &params, sizeof(params), TRUE);
+
+  const time_t last30d = now - (ONE_DAY * 30);
+  (void)localtime_r(&last30d, &tt);
+  strftime(datetime, 100, "> %Y:%m:%d", &tt);
+
+  params.rule[0].item = DT_COLLECTION_PROP_IMPORT_TIMESTAMP;
+  g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
+  dt_lib_presets_add(_("last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 }
 
