@@ -601,8 +601,8 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       else if(operation == DEVELOP_MASK_POST_FEATHER_OUT)
       {
         const float guide_weight = cst == iop_cs_rgb ? 100.0f : 1.0f;
-        _develop_blend_process_feather((const float *const restrict)ovoid, mask, owidth, oheight, ch, guide_weight,
-                                       d->feathering_radius, roi_out->scale / piece->iscale);
+        _develop_blend_process_feather((const float *const restrict)ovoid, mask, owidth, oheight, ch,
+                                       guide_weight, d->feathering_radius, roi_out->scale / piece->iscale);
       }
       else if(operation == DEVELOP_MASK_POST_BLUR)
       {
@@ -1383,6 +1383,32 @@ gboolean dt_develop_blend_params_is_all_zero(const void *params, size_t length)
   return TRUE;
 }
 
+static uint32_t _blend_legacy_blend_mode(uint32_t legacy_blend_mode)
+{
+  uint32_t blend_mode = legacy_blend_mode & DEVELOP_BLEND_MODE_MASK;
+  gboolean blend_reverse = FALSE;
+  switch(blend_mode) {
+    case DEVELOP_BLEND_NORMAL_OBSOLETE:
+      blend_mode = DEVELOP_BLEND_BOUNDED;
+      break;
+    case DEVELOP_BLEND_INVERSE_OBSOLETE:
+      blend_mode = DEVELOP_BLEND_BOUNDED;
+      blend_reverse = TRUE;
+      break;
+    case DEVELOP_BLEND_DISABLED_OBSOLETE:
+    case DEVELOP_BLEND_UNBOUNDED_OBSOLETE:
+      blend_mode = DEVELOP_BLEND_NORMAL2;
+      break;
+    case DEVELOP_BLEND_MULTIPLY_REVERSE_OBSOLETE:
+      blend_mode = DEVELOP_BLEND_MULTIPLY;
+      blend_reverse = TRUE;
+      break;
+    default:
+      break;
+  }
+  return (blend_reverse ? DEVELOP_BLEND_REVERSE : 0) | blend_mode;
+}
+
 /** update blendop params from older versions */
 int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const old_params,
                                    const int old_version, void *new_params, const int new_version,
@@ -1422,8 +1448,8 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
-    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
-    n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
+    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED_OBSOLETE) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
+    n->blend_mode = _blend_legacy_blend_mode(o->mode);
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
     return 0;
@@ -1452,11 +1478,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
-    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
+    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED_OBSOLETE) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
     n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED))
                         ? DEVELOP_MASK_CONDITIONAL
                         : 0;
-    n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->mode);
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
     n->blendif = o->blendif & 0xff; // only just in case: knock out all bits
@@ -1490,11 +1516,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
-    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
+    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED_OBSOLETE) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
     n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED))
                         ? DEVELOP_MASK_CONDITIONAL
                         : 0;
-    n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->mode);
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
     n->blendif = o->blendif & ~(1u << DEVELOP_BLENDIF_active); // knock out old unused "active" flag
@@ -1528,11 +1554,11 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     dt_develop_blend_params_t *n = (dt_develop_blend_params_t *)new_params;
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
-    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
+    n->mask_mode = (o->mode == DEVELOP_BLEND_DISABLED_OBSOLETE) ? DEVELOP_MASK_DISABLED : DEVELOP_MASK_ENABLED;
     n->mask_mode |= ((o->blendif & (1u << DEVELOP_BLENDIF_active)) && (n->mask_mode == DEVELOP_MASK_ENABLED))
                         ? DEVELOP_MASK_CONDITIONAL
                         : 0;
-    n->blend_mode = (o->mode == DEVELOP_BLEND_DISABLED) ? DEVELOP_BLEND_NORMAL2 : o->mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->mode);
     n->opacity = o->opacity;
     n->mask_id = o->mask_id;
     n->blur_radius = o->radius;
@@ -1574,7 +1600,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
-    n->blend_mode = o->blend_mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->blend_mode);
     n->opacity = o->opacity;
     n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
@@ -1622,7 +1648,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
-    n->blend_mode = o->blend_mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->blend_mode);
     n->opacity = o->opacity;
     n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
@@ -1664,7 +1690,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
-    n->blend_mode = o->blend_mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->blend_mode);
     n->opacity = o->opacity;
     n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
@@ -1714,7 +1740,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
-    n->blend_mode = o->blend_mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->blend_mode);
     n->opacity = o->opacity;
     n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
@@ -1773,7 +1799,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
 
     *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
-    n->blend_mode = o->blend_mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->blend_mode);
     n->opacity = o->opacity;
     n->mask_combine = o->mask_combine;
     n->mask_id = o->mask_id;
@@ -1842,7 +1868,7 @@ int dt_develop_blend_legacy_params(dt_iop_module_t *module, const void *const ol
     *n = default_display_blend_params; // start with a fresh copy of default parameters
     n->mask_mode = o->mask_mode;
     n->blend_cst = o->blend_cst;
-    n->blend_mode = o->blend_mode;
+    n->blend_mode = _blend_legacy_blend_mode(o->blend_mode);
     n->blend_parameter = o->blend_parameter;
     n->opacity = o->opacity;
     n->mask_combine = o->mask_combine;

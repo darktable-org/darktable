@@ -25,7 +25,7 @@
 #include "dtgtk/gradientslider.h"
 #include "gui/color_picker_proxy.h"
 
-#define DEVELOP_BLEND_VERSION (10)
+#define DEVELOP_BLEND_VERSION (11)
 
 typedef enum dt_develop_blend_colorspace_t
 {
@@ -38,8 +38,8 @@ typedef enum dt_develop_blend_colorspace_t
 
 typedef enum dt_develop_blend_mode_t
 {
-  DEVELOP_BLEND_DISABLED = 0x00,
-  DEVELOP_BLEND_NORMAL = 0x01, /* deprecated as it did clamping */
+  DEVELOP_BLEND_DISABLED_OBSOLETE = 0x00, /* same as the new normal */
+  DEVELOP_BLEND_NORMAL_OBSOLETE = 0x01, /* obsolete as it did clamping */
   DEVELOP_BLEND_LIGHTEN = 0x02,
   DEVELOP_BLEND_DARKEN = 0x03,
   DEVELOP_BLEND_MULTIPLY = 0x04,
@@ -58,8 +58,8 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_CHROMATICITY = 0x11,
   DEVELOP_BLEND_HUE = 0x12,
   DEVELOP_BLEND_COLOR = 0x13,
-  DEVELOP_BLEND_INVERSE = 0x14,   /* deprecated */
-  DEVELOP_BLEND_UNBOUNDED = 0x15, /* deprecated as new normal takes over */
+  DEVELOP_BLEND_INVERSE_OBSOLETE = 0x14, /* obsolete */
+  DEVELOP_BLEND_UNBOUNDED_OBSOLETE = 0x15, /* obsolete as new normal takes over */
   DEVELOP_BLEND_COLORADJUST = 0x16,
   DEVELOP_BLEND_DIFFERENCE2 = 0x17,
   DEVELOP_BLEND_NORMAL2 = 0x18,
@@ -74,12 +74,15 @@ typedef enum dt_develop_blend_mode_t
   DEVELOP_BLEND_RGB_R = 0x21,
   DEVELOP_BLEND_RGB_G = 0x22,
   DEVELOP_BLEND_RGB_B = 0x23,
-  DEVELOP_BLEND_MULTIPLY_REVERSE = 0x24,
-  DEVELOP_BLEND_SUBTRACT_REVERSE = 0x25,
+  DEVELOP_BLEND_MULTIPLY_REVERSE_OBSOLETE = 0x24, /* obsoleted by MULTIPLY + REVERSE */
+  DEVELOP_BLEND_SUBTRACT_INVERSE = 0x25,
   DEVELOP_BLEND_DIVIDE = 0x26,
-  DEVELOP_BLEND_DIVIDE_REVERSE = 0x27,
+  DEVELOP_BLEND_DIVIDE_INVERSE = 0x27,
   DEVELOP_BLEND_GEOMETRIC_MEAN = 0x28,
   DEVELOP_BLEND_HARMONIC_MEAN = 0x29,
+
+  DEVELOP_BLEND_REVERSE = 0x80000000,
+  DEVELOP_BLEND_MODE_MASK = 0xFF,
 } dt_develop_blend_mode_t;
 
 typedef enum dt_develop_mask_mode_t
@@ -275,6 +278,7 @@ typedef struct dt_iop_blend_name_value_t
 
 extern const dt_develop_name_value_t dt_develop_blend_colorspace_names[];
 extern const dt_develop_name_value_t dt_develop_blend_mode_names[];
+extern const dt_develop_name_value_t dt_develop_blend_mode_flag_names[];
 extern const dt_develop_name_value_t dt_develop_mask_mode_names[];
 extern const dt_develop_name_value_t dt_develop_combine_masks_names[];
 extern const dt_develop_name_value_t dt_develop_feathering_guide_names[];
