@@ -161,10 +161,6 @@ static INLINE vfloat vminf(vfloat x, vfloat y)
 }
 #endif
 
-#ifndef CLIP
-  #define CLIP(x) (((x) >= 0) ? ((x) <= 1 ? (x) : 1) : 0)
-#endif
-
 static INLINE float intp(float a, float b, float c)
 {
     // calculate a * b + (1 - a) * c
@@ -319,7 +315,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
     float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
     float *const cfa =    dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
-    float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
+    float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
 
     // No overlapping use so re-use same buffer; also note we use divide-by-2 index for lower mem pressure
     // this divide-by-2 also allows slightly faster sse2 specific code.
