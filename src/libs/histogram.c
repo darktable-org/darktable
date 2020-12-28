@@ -217,7 +217,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   // note that threads must handle >= bin_width columns to not overwrite each other
   // FIXME: instead outer loop could be by bin
   // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
-#ifdef _OPENMP
+  // Quick and Dirty fix: parallelization breaks display of histogram and introduces massive lags on OSX
+#if defined(_OPENMP) && !defined(__APPLE__)
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(input, width, height, wf_width, bin_width, _height, scale) \
   dt_omp_sharedconst(wf_linear) \
