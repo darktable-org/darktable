@@ -990,7 +990,11 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   mi->version = module->version();
   mi->module = module;
   mi->params = module->get_params ? module->get_params(module, &mi->params_size) : NULL;
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> cb3636736 (libs: add set_preference() entry to preset menu)
   if(!mi->params)
   {
     // this is a valid case, for example in location.c when nothing got selected
