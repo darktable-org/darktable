@@ -67,7 +67,8 @@ typedef enum dt_confgen_value_kind_t
 {
   DT_DEFAULT,
   DT_MIN,
-  DT_MAX
+  DT_MAX,
+  DT_VALUES
 } dt_confgen_value_kind_t;
 
 void dt_conf_set_int(const char *name, int val);
