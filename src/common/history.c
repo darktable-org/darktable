@@ -773,7 +773,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
     return 1;
   }
 
-  dt_lock_image_pair(imgid,dest_imgid);
+  dt_lock_image_pair(imgid, dest_imgid);
 
   // be sure the current history is written before pasting some other history data
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -831,7 +831,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
   // signal that the mipmap need to be updated
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
 
-  dt_unlock_image_pair(imgid,dest_imgid);
+  dt_unlock_image_pair(imgid, dest_imgid);
 
   return ret_val;
 }
