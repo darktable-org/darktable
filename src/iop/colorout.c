@@ -28,6 +28,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
@@ -348,10 +349,12 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
                                               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
   
   if(!isnan(d->cmatrix[0]))
   {
-    assert(piece->colors == 4);
     const size_t npixels = (size_t)roi_out->width * roi_out->height;
     float *const restrict out = (float *const)ovoid;
     // out is already converted to RGB from Lab.

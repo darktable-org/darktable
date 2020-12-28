@@ -370,7 +370,10 @@ static inline float dt_prophoto_rgb_luminance(const float *const rgb)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  assert(piece->colors == 4);
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+                                         i, o, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
   const dt_iop_tonecurve_data_t *const restrict d = (dt_iop_tonecurve_data_t *)(piece->data);
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
