@@ -349,8 +349,8 @@ static inline float lanczos(float width, float t)
   } sign;
   sign.i = ((a & 1) << 31) | 0x3f800000;
 
-  return (DT_LANCZOS_EPSILON + width * sign.f * sinf_fast(M_PI * r) * sinf_fast(M_PI * t / width))
-         / (DT_LANCZOS_EPSILON + M_PI * M_PI * t * t);
+  return (DT_LANCZOS_EPSILON + width * sign.f * sinf_fast(M_PI_F * r) * sinf_fast(M_PI_F * t / width))
+         / (DT_LANCZOS_EPSILON + M_PI_F * M_PI_F * t * t);
 }
 
 #if defined(__SSE2__)
