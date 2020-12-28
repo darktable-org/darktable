@@ -19,7 +19,6 @@
 #include "gui/camera_import_dialog.h"
 #include "common/metadata.h"
 #include "gui/import_metadata.h"
-#include "gui/preferences.h"
 #include "common/camera_control.h"
 #include "common/darktable.h"
 #include "common/debug.h"
@@ -85,10 +84,8 @@ typedef struct _camera_import_dialog_t
     /** Group of general import settings */
     struct
     {
-      GtkWidget *ignore_jpeg;
       GtkWidget *date_override;
       GtkWidget *date_entry;
-      dt_import_metadata_t *metadata;
     } general;
 
   } settings;
@@ -261,24 +258,8 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   gtk_box_pack_start(GTK_BOX(data->import.page), data->import.treeview, TRUE, TRUE, 0);
 
-  dt_import_metadata_t *metadata = data->settings.general.metadata;
-
   // SETTINGS PAGE
   data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  GtkWidget *grid = gtk_grid_new();
-  // ignoring of jpegs
-  dt_preferences_dialog_bool(grid, "ui_last/import_ignore_jpegs");
-  // initial rating
-  dt_preferences_dialog_int(grid, "ui_last/import_initial_rating");
-  // apply metadata
-  metadata->apply_metadata = dt_preferences_dialog_bool(grid, "ui_last/import_apply_metadata");
-  gtk_box_pack_start(GTK_BOX(data->settings.page), grid, FALSE, FALSE, 0);
-
-  // metadata
-  metadata->box = data->settings.page;
-  dt_import_metadata_dialog_new(metadata);
-
   // today's date
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -482,9 +463,6 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
     gint result = gtk_dialog_run(GTK_DIALOG(data->dialog));
     if(result == GTK_RESPONSE_ACCEPT)
     {
-      dt_import_metadata_t *metadata = data->settings.general.metadata;
-      dt_import_metadata_evaluate(metadata);
-
       GtkTreeIter iter;
       all_good = TRUE;
       GtkTreeSelection *selection
@@ -553,8 +531,6 @@ void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
   _camera_import_dialog_t data;
   memset(&data, 0, sizeof(_camera_import_dialog_t)); // needed to initialize pointers to null
   data.params = params;
-  dt_import_metadata_t metadata;
-  data.settings.general.metadata = &metadata;
   _camera_import_dialog_new(&data);
   _camera_import_dialog_run(&data);
   _camera_import_dialog_free(&data);
