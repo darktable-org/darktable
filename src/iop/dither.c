@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/imageio.h"
 #include "common/math.h"
 #include "common/opencl.h"
@@ -269,6 +270,7 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
                                  const float scale, unsigned int *const restrict levels)
 {
   int graymode = -1;
+  *levels = 65536;
   const int l1 = floorf(1.0f + dt_log2f(1.0f / scale));
   const int bds = ((piece->pipe->type & DT_DEV_PIXELPIPE_EXPORT) != DT_DEV_PIXELPIPE_EXPORT) ? l1 * l1 : 1;
 
@@ -354,16 +356,19 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   const int width = roi_in->width;
   const int height = roi_in->height;
-  assert(piece->colors == 4);
   const float scale = roi_in->scale / piece->iscale;
-
-  unsigned int levels = 1;
-  int graymode = get_dither_parameters(data,piece,scale,&levels);
-
-  if(graymode < 0) return;
 
   const float *const restrict in = (const float *)ivoid;
   float *const restrict out = (float *)ovoid;
+
+  unsigned int levels = 1;
+  int graymode = get_dither_parameters(data,piece,scale,&levels);
+  if(graymode < 0)
+  {
+    for(int j = 0; j < height * width; j++)
+      clipnan_pixel(out + 4*j, in + 4*j);
+    return;
+  }
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
@@ -533,13 +538,17 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
   assert(piece->colors == 4);
   const float scale = roi_in->scale / piece->iscale;
 
-  unsigned int levels = 1;
-  int graymode = get_dither_parameters(data,piece,scale,&levels);
-
-  if(graymode < 0) return;
-
   const float *const restrict in = (const float *)ivoid;
   float *const restrict out = (float *)ovoid;
+
+  unsigned int levels = 1;
+  int graymode = get_dither_parameters(data,piece,scale,&levels);
+  if(graymode < 0)
+  {
+    for(int j = 0; j < height * width; j++)
+      clipnan_pixel(out + 4*j, in + 4*j);
+    return;
+  }
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
