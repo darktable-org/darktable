@@ -668,6 +668,7 @@ if(USE_LUA)
       "lua/lualib.c"
       "lua/luastorage.c"
       "lua/modules.c"
+      "lua/password.c"
       "lua/preferences.c"
       "lua/print.c"
       "lua/storage.c"
