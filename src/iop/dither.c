@@ -44,6 +44,8 @@
 #include <xmmintrin.h>
 #endif
 
+//#define USE_FASTEST_VERSION
+
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
 typedef enum dt_iop_dither_type_t
@@ -137,50 +139,49 @@ void init_presets(dt_iop_module_so_t *self)
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd simdlen(4)
 #endif
 static inline float _quantize(const float val, const float f, const float rf)
 {
-  const float tmp = val * f;
-  const float itmp = floorf(tmp);
-  const float adj = (tmp - itmp > 0.5f) ? 1.0f : 0.0f;
-  return (itmp + adj) * rf;
+  return rf * ceilf((val * f) - 0.5); // round up only if frac(x) strictly greater than 0.5
+  //originally (and more slowly):
+  //const float tmp = val * f;
+  //const float itmp = floorf(tmp);
+  //return rf * (itmp + ((tmp - itmp > 0.5f) ? 1.0f : 0.0f));
 }
 
-// dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static void _find_nearest_color_n_levels_gray(float *restrict val, float *restrict err, const float f, const float rf)
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline float _rgb_to_gray(const float *const restrict val)
 {
-  const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
-  const float new = _quantize(in,f,rf);
+  return 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd
+#endif
+static inline void nearest_color(float *const restrict val, float *const restrict err, int graymode,
+                                 const float f, const float rf)
+{
+  if (graymode)
+  {
+    // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
+    const float in = _rgb_to_gray(val);
+    const float new = _quantize(in,f,rf);
 
 #ifdef _OPENMP
 #pragma omp simd aligned(val, err : 16)
 #endif
-  for(int c = 0; c < 4; c++)
-  {
-    err[c] = val[c] - new;
-    val[c] = new;
+    for(int c = 0; c < 4; c++)
+    {
+      err[c] = val[c] - new;
+      val[c] = new;
+    }
   }
-}
-
-#if defined(__SSE2__)
-// dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_gray_sse(float *restrict val, const float f, const float rf)
-{
-  const float in = 0.30f * val[0] + 0.59f * val[1] + 0.11f * val[2]; // RGB -> GRAY
-
-  __m128 new = _mm_set1_ps(_quantize(in,f,rf));
-  __m128 err = _mm_load_ps(val) - new;
-  _mm_store_ps(val, new);
-
-  return err;
-}
-#endif
-
-// dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static void _find_nearest_color_n_levels_rgb(float *const restrict val, float *const restrict err,
-                                             const float f, const float rf)
-{
+  else
+  {
+    // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
 #ifdef _OPENMP
 #pragma omp simd aligned(val, err : 16)
 #endif
@@ -191,24 +192,35 @@ static void _find_nearest_color_n_levels_rgb(float *const restrict val, float *c
     err[c] = old - new;
     val[c] = new;
   }
+  }
 }
 
 #if defined(__SSE2__)
-// dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
-static __m128 _find_nearest_color_n_levels_rgb_sse2(float *const restrict val, const float f, const float rf)
+static inline __m128 nearest_color_sse(float *const restrict val, int graymode, const float f, const float rf)
 {
-  __m128 old = _mm_load_ps(val);
-  __m128 tmp = old * _mm_set1_ps(f);        // old * f
-  __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp)); // floor(tmp)
-  __m128 new = _mm_mul_ps(
-      _mm_add_ps(itmp,
-                 _mm_and_ps(_mm_cmpgt_ps((tmp - itmp), // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
+  if (graymode)
+  {
+    // dither pixel into gray, with f=levels-1 and rf=1/f, return err=old-new
+    const float in = _rgb_to_gray(val);
+    __m128 new = _mm_set1_ps(_quantize(in,f,rf));
+    __m128 err = _mm_load_ps(val) - new;
+    _mm_store_ps(val, new);
+    return err;
+  }
+  else
+  {
+    // dither pixel into RGB, with f=levels-1 and rf=1/f, return err=old-new
+    __m128 old = _mm_load_ps(val);
+    __m128 tmp = old * _mm_set1_ps(f);        // old * f
+    __m128 itmp = _mm_cvtepi32_ps(_mm_cvtps_epi32(tmp)); // floor(tmp)
+    __m128 new = _mm_set1_ps(rf) *
+      (itmp +_mm_and_ps(_mm_cmpgt_ps((tmp - itmp), // (tmp - itmp > 0.5f ? itmp + 1 : itmp) * rf
                                          _mm_set1_ps(0.5f)),
-                            _mm_set1_ps(1.0f))),
-      _mm_set1_ps(rf));
+                        _mm_set1_ps(1.0f)));
 
-  _mm_store_ps(val, new);
-  return old - new;
+    _mm_store_ps(val, new);
+    return old - new; // return err
+  }
 }
 #endif
 
@@ -236,8 +248,9 @@ static inline void _diffuse_error_sse(float *val, const __m128 err, const float 
 static inline float clipnan(const float x)
 {
   // convert NaN to 0.5, otherwise clamp to between 0.0 and 1.0
-//  return isnan(x) ? 0.5f : (isless(x, 0.0f) ? 0.0f : (isgreater(x, 1.0f) ? 1.0f : x));
-  return isnan(x) ? 0.5f : ((x < 0.0f) ? 0.0f : (x > 1.0f) ? 1.0f : x);
+  return (x > 0.0f) ? ((x < 1.0f) ? x : 1.0f) : (x == x) ? 0.0f : 0.5f;
+//                                  ^      ^                ^       ^
+//                          0<x<1 --+ x>1--+  not-NaN x<0---+  NaN--+
 }
 
 static inline void clipnan_pixel(float *const restrict out, const float *const restrict in)
@@ -249,21 +262,8 @@ static inline void clipnan_pixel(float *const restrict out, const float *const r
     out[c] = clipnan(in[c]);
 }
 
-static inline void nearest_color(float *const restrict val, float *const restrict err, int graymode,
-                                 const float f, const float rf)
-{
-  if (graymode)
-    _find_nearest_color_n_levels_gray(val,err,f,rf);
-  else
-    _find_nearest_color_n_levels_rgb(val,err,f,rf);
-}
-
-static inline __m128 nearest_color_sse(float *const restrict val, int graymode, const float f, const float rf)
-{
-  return graymode
-    ? _find_nearest_color_n_levels_gray_sse(val,f,rf)
-    : _find_nearest_color_n_levels_rgb_sse2(val,f,rf);
-}
+// clipnan_pixel proves to vectorize just fine, so don't bother implementing a separate SSE version
+#define clipnan_pixel_sse clipnan_pixel
 
 static int get_dither_parameters(const dt_iop_dither_data_t *const data, const dt_dev_pixelpipe_iop_t *const piece,
                                  const float scale, unsigned int *const restrict levels)
@@ -343,6 +343,9 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
 #define DOWN_WT       (5.0f/16.0f)
 #define DOWNLEFT_WT   (3.0f/16.0f)
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(ivoid, ovoid : 64)
+#endif
 static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                     const void *const ivoid, void *const ovoid,
                                     const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -386,8 +389,38 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
   const size_t down = 4 * width;
   const size_t downright = 4 * (width+1);
 
+#define PROCESS_PIXEL_FULL(_pixel, inpix)                               \
+  {                                                                     \
+    float *const pixel_ = (_pixel);                                     \
+    nearest_color(pixel_, err, graymode, f, rf);              /* quantize pixel */ \
+    clipnan_pixel(pixel_ + downright,(inpix) + downright);    /* prepare downright for first access */ \
+    _diffuse_error(pixel_ + right, err, RIGHT_WT);            /* diffuse quantization error to neighbors */ \
+    _diffuse_error(pixel_ + downleft, err, DOWNLEFT_WT);                \
+    _diffuse_error(pixel_ + down, err, DOWN_WT);                        \
+    _diffuse_error(pixel_ + downright, err, DOWNRIGHT_WT);              \
+  }
+  
+#define PROCESS_PIXEL_LEFT(_pixel, inpix)                               \
+  {                                                                     \
+    float *const pixel_ = (_pixel);                                     \
+    nearest_color(pixel_, err, graymode, f, rf);              /* quantize pixel */ \
+    clipnan_pixel(pixel_ + down,(inpix) + down);              /* prepare down for first access */ \
+    clipnan_pixel(pixel_ + downright,(inpix) + downright);    /* prepare downright for first access */ \
+    _diffuse_error(pixel_ + right, err, RIGHT_WT);            /* diffuse quantization error to neighbors */ \
+    _diffuse_error(pixel_ + down, err, DOWN_WT);                        \
+    _diffuse_error(pixel_ + downright, err, DOWNRIGHT_WT);              \
+  }
+  
+#define PROCESS_PIXEL_RIGHT(pixel)                                      \
+  nearest_color(pixel, err, graymode, f, rf);             /* quantize pixel */ \
+  _diffuse_error(pixel + downleft, err, DOWNLEFT_WT);     /* diffuse quantization error to neighbors */ \
+  _diffuse_error(pixel + down, err, DOWN_WT);
+  
   // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
   // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
+#ifdef _OPENMP
+#pragma omp simd aligned(in, out : 64)
+#endif
   for (int j = 0; j < width; j++)
   {
     clipnan_pixel(out + 4*j, in + 4*j);
@@ -395,58 +428,34 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   // floyd-steinberg dithering follows here
 
+#ifdef USE_FASTEST_VERSION // this version does not match the reference image
   // do the bulk of the image (all except the last one or two rows)
   for(int j = 0; j < height - 2; j += 2)
   {
     const float *const restrict inrow = in + (size_t)4 * j * width;
     float *const restrict outrow = out + (size_t)4 * j * width;
 
-    // first column
-    clipnan_pixel(outrow + downright, inrow + downright);       // down-right pixel is about to get its first access
-    clipnan_pixel(outrow + down, inrow + down);                 // same for the pixel below
-    nearest_color(outrow, err, graymode, f, rf);                // quantize the left-most pixel of the row
-    _diffuse_error(outrow + right, err, RIGHT_WT);              // spread the quantization error to neighbors
-    _diffuse_error(outrow + down, err, DOWN_WT);
-    _diffuse_error(outrow + downright, err, DOWNRIGHT_WT);
+    // first two columns
+    PROCESS_PIXEL_LEFT(outrow, inrow);                          // leftmost pixel in first (upper) row
+    PROCESS_PIXEL_FULL(outrow + right, inrow + right);          // second pixel in first (upper) row
+    PROCESS_PIXEL_LEFT(outrow + down, inrow + down);            // leftmost in second (lower) row
 
     // main part of the current pair of rows
     for(int i = 1; i < width - 1; i++)
     {
       float *const restrict pixel = outrow + 4 * i;
-      nearest_color(pixel, err, graymode, f, rf);               // quantize the pixel in the upper row
-      clipnan_pixel(pixel + downright, inrow + 4 * i + downright); // prepare down-right pixel
-      _diffuse_error(pixel + right, err, RIGHT_WT);             // spread the quantization error to neighbors
-      _diffuse_error(pixel + downleft, err, DOWNLEFT_WT);
-      _diffuse_error(pixel + down, err, DOWN_WT);
-      _diffuse_error(pixel + downright, err, DOWNRIGHT_WT);
-      float *const restrict lower = pixel + downleft;
-      nearest_color(lower, err, graymode, f, rf);               // quantize the pixel in the lower row
-      clipnan_pixel(lower + downright, inrow + 4 * i + downright); // prepare its down-right neighbor
-      _diffuse_error(lower + right, err, RIGHT_WT);             // spread the quantization error to neighbors
-      _diffuse_error(lower + downleft, err, DOWNLEFT_WT);
-      _diffuse_error(lower + down, err, DOWN_WT);
-      _diffuse_error(lower + downright, err, DOWNRIGHT_WT);
+      PROCESS_PIXEL_FULL(pixel, inrow + 4 * i);
+      PROCESS_PIXEL_FULL(pixel + downleft, inrow + 4 * i + downleft);
     }
 
     // last column of upper row
     float *const restrict lastpixel = outrow + 4 * (width-1);
-    nearest_color(lastpixel, err, graymode, f, rf);
-    _diffuse_error(lastpixel + downleft, err, DOWNLEFT_WT);
-    _diffuse_error(lastpixel + down, err, DOWN_WT);
+    PROCESS_PIXEL_RIGHT(lastpixel);
     // we have two pixels left over in the lower row
-    float *const restrict lower = lastpixel + downleft;
-    const float *const restrict lower_in = inrow + 4 * (width-2) + downright;
-    nearest_color(lower, err, graymode, f, rf);                 // quantize the pixel in the lower row
-    clipnan_pixel(lower + downright, lower_in + downright);     // prepare its down-right neighbor
-    _diffuse_error(lower + right, err, RIGHT_WT);               // spread the quantization error to neighbors
-    _diffuse_error(lower + downleft, err, DOWNLEFT_WT);
-    _diffuse_error(lower + down, err, DOWN_WT);
-    _diffuse_error(lower + downright, err, DOWNRIGHT_WT);
+    const float *const restrict lower_in = inrow + 4 * (width-1) + downleft;
+    PROCESS_PIXEL_FULL(lastpixel + downleft, lower_in);
     // and now process the final pixel in the lower row
-    float *const restrict lastlower = lower + right;
-    nearest_color(lastlower, err, graymode, f, rf);             // quantize the last pixel in the lower row
-    _diffuse_error(lastlower + downleft, err, DOWNLEFT_WT);
-    _diffuse_error(lastlower + down, err, DOWN_WT);
+    PROCESS_PIXEL_RIGHT(lastpixel + down);
   }
 
   // next-to-last row, if the total number of rows is even
@@ -456,31 +465,37 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
     float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
 
     // first column
-    clipnan_pixel(outrow + downright, inrow + downright);       // down-right pixel is about to get its first access
-    clipnan_pixel(outrow + down, inrow + down);                 // same for the pixel below
-    nearest_color(outrow, err, graymode, f, rf);                // quantize the left-most pixel of the row
-    _diffuse_error(outrow + right, err, RIGHT_WT);              // spread the quantization error to neighbors
-    _diffuse_error(outrow + down, err, DOWN_WT);
-    _diffuse_error(outrow + downright, err, DOWNRIGHT_WT);
+    PROCESS_PIXEL_LEFT(outrow, inrow);
 
     // main part of image
     for(int i = 1; i < width - 1; i++)
     {
-      float *const restrict pixel = outrow + 4 * i;
-      nearest_color(pixel, err, graymode, f, rf);               // quantize the current pixel
-      clipnan_pixel(pixel + downright, inrow + 4 * i + downright); // prepare down-right pixel
-      _diffuse_error(pixel + right, err, RIGHT_WT);             // spread the quantization error to all four
-      _diffuse_error(pixel + downleft, err, DOWNLEFT_WT);       // neighbors: right/down-right/down/down-left
-      _diffuse_error(pixel + down, err, DOWN_WT);
-      _diffuse_error(pixel + downright, err, DOWNRIGHT_WT);
+      PROCESS_PIXEL_FULL(outrow + 4 * i, inrow + 4 * i);
     }
 
     // last column
-    float *const restrict lastpixel = outrow + 4 * (width-1);
-    nearest_color(lastpixel, err, graymode, f, rf);             // quantize the right-most pixel of the row
-    _diffuse_error(lastpixel + downleft, err, DOWNLEFT_WT);     // spread the quantization to the remaining neighbors:
-    _diffuse_error(lastpixel + down, err, DOWN_WT);             // down and down-left
+    PROCESS_PIXEL_RIGHT(outrow + 4 * (width-1));
   }
+#else  // this version produces output matching the reference image, but is slower
+  // do the bulk of the image (all except the last row)
+  for(int j = 0; j < height - 1; j++)
+  {
+    const float *const restrict inrow = in + (size_t)4 * j * width;
+    float *const restrict outrow = out + (size_t)4 * j * width;
+
+    // first two columns
+    PROCESS_PIXEL_LEFT(outrow, inrow);                          // leftmost pixel in first (upper) row
+
+    // main part of the current row
+    for(int i = 1; i < width - 1; i++)
+    {
+      PROCESS_PIXEL_FULL(outrow + 4 * i, inrow + 4 * i);
+    }
+
+    // last column of upper row
+    PROCESS_PIXEL_RIGHT(outrow + 4 * (width-1));
+  }
+#endif // USE_FASTEST_VERSION
 
   // final row
   {
@@ -504,6 +519,9 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 }
 
 #if defined(__SSE2__)
+#ifdef _OPENMP
+#pragma omp declare simd aligned(ivoid, ovoid : 64)
+#endif
 static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                          const void *const ivoid, void *const ovoid,
                                          const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
@@ -525,7 +543,6 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
 
   const float f = levels - 1;
   const float rf = 1.0 / f;
-  __m128 err;
 
   // dither without error diffusion on very tiny images
   if(width < 3 || height < 3)
@@ -547,67 +564,71 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
   const size_t down = 4 * width;
   const size_t downright = 4 * (width+1);
 
+#define PROCESS_PIXEL_FULL_SSE(_pixel, inpix)                           \
+  {                                                                     \
+    float *const pixel_ = (_pixel);                                     \
+    err = nearest_color_sse(pixel_, graymode, f, rf);             /* quantize pixel */ \
+    clipnan_pixel_sse(pixel_ + downright,(inpix) + downright);    /* prepare downright for first access */ \
+    _diffuse_error_sse(pixel_ + right, err, RIGHT_WT);            /* diffuse quantization error to neighbors */ \
+    _diffuse_error_sse(pixel_ + downleft, err, DOWNLEFT_WT);            \
+    _diffuse_error_sse(pixel_ + down, err, DOWN_WT);                    \
+    _diffuse_error_sse(pixel_ + downright, err, DOWNRIGHT_WT);          \
+  }
+  
+#define PROCESS_PIXEL_LEFT_SSE(_pixel, inpix)                           \
+  {                                                                     \
+    float *const pixel_ = (_pixel);                                     \
+    err = nearest_color_sse(pixel_, graymode, f, rf);             /* quantize pixel */ \
+    clipnan_pixel_sse(pixel_ + down,(inpix) + down);              /* prepare downright for first access */ \
+    clipnan_pixel_sse(pixel_ + downright,(inpix) + downright);    /* prepare downright for first access */ \
+    _diffuse_error_sse(pixel_ + right, err, RIGHT_WT);            /* diffuse quantization error to neighbors */ \
+    _diffuse_error_sse(pixel_ + down, err, DOWN_WT);                    \
+    _diffuse_error_sse(pixel_ + downright, err, DOWNRIGHT_WT);          \
+  }
+  
+#define PROCESS_PIXEL_RIGHT_SSE(pixel)                                  \
+  err = nearest_color_sse(pixel, graymode, f, rf);             /* quantize pixel */ \
+  _diffuse_error_sse(pixel + downleft, err, DOWNLEFT_WT);      /* diffuse quantization error to neighbors */ \
+  _diffuse_error_sse(pixel + down, err, DOWN_WT);
+  
   // once the FS dithering gets started, we can copy&clip the downright pixel, as that will be the first time
   // it will be accessed.  But to get the process started, we need to prepare the top row of pixels
   for (int j = 0; j < width; j++)
   {
-    clipnan_pixel(out + 4*j, in + 4*j);
+    clipnan_pixel_sse(out + 4*j, in + 4*j);
   }
 
   // floyd-steinberg dithering follows here
 
+#ifdef USE_FASTEST_VERSION // does not match reference output
   // do the bulk of the image (all except the last one or two rows)
   for(int j = 0; j < height - 2; j += 2)
   {
     const float *const restrict inrow = in + (size_t)4 * j * width;
     float *const restrict outrow = out + (size_t)4 * j * width;
+    __m128 err;
 
-    // first column
-    clipnan_pixel(outrow + downright, inrow + downright);       // down-right pixel is about to get its first access
-    clipnan_pixel(outrow + down, inrow + down);                 // same for the pixel below
-    err = nearest_color_sse(outrow, graymode, f, rf);           // quantize the left-most pixel of the row
-    _diffuse_error_sse(outrow + right, err, RIGHT_WT);
-    _diffuse_error_sse(outrow + down, err, DOWN_WT);
-    _diffuse_error_sse(outrow + downright, err, DOWNRIGHT_WT);
+    // first two columns
+    PROCESS_PIXEL_LEFT_SSE(outrow, inrow);                      // left-most pixel in first (upper) row
+    PROCESS_PIXEL_FULL_SSE(outrow + right, inrow + right);      // second pixel in first (upper) row
+    PROCESS_PIXEL_LEFT_SSE(outrow + down, inrow + down);        // leftmost in second (lower) row
 
     // main part of the current pair of rows
-    for(int i = 1; i < width - 1; i++)
+    for(int i = 2; i < width - 1; i++)
     {
       float *const restrict pixel = outrow + 4 * i;
-      err = nearest_color_sse(pixel, graymode, f, rf);          // quantize the pixel in the upper row
-      clipnan_pixel(pixel + downright, inrow + 4 * i + downright); // prepare down-right pixel
-      _diffuse_error_sse(pixel + right, err, RIGHT_WT);         // spread the quantization error to neighbors
-      _diffuse_error_sse(pixel + downleft, err, DOWNLEFT_WT);
-      _diffuse_error_sse(pixel + down, err, DOWN_WT);
-      _diffuse_error_sse(pixel + downright, err, DOWNRIGHT_WT);
-      float *const restrict lower = pixel + downleft;
-      err = nearest_color_sse(lower, graymode, f, rf);          // quantize the pixel in the lower row
-      clipnan_pixel(lower + downright, inrow + 4 * i + downright); // prepare its down-right pixel
-      _diffuse_error_sse(lower + right, err, RIGHT_WT);         // spread the quantization error to neighbors
-      _diffuse_error_sse(lower + downleft, err, DOWNLEFT_WT);
-      _diffuse_error_sse(lower + down, err, DOWN_WT);
-      _diffuse_error_sse(lower + downright, err, DOWNRIGHT_WT);
+      PROCESS_PIXEL_FULL_SSE(pixel, inrow + 4 * i);             // pixel in upper row
+      PROCESS_PIXEL_FULL_SSE(pixel + downleft, inrow + 4 * i + downleft);  // pixel in lower row
     }
 
     // last column of upper row
     float *const restrict lastpixel = outrow + 4 * (width-1);
-    err = nearest_color_sse(lastpixel, graymode, f, rf);
-    _diffuse_error_sse(lastpixel + downleft, err, DOWNLEFT_WT);
-    _diffuse_error_sse(lastpixel + down, err, DOWN_WT);
+    PROCESS_PIXEL_RIGHT_SSE(lastpixel);
     // we have two pixels left over in the lower row
-    float *const restrict lower = lastpixel + downleft;
-    const float *const restrict lower_in = inrow + 4 * (width-2) + downright;
-    err = nearest_color_sse(lower, graymode, f, rf);             // quantize the pixel in the lower row
-    clipnan_pixel(lower + downright, lower_in + downright);      // prepare its down-right pixel
-    _diffuse_error_sse(lower + right, err, RIGHT_WT);            // spread the quantization error to neighbors
-    _diffuse_error_sse(lower + downleft, err, DOWNLEFT_WT);
-    _diffuse_error_sse(lower + down, err, DOWN_WT);
-    _diffuse_error_sse(lower + downright, err, DOWNRIGHT_WT);
+    const float *const restrict lower_in = inrow + 4 * (width-1) + downleft;
+    PROCESS_PIXEL_FULL_SSE(lastpixel + downleft, lower_in);
     // and now process the final pixel in the lower row
-    float *const restrict lastlower = lower + right;
-    err = nearest_color_sse(lastlower, graymode, f, rf);
-    _diffuse_error_sse(lastlower + downleft, err, DOWNLEFT_WT);
-    _diffuse_error_sse(lastlower + down, err, DOWN_WT);
+    PROCESS_PIXEL_RIGHT_SSE(lastpixel + down);
   }
 
   // next-to-last row, if the total number of rows is even
@@ -615,33 +636,43 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
   {
     const float *const restrict inrow = in + (size_t)4 * (height - 2) * width;
     float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
+    __m128 err;
 
     // first column
-    clipnan_pixel(outrow + downright, inrow + downright);       // down-right pixel is about to get its first access
-    clipnan_pixel(outrow + down, inrow + down);                 // same for the pixel below
-    err = nearest_color_sse(outrow, graymode, f, rf);           // quantize the left-most pixel of the row
-    _diffuse_error_sse(outrow + right, err, RIGHT_WT);
-    _diffuse_error_sse(outrow + down, err, DOWN_WT);
-    _diffuse_error_sse(outrow + downright, err, DOWNRIGHT_WT);
+    PROCESS_PIXEL_LEFT_SSE(outrow, inrow);
 
     // main part of image
     for(int i = 1; i < width - 1; i++)
     {
-      float *const restrict pixel = outrow + 4 * i;
-      err = nearest_color_sse(pixel, graymode, f, rf);          // quantize the current pixel
-      clipnan_pixel(pixel + downright, inrow + 4 * i + downright); // prepare down-right pixel
-      _diffuse_error_sse(pixel + right, err, RIGHT_WT);         // spread the quantization error to all four
-      _diffuse_error_sse(pixel + downleft, err, DOWNLEFT_WT);   // neighbors: right/down-right/down/down-left
-      _diffuse_error_sse(pixel + down, err, DOWN_WT);
-      _diffuse_error_sse(pixel + downright, err, DOWNRIGHT_WT);
+      PROCESS_PIXEL_FULL_SSE(outrow + 4 * i, inrow + 4 * i);
     }
 
     // last column
-    float *const restrict lastpixel = outrow + 4 * (width-1);
-    err = nearest_color_sse(lastpixel, graymode, f, rf);
-    _diffuse_error_sse(lastpixel + downleft, err, DOWNLEFT_WT);
-    _diffuse_error_sse(lastpixel + down, err, DOWN_WT);
+    PROCESS_PIXEL_RIGHT_SSE(outrow + 4 * (width-1));
   }
+#else // this version DOES match the reference output, but is slower
+  // do the bulk of the image (all except the last one or two rows)
+  for(int j = 0; j < height - 1; j++)
+  {
+    const float *const restrict inrow = in + (size_t)4 * j * width;
+    float *const restrict outrow = out + (size_t)4 * j * width;
+    __m128 err;
+
+    // first two columns
+    PROCESS_PIXEL_LEFT_SSE(outrow, inrow);
+
+    // main part of the current row
+    for(int i = 1; i < width - 1; i++)
+    {
+      float *const restrict pixel = outrow + 4 * i;
+      PROCESS_PIXEL_FULL_SSE(pixel, inrow + 4 * i);		// pixel in upper row
+    }
+
+    // last column of upper row
+    float *const restrict lastpixel = outrow + 4 * (width-1);
+    PROCESS_PIXEL_RIGHT_SSE(lastpixel);
+  }
+#endif // USE_FASTEST_VERSION
 
   // final row
   {
@@ -651,7 +682,7 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
     for(int i = 0; i < width - 1; i++)
     {
       float *const restrict pixel = outrow + 4 * i;
-      err = nearest_color_sse(pixel, graymode, f, rf);
+      __m128 err = nearest_color_sse(pixel, graymode, f, rf);
       _diffuse_error_sse(pixel + right, err, RIGHT_WT);
     }
 
