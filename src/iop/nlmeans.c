@@ -405,7 +405,9 @@ static void process_cpu(dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_nlmeans_params_t *const d = (dt_iop_nlmeans_params_t *)piece->data;
-  assert(piece->colors == 4);
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors, NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
   // adjust to zoom size:
   const float scale = fmin(roi_in->scale, 2.0f) / fmax(piece->iscale, 1.0f);
