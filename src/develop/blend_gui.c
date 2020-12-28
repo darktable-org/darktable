@@ -74,18 +74,19 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "RGB red channel"), DEVELOP_BLEND_RGB_R },
         { NC_("blendmode", "RGB green channel"), DEVELOP_BLEND_RGB_G },
         { NC_("blendmode", "RGB blue channel"), DEVELOP_BLEND_RGB_B },
-        { NC_("blendmode", "multiply reverse"), DEVELOP_BLEND_MULTIPLY_REVERSE },
-        { NC_("blendmode", "subtract reverse"), DEVELOP_BLEND_SUBTRACT_REVERSE },
+        { NC_("blendmode", "subtract inverse"), DEVELOP_BLEND_SUBTRACT_INVERSE },
         { NC_("blendmode", "divide"), DEVELOP_BLEND_DIVIDE },
-        { NC_("blendmode", "divide reverse"), DEVELOP_BLEND_DIVIDE_REVERSE },
+        { NC_("blendmode", "divide inverse"), DEVELOP_BLEND_DIVIDE_INVERSE },
         { NC_("blendmode", "geometric mean"), DEVELOP_BLEND_GEOMETRIC_MEAN },
         { NC_("blendmode", "harmonic mean"), DEVELOP_BLEND_HARMONIC_MEAN },
 
         /** deprecated blend modes: make them available as legacy history stacks might want them */
         { NC_("blendmode", "difference (deprecated)"), DEVELOP_BLEND_DIFFERENCE },
-        { NC_("blendmode", "inverse (deprecated)"), DEVELOP_BLEND_INVERSE },
-        { NC_("blendmode", "normal (deprecated)"), DEVELOP_BLEND_NORMAL },
-        { NC_("blendmode", "unbounded (deprecated)"), DEVELOP_BLEND_UNBOUNDED },
+        { "", 0 } };
+
+const dt_develop_name_value_t dt_develop_blend_mode_flag_names[]
+    = { { NC_("blendoperation", "normal"), 0 },
+        { NC_("blendoperation", "reverse"), DEVELOP_BLEND_REVERSE },
         { "", 0 } };
 
 const dt_develop_name_value_t dt_develop_blend_colorspace_names[]
@@ -292,11 +293,10 @@ static gboolean _blendif_blend_parameter_enabled(dt_develop_blend_colorspace_t c
     {
       case DEVELOP_BLEND_ADD:
       case DEVELOP_BLEND_MULTIPLY:
-      case DEVELOP_BLEND_MULTIPLY_REVERSE:
       case DEVELOP_BLEND_SUBTRACT:
-      case DEVELOP_BLEND_SUBTRACT_REVERSE:
+      case DEVELOP_BLEND_SUBTRACT_INVERSE:
       case DEVELOP_BLEND_DIVIDE:
-      case DEVELOP_BLEND_DIVIDE_REVERSE:
+      case DEVELOP_BLEND_DIVIDE_INVERSE:
         return TRUE;
       default:
         return FALSE;
@@ -620,19 +620,41 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
 
 static void _blendop_blend_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
 {
-  dt_develop_blend_params_t *bp = data->module->blend_params;
-  dt_iop_combobox_enum_callback(combo, (int *)&bp->blend_mode);
+  if(darktable.gui->reset) return;
 
-  if(_blendif_blend_parameter_enabled(data->blend_modes_csp, bp->blend_mode))
+  dt_develop_blend_params_t *bp = data->module->blend_params;
+  dt_develop_blend_mode_t new_blend_mode = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(combo));
+  if(new_blend_mode != (bp->blend_mode & DEVELOP_BLEND_MODE_MASK))
   {
-    gtk_widget_set_sensitive(data->blend_mode_parameter_slider, TRUE);
+    bp->blend_mode = new_blend_mode | (bp->blend_mode & DEVELOP_BLEND_REVERSE);
+    if(_blendif_blend_parameter_enabled(data->blend_modes_csp, bp->blend_mode))
+    {
+      gtk_widget_set_sensitive(data->blend_mode_parameter_slider, TRUE);
+    }
+    else
+    {
+      bp->blend_parameter = 0.0f;
+      dt_bauhaus_slider_set_soft(data->blend_mode_parameter_slider, bp->blend_parameter);
+      gtk_widget_set_sensitive(data->blend_mode_parameter_slider, FALSE);
+    }
+    dt_dev_add_history_item(darktable.develop, data->module, TRUE);
   }
+}
+
+static void _blendop_blend_mode_reverse_callback(GtkWidget *button, dt_iop_module_t *self)
+{
+  if(darktable.gui->reset) return;
+
+  int active = dt_bauhaus_widget_get_quad_active(button);
+
+  dt_develop_blend_params_t *bp = self->blend_params;
+  if(!active)
+    bp->blend_mode &= ~DEVELOP_BLEND_REVERSE;
   else
-  {
-    bp->blend_parameter = 0.0f;
-    dt_bauhaus_slider_set_soft(data->blend_mode_parameter_slider, bp->blend_parameter);
-    gtk_widget_set_sensitive(data->blend_mode_parameter_slider, FALSE);
-  }
+    bp->blend_mode |= DEVELOP_BLEND_REVERSE;
+
+  dt_dev_add_history_item(darktable.develop, self, TRUE);
+  dt_control_queue_redraw_widget(GTK_WIDGET(button));
 }
 
 static void _blendop_masks_combine_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
@@ -2263,7 +2285,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   {
     if(module->dev->form_gui && module->dev->form_visible && module->dev->form_gui->creation
        && module->dev->form_gui->creation_module == module
-       && module->dev->form_visible->type & bd->masks_type[n])
+       && (module->dev->form_visible->type & bd->masks_type[n]))
     {
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[n]), TRUE);
     }
@@ -2673,13 +2695,12 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
       dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("normal & arithmetic modes"));
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_NORMAL2);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_MULTIPLY_REVERSE);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIVIDE);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIVIDE_INVERSE);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_ADD);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT_REVERSE);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_SUBTRACT_INVERSE);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIFFERENCE2);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIVIDE);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_DIVIDE_REVERSE);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_AVERAGE);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_GEOMETRIC_MEAN);
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HARMONIC_MEAN);
@@ -2694,20 +2715,24 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     bd->blend_modes_csp = bd->csp;
   }
 
-  if(!dt_bauhaus_combobox_set_from_value(bd->blend_modes_combo, module->blend_params->blend_mode))
+  dt_develop_blend_mode_t blend_mode = module->blend_params->blend_mode & DEVELOP_BLEND_MODE_MASK;
+  if(!dt_bauhaus_combobox_set_from_value(bd->blend_modes_combo, blend_mode))
   {
     // add deprecated blend mode
     dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("deprecated modes"));
-    if(!_add_blendmode_combo(bd->blend_modes_combo, module->blend_params->blend_mode))
+    if(!_add_blendmode_combo(bd->blend_modes_combo, blend_mode))
     {
       // should never happen: unknown blend mode
-      dt_control_log("unknown blend mode '%d' in module '%s'", module->blend_params->blend_mode, module->op);
-
+      dt_control_log("unknown blend mode '%d' in module '%s'", blend_mode, module->op);
       module->blend_params->blend_mode = DEVELOP_BLEND_NORMAL2;
+      blend_mode = DEVELOP_BLEND_NORMAL2;
     }
 
-    dt_bauhaus_combobox_set_from_value(bd->blend_modes_combo, module->blend_params->blend_mode);
+    dt_bauhaus_combobox_set_from_value(bd->blend_modes_combo, blend_mode);
   }
+
+  gboolean blend_mode_reversed = (module->blend_params->blend_mode & DEVELOP_BLEND_REVERSE) == DEVELOP_BLEND_REVERSE;
+  dt_bauhaus_widget_set_quad_active(bd->blend_modes_combo, blend_mode_reversed);
 
   dt_bauhaus_slider_set_soft(bd->blend_mode_parameter_slider, module->blend_params->blend_parameter);
   gtk_widget_set_sensitive(bd->blend_mode_parameter_slider,
@@ -3015,6 +3040,12 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     g_signal_connect(G_OBJECT(bd->blend_modes_combo), "value-changed",
                      G_CALLBACK(_blendop_blend_mode_callback), bd);
     dt_gui_add_help_link(GTK_WIDGET(bd->blend_modes_combo), dt_get_help_url("masks_blending_op"));
+
+    dt_bauhaus_widget_set_quad_paint(bd->blend_modes_combo, dtgtk_cairo_paint_invert, 0, NULL);
+    dt_bauhaus_widget_set_quad_toggle(bd->blend_modes_combo, TRUE);
+    g_signal_connect(G_OBJECT(bd->blend_modes_combo), "quad-pressed",
+                     G_CALLBACK(_blendop_blend_mode_reverse_callback), module);
+    dt_bauhaus_widget_set_quad_active(bd->blend_modes_combo, FALSE);
 
     bd->blend_mode_parameter_slider = dt_bauhaus_slider_new_with_range(module, -3.0f, 3.0f, .02f, 0.0f, 3);
     dt_bauhaus_slider_set_format(bd->blend_mode_parameter_slider, _("%.2f EV"));
