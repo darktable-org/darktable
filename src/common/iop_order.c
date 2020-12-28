@@ -596,6 +596,27 @@ GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version)
   return iop_order_list;
 }
 
+gboolean dt_ioppr_has_iop_order_list(int32_t imgid)
+{
+  gboolean result = FALSE;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT version, iop_list"
+                              " FROM main.module_order"
+                              " WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    result = (sqlite3_column_type(stmt, 1) != SQLITE_NULL);
+  }
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
 GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
 {
   GList *iop_order_list = NULL;
