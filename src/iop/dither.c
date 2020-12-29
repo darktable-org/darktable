@@ -45,8 +45,6 @@
 #include <xmmintrin.h>
 #endif
 
-//#define USE_FASTEST_VERSION
-
 DT_MODULE_INTROSPECTION(1, dt_iop_dither_params_t)
 
 typedef enum dt_iop_dither_type_t
@@ -350,7 +348,8 @@ static int get_dither_parameters(const dt_iop_dither_data_t *const data, const d
 #endif
 static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                     const void *const ivoid, void *const ovoid,
-                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+                                    const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                    int fast_mode)
 {
   const dt_iop_dither_data_t *const restrict data = (dt_iop_dither_data_t *)piece->data;
 
@@ -433,74 +432,77 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 
   // floyd-steinberg dithering follows here
 
-#ifdef USE_FASTEST_VERSION // this version does not match the reference image
-  // do the bulk of the image (all except the last one or two rows)
-  for(int j = 0; j < height - 2; j += 2)
+  if (fast_mode)
   {
-    const float *const restrict inrow = in + (size_t)4 * j * width;
-    float *const restrict outrow = out + (size_t)4 * j * width;
-
-    // first two columns
-    PROCESS_PIXEL_LEFT(outrow, inrow);                          // leftmost pixel in first (upper) row
-    PROCESS_PIXEL_FULL(outrow + right, inrow + right);          // second pixel in first (upper) row
-    PROCESS_PIXEL_LEFT(outrow + down, inrow + down);            // leftmost in second (lower) row
-
-    // main part of the current pair of rows
-    for(int i = 1; i < width - 1; i++)
+    // do the bulk of the image (all except the last one or two rows)
+    for(int j = 0; j < height - 2; j += 2)
     {
-      float *const restrict pixel = outrow + 4 * i;
-      PROCESS_PIXEL_FULL(pixel, inrow + 4 * i);
-      PROCESS_PIXEL_FULL(pixel + downleft, inrow + 4 * i + downleft);
+      const float *const restrict inrow = in + (size_t)4 * j * width;
+      float *const restrict outrow = out + (size_t)4 * j * width;
+
+      // first two columns
+      PROCESS_PIXEL_LEFT(outrow, inrow);                          // leftmost pixel in first (upper) row
+      PROCESS_PIXEL_FULL(outrow + right, inrow + right);          // second pixel in first (upper) row
+      PROCESS_PIXEL_LEFT(outrow + down, inrow + down);            // leftmost in second (lower) row
+
+      // main part of the current pair of rows
+      for(int i = 1; i < width - 1; i++)
+      {
+        float *const restrict pixel = outrow + 4 * i;
+        PROCESS_PIXEL_FULL(pixel, inrow + 4 * i);
+        PROCESS_PIXEL_FULL(pixel + downleft, inrow + 4 * i + downleft);
+      }
+
+      // last column of upper row
+      float *const restrict lastpixel = outrow + 4 * (width-1);
+      PROCESS_PIXEL_RIGHT(lastpixel);
+      // we have two pixels left over in the lower row
+      const float *const restrict lower_in = inrow + 4 * (width-1) + downleft;
+      PROCESS_PIXEL_FULL(lastpixel + downleft, lower_in);
+      // and now process the final pixel in the lower row
+      PROCESS_PIXEL_RIGHT(lastpixel + down);
     }
 
-    // last column of upper row
-    float *const restrict lastpixel = outrow + 4 * (width-1);
-    PROCESS_PIXEL_RIGHT(lastpixel);
-    // we have two pixels left over in the lower row
-    const float *const restrict lower_in = inrow + 4 * (width-1) + downleft;
-    PROCESS_PIXEL_FULL(lastpixel + downleft, lower_in);
-    // and now process the final pixel in the lower row
-    PROCESS_PIXEL_RIGHT(lastpixel + down);
-  }
-
-  // next-to-last row, if the total number of rows is even
-  if ((height & 1) == 0)
-  {
-    const float *const restrict inrow = in + (size_t)4 * (height - 2) * width;
-    float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
-
-    // first column
-    PROCESS_PIXEL_LEFT(outrow, inrow);
-
-    // main part of image
-    for(int i = 1; i < width - 1; i++)
+    // next-to-last row, if the total number of rows is even
+    if ((height & 1) == 0)
     {
-      PROCESS_PIXEL_FULL(outrow + 4 * i, inrow + 4 * i);
-    }
+      const float *const restrict inrow = in + (size_t)4 * (height - 2) * width;
+      float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
 
-    // last column
-    PROCESS_PIXEL_RIGHT(outrow + 4 * (width-1));
+      // first column
+      PROCESS_PIXEL_LEFT(outrow, inrow);
+
+      // main part of image
+      for(int i = 1; i < width - 1; i++)
+      {
+        PROCESS_PIXEL_FULL(outrow + 4 * i, inrow + 4 * i);
+      }
+
+      // last column
+      PROCESS_PIXEL_RIGHT(outrow + 4 * (width-1));
+    }
   }
-#else  // this version produces output matching the reference image, but is slower
-  // do the bulk of the image (all except the last row)
-  for(int j = 0; j < height - 1; j++)
+  else // use slower version which generates output identical to previous releases
   {
-    const float *const restrict inrow = in + (size_t)4 * j * width;
-    float *const restrict outrow = out + (size_t)4 * j * width;
-
-    // first two columns
-    PROCESS_PIXEL_LEFT(outrow, inrow);                          // leftmost pixel in first (upper) row
-
-    // main part of the current row
-    for(int i = 1; i < width - 1; i++)
+    // do the bulk of the image (all except the last row)
+    for(int j = 0; j < height - 1; j++)
     {
-      PROCESS_PIXEL_FULL(outrow + 4 * i, inrow + 4 * i);
-    }
+      const float *const restrict inrow = in + (size_t)4 * j * width;
+      float *const restrict outrow = out + (size_t)4 * j * width;
 
-    // last column of upper row
-    PROCESS_PIXEL_RIGHT(outrow + 4 * (width-1));
+      // first two columns
+      PROCESS_PIXEL_LEFT(outrow, inrow);                          // leftmost pixel in first (upper) row
+
+      // main part of the current row
+      for(int i = 1; i < width - 1; i++)
+      {
+        PROCESS_PIXEL_FULL(outrow + 4 * i, inrow + 4 * i);
+      }
+
+      // last column of upper row
+      PROCESS_PIXEL_RIGHT(outrow + 4 * (width-1));
+    }
   }
-#endif // USE_FASTEST_VERSION
 
   // final row
   {
@@ -529,7 +531,8 @@ static void process_floyd_steinberg(struct dt_iop_module_t *self, dt_dev_pixelpi
 #endif
 static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                          const void *const ivoid, void *const ovoid,
-                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
+                                         const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
+                                         int fast_mode)
 {
   dt_iop_dither_data_t *data = (dt_iop_dither_data_t *)piece->data;
 
@@ -609,79 +612,82 @@ static void process_floyd_steinberg_sse2(struct dt_iop_module_t *self, dt_dev_pi
 
   // floyd-steinberg dithering follows here
 
-#ifdef USE_FASTEST_VERSION // does not match reference output
-  // do the bulk of the image (all except the last one or two rows)
-  for(int j = 0; j < height - 2; j += 2)
+  if (fast_mode)
   {
-    const float *const restrict inrow = in + (size_t)4 * j * width;
-    float *const restrict outrow = out + (size_t)4 * j * width;
-    __m128 err;
-
-    // first two columns
-    PROCESS_PIXEL_LEFT_SSE(outrow, inrow);                      // left-most pixel in first (upper) row
-    PROCESS_PIXEL_FULL_SSE(outrow + right, inrow + right);      // second pixel in first (upper) row
-    PROCESS_PIXEL_LEFT_SSE(outrow + down, inrow + down);        // leftmost in second (lower) row
-
-    // main part of the current pair of rows
-    for(int i = 2; i < width - 1; i++)
+    // do the bulk of the image (all except the last one or two rows)
+    for(int j = 0; j < height - 2; j += 2)
     {
-      float *const restrict pixel = outrow + 4 * i;
-      PROCESS_PIXEL_FULL_SSE(pixel, inrow + 4 * i);             // pixel in upper row
-      PROCESS_PIXEL_FULL_SSE(pixel + downleft, inrow + 4 * i + downleft);  // pixel in lower row
+      const float *const restrict inrow = in + (size_t)4 * j * width;
+      float *const restrict outrow = out + (size_t)4 * j * width;
+      __m128 err;
+
+      // first two columns
+      PROCESS_PIXEL_LEFT_SSE(outrow, inrow);                      // left-most pixel in first (upper) row
+      PROCESS_PIXEL_FULL_SSE(outrow + right, inrow + right);      // second pixel in first (upper) row
+      PROCESS_PIXEL_LEFT_SSE(outrow + down, inrow + down);        // leftmost in second (lower) row
+
+      // main part of the current pair of rows
+      for(int i = 2; i < width - 1; i++)
+      {
+        float *const restrict pixel = outrow + 4 * i;
+        PROCESS_PIXEL_FULL_SSE(pixel, inrow + 4 * i);             // pixel in upper row
+        PROCESS_PIXEL_FULL_SSE(pixel + downleft, inrow + 4 * i + downleft);  // pixel in lower row
+      }
+
+      // last column of upper row
+      float *const restrict lastpixel = outrow + 4 * (width-1);
+      PROCESS_PIXEL_RIGHT_SSE(lastpixel);
+      // we have two pixels left over in the lower row
+      const float *const restrict lower_in = inrow + 4 * (width-1) + downleft;
+      PROCESS_PIXEL_FULL_SSE(lastpixel + downleft, lower_in);
+      // and now process the final pixel in the lower row
+      PROCESS_PIXEL_RIGHT_SSE(lastpixel + down);
     }
 
-    // last column of upper row
-    float *const restrict lastpixel = outrow + 4 * (width-1);
-    PROCESS_PIXEL_RIGHT_SSE(lastpixel);
-    // we have two pixels left over in the lower row
-    const float *const restrict lower_in = inrow + 4 * (width-1) + downleft;
-    PROCESS_PIXEL_FULL_SSE(lastpixel + downleft, lower_in);
-    // and now process the final pixel in the lower row
-    PROCESS_PIXEL_RIGHT_SSE(lastpixel + down);
-  }
-
-  // next-to-last row, if the total number of rows is even
-  if ((height & 1) == 0)
-  {
-    const float *const restrict inrow = in + (size_t)4 * (height - 2) * width;
-    float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
-    __m128 err;
-
-    // first column
-    PROCESS_PIXEL_LEFT_SSE(outrow, inrow);
-
-    // main part of image
-    for(int i = 1; i < width - 1; i++)
+    // next-to-last row, if the total number of rows is even
+    if ((height & 1) == 0)
     {
-      PROCESS_PIXEL_FULL_SSE(outrow + 4 * i, inrow + 4 * i);
-    }
+      const float *const restrict inrow = in + (size_t)4 * (height - 2) * width;
+      float *const restrict outrow = out + (size_t)4 * (height - 2) * width;
+      __m128 err;
 
-    // last column
-    PROCESS_PIXEL_RIGHT_SSE(outrow + 4 * (width-1));
+      // first column
+      PROCESS_PIXEL_LEFT_SSE(outrow, inrow);
+
+      // main part of image
+      for(int i = 1; i < width - 1; i++)
+      {
+        PROCESS_PIXEL_FULL_SSE(outrow + 4 * i, inrow + 4 * i);
+      }
+
+      // last column
+      PROCESS_PIXEL_RIGHT_SSE(outrow + 4 * (width-1));
+    }
   }
-#else // this version DOES match the reference output, but is slower
-  // do the bulk of the image (all except the last one or two rows)
-  for(int j = 0; j < height - 1; j++)
+  else // use slower version which generates output identical to previous releases
   {
-    const float *const restrict inrow = in + (size_t)4 * j * width;
-    float *const restrict outrow = out + (size_t)4 * j * width;
-    __m128 err;
-
-    // first two columns
-    PROCESS_PIXEL_LEFT_SSE(outrow, inrow);
-
-    // main part of the current row
-    for(int i = 1; i < width - 1; i++)
+    // do the bulk of the image (all except the last one or two rows)
+    for(int j = 0; j < height - 1; j++)
     {
-      float *const restrict pixel = outrow + 4 * i;
-      PROCESS_PIXEL_FULL_SSE(pixel, inrow + 4 * i);		// pixel in upper row
-    }
+      const float *const restrict inrow = in + (size_t)4 * j * width;
+      float *const restrict outrow = out + (size_t)4 * j * width;
+      __m128 err;
 
-    // last column of upper row
-    float *const restrict lastpixel = outrow + 4 * (width-1);
-    PROCESS_PIXEL_RIGHT_SSE(lastpixel);
+      // first two columns
+      PROCESS_PIXEL_LEFT_SSE(outrow, inrow);
+
+      // main part of the current row
+      for(int i = 1; i < width - 1; i++)
+      {
+        float *const restrict pixel = outrow + 4 * i;
+        PROCESS_PIXEL_FULL_SSE(pixel, inrow + 4 * i);		// pixel in upper row
+      }
+
+      // last column of upper row
+      float *const restrict lastpixel = outrow + 4 * (width-1);
+      PROCESS_PIXEL_RIGHT_SSE(lastpixel);
+    }
   }
-#endif // USE_FASTEST_VERSION
 
   // final row
   {
@@ -766,7 +772,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(data->dither_type == DITHER_RANDOM)
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
-    process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out);
+  {
+    const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+    process_floyd_steinberg(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
+  }
 }
 
 #if defined(__SSE2__)
@@ -778,7 +787,10 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   if(data->dither_type == DITHER_RANDOM)
     process_random(self, piece, ivoid, ovoid, roi_in, roi_out);
   else
-    process_floyd_steinberg_sse2(self, piece, ivoid, ovoid, roi_in, roi_out);
+  {
+    const gboolean fastmode = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
+    process_floyd_steinberg_sse2(self, piece, ivoid, ovoid, roi_in, roi_out, fastmode);
+  }
 }
 #endif
 
