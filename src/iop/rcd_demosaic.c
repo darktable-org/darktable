@@ -41,12 +41,14 @@
 
 // this allows to pass RCD_TILESIZE to the code. On some machines larger tilesizes are faster
 // If it is undefined it will be set to 140, which is a good guess for modern x86/64 machines
-// Tested and tuned on Xeon E-2288G and AMD FX8350 
+// Tested and tuned on Xeon E-2288G, i5-8250U and AMD FX8350 
 #ifndef RCD_TILESIZE
  #define RCD_TILESIZE 140
 #endif
 
+// Make sure we use -Ofast only in the rcd code section
 #ifdef __GNUC__
+  #pragma GCC push_options
   #pragma GCC optimize ("-Ofast")
 #endif
 
@@ -604,6 +606,10 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 
   rcd_border_interpolate(out, in, cfarray, width, height, RCD_BORDER);
 }
+
+#ifdef __GNUC__
+  #pragma GCC pop_options
+#endif
 
 #undef FCRCD
 #undef RCD_BORDER
