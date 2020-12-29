@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-12 18:19+0100\n"
+"PO-Revision-Date: 2020-12-29 16:22+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -13,7 +13,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.4.2\n"
+"X-Generator: Poedit 2.2.1\n"
 "X-Poedit-Bookmarks: 3066,376,-1,-1,-1,-1,-1,-1,-1,-1\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
@@ -1756,7 +1756,7 @@ msgstr "Mitwirkende (rawspeed)"
 #: ../build/bin/preferences_gen.h:7062 ../build/bin/preferences_gen.h:7101
 #: ../build/bin/preferences_gen.h:7136
 msgid "this setting has been modified"
-msgstr "Diese Voreinstellung wurde manuell angepasst."
+msgstr "Diese Voreinstellung wurde manuell angepasst"
 
 #: ../build/bin/preferences_gen.h:2769 ../src/libs/tools/lighttable.c:79
 #: ../src/views/lighttable.c:88
@@ -1788,7 +1788,7 @@ msgid ""
 "right"
 msgstr ""
 "Bestimmt die Anzahl an Verzeichnis-Ebenen, die im Filmrollennamen angezeigt "
-"werden sollen, beginnend von rechts."
+"werden sollen, beginnend von rechts"
 
 #: ../build/bin/preferences_gen.h:2837
 msgid "sort film rolls by"
@@ -1854,7 +1854,7 @@ msgstr "Doppelklick, um auf „%s” zurückzusetzen"
 
 #: ../build/bin/preferences_gen.h:2875
 msgid "sets the collections-list order for film rolls"
-msgstr "Bestimmt die Sortierung der Bilder einer Filmrolle."
+msgstr "Bestimmt die Sortierung der Bilder einer Filmrolle"
 
 #: ../build/bin/preferences_gen.h:2896
 msgid "sort collection recent to older"
@@ -1882,7 +1882,7 @@ msgid ""
 "run from recent to older"
 msgstr ""
 "Ändert die voreingestellte Sortierung von Sammlungen, so dass jüngere Bilder "
-"vor älteren gezeigt werden."
+"vor älteren gezeigt werden"
 
 #: ../build/bin/preferences_gen.h:2931
 msgid "hide built-in presets for utility modules"
@@ -1921,7 +1921,7 @@ msgid ""
 msgstr ""
 "Aktiviere die Option, um Elemente in „Bilder sammeln”-Liste mit einem "
 "einzigen Mausklick auszuwählen. Dies erlaubt die Mehrfachauswahl für „Datum/"
-"Uhrzeit” und numerische Werte wie „ISO”, „Blende” etc. "
+"Uhrzeit” und numerische Werte wie „ISO”, „Blende” etc."
 
 #: ../build/bin/preferences_gen.h:3001
 msgid "expand a single utility module at a time"
@@ -1931,7 +1931,7 @@ msgstr "nur ein Leuchttisch-Modul wird eingeblendet"
 msgid "this option toggles the behavior of shift clicking in lighttable mode"
 msgstr ""
 "Diese Option schaltet das Verhalten von Umschalt+Klick in der Leuchttisch-"
-"Ansicht um."
+"Ansicht um"
 
 #: ../build/bin/preferences_gen.h:3036
 msgid "scroll to utility modules when expanded/collapsed"
@@ -1943,7 +1943,7 @@ msgid ""
 "the top of the visible list"
 msgstr ""
 "Wenn diese Option aktiviert ist, wird versucht, das entsprechende Modul nach "
-"oben in den sichtbaren Bereich der Liste zu scrollen."
+"oben in den sichtbaren Bereich der Liste zu scrollen"
 
 #: ../build/bin/preferences_gen.h:3071
 msgid "rating an image one star twice will not zero out the rating"
@@ -1963,7 +1963,7 @@ msgstr "zeige Scrollbalken für die mittlere Bildansicht"
 
 #: ../build/bin/preferences_gen.h:3120 ../build/bin/preferences_gen.h:3782
 msgid "defines whether scrollbars should be displayed"
-msgstr "Definiert, ob Scrollbalken angezeigt werden sollen."
+msgstr "Definiert, ob Scrollbalken angezeigt werden sollen"
 
 #: ../build/bin/preferences_gen.h:3129
 msgid "thumbnails"
@@ -2271,8 +2271,8 @@ msgstr "auf ein Viertel"
 #: ../build/bin/preferences_gen.h:3915
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
-"Verringern, um die Berechnung des Vorschaubildes zu beschleunigen. Dies kann "
-"zu weniger genaue Maskierungen zur Folge haben."
+"Verringern, um die Berechnung des Vorschaubildes zu beschleunigen, dies kann "
+"zu weniger genauen Maskierungen führen"
 
 #: ../build/bin/preferences_gen.h:3936
 msgid "show right-side buttons in processing module headers"
@@ -2388,7 +2388,7 @@ msgstr "nur ein Dunkelkammer-Modul wird eingeblendet"
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
 msgstr ""
 "Diese Option schaltet das Verhalten von Umschalt+Klick in der Dunkelkammer-"
-"Ansicht um."
+"Ansicht um"
 
 #: ../build/bin/preferences_gen.h:4162
 msgid "only collapse modules in current group"
@@ -2399,9 +2399,9 @@ msgid ""
 "if only expanding a single module at a time, only collapse other modules in "
 "the current group - ignore modules in other groups"
 msgstr ""
-"Falls „nur einzelnes Dunkelkammer-Modul einblenden” aktiviert, werden nur "
+"Falls „nur ein Dunkelkammer-Modul wird eingeblendet” aktiviert, werden nur "
 "Module der aktuellen Gruppe ausgeblendet nicht jedoch Module in den übrigen "
-"Gruppen."
+"Gruppen"
 
 #: ../build/bin/preferences_gen.h:4197
 msgid "expand the module when it is activated, and collapse it when disabled"
@@ -2446,11 +2446,12 @@ msgid ""
 "in 'effect emulation' slider colors represent the effect the adjustment "
 "would have on the scene"
 msgstr ""
-"Visualisierung von Farbtemperaturanpassungen im Modul „Weißabgleich”. Im "
-"Modus „Farbe der Lichtquelle” zeigt der Temperaturregler einen Farbverlauf "
-"gemäß der Farbe der eingestellten Lichtquelle. Bei „Emulation der "
-"Farbänderung” repräsentiert die Farbe des Reglers die Auswirkung, die eine "
-"Verschiebung der Farbtemperatur zur Folge hat."
+"Visualisierung von Farbtemperaturanpassungen im Modul „Weißabgleich”. \n"
+"Im Modus „Farbe der Lichtquelle” zeigt der Temperaturregler einen "
+"Farbverlauf gemäß der Farbe der eingestellten Lichtquelle. \n"
+"Bei „Emulation der Farbänderung” repräsentiert die Farbe des Reglers die "
+"Auswirkung auf die Bildszene, die eine Verschiebung der Farbtemperatur zur "
+"Folge hat."
 
 #: ../build/bin/preferences_gen.h:4331
 msgid "colorbalance slider block layout"
@@ -2515,8 +2516,7 @@ msgid ""
 "show a more readable representation of the location in the image information "
 "module"
 msgstr ""
-"Zeige eine besser lesbare Darstellung der Position im Modul "
-"„Bildinformation“."
+"Zeige eine besser lesbare Darstellung der Position im Modul „Bildinformation“"
 
 #: ../build/bin/preferences_gen.h:4492 ../src/views/slideshow.c:344
 msgid "slideshow"
@@ -2697,8 +2697,8 @@ msgid ""
 "this slows down imports and reading exif data"
 msgstr ""
 "Zahlreiche monochrome Aufnahmen können via EXIF-Metadaten oder eingebettete "
-"Vorschaubilder erkannt werden. Vorsicht: Dies verlangsamt den Import sowie "
-"das Lesen der EXIF-Metadaten."
+"Vorschaubilder erkannt werden\n"
+"Vorsicht: Dies verlangsamt den Import sowie das Lesen der EXIF-Metadaten"
 
 #: ../build/bin/preferences_gen.h:4956
 msgid "security"
@@ -2721,8 +2721,7 @@ msgstr "fragen, bevor Bilder von der Festplatte gelöscht werden"
 #: ../build/bin/preferences_gen.h:5020
 msgid "always ask the user before any image file is deleted"
 msgstr ""
-"Immer beim Anwender nachfragen, bevor eine Bilddatei von der Festplatte "
-"gelöscht wird."
+"Immer nachfragen, bevor eine Bilddatei von der Festplatte gelöscht wird"
 
 #: ../build/bin/preferences_gen.h:5041
 msgid "ask before discarding history stack"
@@ -2731,8 +2730,7 @@ msgstr "fragen, bevor Verlaufsstapel von Bildern gelöscht werden"
 #: ../build/bin/preferences_gen.h:5055
 msgid "always ask the user before history stack is discarded on any image"
 msgstr ""
-"Immer beim Anwender nachfragen, bevor der Verlaufsstapel einer Bilddatei "
-"verworfen wird."
+"Immer nachfragen, bevor der Verlaufsstapel einer Bilddatei verworfen wird"
 
 #: ../build/bin/preferences_gen.h:5076
 msgid "send files to trash when erasing images"
@@ -2744,7 +2742,7 @@ msgid ""
 "supports it"
 msgstr ""
 "Verschiebe Bilder in den Papierkorb, statt sie permanent zu löschen, falls "
-"dies vom System unterstützt wird."
+"dies vom System unterstützt wird"
 
 #: ../build/bin/preferences_gen.h:5111
 msgid "ask before moving images from film roll folder"
@@ -2790,8 +2788,8 @@ msgstr "fragen, bevor eine Modul-Voreinstellung gelöscht wird"
 #: ../build/bin/preferences_gen.h:5298
 msgid "will ask for confirmation before deleting or overwritting a preset"
 msgstr ""
-"Immer beim Anwender nachfragen, bevor eine Modul-Voreinstellung gelöscht "
-"oder geändert wird."
+"Immer nachfragen, bevor eine Modul-Voreinstellung gelöscht oder geändert "
+"wird."
 
 #: ../build/bin/preferences_gen.h:5326
 msgid "cpu / gpu / memory"
@@ -2955,7 +2953,7 @@ msgstr ""
 "(kann über die Konfigurationsdatei „darktablerc” weiter angepasst werden)\n"
 "• mehrere GPUs: beide Pixelpipes werden parallel auf zwei GPUs berechnet\n"
 "• sehr schnelle GPU: beide Pixelpipes werden nacheinander auf der selben GPU "
-"berechnet"
+"berechnet."
 
 #: ../build/bin/preferences_gen.h:5709
 msgid "storage"
@@ -4946,8 +4944,7 @@ msgstr "Bilder entfernen"
 msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
 msgstr[0] "Soll %d Bild aus der Sammlung entfernt werden?"
-msgstr[1] ""
-"Sollen %d ausgewählte Bilder aus der Sammlung entfernt werden?"
+msgstr[1] "Sollen %d ausgewählte Bilder aus der Sammlung entfernt werden?"
 
 #: ../src/control/jobs/control_jobs.c:1507
 msgid "remove images?"
@@ -4964,8 +4961,7 @@ msgstr "Bilder löschen"
 msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
 msgstr[0] "Soll %d Bild in den Papierkorb verschoben werden?"
-msgstr[1] ""
-"Sollen %d ausgewählte Bilder in den Papierkorb verschoben werden?"
+msgstr[1] "Sollen %d ausgewählte Bilder in den Papierkorb verschoben werden?"
 
 #: ../src/control/jobs/control_jobs.c:1545
 #, c-format
@@ -4973,8 +4969,7 @@ msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "Soll %d Bild physisch von der Festplatte gelöscht werden?"
 msgstr[1] ""
-"Sollen %d ausgewählte Bilder physisch von der Festplatte gelöscht "
-"werden?"
+"Sollen %d ausgewählte Bilder physisch von der Festplatte gelöscht werden?"
 
 #: ../src/control/jobs/control_jobs.c:1552
 #: ../src/control/jobs/control_jobs.c:1590
@@ -7641,11 +7636,11 @@ msgstr "Beschreibung für weitere Information"
 
 #: ../src/gui/preferences.c:1831 ../src/gui/presets.c:442
 msgid "auto apply this preset to matching images"
-msgstr "Diese Voreinstellung automatisch auf passende Bilder anwenden."
+msgstr "Diese Voreinstellung automatisch auf passende Bilder anwenden"
 
 #: ../src/gui/preferences.c:1834 ../src/gui/presets.c:445
 msgid "only show this preset for matching images"
-msgstr "Diese Voreinstellung nur für passende Bilder anzeigen."
+msgstr "Diese Voreinstellung nur für passende Bilder anzeigen"
 
 #: ../src/gui/preferences.c:1836 ../src/gui/presets.c:446
 msgid ""
@@ -7716,7 +7711,7 @@ msgstr "Format"
 #: ../src/gui/preferences.c:1934 ../src/gui/presets.c:541
 msgid "select image types you want this preset to be available for"
 msgstr ""
-"Bildtypen auswählen für welche, diese Voreinstellung verfügbar sein soll."
+"Bildtypen auswählen für welche, diese Voreinstellung verfügbar sein soll"
 
 #: ../src/gui/preferences.c:2040 ../src/imageio/storage/disk.c:122
 #: ../src/imageio/storage/gallery.c:109 ../src/imageio/storage/latex.c:108
@@ -7726,13 +7721,13 @@ msgstr "als Ausgabeziel _wählen"
 #: ../src/gui/preferences.c:2051
 #, c-format
 msgid "preset %s was successfully saved"
-msgstr "Voreinstellung „%s” wurde erfolgreich gespeichert."
+msgstr "Voreinstellung „%s” wurde erfolgreich gespeichert"
 
 #: ../src/gui/presets.c:177
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
-"Voreinstellung „%s” ist schreibgeschützt und kann nicht gelöscht werden."
+"Voreinstellung „%s” ist schreibgeschützt und kann nicht gelöscht werden"
 
 #. then show edit dialog
 #: ../src/gui/presets.c:228 ../src/gui/presets.c:693 ../src/gui/presets.c:700
@@ -7744,7 +7739,7 @@ msgstr "neue Voreinstellung"
 
 #: ../src/gui/presets.c:234
 msgid "please give preset a name"
-msgstr "Geben Sie der Voreinstellung einen Namen."
+msgstr "Geben Sie der Voreinstellung einen Namen"
 
 #: ../src/gui/presets.c:239
 msgid "unnamed preset"
@@ -7767,7 +7762,7 @@ msgstr "Voreinstellung überschreiben?"
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
 msgstr ""
-"Voreinstellung „%s” ist schreibgeschützt und kann nicht geändert werden."
+"Voreinstellung „%s” ist schreibgeschützt und kann nicht geändert werden"
 
 #: ../src/gui/presets.c:434 ../src/libs/lib.c:253
 msgid "name of the preset"
@@ -7835,7 +7830,7 @@ msgstr "Voreinstellung überschreiben?"
 
 #: ../src/gui/styles_dialog.c:240 ../src/gui/styles_dialog.c:299
 msgid "please give style a name"
-msgstr "Geben Sie der Voreinstellung einen Namen."
+msgstr "Geben Sie der Voreinstellung einen Namen"
 
 #: ../src/gui/styles_dialog.c:244 ../src/gui/styles_dialog.c:303
 msgid "unnamed style"
@@ -9902,11 +9897,13 @@ msgid "angle"
 msgstr "Winkel"
 
 # sehr unschön :-(
+# hoffe, der deutsche Vorschlag ist besser :-)
+# (evtl. müßte das englische Original ebenfalls verbessert werden)
 #: ../src/iop/clipping.c:2168
 msgid "right-click and drag a line on the image to drag a straight line"
 msgstr ""
-"Mit rechter Maustaste ins Bild klicken und eine Linie ziehen, um eine gerade "
-"Kante zu markieren"
+"Mit rechter Maustaste ins Bild klicken und eine Linie entlang einer "
+"horizontalen oder vertikalen Kante des Motivs ziehen"
 
 #: ../src/iop/clipping.c:2171
 msgid "keystone"
@@ -9995,11 +9992,11 @@ msgid ""
 "the list is sorted: from most square to least square"
 msgstr ""
 "Seitenverhältnis\n"
-"Die Liste ist nach absteigendem Seitenverhältnis sortiert."
+"Die Liste ist nach absteigendem Seitenverhältnis sortiert"
 
 #: ../src/iop/clipping.c:2329 ../src/libs/live_view.c:365
 msgid "display guide lines to help compose your photograph"
-msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotografie helfen."
+msgstr "Hilfslinien anzeigen, die beim Komponieren der Fotografie helfen"
 
 #: ../src/iop/clipping.c:2333 ../src/iop/clipping.c:2338
 #: ../src/libs/live_view.c:374
@@ -10020,19 +10017,19 @@ msgstr "Ränder"
 
 #: ../src/iop/clipping.c:2351
 msgid "the left margin cannot overlap with the right margin"
-msgstr "Linker Rand kann nicht über rechten Rand hinauslaufen."
+msgstr "Linker Rand kann nicht über rechten Rand hinauslaufen"
 
 #: ../src/iop/clipping.c:2358
 msgid "the right margin cannot overlap with the left margin"
-msgstr "Rechter Rand kann nicht über linken Rand hinauslaufen."
+msgstr "Rechter Rand kann nicht über linken Rand hinauslaufen"
 
 #: ../src/iop/clipping.c:2364
 msgid "the top margin cannot overlap with the bottom margin"
-msgstr "Oberer Rand kann nicht über unteren Rand hinauslaufen."
+msgstr "Oberer Rand kann nicht über unteren Rand hinauslaufen"
 
 #: ../src/iop/clipping.c:2371
 msgid "the bottom margin cannot overlap with the top margin"
-msgstr "Unterer Rand kann nicht über oberen Rand hinauslaufen."
+msgstr "Unterer Rand kann nicht über oberen Rand hinauslaufen"
 
 #: ../src/iop/clipping.c:3467
 msgid "commit"
@@ -10927,6 +10924,7 @@ msgid "demosaicing raw data method"
 msgstr "Methode zum Entrastern der Rohdaten"
 
 # WTF? Wer bitte soll das verstehen?
+# stimmt - wo kommt das vor?
 #: ../src/iop/demosaic.c:5072
 msgid ""
 "threshold for edge-aware median.\n"
@@ -11318,8 +11316,8 @@ msgid ""
 "this is useful if you exposed the image to the right."
 msgstr ""
 "Automatisch die kamerainterne Belichtungskorrektur ausgleichen. Dies ist "
-"insbesondere bei Aufnahmen nützlich, die mit lichter Unterbelichtung "
-"aufgenommen wurden, um die Spitzlichter zu erhalten."
+"insbesondere bei Aufnahmen nützlich, die so belichtet wurden, daß die "
+"Spitzlichter erhalten bleiben."
 
 #: ../src/iop/exposure.c:870
 msgid ""
@@ -11627,7 +11625,8 @@ msgstr "Filmisch RGB"
 #: ../src/iop/filmicrgb.c:322
 msgid "tone mapping|curve|view transform|contrast|saturation|highlights"
 msgstr ""
-"Tonemapping|Tonwertkurve|Ansichtstransformation|Kontrast|Sättigung|Highlights"
+"Tonemapping|Tonwertkurve|Ansichtstransformation|Kontrast|Sättigung|"
+"Spitzlichter"
 
 #: ../src/iop/filmicrgb.c:327
 msgid ""
@@ -11924,6 +11923,7 @@ msgid "options"
 msgstr "Optionen"
 
 # Was bedeutet „same as color balance”?
+# => meint evtl. "wie im Modul Farbbalance"?
 #: ../src/iop/filmicrgb.c:3827
 msgid ""
 "v3 is darktable 3.0 desaturation method, same as color balance.\n"
@@ -12107,6 +12107,8 @@ msgid "the global tonemap operator"
 msgstr "der globale Tonemapping-Operator"
 
 # ...?
+# Bias => Vorgabewert/Vorspannungswert/Voreinstellwert??
+# tonemapper => Tonwertzuordnung/-korrektur/-anpassung ??
 #: ../src/iop/globaltonemap.c:651
 msgid ""
 "the bias for tonemapper controls the linearity, the higher the more details "
@@ -14373,7 +14375,7 @@ msgid ""
 "disabled"
 msgstr ""
 "Der Tonwert-Equalizer muss nach den Verzeichnungs-Modulen in der Pipeline "
-"erfolgen - deaktiviert."
+"erfolgen - deaktiviert"
 
 #. Pointers are not 64-bits aligned, and SSE code will segfault
 #: ../src/iop/toneequal.c:910
@@ -14382,13 +14384,13 @@ msgid ""
 "developers"
 msgstr ""
 "Ein-/Ausgabepuffer des Tonwert-Equalizer ist schlecht ausgerichtet, bitte "
-"melden Sie den Fehler an die Entwickler."
+"melden Sie den Fehler an die Entwickler"
 
 #: ../src/iop/toneequal.c:1009
 msgid "tone equalizer failed to allocate memory, check your RAM settings"
 msgstr ""
 "Tonwert-Equalizer konnte keinen Speicher reservieren, überprüfen Sie Ihre "
-"RAM-Einstellungen."
+"RAM-Einstellungen"
 
 #: ../src/iop/toneequal.c:1689 ../src/iop/toneequal.c:2049
 msgid "the interpolation is unstable, decrease the curve smoothing"
@@ -18688,7 +18690,7 @@ msgstr "beliebiger RGB-Kanal"
 # wtf?
 #: ../src/views/darkroom.c:2265
 msgid "luminance only"
-msgstr "nur Luminanz"
+msgstr "nur Helligkeit"
 
 #: ../src/views/darkroom.c:2266
 msgid "saturation only"
