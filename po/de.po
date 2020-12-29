@@ -5,7 +5,7 @@ msgstr ""
 "Project-Id-Version: darktable\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-29 16:22+0100\n"
+"PO-Revision-Date: 2020-12-29 19:58+0100\n"
 "Last-Translator: Pierre Metzner <openhab.doc@web.de>\n"
 "Language-Team: German <>\n"
 "Language: de_DE\n"
@@ -458,7 +458,7 @@ msgstr "nichtlinear Bradford"
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:536
 msgid "XYZ "
-msgstr "XYZ"
+msgstr "XYZ "
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:537
 msgid "none (bypass)"
@@ -1380,12 +1380,12 @@ msgstr "Belichtung"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:238
 #: ../build/lib/darktable/plugins/introspection_retouch.c:379
 msgid "blur type"
-msgstr "Weichzeichnungstyp"
+msgstr "Weichzeichner-Filter"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:244
 #: ../build/lib/darktable/plugins/introspection_retouch.c:383
 msgid "blur radius"
-msgstr "Weichzeichnungsradius"
+msgstr "Weichzeichnersradius"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:250
 #: ../build/lib/darktable/plugins/introspection_retouch.c:387
@@ -2619,7 +2619,7 @@ msgid ""
 "curve and the legacy module pipe order."
 msgstr ""
 "Eine auf die Aufnahme bezogene Bearbeitung basiert auf Modulen, die in einem "
-"linearen Farbraum arbeiten. Hierfür werden die Module „Filmic” und "
+"linearen Farbraum arbeiten. Hierfür werden die Module „Filmisch” und "
 "„Belichtung” automatisch angewandt. Eine auf die Anzeige bezogene "
 "Bearbeitung basiert auf Modulen, die im Lab Farbraum arbeiten. Hierfür wird "
 "das Modul „Basiskurve” automatisch angewandt und eine veraltete "
@@ -2710,9 +2710,7 @@ msgstr "fragen, bevor Bilder aus der Datenbank entfernt werden"
 
 #: ../build/bin/preferences_gen.h:4985
 msgid "always ask the user before any image is removed from DB."
-msgstr ""
-"Immer beim Anwender nachfragen, bevor ein Bild aus der Datenbank gelöscht "
-"wird."
+msgstr "Immer nachfragen, bevor ein Bild aus der Datenbank gelöscht wird."
 
 #: ../build/bin/preferences_gen.h:5006
 msgid "ask before erasing images from disk"
@@ -2750,7 +2748,7 @@ msgstr "fragen, bevor Bilder aus dem Filmrollen-Ordner verschoben werden"
 
 #: ../build/bin/preferences_gen.h:5125
 msgid "always ask the user before any image file is moved."
-msgstr "Immer beim Anwender nachfragen, bevor eine Bilddatei verschoben wird."
+msgstr "Immer nachfragen, bevor eine Bilddatei verschoben wird."
 
 #: ../build/bin/preferences_gen.h:5146
 msgid "ask before copying images to new film roll folder"
@@ -2758,7 +2756,7 @@ msgstr "fragen, bevor Bilder in einen neuen Filmrollen-Ordner kopiert werden"
 
 #: ../build/bin/preferences_gen.h:5160
 msgid "always ask the user before any image file is copied."
-msgstr "Immer beim Anwender nachfragen, bevor eine Bilddatei kopiert wird."
+msgstr "Immer nachfragen, bevor eine Bilddatei kopiert wird."
 
 #: ../build/bin/preferences_gen.h:5181
 msgid "ask before removing empty folders"
@@ -2769,9 +2767,8 @@ msgid ""
 "always ask the user before removing any empty folder. this can happen after "
 "moving or deleting images."
 msgstr ""
-"Immer beim Anwender nachfragen, bevor leere Verzeichnisse gelöscht werden. "
-"Leere Verzeichnisse können entstehen, wenn Bilder verschoben oder gelöscht "
-"werden."
+"Immer nachfragen, bevor leere Verzeichnisse gelöscht werden. Leere "
+"Verzeichnisse können entstehen, wenn Bilder verschoben oder gelöscht werden."
 
 #: ../build/bin/preferences_gen.h:5216
 msgid "ask before deleting a tag"
@@ -11644,16 +11641,17 @@ msgid ""
 "filmic highlights reconstruction failed to allocate memory, check your RAM "
 "settings"
 msgstr ""
-"Filmic Spitzlichtrekonstruktion konnte kein Speicher zuweisen werden, "
+"Filmisch Spitzlichtrekonstruktion konnte kein Speicher zuweisen werden, "
 "überprüfen Sie Ihre RAM-Einstellungen."
 
 #: ../src/iop/filmicrgb.c:1459 ../src/iop/filmicrgb.c:1735
 msgid "filmic works only on RGB input"
-msgstr "Filmic funktioniert nur mit RGB-Eingabedaten."
+msgstr "Filmisch funktioniert nur mit RGB-Eingabedaten."
 
 #: ../src/iop/filmicrgb.c:1594
 msgid "filmic highlights reconstruction failed to allocate memory on GPU"
-msgstr "Filmic Spitzlichtrekonstruktion konnte keinen GPU Speicher allokieren."
+msgstr ""
+"Filmisch Spitzlichtrekonstruktion konnte keinen GPU Speicher allokieren."
 
 #: ../src/iop/filmicrgb.c:2715
 msgid "look only"
@@ -11949,7 +11947,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"Wähle die gewünschte Krümmung des Filmic-Kurve in den Lichtern.\n"
+"Wähle die gewünschte Krümmung der Filmisch-Kurve in den Lichtern.\n"
 "„hart” nutzt eine starke Krümmung, die zu stärkerer tonaler Kompression "
 "führt.\n"
 "„weich” benutzt eine schwächere Krümmung, was eine geringere tonale "
@@ -11961,7 +11959,7 @@ msgid ""
 "hard uses a high curvature resulting in more tonal compression.\n"
 "soft uses a low curvature resulting in less tonal compression."
 msgstr ""
-"Wähle die gewünschte Krümmung des Filmic-Kurve in den Schatten.\n"
+"Wähle die gewünschte Krümmung der Filmisch-Kurve in den Schatten.\n"
 "„hart” nutzt eine starke Krümmung, die zu stärkerer tonaler Kompression "
 "führt.\n"
 "„weich” benutzt eine schwächere Krümmung, was eine geringere tonale "
@@ -11990,7 +11988,7 @@ msgstr ""
 "Automatisches Setzen des „Härte”-Parameters unter „Aussehen” in Abhängigkeit "
 "vom eingestellten Weiß- und Schwarzpunkt.\n"
 "Dadurch wird der Wert für mittleres Grau auf der neutralen Linie gehalten, "
-"was die Einstellung der Filmic-Parameter vereinfacht. Für mehr manuelle "
+"was die Einstellung der Filmisch-Parameter vereinfacht. Für mehr manuelle "
 "Kontrolle abschalten."
 
 #: ../src/iop/filmicrgb.c:3860
@@ -13746,12 +13744,12 @@ msgstr ""
 
 #: ../src/iop/retouch.c:2235
 msgid "type for the blur algorithm"
-msgstr "Typ des Weichzeichnungsalgorithmus"
+msgstr "Typ des Weichzeichner-Filters"
 
 # Ugh ...
 #: ../src/iop/retouch.c:2239
 msgid "radius of the selected blur type"
-msgstr "Radius des selektierten Weichzeichnungstyp"
+msgstr "Radius des ausgewählten Weichzeichner-Filter"
 
 #: ../src/iop/retouch.c:2244
 msgid "set the opacity on the selected shape"
