@@ -1437,6 +1437,7 @@ margin: 0 2px;
 #basics-box-labels #basics-widget,
 #basics-box-labels #section_label
 {
+  padding-top: 2px;
   margin: 0 0.75em 0.25em 0.75em;
 }
 
