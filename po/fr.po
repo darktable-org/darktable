@@ -16400,12 +16400,11 @@ msgstr "mise à jour des informations de l'image depuis le fichier"
 
 #: ../src/libs/image.c:570
 msgid "set selection as monochrome images and activate monochrome workflow"
-msgstr ""
-"enregistre la sélection comme images monochromes et active le flux monochrome"
+msgstr "définit la sélection comme images monochromes et active le flux monochrome"
 
 #: ../src/libs/image.c:574
 msgid "set selection as color images"
-msgstr "enregistre la sélection comme images couleur"
+msgstr "définit la sélection comme images couleur"
 
 #: ../src/libs/image.c:617
 msgctxt "accel"
