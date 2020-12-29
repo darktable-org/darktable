@@ -495,7 +495,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
     const __m128 m0 = _mm_set_ps(0.0f, cmatrix[6], cmatrix[3], cmatrix[0]);
     const __m128 m1 = _mm_set_ps(0.0f, cmatrix[7], cmatrix[4], cmatrix[1]);
     const __m128 m2 = _mm_set_ps(0.0f, cmatrix[8], cmatrix[5], cmatrix[2]);
- fprintf(stderr,"Using cmatrix codepath\n");
+// fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
