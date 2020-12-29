@@ -1364,21 +1364,24 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
   GtkWidget *label_widget = (module && module->gui_data) ? module->gui_data->warning_label : NULL;
   if (trouble_msg && *trouble_msg)
   {
-    // set the module's trouble flag
-    dt_iop_set_module_in_trouble(module, TRUE);
-    if (label_widget)
+    if (!module->has_trouble)
     {
-      // set the warning message in the module's message area just below the header
-      char *msg = dt_iop_warning_message(trouble_msg);
-      gtk_label_set_text(GTK_LABEL(label_widget), msg);
-      g_free(msg);
-      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
-      gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
+      // set the module's trouble flag
+      dt_iop_set_module_in_trouble(module, TRUE);
+      if (label_widget)
+      {
+        // set the warning message in the module's message area just below the header
+        char *msg = dt_iop_warning_message(trouble_msg);
+        gtk_label_set_text(GTK_LABEL(label_widget), msg);
+        g_free(msg);
+        gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
+        gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
+      }
     }
   }
-  else
+  else if (module->has_trouble)
   {
-    // no trouble, so clear the trouble flag and hide the message area
+    // no more trouble, so clear the trouble flag and hide the message area
     dt_iop_set_module_in_trouble(module, FALSE);
     if (label_widget)
     {
@@ -3297,26 +3300,30 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
                                            const void *const restrict ivoid, void *const restrict ovoid,
                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!module) return FALSE;
   if (ch == req_ch)
   {
-    dt_iop_set_module_trouble_message(module, NULL, NULL);
+    if (module)
+      dt_iop_set_module_trouble_message(module, NULL, NULL);
     return TRUE;
   }
   else
   {
     // copy the input buffer to the output
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
-    // set trouble message
+    // print an error message to the console
+    const char *name = module ? module->name() : "?";
+    fprintf(stderr,"[%s] unsupported data format\n",name);
+    // and set the module's trouble message
     if (module)
       dt_iop_set_module_trouble_message(module, _("unsupported input"),
                                         _("you have placed this module at\n"
                                           "a position in the pipeline where\n"
                                           "the data format does not match\n"
                                           "its requirements."));
-    // and print an error message to the console
-    const char *name = module ? module->name() : "?";
-    fprintf(stderr,"[%s] unsupported data format\n",name);
+    else
+    {
+      //TODO: pop up a toast message?
+    }
     return FALSE;
   }
 }
