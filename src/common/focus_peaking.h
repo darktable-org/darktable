@@ -17,7 +17,9 @@
 
 #pragma once
 
+#include "common/box_filters.h"
 #include "common/fast_guided_filter.h"
+#include "develop/openmp_maths.h"
 
 #ifdef _OPENMP
 #pragma omp declare simd
@@ -35,14 +37,6 @@ static inline uint8_t float_to_uint8(const float i)
   return (uint8_t)(i * 255.0f);
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float sqf(const float x)
-{
-  // square
-  return x * x;
-}
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(image:64) uniform(image)
@@ -88,7 +82,7 @@ static inline void dt_focuspeaking(cairo_t *cr, int width, int height,
                                    const int buf_width, const int buf_height)
 {
   float *const restrict luma =  dt_alloc_sse_ps(buf_width * buf_height);
-  uint8_t *const restrict focus_peaking = dt_alloc_align(64, 4 * buf_width * buf_height * sizeof(uint8_t));
+  uint8_t *const restrict focus_peaking = dt_alloc_align(64, sizeof(uint8_t) * buf_width * buf_height * 4);
 
   // Create a luma buffer as the euclidian norm of RGB channels
 #ifdef _OPENMP
@@ -139,7 +133,8 @@ schedule(static) collapse(2) aligned(luma_ds, luma:64)
     }
 
   // Anti-aliasing
-  box_average(luma_ds, buf_width, buf_height, 1, 2);
+//  box_average(luma_ds, buf_width, buf_height, 1, 2);
+  dt_box_mean(luma_ds, buf_height, buf_width, 1, 2, 1);
 
   // Compute the gradient mean over the picture
   float TV_sum = 0.0f;

@@ -49,14 +49,11 @@ typedef enum dt_lib_live_view_overlay_t
 #define HANDLE_SIZE 0.02
 
 static const cairo_operator_t _overlay_modes[] = {
-  CAIRO_OPERATOR_OVER, CAIRO_OPERATOR_XOR, CAIRO_OPERATOR_ADD, CAIRO_OPERATOR_SATURATE
-#if(CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0))
-  ,
+  CAIRO_OPERATOR_OVER, CAIRO_OPERATOR_XOR, CAIRO_OPERATOR_ADD, CAIRO_OPERATOR_SATURATE,
   CAIRO_OPERATOR_MULTIPLY, CAIRO_OPERATOR_SCREEN, CAIRO_OPERATOR_OVERLAY, CAIRO_OPERATOR_DARKEN,
   CAIRO_OPERATOR_LIGHTEN, CAIRO_OPERATOR_COLOR_DODGE, CAIRO_OPERATOR_COLOR_BURN, CAIRO_OPERATOR_HARD_LIGHT,
   CAIRO_OPERATOR_SOFT_LIGHT, CAIRO_OPERATOR_DIFFERENCE, CAIRO_OPERATOR_EXCLUSION, CAIRO_OPERATOR_HSL_HUE,
   CAIRO_OPERATOR_HSL_SATURATION, CAIRO_OPERATOR_HSL_COLOR, CAIRO_OPERATOR_HSL_LUMINOSITY
-#endif
 };
 
 DT_MODULE(1)
@@ -338,7 +335,7 @@ void gui_init(dt_lib_module_t *self)
 
   // Guides
   lib->guide_selector = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->guide_selector, NULL, _("guides"));
+  dt_bauhaus_widget_set_label(lib->guide_selector, NULL, N_("guides"));
   gtk_box_pack_start(GTK_BOX(self->widget), lib->guide_selector, TRUE, TRUE, 0);
 
   lib->guides_widgets = gtk_stack_new();
@@ -369,7 +366,7 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(lib->guide_selector), "value-changed", G_CALLBACK(guides_presets_changed), lib);
 
   lib->flip_guides = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->flip_guides, NULL, _("flip"));
+  dt_bauhaus_widget_set_label(lib->flip_guides, NULL, N_("flip"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("none"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("horizontally"));
   dt_bauhaus_combobox_add(lib->flip_guides, _("vertically"));
@@ -378,7 +375,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), lib->flip_guides, TRUE, TRUE, 0);
 
   lib->overlay = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->overlay, NULL, _("overlay"));
+  dt_bauhaus_widget_set_label(lib->overlay, NULL, N_("overlay"));
   dt_bauhaus_combobox_add(lib->overlay, _("none"));
   dt_bauhaus_combobox_add(lib->overlay, _("selected image"));
   dt_bauhaus_combobox_add(lib->overlay, _("id"));
@@ -402,12 +399,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_show(label);
 
   lib->overlay_mode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->overlay_mode, NULL, _("overlay mode"));
+  dt_bauhaus_widget_set_label(lib->overlay_mode, NULL, N_("overlay mode"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "normal"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "xor"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "add"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "saturate"));
-#if(CAIRO_VERSION >= CAIRO_VERSION_ENCODE(1, 10, 0))
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "multiply"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "screen"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "overlay"));
@@ -423,14 +419,13 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL saturation"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL color"));
   dt_bauhaus_combobox_add(lib->overlay_mode, C_("blendmode", "HSL luminosity"));
-#endif
   gtk_widget_set_tooltip_text(lib->overlay_mode, _("mode of the overlay"));
   dt_bauhaus_combobox_set(lib->overlay_mode, dt_conf_get_int("plugins/lighttable/live_view/overlay_mode"));
   g_signal_connect(G_OBJECT(lib->overlay_mode), "value-changed", G_CALLBACK(_overlay_mode_changed), lib);
   gtk_box_pack_start(GTK_BOX(self->widget), lib->overlay_mode, TRUE, TRUE, 0);
 
   lib->overlay_splitline = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, _("split line"));
+  dt_bauhaus_widget_set_label(lib->overlay_splitline, NULL, N_("split line"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("off"));
   dt_bauhaus_combobox_add(lib->overlay_splitline, _("on"));
   gtk_widget_set_tooltip_text(lib->overlay_splitline, _("only draw part of the overlay"));
@@ -479,6 +474,21 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   gtk_widget_set_sensitive(lib->focus_out_small, sensitive);
 }
 
+void view_leave(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
+{
+  dt_lib_live_view_t *lib = self->data;
+
+  // there's no code to automatically restart live view when entering
+  // the view, and besides the user may not want to jump right back
+  // into live view if they've been out of tethering view doing other
+  // things
+  if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(lib->live_view)) == TRUE)
+  {
+    dt_camctl_camera_stop_live_view(darktable.camctl);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(lib->live_view), FALSE);
+  }
+}
+
 // TODO: find out where the zoom window is and draw overlay + grid accordingly
 #define MARGIN 20
 #define BAR_HEIGHT 18 /* see libs/camera.c */
@@ -490,16 +500,16 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
 
   if(cam->is_live_viewing == FALSE || cam->live_view_zoom == TRUE) return;
 
-  dt_pthread_mutex_lock(&cam->live_view_pixbuf_mutex);
-  if(GDK_IS_PIXBUF(cam->live_view_pixbuf) == FALSE)
+  dt_pthread_mutex_lock(&cam->live_view_buffer_mutex);
+  if(!cam->live_view_buffer)
   {
-    dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+    dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
     return;
   }
   double w = width - (MARGIN * 2.0f);
   double h = height - (MARGIN * 2.0f) - BAR_HEIGHT;
-  gint pw = gdk_pixbuf_get_width(cam->live_view_pixbuf);
-  gint ph = gdk_pixbuf_get_height(cam->live_view_pixbuf);
+  gint pw = cam->live_view_width;
+  gint ph = cam->live_view_height;
   lib->overlay_x0 = lib->overlay_x1 = lib->overlay_y0 = lib->overlay_y1 = 0.0;
 
   gboolean use_splitline = (dt_bauhaus_combobox_get(lib->overlay_splitline) == 1);
@@ -576,7 +586,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
             break;
           default:
             fprintf(stderr, "OMFG, the world will collapse, this shouldn't be reachable!\n");
-            dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+            dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
             return;
         }
 
@@ -698,7 +708,7 @@ void gui_post_expose(dt_lib_module_t *self, cairo_t *cr, int32_t width, int32_t 
     cairo_stroke(cr);
   }
   cairo_restore(cr);
-  dt_pthread_mutex_unlock(&cam->live_view_pixbuf_mutex);
+  dt_pthread_mutex_unlock(&cam->live_view_buffer_mutex);
 }
 
 int button_released(struct dt_lib_module_t *self, double x, double y, int which, uint32_t state)

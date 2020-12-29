@@ -30,16 +30,20 @@ constant sampler_t samplerc =  CLK_NORMALIZED_COORDS_FALSE | CLK_ADDRESS_CLAMP  
 #define ICLAMP(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 
-int
+inline int
 FC(const int row, const int col, const unsigned int filters)
 {
   return filters >> ((((row) << 1 & 14) + ((col) & 1)) << 1) & 3;
 }
 
 
-int 
+inline int
 FCxtrans(const int row, const int col, global const unsigned char (*const xtrans)[6])
 {
   return xtrans[row % 6][col % 6];
 }
 
+
+// Allow the compiler to convert a * b + c to fused multiply-add to use hardware acceleration
+// on compatible platforms
+#pragma OPENCL FP_CONTRACT ON

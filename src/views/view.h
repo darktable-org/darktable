@@ -25,6 +25,7 @@
 #endif
 #ifdef HAVE_MAP
 #include "common/geo.h"
+#include "common/map_locations.h"
 #include <osm-gps-map.h>
 #endif
 #include <cairo.h>
@@ -101,6 +102,14 @@ typedef enum dt_mouse_action_type_t
   DT_MOUSE_ACTION_RIGHT_DRAG
 } dt_mouse_action_type_t;
 
+// flags that a view can set in flags()
+typedef enum dt_view_surface_value_t
+{
+  DT_VIEW_SURFACE_OK = 0,
+  DT_VIEW_SURFACE_KO,
+  DT_VIEW_SURFACE_SMALLER
+} dt_view_surface_value_t;
+
 typedef struct dt_mouse_action_t
 {
   GtkAccelKey key;
@@ -168,7 +177,7 @@ typedef struct dt_view_t
   GSList *(*mouse_actions)(const struct dt_view_t *self);
 
   GSList *accel_closures;
-  struct dt_accel_dynamic_t *dynamic_accel_current;
+  GtkWidget *dynamic_accel_current;
 } dt_view_t;
 
 typedef enum dt_view_image_over_t
@@ -194,9 +203,10 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
 int dt_view_get_image_to_act_on();
 
 /** returns an uppercase string of file extension **plus** some flag information **/
-char* dt_view_extend_modes_str(const char * name, const int is_hdr, const int is_bw);
-/** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality);
+char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow);
+/** expose an image and return a cair0_surface. */
+dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+                                                  const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
@@ -334,15 +344,8 @@ typedef struct dt_view_manager_t
       struct dt_view_t *view;
       const char *(*get_job_code)(const dt_view_t *view);
       void (*set_job_code)(const dt_view_t *view, const char *name);
-      uint32_t (*get_selected_imgid)(const dt_view_t *view);
+      int32_t (*get_selected_imgid)(const dt_view_t *view);
     } tethering;
-
-    /* more module window proxy */
-    struct
-    {
-      struct dt_lib_module_t *module;
-      void (*update)(struct dt_lib_module_t *);
-    } more_module;
 
     /* timeline module proxy */
     struct
@@ -362,6 +365,11 @@ typedef struct dt_view_manager_t
       void (*set_map_source)(const dt_view_t *view, OsmGpsMapSource_t map_source);
       GObject *(*add_marker)(const dt_view_t *view, dt_geo_map_display_t type, GList *points);
       gboolean (*remove_marker)(const dt_view_t *view, dt_geo_map_display_t type, GObject *marker);
+      void (*add_location)(const dt_view_t *view, dt_map_location_data_t *p, const guint posid);
+      void (*location_action)(const dt_view_t *view, const int action);
+      void (*drag_set_icon)(const dt_view_t *view, GdkDragContext *context, const int imgid, const int count);
+      gboolean (*redraw)(gpointer user_data);
+      gboolean (*display_selected)(gpointer user_data);
     } map;
 #endif
 
@@ -480,6 +488,9 @@ void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled);
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source);
 GObject *dt_view_map_add_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GList *points);
 gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_display_t type, GObject *marker);
+void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_t *p, const guint posid);
+void dt_view_map_location_action(const dt_view_manager_t *vm, const int action);
+void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const int imgid, const int count);
 #endif
 
 /*

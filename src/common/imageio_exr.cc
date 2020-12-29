@@ -129,7 +129,7 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
   }
 
   // FIXME: is this really needed?
-  memset(buf, 0, 4 * img->width * img->height * sizeof(float));
+  memset(buf, 0, sizeof(float) * 4 * img->width * img->height);
 
   /* setup framebuffer */
   xstride = sizeof(float) * 4;
@@ -183,6 +183,10 @@ dt_imageio_retval_t dt_imageio_open_exr(dt_image_t *img, const char *filename, d
 
 
   /* cleanup and return... */
+  img->buf_dsc.filters = 0u;
+  img->flags &= ~DT_IMAGE_RAW;
+  img->flags &= ~DT_IMAGE_S_RAW;
+  img->flags &= ~DT_IMAGE_LDR;
   img->flags |= DT_IMAGE_HDR;
 
   return DT_IMAGEIO_OK;

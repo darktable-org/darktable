@@ -371,7 +371,7 @@ void gui_init(dt_imageio_module_format_t *self)
   const int compression_last = dt_conf_get_int("plugins/imageio/format/exr/compression");
 
   gui->compression = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(gui->compression, NULL, _("compression mode"));
+  dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression mode"));
 
   dt_bauhaus_combobox_add(gui->compression, _("off"));
   dt_bauhaus_combobox_add(gui->compression, _("RLE"));

@@ -23,6 +23,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <getopt.h>
+#include <inttypes.h>
 
 #include <errno.h>
 
@@ -661,22 +662,22 @@ read_curveset(
   float* curve,
   uint32_t* hist)
 {
-  int r = fread(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), f);
-  if (r != 3*CURVE_RESOLUTION*sizeof(float))
+  size_t r = fread(curve, 1, sizeof(float) * 3 * CURVE_RESOLUTION, f);
+  if (r != sizeof(float) * 3 * CURVE_RESOLUTION)
   {
     /* could not read save state, either missing stats in that save file or
      * corrupt data. both cases need to clean state */
-    memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
+    memset(curve, 0, sizeof(float) * 3 * CURVE_RESOLUTION);
   }
   else
   {
-    r = fread(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), f);
-    if (r != 3*CURVE_RESOLUTION*sizeof(uint32_t))
+    r = fread(hist, 1, sizeof(uint32_t) * 3 * CURVE_RESOLUTION, f);
+    if (r != sizeof(uint32_t) * 3 * CURVE_RESOLUTION)
     {
       /* could not read save state, either missing stats in that save file or
        * corrupt data. both cases need to clean state */
-      memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
-      memset(hist, 0, 3*CURVE_RESOLUTION*sizeof(uint32_t));
+      memset(curve, 0, sizeof(float) * 3 * CURVE_RESOLUTION);
+      memset(hist, 0, sizeof(uint32_t) * 3 * CURVE_RESOLUTION);
     }
   }
 }
@@ -764,7 +765,7 @@ main(int argc, char** argv)
     opt.num_nodes = 20;
   }
 
-  curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*6);
+  curve = calloc(1, sizeof(float) * 6 * CURVE_RESOLUTION);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     ret = -1;
@@ -773,7 +774,7 @@ main(int argc, char** argv)
   curve_base = curve;
   curve_tone = curve + 3*CURVE_RESOLUTION;
 
-  hist = calloc(1, CURVE_RESOLUTION*sizeof(uint32_t)*6);
+  hist = calloc(1, sizeof(uint32_t) * 6 * CURVE_RESOLUTION);
   if (!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
     ret = -1;
@@ -831,7 +832,7 @@ main(int argc, char** argv)
     }
   }
 
-  raw_buff_f = calloc(1, 3*raw_width*raw_height*sizeof(float));
+  raw_buff_f = calloc(1, sizeof(float)*3*raw_width*raw_height);
   if (!raw_buff_f) {
     fprintf(stderr, "error: failed allocating raw file float buffer\n");
     goto exit;
@@ -844,7 +845,7 @@ main(int argc, char** argv)
   free(raw_buff);
   raw_buff = NULL;
 
-  jpeg_buff_f = calloc(1, 3*jpeg_width*jpeg_height*sizeof(float));
+  jpeg_buff_f = calloc(1, sizeof(float)*3*jpeg_width*jpeg_height);
   if (!jpeg_buff_f) {
     fprintf(stderr, "error: failed allocating JPEG file float buffer\n");
     goto exit;
@@ -910,10 +911,9 @@ main(int argc, char** argv)
 
     // output the histograms:
     fprintf(f, "# basecurve-red basecurve-green basecurve-blue basecurve-avg cnt-red cnt-green cnt-blue\n");
-    for(int k=0;k<CURVE_RESOLUTION;k++)
-    {
-      fprintf(f, "%f %f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], (ch0[k] + ch1[k] + ch2[k])/3.0f, h0[k], h1[k], h2[k]);
-    }
+    for(int k = 0; k < CURVE_RESOLUTION; k++)
+      fprintf(f, "%f %f %f %f %" PRIu32 " %" PRIu32 " %" PRIu32 "\n", ch0[k], ch1[k], ch2[k],
+              (ch0[k] + ch1[k] + ch2[k]) / 3.0f, h0[k], h1[k], h2[k]);
   }
 
   fclose(f);
@@ -942,10 +942,8 @@ main(int argc, char** argv)
 
     // output the histogram
     fprintf(f, "# tonecurve-L tonecurve-a tonecurve-b cnt-L cnt-a cnt-b\n");
-    for(int k=0;k<CURVE_RESOLUTION;k++)
-    {
-      fprintf(f, "%f %f %f %d %d %d\n", ch0[k], ch1[k], ch2[k], h0[k], h1[k], h2[k]);
-    }
+    for(int k = 0; k < CURVE_RESOLUTION; k++)
+      fprintf(f, "%f %f %f %" PRIu32 " %" PRIu32 " %" PRIu32 "\n", ch0[k], ch1[k], ch2[k], h0[k], h1[k], h2[k]);
   }
 
   fclose(f);
@@ -1147,14 +1145,13 @@ fit:;
                     opt.filename_exif ? model : "new measured tonecurve",
                     opt.filename_exif ? maker : "<MAKER>",
                     opt.filename_exif ? model : "<MODEL>");
-    for (int i=0; i<3; i++)
+    for(int i = 0; i < 3; i++)
     {
       fprintf(stdout, "{");
-      for(int k=0;k<params.tonecurve_nodes[i];k++)
-      {
-        fprintf(stdout, "{%f, %f}%s", params.tonecurve[i][k].x, params.tonecurve[i][k].y, params.tonecurve_nodes[i]-1?", ":"");
-      }
-      fprintf(stdout, "},");
+      for(int k = 0; k < params.tonecurve_nodes[i]; k++)
+        fprintf(stdout, "{%f, %f}%s", params.tonecurve[i][k].x, params.tonecurve[i][k].y,
+                (k + 1 < params.tonecurve_nodes[i]) ? ", " : "");
+      fprintf(stdout, (i + 1 < 3) ? "}, " : "}");
     }
     fprintf(stdout, "}, {%d, %d, %d}, {%d, %d, %d}, %d, 0, %d}},\n",
       params.tonecurve_nodes[0], params.tonecurve_nodes[1], params.tonecurve_nodes[2],

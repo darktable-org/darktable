@@ -61,7 +61,7 @@ void dt_lua_debug_table_internal(lua_State *L, int t, const char *function, int 
 
 #define dt_lua_lock() dt_lua_lock_internal(__FUNCTION__, __FILE__, __LINE__, FALSE)
 #define dt_lua_lock_silent() dt_lua_lock_internal(__FUNCTION__, __FILE__, __LINE__, TRUE)
-#define dt_lua_unlock() dt_lua_unlock_internal( __FUNCTION__, __LINE__) 
+#define dt_lua_unlock() dt_lua_unlock_internal( __FUNCTION__, __LINE__)
 
 typedef struct
 {

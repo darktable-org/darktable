@@ -45,7 +45,7 @@ extern GType DT_BAUHAUS_WIDGET_TYPE;
 
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MAX 500
 #define DT_BAUHAUS_SLIDER_VALUE_CHANGED_DELAY_MIN 25
-#define DT_BAUHAUS_SLIDER_MAX_STOPS 10
+#define DT_BAUHAUS_SLIDER_MAX_STOPS 20
 
 typedef enum dt_bauhaus_type_t
 {
@@ -107,11 +107,14 @@ typedef struct dt_bauhaus_combobox_entry_t
 
 typedef struct dt_bauhaus_combobox_data_t
 {
-  int num_labels;     // number of elements
-  int active;         // currently active element
-  int defpos;         // default position
-  int editable;       // 1 if arbitrary text may be typed
-  char text[180];     // roughly as much as a slider
+  int num_labels;       // number of elements
+  int active;           // currently active element
+  int defpos;           // default position
+  int editable;         // 1 if arbitrary text may be typed
+  int scale;            // scale of the combo popup from combo widget
+  dt_bauhaus_combobox_alignment_t text_align; // if selected text in combo should be aligned to the left/right
+  char text[180];       // roughly as much as a slider
+  PangoEllipsizeMode entries_ellipsis;
   GList *entries;
 } dt_bauhaus_combobox_data_t;
 
@@ -200,12 +203,15 @@ typedef struct dt_bauhaus_t
   GList *key_val;     // for autocomplete, after the point: .value
   char key_history[64][256];
 
+  // initialise or connect accelerators in set_label
+  int skip_accel;
+
   // appearance relevant stuff:
   // sizes and fonts:
   float scale;                           // gui scale multiplier
-  float widget_space;                      // space between widgets in a module
-  float line_space;                        // space between lines of text in e.g. the combo box
-  float line_height;                       // height of a line of text
+  float widget_space;                    // space between widgets in a module
+  float line_space;                      // space between lines of text in e.g. the combo box
+  float line_height;                     // height of a line of text
   float marker_size;                     // height of the slider indicator
   float baseline_size;                   // height of the slider bar
   float border_width;                    // width of the border of the slider marker
@@ -225,7 +231,8 @@ typedef struct dt_bauhaus_t
   GdkRGBA color_fg, color_fg_insensitive, color_bg, color_border, indicator_border, color_fill;
 
   // colors for graphs
-  GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, inset_histogram;
+  GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
+  GdkRGBA graph_primaries[3];
 } dt_bauhaus_t;
 
 #define DT_BAUHAUS_SPACE 0
@@ -286,6 +293,7 @@ void dt_bauhaus_slider_set_step(GtkWidget *w, float val);
 float dt_bauhaus_slider_get_step(GtkWidget *w);
 
 void dt_bauhaus_slider_set_feedback(GtkWidget *w, int feedback);
+int dt_bauhaus_slider_get_feedback(GtkWidget *w);
 
 void dt_bauhaus_slider_reset(GtkWidget *widget);
 void dt_bauhaus_slider_set_format(GtkWidget *w, const char *format);
@@ -295,6 +303,7 @@ void dt_bauhaus_slider_set_stop(GtkWidget *widget, float stop, float r, float g,
 void dt_bauhaus_slider_clear_stops(GtkWidget *widget);
 void dt_bauhaus_slider_set_default(GtkWidget *widget, float def);
 void dt_bauhaus_slider_set_soft_range(GtkWidget *widget, float soft_min, float soft_max);
+float dt_bauhaus_slider_get_default(GtkWidget *widget);
 void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min, float hard_max);
 void dt_bauhaus_slider_set_curve(GtkWidget *widget, float (*curve)(GtkWidget *self, float value, dt_bauhaus_curve_t dir));
 
@@ -309,12 +318,15 @@ void dt_bauhaus_combobox_add_full(GtkWidget *widget, const char *text, dt_bauhau
                                   gpointer data, void (*free_func)(void *data), gboolean sensitive);
 void dt_bauhaus_combobox_set(GtkWidget *w, int pos);
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *w, const char *text);
+gboolean dt_bauhaus_combobox_set_from_value(GtkWidget *w, int value);
 void dt_bauhaus_combobox_remove_at(GtkWidget *widget, int pos);
 void dt_bauhaus_combobox_insert(GtkWidget *widget, const char *text,int pos);
 void dt_bauhaus_combobox_insert_full(GtkWidget *widget, const char *text, dt_bauhaus_combobox_alignment_t align,
                                      gpointer data, void (*free_func)(void *data), int pos);
 int dt_bauhaus_combobox_length(GtkWidget *widget);
 void dt_bauhaus_combobox_set_editable(GtkWidget *w, int editable);
+void dt_bauhaus_combobox_set_popup_scale(GtkWidget *widget, int scale);
+void dt_bauhaus_combobox_set_selected_text_align(GtkWidget *widget, const dt_bauhaus_combobox_alignment_t text_align);
 int dt_bauhaus_combobox_get_editable(GtkWidget *w);
 const char *dt_bauhaus_combobox_get_text(GtkWidget *w);
 void dt_bauhaus_combobox_set_text(GtkWidget *w, const char *text);
@@ -326,6 +338,8 @@ void dt_bauhaus_combobox_set_default(GtkWidget *widget, int def);
 int dt_bauhaus_combobox_get_default(GtkWidget *widget);
 void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidget *w, struct dt_iop_module_t **module));
 void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget, int pos, gboolean sensitive);
+void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget, PangoEllipsizeMode ellipis);
+PangoEllipsizeMode dt_bauhaus_combobox_get_entries_ellipsis(GtkWidget *widget);
 
 // key accel parsing:
 // execute a line of input

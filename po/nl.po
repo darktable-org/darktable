@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable _master\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-05-25 13:04+0200\n"
-"PO-Revision-Date: 2020-05-25 13:30+0200\n"
+"PO-Revision-Date: 2020-12-29 13:00+0100\n"
 "Last-Translator: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language-Team: Ger Siemerink <g.siemerink@gmail.com>\n"
 "Language: nl_NL\n"
@@ -11,16 +11,16 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Poedit 2.4.2\n"
 
 #: ../build/data/darktable.desktop.in.h:1 ../data/darktable.desktop.in.h:1
 msgid "Virtual Lighttable and Darkroom"
-msgstr "virtuele bibliotheek en donkere kamer"
+msgstr "Virtuele bibliotheek en donkere kamer"
 
 #: ../build/data/darktable.desktop.in.h:2 ../data/darktable.appdata.xml.in.h:1
 #: ../data/darktable.desktop.in.h:2
 msgid "Organize and develop images from digital cameras"
-msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
+msgstr "Organiseer en ontwikkel afbeeldingen van digitale camera's"
 
 #. TRANSLATORS: Search terms to find this application. Do NOT translate or localize the semicolons! The list MUST also end with a semicolon!
 #: ../build/data/darktable.desktop.in.h:4 ../data/darktable.desktop.in.h:4
@@ -90,7 +90,7 @@ msgstr "dubbelklikken is resetten naar `%s'"
 #: ../build/src/preferences_gen.h:3630 ../build/src/preferences_gen.h:3759
 msgctxt "preferences"
 msgid "TRUE"
-msgstr "waar"
+msgstr "WAAR"
 
 #: ../build/src/preferences_gen.h:1624
 msgid ""
@@ -100,7 +100,7 @@ msgid ""
 msgstr ""
 "indien ingeschakeld zullen gecachte miniaturen op kleur worden beheerd en "
 "vertonen bibliotheek en filmreeks de correcte kleuren, anders wordt mogelijk "
-"bij een gewijzigd weergaveprofiel het resultaat niet goed weergegeven"
+"bij een gewijzigd weergaveprofiel het resultaat niet goed weergegeven."
 
 #: ../build/src/preferences_gen.h:1632
 msgid "don't use embedded preview JPEG but half-size raw"
@@ -121,7 +121,7 @@ msgstr ""
 #: ../build/src/preferences_gen.h:4117
 msgctxt "preferences"
 msgid "FALSE"
-msgstr "onwaar"
+msgstr "ONWAAR"
 
 #: ../build/src/preferences_gen.h:1645
 msgid ""
@@ -129,8 +129,8 @@ msgid ""
 "the raw data. this is slower but gives you color managed thumbnails."
 msgstr ""
 "vink aan om niet de ingesloten JPEG's van de raw-bestanden te gebruiken maar "
-"ze te maken van de raw-data. dit kost tijd maar geeft kleurrijke "
-"voorvertoningen"
+"ze te maken van de raw-data. Dit kost tijd maar geeft op kleur beheerde "
+"voorvertoningen."
 
 #: ../build/src/preferences_gen.h:1653
 msgid "number of folder levels to show in lists"
@@ -233,7 +233,7 @@ msgid ""
 "values depending of the size of the thumbnail."
 msgstr ""
 "groottecategorieën worden gebruikt om verschillende overlays en css-waarden "
-"in te stellen, afhankelijk van de grootte van de miniatuur"
+"in te stellen, afhankelijk van de grootte van de miniatuur."
 
 #: ../build/src/preferences_gen.h:1810
 msgid "pattern for the thumbnail extended overlay text"
@@ -242,7 +242,7 @@ msgstr "patroon voor de uitgebreide miniaturen overlay tekst"
 #: ../build/src/preferences_gen.h:1831 ../build/src/preferences_gen.h:1860
 #: ../build/src/preferences_gen.h:2197
 msgid "see manual to know all the tags you can use."
-msgstr "lees de handleiding om alle mogelijke labels te ontdekken"
+msgstr "lees de handleiding om alle mogelijke labels te ontdekken."
 
 #: ../build/src/preferences_gen.h:1839
 msgid "pattern for the thumbnail tooltip (empty to disable)"
@@ -258,7 +258,7 @@ msgid ""
 "this will allow you to do range selections for date-time and numeric values."
 msgstr ""
 "vink deze optie aan om items te selecteren met één klik, hiermee kun je "
-"selecties uitvoeren voor datum- en numerieke waarden"
+"selecties uitvoeren voor datum- en numerieke waarden."
 
 #: ../build/src/preferences_gen.h:1889
 msgid "overlay txt sidecar over zoomed images"
@@ -305,9 +305,9 @@ msgid ""
 "do not have the rating of one star behave as documented in the manual--an "
 "image rated one star twice will result in a zero star rating."
 msgstr ""
-"hebben niet de classificatie van een ster gedragen zoals beschreven in de "
-"handleiding--het tweemaal classificeren met een ster resulteert in een nul "
-"sterren classificatie"
+"laat de beoordeling van een ster zich niet gedragen zoals beschreven in de "
+"handleiding--het tweemaal beoordelen met één ster geeft een beoordeling van "
+"nul sterren."
 
 #: ../build/src/preferences_gen.h:1973 ../build/src/preferences_gen.h:2406
 msgid "show scrollbars for central view"
@@ -361,10 +361,10 @@ msgid ""
 "reading controls specified attribute, absolute/relative - pressure reading "
 "is taken directly as attribute value or multiplied with pre-defined setting."
 msgstr ""
-"uit- negeer drukuitlezing, hardheid, dekking, penseeldikte - drukuitlezing "
-"beïnvloed benoemd attribuut, absoluut/relatief - drukuitlezing wordt direct "
-"genomen als attribuut waarde of vermenigvuldigd met een vooraf ingestelde "
-"waarde"
+"uit- negeer drukuitlezing, hardheid/dekking/penseeldikte - drukuitlezing "
+"beïnvloedt benoemd attribuut, absoluut/relatief - drukuitlezing wordt direct "
+"genomen als attribuutwaarde of vermenigvuldigd met een vooraf ingestelde "
+"waarde."
 
 #: ../build/src/preferences_gen.h:2081
 msgid "smoothing of brush strokes"
@@ -414,7 +414,7 @@ msgid ""
 "masks feature."
 msgstr ""
 "bepaalt hoe kleurkanalen worden weergegeven indien geactiveerd in het "
-"parametrisch masker"
+"parametrisch masker."
 
 #: ../build/src/preferences_gen.h:2176
 msgid "pattern for the image infos line"
@@ -470,7 +470,7 @@ msgstr "toon beide"
 
 #: ../build/src/preferences_gen.h:2313
 msgid "expand a single darkroom module at a time"
-msgstr "uitbreiden: een enkele ontwikkelmodule per keer "
+msgstr "vouw een enkele ontwikkelmodule per keer uit"
 
 #: ../build/src/preferences_gen.h:2326
 msgid "this option toggles the behavior of shift clicking in darkroom mode"
@@ -486,7 +486,7 @@ msgid ""
 "enabled or disabled."
 msgstr ""
 "deze optie maakt bij in- of uitschakeling automatisch uitvouwen of "
-"samenvouwen mogelijk"
+"samenvouwen mogelijk."
 
 #: ../build/src/preferences_gen.h:2355
 msgid "scroll to darkroom modules when expanded/collapsed"
@@ -501,8 +501,8 @@ msgid ""
 "process the image in darkroom mode with a small border. set to 0 if you "
 "don't want any border."
 msgstr ""
-"de afbeelding in de modus ontwikkelen aanmaken met een smalle rand, kies 0 "
-"als je geen rand wil"
+"verwerk de afbeelding in de ontwikkelmodus met een smalle rand. Kies 0 als "
+"je geen rand wil."
 
 #: ../build/src/preferences_gen.h:2427
 msgid "demosaicing for zoomed out darkroom mode"
@@ -530,11 +530,11 @@ msgid ""
 "below, full will use exactly the settings for full-size export. X-Trans "
 "sensors use VNG rather than PPG as middle ground."
 msgstr ""
-"interpolatie indien niet gekozen voor 1:1 weergave in de ontwikkelen modus: "
+"interpolatie. Indien niet gekozen voor 1:1 weergave in de ontwikkelmodus: "
 "bilineair is het snelst maar niet zo scherp, middle ground maakt gebruik van "
 "PPG + interpolatie volgens onderstaande opgave, volledig gebruikt "
 "instellingen identiek aan de volledige exportafmetingen, X-Trans sensoren "
-"gebruiken VNG liever nog dan PPG zoals middle ground"
+"gebruiken VNG in plaats van PPG zoals middle ground."
 
 #: ../build/src/preferences_gen.h:2477
 msgid "reduce resolution of preview image"
@@ -563,6 +563,8 @@ msgstr "naar 1/4"
 #: ../build/src/preferences_gen.h:2524
 msgid "decrease to speed up preview rendering, may hinder accurate masking"
 msgstr ""
+"verminder om de voorvertoning sneller weer te geven, het kan accuraat maken "
+"van maskers hinderen"
 
 #: ../build/src/preferences_gen.h:2551
 msgid "other views"
@@ -583,8 +585,8 @@ msgid ""
 "number of images drawn and thus reduces the time needed to draw the images."
 msgstr ""
 "gebruik het huidige filter om geo-gelabelde afbeeldingen op de kaart te "
-"selecteren, geef bijvoorbeeld een weergavelimiet aan de huidige filmreeks "
-"waardoor de tijd die nodig is om ze weer te geven, wordt verkort"
+"selecteren, geef bijvoorbeeld een weergavelimiet aan de huidige filmstrip "
+"waardoor de tijd die nodig is om ze weer te geven, wordt verkort."
 
 #: ../build/src/preferences_gen.h:2583
 msgid "maximum number of images drawn on map"
@@ -595,8 +597,8 @@ msgid ""
 "the maximum number of geotagged images drawn on the map. increasing this "
 "number can slow drawing of the map down."
 msgstr ""
-"het maximaal aantal weer te geven afbeeldingen op de kaart, hogere waarden "
-"kunnen de opbouw en weergave op de kaart vertragen"
+"het maximaal aantal weer te geven afbeeldingen op de kaart. Hogere waarden "
+"kunnen de opbouw van de kaart vertragen."
 
 #: ../build/src/preferences_gen.h:2613
 msgid "pretty print the image location"
@@ -622,7 +624,7 @@ msgstr "maak presentatie van uitstekende kwaliteit"
 
 #: ../build/src/preferences_gen.h:2684
 msgid "same option as for export, but applies to slideshow."
-msgstr "optie gelijk aan exporteren, maar toegepast op presentatie"
+msgstr "optie gelijk aan exporteren, maar toegepast op presentatie."
 
 #: ../build/src/preferences_gen.h:2711
 msgid "processing"
@@ -634,7 +636,7 @@ msgstr "gebruik altijd LittleCMS als toepassing voor uitgaand profiel"
 
 #: ../build/src/preferences_gen.h:2727
 msgid "this is slower than the default."
-msgstr "dit is langzamer dan de standaard"
+msgstr "dit is langzamer dan de standaard."
 
 #: ../build/src/preferences_gen.h:2735
 msgid "pixel interpolator"
@@ -686,8 +688,8 @@ msgid ""
 "this folder (and sub-folders) contains Lut files used by lut3d modules. need "
 "to restart darktable."
 msgstr ""
-"deze map (en submappen) bevat Lut bestanden gebruikt door lut3d modules, "
-"herstart darktable"
+"deze map (en submappen) bevat Lut-bestanden gebruikt door lut3d-modules, "
+"herstart darktable."
 
 #: ../build/src/preferences_gen.h:2816
 msgid "auto-apply basecurve"
@@ -699,7 +701,7 @@ msgstr "gebruik standaard een basecurve(herstarten noodzakelijk)"
 
 #: ../build/src/preferences_gen.h:2837
 msgid "auto-apply per camera basecurve presets"
-msgstr "automatisch toepassen van basecurve voorkeuren "
+msgstr "automatisch toepassen van basiscurvevoorinstellingen"
 
 #: ../build/src/preferences_gen.h:2850
 msgid ""
@@ -736,7 +738,7 @@ msgstr "vraag om bevestiging voor verwijdering afbeeldingen uit database"
 msgid "always ask the user before any image is removed from DB."
 msgstr ""
 "vraag altijd eerst aan de gebruiker voordat een afbeelding uit de database "
-"wordt gehaald"
+"wordt gehaald."
 
 #: ../build/src/preferences_gen.h:2922
 msgid "ask before erasing images from disk / discarding history stack"
@@ -747,8 +749,8 @@ msgid ""
 "always ask the user before any image file is deleted / history stack is "
 "discarded."
 msgstr ""
-"vraag altijd eerst de gebruiker voordat een afbeelding wordt verwijderd/"
-"bewerkingsstappen worden weggegooid"
+"vraag altijd eerst de gebruiker voordat een afbeelding wordt verwijderd / "
+"bewerkingsstappen worden weggegooid."
 
 #: ../build/src/preferences_gen.h:2943
 msgid "send files to trash when erasing images"
@@ -769,7 +771,7 @@ msgstr "vraag om bevestiging voordat afbeeldingen uit mappen worden gehaald"
 #: ../build/src/preferences_gen.h:2977
 msgid "always ask the user before any image file is moved."
 msgstr ""
-"vraag altijd eerst de gebruiker voordat een afbeelding wordt verplaatst"
+"vraag altijd eerst de gebruiker voordat een afbeelding wordt verplaatst."
 
 #: ../build/src/preferences_gen.h:2985
 msgid "ask before copying images to new film roll folder"
@@ -777,7 +779,7 @@ msgstr "vraag om bevestiging voordat afbeeldingen worden gekopieerd"
 
 #: ../build/src/preferences_gen.h:2998
 msgid "always ask the user before any image file is copied."
-msgstr "vraag om bevestiging voordat een afbeelding wordt gekopieerd"
+msgstr "vraag om bevestiging voordat een afbeelding wordt gekopieerd."
 
 #: ../build/src/preferences_gen.h:3006
 msgid "ask before removing empty folders"
@@ -872,7 +874,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3191
 msgid "host memory limit (in MB) for tiling"
-msgstr "limiet voor hostgeheugen bij bewerkingen (in MB) "
+msgstr "limiet voor hostgeheugen bij bewerkingen (in MB)"
 
 #: ../build/src/preferences_gen.h:3213
 msgid ""
@@ -902,7 +904,7 @@ msgstr ""
 
 #: ../build/src/preferences_gen.h:3252
 msgid "activate OpenCL support"
-msgstr "activeer OpenCL ondersteuning "
+msgstr "activeer OpenCL-ondersteuning"
 
 #: ../build/src/preferences_gen.h:3265
 msgid ""
@@ -910,7 +912,7 @@ msgid ""
 "can be switched on and off at any time."
 msgstr ""
 "indien aanwezig, gebruik dan OpenCL runtime voor een verbeterde "
-"verwerkingssnelheid, het kan op elk moment worden in- en uitgeschakeld"
+"verwerkingssnelheid, het kan op elk moment worden in- en uitgeschakeld."
 
 #: ../build/src/preferences_gen.h:3266 ../build/src/preferences_gen.h:3324
 msgid "not available"
@@ -923,7 +925,7 @@ msgstr "niet beschikbaar op dit systeem"
 
 #: ../build/src/preferences_gen.h:3281
 msgid "OpenCL scheduling profile"
-msgstr "gepland OpenCL profiel"
+msgstr "OpenCL planningsprofiel"
 
 #. Adding the restore defaults button
 #: ../build/src/preferences_gen.h:3292 ../build/src/preferences_gen.h:3320
@@ -950,11 +952,11 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelpipes "
 "sequentially on the GPU."
 msgstr ""
-"bepaalt hoe voorbeeld en volledige pixelpipe taken worden gepland op OpenCL "
-"systemen, standaard - GPU verwerkt volledig en CPU verwerkt preview pipe "
-"(aanpasbaar met instelbare parameters); meerdere GPU's - verwerkt beide "
+"bepaalt hoe voorvertoning en volledige pixelpipetaken worden gepland op "
+"OpenCL-systemen. standaard - GPU verwerkt volledig en CPU verwerkt preview "
+"pipe (aanpasbaar met instelbare parameters); meerdere GPU's - verwerkt beide "
 "pixelpipes parallel op twee verschillende GPU's; zeer snelle GPU -verwerkt "
-"beide pixelpipes sequentieel op the GPU"
+"beide pixelpipes sequentieel op the GPU."
 
 #: ../build/src/preferences_gen.h:3358
 msgid "storage"
@@ -1031,8 +1033,8 @@ msgid ""
 "these redundant files can later be re-imported into a different database, "
 "preserving your changes to the image."
 msgstr ""
-"deze overbodige bestanden kunnen later opnieuw worden geïmporteerd in aan "
-"andere database, veranderingen van de afbeelding blijven zo bewaard"
+"deze overtollige bestanden kunnen later opnieuw worden geïmporteerd in aan "
+"andere database, veranderingen aan de afbeelding blijven bewaard."
 
 #: ../build/src/preferences_gen.h:3498
 msgid "store xmp tags in compressed format"
@@ -1049,13 +1051,13 @@ msgid ""
 "to store the history stack in output files. this option allows xmp tags to "
 "be compressed and save space."
 msgstr ""
-"data in xmp labels kan nogal groot worden en de beschikbare opslag ruimte "
+"data in xmp labels kan nogal groot worden en de beschikbare opslagruimte "
 "voor bewerkingsgeschiedenis overschrijden, deze optie maakt het mogelijk om "
-"xmp-labels te comprimeren en ruimte te besparen"
+"xmp-labels te comprimeren en ruimte te besparen."
 
 #: ../build/src/preferences_gen.h:3548
 msgid "look for updated xmp files on startup"
-msgstr "zoek bij het opstarten naar bijgewerkte xmp bestanden "
+msgstr "zoek bij het opstarten naar bijgewerkte xmp-bestanden"
 
 #: ../build/src/preferences_gen.h:3561
 msgid ""
@@ -1063,7 +1065,7 @@ msgid ""
 "got updated in the meantime"
 msgstr ""
 "controleer alle xmp-bestanden tijdens het opstarten op eventuele "
-"tussentijdse tijdwijzigingen "
+"tussentijdse tijdwijzigingen"
 
 #: ../build/src/preferences_gen.h:3588
 msgid "miscellaneous"
@@ -1121,8 +1123,9 @@ msgid ""
 "this option allows to force a specific means of getting the current display "
 "profile. this is useful when one alternative gives wrong results"
 msgstr ""
-"deze optie forceert een specifieke inzet om een weergaveprofiel af te "
-"dwingen. Dit is handig wanneer een alternatief verkeerde resultaten oplevert "
+"deze optie forceert een specifieke manier om een weergaveprofiel af te "
+"dwingen. Dit is handig wanneer een andere methode verkeerde resultaten "
+"oplevert"
 
 #. tags
 #: ../build/src/preferences_gen.h:3691 ../src/develop/lightroom.c:1508
@@ -1143,11 +1146,9 @@ msgid ""
 "ignore the rest. so 'foo|bar|baz' will only add 'baz'."
 msgstr ""
 "bij de aanmaak van een xmp-bestand worden ook de hiërarchische labels "
-"toegevoegd als\n"
-"een eenvoudige lijst van niet-hiërarchische vorm met als doel \n"
-"ze zichtbaar te maken voor andere programma's\n"
-"indien aangevinkt zal Darktable allen het laatste deel insluiten\n"
-"dus 'naam1|naam2|naam3' wordt 'naam3'"
+"toegevoegd als een eenvoudige niet-hiërarchische lijst om ze zichtbaar te "
+"maken voor andere programma's. Indien aangevinkt zal darktable allen het "
+"laatste deel insluiten. Bijv. 'foo|bar|baz' wordt 'baz'."
 
 #: ../build/src/preferences_gen.h:3720
 msgid "disable the entry completion"
@@ -1211,7 +1212,7 @@ msgid ""
 "keep notes for images"
 msgstr ""
 "dit externe programma wordt gebruikt om audiobestanden af ​​te spelen die "
-"sommige camera's bewaren "
+"sommige camera's als notitie bij de afbeelding bewaren"
 
 #: ../build/src/preferences_gen.h:3870 ../build/src/preferences_gen.h:3873
 #: ../src/libs/import.c:90
@@ -1228,7 +1229,7 @@ msgid ""
 "import both. with this flag one can ignore all JPEGs found."
 msgstr ""
 "wanneer raw+JPEG beelden in dezelfde map staan heeft het weinig zin om ze "
-"beide te importeren. negeer hiermee alle gevonden JPEG's"
+"beide te importeren. Negeer hiermee alle gevonden JPEG's."
 
 #: ../build/src/preferences_gen.h:3902
 msgid "recursive directory traversal when importing filmrolls"
@@ -1284,6 +1285,8 @@ msgid ""
 "keep original filename instead of a pattern while importing from camera or "
 "card"
 msgstr ""
+"behoud de oorspronkelijke bestandsnaam in plaats van een patroon te "
+"gebruiken tijdens het importeren van een camera of kaart"
 
 #: ../build/src/preferences_gen.h:4128
 msgid "file naming pattern"
@@ -1300,43 +1303,44 @@ msgid ""
 "enhance them in a darkroom."
 msgstr ""
 "darktable bewaart uw digitale negatieven in een database en toont ze in een "
-"bibliotheek, u kunt ze ontwikkelen en verbeteren in de ontwikkel-modulen"
+"bibliotheek, je kunt RAW-afbeeldingen ontwikkelen en verbeteren in de "
+"ontwikkelmodule."
 
 #: ../data/darktable.appdata.xml.in.h:3
 msgid ""
 "Other modes besides lighttable and darkroom are a map for geotagging, "
 "tethering, print and a slideshow."
 msgstr ""
-"overige modules naast de bibliotheek en ontwikkelen zijn kaart, tethering, "
-"afdrukken en presentatie"
+"Overige modules naast de bibliotheek en ontwikkelen zijn een kaart voor "
+"geotagging, tethering, afdrukken en presentatie."
 
 #: ../data/darktable.appdata.xml.in.h:4
 msgid ""
 "darktable supports most modern cameras' raw formats, and does all of its "
 "processing at very high precision."
 msgstr ""
-"darktable ondersteunt van veel moderne camera's de raw-formaten en werkt met "
-"een zeer hoge precisie"
+"darktable ondersteunt van veel moderne camera's de raw-formaten en verwerkt "
+"ze met een zeer hoge precisie."
 
 #: ../data/darktable.appdata.xml.in.h:5
 msgid "Virtual light table, showing a collection"
-msgstr "virtuele bibliotheek, toont een collectie"
+msgstr "Virtuele bibliotheek, toont een collectie"
 
 #: ../data/darktable.appdata.xml.in.h:6
 msgid "Virtual dark room with an opened image"
-msgstr "virtuele ontwikkelaar met een geopende afbeelding"
+msgstr "Virtuele ontwikkelkamer met een geopende afbeelding"
 
 #: ../data/darktable.appdata.xml.in.h:7
 msgid "Virtual dark room, sharpening an image"
-msgstr "virtuele ontwikkelaar, verscherp een afbeelding"
+msgstr "Virtuele ontwikkelkamer, die een afbeelding scherper maakt"
 
 #: ../data/darktable.appdata.xml.in.h:8
 msgid "Show images on a map"
-msgstr "toon afbeeldingen op een kaart"
+msgstr "Toon afbeeldingen op een kaart"
 
 #: ../data/darktable.appdata.xml.in.h:9
 msgid "Print your images"
-msgstr "de afbeeldingen printen"
+msgstr "Print je afbeeldingen"
 
 #: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1540
 #: ../src/control/jobs/control_jobs.c:1603 ../src/gui/hist_dialog.c:187
@@ -1428,7 +1432,9 @@ msgstr "verwijder bewerkingsstap(pen)"
 msgid ""
 "cannot find disk storage module. please check your installation, something "
 "seems to be broken."
-msgstr "module schijfopslag niet gevonden, controleer de installatie"
+msgstr ""
+"module schijfopslag niet gevonden, controleer je installatie, er lijkt iets "
+"kapot te zijn."
 
 #: ../src/cli/main.c:374
 msgid "failed to get parameters from storage module, aborting export ..."
@@ -1642,8 +1648,8 @@ msgstr "%d afbeelding van %d (#%d) uit de collectie is geselecteerd"
 #, c-format
 msgid "%d image of %d in current collection is selected"
 msgid_plural "%d images of %d in current collection are selected"
-msgstr[0] " geselecteerd %d afbeelding uit %d"
-msgstr[1] "geselecteerd %d afbeeldingen uit %d "
+msgstr[0] "%d afbeelding van de %d in de huidige collectie geselecteerd"
+msgstr[1] "%d afbeeldingen van de %d in de huidige collectie geselecteerd"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
 #: ../src/common/colorspaces.c:1380 ../src/common/colorspaces.c:1636
@@ -2184,17 +2190,17 @@ msgstr "fout bij het verplaatsen `%s' -> `%s'"
 
 #: ../src/common/image.c:1944
 msgid "cannot create local copy when the original file is not accessible."
-msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is "
+msgstr "aanmaak lokale kopie lukt alleen als het origineel toegankelijk is."
 
 #: ../src/common/image.c:1958
 msgid "cannot create local copy."
-msgstr "aanmaak lokale kopie mislukt"
+msgstr "aanmaak lokale kopie niet mogelijk."
 
 #: ../src/common/image.c:2030 ../src/control/jobs/control_jobs.c:658
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "verwijderen van lokale kopie is niet mogelijk wanneer het origineel niet "
-"toegankelijk is"
+"toegankelijk is."
 
 #: ../src/common/image.c:2211
 #, c-format
@@ -2214,8 +2220,8 @@ msgid ""
 "failed to allocate memory for %s, please lower the threads used for export "
 "or buy more memory."
 msgstr ""
-"geheugen toewijzing voor %s mislukt, verlaag het aantal exporteer stappen of "
-"koop meer geheugen"
+"geheugen toewijzing voor %s mislukt, verlaag het aantal exporteerstappen of "
+"koop meer geheugen."
 
 #: ../src/common/imageio.c:664
 msgctxt "noun"
@@ -2230,7 +2236,7 @@ msgstr "exporteren"
 #: ../src/common/imageio.c:674
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
-msgstr "toe te passen stijl '%s' bij het exporteren is niet gevonden"
+msgstr "toe te passen stijl '%s' bij het exporteren is niet gevonden."
 
 #: ../src/common/import_session.c:280
 msgid ""
@@ -2238,7 +2244,7 @@ msgid ""
 "session settings."
 msgstr ""
 "uitbreiding naar unieke bestandsnaam voor deze sessie is mislukt, controleer "
-"uw importeer-instellingen"
+"uw importeer-instellingen."
 
 #: ../src/common/iop_order.c:58
 msgid "custom"
@@ -2270,25 +2276,25 @@ msgstr "ruisprofiel bestand `%s' is ongeldig"
 msgid ""
 "due to a slow GPU hardware acceleration via opencl has been de-activated."
 msgstr ""
-"vanwege langzame GPU-hardware wordt versnelling via opencl uitgeschakeld"
+"vanwege langzame GPU-hardware wordt versnelling via opencl uitgeschakeld."
 
 #: ../src/common/opencl.c:798
 msgid ""
 "multiple GPUs detected - opencl scheduling profile has been set accordingly."
 msgstr ""
-"meerdere GPU's gedecteerd = gepland OpenCL profiel is hiermee overeenkomstig "
-"ingesteld"
+"meerdere GPU's gedecteerd = OpenCL planningsprofiel is hiermee "
+"overeenkomstig ingesteld."
 
 #: ../src/common/opencl.c:805
 msgid ""
 "very fast GPU detected - opencl scheduling profile has been set accordingly."
 msgstr ""
-"zeer snelle GPU gedetecteerd - gepland OpenCL profiel is hiermee "
-"overeenkomstig ingesteld"
+"zeer snelle GPU gedetecteerd - OpenCL planningsprofiel is hiermee "
+"overeenkomstig ingesteld."
 
 #: ../src/common/opencl.c:812
 msgid "opencl scheduling profile set to default."
-msgstr "maak standaard van gepland OpenCl profiel"
+msgstr "maak standaard van OpenCl planningsprofiel."
 
 #: ../src/common/pdf.h:88 ../src/iop/lens.cc:1934
 #: ../src/libs/print_settings.c:1291
@@ -2520,11 +2526,11 @@ msgstr "importeer afbeeldingen vanaf de camera"
 
 #: ../src/control/jobs/control_jobs.c:123
 msgid "failed to create film roll for destination directory, aborting move.."
-msgstr "aanmaak map voor uitvoer mislukt, verplaatsing afgebroken"
+msgstr "aanmaak map voor uitvoer mislukt, verplaatsing geannuleerd."
 
 #: ../src/control/jobs/control_jobs.c:345
 msgid "exposure bracketing only works on raw images."
-msgstr "belichtingsbracketing werkt alleen voor raw-afbeeldingen"
+msgstr "belichtingsbracketing werkt alleen voor raw-afbeeldingen."
 
 #: ../src/control/jobs/control_jobs.c:352
 msgid "images have to be of same size and orientation!"
@@ -2671,8 +2677,8 @@ msgstr[1] "ververst info voor %d afbeeldingen"
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
-msgstr[0] "exporteer %d afbeelding"
-msgstr[1] "exporteren %d afbeeldingen"
+msgstr[0] "exporteer %d afbeelding..."
+msgstr[1] "exporteren %d afbeeldingen..."
 
 #: ../src/control/jobs/control_jobs.c:1268
 #, c-format
@@ -2814,7 +2820,7 @@ msgstr "ververs exif"
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "het opvragen van instellingen van de opslagmodule `%s' is mislukt, het "
-"exporteren is gestopt"
+"exporteren is gestopt."
 
 #: ../src/control/jobs/control_jobs.c:1746
 msgid "export images"
@@ -3030,10 +3036,8 @@ msgid ""
 "double click to reset. press 'a' to toggle available slider modes.\n"
 "press 'c' to toggle view of channel data. press 'm' to toggle mask view."
 msgstr ""
-"reset met een dubbelklik,\n"
-"'a' schakelt tussen beschikbare schuif modussen\n"
-"'c' schakelt kanaal data in/uit\n"
-"'m' schakelt masker weergave in/uit"
+"reset met een dubbelklik, 'a' schakelt tussen beschikbare schuifmodussen.\n"
+"'C' schakelt kanaal data in/uit, 'm' schakelt maskerweergave in/uit."
 
 #: ../src/develop/blend_gui.c:1753 ../src/develop/blend_gui.c:2458
 msgid "parametric mask"
@@ -3835,7 +3839,7 @@ msgstr ""
 #: ../src/develop/tiling.c:820 ../src/develop/tiling.c:1161
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
-msgstr "tiling voor module '% s' mislukt, de uitvoer is nu mogelijk verminkt"
+msgstr "tiling voor module '% s' mislukt, de uitvoer is nu mogelijk verminkt."
 
 #: ../src/dtgtk/culling.c:231
 msgid "you have reached the start of your selection"
@@ -4172,7 +4176,7 @@ msgid "warning: did you want to swap these boundaries?\n"
 msgstr "waarschuwing: verwisselde je de kaders?\n"
 
 #: ../src/generate-cache/main.c:218
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "warning: disk backend for thumbnail cache is disabled (cache_disk_backend)\n"
 "if you want to pre-generate thumbnails and for darktable to use them, you "
@@ -4182,11 +4186,11 @@ msgstr ""
 "waarschuwing: disk-backend voor de miniaturencache is uitgeschakeld "
 "(cache_disk_backend)\n"
 "als miniaturen vooraf moeten worden gemaakt en worden gebruikt door "
-"darktable\n"
-"dan moet de disk-backend voor miniaturen ingeschakeld worden."
+"darktable dan moet de disk-backend voor miniaturen ingeschakeld worden.\n"
+"geen miniaturen om te genereren, klaar.\n"
 
 #: ../src/generate-cache/main.c:229
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "warning: disk backend for full preview cache is disabled "
 "(cache_disk_backend_full)\n"
@@ -4197,8 +4201,8 @@ msgstr ""
 "waarschuwing: disk-backend voor de miniaturencache is uitgeschakeld "
 "(cache_disk_backend)\n"
 "als miniaturen vooraf moeten worden gemaakt en worden gebruikt door "
-"darktable\n"
-"dan moet de disk-backend voor miniaturen ingeschakeld worden."
+"darktable dan moet de disk-backend voor miniaturen ingeschakeld worden.\n"
+"geen miniaturen om te genereren, klaar.\n"
 
 #: ../src/generate-cache/main.c:239
 #, c-format
@@ -4351,7 +4355,7 @@ msgstr "importeren"
 msgid "please wait while prefetching thumbnails of images from camera..."
 msgstr ""
 "een moment alstublieft, voorvertoningen van afbeeldingen op de camera worden "
-"opgehaald"
+"opgehaald..."
 
 #: ../src/gui/camera_import_dialog.c:242 ../src/libs/session.c:100
 msgid "jobcode"
@@ -4389,7 +4393,7 @@ msgid ""
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
 msgstr ""
-"Vink deze mogelijkheid aan als u de gebruikte tijdsvermelding bij de "
+"vink deze mogelijkheid aan als u de gebruikte tijdsvermelding bij de "
 "uitbreiding van de variabelen wilt overschrijven:\n"
 "$(YEAR), $(MONTH), $(DAY),\n"
 "$(HOUR), $(MINUTE), $(SECONDS)"
@@ -5008,7 +5012,7 @@ msgstr "exporteren ..."
 #. Setting the notification text
 #: ../src/gui/preferences.c:1199
 msgid "press key combination to remap..."
-msgstr "geef nieuwe toets combinatie"
+msgstr "geef nieuwe toets combinatie..."
 
 #: ../src/gui/preferences.c:1301
 #, c-format
@@ -5091,7 +5095,7 @@ msgid ""
 "preset."
 msgstr ""
 "wees voorzichtig met deze optie, het kan de laatste mogelijkheid zijn om uw "
-"voorkeuren te zien"
+"voorkeuren te zien."
 
 #: ../src/gui/preferences.c:1693 ../src/gui/presets.c:430
 #, no-c-format
@@ -5199,7 +5203,7 @@ msgstr "uitgeschakeld: verkeerde module versie"
 
 #: ../src/gui/presets.c:929 ../src/libs/lib.c:488
 msgid "edit this preset.."
-msgstr "voorkeur bewerken"
+msgstr "voorkeur bewerken..."
 
 #: ../src/gui/presets.c:933 ../src/libs/lib.c:492
 msgid "delete this preset"
@@ -5207,7 +5211,7 @@ msgstr "voorkeur verwijderen"
 
 #: ../src/gui/presets.c:939 ../src/libs/lib.c:499
 msgid "store new preset.."
-msgstr "voorkeur opslaan"
+msgstr "voorkeur opslaan..."
 
 #: ../src/gui/presets.c:945 ../src/libs/lib.c:511
 msgid "update preset"
@@ -5837,7 +5841,7 @@ msgstr "toets login button om te starten"
 
 #: ../src/imageio/storage/piwigo.c:989
 msgid "cannot create a new piwigo album!"
-msgstr "aanmaak nieuwe piwigo album is mislukt"
+msgstr "aanmaak nieuwe piwigo album is mislukt!"
 
 #: ../src/imageio/storage/piwigo.c:998
 msgid "could not upload to piwigo!"
@@ -6499,9 +6503,9 @@ msgid ""
 "fuse this image stopped up/down a couple of times with itself, to compress "
 "high dynamic range. expose for the highlights before use."
 msgstr ""
-"fuseer deze afbeelding nadat er eerst kopieën met hogere/lagere  stops van "
+"fuseer deze afbeelding nadat er eerst kopieën met hogere/lagere stops van "
 "zijn gemaakt, comprimeer zo nodig een hoog dynamisch bereik door vooraf de "
-"hooglichten te belichten"
+"hooglichten te belichten."
 
 #: ../src/iop/basecurve.c:2205
 msgid "how many stops to shift the individual exposures apart"
@@ -6754,7 +6758,7 @@ msgid ""
 "lead to artifacts around edges for extreme settings."
 msgstr ""
 "het filter gebruikt voor lokale contrast verbeteringen. bilateral is sneller "
-"maar kan bij extreme waarden artefacten geven rond de randen"
+"maar kan bij extreme waarden artefacten geven rond de randen."
 
 #: ../src/iop/bilat.c:493 ../src/iop/globaltonemap.c:757
 msgid "detail"
@@ -7157,7 +7161,7 @@ msgid ""
 "only works for raw images."
 msgstr ""
 "automatisch chromatische aberratiecorrectie\n"
-"werkt alleen voor raw-afbeeldingen"
+"werkt alleen voor raw-afbeeldingen."
 
 #: ../src/iop/channelmixer.c:112
 msgid "channel mixer"
@@ -7277,7 +7281,7 @@ msgstr "B/W Kodak Tri-X 400"
 msgid ""
 "Choleski decomposition failed to allocate memory, check your RAM settings"
 msgstr ""
-"tcholeski decompositie kon geen geheugen toewijzen, controleer uw RAM-"
+"Choleski decompositie kon geen geheugen toewijzen, controleer uw RAM-"
 "instellingen"
 
 #: ../src/iop/clahe.c:339 ../src/iop/sharpen.c:793
@@ -7689,7 +7693,7 @@ msgstr "pas aan om een neutrale toon overeen tekomen"
 
 #: ../src/iop/colorbalance.c:2390 ../src/iop/colorbalance.c:2399
 msgid "factor of "
-msgstr "factor van"
+msgstr "factor van "
 
 #: ../src/iop/colorbalance.c:2391
 msgid "factor"
@@ -7791,7 +7795,7 @@ msgstr "maak het hele histogramm passend en centreer de gemiddelde luminantie"
 
 #: ../src/iop/colorbalance.c:2561
 msgid "optimize the RGB curves to remove color casts"
-msgstr "verwijder kleurzwemen met de optimalisatie van RGB curven "
+msgstr "verwijder kleurzwemen met de optimalisatie van RGB curven"
 
 #: ../src/iop/colorchecker.c:114
 msgid "color look up table"
@@ -8004,12 +8008,12 @@ msgid ""
 "RGB!"
 msgstr ""
 "kan matrix niet extraheren uit kleurenruimte `%s', alternatief Rec2020RGB "
-"wordt gebruikt"
+"wordt gebruikt!"
 
 #: ../src/iop/colorin.c:1603
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "`%s' kleuren matrix is niet gevonden"
+msgstr "`%s' kleuren matrix is niet gevonden!"
 
 #: ../src/iop/colorin.c:1638
 msgid "input profile could not be generated!"
@@ -8108,11 +8112,11 @@ msgstr "verwerk als doel"
 
 #: ../src/iop/colormapping.c:1118
 msgid "source clusters:"
-msgstr "clusterbronnen"
+msgstr "clusterbronnen:"
 
 #: ../src/iop/colormapping.c:1127
 msgid "target clusters:"
-msgstr "clusterdoelen"
+msgstr "clusterdoelen:"
 
 #: ../src/iop/colormapping.c:1140
 msgid "acquire as source"
@@ -8379,7 +8383,6 @@ msgstr ""
 "weergave van maskers is onmogelijk wanneer een mengmasker wordt getoond"
 
 #: ../src/iop/colorzones.c:2379 ../src/iop/rgbcurve.c:1485
-#, fuzzy
 msgid ""
 "create a curve based on an area from the image\n"
 "drag to create a flat curve\n"
@@ -8387,9 +8390,9 @@ msgid ""
 "shift+drag to create a negative curve"
 msgstr ""
 "creëer een curve gebaseerd op een deel van de afbeelding\n"
-"klik voor een platte curve\n"
-"ctrl+klik voor een positieve curve\n"
-"shift+klik voor een negatieve curve"
+"sleep voor een platte curve\n"
+"ctrl+slepen voor een positieve curve\n"
+"shift+slepen voor een negatieve curve"
 
 #. edit by area
 #: ../src/iop/colorzones.c:2401
@@ -8607,7 +8610,7 @@ msgid ""
 msgstr ""
 "drempelwaarde voor een randbewuste mediaan\n"
 "schakel uit met 0.0\n"
-"kies 1.0 om de randen te negeren"
+"kies 1.0 om de randen te negeren."
 
 #: ../src/iop/demosaic.c:5153
 msgid "edge threshold"
@@ -8671,7 +8674,7 @@ msgid ""
 "only needed for raw images."
 msgstr ""
 "demosaicing\n"
-"alleen nodig voor RAW-afbeeldingen"
+"alleen nodig voor RAW-afbeeldingen."
 
 #: ../src/iop/denoiseprofile.c:574
 msgid "denoise (profiled)"
@@ -8716,7 +8719,7 @@ msgstr "centrale pixel invloed (details)"
 #: ../src/iop/denoiseprofile.c:3340
 #, c-format
 msgid "found match for ISO %d"
-msgstr "overeenkomst voor ISO %d "
+msgstr "overeenkomst voor ISO %d"
 
 #: ../src/iop/denoiseprofile.c:3349
 #, c-format
@@ -8739,7 +8742,7 @@ msgstr ""
 
 #: ../src/iop/denoiseprofile.c:4338
 msgid "variance red: "
-msgstr "variantie rood:"
+msgstr "variantie rood: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:4341
@@ -8748,7 +8751,7 @@ msgstr "variantie berekend op het rode kanaal"
 
 #: ../src/iop/denoiseprofile.c:4346
 msgid "variance green: "
-msgstr "variantie groen:"
+msgstr "variantie groen: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:4349
@@ -8757,7 +8760,7 @@ msgstr "variantie berekend op het groene kanaal"
 
 #: ../src/iop/denoiseprofile.c:4354
 msgid "variance blue: "
-msgstr "variantie blauw:"
+msgstr "variantie blauw: "
 
 #. This gets filled in by process
 #: ../src/iop/denoiseprofile.c:4357
@@ -8802,7 +8805,7 @@ msgstr ""
 "activeer dit als eerste\n"
 "voor betere ontruising\n"
 "maar deactiveer dit als in een eerder exemplaar\n"
-"gebruik is gemaakt van een mode voor kleurmenging"
+"gebruik is gemaakt van een mode voor kleurmenging."
 
 #: ../src/iop/denoiseprofile.c:4440
 msgid "fix various bugs in algorithm"
@@ -8827,7 +8830,7 @@ msgstr ""
 "non local means normalisatie wat resulterend in \n"
 "afvlakking wanneer de patroon afmeting was verhoogd\n"
 "deze optie beïnvloed het ontruis resultaat\n"
-"en indien ingesteld dan kun je niet terug naar het oude algoritme"
+"en indien ingesteld dan kun je niet terug naar het oude algoritme."
 
 #: ../src/iop/denoiseprofile.c:4453
 msgid "upgrade profiled transform"
@@ -8843,7 +8846,7 @@ msgstr ""
 "upgrade het variantie stabiliserend algoritme\n"
 "nieuw algoritme breidt de huidige uit\n"
 "het is flexibeler, maar zou kleine verschillen\n"
-"kunnen geven in de reeds bewerkte afbeeldingen"
+"kunnen geven in de reeds bewerkte afbeeldingen."
 
 #: ../src/iop/denoiseprofile.c:4466 ../src/libs/export.c:655
 #: ../src/libs/print_settings.c:1188 ../src/libs/print_settings.c:1408
@@ -8944,7 +8947,7 @@ msgstr ""
 "verhoog voor meer scherpte bij krachtige randen en verbeterde ontruising van "
 "afgevlakte gebieden\n"
 "indien details te ver zijn afgevlakt verlaag je de waarde of verhoog je de "
-"detail schuifregelaar"
+"detail schuifregelaar."
 
 #: ../src/iop/denoiseprofile.c:4501
 msgid ""
@@ -8962,7 +8965,7 @@ msgid ""
 "coarse-grain noise reduction. does not affect execution time."
 msgstr ""
 "zoek patroon verstrooiing in de nabijheid, verhoog voor betere grofkorrelige "
-"reductie, dit heeft geen invloed op de uitvoertijd"
+"reductie, dit heeft geen invloed op de uitvoertijd."
 
 #: ../src/iop/denoiseprofile.c:4505
 msgid ""
@@ -8974,11 +8977,11 @@ msgstr ""
 "verhoog invloed van centrale pixel\n"
 "bij de vergelijking van het patroon\n"
 "dit is nuttig voor herstel details\n"
-"bij grotere patroon afmetingen "
+"bij grotere patroonafmetingen."
 
 #: ../src/iop/denoiseprofile.c:4509
 msgid "finetune denoising strength"
-msgstr "afstemmen kracht van ruisonderdrukking "
+msgstr "afstemmen kracht van ruisonderdrukking"
 
 #: ../src/iop/denoiseprofile.c:4510
 msgid ""
@@ -8990,7 +8993,7 @@ msgstr ""
 "bepaalt hoe parameters automatisch worden ingesteld\n"
 "verhoogd indien schaduwen onvoldoende worden ontruisd\n"
 "of wanneer kleurwaarde ruis blijft bestaan\n"
-"dit ontstaat bij onderbelichte afbeeldingen"
+"dit ontstaat bij onderbelichte afbeeldingen."
 
 #: ../src/iop/denoiseprofile.c:4514
 msgid ""
@@ -9010,7 +9013,7 @@ msgid ""
 msgstr ""
 "corrigeer kleurzweem in de schaduwen\n"
 "verlaag bij te paarse schaduwen\n"
-"verhoog bij te groene schaduwen"
+"verhoog bij te groene schaduwen."
 
 #: ../src/iop/dither.c:103 ../src/iop/vignette.c:1166
 msgid "dithering"
@@ -9100,7 +9103,7 @@ msgid ""
 msgstr ""
 "deze module wordt in de toekomst verwijderd\n"
 "en zit er alleen nog in zodat de module uitgeschakeld kan worden\n"
-"en de nieuwe equalizer gebruikt kan worden"
+"en de nieuwe equalizer gebruikt kan worden."
 
 #: ../src/iop/exposure.c:125 ../src/iop/levels.c:127
 msgctxt "accel"
@@ -9148,12 +9151,12 @@ msgid ""
 "if poorly set, it will clip near-black colors out of gamut\n"
 "by pushing RGB values into negatives."
 msgstr ""
-"wijzig het zwart niveau om het clippen van negatieve RGB waarden te "
+"wijzig het zwartniveau om het clippen van negatieve RGB waarden te "
 "voorkomen\n"
 "gebruik het nooit voor meer dichtheid in de schaduwkleuren\n"
 "indien slecht ingesteld, worden bijna-zwarte kleuren uit het gamma "
 "verwijderd\n"
-"door RGB waarden in het negatieve te drukken"
+"door RGB waarden in het negatieve te drukken."
 
 #: ../src/iop/exposure.c:896
 msgid ""
@@ -9257,7 +9260,7 @@ msgid ""
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
 "wijzig om de gemiddelde luminantie van het onderwerp te laten overeenkomen\n"
-"behalve bij tegenlicht situaties, de waarde zal ongeveer 18% zijn"
+"behalve bij tegenlichtsituaties, de waarde zal ongeveer 18% zijn."
 
 #: ../src/iop/filmic.c:1638 ../src/iop/filmicrgb.c:1410
 msgid "white relative exposure"
@@ -9289,7 +9292,7 @@ msgstr ""
 "aantal stops tussen middengrijs en geheel zwart\n"
 "dit is een waarde die een lichtmeter voor de afbeelding zou geven\n"
 "verhoog voor meer contrast\n"
-"verlaag om details in schaduwkleuren te herwinnen"
+"verlaag om details in schaduwkleuren te herwinnen."
 
 #: ../src/iop/filmic.c:1661 ../src/iop/profile_gamma.c:868
 msgid "safety factor"
@@ -9301,7 +9304,7 @@ msgid ""
 "useful in conjunction with \"auto tune levels\"."
 msgstr ""
 "vergroot of verklein het berekende dynamisch bereik\n"
-"nuttig in combinatie met \"automatische afstemming niveaus\""
+"nuttig in combinatie met \"automatische afstemming niveaus\"."
 
 #: ../src/iop/filmic.c:1670 ../src/iop/filmicrgb.c:1443
 #: ../src/iop/profile_gamma.c:876
@@ -9318,7 +9321,7 @@ msgstr ""
 "probeert instellingen te optimaliseren door te gissen\n"
 "dit plaatst het luminantie bereik binnen de histogramgrenzen\n"
 "het is met name geschikt voor landschappen en gelijkmatig verlichte foto's\n"
-"en werkt niet bij highkey en lowkey afbeeldingen"
+"en werkt niet bij highkey en lowkey afbeeldingen."
 
 #: ../src/iop/filmic.c:1677
 msgid "filmic S curve"
@@ -9346,7 +9349,7 @@ msgid ""
 msgstr ""
 "breedte van het lineaire domein in het midden van de curve\n"
 "verhoog voor meer contrast bij extreme luminanties\n"
-"het heeft geen effect op middenkleuren"
+"het heeft geen effect op middenkleuren."
 
 #: ../src/iop/filmic.c:1701 ../src/iop/filmicrgb.c:1477
 msgid "shadows/highlights balance"
@@ -9362,7 +9365,7 @@ msgstr ""
 "schuift de breedte langs de helling\n"
 "voor meer ruimte voor schaduwen en hooglichten\n"
 "gebruik dit voor bescherming van de details\n"
-"aan één uiteinde van het histogram"
+"aan één uiteinde van het histogram."
 
 #: ../src/iop/filmic.c:1710
 msgid "global saturation"
@@ -9376,7 +9379,7 @@ msgid ""
 msgstr ""
 "verminderd globaal de verzadiging van de invoer\n"
 "stel de waarde in op minder dan 100%\n"
-"als het behoud van chrominantie is ingeschakeld"
+"als het behoud van chrominantie is ingeschakeld."
 
 #: ../src/iop/filmic.c:1720 ../src/iop/filmicrgb.c:1488
 msgid "extreme luminance saturation"
@@ -9390,7 +9393,7 @@ msgid ""
 msgstr ""
 "vermindert globaal de verzadiging van de uitvoer\n"
 "met name bij extreme luminanties\n"
-"verlaag het als schaduwen en/of hooglichten oververzadigd zijn"
+"verlaag het als schaduwen en/of hooglichten oververzadigd zijn."
 
 #: ../src/iop/filmic.c:1734 ../src/libs/export.c:677
 #: ../src/libs/print_settings.c:1243 ../src/libs/print_settings.c:1456
@@ -9429,7 +9432,7 @@ msgstr ""
 "zorg ervoor dat de originele kleur behouden blijft\n"
 "mogelijk worden chromatische aberraties versterkt\n"
 "bij het gebruik van deze modus zul je handmatig de verzadiging moeten "
-"afstellen"
+"afstellen."
 
 #: ../src/iop/filmic.c:1756
 msgid "destination/display"
@@ -9456,8 +9459,8 @@ msgid ""
 "midde grey value of the target display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"midden grijswaarde voor doel of kleurruimte\n"
-"wijzig dit niet tenzij je weet waarmee je bezig bent"
+"midden grijswaarde voor doelscherm of kleurruimte\n"
+"wijzig dit niet tenzij je weet waarmee je bezig bent."
 
 #: ../src/iop/filmic.c:1790 ../src/iop/filmicrgb.c:1531
 msgid "target white luminance"
@@ -9481,9 +9484,9 @@ msgid ""
 "of the display or color space.\n"
 "you should never touch that unless you know what you are doing."
 msgstr ""
-"kracht van gamma van de overdrachtsfunctie\n"
+"kracht of gamma van de overdrachtsfunctie\n"
 "van de weergave van de kleurruimte\n"
-"wijzig dit alleen als je zeker weet wat je doet"
+"wijzig dit alleen als je zeker weet wat je doet."
 
 #: ../src/iop/filmicrgb.c:181
 msgid "filmic rgb"
@@ -9658,8 +9661,8 @@ msgstr ""
 "in procenten van het dynamische bereik (witbelichting - zwartbelichting).\n"
 "verhoog om meer contrast en minder desaturatie te krijgen bij extreme "
 "luminanties,\n"
-"verminderen zonodig, er treedt geen desaturatie op in het breedtebereik.\n"
-"het heeft geen effect op middenkleuren"
+"verminder zonodig. Er treedt geen desaturatie op in het breedtebereik.\n"
+"het heeft geen effect op middenkleuren."
 
 #: ../src/iop/filmicrgb.c:1492
 msgid ""
@@ -9667,9 +9670,9 @@ msgid ""
 "specifically at extreme luminances.\n"
 "increase if shadows and/or highlights are under-saturated."
 msgstr ""
-"verlaagde de uitgangsverzadiging van de module\\n\n"
+"verlaagt de uitgangsverzadiging van de module\n"
 "met name bij extreme luminanties\n"
-"verhoog dit als schaduwen en/of hooglichten onderverzadigd zijn"
+"verhoog dit als schaduwen en/of hooglichten onderverzadigd zijn."
 
 #: ../src/iop/filmicrgb.c:1500
 msgid "preserve chrominance"
@@ -9755,7 +9758,7 @@ msgstr "draai 90 graden met de klok richting mee"
 #: ../src/iop/gamma.c:43
 msgctxt "modulename"
 msgid "display encoding"
-msgstr "weergeven codering "
+msgstr "weergeven codering"
 
 #: ../src/iop/globaltonemap.c:102
 msgid "global tonemap"
@@ -10077,7 +10080,7 @@ msgid ""
 "only works for raw images."
 msgstr ""
 "hot pixel correctie\n"
-"werkt alleen voor raw bestanden"
+"werkt alleen voor raw-bestanden."
 
 #: ../src/iop/invert.c:94 ../src/iop/invert.c:525
 #, c-format
@@ -10307,7 +10310,7 @@ msgstr "vervorm"
 
 #: ../src/iop/lens.cc:2464
 msgid "Transversal Chromatic Aberration red"
-msgstr "transversale chromatische aberratie rood"
+msgstr "Transversale Chromatische Aberratie rood"
 
 #: ../src/iop/lens.cc:2465
 msgid "TCA red"
@@ -10315,7 +10318,7 @@ msgstr "TCA rood"
 
 #: ../src/iop/lens.cc:2470
 msgid "Transversal Chromatic Aberration blue"
-msgstr "transversale chromatische aberratie blauw"
+msgstr "Transversale Chromatische Aberratie blauw"
 
 #: ../src/iop/lens.cc:2471
 msgid "TCA blue"
@@ -10323,7 +10326,7 @@ msgstr "TCA blauw"
 
 #: ../src/iop/lens.cc:2478
 msgid "corrections done: "
-msgstr "uitgevoerde correcties:"
+msgstr "uitgevoerde correcties: "
 
 #: ../src/iop/lens.cc:2479
 msgid "which corrections have actually been done"
@@ -10348,7 +10351,7 @@ msgid ""
 "drag handles to set black, gray, and white points. operates on L channel."
 msgstr ""
 "sleep de handvatten en bepaal het zwart-, grijs- en witpunt, dit beïnvloedt "
-"het L-kanaal"
+"het L-kanaal."
 
 #: ../src/iop/levels.c:685 ../src/iop/rgblevels.c:1067
 msgid "apply auto levels"
@@ -10437,7 +10440,7 @@ msgid ""
 "right-click to remove a warp."
 msgstr ""
 "voeg verdraaiingen toe met de gereedschappen\n"
-"verwijder een verdraaiing met de rechtermuisknop"
+"verwijder een verdraaiing met de rechtermuisknop."
 
 #: ../src/iop/liquify.c:3564
 msgid "warps|nodes count:"
@@ -10792,7 +10795,7 @@ msgstr "alle bestanden"
 
 #: ../src/iop/lut3d.c:1653
 msgid "Select file outside Lut root folder is not allowed"
-msgstr "bestandsselectie buiten de Lut hoofdmap is niet toegestaan"
+msgstr "Bestandsselectie buiten de Lut hoofdmap is niet toegestaan"
 
 #: ../src/iop/lut3d.c:1733
 msgid ""
@@ -10802,8 +10805,7 @@ msgid ""
 msgstr ""
 "selecteer een png (haldclut), een kubus, een 3dl of een gmz (gecomprimeerd "
 "lut) bestand, let op: 3D lut-map moet zijn ingesteld in voorkeuren / "
-"kernopties / diversen voordat het lut-bestand wordt gekozen\n"
-" "
+"kernopties / diversen voordat het lut-bestand wordt gekozen"
 
 #: ../src/iop/lut3d.c:1737
 msgid ""
@@ -10821,9 +10823,7 @@ msgid ""
 msgstr ""
 "het bestandspad (relatief ten opzichte van de map lut) wordt samen met de "
 "afbeelding opgeslagen samen met de lut-gegevens als het een gecomprimeerde "
-"lut (gmz) is\n"
-"\n"
-" "
+"lut (gmz) is"
 
 #: ../src/iop/lut3d.c:1751
 msgid ""
@@ -10940,7 +10940,6 @@ msgid "color"
 msgstr "kleur"
 
 #: ../src/iop/negadoctor.c:1055
-#, fuzzy
 msgid "toggle on or off the color controls"
 msgstr "schakel de kleurregelaars in of uit"
 
@@ -11004,7 +11003,7 @@ msgstr ""
 "maximale dichtheid van de film, overeenkomend met wit na inversie\n"
 "deze waarde is afhankelijk van de filmspecificaties, het ontwikkelproces,\n"
 "het dynamische bereik van de scène en de belichtingsinstellingen van de "
-"scanner"
+"scanner."
 
 #: ../src/iop/negadoctor.c:1134
 msgid "scanner exposure settings"
@@ -11050,7 +11049,7 @@ msgstr ""
 "corrigeer de kleurzweem in schaduwen zodat zwart\n"
 "echt achromatisch zijn, deze waarde eerder instellen\n"
 "dan de hooglichten lichtgevende witbalans zal helpen\n"
-"de moeilijke witbalans in moeilijke gevallen herstellen"
+"de moeilijke witbalans in moeilijke gevallen herstellen."
 
 #: ../src/iop/negadoctor.c:1174
 msgid "shadows green offset"
@@ -11086,9 +11085,9 @@ msgid ""
 "recovering the global white balance in difficult cases."
 msgstr ""
 "corrigeer de kleur van de lichtbron zodat wit\n"
-"echt achromatischis, deze waarde instellen na\n"
-"de schaduwen kleurzweem,helpt de \n"
-"algemene witbalans in moeilijke gevallen herstellen"
+"echt achromatisch is. Deze waarde instellen na\n"
+"de kleurzweem van de schaduwen,helpt de \n"
+"algemene witbalans in moeilijke gevallen herstellen."
 
 #: ../src/iop/negadoctor.c:1220
 msgid "illuminant green gain"
@@ -11114,7 +11113,7 @@ msgid ""
 msgstr ""
 "corrigeer de dichtheid van zwart na de inversie,\n"
 "om het globale contrast aan te passen en tegelijkertijd schaduwen te "
-"vermijden"
+"vermijden."
 
 #: ../src/iop/negadoctor.c:1250
 msgid "paper grade (gamma)"
@@ -11321,7 +11320,7 @@ msgid ""
 "only works for raw images."
 msgstr ""
 "raw ontruisen\n"
-"werkt alleen voor raw bestanden"
+"werkt alleen voor raw bestanden."
 
 #: ../src/iop/rawoverexposed.c:68
 msgid "raw overexposed"
@@ -11391,7 +11390,7 @@ msgid ""
 "only works for the sensors that need it."
 msgstr ""
 "raw zwart/witpuntcorrectie\n"
-"werkt alleen bij sensoren die dat nodig hebben"
+"werkt alleen bij sensoren die dat nodig hebben."
 
 #: ../src/iop/relight.c:55
 msgid "fill-light 0.25EV with 4 zones"
@@ -11422,7 +11421,7 @@ msgstr "breedte"
 #: ../src/iop/relight.c:343
 #, no-c-format
 msgid "width of fill-light area defined in zones"
-msgstr "de omvang van het gebied voor lichtopvulling uitgedrukt in zones "
+msgstr "de omvang van het gebied voor lichtopvulling uitgedrukt in zones"
 
 #: ../src/iop/relight.c:354
 msgid ""
@@ -11542,7 +11541,7 @@ msgstr "automatisch niveaus"
 
 #: ../src/iop/retouch.c:2867
 msgid "shape selected:"
-msgstr "geselecteerde vorm"
+msgstr "geselecteerde vorm:"
 
 #: ../src/iop/retouch.c:2871
 msgid ""
@@ -11566,7 +11565,7 @@ msgstr "wis de details of vullingen met gekozen kleur"
 
 #: ../src/iop/retouch.c:2889
 msgid "fill color: "
-msgstr "vul kleur:"
+msgstr "vulkleur: "
 
 #: ../src/iop/retouch.c:2894 ../src/iop/retouch.c:2895
 msgid "select fill color"
@@ -11721,11 +11720,11 @@ msgstr "RGB, verbonden kanalen"
 
 #: ../src/iop/rgbcurve.c:1445 ../src/iop/rgblevels.c:991
 msgid "RGB, independent channels"
-msgstr "rgb, onafhankelijke kanalen"
+msgstr "RGB, onafhankelijke kanalen"
 
 #: ../src/iop/rgbcurve.c:1447 ../src/iop/rgblevels.c:993
 msgid "choose between linked and independent channels."
-msgstr "kies tussen gekoppelde en onafhankelijke kanalen"
+msgstr "kies tussen gekoppelde en onafhankelijke kanalen."
 
 #: ../src/iop/rgbcurve.c:1454 ../src/iop/rgblevels.c:1000
 msgid "  R  "
@@ -11782,7 +11781,8 @@ msgstr "pixels automatische draaien"
 #: ../src/iop/rotatepixels.c:358
 msgid "automatic pixel rotation only works for the sensors that need it."
 msgstr ""
-"automatisch draaien van pixels werkt alleen voor sensors die dat nodig hebben"
+"automatisch draaien van pixels werkt alleen voor sensors die dat nodig "
+"hebben."
 
 #: ../src/iop/scalepixels.c:56
 msgctxt "modulename"
@@ -11796,7 +11796,7 @@ msgstr "pixels automatisch schalen"
 #: ../src/iop/scalepixels.c:275
 msgid "automatic pixel scaling only works for the sensors that need it."
 msgstr ""
-"automatisch pixels schalen werkt alleen voor sensors die dat nodig hebben"
+"automatisch pixels schalen werkt alleen voor sensors die dat nodig hebben."
 
 #: ../src/iop/shadhi.c:177
 msgid "shadows and highlights"
@@ -12032,7 +12032,7 @@ msgid ""
 msgstr ""
 "klik op een vorm en sleep die naar het canvas\n"
 "bepaal met het muiswiel de afmeting\n"
-"klik rechts om een lijn te verwijderen"
+"klik rechts om een lijn te verwijderen."
 
 #: ../src/iop/spots.c:800
 msgid "show and edit shapes"
@@ -12196,9 +12196,9 @@ msgid ""
 "XYZ is similar but applies the saturation changes in XYZ space."
 msgstr ""
 "in stand auto hebben de a- en b-curves geen effect en worden daarom niet "
-"getoond. kleurwaarden (a en b) voor elke pixel worden dan aangepast op basis "
+"getoond. Kleurwaarden (a en b) voor elke pixel worden dan aangepast op basis "
 "van de L-curve, automatisch XYZ is vergelijkbaar en wordt toegepast op "
-"verzadigingsveranderingen in XYZ ruimte"
+"verzadigingsveranderingen in XYZ ruimte."
 
 #: ../src/iop/tonecurve.c:1343
 msgid "  L  "
@@ -12430,7 +12430,7 @@ msgstr "+0 EV"
 
 #: ../src/iop/toneequal.c:3286
 msgid "double-click to reset the curve"
-msgstr "dubbelklikken reset de curve "
+msgstr "dubbelklikken reset de curve"
 
 #: ../src/iop/toneequal.c:3293
 msgid "curve smoothing"
@@ -12446,7 +12446,7 @@ msgstr ""
 "positieve waarden zullen meer progressieve toonovergangen produceren\n"
 "maar de curve kan bij sommige instellingen oscilleren\n"
 "negatieve waarden voorkomen oscillaties en gedragen zich robuuster\n"
-"maar kan brute toonovergangen veroorzaken en het lokale contrast beschadigen"
+"maar kan brute toonovergangen veroorzaken en het lokale contrast beschadigen."
 
 #: ../src/iop/toneequal.c:3303
 msgid "luminance estimator"
@@ -12567,8 +12567,8 @@ msgid ""
 "clipping occurs."
 msgstr ""
 "teveel spanwijdte tussen eerste en laatste deciel in het masker histogram\n"
-"de centrale lijn geeft het gemiddelde aan\n"
-"oranje balken verschijnen bij extremen indien clipping optreedt"
+"de centrale lijn geeft het gemiddelde aan, oranje balken verschijnen bij "
+"extremen indien clipping optreedt."
 
 #: ../src/iop/toneequal.c:3368
 msgid "mask quantization"
@@ -12616,7 +12616,7 @@ msgstr ""
 "gebruik dit om het gemiddelde effect van het geleid filter tegen te gaan\n"
 "en verwijd het maskercontrast naar -4EV\n"
 "hierdoor kan het belichtingshistogram over meerdere kanalen worden verdeeld\n"
-"voor een betere controle van de belichtingscorrecties"
+"voor een betere controle van de belichtingscorrecties."
 
 #: ../src/iop/toneequal.c:3407 ../src/iop/toneequal.c:3411
 msgid "display exposure mask"
@@ -13032,8 +13032,9 @@ msgid ""
 "you can use this in conjunction with delayed mode to create stop-motion "
 "sequences."
 msgstr ""
-"het aantal, in een reeks, op te nemen afbeeldingen,\n"
-"u kunt die met een vertraagde modus opnemen om zo bewegende beelden te maken"
+"het aantal op te nemen afbeeldingen in een reeks,\n"
+"ujekunt die met een vertraagde modus opnemen om zo een stop motionfilmpje te "
+"maken."
 
 #: ../src/libs/camera.c:486
 msgid ""
@@ -13041,7 +13042,7 @@ msgid ""
 "(brackets*2)+1."
 msgstr ""
 "het aantal brackets aan beide zijden van de hoofdafbeelding, aantal "
-"afbeeldingen =( (brackets*2)+1"
+"afbeeldingen = (brackets*2)+1."
 
 #: ../src/libs/camera.c:488
 msgid ""
@@ -13049,9 +13050,9 @@ msgid ""
 "steps per stop\n"
 "with other words, 3 steps is 1EV exposure step between brackets."
 msgstr ""
-"het aantal stappen per 'bracket'  is in de camera instelbaar en bedraagt "
+"het aantal stappen per 'bracket' is in de camera instelbaar en bedraagt "
 "meestal 3 stappen per stop\n"
-"m.a.w. 3 stappen is gelijk aan 1EV belichtingsstap tussen de 'brackets'"
+"m.a.w. 3 stappen is gelijk aan 1EV belichtingsstap tussen de 'brackets'."
 
 #. user specified properties
 #: ../src/libs/camera.c:517
@@ -13105,11 +13106,11 @@ msgstr "probleem bij het kiezen van een nieuw vorm voor de map in %s"
 
 #: ../src/libs/collect.c:487
 msgid "search filmroll..."
-msgstr "zoek map"
+msgstr "zoek map..."
 
 #: ../src/libs/collect.c:491
 msgid "remove..."
-msgstr "uitschrijven"
+msgstr "verwijderen..."
 
 #: ../src/libs/collect.c:1133
 msgid "uncategorized"
@@ -13255,7 +13256,7 @@ msgstr "open xmp bestand"
 
 #: ../src/libs/copy_history.c:87
 msgid "XMP sidecar files"
-msgstr "xmp bestanden"
+msgstr "XMP-bestanden"
 
 #: ../src/libs/copy_history.c:105
 #, c-format
@@ -13272,10 +13273,10 @@ msgid_plural ""
 "see tag: darktable|problem|history-compress."
 msgstr[0] ""
 "geen compressie van de geschiedenis van 1 afbeelding\n"
-"zie label: darktable|problem|history-compress"
+"zie label: darktable|problem|history-compress."
 msgstr[1] ""
 "geen compressie van de geschiedenis van %d afbeeldingen\n"
-"zie label: darktable|problem|history-compress"
+"zie label: darktable|problem|history-compress."
 
 #: ../src/libs/copy_history.c:158
 msgid "history compression warning"
@@ -13800,7 +13801,7 @@ msgstr "pas tijdsverschil toe op geselecteerde afbeelding(en)"
 #. gpx
 #: ../src/libs/geotagging.c:817
 msgid "apply GPX track file..."
-msgstr "GPX track file toepassen ..."
+msgstr "GPX track-bestand toepassen..."
 
 #: ../src/libs/geotagging.c:818
 msgid "parses a GPX file and updates location of selected images"
@@ -14143,7 +14144,7 @@ msgstr "afbeelding lokaal kopiëren"
 #: ../src/libs/image.c:563
 msgctxt "accel"
 msgid "resync the local copy"
-msgstr "lokale kopie opnieuw synchroniseren "
+msgstr "lokale kopie opnieuw synchroniseren"
 
 #: ../src/libs/image.c:564
 msgctxt "accel"
@@ -14237,7 +14238,8 @@ msgstr "recursief mappen importeren"
 #: ../src/libs/import.c:381
 msgid "recursively import subfolders. Each folder goes into a new film roll."
 msgstr ""
-"recursief importeren submappen, elke map wordt in een nieuwe map geplaatst"
+"importeer submappen recursief. Elke map wordt in een nieuwe filmstrip "
+"geplaatst."
 
 #: ../src/libs/import.c:578
 msgid "supported images"
@@ -14672,7 +14674,7 @@ msgstr "alle rechten voorbehouden"
 
 #: ../src/libs/metadata.c:796
 msgid "all rights reserved."
-msgstr "alle rechten voorbehouden"
+msgstr "alle rechten voorbehouden."
 
 #. internal
 #: ../src/libs/metadata_view.c:102
@@ -14725,7 +14727,7 @@ msgstr "hoogte"
 
 #: ../src/libs/metadata_view.c:149
 msgid "categories"
-msgstr "categorieën "
+msgstr "categorieën"
 
 #: ../src/libs/metadata_view.c:161
 msgid "image information"
@@ -15217,16 +15219,16 @@ msgstr "keer terug naar vorige collectie"
 
 #: ../src/libs/recentcollect.c:119
 msgid " and "
-msgstr "en"
+msgstr " en "
 
 #: ../src/libs/recentcollect.c:124
 msgid " or "
-msgstr "of"
+msgstr " of "
 
 #. case DT_LIB_COLLECT_MODE_AND_NOT:
 #: ../src/libs/recentcollect.c:129
 msgid " but not "
-msgstr "maar niet"
+msgstr " maar niet "
 
 #: ../src/libs/select.c:103
 msgid "select all images in current collection"
@@ -15501,8 +15503,8 @@ msgstr "verwijder lpad"
 #, c-format
 msgid "<u>%d</u> tag will be deleted."
 msgid_plural "<u>%d</u> tags will be deleted."
-msgstr[0] "<u>%d</u> label wordt verwijderd"
-msgstr[1] "<u>%d</u> labels worden verwijderd"
+msgstr[0] "<u>%d</u> label wordt verwijderd."
+msgstr[1] "<u>%d</u> labels worden verwijderd."
 
 #: ../src/libs/tagging.c:1366 ../src/libs/tagging.c:1572
 #: ../src/libs/tagging.c:1790
@@ -15510,7 +15512,7 @@ msgstr[1] "<u>%d</u> labels worden verwijderd"
 msgid "<u>%d</u> image will be updated"
 msgid_plural "<u>%d</u> images will be updated "
 msgstr[0] "<u>%d</u> afbeelding wordt bijgewerkt"
-msgstr[1] "<u>%d</u> afbeeldingen worden bijgewerkt"
+msgstr[1] "<u>%d</u> afbeeldingen worden bijgewerkt "
 
 #: ../src/libs/tagging.c:1392
 #, c-format
@@ -15545,7 +15547,7 @@ msgstr "leeg label is niet toegestaan, afbreken"
 
 #: ../src/libs/tagging.c:1493
 msgid "tag name already exists. aborting."
-msgstr "label naam bestaat al, afbreken"
+msgstr "labelnaam bestaat al, afbreken."
 
 #: ../src/libs/tagging.c:1553
 msgid "edit tag"
@@ -15555,16 +15557,16 @@ msgstr "bewerk label"
 #, c-format
 msgid "<u>%d</u> tag will be updated."
 msgid_plural "<u>%d</u> tags will be updated."
-msgstr[0] "<u>%d</u> label wordt bijgewerkt"
-msgstr[1] "<u>%d</u> labels worden bijgewerkt"
+msgstr[0] "<u>%d</u> label wordt bijgewerkt."
+msgstr[1] "<u>%d</u> labels worden bijgewerkt."
 
 #: ../src/libs/tagging.c:1628
 msgid ""
 "'|' character is not allowed for renaming tag.\n"
 "to modify the hierachy use rename path instead. Aborting."
 msgstr ""
-"het '|' symbool is niet toegestaan \n"
-"gebruik een aangepast pad om de hiërarchie te wijzigen "
+"het '|' symbool is niet toegestaan om de tag te hernoemen \n"
+"gebruik een aangepast pad om de hiërarchie te wijzigen. Annuleren."
 
 #: ../src/libs/tagging.c:1667
 #, c-format
@@ -15578,7 +15580,7 @@ msgstr "hernoem pad?"
 #: ../src/libs/tagging.c:1778
 #, c-format
 msgid "selected path: %s "
-msgstr "geselecteerd pad: %s"
+msgstr "geselecteerd pad: %s "
 
 #: ../src/libs/tagging.c:1814
 msgid "'|' misplaced, empty tag is not allowed, aborting"
@@ -15587,7 +15589,7 @@ msgstr "'|' misplaatst, lege label is niet toegestaan, afbreken"
 #: ../src/libs/tagging.c:1840
 #, c-format
 msgid "at least one new tagname (%s) already exists, aborting."
-msgstr "ten minste één nieuw tagname (%s) bestaat al, annuleren"
+msgstr "ten minste één nieuwe tagnaam (%s) bestaat al, annuleren."
 
 #: ../src/libs/tagging.c:1952
 msgid "attach tag"
@@ -15627,7 +15629,7 @@ msgstr "(persoonlijk)"
 
 #: ../src/libs/tagging.c:2163
 msgid "Select a keyword file"
-msgstr "selecteer trefwoorden bestand"
+msgstr "Selecteer trefwoordenbestand"
 
 #: ../src/libs/tagging.c:2166
 msgid "_import"
@@ -15644,7 +15646,7 @@ msgstr "%zd  labels geïmporteerd"
 
 #: ../src/libs/tagging.c:2204
 msgid "Select file to export to"
-msgstr "kies bestand om naar te exporteren"
+msgstr "Kies bestand om naar te exporteren"
 
 #: ../src/libs/tagging.c:2207
 msgid "_export"
@@ -15828,12 +15830,7 @@ msgstr "organiseer en ontwikkel afbeeldingen van digitale camera's"
 
 #: ../src/libs/tools/darktable.c:271
 msgid "translator-credits"
-msgstr ""
-"Ger Siemerink\n"
-"\n"
-"vragen of opmerking over de vertaling?\n"
-"\n"
-"mailto: g.siemerink@gmail.com"
+msgstr "vertaler credits"
 
 #: ../src/libs/tools/filmstrip.c:53
 msgid "filmstrip"
@@ -16533,7 +16530,7 @@ msgstr "verplaats pagina omhoog"
 #: ../src/views/lighttable.c:707
 msgctxt "accel"
 msgid "move page down"
-msgstr "verplaats pagina omlaag "
+msgstr "verplaats pagina omlaag"
 
 #: ../src/views/lighttable.c:708
 msgctxt "accel"
@@ -16782,43 +16779,43 @@ msgstr "nieuwe sessie gestart-'%s'"
 
 #: ../src/views/tethering.c:276
 msgid "no camera with tethering support available for use..."
-msgstr "geen camera met tetheringondersteuning aanwezig"
+msgstr "geen camera met tetheringondersteuning aanwezig..."
 
 #: ../src/views/view.c:1311
 msgid "Left click"
-msgstr "links klikken"
+msgstr "Klik links"
 
 #: ../src/views/view.c:1314
 msgid "Right click"
-msgstr "klik rechts"
+msgstr "Klik rechts"
 
 #: ../src/views/view.c:1317
 msgid "Middle click"
-msgstr "klik middelste"
+msgstr "Klik middelste"
 
 #: ../src/views/view.c:1320
 msgid "Scroll"
-msgstr "scroll"
+msgstr "Scroll"
 
 #: ../src/views/view.c:1323
 msgid "Left double-click"
-msgstr "links dubbelklikken"
+msgstr "Links dubbelklikken"
 
 #: ../src/views/view.c:1326
 msgid "Right double-click"
-msgstr "rechts dubbelklikken"
+msgstr "Rechts dubbelklikken"
 
 #: ../src/views/view.c:1329
 msgid "Drag and drop"
-msgstr "slepen en neerzetten"
+msgstr "Slepen en neerzetten"
 
 #: ../src/views/view.c:1332
 msgid "Left click+Drag"
-msgstr "klik links + sleep"
+msgstr "Klik links + Sleep"
 
 #: ../src/views/view.c:1335
 msgid "Right click+Drag"
-msgstr "klik rechts + sleep"
+msgstr "Klik rechts + Sleep"
 
 #: ../src/views/view.c:1356
 msgid "darktable - accels window"
@@ -16827,7 +16824,8 @@ msgstr "darktable - accels window"
 #: ../src/views/view.c:1412
 msgid "switch to a classic window which will stay open after key release."
 msgstr ""
-"schakel over naar klassiek venster dat open blijft na het loslaten van toets"
+"schakel over naar een klassiek venster dat open blijft na het loslaten van "
+"toets."
 
 #: ../src/views/view.c:1528
 msgid "+Scroll"
@@ -16843,7 +16841,7 @@ msgstr "Accel"
 
 #: ../src/views/view.c:1583
 msgid "Action"
-msgstr "actie"
+msgstr "Actie"
 
 #~ msgid "date"
 #~ msgstr "datum"

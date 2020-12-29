@@ -82,18 +82,10 @@ cat > "$FONTCONFIG_FILE" <<EOF
 EOF
 
 execute 'Installing base-devel and toolchain'  pacman -S --needed --noconfirm mingw-w64-x86_64-{toolchain,clang,cmake}
-execute 'Installing dependencies (except lensfun)' pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes}
+execute 'Installing dependencies' pacman -S --needed --noconfirm  mingw-w64-x86_64-{exiv2,lcms2,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,lensfun}
 
-# Lensfun must be dealt with separately in an MSYS64 environment per note in Windows build instructions added in commit ca5a4fb
-execute 'Downloading known good lensfun 0.3.2-4' curl -fSs -o mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz http://repo.msys2.org/mingw/x86_64/mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
-execute 'Installing known good lensfun' pacman -U --needed --noconfirm mingw-w64-x86_64-lensfun-0.3.2-4-any.pkg.tar.xz
-# Downgraded lensfun package is explicitly packaged to python 3.6 directories
-# but fortunately compatible with 3.8
-execute 'Copying python 3.6 lensfun libraries to 3.8' cp -R /mingw64/lib/python3.6/site-packages/lensfun* /mingw64/lib/python3.8/site-packages
 execute 'Updating lensfun databse' lensfun-update-data
 
 execute 'Installing additional OpenMP library for clang' pacman -S --needed --noconfirm mingw-w64-x86_64-openmp
-execute 'Library linking fix for MinGW clang issue 6400: extracting library' ar x /mingw64/lib/libomp.a 
-execute 'Library linking fix for MinGW clang issue 6400: copying library' cp libomp.dll.a /mingw64/lib/
 
 execute 'Building darktable' build_darktable

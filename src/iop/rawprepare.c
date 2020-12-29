@@ -41,35 +41,21 @@
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rawprepare_params_t)
 
-static const struct
-{
-  const char *label;
-  const char *tooltip;
-} crop_labels[4] = { { N_("crop x"), N_("crop from left border") },
-                     { N_("crop y"), N_("crop from top") },
-                     { N_("crop width"), N_("crop from right border") },
-                     { N_("crop height"), N_("crop from bottom") } };
-
 typedef struct dt_iop_rawprepare_params_t
 {
-  union {
-    struct
-    {
-      int32_t x, y, width, height; // $MIN: 0 $MAX: UINT16_MAX
-    } named;
-    int32_t array[4]; // $MIN: 0 $MAX: UINT16_MAX
-  } crop;
-  uint16_t raw_black_level_separate[4]; // $MIN: 0 $MAX: UINT16_MAX
+  int32_t x; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop x"
+  int32_t y; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop y"
+  int32_t width; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop width"
+  int32_t height; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "crop height"
+  uint16_t raw_black_level_separate[4]; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "black level"
   uint16_t raw_white_point; // $MIN: 0 $MAX: UINT16_MAX $DESCRIPTION: "white point"
 } dt_iop_rawprepare_params_t;
 
 typedef struct dt_iop_rawprepare_gui_data_t
 {
-  GtkWidget *box_raw;
   GtkWidget *black_level_separate[4];
   GtkWidget *white_point;
-  GtkWidget *crop[4];
-  GtkWidget *label_non_raw;
+  GtkWidget *x, *y, *width, *height;
 } dt_iop_rawprepare_gui_data_t;
 
 typedef struct dt_iop_rawprepare_data_t
@@ -106,12 +92,13 @@ int operation_tags()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
+    | IOP_FLAGS_UNSAFE_COPY;
 }
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -119,62 +106,29 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_RAW;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
+                    "you should not touch values here !"));
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   dt_gui_presets_add_generic(_("passthrough"), self->op, self->version(),
-                             &(dt_iop_rawprepare_params_t){.crop.array = { 0, 0, 0, 0 },
+                             &(dt_iop_rawprepare_params_t){.x = 0,
+                                                           .y = 0,
+                                                           .width = 0,
+                                                           .height = 0,
                                                            .raw_black_level_separate[0] = 0,
                                                            .raw_black_level_separate[1] = 0,
                                                            .raw_black_level_separate[2] = 0,
                                                            .raw_black_level_separate[3] = 0,
                                                            .raw_white_point = UINT16_MAX },
-                             sizeof(dt_iop_rawprepare_params_t), 1);
+                             sizeof(dt_iop_rawprepare_params_t), 1, DEVELOP_BLEND_CS_NONE);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_register_slider_iop(self, FALSE, NC_("accel", label));
-    g_free(label);
-  }
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    for(int i = 0; i < 4; i++)
-    {
-      dt_accel_register_slider_iop(self, FALSE, NC_("accel", gettext(crop_labels[i].label)));
-    }
-  }
-
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white point"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
-
-  for(int i = 0; i < 4; i++)
-  {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
-    dt_accel_connect_slider_iop(self, label, g->black_level_separate[i]);
-    g_free(label);
-  }
-
-  dt_accel_connect_slider_iop(self, _("white point"), GTK_WIDGET(g->white_point));
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    for(int i = 0; i < 4; i++)
-    {
-      dt_accel_connect_slider_iop(self, gettext(crop_labels[i].label), g->crop[i]);
-    }
-  }
 }
 
 // value to round,   reference on how to round:
@@ -652,7 +606,7 @@ static gboolean image_set_rawcrops(const uint32_t imgid, int dx, int dy)
   if(test) return FALSE;
 
   img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-  img->p_width = img->width - dx;  
+  img->p_width = img->width - dx;
   img->p_height = img->height - dy;
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
   return TRUE;
@@ -664,10 +618,10 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   const dt_iop_rawprepare_params_t *const p = (dt_iop_rawprepare_params_t *)params;
   dt_iop_rawprepare_data_t *d = (dt_iop_rawprepare_data_t *)piece->data;
 
-  d->x = p->crop.named.x;
-  d->y = p->crop.named.y;
-  d->width = p->crop.named.width;
-  d->height = p->crop.named.height;
+  d->x = p->x;
+  d->y = p->y;
+  d->width = p->width;
+  d->height = p->height;
 
   if(piece->pipe->dsc.filters)
   {
@@ -707,7 +661,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
   d->rawprepare.raw_white_point = p->raw_white_point;
 
   if(image_set_rawcrops(pipe->image.id, d->x + d->width, d->y + d->height))
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_UPDATE);
 
   if(!(dt_image_is_rawprepare_supported(&piece->pipe->image)) || image_is_normalized(&piece->pipe->image)) piece->enabled = 0;
 }
@@ -715,7 +669,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelp
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rawprepare_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -726,28 +679,24 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_rawprepare_params_t tmp = { { { 0 } } };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
-
+  dt_iop_rawprepare_params_t *d = self->default_params;
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rawprepare_params_t){.crop.named.x = image->crop_x,
-                                     .crop.named.y = image->crop_y,
-                                     .crop.named.width = image->crop_width,
-                                     .crop.named.height = image->crop_height,
-                                     .raw_black_level_separate[0] = image->raw_black_level_separate[0],
-                                     .raw_black_level_separate[1] = image->raw_black_level_separate[1],
-                                     .raw_black_level_separate[2] = image->raw_black_level_separate[2],
-                                     .raw_black_level_separate[3] = image->raw_black_level_separate[3],
-                                     .raw_white_point = image->raw_white_point };
+  *d = (dt_iop_rawprepare_params_t){.x = image->crop_x,
+                                    .y = image->crop_y,
+                                    .width = image->crop_width,
+                                    .height = image->crop_height,
+                                    .raw_black_level_separate[0] = image->raw_black_level_separate[0],
+                                    .raw_black_level_separate[1] = image->raw_black_level_separate[1],
+                                    .raw_black_level_separate[2] = image->raw_black_level_separate[2],
+                                    .raw_black_level_separate[3] = image->raw_black_level_separate[3],
+                                    .raw_white_point = image->raw_white_point };
 
+  self->hide_enable_button = 1;
   self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
 
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_rawprepare_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_rawprepare_params_t));
+  if(self->widget)
+    gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -759,23 +708,6 @@ void init_global(dt_iop_module_so_t *self)
   gd->kernel_rawprepare_1f = dt_opencl_create_kernel(program, "rawprepare_1f");
   gd->kernel_rawprepare_1f_unnormalized = dt_opencl_create_kernel(program, "rawprepare_1f_unnormalized");
   gd->kernel_rawprepare_4f = dt_opencl_create_kernel(program, "rawprepare_4f");
-}
-
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_rawprepare_params_t));
-  self->hide_enable_button = 1;
-  self->default_enabled = 0;
-  if(self->dev)
-  { // just being extra careful here, because there is a case when old presets
-    // are upgraded and temporary modules are constructed for this, with a 0x0 dev
-    // pointer. i suppose the can be solved more elegantly on the other side.
-    const dt_image_t *const image = &(self->dev->image_storage);
-    self->default_enabled = dt_image_is_rawprepare_supported(image) && !image_is_normalized(image);
-  }
-  self->params_size = sizeof(dt_iop_rawprepare_params_t);
-  self->gui_data = NULL;
 }
 
 void cleanup_global(dt_iop_module_so_t *self)
@@ -796,101 +728,74 @@ void gui_update(dt_iop_module_t *self)
   for(int i = 0; i < 4; i++)
   {
     dt_bauhaus_slider_set_soft(g->black_level_separate[i], p->raw_black_level_separate[i]);
-    dt_bauhaus_slider_set_default(g->black_level_separate[i], p->raw_black_level_separate[i]);
   }
 
   dt_bauhaus_slider_set_soft(g->white_point, p->raw_white_point);
-  dt_bauhaus_slider_set_default(g->white_point, p->raw_white_point);
 
   if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
   {
-    for(int i = 0; i < 4; i++)
-    {
-      dt_bauhaus_slider_set_soft(g->crop[i], p->crop.array[i]);
-      dt_bauhaus_slider_set_default(g->crop[i], p->crop.array[i]);
-    }
+    dt_bauhaus_slider_set_soft(g->x, p->x);
+    dt_bauhaus_slider_set_soft(g->y, p->y);
+    dt_bauhaus_slider_set_soft(g->width, p->width);
+    dt_bauhaus_slider_set_soft(g->height, p->height);
   }
-
-  gtk_widget_set_visible(g->box_raw      ,  self->default_enabled);
-  gtk_widget_set_visible(g->label_non_raw, !self->default_enabled);
 }
 
-static void callback(GtkWidget *widget, gpointer *user_data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  if(darktable.gui->reset) return;
-
-  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
-  dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
-
-  for(int i = 0; i < 4; i++)
-    p->raw_black_level_separate[i] = dt_bauhaus_slider_get(g->black_level_separate[i]);
-  p->raw_white_point = dt_bauhaus_slider_get(g->white_point);
-
-  if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
-  {
-    for(int i = 0; i < 4; i++)
-    {
-      p->crop.array[i] = dt_bauhaus_slider_get(g->crop[i]);
-    }
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
+const gchar *black_label[]
+  =  { N_("black level 0"),
+       N_("black level 1"),
+       N_("black level 2"),
+       N_("black level 3") };
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_rawprepare_gui_data_t));
+  dt_iop_rawprepare_gui_data_t *g = IOP_GUI_ALLOC(rawprepare);
 
-  dt_iop_rawprepare_gui_data_t *g = (dt_iop_rawprepare_gui_data_t *)self->gui_data;
-  dt_iop_rawprepare_params_t *p = (dt_iop_rawprepare_params_t *)self->params;
-
-  g->box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   for(int i = 0; i < 4; i++)
   {
-    gchar *label = g_strdup_printf(_("black level %i"), i);
+    gchar *par = g_strdup_printf("raw_black_level_separate[%i]", i);
 
-    g->black_level_separate[i]
-        = dt_bauhaus_slider_new_with_range(self, 0, UINT16_MAX, 1, p->raw_black_level_separate[i], 0);
-    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, label);
-    gtk_widget_set_tooltip_text(g->black_level_separate[i], label);
-    gtk_box_pack_start(GTK_BOX(g->box_raw), g->black_level_separate[i], FALSE, FALSE, 0);
+    g->black_level_separate[i] = dt_bauhaus_slider_from_params(self, par);
+    dt_bauhaus_widget_set_label(g->black_level_separate[i], NULL, black_label[i]);
+    gtk_widget_set_tooltip_text(g->black_level_separate[i], _(black_label[i]));
     dt_bauhaus_slider_set_soft_max(g->black_level_separate[i], 16384);
-    g_signal_connect(G_OBJECT(g->black_level_separate[i]), "value-changed", G_CALLBACK(callback), self);
 
-    g_free(label);
+    g_free(par);
   }
 
-  g->white_point = dt_bauhaus_slider_new_with_range(self, 0, UINT16_MAX, 1, p->raw_white_point, 0);
-  dt_bauhaus_widget_set_label(g->white_point, NULL, _("white point"));
+  g->white_point = dt_bauhaus_slider_from_params(self, "raw_white_point");
   gtk_widget_set_tooltip_text(g->white_point, _("white point"));
-  gtk_box_pack_start(GTK_BOX(g->box_raw), g->white_point, FALSE, FALSE, 0);
   dt_bauhaus_slider_set_soft_max(g->white_point, 16384);
-  g_signal_connect(G_OBJECT(g->white_point), "value-changed", G_CALLBACK(callback), self);
 
   if(dt_conf_get_bool("plugins/darkroom/rawprepare/allow_editing_crop"))
   {
-    for(int i = 0; i < 4; i++)
-    {
-      g->crop[i] = dt_bauhaus_slider_new_with_range(self, 0, UINT16_MAX, 1, p->crop.array[i], 0);
-      dt_bauhaus_widget_set_label(g->crop[i], NULL, gettext(crop_labels[i].label));
-      gtk_widget_set_tooltip_text(g->crop[i], gettext(crop_labels[i].tooltip));
-      gtk_box_pack_start(GTK_BOX(g->box_raw), g->crop[i], FALSE, FALSE, 0);
-      dt_bauhaus_slider_set_soft_max(g->crop[i], 256);
-      g_signal_connect(G_OBJECT(g->crop[i]), "value-changed", G_CALLBACK(callback), self);
-    }
+    g->x = dt_bauhaus_slider_from_params(self, "x");
+    gtk_widget_set_tooltip_text(g->x, _("crop from left border"));
+    dt_bauhaus_slider_set_soft_max(g->x, 256);
+
+    g->y = dt_bauhaus_slider_from_params(self, "y");
+    gtk_widget_set_tooltip_text(g->y, _("crop from top"));
+    dt_bauhaus_slider_set_soft_max(g->y, 256);
+
+    g->width = dt_bauhaus_slider_from_params(self, "width");
+    gtk_widget_set_tooltip_text(g->width, _("crop from right border"));
+    dt_bauhaus_slider_set_soft_max(g->width, 256);
+
+    g->height = dt_bauhaus_slider_from_params(self, "height");
+    gtk_widget_set_tooltip_text(g->height, _("crop from bottom"));
+    dt_bauhaus_slider_set_soft_max(g->height, 256);
   }
 
   // start building top level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
+  self->widget = gtk_stack_new();
+  gtk_stack_set_homogeneous(GTK_STACK(self->widget), FALSE);
 
-  gtk_box_pack_start(GTK_BOX(self->widget), g->box_raw, FALSE, FALSE, 0);
+  GtkWidget *label_non_raw = dt_ui_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
 
-  g->label_non_raw
-      = gtk_label_new(_("raw black/white point correction\nonly works for the sensors that need it."));
-  gtk_widget_set_halign(g->label_non_raw, GTK_ALIGN_START);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->label_non_raw, FALSE, FALSE, 0);
+  gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
+  gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

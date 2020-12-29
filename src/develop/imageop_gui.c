@@ -19,7 +19,9 @@
 #include "develop/imageop_gui.h"
 #include "develop/imageop.h"
 #include "bauhaus/bauhaus.h"
+#include "dtgtk/button.h"
 #include "gui/color_picker_proxy.h"
+#include "gui/accelerators.h"
 
 #ifdef GDK_WINDOWING_QUARTZ
 #include "osx/osx.h"
@@ -53,7 +55,7 @@ static inline void process_changed_value(dt_iop_module_t *self, GtkWidget *widge
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void generic_slider_float_callback(GtkWidget *slider, float *field)
+void dt_iop_slider_float_callback(GtkWidget *slider, float *field)
 {
   if(darktable.gui->reset) return;
 
@@ -63,7 +65,7 @@ static void generic_slider_float_callback(GtkWidget *slider, float *field)
   if (*field != previous) process_changed_value(NULL, slider, &previous);
 }
 
-static void generic_slider_int_callback(GtkWidget *slider, int *field)
+void dt_iop_slider_int_callback(GtkWidget *slider, int *field)
 {
   if(darktable.gui->reset) return;
 
@@ -73,22 +75,39 @@ static void generic_slider_int_callback(GtkWidget *slider, int *field)
   if(*field != previous) process_changed_value(NULL, slider, &previous);
 }
 
-static void generic_combobox_enum_callback(GtkWidget *combobox, int *field)
+void dt_iop_slider_ushort_callback(GtkWidget *slider, unsigned short *field)
+{
+  if(darktable.gui->reset) return;
+
+  unsigned short previous = *field;
+  *field = dt_bauhaus_slider_get(slider);
+
+  if(*field != previous) process_changed_value(NULL, slider, &previous);
+}
+
+void dt_iop_combobox_enum_callback(GtkWidget *combobox, int *field)
 {
   if(darktable.gui->reset) return;
 
   int previous = *field;
 
-  int *combo_data = dt_bauhaus_combobox_get_data(combobox);
-  if(combo_data) 
-    *field = *combo_data;
-  else
-    *field = dt_bauhaus_combobox_get(combobox);
+  *field = GPOINTER_TO_INT(dt_bauhaus_combobox_get_data(combobox));
 
   if(*field != previous) process_changed_value(NULL, combobox, &previous);
 }
 
-static void generic_combobox_bool_callback(GtkWidget *combobox, gboolean *field)
+void dt_iop_combobox_int_callback(GtkWidget *combobox, int *field)
+{
+  if(darktable.gui->reset) return;
+
+  int previous = *field;
+
+  *field = dt_bauhaus_combobox_get(combobox);
+
+  if(*field != previous) process_changed_value(NULL, combobox, &previous);
+}
+
+void dt_iop_combobox_bool_callback(GtkWidget *combobox, gboolean *field)
 {
   if(darktable.gui->reset) return;
 
@@ -98,7 +117,7 @@ static void generic_combobox_bool_callback(GtkWidget *combobox, gboolean *field)
   if(*field != previous) process_changed_value(NULL, combobox, &previous);
 }
 
-static void generic_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *data)
+static void _iop_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *data)
 {
   if(darktable.gui->reset) return;
 
@@ -114,7 +133,26 @@ static void generic_toggle_callback(GtkWidget *togglebutton, dt_module_param_t *
 GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *param)
 {
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
-  dt_introspection_field_t *f = self->so->get_f(param);
+  dt_iop_params_t *d = (dt_iop_params_t *)self->default_params;
+
+  size_t param_index = 0;
+  gboolean skip_label = FALSE;
+
+  const size_t param_length = strlen(param) + 1;
+  char *param_name = g_malloc(param_length);
+  char *base_name = g_malloc(param_length);
+  if(sscanf(param, "%[^[][%zu]", base_name, &param_index) == 2)
+  {
+    sprintf(param_name, "%s[0]", base_name);
+    skip_label = TRUE;
+  }
+  else
+  {
+    memcpy(param_name, param, param_length);
+  }
+  g_free(base_name);
+
+  const dt_introspection_field_t *f = self->so->get_f(param_name);
 
   GtkWidget *slider = NULL;
   gchar *str;
@@ -125,7 +163,8 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
     {
       const float min = f->Float.Min;
       const float max = f->Float.Max;
-      const float defval = *(float*)self->so->get_p(p, param);
+      const size_t offset = f->header.offset + param_index * sizeof(float);
+      const float defval = *(float*)(d + offset);
       int digits = 2;
       float step = 0;
 
@@ -142,7 +181,7 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
         step = powf(10.f,fdigits);
         if (log10step - fdigits > .5)
           step *= 5;
-        if (fdigits < -2.f) 
+        if (fdigits < -2.f)
           digits = -fdigits;
       }
 
@@ -155,41 +194,66 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
         str = g_strdup_printf("%%%s.0%df%s", (min < 0 ? "+" : ""), digits, post);
 
         dt_bauhaus_slider_set_format(slider, str);
-      
+
         g_free(str);
       }
 
-      g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(generic_slider_float_callback), p + f->header.offset);
+      g_signal_connect(G_OBJECT(slider), "value-changed",
+                       G_CALLBACK(dt_iop_slider_float_callback),
+                       p + offset);
     }
     else if(f->header.type == DT_INTROSPECTION_TYPE_INT)
     {
       const int min = f->Int.Min;
       const int max = f->Int.Max;
-      const int defval = *(float*)self->so->get_p(p, param);
+      const size_t offset = f->header.offset + param_index * sizeof(int);
+      const int defval = *(int*)(d + offset);
 
       slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
 
-      g_signal_connect(G_OBJECT(slider), "value-changed", G_CALLBACK(generic_slider_int_callback), p + f->header.offset);
+      g_signal_connect(G_OBJECT(slider), "value-changed",
+                       G_CALLBACK(dt_iop_slider_int_callback),
+                       p + offset);
     }
-
-    if (*f->header.description)
+    else if(f->header.type == DT_INTROSPECTION_TYPE_USHORT)
     {
-      // we do not want to support a context as it break all translations see #5498
-      // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-      dt_bauhaus_widget_set_label(slider, NULL, gettext(f->header.description));
+      const unsigned short min = f->UShort.Min;
+      const unsigned short max = f->UShort.Max;
+      const size_t offset = f->header.offset + param_index * sizeof(unsigned short);
+      const unsigned short defval = *(unsigned short*)(d + offset);
+
+      slider = dt_bauhaus_slider_new_with_range_and_feedback(self, min, max, 1, defval, 0, 1);
+
+      g_signal_connect(G_OBJECT(slider), "value-changed",
+                       G_CALLBACK(dt_iop_slider_ushort_callback),
+                       p + offset);
     }
-    else
-    {
-      str = dt_util_str_replace(f->header.field_name, "_", " ");
-    
-      dt_bauhaus_widget_set_label(slider, NULL, _(str));
+    else f = NULL;
+  }
 
-      g_free(str);
+  if(f)
+  {
+    if(!skip_label)
+    {
+      if (*f->header.description)
+      {
+        // we do not want to support a context as it break all translations see #5498
+        // dt_bauhaus_widget_set_label(slider, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
+        dt_bauhaus_widget_set_label(slider, NULL, f->header.description);
+      }
+      else
+      {
+        str = dt_util_str_replace(f->header.field_name, "_", " ");
+
+        dt_bauhaus_widget_set_label(slider,  NULL, str);
+
+        g_free(str);
+      }
     }
   }
   else
   {
-    str = g_strdup_printf("'%s' is not a float/int/slider parameter", param);
+    str = g_strdup_printf("'%s' is not a float/int/unsigned short/slider parameter", param_name);
 
     slider = dt_bauhaus_slider_new(self);
     dt_bauhaus_widget_set_label(slider, NULL, str);
@@ -199,6 +263,8 @@ GtkWidget *dt_bauhaus_slider_from_params(dt_iop_module_t *self, const char *para
 
   if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), slider, FALSE, FALSE, 0);
+
+  g_free(param_name);
 
   return slider;
 }
@@ -211,7 +277,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
   GtkWidget *combobox = dt_bauhaus_combobox_new(self);
   gchar *str = NULL;
 
-  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM || 
+  if (f && (f->header.type == DT_INTROSPECTION_TYPE_ENUM ||
             f->header.type == DT_INTROSPECTION_TYPE_INT  ||
             f->header.type == DT_INTROSPECTION_TYPE_UINT ||
             f->header.type == DT_INTROSPECTION_TYPE_BOOL ))
@@ -220,13 +286,13 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
     {
       // we do not want to support a context as it break all translations see #5498
       // dt_bauhaus_widget_set_label(combobox, NULL, g_dpgettext2(NULL, "introspection description", f->header.description));
-      dt_bauhaus_widget_set_label(combobox, NULL, gettext(f->header.description));
+      dt_bauhaus_widget_set_label(combobox, NULL, f->header.description);
     }
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
-    
-      dt_bauhaus_widget_set_label(combobox, NULL, _(str));
+
+      dt_bauhaus_widget_set_label(combobox,  NULL, str);
 
       g_free(str);
     }
@@ -236,7 +302,7 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
       dt_bauhaus_combobox_add(combobox, _("no"));
       dt_bauhaus_combobox_add(combobox, _("yes"));
 
-      g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_bool_callback), p + f->header.offset);
+      g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(dt_iop_combobox_bool_callback), p + f->header.offset);
     }
     else
     {
@@ -245,12 +311,17 @@ GtkWidget *dt_bauhaus_combobox_from_params(dt_iop_module_t *self, const char *pa
         for(dt_introspection_type_enum_tuple_t *iter = f->Enum.values; iter && iter->name; iter++)
         {
           // we do not want to support a context as it break all translations see #5498
-          // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, &iter->value, NULL, TRUE);
-          dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, &iter->value, NULL, TRUE);
+          // dt_bauhaus_combobox_add_full(combobox, g_dpgettext2(NULL, "introspection description", iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
+          if(*iter->description)
+            dt_bauhaus_combobox_add_full(combobox, gettext(iter->description), DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT, GINT_TO_POINTER(iter->value), NULL, TRUE);
         }
-      }
 
-      g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(generic_combobox_enum_callback), p + f->header.offset);
+        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(dt_iop_combobox_enum_callback), p + f->header.offset);
+      }
+      else
+      {
+        g_signal_connect(G_OBJECT(combobox), "value-changed", G_CALLBACK(dt_iop_combobox_int_callback), p + f->header.offset);
+      }
     }
   }
   else
@@ -273,7 +344,7 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
   dt_iop_params_t *p = (dt_iop_params_t *)self->params;
   dt_introspection_field_t *f = self->so->get_f(param);
 
-  GtkWidget *button;
+  GtkWidget *button, *label;
   gchar *str;
 
   if(f && f->header.type == DT_INTROSPECTION_TYPE_BOOL)
@@ -282,21 +353,24 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
     {
       // we do not want to support a context as it break all translations see #5498
       // button = gtk_check_button_new_with_label(g_dpgettext2(NULL, "introspection description", f->header.description));
-      button = gtk_check_button_new_with_label(gettext(f->header.description));
+      label = gtk_label_new(gettext(f->header.description));
     }
     else
     {
       str = dt_util_str_replace(f->header.field_name, "_", " ");
-    
-      button = gtk_check_button_new_with_label(_(str));
+
+      label = gtk_label_new(_(str));
 
       g_free(str);
     }
 
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+    button = gtk_check_button_new();
+    gtk_container_add(GTK_CONTAINER(button), label);
     dt_module_param_t *module_param = (dt_module_param_t *)g_malloc(sizeof(dt_module_param_t));
     module_param->module = self;
     module_param->param = p + f->header.offset;
-    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(generic_toggle_callback), module_param, (GClosureNotify)g_free, 0);
+    g_signal_connect_data(G_OBJECT(button), "toggled", G_CALLBACK(_iop_toggle_callback), module_param, (GClosureNotify)g_free, 0);
   }
   else
   {
@@ -309,6 +383,108 @@ GtkWidget *dt_bauhaus_toggle_from_params(dt_iop_module_t *self, const char *para
 
   if(!self->widget) self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
   gtk_box_pack_start(GTK_BOX(self->widget), button, FALSE, FALSE, 0);
+
+  return button;
+}
+
+static void _send_button_press_event(GtkWidget *w, guint state)
+{
+  if(!(GTK_IS_BUTTON(w))) return;
+
+  GdkEvent *event = gdk_event_new(GDK_BUTTON_PRESS);
+  event->button.state = state;
+  event->button.button = 1;
+  event->button.window = gtk_widget_get_window(w);
+  g_object_ref(event->button.window);
+
+  gtk_widget_event(w, event);
+
+  gdk_event_free(event);
+}
+
+static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                       GdkModifierType modifier, gpointer widget)
+{
+  _send_button_press_event(widget, 0);
+  return TRUE;
+}
+
+static gboolean _ctrl_press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                             GdkModifierType modifier, gpointer widget)
+{
+  _send_button_press_event(widget, GDK_CONTROL_MASK);
+  return TRUE;
+}
+
+GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const gchar *label, const gchar *ctrl_label,
+                                   GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
+                                   DTGTKCairoPaintIconFunc paint, GtkWidget *box)
+{
+  GtkWidget *w = dtgtk_togglebutton_new(paint, CPF_STYLE_FLAT, NULL);
+  g_signal_connect(G_OBJECT(w), "button-press-event", callback, self);
+
+  if(!ctrl_label)
+    gtk_widget_set_tooltip_text(w, _(label));
+  else
+  {
+    gchar *tooltip = g_strdup_printf(_("%s\nctrl+click to %s"), _(label), _(ctrl_label));
+    gtk_widget_set_tooltip_text(w, tooltip);
+    g_free(tooltip);
+  }
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
+  if(GTK_IS_BOX(box)) gtk_box_pack_end(GTK_BOX(box), w, FALSE, FALSE, 0);
+
+  gchar *label_first_line = g_strdelimit(g_strdup(label), "\n", '\0');
+  if(darktable.control->accel_initialising)
+  {
+    dt_accel_register_iop(self->so, local, label_first_line, accel_key, mods);
+    if(ctrl_label) dt_accel_register_iop(self->so, local, ctrl_label, 0, 0);
+  }
+  else
+  {
+    GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), (gpointer)w, NULL);
+    dt_accel_connect_iop(self, label_first_line, closure);
+    if(ctrl_label)
+    {
+      closure = g_cclosure_new(G_CALLBACK(_ctrl_press_button_callback), (gpointer)w, NULL);
+      dt_accel_connect_iop(self, ctrl_label, closure);
+    }
+  }
+  g_free(label_first_line);
+
+  return w;
+}
+
+GtkWidget *dt_iop_button_new(dt_iop_module_t *self, const gchar *label,
+                             GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
+                             DTGTKCairoPaintIconFunc paint, gint paintflags, GtkWidget *box)
+{
+  GtkWidget *button = NULL;
+
+  if(paint)
+  {
+    button = dtgtk_button_new(paint, CPF_STYLE_FLAT | paintflags, NULL);
+    gtk_widget_set_tooltip_text(button, _(label));
+  }
+  else
+  {
+    button = gtk_button_new_with_label(_(label));
+    gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
+  }
+
+  g_signal_connect(G_OBJECT(button), "clicked", callback, (gpointer)self);
+
+  if(darktable.control->accel_initialising)
+  {
+    dt_accel_register_iop(self->so, local, label, accel_key, mods);
+  }
+  else
+  {
+    dt_accel_connect_button_iop(self, label, button);
+  }
+
+  if(GTK_IS_BOX(box)) gtk_box_pack_start(GTK_BOX(box), button, TRUE, TRUE, 0);
 
   return button;
 }

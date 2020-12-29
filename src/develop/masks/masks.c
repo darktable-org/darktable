@@ -1250,6 +1250,75 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
   return res;
 }
 
+static void _dt_masks_sanitize_config(dt_masks_type_t type)
+{
+  if(type & DT_MASKS_CIRCLE)
+  {
+    if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
+      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
+    }
+    else
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/size", 0.001f, 0.5f);
+      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
+    }
+  }
+  else if (type & DT_MASKS_ELLIPSE)
+  {
+    int flags = -1;
+    float radius_a = 0.0f;
+    float radius_b = 0.0f;
+    float border = 0.0f;
+    if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/ellipse_rotation", 0.0f, 360.f);
+      flags = dt_conf_get_and_sanitize_int("plugins/darkroom/spots/ellipse_flags", DT_MASKS_ELLIPSE_EQUIDISTANT, DT_MASKS_ELLIPSE_PROPORTIONAL);
+      radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
+      radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
+      border = dt_conf_get_float("plugins/darkroom/spots/ellipse_border");
+    }
+    else
+    {
+      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/ellipse_rotation", 0.0f, 360.f);
+      flags = dt_conf_get_and_sanitize_int("plugins/darkroom/masks/ellipse/flags", DT_MASKS_ELLIPSE_EQUIDISTANT, DT_MASKS_ELLIPSE_PROPORTIONAL);
+      radius_a = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_a");
+      radius_b = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_b");
+      border = dt_conf_get_float("plugins/darkroom/masks/ellipse/border");
+    }
+
+    const float ratio = radius_a / radius_b;
+
+    if(radius_a > radius_b)
+    {
+      radius_a = CLAMPS(radius_a, 0.001f, 0.5f);
+      radius_b = radius_a / ratio;
+    }
+    else
+    {
+      radius_b = CLAMPS(radius_b, 0.001f, 0.5);
+      radius_a = ratio * radius_b;
+    }
+
+    const float reference = (flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f / fmin(radius_a, radius_b) : 1.0f);
+    border = CLAMPS(border, 0.001f * reference, reference);
+
+    if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+    {
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/spots/ellipse_radius_a", radius_a, 0.001f, 0.5f)
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/spots/ellipse_radius_b", radius_b, 0.001f, 0.5f);
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/spots/ellipse_border", border, 0.001f, reference);
+    }
+    else
+    {
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/masks/ellipse/radius_a", radius_a, 0.001f, 0.5f);
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/masks/ellipse/radius_b", radius_b, 0.001f, 0.5f);
+      DT_CONF_SET_SANITIZED_FLOAT("plugins/darkroom/masks/ellipse/border", border, 0.001f, reference);
+    }
+  }
+}
+
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
   dt_masks_form_t *form = (dt_masks_form_t *)calloc(1, sizeof(dt_masks_form_t));
@@ -1258,6 +1327,8 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
   form->type = type;
   form->version = dt_masks_version();
   form->formid = time(NULL);
+
+  _dt_masks_sanitize_config(type);
 
   return form;
 }
@@ -1333,7 +1404,7 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
     form->version = sqlite3_column_int(stmt, 4);
     form->points = NULL;
     const int nb_points = sqlite3_column_int(stmt, 6);
-    memcpy(form->source, sqlite3_column_blob(stmt, 7), 2 * sizeof(float));
+    memcpy(form->source, sqlite3_column_blob(stmt, 7), sizeof(float) * 2);
 
     // and now we "read" the blob
     if(form->type & DT_MASKS_CIRCLE)
@@ -1719,7 +1790,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   if(gui)
   {
     // for brush, the opacity is the density of the masks, do not update opacity here for the brush.
-    if(gui->creation && (state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(gui->creation && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == GDK_CONTROL_MASK)
     {
       float opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
       float amount = 0.05f;
@@ -1875,10 +1946,18 @@ void dt_masks_reset_show_masks_icons(void)
   }
 }
 
+dt_masks_edit_mode_t dt_masks_get_edit_mode(struct dt_iop_module_t *module)
+{
+  return darktable.develop->form_gui
+    ? darktable.develop->form_gui->edit_mode
+    : DT_MASKS_EDIT_OFF;
+}
+
 void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t value)
 {
   if(!module) return;
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
+  if(!bd) return;
 
   dt_masks_form_t *grp = NULL;
   dt_masks_form_t *form = dt_masks_get_from_id(module->dev, module->blend_params->mask_id);
@@ -1897,6 +1976,9 @@ void dt_masks_set_edit_mode(struct dt_iop_module_t *module, dt_masks_edit_mode_t
     dt_dev_masks_selection_change(darktable.develop, form->formid, FALSE);
   else
     dt_dev_masks_selection_change(darktable.develop, 0, FALSE);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit),
+                               value == DT_MASKS_EDIT_OFF ? FALSE : TRUE);
 
   dt_control_queue_redraw_center();
 }
@@ -2110,7 +2192,7 @@ void dt_masks_iop_combo_populate(GtkWidget *w, struct dt_iop_module_t **m)
   // we determine a higher approx of the entry number
   guint nbe = 5 + g_list_length(darktable.develop->forms) + g_list_length(darktable.develop->iop);
   free(bd->masks_combo_ids);
-  bd->masks_combo_ids = malloc(nbe * sizeof(int));
+  bd->masks_combo_ids = malloc( sizeof(int) *nbe);
 
   int *cids = bd->masks_combo_ids;
   GtkWidget *combo = bd->masks_combo;
@@ -2592,7 +2674,7 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
   pos += sizeof(int);
   memcpy(str + pos, &form->version, sizeof(int));
   pos += sizeof(int);
-  memcpy(str + pos, &form->source, 2 * sizeof(float));
+  memcpy(str + pos, &form->source, sizeof(float) * 2);
   pos += 2 * sizeof(float);
 
   GList *forms = g_list_first(form->points);
@@ -2758,7 +2840,7 @@ void dt_masks_cleanup_unused_from_list(GList *history_list)
   while(history)
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
-    if(hist->forms && strcmp(hist->op_name, "mask_manager") != 0)
+    if(hist->forms && strcmp(hist->op_name, "mask_manager") == 0)
     {
       _masks_cleanup_unused(&hist->forms, history_list, history_end);
       history_end = num - 1;
@@ -3043,10 +3125,10 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
                                          float *py, const int adding)
 {
   float x = 0.0f, y = 0.0f;
-  const float pr_d = darktable.develop->preview_downsampling;                                                            
+  const float pr_d = darktable.develop->preview_downsampling;
   const float iwd = pr_d * darktable.develop->preview_pipe->iwidth;
   const float iht = pr_d * darktable.develop->preview_pipe->iheight;
-  
+
   if(gui->source_pos_type == DT_MASKS_SOURCE_POS_RELATIVE)
   {
     x = xpos + gui->posx_source;

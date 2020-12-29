@@ -87,7 +87,7 @@ for camera in xml_doc.getroot().findall('Camera'):
         maker = cid.get('make')
         model = cid.get('model')
     exif_name_map[exif_id] = maker,model
-    for alias in camera.findall('Alias'):
+    for alias in camera.findall('Aliases/Alias'):
         exif_model = alias.text
         exif_id = exif_maker, exif_model
         exif_name_map[exif_id] = maker,model
@@ -201,9 +201,12 @@ for filename in argv[1:]:
             finetune = values[0]
         elif tag == "WB Shift GM": # detect GM shift and warn about it
             gm_skew = gm_skew or (int(values[0]) != 0)
-        elif tag == "WB Shift AB GM": # sony
+        elif tag == "WB Shift AB GM": # Sony
             finetune = values[0]
             gm_skew = gm_skew or (int(values[1]) != 0)
+        elif tag == "WB Shift AB GM Precise" and maker.startswith("SONY"): # Sony
+            finetune = int(float(values[0]) * 2.0)
+            gm_skew = gm_skew or (float(values[1]) != 0.0)
         elif tag == "White Balance Fine Tune" and maker.startswith("NIKON"): # nikon
             finetune = 0-(int(values[0]) * 2) # nikon lies about half-steps (eg 6->6->5 instead of 6->5.5->5, need to address this later on, so rescalling this now)
             gm_skew = gm_skew or (int(values[1]) != 0)
@@ -303,8 +306,9 @@ for index in range(len(found_presets)-1):
             found_presets[index][3] = (curr_finetune) - 1
             found_presets[index] = tuple(found_presets[index])
 
+# check for gaps in finetuning for half-steps (seems that nikon and sony can have half-steps)
 for index in range(len(found_presets)-1):
-    if (found_presets[index][0] == "Nikon" and #case now translated
+    if ( (found_presets[index][0] == "Nikon" or found_presets[index][0] == "Sony") and #case now translated
         found_presets[index+1][0] == found_presets[index][0] and ##
         found_presets[index+1][1] == found_presets[index][1] and
         found_presets[index+1][2] == found_presets[index][2]) :
@@ -327,7 +331,7 @@ for index in range(len(found_presets)-1):
 
             #dealing with corner case of last-halfstep not being dealth with earlier
             found_presets[index+1][3] = int(found_presets[index+1][3] / 2)
-        
+
         found_presets[index] = tuple(found_presets[index])
         found_presets[index+1] = tuple(found_presets[index+1])
 

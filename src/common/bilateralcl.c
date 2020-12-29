@@ -18,6 +18,7 @@
 
 #ifdef HAVE_OPENCL
 
+#include "common/bilateral.h"
 #include "common/bilateralcl.h"
 #include "common/darktable.h" // for CLAMPS, dt_print, darktable, darktable_t
 #include "common/opencl.h"    // for dt_opencl_set_kernel_arg, dt_opencl_cr...
@@ -51,21 +52,6 @@ void dt_bilateral_free_cl(dt_bilateral_cl_t *b)
 }
 
 
-size_t dt_bilateral_memory_use(const int width,     // width of input image
-                               const int height,    // height of input image
-                               const float sigma_s, // spatial sigma (blur pixel coords)
-                               const float sigma_r) // range sigma (blur luma values)
-{
-  float _x = roundf(width / sigma_s);
-  float _y = roundf(height / sigma_s);
-  float _z = roundf(100.0f / sigma_r);
-  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
-  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
-  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
-
-  return size_x * size_y * size_z * sizeof(float) * 2;
-}
-
 // modules that want to use dt_bilateral_slice_to_output_cl() ought to take this one;
 // takes account of an additional temp buffer needed in the OpenCL code path
 size_t dt_bilateral_memory_use2(const int width,
@@ -73,23 +59,7 @@ size_t dt_bilateral_memory_use2(const int width,
                                 const float sigma_s,
                                 const float sigma_r)
 {
-  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r) + (size_t)width * height * 4 * sizeof(float);
-}
-
-
-size_t dt_bilateral_singlebuffer_size(const int width,     // width of input image
-                                      const int height,    // height of input image
-                                      const float sigma_s, // spatial sigma (blur pixel coords)
-                                      const float sigma_r) // range sigma (blur luma values)
-{
-  float _x = roundf(width / sigma_s);
-  float _y = roundf(height / sigma_s);
-  float _z = roundf(100.0f / sigma_r);
-  size_t size_x = CLAMPS((int)_x, 4, 900) + 1;
-  size_t size_y = CLAMPS((int)_y, 4, 900) + 1;
-  size_t size_z = CLAMPS((int)_z, 4, 50) + 1;
-
-  return size_x * size_y * size_z * sizeof(float);
+  return dt_bilateral_memory_use(width, height, sigma_s, sigma_r) + sizeof(float) * 4 * width * height;
 }
 
 // modules that want to use dt_bilateral_slice_to_output_cl() ought to take this one;
@@ -99,7 +69,7 @@ size_t dt_bilateral_singlebuffer_size2(const int width,
                                        const float sigma_s,
                                        const float sigma_r)
 {
-  return MAX(dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r), (size_t)width * height * 4 * sizeof(float));
+  return MAX(dt_bilateral_singlebuffer_size(width, height, sigma_s, sigma_r), sizeof(float) * 4 * width * height);
 }
 
 
@@ -133,25 +103,24 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
   if(!b) return NULL;
 
   b->global = darktable.opencl->bilateral;
-  float _x = roundf(width / sigma_s);
-  float _y = roundf(height / sigma_s);
-  float _z = roundf(100.0f / sigma_r);
-  b->size_x = CLAMPS((int)_x, 4, 900) + 1;
-  b->size_y = CLAMPS((int)_y, 4, 900) + 1;
-  b->size_z = CLAMPS((int)_z, 4, 50) + 1;
   b->width = width;
   b->height = height;
   b->blocksizex = locopt.sizex;
   b->blocksizey = locopt.sizey;
-  b->sigma_s = MAX(height / (b->size_y - 1.0f), width / (b->size_x - 1.0f));
-  b->sigma_r = 100.0f / (b->size_z - 1.0f);
   b->devid = devid;
   b->dev_grid = NULL;
   b->dev_grid_tmp = NULL;
+  dt_bilateral_t b2;
+  dt_bilateral_grid_size(&b2,width,height,100.0f,sigma_s,sigma_r);
+  b->size_x = b2.size_x;
+  b->size_y = b2.size_y;
+  b->size_z = b2.size_z;
+  b->sigma_s = b2.sigma_s;
+  b->sigma_r = b2.sigma_r;
 
   // alloc grid buffer:
   b->dev_grid
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
     dt_bilateral_free_cl(b);
@@ -160,7 +129,7 @@ dt_bilateral_cl_t *dt_bilateral_init_cl(const int devid,
 
   // alloc temporary grid buffer
   b->dev_grid_tmp
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
     dt_bilateral_free_cl(b);
@@ -276,7 +245,7 @@ cl_int dt_bilateral_slice_to_output_cl(dt_bilateral_cl_t *b, cl_mem in, cl_mem o
   cl_int err = -666;
   cl_mem tmp = NULL;
 
-  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, 4 * sizeof(float));
+  tmp = dt_opencl_alloc_device(b->devid, b->width, b->height, sizeof(float) * 4);
   if(tmp == NULL) goto error;
 
   size_t origin[] = { 0, 0, 0 };

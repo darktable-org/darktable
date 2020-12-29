@@ -102,12 +102,12 @@ void dt_iop_clip_and_zoom_8(const uint8_t *i, int32_t ix, int32_t iy, int32_t iw
 {
   const float scalex = iw / (float)ow;
   const float scaley = ih / (float)oh;
-  int32_t ix2 = MAX(ix, 0);
-  int32_t iy2 = MAX(iy, 0);
-  int32_t ox2 = MAX(ox, 0);
-  int32_t oy2 = MAX(oy, 0);
-  int32_t oh2 = MIN(MIN(oh, (ibh - iy2) / scaley), obh - oy2);
-  int32_t ow2 = MIN(MIN(ow, (ibw - ix2) / scalex), obw - ox2);
+  const int32_t ix2 = MAX(ix, 0);
+  const int32_t iy2 = MAX(iy, 0);
+  const int32_t ox2 = MAX(ox, 0);
+  const int32_t oy2 = MAX(oy, 0);
+  const int32_t oh2 = MIN(MIN(oh, (ibh - iy2) / scaley), obh - oy2);
+  const int32_t ow2 = MIN(MIN(ow, (ibw - ix2) / scalex), obw - ox2);
   assert((int)(ix2 + ow2 * scalex) <= ibw);
   assert((int)(iy2 + oh2 * scaley) <= ibh);
   assert(ox2 + ow2 <= obw);
@@ -280,23 +280,23 @@ void dt_iop_clip_and_zoom_mosaic_half_size_sse2(uint16_t *const out, const uint1
   {
     uint16_t *outc = out + out_stride * y;
 
-    float fy = (y + roi_out->y) * px_footprint;
+    const float fy = (y + roi_out->y) * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
     py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
 
-    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+    const int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
 
     for(int x = 0; x < roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
 
-      float fx = (x + roi_out->x) * px_footprint;
+      const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
       px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
 
-      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+      const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
       float p1, p2, p3, p4;
       float num = 0;
@@ -491,7 +491,7 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f_plain(float *const out, const float
   {
     float *outc = out + out_stride * y;
 
-    float fy = (y + roi_out->y) * px_footprint;
+    const float fy = (y + roi_out->y) * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
     py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
@@ -502,12 +502,12 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f_plain(float *const out, const float
     {
       float col[4] = { 0, 0, 0, 0 };
 
-      float fx = (x + roi_out->x) * px_footprint;
+      const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
       px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
 
-      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+      const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
       float p[4];
       float num = 0;
@@ -681,23 +681,23 @@ void dt_iop_clip_and_zoom_mosaic_half_size_f_sse2(float *const out, const float 
   {
     float *outc = out + out_stride * y;
 
-    float fy = (y + roi_out->y) * px_footprint;
+    const float fy = (y + roi_out->y) * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
     py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
 
-    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+    const int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
 
     for(int x = 0; x < roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
 
-      float fx = (x + roi_out->x) * px_footprint;
+      const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
       px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
 
-      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+      const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
       float p1, p2, p3, p4;
       float num = 0;
@@ -973,23 +973,23 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f_plain(float *out, co
   {
     float *outc = out + 4 * (out_stride * y);
 
-    float fy = (y + roi_out->y) * px_footprint;
+    const float fy = (y + roi_out->y) * px_footprint;
     int py = (int)fy;
     const float dy = fy - py;
     py = MIN(((roi_in->height - 3)), py);
 
-    int maxj = MIN(((roi_in->height - 2)), py + samples);
+    const int maxj = MIN(((roi_in->height - 2)), py + samples);
 
     for(int x = 0; x < roi_out->width; x++)
     {
       float col = 0.0f;
 
-      float fx = (x + roi_out->x) * px_footprint;
+      const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx;
       const float dx = fx - px;
       px = MIN(((roi_in->width - 3)), px);
 
-      int maxi = MIN(((roi_in->width - 2)), px + samples);
+      const int maxi = MIN(((roi_in->width - 2)), px + samples);
 
       float p;
       float num = 0;
@@ -1118,23 +1118,23 @@ void dt_iop_clip_and_zoom_demosaic_passthrough_monochrome_f_sse2(float *out, con
   {
     float *outc = out + 4 * (out_stride * y);
 
-    float fy = (y + roi_out->y) * px_footprint;
+    const float fy = (y + roi_out->y) * px_footprint;
     int py = (int)fy;
     const float dy = fy - py;
     py = MIN(((roi_in->height - 3)), py);
 
-    int maxj = MIN(((roi_in->height - 2)), py + samples);
+    const int maxj = MIN(((roi_in->height - 2)), py + samples);
 
     for(int x = 0; x < roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
 
-      float fx = (x + roi_out->x) * px_footprint;
+      const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx;
       const float dx = fx - px;
       px = MIN(((roi_in->width - 3)), px);
 
-      int maxi = MIN(((roi_in->width - 2)), px + samples);
+      const int maxi = MIN(((roi_in->width - 2)), px + samples);
 
       float p;
       float num = 0;
@@ -1292,13 +1292,13 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
   {
     float *outc = out + 4*(out_stride*y);
 
-    float fy = (y + roi_out->y)*px_footprint;
+    const float fy = (y + roi_out->y)*px_footprint;
     int py = (int)fy & ~1;
     py = MIN(((roi_in->height-4) & ~1u), py) + rggby;
 
     int maxj = MIN(((roi_in->height-3)&~1u)+rggby, py+2*samples);
 
-    float fx = roi_out->x*px_footprint;
+    const float fx = roi_out->x*px_footprint;
 
     for(int x=0; x<roi_out->width; x++)
     {
@@ -1308,7 +1308,7 @@ dt_iop_clip_and_zoom_demosaic_half_size_f(
       int px = (int)fx & ~1;
       px = MIN(((roi_in->width -4) & ~1u), px) + rggbx;
 
-      int maxi = MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);
+      const int maxi = MIN(((roi_in->width -3)&~1u)+rggbx, px+2*samples);
 
       int num = 0;
 
@@ -1375,23 +1375,23 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_plain(float *out, const float *co
   {
     float *outc = out + 4 * (out_stride * y);
 
-    float fy = (y + roi_out->y) * px_footprint;
+    const float fy = (y + roi_out->y) * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
     py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
 
-    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+    const int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
 
     for(int x = 0; x < roi_out->width; x++)
     {
       float col[4] = { 0, 0, 0, 0 };
 
-      float fx = (x + roi_out->x) * px_footprint;
+      const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
       px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
 
-      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+      const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
       float p[3];
       float num = 0;
@@ -1554,23 +1554,23 @@ void dt_iop_clip_and_zoom_demosaic_half_size_f_sse2(float *out, const float *con
   {
     float *outc = out + 4 * (out_stride * y);
 
-    float fy = (y + roi_out->y) * px_footprint;
+    const float fy = (y + roi_out->y) * px_footprint;
     int py = (int)fy & ~1;
     const float dy = (fy - py) / 2;
     py = MIN(((roi_in->height - 6) & ~1u), py) + rggby;
 
-    int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
+    const int maxj = MIN(((roi_in->height - 5) & ~1u) + rggby, py + 2 * samples);
 
     for(int x = 0; x < roi_out->width; x++)
     {
       __m128 col = _mm_setzero_ps();
 
-      float fx = (x + roi_out->x) * px_footprint;
+      const float fx = (x + roi_out->x) * px_footprint;
       int px = (int)fx & ~1;
       const float dx = (fx - px) / 2;
       px = MIN(((roi_in->width - 6) & ~1u), px) + rggbx;
 
-      int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
+      const int maxi = MIN(((roi_in->width - 5) & ~1u) + rggbx, px + 2 * samples);
 
       float p1, p2, p4;
       float num = 0;

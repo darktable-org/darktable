@@ -42,9 +42,13 @@ DT_MODULE(1)
 
 typedef struct dt_lib_darktable_t
 {
+  // logo
   cairo_surface_t *image;
   guint8 *image_buffer;
   int image_width, image_height;
+  // text with logo font
+  cairo_surface_t *text;
+  int text_width, text_height;
 } dt_lib_darktable_t;
 
 
@@ -160,6 +164,12 @@ done:
   d->image_width = d->image ? dt_cairo_image_surface_get_width(d->image) : 0;
   d->image_height = d->image ? dt_cairo_image_surface_get_height(d->image) : 0;
 
+  /* try to load program name as svg */
+  d->text = dt_util_get_logo_text(DT_PIXEL_APPLY_DPI(-1.0));
+  /* no png fallback, we'll use text */
+  d->text_width = d->text ? dt_cairo_image_surface_get_width(d->text) : 0;
+  d->text_height = d->text ? dt_cairo_image_surface_get_height(d->text) : 0;
+
   /* set size of drawing area */
   gtk_widget_set_size_request(self->widget, d->image_width + (int)DT_PIXEL_APPLY_DPI(180),
                               d->image_height + (int)DT_PIXEL_APPLY_DPI(8));
@@ -169,6 +179,7 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
   cairo_surface_destroy(d->image);
+  cairo_surface_destroy(d->text);
   free(d->image_buffer);
   g_free(self->data);
   self->data = NULL;
@@ -208,20 +219,35 @@ static gboolean _lib_darktable_draw_callback(GtkWidget *widget, cairo_t *cr, gpo
   /* create a pango layout and print fancy name/version string */
   PangoLayout *layout;
   layout = gtk_widget_create_pango_layout(widget, NULL);
-  pango_font_description_set_weight(font_desc, PANGO_WEIGHT_BOLD);
-  pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
-  pango_layout_set_font_description(layout, font_desc);
 
-  pango_layout_set_text(layout, PACKAGE_NAME, -1);
-  cairo_set_source_rgba(cr, tmpcolor->red, tmpcolor->green, tmpcolor->blue, 0.7);
-  cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(2.0), DT_PIXEL_APPLY_DPI(5.0));
-  pango_cairo_show_layout(cr, layout);
+  /* try to use logo text in svg */
+  if(d->text)
+  {
+    cairo_set_source_surface(cr, d->text, d->image_width + (int)DT_PIXEL_APPLY_DPI(5),
+                             (int)DT_PIXEL_APPLY_DPI(12));
+    cairo_rectangle(cr, 0, 0, d->image_width + d->text_width + (int)DT_PIXEL_APPLY_DPI(11),
+                    d->text_height + (int)DT_PIXEL_APPLY_DPI(13));
+    cairo_fill(cr);
+  }
+  else
+  {
+    /* fallback using normal text */
+    pango_font_description_set_weight(font_desc, PANGO_WEIGHT_BOLD);
+    pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(25) * PANGO_SCALE);
+
+    pango_layout_set_font_description(layout, font_desc);
+
+    pango_layout_set_text(layout, PACKAGE_NAME, -1);
+    cairo_set_source_rgba(cr, tmpcolor->red, tmpcolor->green, tmpcolor->blue, 0.7);
+    cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(3.0), DT_PIXEL_APPLY_DPI(5.0));
+    pango_cairo_show_layout(cr, layout);
+  }
 
   /* print version */
   pango_font_description_set_absolute_size(font_desc, DT_PIXEL_APPLY_DPI(10) * PANGO_SCALE);
   pango_layout_set_font_description(layout, font_desc);
   pango_layout_set_text(layout, darktable_package_version, -1);
-  cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(30.0));
+  cairo_move_to(cr, d->image_width + DT_PIXEL_APPLY_DPI(4.0), DT_PIXEL_APPLY_DPI(32.0));
   cairo_set_source_rgba(cr, tmpcolor->red, tmpcolor->green, tmpcolor->blue, 0.3);
   pango_cairo_show_layout(cr, layout);
 
@@ -244,6 +270,7 @@ static gboolean _lib_darktable_button_press_callback(GtkWidget *widget, GdkEvent
 static void _lib_darktable_show_about_dialog()
 {
   GtkWidget *dialog = gtk_about_dialog_new();
+  gtk_widget_set_name (dialog, "about_dialog");
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
@@ -255,6 +282,7 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_comments(GTK_ABOUT_DIALOG(dialog),
                                 _("organize and develop images from digital cameras"));
   gtk_about_dialog_set_website(GTK_ABOUT_DIALOG(dialog), "https://www.darktable.org/");
+  gtk_about_dialog_set_website_label(GTK_ABOUT_DIALOG(dialog), "website");
   dt_logo_season_t season = dt_util_get_logo_season();
   char *icon;
   if(season != DT_LOGO_SEASON_NONE)
@@ -264,11 +292,15 @@ static void _lib_darktable_show_about_dialog()
   gtk_about_dialog_set_logo_icon_name(GTK_ABOUT_DIALOG(dialog), icon);
   g_free(icon);
 
-#include "libs/tools/darktable_authors.h"
+  const char *str = _("all those of you that made previous releases possible");
 
-  gtk_about_dialog_set_authors(GTK_ABOUT_DIALOG(dialog), authors);
+#include "tools/darktable_authors.h"
+
+  const char *final[] = {str, NULL };
+  gtk_about_dialog_add_credit_section (GTK_ABOUT_DIALOG(dialog), _("and..."), final);
 
   gtk_about_dialog_set_translator_credits(GTK_ABOUT_DIALOG(dialog), _("translator-credits"));
+
   gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)));
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);

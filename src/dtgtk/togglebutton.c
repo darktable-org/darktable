@@ -116,19 +116,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
 
   gtk_render_frame(context, cr, startx, starty, cwidth, cheight);
 
-  /* create pango text settings if label exists */
-  PangoLayout *layout = NULL;
-  int pw = 0, ph = 0;
-  const gchar *text = gtk_button_get_label(GTK_BUTTON(widget));
-  if(text)
-  {
-    layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, darktable.bauhaus->pango_font_desc);
-    pango_cairo_context_set_resolution(pango_layout_get_context(layout), darktable.gui->dpi);
-    pango_layout_set_text(layout, text, -1);
-    pango_layout_get_pixel_size(layout, &pw, &ph);
-  }
-
   gdk_cairo_set_source_rgba(cr, &fg_color);
 
   /* draw icon */
@@ -159,20 +146,6 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
 
     if(cwidth > 0 && cheight > 0)
         DTGTK_TOGGLEBUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
-  }
-
-
-  /* draw label */
-  if(text)
-  {
-    int lx = DT_PIXEL_APPLY_DPI(2), ly = ((height / 2.0) - (ph / 2.0));
-    // if (DTGTK_TOGGLEBUTTON (widget)->icon) lx += width;
-    // GdkRectangle t={x,y,x+width,y+height};
-    // gtk_paint_layout(style,gtk_widget_get_window(widget),
-    // state,TRUE,&t,widget,"togglebutton",lx,ly,layout);
-    cairo_translate(cr, lx, ly);
-    pango_cairo_show_layout(cr, layout);
-    g_object_unref(layout);
   }
 
   return FALSE;

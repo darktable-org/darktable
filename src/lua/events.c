@@ -55,7 +55,7 @@ void dt_lua_event_trigger(lua_State *L, const char *event, int nargs)
   dt_lua_redraw_screen();
 }
 
-int dt_lua_event_trigger_wrapper(lua_State *L) 
+int dt_lua_event_trigger_wrapper(lua_State *L)
 {
   const char*event = luaL_checkstring(L,1);
   int nargs = lua_gettop(L) -1;

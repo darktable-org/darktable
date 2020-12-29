@@ -33,7 +33,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
-#include "dtgtk/button.h"
+#include "develop/imageop_gui.h"
 #include "dtgtk/resetlabel.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
@@ -69,7 +69,6 @@ static void adjust_aabb(const int32_t *p, int32_t *aabb)
   aabb[3] = MAX(aabb[3], p[1]);
 }
 
-
 const char *name()
 {
   return _("orientation");
@@ -77,7 +76,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -87,12 +86,22 @@ int operation_tags()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
+    | IOP_FLAGS_UNSAFE_COPY;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("rotate image by step of 90 degrees"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("geometric, RGB"),
+                                      _("linear, RGB, scene-referred"));
 }
 
 static dt_image_orientation_t merge_two_orientations(dt_image_orientation_t raw_orientation,
@@ -379,7 +388,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_flip_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -394,32 +402,42 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
 
   p.orientation = ORIENTATION_NULL;
-  dt_gui_presets_add_generic(_("autodetect"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("autodetect"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
   dt_gui_presets_update_autoapply(_("autodetect"), self->op, self->version(), 1);
 
   p.orientation = ORIENTATION_NONE;
-  dt_gui_presets_add_generic(_("no rotation"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("no rotation"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 
   p.orientation = ORIENTATION_FLIP_HORIZONTALLY;
-  dt_gui_presets_add_generic(_("flip horizontally"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("flip horizontally"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_FLIP_VERTICALLY;
-  dt_gui_presets_add_generic(_("flip vertically"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("flip vertically"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_ROTATE_CW_90_DEG;
-  dt_gui_presets_add_generic(_("rotate by -90 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by -90 degrees"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_ROTATE_CCW_90_DEG;
-  dt_gui_presets_add_generic(_("rotate by  90 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by  90 degrees"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
+
   p.orientation = ORIENTATION_ROTATE_180_DEG;
-  dt_gui_presets_add_generic(_("rotate by 180 degrees"), self->op, self->version(), &p, sizeof(p), 1);
+  dt_gui_presets_add_generic(_("rotate by 180 degrees"), self->op,
+                             self->version(), &p, sizeof(p), 1, DEVELOP_BLEND_CS_NONE);
 
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
 }
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_flip_params_t tmp = (dt_iop_flip_params_t){ .orientation = ORIENTATION_NULL };
+  dt_iop_flip_params_t *d = self->default_params;
 
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  d->orientation = ORIENTATION_NULL;
 
   self->default_enabled = 1;
 
@@ -434,32 +452,12 @@ void reload_defaults(dt_iop_module_t *self)
     if(sqlite3_step(stmt) != SQLITE_ROW)
     {
       // convert the old legacy flip bits to a proper parameter set:
-      self->default_enabled = 1;
-      tmp.orientation
+      d->orientation
           = merge_two_orientations(dt_image_orientation(&self->dev->image_storage),
                                    (dt_image_orientation_t)(self->dev->image_storage.legacy_flip.user_flip));
     }
     sqlite3_finalize(stmt);
   }
-
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_flip_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_flip_params_t));
-}
-
-void gui_update(struct dt_iop_module_t *self)
-{
-  // nothing to do
-}
-
-void init(dt_iop_module_t *module)
-{
-  // module->data = malloc(sizeof(dt_iop_flip_data_t));
-  module->params = calloc(1, sizeof(dt_iop_flip_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_flip_params_t));
-  module->default_enabled = 1;
-  module->params_size = sizeof(dt_iop_flip_params_t);
-  module->gui_data = NULL;
 }
 
 static void do_rotate(dt_iop_module_t *self, uint32_t cw)
@@ -496,18 +494,6 @@ static void rotate_ccw(GtkWidget *widget, dt_iop_module_t *self)
 {
   do_rotate(self, 0);
 }
-static gboolean rotate_cw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                              GdkModifierType modifier, dt_iop_module_t *self)
-{
-  do_rotate(self, 1);
-  return TRUE;
-}
-static gboolean rotate_ccw_key(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                               GdkModifierType modifier, dt_iop_module_t *self)
-{
-  do_rotate(self, 0);
-  return TRUE;
-}
 
 void gui_init(struct dt_iop_module_t *self)
 {
@@ -519,35 +505,18 @@ void gui_init(struct dt_iop_module_t *self)
   GtkWidget *label = dtgtk_reset_label_new(_("rotate"), self, &p->orientation, sizeof(int32_t));
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
 
-  GtkWidget *button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CCW"));
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_ccw), (gpointer)self);
+  dt_iop_button_new(self, N_("rotate 90 degrees CCW"),
+                    G_CALLBACK(rotate_ccw), FALSE, GDK_KEY_bracketleft, 0,
+                    dtgtk_cairo_paint_refresh, 0, self->widget);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_refresh, CPF_STYLE_FLAT | 1, NULL);
-  gtk_widget_set_tooltip_text(button, _("rotate 90 degrees CW"));
-  gtk_box_pack_start(GTK_BOX(self->widget), button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(rotate_cw), (gpointer)self);
+  dt_iop_button_new(self, N_("rotate 90 degrees CW"),
+                    G_CALLBACK(rotate_cw), FALSE, GDK_KEY_bracketright, 0,
+                    dtgtk_cairo_paint_refresh, 1, self->widget);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
 {
   self->gui_data = NULL;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees CCW"), GDK_KEY_bracketleft, 0);
-  dt_accel_register_iop(self, TRUE, NC_("accel", "rotate 90 degrees CW"), GDK_KEY_bracketright, 0);
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  GClosure *closure;
-  closure = g_cclosure_new(G_CALLBACK(rotate_cw_key), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "rotate 90 degrees CW", closure);
-  closure = g_cclosure_new(G_CALLBACK(rotate_ccw_key), (gpointer)self, NULL);
-  dt_accel_connect_iop(self, "rotate 90 degrees CCW", closure);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

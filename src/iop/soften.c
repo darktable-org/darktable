@@ -24,7 +24,9 @@
 #include <string.h>
 
 #include "bauhaus/bauhaus.h"
+#include "common/box_filters.h"
 #include "common/colorspaces.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -43,10 +45,6 @@
 #endif
 
 #define MAX_RADIUS 32
-#define BOX_ITERATIONS 8
-
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define MM_CLIP_PS(X) (_mm_min_ps(_mm_max_ps((X), _mm_setzero_ps()), _mm_set1_ps(1.0)))
 
 DT_MODULE_INTROSPECTION(1, dt_iop_soften_params_t)
 
@@ -92,7 +90,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_EFFECT;
+  return IOP_GROUP_EFFECT | IOP_GROUP_EFFECTS;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -100,22 +98,13 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_rgb;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+const char *description(struct dt_iop_module_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "size"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "saturation"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "brightness"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "mix"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "size", GTK_WIDGET(g->size));
-  dt_accel_connect_slider_iop(self, "saturation", GTK_WIDGET(g->saturation));
-  dt_accel_connect_slider_iop(self, "brightness", GTK_WIDGET(g->brightness));
-  dt_accel_connect_slider_iop(self, "mix", GTK_WIDGET(g->amount));
+  return dt_iop_set_description(self, _("create a softened image using the Orton effect"),
+                                      _("creative"),
+                                      _("linear, RGB, display-referred"),
+                                      _("linear, RGB"),
+                                      _("linear, RGB, display-referred"));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -123,21 +112,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 {
   const dt_iop_soften_data_t *const d = (const dt_iop_soften_data_t *const)piece->data;
 
-  const int ch = piece->colors;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
   const float brightness = 1.0 / exp2f(-d->brightness);
   const float saturation = d->saturation / 100.0;
 
-  const float *const in = (const float *const)ivoid;
-  float *const out = (float *const)ovoid;
+  const float *const restrict in = (const float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
 
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
 /* create overexpose image and then blur */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(brightness, ch, in, out, roi_out, saturation) \
+  dt_omp_firstprivate(brightness, npixels, saturation) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     float h, s, l;
     rgb2hsl(&in[k], &h, &s, &l);
@@ -152,133 +145,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   int rad = mrad * (fmin(100.0, d->size + 1) / 100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-
-  const size_t scanline_size = (size_t)4 * size;
-  float *const scanline_buf = dt_alloc_align(64, scanline_size * dt_get_num_threads() * sizeof(float));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, radius, out, roi_out, scanline_buf, scanline_size) \
-    schedule(static)
-#endif
-    /* horizontal blur out into out */
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-      __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-      size_t index = (size_t)y * roi_out->width;
-      int hits = 0;
-      for(int x = -radius; x < roi_out->width; x++)
-      {
-        int op = x - radius - 1;
-        int np = x + radius;
-        if(op >= 0)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            L[c] -= out[((index + op) * ch) + c];
-          }
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            L[c] += out[((index + np) * ch) + c];
-          }
-          hits++;
-        }
-        if(x >= 0)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            scanline[4 * x + c] = L[c] / hits;
-          }
-        }
-      }
-
-      for(int x = 0; x < roi_out->width; x++)
-      {
-        for(int c = 0; c < 4; c++)
-        {
-          out[(index + x) * ch + c] = scanline[4 * x + c];
-        }
-      }
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(radius + 1) * roi_out->width;
-    const int npoffs = (radius)*roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, npoffs, opoffs, radius, out, roi_out, \
-                        scanline_buf, scanline_size) \
-    schedule(static)
-#endif
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      float *scanline = scanline_buf + scanline_size * dt_get_thread_num();
-      __attribute__((aligned(64))) float L[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
-
-      int hits = 0;
-      size_t index = (size_t)x - radius * roi_out->width;
-      for(int y = -radius; y < roi_out->height; y++)
-      {
-        int op = y - radius - 1;
-        int np = y + radius;
-
-        if(op >= 0)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            L[c] -= out[((index + opoffs) * ch) + c];
-          }
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            L[c] += out[((index + npoffs) * ch) + c];
-          }
-          hits++;
-        }
-        if(y >= 0)
-        {
-          for(int c = 0; c < 4; c++)
-          {
-            scanline[4 * y + c] = L[c] / hits;
-          }
-        }
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++)
-      {
-        for(int c = 0; c < 4; c++)
-        {
-          out[((size_t)y * roi_out->width + x) * ch + c] = scanline[ch * y + c];
-        }
-      }
-    }
-  }
-
-  dt_free_align(scanline_buf);
+  dt_box_mean(out, roi_out->height, roi_out->width, 4, radius, BOX_ITERATIONS);
 
   const float amount = (d->amount / 100.0);
   const float amount_1 = (1 - (d->amount) / 100.0);
 
 #ifdef _OPENMP
-#pragma omp parallel for SIMD() default(none) \
-  dt_omp_firstprivate(amount, amount_1, ch, in, out, roi_out) \
-  schedule(static) \
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(amount, amount_1, in, out, npixels) \
+  schedule(simd:static) aligned(in, out : 64) \
   collapse(2)
 #endif
-  for(size_t k = 0; k < (size_t)ch * roi_out->width * roi_out->height; k += ch)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
     for(int c = 0; c < 4; c++)
     {
@@ -291,28 +169,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_soften_data_t *data = (dt_iop_soften_data_t *)piece->data;
-  float *in = (float *)ivoid;
-  float *out = (float *)ovoid;
-  const int ch = piece->colors;
+  dt_iop_soften_data_t *const data = (dt_iop_soften_data_t *)piece->data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
   const float brightness = 1.0 / exp2f(-data->brightness);
   const float saturation = data->saturation / 100.0;
+
+  const float *const restrict in = (const float *const)ivoid;
+  float *const restrict out = (float *const)ovoid;
+
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
 /* create overexpose image and then blur */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, brightness, roi_out, saturation) \
-  shared(in, out) \
+  dt_omp_firstprivate(npixels, brightness, saturation) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
-    size_t index = ch * k;
     float h, s, l;
-    rgb2hsl(&in[index], &h, &s, &l);
+    rgb2hsl(&in[k], &h, &s, &l);
     s *= saturation;
     l *= brightness;
-    hsl2rgb(&out[index], h, CLIP(s), CLIP(l));
+    hsl2rgb(&out[k], h, CLIP(s), CLIP(l));
   }
 
   const float w = piece->iwidth * piece->iscale;
@@ -321,99 +203,19 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   int rad = mrad * (fmin(100.0, data->size + 1) / 100.0);
   const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
 
-  const int size = roi_out->width > roi_out->height ? roi_out->width : roi_out->height;
-
-  __m128 *const scanline_buf = dt_alloc_align(64, size * dt_get_num_threads() * sizeof(__m128));
-
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
-  {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, radius, roi_out, scanline_buf, size) \
-    shared(out) \
-    schedule(static)
-#endif
-    /* horizontal blur out into out */
-    for(int y = 0; y < roi_out->height; y++)
-    {
-      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
-      size_t index = (size_t)y * roi_out->width;
-      __m128 L = _mm_setzero_ps();
-      int hits = 0;
-      for(int x = -radius; x < roi_out->width; x++)
-      {
-        int op = x - radius - 1;
-        int np = x + radius;
-        if(op >= 0)
-        {
-          L = _mm_sub_ps(L, _mm_load_ps(&out[(index + op) * ch]));
-          hits--;
-        }
-        if(np < roi_out->width)
-        {
-          L = _mm_add_ps(L, _mm_load_ps(&out[(index + np) * ch]));
-          hits++;
-        }
-        if(x >= 0) scanline[x] = _mm_div_ps(L, _mm_set_ps1(hits));
-      }
-
-      for(int x = 0; x < roi_out->width; x++) _mm_store_ps(&out[(index + x) * ch], scanline[x]);
-    }
-
-    /* vertical pass on blurlightness */
-    const int opoffs = -(radius + 1) * roi_out->width;
-    const int npoffs = (radius)*roi_out->width;
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, npoffs, opoffs, radius, roi_out, scanline_buf, size) \
-    shared(out) \
-    schedule(static)
-#endif
-    for(int x = 0; x < roi_out->width; x++)
-    {
-      __m128 *scanline = scanline_buf + size * dt_get_thread_num();
-      __m128 L = _mm_setzero_ps();
-      int hits = 0;
-      size_t index = (size_t)x - radius * roi_out->width;
-      for(int y = -radius; y < roi_out->height; y++)
-      {
-        int op = y - radius - 1;
-        int np = y + radius;
-
-        if(op >= 0)
-        {
-          L = _mm_sub_ps(L, _mm_load_ps(&out[(index + opoffs) * ch]));
-          hits--;
-        }
-        if(np < roi_out->height)
-        {
-          L = _mm_add_ps(L, _mm_load_ps(&out[(index + npoffs) * ch]));
-          hits++;
-        }
-        if(y >= 0) scanline[y] = _mm_div_ps(L, _mm_set_ps1(hits));
-        index += roi_out->width;
-      }
-
-      for(int y = 0; y < roi_out->height; y++)
-        _mm_store_ps(&out[((size_t)y * roi_out->width + x) * ch], scanline[y]);
-    }
-  }
-
-  dt_free_align(scanline_buf);
+  dt_box_mean(out, roi_out->height, roi_out->width, 4, radius, BOX_ITERATIONS);
 
   const __m128 amount = _mm_set1_ps(data->amount / 100.0);
   const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, amount, amount_1, roi_out) \
-  shared(in, out, data) \
+  dt_omp_firstprivate(npixels, amount, amount_1, roi_out) \
+  dt_omp_sharedconst(in, out, data) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
+  for(size_t k = 0; k < 4 * npixels; k += 4)
   {
-    int index = ch * k;
-    _mm_store_ps(&out[index], _mm_add_ps(_mm_mul_ps(_mm_load_ps(&in[index]), amount_1),
-                                         _mm_mul_ps(MM_CLIP_PS(_mm_load_ps(&out[index])), amount)));
+    _mm_store_ps(&out[k], ((_mm_load_ps(&in[k]) * amount_1) + (MM_CLIP_PS(_mm_load_ps(&out[k])) * amount)));
   }
 }
 #endif
@@ -446,7 +248,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
    * unproven. ask me if you need details. ulrich */
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
   const int wd = 2 * wdh + 1;
   const size_t mat_size = sizeof(float) * wd;
@@ -490,7 +292,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[3];
   size_t local[3];
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, mat_size, mat);
@@ -593,7 +395,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
   /* sigma-radius correlation to match opencl vs. non-opencl. identified by numerical experiments but
    * unproven. ask me if you need details. ulrich */
-  const float sigma = sqrt((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
+  const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
   tiling->factor = 3.0f; // in + out + tmp
@@ -644,7 +446,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_soften_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -655,9 +456,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
-  dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)module->params;
+  dt_iop_soften_params_t *p = (dt_iop_soften_params_t *)self->params;
   dt_bauhaus_slider_set(g->size, p->size);
   dt_bauhaus_slider_set(g->saturation, p->saturation);
   dt_bauhaus_slider_set(g->brightness, p->brightness);
@@ -667,8 +467,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_soften_gui_data_t));
-  dt_iop_soften_gui_data_t *g = (dt_iop_soften_gui_data_t *)self->gui_data;
+  dt_iop_soften_gui_data_t *g = IOP_GUI_ALLOC(soften);
 
   g->size = dt_bauhaus_slider_from_params(self, N_("size"));
   dt_bauhaus_slider_set_format(g->size, "%.0f%%");

@@ -22,6 +22,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -129,6 +130,15 @@ const char *name()
   return _("color reconstruction");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("recover clipped highlights by propagating surrounding colors"),
+                                      _("corrective"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
+}
+
 int flags()
 {
   // we do not allow tiling. reason: this module needs to see the full surrounding of highlights.
@@ -138,7 +148,7 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -174,26 +184,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "range extent"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "hue"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "precedence"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "threshold", GTK_WIDGET(g->threshold));
-  dt_accel_connect_slider_iop(self, "spatial extent", GTK_WIDGET(g->spatial));
-  dt_accel_connect_slider_iop(self, "range extent", GTK_WIDGET(g->range));
-  dt_accel_connect_slider_iop(self, "hue", GTK_WIDGET(g->hue));
-  dt_accel_connect_combobox_iop(self, "precedence", GTK_WIDGET(g->precedence));
-}
-
 typedef struct dt_iop_colorreconstruct_bilateral_t
 {
   size_t size_x, size_y, size_z;
@@ -217,7 +207,7 @@ static inline float hue_conversion(const float HSL_Hue)
   dt_XYZ_to_Lab(XYZ, Lab);
 
   // Hue from LCH color space in [-pi, +pi] interval
-  float LCH_hue = atan2(Lab[2], Lab[1]);
+  float LCH_hue = atan2f(Lab[2], Lab[1]);
 
   return LCH_hue;
 }
@@ -276,7 +266,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
   b->scale = iscale / roi->scale;
   b->sigma_s = MAX(roi->height / (b->size_y - 1.0f), roi->width / (b->size_x - 1.0f));
   b->sigma_r = 100.0f / (b->size_z - 1.0f);
-  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  b->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(!b->buf)
   {
     fprintf(stderr, "[color reconstruction] not able to allocate buffer (b)\n");
@@ -284,7 +274,7 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_in
     return NULL;
   }
 
-  memset(b->buf, 0, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  memset(b->buf, 0, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
 #if 0
   fprintf(stderr, "[bilateral] created grid [%d %d %d]"
           " with sigma (%f %f) (%f %f)\n", b->size_x, b->size_y, b->size_z,
@@ -314,10 +304,10 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  bf->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(bf->buf && b->buf)
   {
-    memcpy(bf->buf, b->buf, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+    memcpy(bf->buf, b->buf, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   }
   else
   {
@@ -350,10 +340,10 @@ static dt_iop_colorreconstruct_bilateral_t *dt_iop_colorreconstruct_bilateral_th
   b->scale = bf->scale;
   b->sigma_s = bf->sigma_s;
   b->sigma_r = bf->sigma_r;
-  b->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  b->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(b->buf && bf->buf)
   {
-    memcpy(b->buf, bf->buf, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+    memcpy(b->buf, bf->buf, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   }
   else
   {
@@ -392,14 +382,14 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
       switch(precedence)
       {
         case COLORRECONSTRUCT_PRECEDENCE_CHROMA:
-          weight = sqrt(ain * ain + bin * bin);
+          weight = sqrtf(ain * ain + bin * bin);
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_HUE:
-          m = atan2(bin, ain) - params[0];
+          m = atan2f(bin, ain) - params[0];
           // readjust m into [-pi, +pi] interval
           m = m > M_PI ? m - 2*M_PI : (m < -M_PI ? m + 2*M_PI : m);
-          weight = exp(-m*m/params[1]);
+          weight = expf(-m*m/params[1]);
           break;
 
         case COLORRECONSTRUCT_PRECEDENCE_NONE:
@@ -678,7 +668,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 error:
   dt_control_log(_("module `color reconstruction' failed"));
   dt_iop_colorreconstruct_bilateral_free(b);
-  memcpy(ovoid, ivoid, (size_t)sizeof(float) * piece->colors * roi_out->width * roi_out->height);
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, piece->colors);
 }
 
 #ifdef HAVE_OPENCL
@@ -766,7 +756,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc grid buffer:
   b->dev_grid
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (b)\n");
@@ -776,7 +766,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc temporary grid buffer
   b->dev_grid_tmp
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (c)\n");
@@ -828,12 +818,12 @@ static dt_iop_colorreconstruct_bilateral_frozen_t *dt_iop_colorreconstruct_bilat
   bf->scale = b->scale;
   bf->sigma_s = b->sigma_s;
   bf->sigma_r = b->sigma_r;
-  bf->buf = dt_alloc_align(64, b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t));
+  bf->buf = dt_alloc_align(64, sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z);
   if(bf->buf && b->dev_grid)
   {
     // read bilateral grid from device memory to host buffer (blocking)
     cl_int err = dt_opencl_read_buffer_from_device(b->devid, bf->buf, b->dev_grid, 0,
-                                    b->size_x * b->size_y * b->size_z * sizeof(dt_iop_colorreconstruct_Lab_t), TRUE);
+                                    sizeof(dt_iop_colorreconstruct_Lab_t) * b->size_x * b->size_y * b->size_z, TRUE);
     if(err != CL_SUCCESS)
     {
       dt_print(DT_DEBUG_OPENCL,
@@ -907,7 +897,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc grid buffer:
   b->dev_grid
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (g)\n");
@@ -917,7 +907,7 @@ static dt_iop_colorreconstruct_bilateral_cl_t *dt_iop_colorreconstruct_bilateral
 
   // alloc temporary grid buffer
   b->dev_grid_tmp
-      = dt_opencl_alloc_device_buffer(b->devid, (size_t)b->size_x * b->size_y * b->size_z * 4 * sizeof(float));
+      = dt_opencl_alloc_device_buffer(b->devid, sizeof(float) * 4 * b->size_x * b->size_y * b->size_z);
   if(!b->dev_grid_tmp)
   {
     dt_print(DT_DEBUG_OPENCL, "[opencl_colorreconstruction] not able to allocate device buffer (h)\n");
@@ -1231,7 +1221,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 {
   dt_iop_colorreconstruct_data_t *d = (dt_iop_colorreconstruct_data_t *)calloc(1, sizeof(dt_iop_colorreconstruct_data_t));
   piece->data = (void *)d;
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1242,9 +1231,9 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)module->params;
+  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
+
   dt_bauhaus_slider_set(g->threshold, p->threshold);
   dt_bauhaus_slider_set(g->spatial, p->spatial);
   dt_bauhaus_slider_set(g->range, p->range);
@@ -1286,9 +1275,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_colorreconstruct_gui_data_t));
-  dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
-  dt_iop_colorreconstruct_params_t *p = (dt_iop_colorreconstruct_params_t *)self->params;
+  dt_iop_colorreconstruct_gui_data_t *g = IOP_GUI_ALLOC(colorreconstruct);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->can = NULL;
@@ -1296,10 +1283,10 @@ void gui_init(struct dt_iop_module_t *self)
 
   g->threshold = dt_bauhaus_slider_from_params(self, N_("threshold"));
   dt_bauhaus_slider_set_step(g->threshold, 0.1f);
-  g->spatial = dt_bauhaus_slider_from_params(self, "spatial");
-  g->range = dt_bauhaus_slider_from_params(self, "range");
+  g->spatial = dt_bauhaus_slider_from_params(self, N_("spatial"));
+  g->range = dt_bauhaus_slider_from_params(self, N_("range"));
   dt_bauhaus_slider_set_step(g->range, 0.1f);
-  g->precedence = dt_bauhaus_combobox_from_params(self, "precedence");
+  g->precedence = dt_bauhaus_combobox_from_params(self, N_("precedence"));
   g->hue = dt_bauhaus_slider_from_params(self, N_("hue"));
   dt_bauhaus_slider_set_feedback(g->hue, 0);
   dt_bauhaus_slider_set_stop(g->hue, 0.0f,   1.0f, 0.0f, 0.0f);
@@ -1313,8 +1300,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_show_all(g->hue);
   gtk_widget_set_no_show_all(g->hue, TRUE);
 
-  gtk_widget_set_visible(g->hue, p->precedence == COLORRECONSTRUCT_PRECEDENCE_HUE);
-
   gtk_widget_set_tooltip_text(g->threshold, _("pixels with lightness values above this threshold are corrected"));
   gtk_widget_set_tooltip_text(g->spatial, _("how far to look for replacement colors in spatial dimensions"));
   gtk_widget_set_tooltip_text(g->range, _("how far to look for replacement colors in the luminance dimension"));
@@ -1327,8 +1312,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
   dt_iop_colorreconstruct_gui_data_t *g = (dt_iop_colorreconstruct_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
   dt_iop_colorreconstruct_bilateral_dump(g->can);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

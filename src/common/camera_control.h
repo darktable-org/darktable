@@ -86,7 +86,9 @@ typedef struct dt_camera_t
   /** Live view */
   gboolean is_live_viewing;
   /** The last preview image from the camera */
-  GdkPixbuf *live_view_pixbuf;
+  uint8_t *live_view_buffer;
+  int live_view_width, live_view_height;
+  //dt_colorspaces_color_profile_type_t live_view_color_space;
   /** Rotation of live view, multiples of 90° */
   int32_t live_view_rotation;
   /** Zoom level for live view */
@@ -99,11 +101,20 @@ typedef struct dt_camera_t
   gboolean live_view_flip;
   /** The thread adding the live view jobs */
   pthread_t live_view_thread;
-  /** A guard so that writing and reading the pixbuf don't interfere */
-  dt_pthread_mutex_t live_view_pixbuf_mutex;
+  /** A guard so that writing and reading the live view buffer don't interfere */
+  dt_pthread_mutex_t live_view_buffer_mutex;
   /** A flag to tell the live view thread that the last job was completed */
   dt_pthread_mutex_t live_view_synch;
 } dt_camera_t;
+
+/** A dummy camera object used for locked cameras */
+typedef struct dt_camera_locked_t
+{
+  /** A pointer to the model string of camera. */
+  char *model;
+  /** A pointer to the port string of camera. */
+  char *port;
+} dt_camera_locked_t;
 
 /** Camera control status.
   These enumerations are passed back to host application using
@@ -146,6 +157,8 @@ typedef struct dt_camctl_t
   GList *listeners;
   /** List of cameras found and initialized by camera control.*/
   GList *cameras;
+  /** List of locked cameras found */
+  GList *locked_cameras;
 
   /** The actual gphoto2 context */
   GPContext *gpcontext;
@@ -209,7 +222,8 @@ typedef enum dt_camera_preview_flags_t
   CAMCTL_IMAGE_PREVIEW_DATA = 1,
 } dt_camera_preview_flags_t;
 
-
+/** gphoto2 device updating function for thread */
+void *dt_update_cameras_thread(void *ptr);
 /** Initializes the gphoto and cam control, returns NULL if failed */
 dt_camctl_t *dt_camctl_new();
 /** Destroys the camera control */
@@ -218,10 +232,10 @@ void dt_camctl_destroy(dt_camctl_t *c);
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
 /** Unregisters a listener of camera control */
 void dt_camctl_unregister_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener);
-/** start a thread job to detect cameras and update list of available cameras */
-void dt_camctl_background_detect_cameras();
 /** Check if there is any camera connected */
-int dt_camctl_have_cameras(const dt_camctl_t *c);
+gboolean dt_camctl_have_cameras(const dt_camctl_t *c);
+/** Check if there is any camera locked  */
+gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c);
 /** Selects a camera to be used by cam control, this camera is selected if NULL is passed as camera*/
 void dt_camctl_select_camera(const dt_camctl_t *c, const dt_camera_t *cam);
 /** Can tether...*/

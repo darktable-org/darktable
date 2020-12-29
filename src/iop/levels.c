@@ -32,6 +32,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "develop/openmp_maths.h"
 #include "dtgtk/drawingarea.h"
 #include "gui/draw.h"
 #include "gui/color_picker_proxy.h"
@@ -112,7 +113,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int flags()
@@ -125,22 +126,13 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-void init_key_accels(dt_iop_module_so_t *self)
+const char *description(struct dt_iop_module_t *self)
 {
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "black"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "gray"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "white"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "mode"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "black", GTK_WIDGET(g->percentile_black));
-  dt_accel_connect_slider_iop(self, "gray", GTK_WIDGET(g->percentile_grey));
-  dt_accel_connect_slider_iop(self, "white", GTK_WIDGET(g->percentile_white));
-  dt_accel_connect_combobox_iop(self, "mode", GTK_WIDGET(g->mode));
+  return dt_iop_set_description(self, _("adjust black, white and mid-gray points"),
+                                      _("creative"),
+                                      _("linear or non-linear, Lab, display-referred"),
+                                      _("non-linear, Lab"),
+                                      _("non-linear, Lab, display-referred"));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -245,7 +237,7 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
   for(unsigned int i = 0; i < 0x10000; i++)
   {
     float percentage = (float)i / (float)0x10000ul;
-    d->lut[i] = 100.0f * pow(percentage, d->in_inv_gamma);
+    d->lut[i] = 100.0f * powf(percentage, d->in_inv_gamma);
   }
 }
 
@@ -372,6 +364,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const int ch = piece->colors;
+  assert(piece->colors >= 3);
   const dt_iop_levels_data_t *const d = (dt_iop_levels_data_t *)piece->data;
 
   if(d->mode == LEVELS_MODE_AUTOMATIC)
@@ -379,52 +372,41 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     commit_params_late(self, piece);
   }
 
+  const float *const restrict in = (float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  const size_t npixels = roi_out->width * roi_out->height;
+  
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(ch, d, ivoid, ovoid, roi_out) \
+  dt_omp_firstprivate(ch, d) \
+  dt_omp_sharedconst(in, out, npixels) \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
+  for(int i = 0; i < ch * npixels; i += ch)
   {
-    float *in = (float *)ivoid + (size_t)k * ch * roi_out->width;
-    float *out = (float *)ovoid + (size_t)k * ch * roi_out->width;
-    for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+    const float L_in = in[i] / 100.0f;
+    float L_out;
+    if(L_in <= d->levels[0])
     {
-      float L_in = in[0] / 100.0f;
-
-      if(L_in <= d->levels[0])
-      {
-        // Anything below the lower threshold just clips to zero
-        out[0] = 0.0f;
-      }
-      else if(L_in >= d->levels[2])
-      {
-        float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
-        out[0] = 100.0f * pow(percentage, d->in_inv_gamma);
-      }
-      else
-      {
-        // Within the expected input range we can use the lookup table
-        float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
-        // out[0] = 100.0 * pow(percentage, d->in_inv_gamma);
-        out[0] = d->lut[CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
-      }
-
-      // Preserving contrast
-      if(in[0] > 0.01f)
-      {
-        out[1] = in[1] * out[0] / in[0];
-        out[2] = in[2] * out[0] / in[0];
-      }
-      else
-      {
-        out[1] = in[1] * out[0] / 0.01f;
-        out[2] = in[2] * out[0] / 0.01f;
-      }
+      // Anything below the lower threshold just clips to zero
+      L_out = 0.0f;
     }
+    else
+    {
+      const float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
+      // Within the expected input range we can use the lookup table, else we need to compute from scratch
+      L_out = percentage < 1.0f ? d->lut[(int)(percentage * 0x10000ul)] : 100.0f * powf(percentage, d->in_inv_gamma);
+    }
+
+    // Preserving contrast
+    const float denom = (in[i] > 0.01f) ? in[i] : 0.01f;
+    out[i] = L_out;
+    out[i+1] = in[i+1] * L_out / denom;
+    out[i+2] = in[i+2] * L_out / denom;
   }
 
-  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
+  if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
+    dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 }
 
 #ifdef HAVE_OPENCL
@@ -524,7 +506,7 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
     d->levels[0] = NAN;
     d->levels[1] = NAN;
     d->levels[2] = NAN;
-    
+
     // commit_params_late() will compute LUT later
   }
   else
@@ -588,17 +570,17 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_queue_draw(self->widget);
 }
 
-void reload_defaults(dt_iop_module_t *self)
+void init(dt_iop_module_t *module)
 {
-  self->request_histogram |= (DT_REQUEST_ON);
+  dt_iop_default_init(module);
 
-  dt_iop_levels_params_t *d = self->default_params;
+  module->request_histogram |= (DT_REQUEST_ON);
+
+  dt_iop_levels_params_t *d = module->default_params;
 
   d->levels[0] = 0.0f;
   d->levels[1] = 0.5f;
   d->levels[2] = 1.0f;
-
-  memcpy(self->params, self->default_params, sizeof(dt_iop_levels_params_t));
 }
 
 void init_global(dt_iop_module_so_t *self)
@@ -620,8 +602,7 @@ void cleanup_global(dt_iop_module_so_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_levels_gui_data_t));
-  dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
+  dt_iop_levels_gui_data_t *c = IOP_GUI_ALLOC(levels);
 
   dt_pthread_mutex_init(&c->lock, NULL);
 
@@ -692,7 +673,7 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(c->percentile_black, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_black, 0.1);
 
-  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray")); 
+  c->percentile_grey = dt_bauhaus_slider_from_params(self, N_("gray"));
   gtk_widget_set_tooltip_text(c->percentile_grey, _("gray percentile"));
   dt_bauhaus_slider_set_format(c->percentile_grey, "%.1f%%");
   dt_bauhaus_slider_set_step(c->percentile_grey, 0.1);
@@ -708,10 +689,8 @@ void gui_init(dt_iop_module_t *self)
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, 5));
 
   c->mode = dt_bauhaus_combobox_from_params(self, N_("mode"));
- 
-  gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 
-  gui_changed(self, c->mode, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), c->mode_stack, TRUE, TRUE, 0);
 }
 
 void gui_cleanup(dt_iop_module_t *self)
@@ -721,8 +700,7 @@ void gui_cleanup(dt_iop_module_t *self)
 
   dt_pthread_mutex_destroy(&g->lock);
 
-  free(self->gui_data);
-  self->gui_data = NULL;
+  IOP_GUI_FREE;
 }
 
 static gboolean dt_iop_levels_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gpointer user_data)
@@ -740,7 +718,6 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  dt_develop_t *dev = darktable.develop;
   const int inset = DT_GUI_CURVE_EDITOR_INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(GTK_WIDGET(c->area), &allocation);
@@ -823,16 +800,14 @@ static gboolean dt_iop_levels_area_draw(GtkWidget *widget, cairo_t *crf, gpointe
   if(self->enabled)
   {
     uint32_t *hist = self->histogram;
-    float hist_max = dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR ? self->histogram_max[0]
-                                                                    : logf(1.0 + self->histogram_max[0]);
+    const gboolean is_linear = darktable.lib->proxy.histogram.is_linear;
+    float hist_max = is_linear ? self->histogram_max[0] : logf(1.0 + self->histogram_max[0]);
     if(hist && hist_max > 0.0f)
     {
       cairo_save(cr);
       cairo_scale(cr, width / 255.0, -(height - DT_PIXEL_APPLY_DPI(5)) / hist_max);
       cairo_set_source_rgba(cr, .2, .2, .2, 0.5);
-      dt_draw_histogram_8(cr, hist, 4, 0, dev->histogram_type == DT_DEV_HISTOGRAM_LINEAR); // TODO: make draw
-                                                                                        // handle waveform
-                                                                                        // histograms
+      dt_draw_histogram_8(cr, hist, 4, 0, is_linear);
       cairo_restore(cr);
     }
   }
@@ -1002,7 +977,8 @@ static gboolean dt_iop_levels_scroll(GtkWidget *widget, GdkEventScroll *event, g
   dt_iop_levels_gui_data_t *c = (dt_iop_levels_gui_data_t *)self->gui_data;
   dt_iop_levels_params_t *p = (dt_iop_levels_params_t *)self->params;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   dt_iop_color_picker_reset(self, TRUE);
 
   if(c->dragging)

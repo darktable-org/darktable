@@ -99,7 +99,10 @@ void dt_history_snapshot_undo_create(int32_t imgid, int *snap_id, int *history_e
   if(all_ok)
     sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
+  {
     sqlite3_exec(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
+    fprintf(stderr, "[dt_history_snapshot_undo_create] fails to create a snapshot for %d\n", imgid);
+  }
 
   dt_unlock_image(imgid);
 }
@@ -115,7 +118,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
   sqlite3_exec(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
 
   dt_history_delete_on_image_ext(imgid, FALSE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   // copy undo_history snapshot back as current history state
 
@@ -127,7 +130,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   // copy undo_masks_history snapshot back as current masks_history state
@@ -140,7 +143,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   // set history end
@@ -149,7 +152,7 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               "UPDATE main.images SET history_end=?2 WHERE id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, history_end);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   // restore module order
@@ -161,15 +164,19 @@ static void _history_snapshot_undo_restore(int32_t imgid, int snap_id, int histo
                               "  WHERE imgid=?2 AND id=?1", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, snap_id);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
-  all_ok &= (sqlite3_step(stmt) != SQLITE_DONE);
+  all_ok &= (sqlite3_step(stmt) == SQLITE_DONE);
   sqlite3_finalize(stmt);
 
   if(all_ok)
     sqlite3_exec(dt_database_get(darktable.db), "COMMIT", NULL, NULL, NULL);
   else
+  {
     sqlite3_exec(dt_database_get(darktable.db), "ROLLBACK_TRANSACTION", NULL, NULL, NULL);
-
+    fprintf(stderr, "[_history_snapshot_undo_restore] fails to restore a snapshot for %d\n", imgid);
+  }
   dt_unlock_image(imgid);
+
+  dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
 }
 
 static void _clear_undo_snapshot(int32_t imgid, int snap_id)

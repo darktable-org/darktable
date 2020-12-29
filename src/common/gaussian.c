@@ -23,13 +23,8 @@
 #include <xmmintrin.h>
 #endif
 #include "common/gaussian.h"
+#include "common/math.h"
 #include "common/opencl.h"
-
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
-
-#if defined(__SSE__)
-#define MMCLAMPPS(a, mn, mx) (_mm_min_ps((mx), _mm_max_ps((a), (mn))))
-#endif
 
 #define BLOCKSIZE (1 << 6)
 
@@ -37,8 +32,8 @@ static void compute_gauss_params(const float sigma, dt_gaussian_order_t order, f
                                  float *a2, float *a3, float *b1, float *b2, float *coefp, float *coefn)
 {
   const float alpha = 1.695f / sigma;
-  const float ema = exp(-alpha);
-  const float ema2 = exp(-2.0f * alpha);
+  const float ema = expf(-alpha);
+  const float ema2 = expf(-2.0f * alpha);
   *b1 = -2.0f * ema;
   *b2 = ema2;
   *a0 = 0.0f;
@@ -92,9 +87,9 @@ size_t dt_gaussian_memory_use(const int width,    // width of input image
 {
   size_t mem_use;
 #ifdef HAVE_OPENCL
-  mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float) * 2;
+  mem_use = sizeof(float) * channels * (width + BLOCKSIZE) * (height + BLOCKSIZE) * 2;
 #else
-  mem_use = (size_t)width * height * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * width * height;
 #endif
   return mem_use;
 }
@@ -105,9 +100,9 @@ size_t dt_gaussian_singlebuffer_size(const int width,    // width of input image
 {
   size_t mem_use;
 #ifdef HAVE_OPENCL
-  mem_use = (size_t)(width + BLOCKSIZE) * (height + BLOCKSIZE) * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * (width + BLOCKSIZE) * (height + BLOCKSIZE);
 #else
-  mem_use = (size_t)width * height * channels * sizeof(float);
+  mem_use = sizeof(float) * channels * width * height;
 #endif
   return mem_use;
 }
@@ -141,7 +136,7 @@ dt_gaussian_t *dt_gaussian_init(const int width,    // width of input image
     g->min[k] = min[k];
   }
 
-  g->buf = dt_alloc_align(64, (size_t)width * height * channels * sizeof(float));
+  g->buf = dt_alloc_align_float((size_t)channels * width * height);
   if(!g->buf) goto error;
 
   return g;
@@ -593,9 +588,9 @@ dt_gaussian_cl_t *dt_gaussian_init_cl(const int devid,
   g->bheight = bheight;
 
   // get intermediate vector buffers with read-write access
-  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp1 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp1) goto error;
-  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, (size_t)bwidth * bheight * channels * sizeof(float));
+  g->dev_temp2 = dt_opencl_alloc_device_buffer(devid, sizeof(float) * channels * bwidth * bheight);
   if(!g->dev_temp2) goto error;
 
   return g;

@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/rgb_norms.h"
 #include "control/control.h"
@@ -39,7 +40,6 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -186,33 +186,17 @@ typedef struct dt_iop_basecurve_gui_data_t
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;
   GtkDrawingArea *area;
-  GtkWidget *scale, *fusion, *exposure_step, *exposure_bias;
+  GtkWidget *fusion, *exposure_step, *exposure_bias;
   GtkWidget *cmb_preserve_colors;
   double mouse_x, mouse_y;
   int selected;
-  int timeout_handle;
   double selected_offset, selected_y, selected_min, selected_max;
   float draw_xs[DT_IOP_TONECURVE_RES], draw_ys[DT_IOP_TONECURVE_RES];
   float draw_min_xs[DT_IOP_TONECURVE_RES], draw_min_ys[DT_IOP_TONECURVE_RES];
   float draw_max_xs[DT_IOP_TONECURVE_RES], draw_max_ys[DT_IOP_TONECURVE_RES];
-  int loglogscale;
+  float loglogscale;
+  GtkWidget *logbase;
 } dt_iop_basecurve_gui_data_t;
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "scale"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "preserve colors"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "exposure fusion"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_combobox_iop(self, "scale", GTK_WIDGET(g->scale));
-  dt_accel_connect_combobox_iop(self, "preserve colors", GTK_WIDGET(g->cmb_preserve_colors));
-  dt_accel_connect_combobox_iop(self, "exposure fusion", GTK_WIDGET(g->fusion));
-}
 
 static const char neutral[] = N_("neutral");
 static const char canon_eos[] = N_("canon eos like");
@@ -276,7 +260,7 @@ static const basecurve_preset_t basecurve_camera_presets[] = {
   // contributed by Edouard Gomez
   {"Nikon D90", "NIKON CORPORATION", "NIKON D90", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.011702, 0.012659}, {0.122918, 0.289973}, {0.153642, 0.342731}, {0.246855, 0.510114}, {0.448958, 0.733820}, {0.666759, 0.894290}, {1.000000, 1.000000}}}, {8}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
   // contributed by Pascal Obry
-  { "Nikon D800", "NIKON", "D800", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
+  { "Nikon D800", "NIKON", "NIKON D800", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.001773, 0.001936 }, { 0.009671, 0.009693 }, { 0.016754, 0.020617 }, { 0.024884, 0.037309 }, { 0.048174, 0.107768 }, { 0.056932, 0.139532 }, { 0.085504, 0.233303 }, { 0.130378, 0.349747 }, { 0.155476, 0.405445 }, { 0.175245, 0.445918 }, { 0.217657, 0.516873 }, { 0.308475, 0.668608 }, { 0.375381, 0.754058 }, { 0.459858, 0.839909 }, { 0.509567, 0.881543 }, { 0.654394, 0.960877 }, { 0.783380, 0.999161 }, { 0.859310, 1.000000 }, { 1.000000, 1.000000 } } }, { 20 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
   // contributed by Lukas Schrangl
   {"Olympus OM-D E-M10 II", "OLYMPUS CORPORATION    ", "E-M10MarkII     ", 0, FLT_MAX, {{{{0.000000, 0.000000}, {0.005707, 0.004764}, {0.018944, 0.024456}, {0.054501, 0.129992}, {0.075665, 0.211873}, {0.119641, 0.365771}, {0.173148, 0.532024}, {0.247979, 0.668989}, {0.357597, 0.780138}, {0.459003, 0.839829}, {0.626844, 0.904426}, {0.769425, 0.948541}, {0.820429, 0.964715}, {1.000000, 1.000000}}}, {14}, {m}, 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1},
   // clang-format on
@@ -289,14 +273,14 @@ static const basecurve_preset_t basecurve_presets[] = {
   { N_("cubic spline"), "", "", 0, FLT_MAX, { { { { 0.0, 0.0}, { 1.0, 1.0 }, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.}, { 0., 0.} } }, { 2 }, { CUBIC_SPLINE }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { neutral,         "", "",                      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.005000, 0.002500 }, { 0.150000, 0.300000 }, { 0.400000, 0.700000 }, { 0.750000, 0.950000 }, { 1.000000, 1.000000 } } }, { 6 }, { m } , 0, 0, 0, DT_RGB_NORM_LUMINANCE}, 0, 1 },
   { canon_eos,       "Canon", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.028226, 0.029677 }, { 0.120968, 0.232258 }, { 0.459677, 0.747581 }, { 0.858871, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { canon_eos_alt,   "Canon", "EOS 5D Mark",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { canon_eos_alt,   "Canon", "EOS 5D Mark%",      0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.026210, 0.029677 }, { 0.108871, 0.232258 }, { 0.350806, 0.747581 }, { 0.669355, 0.967742 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { nikon,           "NIKON", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.036532 }, { 0.120968, 0.228226 }, { 0.459677, 0.759678 }, { 0.858871, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { nikon_alt,       "NIKON", "D____",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { nikon_alt,       "NIKON", "%D____%",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.007322 }, { 0.072581, 0.130742 }, { 0.310484, 0.729291 }, { 0.611321, 0.951613 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { sony_alpha,      "SONY", "",                  0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.031949, 0.036532 }, { 0.105431, 0.228226 }, { 0.434505, 0.759678 }, { 0.855738, 0.983468 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { pentax,          "PENTAX", "",                0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032258, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { ricoh,           "RICOH", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.032259, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { olympus,         "OLYMPUS", "",               0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.033962, 0.028226 }, { 0.249057, 0.439516 }, { 0.501887, 0.798387 }, { 0.750943, 0.955645 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
-  { olympus_alt,     "OLYMPUS", "E-M",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
+  { olympus_alt,     "OLYMPUS", "E-M%",            0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.012097, 0.010322 }, { 0.072581, 0.167742 }, { 0.310484, 0.711291 }, { 0.645161, 0.956855 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { panasonic,       "Panasonic", "",             0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036290, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { leica,           "Leica", "",                 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.036291, 0.024596 }, { 0.120968, 0.166419 }, { 0.205645, 0.328527 }, { 0.604839, 0.790171 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
   { kodak_easyshare, "EASTMAN KODAK COMPANY", "", 0, FLT_MAX, { { { { 0.000000, 0.000000 }, { 0.044355, 0.020967 }, { 0.133065, 0.154322 }, { 0.209677, 0.300301 }, { 0.572581, 0.753477 }, { 1.000000, 1.000000 } } }, { 6 }, { m }, 0, 0, 0, DT_RGB_NORM_LUMINANCE }, 0, 0 },
@@ -348,18 +332,19 @@ const char *name()
   return _("base curve");
 }
 
-const char *description()
+const char *description(struct dt_iop_module_t *self)
 {
-  return _("apply a view transform based on camera manufacturer look,\n"
-           "for corrective purposes, to prepare images for display.\n"
-           "works in RGB,\n"
-           "takes preferably a linear RGB input,\n"
-           "outputs non-linear RGB.");
+  return dt_iop_set_description(self, _("apply a view transform based on personal or camera manufacturer look,\n"
+                                        "for corrective purposes, to prepare images for display"),
+                                      _("corrective"),
+                                      _("linear, RGB, display-referred"),
+                                      _("non-linear, RGB"),
+                                      _("non-linear, RGB, display-referred"));
 }
 
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -374,12 +359,9 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *presets, int count, gboolean camera)
 {
-  char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
-  const gboolean autoapply = strcmp(workflow, "display-referred") == 0;
-  g_free(workflow);
   const gboolean autoapply_percamera = dt_conf_get_bool("plugins/darkroom/basecurve/auto_apply_percamera_presets");
 
-  const gboolean force_autoapply = autoapply && (autoapply_percamera || !camera);
+  const gboolean force_autoapply = (autoapply_percamera || !camera);
 
   // transform presets above to db entries.
   for(int k = 0; k < count; k++)
@@ -394,7 +376,8 @@ static void set_presets(dt_iop_module_so_t *self, const basecurve_preset_t *pres
     }
     // add the preset.
     dt_gui_presets_add_generic(_(presets[k].name), self->op, self->version(),
-                               &tmp, sizeof(dt_iop_basecurve_params_t), 1);
+                               &tmp, sizeof(dt_iop_basecurve_params_t), 1,
+                               DEVELOP_BLEND_CS_RGB_DISPLAY);
     // and restrict it to model, maker, iso, and raw images
     dt_gui_presets_update_mml(_(presets[k].name), self->op, self->version(),
                               presets[k].maker, presets[k].model, "");
@@ -532,7 +515,7 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   cl_int err = -999;
 
@@ -564,20 +547,20 @@ int process_cl_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
 
   int num_levels = num_levels_max;
 
-  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp1 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp1 == NULL) goto error;
 
-  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp2 = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp2 == NULL) goto error;
 
   // allocate buffers for wavelet transform and blending
   for(int k = 0, step = 1, w = width, h = height; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    dev_col[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_col[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_col[k] == NULL) goto error;
 
-    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, 4 * sizeof(float));
+    dev_comb[k] = dt_opencl_alloc_device(devid, w, h, sizeof(float) * 4);
     if(dev_comb[k] == NULL) goto error;
 
     size_t sizes[] = { ROUNDUPWD(w), ROUNDUPHT(h), 1 };
@@ -838,7 +821,7 @@ int process_cl_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 {
   dt_iop_basecurve_data_t *d = (dt_iop_basecurve_data_t *)piece->data;
   dt_iop_basecurve_global_data_t *gd = (dt_iop_basecurve_global_data_t *)self->global_data;
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   cl_mem dev_m = NULL;
   cl_mem dev_coeffs = NULL;
@@ -955,7 +938,6 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
 }
 
-
 // See comments of opencl version in data/kernels/basecurve.cl for description of the meaning of "legacy"
 static inline void apply_legacy_curve(
     const float *const in,
@@ -1068,8 +1050,8 @@ static inline void gauss_blur(
     const size_t ht)
 {
   const float w[5] = { 1.f / 16.f, 4.f / 16.f, 6.f / 16.f, 4.f / 16.f, 1.f / 16.f };
-  float *tmp = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
-  memset(tmp, 0, 4*wd*ht*sizeof(float));
+  float *tmp = dt_alloc_align_float((size_t)4 * wd * ht);
+  memset(tmp, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, input, w, wd) \
@@ -1091,7 +1073,7 @@ static inline void gauss_blur(
       for(int ii=-2;ii<=2;ii++)
         tmp[4*(j*wd+i)+c] += input[4*(j*wd+MIN(i+ii, wd-(i+ii-wd+1) ))+c] * w[ii+2];
   }
-  memset(output, 0, 4*wd*ht*sizeof(float));
+  memset(output, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ht, output, w, wd) \
@@ -1121,7 +1103,7 @@ static inline void gauss_expand(
 {
   const size_t cw = (wd-1)/2+1;
   // fill numbers in even pixels, zero odd ones
-  memset(fine, 0, 4*wd*ht*sizeof(float));
+  memset(fine, 0, sizeof(float) * 4 * wd * ht);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(cw, fine, ht, input, wd) \
@@ -1151,7 +1133,7 @@ static inline void gauss_reduce(
   // blur, store only coarse res
   const size_t cw = (wd-1)/2+1, ch = (ht-1)/2+1;
 
-  float *blurred = dt_alloc_align(64, (size_t)wd*ht*4*sizeof(float));
+  float *blurred = dt_alloc_align_float((size_t)4 * wd * ht);
   gauss_blur(input, blurred, wd, ht);
   for(size_t j=0;j<ch;j++) for(size_t i=0;i<cw;i++)
     for(int c=0;c<4;c++) coarse[4*(j*cw+i)+c] = blurred[4*(2*j*wd+2*i)+c];
@@ -1173,21 +1155,21 @@ void process_fusion(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   const float *const in = (const float *)ivoid;
   float *const out = (float *)ovoid;
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   // allocate temporary buffer for wavelet transform + blending
   const int wd = roi_in->width, ht = roi_in->height;
   int num_levels = 8;
-  float **col = malloc(num_levels * sizeof(float *));
-  float **comb = malloc(num_levels * sizeof(float *));
+  float **col = malloc(sizeof(float *) * num_levels);
+  float **comb = malloc(sizeof(float *) * num_levels);
   int w = wd, h = ht;
   const int rad = MIN(wd, (int)ceilf(256 * roi_in->scale / piece->iscale));
   int step = 1;
   for(int k = 0; k < num_levels; k++)
   {
     // coarsest step is some % of image width.
-    col[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
-    comb[k] = dt_alloc_align(64, sizeof(float) * 4 * w * h);
+    col[k]  = dt_alloc_align_float((size_t)4 * w * h);
+    comb[k] = dt_alloc_align_float((size_t)4 * w * h);
     memset(comb[k], 0, sizeof(float) * 4 * w * h);
     w = (w - 1) / 2 + 1;
     h = (h - 1) / 2 + 1;
@@ -1352,7 +1334,7 @@ void process_lut(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, co
   //however the for loops only handled RGBA - FIXME, determine what possible data formats and channel
   //configurations we might encounter here and handle those too
   dt_iop_basecurve_data_t *const d = (dt_iop_basecurve_data_t *)(piece->data);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_iop_work_profile_info(piece->module, piece->module->dev->iop);
 
   const int wd = roi_in->width, ht = roi_in->height;
 
@@ -1447,28 +1429,26 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->exposure_step, p->exposure_fusion != 0);
   gtk_widget_set_visible(g->exposure_bias, p->exposure_fusion != 0);
 
-  if(g->timeout_handle)
-  {
-    g_source_remove(g->timeout_handle);
-    g->timeout_handle = 0;
-  }
-
+  dt_iop_cancel_history_update(self);
   dt_bauhaus_slider_set(g->exposure_step, p->exposure_stops);
   dt_bauhaus_slider_set(g->exposure_bias, p->exposure_bias);
   // gui curve is read directly from params during expose event.
   gtk_widget_queue_draw(self->widget);
 }
 
+static float eval_grey(float x)
+{
+  // "log base" is a combined scaling and offset change so that x->[0,1], with
+  // the left side of the histogram expanded (slider->right) or not (slider left, linear)
+  return x;
+}
+
 void init(dt_iop_module_t *module)
 {
   dt_iop_default_init(module);
-
   dt_iop_basecurve_params_t *d = module->default_params;
-
   d->basecurve[0][1].x = d->basecurve[0][1].y = 1.0;
   d->basecurve_nodes[0] = 2;
-
-  memcpy(module->params, module->default_params, sizeof(dt_iop_basecurve_params_t));
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1530,16 +1510,16 @@ static gboolean dt_iop_basecurve_leave_notify(GtkWidget *widget, GdkEventCrossin
 
 static float to_log(const float x, const float base)
 {
-  if(base > 0.0f && base != 1.0f)
-    return logf(x * (base - 1.0f) + 1.0f) / logf(base);
+  if(base > 0.0f)
+    return logf(x * base + 1.0f) / logf(base + 1.0f);
   else
     return x;
 }
 
 static float to_lin(const float x, const float base)
 {
-  if(base > 0.0f && base != 1.0f)
-    return (powf(base, x) - 1.0f) / (base - 1.0f);
+  if(base > 0.0f)
+    return (powf(base - 1.0f, x) - 1.0f) / base;
   else
     return x;
 }
@@ -1655,7 +1635,7 @@ static gboolean dt_iop_basecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.4));
   cairo_set_source_rgb(cr, .1, .1, .1);
   if(c->loglogscale)
-    dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale);
+    dt_draw_loglog_grid(cr, 4, 0, 0, width, height, c->loglogscale + 1.0f);
   else
     dt_draw_grid(cr, 4, 0, 0, width, height);
 
@@ -1944,6 +1924,7 @@ static gboolean dt_iop_basecurve_button_press(GtkWidget *widget, GdkEventButton 
       basecurve[k].x = basecurve[k + 1].x;
       basecurve[k].y = basecurve[k + 1].y;
     }
+    basecurve[nodes - 1].x = basecurve[nodes - 1].y = 0;
     c->selected = -2; // avoid re-insertion of that point immediately after this
     p->basecurve_nodes[ch]--;
     gtk_widget_queue_draw(self->widget);
@@ -1962,17 +1943,6 @@ static gboolean area_resized(GtkWidget *widget, GdkEvent *event, gpointer user_d
   r.height = allocation.width;
   gtk_widget_get_preferred_size(widget, &r, NULL);
   return TRUE;
-}
-
-static gboolean postponed_value_change(gpointer data)
-{
-  dt_iop_module_t *self = (dt_iop_module_t *)data;
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-  c->timeout_handle = 0;
-
-  return FALSE;
 }
 
 static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, float dx, float dy, guint state)
@@ -2008,12 +1978,7 @@ static gboolean _move_point_internal(dt_iop_module_t *self, GtkWidget *widget, f
   dt_iop_basecurve_sanity_check(self, widget);
 
   gtk_widget_queue_draw(widget);
-
-  const int delay = CLAMP(darktable.develop->average_delay * 3 / 2, 10, 1000);
-
-  if(!c->timeout_handle)
-    c->timeout_handle = g_timeout_add(delay, postponed_value_change, self);
-
+  dt_iop_queue_history_update(self, FALSE);
   return TRUE;
 }
 
@@ -2024,7 +1989,8 @@ static gboolean _scrolled(GtkWidget *widget, GdkEventScroll *event, gpointer use
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
 
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   if(c->selected < 0) return TRUE;
 
   gdouble delta_y;
@@ -2095,22 +2061,18 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   }
 }
 
-static void scale_callback(GtkWidget *widget, gpointer user_data)
+static void logbase_callback(GtkWidget *slider, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_basecurve_gui_data_t *g = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  if(dt_bauhaus_combobox_get(widget))
-    g->loglogscale = 64;
-  else
-    g->loglogscale = 0;
+  g->loglogscale = eval_grey(dt_bauhaus_slider_get(g->logbase));
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_basecurve_gui_data_t));
-  dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
-  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->params;
+  dt_iop_basecurve_gui_data_t *c = IOP_GUI_ALLOC(basecurve);
+  dt_iop_basecurve_params_t *p = (dt_iop_basecurve_params_t *)self->default_params;
 
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, p->basecurve_type[0]);
   c->minmax_curve_type = p->basecurve_type[0];
@@ -2120,7 +2082,7 @@ void gui_init(struct dt_iop_module_t *self)
   c->mouse_x = c->mouse_y = -1.0;
   c->selected = -1;
   c->loglogscale = 0;
-  c->timeout_handle = 0;
+  self->timeout_handle = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -2128,16 +2090,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("abscissa: input, ordinate: output. works on RGB channels"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
-
-  c->scale = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(c->scale, NULL, _("scale"));
-  dt_bauhaus_combobox_add(c->scale, _("linear"));
-  dt_bauhaus_combobox_add(c->scale, _("logarithmic"));
-  gtk_widget_set_tooltip_text(c->scale, _("scale to use in the graph. use logarithmic scale for "
-                                          "more precise control near the blacks"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->scale, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(c->scale), "value-changed", G_CALLBACK(scale_callback), self);
-
   c->cmb_preserve_colors = dt_bauhaus_combobox_from_params(self, "preserve_colors");
   gtk_widget_set_tooltip_text(c->cmb_preserve_colors, _("method to preserve colors when applying contrast"));
 
@@ -2157,12 +2109,15 @@ void gui_init(struct dt_iop_module_t *self)
   // initially set to 1 (consistency with previous versions), but double-click resets to 0
   // to get a quick way to reach 0 with the mouse.
   c->exposure_bias = dt_bauhaus_slider_from_params(self, "exposure_bias");
-  dt_bauhaus_slider_set_default(c->exposure_bias, 0.0f); 
-  dt_bauhaus_slider_set_digits(c->exposure_bias, 3); 
+  dt_bauhaus_slider_set_default(c->exposure_bias, 0.0f);
+  dt_bauhaus_slider_set_digits(c->exposure_bias, 3);
   gtk_widget_set_tooltip_text(c->exposure_bias, _("whether to shift exposure up or down "
                                                   "(-1: reduce highlight, +1: reduce shadows)"));
   gtk_widget_set_no_show_all(c->exposure_bias, TRUE);
   gtk_widget_set_visible(c->exposure_bias, p->exposure_fusion != 0 ? TRUE : FALSE);
+  c->logbase = dt_bauhaus_slider_new_with_range(self, 0.0f, 40.0f, 0.5f, 0.0f, 2);
+  dt_bauhaus_widget_set_label(c->logbase, NULL, N_("scale for graph"));
+  gtk_box_pack_start(GTK_BOX(self->widget), c->logbase , TRUE, TRUE, 0);  g_signal_connect(G_OBJECT(c->logbase), "value-changed", G_CALLBACK(logbase_callback), self);
 
   gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
@@ -2183,9 +2138,9 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_basecurve_gui_data_t *c = (dt_iop_basecurve_gui_data_t *)self->gui_data;
   dt_draw_curve_destroy(c->minmax_curve);
-  if(c->timeout_handle) g_source_remove(c->timeout_handle);
-  free(self->gui_data);
-  self->gui_data = NULL;
+  dt_iop_cancel_history_update(self);
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

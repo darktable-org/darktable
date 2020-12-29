@@ -132,22 +132,19 @@ relight (read_only image2d_t in, write_only image2d_t out, const int width, cons
 }
 
 
-typedef  enum _channelmixer_output_t
+typedef enum _channelmixer_operation_mode_t
 {
-  CHANNEL_HUE=0,
-  CHANNEL_SATURATION,
-  CHANNEL_LIGHTNESS,
-  CHANNEL_RED,
-  CHANNEL_GREEN,
-  CHANNEL_BLUE,
-  CHANNEL_GRAY,
-  CHANNEL_SIZE
-} _channelmixer_output_t;
+  OPERATION_MODE_RGB = 0,
+  OPERATION_MODE_GRAY = 1,
+  OPERATION_MODE_HSL_V1 = 2,
+  OPERATION_MODE_HSL_V2 = 3,
+} _channelmixer_operation_mode_t;
 
 
 __kernel void
 channelmixer (read_only image2d_t in, write_only image2d_t out, const int width, const int height,
-              const int gray_mix_mode, global const float *red, global const float *green, global const float *blue)
+              const int operation_mode, global const float *hsl_matrix,
+              global const float *rgb_matrix)
 {
   const int x = get_global_id(0);
   const int y = get_global_id(1);
@@ -155,29 +152,61 @@ channelmixer (read_only image2d_t in, write_only image2d_t out, const int width,
   if(x >= width || y >= height) return;
 
   float4 pixel = read_imagef(in, sampleri, (int2)(x, y));
+  float4 opixel = (float4)(0.0f, 0.0f, 0.0f, pixel.w);
+  float gray, hmix, smix, lmix;
 
-  float hmix = clamp(pixel.x * red[CHANNEL_HUE], 0.0f, 1.0f) + pixel.y * green[CHANNEL_HUE] + pixel.z * blue[CHANNEL_HUE];
-  float smix = clamp(pixel.x * red[CHANNEL_SATURATION], 0.0f, 1.0f) + pixel.y * green[CHANNEL_SATURATION] + pixel.z * blue[CHANNEL_SATURATION];
-  float lmix = clamp(pixel.x * red[CHANNEL_LIGHTNESS], 0.0f, 1.0f) + pixel.y * green[CHANNEL_LIGHTNESS] + pixel.z * blue[CHANNEL_LIGHTNESS];
-
-  if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
+  switch(operation_mode)
   {
-    float4 hsl = RGB_2_HSL(pixel);
-    hsl.x = (hmix != 0.0f ) ? hmix : hsl.x;
-    hsl.y = (smix != 0.0f ) ? smix : hsl.y;
-    hsl.z = (lmix != 0.0f ) ? lmix : hsl.z;
-    pixel = HSL_2_RGB(hsl);
+    case OPERATION_MODE_RGB:
+      opixel.x = fmax(pixel.x * rgb_matrix[0] + pixel.y * rgb_matrix[1] + pixel.z * rgb_matrix[2], 0.0f);
+      opixel.y = fmax(pixel.x * rgb_matrix[3] + pixel.y * rgb_matrix[4] + pixel.z * rgb_matrix[5], 0.0f);
+      opixel.z = fmax(pixel.x * rgb_matrix[6] + pixel.y * rgb_matrix[7] + pixel.z * rgb_matrix[8], 0.0f);
+      break;
+
+    case OPERATION_MODE_GRAY:
+      gray = fmax(pixel.x * rgb_matrix[0] + pixel.y * rgb_matrix[1] + pixel.z * rgb_matrix[2], 0.0f);
+      opixel = (float4)(gray, gray, gray, pixel.w);
+      break;
+
+    case OPERATION_MODE_HSL_V1:
+      hmix = clamp(pixel.x * hsl_matrix[0], 0.0f, 1.0f) + pixel.y * hsl_matrix[1] + pixel.z * hsl_matrix[2];
+      smix = clamp(pixel.x * hsl_matrix[3], 0.0f, 1.0f) + pixel.y * hsl_matrix[4] + pixel.z * hsl_matrix[5];
+      lmix = clamp(pixel.x * hsl_matrix[6], 0.0f, 1.0f) + pixel.y * hsl_matrix[7] + pixel.z * hsl_matrix[8];
+
+      if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
+      {
+        float4 hsl = RGB_2_HSL(pixel);
+        hsl.x = (hmix != 0.0f ) ? hmix : hsl.x;
+        hsl.y = (smix != 0.0f ) ? smix : hsl.y;
+        hsl.z = (lmix != 0.0f ) ? lmix : hsl.z;
+        pixel = HSL_2_RGB(hsl);
+      }
+
+      opixel.x = clamp(pixel.x * rgb_matrix[0] + pixel.y * rgb_matrix[1] + pixel.z * rgb_matrix[2], 0.0f, 1.0f);
+      opixel.y = clamp(pixel.x * rgb_matrix[3] + pixel.y * rgb_matrix[4] + pixel.z * rgb_matrix[5], 0.0f, 1.0f);
+      opixel.z = clamp(pixel.x * rgb_matrix[6] + pixel.y * rgb_matrix[7] + pixel.z * rgb_matrix[8], 0.0f, 1.0f);
+      break;
+
+    case OPERATION_MODE_HSL_V2:
+      hmix = clamp(pixel.x * hsl_matrix[0] + pixel.y * hsl_matrix[1] + pixel.z * hsl_matrix[2], 0.0f, 1.0f);
+      smix = clamp(pixel.x * hsl_matrix[3] + pixel.y * hsl_matrix[4] + pixel.z * hsl_matrix[5], 0.0f, 1.0f);
+      lmix = clamp(pixel.x * hsl_matrix[6] + pixel.y * hsl_matrix[7] + pixel.z * hsl_matrix[8], 0.0f, 1.0f);
+      if( hmix != 0.0f || smix != 0.0f || lmix != 0.0f )
+      {
+        pixel = (float4)(clamp(pixel.x, 0.0f, 1.0f), clamp(pixel.y, 0.0f, 1.0f), clamp(pixel.z, 0.0f, 1.0f), pixel.w);
+        float4 hsl = RGB_2_HSL(pixel);
+        hsl.x = (hmix != 0.0f ) ? hmix : hsl.x;
+        hsl.y = (smix != 0.0f ) ? smix : hsl.y;
+        hsl.z = (lmix != 0.0f ) ? lmix : hsl.z;
+        pixel = HSL_2_RGB(hsl);
+      }
+      opixel.x = fmax(pixel.x * rgb_matrix[0] + pixel.y * rgb_matrix[1] + pixel.z * rgb_matrix[2], 0.0f);
+      opixel.y = fmax(pixel.x * rgb_matrix[3] + pixel.y * rgb_matrix[4] + pixel.z * rgb_matrix[5], 0.0f);
+      opixel.z = fmax(pixel.x * rgb_matrix[6] + pixel.y * rgb_matrix[7] + pixel.z * rgb_matrix[8], 0.0f);
+      break;
   }
 
-  float graymix = clamp(pixel.x * red[CHANNEL_GRAY]+ pixel.y * green[CHANNEL_GRAY] + pixel.z * blue[CHANNEL_GRAY], 0.0f, 1.0f);
-
-  float rmix = clamp(pixel.x * red[CHANNEL_RED] + pixel.y * green[CHANNEL_RED] + pixel.z * blue[CHANNEL_RED], 0.0f, 1.0f);
-  float gmix = clamp(pixel.x * red[CHANNEL_GREEN] + pixel.y * green[CHANNEL_GREEN] + pixel.z * blue[CHANNEL_GREEN], 0.0f, 1.0f);
-  float bmix = clamp(pixel.x * red[CHANNEL_BLUE] + pixel.y * green[CHANNEL_BLUE] + pixel.z * blue[CHANNEL_BLUE], 0.0f, 1.0f);
-
-  pixel = gray_mix_mode ? (float4)(graymix, graymix, graymix, pixel.w) : (float4)(rmix, gmix, bmix, pixel.w);
-
-  write_imagef (out, (int2)(x, y), pixel);
+  write_imagef (out, (int2)(x, y), opixel);
 }
 
 

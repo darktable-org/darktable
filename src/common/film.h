@@ -56,7 +56,7 @@ void dt_film_set_query(const int32_t id);
 /** removes this film and all its images from db. */
 void dt_film_remove(const int id);
 /** checks if film is empty */
-int dt_film_is_empty(const int id);
+gboolean dt_film_is_empty(const int id);
 /** Creating a new filmroll */
 int dt_film_new(dt_film_t *film, const char *directory);
 /** removes all empty film rolls. */

@@ -1317,7 +1317,7 @@ If a table of images is returned, that table will be used instead. The table can
 },
 ["signature"] = {
 ["1"] = {
-["__text"] = [[The type of format object to create, one of : 
+["__text"] = [[The type of format object to create, one of :
 
 * copy
 * exr
@@ -1348,7 +1348,7 @@ If a table of images is returned, that table will be used instead. The table can
 },
 ["signature"] = {
 ["1"] = {
-["__text"] = [[The type of storage object to create, one of : 
+["__text"] = [[The type of storage object to create, one of :
 
 * disk
 * email
@@ -1885,18 +1885,6 @@ The snapshot file will be generated at the next redraw of the main window]],
 },
 ["hinter"] = {
 ["__text"] = [[The small line of text at the top of the UI showing the number of selected images]],
-["__attributes"] = {
-["has_pairs"] = true,
-["has_tostring"] = true,
-["is_attribute"] = true,
-["is_singleton"] = true,
-["parent"] = {} --[=[API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]]=],
-["read"] = true,
-["reported_type"] = [[dt_singleton]],
-},
-},
-["modulelist"] = {
-["__text"] = [[The window allowing to set modules as visible/hidden/favorite]],
 ["__attributes"] = {
 ["has_pairs"] = true,
 ["has_tostring"] = true,
@@ -2457,7 +2445,7 @@ This will raise an error if the user is running a released version of DT and a w
 ["preferences"] = {
 ["__text"] = [[Lua allows you do manipulate preferences. Lua has its own namespace for preferences and you can't access nor write normal darktable preferences.
 Preference handling functions take a _script_ parameter. This is a string used to avoid name collision in preferences (i.e namespace). Set it to something unique, usually the name of the script handling the preference.
-Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling. 
+Preference handling functions can't guess the type of a parameter. You must pass the type of the preference you are handling.
 Note that the directory, enum and file type preferences are stored internally as string. The user can only select valid values, but a lua script can set it to any string]],
 ["__attributes"] = {
 ["reported_type"] = [[table]],
@@ -2699,7 +2687,7 @@ NOTE2: If the parameter is a directory the call is non-blocking; the film object
 ["delete"] = {} --[=[API["darktable"]["register_storage"].__attributes["signature"]["3"].__attributes["signature"]["1"].__attributes["reported_type"]["supports_format"].__attributes["signature"]["2"].__attributes["reported_type"]["write_image"].__attributes["signature"]["2"].__attributes["reported_type"]["delete"]]=],
 },
 ["debug"] = {
-["__text"] = [[This section must be activated separately by calling 
+["__text"] = [[This section must be activated separately by calling
 
 require "darktable.debug"
 ]],
@@ -3535,7 +3523,6 @@ API["darktable"]["gui"]["libs"]["styles"].__attributes["parent"] = API["darktabl
 API["darktable"]["gui"]["libs"]["metadata_view"].__attributes["parent"] = API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]
 API["darktable"]["gui"]["libs"]["metadata"].__attributes["parent"] = API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]
 API["darktable"]["gui"]["libs"]["hinter"].__attributes["parent"] = API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]
-API["darktable"]["gui"]["libs"]["modulelist"].__attributes["parent"] = API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]
 API["darktable"]["gui"]["libs"]["filmstrip"].__attributes["parent"] = API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]
 API["darktable"]["gui"]["libs"]["viewswitcher"].__attributes["parent"] = API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]
 API["darktable"]["gui"]["libs"]["darktable_label"].__attributes["parent"] = API["darktable"]["gui"]["libs"]["snapshots"].__attributes["parent"]

@@ -35,6 +35,7 @@
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/import_metadata.h"
+#include "gui/preferences.h"
 #include <gdk/gdkkeysyms.h>
 #ifdef HAVE_GPHOTO2
 #include "gui/camera_import_dialog.h"
@@ -70,16 +71,15 @@ typedef struct dt_lib_import_t
   dt_camctl_listener_t camctl_listener;
 #endif
   GtkWidget *frame;
-  GtkWidget *recursive;
-  GtkWidget *ignore_jpeg;
   GtkWidget *expander;
   GtkButton *import_file;
   GtkButton *import_directory;
   GtkButton *import_camera;
-  GtkButton *scan_devices;
   GtkButton *tethered_shoot;
 
   GtkBox *devices;
+  GtkBox *locked_devices;
+
 #ifdef USE_LUA
   GtkWidget *extra_lua_widgets;
 #endif
@@ -109,7 +109,6 @@ int position()
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "scan for devices"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import from camera"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "tethered shoot"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "import image"), 0, 0);
@@ -120,7 +119,6 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "scan for devices", GTK_WIDGET(d->scan_devices));
   dt_accel_connect_button_lib(self, "import image", GTK_WIDGET(d->import_file));
   dt_accel_connect_button_lib(self, "import folder", GTK_WIDGET(d->import_directory));
   if(d->tethered_shoot) dt_accel_connect_button_lib(self, "tethered shoot", GTK_WIDGET(d->tethered_shoot));
@@ -128,15 +126,6 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 #ifdef HAVE_GPHOTO2
-
-/* scan for new devices button callback */
-static void _lib_import_scan_devices_callback(GtkButton *button, gpointer data)
-{
-  /* detect cameras */
-  dt_camctl_background_detect_cameras();
-  /* update UI */
-  // this part is now asynchronously done by the signal connected to in gui_init()
-}
 
 /* show import from camera dialog */
 static void _lib_import_from_camera_callback(GtkButton *button, gpointer data)
@@ -177,28 +166,41 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   /* cleanup of widgets in devices container*/
   GList *item, *iter;
 
-  if((iter = item = gtk_container_get_children(GTK_CONTAINER(d->devices))) != NULL) do
+  if((iter = item = gtk_container_get_children(GTK_CONTAINER(d->devices))) != NULL)
+    do
     {
       gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(iter->data));
-    } while((iter = g_list_next(iter)) != NULL);
+    }
+    while((iter = g_list_next(iter)) != NULL);
 
   g_list_free(item);
 
-  uint32_t count = 0;
+  if((iter = item = gtk_container_get_children(GTK_CONTAINER(d->locked_devices))) != NULL)
+    do
+    {
+      gtk_container_remove(GTK_CONTAINER(d->locked_devices), GTK_WIDGET(iter->data));
+    }
+    while((iter = g_list_next(iter)) != NULL);
+
+  g_list_free(item);
+
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   dt_pthread_mutex_lock(&camctl->lock);
 
   if((citem = g_list_first(camctl->cameras)) != NULL)
   {
+    // The label for the section below could be "Mass Storage Camera" from gphoto2
+    // let's add a translatable string for it.
+    #define FOR_TRANSLATION_MSC N_("Mass Storage Camera")
+
     // Add detected supported devices
     char buffer[512] = { 0 };
     do
     {
       dt_camera_t *camera = (dt_camera_t *)citem->data;
-      count++;
 
       /* add camera label */
-      GtkWidget *label = dt_ui_section_label_new(camera->model);
+      GtkWidget *label = dt_ui_section_label_new(_(camera->model));
       gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
 
       /* set camera summary if available */
@@ -242,35 +244,31 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         dt_gui_add_help_link(tb, "lighttable_panels.html#import_from_camera");
       }
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
-    } while((citem = g_list_next(citem)) != NULL);
+    }
+    while((citem = g_list_next(citem)) != NULL);
   }
-  dt_pthread_mutex_unlock(&camctl->lock);
 
-  if(count == 0)
+  if((citem = g_list_first(camctl->locked_cameras)) != NULL)
   {
-    // No supported devices is detected lets notice user..
-    GtkWidget *label = gtk_label_new(_("no supported devices found"));
-    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
-    g_object_set(G_OBJECT(label), "xalign", 0.0, (gchar *)0);
-    gtk_box_pack_start(GTK_BOX(d->devices), label, TRUE, TRUE, 0);
+    // Add detected but locked devices
+    char buffer[512] = { 0 };
+    do
+    {
+      dt_camera_locked_t *camera = (dt_camera_locked_t *)citem->data;
+
+      snprintf(buffer, sizeof(buffer), "Locked: %s on\n%s", camera->model, camera->port);
+
+      /* add camera label */
+      GtkWidget *label = dt_ui_section_label_new(buffer);
+      gtk_box_pack_start(GTK_BOX(d->locked_devices), label, FALSE, FALSE, 0);
+
+    }
+    while((citem = g_list_next(citem)) != NULL);
   }
+
+  dt_pthread_mutex_unlock(&camctl->lock);
   gtk_widget_show_all(GTK_WIDGET(d->devices));
-}
-
-/** camctl camera disconnect callback */
-static gboolean _detect_async(gpointer user_data)
-{
-  dt_camctl_background_detect_cameras();
-  return FALSE;
-}
-
-static void _camctl_camera_disconnected_callback(const dt_camera_t *camera, void *data)
-{
-  /* rescan connected cameras. do that asynchronously since otherwise we deadlock (#10314) */
-  g_idle_add(_detect_async, NULL);
-
-  /* update gui with detected devices */
-  // this is done asynchronously in _camera_detected()
+  gtk_widget_show_all(GTK_WIDGET(d->locked_devices));
 }
 
 /** camctl status listener callback */
@@ -294,12 +292,15 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
       /* set all devices as inaccessible */
       GList *list, *child;
       list = child = gtk_container_get_children(GTK_CONTAINER(d->devices));
-      if(child) do
-      {
-        if(!(GTK_IS_TOGGLE_BUTTON(child->data)
-          && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
-          gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
-      } while((child = g_list_next(child)));
+      if(child)
+        do
+        {
+          if(!(GTK_IS_TOGGLE_BUTTON(child->data)
+               && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(child->data)) == TRUE))
+            gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
+        }
+        while((child = g_list_next(child)));
+
       g_list_free(list);
     }
     break;
@@ -309,10 +310,12 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
       /* set all devices as accessible */
       GList *list, *child;
       list = child = gtk_container_get_children(GTK_CONTAINER(d->devices));
-      if(child) do
-      {
-        gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
-      } while((child = g_list_next(child)));
+      if(child)
+        do
+        {
+          gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
+        }
+        while((child = g_list_next(child)));
       g_list_free(list);
     }
     break;
@@ -352,12 +355,6 @@ static void detach_lua_widgets(GtkWidget *extra_lua_widgets)
 }
 #endif
 
-static void _check_button_callback(GtkWidget *widget, gpointer data)
-{
-    dt_conf_set_bool("ui_last/import_ignore_jpegs",
-                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
-}
-
 static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_metadata_t *metadata,
                                                gboolean import_folder)
 {
@@ -371,55 +368,44 @@ static GtkWidget *_lib_import_get_extra_widget(dt_lib_import_t *d, dt_import_met
   gtk_container_add(GTK_CONTAINER(frame), expander);
   d->frame = frame;
 
-  GtkWidget *extra;
-  extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add(GTK_CONTAINER(expander), extra);
+  GtkWidget *opts = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_container_add(GTK_CONTAINER(expander), opts);
 
-  GtkWidget *recursive = NULL, *ignore_jpeg = NULL;
-  if(import_folder == TRUE)
+  GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(opts), main_box, TRUE, TRUE, 0);
+
+  GtkWidget *extra = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  gtk_box_pack_start(GTK_BOX(opts), extra, TRUE, TRUE, DT_PIXEL_APPLY_DPI(50));
+
+  GtkWidget *grid = gtk_grid_new();
+  if(import_folder)
   {
     // recursive opening.
-    recursive = gtk_check_button_new_with_label(_("import folders recursively"));
-    gtk_widget_set_tooltip_text(recursive,
-                                _("recursively import subfolders. Each folder goes into a new film roll."));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(recursive), dt_conf_get_bool("ui_last/import_recursive"));
-    gtk_box_pack_start(GTK_BOX(extra), recursive, FALSE, FALSE, 0);
-
+    dt_preferences_dialog_bool(grid, "ui_last/import_recursive");
     // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-    ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
-    gtk_widget_set_tooltip_text(ignore_jpeg, _("do not load files with an extension of .jpg or .jpeg. this "
-                                               "can be useful when there are raw+JPEG in a directory."));
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(ignore_jpeg),
-                                 dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-    gtk_box_pack_start(GTK_BOX(extra), ignore_jpeg, FALSE, FALSE, 0);
-    g_signal_connect(G_OBJECT(ignore_jpeg), "clicked",
-                   G_CALLBACK(_check_button_callback), ignore_jpeg);
+    dt_preferences_dialog_bool(grid, "ui_last/import_ignore_jpegs");
   }
-  d->recursive = recursive;
-  d->ignore_jpeg = ignore_jpeg;
+  // initial rating
+  dt_preferences_dialog_int(grid, "ui_last/import_initial_rating");
+  // apply metadata
+  metadata->apply_metadata = dt_preferences_dialog_bool(grid, "ui_last/import_apply_metadata");
+  gtk_box_pack_start(GTK_BOX(main_box), grid, FALSE, FALSE, 0);
 
   metadata->box = extra;
   dt_import_metadata_dialog_new(metadata);
-  gtk_widget_show_all(frame);
 
 #ifdef USE_LUA
-  gtk_box_pack_start(GTK_BOX(extra),d->extra_lua_widgets , FALSE, FALSE, 0);
-  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets),reset_child,NULL);
+  gtk_box_pack_start(GTK_BOX(extra), d->extra_lua_widgets , FALSE, FALSE, 0);
+  gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
 #endif
+
+  gtk_widget_show_all(frame);
 
   return frame;
 }
 
-static void _lib_import_evaluate_extra_widget(dt_lib_import_t *d, dt_import_metadata_t *metadata,
-                                              gboolean import_folder)
+static void _lib_import_evaluate_extra_widget(dt_lib_import_t *d, dt_import_metadata_t *metadata)
 {
-  if(import_folder == TRUE)
-  {
-    dt_conf_set_bool("ui_last/import_recursive",
-                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)));
-    dt_conf_set_bool("ui_last/import_ignore_jpegs",
-                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->ignore_jpeg)));
-  }
   dt_conf_set_bool("ui_last/import_options_expanded", gtk_expander_get_expanded(GTK_EXPANDER(d->expander)));
 
   dt_import_metadata_evaluate(metadata);
@@ -600,7 +586,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_import_t
     dt_conf_set_string("ui_last/import_last_directory", folder);
     g_free(folder);
 
-    _lib_import_evaluate_extra_widget(d, &metadata, FALSE);
+    _lib_import_evaluate_extra_widget(d, &metadata);
 
     char *filename = NULL;
     dt_film_t film;
@@ -684,7 +670,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
     dt_conf_set_string("ui_last/import_last_directory", folder);
     g_free(folder);
 
-    _lib_import_evaluate_extra_widget(d, &metadata, TRUE);
+    _lib_import_evaluate_extra_widget(d, &metadata);
 
     char *filename = NULL, *first_filename = NULL;
     GSList *list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
@@ -694,6 +680,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
     dt_view_filter_reset(darktable.view_manager, TRUE);
 
     /* for each selected folder add import job */
+    const gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
     while(it)
     {
       filename = (char *)it->data;
@@ -701,7 +688,7 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
       if(!first_filename)
       {
         first_filename = g_strdup(filename);
-        if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->recursive)))
+        if(recursive)
           first_filename = dt_util_dstrcat(first_filename, "%%");
       }
       g_free(filename);
@@ -773,22 +760,16 @@ void gui_init(dt_lib_module_t *self)
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   /* add import single image buttons */
-  GtkWidget *widget = gtk_button_new_with_label(_("image..."));
-  dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
+  GtkWidget *widget = dt_ui_button_new(_("image..."), _("select one or more images to import"), "lighttable_panels.html#import_from_fs");
   d->import_file = GTK_BUTTON(widget);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);
-  gtk_widget_set_tooltip_text(widget, _("select one or more images to import"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_single_image_callback), d);
 
   /* adding the import folder button */
-  widget = gtk_button_new_with_label(_("folder..."));
-  dt_gui_add_help_link(widget, "lighttable_panels.html#import_from_fs");
+  widget = dt_ui_button_new(_("folder..."), _("select a folder to import as film roll"), "lighttable_panels.html#import_from_fs");
   d->import_directory = GTK_BUTTON(widget);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(widget)), GTK_ALIGN_CENTER);
-  gtk_widget_set_tooltip_text(widget, _("select a folder to import as film roll"));
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
@@ -796,27 +777,21 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 #ifdef HAVE_GPHOTO2
-  /* add the rescan button */
-  GtkButton *scan = GTK_BUTTON(gtk_button_new_with_label(_("scan for devices")));
-  dt_gui_add_help_link(GTK_WIDGET(scan), "lighttable_panels.html#import_from_camera");
-  d->scan_devices = scan;
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(scan)), GTK_ALIGN_CENTER);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(scan), _("scan for newly attached devices"));
-  g_signal_connect(G_OBJECT(scan), "clicked", G_CALLBACK(_lib_import_scan_devices_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(scan), TRUE, TRUE, 0);
-
   /* add devices container for cameras */
   d->devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->devices), FALSE, FALSE, 0);
 
-  _lib_import_ui_devices_update(self);
+   /* add devices container for locked cameras */
+  d->locked_devices = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->locked_devices), FALSE, FALSE, 0);
+
+ _lib_import_ui_devices_update(self);
 
   /* initialize camctl listener and update devices */
   d->camctl_listener.data = self;
   d->camctl_listener.control_status = _camctl_camera_control_status_callback;
-  d->camctl_listener.camera_disconnected = _camctl_camera_disconnected_callback;
   dt_camctl_register_listener(darktable.camctl, &d->camctl_listener);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CAMERA_DETECTED, G_CALLBACK(_camera_detected),
                             self);
 #endif
 #ifdef USE_LUA
@@ -829,7 +804,7 @@ void gui_init(dt_lib_module_t *self)
 void gui_cleanup(dt_lib_module_t *self)
 {
 #ifdef HAVE_GPHOTO2
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_camera_detected), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_camera_detected), self);
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   /* unregister camctl listener */
   dt_camctl_unregister_listener(darktable.camctl, &d->camctl_listener);

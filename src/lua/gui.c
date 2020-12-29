@@ -405,7 +405,7 @@ int dt_lua_init_gui(lua_State *L)
     lua_pushcfunction(L, dt_lua_event_multiinstance_register);
     lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
     dt_lua_event_add(L, "mouse-over-image-changed");
-    dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(on_mouse_over_image_changed), NULL);
+    DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE, G_CALLBACK(on_mouse_over_image_changed), NULL);
   }
   return 0;
 }

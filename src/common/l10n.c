@@ -34,11 +34,56 @@
 #include <windows.h>
 #endif
 
+static gchar* _dt_full_locale_name(const char *locale)
+{
+#if defined(__linux__) || defined(__APPLE__)
+  gchar *output = NULL;
+  GError *error = NULL;
+  if(!g_spawn_command_line_sync("locale -a", &output, NULL, NULL, &error))
+  {
+    if(error)
+    {
+      fprintf(stderr, "couldn't check locale: '%s'\n", error->message);
+      g_error_free(error);
+    }
+  }
+  else
+  {
+    if(output)
+    {
+      gchar **locales = g_strsplit (output, "\n", -1);
+      g_free(output);
+      int j = 0;
+      while(locales[j])
+      {
+        if(g_str_has_prefix(locales[j], locale))
+        {
+          // return first found variant - this is most likelly the best one
+          gchar *ret=g_strdup(locales[j]);
+          g_strfreev(locales);
+          return ret;
+        }
+        j++;
+      }
+    }
+  }
+  return NULL;
+#else
+  // TODO: check a way to do above on windows
+  return NULL;
+#endif
+}
+
 static void set_locale(const char *ui_lang, const char *old_env)
 {
   if(ui_lang && *ui_lang)
   {
-    // TODO: Also set LANG
+    gchar *full_locale = _dt_full_locale_name(ui_lang);
+    if(full_locale)
+    {
+      g_setenv("LANG", full_locale, TRUE);
+      g_free(full_locale);
+    }
     g_setenv("LANGUAGE", ui_lang, TRUE);
     gtk_disable_setlocale();
   }
@@ -144,6 +189,8 @@ static void get_language_names(GList *languages)
     goto end;
   }
 
+  char *saved_locale = strdup(setlocale(LC_ALL, NULL));
+
   int n_elements = json_reader_count_elements(reader);
   for(int i = 0; i < n_elements; i++)
   {
@@ -217,6 +264,12 @@ static void get_language_names(GList *languages)
       fprintf(stderr, "[l10n] error: element %d has no name, skipping\n", i);
 
     json_reader_end_element(reader);
+  }
+
+  if(saved_locale)
+  {
+    setlocale(LC_ALL, saved_locale);
+    free(saved_locale);
   }
 
   json_reader_end_member(reader); // 639-2
@@ -333,6 +386,16 @@ dt_l10n_t *dt_l10n_init(gboolean init_list)
     }
     else
       fprintf(stderr, "[l10n] error: can't open directory `%s'\n", localedir);
+
+    // default to English if no other language matched
+    if(!sys_default)
+    {
+      sys_default = g_list_last(result->languages)->data;
+      sys_default->is_default = TRUE;
+      gchar* name = sys_default->name;
+      sys_default->name = g_strdup_printf("%s *", name);
+      g_free(name);
+    }
 
     // now try to find language names and translations!
     get_language_names(result->languages);

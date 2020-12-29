@@ -29,7 +29,7 @@ SUDO=""
 
 PRINT_HELP=0
 
-FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP GAME"
+FEATURES="CAMERA COLORD FLICKR GRAPHICSMAGICK IMAGEMAGICK KWALLET LIBSECRET LUA MAP MAC_INTEGRATION NLS OPENCL OPENEXR OPENMP UNITY WEBP GAME"
 
 # prepare a lowercase version with a space before and after
 # it's very important for parse_feature, has no impact in for loop expansions
@@ -265,7 +265,7 @@ CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 mkdir -p "$BUILD_DIR"
 
 cat <<EOF
-Darktable build script
+darktable build script
 
 Building directory:  $BUILD_DIR
 Installation prefix: $INSTALL_PREFIX

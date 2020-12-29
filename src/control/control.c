@@ -157,7 +157,11 @@ void dt_control_shutdown(dt_control_t *s)
   dt_pthread_mutex_unlock(&s->cond_mutex);
   pthread_cond_broadcast(&s->cond);
 
-  /* first wait for kick_on_workers_thread */
+  /* first wait for gphoto device updater */
+#ifdef HAVE_GPHOTO2
+  pthread_join(s->update_gphoto_thread, NULL);
+#endif
+  /* then wait for kick_on_workers_thread */
   pthread_join(s->kick_on_workers_thread, NULL);
 
   int k;
@@ -187,11 +191,6 @@ void dt_control_cleanup(dt_control_t *s)
   {
     g_slist_free_full(s->accelerator_list, g_free);
   }
-  if(s->dynamic_accelerator_list)
-  {
-    g_slist_free(s->dynamic_accelerator_valid);
-    g_slist_free_full(s->dynamic_accelerator_list, g_free);
-  }
 }
 
 
@@ -212,6 +211,35 @@ static GdkRGBA lookup_color(GtkStyleContext *context, const char *name)
   if(!gtk_style_context_lookup_color (context, name, &color))
     color = fallback;
   return color;
+}
+
+void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
+{
+  PangoRectangle ink;
+  PangoLayout *layout;
+  PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
+  const float fontsize = DT_PIXEL_APPLY_DPI(14);
+  pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
+  pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
+  layout = pango_cairo_create_layout(cr);
+  pango_layout_set_font_description(layout, desc);
+  pango_layout_set_text(layout, _("working..."), -1);
+  pango_layout_get_pixel_extents(layout, &ink, NULL);
+  if(ink.width > width * 0.98)
+  {
+    pango_layout_set_text(layout, "...", -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+  }
+  const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
+  cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
+  pango_cairo_layout_path(cr, layout);
+  cairo_set_line_width(cr, 2.0);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
+  cairo_stroke_preserve(cr);
+  dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
+  cairo_fill(cr);
+  pango_font_description_free(desc);
+  g_object_unref(layout);
 }
 
 void *dt_control_expose(void *voidptr)
@@ -258,26 +286,7 @@ void *dt_control_expose(void *voidptr)
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   if(darktable.control->log_busy > 0)
   {
-    PangoRectangle ink;
-    PangoLayout *layout;
-    PangoFontDescription *desc = pango_font_description_copy_static(darktable.bauhaus->pango_font_desc);
-    const float fontsize = DT_PIXEL_APPLY_DPI(14);
-    pango_font_description_set_absolute_size(desc, fontsize * PANGO_SCALE);
-    pango_font_description_set_weight(desc, PANGO_WEIGHT_BOLD);
-    layout = pango_cairo_create_layout(cr);
-    pango_layout_set_font_description(layout, desc);
-    pango_layout_set_text(layout, _("working..."), -1);
-    pango_layout_get_pixel_extents(layout, &ink, NULL);
-    const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
-    cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
-    pango_cairo_layout_path(cr, layout);
-    cairo_set_line_width(cr, 2.0);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_BG);
-    cairo_stroke_preserve(cr);
-    dt_gui_gtk_set_source_rgb(cr, DT_GUI_COLOR_LOG_FG);
-    cairo_fill(cr);
-    pango_font_description_free(desc);
-    g_object_unref(layout);
+    dt_control_draw_busy_msg(cr, width, height);
   }
   dt_pthread_mutex_unlock(&darktable.control->log_mutex);
 
@@ -359,7 +368,12 @@ static gboolean _dt_ctl_switch_mode_to_by_view(gpointer user_data)
 void dt_ctl_switch_mode_to(const char *mode)
 {
   const dt_view_t *current_view = dt_view_manager_get_current_view(darktable.view_manager);
-  if(current_view && !strcmp(mode, current_view->module_name)) return;
+  if(current_view && !strcmp(mode, current_view->module_name))
+  {
+    // if we are not in lighttable, we switch back to that view
+    if(strcmp(current_view->module_name, "lighttable")) dt_ctl_switch_mode_to("lighttable");
+    return;
+  }
 
   g_main_context_invoke(NULL, _dt_ctl_switch_mode_to, (gpointer)mode);
 }
@@ -460,7 +474,9 @@ void dt_control_log(const char *msg, ...)
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   va_list ap;
   va_start(ap, msg);
-  vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
+  char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
+  g_strlcpy(darktable.control->log_message[darktable.control->log_pos], escaped_msg, DT_CTL_LOG_MSG_SIZE);
+  g_free(escaped_msg);
   va_end(ap);
   if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
   darktable.control->log_ack = darktable.control->log_pos;
@@ -472,13 +488,20 @@ void dt_control_log(const char *msg, ...)
   g_idle_add(_redraw_center, 0);
 }
 
-void dt_toast_log(const char *msg, ...)
+static void _toast_log(const gboolean markup, const char *msg, va_list ap)
 {
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
-  va_list ap;
-  va_start(ap, msg);
-  vsnprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, msg, ap);
-  va_end(ap);
+
+  // if we don't want markup, we escape <>&... so they are not interpreted later
+  if(markup)
+    vsnprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, msg, ap);
+  else
+  {
+    char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
+    g_strlcpy(darktable.control->toast_message[darktable.control->toast_pos], escaped_msg, DT_CTL_TOAST_MSG_SIZE);
+    g_free(escaped_msg);
+  }
+
   if(darktable.control->toast_message_timeout_id) g_source_remove(darktable.control->toast_message_timeout_id);
   darktable.control->toast_ack = darktable.control->toast_pos;
   darktable.control->toast_pos = (darktable.control->toast_pos + 1) % DT_CTL_TOAST_SIZE;
@@ -489,7 +512,23 @@ void dt_toast_log(const char *msg, ...)
   g_idle_add(_redraw_center, 0);
 }
 
-static void dt_control_log_ack_all()
+void dt_toast_log(const char *msg, ...)
+{
+  va_list ap;
+  va_start(ap, msg);
+  _toast_log(FALSE, msg, ap);
+  va_end(ap);
+}
+
+void dt_toast_markup_log(const char *msg, ...)
+{
+  va_list ap;
+  va_start(ap, msg);
+  _toast_log(TRUE, msg, ap);
+  va_end(ap);
+}
+
+static void _control_log_ack_all()
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_pos = darktable.control->log_ack;
@@ -531,41 +570,42 @@ void dt_control_toast_busy_leave()
 
 void dt_control_queue_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_ALL);
 }
 
 void dt_control_queue_redraw_center()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_REDRAW_CENTER);
 }
 
 void dt_control_navigation_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_NAVIGATION_REDRAW);
 }
 
 void dt_control_log_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 }
 
 void dt_control_toast_redraw()
 {
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
-static gboolean _gtk_widget_queue_draw(gpointer user_data)
+static int _widget_queue_draw(void *widget)
 {
-  gtk_widget_queue_draw(GTK_WIDGET(user_data));
+  gtk_widget_queue_draw((GtkWidget*)widget);
   return FALSE;
 }
 
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
-    g_main_context_invoke(NULL, _gtk_widget_queue_draw, widget);
+  {
+    g_idle_add(_widget_queue_draw, (void*)widget);
+  }
 }
-
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
@@ -618,7 +658,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       }
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
-      dt_control_log_ack_all();
+      _control_log_ack_all();
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
@@ -626,7 +666,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     {
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
-      dt_control_log_ack_all();
+      _control_log_ack_all();
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
@@ -637,7 +677,7 @@ int dt_control_key_pressed_override(guint key, guint state)
              - g_utf8_prev_char(darktable.control->vimkey + darktable.control->vimkey_cnt);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
       if(darktable.control->vimkey_cnt == 0)
-        dt_control_log_ack_all();
+        _control_log_ack_all();
       else
         dt_control_log("%s", darktable.control->vimkey);
       g_list_free(autocomplete);
@@ -707,25 +747,6 @@ int dt_control_key_pressed_override(guint key, guint state)
 
   /* check if key accelerators are enabled*/
   if(darktable.control->key_accelerators_on != 1) return 0;
-
-  // dynamic accels
-  darktable.view_manager->current_view->dynamic_accel_current = dt_dynamic_accel_find_by_key(key, state);
-  if(darktable.view_manager->current_view->dynamic_accel_current)
-  {
-    gchar **vals = g_strsplit_set(darktable.view_manager->current_view->dynamic_accel_current->translated_path, "/", -1);
-    dt_iop_module_so_t *mod_so = darktable.view_manager->current_view->dynamic_accel_current->mod_so;
-    dt_iop_module_t *mod = dt_iop_get_module_accel_curr(mod_so);
-    if(vals[0] && vals[1] && vals[2] && vals[3])
-    {
-      gchar *txt = dt_util_dstrcat(NULL, _("scroll to change <b>%s</b> of %s %s module"), vals[3], vals[2], mod->multi_name);
-      dt_control_hinter_message(darktable.control, txt);
-      g_free(txt);
-    }
-    else
-      dt_control_hinter_message(darktable.control, "");
-    g_strfreev(vals);
-    return 1;
-  }
 
   if(key == accels->global_sideborders.accel_key && state == accels->global_sideborders.accel_mods)
   {
@@ -808,7 +829,7 @@ void dt_control_set_mouse_over_id(int32_t value)
   {
     darktable.control->mouse_over_id = value;
     dt_pthread_mutex_unlock(&(darktable.control->global_mutex));
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
   else
     dt_pthread_mutex_unlock(&(darktable.control->global_mutex));

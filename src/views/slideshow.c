@@ -207,7 +207,7 @@ static int process_image(dt_slideshow_t *d, dt_slideshow_slot_t slot)
   sqlite3_finalize(stmt);
 
   // this is a little slow, might be worth to do an option:
-  const gboolean high_quality = dt_conf_get_bool("plugins/slideshow/high_quality");
+  const gboolean high_quality = !dt_conf_get_bool("ui/performance");
 
   if(id)
   {
@@ -570,7 +570,15 @@ int key_pressed(dt_view_t *self, guint key, guint state)
   dt_slideshow_t *d = (dt_slideshow_t *)self->data;
   dt_control_accels_t *accels = &darktable.control->accels;
 
-  if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
+  if(key == GDK_KEY_Shift_L || key == GDK_KEY_Shift_R || key == GDK_KEY_Shift_Lock || key == GDK_KEY_Control_L
+     || key == GDK_KEY_Control_R || key == GDK_KEY_Alt_L || key == GDK_KEY_Alt_R || key == GDK_KEY_Caps_Lock
+     || key == GDK_KEY_Num_Lock || key == GDK_KEY_ISO_Level3_Shift)
+  {
+    // we don't want to handle modifiers keys here. They will be handled by the state value when pressing the
+    // regular key
+    return 0;
+  }
+  else if(key == accels->slideshow_start.accel_key && state == accels->slideshow_start.accel_mods)
   {
     if(!d->auto_advance)
     {
@@ -584,23 +592,23 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     }
     return 0;
   }
-  else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add)
+  else if(key == GDK_KEY_Up || key == GDK_KEY_KP_Add || key == GDK_KEY_plus)
   {
     _set_delay(d, 1);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
   }
-  else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract)
+  else if(key == GDK_KEY_Down || key == GDK_KEY_KP_Subtract || key == GDK_KEY_minus)
   {
     _set_delay(d, -1);
     dt_control_log(ngettext("slideshow delay set to %d second", "slideshow delay set to %d seconds", d->delay), d->delay);
   }
-  else if(key == GDK_KEY_Left || key == GDK_KEY_Shift_L)
+  else if(key == GDK_KEY_Left)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
     d->auto_advance = FALSE;
     _step_state(d, S_REQUEST_STEP_BACK);
   }
-  else if(key == GDK_KEY_Right || key == GDK_KEY_Shift_R)
+  else if(key == GDK_KEY_Right)
   {
     if (d->auto_advance) dt_control_log(_("slideshow paused"));
     d->auto_advance = FALSE;
@@ -619,6 +627,7 @@ int key_pressed(dt_view_t *self, guint key, guint state)
 void init_key_accels(dt_view_t *self)
 {
   dt_accel_register_view(self, NC_("accel", "start and stop"), GDK_KEY_space, 0);
+  dt_accel_register_view(self, NC_("accel", "exit slideshow"), GDK_KEY_Escape, 0);
 }
 
 void connect_key_accels(dt_view_t *self)

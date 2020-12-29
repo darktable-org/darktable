@@ -195,11 +195,57 @@ static void _gui_styles_new_style_response(GtkDialog *dialog, gint response_id, 
     /* create the style from imageid */
     const gchar *name = gtk_entry_get_text(GTK_ENTRY(g->name));
     if(name && *name)
+    {
+        
+      /* show prompt dialog when style already exists */
+      if(name && (dt_styles_exists(name)) != 0)
+      {
+        GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+        GtkWidget *dlg_overwrite = gtk_message_dialog_new(
+            GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING, GTK_BUTTONS_YES_NO,
+            _("style `%s' already exists.\ndo you want to overwrite?"), name);
+#ifdef GDK_WINDOWING_QUARTZ
+        dt_osx_disallow_fullscreen(dlg_overwrite);
+#endif
+
+        gtk_window_set_title(GTK_WINDOW(dlg_overwrite), _("overwrite style?"));
+
+        gint dlg_ret = gtk_dialog_run(GTK_DIALOG(dlg_overwrite));
+        gtk_widget_destroy(dlg_overwrite);
+
+        /* on button yes delete style name for overwriting */
+        if(dlg_ret == GTK_RESPONSE_YES) 
+        {
+          dt_styles_delete_by_name(name);
+        }
+        else 
+        {
+         /* on RESPONSE_NO and escape key return to dialog */
+          return;
+        }
+      }
+
       if(dt_styles_create_from_image(name, gtk_entry_get_text(GTK_ENTRY(g->description)),
                                      g->imgid, result, _gui_styles_is_copy_module_order_set(g)))
       {
         dt_control_log(_("style named '%s' successfully created"), name);
       };
+    }
+    else
+    {
+      /* show dialog if name is missing from entry */
+      GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+      GtkWidget *dlg_changename
+                    = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING,
+                                             GTK_BUTTONS_OK, _("please give style a name"));
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dlg_changename);
+#endif
+      gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
+      gtk_dialog_run(GTK_DIALOG(dlg_changename));
+      gtk_widget_destroy(dlg_changename);
+      return;
+    }
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->nameorig);
@@ -243,6 +289,21 @@ static void _gui_styles_edit_style_response(GtkDialog *dialog, gint response_id,
                          _gui_styles_is_update_module_order_set(g));
       }
       dt_control_log(_("style %s was successfully saved"), name);
+    }
+    else
+    {
+      /* show dialog if name is missing from entry */
+      GtkWidget *window = dt_ui_main_window(darktable.gui->ui);
+      GtkWidget *dlg_changename
+                    = gtk_message_dialog_new(GTK_WINDOW(window), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_WARNING,
+                                             GTK_BUTTONS_OK, _("please give style a name"));
+#ifdef GDK_WINDOWING_QUARTZ
+      dt_osx_disallow_fullscreen(dlg_changename);
+#endif
+      gtk_window_set_title(GTK_WINDOW(dlg_changename), _("unnamed style"));
+      gtk_dialog_run(GTK_DIALOG(dlg_changename));
+      gtk_widget_destroy(dlg_changename);
+      return;
     }
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
@@ -369,7 +430,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   GtkWidget *scroll = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(300));
+  gtk_scrolled_window_set_min_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(400));
 //  only available in 3.22, and not making the expected job anyway
 //  gtk_scrolled_window_set_max_content_height(GTK_SCROLLED_WINDOW(scroll), DT_PIXEL_APPLY_DPI(700));
 //  gtk_scrolled_window_set_propagate_natural_height(GTK_SCROLLED_WINDOW(scroll), TRUE);
@@ -378,7 +439,6 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
   GtkBox *sbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(box), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(scroll), TRUE, TRUE, 0);
   gtk_container_add(GTK_CONTAINER(scroll), GTK_WIDGET(sbox));
 
   sd->name = gtk_entry_new();
@@ -404,8 +464,9 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
     }
   }
 
-  gtk_box_pack_start(box, sd->name, TRUE, TRUE, 0);
-  gtk_box_pack_start(box, sd->description, TRUE, TRUE, 0);
+  gtk_box_pack_start(box, sd->name, FALSE, TRUE, 0);
+  gtk_box_pack_start(box, sd->description, FALSE, TRUE, 0);
+  gtk_box_pack_start(box, GTK_WIDGET(scroll), TRUE, TRUE, 0);
 
   /* create the list of items */
   sd->items = GTK_TREE_VIEW(gtk_tree_view_new());
@@ -571,7 +632,7 @@ static void _gui_styles_dialog_run(gboolean edit, const char *name, int imgid)
 
   if(has_new_item) gtk_box_pack_start(sbox, GTK_WIDGET(sd->items_new), TRUE, TRUE, 0);
 
-  if(edit) gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(sd->duplicate), TRUE, TRUE, 0);
+  if(edit) gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(sd->duplicate), FALSE, TRUE, 0);
 
   g_object_unref(liststore);
   g_object_unref(liststore_new);

@@ -111,7 +111,8 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
   params->data->elevation = 0.0f;
   if(params->imgid)
   {
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
+    const dt_image_t *img = params->img ? (dt_image_t *)params->img
+                                        : dt_image_cache_get(darktable.image_cache, params->imgid, 'r');
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &params->data->exif_tm.tm_year, &params->data->exif_tm.tm_mon,
       &params->data->exif_tm.tm_mday, &params->data->exif_tm.tm_hour, &params->data->exif_tm.tm_min, &params->data->exif_tm.tm_sec) == 6)
     {
@@ -139,7 +140,7 @@ static void init_expansion(dt_variables_params_t *params, gboolean iterate)
 
     params->data->flags = img->flags;
 
-    dt_image_cache_read_release(darktable.image_cache, img);
+    if(params->img == NULL) dt_image_cache_read_release(darktable.image_cache, img);
   }
   else if (params->data->exif_time) {
     localtime_r(&params->data->exif_time, &params->data->exif_tm);
@@ -553,7 +554,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if (has_prefix(variable, "TAGS"))
   {
     GList *tags_list = dt_tag_get_list_export(params->imgid, params->data->tags_flags);
-    char *tags = dt_util_glist_to_str(",", tags_list);
+    char *tags = dt_util_glist_to_str(", ", tags_list);
     g_list_free_full(tags_list, g_free);
     result = g_strdup(tags);
     g_free(tags);
@@ -870,6 +871,7 @@ static void grow_buffer(char **result, char **result_iter, size_t *result_length
 static char *expand(dt_variables_params_t *params, char **source, char extra_stop)
 {
   char *result = g_strdup("");
+  if(!*source) return result;
   char *result_iter = result;
   size_t result_length = 0;
   char *source_iter = *source;
@@ -942,6 +944,7 @@ void dt_variables_params_init(dt_variables_params_t **params)
   localtime_r(&now, &(*params)->data->time);
   (*params)->data->exif_time = 0;
   (*params)->sequence = -1;
+  (*params)->img = NULL;
 }
 
 void dt_variables_params_destroy(dt_variables_params_t *params)

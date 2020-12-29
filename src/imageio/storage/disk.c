@@ -141,6 +141,7 @@ static void button_clicked(GtkWidget *widget, dt_imageio_module_storage_t *self)
     gchar *escaped = dt_util_str_replace(composed, "\\", "\\\\");
 
     gtk_entry_set_text(GTK_ENTRY(d->entry), escaped); // the signal handler will write this to conf
+    gtk_editable_set_position(GTK_EDITABLE(d->entry), strlen(escaped));
     g_free(dir);
     g_free(composed);
     g_free(escaped);
@@ -174,6 +175,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   if(dir)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), dir);
+    gtk_editable_set_position(GTK_EDITABLE(widget), strlen(dir));
     g_free(dir);
   }
 
@@ -197,7 +199,7 @@ void gui_init(dt_imageio_module_storage_t *self)
   g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(button_clicked), self);
 
   d->onsave_action = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->onsave_action, NULL, _("on conflict"));
+  dt_bauhaus_widget_set_label(d->onsave_action, NULL, N_("on conflict"));
   dt_bauhaus_combobox_add(d->onsave_action, _("create unique filename"));
   dt_bauhaus_combobox_add(d->onsave_action, _("overwrite"));
   dt_bauhaus_combobox_add(d->onsave_action, _("skip"));
@@ -386,6 +388,7 @@ int set_params(dt_imageio_module_storage_t *self, const void *params, const int 
   if(size != self->params_size(self)) return 1;
 
   gtk_entry_set_text(GTK_ENTRY(g->entry), d->filename);
+  gtk_editable_set_position(GTK_EDITABLE(g->entry), strlen(d->filename));
   dt_bauhaus_combobox_set(g->onsave_action, d->onsave_action);
   return 0;
 }

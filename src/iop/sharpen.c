@@ -22,6 +22,7 @@
 #include <xmmintrin.h>
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -77,7 +78,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;
 }
 
 int flags()
@@ -90,33 +91,25 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("sharpen the details in the image using a standard UnSharp Mask (USM)"),
+                                      _("corrective"),
+                                      _("linear or non-linear, Lab, display or scene-referred"),
+                                      _("frequential, Lab"),
+                                      _("quasi-linear, Lab, display or scene-referred"));
+}
+
 void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_sharpen_params_t tmp = (dt_iop_sharpen_params_t){ 2.0, 0.5, 0.5 };
   // add the preset.
-  dt_gui_presets_add_generic(_("sharpen"), self->op, self->version(), &tmp, sizeof(dt_iop_sharpen_params_t),
-                             1);
+  dt_gui_presets_add_generic(_("sharpen"), self->op,
+                             self->version(), &tmp, sizeof(dt_iop_sharpen_params_t),
+                             1, DEVELOP_BLEND_CS_RGB_DISPLAY);
   // restrict to raw images
-  dt_gui_presets_update_ldr(_("sharpen"), self->op, self->version(), FOR_RAW);
-  // make it auto-apply if needed for matching images:
-  const gboolean auto_apply = dt_conf_get_bool("plugins/darkroom/sharpen/auto_apply");
-  dt_gui_presets_update_autoapply(_("sharpen"), self->op, self->version(), auto_apply);
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "radius"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "amount"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "threshold"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "radius", g->radius);
-  dt_accel_connect_slider_iop(self, "amount", g->amount);
-  dt_accel_connect_slider_iop(self, "threshold", g->threshold);
+  dt_gui_presets_update_ldr(_("sharpen"), self->op,
+                            self->version(), FOR_RAW);
 }
 
 #ifdef HAVE_OPENCL
@@ -156,7 +149,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     return TRUE;
   }
 
-  mat = malloc(wd * sizeof(float));
+  mat = malloc(sizeof(float) * wd);
 
   // init gaussian kernel
   float *m = mat + rad;
@@ -195,7 +188,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   size_t sizes[3];
   size_t local[3];
 
-  dev_tmp = dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_m = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * wd, mat);
@@ -288,33 +281,28 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
   const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
-  if(rad == 0)
+  // Special case handling: very small image with one or two dimensions below 2*rad+1 treat as no sharpening and just
+  // pass through.  This avoids handling of all kinds of border cases below.
+  if(rad == 0 ||
+     (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
-  // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening
-  // avoids handling of all kinds of border cases below
-  if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
+  float *restrict tmp;
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, 1, &tmp, 0))
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
-    return;
-  }
-
-  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
-  if(tmp == NULL)
-  {
-    fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     return;
   }
 
   const int wd = 2 * rad + 1;
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
-  const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(64, mat_size);
-  memset(mat, 0, mat_size);
+  const size_t mat_size = (size_t)4 * wd4;
+  float *const mat = dt_alloc_align_float(mat_size);
+  memset(mat, 0, sizeof(float) * mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
@@ -479,36 +467,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
                   void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_sharpen_data_t *data = (dt_iop_sharpen_data_t *)piece->data;
+  const dt_iop_sharpen_data_t *const data = (dt_iop_sharpen_data_t *)piece->data;
   const int ch = piece->colors;
   const int rad = MIN(MAXR, ceilf(data->radius * roi_in->scale / piece->iscale));
-  if(rad == 0)
+  // Special case handling: very small image with one or two dimensions below 2*rad+1 treat as no sharpening and just
+  // pass through.  This avoids handling of all kinds of border cases below.
+  if(rad == 0 ||
+     (roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1))
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
-  // special case handling: very small image with one or two dimensions below 2*rad+1 => no sharpening
-  // avoids handling of all kinds of border cases below
-  if(roi_out->width < 2 * rad + 1 || roi_out->height < 2 * rad + 1)
+  float *restrict tmp;
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, 1, &tmp, 0))
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
-    return;
-  }
-
-  float *const tmp = dt_alloc_align(64, (size_t)sizeof(float) * roi_out->width * roi_out->height);
-  if(tmp == NULL)
-  {
-    fprintf(stderr, "[sharpen] failed to allocate temporary buffer\n");
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     return;
   }
 
   const int wd = 2 * rad + 1;
   const int wd4 = (wd & 3) ? (wd >> 2) + 1 : wd >> 2;
 
-  const size_t mat_size = wd4 * 4 * sizeof(float);
-  float *const mat = dt_alloc_align(64, mat_size);
-  memset(mat, 0, mat_size);
+  const size_t mat_size = (size_t)4 * wd4;
+  float *const mat = dt_alloc_align_float(mat_size);
+  memset(mat, 0, sizeof(float) * mat_size);
 
   const float sigma2 = (1.0f / (2.5 * 2.5)) * (data->radius * roi_in->scale / piece->iscale)
                        * (data->radius * roi_in->scale / piece->iscale);
@@ -645,7 +628,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
-  shared(data) \
+  dt_omp_sharedconst(data) \
   schedule(static)
 #endif
   // subtract blurred image, if diff > thrs, add *amount to original image
@@ -690,7 +673,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_sharpen_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -701,9 +683,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
-  dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)module->params;
+  dt_iop_sharpen_params_t *p = (dt_iop_sharpen_params_t *)self->params;
   dt_bauhaus_slider_set_soft(g->radius, p->radius);
   dt_bauhaus_slider_set(g->amount, p->amount);
   dt_bauhaus_slider_set(g->threshold, p->threshold);
@@ -732,8 +713,7 @@ void cleanup_global(dt_iop_module_so_t *module)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_sharpen_gui_data_t));
-  dt_iop_sharpen_gui_data_t *g = (dt_iop_sharpen_gui_data_t *)self->gui_data;
+  dt_iop_sharpen_gui_data_t *g = IOP_GUI_ALLOC(sharpen);
 
   g->radius = dt_bauhaus_slider_from_params(self, N_("radius"));
   dt_bauhaus_slider_set_soft_max(g->radius, 8.0);

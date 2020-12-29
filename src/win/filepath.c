@@ -24,7 +24,7 @@ GList* win_image_find_duplicates(const char* filename)
   GList* files = NULL;
   gchar *imgpath = g_path_get_dirname(filename);
   // Windows only accepts generic wildcards for filename
-  static const gchar *glob_patterns[] = { "", "_????", NULL }; 
+  static const gchar *glob_patterns[] = { "", "_????", NULL };
   const gchar *c3 = filename + strlen(filename);
   while(*c3 != '\\' && c3 > filename) c3--;
   if(*c3 == '\\') c3++;
@@ -42,19 +42,19 @@ GList* win_image_find_duplicates(const char* filename)
     wchar_t *wpattern = g_utf8_to_utf16(pattern, -1, NULL, NULL, NULL);
     WIN32_FIND_DATAW data;
     HANDLE handle = FindFirstFileW(wpattern, &data);
-    g_free(wpattern); 
+    g_free(wpattern);
     gchar *imgfile_without_path=g_strndup(c3,c2-c3); /*Need to remove path from front of filename*/
     if(handle != INVALID_HANDLE_VALUE)
     {
       do
       {
         gchar *file = g_utf16_to_utf8(data.cFileName, -1, NULL, NULL, NULL);
-        gchar *short_file_name = g_strndup(file, strlen(file) - 4 + c2 - filename - strlen(filename));  
+        gchar *short_file_name = g_strndup(file, strlen(file) - 4 + c2 - filename - strlen(filename));
         gboolean valid_xmp_name = FALSE;
-        if(!(valid_xmp_name = (strlen(short_file_name) == strlen(imgfile_without_path)))) 
+        if(!(valid_xmp_name = (strlen(short_file_name) == strlen(imgfile_without_path))))
         {
           // if not the same length, make sure the extra char are 2-4 digits preceded by '_'
-          gchar *c4 = short_file_name + strlen(short_file_name);   
+          gchar *c4 = short_file_name + strlen(short_file_name);
           int i=0;
           do
           {
@@ -64,10 +64,10 @@ GList* win_image_find_duplicates(const char* filename)
           while(g_ascii_isdigit(*c4) && c4 > short_file_name && i <= 4);
           valid_xmp_name = (*c4 == '_' && strlen(short_file_name) == strlen(imgfile_without_path) + i);
         }
-        
+
         if(valid_xmp_name)
             files = g_list_append(files, g_build_filename(imgpath, file, NULL));
-        
+
         g_free(short_file_name);
         g_free(file);
       }

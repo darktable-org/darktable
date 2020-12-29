@@ -35,6 +35,7 @@ void dt_control_delete_images();
 void dt_control_delete_image(int imgid);
 void dt_control_duplicate_images();
 void dt_control_flip_images(const int32_t cw);
+void dt_control_monochrome_images(const int32_t mode);
 gboolean dt_control_remove_images();
 void dt_control_move_images();
 void dt_control_copy_images();

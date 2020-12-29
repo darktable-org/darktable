@@ -12,6 +12,7 @@
     },
     "noiseprofiles": {
       "type": "array",
+      "minItems": 1,
       "uniqueItems": true,
       "items": {
         "type": "object",
@@ -19,11 +20,10 @@
           "maker": {
             "type": "string",
             "pattern": "^[a-zA-Z ]+$",
-            "minLength": 3,
-            "maxLength": 13,
             "enum": [
               "Canon",
               "Fujifilm",
+              "Hasselblad",
               "LGE",
               "Leica",
               "Minolta",
@@ -40,6 +40,7 @@
           "models": {
             "type": "array",
             "uniqueItems": true,
+            "minItems": 1,
             "items": {
               "type": "object",
               "properties": {
@@ -50,11 +51,12 @@
                   "type": "string",
                   "pattern": "^[a-zA-Z0-9\\- \\*]+$",
                   "minLength": 2,
-                  "maxLength": 25
+                  "maxLength": 30
                 },
                 "profiles": {
                   "type": "array",
                   "uniqueItems": true,
+                  "minItems": 1,
                   "items": {
                     "type": "object",
                     "properties": {
@@ -62,7 +64,7 @@
                         "type": "string",
                         "pattern": "^[a-zA-Z0-9\\- \\*]+ iso [0-9]{2,7}$",
                         "minLength": 9,
-                        "maxLength": 33
+                        "maxLength": 38
                       },
                       "iso": {
                         "type": "integer",
@@ -119,9 +121,7 @@
           "models"
         ],
         "additionalProperties": false
-      },
-      "minItems": 13,
-      "maxItems": 13
+      }
     }
   },
   "required": [

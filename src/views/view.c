@@ -458,13 +458,13 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
   if(vm->accels_window.window && vm->accels_window.sticky) dt_view_accels_refresh(vm);
 
   /* raise view changed signal */
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED, old_view, new_view);
 
   // update log visibility
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_LOG_REDRAW);
 
   // update toast visibility
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
   return 0;
 }
 
@@ -744,8 +744,9 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       while(sqlite3_step(stmt) == SQLITE_ROW)
       {
-        if(!g_list_find_custom(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)), _images_to_act_on_find_custom))
-          *list = g_list_append(*list, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+        const int imgidg = sqlite3_column_int(stmt, 0);
+        if(!g_list_find_custom(*list, GINT_TO_POINTER(imgidg), _images_to_act_on_find_custom))
+          *list = g_list_append(*list, GINT_TO_POINTER(imgidg));
       }
       sqlite3_finalize(stmt);
       g_free(query);
@@ -930,8 +931,10 @@ int dt_view_get_image_to_act_on()
   return ret;
 }
 
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality)
+dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+                                                  const gboolean quality)
 {
+  dt_view_surface_value_t ret = DT_VIEW_SURFACE_KO;
   // if surface not null, clean it up
   if(*surface && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
   *surface = NULL;
@@ -942,31 +945,24 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
-  gboolean buf_ok = TRUE;
-  int buf_wd = 0;
-  int buf_ht = 0;
-
   dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
-  buf_wd = buf.width;
-  buf_ht = buf.height;
-  if(!buf.buf)
-    buf_ok = FALSE;
-  else if(mip != buf.size)
-    buf_ok = FALSE;
+  const int buf_wd = buf.width;
+  const int buf_ht = buf.height;
 
-  // if we got a different mip than requested, and it's not a skull (8x8 px), we count
-  // this thumbnail as missing (to trigger re-exposure)
-  if(!buf_ok && buf_wd != 8 && buf_ht != 8)
+  // if we don't get buffer, no image is awailable at the moment
+  if(!buf.buf)
   {
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    return 1;
+    return DT_VIEW_SURFACE_KO;
   }
 
   // so we create a new image surface to return
-  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht);
+  const float scale = fminf(width / (float)buf_wd, height / (float)buf_ht) * darktable.gui->ppd_thb;
   const int img_width = buf_wd * scale;
   const int img_height = buf_ht * scale;
   *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
+
+  dt_print(DT_DEBUG_LIGHTTABLE, "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i\n", imgid, width, height, buf_wd, buf_ht, img_width, img_height);
 
   // we transfer cached image on a cairo_surface (with colorspace transform if needed)
   cairo_surface_t *tmp_surface = NULL;
@@ -1049,9 +1045,13 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     // in between, filtering just makes stuff go unsharp.
     if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    else if(mip != buf.size)
+      cairo_pattern_set_filter(cairo_get_source(cr),
+                               CAIRO_FILTER_FAST); // not the right size, so we scale as fast a possible
     else
-    cairo_pattern_set_filter(cairo_get_source(cr), ((darktable.gui->filter_image == CAIRO_FILTER_FAST) && quality)
-      ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
+      cairo_pattern_set_filter(cairo_get_source(cr), ((darktable.gui->filter_image == CAIRO_FILTER_FAST) && quality)
+                                                         ? CAIRO_FILTER_GOOD
+                                                         : darktable.gui->filter_image);
 
     cairo_paint(cr);
     /* from focus_peaking.h
@@ -1061,34 +1061,70 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
        The current implementation assumes the data at image is organized as a rectangle without a stride,
        So we pass the raw data to be processed, this is more data but correct.
     */
-    if(darktable.gui->show_focus_peaking)
+    if(darktable.gui->show_focus_peaking && mip == buf.size)
       dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
   }
 
+  // we consider skull as ok as the image hasn't to be reload
+  if(buf_wd <= 8 && buf_ht <= 8)
+    ret = DT_VIEW_SURFACE_OK;
+  else if(mip != buf.size)
+    ret = DT_VIEW_SURFACE_SMALLER;
+  else
+    ret = DT_VIEW_SURFACE_OK;
+
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   if(rgbbuf) free(rgbbuf);
-  return 0;
+
+  // we consider skull as ok as the image hasn't to be reload
+  return ret;
 }
 
-char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw)
+char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow)
 {
   char* upcase = g_ascii_strup(name, -1);  // extension in capital letters to avoid character descenders
+  // convert to canonical format extension
+  if(0 == g_ascii_strcasecmp(upcase, "JPG"))
+  {
+      gchar* canonical = g_strdup("JPEG");
+      g_free(upcase);
+      upcase = canonical;
+  }
+  else if(0 == g_ascii_strcasecmp(upcase, "HDR"))
+  {
+      gchar* canonical = g_strdup("RGBE");
+      g_free(upcase);
+      upcase = canonical;
+  }
+  else if(0 == g_ascii_strcasecmp(upcase, "TIF"))
+  {
+      gchar* canonical = g_strdup("TIFF");
+      g_free(upcase);
+      upcase = canonical;
+  }
 
   if(is_hdr)
   {
-    gchar* fullname = g_strdup_printf("%s HDR",upcase);
+    gchar* fullname = g_strdup_printf("%s HDR", upcase);
     g_free(upcase);
     upcase = fullname;
   }
   if(is_bw)
   {
-    gchar* fullname = g_strdup_printf("%s B&W",upcase);
+    gchar* fullname = g_strdup_printf("%s B&W", upcase);
     g_free(upcase);
     upcase = fullname;
+    if(!is_bw_flow)
+    {
+      fullname = g_strdup_printf("%s-", upcase);
+      g_free(upcase);
+      upcase = fullname;
+    }
   }
+
   return upcase;
 }
 
@@ -1185,13 +1221,13 @@ void dt_view_active_images_reset(gboolean raise)
   g_slist_free(darktable.view_manager->active_images);
   darktable.view_manager->active_images = NULL;
 
-  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  if(raise) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 void dt_view_active_images_add(int imgid, gboolean raise)
 {
   darktable.view_manager->active_images
       = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
-  if(raise) dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  if(raise) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 }
 GSList *dt_view_active_images_get()
 {
@@ -1329,6 +1365,21 @@ gboolean dt_view_map_remove_marker(const dt_view_manager_t *vm, dt_geo_map_displ
   if(vm->proxy.map.view) return vm->proxy.map.remove_marker(vm->proxy.map.view, type, marker);
   return FALSE;
 }
+void dt_view_map_add_location(const dt_view_manager_t *vm, dt_map_location_data_t *p, const guint posid)
+{
+  if(vm->proxy.map.view) vm->proxy.map.add_location(vm->proxy.map.view, p, posid);
+}
+
+void dt_view_map_location_action(const dt_view_manager_t *vm, const int action)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.location_action(vm->proxy.map.view, action);
+}
+
+void dt_view_map_drag_set_icon(const dt_view_manager_t *vm, GdkDragContext *context, const int imgid, const int count)
+{
+  if(vm->proxy.map.view) return vm->proxy.map.drag_set_icon(vm->proxy.map.view, context, imgid, count);
+}
+
 #endif
 
 #ifdef HAVE_PRINT

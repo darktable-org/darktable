@@ -155,11 +155,11 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), label, TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), d->widget, TRUE, TRUE, 0);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
                             G_CALLBACK(_image_loaded_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_INITIALIZE,
                             G_CALLBACK(_image_loaded_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE,
                             G_CALLBACK(_image_loaded_callback), self);
 }
 
@@ -198,12 +198,13 @@ void init_presets(dt_lib_module_t *self)
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_LEGACY);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
+  dt_lib_presets_add(_("legacy"), self->plugin_name, self->version(), (const char *)params, (int32_t)size, TRUE);
   free(params);
 
   list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);
   params = dt_ioppr_serialize_iop_order_list(list, &size);
-  dt_lib_presets_add(_("v3.0 (default)"), self->plugin_name, self->version(), (const char *)params, (int32_t)size);
+  dt_lib_presets_add(_("v3.0 (default)"), self->plugin_name, self->version(), (const char *)params, (int32_t)size,
+                     TRUE);
   free(params);
 }
 

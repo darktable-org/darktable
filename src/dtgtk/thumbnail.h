@@ -71,6 +71,7 @@ typedef struct
   gboolean has_audio;
   gboolean is_grouped;
   gboolean is_bw;
+  gboolean is_bw_flow;
   gboolean is_hdr;
   gboolean has_localcopy;
   int groupid;
@@ -116,20 +117,22 @@ typedef struct
   int overlay_timeout_id;       // id of the g_source timeout fct
   gboolean tooltip;             // should we show the tooltip ?
 
+  int expose_again_timeout_id;  // source id of the expose_again timeout
+
   // specific for culling and preview
   gboolean zoomable;   // can we zoom in/out the thumbnail (used for culling/preview)
   double aspect_ratio; // aspect ratio of the image
 
   // difference between the global zoom values and the value to apply to this specific thumbnail
   float zoom;     // zoom value. 1.0 is "image to fit" (the initial value)
-  int zoomx;      // zoom panning of the image
-  int zoomy;      //
-  int current_zx; // zoom panning currently applied on the image
-  int current_zy; // can differ from zoomx if image is not loaded on first try
+  double zoomx;   // zoom panning of the image
+  double zoomy;   //
 
   float zoom_100; // max zoom value (image 100%)
 
   gboolean display_focus; // do we display rectangles to show focused part of the image
+
+  gboolean busy; // should we show the busy message ?
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,

@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/bilateral.h"
 #include "common/bilateralcl.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -32,7 +33,6 @@
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -41,8 +41,6 @@
 
 #define REDUCESIZE 64
 
-// NaN-safe clip: NaN compares false and will result in 0.0
-#define CLIP(x) (((x) >= 0.0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
 DT_MODULE_INTROSPECTION(3, dt_iop_global_tonemap_params_t)
 
 typedef enum _iop_operator_t
@@ -103,38 +101,25 @@ const char *name()
   return _("global tonemap");
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use filmic rgb module instead.");
+}
+
 int flags()
 {
-  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING;
+  return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_DEPRECATED;
 }
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
 }
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "bias"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "target"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "detail"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "operator"));
- }
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "bias", GTK_WIDGET(g->drago.bias));
-  dt_accel_connect_slider_iop(self, "target", GTK_WIDGET(g->drago.max_light));
-  dt_accel_connect_slider_iop(self, "detail", GTK_WIDGET(g->detail));
-  dt_accel_connect_combobox_iop(self, "operator", GTK_WIDGET(g->operator));
- }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -217,9 +202,14 @@ static inline void process_drago(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   if(isnan(tmp_lwmax))
   {
     lwmax = eps;
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(roi_out, in, ch) reduction(max : lwmax)      \
+  schedule(static)
+#endif
     for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height; k++)
     {
-      float *inp = in + ch * k;
+      const float *inp = in + ch * k;
       lwmax = fmaxf(lwmax, (inp[0] * 0.01f));
     }
   }
@@ -407,10 +397,10 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       size_t sizes[3];
       size_t local[3];
 
-      dev_m = dt_opencl_alloc_device_buffer(devid, (size_t)bufsize * sizeof(float));
+      dev_m = dt_opencl_alloc_device_buffer(devid, sizeof(float) * bufsize);
       if(dev_m == NULL) goto error;
 
-      dev_r = dt_opencl_alloc_device_buffer(devid, (size_t)reducesize * sizeof(float));
+      dev_r = dt_opencl_alloc_device_buffer(devid, sizeof(float) * reducesize);
       if(dev_r == NULL) goto error;
 
       sizes[0] = bwidth;
@@ -440,7 +430,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
-      maximum = dt_alloc_align(64, reducesize * sizeof(float));
+      maximum = dt_alloc_align_float((size_t)reducesize);
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
                                             (size_t)reducesize * sizeof(float), CL_TRUE);
       if(err != CL_SUCCESS) goto error;
@@ -580,7 +570,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_global_tonemap_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -629,9 +618,9 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
-  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)module->params;
+  dt_iop_global_tonemap_params_t *p = (dt_iop_global_tonemap_params_t *)self->params;
+
   dt_bauhaus_combobox_set(g->operator, p->operator);
   dt_bauhaus_slider_set(g->drago.bias, p->drago.bias);
   dt_bauhaus_slider_set(g->drago.max_light, p->drago.max_light);
@@ -647,8 +636,7 @@ void gui_update(struct dt_iop_module_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_global_tonemap_gui_data_t));
-  dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
+  dt_iop_global_tonemap_gui_data_t *g = IOP_GUI_ALLOC(global_tonemap);
 
   dt_pthread_mutex_init(&g->lock, NULL);
   g->lwmax = NAN;
@@ -673,8 +661,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   dt_iop_global_tonemap_gui_data_t *g = (dt_iop_global_tonemap_gui_data_t *)self->gui_data;
   dt_pthread_mutex_destroy(&g->lock);
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

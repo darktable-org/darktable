@@ -58,10 +58,12 @@ int dt_control_key_pressed_override(guint key, guint state);
 gboolean dt_control_configure(GtkWidget *da, GdkEventConfigure *event, gpointer user_data);
 void dt_control_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_toast_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
+void dt_toast_markup_log(const char *msg, ...) __attribute__((format(printf, 1, 2)));
 void dt_control_log_busy_enter();
 void dt_control_toast_busy_enter();
 void dt_control_log_busy_leave();
 void dt_control_toast_busy_leave();
+void dt_control_draw_busy_msg(cairo_t *cr, int width, int height);
 // disable the possibility to change the cursor shape with dt_control_change_cursor
 void dt_control_forbid_change_cursor();
 // enable the possibility to change the cursor shape with dt_control_change_cursor
@@ -123,20 +125,23 @@ int dt_control_is_key_accelerators_on(struct dt_control_t *s);
 // All the accelerator keys for the key_pressed style shortcuts
 typedef struct dt_control_accels_t
 {
-  GtkAccelKey filmstrip_forward, filmstrip_back, lighttable_up, lighttable_down, lighttable_right, lighttable_left,
-      lighttable_pageup, lighttable_pagedown, lighttable_start, lighttable_end, lighttable_sel_up,
-      lighttable_sel_down, lighttable_sel_right, lighttable_sel_left, lighttable_sel_pageup,
-      lighttable_sel_pagedown, lighttable_sel_start, lighttable_sel_end, lighttable_center, lighttable_preview,
-      lighttable_preview_display_focus, lighttable_timeline, lighttable_preview_zoom_100,
-      lighttable_preview_zoom_fit, global_focus_peaking, global_sideborders, global_accels_window,
-      darkroom_preview, slideshow_start, darkroom_skip_mouse_events;
+  GtkAccelKey filmstrip_forward, filmstrip_back, lighttable_up, lighttable_down,
+    lighttable_right, lighttable_left, lighttable_pageup, lighttable_pagedown,
+    lighttable_start, lighttable_end, lighttable_sel_up, lighttable_sel_down,
+    lighttable_sel_right, lighttable_sel_left, lighttable_sel_pageup,
+    lighttable_sel_pagedown, lighttable_sel_start, lighttable_sel_end,
+    lighttable_center, lighttable_preview, lighttable_preview_display_focus,
+    lighttable_timeline, lighttable_preview_zoom_100, lighttable_preview_zoom_fit,
+    global_focus_peaking, global_sideborders, global_accels_window,
+    darkroom_preview, slideshow_start, darkroom_skip_mouse_events, global_collapsing_controls,
+    slideshow_view;
 } dt_control_accels_t;
 
 #define DT_CTL_LOG_SIZE 10
 #define DT_CTL_LOG_MSG_SIZE 200
 #define DT_CTL_LOG_TIMEOUT 5000
 #define DT_CTL_TOAST_SIZE 10
-#define DT_CTL_TOAST_MSG_SIZE 200
+#define DT_CTL_TOAST_MSG_SIZE 300
 #define DT_CTL_TOAST_TIMEOUT 1500
 /**
  * this manages everything time-consuming.
@@ -150,8 +155,8 @@ typedef struct dt_control_t
 
   // Accelerator group path lists
   GSList *accelerator_list;
-  GSList *dynamic_accelerator_list;
-  GSList *dynamic_accelerator_valid;
+
+  gboolean accel_initialising;
 
   // Cached accelerator keys for key_pressed shortcuts
   dt_control_accels_t accels;
@@ -204,7 +209,7 @@ typedef struct dt_control_t
   dt_pthread_mutex_t queue_mutex, cond_mutex, run_mutex;
   pthread_cond_t cond;
   int32_t num_threads;
-  pthread_t *thread, kick_on_workers_thread;
+  pthread_t *thread, kick_on_workers_thread, update_gphoto_thread;
   dt_job_t **job;
 
   GList *queues[DT_JOB_QUEUE_MAX];

@@ -21,13 +21,13 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
+#include "common/math.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
 #include "develop/tiling.h"
 #include "gui/gtk.h"
 #include "iop/iop_api.h"
 
-#include <math.h>
 #include <stdlib.h>
 
 DT_MODULE_INTROSPECTION(1, dt_iop_rotatepixels_params_t)
@@ -49,12 +49,6 @@ typedef struct dt_iop_rotatepixels_data_t
 } dt_iop_rotatepixels_data_t;
 
 dt_iop_rotatepixels_gui_data_t dummy;
-
-static void mul_mat_vec_2(const float *m, const float *p, float *o)
-{
-  o[0] = p[0] * m[0] + p[1] * m[1];
-  o[1] = p[0] * m[2] + p[1] * m[3];
-}
 
 // helper to count corners in for loops:
 static void get_corner(const float *aabb, const int i, float *p)
@@ -78,12 +72,13 @@ const char *name()
 
 int flags()
 {
-  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ALLOW_TILING | IOP_FLAGS_TILING_FULL_ROI | IOP_FLAGS_ONE_INSTANCE
+    | IOP_FLAGS_UNSAFE_COPY;
 }
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_TECHNICAL;
 }
 
 int operation_tags()
@@ -94,6 +89,12 @@ int operation_tags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return g_strdup(_("internal module to setup technical specificities of raw sensor.\n\n"
+                    "you should not touch values here !"));
 }
 
 static void transform(const dt_dev_pixelpipe_iop_t *const piece, const float scale, const float *const x,
@@ -319,7 +320,6 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = calloc(1, sizeof(dt_iop_rotatepixels_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -330,60 +330,33 @@ void cleanup_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelp
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_rotatepixels_params_t tmp = { 0 };
-
-  // we might be called from presets update infrastructure => there is no image
-  if(!self->dev) goto end;
+  dt_iop_rotatepixels_params_t *d = self->default_params;
 
   const dt_image_t *const image = &(self->dev->image_storage);
 
-  tmp = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
+  *d = (dt_iop_rotatepixels_params_t){ .rx = 0u, .ry = image->fuji_rotation_pos, .angle = -45.0f };
 
-  self->default_enabled = ((tmp.rx != 0u) || (tmp.ry != 0u));
+  self->default_enabled = ((d->rx != 0u) || (d->ry != 0u));
 
   // FIXME: does not work.
   self->hide_enable_button = !self->default_enabled;
 
-end:
-  memcpy(self->params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
-  memcpy(self->default_params, &tmp, sizeof(dt_iop_rotatepixels_params_t));
+  if(self->widget)
+    gtk_label_set_text(GTK_LABEL(self->widget), self->default_enabled
+                       ? _("automatic pixel rotation")
+                       : _("automatic pixel rotation\nonly works for the sensors that need it."));
 }
 
 void gui_update(dt_iop_module_t *self)
 {
-  if(!self->widget) return;
-  if(self->default_enabled)
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation"));
-  else
-    gtk_label_set_text(GTK_LABEL(self->widget), _("automatic pixel rotation only works for the sensors that need it."));
 }
-
-void init(dt_iop_module_t *self)
-{
-  self->params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->default_params = calloc(1, sizeof(dt_iop_rotatepixels_params_t));
-  self->params_size = sizeof(dt_iop_rotatepixels_params_t);
-  self->gui_data = &dummy;
-}
-
-void cleanup(dt_iop_module_t *self)
-{
-  free(self->params);
-  self->params = NULL;
-  free(self->default_params);
-  self->default_params = NULL;
-}
-
 void gui_init(dt_iop_module_t *self)
 {
-  self->widget = gtk_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
-}
+  IOP_GUI_ALLOC(rotatepixels);
 
-void gui_cleanup(dt_iop_module_t *self)
-{
-  self->gui_data = NULL;
+  self->widget = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->widget), TRUE);
+
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

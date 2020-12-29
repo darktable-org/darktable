@@ -863,7 +863,7 @@ static void _lrop(const dt_develop_t *dev, const xmlDocPtr doc, const int imgid,
       }
       tagNode = tagNode->next;
     }
-    if(tag_change) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    if(tag_change) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
   else if(dev != NULL && !xmlStrcmp(name, (const xmlChar *)"RetouchInfo"))
   {
@@ -1142,7 +1142,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     xmlNodePtr xnode = xnodes->nodeTab[0];
     xmlChar *value = xmlNodeListGetString(doc, xnode->xmlChildrenNode, 1);
 
-    if(!strstr((char *)value, "Lightroom"))
+    if(!strstr((char *)value, "Lightroom") && !strstr((char *)value, "Camera Raw"))
     {
       xmlXPathFreeContext(xpathCtx);
       xmlXPathFreeObject(xpathObj);
@@ -1553,7 +1553,7 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
       dt_dev_modulegroups_set(darktable.develop, dt_dev_modulegroups_get(darktable.develop));
       /* update xmp file */
       dt_image_synch_xmp(imgid);
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_HISTORY_CHANGE);
     }
   }
 }

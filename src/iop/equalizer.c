@@ -20,6 +20,7 @@
 #endif
 #include "common/darktable.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -91,7 +92,7 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;
 }
 
 int flags()
@@ -104,6 +105,10 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use contrast equalizer module instead.");
+}
 
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -112,7 +117,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const int chs = piece->colors;
   const int width = roi_in->width, height = roi_in->height;
   const float scale = roi_in->scale;
-  memcpy(ovoid, ivoid, (size_t)chs * sizeof(float) * width * height);
+  dt_iop_image_copy_by_size(ovoid, ivoid, width, height, chs);
 #if 1
   // printf("thread %d starting equalizer", (int)pthread_self());
   // if(piece->iscale != 1.0) printf(" for preview\n");
@@ -136,7 +141,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   for(int k = 1; k < numl_cap; k++)
   {
     const int wd = (int)(1 + (width >> (k - 1))), ht = (int)(1 + (height >> (k - 1)));
-    tmp[k] = (float *)malloc((size_t)sizeof(float) * wd * ht);
+    tmp[k] = (float *)malloc(sizeof(float) * wd * ht);
   }
 
   for(int level = 1; level < numl_cap; level++) dt_iop_equalizer_wtf(ovoid, tmp, level, width, height);
@@ -274,23 +279,13 @@ void init(dt_iop_module_t *module)
   module->default_enabled = 0; // we're a rather slow and rare op.
   module->params_size = sizeof(dt_iop_equalizer_params_t);
   module->gui_data = NULL;
-  dt_iop_equalizer_params_t tmp;
+  dt_iop_equalizer_params_t *d = module->default_params;
   for(int ch = 0; ch < 3; ch++)
   {
     for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++)
-      tmp.equalizer_x[ch][k] = k / (float)(DT_IOP_EQUALIZER_BANDS - 1);
-    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++) tmp.equalizer_y[ch][k] = 0.5f;
+      d->equalizer_x[ch][k] = k / (float)(DT_IOP_EQUALIZER_BANDS - 1);
+    for(int k = 0; k < DT_IOP_EQUALIZER_BANDS; k++) d->equalizer_y[ch][k] = 0.5f;
   }
-  memcpy(module->params, &tmp, sizeof(dt_iop_equalizer_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_equalizer_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
 }
 
 #if 0
@@ -351,10 +346,10 @@ void init_presets (dt_iop_module_so_t *self)
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_equalizer_gui_data_t));
-  self->widget = gtk_label_new(_("this module will be removed in the future\nand is only here so you can "
-                                 "switch it off\nand move to the new equalizer."));
-  gtk_widget_set_halign(self->widget, GTK_ALIGN_START);
+  IOP_GUI_ALLOC(equalizer);
+
+  self->widget = dt_ui_label_new(_("this module will be removed in the future\nand is only here so you can "
+                                   "switch it off\nand move to the new equalizer."));
 
 #if 0
   dt_iop_equalizer_gui_data_t *c = (dt_iop_equalizer_gui_data_t *)self->gui_data;

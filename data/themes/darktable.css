@@ -83,13 +83,13 @@
 
 /* Modules box (plugins) */
 @define-color plugin_bg_color @grey_20;
-@define-color plugin_fg_color @grey_70;
+@define-color plugin_fg_color @fg_color;
 @define-color section_label @grey_60;
 @define-color plugin_label_color @grey_65;
 
 /* Modules controls (sliders and comboboxes) */
 @define-color bauhaus_bg @grey_15;
-@define-color bauhaus_fg @grey_70;
+@define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
 @define-color bauhaus_fill @grey_40;
@@ -138,9 +138,9 @@
 @define-color thumbnail_star_bg_color @grey_35;
 @define-color thumbnail_fg_color @grey_55;
 @define-color thumbnail_bg50_color @grey_100;
-@define-color thumbnail_selected_bg_color @grey_60;
-@define-color thumbnail_hover_bg_color @grey_80;
-@define-color thumbnail_hover_fg_color @grey_85;
+@define-color thumbnail_selected_bg_color @grey_70;
+@define-color thumbnail_hover_bg_color @grey_85;
+@define-color thumbnail_hover_fg_color @grey_90;
 @define-color filmstrip_bg_color @darkroom_bg_color;
 @define-color thumbnail_localcopy_color @grey_75;
 
@@ -154,7 +154,15 @@
 @define-color graph_fg @grey_75;
 @define-color graph_fg_active @grey_95;
 @define-color graph_grid @grey_05;
+@define-color graph_overlay @grey_50;
 @define-color inset_histogram alpha(@grey_65, 0.50);
+/* Primaries selected for visual legibility across a variety of
+   gamuts, and to combine to pleasing secondaries. The combination of
+   all three must either to either the same number or >= 255 to
+   produce a neutral overlap. */
+@define-color graph_red rgb(237,30,20);
+@define-color graph_green rgb(28,235,26);
+@define-color graph_blue rgb(14,14,233);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
 *
@@ -177,7 +185,6 @@
 /* Be sure now than all others UI widgets doesn't inherit font size already set and have no background color on start */
 #lib-plugin-ui,
 #iop-plugin-ui,
-#lib-modulelist,
 #modules-tabs,
 #left,
 #right,
@@ -389,13 +396,24 @@ overshoot.right
   background-color: transparent;
   outline-style:none;
   border-radius: 2px;
-  padding: 0.4em;
   color: @section_label;
 }
 
+#view_dropdown menu
+{
+  padding: 2px 0;
+}
+
+#view_dropdown button,
 #view_label
 {
-  margin: 0.1em 0;
+  margin: 0.2em 0;
+  padding: 0.2em 0.4em;
+}
+
+#view_dropdown menuitem
+{
+  padding: 0.1em 0.3em;
 }
 
 /*------------------------------
@@ -497,21 +515,35 @@ overshoot.right
 #header-toolbar #control-button
 {
   min-height: 1em;
-  min-width: 0.9em;
+  min-width: 1em;
   padding: 0.15em;
-  margin: 0.15em;
 }
 
-#control-button #button-canvas,
-.duplicate-ui #button-canvas
+#control-button #button-canvas
 {
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
-/* Adjust add button in picker module */
+#lib-plugin-ui-main viewport
+{
+  margin-left: 2px
+}
+
+/* Add some space to aerate if a notebook follows a widget (like for example in filmic rgb module */
+#iop-plugin-ui-main widget + notebook
+{
+  margin-top: 0.5em;
+}
+
+/* Adjust add and remove buttons in picker module */
 .picker-module button
 {
-  padding: 0 3px;
+  padding: 0px;
+}
+
+.picker-module label
+{
+  padding-right: 3px;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -580,11 +612,20 @@ overshoot.right
   margin: 8px 0px;
 }
 
-#left #lib-plugin-ui scrolledwindow entry /* this will avoid having too much height on entry items in clone manager without touching other parts of the UI */
+#left #lib-plugin-ui .duplicate-ui entry
 {
-  padding: 0px;
-  margin: 45px 3px;
-  min-width: 100px;
+  margin-left: 0.5em;
+}
+
+#left .duplicate-ui .text-button
+{
+  margin-top: 4px;
+}
+
+#left #lib-plugin-ui #lib-collect-entry
+{
+  margin-top: 0;
+  margin-bottom: 4px;
 }
 
 #right #lib-plugin-ui entry /* this will adjust entry height on right panel */
@@ -598,13 +639,19 @@ overshoot.right
   padding: 0.5em 0.5em 0.5em 0.5em;
 }
 
+#module-header entry
+{
+  background-color: @field_active_bg;
+}
+
 /* Labels in modules */
 #iop-panel-label,
 #lib-panel-label
 {
   background-color: @bg_color;
   color: @plugin_label_color;
-  border:0;
+  border: 0;
+  margin: 0;
   padding: 0 2px 2px 0.45em;
   font-weight: normal;
   font-family: sans-serif;
@@ -774,6 +821,39 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
   font-weight: normal;
 }
 
+/* about window: set different background for credits view */
+#about_dialog scrolledwindow
+{
+  background: @bg_color;
+}
+
+#about_dialog grid *
+{
+    padding: 2px;
+}
+
+/*--------------------------------------------------------
+  - Bauhaus controls (sliders and comboboxes in modules) -
+  --------------------------------------------------------*/
+
+#bauhaus-popup
+{
+  color: @bauhaus_fg;
+}
+
+#bauhaus-popup:selected
+{
+  color: @bauhaus_fg_selected;
+}
+
+#bauhaus-combobox,
+#bauhaus-slider
+{
+  min-height: 1em;
+  background-color: transparent;
+  color: @bauhaus_fg;
+}
+
 /*----------------------------------------
   - Context menu & tooltips & comboboxes -
   ----------------------------------------*/
@@ -782,14 +862,18 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
 combobox,
 combobox button
 {
-  border: 1px solid transparent;
-  padding: 1px;
   background-color: transparent;
-  border-radius: 4px;
+  border-radius: 2px;
   color: @bauhaus_fg;
   outline-style: none;
   min-height: 1em;
   min-width: 1em;
+}
+
+combobox button
+{
+  padding: 1px;
+  border: 1px solid transparent;
 }
 
 combobox entry
@@ -810,16 +894,34 @@ menuitem arrow,
 tooltip,
 popover,
 combobox window,
-dialog combobox window
+dialog combobox window,
+#bauhaus-combobox *,
+#bauhaus-slider *,
+#modulegroups-iop-popup
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
-  border-radius: 4px;
-  border: 0;
+  border-radius: 2px;
+  border: 1px solid @button_border;
   outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
-  padding: 0.2em;
+  padding: 0.2em 0;
+}
+
+#modulegroups-iop-popup viewport
+{
+  background-color: @tooltip_bg_color;
+}
+
+popover
+{
+  padding: 0.4em;
+}
+
+menu menuitem
+{
+  padding: 0 0.2em;
 }
 
 tooltip
@@ -855,11 +957,18 @@ menuitem check
   margin-right: 5px;
 }
 
-/* Header and footer combobox */
-#header-toolbar combobox,
-#footer-toolbar combobox
+/* Header and footer labels */
+#header-toolbar label,
+#footer-toolbar label
 {
   margin: 0 0.5em;
+}
+
+menu separator
+{
+  margin: 0.6em 2em;
+  padding-bottom: 1px;
+  background-color: @selected_bg_color;
 }
 
 /*----------------------
@@ -887,10 +996,7 @@ notebook tabs,
 #modules-tabs #dt-toggle-button
 {
   min-height: 2em;
-  min-width: 2em;
-  margin: 0;
   padding: 0.1em;
-  border: 0;
 }
 
 #modules-tabs #button-canvas
@@ -898,21 +1004,41 @@ notebook tabs,
   margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
-#blending-tabs button
+#blending-tabs #dt-toggle-button
 {
   font-size: 0.8em;
   min-height: 1.55em;
-  min-width: 1.55em;
   padding: 0.45em;
-  margin: 0;
-  border: 0;
+}
+
+#modules-tabs #dt-toggle-button,   /* This is needed separately to set a minimal width if panel is really narrow */
+#blending-tabs #dt-toggle-button
+{
+  min-width: 0em;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
+}
+
+#blending-tabs #dt-button
+{
+	font-size: 0.8em;
+	margin: 0;
+}
+
+#blending-tabs #dt-button,
+#modules-tabs #dt-button
+{
+	min-width: 1.25em;
+	padding: 0.25em 0.5em;
 }
 
 /* Do not apply border-radius to group modules icons and masks icons */
-#modules-tabs #dt-toggle-button,
+#modules-tabs button,
 #blending-tabs button
 {
+	margin: 0;
   border-radius: 0;
+  border: 0;
 }
 
 /* Set notebook tabs */
@@ -932,29 +1058,6 @@ notebook tab label /* disabled tabs */
 notebook header /* add space between notebook tabs and options below */
 {
   margin-bottom: 6px;
-}
-
-/*--------------------------------------------------------
-  - Bauhaus controls (sliders and comboboxes in modules) -
-  --------------------------------------------------------*/
-
-#bauhaus-popup
-{
-  background-color: @really_dark_bg_color;
-  color: @bauhaus_fg;
-}
-
-#bauhaus-popup:selected
-{
-  color: @bauhaus_fg_selected;
-}
-
-#bauhaus-combobox,
-#bauhaus-slider
-{
-  min-height: 1em;
-  background-color: transparent;
-  color: @bauhaus_fg;
 }
 
 /*--------------------------
@@ -1127,15 +1230,27 @@ dialog scrollbar
   margin: 1px 0;
 }
 
+#preference_non_default
+{
+  font-weight: bolder;
+  margin: 1px;
+  min-width: 1em;
+}
+
 #preferences_notebook combobox,
 #preferences_notebook spinbutton
 {
    min-width: 180px;
 }
 
+#preferences_notebook combobox menuitem
+{
+  padding: 0.2em;
+}
+
 #preferences_notebook button
 {
-  margin: 0 2px;
+  margin-left: 1px;
   padding: 0 2px;
 }
 
@@ -1149,6 +1264,172 @@ dialog scrollbar
 #preferences_box #shortcut_controls
 {
   margin-left: 5px;
+}
+
+#preferences_box #shortcut_controls button,
+#preferences_box #preset_controls button
+{
+margin: 0 2px;
+}
+
+/*--------------------------------
+  - module layouts manager dialog -
+  --------------------------------*/
+
+#modulegroups_manager box
+{
+  margin: 0;
+}
+
+#modulegroups_editor
+{
+  color: @fg_color;
+  background-color: @plugin_bg_color;
+  padding: 0.5em 0.6em;
+}
+
+#modulegroups-presets-list
+{
+  background-color: @bg_color;
+}
+
+#modulegroups-preset,
+#modulegroups-preset-activated
+{
+  background-color: @bg_color;
+  color: @plugin_label_color;
+  border-left: 2px solid @bg_color;
+  padding: 7px 17px;
+  font-size: 1.1em;
+  min-width: 150px;
+}
+
+#modulegroups-iop-header,
+#modulegroups-header-center
+{
+  background-color: @bg_color;
+  color: @plugin_label_color;
+  padding: 0.5em;
+  margin-bottom: 0.2em;
+}
+
+#modulegroups-header
+{
+  padding-top: 0.5em;
+  margin-bottom: 0.4em;
+}
+
+#modulegroups-group-icon {
+  min-height: 2em;
+  min-width: 2em;
+  margin: 0 0.5em 0 0;
+  padding: 0.1em;
+  border: 0;
+}
+
+#modulegroups-header #dt-button,
+#modulegroups-preset #dt-button,
+#modulegroups-preset-activated #dt-button,
+#modulegroups-iop-popup-name,
+#modulegroups-iop-popup-cb
+{
+  border: 0;
+}
+
+#modulegroups_iop_title,
+#modulegroups-iop-popup-name
+{
+   padding: 0.2em 0.5em;
+}
+
+#modulegroups-iop-popup-cb
+{
+  margin-left: 2em;
+}
+
+#modulegroups-groups-title
+{
+  font-size: 1.1em;
+  font-weight: bold;
+  padding: 0.5em 0.5em 0.5em 0.5em;
+}
+
+#modulegroups-groups-title #dt-button
+{
+  min-height: 1.2em;
+  min-width: 1.2em;
+  margin: 0 0 0 1em;
+}
+#modulegroups-groups-box
+{
+  border-top: 1px solid @plugin_label_color;
+}
+
+#modulegroups-reset
+{
+  padding: 0.5em;
+  margin: 0.5em;
+}
+
+#modulegroups-preset-name
+{
+  font-size: 1.1em;
+  margin-top: 0.4em;
+}
+
+#modulegroups-preset-name entry
+{
+  min-width: 300px;
+}
+
+#modulegroups-ro
+{
+  font-style: italic;
+  margin: 0.4em 0;
+}
+
+#modulegroups-groupbox
+{
+  padding: 0 0.5em 0 0.5em;
+  margin-top: 0.75em;
+}
+
+#modulegroups-icons-popup
+{
+  padding: 0.5em;
+  font-size: 1.1em;
+  background-color: @grey_30;
+}
+
+#modulegroups-icons-popup #dt-button
+{
+  min-width: 1.6em;
+  min-height: 1.6em;
+  border: 0;
+}
+
+#modulegroups_iop_title
+{
+  font-weight: bold;
+}
+
+#modulegroups-add-module-btn,
+#modulegroups-preset-add-btn
+{
+  margin-top: 0.4em;
+}
+
+#modulegroups-preset:hover label,
+#modulegroups-preset:hover #dt-button
+{
+  color: @button_hover_fg;
+}
+
+#modulegroups-deprecated-msg,
+#iop-plugin-deprecated
+{
+  background-color: #852A2A;
+  padding: 0.45em;
 }
 
 /*---------------------------------------------------------------
@@ -1189,7 +1470,8 @@ filechooser row
 filechooser .sidebar row:selected,
 filechooser .sidebar row:selected:hover .sidebar-label,
 #preferences_box .sidebar row:selected,
-#preferences_box .sidebar row:selected:hover label
+#preferences_box .sidebar row:selected:hover label,
+#modulegroups-preset-activated
 {
   color: @fg_color;
   background-color: @plugin_bg_color;
@@ -1208,13 +1490,15 @@ filechooser row:hover .sidebar-icon
   background-color: @field_hover_bg;
 }
 
-#preferences_box .sidebar row:selected
+#preferences_box .sidebar row:selected,
+#modulegroups-preset-activated
 {
   border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
 }
 
 filechooser row:hover,
-#preferences_box .sidebar :hover  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
+#preferences_box .sidebar :hover,  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
+#modulegroups-preset:hover
 {
   border-left-color: @button_hover_bg;
   background-color: @button_hover_bg;
@@ -1292,6 +1576,11 @@ border-bottom: 1px solid @button_border;
   color: @field_hover_fg;
 }
 
+#map_drag_icon
+{
+  background: transparent;
+}
+
 /*---------------
   - Other stuff -
   ---------------*/
@@ -1330,7 +1619,6 @@ progressbar progress
 {
   min-width: 80px;
   padding-left: 2px;
-  padding-bottom: 1px;
 }
 
 /* Checkbutton check state */
@@ -1351,12 +1639,6 @@ cell:selected
 #blending-box #section_label
 {
   margin: 0 0 8px 0;
-}
-
-/* Set specific padding for export module spinbutton */
-#export-max-size spinbutton
-{
-  padding: 0px 5px;
 }
 
 /* Set below spacing between history items in darkroom */
@@ -1388,6 +1670,13 @@ cell:selected
 #left #history-switch-deprecated
 {
   font-size: 0.5em;
+}
+
+#history-tooltip,
+#colorpicker-tooltip
+{
+  font-family: monospace;
+  background-color: @tooltip_bg_color;
 }
 
 /* Set color bar min height in colorzones module */
@@ -1422,6 +1711,11 @@ cell:selected
   font-family: monospace;
 }
 
+#quick-presets_manager box
+{
+  margin: 0;
+}
+
 /*---------------------
   - Set color pickers -
   ---------------------*/
@@ -1450,7 +1744,7 @@ cell:selected
 
 #live-sample
 {
-  padding: 2px;
+  padding: 0px;
   min-height: 1em;
   min-width: 3em;
 }
@@ -1507,7 +1801,8 @@ combobox window *:selected,
 #iop-plugin-ui button:active,
 #lib-plugin-ui button:active,
 #recent-collection-button:active,
-#recent-collection-button:selected
+#recent-collection-button:selected,
+messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
   background-color: @button_checked_bg;
   color: @button_checked_fg;
@@ -1577,6 +1872,15 @@ notebook tab:hover label,
 #view_dropdown .combo:hover *
 {
   color: @button_hover_fg;
+}
+
+/* workaround for a macOS quartz GTK backend bug
+   making combobox list appear behind dialog window:
+   color of "button:checked cellview" has to differ from
+   "button:hover cellview", don't ask for a reason for that */
+button:checked cellview
+{
+  color: shade(@button_hover_fg, 0.99);
 }
 
 /* Set submenus */
@@ -1717,6 +2021,16 @@ treeview#delete-dialog:selected
   color: @plugin_bg;
 }
 
+#bauhaus-combobox *
+{
+    color: shade(@bauhaus_fg, 0.8);
+}
+
+#bauhaus-combobox *:selected
+{
+    color: shade(@bauhaus_fg_selected, 1.2);
+}
+
 /* Notebooks states */
 notebook tab:hover
 {
@@ -1779,16 +2093,20 @@ scale contents trough slider:hover
   background-color: @scroll_bar_active;
 }
 
+.iop_drag_icon
+{
+  border: 1px solid @plugin_bg_color;
+  background-color: @bg_color;
+}
+
 .iop_drop_before
 {
-   border: 2px solid @plugin_bg_color;
-   border-bottom: 2.8em solid @plugin_bg_color;
+   border-bottom: 2.4em solid @plugin_bg_color;
 }
 
 .iop_drop_after
 {
-   border: 2px solid @plugin_bg_color;
-   border-top: 2.8em solid @plugin_bg_color;
+   border-top: 2.4em solid @plugin_bg_color;
 }
 
 /*** --- Thumbtable css part ---

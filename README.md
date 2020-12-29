@@ -1,4 +1,4 @@
-[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![build status](https://travis-ci.org/darktable-org/darktable.svg?branch=master)](https://travis-ci.org/darktable-org/darktable) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
+[![icon](/data/pixmaps/idbutton.png?raw=true)](https://www.darktable.org/) darktable [![build status](https://travis-ci.com/darktable-org/darktable.svg?branch=master)](https://travis-ci.com/darktable-org/darktable) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/470/badge)](https://bestpractices.coreinfrastructure.org/projects/470)
 =========
 
 darktable is an open source photography workflow application and non-destructive raw developer. A virtual lighttable and darkroom for photographers. It manages your digital negatives in a database, lets you view them through a zoomable lighttable and enables you to develop raw images, enhance them and export them on local or remote storage.
@@ -194,8 +194,8 @@ then install it. This can usually be done in your package manager (not the appli
 customarily provided by default in your distribution) or on the internet with a search engine. 
 You may need to install a package manager first (like Synaptic on Debian/Ubuntu, or DNF Dragora on Fedora/RHEL).
 
-This process might be tedious but you only need to do it once. See this 
-[outdated page on building darktable 2.6](https://redmine.darktable.org/projects/darktable/wiki/Building_darktable_26)
+This process might be tedious but you only need to do it once. See this
+[page on building darktable](https://github.com/darktable-org/darktable/wiki/Building-darktable)
 for one-line commands that will install most dependencies on the most frequent Linux distributions.
 
 ### Get the source
@@ -217,7 +217,7 @@ which is fine if you don't need to open your edits again in the future, but mayb
 After backing up your `~/.config/darktable` directory as well as the sidecar .XMP files of the pictures you will open
 with the master branch, you may get the source:
 ```bash
-git clone https://github.com/darktable-org/darktable.git
+git clone --recurse-submodules https://github.com/darktable-org/darktable.git
 cd darktable
 ```
 
@@ -232,7 +232,7 @@ Minor revisions are tagged with a third digit (like 3.0.1, 3.0.2) and mostly pro
 You may want to compile these stable releases yourself in order to get better performance for your particular computer:
 
 ```bash
-git clone https://github.com/darktable-org/darktable.git
+git clone --recurse-submodules https://github.com/darktable-org/darktable.git 
 cd darktable
 git fetch --tags
 git checkout tags/release-3.2.1
@@ -240,11 +240,10 @@ git checkout tags/release-3.2.1
 
 ### Get submodules
 
-Note that [rawspeed](https://github.com/darktable-org/rawspeed) is tracked via a git submodule, as well as OpenCL and LibXCF modules, so after checking-out the darktable, you need to update/checkout them,
+Note that [LibXCF](https://github.com/houz/libxcf.git), [OpenCL](https://github.com/KhronosGroup/OpenCL-Headers.git), [rawspeed](https://github.com/darktable-org/rawspeed), and [whereami](https://github.com/gpakosz/whereami) are tracked via a git submodule, so after checking-out the darktable, you need to update/checkout them:
 
 ```bash
-git submodule init
-git submodule update
+git submodule update --init
 ```
 
 ### Compile
@@ -332,7 +331,7 @@ Contributing
 * Share your ideas on the [developer mailing list](https://www.mail-archive.com/darktable-dev@lists.darktable.org/)
 * Test [releases](https://www.darktable.org/install/)
 * Review [pull requests](https://github.com/darktable-org/darktable/pulls)
-* Start [hacking on darktable](https://www.darktable.org/redmine/projects/darktable/wiki/Contributing_code) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
+* Start [hacking on darktable](https://www.darktable.org/development/) and see [developer's guide](https://github.com/darktable-org/darktable/wiki/Developer's-guide)
 
 
 FAQ
@@ -379,7 +378,6 @@ Wiki
 ----
 
 * [GitHub wiki](https://github.com/darktable-org/darktable/wiki "github wiki")
-* [User wiki](https://www.darktable.org/redmine/projects/users/wiki "darktable user wiki")
 * [Developer wiki](https://github.com/darktable-org/darktable/wiki/Developer's-guide "darktable developer wiki")
 
 

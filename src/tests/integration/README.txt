@@ -11,6 +11,9 @@ deltae     : python script to compute a delta-E between 2 images
 
 nnnn-name/  : tests
 
+Needed tools : zopflipng
+
+
 How to add a new test (using default driver)
 --------------------------------------------
 
@@ -30,8 +33,8 @@ How to add a new test (using default driver)
 
    ./run <dir>
 
-   And rename output.jpg to expected.jpg and double check that
-   expected.jpg is correct and really the expected output.
+   The output.png will be copied to expected.png, double check that
+   expected.png is correct and really the expected output.
 
 6. Test that all is ok by running:
 
@@ -46,7 +49,7 @@ How to add a new test (using default driver)
       Max  dE         0.0000
    OK
 
-7. If all goes well commit the .xmp and expected.jpg files
+7. If all goes well commit the .xmp and expected.png files
 
 
 

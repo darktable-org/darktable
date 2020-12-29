@@ -40,19 +40,6 @@ $ cd build && make install (or sudo make install)
 $ darktable
 ```
 
-Optionally, to build the user manual:
-
- - Java JDK, `gnome-doc-utils`, Saxon 6.5.x, FOP and ImageMagick
- - `xsltproc` and the DocBook XML DTD and XSL stylesheets
-
-Then, type:
-
-```
-$ cd build
-$ make darktable-usermanual
-$ evince doc/usermanual/darktable-usermanual.pdf
-```
-
 Optionally, to build translations of the manual pages:
 
  - PO for anything (`po4a`)
@@ -62,7 +49,7 @@ Other used packages (supplied in the source tree):
  - RawSpeed
  - Lua 5.2 and LuaAutoc (although the local system version can be used instead)
 
-Darktable has OpenCL support for graphics cards with:
+darktable has OpenCL support for graphics cards with:
 
  - at least 1GB graphics RAM (more is better)
  - a modern AMD or nVidia chipset

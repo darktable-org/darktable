@@ -53,7 +53,7 @@ typedef struct dt_history_copy_item_t
   GList *selops;
   GtkTreeView *items;
   int copied_imageid;
-  gboolean partial;
+  gboolean full_copy;
   gboolean copy_iop_order;
 } dt_history_copy_item_t;
 
@@ -64,7 +64,7 @@ void dt_history_item_free(gpointer data);
 int dt_history_merge_module_into_history(struct dt_develop_t *dev_dest, struct dt_develop_t *dev_src, struct dt_iop_module_t *mod_src, GList **_modules_used, const int append);
 
 /** copy history from imgid and pasts on dest_imgid, merge or overwrite... */
-int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order);
+int dt_history_copy_and_paste_on_image(int32_t imgid, int32_t dest_imgid, gboolean merge, GList *ops, gboolean copy_iop_order, const gboolean copy_full);
 
 /** delete all history for the given image */
 void dt_history_delete_on_image(int32_t imgid);
@@ -89,9 +89,13 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo);
 
 /** compress history stack */
 int dt_history_compress_on_list(const GList *imgs);
-void dt_history_compress_on_image(int32_t imgid);
+void dt_history_compress_on_image(const int32_t imgid);
+
+/** truncate history stack */
+void dt_history_truncate_on_image(const int32_t imgid, const int32_t history_end);
+
 /* set or clear a tag representing an error state while compressing history */
-void dt_history_set_compress_problem(int32_t imgid, gboolean set);
+void dt_history_set_compress_problem(const int32_t imgid, const gboolean set);
 /* duplicate an history list */
 GList *dt_history_duplicate(GList *hist);
 

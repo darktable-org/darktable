@@ -69,6 +69,9 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
 {
   module->widget = NULL;
   module->parameter_lua_type = LUAA_INVALID_TYPE;
+  // Can by set by the module function to false if something went wrong.
+  module->ready = TRUE;
+
   g_strlcpy(module->plugin_name, plugin_name, sizeof(module->plugin_name));
   dt_print(DT_DEBUG_CONTROL, "[imageio_load_module] loading format module `%s' from %s\n", plugin_name, libname);
   module->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
@@ -130,6 +133,11 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
     dt_lua_register_format_type(darktable.lua_state.state, module, my_type);
 #endif
     module->init(module);
+    if (!module->ready)
+    {
+      goto error;
+    }
+
 #ifdef USE_LUA
     lua_pushcfunction(darktable.lua_state.state, dt_lua_type_member_luaautoc);
     dt_lua_type_register_struct_type(darktable.lua_state.state, my_type);
@@ -434,7 +442,48 @@ void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage)
 {
   darktable.imageio->plugins_storage
       = g_list_insert_sorted(darktable.imageio->plugins_storage, storage, dt_imageio_sort_modules_storage);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGEIO_STORAGE_CHANGE);
+}
+
+gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum)
+{
+  double _num, _denum;
+  gchar *scale_str = dt_conf_get_string("plugins/lighttable/export/resizing_factor");
+
+  char sep[4] = "";
+  snprintf( sep, 4, "%g", (double) 3/2);
+  int i = -1;
+  while(scale_str[++i])
+  {
+      if ((scale_str[i] == '.') || (scale_str[i] == ',')) scale_str[i] = sep[1];
+  }
+
+  gchar *pdiv = strchr(scale_str, '/');
+
+  if (pdiv == NULL)
+  {
+    _num = atof(scale_str);
+    _denum = 1;
+  }
+  else if (pdiv-scale_str == 0)
+  {
+    _num = 1;
+    _denum = atof(pdiv + 1);
+}
+  else
+{
+    _num = atof(scale_str);
+    _denum = atof(pdiv+1);
+  }
+
+  if (_num == 0.0) _num = 1.0;
+  if (_denum == 0.0) _denum = 1.0;
+
+  *num = _num;
+  *denum = _denum;
+
+  dt_conf_set_string("plugins/lighttable/export/resizing_factor", scale_str);
+  return scale_str;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

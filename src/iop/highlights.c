@@ -47,7 +47,7 @@ typedef enum dt_iop_highlights_mode_t
 {
   DT_IOP_HIGHLIGHTS_CLIP = 0,    // $DESCRIPTION: "clip highlights"
   DT_IOP_HIGHLIGHTS_LCH = 1,     // $DESCRIPTION: "reconstruct in LCh"
-  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color" 
+  DT_IOP_HIGHLIGHTS_INPAINT = 2, // $DESCRIPTION: "reconstruct color"
 } dt_iop_highlights_mode_t;
 
 typedef struct dt_iop_highlights_params_t
@@ -81,9 +81,18 @@ const char *name()
   return _("highlight reconstruction");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("avoid magenta highlights and try to recover highlights colors"),
+                                      _("corrective"),
+                                      _("linear, raw, scene-referred"),
+                                      _("reconstruction, raw"),
+                                      _("linear, raw, scene-referred"));
+}
+
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
@@ -94,20 +103,6 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_RAW;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "clipping threshold"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "method"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "clipping threshold", GTK_WIDGET(g->clip));
-  dt_accel_connect_combobox_iop(self, "method", GTK_WIDGET(g->mode));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -1011,7 +1006,6 @@ void cleanup_global(dt_iop_module_so_t *module)
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_highlights_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1022,23 +1016,21 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
-  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)module->params;
+  dt_iop_highlights_params_t *p = (dt_iop_highlights_params_t *)self->params;
   dt_bauhaus_slider_set(g->clip, p->clip);
   dt_bauhaus_combobox_set(g->mode, p->mode);
 }
 
 void reload_defaults(dt_iop_module_t *module)
 {
-  // enable this per default if raw or sraw, 
+  // enable this per default if raw or sraw,
   module->default_enabled = dt_image_is_rawprepare_supported(&(module->dev->image_storage));
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_highlights_gui_data_t));
-  dt_iop_highlights_gui_data_t *g = (dt_iop_highlights_gui_data_t *)self->gui_data;
+  dt_iop_highlights_gui_data_t *g = IOP_GUI_ALLOC(highlights);
 
   g->mode = dt_bauhaus_combobox_from_params(self, "mode");
   gtk_widget_set_tooltip_text(g->mode, _("highlight reconstruction method"));

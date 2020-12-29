@@ -18,6 +18,7 @@
 
 #pragma once
 
+#include "common/atomic.h"
 #include "common/image.h"
 #include "common/imageio.h"
 #include "common/iop_order.h"
@@ -107,6 +108,13 @@ typedef struct dt_dev_pixelpipe_t
   // and should be modified by process*(), if necessary.
   dt_iop_buffer_dsc_t dsc;
 
+  /** work profile info of the image */
+  struct dt_iop_order_iccprofile_info_t *work_profile_info;
+  /** input profile info **/
+  struct dt_iop_order_iccprofile_info_t *input_profile_info;
+  /** output profile info **/
+  struct dt_iop_order_iccprofile_info_t *output_profile_info;
+
   // instances of pixelpipe, stored in GList of dt_dev_pixelpipe_iop_t
   GList *nodes;
   // event flag
@@ -126,7 +134,7 @@ typedef struct dt_dev_pixelpipe_t
   // working?
   int processing;
   // shutting down?
-  int shutdown;
+  dt_atomic_int shutdown;
   // opencl enabled for this pixelpipe?
   int opencl_enabled;
   // opencl error detected?

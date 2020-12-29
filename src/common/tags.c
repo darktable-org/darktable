@@ -134,7 +134,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       list = g_list_next(list);
     }
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
 }
 
@@ -201,7 +201,7 @@ gboolean dt_tag_new_from_gui(const char *name, guint *tagid)
 {
   const gboolean ret = dt_tag_new(name, tagid);
   /* if everything went fine, raise signal of tags change to refresh keywords module in GUI */
-  if(ret) dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  if(ret) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   return ret;
 }
 
@@ -654,6 +654,7 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
                             " ORDER by T.name",
                             images, ignore_dt_tags ? " AND T.id NOT IN memory.darktable_tags" : "");
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    g_free(images);
 
     // Create result
     *result = NULL;
@@ -727,7 +728,7 @@ static gint sort_tag_by_path(gconstpointer a, gconstpointer b)
   const dt_tag_t *tuple_a = (const dt_tag_t *)a;
   const dt_tag_t *tuple_b = (const dt_tag_t *)b;
 
-  return g_ascii_strcasecmp(tuple_a->tag, tuple_b->tag);
+  return g_strcmp0(tuple_a->tag, tuple_b->tag);
 }
 
 static gint sort_tag_by_leave(gconstpointer a, gconstpointer b)
@@ -735,7 +736,7 @@ static gint sort_tag_by_leave(gconstpointer a, gconstpointer b)
   const dt_tag_t *tuple_a = (const dt_tag_t *)a;
   const dt_tag_t *tuple_b = (const dt_tag_t *)b;
 
-  return g_ascii_strcasecmp(tuple_a->leave, tuple_b->leave);
+  return g_strcmp0(tuple_a->leave, tuple_b->leave);
 }
 
 static gint sort_tag_by_count(gconstpointer a, gconstpointer b)
@@ -1000,7 +1001,28 @@ gboolean dt_is_tag_attached(const guint tagid, const gint imgid)
   return ret;
 }
 
-GList *dt_tag_get_images_from_list(const GList *img, gint tagid)
+GList *dt_tag_get_images(const gint tagid)
+{
+  GList *result = NULL;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT imgid FROM main.tagged_images"
+                              " WHERE tagid = ?1",
+                              -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, tagid);
+
+  while(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    int id = sqlite3_column_int(stmt, 0);
+    result = g_list_append(result, GINT_TO_POINTER(id));
+  }
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
+GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
 {
   GList *result = NULL;
   char *images = NULL;
@@ -1298,15 +1320,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
     gchar **entry = tokens;
     while (*entry)
     {
-      // remove leading and trailing spaces
-      char *e = *entry + strlen(*entry) - 1;
-      while(*e == ' ' && e > *entry)
-      {
-        *e = '\0';
-        e--;
-      }
-      e = *entry;
-      while(*e == ' ') e++;
+      char *e = g_strstrip(*entry);
       if(*e)
       {
         synonyms = dt_util_dstrcat(synonyms, "%s, ", e);
@@ -1544,7 +1558,7 @@ ssize_t dt_tag_import(const char *filename)
   g_list_free_full(hierarchy, g_free);
   fclose(fd);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   return count;
 }
@@ -1663,7 +1677,16 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
     {
       gchar **pch = g_strsplit(tag, "|", -1);
       char *subtag = pch[rootnb + level];
-      tags = dt_util_dstrcat(tags, "%s,", subtag);
+      gboolean valid = TRUE;
+      // check we have not yet this subtag in the list
+      if(tags && strlen(tags) >= strlen(subtag) + 1)
+      {
+        gchar *found = g_strstr_len(tags, strlen(tags), subtag);
+        if(found && found[strlen(subtag)] == ',')
+          valid = FALSE;
+      }
+      if(valid)
+        tags = dt_util_dstrcat(tags, "%s,", subtag);
       g_strfreev(pch);
     }
   }

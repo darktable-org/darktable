@@ -65,7 +65,7 @@ static void test_name(void **state)
 
 static void test_default_group(void **state)
 {
-  assert_int_equal(default_group(), IOP_GROUP_TONE);
+  assert_int_equal(default_group(), IOP_GROUP_TONE | IOP_GROUP_TECHNICAL);
 }
 
 static void test_clamp_simd(void **state)

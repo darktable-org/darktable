@@ -21,6 +21,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/file_location.h"
+#include "common/focus_peaking.h"
 #include "common/grouping.h"
 #include "common/history.h"
 #include "common/image_cache.h"
@@ -167,6 +168,7 @@ static void _lighttable_check_layout(dt_view_t *self)
     dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = FALSE;
     gtk_widget_hide(lib->preview->widget);
     gtk_widget_hide(lib->culling->widget);
+    gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
     // if we arrive from culling, we just need to ensure the offset is right
     if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING)
@@ -224,6 +226,8 @@ static void _lighttable_check_layout(dt_view_t *self)
 
   if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_state)
   {
+    dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                             DT_THUMBTABLE_MODE_NONE);
     dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
     dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                        TRUE); // always on, visibility is driven by panel state
@@ -584,6 +588,8 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   dt_ui_thumbtable(darktable.gui->ui)->navigate_inside_selection = lib->preview->navigate_inside_selection;
 
   // show/hide filmstrip & timeline when entering the view
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
+                           DT_THUMBTABLE_MODE_NONE);
   dt_lib_set_visible(darktable.view_manager->proxy.timeline.module, FALSE); // not available in this layouts
   dt_lib_set_visible(darktable.view_manager->proxy.filmstrip.module,
                      TRUE); // always on, visibility is driven by panel state
@@ -594,7 +600,7 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
   darktable.view_manager->active_images = NULL;
   darktable.view_manager->active_images
       = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(lib->preview->offset_imgid));
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // restore panels
   dt_ui_restore_panels(darktable.gui->ui);
@@ -612,7 +618,7 @@ void leave(dt_view_t *self)
   {
     g_slist_free(darktable.view_manager->active_images);
     darktable.view_manager->active_images = NULL;
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
   }
 
   // we hide culling and preview too
@@ -626,7 +632,7 @@ void leave(dt_view_t *self)
   }
 
   // we remove the thumbtable from main view
-  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_FILMSTRIP);
+  dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), NULL, DT_THUMBTABLE_MODE_NONE);
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 }
@@ -973,7 +979,7 @@ static gboolean _accel_culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acc
 static gboolean _accel_select_toggle(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  const uint32_t id = dt_control_get_mouse_over_id();
+  const int32_t id = dt_control_get_mouse_over_id();
   dt_selection_toggle(darktable.selection, id);
   return TRUE;
 }
@@ -981,7 +987,7 @@ static gboolean _accel_select_toggle(GtkAccelGroup *accel_group, GObject *accele
 static gboolean _accel_select_single(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                      GdkModifierType modifier, gpointer data)
 {
-  const uint32_t id = dt_control_get_mouse_over_id();
+  const int32_t id = dt_control_get_mouse_over_id();
   dt_selection_select_single(darktable.selection, id);
   return TRUE;
 }
@@ -1240,7 +1246,7 @@ end:
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
     dt_colorspaces_update_display_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_DISPLAY);
     dt_control_queue_redraw_center();
   }
@@ -1281,7 +1287,7 @@ end:
     pthread_rwlock_rdlock(&darktable.color_profiles->xprofile_lock);
     dt_colorspaces_update_display2_transforms();
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             DT_COLORSPACES_PROFILE_TYPE_DISPLAY2);
     dt_control_queue_redraw_center();
   }
@@ -1361,9 +1367,13 @@ void gui_init(dt_view_t *self)
                               gtk_widget_get_parent(dt_ui_log_msg(darktable.gui->ui)), -1);
   gtk_overlay_reorder_overlay(GTK_OVERLAY(dt_ui_center_base(darktable.gui->ui)),
                               gtk_widget_get_parent(dt_ui_toast_msg(darktable.gui->ui)), -1);
+
+  /* add the global focus peaking button in toolbox */
+  dt_view_manager_module_toolbox_add(darktable.view_manager, darktable.gui->focus_peaking_button,
+                                     DT_VIEW_LIGHTTABLE | DT_VIEW_DARKROOM);
+
   // create display profile button
-  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT,
-                                                     NULL);
+  GtkWidget *const profile_button = dtgtk_button_new(dtgtk_cairo_paint_display, CPF_STYLE_FLAT, NULL);
   gtk_widget_set_tooltip_text(profile_button, _("set display profile"));
   dt_view_manager_module_toolbox_add(darktable.view_manager, profile_button, DT_VIEW_LIGHTTABLE);
 
@@ -1387,7 +1397,7 @@ void gui_init(dt_view_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display_intent, NULL, _("display intent"));
+  dt_bauhaus_widget_set_label(display_intent, NULL, N_("display intent"));
   gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(display_intent, _("perceptual"));
   dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
@@ -1395,7 +1405,7 @@ void gui_init(dt_view_t *self)
   dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
   GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display2_intent, NULL, _("preview display intent"));
+  dt_bauhaus_widget_set_label(display2_intent, NULL, N_("preview display intent"));
   gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
   dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
   dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
@@ -1403,11 +1413,11 @@ void gui_init(dt_view_t *self)
   dt_bauhaus_combobox_add(display2_intent, _("absolute colorimetric"));
 
   GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display_profile, NULL, _("display profile"));
+  dt_bauhaus_widget_set_label(display_profile, NULL, N_("display profile"));
   gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
 
   GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display2_profile, NULL, _("preview display profile"));
+  dt_bauhaus_widget_set_label(display2_profile, NULL, N_("preview display profile"));
   gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
 
   for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
@@ -1454,9 +1464,9 @@ void gui_init(dt_view_t *self)
                    NULL);
 
   // update the gui when profiles change
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_profile_display_changed), (gpointer)display_profile);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED,
                             G_CALLBACK(_profile_display2_changed), (gpointer)display2_profile);
 }
 

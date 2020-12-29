@@ -77,31 +77,22 @@ const char *name()
 
 int default_group()
 {
-  return IOP_GROUP_TONE;
+  return IOP_GROUP_TONE | IOP_GROUP_GRADING;
 }
 
 int flags()
 {
-  return IOP_FLAGS_SUPPORTS_BLENDING;
+  return IOP_FLAGS_SUPPORTS_BLENDING | IOP_FLAGS_DEPRECATED;
+}
+
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use local contrast or tone equalizer modules instead.");
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "contrast compression"));
-  dt_accel_register_slider_iop(self, FALSE, NC_("accel", "spatial extent"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_slider_iop(self, "contrast compression", GTK_WIDGET(g->contrast));
-  dt_accel_connect_slider_iop(self, "spatial extent", GTK_WIDGET(g->Fsize));
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
@@ -223,7 +214,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_tonemapping_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -234,17 +224,15 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(struct dt_iop_module_t *self)
 {
-  dt_iop_module_t *module = (dt_iop_module_t *)self;
   dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
-  dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)module->params;
+  dt_iop_tonemapping_params_t *p = (dt_iop_tonemapping_params_t *)self->params;
   dt_bauhaus_slider_set(g->contrast, p->contrast);
   dt_bauhaus_slider_set(g->Fsize, p->Fsize);
 }
 
 void gui_init(struct dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_tonemapping_gui_data_t));
-  dt_iop_tonemapping_gui_data_t *g = (dt_iop_tonemapping_gui_data_t *)self->gui_data;
+  dt_iop_tonemapping_gui_data_t *g = IOP_GUI_ALLOC(tonemapping);
 
   g->contrast = dt_bauhaus_slider_from_params(self, "contrast");
 

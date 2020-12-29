@@ -370,14 +370,14 @@ int write_image(dt_imageio_module_data_t *jpg_tmp, const char *filename, const v
     cmsSaveProfileToMem(out_profile, 0, &len);
     if(len > 0)
     {
-      unsigned char *buf = malloc(len * sizeof(unsigned char));
+      unsigned char *buf = malloc(sizeof(unsigned char) * len);
       cmsSaveProfileToMem(out_profile, buf, &len);
       write_icc_profile(&(jpg->cinfo), buf, len);
       free(buf);
     }
   }
 
-  uint8_t *row = dt_alloc_align(64, (size_t)3 * jpg->global.width * sizeof(uint8_t));
+  uint8_t *row = dt_alloc_align(64, sizeof(uint8_t) * 3 * jpg->global.width);
   const uint8_t *buf;
   while(jpg->cinfo.next_scanline < jpg->cinfo.image_height)
   {
@@ -589,7 +589,7 @@ void gui_init(dt_imageio_module_format_t *self)
   self->widget = box;
   // quality slider
   g->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
-  dt_bauhaus_widget_set_label(g->quality, NULL, _("quality"));
+  dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
   dt_bauhaus_slider_set_default(g->quality, 95);
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);

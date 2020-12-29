@@ -88,7 +88,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       double RGB_to_CAM[4][3];
 
       // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-      if(!dt_colorspaces_conversion_matrices_rgb(camera, RGB_to_CAM, NULL, NULL))
+      if(!dt_colorspaces_conversion_matrices_rgb(camera, RGB_to_CAM, NULL, self->dev->image_storage.d65_color_matrix, NULL))
       {
         fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
         dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
@@ -110,14 +110,29 @@ const char *name()
   return _("invert");
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. better use negadoctor module instead.");
+}
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("invert film negatives"),
+                                      _("corrective"),
+                                      _("linear, raw, display-referred"),
+                                      _("linear, raw"),
+                                      _("linear, raw, display-referred"));
+}
+
+
 int default_group()
 {
-  return IOP_GROUP_BASIC;
+  return IOP_GROUP_BASIC | IOP_GROUP_TECHNICAL;
 }
 
 int flags()
 {
-  return IOP_FLAGS_ONE_INSTANCE;
+  return IOP_FLAGS_ONE_INSTANCE | IOP_FLAGS_DEPRECATED;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -127,7 +142,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 void init_key_accels(dt_iop_module_so_t *self)
 {
-  dt_accel_register_iop(self, FALSE, NC_("accel", "pick color of film material from image"), 0, 0);
+  dt_accel_register_iop(self, FALSE, N_("pick color of film material from image"), 0, 0);
 }
 
 void connect_key_accels(dt_iop_module_t *self)
@@ -497,27 +512,31 @@ error:
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  self->hide_enable_button = 0;
+  dt_iop_invert_gui_data_t *g = self->gui_data;
 
-  if(!self->dev) return;
-
-  if(dt_image_is_monochrome(&self->dev->image_storage))
+  if (g)
   {
-    self->hide_enable_button = 0;
-    // Here we could provide more for monochrome special cases. As no monochrome camera
-    // has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
-  }
-  else if(self->dev->image_storage.flags & DT_IMAGE_4BAYER && self->gui_data)
-  {
-    dt_iop_invert_gui_data_t *g = self->gui_data;
-
-    const char *camera = self->dev->image_storage.camera_makermodel;
-
-    // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
-    if(!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, g->CAM_to_RGB, NULL))
+    if(dt_image_is_monochrome(&self->dev->image_storage))
     {
-      fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
-      dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
+      // Here we could provide more for monochrome special cases. As no monochrome camera
+      // has a bayer sensor we don't need g->RGB_to_CAM and g->CAM_to_RGB corrections
+      dtgtk_reset_label_set_text(g->label, _("brightness of film material"));
+    }
+    else
+    {
+      dtgtk_reset_label_set_text(g->label, _("color of film material"));
+
+      if(self->dev->image_storage.flags & DT_IMAGE_4BAYER)
+      {
+        const char *camera = self->dev->image_storage.camera_makermodel;
+
+        // Get and store the matrix to go from camera to RGB for 4Bayer images (used for spot WB)
+        if(!dt_colorspaces_conversion_matrices_rgb(camera, g->RGB_to_CAM, g->CAM_to_RGB, self->dev->image_storage.d65_color_matrix, NULL))
+        {
+          fprintf(stderr, "[invert] `%s' color matrix not found for 4bayer image\n", camera);
+          dt_control_log(_("`%s' color matrix not found for 4bayer image"), camera);
+        }
+      }
     }
   }
 }
@@ -561,7 +580,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = g_malloc0(sizeof(dt_iop_invert_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -572,31 +590,16 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_update(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
-
-  if(!dt_image_is_monochrome(&self->dev->image_storage))
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
-    dtgtk_reset_label_set_text(g->label, _("color of film material"));
-    gui_update_from_coeffs(self);
-  }
-  else
-  {
-    gtk_widget_set_visible(GTK_WIDGET(g->pickerbuttons), TRUE);
-    dtgtk_reset_label_set_text(g->label, _("brightness of film material"));
-    gui_update_from_coeffs(self);
-
-  }
+  gui_update_from_coeffs(self);
 }
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = g_malloc0(sizeof(dt_iop_invert_gui_data_t));
-  dt_iop_invert_gui_data_t *g = (dt_iop_invert_gui_data_t *)self->gui_data;
+  dt_iop_invert_gui_data_t *g = IOP_GUI_ALLOC(invert);
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 4 * sizeof(float)));
+  g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, sizeof(float) * 4));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
 
   g->pickerbuttons = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));

@@ -49,7 +49,6 @@ typedef struct dt_lib_metadata_t
   GtkWidget *config_button;
   gint line_height;
   gboolean init_layout;
-  guint timeout_handle;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -118,6 +117,7 @@ static void _fill_text_view(const uint32_t i, const uint32_t count, dt_lib_modul
 
 static void _update(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   d->imgsel = dt_control_get_mouse_over_id();
 
@@ -177,20 +177,6 @@ static void _update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), imgs_count > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->clear_button), imgs_count > 0);
-
-  if(d->timeout_handle)
-  {
-    g_source_remove(d->timeout_handle);
-    d->timeout_handle = 0;
-  }
-}
-
-static gboolean _postponed_update(gpointer data)
-{
-  // timeout handle clearing is handled by update code
-  _update((dt_lib_module_t *)data);
-
-  return FALSE;
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -210,7 +196,7 @@ static void _clear_button_clicked(GtkButton *button, dt_lib_module_t *self)
   d->editing = FALSE;
   const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
   dt_metadata_clear(imgs, TRUE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   _update(self);
 }
@@ -245,8 +231,8 @@ static void _write_metadata(dt_lib_module_t *self)
   }
   g_list_free(key_value);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED, DT_METADATA_SIGNAL_NEW_VALUE);
 
   dt_image_synch_xmps(imgs);
   _update(self);
@@ -374,15 +360,7 @@ static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
   // if editing don't lose the current entry
   if (d->editing) return;
 
-  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
-
-  if(d->timeout_handle)
-  {
-    // here we're making sure the event fires at last hover
-    // and we won't have avalanche of events in the mean time.
-    g_source_remove(d->timeout_handle);
-  }
-  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
+  dt_lib_queue_postponed_update(self, _update);
 }
 
 static gboolean _metadata_list_size_changed(GtkWidget *window, GdkEvent  *event, GtkCellRenderer *renderer)
@@ -516,7 +494,7 @@ static void _config_button_clicked(GtkButton *button, dt_lib_module_t *self)
       }
     }
     if(meta_signal)
-      dt_control_signal_raise(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
                               meta_remove ? DT_METADATA_SIGNAL_HIDDEN : DT_METADATA_SIGNAL_SHOWN);
   }
 //  update_layout(self);
@@ -552,16 +530,20 @@ static gboolean _mouse_scroll(GtkWidget *swindow, GdkEventScroll *event, dt_lib_
       const gint max_height = DT_PIXEL_APPLY_DPI(20*d->line_height + d->line_height / 5);
       gint height;
       gtk_widget_get_size_request(GTK_WIDGET(swindow), NULL, &height);
-      height = height + increment * event->delta_y;
-      height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-      gtk_widget_set_size_request(GTK_WIDGET(swindow), -1, (gint)height);
+      int delta_y;
+      if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+      {
+        height = height + increment * delta_y;
+        height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
+        gtk_widget_set_size_request(GTK_WIDGET(swindow), -1, (gint)height);
 
-      const gchar *name = dt_metadata_get_name_by_display_order(i);
-      gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
-      dt_conf_set_int(setting, height);
-      g_free(setting);
+        const gchar *name = dt_metadata_get_name_by_display_order(i);
+        gchar *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_text_height", name);
+        dt_conf_set_int(setting, height);
+        g_free(setting);
 
-      return TRUE;
+        return TRUE;
+      }
     }
   }
   return FALSE;
@@ -671,7 +653,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
 
   d->imgsel = -1;
-  d->timeout_handle = 0;
+  self->timeout_handle = 0;
 
   GtkGrid *grid = (GtkGrid *)gtk_grid_new();
   self->widget = GTK_WIDGET(grid);
@@ -686,8 +668,7 @@ void gui_init(dt_lib_module_t *self)
 
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
-    GtkWidget *label = gtk_label_new(_(dt_metadata_get_name_by_display_order(i)));
-    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    GtkWidget *label = dt_ui_label_new(_(dt_metadata_get_name_by_display_order(i)));
     gtk_grid_attach(grid, label, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
               _("metadata text. ctrl-wheel scroll to resize the text box"
@@ -735,54 +716,43 @@ void gui_init(dt_lib_module_t *self)
 
   // clear/apply buttons
 
-  grid = (GtkGrid *)gtk_grid_new();
-  gtk_grid_set_column_homogeneous(grid, FALSE);
+  GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  GtkWidget *button = gtk_button_new_with_label(_("clear"));
-  d->clear_button = button;
-  gtk_widget_set_tooltip_text(button, _("remove metadata from selected images"));
-  gtk_grid_attach(grid, button, 0, 0, 1, 1);
-  gtk_widget_set_hexpand(button, TRUE);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_clear_button_clicked), self);
+  d->clear_button = dt_ui_button_new(_("clear"), _("remove metadata from selected images"), NULL);
+  gtk_box_pack_start(hbox, d->clear_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->clear_button), "clicked", G_CALLBACK(_clear_button_clicked), self);
 
-  button = gtk_button_new_with_label(_("apply"));
-  d->apply_button = button;
-  gtk_widget_set_tooltip_text(button, _("write metadata for selected images"));
-  gtk_grid_attach(grid, button, 1, 0, 1, 1);
-  gtk_widget_set_hexpand(button, TRUE);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_apply_button_clicked), self);
+  d->apply_button = dt_ui_button_new(_("apply"), _("write metadata for selected images"), NULL);
+  gtk_box_pack_start(hbox, d->apply_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->apply_button), "clicked", G_CALLBACK(_apply_button_clicked), self);
 
-  button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
-  d->config_button = button;
-  gtk_widget_set_name(button, "non-flat");
-  gtk_widget_set_tooltip_text(button, _("configure metadata"));
-  gtk_grid_attach(grid, button, 2, 0, 1, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_config_button_clicked), self);
+  d->config_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
+  gtk_widget_set_name(d->config_button, "non-flat");
+  gtk_widget_set_tooltip_text(d->config_button, _("configure metadata"));
+  gtk_box_pack_start(hbox, d->config_button, TRUE, TRUE, 0);
+  g_signal_connect(G_OBJECT(d->config_button), "clicked", G_CALLBACK(_config_button_clicked), self);
 
-  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(grid), 0, 1, 1, 1);
-  gtk_widget_set_hexpand(GTK_WIDGET(grid), TRUE);
+  gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(hbox), 0, 1, 1, 1);
 
   /* lets signup for mouse over image change signals */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
 
   // and 2 other interesting signals:
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
   _update(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   const dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
-
-  if(d->timeout_handle)
-    g_source_remove(d->timeout_handle);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
@@ -801,7 +771,7 @@ static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 
   char *params = calloc(sizeof(char), params_size);
   memcpy(params + 4, string, params_size - metadata_nb);
-  dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size);
+  dt_lib_presets_add(name, self->plugin_name, self->version(), params, params_size, TRUE);
   free(params);
 }
 
@@ -945,7 +915,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
 
   g_list_free(key_value);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
   _update(self);
   return 0;

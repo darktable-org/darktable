@@ -21,6 +21,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_png.h"
+#include "common/imagebuf.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
@@ -132,6 +133,15 @@ const char *name()
   return _("lut 3D");
 }
 
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("perform color space corrections and apply look"),
+                                      _("corrective or creative"),
+                                      _("linear, RGB, display-referred"),
+                                      _("defined by profile, RGB"),
+                                      _("linear or non-linear, RGB, display-referred"));
+}
+
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
@@ -139,26 +149,12 @@ int flags()
 
 int default_group()
 {
-  return IOP_GROUP_COLOR;
+  return IOP_GROUP_COLOR | IOP_GROUP_TECHNICAL;
 }
 
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_rgb;
-}
-
-void init_key_accels(dt_iop_module_so_t *self)
-{
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "application color space"));
-  dt_accel_register_combobox_iop(self, FALSE, NC_("accel", "interpolation"));
-}
-
-void connect_key_accels(dt_iop_module_t *self)
-{
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
-
-  dt_accel_connect_combobox_iop(self, "application color space", GTK_WIDGET(g->colorspace));
-  dt_accel_connect_combobox_iop(self, "interpolation ", GTK_WIDGET(g->interpolation ));
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version, void *new_params,
@@ -463,7 +459,7 @@ uint8_t calculate_clut_compressed(dt_iop_lut3d_params_t *const p, const char *co
 
   get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
-  lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
+  lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
   if(!lclut)
   {
     fprintf(stderr, "[lut3d] error allocating buffer for gmz lut\n");
@@ -563,7 +559,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu floats for png lut - level %d\n", buf_size_lut, level);
-  float *lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
+  float *lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
   if(!lclut)
   {
     fprintf(stderr, "[lut3d] error - allocating buffer for png lut\n");
@@ -793,7 +789,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
-        lclut = dt_alloc_align(16, buf_size * sizeof(float));
+        lclut = dt_alloc_align(16, sizeof(float) * buf_size);
         if(!lclut)
         {
           fprintf(stderr, "[lut3d] error - allocating buffer for cube lut\n");
@@ -905,7 +901,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
             }
             buf_size = level * level * level * 3;
             dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
-            lclut = dt_alloc_align(16, buf_size * sizeof(float));
+            lclut = dt_alloc_align(16, sizeof(float) * buf_size);
             if(!lclut)
             {
               fprintf(stderr, "[lut3d] error - allocating buffer for cube lut\n");
@@ -999,7 +995,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const dt_iop_order_iccprofile_info_t *const lut_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
-    = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
   cl_mem clut_cl = NULL;
   const int devid = piece->pipe->devid;
@@ -1078,7 +1074,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_order_iccprofile_info_t *const lut_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, colorspace, "", INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *const work_profile
-    = dt_ioppr_get_pipe_work_profile_info(piece->pipe);
+    = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
   const gboolean transform = (work_profile != NULL && lut_profile != NULL) ? TRUE : FALSE;
   if (clut)
   {
@@ -1107,7 +1103,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else  // no clut
   {
-    memcpy(obuf, ibuf, width * height * ch * sizeof(float));
+    dt_iop_image_copy_by_size(obuf, ibuf, width, height, ch);
   }
 }
 
@@ -1132,7 +1128,7 @@ void init_global(dt_iop_module_so_t *module)
 #ifdef HAVE_GMIC
   // make sure the cache dir exists
   char *cache_dir = g_build_filename(g_get_user_cache_dir(), "gmic", NULL);
-  char *cache_gmic_dir = dt_loc_init_generic(cache_dir, NULL);
+  char *cache_gmic_dir = dt_loc_init_generic(cache_dir, NULL, NULL);
   g_free(cache_dir);
   g_free(cache_gmic_dir);
 #endif // HAVE_GMIC
@@ -1378,7 +1374,6 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
   d->clut = NULL;
   d->level = 0;
   d->params.filepath[0] = '\0';
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1621,11 +1616,6 @@ static void button_clicked(GtkWidget *widget, dt_iop_module_t *self)
   gtk_widget_destroy(filechooser);
 }
 
-void gui_reset(dt_iop_module_t *self)
-{
-  memcpy(self->params, self->default_params, sizeof(dt_iop_lut3d_params_t));
-}
-
 static void _show_hide_colorspace(dt_iop_module_t *self)
 {
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
@@ -1682,8 +1672,7 @@ void module_moved_callback(gpointer instance, dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_lut3d_gui_data_t));
-  dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
+  dt_iop_lut3d_gui_data_t *g = IOP_GUI_ALLOC(lut3d);
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1697,12 +1686,13 @@ void gui_init(dt_iop_module_t *self)
 #else
   gtk_widget_set_tooltip_text(button, _("select a png (haldclut)"
       ", a cube or a 3dl file "
-      "CAUTION: 3D lut folder must be set in preferences/core options/miscellaneous before choosing the lut file"));
+      "CAUTION: 3D lut folder must be set in preferences/processing before choosing the lut file"));
 #endif // HAVE_GMIC
   gtk_box_pack_start(GTK_BOX(g->hbox), button, FALSE, FALSE, 0);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), self);
 
   g->filepath = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_combobox_set_entries_ellipsis(g->filepath, PANGO_ELLIPSIZE_MIDDLE);
   gtk_box_pack_start(GTK_BOX(g->hbox), g->filepath, TRUE, TRUE, 0);
 #ifdef HAVE_GMIC
   gtk_widget_set_tooltip_text(g->filepath,
@@ -1758,7 +1748,7 @@ void gui_init(dt_iop_module_t *self)
   g->interpolation = dt_bauhaus_combobox_from_params(self, N_("interpolation"));
   gtk_widget_set_tooltip_text(g->interpolation, _("select the interpolation method"));
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_MODULE_MOVED,
                             G_CALLBACK(module_moved_callback), self);
 }
 
@@ -1768,9 +1758,9 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_lut3d_gui_data_t *g = (dt_iop_lut3d_gui_data_t *)self->gui_data;
   dt_gui_key_accel_block_on_focus_disconnect(g->lutentry);
 #endif // HAVE_GMIC
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(module_moved_callback), self);
-  free(self->gui_data);
-  self->gui_data = NULL;
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(module_moved_callback), self);
+
+  IOP_GUI_FREE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

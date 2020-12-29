@@ -92,6 +92,18 @@ typedef unsigned int u_int;
 #  define dt_omp_firstprivate(...)
 # endif/* HAVE_OMP_FIRSTPRIVATE_WITH_CONST */
 
+#ifndef dt_omp_sharedconst
+#ifdef _OPENMP
+#if defined(__clang__) || __GNUC__ > 8
+# define dt_omp_sharedconst(...) shared(__VA_ARGS__)
+#else
+  // GCC 8.4 throws string of errors "'x' is predetermined 'shared' for 'shared'" if we explicitly declare
+  //  'const' variables as shared
+# define dt_omp_sharedconst(var, ...)
+#endif
+#endif /* _OPENMP */
+#endif /* dt_omp_sharedconst */
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
@@ -121,7 +133,10 @@ typedef unsigned int u_int;
 
 #include "common/usermanual_url.h"
 
-#define DT_MODULE_VERSION 22 // version of dt's module interface
+// for signal debugging symbols
+#include "control/signal.h"
+
+#define DT_MODULE_VERSION 23 // version of dt's module interface
 
 // version of current performance configuration version
 // if you want to run an updated version of the performance configuration later
@@ -163,10 +178,6 @@ static inline int dt_version()
 #endif
 }
 
-#ifndef M_PI
-#define M_PI 3.14159265358979323846F
-#endif
-
 // Golden number (1+sqrt(5))/2
 #ifndef PHI
 #define PHI 1.61803398874989479F
@@ -188,6 +199,14 @@ static inline int dt_version()
 
 #define DT_IMAGE_DBLOCKS 64
 
+// If platform supports hardware-accelerated fused-multiply-add
+// This is not only faster but more accurate because rounding happens at the right place
+#ifdef FP_FAST_FMAF
+  #define DT_FMA(x, y, z) fmaf(x, y, z)
+#else
+  #define DT_FMA(x, y, z) ((x) * (y) + (z))
+#endif
+
 struct dt_gui_gtk_t;
 struct dt_control_t;
 struct dt_develop_t;
@@ -205,24 +224,27 @@ struct dt_l10n_t;
 typedef enum dt_debug_thread_t
 {
   // powers of two, masking
-  DT_DEBUG_CACHE = 1 << 0,
-  DT_DEBUG_CONTROL = 1 << 1,
-  DT_DEBUG_DEV = 1 << 2,
-  DT_DEBUG_PERF = 1 << 4,
-  DT_DEBUG_CAMCTL = 1 << 5,
-  DT_DEBUG_PWSTORAGE = 1 << 6,
-  DT_DEBUG_OPENCL = 1 << 7,
-  DT_DEBUG_SQL = 1 << 8,
-  DT_DEBUG_MEMORY = 1 << 9,
-  DT_DEBUG_LIGHTTABLE = 1 << 10,
-  DT_DEBUG_NAN = 1 << 11,
-  DT_DEBUG_MASKS = 1 << 12,
-  DT_DEBUG_LUA = 1 << 13,
-  DT_DEBUG_INPUT = 1 << 14,
-  DT_DEBUG_PRINT = 1 << 15,
+  DT_DEBUG_CACHE          = 1 <<  0,
+  DT_DEBUG_CONTROL        = 1 <<  1,
+  DT_DEBUG_DEV            = 1 <<  2,
+  DT_DEBUG_PERF           = 1 <<  4,
+  DT_DEBUG_CAMCTL         = 1 <<  5,
+  DT_DEBUG_PWSTORAGE      = 1 <<  6,
+  DT_DEBUG_OPENCL         = 1 <<  7,
+  DT_DEBUG_SQL            = 1 <<  8,
+  DT_DEBUG_MEMORY         = 1 <<  9,
+  DT_DEBUG_LIGHTTABLE     = 1 << 10,
+  DT_DEBUG_NAN            = 1 << 11,
+  DT_DEBUG_MASKS          = 1 << 12,
+  DT_DEBUG_LUA            = 1 << 13,
+  DT_DEBUG_INPUT          = 1 << 14,
+  DT_DEBUG_PRINT          = 1 << 15,
   DT_DEBUG_CAMERA_SUPPORT = 1 << 16,
-  DT_DEBUG_IOPORDER = 1 << 17,
-  DT_DEBUG_IMAGEIO = 1 << 18,
+  DT_DEBUG_IOPORDER       = 1 << 17,
+  DT_DEBUG_IMAGEIO        = 1 << 18,
+  DT_DEBUG_UNDO           = 1 << 19,
+  DT_DEBUG_SIGNAL         = 1 << 20,
+  DT_DEBUG_PARAMS         = 1 << 21,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -273,6 +295,7 @@ typedef struct darktable_t
   dt_pthread_mutex_t readFile_mutex;
   char *progname;
   char *datadir;
+  char *sharedir;
   char *plugindir;
   char *localedir;
   char *tmpdir;
@@ -282,6 +305,8 @@ typedef struct darktable_t
   GList *guides;
   double start_wtime;
   GList *themes;
+  int32_t unmuted_signal_dbg_acts;
+  gboolean unmuted_signal_dbg[DT_SIGNAL_COUNT];
 } darktable_t;
 
 typedef struct
@@ -297,7 +322,12 @@ void dt_cleanup();
 void dt_print(dt_debug_thread_t thread, const char *msg, ...) __attribute__((format(printf, 2, 3)));
 void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
+
 void *dt_alloc_align(size_t alignment, size_t size);
+static inline float *dt_alloc_align_float(size_t pixels)
+{
+  return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+}
 size_t dt_round_size(const size_t size, const size_t alignment);
 size_t dt_round_size_sse(const size_t size);
 
@@ -309,17 +339,17 @@ void dt_free_align(void *mem);
 #define dt_free_align_ptr free
 #endif
 
-static inline void dt_lock_image(uint32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image(int32_t imgid) ACQUIRE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_lock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_unlock_image(uint32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image(int32_t imgid) RELEASE(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid & (DT_IMAGE_DBLOCKS-1)]));
 }
 
-static inline void dt_lock_image_pair(uint32_t imgid1, uint32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_lock_image_pair(int32_t imgid1, int32_t imgid2) ACQUIRE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   if(imgid1 < imgid2)
   {
@@ -333,7 +363,7 @@ static inline void dt_lock_image_pair(uint32_t imgid1, uint32_t imgid2) ACQUIRE(
   }
 }
 
-static inline void dt_unlock_image_pair(uint32_t imgid1, uint32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
+static inline void dt_unlock_image_pair(int32_t imgid1, int32_t imgid2) RELEASE(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)], darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)])
 {
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid1 & (DT_IMAGE_DBLOCKS-1)]));
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
@@ -385,10 +415,11 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
 /** \brief check if file is a supported image */
 gboolean dt_supported_image(const gchar *filename);
 
-static inline int dt_get_num_threads()
+static inline size_t dt_get_num_threads()
 {
 #ifdef _OPENMP
-  return omp_get_num_procs();
+  // we can safely assume omp_get_num_procs is > 0
+  return (size_t)omp_get_num_procs();
 #else
   return 1;
 #endif
@@ -403,32 +434,28 @@ static inline int dt_get_thread_num()
 #endif
 }
 
-static inline float dt_log2f(const float f)
+// Allocate a buffer for 'n' objects each of size 'objsize' bytes for each of the program's threads.
+// Ensures that there is no false sharing among threads by aligning and rounding up the allocation to
+// a multiple of the cache line size.  Returns a pointer to the allocated pool and the adjusted number
+// of objects in each thread's buffer.  Use dt_get_perthread or dt_get_bythread (see below) to access
+// a specific thread's buffer.
+static inline void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
 {
-#ifdef __GLIBC__
-  return log2f(f);
-#else
-  return logf(f) / logf(2.0f);
-#endif
+  const size_t alloc_size = n * objsize;
+  const size_t cache_lines = (alloc_size+63)/64;
+  *padded_size = 64 * cache_lines / objsize;
+  return __builtin_assume_aligned(dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads()), 64);
 }
-
-static inline float dt_fast_expf(const float x)
+// Same as dt_alloc_perthread, but the object is a float.
+static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_size)
 {
-  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
-  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
-  const int i1 = 0x3f800000u;
-  // e^x, the comment would be 2^x
-  const int i2 = 0x402DF854u; // 0x40000000u;
-  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster):
-  const int k0 = i1 + x * (i2 - i1);
-  union {
-      float f;
-      int k;
-  } u;
-  u.k = k0 > 0 ? k0 : 0;
-  return u.f;
+  return (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
 }
+// Given the buffer and object count returned by dt_alloc_perthread, return the current thread's private buffer.
+#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
+// Given the buffer and object count returned by dt_alloc_perthread and a thread count in 0..dt_get_num_threads(),
+// return a pointer to the indicated thread's private buffer.
+#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
 
 static inline void dt_print_mem_usage()
 {

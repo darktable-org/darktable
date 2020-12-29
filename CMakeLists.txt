@@ -44,6 +44,19 @@ include(DefineOptions.cmake)
 include(GNUInstallDirs)
 include(FeatureSummary)
 
+# resolve symbolic links into real path?
+get_filename_component(CMAKE_INSTALL_BINDIR_ABS "${CMAKE_INSTALL_FULL_BINDIR}" REALPATH "${CMAKE_INSTALL_PREFIX}")
+# get relative pathes specific to the system
+file(RELATIVE_PATH REL_BIN_TO_LIBDIR    ${CMAKE_INSTALL_FULL_BINDIR} "${CMAKE_INSTALL_FULL_LIBDIR}/darktable")
+file(RELATIVE_PATH REL_BIN_TO_SHAREDIR  ${CMAKE_INSTALL_FULL_BINDIR} "${CMAKE_INSTALL_FULL_DATADIR}")
+file(RELATIVE_PATH REL_BIN_TO_LOCALEDIR ${CMAKE_INSTALL_FULL_BINDIR} "${CMAKE_INSTALL_FULL_LOCALEDIR}")
+set(REL_BIN_TO_DATADIR  "${REL_BIN_TO_SHAREDIR}/darktable")
+set(DARKTABLE_BINDIR    "${CMAKE_BINARY_DIR}/${CMAKE_INSTALL_BINDIR}")
+set(DARKTABLE_LIBDIR    "${DARKTABLE_BINDIR}/${REL_BIN_TO_LIBDIR}")
+set(DARKTABLE_SHAREDIR  "${DARKTABLE_BINDIR}/${REL_BIN_TO_SHAREDIR}")
+set(DARKTABLE_DATADIR   "${DARKTABLE_BINDIR}/${REL_BIN_TO_DATADIR}") # DATAROOTDIR == DATADIR # darktablerc, themes, icons, ... Cannot use ${CMAKE_BINDIR}/data because not everything resides there. Like icons (pixmaps)
+set(DARKTABLE_LOCALEDIR "${DARKTABLE_BINDIR}/${REL_BIN_TO_LOCALEDIR}")
+
 # https://medium.com/@alasher/colored-c-compiler-output-with-ninja-clang-gcc-10bfe7f2b949
 if(${FORCE_COLORED_OUTPUT})
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
@@ -116,10 +129,9 @@ if(APPLE)
 	LIST(APPEND CMAKE_PREFIX_PATH /opt/local /usr/local)
 	set(CMAKE_FIND_FRAMEWORK "LAST")
 	# except libstdc++ (only one linked via -l flag, not full path)
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
-	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
-	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib" CACHE STRING "" FORCE)
-	mark_as_advanced(CMAKE_EXE_LINKER_FLAGS CMAKE_SHARED_LINKER_FLAGS CMAKE_MODULE_LINKER_FLAGS)
+	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -L/usr/lib")
+	set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -L/usr/lib")
+	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -L/usr/lib")
 
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -D_DARWIN_C_SOURCE")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -D_DARWIN_C_SOURCE")
@@ -145,7 +157,7 @@ endif(WIN32)
 #
 # Set package version
 #
-file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/src/") # the src/ subdirectory won't exist yet
+file(MAKE_DIRECTORY "${DARKTABLE_BINDIR}/") # the bin/ subdirectory won't exist yet
 
 # adds custom command to generate header containing version info.
 # takes 1 optional parameter - version override.
@@ -162,7 +174,7 @@ function(generate_version_gen_c)
 
   add_custom_target(
     create_version_gen ALL
-    COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_c.sh ${CMAKE_BINARY_DIR}/src/version_gen.c ${_VERSION}
+    COMMAND ${CMAKE_SOURCE_DIR}/tools/create_version_c.sh ${DARKTABLE_BINDIR}/version_gen.c ${_VERSION}
     DEPENDS ${CMAKE_SOURCE_DIR}/tools/create_version_c.sh
     WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
     COMMENT "Updating version string (${_TYPE})"
@@ -203,7 +215,7 @@ else(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
       # but generate_version target expects it to be in build dir, so we need to copy it
       add_custom_target(
         create_version_gen ALL
-        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/src/version_gen.c ${CMAKE_BINARY_DIR}/src/version_gen.c
+        COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_SOURCE_DIR}/src/version_gen.c ${DARKTABLE_BINDIR}/version_gen.c
         DEPENDS ${CMAKE_SOURCE_DIR}/src/version_gen.c
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
         COMMENT "Updating version string (source package) - ${PROJECT_VERSION}"
@@ -214,7 +226,7 @@ endif(DEFINED PROJECT_VERSION AND PROJECT_VERSION VERSION_GREATER 0)
 
 # needed to make sure that version string is actually updated.
 add_custom_command(
-  OUTPUT ${CMAKE_BINARY_DIR}/src/version_gen.c
+  OUTPUT ${DARKTABLE_BINDIR}/version_gen.c
   COMMAND ${CMAKE_COMMAND} -E echo
   DEPENDS create_version_gen
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
@@ -223,7 +235,7 @@ add_custom_command(
 # WARNING: no target should reference version_gen.c directly. instead, they should add_dependencies(yourtarget generate_version)
 add_custom_target(
   generate_version ALL
-  DEPENDS ${CMAKE_BINARY_DIR}/src/version_gen.c
+  DEPENDS ${DARKTABLE_BINDIR}/version_gen.c
   WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
@@ -296,7 +308,7 @@ if(TESTBUILD_OPENCL_PROGRAMS)
   endmacro()
 
   # 3.9 is the first version with which this works.
-  find_llvm("10;9;8;7;6.0;5.0;4.0;3.9")
+  find_llvm("11;10;9;8;7;6.0;5.0;4.0;3.9")
 
   if (LLVM_FOUND)
     message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}")
@@ -347,17 +359,17 @@ else(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
   set(VALIDATE_JSON 1)
 endif(${jsonschema_BIN} STREQUAL "jsonschema_BIN-NOTFOUND")
 
-# we need an xslt interpreter to generate preferences_gen.h and darktablerc
+# we need an XSLT interpreter to generate preferences_gen.h and darktablerc
 find_program(Xsltproc_BIN xsltproc)
 if(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   message(STATUS "Missing xsltproc")
   find_program(Saxon_BIN saxon-xslt)
   if(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
-    message(STATUS "Missing saxon-xslt")
-    message(STATUS "No xslt interpreter found")
+    message(STATUS "Missing Saxon-XSLT")
+    message(STATUS "No XSLT interpreter found")
     set(EXTERNAL_PROGRAMS_FOUND 0)
   else(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
-    message(STATUS "Found saxon-xslt")
+    message(STATUS "Found Saxon-XSLT")
   endif(${Saxon_BIN} STREQUAL "Saxon_BIN-NOTFOUND")
 else(${Xsltproc_BIN} STREQUAL "Xsltproc_BIN-NOTFOUND")
   message(STATUS "Found xsltproc")
@@ -451,6 +463,7 @@ if(BUILD_TESTING)
   find_package(cmocka 1.1.0 CONFIG REQUIRED)
   include(AddCMockaTest)
   include(AddCMockaMockTest)
+  include_directories(${CMOCKA_INCLUDE_DIR} include)
 endif(BUILD_TESTING)
 
 #
@@ -485,10 +498,6 @@ endif(BUILD_TESTING)
 # 	set(CMAKE_C_FLAGS ${CMAKE_C_FLAGS} "-m${USE_SSE_SET}")
 # endif(USE_SSE_SET)
 
-# setup some theme specific variables
-set(THEME hicolor)
-set(THEME_DIRECTORY "${CMAKE_INSTALL_DATAROOTDIR}/icons/${THEME}")
-
 # we need some specific functions:
 if(NOT WIN32)
     if(CMAKE_SYSTEM MATCHES "SunOS.*")
@@ -503,11 +512,11 @@ endif(NOT WIN32)
 set(CMAKE_INSTALL_DEFAULT_COMPONENT_NAME DTApplication)
 
 # lets continue into build directories
-include(data/supported_extensions.cmake) # this file needs to be included first as it gets amended in src/
-add_subdirectory(src) # src/ needs to be before data/ so that the correct CSS file gets installed
-add_subdirectory(data)
+include(data/supported_extensions.cmake) # this file needs to be included first as it gets amended in bin/
+add_subdirectory(src "${DARKTABLE_BINDIR}") # directory needs to be there before data directory so that the correct CSS file gets installed
+add_subdirectory(data "${DARKTABLE_DATADIR}")
 add_subdirectory(doc)
-add_subdirectory(tools)
+add_subdirectory(tools "${DARKTABLE_DATADIR}/tools")
 
 # This contains fixup_bundle
 # And adding a separate subderectory as a last one will make sure

@@ -160,7 +160,7 @@ static int import_images(lua_State *L)
     luaA_push(L, dt_lua_image_t, &result);
     // force refresh of thumbtable view
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_append(NULL, GINT_TO_POINTER(result)));
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
     dt_control_queue_redraw_center();
 
   }
@@ -223,7 +223,7 @@ static int collection_numindex(lua_State *L)
   if (imgid >0)
   {
     luaA_push(L, dt_lua_image_t, &imgid);
-  } else { 
+  } else {
     lua_pushnil(L);
   }
   return 1;
@@ -280,7 +280,7 @@ int dt_lua_init_database(lua_State *L)
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "post-import-film");
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(on_film_imported),
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, G_CALLBACK(on_film_imported),
                             NULL);
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);

@@ -159,7 +159,7 @@ void dt_metadata_init()
     char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
     if(!dt_conf_key_exists(setting))
     {
-      // per default should be imported
+      // per default should be imported - ignored if "write_sidecar_files" set
       uint32_t flag = DT_METADATA_FLAG_IMPORTED;
       if(type == DT_METADATA_TYPE_OPTIONAL)
       {
@@ -299,7 +299,7 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
       list = g_list_next(list);
     }
 
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   }
 }
 
@@ -605,8 +605,8 @@ void dt_metadata_set_import(const int imgid, const char *key, const char *value)
 
   if(keyid != -1) // known key
   {
-    gboolean imported = TRUE;
-    if(dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
+    gboolean imported = dt_conf_get_bool("write_sidecar_files");
+    if(!imported && dt_metadata_get_type(keyid) != DT_METADATA_TYPE_INTERNAL)
     {
       const gchar *name = dt_metadata_get_name(keyid);
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name);
@@ -643,7 +643,7 @@ void dt_metadata_set_list(const GList *imgs, GList *key_value, const gboolean un
   while(kv)
   {
     const gchar *key = (const gchar *)kv->data;
-    int keyid = dt_metadata_get_keyid(key);
+    const int keyid = dt_metadata_get_keyid(key);
     if(keyid != -1) // known key
     {
       const gchar *ckey = dt_util_dstrcat(NULL, "%d", keyid);

@@ -26,9 +26,11 @@
 #include "common/dwt.h"
 #include "common/gaussian.h"
 #include "common/heal.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "develop/blend.h"
 #include "develop/imageop_math.h"
+#include "develop/imageop_gui.h"
 #include "develop/masks.h"
 #include "iop/iop_api.h"
 #include "dtgtk/drawingarea.h"
@@ -53,34 +55,35 @@ typedef enum dt_iop_retouch_drag_types_t {
 } dt_iop_retouch_drag_types_t;
 
 typedef enum dt_iop_retouch_fill_modes_t {
-  DT_IOP_RETOUCH_FILL_ERASE = 0,
-  DT_IOP_RETOUCH_FILL_COLOR = 1
+  DT_IOP_RETOUCH_FILL_ERASE = 0, // $DESCRIPTION: "erase"
+  DT_IOP_RETOUCH_FILL_COLOR = 1  // $DESCRIPTION: "color"
 } dt_iop_retouch_fill_modes_t;
 
 typedef enum dt_iop_retouch_blur_types_t {
-  DT_IOP_RETOUCH_BLUR_GAUSSIAN = 0,
-  DT_IOP_RETOUCH_BLUR_BILATERAL = 1
+  DT_IOP_RETOUCH_BLUR_GAUSSIAN = 0, // $DESCRIPTION: "gaussian"
+  DT_IOP_RETOUCH_BLUR_BILATERAL = 1 // $DESCRIPTION: "bilateral"
 } dt_iop_retouch_blur_types_t;
 
 typedef enum dt_iop_retouch_algo_type_t {
-  DT_IOP_RETOUCH_CLONE = 1,
-  DT_IOP_RETOUCH_HEAL = 2,
-  DT_IOP_RETOUCH_BLUR = 3,
-  DT_IOP_RETOUCH_FILL = 4
+  DT_IOP_RETOUCH_NONE = 0,  // $DESCRIPTION: "unused"
+  DT_IOP_RETOUCH_CLONE = 1, // $DESCRIPTION: "clone"
+  DT_IOP_RETOUCH_HEAL = 2,  // $DESCRIPTION: "heal"
+  DT_IOP_RETOUCH_BLUR = 3,  // $DESCRIPTION: "blur"
+  DT_IOP_RETOUCH_FILL = 4   // $DESCRIPTION: "fill"
 } dt_iop_retouch_algo_type_t;
 
 typedef struct dt_iop_retouch_form_data_t
 {
   int formid; // from masks, form->formid
   int scale;  // 0==original image; 1..RETOUCH_MAX_SCALES==scale; RETOUCH_MAX_SCALES+1==residual
-  dt_iop_retouch_algo_type_t algorithm; // clone, heal, blur, fill
+  dt_iop_retouch_algo_type_t algorithm;  // clone, heal, blur, fill
 
-  int blur_type;     // gaussian, bilateral
-  float blur_radius; // radius for blur algorithm
+  dt_iop_retouch_blur_types_t blur_type; // gaussian, bilateral
+  float blur_radius;                     // radius for blur algorithm
 
-  int fill_mode;         // mode for fill algorithm, erase or fill with color
-  float fill_color[3];   // color for fill algorithm
-  float fill_brightness; // value to be added to the color
+  dt_iop_retouch_fill_modes_t fill_mode; // mode for fill algorithm, erase or fill with color
+  float fill_color[3];                   // color for fill algorithm
+  float fill_brightness;                 // value to be added to the color
 } dt_iop_retouch_form_data_t;
 
 typedef struct retouch_user_data_t
@@ -97,20 +100,20 @@ typedef struct dt_iop_retouch_params_t
 {
   dt_iop_retouch_form_data_t rt_forms[RETOUCH_NO_FORMS]; // array of masks index and additional data
 
-  dt_iop_retouch_algo_type_t algorithm; // clone, heal, blur, fill
+  dt_iop_retouch_algo_type_t algorithm; // $DEFAULT: DT_IOP_RETOUCH_HEAL clone, heal, blur, fill
 
-  int num_scales; // number of wavelets scales
-  int curr_scale; // current wavelet scale
-  int merge_from_scale;
+  int num_scales;       // $DEFAULT: 0 number of wavelets scales
+  int curr_scale;       // $DEFAULT: 0 current wavelet scale
+  int merge_from_scale; // $DEFAULT: 0
 
   float preview_levels[3];
 
-  int blur_type;     // gaussian, bilateral
-  float blur_radius; // radius for blur algorithm
+  dt_iop_retouch_blur_types_t blur_type; // $DEFAULT: DT_IOP_RETOUCH_BLUR_GAUSSIAN $DESCRIPTION: "blur type" gaussian, bilateral
+  float blur_radius; // $MIN: 0.1 $MAX: 200.0 $DEFAULT: 10.0 $DESCRIPTION: "blur radius" radius for blur algorithm
 
-  int fill_mode;         // mode for fill algorithm, erase or fill with color
-  float fill_color[3];   // color for fill algorithm
-  float fill_brightness; // value to be added to the color
+  dt_iop_retouch_fill_modes_t fill_mode; // $DEFAULT: DT_IOP_RETOUCH_FILL_ERASE $DESCRIPTION: "fill mode" mode for fill algorithm, erase or fill with color
+  float fill_color[3];   // $DEFAULT: 0.0 color for fill algorithm
+  float fill_brightness; // $MIN: -1.0 $MAX: 1.0 $DESCRIPTION: "brightness" value to be added to the color
 } dt_iop_retouch_params_t;
 
 typedef struct dt_iop_retouch_gui_data_t
@@ -193,9 +196,24 @@ const char *name()
   return _("retouch");
 }
 
+const char *aliases()
+{
+  return _("split-frequency|healing|cloning|stamp");
+}
+
+
+const char *description(struct dt_iop_module_t *self)
+{
+  return dt_iop_set_description(self, _("remove and clone spots, perform split-frequency skin editing"),
+                                      _("corrective"),
+                                      _("linear, RGB, scene-referred"),
+                                      _("geometric and frequential, RGB"),
+                                      _("linear, RGB, scene-referred"));
+}
+
 int default_group()
 {
-  return IOP_GROUP_CORRECT;
+  return IOP_GROUP_CORRECT | IOP_GROUP_EFFECTS;
 }
 
 int flags()
@@ -288,47 +306,49 @@ static void rt_display_selected_fill_color(dt_iop_retouch_gui_data_t *g, dt_iop_
   gtk_color_chooser_set_rgba(GTK_COLOR_CHOOSER(g->colorpick), &c);
 }
 
-static void rt_show_hide_controls(const dt_iop_module_t *self, const dt_iop_retouch_gui_data_t *d,
-                                  dt_iop_retouch_params_t *p, dt_iop_retouch_gui_data_t *g)
+static void rt_show_hide_controls(const dt_iop_module_t *self)
 {
+  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
+
   const int creation_continuous = (darktable.develop->form_gui && darktable.develop->form_gui->creation_continuous
                                    && darktable.develop->form_gui->creation_continuous_module == self);
 
   switch(p->algorithm)
   {
     case DT_IOP_RETOUCH_HEAL:
-      gtk_widget_hide(GTK_WIDGET(d->vbox_blur));
-      gtk_widget_hide(GTK_WIDGET(d->vbox_fill));
+      gtk_widget_hide(GTK_WIDGET(g->vbox_blur));
+      gtk_widget_hide(GTK_WIDGET(g->vbox_fill));
       break;
     case DT_IOP_RETOUCH_BLUR:
-      gtk_widget_show(GTK_WIDGET(d->vbox_blur));
-      gtk_widget_hide(GTK_WIDGET(d->vbox_fill));
+      gtk_widget_show(GTK_WIDGET(g->vbox_blur));
+      gtk_widget_hide(GTK_WIDGET(g->vbox_fill));
       break;
     case DT_IOP_RETOUCH_FILL:
-      gtk_widget_hide(GTK_WIDGET(d->vbox_blur));
-      gtk_widget_show(GTK_WIDGET(d->vbox_fill));
+      gtk_widget_hide(GTK_WIDGET(g->vbox_blur));
+      gtk_widget_show(GTK_WIDGET(g->vbox_fill));
       if(p->fill_mode == DT_IOP_RETOUCH_FILL_COLOR)
-        gtk_widget_show(GTK_WIDGET(d->hbox_color_pick));
+        gtk_widget_show(GTK_WIDGET(g->hbox_color_pick));
       else
-        gtk_widget_hide(GTK_WIDGET(d->hbox_color_pick));
+        gtk_widget_hide(GTK_WIDGET(g->hbox_color_pick));
       break;
     case DT_IOP_RETOUCH_CLONE:
     default:
-      gtk_widget_hide(GTK_WIDGET(d->vbox_blur));
-      gtk_widget_hide(GTK_WIDGET(d->vbox_fill));
+      gtk_widget_hide(GTK_WIDGET(g->vbox_blur));
+      gtk_widget_hide(GTK_WIDGET(g->vbox_fill));
       break;
   }
 
   if(g->display_wavelet_scale)
-    gtk_widget_show(GTK_WIDGET(d->vbox_preview_scale));
+    gtk_widget_show(GTK_WIDGET(g->vbox_preview_scale));
   else
-    gtk_widget_hide(GTK_WIDGET(d->vbox_preview_scale));
+    gtk_widget_hide(GTK_WIDGET(g->vbox_preview_scale));
 
   const dt_masks_form_t *form = dt_masks_get_from_id(darktable.develop, rt_get_selected_shape_id());
   if(form && !creation_continuous)
-    gtk_widget_show(GTK_WIDGET(d->sl_mask_opacity));
+    gtk_widget_show(GTK_WIDGET(g->sl_mask_opacity));
   else
-    gtk_widget_hide(GTK_WIDGET(d->sl_mask_opacity));
+    gtk_widget_hide(GTK_WIDGET(g->sl_mask_opacity));
 }
 
 static void rt_display_selected_shapes_lbl(dt_iop_retouch_gui_data_t *g)
@@ -396,7 +416,7 @@ static void rt_shape_selection_changed(dt_iop_module_t *self)
       selection_changed = 1;
     }
 
-    if(selection_changed) rt_show_hide_controls(self, g, p, g);
+    if(selection_changed) rt_show_hide_controls(self);
   }
 
   rt_display_selected_shapes_lbl(g);
@@ -758,7 +778,7 @@ static void rt_clamp_minmax(float levels_old[3], float levels_new[3])
   }
 }
 
-static int rt_shape_is_beign_added(dt_iop_module_t *self, const int shape_type)
+static int rt_shape_is_being_added(dt_iop_module_t *self, const int shape_type)
 {
   int being_added = 0;
 
@@ -1032,8 +1052,10 @@ static gboolean rt_wdbar_button_release(GtkWidget *widget, GdkEventButton *event
 
 static gboolean rt_wdbar_scrolled(GtkWidget *widget, GdkEventScroll *event, dt_iop_module_t *self)
 {
-  if(((event->state & gtk_accelerator_get_default_mod_mask()) == darktable.gui->sidebar_scroll_mask) != dt_conf_get_bool("darkroom/ui/sidebar_scroll_default")) return FALSE;
+  if(dt_gui_ignore_scroll(event)) return FALSE;
+
   if(darktable.gui->reset) return TRUE;
+
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -1323,13 +1345,14 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
-static void rt_copypaste_scale_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+static gboolean rt_copypaste_scale_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
+
   ++darktable.gui->reset;
 
   int scale_copied = 0;
-  const int active = gtk_toggle_button_get_active(togglebutton);
+  const int active = !gtk_toggle_button_get_active(togglebutton);
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -1353,11 +1376,13 @@ static void rt_copypaste_scale_callback(GtkToggleButton *togglebutton, dt_iop_mo
   --darktable.gui->reset;
 
   if(scale_copied) dt_dev_add_history_item(darktable.develop, self, TRUE);
+
+  return TRUE;
 }
 
-static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
 
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
@@ -1370,15 +1395,15 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
     ++darktable.gui->reset;
     gtk_toggle_button_set_active(togglebutton, FALSE);
     --darktable.gui->reset;
-    return;
+    return TRUE;
   }
 
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 
-  g->display_wavelet_scale = gtk_toggle_button_get_active(togglebutton);
+  g->display_wavelet_scale = !gtk_toggle_button_get_active(togglebutton);
 
-  rt_show_hide_controls(self, g, p, g);
+  rt_show_hide_controls(self);
 
   // compute auto levels only the first time display wavelet scale is used,
   // only if levels values are the default
@@ -1394,6 +1419,9 @@ static void rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton, dt_
   dt_pthread_mutex_unlock(&g->lock);
 
   dt_dev_reprocess_center(self->dev);
+
+  gtk_toggle_button_set_active(togglebutton, g->display_wavelet_scale);
+  return TRUE;
 }
 
 static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -1439,9 +1467,9 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
 }
 
-static void rt_auto_levels_callback(GtkToggleButton *togglebutton, dt_iop_module_t *self)
+static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return FALSE;
 
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
@@ -1455,9 +1483,9 @@ static void rt_auto_levels_callback(GtkToggleButton *togglebutton, dt_iop_module
   }
   dt_pthread_mutex_unlock(&g->lock);
 
-  gtk_toggle_button_set_active(togglebutton, FALSE);
+  dt_iop_refresh_center(self);
 
-  dt_dev_reprocess_center(self->dev);
+  return TRUE;
 }
 
 static void rt_mask_opacity_callback(GtkWidget *slider, dt_iop_module_t *self)
@@ -1563,17 +1591,26 @@ static gboolean rt_edit_masks_callback(GtkWidget *widget, GdkEventButton *event,
     return TRUE;
   }
 
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean rt_add_shape_callback(GtkWidget *widget, GdkEventButton *e, dt_iop_module_t *self)
 {
+  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
+
   if(darktable.gui->reset) return FALSE;
 
   GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
   const int creation_continuous = ((e->state & modifiers) == GDK_CONTROL_MASK);
 
-  return rt_add_shape(widget, creation_continuous, self);
+  rt_add_shape(widget, creation_continuous, self);
+
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_being_added(self, DT_MASKS_CIRCLE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_being_added(self, DT_MASKS_PATH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_being_added(self, DT_MASKS_ELLIPSE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_being_added(self, DT_MASKS_BRUSH));
+
+  return TRUE;
 }
 
 static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkEventButton *e,
@@ -1624,7 +1661,7 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), (p->algorithm == DT_IOP_RETOUCH_BLUR));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), (p->algorithm == DT_IOP_RETOUCH_FILL));
 
-  rt_show_hide_controls(self, g, p, g);
+  rt_show_hide_controls(self);
 
   if(!accept)
   {
@@ -1669,12 +1706,13 @@ static gboolean rt_select_algorithm_callback(GtkToggleButton *togglebutton, GdkE
   --darktable.gui->reset;
 
   dt_dev_add_history_item(darktable.develop, self, TRUE);
+
   return TRUE;
 }
 
-static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+static gboolean rt_showmask_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
 
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
 
@@ -1683,115 +1721,65 @@ static void rt_showmask_callback(GtkToggleButton *togglebutton, dt_iop_module_t 
   {
     dt_control_log(_("cannot display masks when the blending mask is displayed"));
 
-    ++darktable.gui->reset;
     gtk_toggle_button_set_active(togglebutton, FALSE);
-    --darktable.gui->reset;
-    return;
+    return TRUE;
   }
 
-  g->mask_display = gtk_toggle_button_get_active(togglebutton);
+  g->mask_display = !gtk_toggle_button_get_active(togglebutton);
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  dt_dev_reprocess_center(module->dev);
+  dt_iop_refresh_center(module);
+
+  gtk_toggle_button_set_active(togglebutton, g->mask_display);
+  return TRUE;
 }
 
-static void rt_suppress_callback(GtkToggleButton *togglebutton, dt_iop_module_t *module)
+static gboolean rt_suppress_callback(GtkToggleButton *togglebutton, GdkEventButton *event, dt_iop_module_t *module)
 {
-  if(darktable.gui->reset) return;
+  if(darktable.gui->reset) return TRUE;
 
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-  g->suppress_mask = gtk_toggle_button_get_active(togglebutton);
+  g->suppress_mask = !gtk_toggle_button_get_active(togglebutton);
 
   if(module->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->off), 1);
   dt_iop_request_focus(module);
 
-  dt_dev_reprocess_center(module->dev);
+  dt_iop_refresh_center(module);
+
+  gtk_toggle_button_set_active(togglebutton, g->suppress_mask);
+  return TRUE;
 }
 
-static void rt_blur_type_callback(GtkComboBox *combo, dt_iop_module_t *self)
+void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
-  if(darktable.gui->reset) return;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  p->blur_type = dt_bauhaus_combobox_get((GtkWidget *)combo);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
-  {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
-    {
-      p->rt_forms[index].blur_type = p->blur_type;
-    }
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void rt_blur_radius_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  p->blur_radius = dt_bauhaus_slider_get(slider);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
-  {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
-    {
-      p->rt_forms[index].blur_radius = p->blur_radius;
-    }
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void rt_fill_mode_callback(GtkComboBox *combo, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-
-  ++darktable.gui->reset;
-
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
 
-  p->fill_mode = dt_bauhaus_combobox_get((GtkWidget *)combo);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
+  if(w == g->cmb_fill_mode)
   {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
+    ++darktable.gui->reset;
+    rt_show_hide_controls(self);
+    --darktable.gui->reset;
+  }
+  else
+  {
+    const int index = rt_get_selected_shape_index(p);
+    if(index >= 0)
     {
-      p->rt_forms[index].fill_mode = p->fill_mode;
+      if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_BLUR)
+      {
+        p->rt_forms[index].blur_type = p->blur_type;
+        p->rt_forms[index].blur_radius = p->blur_radius;
+      }
+      else if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
+      {
+        p->rt_forms[index].fill_mode = p->fill_mode;
+        p->rt_forms[index].fill_brightness = p->fill_brightness;
+      }
     }
   }
-
-  rt_show_hide_controls(self, g, p, g);
-
-  --darktable.gui->reset;
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
-}
-
-static void rt_fill_brightness_callback(GtkWidget *slider, dt_iop_module_t *self)
-{
-  if(darktable.gui->reset) return;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
-
-  p->fill_brightness = dt_bauhaus_slider_get(slider);
-
-  const int index = rt_get_selected_shape_index(p);
-  if(index >= 0)
-  {
-    if(p->rt_forms[index].algorithm == DT_IOP_RETOUCH_FILL)
-    {
-      p->rt_forms[index].fill_brightness = p->fill_brightness;
-    }
-  }
-
-  dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
 //--------------------------------------------------------------------------------------------------
@@ -1812,43 +1800,13 @@ void masks_selection_changed(struct dt_iop_module_t *self, const int form_select
 
 void init(dt_iop_module_t *module)
 {
-  module->params = calloc(1, sizeof(dt_iop_retouch_params_t));
-  module->default_params = calloc(1, sizeof(dt_iop_retouch_params_t));
-  // our module is disabled by default
-  module->default_enabled = 0;
-  module->params_size = sizeof(dt_iop_retouch_params_t);
-  module->gui_data = NULL;
+  dt_iop_default_init(module);
 
-  // init defaults:
-  dt_iop_retouch_params_t tmp;
-  memset(&tmp, 0, sizeof(tmp));
+  dt_iop_retouch_params_t *d = module->default_params;
 
-  tmp.algorithm = DT_IOP_RETOUCH_HEAL;
-  tmp.num_scales = 0;
-  tmp.curr_scale = 0;
-  tmp.merge_from_scale = 0;
-
-  tmp.preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
-  tmp.preview_levels[1] = 0.f;
-  tmp.preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
-
-  tmp.blur_type = DT_IOP_RETOUCH_BLUR_GAUSSIAN;
-  tmp.blur_radius = 10.0f;
-
-  tmp.fill_mode = DT_IOP_RETOUCH_FILL_ERASE;
-  tmp.fill_color[0] = tmp.fill_color[1] = tmp.fill_color[2] = 0.f;
-  tmp.fill_brightness = 0.f;
-
-  memcpy(module->params, &tmp, sizeof(dt_iop_retouch_params_t));
-  memcpy(module->default_params, &tmp, sizeof(dt_iop_retouch_params_t));
-}
-
-void cleanup(dt_iop_module_t *module)
-{
-  free(module->params);
-  module->params = NULL;
-  free(module->default_params);
-  module->default_params = NULL;
+  d->preview_levels[0] = RETOUCH_PREVIEW_LVL_MIN;
+  d->preview_levels[1] = 0.f;
+  d->preview_levels[2] = RETOUCH_PREVIEW_LVL_MAX;
 }
 
 void init_global(dt_iop_module_so_t *module)
@@ -1934,7 +1892,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     }
 
     // if we are switching between display modes we have to reprocess the main image
-    if(g->display_wavelet_scale || g->mask_display || g->suppress_mask) dt_dev_reprocess_center(self->dev);
+    if(g->display_wavelet_scale || g->mask_display || g->suppress_mask)
+      dt_iop_refresh_center(self);
   }
 }
 
@@ -1948,7 +1907,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   piece->data = malloc(sizeof(dt_iop_retouch_data_t));
-  self->commit_params(self, self->default_params, pipe, piece);
 }
 
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -1997,10 +1955,10 @@ void gui_update(dt_iop_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), p->algorithm == DT_IOP_RETOUCH_FILL);
 
   // enable/disable shapes toolbar
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(self, DT_MASKS_CIRCLE));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(self, DT_MASKS_PATH));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(self, DT_MASKS_ELLIPSE));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(self, DT_MASKS_BRUSH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_being_added(self, DT_MASKS_CIRCLE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_being_added(self, DT_MASKS_PATH));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_being_added(self, DT_MASKS_ELLIPSE));
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_being_added(self, DT_MASKS_BRUSH));
 
   // update the rest of the fields
   gtk_widget_queue_draw(GTK_WIDGET(g->wd_bar));
@@ -2018,7 +1976,7 @@ void gui_update(dt_iop_module_t *self)
   gtk_widget_set_sensitive(g->bt_paste_scale, g->copied_scale >= 0);
 
   // show/hide some fields
-  rt_show_hide_controls(self, g, p, g);
+  rt_show_hide_controls(self);
 
   // update edit shapes status
   dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)self->blend_data;
@@ -2068,126 +2026,82 @@ void change_image(struct dt_iop_module_t *self)
 
 void gui_init(dt_iop_module_t *self)
 {
-  self->gui_data = malloc(sizeof(dt_iop_retouch_gui_data_t));
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->params;
+  dt_iop_retouch_gui_data_t *g = IOP_GUI_ALLOC(retouch);
+  dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->default_params;
 
   dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
 
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
   // shapes toolbar
   GtkWidget *hbox_shapes = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label = gtk_label_new(_("shapes:"));
-  gtk_box_pack_start(GTK_BOX(hbox_shapes), label, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_shapes), dt_ui_label_new(_("shapes:")), FALSE, TRUE, 0);
   g->label_form = GTK_LABEL(gtk_label_new("-1"));
   gtk_box_pack_start(GTK_BOX(hbox_shapes), GTK_WIDGET(g->label_form), FALSE, TRUE, DT_PIXEL_APPLY_DPI(5));
   gtk_widget_set_tooltip_text(hbox_shapes,
                _("to add a shape select an algorithm and a shape type and click on the image.\n"
                  "shapes are added to the current scale"));
 
-  g->bt_edit_masks
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_eye, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_edit_masks), "button-press-event", G_CALLBACK(rt_edit_masks_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_edit_masks, _("show and edit shapes on the current scale"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_edit_masks, FALSE, FALSE, 0);
+  g->bt_edit_masks = dt_iop_togglebutton_new(self, N_("show and edit shapes on the current scale"),
+                                                   N_("show and edit shapes in restricted mode"),
+                                             G_CALLBACK(rt_edit_masks_callback), TRUE, 0, 0,
+                                             dtgtk_cairo_paint_masks_eye, hbox_shapes);
 
-  g->bt_brush
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_brush, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_brush), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_brush, _("add brush\nctrl+click to add multiple brush strokes"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_brush, FALSE, FALSE, 0);
+  g->bt_brush = dt_iop_togglebutton_new(self, N_("add brush"), N_("add multiple brush strokes"),
+                                        G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
+                                        dtgtk_cairo_paint_masks_brush, hbox_shapes);
 
-  g->bt_path = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_path, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_path), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_path, _("add path\nctrl+click to add multiple paths"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_path, FALSE, FALSE, 0);
+  g->bt_path = dt_iop_togglebutton_new(self, N_("add path"), N_("add multiple paths"),
+                                       G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_masks_path, hbox_shapes);
 
-  g->bt_ellipse
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_ellipse, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_ellipse), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_ellipse, _("add ellipse\nctrl+click to add multiple ellipses"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_ellipse, FALSE, FALSE, 0);
+  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("add ellipse"), N_("add multiple ellipses"),
+                                          G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
+                                          dtgtk_cairo_paint_masks_ellipse, hbox_shapes);
 
-  g->bt_circle
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_masks_circle, CPF_STYLE_FLAT, NULL);
-  g_signal_connect(G_OBJECT(g->bt_circle), "button-press-event", G_CALLBACK(rt_add_shape_callback), self);
-  gtk_widget_set_tooltip_text(g->bt_circle, _("add circle\nctrl+click to add multiple circles"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  gtk_box_pack_end(GTK_BOX(hbox_shapes), g->bt_circle, FALSE, FALSE, 0);
+  g->bt_circle = dt_iop_togglebutton_new(self, N_("add circle"), N_("add multiple circles"),
+                                         G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
+                                         dtgtk_cairo_paint_masks_circle, hbox_shapes);
 
   // algorithm toolbar
   GtkWidget *hbox_algo = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 
-  GtkWidget *label2 = gtk_label_new(_("algorithms:"));
-  gtk_box_pack_start(GTK_BOX(hbox_algo), label2, FALSE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox_algo), dt_ui_label_new(_("algorithms:")), FALSE, TRUE, 0);
 
-  g->bt_fill
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_fill, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_fill, _("activates fill tool"));
-  g_signal_connect(G_OBJECT(g->bt_fill), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_fill), FALSE);
+  g->bt_blur = dt_iop_togglebutton_new(self, N_("activate blur tool"), NULL,
+                                       G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_tool_blur, hbox_algo);
 
-  g->bt_blur
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_blur, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_blur, _("activates blur tool"));
-  g_signal_connect(G_OBJECT(g->bt_blur), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_blur), FALSE);
+  g->bt_fill = dt_iop_togglebutton_new(self, N_("activate fill tool"), NULL,
+                                       G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_tool_fill, hbox_algo);
 
-  g->bt_heal
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_heal, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_heal, _("activates healing tool"));
-  g_signal_connect(G_OBJECT(g->bt_heal), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_heal), FALSE);
+  g->bt_clone = dt_iop_togglebutton_new(self, N_("activate cloning tool"), NULL,
+                                        G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
+                                        dtgtk_cairo_paint_tool_clone, hbox_algo);
 
-  g->bt_clone
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_tool_clone, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_clone, _("activates cloning tool"));
-  g_signal_connect(G_OBJECT(g->bt_clone), "button-press-event", G_CALLBACK(rt_select_algorithm_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_clone), FALSE);
-
-  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_blur, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_fill, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_clone, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_algo), g->bt_heal, FALSE, FALSE, 0);
+  g->bt_heal = dt_iop_togglebutton_new(self, N_("activate healing tool"), NULL,
+                                       G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
+                                       dtgtk_cairo_paint_tool_heal, hbox_algo);
 
   // wavelet decompose bar labels
   GtkWidget *grid_wd_labels = gtk_grid_new();
   gtk_grid_set_column_homogeneous(GTK_GRID(grid_wd_labels), FALSE);
 
-  GtkWidget *lbl_num_scales = gtk_label_new(_("scales:"));
-  gtk_widget_set_halign(lbl_num_scales, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid_wd_labels), lbl_num_scales, 0, 0, 1, 1);
-
-  g->lbl_num_scales = GTK_LABEL(gtk_label_new(NULL));
-  gtk_widget_set_halign(GTK_WIDGET(g->lbl_num_scales), GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), dt_ui_label_new(_("scales:")), 0, 0, 1, 1);
+  g->lbl_num_scales = GTK_LABEL(dt_ui_label_new(NULL));
   gtk_label_set_width_chars(g->lbl_num_scales, 2);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_num_scales), lbl_num_scales, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_num_scales), 1, 0, 1, 1);
 
-  GtkWidget *lbl_curr_scale = gtk_label_new(_("current:"));
-  gtk_widget_set_halign(lbl_curr_scale, GTK_ALIGN_START);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_curr_scale, lbl_num_scales, GTK_POS_BOTTOM, 1, 1);
-
-  g->lbl_curr_scale = GTK_LABEL(gtk_label_new(NULL));
-  gtk_widget_set_halign(GTK_WIDGET(g->lbl_curr_scale), GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), dt_ui_label_new(_("current:")), 0, 1, 1, 1);
+  g->lbl_curr_scale = GTK_LABEL(dt_ui_label_new(NULL));
   gtk_label_set_width_chars(g->lbl_curr_scale, 2);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_curr_scale), lbl_curr_scale, GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_curr_scale), 1, 1, 1, 1);
 
-  GtkWidget *lbl_merge_from_scale = gtk_label_new(_("merge from:"));
-  gtk_widget_set_halign(lbl_merge_from_scale, GTK_ALIGN_START);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), lbl_merge_from_scale, lbl_curr_scale, GTK_POS_BOTTOM, 1, 1);
-
-  g->lbl_merge_from_scale = GTK_LABEL(gtk_label_new(NULL));
-  gtk_widget_set_halign(GTK_WIDGET(g->lbl_merge_from_scale), GTK_ALIGN_START);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), dt_ui_label_new(_("merge from:")), 0, 2, 1, 1);
+  g->lbl_merge_from_scale = GTK_LABEL(dt_ui_label_new(NULL));
   gtk_label_set_width_chars(g->lbl_merge_from_scale, 2);
-  gtk_grid_attach_next_to(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), lbl_merge_from_scale,
-                          GTK_POS_RIGHT, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid_wd_labels), GTK_WIDGET(g->lbl_merge_from_scale), 1, 2, 1, 1);
 
   // wavelet decompose bar
   g->wd_bar = gtk_drawing_area_new();
@@ -2213,56 +2127,31 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *hbox_scale = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   // display & suppress masks
-  g->bt_showmask
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_showmask, _("display masks"));
-  g_signal_connect(G_OBJECT(g->bt_showmask), "toggled", G_CALLBACK(rt_showmask_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_showmask), FALSE);
+  g->bt_showmask = dt_iop_togglebutton_new(self, N_("display masks"), NULL,
+                                           G_CALLBACK(rt_showmask_callback), TRUE, 0, 0,
+                                           dtgtk_cairo_paint_showmask, hbox_scale);
 
-  g->bt_suppress
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_eye_toggle, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_suppress, _("temporarily switch off shapes"));
-  g_signal_connect(G_OBJECT(g->bt_suppress), "toggled", G_CALLBACK(rt_suppress_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_suppress), FALSE);
+  g->bt_suppress = dt_iop_togglebutton_new(self, N_("temporarily switch off shapes"), NULL,
+                                           G_CALLBACK(rt_suppress_callback), TRUE, 0, 0,
+                                           dtgtk_cairo_paint_eye_toggle, hbox_scale);
 
-  // display final image/current scale
-  g->bt_display_wavelet_scale = dtgtk_togglebutton_new(dtgtk_cairo_paint_display_wavelet_scale,
-                                                       CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_display_wavelet_scale, _("display wavelet scale"));
-  g_signal_connect(G_OBJECT(g->bt_display_wavelet_scale), "toggled", G_CALLBACK(rt_display_wavelet_scale_callback),
-                   self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_display_wavelet_scale), FALSE);
+  gtk_box_pack_end(GTK_BOX(hbox_scale), gtk_grid_new(), TRUE, TRUE, 0);
 
   // copy/paste shapes
-  g->bt_copy_scale
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_cut_forms, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_copy_scale, _("cut shapes from current scale"));
-  g_signal_connect(G_OBJECT(g->bt_copy_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_copy_scale), FALSE);
-  gtk_widget_set_sensitive(g->bt_copy_scale, FALSE);
+  g->bt_paste_scale = dt_iop_togglebutton_new(self, N_("paste cut shapes to current scale"), NULL,
+                                              G_CALLBACK(rt_copypaste_scale_callback), TRUE, 0, 0,
+                                              dtgtk_cairo_paint_paste_forms, hbox_scale);
 
-  g->bt_paste_scale
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_paste_forms, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_paste_scale, _("paste cut shapes to current scale"));
-  g_signal_connect(G_OBJECT(g->bt_paste_scale), "toggled", G_CALLBACK(rt_copypaste_scale_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_paste_scale), FALSE);
-  gtk_widget_set_sensitive(g->bt_paste_scale, FALSE);
+  g->bt_copy_scale = dt_iop_togglebutton_new(self, N_("cut shapes from current scale"), NULL,
+                                             G_CALLBACK(rt_copypaste_scale_callback), TRUE, 0, 0,
+                                             dtgtk_cairo_paint_cut_forms, hbox_scale);
 
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_showmask, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_suppress, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(hbox_scale), gtk_grid_new(), TRUE, TRUE, 0);
 
-  GtkWidget *lbl_scale_sep = gtk_label_new(NULL);
-  gtk_label_set_width_chars(GTK_LABEL(lbl_scale_sep), 1);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), GTK_WIDGET(lbl_scale_sep), FALSE, FALSE, 0);
-
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_paste_scale, FALSE, FALSE, 0);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_copy_scale, FALSE, FALSE, 0);
-
-  GtkWidget *lbl_scale_sep1 = gtk_label_new(NULL);
-  gtk_label_set_width_chars(GTK_LABEL(lbl_scale_sep1), 1);
-  gtk_box_pack_end(GTK_BOX(hbox_scale), GTK_WIDGET(lbl_scale_sep1), FALSE, FALSE, 0);
-
-  gtk_box_pack_end(GTK_BOX(hbox_scale), g->bt_display_wavelet_scale, FALSE, FALSE, 0);
+  // display final image/current scale
+  g->bt_display_wavelet_scale = dt_iop_togglebutton_new(self, N_("display wavelet scale"), NULL,
+                                                        G_CALLBACK(rt_display_wavelet_scale_callback), TRUE, 0, 0,
+                                                        dtgtk_cairo_paint_display_wavelet_scale, hbox_scale);
 
   // preview single scale
   g->vbox_preview_scale = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -2290,21 +2179,19 @@ void gui_init(dt_iop_module_t *self)
   (g->preview_levels_gslider)->min_spacing = 0.05;
   g_signal_connect(G_OBJECT(g->preview_levels_gslider), "value-changed", G_CALLBACK(rt_gslider_changed), self);
 
-  // auto-levels button
-  g->bt_auto_levels
-      = dtgtk_togglebutton_new(dtgtk_cairo_paint_auto_levels, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(g->bt_auto_levels, _("auto levels"));
-  g_signal_connect(G_OBJECT(g->bt_auto_levels), "toggled", G_CALLBACK(rt_auto_levels_callback), self);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_auto_levels), FALSE);
-
   gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 0);
-  gtk_box_pack_end(GTK_BOX(prev_lvl), g->bt_auto_levels, FALSE, FALSE, 0);
+
+  // auto-levels button
+  g->bt_auto_levels = dt_iop_togglebutton_new(self, N_("auto levels"), NULL,
+                                              G_CALLBACK(rt_auto_levels_callback), TRUE, 0, 0,
+                                              dtgtk_cairo_paint_auto_levels, prev_lvl);
 
   gtk_box_pack_start(GTK_BOX(g->vbox_preview_scale), prev_lvl, TRUE, TRUE, 0);
 
   // shapes selected (label)
   GtkWidget *hbox_shape_sel = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label1 = gtk_label_new(_("shape selected: "));
+  GtkWidget *label1 = gtk_label_new(_("shape selected:"));
+  gtk_label_set_ellipsize(GTK_LABEL(label1), PANGO_ELLIPSIZE_START);
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), label1, FALSE, TRUE, 0);
   g->label_form_selected = GTK_LABEL(gtk_label_new("-1"));
   gtk_widget_set_tooltip_text(hbox_shape_sel,
@@ -2312,21 +2199,17 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(hbox_shape_sel), GTK_WIDGET(g->label_form_selected), FALSE, TRUE, 0);
 
   // fill properties
-  g->vbox_fill = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+  g->vbox_fill = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
-  g->cmb_fill_mode = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_fill_mode, NULL, _("fill mode"));
-  dt_bauhaus_combobox_add(g->cmb_fill_mode, _("erase"));
-  dt_bauhaus_combobox_add(g->cmb_fill_mode, _("color"));
+  g->cmb_fill_mode = dt_bauhaus_combobox_from_params(self, "fill_mode");
   gtk_widget_set_tooltip_text(g->cmb_fill_mode, _("erase the detail or fills with chosen color"));
-  g_signal_connect(G_OBJECT(g->cmb_fill_mode), "value-changed", G_CALLBACK(rt_fill_mode_callback), self);
 
   // color for fill algorithm
   GdkRGBA color
       = (GdkRGBA){.red = p->fill_color[0], .green = p->fill_color[1], .blue = p->fill_color[2], .alpha = 1.0 };
 
   g->hbox_color_pick = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *lbl_fill_color = gtk_label_new(_("fill color: "));
+  GtkWidget *lbl_fill_color = dt_ui_label_new(_("fill color: "));
   gtk_box_pack_start(GTK_BOX(g->hbox_color_pick), lbl_fill_color, FALSE, TRUE, 0);
 
   g->colorpick = gtk_color_button_new_with_rgba(&color);
@@ -2339,42 +2222,32 @@ void gui_init(dt_iop_module_t *self)
   g->colorpicker = dt_color_picker_new(self, DT_COLOR_PICKER_POINT, g->hbox_color_pick);
   gtk_widget_set_tooltip_text(g->colorpicker, _("pick fill color from image"));
 
-  g->sl_fill_brightness = dt_bauhaus_slider_new_with_range(self, -1.0, 1.0, .0005, .0, 4);
-  dt_bauhaus_widget_set_label(g->sl_fill_brightness, _("brightness"), _("brightness"));
+  gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->hbox_color_pick, TRUE, TRUE, 0);
+
+  g->sl_fill_brightness = dt_bauhaus_slider_from_params(self, "fill_brightness");
+  dt_bauhaus_slider_set_digits(g->sl_fill_brightness, 4);
   gtk_widget_set_tooltip_text(g->sl_fill_brightness,
                               _("adjusts color brightness to fine-tune it. works with erase as well"));
-  g_signal_connect(G_OBJECT(g->sl_fill_brightness), "value-changed", G_CALLBACK(rt_fill_brightness_callback), self);
-
-  gtk_box_pack_start(GTK_BOX(g->vbox_fill), GTK_WIDGET(g->cmb_fill_mode), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->hbox_color_pick, TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(g->vbox_fill), g->sl_fill_brightness, TRUE, TRUE, 0);
 
   // blur properties
-  g->vbox_blur = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+  g->vbox_blur = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
 
-  g->cmb_blur_type = dt_bauhaus_combobox_new(self);
-  dt_bauhaus_widget_set_label(g->cmb_blur_type, NULL, _("blur type"));
-  dt_bauhaus_combobox_add(g->cmb_blur_type, _("gaussian"));
-  dt_bauhaus_combobox_add(g->cmb_blur_type, _("bilateral"));
+  g->cmb_blur_type = dt_bauhaus_combobox_from_params(self, "blur_type");
   gtk_widget_set_tooltip_text(g->cmb_blur_type, _("type for the blur algorithm"));
-  g_signal_connect(G_OBJECT(g->cmb_blur_type), "value-changed", G_CALLBACK(rt_blur_type_callback), self);
 
-  gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->cmb_blur_type, TRUE, TRUE, 0);
-
-  g->sl_blur_radius = dt_bauhaus_slider_new_with_range(self, 0.1, 200.0, 0.1, 10., 2);
-  dt_bauhaus_widget_set_label(g->sl_blur_radius, _("blur radius"), _("blur radius"));
+  g->sl_blur_radius = dt_bauhaus_slider_from_params(self, "blur_radius");
+  dt_bauhaus_slider_set_step(g->sl_blur_radius, 0.1);
   gtk_widget_set_tooltip_text(g->sl_blur_radius, _("radius of the selected blur type"));
-  g_signal_connect(G_OBJECT(g->sl_blur_radius), "value-changed", G_CALLBACK(rt_blur_radius_callback), self);
-
-  gtk_box_pack_start(GTK_BOX(g->vbox_blur), g->sl_blur_radius, TRUE, TRUE, 0);
 
   // mask opacity
   g->sl_mask_opacity = dt_bauhaus_slider_new_with_range(self, 0.0, 1.0, 0.05, 1., 3);
-  dt_bauhaus_widget_set_label(g->sl_mask_opacity, _("mask opacity"), _("mask opacity"));
+  dt_bauhaus_widget_set_label(g->sl_mask_opacity, NULL, N_("mask opacity"));
   gtk_widget_set_tooltip_text(g->sl_mask_opacity, _("set the opacity on the selected shape"));
   g_signal_connect(G_OBJECT(g->sl_mask_opacity), "value-changed", G_CALLBACK(rt_mask_opacity_callback), self);
 
-  // add all the controls to the iop
+  // start building top level widget
+  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+
   GtkWidget *lbl_rt_tools = dt_ui_section_label_new(_("retouch tools"));
   gtk_box_pack_start(GTK_BOX(self->widget), lbl_rt_tools, FALSE, TRUE, 0);
 
@@ -2411,19 +2284,8 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), g->sl_mask_opacity, TRUE, TRUE, 0);
 
   /* add signal handler for preview pipe finish to redraw the preview */
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(rt_develop_ui_pipe_finished_callback), self);
-
-  gtk_widget_show_all(g->vbox_blur);
-  gtk_widget_set_no_show_all(g->vbox_blur, TRUE);
-
-  gtk_widget_show_all(g->vbox_fill);
-  gtk_widget_set_no_show_all(g->vbox_fill, TRUE);
-
-  gtk_widget_show_all(g->vbox_preview_scale);
-  gtk_widget_set_no_show_all(g->vbox_preview_scale, TRUE);
-
-  rt_show_hide_controls(self, g, p, g);
 }
 
 void gui_reset(struct dt_iop_module_t *self)
@@ -2434,15 +2296,15 @@ void gui_reset(struct dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(rt_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(rt_develop_ui_pipe_finished_callback), self);
 
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   if(g)
   {
     dt_pthread_mutex_destroy(&g->lock);
   }
-  free(self->gui_data);
-  self->gui_data = NULL;
+
+  IOP_GUI_FREE;
 }
 
 void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t *roi_out,
@@ -2744,247 +2606,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   roi_in->height = CLAMP(roib - roi_in->y, 1, scheight + .5f - roi_in->y);
 }
 
-void init_key_accels(dt_iop_module_so_t *module)
-{
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool circle"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool ellipse"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool path"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "retouch tool brush"), 0, 0);
-
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add circle"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add ellipse"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add path"), 0, 0);
-  dt_accel_register_iop(module, TRUE, NC_("accel", "continuous add brush"), 0, 0);
-
-  dt_accel_register_iop(module, TRUE, NC_("accel", "show or hide shapes"), 0, 0);
-}
-
-static gboolean _add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_circle), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(module, DT_MASKS_CIRCLE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                       GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_ellipse), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(module, DT_MASKS_ELLIPSE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _add_brush_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                     GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_brush), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(module, DT_MASKS_BRUSH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                    GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_path), FALSE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(module, DT_MASKS_PATH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_circle_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                 GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_circle), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), rt_shape_is_beign_added(module, DT_MASKS_CIRCLE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_ellipse_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                  GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_ellipse), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), rt_shape_is_beign_added(module, DT_MASKS_ELLIPSE));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_brush_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_brush), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), rt_shape_is_beign_added(module, DT_MASKS_BRUSH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _continuous_add_path_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                               GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-
-  rt_add_shape(GTK_WIDGET(g->bt_path), TRUE, module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), rt_shape_is_beign_added(module, DT_MASKS_PATH));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-static gboolean _show_or_hide_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                               GdkModifierType modifier, gpointer data)
-{
-  ++darktable.gui->reset;
-
-  dt_iop_module_t *module = (dt_iop_module_t *)data;
-  const dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)module->gui_data;
-  dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-
-  // if we don't have the focus, request for it and quit, gui_focus() do the rest
-  if(darktable.develop->gui_module != module)
-  {
-    dt_iop_request_focus(module);
-    return FALSE;
-  }
-
-  //hide all shapes and free if some are in creation
-  if(darktable.develop->form_gui->creation && darktable.develop->form_gui->creation_module == module)
-    dt_masks_change_form_gui(NULL);
-
-  if(darktable.develop->form_gui->creation_continuous_module == module)
-  {
-    darktable.develop->form_gui->creation_continuous = FALSE;
-    darktable.develop->form_gui->creation_continuous_module = NULL;
-  }
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_path), FALSE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_circle), FALSE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_ellipse), FALSE);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_brush), FALSE);
-
-  dt_iop_color_picker_reset(module, TRUE);
-
-  dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
-  if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
-  {
-
-    if(bd->masks_shown == DT_MASKS_EDIT_OFF)
-      bd->masks_shown = DT_MASKS_EDIT_FULL;
-    else
-      bd->masks_shown = DT_MASKS_EDIT_OFF;
-  }
-  else
-    bd->masks_shown = DT_MASKS_EDIT_OFF;
-
-  rt_show_forms_for_current_scale(module);
-
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
-                               (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == module));
-
-  --darktable.gui->reset;
-
-  return TRUE;
-}
-
-void connect_key_accels(dt_iop_module_t *module)
-{
-  GClosure *closure;
-
-  // single add
-  closure = g_cclosure_new(G_CALLBACK(_add_circle_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool circle", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool elipse", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_brush_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool brush", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_add_path_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "retouch tool path", closure);
-
-  // continuous add
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_circle_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add circle", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_ellipse_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add ellipse", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_brush_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add brush", closure);
-
-  closure = g_cclosure_new(G_CALLBACK(_continuous_add_path_key_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "continuous add path", closure);
-
-  //show or hide
-  closure = g_cclosure_new(G_CALLBACK(_show_or_hide_accel), (gpointer)module, NULL);
-  dt_accel_connect_iop(module, "show or hide shapes", closure);
-}
-
 //--------------------------------------------------------------------------------------------------
 // process
 //--------------------------------------------------------------------------------------------------
@@ -3189,7 +2810,7 @@ static void rt_adjust_levels(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piec
   const float delta = (right - left) / 2.0f;
   const float mid = left + delta;
   const float tmp = (middle - mid) / delta;
-  const float in_inv_gamma = pow(10, tmp);
+  const float in_inv_gamma = powf(10, tmp);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3317,13 +2938,13 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
   const int x_to = roi_mask_scaled->width + roi_mask_scaled->x;
   const int y_to = roi_mask_scaled->height + roi_mask_scaled->y;
 
-  mask_tmp = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
+  mask_tmp = dt_alloc_align_float((size_t)roi_mask_scaled->width * roi_mask_scaled->height);
   if(mask_tmp == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");
     goto cleanup;
   }
-  memset(mask_tmp, 0, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
+  memset(mask_tmp, 0, sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -3531,7 +3152,7 @@ static void retouch_clone(float *const in, dt_iop_roi_t *const roi_in, const int
                           const int use_sse)
 {
   // alloc temp image to avoid issues when areas self-intersects
-  float *img_src = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+  float *img_src = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_src == NULL)
   {
     fprintf(stderr, "retouch_clone: error allocating memory for cloning\n");
@@ -3552,14 +3173,14 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
                          dt_iop_roi_t *const roi_mask_scaled, const float opacity, const int blur_type,
                          const float blur_radius, dt_dev_pixelpipe_iop_t *piece, const int use_sse)
 {
-  if(fabs(blur_radius) <= 0.1f) return;
+  if(fabsf(blur_radius) <= 0.1f) return;
 
   const float sigma = blur_radius * roi_in->scale / piece->iscale;
 
   float *img_dest = NULL;
 
   // alloc temp image to blur
-  img_dest = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+  img_dest = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(img_dest == NULL)
   {
     fprintf(stderr, "retouch_blur: error allocating memory for blurring\n");
@@ -3569,7 +3190,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
   // copy source image so we blur just the mask area (at least the smallest rect that covers it)
   rt_copy_in_to_out(in, roi_in, img_dest, roi_mask_scaled, ch, 0, 0);
 
-  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabs(blur_radius) > 0.1f)
+  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
     float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
     float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
@@ -3585,7 +3206,7 @@ static void retouch_blur(dt_iop_module_t *self, float *const in, dt_iop_roi_t *c
       dt_gaussian_free(g);
     }
   }
-  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabs(blur_radius) > 0.1f)
+  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabsf(blur_radius) > 0.1f)
   {
     const float sigma_r = 100.0f; // does not depend on scale
     const float sigma_s = sigma;
@@ -3633,8 +3254,8 @@ static void retouch_heal(float *const in, dt_iop_roi_t *const roi_in, const int 
   float *img_dest = NULL;
 
   // alloc temp images for source and destination
-  img_src = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
-  img_dest = dt_alloc_align(64, roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+  img_src  = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
+  img_dest = dt_alloc_align_float((size_t)ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if((img_src == NULL) || (img_dest == NULL))
   {
     fprintf(stderr, "retouch_heal: error allocating memory for healing\n");
@@ -3857,10 +3478,10 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
-  in_retouch = dt_alloc_align(64, roi_rt->width * roi_rt->height * ch * sizeof(float));
+  in_retouch = dt_alloc_align_float((size_t)ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL) goto cleanup;
 
-  memcpy(in_retouch, ivoid, roi_rt->width * roi_rt->height * ch * sizeof(float));
+  dt_iop_image_copy_by_size(in_retouch, ivoid, roi_rt->width, roi_rt->height, ch);
 
   // user data passed from the decompose routine to the one that process each scale
   usr_data.self = self;
@@ -3879,12 +3500,13 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if(dwt_p == NULL) goto cleanup;
 
   // check if this module should expose mask.
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g && g->mask_display && self->dev->gui_attached
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL && g
+     && (g->mask_display || display_wavelet_scale) && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
     for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
 
-    piece->pipe->mask_display = DT_DEV_PIXELPIPE_DISPLAY_MASK;
+    piece->pipe->mask_display = g->mask_display ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     piece->pipe->bypass_blendif = 1;
     usr_data.mask_display = 1;
   }
@@ -3991,7 +3613,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   float *src_buffer = NULL;
 
-  src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
@@ -4009,7 +3631,7 @@ cl_int rt_process_stats_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   // just call the CPU version for now
   rt_process_stats(self, piece, src_buffer, width, height, ch, levels, 1);
 
-  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, width * height * ch * sizeof(float), TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
@@ -4030,7 +3652,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
 
   float *src_buffer = NULL;
 
-  src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+  src_buffer = dt_alloc_align_float((size_t)ch * width * height);
   if(src_buffer == NULL)
   {
     fprintf(stderr, "dt_heal_cl: error allocating memory for healing\n");
@@ -4048,7 +3670,7 @@ cl_int rt_adjust_levels_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   // just call the CPU version for now
   rt_adjust_levels(self, piece, src_buffer, width, height, ch, levels, 1);
 
-  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, width * height * ch * sizeof(float), TRUE);
+  err = dt_opencl_write_buffer_to_device(devid, src_buffer, dev_img, 0, sizeof(float) * ch * width * height, TRUE);
   if(err != CL_SUCCESS)
   {
     goto cleanup;
@@ -4118,7 +3740,7 @@ static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop
   }
 
   const cl_mem dev_mask_scaled
-      = dt_opencl_alloc_device_buffer(devid, roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float));
+      = dt_opencl_alloc_device_buffer(devid, sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_mask_scaled == NULL)
   {
     fprintf(stderr, "rt_build_scaled_mask_cl error 2\n");
@@ -4127,7 +3749,7 @@ static cl_int rt_build_scaled_mask_cl(const int devid, float *const mask, dt_iop
   }
 
   err = dt_opencl_write_buffer_to_device(devid, *mask_scaled, dev_mask_scaled, 0,
-                                         roi_mask_scaled->width * roi_mask_scaled->height * sizeof(float), TRUE);
+                                         sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height, TRUE);
   if(err != CL_SUCCESS)
   {
     fprintf(stderr, "rt_build_scaled_mask_cl error 4\n");
@@ -4223,7 +3845,7 @@ static cl_int retouch_clone_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *
 
   // alloc source temp image to avoid issues when areas self-intersects
   const cl_mem dev_src = dt_opencl_alloc_device_buffer(devid,
-                                          roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+                                          sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_src == NULL)
   {
     fprintf(stderr, "retouch_clone_cl error 2\n");
@@ -4300,13 +3922,13 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
 {
   cl_int err = CL_SUCCESS;
 
-  if(fabs(blur_radius) <= 0.1f) return err;
+  if(fabsf(blur_radius) <= 0.1f) return err;
 
   const float sigma = blur_radius * roi_layer->scale / piece->iscale;
   const int ch = 4;
 
   const cl_mem dev_dest =
-    dt_opencl_alloc_device(devid, roi_mask_scaled->width, roi_mask_scaled->height, ch * sizeof(float));
+    dt_opencl_alloc_device(devid, roi_mask_scaled->width, roi_mask_scaled->height, sizeof(float) * ch);
   if(dev_dest == NULL)
   {
     fprintf(stderr, "retouch_blur_cl error 2\n");
@@ -4334,7 +3956,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
     goto cleanup;
   }
 
-  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabs(blur_radius) > 0.1f)
+  if(blur_type == DT_IOP_RETOUCH_BLUR_GAUSSIAN && fabsf(blur_radius) > 0.1f)
   {
     float Labmax[] = { INFINITY, INFINITY, INFINITY, INFINITY };
     float Labmin[] = { -INFINITY, -INFINITY, -INFINITY, -INFINITY };
@@ -4348,7 +3970,7 @@ static cl_int retouch_blur_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
       if(err != CL_SUCCESS) goto cleanup;
     }
   }
-  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabs(blur_radius) > 0.1f)
+  else if(blur_type == DT_IOP_RETOUCH_BLUR_BILATERAL && fabsf(blur_radius) > 0.1f)
   {
     const float sigma_r = 100.0f; // does not depend on scale
     const float sigma_s = sigma;
@@ -4403,7 +4025,7 @@ static cl_int retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
 
   cl_mem dev_dest = NULL;
   cl_mem dev_src = dt_opencl_alloc_device_buffer(devid,
-                                          roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+                                          sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_src == NULL)
   {
     fprintf(stderr, "retouch_heal_cl: error allocating memory for healing\n");
@@ -4412,7 +4034,7 @@ static cl_int retouch_heal_cl(const int devid, cl_mem dev_layer, dt_iop_roi_t *c
   }
 
   dev_dest = dt_opencl_alloc_device_buffer(devid,
-                                           roi_mask_scaled->width * roi_mask_scaled->height * ch * sizeof(float));
+                                           sizeof(float) * ch * roi_mask_scaled->width * roi_mask_scaled->height);
   if(dev_dest == NULL)
   {
     fprintf(stderr, "retouch_heal_cl: error allocating memory for healing\n");
@@ -4690,7 +4312,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   // we will do all the clone, heal, etc on the input image,
   // this way the source for one algorithm can be the destination from a previous one
-  const cl_mem in_retouch = dt_opencl_alloc_device_buffer(devid, roi_rt->width * roi_rt->height * ch * sizeof(float));
+  const cl_mem in_retouch = dt_opencl_alloc_device_buffer(devid, sizeof(float) * ch * roi_rt->width * roi_rt->height);
   if(in_retouch == NULL)
   {
     fprintf(stderr, "process_internal: error allocating memory for wavelet decompose\n");

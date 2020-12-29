@@ -41,11 +41,10 @@ DT_MODULE(1)
 typedef struct dt_lib_copy_history_t
 {
   GtkWidget *pastemode;
-  GtkButton *paste, *paste_parts;
-  GtkWidget *copy_button, *delete_button, *load_button, *write_button;
+  GtkWidget *paste, *paste_parts;
+  GtkWidget *copy_button, *discard_button, *load_button, *write_button;
   GtkWidget *copy_parts_button;
-  GtkButton *compress_button;
-  guint timeout_handle;
+  GtkWidget *compress_button;
 } dt_lib_copy_history_t;
 
 const char *name(dt_lib_module_t *self)
@@ -66,6 +65,7 @@ uint32_t container(dt_lib_module_t *self)
 
 static void _update(dt_lib_module_t *self)
 {
+  dt_lib_cancel_postponed_update(self);
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
@@ -76,7 +76,7 @@ static void _update(dt_lib_module_t *self)
             || (act_on_cnt == 1
                 && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on())));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->discard_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->load_button), act_on_cnt > 0);
   gtk_widget_set_sensitive(GTK_WIDGET(d->write_button), act_on_cnt > 0);
@@ -86,22 +86,6 @@ static void _update(dt_lib_module_t *self)
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), can_paste);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), can_paste);
-
-  if(d->timeout_handle)
-  {
-    g_source_remove(d->timeout_handle);
-    d->timeout_handle = 0;
-  }
-}
-
-static gboolean _postponed_update(gpointer data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)data;
-
-  // timeout handle clearing is handled by update code
-  _update(self);
-
-  return FALSE;
 }
 
 static void write_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
@@ -151,6 +135,8 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
     {
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                                  g_list_copy((GList *)imgs));
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
+                                    g_list_copy((GList *)imgs), 0);
       dt_control_queue_redraw_center();
     }
 
@@ -212,17 +198,18 @@ static void copy_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   }
 }
 
-static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
+static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+  GList *imgs_copy = g_list_copy((GList *)imgs);
 
-  if(dt_conf_get_bool("ask_before_delete"))
+  if(dt_conf_get_bool("ask_before_discard"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    const int number = g_list_length((GList *)imgs);
+    const int number = g_list_length((GList *)imgs_copy);
 
     if (number == 0) return;
 
@@ -241,12 +228,14 @@ static void delete_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
-    dt_history_delete_on_list(imgs, TRUE);
+    dt_history_delete_on_list(imgs_copy, TRUE);
 
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_copy((GList *)imgs));
+                               g_list_copy((GList *)imgs_copy));
     dt_control_queue_redraw_center();
   }
+
+  g_list_free(imgs_copy);
 }
 
 static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
@@ -274,11 +263,19 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   /* copy history from previously copied image and past onto selection */
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
+  // at the time the dialog is started, some signals are sent and this in turn call
+  // back dt_view_get_images_to_act_on() which free list and create a new one. So the
+  // above imgs will be invalidated.
+
+  GList *l_copy = g_list_copy((GList *)imgs);
+
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_copy((GList *)imgs));
+                               g_list_copy((GList *)l_copy));
   }
+  else
+    g_list_free(l_copy);
 }
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)
@@ -302,16 +299,7 @@ static void _collection_updated_callback(gpointer instance, dt_collection_change
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
 {
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
-  const int delay = CLAMP(darktable.develop->average_delay / 2, 10, 250);
-
-  if(d->timeout_handle)
-  {
-    // here we're making sure the event fires at last hover
-    // and we won't have avalanche of events in the mean time.
-    g_source_remove(d->timeout_handle);
-  }
-  d->timeout_handle = g_timeout_add(delay, _postponed_update, self);
+  dt_lib_queue_postponed_update(self, _update);
 }
 
 void gui_reset(dt_lib_module_t *self)
@@ -324,13 +312,11 @@ int position()
   return 600;
 }
 
-#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_END);
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)malloc(sizeof(dt_lib_copy_history_t));
   self->data = (void *)d;
-
-  d->timeout_handle = 0;
+  self->timeout_handle = 0;
 
   self->widget = gtk_grid_new();
   GtkGrid *grid = GTK_GRID(self->widget);
@@ -338,48 +324,39 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_homogeneous(grid, TRUE);
   int line = 0;
 
-  GtkWidget *copy_parts = gtk_button_new_with_label(_("copy..."));
-  ellipsize_button(copy_parts);
-  d->copy_parts_button = copy_parts;
-  gtk_widget_set_tooltip_text(copy_parts, _("copy part history stack of\nfirst selected image"));
-  dt_gui_add_help_link(copy_parts, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, copy_parts, 0, line, 3, 1);
+  d->copy_parts_button = dt_ui_button_new(_("copy parts..."),
+                                          _("copy part history stack of\nfirst selected image"),
+                                          "history_stack.html#history_stack_usage");
+  gtk_grid_attach(grid, d->copy_parts_button, 0, line, 3, 1);
 
-  GtkWidget *copy = gtk_button_new_with_label(_("copy all"));
-  ellipsize_button(copy);
-  d->copy_button = copy;
-  gtk_widget_set_tooltip_text(copy, _("copy history stack of\nfirst selected image"));
-  dt_gui_add_help_link(copy, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, copy, 3, line++, 3, 1);
+  d->copy_button = dt_ui_button_new(_("copy"),
+                                    _("copy history stack of\nfirst selected image"),
+                                    "history_stack.html#history_stack_usage");
+  gtk_grid_attach(grid, d->copy_button, 3, line++, 3, 1);
 
-  d->paste_parts = GTK_BUTTON(gtk_button_new_with_label(_("paste...")));
-  ellipsize_button(d->paste_parts);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste_parts), _("paste part history stack to\nall selected images"));
-  dt_gui_add_help_link(GTK_WIDGET(d->paste_parts), "history_stack.html#history_stack_usage");
-  gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), FALSE);
-  gtk_grid_attach(grid, GTK_WIDGET(d->paste_parts), 0, line, 3, 1);
+  d->paste_parts = dt_ui_button_new(_("paste parts..."),
+                                    _("paste part history stack to\nall selected images"),
+                                    "history_stack.html#history_stack_usage");
+  gtk_widget_set_sensitive(d->paste_parts, FALSE);
+  gtk_grid_attach(grid, d->paste_parts, 0, line, 3, 1);
 
-  d->paste = GTK_BUTTON(gtk_button_new_with_label(_("paste all")));
-  ellipsize_button(d->paste);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->paste), _("paste history stack to\nall selected images"));
-  dt_gui_add_help_link(GTK_WIDGET(d->paste), "history_stack.html#history_stack_usage");
-  gtk_widget_set_sensitive(GTK_WIDGET(d->paste), FALSE);
-  gtk_grid_attach(grid, GTK_WIDGET(d->paste), 3, line++, 3, 1);
+  d->paste = dt_ui_button_new(_("paste"),
+                              _("paste history stack to\nall selected images"),
+                              "history_stack.html#history_stack_usage");
+  gtk_widget_set_sensitive(d->paste, FALSE);
+  gtk_grid_attach(grid, d->paste, 3, line++, 3, 1);
 
-  d->compress_button = GTK_BUTTON(gtk_button_new_with_label(_("compress history")));
-  ellipsize_button(d->compress_button);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->compress_button), _("compress history stack of\nall selected images"));
-  gtk_grid_attach(grid, GTK_WIDGET(d->compress_button), 0, line, 3, 1);
+  d->compress_button = dt_ui_button_new(_("compress history"),
+                                        _("compress history stack of\nall selected images"), NULL);
+  gtk_grid_attach(grid, d->compress_button, 0, line, 3, 1);
 
-  GtkWidget *delete = gtk_button_new_with_label(_("discard history"));
-  ellipsize_button(delete);
-  d->delete_button = delete;
-  gtk_widget_set_tooltip_text(delete, _("discard history stack of\nall selected images"));
-  dt_gui_add_help_link(delete, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, delete, 3, line++, 3, 1);
+  d->discard_button = dt_ui_button_new(_("discard history"),
+                                       _("discard history stack of\nall selected images"),
+                                       "history_stack.html#history_stack_usage");
+  gtk_grid_attach(grid, d->discard_button, 3, line++, 3, 1);
 
   d->pastemode = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(d->pastemode, NULL, _("mode"));
+  dt_bauhaus_widget_set_label(d->pastemode, NULL, N_("mode"));
   dt_bauhaus_combobox_add(d->pastemode, _("append"));
   dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));
   gtk_widget_set_tooltip_text(d->pastemode, _("how to handle existing history"));
@@ -387,49 +364,42 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
   dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 
-  GtkWidget *loadbutton = gtk_button_new_with_label(_("load sidecar file..."));
-  ellipsize_button(loadbutton);
-  d->load_button = loadbutton;
-  gtk_widget_set_tooltip_text(loadbutton, _("open an XMP sidecar file\nand apply it to selected images"));
-  dt_gui_add_help_link(loadbutton, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, loadbutton, 0, line, 3, 1);
+  d->load_button = dt_ui_button_new(_("load sidecar file..."),
+                                    _("open an XMP sidecar file\nand apply it to selected images"),
+                                    "history_stack.html#history_stack_usage");
+  gtk_grid_attach(grid, d->load_button, 0, line, 3, 1);
 
-  GtkWidget *button = gtk_button_new_with_label(_("write sidecar files"));
-  ellipsize_button(button);
-  d->write_button = button;
-  gtk_widget_set_tooltip_text(button, _("write history stack and tags to XMP sidecar files"));
-  dt_gui_add_help_link(button, "history_stack.html#history_stack_usage");
-  gtk_grid_attach(grid, button, 3, line, 3, 1);
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
+  d->write_button = dt_ui_button_new(_("write sidecar files"),
+                                     _("write history stack and tags to XMP sidecar files"),
+                                     "history_stack.html#history_stack_usage");
+  gtk_grid_attach(grid, d->write_button, 3, line, 3, 1);
 
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
                             G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_connect(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED,
                             G_CALLBACK(_collection_updated_callback), self);
 
   _update(self);
 
-  g_signal_connect(G_OBJECT(copy), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(copy_parts), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->copy_button), "clicked", G_CALLBACK(copy_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->copy_parts_button), "clicked", G_CALLBACK(copy_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->compress_button), "clicked", G_CALLBACK(compress_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(delete), "clicked", G_CALLBACK(delete_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->discard_button), "clicked", G_CALLBACK(discard_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste_parts), "clicked", G_CALLBACK(paste_parts_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->paste), "clicked", G_CALLBACK(paste_button_clicked), (gpointer)self);
-  g_signal_connect(G_OBJECT(loadbutton), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->load_button), "clicked", G_CALLBACK(load_button_clicked), (gpointer)self);
   g_signal_connect(G_OBJECT(d->pastemode), "value-changed", G_CALLBACK(pastemode_combobox_changed), (gpointer)self);
+  g_signal_connect(G_OBJECT(d->write_button), "clicked", G_CALLBACK(write_button_clicked), (gpointer)self);
 }
-#undef ellipsize_button
 
 void gui_cleanup(dt_lib_module_t *self)
 {
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  dt_control_signal_disconnect(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
-  dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
-  if(d->timeout_handle)
-    g_source_remove(d->timeout_handle);
+  dt_lib_cancel_postponed_update(self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_selection_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_collection_updated_callback), self);
 
   free(self->data);
   self->data = NULL;
@@ -437,12 +407,12 @@ void gui_cleanup(dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "copy all"), GDK_KEY_c, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy"), GDK_KEY_c, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "copy parts"), GDK_KEY_c, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "compress"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "discard"), 0, 0);
-  dt_accel_register_lib(self, NC_("accel", "paste all"), GDK_KEY_v, GDK_CONTROL_MASK);
-  dt_accel_register_lib(self, NC_("accel", "paste"), GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste"), GDK_KEY_v, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "paste parts"), GDK_KEY_v, GDK_CONTROL_MASK | GDK_SHIFT_MASK);
   dt_accel_register_lib(self, NC_("accel", "load sidecar files"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "write sidecar files"), 0, 0);
 }
@@ -451,12 +421,12 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "copy all", GTK_WIDGET(d->copy_button));
-  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_parts_button));
-  dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->delete_button));
+  dt_accel_connect_button_lib(self, "copy", GTK_WIDGET(d->copy_button));
+  dt_accel_connect_button_lib(self, "copy parts", GTK_WIDGET(d->copy_parts_button));
+  dt_accel_connect_button_lib(self, "discard", GTK_WIDGET(d->discard_button));
   dt_accel_connect_button_lib(self, "compress", GTK_WIDGET(d->compress_button));
-  dt_accel_connect_button_lib(self, "paste all", GTK_WIDGET(d->paste));
-  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste_parts));
+  dt_accel_connect_button_lib(self, "paste", GTK_WIDGET(d->paste));
+  dt_accel_connect_button_lib(self, "paste parts", GTK_WIDGET(d->paste_parts));
   dt_accel_connect_button_lib(self, "load sidecar files", GTK_WIDGET(d->load_button));
   dt_accel_connect_button_lib(self, "write sidecar files", GTK_WIDGET(d->write_button));
 }

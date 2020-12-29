@@ -131,6 +131,7 @@ typedef struct dt_imageio_module_format_t
   int (*read_image)(dt_imageio_module_data_t *data, uint8_t *out);
   luaA_Type parameter_lua_type;
 
+  gboolean ready;
 } dt_imageio_module_format_t;
 
 
@@ -230,6 +231,13 @@ int dt_imageio_get_index_of_storage(dt_imageio_module_storage_t *storage);
 
 /* add a module into the known module list */
 void dt_imageio_insert_storage(dt_imageio_module_storage_t *storage);
+
+// This function returns value of string which stored in the
+// "plugins/lighttable/export/resizing_factor" parameter of the configuration file
+// and its "num" and "denum" fraction's elements to calculate the scaling factor
+// and improve the readability of the displayed string itself in the "scale" field
+// of the settings export.
+gchar *dt_imageio_resizing_factor_get_and_parsing(double *num, double *denum);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

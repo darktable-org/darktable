@@ -27,6 +27,9 @@
 #include "common/iop_order.h"
 #include "common/styles.h"
 #include "common/history.h"
+#ifdef HAVE_ICU
+#include "common/sqliteicu.h"
+#endif
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/legacy_presets.h"
@@ -45,7 +48,7 @@
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
 #define CURRENT_DATABASE_VERSION_LIBRARY 30
-#define CURRENT_DATABASE_VERSION_DATA     6
+#define CURRENT_DATABASE_VERSION_DATA     8
 
 typedef struct dt_database_t
 {
@@ -276,10 +279,10 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   int i = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int rowid = sqlite3_column_int(stmt, 0);
+    const int rowid = sqlite3_column_int(stmt, 0);
     const char *name = (const char *)sqlite3_column_text(stmt, 1);
     const char *operation = (const char *)sqlite3_column_text(stmt, 2);
-    int op_version = sqlite3_column_int(stmt, 3);
+    const int op_version = sqlite3_column_int(stmt, 3);
 
     // is it still the same (name, operation, op_version) triple?
     if(!last_name || strcmp(last_name, name) || !last_operation || strcmp(last_operation, operation)
@@ -344,7 +347,7 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   sqlite3_prepare_v2(db->handle, "UPDATE main.images SET filename = ?1 WHERE id = ?2", -1, &innerstmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
+    const int id = sqlite3_column_int(stmt, 0);
     const char *path = (const char *)sqlite3_column_text(stmt, 1);
     gchar *filename = g_path_get_basename(path);
     sqlite3_bind_text(innerstmt, 1, filename, -1, SQLITE_TRANSIENT);
@@ -732,8 +735,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // first rename presets with (name, operation, op_version) not being unique
     while(sqlite3_step(select_stmt) == SQLITE_ROW)
     {
-      int own_rowid = sqlite3_column_int(select_stmt, 0);
-      int other_rowid = sqlite3_column_int(select_stmt, 1);
+      const int own_rowid = sqlite3_column_int(select_stmt, 0);
+      const int other_rowid = sqlite3_column_int(select_stmt, 1);
       int preset_version = 0;
 
       do
@@ -757,7 +760,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       int preset_version = 0;
-      int rowid = sqlite3_column_int(stmt, 0);
+      const int rowid = sqlite3_column_int(stmt, 0);
 
       do
       {
@@ -835,7 +838,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int id = sqlite3_column_int(stmt, 0);
+      const int id = sqlite3_column_int(stmt, 0);
       const char *name = (const char *)sqlite3_column_text(stmt, 1);
 
       // find a unique name of the style for data.styles
@@ -875,7 +878,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
       sqlite3_bind_int(select_new_stmt, 1, last_rowid);
       TRY_STEP(select_new_stmt, SQLITE_ROW, "[init] can't select new style from data database\n");
-      int new_id = sqlite3_column_int(select_new_stmt, 0);
+      const int new_id = sqlite3_column_int(select_new_stmt, 0);
 
       // now that we have the style over in data.styles and the new id we can just copy over all style items
       sqlite3_bind_int(copy_style_items_stmt, 1, new_id);
@@ -1854,6 +1857,22 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     new_version = 6;
   }
+  else if(version == 6)
+  {
+    TRY_EXEC("CREATE TABLE data.locations "
+             "(tagid INTEGER PRIMARY KEY, type INTEGER, longitude REAL, latitude REAL, "
+             "delta1 REAL, delta2 REAL, FOREIGN KEY(tagid) REFERENCES tags(id))",
+             "[init] can't create new locations table\n");
+
+    new_version = 7;
+  }
+  else if(version == 7)
+  {
+    TRY_EXEC("ALTER TABLE data.locations ADD COLUMN ratio FLOAT DEFAULT 1",
+             "[init] can't add column `ratio' column to locations table\n");
+
+    new_version = 8;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2033,6 +2052,10 @@ static void _create_data_schema(dt_database_t *db)
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX data.presets_idx ON presets (name, operation, op_version)",
                NULL, NULL, NULL);
+  ////////////////////////////// (map) locations
+  sqlite3_exec(db->handle, "CREATE TABLE data.locations (tagid INTEGER PRIMARY KEY, "
+               "type INTEGER, longitude REAL, latitude REAL, delta1 REAL, delta2 REAL, ratio FLOAT, "
+               "FOREIGN KEY(tagid) REFERENCES tags(id))", NULL, NULL, NULL);
 }
 
 // create the in-memory tables
@@ -2085,7 +2108,7 @@ static void _sanitize_db(dt_database_t *db)
   sqlite3_prepare_v2(db->handle, "UPDATE data.tags SET name = ?1 WHERE id = ?2", -1, &innerstmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    int id = sqlite3_column_int(stmt, 0);
+    const int id = sqlite3_column_int(stmt, 0);
     const char *tag = (const char *)sqlite3_column_text(stmt, 1);
 
     if(!g_utf8_validate(tag, -1, NULL))
@@ -2413,23 +2436,66 @@ void dt_database_backup(const char *filename)
   {
     GFile *src = g_file_new_for_path(filename);
     GFile *dest = g_file_new_for_path(backup);
-    gboolean copyStatus = TRUE;
+    gboolean copy_status = TRUE;
     if(g_file_test(filename, G_FILE_TEST_EXISTS))
     {
-      copyStatus = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
-      if(copyStatus) copyStatus = g_chmod(backup, S_IRUSR) == 0;
+      copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+      if(copy_status) copy_status = g_chmod(backup, S_IRUSR) == 0;
     }
     else
     {
       // there is nothing to backup, create an empty file to prevent further backup attempts
       int fd = g_open(backup, O_CREAT, S_IRUSR);
-      if(fd < 0 || !g_close(fd, &gerror)) copyStatus = FALSE;
+      if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
     }
-    if(!copyStatus) fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
+    if(!copy_status) fprintf(stderr, "[backup failed] %s -> %s\n", filename, backup);
+
+    g_object_unref(src);
+    g_object_unref(dest);
   }
 
   g_free(version);
   g_free(backup);
+}
+
+int _get_pragma_int_val(sqlite3 *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  int val = -1;
+  sqlite3_stmt *stmt;
+  const int rc = sqlite3_prepare_v2(db, query,-1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = sqlite3_column_int(stmt, 0);
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+
+  return val;
+}
+
+gchar* _get_pragma_string_val(sqlite3 *db, const char* pragma)
+{
+  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
+  sqlite3_stmt *stmt;
+  gchar* val = NULL;
+  const int rc = sqlite3_prepare_v2(db, query,-1, &stmt, NULL);
+  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    val = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+    while(sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      gchar* cur_val = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+      gchar* tmp_val = g_strdup(val);
+      g_free(val);
+      val = g_strconcat(tmp_val, "\n", cur_val, NULL);
+      g_free(cur_val);
+      g_free(tmp_val);
+    }
+  }
+  sqlite3_finalize(stmt);
+  g_free(query);
+  return val;
 }
 
 dt_database_t *dt_database_init(const char *alternative, const gboolean load_data, const gboolean has_gui)
@@ -2506,6 +2572,8 @@ start:
     dt_database_backup(dbfilename_library);
   }
 
+  dt_print(DT_DEBUG_SQL, "[init sql] library: %s, data: %s\n", dbfilename_library, dbfilename_data);
+
   /* having more than one instance of darktable using the same database is a bad idea */
   /* try to get locks for the databases */
   db->lock_acquired = _lock_databases(db);
@@ -2574,9 +2642,11 @@ start:
   }
   else
   {
+    gchar* data_status = _get_pragma_string_val(db->handle, "data.quick_check");
     rc = sqlite3_prepare_v2(db->handle, "select value from data.db_info where key = 'version'", -1, &stmt, NULL);
-    if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+    if(!g_strcmp0(data_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
     {
+      g_free(data_status); // status is OK and we don't need to care :)
       // compare the version of the db with what is current for this executable
       const int db_version = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
@@ -2616,49 +2686,147 @@ start:
       // oh, bad situation. the database is corrupt and can't be read!
       // we inform the user here and let him decide what to do: exit or delete and try again.
 
+      gchar* quick_check_text = NULL;
+      if(g_strcmp0(data_status, "ok")) // data_status is not ok
+      {
+        quick_check_text = g_strdup_printf(_("quick_check said:\n"
+                                            "%s \n"), data_status);
+      }
+      else
+      {
+        quick_check_text = g_strdup(""); // a trick;
+      }
+
+      gchar *data_snap = dt_database_get_most_recent_snap(dbfilename_data);
+
+      GtkWidget *dialog;
+      GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+      const char* label_options = NULL;
+
+      if(data_snap)
+      {
+        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                            NULL,
+                                            dflags,
+                                            _("close darktable"),
+                                            GTK_RESPONSE_CLOSE,
+                                            _("attempt restore"),
+                                            GTK_RESPONSE_ACCEPT,
+                                            _("delete database"),
+                                            GTK_RESPONSE_REJECT,
+                                            NULL);
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+        label_options = _("do you want to close darktable now to manually restore\n"
+                          "the database from a backup, attempt an automatic restore\n"
+                          "from the most recent snapshot or delete the corrupted database\n"
+                          "and start with a new one?");
+      }
+      else
+      {
+        dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                            NULL,
+                                            dflags,
+                                            _("close darktable"),
+                                            GTK_RESPONSE_CLOSE,
+                                            _("delete database"),
+                                            GTK_RESPONSE_REJECT,
+                                            NULL);
+        gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
+        label_options = _("do you want to close darktable now to manually restore\n"
+                          "the database from a backup or delete the corrupted database\n"
+                          "and start with a new one?");
+      }
+
+
+
       char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                    "\n"
                                                    "<span style=\"italic\">%s</span>\n"
                                                    "\n"
-                                                   "it seems that the database is corrupt.\n"
-                                                   "do you want to close darktable now to manually restore\n"
-                                                   "the database from a backup or start with a new one?"),
-                                                 dbfilename_data);
+                                                   "it seems that the database is corrupted.\n"
+                                                   "%s"
+                                                   "%s"),
+                                                 dbfilename_data, quick_check_text, label_options);
 
-      gboolean shall_we_delete_the_db =
-          dt_gui_show_standalone_yes_no_dialog(_("darktable - error opening database"), label_text,
-                                               _("close darktable"), _("delete database"));
+      g_free(quick_check_text);
+      g_free(data_status);
 
+      GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
+      GtkWidget *label = gtk_label_new(NULL);
+      gtk_label_set_markup(GTK_LABEL(label), label_text);
       g_free(label_text);
+      gtk_container_add(GTK_CONTAINER (content_area), label);
+
+      gtk_widget_show_all(content_area);
+
+      const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+      gtk_widget_destroy(dialog);
 
       dt_database_destroy(db);
       db = NULL;
 
-      if(shall_we_delete_the_db)
-      {
-        fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_data);
-
-        if(g_unlink(dbfilename_data) == 0)
-          fprintf(stderr, " ... ok\n");
-        else
-          fprintf(stderr, " ... failed\n");
-
-        goto start;
-      }
-      else
+      if(resp != GTK_RESPONSE_ACCEPT && resp != GTK_RESPONSE_REJECT)
       {
         fprintf(stderr, "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
         "delete the file so that darktable can create a new one the next time. aborting\n", dbfilename_data);
+        g_free(data_snap);
         goto error;
       }
+
+      //here were sure that response is either accept (restore from snap) or reject (just delete the damaged db)
+
+      fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_data);
+
+      if(g_unlink(dbfilename_data) == 0)
+        fprintf(stderr, " ... ok\n");
+      else
+        fprintf(stderr, " ... failed\n");
+
+      if(resp == GTK_RESPONSE_ACCEPT && data_snap)
+      {
+        fprintf(stderr, "[init] restoring `%s' from `%s'...", dbfilename_data, data_snap);
+        GError *gerror = NULL;
+        if(!g_file_test(dbfilename_data, G_FILE_TEST_EXISTS))
+        {
+          GFile *src = g_file_new_for_path(data_snap);
+          GFile *dest = g_file_new_for_path(dbfilename_data);
+          gboolean copy_status = TRUE;
+          if(g_file_test(data_snap, G_FILE_TEST_EXISTS))
+          {
+            copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+            if(copy_status) copy_status = g_chmod(dbfilename_data, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
+          }
+          else
+          {
+            // there is nothing to restore, create an empty file
+            const int fd = g_open(dbfilename_data, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+            if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
+          }
+          if(copy_status)
+            fprintf(stderr, " success!\n");
+          else
+            fprintf(stderr, " failed!\n");
+
+          g_object_unref(src);
+          g_object_unref(dest);
+        }
+      }
+      g_free(data_snap);
+      g_free(dbname);
+      goto start;
     }
   }
 
+  gchar* libdb_status = _get_pragma_string_val(db->handle, "main.quick_check");
   // next we are looking at the library database
   // does the db contain the new 'db_info' table?
   rc = sqlite3_prepare_v2(db->handle, "select value from main.db_info where key = 'version'", -1, &stmt, NULL);
-  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  if(!g_strcmp0(libdb_status, "ok") && rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
   {
+    g_free(libdb_status);//it's ok :)
+
     // compare the version of the db with what is current for this executable
     const int db_version = sqlite3_column_int(stmt, 0);
 
@@ -2693,46 +2861,138 @@ start:
     }
     // else: the current version, do nothing
   }
-  else if(rc == SQLITE_CORRUPT || rc == SQLITE_NOTADB)
+  else if(g_strcmp0(libdb_status, "ok") || rc == SQLITE_CORRUPT || rc == SQLITE_NOTADB)
   {
     // oh, bad situation. the database is corrupt and can't be read!
     // we inform the user here and let him decide what to do: exit or delete and try again.
 
+    gchar* quick_check_text = NULL;
+    if(g_strcmp0(libdb_status, "ok")) // data_status is not ok
+    {
+      quick_check_text = g_strdup_printf(_("quick_check said:\n"
+                                          "%s \n"), libdb_status);
+    }
+    else
+    {
+      quick_check_text = g_strdup(""); // a trick;
+    }
+
+    gchar *data_snap = dt_database_get_most_recent_snap(dbfilename_library);
+
+    GtkWidget *dialog;
+    GtkDialogFlags dflags = GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT;
+
+    const char* label_options = NULL;
+
+    if(data_snap)
+    {
+      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                          NULL,
+                                          dflags,
+                                          _("close darktable"),
+                                          GTK_RESPONSE_CLOSE,
+                                          _("attempt restore"),
+                                          GTK_RESPONSE_ACCEPT,
+                                          _("delete database"),
+                                          GTK_RESPONSE_REJECT,
+                                          NULL);
+      gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+      label_options = _("do you want to close darktable now to manually restore\n"
+                        "the database from a backup, attempt an automatic restore\n"
+                        "from the most recent snapshot or delete the corrupted database\n"
+                        "and start with a new one?");
+    }
+    else
+    {
+      dialog = gtk_dialog_new_with_buttons(_("darktable - error opening database"),
+                                          NULL,
+                                          dflags,
+                                          _("close darktable"),
+                                          GTK_RESPONSE_CLOSE,
+                                          _("delete database"),
+                                          GTK_RESPONSE_REJECT,
+                                          NULL);
+      gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_CLOSE);
+      label_options = _("do you want to close darktable now to manually restore\n"
+                        "the database from a backup or delete the corrupted database\n"
+                        "and start with a new one?");
+    }
+
     char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
-                                                  "\n"
-                                                  "<span style=\"italic\">%s</span>\n"
-                                                  "\n"
-                                                  "it seems that the database is corrupt.\n"
-                                                  "do you want to close darktable now to manually restore\n"
-                                                  "the database from a backup or start with a new one?"),
-                                               dbfilename_library);
+                                                 "\n"
+                                                 "<span style=\"italic\">%s</span>\n"
+                                                 "\n"
+                                                 "it seems that the database is corrupted.\n"
+                                                 "%s"
+                                                 "%s"),
+                                               dbfilename_data, quick_check_text, label_options);
 
-    gboolean shall_we_delete_the_db =
-        dt_gui_show_standalone_yes_no_dialog(_("darktable - error opening database"), label_text,
-                                              _("close darktable"), _("delete database"));
+    g_free(quick_check_text);
+    g_free(libdb_status);
 
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG (dialog));
+    GtkWidget *label = gtk_label_new(NULL);
+    gtk_label_set_markup(GTK_LABEL(label), label_text);
     g_free(label_text);
+    gtk_container_add(GTK_CONTAINER (content_area), label);
+
+    gtk_widget_show_all(content_area);
+
+    const int resp = gtk_dialog_run(GTK_DIALOG(dialog));
+
+    gtk_widget_destroy(dialog);
 
     dt_database_destroy(db);
     db = NULL;
 
-    if(shall_we_delete_the_db)
-    {
-      fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_library);
-
-      if(g_unlink(dbfilename_library) == 0)
-        fprintf(stderr, " ... ok\n");
-      else
-        fprintf(stderr, " ... failed\n");
-
-      goto start;
-    }
-    else
+    if(resp != GTK_RESPONSE_ACCEPT && resp != GTK_RESPONSE_REJECT)
     {
       fprintf(stderr, "[init] database `%s' is corrupt and can't be opened! either replace it from a backup or "
-                      "delete the file so that darktable can create a new one the next time. aborting\n", dbname);
+        "delete the file so that darktable can create a new one the next time. aborting\n", dbfilename_library);
+      g_free(data_snap);
       goto error;
     }
+
+    //here were sure that response is either accept (restore from snap) or reject (just delete the damaged db)
+
+    fprintf(stderr, "[init] deleting `%s' on user request", dbfilename_library);
+
+    if(g_unlink(dbfilename_library) == 0)
+      fprintf(stderr, " ... ok\n");
+    else
+      fprintf(stderr, " ... failed\n");
+
+    if(resp == GTK_RESPONSE_ACCEPT && data_snap)
+    {
+      fprintf(stderr, "[init] restoring `%s' from `%s'...", dbfilename_library, data_snap);
+      GError *gerror = NULL;
+      if(!g_file_test(dbfilename_library, G_FILE_TEST_EXISTS))
+      {
+        GFile *src = g_file_new_for_path(data_snap);
+        GFile *dest = g_file_new_for_path(dbfilename_library);
+        gboolean copy_status = TRUE;
+        if(g_file_test(data_snap, G_FILE_TEST_EXISTS))
+        {
+          copy_status = g_file_copy(src, dest, G_FILE_COPY_NONE, NULL, NULL, NULL, &gerror);
+          if(copy_status) copy_status = g_chmod(dbfilename_library, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH) == 0;
+        }
+        else
+        {
+          // there is nothing to restore, create an empty file to prevent further backup attempts
+          const int fd = g_open(dbfilename_library, O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+          if(fd < 0 || !g_close(fd, &gerror)) copy_status = FALSE;
+        }
+        if(copy_status)
+          fprintf(stderr, " success!\n");
+        else
+          fprintf(stderr, " failed!\n");
+        g_object_unref(src);
+        g_object_unref(dest);
+      }
+    }
+    g_free(data_snap);
+    g_free(dbname);
+    goto start;
   }
   else
   {
@@ -2783,6 +3043,22 @@ start:
 
   // take care of potential bad data in the db.
   _sanitize_db(db);
+
+#ifdef HAVE_ICU
+  // check if sqlite is already icu enabled
+  // if not enabled expected error: no such function:icu_load_collation
+  rc = sqlite3_prepare_v2(db->handle,
+                          "SELECT icu_load_collation('en_US', 'english')",
+                          -1, &stmt, NULL);
+  sqlite3_finalize(stmt);
+
+  if(rc != SQLITE_OK)
+  {
+    rc = sqlite3IcuInit(db->handle);
+    if(rc != SQLITE_OK)
+      fprintf(stderr, "[sqlite] init icu extension error %d\n", rc);
+  }
+#endif
 
 error:
   g_free(dbname);
@@ -2875,64 +3151,66 @@ gboolean dt_database_get_lock_acquired(const dt_database_t *db)
   return db->lock_acquired;
 }
 
-int _get_pragma_val(const struct dt_database_t *db, const char* pragma)
+void dt_database_cleanup_busy_statements(const struct dt_database_t *db)
 {
-  gchar* query= g_strdup_printf("PRAGMA %s", pragma);
-  int val = -1;
-  sqlite3_stmt *stmt;
-  const int rc = sqlite3_prepare_v2(db->handle, query,-1, &stmt, NULL);
-  if(rc == SQLITE_OK && sqlite3_step(stmt) == SQLITE_ROW)
+  sqlite3_stmt *stmt = NULL;
+  while( (stmt = sqlite3_next_stmt(db->handle, NULL)) != NULL)
   {
-    val = sqlite3_column_int(stmt, 0);
+    const char* sql = sqlite3_sql(stmt);
+    if(sqlite3_stmt_busy(stmt))
+    {
+      dt_print(DT_DEBUG_SQL, "[db busy stmt] non-finalized nor stepped through statement: '%s'\n",sql);
+      sqlite3_reset(stmt);
+    }
+    else {
+      dt_print(DT_DEBUG_SQL, "[db busy stmt] non-finalized statement: '%s'\n",sql);
+    }
+    sqlite3_finalize(stmt);
   }
-  sqlite3_finalize(stmt);
-  g_free(query);
-
-  return val;
 }
 
 #define ERRCHECK {if (err!=NULL) {dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance error: '%s'\n",err); sqlite3_free(err); err=NULL;}}
-void _dt_database_maintenance(const struct dt_database_t *db)
+void dt_database_perform_maintenance(const struct dt_database_t *db)
 {
   char* err = NULL;
 
-  const int main_pre_free_count = _get_pragma_val(db, "main.freelist_count");
-  const int main_page_size = _get_pragma_val(db, "main.page_size");
-  const int data_pre_free_count = _get_pragma_val(db, "data.freelist_count");
-  const int data_page_size = _get_pragma_val(db, "data.page_size");
+  const int main_pre_free_count = _get_pragma_int_val(db->handle, "main.freelist_count");
+  const int main_page_size = _get_pragma_int_val(db->handle, "main.page_size");
+  const int data_pre_free_count = _get_pragma_int_val(db->handle, "data.freelist_count");
+  const int data_page_size = _get_pragma_int_val(db->handle, "data.page_size");
 
   const guint64 calc_pre_size = (main_pre_free_count*main_page_size) + (data_pre_free_count*data_page_size);
 
   if(calc_pre_size == 0)
   {
     dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance deemed unnecesary, performing only analyze.\n");
-    sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, &err);
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
     ERRCHECK
-    sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, &err);
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
     ERRCHECK
-    sqlite3_exec(db->handle, "ANALYZE", NULL, NULL, &err);
+    DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
     ERRCHECK
     return;
   }
 
-  sqlite3_exec(db->handle, "VACUUM data", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM data", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "VACUUM main", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM main", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "ANALYZE data", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE data", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "ANALYZE main", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE main", NULL, NULL, &err);
   ERRCHECK
 
   // for some reason this is needed in some cases
   // in case above performed vacuum+analyze properly, this is noop.
-  sqlite3_exec(db->handle, "VACUUM", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "VACUUM", NULL, NULL, &err);
   ERRCHECK
-  sqlite3_exec(db->handle, "ANALYZE", NULL, NULL, &err);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "ANALYZE", NULL, NULL, &err);
   ERRCHECK
 
-  const int main_post_free_count = _get_pragma_val(db, "main.freelist_count");
-  const int data_post_free_count = _get_pragma_val(db, "data.freelist_count");
+  const int main_post_free_count = _get_pragma_int_val(db->handle, "main.freelist_count");
+  const int data_post_free_count = _get_pragma_int_val(db->handle, "data.freelist_count");
 
   const guint64 calc_post_size = (main_post_free_count*main_page_size) + (data_post_free_count*data_page_size);
   const gint64 bytes_freed = calc_pre_size - calc_post_size;
@@ -2941,11 +3219,11 @@ void _dt_database_maintenance(const struct dt_database_t *db)
 
   if(calc_post_size >= calc_pre_size)
   {
-    dt_print(DT_DEBUG_SQL, "[db maintenance] paintenance problem. if no errors logged, it should work fine next time.\n");
+    dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance problem. if no errors logged, it should work fine next time.\n");
   }
   else
   {
-    
+
   }
 }
 #undef ERRCHECK
@@ -2993,15 +3271,24 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
     return shall_perform_maintenance;
 }
 
-void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
+static inline gboolean _is_mem_db(const struct dt_database_t *db)
 {
+  return !g_strcmp0(db->dbfilename_data, ":memory:") || !g_strcmp0(db->dbfilename_library, ":memory:");
+}
+
+gboolean dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolean has_gui, const gboolean closing_time)
+{
+  if(_is_mem_db(db))
+    return FALSE;
+
   char *config = dt_conf_get_string("database/maintenance_check");
 
   if(!g_strcmp0(config, "never"))
   {
     // early bail out on "never"
     dt_print(DT_DEBUG_SQL, "[db maintenance] please consider enabling database maintenance.\n");
-    return;
+    g_free(config);
+    return FALSE;
   }
 
   gboolean check_for_maintenance = FALSE;
@@ -3023,17 +3310,17 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
 
   if(!check_for_maintenance)
   {
-    return;
+    return FALSE;
   }
 
   // checking free pages
-  const int main_free_count = _get_pragma_val(db, "main.freelist_count");
-  const int main_page_count = _get_pragma_val(db, "main.page_count");
-  const int main_page_size = _get_pragma_val(db, "main.page_size");
+  const int main_free_count = _get_pragma_int_val(db->handle, "main.freelist_count");
+  const int main_page_count = _get_pragma_int_val(db->handle, "main.page_count");
+  const int main_page_size = _get_pragma_int_val(db->handle, "main.page_size");
 
-  const int data_free_count = _get_pragma_val(db, "data.freelist_count");
-  const int data_page_count = _get_pragma_val(db, "data.page_count");
-  const int data_page_size = _get_pragma_val(db, "data.page_size");
+  const int data_free_count = _get_pragma_int_val(db->handle, "data.freelist_count");
+  const int data_page_count = _get_pragma_int_val(db->handle, "data.page_count");
+  const int data_page_size = _get_pragma_int_val(db->handle, "data.page_size");
 
   dt_print(DT_DEBUG_SQL,
       "[db maintenance] main: [%d/%d pages], data: [%d/%d pages].\n",
@@ -3045,7 +3332,7 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
     dt_print(DT_DEBUG_SQL,
         "[db maintenance] page_count <= 0 : main.page_count: %d, data.page_count: %d \n",
         main_page_count, data_page_count);
-    return;
+    return FALSE;
   }
 
   // we don't need fine-grained percentages, so let's do ints
@@ -3062,19 +3349,704 @@ void dt_database_maybe_maintenance(const struct dt_database_t *db, const gboolea
 
     if(force_maintenance || _ask_for_maintenance(has_gui, closing_time, calc_size))
     {
-      _dt_database_maintenance(db);
+      return TRUE;
     }
   }
+  return FALSE;
 }
 
 void dt_database_optimize(const struct dt_database_t *db)
 {
+  if(_is_mem_db(db))
+    return;
   // optimize should in most cases be no-op and have no noticeable downsides
   // this should be ran on every exit
   // see: https://www.sqlite.org/pragma.html#pragma_optimize
-  sqlite3_exec(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
+  DT_DEBUG_SQLITE3_EXEC(db->handle, "PRAGMA optimize", NULL, NULL, NULL);
 }
 
+static void _print_backup_progress(int remaining, int total)
+{
+  // TODO if we have closing splashpage - this can be used to advance progressbar :)
+  dt_print(DT_DEBUG_SQL, "[db backup] %d out of %d done\n", total - remaining, total);
+}
+
+static int _backup_db(
+  sqlite3 *src_db,               /* Database handle to back up */
+  const char *src_db_name,       /* Database name to back up */
+  const char *dest_filename,      /* Name of file to back up to */
+  void(*xProgress)(int, int)  /* Progress function to invoke */
+)
+{
+  sqlite3 *dest_db;             /* Database connection opened on zFilename */
+  sqlite3_backup *sb_dest;    /* Backup handle used to copy data */
+
+  /* Open the database file identified by zFilename. */
+  int rc = sqlite3_open(dest_filename, &dest_db);
+
+  if(rc == SQLITE_OK)
+  {
+    /* Open the sqlite3_backup object used to accomplish the transfer */
+    sb_dest = sqlite3_backup_init(dest_db, "main", src_db, src_db_name);
+    if(sb_dest)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] %s to %s\n", src_db_name, dest_filename);
+      gchar *pragma = g_strdup_printf("%s.page_count", src_db_name);
+      const int spc = _get_pragma_int_val(src_db, pragma);
+      g_free(pragma);
+      const int pc = MIN(spc, MAX(5,spc/100));
+      do
+      {
+        rc = sqlite3_backup_step(sb_dest, pc);
+        if(xProgress)
+          xProgress(
+            sqlite3_backup_remaining(sb_dest),
+            sqlite3_backup_pagecount(sb_dest)
+          );
+        if( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED )
+        {
+          sqlite3_sleep(25);
+        }
+      }
+      while( rc==SQLITE_OK || rc==SQLITE_BUSY || rc==SQLITE_LOCKED );
+
+      /* Release resources allocated by backup_init(). */
+      (void)sqlite3_backup_finish(sb_dest);
+    }
+    rc = sqlite3_errcode(dest_db);
+  }
+  /* Close the database connection opened on database file zFilename
+  ** and return the result of this function. */
+  (void)sqlite3_close(dest_db);
+  return rc;
+}
+
+gboolean dt_database_snapshot(const struct dt_database_t *db)
+{
+  // backing up memory db is pointelss
+  if(_is_mem_db(db))
+    return FALSE;
+  GDateTime *date_now = g_date_time_new_now_local();
+  gchar *date_suffix = g_date_time_format(date_now, "%Y%m%d%H%M%S");
+  g_date_time_unref(date_now);
+
+  const char *file_pattern = "%s-snp-%s";
+  const char *temp_pattern = "%s-tmp-%s";
+
+  gchar *lib_backup_file = g_strdup_printf(file_pattern, db->dbfilename_library, date_suffix);
+  gchar *lib_tmpbackup_file = g_strdup_printf(temp_pattern, db->dbfilename_library, date_suffix);
+
+  int rc = _backup_db(db->handle, "main", lib_tmpbackup_file, _print_backup_progress);
+  if(!(rc==SQLITE_OK))
+  {
+    g_unlink(lib_tmpbackup_file);
+    g_free(lib_tmpbackup_file);
+    g_free(lib_backup_file);
+    g_free(date_suffix);
+    return FALSE;
+  }
+  g_rename(lib_tmpbackup_file, lib_backup_file);
+  g_chmod(lib_backup_file, S_IRUSR);
+  g_free(lib_tmpbackup_file);
+  g_free(lib_backup_file);
+
+  gchar *dat_backup_file = g_strdup_printf(file_pattern, db->dbfilename_data, date_suffix);
+  gchar *dat_tmpbackup_file = g_strdup_printf(temp_pattern, db->dbfilename_data, date_suffix);
+
+  g_free(date_suffix);
+
+  rc = _backup_db(db->handle, "data", dat_tmpbackup_file, _print_backup_progress);
+  if(!(rc==SQLITE_OK))
+  {
+    g_unlink(dat_tmpbackup_file);
+    g_free(dat_tmpbackup_file);
+    g_free(dat_backup_file);
+    return FALSE;
+  }
+  g_rename(dat_tmpbackup_file, dat_backup_file);
+  g_chmod(dat_backup_file, S_IRUSR);
+  g_free(dat_tmpbackup_file);
+  g_free(dat_backup_file);
+
+  return TRUE;
+}
+
+gboolean dt_database_maybe_snapshot(const struct dt_database_t *db)
+{
+  if(_is_mem_db(db))
+    return FALSE;
+
+  char *config = dt_conf_get_string("database/create_snapshot");
+  if(!g_strcmp0(config, "never"))
+  {
+    // early bail out on "never"
+    dt_print(DT_DEBUG_SQL, "[db backup] please consider enabling database snapshots.\n");
+    g_free(config);
+    return FALSE;
+  }
+  if(!g_strcmp0(config, "on close"))
+  {
+    // early bail out on "on close"
+    dt_print(DT_DEBUG_SQL, "[db backup] performing unconditional snapshot.\n");
+    g_free(config);
+    return TRUE;
+  }
+
+  GTimeSpan span_from_last_snap_required;
+
+  if(!g_strcmp0(config, "once a day"))
+  {
+    span_from_last_snap_required = G_TIME_SPAN_DAY;
+  }
+  else if(!g_strcmp0(config, "once a week"))
+  {
+    span_from_last_snap_required = G_TIME_SPAN_DAY * 7;
+  }
+  else if(!g_strcmp0(config, "once a month"))
+  {
+    //average month ;)
+    span_from_last_snap_required = G_TIME_SPAN_DAY * 30;
+  }
+  else
+  {
+    // early bail out on "invalid value"
+    dt_print(DT_DEBUG_SQL, "[db backup] invalid timespan requirement expecting never/on close/once a [day/week/month], got %s.\n", config);
+    g_free(config);
+    return TRUE;
+  }
+  g_free(config);
+
+  //we're in trouble zone - we have to determine when was the last snapshot done (including version upgrade snapshot) :/
+  //this could be easy if we wrote date of last successful backup to config, but that's not really an option since
+  //backup may done as last db operation, way after config file is closed. Plus we might be mixing dates of backups for
+  //various library.db
+
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  GFile *library = g_file_parse_name(db->dbfilename_library);
+  GFile *parent = g_file_get_parent(library);
+
+  if(parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!.\n");
+    g_object_unref(library);
+    return FALSE;
+  }
+
+  gchar *lib_basename = g_file_get_basename(library);
+  g_object_unref(library);
+
+  gchar *lib_snap_format = g_strdup_printf("%s-snp-", lib_basename);
+  gchar *lib_backup_format = g_strdup_printf("%s-pre-", lib_basename);
+  g_free(lib_basename);
+
+  GError *error = NULL;
+  GFileEnumerator *library_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_STANDARD_NAME "," G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
+
+  if(library_dir_files == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
+    g_object_unref(parent);
+    g_error_free(error);
+    return FALSE;
+  }
+
+  GFileInfo *info = NULL;
+  guint64 last_snap = 0;
+
+  while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+  {
+    const char* fname = g_file_info_get_name(info);
+    if(g_str_has_prefix(fname, lib_snap_format) || g_str_has_prefix(fname, lib_backup_format))
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+      if(last_snap == 0)
+      {
+        last_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+        g_object_unref(info);
+        continue;
+      }
+      const guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      if(try_snap > last_snap)
+      {
+        last_snap = try_snap;
+      }
+    }
+    g_object_unref(info);
+  }
+  g_object_unref(parent);
+  g_free(lib_snap_format);
+  g_free(lib_backup_format);
+
+  if(error)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+    g_file_enumerator_close(library_dir_files, NULL, NULL);
+    g_object_unref(library_dir_files);
+    g_error_free(error);
+    return FALSE;
+  }
+
+  g_file_enumerator_close(library_dir_files, NULL, NULL);
+  g_object_unref(library_dir_files);
+
+  GDateTime *date_now = g_date_time_new_now_local();
+
+  // Even if last_snap is 0 (didn't found any snaps) it produces proper date - unix epoch
+  GDateTime *date_last_snap = g_date_time_new_from_unix_local(last_snap);
+
+  gchar *now_txt = g_date_time_format(date_now, "%Y%m%d%H%M%S");
+  gchar *ls_txt = g_date_time_format(date_last_snap, "%Y%m%d%H%M%S");
+  dt_print(DT_DEBUG_SQL, "[db backup] last snap: %s; curr date: %s.\n", ls_txt, now_txt);
+  g_free(now_txt);
+  g_free(ls_txt);
+
+  GTimeSpan span_from_last_snap = g_date_time_difference(date_now, date_last_snap);
+
+  g_date_time_unref(date_now);
+  g_date_time_unref(date_last_snap);
+
+  return span_from_last_snap > span_from_last_snap_required;
+}
+
+/* Parse integers in the form d (week days), dd (hours etc), ddd (ordinal days) or dddd (years) */
+static gboolean _get_iso8601_int (const gchar *text, gsize length, gint *value)
+{
+  gsize i;
+  guint v = 0;
+
+  if (length < 1 || length > 4)
+    return FALSE;
+
+  for (i = 0; i < length; i++)
+  {
+    const gchar c = text[i];
+    if (c < '0' || c > '9')
+      return FALSE;
+    v = v * 10 + (c - '0');
+  }
+
+  *value = v;
+  return TRUE;
+}
+
+static gint _db_snap_sort(gconstpointer a, gconstpointer b, gpointer user_data)
+{
+  const gchar* e1 = (gchar *) a;
+  const gchar* e2 = (gchar *) b;
+
+  //we assume that both end with date in
+  //"%Y%m%d%H%M%S" format
+
+  gchar *datepos1 = g_strrstr(e1, "-snp-");
+  gchar *datepos2 = g_strrstr(e2, "-snp-");
+  if(!datepos1 || !datepos2)
+    return 0;
+
+  datepos1 +=5; //skip "-snp-"
+  datepos2 +=5; //skip "-snp-"
+
+  int year,month,day,hour,minute,second;
+
+  if(!_get_iso8601_int(datepos1,    4, &year)   ||
+     !_get_iso8601_int(datepos1+4,  2, &month)  ||
+     !_get_iso8601_int(datepos1+6,  2, &day)    ||
+     !_get_iso8601_int(datepos1+8,  2, &hour)   ||
+     !_get_iso8601_int(datepos1+10, 2, &minute) ||
+     !_get_iso8601_int(datepos1+12, 2, &second)
+    )
+  {
+    return 0;
+  }
+
+  GDateTime *d1=g_date_time_new_local(year, month, day, hour, minute, second);
+
+  if(!_get_iso8601_int(datepos2,    4, &year)   ||
+     !_get_iso8601_int(datepos2+4,  2, &month)  ||
+     !_get_iso8601_int(datepos2+6,  2, &day)    ||
+     !_get_iso8601_int(datepos2+8,  2, &hour)   ||
+     !_get_iso8601_int(datepos2+10, 2, &minute) ||
+     !_get_iso8601_int(datepos2+12, 2, &second)
+    )
+  {
+    g_date_time_unref(d1);
+    return 0;
+  }
+
+  GDateTime *d2=g_date_time_new_local(year, month, day, hour, minute, second);
+
+  const gint ret = g_date_time_compare(d1, d2);
+
+  g_date_time_unref(d1);
+  g_date_time_unref(d2);
+
+  return ret;
+}
+
+char **dt_database_snaps_to_remove(const struct dt_database_t *db)
+{
+  if(_is_mem_db(db))
+    return NULL;
+
+  const int keep_snaps = dt_conf_get_int("database/keep_snapshots");
+
+  if(keep_snaps < 0)
+    return NULL;
+
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  GFile *lib_file = g_file_parse_name(db->dbfilename_library);
+  GFile *lib_parent = g_file_get_parent(lib_file);
+
+  if(lib_parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get library parent!.\n");
+    g_object_unref(lib_file);
+    return NULL;
+  }
+
+  GFile *dat_file = g_file_parse_name(db->dbfilename_data);
+  GFile *dat_parent = g_file_get_parent(dat_file);
+
+  if(dat_parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get data parent!.\n");
+    g_object_unref(dat_file);
+    g_object_unref(lib_file);
+    g_object_unref(lib_parent);
+  }
+
+  gchar *lib_basename = g_file_get_basename(lib_file);
+  g_object_unref(lib_file);
+  gchar *lib_snap_format = g_strdup_printf("%s-snp-", lib_basename);
+  gchar *lib_tmp_format = g_strdup_printf("%s-tmp-", lib_basename);
+  g_free(lib_basename);
+
+  gchar *dat_basename = g_file_get_basename(dat_file);
+  g_object_unref(dat_file);
+  gchar *dat_snap_format = g_strdup_printf("%s-snp-", dat_basename);
+  gchar *dat_tmp_format = g_strdup_printf("%s-tmp-", dat_basename);
+  g_free(dat_basename);
+
+  GQueue *lib_snaps = g_queue_new();
+  GQueue *dat_snaps = g_queue_new();
+  GQueue *tmplib_snaps = g_queue_new();
+  GQueue *tmpdat_snaps = g_queue_new();
+
+  if(g_file_equal(lib_parent, dat_parent))
+  {
+    //slight optimization if library and data are in same dir, we only have to scan one
+    GError *error = NULL;
+    GFileEnumerator *library_dir_files = g_file_enumerate_children(lib_parent, G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NONE, NULL, &error);
+
+    if(library_dir_files == NULL)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_free(lib_snap_format);
+      g_free(dat_snap_format);
+      g_queue_free(lib_snaps);
+      g_queue_free(dat_snaps);
+      g_queue_free(tmplib_snaps);
+      g_queue_free(tmpdat_snaps);
+      g_error_free(error);
+      return NULL;
+    }
+
+    GFileInfo *info = NULL;
+
+    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    {
+      const char* fname = g_file_info_get_name(info);
+      if(g_str_has_prefix(fname, lib_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(lib_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      else if(g_str_has_prefix(fname, dat_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
+      {
+        //we insert into single queue, since it's just dependent on parent
+        g_queue_push_head(tmplib_snaps, g_strdup(fname));
+      }
+      g_object_unref(info);
+    }
+    g_free(lib_snap_format);
+    g_free(dat_snap_format);
+
+    if(error)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_queue_free_full(lib_snaps, g_free);
+      g_queue_free_full(dat_snaps, g_free);
+      g_queue_free_full(tmplib_snaps, g_free);
+      g_queue_free_full(tmpdat_snaps, g_free);
+      g_file_enumerator_close(library_dir_files, NULL, NULL);
+      g_object_unref(library_dir_files);
+      g_error_free(error);
+      return NULL;
+    }
+    g_file_enumerator_close(library_dir_files, NULL, NULL);
+    g_object_unref(library_dir_files);
+  }
+  else
+  {
+    //well... fun.
+
+    GError *error = NULL;
+    GFileEnumerator *library_dir_files = g_file_enumerate_children(lib_parent, G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NONE, NULL, &error);
+    if(library_dir_files == NULL)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_free(lib_snap_format);
+      g_free(dat_snap_format);
+      g_error_free(error);
+      g_queue_free(lib_snaps);
+      g_queue_free(dat_snaps);
+      g_queue_free(tmplib_snaps);
+      g_queue_free(tmpdat_snaps);
+      return NULL;
+    }
+
+    GFileEnumerator *data_dir_files = g_file_enumerate_children(dat_parent, G_FILE_ATTRIBUTE_STANDARD_NAME, G_FILE_QUERY_INFO_NONE, NULL, &error);
+    if(data_dir_files == NULL)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate data parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_free(lib_snap_format);
+      g_free(dat_snap_format);
+      g_file_enumerator_close(library_dir_files, NULL, NULL);
+      g_object_unref(library_dir_files);
+      g_error_free(error);
+      g_queue_free(lib_snaps);
+      g_queue_free(dat_snaps);
+      g_queue_free(tmplib_snaps);
+      g_queue_free(tmpdat_snaps);
+      return NULL;
+    }
+
+    GFileInfo *info = NULL;
+
+    while ((info = g_file_enumerator_next_file(library_dir_files, NULL, &error)))
+    {
+      const char* fname = g_file_info_get_name(info);
+      if(g_str_has_prefix(fname, lib_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(lib_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
+      {
+        // we remove all incomplete snaps matching pattern in BOTH dirs
+        g_queue_push_head(tmplib_snaps, g_strdup(fname));
+      }
+      g_object_unref(info);
+    }
+    g_free(lib_snap_format);
+
+    if(error)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating library parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_queue_free_full(lib_snaps, g_free);
+      g_queue_free(dat_snaps);
+      g_queue_free_full(tmplib_snaps, g_free);
+      g_queue_free(tmpdat_snaps);
+      g_file_enumerator_close(library_dir_files, NULL, NULL);
+      g_object_unref(library_dir_files);
+      g_file_enumerator_close(data_dir_files, NULL, NULL);
+      g_object_unref(data_dir_files);
+      g_error_free(error);
+      return NULL;
+    }
+    g_file_enumerator_close(library_dir_files, NULL, NULL);
+    g_object_unref(library_dir_files);
+
+    while ((info = g_file_enumerator_next_file(data_dir_files, NULL, &error)))
+    {
+      const char* fname = g_file_info_get_name(info);
+      if(g_str_has_prefix(fname, dat_snap_format))
+      {
+        dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+        g_queue_insert_sorted(dat_snaps, g_strdup(fname), _db_snap_sort, NULL);
+      }
+      else if(g_str_has_prefix(fname, lib_tmp_format) || g_str_has_prefix(fname, dat_tmp_format))
+      {
+        //we add to queue both matches - it just depends on parent
+        g_queue_push_head(tmpdat_snaps, g_strdup(fname));
+      }
+      g_object_unref(info);
+    }
+    g_free(dat_snap_format);
+
+    if(error)
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating data parent: %s.\n", error->message);
+      g_object_unref(lib_parent);
+      g_object_unref(dat_parent);
+      g_queue_free_full(lib_snaps, g_free);
+      g_queue_free_full(dat_snaps, g_free);
+      g_queue_free_full(tmplib_snaps, g_free);
+      g_queue_free_full(tmpdat_snaps, g_free);
+      g_file_enumerator_close(data_dir_files, NULL, NULL);
+      g_object_unref(data_dir_files);
+      g_error_free(error);
+      return NULL;
+    }
+
+    g_file_enumerator_close(data_dir_files, NULL, NULL);
+    g_object_unref(data_dir_files);
+  }
+
+  // here we have list of snaps sorted in date order, now we have to
+  // create from that list of snaps to be deleted and return that :D
+
+  GPtrArray *ret = g_ptr_array_new();
+
+  gchar *lib_parent_path = g_file_get_path(lib_parent);
+  g_object_unref(lib_parent);
+
+  while(g_queue_get_length(lib_snaps) > keep_snaps)
+  {
+    gchar *head = g_queue_pop_head(lib_snaps);
+    g_ptr_array_add(ret, g_strconcat(lib_parent_path, G_DIR_SEPARATOR_S, head, NULL));
+    g_free(head);
+  }
+  while(!g_queue_is_empty(tmplib_snaps))
+  {
+    gchar *head = g_queue_pop_head(tmplib_snaps);
+    g_ptr_array_add(ret, g_strconcat(lib_parent_path, G_DIR_SEPARATOR_S, head, NULL));
+    g_free(head);
+  }
+  g_free(lib_parent_path);
+  g_queue_free_full(lib_snaps, g_free);
+  g_queue_free_full(tmplib_snaps, g_free); // should be totally freed, but eh - this won't make doublefree
+
+  gchar *dat_parent_path = g_file_get_path(dat_parent);
+  g_object_unref(dat_parent);
+
+  while(g_queue_get_length(dat_snaps) > keep_snaps)
+  {
+    gchar *head = g_queue_pop_head(dat_snaps);
+    g_ptr_array_add(ret, g_strconcat(dat_parent_path, G_DIR_SEPARATOR_S, head, NULL));
+    g_free(head);
+  }
+  while(!g_queue_is_empty(tmpdat_snaps))
+  {
+    gchar *head = g_queue_pop_head(tmpdat_snaps);
+    g_ptr_array_add(ret, g_strconcat(dat_parent_path, G_DIR_SEPARATOR_S, head, NULL));
+    g_free(head);
+  }
+  g_free(dat_parent_path);
+  g_queue_free_full(dat_snaps, g_free);
+  g_queue_free_full(tmpdat_snaps, g_free);
+
+  g_ptr_array_add (ret, NULL);
+
+  return (char**)g_ptr_array_free(ret, FALSE);
+}
+
+gchar *dt_database_get_most_recent_snap(const char* db_filename)
+{
+  if(!g_strcmp0(db_filename, ":memory:"))
+    return NULL;
+
+  dt_print(DT_DEBUG_SQL, "[db backup] checking snapshots existence.\n");
+  GFile *db_file = g_file_parse_name(db_filename);
+  GFile *parent = g_file_get_parent(db_file);
+
+  if(parent == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't get database parent!.\n");
+    g_object_unref(db_file);
+    return NULL;
+  }
+
+  gchar *db_basename = g_file_get_basename(db_file);
+  g_object_unref(db_file);
+
+  gchar *db_snap_format = g_strdup_printf("%s-snp-", db_basename);
+  gchar *db_backup_format = g_strdup_printf("%s-pre-", db_basename);
+  g_free(db_basename);
+
+  GError *error = NULL;
+  GFileEnumerator *db_dir_files = g_file_enumerate_children(parent, G_FILE_ATTRIBUTE_STANDARD_NAME "," G_FILE_ATTRIBUTE_TIME_MODIFIED, G_FILE_QUERY_INFO_NONE, NULL, &error);
+
+  if(db_dir_files == NULL)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] couldn't enumerate database parent: %s.\n", error->message);
+    g_object_unref(parent);
+    g_error_free(error);
+    return NULL;
+  }
+
+  GFileInfo *info = NULL;
+  guint64 last_snap = 0;
+  gchar *last_snap_name = NULL;
+
+  while ((info = g_file_enumerator_next_file(db_dir_files, NULL, &error)))
+  {
+    const char* fname = g_file_info_get_name(info);
+    if(g_str_has_prefix(fname, db_snap_format) || g_str_has_prefix(fname, db_backup_format))
+    {
+      dt_print(DT_DEBUG_SQL, "[db backup] found file: %s.\n", fname);
+      if(last_snap == 0)
+      {
+        last_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+        last_snap_name = g_strdup(fname);
+        g_object_unref(info);
+        continue;
+      }
+      guint64 try_snap = g_file_info_get_attribute_uint64(info, G_FILE_ATTRIBUTE_TIME_MODIFIED);
+      if(try_snap > last_snap)
+      {
+        last_snap = try_snap;
+        g_free(last_snap_name);
+        last_snap_name = g_strdup(fname);
+      }
+    }
+    g_object_unref(info);
+  }
+  g_free(db_snap_format);
+  g_free(db_backup_format);
+
+  if(error)
+  {
+    dt_print(DT_DEBUG_SQL, "[db backup] problem enumerating database parent: %s.\n", error->message);
+    g_file_enumerator_close(db_dir_files, NULL, NULL);
+    g_object_unref(db_dir_files);
+    g_error_free(error);
+    g_free(last_snap_name);
+    return NULL;
+  }
+
+  g_file_enumerator_close(db_dir_files, NULL, NULL);
+  g_object_unref(db_dir_files);
+
+  if(!last_snap_name)
+  {
+    g_object_unref(parent);
+    return NULL;
+  }
+
+  gchar *parent_path = g_file_get_path(parent);
+  g_object_unref(parent);
+
+  gchar *ret = g_strconcat(parent_path, G_DIR_SEPARATOR_S, last_snap_name, NULL);
+  g_free(parent_path);
+  g_free(last_snap_name);
+
+  return ret;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

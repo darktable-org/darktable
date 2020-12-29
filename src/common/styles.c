@@ -313,7 +313,7 @@ static void  _dt_style_update_iop_order(const gchar *name, const int id, const i
 
   GList *iop_list = dt_styles_module_order_list(name);
 
-  // if we update of if the style does not contains an order then the
+  // if we update or if the style does not contains an order then the
   // copy must be done using the imgid iop-order.
 
   if(update_iop_order || g_list_length(iop_list) == 0)
@@ -419,7 +419,7 @@ void dt_styles_update(const char *name, const char *newname, const char *newdesc
     dt_accel_connect_global(tmp_accel, closure);
   }
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
 
   g_free(desc);
 }
@@ -456,8 +456,8 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
 
       snprintf(query, sizeof(query),
                "INSERT INTO data.style_items "
-               "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_"
-               "   version,multi_priority,multi_name)"
+               "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_version,"
+               "   multi_priority,multi_name)"
                " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
                "   multi_priority,multi_name"
                " FROM data.style_items"
@@ -468,10 +468,10 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
     else
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                                   "INSERT INTO data.style_items "
-                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,blendop_"
-                                  "   version,multi_priority,multi_name)"
-                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,blendop_version,"
-                                  "   multi_priority,multi_name"
+                                  "  (styleid,num,module,operation,op_params,enabled,blendop_params,"
+                                  "   blendop_version,multi_priority,multi_name)"
+                                  " SELECT ?1, num,module,operation,op_params,enabled,blendop_params,"
+                                  "        blendop_version,multi_priority,multi_name"
                                   " FROM data.style_items"
                                   " WHERE styleid=?2",
                                   -1, &stmt, NULL);
@@ -505,7 +505,7 @@ void dt_styles_create_from_style(const char *name, const char *newname, const ch
                              _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
     dt_control_log(_("style named '%s' successfully created"), newname);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
 }
 
@@ -588,7 +588,7 @@ gboolean dt_styles_create_from_image(const char *name, const char *description,
     closure = g_cclosure_new(G_CALLBACK(_apply_style_shortcut_callback), tmp_name,
                              _destroy_style_shortcut_callback);
     dt_accel_connect_global(tmp_accel, closure);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
     return TRUE;
   }
   return FALSE;
@@ -619,7 +619,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   }
   dt_undo_end_group(darktable.undo);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   if(!selected) dt_control_log(_("no image selected!"));
   dt_control_log(_("style %s successfully applied!"), name);
@@ -661,7 +661,10 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     GList *style = NULL;
-    if(mode == DT_STYLE_HISTORY_OVERWRITE) dt_history_delete_on_image_ext(imgid, FALSE);
+
+    if(mode == DT_STYLE_HISTORY_OVERWRITE)
+      dt_history_delete_on_image_ext(imgid, FALSE);
+
     for (style = styles; style != NULL; style = style->next)
     {
       dt_styles_apply_to_image((char*)style->data, duplicate, imgid);
@@ -670,7 +673,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
   }
   dt_undo_end_group(darktable.undo);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   dt_control_log(ngettext("style successfully applied!", "styles successfully applied!", styles_cnt));
 }
@@ -699,6 +702,8 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
   if(mod_src)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)calloc(1, sizeof(dt_iop_module_t));
+
+    module->dev = dev;
 
     if(dt_iop_load_module(module, mod_src->so, dev))
     {
@@ -801,7 +806,8 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     if(duplicate)
     {
       newimgid = dt_image_duplicate(imgid);
-      if(newimgid != -1) dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE);
+      if(newimgid != -1)
+        dt_history_copy_and_paste_on_image(imgid, newimgid, FALSE, NULL, TRUE, TRUE);
     }
     else
       newimgid = imgid;
@@ -816,12 +822,23 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
     dt_dev_init(dev_dest, FALSE);
 
     dev_dest->iop = dt_iop_load_modules_ext(dev_dest, TRUE);
+    dev_dest->image_storage.id = imgid;
 
+    // now let's deal with the iop-order (possibly merging style & target lists)
     GList *iop_list = dt_styles_module_order_list(name);
     if(iop_list)
     {
+      // the style has an iop-order, we need to merge the multi-instance from target image
+      // get target image iop-order list:
+      GList *img_iop_order_list = dt_ioppr_get_iop_order_list(newimgid, FALSE);
+      // get multi-instance modules if any:
+      GList *mi = dt_ioppr_extract_multi_instances_list(img_iop_order_list);
+      // if some where found merge them with the style list
+      if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
+      // finaly we have the final list for the image
       dt_ioppr_write_iop_order_list(iop_list, newimgid);
       g_list_free_full(iop_list, g_free);
+      g_list_free_full(img_iop_order_list, g_free);
     }
 
     dt_dev_read_history_ext(dev_dest, newimgid, TRUE);
@@ -935,7 +952,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
       dt_image_reset_aspect_ratio(newimgid, TRUE);
 
     /* redraw center view to update visible mipmaps */
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, newimgid);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, newimgid);
   }
 }
 
@@ -962,7 +979,7 @@ void dt_styles_delete_by_name(const char *name)
     char tmp_accel[1024];
     snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
-    dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
 }
 
@@ -1000,15 +1017,7 @@ GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
           "        main.history.num,0,multi_name, blendop_version"
           " FROM main.history"
           " WHERE imgid=?2 AND main.history.enabled=1"
-          "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1)"
-          "       OR (main.history.op_params"
-          "           NOT IN (SELECT op_params FROM data.style_items"
-                              " WHERE styleid=?1"
-          "                     AND operation=main.history.operation))"
-          "       OR (main.history.blendop_params"
-          "           NOT IN (SELECT blendop_params"
-          "                   FROM data.style_items"
-          "                   WHERE styleid=?1 AND operation=main.history.operation)))"
+          "   AND (main.history.operation NOT IN (SELECT operation FROM data.style_items WHERE styleid=?1))"
           " GROUP BY operation HAVING MAX(num) ORDER BY num DESC", -1, &stmt, NULL);
       DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, imgid);
     }
@@ -1486,7 +1495,7 @@ void dt_styles_import_from_file(const char *style_path)
   dt_styles_style_data_free(style, TRUE);
   fclose(style_file);
 
-  dt_control_signal_raise(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
 }
 
 gchar *dt_styles_get_description(const char *name)

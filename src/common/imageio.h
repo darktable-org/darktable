@@ -53,11 +53,12 @@ typedef enum dt_imageio_levels_t
 
 // Checks that the image is indeed an ldr image
 gboolean dt_imageio_is_ldr(const char *filename);
-// Set te darktable/mode/monochrome tag
-void dt_imageio_set_bw_tag(dt_image_t *img);
-// Set te darktable/mode/hdr tag
+// checks that the image has a monochrome preview attached
+gboolean dt_imageio_has_mono_preview(const char *filename);
+// Set the darktable/mode/hdr tag
 void dt_imageio_set_hdr_tag(dt_image_t *img);
-
+// Update the tag for b&w workflow
+void dt_imageio_update_monochrome_workflow_tag(int32_t id, int mask);
 // opens the file using pfm, hdr, exr.
 dt_imageio_retval_t dt_imageio_open_hdr(dt_image_t *img, const char *filename, dt_mipmap_buffer_t *buf);
 // opens file using imagemagick
@@ -70,14 +71,14 @@ dt_imageio_retval_t dt_imageio_open_exotic(dt_image_t *img, const char *filename
 
 struct dt_imageio_module_format_t;
 struct dt_imageio_module_data_t;
-int dt_imageio_export(const uint32_t imgid, const char *filename, struct dt_imageio_module_format_t *format,
+int dt_imageio_export(const int32_t imgid, const char *filename, struct dt_imageio_module_format_t *format,
                       struct dt_imageio_module_data_t *format_params, const gboolean high_quality,
                       const gboolean upscale, const gboolean copy_metadata, const gboolean export_masks,
                       dt_colorspaces_color_profile_type_t icc_type, const gchar *icc_filename,
                       dt_iop_color_intent_t icc_intent, dt_imageio_module_storage_t *storage,
                       dt_imageio_module_data_t *storage_params, int num, int total, dt_export_metadata_t *metadata);
 
-int dt_imageio_export_with_flags(const uint32_t imgid, const char *filename,
+int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
                                  struct dt_imageio_module_format_t *format,
                                  struct dt_imageio_module_data_t *format_params, const gboolean ignore_exif,
                                  const gboolean display_byteorder, const gboolean high_quality, const gboolean upscale,

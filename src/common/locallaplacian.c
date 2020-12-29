@@ -18,13 +18,13 @@
 
 #include "common/darktable.h"
 #include "common/locallaplacian.h"
+#include "common/math.h"
 
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-#include <math.h>
 #if defined(__SSE2__)
 #include <xmmintrin.h>
 #endif
@@ -184,7 +184,7 @@ static inline __m128 convolve14641_vert(const float *in, const int wd)
   _mm_prefetch(in+4+3*wd, _MM_HINT_T0);
   __m128 t = _mm_mul_ps(r1, _mm_load_ps(four)); // t= 4*r1+4*r2+4*r3
   _mm_prefetch(in+4+4*wd, _MM_HINT_T0);
-  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4 
+  return _mm_add_ps(r0, t);                   // r0+4*r1+6*r2+4*r3+r4
 }
 #endif
 
@@ -283,7 +283,7 @@ static inline float *ll_pad_input(
   const int stride = 4;
   *wd2 = 2*max_supp + wd;
   *ht2 = 2*max_supp + ht;
-  float *const out = dt_alloc_align(64, *wd2**ht2*sizeof(*out));
+  float *const out = dt_alloc_align_float((size_t) *wd2 * *ht2);
 
   if(b && b->mode == 2)
   { // pad by preview buffer
@@ -572,6 +572,8 @@ void local_laplacian_internal(
     const int use_sse2,         // flag whether to use SSE version
     local_laplacian_boundary_t *b)
 {
+  if(wd <= 1 || ht <= 1) return;
+
   // don't divide by 2 more often than we can:
   const int num_levels = MIN(max_levels, 31-__builtin_clz(MIN(wd,ht)));
   int last_level = num_levels-1;
@@ -587,12 +589,12 @@ void local_laplacian_internal(
 
   // allocate pyramid pointers for padded input
   for(int l=1;l<=last_level;l++)
-    padded[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    padded[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
 
   // allocate pyramid pointers for output
   float *output[max_levels] = {0};
   for(int l=0;l<=last_level;l++)
-    output[l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    output[l] = dt_alloc_align_float((size_t)dl(w,l) * dl(h,l));
 
   // create gauss pyramid of padded input, write coarse directly to output
 #if defined(__SSE2__)
@@ -618,7 +620,7 @@ void local_laplacian_internal(
   // allocate memory for intermediate laplacian pyramids
   float *buf[num_gamma][max_levels] = {{0}};
   for(int k=0;k<num_gamma;k++) for(int l=0;l<=last_level;l++)
-    buf[k][l] = dt_alloc_align(64, sizeof(float)*dl(w,l)*dl(h,l));
+    buf[k][l] = dt_alloc_align_float((size_t)dl(w,l)*dl(h,l));
 
   // the paper says remapping only level 3 not 0 does the trick, too
   // (but i really like the additional octave of sharpness we get,
@@ -775,7 +777,7 @@ size_t local_laplacian_memory_use(const int width,     // width of input image
   size_t memory_use = 0;
 
   for(int l=0;l<num_levels;l++)
-    memory_use += (size_t)(2 + num_gamma) * dl(paddwd, l) * dl(paddht, l) * sizeof(float);
+    memory_use += sizeof(float) * (2 + num_gamma) * dl(paddwd, l) * dl(paddht, l);
 
   return memory_use;
 }
@@ -788,5 +790,5 @@ size_t local_laplacian_singlebuffer_size(const int width,     // width of input 
   const int paddwd = width  + 2*max_supp;
   const int paddht = height + 2*max_supp;
 
-  return (size_t)dl(paddwd, 0) * dl(paddht, 0) * sizeof(float);
+  return sizeof(float) * dl(paddwd, 0) * dl(paddht, 0);
 }
