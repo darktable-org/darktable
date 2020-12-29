@@ -72,6 +72,7 @@ typedef struct dt_iop_dither_params_t
 
 typedef struct dt_iop_dither_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
   GtkWidget *dither_type;
   GtkWidget *random;
   GtkWidget *radius;

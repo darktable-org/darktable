@@ -78,6 +78,7 @@ typedef struct dt_iop_colortransfer_params_t
 
 typedef struct dt_iop_colortransfer_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
   int flowback_set;
   dt_iop_colortransfer_params_t flowback;
   GtkWidget *apply_button;

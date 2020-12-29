@@ -60,6 +60,7 @@ typedef struct dt_iop_monochrome_data_t
 
 typedef struct dt_iop_monochrome_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
   GtkDrawingArea *area;
   GtkWidget *highlights;
   int dragging;

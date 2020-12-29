@@ -49,6 +49,7 @@ typedef struct dt_iop_colorcorrection_params_t
 
 typedef struct dt_iop_colorcorrection_gui_data_t
 {
+  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkDrawingArea *area;
   GtkWidget *slider;
   int selected;
@@ -130,7 +131,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_colorcorrection_data_t *const d = (dt_iop_colorcorrection_data_t *)piece->data;
   const float *const restrict in = (float *)i;
   float *const restrict out = (float *)o;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          in, out, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

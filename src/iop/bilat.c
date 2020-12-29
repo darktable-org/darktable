@@ -78,6 +78,7 @@ typedef dt_iop_bilat_params_t dt_iop_bilat_data_t;
 
 typedef struct dt_iop_bilat_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
   GtkWidget *highlights;
   GtkWidget *shadows;
   GtkWidget *midtone;

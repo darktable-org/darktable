@@ -88,11 +88,11 @@ typedef struct dt_iop_useless_params_t
 
 typedef struct dt_iop_useless_gui_data_t
 {
+  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
   GtkWidget *scale, *factor, *check, *method, *extra; // this is needed by gui_update
-  GtkWidget *warning_label;
 } dt_iop_useless_gui_data_t;
 
 typedef struct dt_iop_useless_global_data_t
@@ -273,7 +273,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // and simply pass along the data if not (setting a trouble flag to inform the user)
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
   if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         g ? g->warning_label : NULL,
                                          ivoid, ovoid, roi_in, roi_out))
     return;
 
@@ -579,9 +578,9 @@ void gui_init(dt_iop_module_t *self)
   // set up a box for the warnings from dt_iop_have_required_input_format and the like
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(box_enabled), g->warning_label, FALSE, FALSE, 4);
+  g->common.warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->common.warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(box_enabled), g->common.warning_label, FALSE, FALSE, 4);
   
 }
 
