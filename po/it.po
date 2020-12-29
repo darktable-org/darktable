@@ -4,14 +4,15 @@ msgstr ""
 "Project-Id-Version: darktable 3\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-03 15:30+0100\n"
-"PO-Revision-Date: 2020-12-11 17:49+0100\n"
-"Last-Translator: Maurizio Paglia <mpaglia0@gmail.com>\n"
+"PO-Revision-Date: 2020-12-26 14:34+0100\n"
+"Last-Translator: Matteo Mardegan <11093569+mmardegan@users.noreply.github.com>"
+"\n"
 "Language: it_IT\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.3\n"
+"X-Generator: Lokalize 20.08.2\n"
 "Language-Team: Italian <>\n"
 
 #: ../build/share/darktable/darktable.desktop.in.h:1
@@ -899,7 +900,7 @@ msgstr "Automatico"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:402
 #: ../src/iop/filmic.c:1636
 msgid "middle grey luminance"
-msgstr "Luminosità del grigio medio"
+msgstr "Luminanza del grigio medio"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:203
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:406
@@ -950,7 +951,7 @@ msgstr "Imposta grigio medio"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:442
 #: ../src/iop/filmic.c:1781
 msgid "target black luminance"
-msgstr "Imposta luminanza nero"
+msgstr "Imposta luminanza del nero"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:263
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:446
@@ -969,7 +970,7 @@ msgstr "Intensità"
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:462
 #: ../src/iop/filmic.c:1729 ../src/iop/filmicrgb.c:3937
 msgid "extreme luminance saturation"
-msgstr "Saturazione alte-luci"
+msgstr "Saturazione estrema luminanza"
 
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:293
 #: ../build/lib/darktable/plugins/introspection_filmicrgb.c:466
@@ -1381,7 +1382,7 @@ msgstr "Punto di bianco"
 #: ../src/iop/basicadj.c:598 ../src/iop/exposure.c:108 ../src/iop/exposure.c:861
 #: ../src/libs/metadata_view.c:122
 msgid "exposure"
-msgstr "esposizione"
+msgstr "Esposizione"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:238
 #: ../build/lib/darktable/plugins/introspection_retouch.c:379
@@ -1911,7 +1912,7 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:2931
 #| msgid "deleting preset for obsolete module"
 msgid "hide built-in presets for utility modules"
-msgstr "Nascondi i preset incorporati per i moduli d'utilità"
+msgstr "Nascondi i preset incorporati per i moduli di utilità"
 
 #: ../build/bin/preferences_gen.h:2942 ../build/bin/preferences_gen.h:2977
 #: ../build/bin/preferences_gen.h:3012 ../build/bin/preferences_gen.h:3047
@@ -2119,7 +2120,8 @@ msgstr "Consulta il manuale per conoscere tutte le etichette che puoi usare."
 
 #: ../build/bin/preferences_gen.h:3394
 msgid "pattern for the thumbnail tooltip (empty to disable)"
-msgstr "Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
+msgstr ""
+"Modello dei suggerimenti sui provini (lasciare vuoto per disabilitarlo)"
 
 #: ../build/bin/preferences_gen.h:3443 ../src/views/darkroom.c:110
 msgid "darkroom"
@@ -2507,7 +2509,7 @@ msgstr "Disposizione blocchi selettori scorrevoli nel bilanciamento colore"
 #: ../build/bin/preferences_gen.h:4342 ../build/bin/preferences_gen.h:4371
 msgctxt "preferences"
 msgid "list"
-msgstr "afficherElenco"
+msgstr "Elenco"
 
 #: ../build/bin/preferences_gen.h:4347
 msgctxt "preferences"
@@ -3289,7 +3291,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:6385
 msgid "keyboard shortcuts with multiple instances"
-msgstr "Scorciatoie da tastiera con istanze multiple."
+msgstr "Scorciatoie da tastiera con istanze multiple"
 
 #: ../build/bin/preferences_gen.h:6390
 msgid ""
@@ -3385,7 +3387,8 @@ msgid "kwallet"
 msgstr "kwallet"
 
 #: ../build/bin/preferences_gen.h:6662
-msgid "the storage backend for password storage: auto, none, libsecret, kwallet"
+msgid ""
+"the storage backend for password storage: auto, none, libsecret, kwallet"
 msgstr ""
 "Gestore delle password memorizzate: automatico, nessuno, libsecret, kwallet"
 
@@ -3611,7 +3614,8 @@ msgstr "Intento ICC non valido per --icc-intent: '%s'\n"
 #: ../src/cli/main.c:450
 #, c-format
 msgid "error: input file and import opts specified! that's not supported!\n"
-msgstr "Errore: file e opzioni di input specificate! Questo non è supportato!\n"
+msgstr ""
+"Errore: file e opzioni di input specificate! Questo non è supportato!\n"
 
 #: ../src/cli/main.c:484
 #, c-format
@@ -4207,7 +4211,7 @@ msgstr ""
 "\n"
 "<span style=\"italic\">%s</span>\n"
 "\n"
-"volete procedere o preferite interrompere per fare un backup?\n"
+"vuoi procedere o uscire ora per fare un backup?\n"
 
 #: ../src/common/database.c:2401
 msgid "darktable - schema migration"
@@ -5882,7 +5886,8 @@ msgstr "Guida per la sfumatura"
 
 #: ../src/develop/blend_gui.c:2905
 msgid "choose to guide mask by input or output image"
-msgstr "Scegli di guidare la maschera in base all'immagine in ingresso o uscita"
+msgstr ""
+"Scegli di guidare la maschera in base all'immagine in ingresso o uscita"
 
 #: ../src/develop/blend_gui.c:2910 ../src/libs/history.c:892
 msgid "feathering radius"
@@ -7559,7 +7564,7 @@ msgstr ""
 #. checkbox to allow user to modify theme with user.css
 #: ../src/gui/preferences.c:462
 msgid "modify selected theme with CSS tweaks below"
-msgstr "modifica il tema selezionato con i ritocchi del CSS qui sotto"
+msgstr "Modifica il tema selezionato con il CSS qui sotto"
 
 #: ../src/gui/preferences.c:470
 msgid "modify theme with CSS keyed below (saved to user.css)"
@@ -9282,7 +9287,8 @@ msgstr "riduzione rumore (filtro bilaterale)"
 
 #: ../src/iop/bilateral.cc:97
 msgid "apply edge-aware surface blur to denoise or smoothen textures"
-msgstr "Applica una sfocatura della superficie per ridurre il rumore o la grana"
+msgstr ""
+"Applica una sfocatura della superficie per ridurre il rumore o la grana"
 
 #: ../src/iop/bilateral.cc:100 ../src/iop/channelmixer.c:140
 #: ../src/iop/denoiseprofile.c:636 ../src/iop/exposure.c:117
@@ -9911,7 +9917,8 @@ msgstr ""
 "impostazioni della RAM"
 
 #: ../src/iop/clahe.c:76
-msgid "this module is deprecated. better use new local contrast module instead."
+msgid ""
+"this module is deprecated. better use new local contrast module instead."
 msgstr "Questo modulo è deprecato. Utilizzare il modulo Contrasto Locale"
 
 #: ../src/iop/clahe.c:339 ../src/iop/sharpen.c:733
@@ -10068,7 +10075,8 @@ msgstr "3:1, panorama"
 #: ../src/iop/clipping.c:2234 ../src/iop/clipping.c:2246
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
-msgstr "Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
+msgstr ""
+"Formato invalido per le proporzioni `%s'. Deve essere \"numero:numero\""
 
 #: ../src/iop/clipping.c:2293
 msgid ""
@@ -10641,7 +10649,8 @@ msgid "color mapping"
 msgstr "mappatura dei colori"
 
 #: ../src/iop/colormapping.c:151
-msgid "transfer a color palette and tonal repartition from one image to another"
+msgid ""
+"transfer a color palette and tonal repartition from one image to another"
 msgstr ""
 "Trasferisce una paletta colore e la suddivisione dei toni da un'immagine ad "
 "un'altra"
@@ -10779,7 +10788,8 @@ msgstr "Sono stati corretti i pixel con luminosità sopra questa soglia"
 
 #: ../src/iop/colorreconstruction.c:1303
 msgid "how far to look for replacement colors in spatial dimensions"
-msgstr "Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
+msgstr ""
+"Distanza di ricerca di colori di sostituzione nella dimensione spaziale"
 
 #: ../src/iop/colorreconstruction.c:1304
 msgid "how far to look for replacement colors in the luminance dimension"
@@ -10991,7 +11001,8 @@ msgstr "demosaicizzazione "
 
 #: ../src/iop/demosaic.c:175
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
-msgstr "Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
+msgstr ""
+"Ricostruisce i pixel in RGB dalla lettura del filtro colore del sensore"
 
 #: ../src/iop/demosaic.c:4932
 #, c-format
@@ -11337,7 +11348,8 @@ msgid "legacy equalizer"
 msgstr "Equalizzatore (obsoleto)"
 
 #: ../src/iop/equalizer.c:109
-msgid "this module is deprecated. better use contrast equalizer module instead."
+msgid ""
+"this module is deprecated. better use contrast equalizer module instead."
 msgstr ""
 "Questo modulo è deprecato. E' consigliabile usare l'Equalizzatore di contrasto"
 
@@ -11404,7 +11416,8 @@ msgstr ""
 "se si espone sulla destra."
 
 #: ../src/iop/exposure.c:870
-msgid "percentage of bright values clipped out, toggle color picker to activate"
+msgid ""
+"percentage of bright values clipped out, toggle color picker to activate"
 msgstr ""
 "Percentuale di valori alti troncati, usa la pipetta di estrazione del colore "
 "per attivare"
@@ -11498,7 +11511,7 @@ msgid ""
 "adjust to match the average luminance of the subject.\n"
 "except in back-lighting situations, this should be around 18%."
 msgstr ""
-"Regola sulla luminosità media del soggetto.\n"
+"Regola sulla luminanza media del soggetto.\n"
 "Tranne nei controluce, il valore dovrebbe aggirarsi sul 18%"
 
 #: ../src/iop/filmic.c:1650 ../src/iop/filmicrgb.c:3648
@@ -11544,7 +11557,7 @@ msgid ""
 "but fails for high-keys and low-keys."
 msgstr ""
 "Tenta di ottimizzare le regolazioni per tentativi.\n"
-"Questo farà rientrare la gamma di luminosità all'interno dei limiti "
+"Questo farà rientrare la gamma di luminanza all'interno dei limiti "
 "dell'istogramma.\n"
 "I migliori risultati si otterranno con immagini di paesaggio ben illuminate\n"
 "mentre non funzionerà su scene sovra o sottoesposte."
@@ -11667,7 +11680,7 @@ msgid ""
 "luminance of output pure black, this should be 0%\n"
 "except if you want a faded look"
 msgstr ""
-"Luminosità del nero puro in uscita. Dovrebbe essere 0%\n"
+"Luminanza del nero puro in uscita. Dovrebbe essere 0%\n"
 "a meno che non desideriate un risultato sbiadito."
 
 #: ../src/iop/filmic.c:1793 ../src/iop/filmicrgb.c:3810
@@ -11684,7 +11697,7 @@ msgid ""
 "luminance of output pure white, this should be 100%\n"
 "except if you want a faded look"
 msgstr ""
-"Luminosità del bianco puro in uscita. Dovrebbe essere 100%\n"
+"Luminanza del bianco puro in uscita. Dovrebbe essere 100%\n"
 "a meno che non desideriate un risultato sbiadito."
 
 #: ../src/iop/filmic.c:1808
@@ -11829,7 +11842,7 @@ msgid ""
 "the value entered here will then be remapped to 18.45%.\n"
 "decrease the value to increase the overall brightness."
 msgstr ""
-"Regola sulla luminosità media del soggetto dell'immagine\n"
+"Regola sulla luminanza media del soggetto dell'immagine\n"
 "Il valore inserito verrà rimappato a 18,45%\n"
 "Diminuisci questo valore per aumentare la luminosità globale."
 
@@ -11850,7 +11863,7 @@ msgid ""
 "useful to give a safety margin to extreme luminances."
 msgstr ""
 "Allarga o restringi simmetricamente la gamma dinamica calcolata.\n"
-"Utile per impostare un margine di sicurezza alla luminosità estrema."
+"Utile per impostare un margine di sicurezza a valori di luminanza estremi."
 
 #: ../src/iop/filmicrgb.c:3672
 msgid ""
@@ -11862,7 +11875,7 @@ msgid ""
 "ensure you understand its assumptions before using it."
 msgstr ""
 "Tenta di ottimizzare le regolazioni con l'aiuto di dati statistici.\n"
-"Questo farà rientrare la gamma della luminosità nei limiti dell'istogramma.\n"
+"Questo farà rientrare la gamma della luminanza nei limiti dell'istogramma.\n"
 "I migliori risultati si avranno con foto di paesaggio e immagine illuminate "
 "uniformemente\n"
 "mentre non funzionerà con foto sotto/sovraesposte o scattate ad alti ISO.\n"
@@ -12521,7 +12534,8 @@ msgstr ""
 
 #: ../src/iop/lens.cc:1771
 msgid "camera/lens not found - please select manually"
-msgstr "Fotocamera/obiettivo non trovata/o - per favore selezionali manualmente"
+msgstr ""
+"Fotocamera/obiettivo non trovata/o - per favore selezionali manualmente"
 
 #: ../src/iop/lens.cc:1774
 msgid "try to locate your camera/lens in the above two menus"
@@ -13044,7 +13058,8 @@ msgstr "Errore - numero non valido sulla riga %d del cubo lut"
 #: ../src/iop/lut3d.c:833
 #, c-format
 msgid "error - cube lut lines number %d is not correct, should be %d"
-msgstr "Errore - il numero della riga lut %d non è corretto, dovrebbe essere %d"
+msgstr ""
+"Errore - il numero della riga lut %d non è corretto, dovrebbe essere %d"
 
 #: ../src/iop/lut3d.c:843
 #, c-format
@@ -13441,7 +13456,8 @@ msgstr "correzione profilo di ingresso"
 
 #: ../src/iop/profile_gamma.c:99
 msgid "correct input color profiles meant to be applied on non-linear RGB"
-msgstr "Corregge i profili colore di input da applicare in modo RGB non-lineare"
+msgstr ""
+"Corregge i profili colore di input da applicare in modo RGB non-lineare"
 
 #: ../src/iop/profile_gamma.c:134
 msgid "16 EV dynamic range (generic)"
@@ -14688,7 +14704,7 @@ msgid ""
 "produce piece-wise smooth areas when using high feathering values"
 msgstr ""
 "0 disabilita la quantizzazione.\n"
-"Alti valori posterizzeranno la maschera di luminosità per aiutare la guida.\n"
+"Alti valori posterizzeranno la maschera di luminanza per aiutare la guida.\n"
 "Produce aree sfocate quando viene utilizzata con un valore di sfumatura alto."
 
 #: ../src/iop/toneequal.c:3217
@@ -15253,7 +15269,8 @@ msgstr "Max"
 
 #: ../src/libs/colorpicker.c:468
 msgid "hover to highlight sample on canvas, click to lock sample"
-msgstr "Posizionati sopra per evidenziare il campione, fai click per acquisirlo"
+msgstr ""
+"Posizionati sopra per evidenziare il campione, fai click per acquisirlo"
 
 #: ../src/libs/colorpicker.c:609 ../src/libs/colorpicker.c:654
 msgid "click to (un)hide large color patch"
@@ -15648,7 +15665,7 @@ msgstr ""
 "durante il processo. Nota che Percettivo spesso è una LUT proprietaria che "
 "dipende dallo spazio di destinazione.\n"
 "\n"
-"• Colorimetrico Relativo: preserva la luminosità e riduce minimamente la "
+"• Colorimetrico Relativo: preserva la luminanza e riduce minimamente la "
 "saturazione fino a fare rientrare i colori in gamma.\n"
 "\n"
 "• Colorimetrico Assoluto: adatta il punto di bianco dell'immagine al punto di "
@@ -15927,7 +15944,8 @@ msgstr "Applica un file tracciato GPX..."
 
 #: ../src/libs/geotagging.c:816
 msgid "parses a GPX file and updates location of selected images"
-msgstr "Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
+msgstr ""
+"Analizza un file GPX e aggiorna la posizione delle immagini selezionate"
 
 #: ../src/libs/histogram.c:109
 msgid "histogram"
@@ -16302,7 +16320,8 @@ msgstr "Come gestire i metadati esistenti"
 
 #: ../src/libs/image.c:566
 msgid "update image information to match changes to file"
-msgstr "Aggiorna le informazioni immagine per riflettere i cambiamenti del file"
+msgstr ""
+"Aggiorna le informazioni immagine per riflettere i cambiamenti del file"
 
 #: ../src/libs/image.c:570
 msgid "set selection as monochrome images and activate monochrome workflow"
@@ -18484,7 +18503,8 @@ msgstr "Sovrimpressione anteprime/sovrimpressione al passaggio del mouse"
 #: ../src/libs/tools/global_toolbox.c:705
 msgctxt "accel"
 msgid "thumbnail overlays/extended overlays on mouse hover"
-msgstr "Sovrimpressione anteprime/sovrimpressione estesa al passaggio del mouse"
+msgstr ""
+"Sovrimpressione anteprime/sovrimpressione estesa al passaggio del mouse"
 
 #: ../src/libs/tools/global_toolbox.c:706
 msgctxt "accel"
@@ -18506,7 +18526,8 @@ msgstr ""
 #: ../src/libs/tools/global_toolbox.c:709
 msgctxt "accel"
 msgid "thumbnail overlays/overlays block on mouse hover"
-msgstr "Sovrimpressione anteprime/Blocca sovrimpressione al passaggio del mouse"
+msgstr ""
+"Sovrimpressione anteprime/Blocca sovrimpressione al passaggio del mouse"
 
 #: ../src/libs/tools/hinter.c:42
 msgid "hinter"
@@ -18749,7 +18770,7 @@ msgstr "Qualsiasi canale RGB"
 
 #: ../src/views/darkroom.c:2265
 msgid "luminance only"
-msgstr "Solo luminosità"
+msgstr "Solo luminanza"
 
 #: ../src/views/darkroom.c:2266
 msgid "saturation only"
@@ -18810,7 +18831,7 @@ msgid ""
 "100% is peak medium luminance."
 msgstr ""
 "Taglia soglia per il punto di bianco.\n"
-"100% è il massimo della luminosità media."
+"100% è il massimo della luminanza media."
 
 #: ../src/views/darkroom.c:2321
 msgid ""
