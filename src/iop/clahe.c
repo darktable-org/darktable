@@ -47,6 +47,7 @@ typedef struct dt_iop_rlce_params_t
 
 typedef struct dt_iop_rlce_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
   GtkBox *vbox1, *vbox2;
   GtkWidget *label1, *label2;
   GtkWidget *scale1, *scale2; // radie pixels, slope

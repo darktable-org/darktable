@@ -104,6 +104,7 @@ typedef struct dt_iop_filmic_params_t
 
 typedef struct dt_iop_filmic_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
   GtkWidget *white_point_source;
   GtkWidget *grey_point_source;
   GtkWidget *black_point_source;

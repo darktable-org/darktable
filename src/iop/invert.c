@@ -44,6 +44,7 @@ typedef struct dt_iop_invert_params_t
 
 typedef struct dt_iop_invert_gui_data_t
 {
+  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *colorpicker;
   GtkDarktableResetLabel *label;
   GtkBox *pickerbuttons;
@@ -512,7 +513,7 @@ error:
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_gui_data_t *const g = (dt_iop_invert_gui_data_t*)self->gui_data;
 
   if (g)
   {

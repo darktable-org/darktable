@@ -119,6 +119,7 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
 //  GtkBox *vbox;
 //  GtkWidget *label1, *label2, *label3, *label5, *label6; // density, hardness, rotation, hue, saturation
   GtkWidget *density, *hardness, *rotation, *hue, *saturation;

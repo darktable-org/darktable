@@ -1357,9 +1357,11 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
   _iop_gui_update_header(module);
 }
 
-void dt_iop_set_module_trouble_message(dt_iop_module_t *const module, GtkWidget *label_widget,
+void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        char* const trouble_msg, const char* const trouble_tooltip)
 {
+  dt_iop_gui_enter_critical_section(module);
+  GtkWidget *label_widget = (module && module->gui_data) ? module->gui_data->warning_label : NULL;
   if (trouble_msg && *trouble_msg)
   {
     // set the module's trouble flag
@@ -1385,6 +1387,7 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module, GtkWidget 
       gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
     }
   }
+  dt_iop_gui_leave_critical_section(module);
 }
 
 
@@ -3290,15 +3293,14 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text, con
 #undef TAB_SIZE
 }
 
-gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_module_t *const module,
-                                           const int ch, GtkWidget *warn_label,
+gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_module_t *const module, const int ch,
                                            const void *const restrict ivoid, void *const restrict ovoid,
                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   if (!module) return FALSE;
   if (ch == req_ch)
   {
-    dt_iop_set_module_trouble_message(module, warn_label, NULL, NULL);
+    dt_iop_set_module_trouble_message(module, NULL, NULL);
     return TRUE;
   }
   else
@@ -3307,7 +3309,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     // set trouble message
     if (module)
-      dt_iop_set_module_trouble_message(module, warn_label, _("unsupported input"),
+      dt_iop_set_module_trouble_message(module, _("unsupported input"),
                                         _("you have placed this module at\n"
                                           "a position in the pipeline where\n"
                                           "the data format does not match\n"

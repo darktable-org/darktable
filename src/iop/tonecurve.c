@@ -142,6 +142,7 @@ typedef struct dt_iop_tonecurve_params_t
 
 typedef struct dt_iop_tonecurve_gui_data_t
 {
+  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   dt_draw_curve_t *minmax_curve[3]; // curves for gui to draw
   int minmax_curve_nodes[3];
   int minmax_curve_type[3];
@@ -370,7 +371,7 @@ static inline float dt_prophoto_rgb_luminance(const float *const rgb)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          i, o, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

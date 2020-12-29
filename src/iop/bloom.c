@@ -51,6 +51,7 @@ typedef struct dt_iop_bloom_params_t
 
 typedef struct dt_iop_bloom_gui_data_t
 {
+  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *size, *threshold, *strength; // size,threshold,strength
 } dt_iop_bloom_gui_data_t;
 
@@ -103,7 +104,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

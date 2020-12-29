@@ -117,7 +117,13 @@ typedef enum dt_iop_module_state_t
 
 } dt_iop_module_state_t;
 
-typedef void dt_iop_gui_data_t;
+typedef struct dt_iop_gui_data_t
+{
+  // fields required to be in the gui_data for all iops
+  dt_pthread_mutex_t lock;
+  GtkWidget *warning_label;
+} dt_iop_gui_data_t;
+
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
@@ -586,6 +592,16 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module);
 gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** checks whether iop is shown in specified group */
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
+/** enter a GUI critical section by acquiring gui_data->lock **/
+static inline void dt_iop_gui_enter_critical_section(const dt_iop_module_t *const module)
+{
+  if (module && module->gui_data) dt_pthread_mutex_lock(&module->gui_data->lock);
+}
+/** leave a GUI critical section by releasing gui_data->lock **/
+static inline void dt_iop_gui_leave_critical_section(const dt_iop_module_t *const module)
+{
+  if (module && module->gui_data) dt_pthread_mutex_unlock(&module->gui_data->lock);
+}
 /** cleans up gui of module and of blendops */
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
 /** updates the enable button state. (take into account module->enabled and module->hide_enable_button  */
@@ -713,18 +729,27 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
 void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
 
 /** set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
- ** or NULL, clear the trouble flag.  Because we don't necessarily know where to get the widget for the
- ** message area, have the caller pass it in **/
-void dt_iop_set_module_trouble_message(dt_iop_module_t *module, GtkWidget *label_widget,
-                                       char *const trouble_msg, const char *const trouble_tooltip);
+ ** or NULL, clear the trouble flag.  **/
+void dt_iop_set_module_trouble_message(dt_iop_module_t *module, char *const trouble_msg,
+                                       const char *const trouble_tooltip);
 
 // format modules description going in tooltips
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
                              const char *purpose, const char *input,
                              const char *process, const char *output);
 
-#define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
-#define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL
+static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
+{
+  module->gui_data = (dt_iop_gui_data_t*)calloc(1, size);
+  if (module->gui_data)
+    dt_pthread_mutex_init(&module->gui_data->lock,NULL);
+  return module->gui_data;
+}
+#define IOP_GUI_ALLOC(module) \
+  (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
+  
+#define IOP_GUI_FREE \
+  if(self->gui_data){dt_pthread_mutex_destroy(&self->gui_data->lock);free(self->gui_data);} self->gui_data = NULL
 
 /* return a warning message, prefixed by the special character ⚠ */
 char *dt_iop_warning_message(char *message);
@@ -732,7 +757,7 @@ char *dt_iop_warning_message(char *message);
 /** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
  ** output buffer, set the module's trouble message, and return FALSE */
 gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_module_t *const module,
-                                           const int actual_pipe_ch, GtkWidget *warnlabel,
+                                           const int actual_pipe_ch,
                                            const void *const __restrict__ ivoid, void *const __restrict__ ovoid,
                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
