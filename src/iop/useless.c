@@ -283,7 +283,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // Attempt to allocate all of the buffers we need.  For this example, we need one buffer that is equal in
     // dimensions to the output buffer, has one color channel, and has been zero'd.  (See common/imagebuf.h for
     // more details on all of the options.)
-    if (!dt_iop_alloc_image_buffers(module, NULL, roi_in, roi_out,
+    if (!dt_iop_alloc_image_buffers(module, roi_in, roi_out,
                                     1/*ch per pixel*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL | DT_IMGSZ_CLEARBUF, &mask,
                                     0 /* end of list of buffers to allocate */))
     {

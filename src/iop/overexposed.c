@@ -167,7 +167,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   assert(piece->colors == ch);
 
   float *restrict img_tmp;
-  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, ch, &img_tmp, 0))
+  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, ch, &img_tmp, 0))
   {
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     return;
