@@ -856,7 +856,7 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
 
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
 {
-  const char *section = _(section_orig);
+  const char *section = section_orig ? _(section_orig) : NULL;
   const char *label = _(label_orig);
 
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
