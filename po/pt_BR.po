@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-12-28 13:22-0300\n"
-"PO-Revision-Date: 2020-12-28 13:26-0300\n"
+"POT-Creation-Date: 2020-12-29 13:09-0300\n"
+"PO-Revision-Date: 2020-12-29 13:18-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -103,7 +103,7 @@ msgstr "específico"
 #: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2799
 #: ../src/develop/develop.c:2170 ../src/imageio/format/avif.c:863
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
-#: ../src/iop/ashift.c:4724 ../src/iop/demosaic.c:5078
+#: ../src/iop/ashift.c:4724 ../src/iop/demosaic.c:5107
 #: ../src/libs/live_view.c:429
 msgid "off"
 msgstr "desligado"
@@ -5390,12 +5390,12 @@ msgid "input image"
 msgstr "imagem de entrada"
 
 #: ../src/develop/blend_gui.c:763 ../src/develop/blend_gui.c:2027
-#: ../src/develop/imageop.c:3239
+#: ../src/develop/imageop.c:3238
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:763 ../src/develop/blend_gui.c:2027
-#: ../src/develop/imageop.c:3241
+#: ../src/develop/imageop.c:3240
 msgid "output"
 msgstr "saída"
 
@@ -5970,25 +5970,25 @@ msgstr ""
 "pre-configurações\n"
 "click com botão do meio aplica em nova instância"
 
-#: ../src/develop/imageop.c:2853 ../src/develop/imageop.c:2879
+#: ../src/develop/imageop.c:2852 ../src/develop/imageop.c:2878
 msgid "ERROR"
 msgstr "ERRO"
 
-#: ../src/develop/imageop.c:3238
+#: ../src/develop/imageop.c:3237
 msgid "purpose"
 msgstr "propósito"
 
-#: ../src/develop/imageop.c:3240
+#: ../src/develop/imageop.c:3239
 msgid "process"
 msgstr "processar"
 
-#: ../src/develop/imageop.c:3311
+#: ../src/develop/imageop.c:3310
 msgid "unsupported input"
 msgstr "entrada não suportada"
 
-#: ../src/develop/imageop.c:3312
+#: ../src/develop/imageop.c:3311
 msgid ""
-"You have placed this module at\n"
+"you have placed this module at\n"
 "a position in the pipeline where\n"
 "the data format does not match\n"
 "its requirements."
@@ -8591,7 +8591,7 @@ msgstr "distorcer perspectiva automaticamente"
 
 #: ../src/iop/ashift.c:126 ../src/iop/basecurve.c:339 ../src/iop/cacorrect.c:60
 #: ../src/iop/colorreconstruction.c:136 ../src/iop/defringe.c:81
-#: ../src/iop/denoiseprofile.c:636 ../src/iop/dither.c:108
+#: ../src/iop/denoiseprofile.c:636 ../src/iop/dither.c:103
 #: ../src/iop/flip.c:101 ../src/iop/hazeremoval.c:112
 #: ../src/iop/highlights.c:87 ../src/iop/hotpixels.c:73 ../src/iop/invert.c:121
 #: ../src/iop/lens.cc:160 ../src/iop/nlmeans.c:99
@@ -8605,7 +8605,7 @@ msgstr "corretivo"
 #: ../src/iop/basicadj.c:143 ../src/iop/bilateral.cc:100
 #: ../src/iop/bilateral.cc:102 ../src/iop/channelmixerrgb.c:140
 #: ../src/iop/channelmixerrgb.c:142 ../src/iop/clipping.c:320
-#: ../src/iop/clipping.c:322 ../src/iop/colorin.c:137 ../src/iop/demosaic.c:180
+#: ../src/iop/clipping.c:322 ../src/iop/colorin.c:137 ../src/iop/demosaic.c:182
 #: ../src/iop/denoiseprofile.c:637 ../src/iop/denoiseprofile.c:639
 #: ../src/iop/exposure.c:116 ../src/iop/exposure.c:118 ../src/iop/flip.c:102
 #: ../src/iop/flip.c:104 ../src/iop/hazeremoval.c:113
@@ -9052,7 +9052,7 @@ msgid "linear, RGB, display-referred"
 msgstr "linear, RGB, relativo à exibição"
 
 #: ../src/iop/basecurve.c:341 ../src/iop/basicadj.c:144
-#: ../src/iop/colorbalance.c:162 ../src/iop/dither.c:110
+#: ../src/iop/colorbalance.c:162 ../src/iop/dither.c:105
 #: ../src/iop/filmicrgb.c:333 ../src/iop/graduatednd.c:154
 #: ../src/iop/negadoctor.c:158 ../src/iop/profile_gamma.c:103
 #: ../src/iop/rgbcurve.c:144 ../src/iop/rgblevels.c:124
@@ -9060,8 +9060,8 @@ msgstr "linear, RGB, relativo à exibição"
 msgid "non-linear, RGB"
 msgstr "não-linear, RGB"
 
-#: ../src/iop/basecurve.c:342 ../src/iop/colorout.c:94 ../src/iop/dither.c:109
-#: ../src/iop/dither.c:111 ../src/iop/filmicrgb.c:334
+#: ../src/iop/basecurve.c:342 ../src/iop/colorout.c:94 ../src/iop/dither.c:104
+#: ../src/iop/dither.c:106 ../src/iop/filmicrgb.c:334
 #: ../src/iop/graduatednd.c:155 ../src/iop/negadoctor.c:159
 #: ../src/iop/profile_gamma.c:104 ../src/iop/rgblevels.c:125
 #: ../src/iop/vignette.c:159 ../src/iop/vignette.c:161
@@ -9305,7 +9305,7 @@ msgstr ""
 msgid "linear, RGB"
 msgstr "linear, RGB"
 
-#: ../src/iop/bilateral.cc:311 ../src/iop/clahe.c:335 ../src/iop/dither.c:739
+#: ../src/iop/bilateral.cc:311 ../src/iop/clahe.c:335 ../src/iop/dither.c:887
 #: ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:695 ../src/iop/sharpen.c:718
 msgid "radius"
 msgstr "raio"
@@ -9528,7 +9528,7 @@ msgid "correct chromatic aberrations for Bayer sensors"
 msgstr "correção de aberração cromática para sensores Bayer"
 
 #: ../src/iop/cacorrect.c:61 ../src/iop/cacorrect.c:63
-#: ../src/iop/demosaic.c:178 ../src/iop/highlights.c:88
+#: ../src/iop/demosaic.c:180 ../src/iop/highlights.c:88
 #: ../src/iop/highlights.c:90 ../src/iop/hotpixels.c:74
 #: ../src/iop/hotpixels.c:76 ../src/iop/rawdenoise.c:131
 #: ../src/iop/rawdenoise.c:133 ../src/iop/temperature.c:203
@@ -9536,7 +9536,7 @@ msgstr "correção de aberração cromática para sensores Bayer"
 msgid "linear, raw, scene-referred"
 msgstr "linear, raw, relativo à cena"
 
-#: ../src/iop/cacorrect.c:62 ../src/iop/demosaic.c:179 ../src/iop/invert.c:123
+#: ../src/iop/cacorrect.c:62 ../src/iop/demosaic.c:181 ../src/iop/invert.c:123
 #: ../src/iop/rawdenoise.c:132 ../src/iop/temperature.c:204
 msgid "linear, raw"
 msgstr "linear, raw"
@@ -10573,7 +10573,7 @@ msgstr ""
 "converte qualquer entrada RGB para a referência RGB da pipeline\n"
 "usando perfis de cor para remapear valores RGB"
 
-#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:91 ../src/iop/demosaic.c:177
+#: ../src/iop/colorin.c:134 ../src/iop/colorout.c:91 ../src/iop/demosaic.c:179
 msgid "mandatory"
 msgstr "obrigatório"
 
@@ -11014,26 +11014,26 @@ msgstr ""
 "limiar para defringe (mescla de borda), valores altos significam menos "
 "defringing"
 
-#: ../src/iop/demosaic.c:171
+#: ../src/iop/demosaic.c:173
 msgid "demosaic"
 msgstr "interpolação cromática"
 
-#: ../src/iop/demosaic.c:176
+#: ../src/iop/demosaic.c:178
 msgid "reconstruct full RGB pixels from a sensor color filter array reading"
 msgstr ""
 "reconstrói pixels RGB completamente de uma leitura de array de filtro de "
 "sensor colorido"
 
-#: ../src/iop/demosaic.c:4934
+#: ../src/iop/demosaic.c:4971
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cores não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:5065 ../src/iop/demosaic.c:5069
+#: ../src/iop/demosaic.c:5094 ../src/iop/demosaic.c:5098
 msgid "demosaicing raw data method"
 msgstr "método de interpolação cromática dados raw"
 
-#: ../src/iop/demosaic.c:5074
+#: ../src/iop/demosaic.c:5103
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -11043,35 +11043,35 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:5079
+#: ../src/iop/demosaic.c:5108
 msgid "one time"
 msgstr "uma vez"
 
-#: ../src/iop/demosaic.c:5080
+#: ../src/iop/demosaic.c:5109
 msgid "two times"
 msgstr "duas vezes"
 
-#: ../src/iop/demosaic.c:5081
+#: ../src/iop/demosaic.c:5110
 msgid "three times"
 msgstr "três vezes"
 
-#: ../src/iop/demosaic.c:5082
+#: ../src/iop/demosaic.c:5111
 msgid "four times"
 msgstr "quatro vezes"
 
-#: ../src/iop/demosaic.c:5083
+#: ../src/iop/demosaic.c:5112
 msgid "five times"
 msgstr "cinco vezes"
 
-#: ../src/iop/demosaic.c:5084
+#: ../src/iop/demosaic.c:5113
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:5087
+#: ../src/iop/demosaic.c:5116
 msgid "green channels matching method"
 msgstr "método de correspondência canal verde"
 
-#: ../src/iop/demosaic.c:5093
+#: ../src/iop/demosaic.c:5122
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -11329,11 +11329,11 @@ msgstr ""
 "é mais flexível, mas pode dar pequenas\n"
 "diferenças nas imagens já processadas."
 
-#: ../src/iop/dither.c:102 ../src/iop/vignette.c:997
+#: ../src/iop/dither.c:97 ../src/iop/vignette.c:997
 msgid "dithering"
 msgstr "dithering"
 
-#: ../src/iop/dither.c:107
+#: ../src/iop/dither.c:102
 msgid ""
 "reduce banding and posterization effects in output JPEGs by adding random "
 "noise"
@@ -11342,23 +11342,23 @@ msgstr ""
 "ruído aleatório"
 
 #. add the preset.
-#: ../src/iop/dither.c:136
+#: ../src/iop/dither.c:131
 msgid "dither"
 msgstr "dither"
 
-#: ../src/iop/dither.c:738
+#: ../src/iop/dither.c:886
 msgid "radius for blurring step"
 msgstr "raio para etapa de desfoque"
 
-#: ../src/iop/dither.c:750
+#: ../src/iop/dither.c:898
 msgid "the gradient range where to apply random dither"
 msgstr "a faixa de gradiente onde aplicar o dither aleatório"
 
-#: ../src/iop/dither.c:751
+#: ../src/iop/dither.c:899
 msgid "gradient range"
 msgstr "faixa de gradiente"
 
-#: ../src/iop/dither.c:759
+#: ../src/iop/dither.c:907
 msgid "damping level of random dither"
 msgstr "nível de amortecimento do dither aleatório"
 
@@ -15914,51 +15914,51 @@ msgstr ""
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:770 ../src/libs/histogram.c:804
+#: ../src/libs/histogram.c:771 ../src/libs/histogram.c:805
 msgid "set mode to waveform"
 msgstr "mudar o modo para forma de onda"
 
-#: ../src/libs/histogram.c:773
+#: ../src/libs/histogram.c:774
 msgid "set mode to histogram"
 msgstr "mudar o modo para histograma"
 
-#: ../src/libs/histogram.c:788
+#: ../src/libs/histogram.c:789
 msgid "set scale to linear"
 msgstr "mudar escala para linear"
 
-#: ../src/libs/histogram.c:791
+#: ../src/libs/histogram.c:792
 msgid "set scale to logarithmic"
 msgstr "mudar escala para logarítmica"
 
-#: ../src/libs/histogram.c:801
+#: ../src/libs/histogram.c:802
 msgid "set mode to RGB parade"
 msgstr "mudar o modo para canais RGB separados"
 
-#: ../src/libs/histogram.c:817
+#: ../src/libs/histogram.c:818
 msgid "click to hide red channel"
 msgstr "clique para esconder o canal vermelho"
 
-#: ../src/libs/histogram.c:817
+#: ../src/libs/histogram.c:818
 msgid "click to show red channel"
 msgstr "clique para mostrar o canal vermelho"
 
-#: ../src/libs/histogram.c:822
+#: ../src/libs/histogram.c:823
 msgid "click to hide green channel"
 msgstr "clique para esconder o canal verde"
 
-#: ../src/libs/histogram.c:823
+#: ../src/libs/histogram.c:824
 msgid "click to show green channel"
 msgstr "clique para mostrar o canal verde"
 
-#: ../src/libs/histogram.c:828
+#: ../src/libs/histogram.c:829
 msgid "click to hide blue channel"
 msgstr "clique para esconder o canal azul"
 
-#: ../src/libs/histogram.c:828
+#: ../src/libs/histogram.c:829
 msgid "click to show blue channel"
 msgstr "clique para mostrar o canal azul"
 
-#: ../src/libs/histogram.c:835
+#: ../src/libs/histogram.c:836
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -15969,7 +15969,7 @@ msgstr ""
 "ctrl+scroll muda altura do display"
 
 #. connect callbacks
-#: ../src/libs/histogram.c:840 ../src/libs/histogram.c:1260
+#: ../src/libs/histogram.c:841 ../src/libs/histogram.c:1261
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -15979,46 +15979,46 @@ msgstr ""
 "clique duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:845
+#: ../src/libs/histogram.c:846
 msgid "ctrl+scroll to change display height"
 msgstr "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:1297
+#: ../src/libs/histogram.c:1298
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "histograma/esconder histograma"
 
-#: ../src/libs/histogram.c:1298
+#: ../src/libs/histogram.c:1299
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:1299
+#: ../src/libs/histogram.c:1300
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "histograma/alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:1300
+#: ../src/libs/histogram.c:1301
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:1301
+#: ../src/libs/histogram.c:1302
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "historgama/alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:1302
+#: ../src/libs/histogram.c:1303
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:1303
+#: ../src/libs/histogram.c:1304
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "histograma/alterna escala do histograma linear/logarítmica"
 
-#: ../src/libs/histogram.c:1304
+#: ../src/libs/histogram.c:1305
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "alterna escala do histograma linear/logarítmica"
