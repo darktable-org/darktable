@@ -352,7 +352,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
   if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
-  
+
   if(!isnan(d->cmatrix[0]))
   {
     const size_t npixels = (size_t)roi_out->width * roi_out->height;
@@ -414,7 +414,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   else if(!isnan(d->cmatrix[0]))
   {
     const float *const restrict in = (const float *const)ivoid;
-    const float *const restrict cmatrix = d->cmatrix; 
+    const float *const restrict cmatrix = d->cmatrix;
 // fprintf(stderr,"Using cmatrix codepath\n");
 // convert to rgb using matrix
 #ifdef _OPENMP
@@ -491,7 +491,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
   else if(!isnan(d->cmatrix[0]))
   {
     const float *const restrict in = (const float *const)ivoid;
-    const float *const restrict cmatrix = d->cmatrix; 
+    const float *const restrict cmatrix = d->cmatrix;
     const __m128 m0 = _mm_set_ps(0.0f, cmatrix[6], cmatrix[3], cmatrix[0]);
     const __m128 m1 = _mm_set_ps(0.0f, cmatrix[7], cmatrix[4], cmatrix[1]);
     const __m128 m2 = _mm_set_ps(0.0f, cmatrix[8], cmatrix[5], cmatrix[2]);
