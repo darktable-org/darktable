@@ -3308,7 +3308,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
     // set trouble message
     if (module)
       dt_iop_set_module_trouble_message(module, warn_label, _("unsupported input"),
-                                        _("You have placed this module at\n"
+                                        _("you have placed this module at\n"
                                           "a position in the pipeline where\n"
                                           "the data format does not match\n"
                                           "its requirements."));
