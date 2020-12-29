@@ -4894,7 +4894,7 @@ msgstr "retourner les images"
 
 #: ../src/control/jobs/control_jobs.c:1476
 msgid "set monochrome images"
-msgstr "indique comme images monchromes"
+msgstr "définit comme images monochromes"
 
 #. get all selected images now, to avoid the set changing during ui interaction
 #: ../src/control/jobs/control_jobs.c:1483
@@ -16359,12 +16359,11 @@ msgstr "mise à jour des informations de l'image depuis le fichier"
 
 #: ../src/libs/image.c:570
 msgid "set selection as monochrome images and activate monochrome workflow"
-msgstr ""
-"enregistre la sélection comme images monochromes et active le flux monochrome"
+msgstr "définit la sélection comme images monochromes et active le flux monochrome"
 
 #: ../src/libs/image.c:574
 msgid "set selection as color images"
-msgstr "indique la sélection comme images monochromes"
+msgstr "définit la sélection comme images couleur"
 
 #: ../src/libs/image.c:617
 msgctxt "accel"
