@@ -55,6 +55,7 @@ typedef struct dt_iop_splittoning_params_t
 
 typedef struct dt_iop_splittoning_gui_data_t
 {
+  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *balance_scale, *compress_scale;
   GtkWidget *shadow_colorpick, *highlight_colorpick;
   GtkWidget *shadow_hue_gslider, *shadow_sat_gslider;
@@ -152,7 +153,7 @@ void init_presets(dt_iop_module_so_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

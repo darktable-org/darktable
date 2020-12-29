@@ -52,6 +52,7 @@ typedef struct dt_iop_colisa_params_t
 
 typedef struct dt_iop_colisa_gui_data_t
 {
+  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
   GtkWidget *contrast;
   GtkWidget *brightness;
   GtkWidget *saturation;
