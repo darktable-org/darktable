@@ -164,6 +164,12 @@
 @define-color graph_green rgb(28,235,26);
 @define-color graph_blue rgb(14,14,233);
 
+@define-color colorlabel_red rgb(230,0,0);
+@define-color colorlabel_green rgb(0,230,0);
+@define-color colorlabel_blue rgb(0,0,230);
+@define-color colorlabel_yellow rgb(230,230,0);
+@define-color colorlabel_purple rgb(230,0,230);
+
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
 *
 {

@@ -19,6 +19,7 @@
 #pragma once
 
 #include "common/debug.h"
+#include "common/colorlabels.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -233,6 +234,7 @@ typedef struct dt_bauhaus_t
   // colors for graphs
   GdkRGBA graph_bg, graph_border, graph_fg, graph_grid, graph_fg_active, graph_overlay, inset_histogram;
   GdkRGBA graph_primaries[3];
+  GdkRGBA colorlabels[DT_COLORLABELS_LAST];
 } dt_bauhaus_t;
 
 #define DT_BAUHAUS_SPACE 0
