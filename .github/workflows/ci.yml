@@ -319,7 +319,7 @@ jobs:
           brew update > /dev/null || true
           brew tap Homebrew/bundle
           cd src/.ci
-          brew bundle --verbose
+          brew bundle --verbose --no-upgrade
       - name: Build and Install
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
         run: |
