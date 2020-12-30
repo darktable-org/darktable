@@ -734,8 +734,7 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
  ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that 
  ** message when the module does not have a warning-label widget (use %s for the module's name).  **/
 void dt_iop_set_module_trouble_message(dt_iop_module_t *module, char *const trouble_msg,
-                                       const char *const trouble_tooltip, const char *const toast_message,
-                                       const char *stderr_message);
+                                       const char *const trouble_tooltip, const char *stderr_message);
 
 // format modules description going in tooltips
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
@@ -756,7 +755,7 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t 
   if(self->gui_data){dt_pthread_mutex_destroy(&self->gui_data->lock);free(self->gui_data);} self->gui_data = NULL
 
 /* return a warning message, prefixed by the special character ⚠ */
-char *dt_iop_warning_message(char *message);
+char *dt_iop_warning_message(const char *message);
 
 /** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
  ** output buffer, set the module's trouble message, and return FALSE */

@@ -2026,7 +2026,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                                           "all performing chromatic adaptation.\n"
                                           "this can lead to inconsistencies, unless you\n"
                                           "use them with masks or know what you are doing."),
-                                        _("module %s: double CAT applied"),
                                         "double CAT applied");
     }
     else if(!self->dev->proxy.wb_is_D65)
@@ -2037,17 +2036,16 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                                           "reference illuminant, which will cause issues here\n"
                                           "with chromatic adaptation. either set it to reference\n"
                                           "or disable chromatic adaptation here."),
-                                        _("double white balance detected by %s"),
                                         "white balance error");
     }
     else
     {
-      dt_iop_set_module_trouble_message(self, NULL, NULL, NULL, NULL);
+      dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
     }
   }
   else
   {
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL, NULL);
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
   }
 
   --darktable.gui->reset;
