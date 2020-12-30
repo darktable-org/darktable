@@ -164,6 +164,9 @@ dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid);
     or a customr order  */
 dt_iop_order_t dt_ioppr_get_iop_order_list_kind(GList *iop_order_list);
 
+/** returns true if imgid has an iop-order set */
+gboolean dt_ioppr_has_iop_order_list(int32_t imgid);
+
 /** returns a list of dt_iop_order_entry_t and updates *_version */
 GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted);
 /** return the iop-order list for the given version, this is used to get the built-in lists */

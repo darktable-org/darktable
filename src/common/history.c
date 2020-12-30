@@ -773,7 +773,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
     return 1;
   }
 
-  dt_lock_image_pair(imgid,dest_imgid);
+  dt_lock_image_pair(imgid, dest_imgid);
 
   // be sure the current history is written before pasting some other history data
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -831,7 +831,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
   // signal that the mipmap need to be updated
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
 
-  dt_unlock_image_pair(imgid,dest_imgid);
+  dt_unlock_image_pair(imgid, dest_imgid);
 
   return ret_val;
 }
@@ -1353,12 +1353,15 @@ static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
   }
   sqlite3_finalize(stmt);
 
-  // get history
+  // get history. the active history for an image are all the latest operations (MAX(num))
+  // which are enabled. this is important here as we want the hash to represent the actual
+  // developement of the image.
   gboolean history_on = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation, op_params, blendop_params"
+                              "SELECT operation, op_params, blendop_params, enabled, MAX(num)"
                               " FROM main.history"
-                              " WHERE imgid = ?1 AND enabled = 1 AND num <= ?2"
+                              " WHERE imgid = ?1 AND num <= ?2"
+                              " GROUP BY operation, multi_priority"
                               " ORDER BY num",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1366,18 +1369,22 @@ static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    // operation
-    char *buf = (char *)sqlite3_column_text(stmt, 0);
-    if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
-    // op_params
-    buf = (char *)sqlite3_column_blob(stmt, 1);
-    int params_len = sqlite3_column_bytes(stmt, 1);
-    if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
-    // blendop_params
-    buf = (char *)sqlite3_column_blob(stmt, 2);
-    params_len = sqlite3_column_bytes(stmt, 2);
-    if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
-    history_on = TRUE;
+    const int enabled = sqlite3_column_int(stmt, 3);
+    if(enabled)
+    {
+      // operation
+      char *buf = (char *)sqlite3_column_text(stmt, 0);
+      if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+      // op_params
+      buf = (char *)sqlite3_column_blob(stmt, 1);
+      int params_len = sqlite3_column_bytes(stmt, 1);
+      if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+      // blendop_params
+      buf = (char *)sqlite3_column_blob(stmt, 2);
+      params_len = sqlite3_column_bytes(stmt, 2);
+      if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+      history_on = TRUE;
+    }
   }
   sqlite3_finalize(stmt);
 

@@ -845,22 +845,21 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_free(elevation);
     g_free(location);
 
-  }
-
-  // standard calculation on the remaining variables
-  const int32_t flags = dt_lib_export_metadata_get_conf_flags();
-  dt_variables_params_t *params;
-  dt_variables_params_init(&params);
-  params->filename = image->filename;
-  params->jobcode = "infos";
-  params->sequence = 0;
-  params->imgid = image->id;
-  dt_variables_set_tags_flags(params, flags);
-  svgdoc = dt_variables_expand(params, svgdata, FALSE);
-  if(svgdoc != svgdata)
-  {
-    g_free(svgdata);
-    svgdata = svgdoc;
+    // standard calculation on the remaining variables
+    const int32_t flags = dt_lib_export_metadata_get_conf_flags();
+    dt_variables_params_t *params;
+    dt_variables_params_init(&params);
+    params->filename = image->filename;
+    params->jobcode = "infos";
+    params->sequence = 0;
+    params->imgid = image->id;
+    dt_variables_set_tags_flags(params, flags);
+    svgdoc = dt_variables_expand(params, svgdata, FALSE);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
   }
   return svgdoc;
 }

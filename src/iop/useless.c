@@ -92,6 +92,7 @@ typedef struct dt_iop_useless_gui_data_t
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
   GtkWidget *scale, *factor, *check, *method, *extra; // this is needed by gui_update
+  GtkWidget *warning_label;
 } dt_iop_useless_gui_data_t;
 
 typedef struct dt_iop_useless_global_data_t
@@ -268,12 +269,32 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // how many colors in our buffer?
   const int ch = piece->colors;
 
+  // most modules only support a single type of input data, so we can check whether that format has been supplied
+  // and simply pass along the data if not (setting a trouble flag to inform the user)
+  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         g ? g->warning_label : NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
+
   // we create a raster mask as an example
   float *mask = NULL;
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(piece->module, mask_id))
   {
-    mask = (float *)dt_alloc_align_float((size_t)roi_out->width * roi_out->height);
-    memset(mask, 0, sizeof(float) * roi_out->width * roi_out->height);
+    // Attempt to allocate all of the buffers we need.  For this example, we need one buffer that is equal in
+    // dimensions to the output buffer, has one color channel, and has been zero'd.  (See common/imagebuf.h for
+    // more details on all of the options.)
+    if (!dt_iop_alloc_image_buffers(module, NULL, roi_in, roi_out,
+                                    1/*ch per pixel*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL | DT_IMGSZ_CLEARBUF, &mask,
+                                    0 /* end of list of buffers to allocate */))
+    {
+      // Uh oh, we didn't have enough memory!  If multiple buffers were requested, any that had already
+      // been allocated have been freed, and the module's trouble flag has been set.  We can simply pass
+      // through the input image and return now, since there isn't anything else we need to clean up at
+      // this point.
+      dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+      return;
+    }
   }
   else
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(mask_id));
@@ -554,6 +575,14 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->extra), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);
+
+  // set up a box for the warnings from dt_iop_have_required_input_format and the like
+  GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
+
+  g->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(box_enabled), g->warning_label, FALSE, FALSE, 4);
+  
 }
 
 void gui_cleanup(dt_iop_module_t *self)

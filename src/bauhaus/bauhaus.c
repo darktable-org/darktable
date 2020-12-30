@@ -539,6 +539,16 @@ void dt_bauhaus_load_theme()
   gtk_style_context_lookup_color(ctx, "graph_red", &darktable.bauhaus->graph_primaries[0]);
   gtk_style_context_lookup_color(ctx, "graph_green", &darktable.bauhaus->graph_primaries[1]);
   gtk_style_context_lookup_color(ctx, "graph_blue", &darktable.bauhaus->graph_primaries[2]);
+  gtk_style_context_lookup_color(ctx, "colorlabel_red",
+                                 &darktable.bauhaus->colorlabels[DT_COLORLABELS_RED]);
+  gtk_style_context_lookup_color(ctx, "colorlabel_yellow",
+                                 &darktable.bauhaus->colorlabels[DT_COLORLABELS_YELLOW]);
+  gtk_style_context_lookup_color(ctx, "colorlabel_green",
+                                 &darktable.bauhaus->colorlabels[DT_COLORLABELS_GREEN]);
+  gtk_style_context_lookup_color(ctx, "colorlabel_blue",
+                                 &darktable.bauhaus->colorlabels[DT_COLORLABELS_BLUE]);
+  gtk_style_context_lookup_color(ctx, "colorlabel_purple",
+                                 &darktable.bauhaus->colorlabels[DT_COLORLABELS_PURPLE]);
 
   PangoFontDescription *pfont = 0;
   gtk_style_context_get(ctx, GTK_STATE_FLAG_NORMAL, "font", &pfont, NULL);
@@ -856,7 +866,7 @@ void dt_bauhaus_slider_enable_soft_boundaries(GtkWidget *widget, float hard_min,
 
 void dt_bauhaus_widget_set_label(GtkWidget *widget, const char *section_orig, const char *label_orig)
 {
-  const char *section = _(section_orig);
+  const char *section = section_orig ? _(section_orig) : NULL;
   const char *label = _(label_orig);
 
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);

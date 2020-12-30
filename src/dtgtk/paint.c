@@ -1203,31 +1203,21 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
   if((flags & 8) && !(flags & CPF_PRELIGHT)) alpha = 0.6;
 
-  switch((flags & 7))
+  const dt_colorlabels_enum color = (flags & 7);
+
+  if(color < DT_COLORLABELS_LAST)
   {
-    case 0:
-      cairo_set_source_rgba(cr, 0.9, 0.0, 0.0, alpha);
-      break; // red
-    case 1:
-      cairo_set_source_rgba(cr, 0.9, 0.9, 0.0, alpha);
-      break; // yellow
-    case 2:
-      cairo_set_source_rgba(cr, 0.0, 0.9, 0.0, alpha);
-      break; // green
-    case 3:
-      cairo_set_source_rgba(cr, 0.0, 0.0, 0.9, alpha);
-      break; // blue
-    case 4:
-      cairo_set_source_rgba(cr, 0.9, 0.0, 0.9, alpha);
-      break; // magenta
-    case 7:
-      // don't fill
-      cairo_set_source_rgba(cr, 0, 0, 0, 0);
-      break;
-    default:
-      cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
-      def = TRUE;
-      break; // gray
+    set_color(cr, darktable.bauhaus->colorlabels[color]);
+  }
+  else if(color == 7)
+  {
+    // don't fill
+    cairo_set_source_rgba(cr, 0, 0, 0, 0);
+  }
+  else
+  {
+    cairo_set_source_rgba(cr, 0.75, 0.75, 0.75, alpha);
+    def = TRUE;
   }
   cairo_fill(cr);
 
@@ -1361,35 +1351,35 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
   if(flags & CPF_DIRECTION_UP)
   {
     cairo_arc(cr, r, r, r, 0, 2.0f * M_PI);
-    cairo_set_source_rgba(cr, 0.9, 0, 0, 1.0);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_RED]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_DIRECTION_DOWN)
   {
     cairo_arc(cr, 1.0 - r, r, r, 0, 2.0f * M_PI);
-    cairo_set_source_rgba(cr, 0.9, 0.9, 0, 1.0);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_YELLOW]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_DIRECTION_LEFT)
   {
     cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
-    cairo_set_source_rgba(cr, 0.0, 0.9, 0, 1.0);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_GREEN]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_DIRECTION_RIGHT)
   {
     cairo_arc(cr, r, 1.0 - r, r, 0, 2.0f * M_PI);
-    cairo_set_source_rgba(cr, 0, 0, 0.9, 1.0);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_BLUE]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_BG_TRANSPARENT)
   {
     cairo_arc(cr, 1.0 - r, 1.0 - r, r, 0, 2.0f * M_PI);
-    cairo_set_source_rgba(cr, 0.9, 0, 0.9, 1.0);
+    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_PURPLE]);
     cairo_fill(cr);
   }
 

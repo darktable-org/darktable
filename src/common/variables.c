@@ -554,7 +554,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if (has_prefix(variable, "TAGS"))
   {
     GList *tags_list = dt_tag_get_list_export(params->imgid, params->data->tags_flags);
-    char *tags = dt_util_glist_to_str(",", tags_list);
+    char *tags = dt_util_glist_to_str(", ", tags_list);
     g_list_free_full(tags_list, g_free);
     result = g_strdup(tags);
     g_free(tags);
@@ -871,6 +871,7 @@ static void grow_buffer(char **result, char **result_iter, size_t *result_length
 static char *expand(dt_variables_params_t *params, char **source, char extra_stop)
 {
   char *result = g_strdup("");
+  if(!*source) return result;
   char *result_iter = result;
   size_t result_length = 0;
   char *source_iter = *source;
