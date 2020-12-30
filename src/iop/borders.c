@@ -90,7 +90,7 @@ typedef struct dt_iop_borders_params_t
 
 typedef struct dt_iop_borders_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common; // contains required fields such as .lock
   GtkWidget *size;
   GtkWidget *aspect;
   GtkWidget *aspect_slider;

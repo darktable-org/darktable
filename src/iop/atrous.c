@@ -82,7 +82,7 @@ typedef struct dt_iop_atrous_params_t
 
 typedef struct dt_iop_atrous_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common; // contains required fields such as .lock
   GtkWidget *mix;
   GtkDrawingArea *area;
   GtkNotebook *channel_tabs;
