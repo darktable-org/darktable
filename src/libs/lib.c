@@ -695,6 +695,15 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       g_free(markup);
     }
   }
+
+  if(minfo->module->set_preferences)
+  {
+    if(minfo->params)
+    {
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    }
+    minfo->module->set_preferences(GTK_MENU_SHELL(menu), minfo->module);
+  }
 }
 
 gint dt_lib_sort_plugins(gconstpointer a, gconstpointer b)
@@ -760,6 +769,8 @@ static int dt_lib_load_module(void *m, const char *libname, const char *plugin_n
     module->button_pressed = NULL;
   if(!g_module_symbol(module->module, "configure", (gpointer) & (module->configure)))
     module->configure = NULL;
+  if(!g_module_symbol(module->module, "set_preferences", (gpointer) & (module->set_preferences)))
+    module->set_preferences = NULL;
   if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
   if(!g_module_symbol(module->module, "position", (gpointer) & (module->position))) module->position = NULL;
   if(!g_module_symbol(module->module, "legacy_params", (gpointer) & (module->legacy_params)))
@@ -978,8 +989,8 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   mi->plugin_name = g_strdup(module->plugin_name);
   mi->version = module->version();
   mi->module = module;
-  mi->params = module->get_params(module, &mi->params_size);
-
+  mi->params = module->get_params ? module->get_params(module, &mi->params_size) : NULL;
+  
   if(!mi->params)
   {
     // this is a valid case, for example in location.c when nothing got selected
@@ -1238,7 +1249,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
   g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "clicked", G_CALLBACK(popup_callback), module);
 
-  if(!module->get_params) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
+  if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
 
   /* lets order header elements depending on left/right side panel placement */
