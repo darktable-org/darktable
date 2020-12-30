@@ -1358,15 +1358,19 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
 }
 
 static void _set_trouble_message(dt_iop_module_t *const module,
-                                       char* const trouble_msg, const char* const trouble_tooltip)
+                                 char* const trouble_msg, const char* const trouble_tooltip,
+                                 const char *const toast_message, const char *const stderr_message)
 {
   GtkWidget *label_widget = (module && module->gui_data) ? module->gui_data->warning_label : NULL;
   if (trouble_msg && *trouble_msg)
   {
-    if (!module->has_trouble)
+    if ((!module || !module->has_trouble) && stderr_message)
     {
-      // set the module's trouble flag
-      dt_iop_set_module_in_trouble(module, TRUE);
+      const char *name = module ? module->name() : "?";
+      fprintf(stderr,"[%s] %s\n",name,stderr_message);
+    }
+    if (module && !module->has_trouble)
+    {
       if (label_widget)
       {
         // set the warning message in the module's message area just below the header
@@ -1376,9 +1380,15 @@ static void _set_trouble_message(dt_iop_module_t *const module,
         gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
         gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
       }
+      else if (toast_message)
+      {
+        dt_control_log(toast_message,module->name());
+      }
+      // set the module's trouble flag
+      dt_iop_set_module_in_trouble(module, TRUE);
     }
   }
-  else if (module->has_trouble)
+  else if (module && module->has_trouble)
   {
     // no more trouble, so clear the trouble flag and hide the message area
     dt_iop_set_module_in_trouble(module, FALSE);
@@ -1389,20 +1399,26 @@ static void _set_trouble_message(dt_iop_module_t *const module,
       gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
     }
   }
+  else if (label_widget)
+  {
+    // hide the warning label; needed if the caller relies on this function to manage the visibility
+    gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
+  }
 }
 
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
-                                       char* const trouble_msg, const char* const trouble_tooltip)
+                                       char* const trouble_msg, const char* const trouble_tooltip,
+                                       const char *const toast_message, const char *const stderr_message)
 {
   if (module && module->gui_data)
   {
     // keep LLVM happy by not having any conditional paths on the locks
     dt_iop_gui_enter_critical_section(module);
-    _set_trouble_message(module,trouble_msg,trouble_tooltip);
+    _set_trouble_message(module,trouble_msg,trouble_tooltip,toast_message,stderr_message);
     dt_iop_gui_leave_critical_section(module);
   }
   else
-    _set_trouble_message(module,trouble_msg,trouble_tooltip);
+    _set_trouble_message(module,trouble_msg,trouble_tooltip,toast_message,stderr_message);
 }
 
 
@@ -3315,23 +3331,22 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
   if (ch == req_ch)
   {
     if (module)
-      dt_iop_set_module_trouble_message(module, NULL, NULL);
+      dt_iop_set_module_trouble_message(module, NULL, NULL, NULL, NULL);
     return TRUE;
   }
   else
   {
     // copy the input buffer to the output
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
-    // print an error message to the console
-    const char *name = module ? module->name() : "?";
-    fprintf(stderr,"[%s] unsupported data format\n",name);
     // and set the module's trouble message
     if (module)
       dt_iop_set_module_trouble_message(module, _("unsupported input"),
                                         _("you have placed this module at\n"
                                           "a position in the pipeline where\n"
                                           "the data format does not match\n"
-                                          "its requirements."));
+                                          "its requirements."),
+                                        _("module %s: unsupported position in pipeline"),
+                                        "unsupported data format at current pipeline position");
     else
     {
       //TODO: pop up a toast message?
