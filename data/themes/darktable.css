@@ -2296,7 +2296,7 @@ spinbutton>button
 {
   color: transparent;
 }
-#thumb_main:active #thumb_cursor
+#thumbtable_filmstrip #thumb_main:active #thumb_cursor
 {
   color: @border_color;
 }
