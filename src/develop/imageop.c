@@ -1357,10 +1357,9 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
   _iop_gui_update_header(module);
 }
 
-void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
+static void _set_trouble_message(dt_iop_module_t *const module,
                                        char* const trouble_msg, const char* const trouble_tooltip)
 {
-  dt_iop_gui_enter_critical_section(module);
   GtkWidget *label_widget = (module && module->gui_data) ? module->gui_data->warning_label : NULL;
   if (trouble_msg && *trouble_msg)
   {
@@ -1390,7 +1389,20 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
       gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
     }
   }
-  dt_iop_gui_leave_critical_section(module);
+}
+
+void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
+                                       char* const trouble_msg, const char* const trouble_tooltip)
+{
+  if (module && module->gui_data)
+  {
+    // keep LLVM happy by not having any conditional paths on the locks
+    dt_iop_gui_enter_critical_section(module);
+    _set_trouble_message(module,trouble_msg,trouble_tooltip);
+    dt_iop_gui_leave_critical_section(module);
+  }
+  else
+    _set_trouble_message(module,trouble_msg,trouble_tooltip);
 }
 
 

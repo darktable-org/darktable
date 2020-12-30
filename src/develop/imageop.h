@@ -594,11 +594,13 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
 /** enter a GUI critical section by acquiring gui_data->lock **/
 static inline void dt_iop_gui_enter_critical_section(const dt_iop_module_t *const module)
+  ACQUIRE(&module->gui_data->lock)
 {
   dt_pthread_mutex_lock(&module->gui_data->lock);
 }
 /** leave a GUI critical section by releasing gui_data->lock **/
 static inline void dt_iop_gui_leave_critical_section(const dt_iop_module_t *const module)
+  RELEASE(&module->gui_data->lock)
 {
   dt_pthread_mutex_unlock(&module->gui_data->lock);
 }
