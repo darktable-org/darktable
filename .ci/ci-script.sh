@@ -123,9 +123,31 @@ case "$TARGET" in
       $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
     target_notest
     ;;
-  "usermanual")
-    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" -G"$GENERATOR" -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" "$ECO" "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
-    target_usermanual
+  "nofeatures_nosse")
+    cmake -DCMAKE_INSTALL_PREFIX="$INSTALL_PREFIX" \
+      -G"$GENERATOR" \
+      -DCMAKE_BUILD_TYPE="$CMAKE_BUILD_TYPE" \
+      -DUSE_OPENMP=OFF \
+      -DUSE_OPENCL=OFF \
+      -DUSE_LUA=OFF \
+      -DUSE_GAME=OFF \
+      -DUSE_CAMERA_SUPPORT=OFF \
+      -DUSE_NLS=OFF \
+      -DUSE_GRAPHICSMAGICK=OFF \
+      -DUSE_OPENJPEG=OFF \
+      -DUSE_WEBP=OFF \
+      -DUSE_AVIF=OFF \
+      -DUSE_XCF=OFF \
+      -DBUILD_CMSTEST=OFF \
+      -DUSE_OPENEXR=OFF \
+      -DBUILD_PRINT=OFF \
+      -DBUILD_RS_IDENTIFY=OFF \
+      -DUSE_LENSFUN=OFF \
+      -DUSE_GMIC=OFF \
+      -DUSE_LIBSECRET=OFF \
+      -DBUILD_SSE2_CODEPATHS=OFF \
+      $ECO "$SRC_DIR" || (cat "$BUILD_DIR"/CMakeFiles/CMakeOutput.log; cat "$BUILD_DIR"/CMakeFiles/CMakeError.log)
+    target_notest
     ;;
   *)
     exit 1
