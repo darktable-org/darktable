@@ -313,7 +313,7 @@ jobs:
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
-    needs: Linux
+    needs: Linux-minimal
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -438,7 +438,7 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    needs: Linux
+    needs: Linux-minimal
     runs-on: macos-latest
     strategy:
       fail-fast: true
