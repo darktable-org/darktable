@@ -46,7 +46,7 @@ void dt_history_item_free(gpointer data)
   g_free(item);
 }
 
-static void remove_preset_flag(const int imgid)
+static void _remove_preset_flag(const int imgid)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
@@ -108,7 +108,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  remove_preset_flag(imgid);
+  _remove_preset_flag(imgid);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_reload_history_items(darktable.develop);
