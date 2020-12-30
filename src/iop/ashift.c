@@ -863,7 +863,7 @@ static void homography(float *homograph, const float angle, const float shift_v,
 
 // check if module parameters are set to all neutral values in which case the module's
 // output is identical to its input
-static inline int isneutral(dt_iop_ashift_data_t *data)
+static inline int isneutral(const dt_iop_ashift_data_t *data)
 {
   // values lower than this have no visible effect
   const float eps = 1.0e-4f;
@@ -882,7 +882,7 @@ static inline int isneutral(dt_iop_ashift_data_t *data)
 
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
-  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return 1;
@@ -899,8 +899,8 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(cx, cy) \
-  shared(points, points_count, homograph) \
+  dt_omp_firstprivate(cx, cy, points_count) \
+  shared(points, homograph) \
   schedule(static)
 #endif
   for(size_t i = 0; i < points_count * 2; i += 2)
@@ -919,7 +919,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points,
                           size_t points_count)
 {
-  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
 
   // nothing to be done if parameters are set to neutral values
   if(isneutral(data)) return 1;
@@ -955,7 +955,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
                   float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_ashift_data_t *data = (dt_iop_ashift_data_t *)piece->data;
+  const dt_iop_ashift_data_t *const data = (dt_iop_ashift_data_t *)piece->data;
 
   // if module is set to neutral parameters we just copy input->output and are done
   if(isneutral(data))
@@ -985,8 +985,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *_out = out + (size_t)j * roi_out->width;
-    for(int i = 0; i < roi_out->width; i++, _out++)
+    float *const restrict _out = out + (size_t)j * roi_out->width;
+    for(int i = 0; i < roi_out->width; i++)
     {
       float pin[3], pout[3];
 
@@ -1009,7 +1009,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
       pin[1] -= roi_in->y;
 
       // get output values by interpolation from input image
-      dt_interpolation_compute_pixel1c(interpolation, in, _out, pin[0], pin[1], roi_in->width,
+      dt_interpolation_compute_pixel1c(interpolation, in, _out + i, pin[0], pin[1], roi_in->width,
                                        roi_in->height, roi_in->width);
     }
   }
@@ -1147,24 +1147,19 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
 // simple conversion of rgb image into greyscale variant suitable for line segment detection
 // the lsd routines expect input as *double, roughly in the range [0.0; 256.0]
-static void rgb2grey256(const float *in, double *out, const int width, const int height)
+static void rgb2grey256(const float *const in, double *const out, const int width, const int height)
 {
-  const int ch = 4;
+  const size_t npixels = (size_t)width * height;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width, ch) \
-  shared(in, out) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int index = 0; index < npixels; index++)
   {
-    const float *inp = in + (size_t)ch * j * width;
-    double *outp = out + (size_t)j * width;
-    for(int i = 0; i < width; i++, inp += ch, outp++)
-    {
-      *outp = (0.3f * inp[0] + 0.59f * inp[1] + 0.11f * inp[2]) * 256.0;
-    }
+    out[index] = (0.3f * in[4*index+0] + 0.59f * in[4*index+1] + 0.11f * in[4*index+2]) * 256.0;
   }
 }
 
@@ -1291,12 +1286,12 @@ static void sRGB_to_XYZ(const float *sRGB, float *XYZ)
 }
 
 // detail enhancement via bilateral grid (function arguments in and out may represent identical buffers)
-static int detail_enhance(const float *in, float *out, const int width, const int height)
+static int detail_enhance(const float *const in, float *const out, const int width, const int height)
 {
   const float sigma_r = 5.0f;
   const float sigma_s = fminf(width, height) * 0.02f;
   const float detail = 10.0f;
-
+  const size_t npixels = (size_t)width * height;
   int success = TRUE;
 
   // we need to convert from RGB to Lab first;
@@ -1305,20 +1300,15 @@ static int detail_enhance(const float *in, float *out, const int width, const in
   // convert RGB input to Lab, use output buffer for intermediate storage
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  shared(in, out) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(size_t index = 0; index < 4*npixels; index += 4)
   {
-    const float *inp = in + (size_t)4 * j * width;
-    float *outp = out + (size_t)4 * j * width;
-    for(int i = 0; i < width; i++, inp += 4, outp += 4)
-    {
-      float XYZ[3];
-      sRGB_to_XYZ(inp, XYZ);
-      dt_XYZ_to_Lab(XYZ, outp);
-    }
+    float XYZ[3];
+    sRGB_to_XYZ(in + index, XYZ);
+    dt_XYZ_to_Lab(XYZ, out + index);
   }
 
   // bilateral grid detail enhancement
@@ -1337,42 +1327,34 @@ static int detail_enhance(const float *in, float *out, const int width, const in
   // convert resulting Lab to RGB output
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  shared(out) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(out) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(size_t index = 0; index < 4*npixels; index += 4)
   {
-    float *outp = out + (size_t)4 * j * width;
-    for(int i = 0; i < width; i++, outp += 4)
-    {
-      float XYZ[3];
-      dt_Lab_to_XYZ(outp, XYZ);
-      XYZ_to_sRGB(XYZ, outp);
-    }
+    float XYZ[3];
+    dt_Lab_to_XYZ(out + index, XYZ);
+    XYZ_to_sRGB(XYZ, out + index);
   }
 
   return success;
 }
 
 // apply gamma correction to RGB buffer (function arguments in and out may represent identical buffers)
-static void gamma_correct(const float *in, float *out, const int width, const int height)
+static void gamma_correct(const float *const in, float *const out, const int width, const int height)
 {
+  const size_t npixels = (size_t)width * height;
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(height, width) \
-  shared(in, out) \
+  dt_omp_firstprivate(npixels) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
-  for(int j = 0; j < height; j++)
+  for(int index = 0; index < 4*npixels; index += 4)
   {
-    const float *inp = in + (size_t)4 * j * width;
-    float *outp = out + (size_t)4 * j * width;
-    for(int i = 0; i < width; i++, inp += 4, outp += 4)
-    {
-      for(int c = 0; c < 3; c++)
-        outp[c] = powf(inp[c], LSD_GAMMA);
-    }
+    for(int c = 0; c < 3; c++)
+      out[index+c] = powf(in[index+c], LSD_GAMMA);
   }
 }
 
@@ -2944,8 +2926,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // go over all pixels of output image
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
-    for(int i = 0; i < roi_out->width; i++, out += ch)
+    float *const restrict out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
+    for(int i = 0; i < roi_out->width; i++)
     {
       float pin[3], pout[3];
 
@@ -2968,7 +2950,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       pin[1] -= roi_in->y;
 
       // get output values by interpolation from input image
-      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, pin[0], pin[1], roi_in->width,
+      dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out + ch*i, pin[0], pin[1], roi_in->width,
                                        roi_in->height, ch_width);
     }
   }
