@@ -106,7 +106,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
   if (success)
   {
     if (module)
-      dt_iop_set_module_trouble_message(module, NULL, NULL);
+      dt_iop_set_module_trouble_message(module, NULL, NULL, NULL, NULL);
   }
   else
   {
@@ -129,10 +129,9 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
                                         _("This module was unable to allocate\n"
                                           "all of the memory required to process\n"
                                           "the image.  Some or all processing\n"
-                                          "has been skipped."));
-    // and print an error message to the console
-    const char *name = module ? module->name() : "?";
-    fprintf(stderr,"[%s] unable to allocate working memory\n",name);
+                                          "has been skipped."),
+                                        _("module %s: out of memory"),
+                                        "unable to allocate working memory");
   }
   return success;
 }
