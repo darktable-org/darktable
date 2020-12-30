@@ -1842,7 +1842,7 @@ msgstr "double-cliquer pour réinitialiser à « %s »"
 
 #: ../build/bin/preferences_gen.h:2875
 msgid "sets the collections-list order for film rolls"
-msgstr "indique l'ordre de tri pour la collection sur les pellicules"
+msgstr "définit l'ordre de tri pour la collection sur les pellicules"
 
 #: ../build/bin/preferences_gen.h:2896
 msgid "sort collection recent to older"
@@ -1923,7 +1923,7 @@ msgstr ""
 
 #: ../build/bin/preferences_gen.h:3036
 msgid "scroll to utility modules when expanded/collapsed"
-msgstr "positionne les modules utilitaires lorsque qu'ils sont déplier/repliés"
+msgstr "positionne les modules utilitaires lorsque qu'ils sont dépliés/repliés"
 
 #: ../build/bin/preferences_gen.h:3050 ../build/bin/preferences_gen.h:4246
 msgid ""
@@ -1951,7 +1951,7 @@ msgstr "affiche les barres de défilement pour la vue centrale"
 
 #: ../build/bin/preferences_gen.h:3120 ../build/bin/preferences_gen.h:3782
 msgid "defines whether scrollbars should be displayed"
-msgstr "défini si les barres de défilement doivent apparaître"
+msgstr "définit si les barres de défilement doivent apparaître"
 
 #: ../build/bin/preferences_gen.h:3129
 msgid "thumbnails"
@@ -2143,7 +2143,7 @@ msgid ""
 "sets level for smoothing of brush strokes. stronger smoothing leads to less "
 "nodes and easier editing but with lower control of accuracy."
 msgstr ""
-"indique le niveau de lissage du pinceau. un lissage haut crée moins de nœud "
+"définit le niveau de lissage du pinceau. un lissage haut crée moins de nœud "
 "de contrôle et sera plus facile à éditer mais sera moins précis."
 
 #: ../build/bin/preferences_gen.h:3609
@@ -2912,7 +2912,7 @@ msgid ""
 "parallel on two different GPUs; very fast GPU - process both pixelpipes "
 "sequentially on the GPU."
 msgstr ""
-"défini comment l'image complète et la prévisualisation sont traitées sur les "
+"définit comment l'image complète et la prévisualisation sont traitées sur les "
 "système avec support OpenCL. par défaut le GPU est utilisé pour le rendu de "
 "l'image complète et le CPU pour la prévisualisation (changeable des les "
 "préférences); les GPU multiples traiteront l'image complète et la "
@@ -7399,7 +7399,7 @@ msgstr "thème"
 
 #: ../src/gui/preferences.c:395
 msgid "set the theme for the user interface"
-msgstr "choisir le thème de l'interface utilisateur"
+msgstr "définir le thème de l'interface utilisateur"
 
 #: ../src/gui/preferences.c:398
 msgid "prefer performance over quality"
@@ -16433,22 +16433,22 @@ msgstr "rafraîchir exif"
 #: ../src/libs/image.c:629
 msgctxt "accel"
 msgid "set monochrome image"
-msgstr "indique l'image comme monochrome"
+msgstr "définit l'image comme monochrome"
 
 #: ../src/libs/image.c:630
 msgctxt "accel"
 msgid "set color image"
-msgstr "indique l'image comme couleur"
+msgstr "définit l'image comme couleur"
 
 #: ../src/libs/image.c:631
 msgctxt "accel"
 msgid "replace metadata"
-msgstr "remplacer métadonnée"
+msgstr "remplacer métadonnées"
 
 #: ../src/libs/image.c:632
 msgctxt "accel"
 msgid "paste metadata"
-msgstr "coller métadonnée"
+msgstr "coller métadonnées"
 
 #: ../src/libs/image.c:633
 msgctxt "accel"
