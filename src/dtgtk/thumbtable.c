@@ -1346,7 +1346,53 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     }
 
     // get the new rowid of the new offset image
-    const int nrow = _thumb_get_rowid(newid);
+    int nrow = _thumb_get_rowid(newid);
+
+    // if we don't have a valid rowid that means the image with newid doesn't exist in the new
+    // memory.collected_images as we still have the "old" list of images available in table->list, let's found the
+    // next valid image inside
+    if(nrow <= 0)
+    {
+      l = table->list;
+      gboolean after = FALSE;
+      while(l)
+      {
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+        if(after)
+        {
+          nrow = _thumb_get_rowid(thumb->imgid);
+          if(nrow > 0)
+          {
+            newid = thumb->imgid;
+            break;
+          }
+        }
+        if(thumb->imgid == newid) after = TRUE;
+        l = g_list_next(l);
+      }
+    }
+    // last chance if still not valid, we search the first previous valid image
+    if(nrow <= 0)
+    {
+      l = g_list_last(table->list);
+      gboolean before = FALSE;
+      while(l)
+      {
+        dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+        if(before)
+        {
+          nrow = _thumb_get_rowid(thumb->imgid);
+          if(nrow > 0)
+          {
+            newid = thumb->imgid;
+            break;
+          }
+        }
+        if(thumb->imgid == newid) before = TRUE;
+        l = g_list_previous(l);
+      }
+    }
+
     const gboolean offset_changed = (MAX(1, nrow) != table->offset);
     if(nrow >= 1)
       table->offset_imgid = newid;
@@ -1359,7 +1405,8 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 
     dt_thumbtable_full_redraw(table, TRUE);
 
-    if(offset_changed) dt_view_lighttable_change_offset(darktable.view_manager, FALSE, newid);
+    if(offset_changed)
+      dt_view_lighttable_change_offset(darktable.view_manager, FALSE, table->offset_imgid);
     else
     {
       // if we are in culling or preview mode, ensure to refresh active images
