@@ -932,12 +932,14 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4/*need full-color pixels*/, self, piece->colors, NULL,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // unsupported format, image has been copied to output and module's trouble flag set
+
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
-  const int ch = piece->colors;
+  const int ch = 4;
   const int ch_width = ch * roi_in->width;
-
-  assert(ch == 4);
 
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width
