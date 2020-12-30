@@ -85,6 +85,7 @@ void *get_params(struct dt_lib_module_t *self, int *size);
 int set_params(struct dt_lib_module_t *self, const void *params, int size);
 void init_presets(struct dt_lib_module_t *self);
 void manage_presets(struct dt_lib_module_t *self);
+void set_preferences(void *menu, struct dt_lib_module_t *self);
 
 /** Optional callbacks for keyboard accelerators */
 void init_key_accels(struct dt_lib_module_t *self);
