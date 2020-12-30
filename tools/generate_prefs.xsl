@@ -20,12 +20,29 @@
   gtk_viewport_set_shadow_type(GTK_VIEWPORT(viewport), GTK_SHADOW_NONE); // doesn't seem to work from gtkrc
   gtk_container_add(GTK_CONTAINER(scroll), viewport);
   gtk_container_add(GTK_CONTAINER(viewport), grid);
-
 </xsl:variable>
 
   <xsl:variable name="tab_end">
   gtk_widget_show_all(stack);
 }
+</xsl:variable>
+
+<xsl:variable name="dialog_start">(GtkWidget *dialog)
+{
+  GtkWidget *widget, *label, *labelev, *viewport, *box;
+  GtkWidget *grid = gtk_grid_new();
+  gtk_grid_set_row_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(3));
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_set_valign(grid, GTK_ALIGN_START);
+  int line = 0;
+  char tooltip[1024];
+  GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+  g_object_set_data(G_OBJECT(dialog), "local-dialog", GUINT_TO_POINTER(1));
+</xsl:variable>
+
+<xsl:variable name="dialog_end">
+  gtk_box_pack_start(GTK_BOX(area), grid, FALSE, FALSE, 0);
+  }
 </xsl:variable>
 
   <xsl:param name="HAVE_OPENCL">1</xsl:param>
@@ -108,7 +125,7 @@ gboolean restart_required = FALSE;
 
   <!-- reset callbacks -->
 
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs]">
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs or @dialog]">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
       <xsl:text>static gboolean&#xA;reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *label, GdkEventButton *event, GtkWidget *widget)&#xA;{&#xA;  if(event->type == GDK_2BUTTON_PRESS)&#xA;  {&#xA;</xsl:text>
       <xsl:apply-templates select="." mode="reset"/>
@@ -118,9 +135,21 @@ gboolean restart_required = FALSE;
 
   <!-- response callbacks (on dialog close) -->
 
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs]">
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs or @dialog]">
     <xsl:if test="name != 'opencl' or $HAVE_OPENCL=1">
-      <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;{&#xA;  if(response_id != GTK_RESPONSE_DELETE_EVENT) return;&#xA;</xsl:text>
+      <xsl:text>static void&#xA;preferences_response_callback_</xsl:text><xsl:value-of select="generate-id(.)"/>
+      <xsl:text> (GtkDialog *dialog, gint response_id, GtkWidget *widget)&#xA;</xsl:text>
+      <xsl:text>{&#xA;</xsl:text>
+      <xsl:text>  const gint dkind = GPOINTER_TO_INT(g_object_get_data(G_OBJECT(dialog), "local-dialog"));&#xA;</xsl:text>
+      <xsl:text>  if(dkind)&#xA;</xsl:text>
+      <xsl:text>  {&#xA;</xsl:text>
+      <xsl:text>    if(response_id == GTK_RESPONSE_NONE) return;&#xA;</xsl:text>
+      <xsl:text>    if(response_id == GTK_RESPONSE_DELETE_EVENT) return;&#xA;</xsl:text>
+      <xsl:text>  }&#xA;</xsl:text>
+      <xsl:text>  else&#xA;</xsl:text>
+      <xsl:text>  {&#xA;</xsl:text>
+      <xsl:text>    if(response_id != GTK_RESPONSE_DELETE_EVENT) return;&#xA;</xsl:text>
+      <xsl:text>  }&#xA;</xsl:text>
       <xsl:text>  gtk_widget_set_can_focus(GTK_WIDGET(dialog), TRUE);&#xA;</xsl:text>
       <xsl:text>  gtk_widget_grab_focus(GTK_WIDGET(dialog));&#xA;</xsl:text>
       <xsl:apply-templates select="." mode="change"/>
@@ -130,7 +159,7 @@ gboolean restart_required = FALSE;
 
   <!-- restart callbacks (on change) -->
 
-  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs]">
+  <xsl:for-each select="./dtconfiglist/dtconfig[@prefs or @dialog]">
     <xsl:text>static void&#xA;preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text> (GtkWidget *widget, gpointer user_data)&#xA;{&#xA;</xsl:text>
     <xsl:if test="@restart">
       <xsl:text>  restart_required = TRUE;&#xA;</xsl:text>
@@ -392,6 +421,14 @@ gboolean restart_required = FALSE;
           <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
   <xsl:value-of select="$tab_end" />
+
+  <!-- dialog: collect -->
+
+  <xsl:text>&#xA;void dt_prefs_init_dialog_collect</xsl:text><xsl:value-of select="$dialog_start"/>
+  <xsl:for-each select="./dtconfiglist/dtconfig[@dialog='collect']">
+      <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+  <xsl:value-of select="$dialog_end" />
 
   <!-- closing credits -->
   <xsl:text>&#xA;#endif&#xA;</xsl:text>
