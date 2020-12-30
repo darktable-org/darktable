@@ -317,6 +317,7 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
+          brew link --overwrite python@3.9 # workaround introduced 30.12.2021, replace asap.
           brew upgrade
           brew tap Homebrew/bundle
           cd src/.ci 
