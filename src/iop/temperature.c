@@ -78,7 +78,7 @@ typedef struct dt_iop_temperature_params_t
 
 typedef struct dt_iop_temperature_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *scale_k, *scale_tint, *coeff_widgets, *scale_r, *scale_g, *scale_b, *scale_g2;
   GtkWidget *presets;
   GtkWidget *finetune;
