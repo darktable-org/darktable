@@ -1165,13 +1165,12 @@ static void display_wb_error(struct dt_iop_module_t *self)
                                         "and performing chromatic adaptation.\n"
                                         "set the white balance here to camera reference (D65)\n"
                                         "or disable chromatic adaptation in color calibration."),
-                                      _("%s: color calibration module is also performing white balance"),
                                       "double application of white balance");
   }
   else
   {
     // no longer in trouble
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL, NULL);
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
   }
 
   --darktable.gui->reset;

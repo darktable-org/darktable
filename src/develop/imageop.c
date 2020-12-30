@@ -1357,17 +1357,23 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
   _iop_gui_update_header(module);
 }
 
-static void _set_trouble_message(dt_iop_module_t *const module,
-                                 char* const trouble_msg, const char* const trouble_tooltip,
-                                 const char *const toast_message, const char *const stderr_message)
+static void _set_trouble_message(dt_iop_module_t *const module, const char* const trouble_msg,
+                                 const char* const trouble_tooltip, const char *const stderr_message)
 {
-  GtkWidget *label_widget = (module && module->gui_data) ? module->gui_data->warning_label : NULL;
+  GtkWidget *label_widget = NULL;
+  if (module && module->gui_data)
+  {
+    label_widget = module->gui_data->warning_label ;
+    //TODO: write function to create the label widget on the module's header
+    //if (!label_widget)
+    //  label_widget = module->gui_data->warning_label = create_warning_label(module);
+  }
   if (trouble_msg && *trouble_msg)
   {
-    if ((!module || !module->has_trouble) && stderr_message)
+    if ((!module || !module->has_trouble) && (stderr_message || !label_widget))
     {
       const char *name = module ? module->name() : "?";
-      fprintf(stderr,"[%s] %s\n",name,stderr_message);
+      fprintf(stderr,"[%s] %s\n",name,stderr_message ? stderr_message : trouble_msg);
     }
     if (module && !module->has_trouble)
     {
@@ -1379,10 +1385,6 @@ static void _set_trouble_message(dt_iop_module_t *const module,
         g_free(msg);
         gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
         gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
-      }
-      else if (toast_message)
-      {
-        dt_control_log(toast_message,module->name());
       }
       // set the module's trouble flag
       dt_iop_set_module_in_trouble(module, TRUE);
@@ -1408,17 +1410,17 @@ static void _set_trouble_message(dt_iop_module_t *const module,
 
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        char* const trouble_msg, const char* const trouble_tooltip,
-                                       const char *const toast_message, const char *const stderr_message)
+                                       const char *const stderr_message)
 {
   if (module && module->gui_data)
   {
     // keep LLVM happy by not having any conditional paths on the locks
     dt_iop_gui_enter_critical_section(module);
-    _set_trouble_message(module,trouble_msg,trouble_tooltip,toast_message,stderr_message);
+    _set_trouble_message(module,trouble_msg,trouble_tooltip,stderr_message);
     dt_iop_gui_leave_critical_section(module);
   }
   else
-    _set_trouble_message(module,trouble_msg,trouble_tooltip,toast_message,stderr_message);
+    _set_trouble_message(module,trouble_msg,trouble_tooltip,stderr_message);
 }
 
 
@@ -3257,7 +3259,7 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module)
   }
 }
 
-char *dt_iop_warning_message(char *message)
+char *dt_iop_warning_message(const char *message)
 {
   return g_strdup_printf("⚠ %s", message);
 }
@@ -3331,7 +3333,7 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
   if (ch == req_ch)
   {
     if (module)
-      dt_iop_set_module_trouble_message(module, NULL, NULL, NULL, NULL);
+      dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
     return TRUE;
   }
   else
@@ -3345,7 +3347,6 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
                                           "a position in the pipeline where\n"
                                           "the data format does not match\n"
                                           "its requirements."),
-                                        _("module %s: unsupported position in pipeline"),
                                         "unsupported data format at current pipeline position");
     else
     {
