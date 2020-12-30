@@ -3130,7 +3130,7 @@ msgid ""
 "defines whether the panel scrollbars should be always visible or activated "
 "only depending on the content.  (need a restart)"
 msgstr ""
-"indique si les ascenseurs des panneaux latéraux sont toujours visibles ou "
+"définit si les ascenseurs des panneaux latéraux sont toujours visibles ou "
 "seulement lorsque nécessaire. (nécessite un redémarrage)"
 
 #: ../build/bin/preferences_gen.h:6255
@@ -15718,7 +15718,7 @@ msgstr "ajouter à l'historique"
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
-"indique si les éléments du style sont à ajouter à l'historique ou remplace "
+"définit si les éléments du style sont à ajouter à l'historique ou remplace "
 "ce dernier"
 
 #. Export button
