@@ -617,6 +617,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
     selected = TRUE;
     l = g_list_next(l);
   }
+
   dt_undo_end_group(darktable.undo);
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
