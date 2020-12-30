@@ -37,7 +37,6 @@ jobs:
 
   Linux:
     name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
-    if: false
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -171,7 +170,6 @@ jobs:
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
-    if: false
     needs: Linux
     runs-on: windows-latest
     strategy:
@@ -297,7 +295,7 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    #needs: Linux
+    needs: Linux
     runs-on: macos-latest
     strategy:
       fail-fast: true
