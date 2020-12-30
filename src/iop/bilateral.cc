@@ -60,7 +60,7 @@ typedef struct dt_iop_bilateral_params_t
 
 typedef struct dt_iop_bilateral_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common; // contains required fields such as .lock
   GtkWidget *radius, *red, *green, *blue;
 } dt_iop_bilateral_gui_data_t;
 

@@ -73,7 +73,7 @@ typedef struct dt_iop_levels_params_t
 
 typedef struct dt_iop_levels_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GList *modes;
   GtkWidget *mode;
   GtkWidget *mode_stack;

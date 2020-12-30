@@ -60,7 +60,7 @@ typedef struct dt_iop_rgblevels_params_t
 
 typedef struct dt_iop_rgblevels_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common;          // contains required fields such as .lock
   dt_iop_rgblevels_params_t params;
 
   GtkWidget *cmb_autoscale; // (DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS, DT_IOP_RGBLEVELS_LINKED_CHANNELS)

@@ -34,7 +34,7 @@ DT_MODULE_INTROSPECTION(1, dt_iop_rotatepixels_params_t)
 
 typedef struct dt_iop_rotatepixels_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common;          // contains required fields such as .lock
 } dt_iop_rotatepixels_gui_data_t;
 
 typedef struct dt_iop_rotatepixels_params_t

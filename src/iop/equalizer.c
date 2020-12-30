@@ -59,7 +59,7 @@ typedef enum dt_iop_equalizer_channel_t
 
 typedef struct dt_iop_equalizer_gui_data_t
 {
-  struct dt_iop_gui_data_t common; // contains required fields: lock, warning_label
+  dt_iop_gui_data_t common;      // contains required fields such as .lock
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
   GtkBox *hbox;
   GtkDrawingArea *area;
