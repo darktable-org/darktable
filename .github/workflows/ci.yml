@@ -37,6 +37,7 @@ jobs:
 
   Linux:
     name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    if: false
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -164,6 +165,7 @@ jobs:
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    if: false
     needs: Linux
     runs-on: windows-latest
     strategy:
@@ -289,7 +291,7 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    needs: Linux
+    #needs: Linux
     runs-on: macos-latest
     strategy:
       fail-fast: true
@@ -317,6 +319,7 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
+          brew unlink python@3.8
           brew link --overwrite python@3.9 # workaround introduced 30.12.2021, replace asap.
           brew upgrade
           brew tap Homebrew/bundle
