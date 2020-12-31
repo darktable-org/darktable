@@ -42,6 +42,7 @@
 
 <xsl:variable name="dialog_end">
   gtk_box_pack_start(GTK_BOX(area), grid, FALSE, FALSE, 0);
+  return grid;
   }
 </xsl:variable>
 
@@ -424,8 +425,16 @@ gboolean restart_required = FALSE;
 
   <!-- dialog: collect -->
 
-  <xsl:text>&#xA;void dt_prefs_init_dialog_collect</xsl:text><xsl:value-of select="$dialog_start"/>
+  <xsl:text>&#xA;GtkWidget *dt_prefs_init_dialog_collect</xsl:text><xsl:value-of select="$dialog_start"/>
   <xsl:for-each select="./dtconfiglist/dtconfig[@dialog='collect']">
+      <xsl:apply-templates select="." mode="tab_block"/>
+  </xsl:for-each>
+  <xsl:value-of select="$dialog_end" />
+
+  <!-- dialog: import -->
+
+  <xsl:text>&#xA;GtkWidget *dt_prefs_init_dialog_import</xsl:text><xsl:value-of select="$dialog_start"/>
+  <xsl:for-each select="./dtconfiglist/dtconfig[@dialog='import']">
       <xsl:apply-templates select="." mode="tab_block"/>
   </xsl:for-each>
   <xsl:value-of select="$dialog_end" />
@@ -481,6 +490,7 @@ gboolean restart_required = FALSE;
                 </xsl:when>
                 <xsl:otherwise>
                         <xsl:text>
+    gtk_widget_set_name(widget, "</xsl:text><xsl:value-of select="name"/><xsl:text>");
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), labdef, 1, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), box, 2, line++, 1, 1);
