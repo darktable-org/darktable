@@ -239,7 +239,6 @@ typedef struct dt_iop_toneequalizer_gui_data_t
   float histogram_average;
   float histogram_first_decile;
   float histogram_last_decile;
-  dt_pthread_mutex_t lock;
 
   // Heap arrays, 64 bits-aligned, unknown length
   float *thumb_preview_buf;
@@ -559,19 +558,19 @@ static void hash_set_get(uint64_t *hash_in, uint64_t *hash_out, dt_pthread_mutex
 }
 
 
-static void invalidate_luminance_cache(dt_iop_module_t *self)
+static void invalidate_luminance_cache(dt_iop_module_t *const self)
 {
   // Invalidate the private luminance cache and histogram when
   // the luminance mask extraction parameters have changed
-  dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
+  dt_iop_toneequalizer_gui_data_t *const restrict g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->max_histogram = 1;
   //g->luminance_valid = 0;
   g->histogram_valid = 0;
   g->thumb_preview_hash = 0;
   g->ui_preview_hash = 0;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 
@@ -941,13 +940,13 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     // If the module instance has changed order in the pipe, invalidate the caches
     if(g->pipe_order != position)
     {
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       g->ui_preview_hash = 0;
       g->thumb_preview_hash = 0;
       g->pipe_order = position;
       g->luminance_valid = FALSE;
       g->histogram_valid = FALSE;
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
 
     if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
@@ -976,7 +975,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       // threads locks are required since GUI reads and writes on that buffer.
 
       // Re-allocate a new buffer if the thumb preview size has changed
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       if(g->thumb_preview_buf_width != width || g->thumb_preview_buf_height != height)
       {
         if(g->thumb_preview_buf) dt_free_align(g->thumb_preview_buf);
@@ -989,7 +988,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       luminance = g->thumb_preview_buf;
       cached = TRUE;
 
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else // just to please GCC
     {
@@ -1018,37 +1017,37 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
     {
       uint64_t saved_hash;
-      hash_set_get(&g->ui_preview_hash, &saved_hash, &g->lock);
+      hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
 
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       const int luminance_valid = g->luminance_valid;
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       if(hash != saved_hash || !luminance_valid)
       {
         /* compute only if upstream pipe state has changed */
         compute_luminance_mask(in, luminance, width, height, ch, d);
-        hash_set_get(&hash, &g->ui_preview_hash, &g->lock);
+        hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
       }
     }
     else if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
       uint64_t saved_hash;
-      hash_set_get(&g->thumb_preview_hash, &saved_hash, &g->lock);
+      hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
 
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       const int luminance_valid = g->luminance_valid;
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       if(saved_hash != hash || !luminance_valid)
       {
         /* compute only if upstream pipe state has changed */
-        dt_pthread_mutex_lock(&g->lock);
+        dt_iop_gui_enter_critical_section(self);
         g->thumb_preview_hash = hash;
         g->histogram_valid = FALSE;
         compute_luminance_mask(in, luminance, width, height, ch, d);
         g->luminance_valid = TRUE;
-        dt_pthread_mutex_unlock(&g->lock);
+        dt_iop_gui_leave_critical_section(self);
       }
     }
     else // make it dummy-proof
@@ -1264,7 +1263,7 @@ static void gui_cache_init(struct dt_iop_module_t *self)
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->ui_preview_hash = 0;
   g->thumb_preview_hash = 0;
   g->max_histogram = 1;
@@ -1302,7 +1301,7 @@ static void gui_cache_init(struct dt_iop_module_t *self)
   g->context = NULL;
 
   g->pipe_order = 0;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 
@@ -1386,11 +1385,12 @@ static inline void histogram_deciles(const int histogram[UI_SAMPLES], size_t his
 }
 
 
-static inline void update_histogram(struct dt_iop_toneequalizer_gui_data_t *g)
+static inline void update_histogram(struct dt_iop_module_t *const self)
 {
+  dt_iop_toneequalizer_gui_data_t *const g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(!g->histogram_valid && g->luminance_valid)
   {
     const size_t num_elem = g->thumb_preview_buf_height * g->thumb_preview_buf_width;
@@ -1400,7 +1400,7 @@ static inline void update_histogram(struct dt_iop_toneequalizer_gui_data_t *g)
     g->histogram_average = (g->histogram_first_decile + g->histogram_last_decile) / 2.0f;
     g->histogram_valid = TRUE;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 
@@ -1441,7 +1441,7 @@ static inline gboolean update_curve_lut(struct dt_iop_module_t *self)
 
   gboolean valid = TRUE;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
 
   if(!g->interpolation_valid)
   {
@@ -1475,7 +1475,7 @@ static inline gboolean update_curve_lut(struct dt_iop_module_t *self)
     g->lut_valid = TRUE;
   }
 
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   return valid;
 }
@@ -1527,17 +1527,17 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
    */
   if(self->dev->gui_attached && g)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->sigma != p->smoothing) g->interpolation_valid = FALSE;
     g->sigma = p->smoothing;
     g->user_param_valid = FALSE; // force updating channels factors
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     update_curve_lut(self);
 
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     dt_simd_memcpy(g->factors, d->factors, PIXEL_CHAN);
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
   else
   {
@@ -1740,11 +1740,11 @@ static void auto_adjust_exposure_boost(GtkWidget *quad, gpointer user_data)
   // so we aim at centering the exposure distribution on -4 EV
   const float target = log2f(CONTRAST_FULCRUM);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->histogram_valid = 0;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
-  update_histogram(g);
+  update_histogram(self);
   p->exposure_boost += target - g->histogram_average;
 
   // Update the GUI stuff
@@ -1797,12 +1797,12 @@ static void auto_adjust_contrast_boost(GtkWidget *quad, gpointer user_data)
   }
 
   // The goal is to spread 80 % of the exposure histogram between -4 ± 3 EV
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->histogram_valid = 0;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   const float target = log2f(CONTRAST_FULCRUM);
-  update_histogram(g);
+  update_histogram(self);
   const float span_left = fabsf(target - g->histogram_first_decile);
   const float span_right = fabsf(g->histogram_last_decile - target);
   const float origin = fmaxf(span_left, span_right);
@@ -1874,9 +1874,9 @@ static void switch_cursors(struct dt_iop_module_t *self)
   }
 
   // check if module is enabled and shown in UI
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->has_focus = (self->expanded && self->enabled);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   if(!g->has_focus)
   {
@@ -1939,9 +1939,9 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(!self->enabled) return 0;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   const int fail = (!sanity_check(self) || !g->luminance_valid);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
   if(fail) return 0;
 
   const int wd = dev->preview_pipe->backbuf_width;
@@ -1958,7 +1958,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   const int x_pointer = pzx * wd;
   const int y_pointer = pzy * ht;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   // Cursor is valid if it's inside the picture frame
   if(x_pointer >= 0 && x_pointer < wd && y_pointer >= 0 && y_pointer < ht)
   {
@@ -1972,7 +1972,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     g->cursor_pos_x = 0;
     g->cursor_pos_y = 0;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // store the actual exposure too, to spare I/O op
   if(g->cursor_valid && !dev->pipe->processing && g->luminance_valid)
@@ -2008,10 +2008,10 @@ int mouse_leave(struct dt_iop_module_t *self)
 
   if(g == NULL) return 0;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->cursor_valid = FALSE;
   g->area_active_node = -1;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // display default cursor
   GtkWidget *widget = dt_ui_main_window(darktable.gui->ui);
@@ -2094,18 +2094,18 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   if(darktable.develop->darkroom_skip_mouse_events || in_mask_editing(self)) return 0;
 
   // if GUI buffers not ready, exit but still handle the cursor
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   const int fail = (!g->cursor_valid || !g->luminance_valid || !g->interpolation_valid || !g->user_param_valid || dev->pipe->processing || !g->has_focus);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
   if(fail) return 1;
 
   // re-read the exposure in case it has changed
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->cursor_exposure = log2f(get_luminance_from_buffer(g->thumb_preview_buf,
                                                        g->thumb_preview_buf_width,
                                                        g->thumb_preview_buf_height,
                                                        (size_t)g->cursor_pos_x, (size_t)g->cursor_pos_y));
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // Set the correction from mouse scroll input
   const float increment = (up) ? +1.0f : -1.0f;
@@ -2121,9 +2121,9 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
   const float offset = step * ((float)increment);
 
   // Get the desired correction on exposure channels
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   const int commit = set_new_params_interactive(g->cursor_exposure, offset, g->sigma * g->sigma / 2.0f, g, p);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
 
@@ -2144,7 +2144,8 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
  * GTK/Cairo drawings and custom widgets
  **/
 
-static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui_data_t *g);
+static inline gboolean _init_drawing(dt_iop_module_t *const restrict self, GtkWidget *widget,
+                                     dt_iop_toneequalizer_gui_data_t *const restrict g);
 
 
 void cairo_draw_hatches(cairo_t *cr, double center[2], double span[2], int instances, double line_width, double shade)
@@ -2229,15 +2230,15 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // if we are editing masks, do not display controls
   if(in_mask_editing(self)) return;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   const int fail = (!g->cursor_valid || !g->interpolation_valid || !g->luminance_valid || dev->pipe->processing || !sanity_check(self) || !g->has_focus);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
   if(fail) return;
 
   if(!g->graph_valid)
-    if(!_init_drawing(self->widget, g)) return;
+    if(!_init_drawing(self, self->widget, g)) return;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
 
   // re-read the exposure in case it has changed
   g->cursor_exposure = log2f(get_luminance_from_buffer(g->thumb_preview_buf,
@@ -2258,7 +2259,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   const float exposure_out = exposure_in + correction;
   const float luminance_out = exp2f(exposure_out);
 
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // Rescale and shift Cairo drawing coordinates
   const float wd = dev->preview_pipe->backbuf_width;
@@ -2354,9 +2355,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->has_focus = in;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
   switch_cursors(self);
   if(!in)
   {
@@ -2376,7 +2377,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 }
 
 
-static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui_data_t *g)
+static inline gboolean _init_drawing(dt_iop_module_t *const restrict self, GtkWidget *widget,
+                                     dt_iop_toneequalizer_gui_data_t *const restrict g)
 {
   // Cache the equalizer graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
@@ -2493,41 +2495,39 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
 
   // end of caching section, this will not be drawn again
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->graph_valid = 1;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   return TRUE;
 }
 
 
+// must be called while holding self->gui_lock
 static inline void init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
 {
   if(g == NULL) return;
 
-  dt_pthread_mutex_lock(&g->lock);
   if(!g->valid_nodes_x && g->graph_width > 0)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_x[i] = (((float)i) / ((float)(CHANNELS - 1))) * g->graph_width;
     g->valid_nodes_x = TRUE;
   }
-  dt_pthread_mutex_unlock(&g->lock);
 }
 
 
+// must be called while holding self->gui_lock
 static inline void init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
 {
   if(g == NULL) return;
 
-  dt_pthread_mutex_lock(&g->lock);
   if(g->user_param_valid && g->graph_height > 0)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_y[i] =  (0.5 - log2f(g->temp_user_params[i]) / 4.0) * g->graph_height; // assumes factors in [-2 ; 2] EV
     g->valid_nodes_y = TRUE;
   }
-  dt_pthread_mutex_unlock(&g->lock);
 }
 
 
@@ -2540,17 +2540,17 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
   // Init or refresh the drawing cache
   //if(!g->graph_valid)
-  if(!_init_drawing(widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
+  if(!_init_drawing(self, widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
 
   // since the widget sizes are not cached and invalidated properly above (yet…)
   // force the invalidation of the nodes coordinates to account for possible widget resizing
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->valid_nodes_x = FALSE;
   g->valid_nodes_y = FALSE;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // Refresh cached UI elements
-  update_histogram(g);
+  update_histogram(self);
   update_curve_lut(self);
 
   // Draw graph background
@@ -2630,8 +2630,13 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     cairo_stroke(g->cr);
   }
 
+  dt_iop_gui_enter_critical_section(self);
   init_nodes_x(g);
+  dt_iop_gui_leave_critical_section(self);
+
+  dt_iop_gui_enter_critical_section(self);
   init_nodes_y(g);
+  dt_iop_gui_leave_critical_section(self);
 
   if(g->user_param_valid)
   {
@@ -2713,7 +2718,7 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  update_histogram(g);
+  update_histogram(self);
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -2726,7 +2731,7 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
   cairo_fill_preserve(cr);
   cairo_clip(cr);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
 
   if(g->histogram_valid)
   {
@@ -2763,7 +2768,7 @@ static gboolean dt_iop_toneequalizer_bar_draw(GtkWidget *widget, cairo_t *crf, g
     }
   }
 
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
@@ -2781,13 +2786,13 @@ static gboolean area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gp
 
   dt_iop_toneequalizer_gui_data_t *g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->area_x = (event->x - g->inset);
   g->area_y = (event->y - g->inset);
   g->area_dragging = FALSE;
   g->area_active_node = -1;
   g->area_cursor_valid = (g->area_x > 0.0f && g->area_x < g->graph_width && g->area_y > 0.0f && g->area_y < g->graph_height);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
@@ -2812,13 +2817,13 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
 
     dt_dev_add_history_item(darktable.develop, self, FALSE);
   }
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->area_x = (event->x - g->inset);
   g->area_y = (event->y - g->inset);
   g->area_dragging = FALSE;
   g->area_active_node = -1;
   g->area_cursor_valid = (g->area_x > 0.0f && g->area_x < g->graph_width && g->area_y > 0.0f && g->area_y < g->graph_height);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
@@ -2893,16 +2898,16 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   if(g->area_dragging)
   {
     // vertical distance travelled since button_pressed event
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     const float offset = (-event->y + g->area_y) / g->graph_height * 4.0f; // graph spans over 4 EV
     const float cursor_exposure = g->area_x / g->graph_width * 8.0f - 8.0f;
 
     // Get the desired correction on exposure channels
     g->area_dragging = set_new_params_interactive(cursor_exposure, offset, g->sigma * g->sigma / 2.0f, g, p);
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->area_x = (event->x - g->inset);
   g->area_y = event->y;
   g->area_cursor_valid = (g->area_x > 0.0f && g->area_x < g->graph_width && g->area_y > 0.0f && g->area_y < g->graph_height);
@@ -2922,7 +2927,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
       }
     }
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(GTK_WIDGET(g->area));
   return TRUE;
@@ -2953,9 +2958,9 @@ static gboolean area_button_release(GtkWidget *widget, GdkEventButton *event, gp
 
       dt_dev_add_history_item(darktable.develop, self, FALSE);
 
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       g->area_dragging= 0;
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       return TRUE;
     }
@@ -3018,15 +3023,15 @@ static void _develop_ui_pipe_started_callback(gpointer instance, gpointer user_d
   if(!self->expanded || !self->enabled)
   {
     // if module is not active, disable mask preview
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->mask_display = 0;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   ++darktable.gui->reset;
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
   --darktable.gui->reset;
 }
 
@@ -3067,7 +3072,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_toneequalizer_gui_data_t *g = IOP_GUI_ALLOC(toneequalizer);
 
-  dt_pthread_mutex_init(&g->lock, NULL);
   gui_cache_init(self);
 
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
@@ -3278,8 +3282,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   if(g->layout) g_object_unref(g->layout);
   if(g->cr) cairo_destroy(g->cr);
   if(g->cst) cairo_surface_destroy(g->cst);
-
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }

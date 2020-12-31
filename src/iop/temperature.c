@@ -90,7 +90,6 @@ typedef struct dt_iop_temperature_gui_data_t
   GtkWidget *coeffs_toggle;
   GtkWidget *temp_label;
   GtkWidget *balance_label;
-  GtkWidget *warning_label;
   int preset_cnt;
   int preset_num[54];
   double daylight_wb[4];
@@ -227,7 +226,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 static gboolean _set_preset_spot(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                  GdkModifierType modifier, dt_iop_module_t *self)
 {
-  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_SPOT);
   return TRUE;
 }
@@ -1160,16 +1159,17 @@ static void display_wb_error(struct dt_iop_module_t *self)
   if(self->dev->proxy.chroma_adaptation != NULL && !self->dev->proxy.wb_is_D65)
   {
     // our second biggest problem : another module is doing CAT elsewhere in the pipe
-    dt_iop_set_module_trouble_message(self, g->warning_label, _("white balance applied twice"),
+    dt_iop_set_module_trouble_message(self, _("white balance applied twice"),
                                       _("the color calibration module is enabled,\n"
                                         "and performing chromatic adaptation.\n"
                                         "set the white balance here to camera reference (D65)\n"
-                                        "or disable chromatic adaptation in color calibration."));
+                                        "or disable chromatic adaptation in color calibration."),
+                                      "double application of white balance");
   }
   else
   {
     // no longer in trouble
-    dt_iop_set_module_trouble_message(self, g->warning_label, NULL, NULL);
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
   }
 
   --darktable.gui->reset;
@@ -1654,7 +1654,7 @@ static gboolean btn_toggled(GtkWidget *togglebutton, GdkEventButton *event, dt_i
 {
   if(darktable.gui->reset) return TRUE;
 
-  dt_iop_temperature_gui_data_t *g = self->gui_data;
+  dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t*)self->gui_data;
 
   int preset = togglebutton == g->btn_asshot ? DT_IOP_TEMP_AS_SHOT :
                togglebutton == g->btn_d65 ? DT_IOP_TEMP_D65 :
@@ -1969,9 +1969,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(box_enabled), g->warning_label, FALSE, FALSE, 4);
+  self->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(box_enabled), self->warning_label, FALSE, FALSE, 4);
 
   g->mod_temp = NAN;
   for(int k = 0; k < 4; k++)

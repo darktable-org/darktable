@@ -102,7 +102,6 @@ typedef struct dt_iop_zonesystem_gui_data_t
   int current_zone;
   int zone_under_mouse;
   int mouse_over_output_zones;
-  dt_pthread_mutex_t lock;
 
   cairo_surface_t *image;
   guint8 *image_buffer;
@@ -183,7 +182,7 @@ static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     dt_iop_zonesystem_gui_data_t *g = (dt_iop_zonesystem_gui_data_t *)self->gui_data;
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->in_preview_buffer == NULL || g->out_preview_buffer == NULL || g->preview_width != width
        || g->preview_height != height)
     {
@@ -194,7 +193,7 @@ static void process_common_setup(struct dt_iop_module_t *self, dt_dev_pixelpipe_
       g->preview_width = width;
       g->preview_height = height;
     }
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -242,7 +241,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       dt_gaussian_blur(gauss, tmp, tmp);
 
       /* create zonemap preview for input */
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(height, size, width) \
@@ -253,7 +252,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       {
         g->in_preview_buffer[k] = CLAMPS(tmp[k] * (size - 1) / 100.0f, 0, size - 2);
       }
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
 
 #ifdef _OPENMP
@@ -268,7 +267,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
 
 
       /* create zonemap preview for output */
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(height, size, width) \
@@ -279,7 +278,7 @@ static void process_common_cleanup(struct dt_iop_module_t *self, dt_dev_pixelpip
       {
         g->out_preview_buffer[k] = CLAMPS(tmp[k] * (size - 1) / 100.0f, 0, size - 2);
       }
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
 
     g_free(tmp);
@@ -527,8 +526,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->preview_width = g->preview_height = 0;
   g->mouse_over_output_zones = FALSE;
 
-  dt_pthread_mutex_init(&g->lock, NULL);
-
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_GUI_IOP_MODULE_CONTROL_SPACING);
 
   g->preview = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
@@ -581,7 +578,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   g_free(g->out_preview_buffer);
   if(g->image) cairo_surface_destroy(g->image);
   free(g->image_buffer);
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }
@@ -838,7 +834,7 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   height -= 2 * inset;
   cairo_translate(cr, inset, inset);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->in_preview_buffer && g->out_preview_buffer && self->enabled)
   {
     /* calculate the zonemap */
@@ -855,7 +851,7 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
       image[4 * k + 1] = (g->hilite_zone && buffer[k] == g->zone_under_mouse) ? 255 : zone;
       image[4 * k + 0] = (g->hilite_zone && buffer[k] == g->zone_under_mouse) ? 0 : zone;
     }
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     const int wd = g->preview_width, ht = g->preview_height;
     const float scale = fminf(width / (float)wd, height / (float)ht);
@@ -880,7 +876,7 @@ static gboolean dt_iop_zonesystem_preview_draw(GtkWidget *widget, cairo_t *crf, 
   }
   else
   {
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
     // draw a big, subdued dt logo
     if(g->image)
     {

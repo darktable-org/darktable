@@ -118,8 +118,6 @@ typedef struct dt_iop_retouch_params_t
 
 typedef struct dt_iop_retouch_gui_data_t
 {
-  dt_pthread_mutex_t lock;
-
   int copied_scale; // scale to be copied to another scale
   int mask_display; // should we expose masks?
   int suppress_mask;         // do not process masks
@@ -959,7 +957,7 @@ static void rt_curr_scale_update(const int _curr_scale, dt_iop_module_t *self)
   // compute auto levels only the first time display wavelet scale is used,
   // only if levels values are the default
   // and a detail scale is displayed
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->displayed_wavelet_scale == 0 && p->preview_levels[0] == RETOUCH_PREVIEW_LVL_MIN
      && p->preview_levels[1] == 0.f && p->preview_levels[2] == RETOUCH_PREVIEW_LVL_MAX
      && g->preview_auto_levels == 0 && p->curr_scale > 0 && p->curr_scale <= p->num_scales)
@@ -967,7 +965,7 @@ static void rt_curr_scale_update(const int _curr_scale, dt_iop_module_t *self)
     g->preview_auto_levels = 1;
     g->displayed_wavelet_scale = 1;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   rt_update_wd_bar_labels(p, g);
 
@@ -1408,7 +1406,7 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
   // compute auto levels only the first time display wavelet scale is used,
   // only if levels values are the default
   // and a detail scale is displayed
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->displayed_wavelet_scale == 0 && p->preview_levels[0] == RETOUCH_PREVIEW_LVL_MIN
      && p->preview_levels[1] == 0.f && p->preview_levels[2] == RETOUCH_PREVIEW_LVL_MAX
      && g->preview_auto_levels == 0 && p->curr_scale > 0 && p->curr_scale <= p->num_scales)
@@ -1416,7 +1414,7 @@ static gboolean rt_display_wavelet_scale_callback(GtkToggleButton *togglebutton,
     g->preview_auto_levels = 1;
     g->displayed_wavelet_scale = 1;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   dt_dev_reprocess_center(self->dev);
 
@@ -1432,18 +1430,18 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
   // FIXME: this doesn't seems the right place to update params and GUI ...
   // update auto levels
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->preview_auto_levels == 2)
   {
     g->preview_auto_levels = -1;
 
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     for(int i = 0; i < 3; i++) p->preview_levels[i] = g->preview_levels[i];
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
 
     // update the gradient slider
     double dlevels[3];
@@ -1455,12 +1453,12 @@ static void rt_develop_ui_pipe_finished_callback(gpointer instance, gpointer use
 
     g->preview_auto_levels = 0;
 
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
   }
   else
   {
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // just in case zoom level has changed
@@ -1476,12 +1474,12 @@ static gboolean rt_auto_levels_callback(GtkToggleButton *togglebutton, GdkEventB
   if(self->off) gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), 1);
   dt_iop_request_focus(self);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->preview_auto_levels == 0)
   {
     g->preview_auto_levels = 1;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   dt_iop_refresh_center(self);
 
@@ -1791,11 +1789,9 @@ void masks_selection_changed(struct dt_iop_module_t *self, const int form_select
   dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
   if(!g) return;
 
-  dt_pthread_mutex_lock(&g->lock);
-
+  dt_iop_gui_enter_critical_section(self);
   rt_shape_selection_changed(self);
-
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 void init(dt_iop_module_t *module)
@@ -2029,7 +2025,6 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_retouch_gui_data_t *g = IOP_GUI_ALLOC(retouch);
   dt_iop_retouch_params_t *p = (dt_iop_retouch_params_t *)self->default_params;
 
-  dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
 
   // shapes toolbar
@@ -2297,12 +2292,6 @@ void gui_reset(struct dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(rt_develop_ui_pipe_finished_callback), self);
-
-  dt_iop_retouch_gui_data_t *g = (dt_iop_retouch_gui_data_t *)self->gui_data;
-  if(g)
-  {
-    dt_pthread_mutex_destroy(&g->lock);
-  }
 
   IOP_GUI_FREE;
 }
@@ -3537,12 +3526,12 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->preview_auto_levels == 1 && !darktable.gui->reset)
     {
       g->preview_auto_levels = -1;
 
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       levels[0] = levels[1] = levels[2] = 0;
       rt_process_stats(self, piece, in_retouch, roi_rt->width, roi_rt->height, ch, levels, use_sse);
@@ -3550,15 +3539,13 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 
@@ -4395,12 +4382,12 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->preview_auto_levels == 1 && !darktable.gui->reset)
     {
       g->preview_auto_levels = -1;
 
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       levels[0] = levels[1] = levels[2] = 0;
       err = rt_process_stats_cl(self, piece, devid, in_retouch, roi_rt->width, roi_rt->height, levels);
@@ -4410,15 +4397,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
       for(int i = 0; i < 3; i++) g->preview_levels[i] = levels[i];
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->preview_auto_levels = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 

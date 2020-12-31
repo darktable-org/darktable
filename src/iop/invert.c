@@ -512,7 +512,7 @@ error:
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_gui_data_t *const g = (dt_iop_invert_gui_data_t*)self->gui_data;
 
   if (g)
   {

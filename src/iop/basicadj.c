@@ -57,7 +57,6 @@ typedef struct dt_iop_basicadj_params_t
 
 typedef struct dt_iop_basicadj_gui_data_t
 {
-  dt_pthread_mutex_t lock;
   dt_iop_basicadj_params_t params;
 
   int call_auto_exposure;                       // should we calculate exposure automatically?
@@ -201,13 +200,13 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 
   _turn_selregion_picker_off(self);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->call_auto_exposure == 0)
   {
     g->box_cood[0] = g->box_cood[1] = g->box_cood[2] = g->box_cood[3] = 0.f;
     g->call_auto_exposure = 1;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   dt_dev_reprocess_all(self->dev);
 }
@@ -227,8 +226,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_pthread_mutex_lock(&g->lock);
-
+  dt_iop_gui_enter_critical_section(self);
   if(gtk_toggle_button_get_active(togglebutton))
   {
     g->draw_selected_region = 1;
@@ -237,8 +235,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
     g->draw_selected_region = 0;
 
   g->posx_from = g->posx_to = g->posy_from = g->posy_to = 0;
-
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -251,22 +248,19 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
   // FIXME: this doesn't seems the right place to update params and GUI ...
   // update auto levels
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->call_auto_exposure == 2)
   {
     g->call_auto_exposure = -1;
-
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     memcpy(p, &g->params, sizeof(dt_iop_basicadj_params_t));
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-    dt_pthread_mutex_lock(&g->lock);
-
+    dt_iop_gui_enter_critical_section(self);
     g->call_auto_exposure = 0;
-
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     ++darktable.gui->reset;
 
@@ -276,7 +270,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   }
   else
   {
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -582,7 +576,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = IOP_GUI_ALLOC(basicadj);
 
-  dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
@@ -663,12 +656,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_user_changed), self);
-
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  if(g)
-  {
-    dt_pthread_mutex_destroy(&g->lock);
-  }
 
   IOP_GUI_FREE;
 }
@@ -1299,12 +1286,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
     {
       g->call_auto_exposure = -1;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       // get the image, this works only in C
       src_buffer = dt_alloc_align_float((size_t)ch * width * height);
@@ -1333,15 +1319,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_free_align(src_buffer);
       src_buffer = NULL;
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->call_auto_exposure = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 
@@ -1457,12 +1441,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
     {
       g->call_auto_exposure = -1;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       memcpy(&g->params, p, sizeof(dt_iop_basicadj_params_t));
 
@@ -1472,15 +1455,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                      g->params.middle_grey / 100.f, &g->params.exposure, &g->params.brightness,
                      &g->params.contrast, &g->params.black_point, &g->params.hlcompr, &g->params.hlcomprthresh);
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->call_auto_exposure = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 

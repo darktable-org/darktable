@@ -133,7 +133,6 @@ typedef struct dt_iop_colormapping_gui_data_t
   GtkWidget *dominance;
   GtkWidget *equalization;
   cmsHTRANSFORM xform;
-  dt_pthread_mutex_t lock;
 } dt_iop_colormapping_gui_data_t;
 
 typedef struct dt_iop_colormapping_global_data_t
@@ -445,7 +444,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const int width = roi_in->width;
   const int height = roi_in->height;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          in, out, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -456,7 +455,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // save a copy of preview input buffer so we can get histogram and color statistics out of it
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->buffer) free(g->buffer);
 
     g->buffer = dt_iop_image_alloc(width, height, 4);
@@ -466,7 +465,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     if(g->buffer) dt_iop_image_copy_by_size(g->buffer, in, width, height, 4);
 
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // process image if all mapping information is present in the parameter set
@@ -613,7 +612,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // save a copy of preview input buffer so we can get histogram and color statistics out of it
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     dt_free_align(g->buffer);
 
     g->buffer = malloc(sizeof(float) * ch * width * height);
@@ -624,7 +623,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     if(g->buffer)
       err = dt_opencl_copy_device_to_host(devid, g->buffer, dev_in, width, height, ch * sizeof(float));
 
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     if(err != CL_SUCCESS) goto error;
   }
@@ -964,18 +963,18 @@ static void process_clusters(gpointer instance, gpointer user_data)
 
   ++darktable.gui->reset;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   const int width = g->width;
   const int height = g->height;
   const int ch = g->ch;
   float *const restrict buffer = dt_iop_image_alloc(width, height, ch);
   if(!buffer)
   {
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
     return;
   }
   dt_iop_image_copy_by_size(buffer, g->buffer, width, height, ch);
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   if(p->flag & GET_SOURCE)
   {
@@ -1047,8 +1046,6 @@ void gui_init(struct dt_iop_module_t *self)
   g->xform = cmsCreateTransform(hLab, TYPE_Lab_DBL, hsRGB, TYPE_RGB_DBL, INTENT_PERCEPTUAL, 0);
   g->buffer = NULL;
 
-  dt_pthread_mutex_init(&g->lock, NULL);
-
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("source clusters:")), TRUE, TRUE, 0);
@@ -1109,7 +1106,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_clusters), self);
 
   cmsDeleteTransform(g->xform);
-  dt_pthread_mutex_destroy(&g->lock);
   free(g->buffer);
 
   IOP_GUI_FREE;

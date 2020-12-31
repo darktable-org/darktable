@@ -63,7 +63,7 @@ typedef struct dt_iop_colorize_params_t
 typedef struct dt_iop_colorize_gui_data_t
 {
   GtkWidget *lightness, *source_mix; //  lightness, source_lightnessmix
-  GtkWidget *hue, *saturation; // hue, saturation
+  GtkWidget *hue, *saturation;       // hue, saturation
 } dt_iop_colorize_gui_data_t;
 
 typedef struct dt_iop_colorize_data_t

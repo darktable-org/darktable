@@ -114,7 +114,6 @@ typedef struct dt_iop_lensfun_gui_data_t
   GList *modifiers;
   GtkLabel *message;
   int corrections_done;
-  dt_pthread_mutex_t lock;
 } dt_iop_lensfun_gui_data_t;
 
 typedef struct dt_iop_lensfun_global_data_t
@@ -571,9 +570,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -819,9 +818,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   dt_opencl_release_mem_object(dev_tmpbuf);
@@ -1391,9 +1390,9 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
   if(g)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(module);
     g->corrections_done = -1;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(module);
     gtk_label_set_text(g->message, "");
   }
 }
@@ -2184,9 +2183,9 @@ static void corrections_done(gpointer instance, gpointer user_data)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   const int corrections_done = g->corrections_done;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   const char empty_message[] = "";
   char *message = (char *)empty_message;
@@ -2213,16 +2212,14 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = IOP_GUI_ALLOC(lensfun);
 
-  dt_pthread_mutex_init(&g->lock, NULL);
-
   g->camera = NULL;
   g->camera_menu = NULL;
   g->lens_menu = NULL;
   g->modifiers = NULL;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self); // not actually needed, we're the only one with a ref to this instance
   g->corrections_done = -1;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // initialize modflags options
   int pos = -1;
@@ -2489,8 +2486,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->modifiers->data);
     g->modifiers = g_list_delete_link(g->modifiers, g->modifiers);
   }
-
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }

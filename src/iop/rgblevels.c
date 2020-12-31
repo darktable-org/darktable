@@ -60,7 +60,6 @@ typedef struct dt_iop_rgblevels_params_t
 
 typedef struct dt_iop_rgblevels_gui_data_t
 {
-  dt_pthread_mutex_t lock;
   dt_iop_rgblevels_params_t params;
 
   GtkWidget *cmb_autoscale; // (DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS, DT_IOP_RGBLEVELS_LINKED_CHANNELS)
@@ -150,22 +149,20 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
 
   // FIXME: this doesn't seems the right place to update params and GUI ...
   // update auto levels
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->call_auto_levels == 2)
   {
     g->call_auto_levels = -1;
 
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     memcpy(p, &g->params, sizeof(dt_iop_rgblevels_params_t));
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-    dt_pthread_mutex_lock(&g->lock);
-
+    dt_iop_gui_enter_critical_section(self);
     g->call_auto_levels = 0;
-
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     ++darktable.gui->reset;
 
@@ -175,7 +172,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, dt_iop_module_
   }
   else
   {
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -677,13 +674,13 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 
   _turn_selregion_picker_off(self);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->call_auto_levels == 0)
   {
     g->box_cood[0] = g->box_cood[1] = g->box_cood[2] = g->box_cood[3] = 0.f;
     g->call_auto_levels = 1;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   dt_dev_reprocess_all(self->dev);
 }
@@ -703,7 +700,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
 
   if(gtk_toggle_button_get_active(togglebutton))
   {
@@ -714,7 +711,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
 
   g->posx_from = g->posx_to = g->posy_from = g->posy_to = 0;
 
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
@@ -933,7 +930,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_rgblevels_gui_data_t *c = IOP_GUI_ALLOC(rgblevels);
 
-  dt_pthread_mutex_init(&c->lock, NULL);
   change_image(self);
 
   c->mouse_x = c->mouse_y = -1.0;
@@ -1017,12 +1013,6 @@ void gui_init(dt_iop_module_t *self)
 void gui_cleanup(dt_iop_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
-
-  dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
-  if(g)
-  {
-    dt_pthread_mutex_destroy(&g->lock);
-  }
 
   IOP_GUI_FREE;
 }
@@ -1165,12 +1155,12 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_levels == 1 && !darktable.gui->reset)
     {
       g->call_auto_levels = -1;
 
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       memcpy(&g->params, p, sizeof(dt_iop_rgblevels_params_t));
 
@@ -1178,15 +1168,13 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       _get_selected_area(self, piece, g, roi_in, box);
       _auto_levels((const float *const)ivoid, roi_in->width, roi_in->height, box, &(g->params), g->channel, work_profile);
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->call_auto_levels = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 
@@ -1307,12 +1295,12 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_levels == 1 && !darktable.gui->reset)
     {
       g->call_auto_levels = -1;
 
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       // get the image, this works only in C
       src_buffer = dt_alloc_align_float((size_t)ch * width * height);
@@ -1339,15 +1327,13 @@ int process_cl(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_
       dt_free_align(src_buffer);
       src_buffer = NULL;
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->call_auto_levels = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 

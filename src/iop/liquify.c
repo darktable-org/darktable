@@ -262,7 +262,6 @@ typedef struct
 
 typedef struct
 {
-  dt_pthread_mutex_t lock;
   dt_iop_liquify_params_t params;
   int node_index; // last node index inserted
 
@@ -2625,12 +2624,12 @@ void gui_post_expose(struct dt_iop_module_t *module,
     return;
 
   // get a copy of all iop params
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(module);
   update_warp_count(g);
   smooth_paths_linsys(&g->params);
   dt_iop_liquify_params_t copy_params;
   memcpy(&copy_params, &g->params, sizeof(dt_iop_liquify_params_t));
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(module);
 
   // distort all points
   dt_pthread_mutex_lock(&develop->preview_pipe_mutex);
@@ -2727,7 +2726,7 @@ int mouse_moved(struct dt_iop_module_t *module,
 
   get_point_scale(module, x, y, &pt, &scale);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(module);
 
   g->last_mouse_pos = pt;
   const int dragged = detect_drag(g, scale, pt);
@@ -2871,7 +2870,7 @@ int mouse_moved(struct dt_iop_module_t *module,
   }
 
 done:
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(module);
   if(handled)
   {
     sync_pipe(module, handled == 2);
@@ -2996,7 +2995,7 @@ int button_pressed(struct dt_iop_module_t *module,
 
   get_point_scale(module, x, y, &pt, &scale);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(module);
 
   g->last_mouse_pos = pt;
   g->last_mouse_mods = state & gtk_accelerator_get_default_mod_mask();
@@ -3086,7 +3085,7 @@ int button_pressed(struct dt_iop_module_t *module,
   }
 
 done:
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(module);
   if(handled)
     sync_pipe(module, TRUE);
   return handled;
@@ -3129,7 +3128,7 @@ int button_released(struct dt_iop_module_t *module,
 
   get_point_scale(module, x, y, &pt, &scale);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(module);
 
   g->last_mouse_pos = pt;
 
@@ -3377,7 +3376,7 @@ done:
   if(which == 1)
     g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(module);
   if(handled)
   {
     update_warp_count(g);
@@ -3487,7 +3486,6 @@ void gui_init(dt_iop_module_t *self)
   g->last_mouse_pos =
   g->last_button1_pressed_pos = -1;
   g->last_hit = NOWHERE;
-  dt_pthread_mutex_init(&g->lock, NULL);
   g->node_index = 0;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -3548,7 +3546,6 @@ void gui_cleanup(dt_iop_module_t *self)
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) self->gui_data;
 
   cairo_destroy(g->fake_cr);
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }

@@ -349,7 +349,7 @@ static void process_fastpath_apply_tonecurves(struct dt_iop_module_t *self, dt_d
                                               const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorout_data_t *const d = (dt_iop_colorout_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
