@@ -21,7 +21,7 @@
 
 // Allocate one or more buffers as detailed in the given parameters.  If any allocation fails, free all of them,
 // set the module's trouble flag, and return FALSE.
-gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWidget *warn_label,
+gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module,
                                     const struct dt_iop_roi_t *const roi_in,
                                     const struct dt_iop_roi_t *const roi_out, ...)
 {
@@ -106,7 +106,7 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
   if (success)
   {
     if (module)
-      dt_iop_set_module_trouble_message(module, warn_label, NULL, NULL);
+      dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
   }
   else
   {
@@ -125,14 +125,12 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
     va_end(args);
     // set the module's trouble flag
     if (module)
-      dt_iop_set_module_trouble_message(module, warn_label, _("insufficient memory"),
+      dt_iop_set_module_trouble_message(module, _("insufficient memory"),
                                         _("This module was unable to allocate\n"
                                           "all of the memory required to process\n"
                                           "the image.  Some or all processing\n"
-                                          "has been skipped."));
-    // and print an error message to the console
-    const char *name = module ? module->name() : "?";
-    fprintf(stderr,"[%s] unable to allocate working memory\n",name);
+                                          "has been skipped."),
+                                        "unable to allocate working memory");
   }
   return success;
 }

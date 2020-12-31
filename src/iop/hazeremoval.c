@@ -81,7 +81,6 @@ typedef struct dt_iop_hazeremoval_gui_data_t
   rgb_pixel A0;
   float distance_max;
   uint64_t hash;
-  dt_pthread_mutex_t lock;
 } dt_iop_hazeremoval_gui_data_t;
 
 typedef struct dt_iop_hazeremoval_global_data_t
@@ -181,13 +180,13 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set(g->strength, p->strength);
   dt_bauhaus_slider_set(g->distance, p->distance);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->distance_max = NAN;
   g->A0[0] = NAN;
   g->A0[1] = NAN;
   g->A0[2] = NAN;
   g->hash = 0;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 
@@ -195,7 +194,6 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_hazeremoval_gui_data_t *g = IOP_GUI_ALLOC(hazeremoval);
 
-  dt_pthread_mutex_init(&g->lock, NULL);
   g->distance_max = NAN;
   g->A0[0] = NAN;
   g->A0[1] = NAN;
@@ -214,9 +212,6 @@ void gui_init(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_hazeremoval_gui_data_t *g = (dt_iop_hazeremoval_gui_data_t *)self->gui_data;
-  dt_pthread_mutex_destroy(&g->lock);
-
   IOP_GUI_FREE;
 }
 
@@ -430,7 +425,7 @@ static float ambient_light(const const_rgb_image img, int w1, rgb_pixel *pA0)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
+  dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
 
   const int ch = piece->colors;
@@ -463,9 +458,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // luckily stores it for us.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
     // Note that the case 'hash == 0' on first invocation in a session
     // implies that g->distance_max is NAN, which initiates special
     // handling below to avoid inconsistent results.  In all other
@@ -474,14 +469,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // there we need to wait (with timeout).
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &g->lock, &g->hash))
+                                      &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];
     A0[2] = g->A0[2];
     distance_max = g->distance_max;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light(img_in, w1, &A0);
@@ -489,13 +484,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->A0[0] = A0[0];
     g->A0[1] = A0[1];
     g->A0[2] = A0[2];
     g->distance_max = distance_max;
     g->hash = hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // calculate the transition map
@@ -685,7 +680,7 @@ static int dehaze_cl(struct dt_iop_module_t *self, int devid, cl_mem img_in, cl_
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem img_in, cl_mem img_out,
                const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  dt_iop_hazeremoval_gui_data_t *g = self->gui_data;
+  dt_iop_hazeremoval_gui_data_t *const g = (dt_iop_hazeremoval_gui_data_t*)self->gui_data;
   dt_iop_hazeremoval_params_t *d = piece->data;
 
   const int ch = piece->colors;
@@ -715,9 +710,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // luckily stores it for us.
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     const uint64_t hash = g->hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
     // Note that the case 'hash == 0' on first invocation in a session
     // implies that g->distance_max is NAN, which initiates special
     // handling below to avoid inconsistent results.  In all other
@@ -726,14 +721,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // there we need to wait (with timeout).
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &g->lock, &g->hash))
+                                      &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
     A0[1] = g->A0[1];
     A0[2] = g->A0[2];
     distance_max = g->distance_max;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
   // In all other cases we calculate distance_max and A0 here.
   if(isnan(distance_max)) distance_max = ambient_light_cl(self, devid, img_in, w1, &A0);
@@ -741,13 +736,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
     uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->A0[0] = A0[0];
     g->A0[1] = A0[1];
     g->A0[2] = A0[2];
     g->distance_max = distance_max;
     g->hash = hash;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   // calculate the transition map

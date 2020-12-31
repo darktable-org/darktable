@@ -86,7 +86,6 @@ typedef struct dt_iop_exposure_gui_data_t
   GtkLabel *deflicker_used_EC;
   GtkWidget *compensate_exposure_bias;
   float deflicker_computed_exposure;
-  dt_pthread_mutex_t lock;
 } dt_iop_exposure_gui_data_t;
 
 typedef struct dt_iop_exposure_data_t
@@ -375,7 +374,7 @@ static void compute_correction(dt_iop_module_t *self, dt_iop_params_t *p1, dt_de
 
 static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece)
 {
-  dt_iop_exposure_gui_data_t *g = self->gui_data;
+  dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t*)self->gui_data;
   dt_iop_exposure_data_t *d = piece->data;
 
   d->black = d->params.black;
@@ -401,9 +400,9 @@ static void process_common_setup(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     // second, show computed correction in UI.
     if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       g->deflicker_computed_exposure = exposure;
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 
@@ -571,9 +570,9 @@ void gui_update(struct dt_iop_module_t *self)
   g->deflicker_histogram = NULL;
 
   gtk_label_set_text(g->deflicker_used_EC, "");
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->deflicker_computed_exposure = NAN;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   switch(p->mode)
   {
@@ -780,7 +779,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
   dt_iop_exposure_gui_data_t *g = (dt_iop_exposure_gui_data_t *)self->gui_data;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(!isnan(g->deflicker_computed_exposure))
   {
     gchar *str = g_strdup_printf(_("%.2f EV"), g->deflicker_computed_exposure);
@@ -791,7 +790,7 @@ static gboolean draw(GtkWidget *widget, cairo_t *cr, dt_iop_module_t *self)
 
     g_free(str);
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // if color-picker active and is the one in the main module (not blending ones)
 
@@ -819,8 +818,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_exposure_gui_data_t *g = IOP_GUI_ALLOC(exposure);
 
   g->deflicker_histogram = NULL;
-
-  dt_pthread_mutex_init(&g->lock, NULL);
 
   g->mode_stack = GTK_STACK(gtk_stack_new());
   gtk_stack_set_homogeneous(GTK_STACK(g->mode_stack),FALSE);
@@ -868,9 +865,9 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->deflicker_used_EC), _("what exposure correction has actually been used"));
   gtk_box_pack_start(GTK_BOX(hbox1), GTK_WIDGET(g->deflicker_used_EC), FALSE, FALSE, 0);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->deflicker_computed_exposure = NAN;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   gtk_box_pack_start(GTK_BOX(vbox_deflicker), GTK_WIDGET(hbox1), FALSE, FALSE, 0);
 
@@ -902,8 +899,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   free(g->deflicker_histogram);
   g->deflicker_histogram = NULL;
-
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }
