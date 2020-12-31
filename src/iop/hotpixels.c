@@ -45,7 +45,6 @@ typedef struct dt_iop_hotpixels_params_t
 
 typedef struct dt_iop_hotpixels_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *threshold, *strength;
   GtkToggleButton *markfixed;
   GtkToggleButton *permissive;

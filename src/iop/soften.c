@@ -58,7 +58,6 @@ typedef struct dt_iop_soften_params_t
 
 typedef struct dt_iop_soften_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *size, *saturation, *brightness, *amount;
 } dt_iop_soften_gui_data_t;
 

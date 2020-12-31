@@ -373,7 +373,6 @@ typedef struct dt_iop_ashift_cropfit_params_t
 
 typedef struct dt_iop_ashift_gui_data_t
 {
-  dt_iop_gui_data_t common; // contains required fields such as .lock
   GtkWidget *rotation;
   GtkWidget *lensshift_v;
   GtkWidget *lensshift_h;

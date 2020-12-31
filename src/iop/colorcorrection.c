@@ -49,7 +49,6 @@ typedef struct dt_iop_colorcorrection_params_t
 
 typedef struct dt_iop_colorcorrection_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkDrawingArea *area;
   GtkWidget *slider;
   int selected;

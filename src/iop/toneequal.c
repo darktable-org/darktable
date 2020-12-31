@@ -209,7 +209,6 @@ typedef struct dt_iop_toneequalizer_global_data_t
 
 typedef struct dt_iop_toneequalizer_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   // Mem arrays 64-bits aligned - contiguous memory
   float factors[PIXEL_CHAN] DT_ALIGNED_ARRAY;
   float gui_lut[UI_SAMPLES] DT_ALIGNED_ARRAY; // LUT for the UI graph
@@ -1018,7 +1017,7 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
     if((piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
     {
       uint64_t saved_hash;
-      hash_set_get(&g->ui_preview_hash, &saved_hash, &g->common.lock);
+      hash_set_get(&g->ui_preview_hash, &saved_hash, &self->gui_lock);
 
       dt_iop_gui_enter_critical_section(self);
       const int luminance_valid = g->luminance_valid;
@@ -1028,13 +1027,13 @@ void toneeq_process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       {
         /* compute only if upstream pipe state has changed */
         compute_luminance_mask(in, luminance, width, height, ch, d);
-        hash_set_get(&hash, &g->ui_preview_hash, &g->common.lock);
+        hash_set_get(&hash, &g->ui_preview_hash, &self->gui_lock);
       }
     }
     else if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
     {
       uint64_t saved_hash;
-      hash_set_get(&g->thumb_preview_hash, &saved_hash, &g->common.lock);
+      hash_set_get(&g->thumb_preview_hash, &saved_hash, &self->gui_lock);
 
       dt_iop_gui_enter_critical_section(self);
       const int luminance_valid = g->luminance_valid;
@@ -1386,7 +1385,7 @@ static inline void histogram_deciles(const int histogram[UI_SAMPLES], size_t his
 }
 
 
-static inline void update_histogram(const struct dt_iop_module_t *const self)
+static inline void update_histogram(struct dt_iop_module_t *const self)
 {
   dt_iop_toneequalizer_gui_data_t *const g = (dt_iop_toneequalizer_gui_data_t *)self->gui_data;
   if(g == NULL) return;
@@ -2145,7 +2144,8 @@ int scrolled(struct dt_iop_module_t *self, double x, double y, int up, uint32_t 
  * GTK/Cairo drawings and custom widgets
  **/
 
-static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui_data_t *g);
+static inline gboolean _init_drawing(dt_iop_module_t *const restrict self, GtkWidget *widget,
+                                     dt_iop_toneequalizer_gui_data_t *const restrict g);
 
 
 void cairo_draw_hatches(cairo_t *cr, double center[2], double span[2], int instances, double line_width, double shade)
@@ -2236,7 +2236,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   if(fail) return;
 
   if(!g->graph_valid)
-    if(!_init_drawing(self->widget, g)) return;
+    if(!_init_drawing(self, self->widget, g)) return;
 
   dt_iop_gui_enter_critical_section(self);
 
@@ -2377,7 +2377,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
 }
 
 
-static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui_data_t *g)
+static inline gboolean _init_drawing(dt_iop_module_t *const restrict self, GtkWidget *widget,
+                                     dt_iop_toneequalizer_gui_data_t *const restrict g)
 {
   // Cache the equalizer graph objects to avoid recomputing all the view at each redraw
   gtk_widget_get_allocation(widget, &g->allocation);
@@ -2494,41 +2495,39 @@ static inline gboolean _init_drawing(GtkWidget *widget, dt_iop_toneequalizer_gui
 
   // end of caching section, this will not be drawn again
 
-  dt_pthread_mutex_lock(&g->common.lock);
+  dt_iop_gui_enter_critical_section(self);
   g->graph_valid = 1;
-  dt_pthread_mutex_unlock(&g->common.lock);
+  dt_iop_gui_leave_critical_section(self);
 
   return TRUE;
 }
 
 
+// must be called while holding self->gui_lock
 static inline void init_nodes_x(dt_iop_toneequalizer_gui_data_t *g)
 {
   if(g == NULL) return;
 
-  dt_pthread_mutex_lock(&g->common.lock);
   if(!g->valid_nodes_x && g->graph_width > 0)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_x[i] = (((float)i) / ((float)(CHANNELS - 1))) * g->graph_width;
     g->valid_nodes_x = TRUE;
   }
-  dt_pthread_mutex_unlock(&g->common.lock);
 }
 
 
+// must be called while holding self->gui_lock
 static inline void init_nodes_y(dt_iop_toneequalizer_gui_data_t *g)
 {
   if(g == NULL) return;
 
-  dt_pthread_mutex_lock(&g->common.lock);
   if(g->user_param_valid && g->graph_height > 0)
   {
     for(int i = 0; i < CHANNELS; ++i)
       g->nodes_y[i] =  (0.5 - log2f(g->temp_user_params[i]) / 4.0) * g->graph_height; // assumes factors in [-2 ; 2] EV
     g->valid_nodes_y = TRUE;
   }
-  dt_pthread_mutex_unlock(&g->common.lock);
 }
 
 
@@ -2541,7 +2540,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
 
   // Init or refresh the drawing cache
   //if(!g->graph_valid)
-  if(!_init_drawing(widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
+  if(!_init_drawing(self, widget, g)) return FALSE; // this can be cached and drawn just once, but too lazy to debug a cache invalidation for Cairo objects
 
   // since the widget sizes are not cached and invalidated properly above (yet…)
   // force the invalidation of the nodes coordinates to account for possible widget resizing
@@ -2631,8 +2630,13 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data)
     cairo_stroke(g->cr);
   }
 
+  dt_iop_gui_enter_critical_section(self);
   init_nodes_x(g);
+  dt_iop_gui_leave_critical_section(self);
+
+  dt_iop_gui_enter_critical_section(self);
   init_nodes_y(g);
+  dt_iop_gui_leave_critical_section(self);
 
   if(g->user_param_valid)
   {

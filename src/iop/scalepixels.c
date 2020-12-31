@@ -41,7 +41,6 @@ typedef struct dt_iop_scalepixels_params_t
 
 typedef struct dt_iop_scalepixels_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
 } dt_iop_scalepixels_gui_data_t;
 
 typedef struct dt_iop_scalepixels_data_t {

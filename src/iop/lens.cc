@@ -100,7 +100,6 @@ typedef struct dt_iop_lensfun_params_t
 
 typedef struct dt_iop_lensfun_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   const lfCamera *camera;
   GtkWidget *lens_param_box;
   GtkWidget *detection_warning;

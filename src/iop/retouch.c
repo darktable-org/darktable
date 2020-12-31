@@ -118,8 +118,6 @@ typedef struct dt_iop_retouch_params_t
 
 typedef struct dt_iop_retouch_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields such as .lock
-
   int copied_scale; // scale to be copied to another scale
   int mask_display; // should we expose masks?
   int suppress_mask;         // do not process masks
