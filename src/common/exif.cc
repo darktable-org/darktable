@@ -1065,7 +1065,10 @@ static bool _exif_decode_exif_data(dt_image_t *img, Exiv2::ExifData &exifData)
     if(FIND_EXIF_TAG("Exif.Photo.UserComment"))
     {
       std::string str = pos->print(&exifData);
-      dt_metadata_set_import(img->id, "Xmp.dc.description", str.c_str());
+      Exiv2::CommentValue value(str);
+      std::string str2 = value.comment();
+      if(str2 != "binary comment")
+        dt_metadata_set_import(img->id, "Xmp.dc.description", str2.c_str());
     }
 
     if(FIND_EXIF_TAG("Exif.Image.Copyright"))
