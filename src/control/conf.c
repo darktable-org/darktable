@@ -563,6 +563,8 @@ gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
        return item->min != NULL;
      case DT_MAX:
        return item->max != NULL;
+     case DT_VALUES:
+       return item->enum_values != NULL;
   }
   return FALSE;
 }
@@ -581,6 +583,8 @@ const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
          return item->min;
        case DT_MAX:
          return item->max;
+       case DT_VALUES:
+         return item->enum_values;
     }
   }
 
