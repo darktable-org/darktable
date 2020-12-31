@@ -1420,7 +1420,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     /* get tiling requirement of module */
     dt_develop_tiling_t tiling = { 0 };
+    tiling.factor_cl = tiling.maxbuf_cl = -1;	// set sentinel value to detect whether callback set sizes
     module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
+    if (tiling.factor_cl < 0) tiling.factor_cl = tiling.factor; // default to CPU size if callback didn't set GPU
+    if (tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
     /* does this module involve blending? */
     if(piece->blendop_data && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode != DEVELOP_MASK_DISABLED)
@@ -1431,7 +1434,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       /* aggregate in structure tiling */
       tiling.factor = fmax(tiling.factor, tiling_blendop.factor);
+      tiling.factor_cl = fmax(tiling.factor_cl, tiling_blendop.factor);
       tiling.maxbuf = fmax(tiling.maxbuf, tiling_blendop.maxbuf);
+      tiling.maxbuf_cl = fmax(tiling.maxbuf_cl, tiling_blendop.maxbuf);
       tiling.overhead = fmax(tiling.overhead, tiling_blendop.overhead);
     }
 
@@ -1441,6 +1446,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
        because memory requirements will still be low enough. */
 
     assert(tiling.factor > 0.0f);
+    assert(tiling.factor_cl > 0.0f);
 
     if(dt_atomic_get_int(&pipe->shutdown))
     {
@@ -1467,7 +1473,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       /* pre-check if there is enough space on device for non-tiled processing */
       const int fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
                                                              MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
-                                                             tiling.factor, tiling.overhead);
+                                                             tiling.factor_cl, tiling.overhead);
 
       /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
          fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set
