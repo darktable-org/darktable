@@ -62,7 +62,6 @@ typedef struct dt_iop_colorize_params_t
 
 typedef struct dt_iop_colorize_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *lightness, *source_mix; //  lightness, source_lightnessmix
   GtkWidget *hue, *saturation;       // hue, saturation
 } dt_iop_colorize_gui_data_t;

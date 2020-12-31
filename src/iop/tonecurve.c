@@ -142,7 +142,6 @@ typedef struct dt_iop_tonecurve_params_t
 
 typedef struct dt_iop_tonecurve_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   dt_draw_curve_t *minmax_curve[3]; // curves for gui to draw
   int minmax_curve_nodes[3];
   int minmax_curve_type[3];

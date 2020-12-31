@@ -64,7 +64,6 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_relight_gui_data_t
 {
-  dt_iop_gui_data_t common;           // contains required fields such as .lock
   GtkWidget *exposure, *width;        // ev,width
   GtkDarktableGradientSlider *center; // center
   GtkWidget *colorpicker;             // Pick median lightness

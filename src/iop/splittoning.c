@@ -55,7 +55,6 @@ typedef struct dt_iop_splittoning_params_t
 
 typedef struct dt_iop_splittoning_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *balance_scale, *compress_scale;
   GtkWidget *shadow_colorpick, *highlight_colorpick;
   GtkWidget *shadow_hue_gslider, *shadow_sat_gslider;

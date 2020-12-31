@@ -119,7 +119,6 @@ void init_presets(dt_iop_module_so_t *self)
 
 typedef struct dt_iop_graduatednd_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *density, *hardness, *rotation, *hue, *saturation;
 
   int selected;

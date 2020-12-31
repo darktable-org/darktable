@@ -91,7 +91,6 @@ typedef struct dt_iop_zonesystem_global_data_t
 
 typedef struct dt_iop_zonesystem_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   guchar *in_preview_buffer;
   guchar *out_preview_buffer;
   int preview_width, preview_height;

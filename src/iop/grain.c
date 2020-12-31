@@ -72,7 +72,6 @@ typedef struct dt_iop_grain_params_t
 
 typedef struct dt_iop_grain_gui_data_t
 {
-  dt_iop_gui_data_t common;                    // contains required fields such as .lock
   GtkWidget *scale, *strength, *midtones_bias; // scale, strength, midtones_bias
 } dt_iop_grain_gui_data_t;
 

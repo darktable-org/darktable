@@ -64,7 +64,6 @@ typedef struct dt_iop_nlmeans_params_t
 
 typedef struct dt_iop_nlmeans_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *radius;
   GtkWidget *strength;
   GtkWidget *luma;

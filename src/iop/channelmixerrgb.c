@@ -89,7 +89,6 @@ typedef struct dt_iop_channelmixer_rgb_params_t
 
 typedef struct dt_iop_channelmixer_rgb_gui_data_t
 {
-  dt_iop_gui_data_t common;   // contains required fields: lock, warning_label
   GtkNotebook *notebook;
   GtkWidget *illuminant, *temperature, *adaptation, *gamut, *clip;
   GtkWidget *illum_fluo, *illum_led, *illum_x, *illum_y, *approx_cct, *illum_color;
@@ -2129,9 +2128,9 @@ void gui_init(struct dt_iop_module_t *self)
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), _("chromatic adaptation transform"));
 
-  g->common.warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(g->common.warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->common.warning_label, FALSE, FALSE, 4);
+  self->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), self->warning_label, FALSE, FALSE, 4);
 
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),

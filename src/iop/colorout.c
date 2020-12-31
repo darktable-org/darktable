@@ -74,7 +74,6 @@ typedef struct dt_iop_colorout_params_t
 
 typedef struct dt_iop_colorout_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *output_intent, *output_profile;
 } dt_iop_colorout_gui_data_t;
 

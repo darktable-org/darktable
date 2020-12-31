@@ -60,7 +60,6 @@ typedef struct dt_iop_velvia_params1_t
 
 typedef struct dt_iop_velvia_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkBox *vbox;
   GtkWidget *strength_scale;
   GtkWidget *bias_scale;

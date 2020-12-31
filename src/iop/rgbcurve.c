@@ -75,7 +75,6 @@ typedef struct dt_iop_rgbcurve_params_t
 
 typedef struct dt_iop_rgbcurve_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   dt_draw_curve_t *minmax_curve[DT_IOP_RGBCURVE_MAX_CHANNELS]; // curves for gui to draw
   int minmax_curve_nodes[DT_IOP_RGBCURVE_MAX_CHANNELS];
   int minmax_curve_type[DT_IOP_RGBCURVE_MAX_CHANNELS];

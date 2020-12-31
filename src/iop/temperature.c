@@ -78,7 +78,6 @@ typedef struct dt_iop_temperature_params_t
 
 typedef struct dt_iop_temperature_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *scale_k, *scale_tint, *coeff_widgets, *scale_r, *scale_g, *scale_b, *scale_g2;
   GtkWidget *presets;
   GtkWidget *finetune;
@@ -1970,9 +1969,9 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  g->common.warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(g->common.warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(box_enabled), g->common.warning_label, FALSE, FALSE, 4);
+  self->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(box_enabled), self->warning_label, FALSE, FALSE, 4);
 
   g->mod_temp = NAN;
   for(int k = 0; k < 4; k++)

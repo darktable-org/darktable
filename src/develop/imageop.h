@@ -119,9 +119,7 @@ typedef enum dt_iop_module_state_t
 
 typedef struct dt_iop_gui_data_t
 {
-  // fields required to be in the gui_data for all iops
-  dt_pthread_mutex_t lock;
-  GtkWidget *warning_label;
+  // "base type" for all dt_iop_XXXX_gui_data_t types used by iops
 } dt_iop_gui_data_t;
 
 typedef void dt_iop_data_t;
@@ -356,6 +354,7 @@ typedef struct dt_iop_module_t
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
+  dt_pthread_mutex_t gui_lock;
   /** other stuff that may be needed by the module, not only in gui mode. */
   dt_iop_global_data_t *global_data;
   /** blending params */
@@ -383,6 +382,7 @@ typedef struct dt_iop_module_t
   GtkDarktableToggleButton *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
+  GtkWidget *warning_label;
 
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
@@ -593,16 +593,16 @@ gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** checks whether iop is shown in specified group */
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
 /** enter a GUI critical section by acquiring gui_data->lock **/
-static inline void dt_iop_gui_enter_critical_section(const dt_iop_module_t *const module)
-  ACQUIRE(&module->gui_data->lock)
+static inline void dt_iop_gui_enter_critical_section(dt_iop_module_t *const module)
+  ACQUIRE(&module->gui_lock)
 {
-  dt_pthread_mutex_lock(&module->gui_data->lock);
+  dt_pthread_mutex_lock(&module->gui_lock);
 }
 /** leave a GUI critical section by releasing gui_data->lock **/
-static inline void dt_iop_gui_leave_critical_section(const dt_iop_module_t *const module)
-  RELEASE(&module->gui_data->lock)
+static inline void dt_iop_gui_leave_critical_section(dt_iop_module_t *const module)
+  RELEASE(&module->gui_lock)
 {
-  dt_pthread_mutex_unlock(&module->gui_data->lock);
+  dt_pthread_mutex_unlock(&module->gui_lock);
 }
 /** cleans up gui of module and of blendops */
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
@@ -744,15 +744,14 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {
   module->gui_data = (dt_iop_gui_data_t*)calloc(1, size);
-  if (module->gui_data)
-    dt_pthread_mutex_init(&module->gui_data->lock,NULL);
+  dt_pthread_mutex_init(&module->gui_lock,NULL);
   return module->gui_data;
 }
 #define IOP_GUI_ALLOC(module) \
   (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
   
 #define IOP_GUI_FREE \
-  if(self->gui_data){dt_pthread_mutex_destroy(&self->gui_data->lock);free(self->gui_data);} self->gui_data = NULL
+  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){free(self->gui_data);} self->gui_data = NULL
 
 /* return a warning message, prefixed by the special character ⚠ */
 char *dt_iop_warning_message(const char *message);

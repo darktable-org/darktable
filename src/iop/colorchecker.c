@@ -89,7 +89,6 @@ typedef struct dt_iop_colorchecker_params_t
 
 typedef struct dt_iop_colorchecker_gui_data_t
 {
-  dt_iop_gui_data_t common;   // contains required fields such as .lock
   GtkWidget *area, *combobox_patch, *scale_L, *scale_a, *scale_b, *scale_C, *combobox_target;
   int patch, drawn_patch;
   cmsHTRANSFORM xform;

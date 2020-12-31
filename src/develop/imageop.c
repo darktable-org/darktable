@@ -1360,14 +1360,10 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
 static void _set_trouble_message(dt_iop_module_t *const module, const char* const trouble_msg,
                                  const char* const trouble_tooltip, const char *const stderr_message)
 {
-  GtkWidget *label_widget = NULL;
-  if (module && module->gui_data)
-  {
-    label_widget = module->gui_data->warning_label ;
-    //TODO: write function to create the label widget on the module's header
-    //if (!label_widget)
-    //  label_widget = module->gui_data->warning_label = create_warning_label(module);
-  }
+  GtkWidget *label_widget = module ? module->warning_label : NULL;
+  //TODO: write function to create the label widget on the module's header
+  //if (!label_widget)
+  //  label_widget = module->warning_label = create_warning_label(module);
   if (trouble_msg && *trouble_msg)
   {
     if ((!module || !module->has_trouble) && (stderr_message || !label_widget))

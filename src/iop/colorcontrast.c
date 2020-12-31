@@ -58,7 +58,6 @@ typedef struct dt_iop_colorcontrast_params_t
 
 typedef struct dt_iop_colorcontrast_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   // whatever you need to make your gui happy.
   // stored in self->gui_data
   GtkBox *vbox;

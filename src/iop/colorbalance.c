@@ -105,7 +105,6 @@ typedef struct dt_iop_colorbalance_params_t
 
 typedef struct dt_iop_colorbalance_gui_data_t
 {
-  dt_iop_gui_data_t common;   // contains required fields such as .lock
   GtkWidget *master_box;
   GtkWidget *main_label;
   GtkWidget *main_box;

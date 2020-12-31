@@ -74,7 +74,6 @@ typedef struct dt_iop_exposure_params_t
 
 typedef struct dt_iop_exposure_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *mode;
   GtkWidget *black;
   GtkStack *mode_stack;

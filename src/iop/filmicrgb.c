@@ -220,7 +220,6 @@ typedef struct dt_iop_filmicrgb_gui_button_data_t
 
 typedef struct dt_iop_filmicrgb_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *white_point_source;
   GtkWidget *grey_point_source;
   GtkWidget *black_point_source;
