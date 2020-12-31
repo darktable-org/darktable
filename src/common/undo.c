@@ -257,10 +257,8 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
       while(img->next && img->data == img->next->data)
         imgs = g_list_delete_link(imgs, img->next);
     // udpate xmp for updated images
-    for(GList *img = imgs; img != NULL; img = img->next)
-    {
-      dt_image_synch_xmp(GPOINTER_TO_INT(img->data));
-    }
+
+    dt_image_synch_xmps(imgs);
   }
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
