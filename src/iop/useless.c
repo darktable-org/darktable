@@ -114,6 +114,7 @@ const char *name()
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  // optionally add IOP_FLAGS_ALLOW_TILING and implement tiling_callback
 }
 
 // where does it appear in the gui?
@@ -198,6 +199,23 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   g_hash_table_remove_all(self->raster_mask.source.masks);
   g_hash_table_insert(self->raster_mask.source.masks, GINT_TO_POINTER(mask_id), g_strdup(mask_name));
 }
+
+#if 0
+/** optional, only needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING */
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.0f;    // input buffer + output buffer; increase if additional memory allocated
+  tiling->factor_cl = 2.0f; // same, but for OpenCL code path running on GPU
+  tiling->maxbuf = 1.0f;    // largest buffer needed regardless of how tiling splits up the processing
+  tiling->maxbuf_cl = 1.0f; // same, but for running on GPU
+  tiling->overhead = 0;     // number of bytes of fixed overhead
+  tiling->overlap = 0;      // how many pixels do we need to access from the neighboring tile?
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
+#endif
 
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
