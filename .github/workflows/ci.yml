@@ -35,8 +35,135 @@ on:
 
 jobs:
 
+  Linux-minimal:
+    name: Linux-minimal.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    runs-on: ${{ matrix.os.label }}
+    strategy:
+      fail-fast: true
+      matrix:
+        os: 
+          - { label: ubuntu-20.04, code: focal }
+          #- { label: ubuntu-18.04, code: bionic }
+        compiler:
+          #- { compiler: GNU8,   CC: gcc-8,    CXX: g++-8,      packages: gcc-8 g++-8 }
+          - { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
+          #- { compiler: GNU10,  CC: gcc-10,   CXX: g++-10,     packages: gcc-10 g++-10 }
+          #- { compiler: LLVM9,  CC: clang-9,  CXX: clang++-9,  packages: clang-9 libomp-9-dev libclang-common-9-dev llvm-9-dev clang++-9 libc++-9-dev lld-9}
+          - { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
+          #- { compiler: LLVM11, CC: clang-11, CXX: clang++-11, packages: clang-11 libomp-11-dev libclang-common-11-dev llvm-11-dev clang++-11 libc++-11-dev lld-11}
+        btype: 
+          - RelWithDebInfo
+          #- Release
+        target:
+          #- build
+          - nofeatures
+          - nofeatures_nosse
+        include:
+          - os: { label: ubuntu-18.04, code: bionic }
+            btype: RelWithDebInfo
+            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
+            target: nofeatures
+          - os: { label: ubuntu-18.04, code: bionic }
+            btype: RelWithDebInfo
+            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
+            target: nofeatures_nosse
+    env:
+      CC: ${{ matrix.compiler.CC }}
+      CXX: ${{ matrix.compiler.CXX }}
+      SRC_DIR: ${{ github.workspace }}/src
+      BUILD_DIR: ${{ github.workspace }}/build
+      INSTALL_PREFIX: ${{ github.workspace }}/install
+      CMAKE_BUILD_TYPE: ${{ matrix.btype }}
+      GENERATOR: Ninja
+      TARGET: ${{ matrix.target }}
+      DARKTABLE_CLI: ${{ github.workspace }}/install/bin/darktable-cli
+    steps:
+      - name: Install compiler ${{ matrix.compiler.compiler }}
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+          sudo add-apt-repository -y universe
+          sudo add-apt-repository -y multiverse
+          sudo apt-get update
+          sudo apt-get -y install \
+            ${{ matrix.compiler.packages }}
+      - name: Install Base Dependencies
+        run: |
+          sudo apt-get -y install \
+            build-essential \
+            appstream-util \
+            desktop-file-utils \
+            gettext \
+            git \
+            gdb \
+            intltool \
+            libatk1.0-dev \
+            libcairo2-dev \
+            libcolord-dev \
+            libcolord-gtk-dev \
+            libcmocka-dev \
+            libcups2-dev \
+            libcurl4-gnutls-dev \
+            libexiv2-dev \
+            libgdk-pixbuf2.0-dev \
+            libglib2.0-dev \
+            libgphoto2-dev \
+            libgraphicsmagick1-dev \
+            libgtk-3-dev \
+            libjpeg-dev \
+            libjson-glib-dev \
+            liblcms2-dev \
+            liblensfun-dev \
+            liblua5.2-dev \
+            liblua5.3-dev \
+            libopenexr-dev \
+            libopenjp2-7-dev \
+            libosmgpsmap-1.0-dev \
+            libpango1.0-dev \
+            libpng-dev \
+            libpugixml-dev \
+            librsvg2-dev \
+            libsaxon-java \
+            libsecret-1-dev \
+            libsoup2.4-dev \
+            libsqlite3-dev \
+            libtiff5-dev \
+            libwebp-dev \
+            libx11-dev \
+            libxml2-dev \
+            libxml2-utils \
+            ninja-build \
+            perl \
+            po4a \
+            python3-jsonschema \
+            xsltproc \
+            zlib1g-dev;
+      - uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: src
+      - name: Build and Install
+        run: |
+          cmake -E make_directory "${BUILD_DIR}";
+          cmake -E make_directory "${INSTALL_PREFIX}";
+          ./src/.ci/ci-script.sh;
+      - name: Check if it runs
+        if: ${{ matrix.target != 'usermanual' }}
+        run: |
+          ${INSTALL_PREFIX}/bin/darktable --version || true
+          ${INSTALL_PREFIX}/bin/darktable-cli \
+                 --width 2048 --height 2048 \
+                 --hq true --apply-custom-presets false \
+                 "${SRC_DIR}/src/tests/integration/images/mire1.cr2" \
+                 "${SRC_DIR}/src/tests/integration/0000-nop/nop.xmp" \
+                 output.png \
+                 --core --disable-opencl --conf host_memory_limit=8192 \
+                 --conf worker_threads=4 -t 4 \
+                 --conf plugins/lighttable/export/force_lcms2=FALSE \
+                 --conf plugins/lighttable/export/iccintent=0
+
   Linux:
     name: Linux.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    needs: Linux-minimal
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -57,11 +184,33 @@ jobs:
         target:
           - build
           - nofeatures
+          - nofeatures_nosse
         include:
           - os: { label: ubuntu-latest, code: latest }
             btype: Debug
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
             target: skiptest
+          - os: { label: ubuntu-latest, code: latest }
+            btype: Debug
+            compiler: { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
+            target: skiptest
+        exclude:
+          - os: { label: ubuntu-20.04, code: focal }
+            btype: RelWithDebInfo
+            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
+            target: nofeatures
+          - os: { label: ubuntu-20.04, code: focal }
+            btype: RelWithDebInfo
+            compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
+            target: nofeatures_nosse
+          - os: { label: ubuntu-20.04, code: focal }
+            btype: RelWithDebInfo
+            compiler: { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
+            target: nofeatures
+          - os: { label: ubuntu-20.04, code: focal }
+            btype: RelWithDebInfo
+            compiler: { compiler: LLVM10, CC: clang-10, CXX: clang++-10, packages: clang-10 libomp-10-dev libclang-common-10-dev llvm-10-dev clang++-10 libc++-10-dev lld-10}
+            target: nofeatures_nosse
     env:
       CC: ${{ matrix.compiler.CC }}
       CXX: ${{ matrix.compiler.CXX }}
@@ -164,7 +313,7 @@ jobs:
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
-    needs: Linux
+    needs: Linux-minimal
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -289,7 +438,7 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    needs: Linux
+    needs: Linux-minimal
     runs-on: macos-latest
     strategy:
       fail-fast: true
@@ -317,8 +466,12 @@ jobs:
       - name: Install Base Dependencies
         run: |
           brew update > /dev/null || true
+          brew unlink python@3.8
+          sudo rm '/usr/local/bin/2to3'
+          brew link --overwrite python@3.9 # workaround introduced 30.12.2021, replace asap.
+          brew upgrade
           brew tap Homebrew/bundle
-          cd src/.ci
+          cd src/.ci 
           brew bundle --verbose
       - name: Build and Install
           # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
