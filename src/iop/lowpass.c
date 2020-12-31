@@ -93,7 +93,6 @@ typedef struct dt_iop_lowpass_params_t
 
 typedef struct dt_iop_lowpass_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *radius;
   GtkWidget *contrast;
   GtkWidget *brightness;

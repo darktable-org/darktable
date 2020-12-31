@@ -53,7 +53,6 @@ typedef struct dt_iop_rawprepare_params_t
 
 typedef struct dt_iop_rawprepare_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *black_level_separate[4];
   GtkWidget *white_point;
   GtkWidget *x, *y, *width, *height;

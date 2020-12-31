@@ -76,7 +76,6 @@ typedef dt_iop_hazeremoval_params_t dt_iop_hazeremoval_data_t;
 
 typedef struct dt_iop_hazeremoval_gui_data_t
 {
-  dt_iop_gui_data_t common;  // contains required fields: lock, warning_label
   GtkWidget *strength;
   GtkWidget *distance;
   rgb_pixel A0;
@@ -470,7 +469,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // there we need to wait (with timeout).
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &g->common.lock, &g->hash))
+                                      &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
     dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];
@@ -722,7 +721,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // there we need to wait (with timeout).
     if(hash != 0
        && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL,
-                                      &g->common.lock, &g->hash))
+                                      &self->gui_lock, &g->hash))
       dt_control_log(_("inconsistent output"));
     dt_iop_gui_enter_critical_section(self);
     A0[0] = g->A0[0];

@@ -182,7 +182,6 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
 typedef struct dt_iop_basecurve_gui_data_t
 {
-  dt_iop_gui_data_t common; // contains required fields such as .lock
   dt_draw_curve_t *minmax_curve; // curve for gui to draw
   int minmax_curve_type, minmax_curve_nodes;
   GtkBox *hbox;

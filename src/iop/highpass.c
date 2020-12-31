@@ -52,7 +52,6 @@ typedef struct dt_iop_highpass_params_t
 
 typedef struct dt_iop_highpass_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *sharpness, *contrast;
 } dt_iop_highpass_gui_data_t;
 

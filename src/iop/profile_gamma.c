@@ -59,7 +59,6 @@ typedef struct dt_iop_profilegamma_params_t
 
 typedef struct dt_iop_profilegamma_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *mode;
   GtkWidget *mode_stack;
   GtkWidget *linear;

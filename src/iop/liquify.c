@@ -262,7 +262,6 @@ typedef struct
 
 typedef struct
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   dt_iop_liquify_params_t params;
   int node_index; // last node index inserted
 

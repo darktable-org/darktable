@@ -97,7 +97,6 @@ typedef struct dt_iop_colorreconstruct_bilateral_frozen_t
 
 typedef struct dt_iop_colorreconstruct_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkWidget *threshold;
   GtkWidget *spatial;
   GtkWidget *range;
@@ -627,7 +626,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
     if(cur_scale > 1.05f * min_scale)
     {
-      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->common.lock, &g->hash))
+      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_iop_gui_enter_critical_section(self);
@@ -1083,7 +1082,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     // if we are zoomed in more than just a little bit, we try to use the canned grid of the preview pipeline
     if(cur_scale > 1.05f * min_scale)
     {
-      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->common.lock, &g->hash))
+      if(!dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
       dt_iop_gui_enter_critical_section(self);

@@ -95,7 +95,6 @@ typedef struct dt_iop_channelmixer_params_t
 
 typedef struct dt_iop_channelmixer_gui_data_t
 {
-  dt_iop_gui_data_t common;                           // contains required fields such as .lock
   GtkBox *vbox;
   GtkWidget *output_channel;                          // Output channel
   GtkWidget *scale_red, *scale_green, *scale_blue;    // red, green, blue

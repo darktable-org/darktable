@@ -120,7 +120,6 @@ typedef struct dt_iop_negadoctor_data_t
 
 typedef struct dt_iop_negadoctor_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkNotebook *notebook;
   GtkWidget *film_stock;
   GtkWidget *Dmin_R, *Dmin_G, *Dmin_B;

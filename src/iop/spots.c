@@ -43,7 +43,6 @@ typedef struct dt_iop_spots_params_t
 
 typedef struct dt_iop_spots_gui_data_t
 {
-  dt_iop_gui_data_t common;          // contains required fields such as .lock
   GtkLabel *label;
   GtkWidget *bt_path, *bt_circle, *bt_ellipse, *bt_edit_masks;
 } dt_iop_spots_gui_data_t;
