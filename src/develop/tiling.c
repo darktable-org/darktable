@@ -1233,10 +1233,10 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   float headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);
+  float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * darktable.opencl->dev[devid].max_mem_alloc);
-  float maxbuf = fmax(tiling.maxbuf, 1.0f);
+  float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = _min(roi_in->height, darktable.opencl->dev[devid].max_image_height);
 
@@ -1600,10 +1600,10 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   float headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  float factor = fmax(tiling.factor + pinned_buffer_overhead, 1.0f);
+  float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * darktable.opencl->dev[devid].max_mem_alloc);
-  float maxbuf = fmax(tiling.maxbuf, 1.0f);
+  float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
 
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
   int height = _min(_max(roi_in->height, roi_out->height), darktable.opencl->dev[devid].max_image_height);
@@ -2023,7 +2023,9 @@ void default_tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpi
       = ((float)roi_out->width * (float)roi_out->height) / ((float)roi_in->width * (float)roi_in->height);
 
   tiling->factor = 1.0f + ioratio;
+  tiling->factor_cl = tiling->factor;  // by default, we need the same memory on host or GPU
   tiling->maxbuf = 1.0f;
+  tiling->maxbuf_cl = tiling->maxbuf;
   tiling->overhead = 0;
   tiling->overlap = 0;
   tiling->xalign = 1;
