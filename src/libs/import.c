@@ -70,7 +70,6 @@ typedef struct dt_lib_import_t
 #ifdef HAVE_GPHOTO2
   dt_camctl_listener_t camctl_listener;
 #endif
-  GtkWidget *frame;
   GtkWidget *expander;
   GtkButton *import_file;
   GtkButton *import_directory;
@@ -568,14 +567,12 @@ static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_import_t
     }
   }
 
-  gtk_widget_destroy(d->frame);
   gtk_widget_destroy(filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
 static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("import folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
@@ -637,7 +634,6 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
     g_slist_free(list);
   }
 
-  gtk_widget_destroy(d->frame);
   gtk_widget_destroy(filechooser);
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
