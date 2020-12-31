@@ -727,7 +727,12 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
     const int max_filter_radius = (1u << max_scale); // 2 * 2^max_scale
 
+#ifdef PR7575_MERGED
+    tiling->factor = 5.0f; // in + out + precond + tmp + reducebuffer
+    tiling->factor_cl = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
+#else
     tiling->factor = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
+#endif
     tiling->maxbuf = 1.0f;
     tiling->overhead = 0;
     tiling->overlap = max_filter_radius;
@@ -1225,22 +1230,26 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const int max_mult = 1u << (max_scale - 1);
   const int width = roi_in->width, height = roi_in->height;
   const size_t npixels = (size_t)width*height;
+  const float *const restrict in = (const float*)ivoid;
+  float *const restrict out = (float*)ovoid;
 
   // corner case of extremely small image. this is not really likely to happen but would
   // lead to out of bounds memory access
   if(width < 2 * max_mult || height < 2 * max_mult)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * 4 * npixels);
+    memcpy(out, in, sizeof(float) * 4 * npixels);
     return;
   }
 
-  float *buf[MAX_MAX_SCALE];
-  float sum_y2[4*MAX_MAX_SCALE];
-  float *tmp = NULL;
-  float *buf1 = NULL, *buf2 = NULL;
-  for(int k = 0; k < max_scale; k++)
-    buf[k] = dt_alloc_align_float((size_t)4 * npixels);
-  tmp = dt_alloc_align_float((size_t)4 * npixels);
+  float *buf = NULL;
+  float *restrict precond = NULL;
+  float *restrict tmp = NULL;
+
+  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
+  {
+    dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
+    return;
+  }
 
   float wb[3];
   const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
@@ -1273,63 +1282,68 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   if(!d->use_new_vst)
   {
-    precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
+    precondition(in, precond, width, height, aa, bb);
   }
   else if(d->wavelet_color_mode == MODE_RGB)
   {
-    precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], wb);
+    precondition_v2(in, precond, width, height, d->a[1] * compensate_p, p, d->b[1], wb);
   }
   else
   {
-    precondition_Y0U0V0((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], toY0U0V0);
+    precondition_Y0U0V0(in, precond, width, height, d->a[1] * compensate_p, p, d->b[1], toY0U0V0);
   }
 
-  debug_dump_PFM(piece,"/tmp/transformed.pfm",ovoid,width,height,0);
+  debug_dump_PFM(piece,"/tmp/transformed.pfm",precond,width,height,0);
 
-  buf1 = (float *)ovoid;
-  buf2 = tmp;
+  float *restrict buf1 = precond;
+  float *restrict buf2 = tmp;
+
+  // clear the output buffer, which will be accumulating all of the detail scales
+  memset(out, 0, sizeof(float) * 4 * npixels);
 
   for(int scale = 0; scale < max_scale; scale++)
   {
     const float sigma = 1.0f;
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
     const float sigma_band = powf(varf, scale) * sigma;
-    decompose(buf2, buf1, buf[scale], sum_y2+4*scale, scale, 1.0f / (sigma_band * sigma_band), width, height);
+    float sum_y2[4];
+    decompose(buf2, buf1, buf, sum_y2, scale, 1.0f / (sigma_band * sigma_band), width, height);
     debug_dump_PFM(piece,"/tmp/coarse_%d.pfm",buf2,width,height,scale);
-    debug_dump_PFM(piece,"/tmp/detail_%d.pfm",buf[scale],width,height,scale);
-    float *buf3 = buf2;
-    buf2 = buf1;
-    buf1 = buf3;
-  }
+    debug_dump_PFM(piece,"/tmp/detail_%d.pfm",buf,width,height,scale);
 
-  // now do everything backwards, so the result will end up in *ovoid
-  for(int scale = max_scale - 1; scale >= 0; scale--)
-  {
     const float DT_ALIGNED_PIXEL boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     float DT_ALIGNED_PIXEL thrs[4];
-    variance_stabilizing_xform(thrs,scale,max_scale,npixels,sum_y2 + 4*scale,d);
-    synthesize(buf2, buf1, buf[scale], thrs, boost, width, height);
+    variance_stabilizing_xform(thrs,scale,max_scale,npixels,sum_y2,d);
+    synthesize(out, out, buf, thrs, boost, width, height);
 
     float *buf3 = buf2;
     buf2 = buf1;
     buf1 = buf3;
   }
+
+  // add in the final residue
+#ifdef _OPENMP
+#pragma omp simd aligned(buf1, out : 64)
+#endif
+  for (size_t k = 0; k < 4 * npixels; k++)
+    out[k] += buf1[k];
 
   if(!d->use_new_vst)
   {
-    backtransform((float *)ovoid, width, height, aa, bb);
+    backtransform(out, width, height, aa, bb);
   }
   else if(d->wavelet_color_mode == MODE_RGB)
   {
-    backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb);
+    backtransform_v2(out, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb);
   }
   else
   {
-    backtransform_Y0U0V0((float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb, toRGB);
+    backtransform_Y0U0V0(out, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb, toRGB);
   }
 
-  for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
+  dt_free_align(buf);
   dt_free_align(tmp);
+  dt_free_align(precond);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 
