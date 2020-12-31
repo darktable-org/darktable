@@ -591,14 +591,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_widget_set_label(g->extra, NULL, N_("extra"));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->extra), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->extra), "value-changed", G_CALLBACK(extra_callback), self);
-
-  // set up a box for the warnings from dt_iop_have_required_input_format and the like
-  GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
-
-  self->warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(box_enabled), self->warning_label, FALSE, FALSE, 4);
-  
 }
 
 void gui_cleanup(dt_iop_module_t *self)

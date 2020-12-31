@@ -1268,13 +1268,17 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
 {
   gtk_widget_set_name(lab, "iop-panel-label");
   char *module_name = dt_history_item_get_name_html(module);
-  gchar *label = g_strdup_printf("%s",
-                                 (module->has_trouble && module->enabled)
-                                 ? dt_iop_warning_message(module_name)
-                                 : module_name);
+
+  if((module->has_trouble && module->enabled))
+  {
+    char *saved_old_name = module_name;
+    module_name = dt_iop_warning_message(module_name);
+    g_free(saved_old_name);
+  }
+
+  gtk_label_set_markup(GTK_LABEL(lab), module_name);
   g_free(module_name);
 
-  gtk_label_set_markup(GTK_LABEL(lab), label);
   gtk_label_set_ellipsize(GTK_LABEL(lab), !module->multi_name[0] ? PANGO_ELLIPSIZE_END: PANGO_ELLIPSIZE_MIDDLE);
   g_object_set(G_OBJECT(lab), "xalign", 0.0, (gchar *)0);
   if((module->flags() & IOP_FLAGS_DEPRECATED) && module->deprecated_msg())
@@ -1285,8 +1289,6 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
     gtk_widget_set_tooltip_text(lab, tooltip);
     g_free(tooltip);
   }
-
-  g_free(label);
 }
 
 static void _iop_gui_update_header(dt_iop_module_t *module)
@@ -1361,10 +1363,26 @@ void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
 static void _set_trouble_message(dt_iop_module_t *const module, const char* const trouble_msg,
                                  const char* const trouble_tooltip, const char *const stderr_message)
 {
-  GtkWidget *label_widget = module ? module->warning_label : NULL;
-  //TODO: write function to create the label widget on the module's header
-  //if (!label_widget)
-  //  label_widget = module->warning_label = create_warning_label(module);
+  GtkWidget *label_widget = NULL;
+
+  if(module && module->widget)
+  {
+    GtkWidget *iopw = gtk_widget_get_parent(module->widget);
+    GList *children = gtk_container_get_children(GTK_CONTAINER(iopw));
+    label_widget = g_list_nth_data(children, 0);
+    g_list_free(children);
+    if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
+    {
+      label_widget = gtk_label_new("");;
+      gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
+      gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
+      gtk_widget_set_name(label_widget, "iop-plugin-warning");
+      gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
+      gtk_box_reorder_child(GTK_BOX(iopw), label_widget, 0);
+      gtk_widget_show(label_widget);
+    }
+  }
+
   if (trouble_msg && *trouble_msg)
   {
     if ((!module || !module->has_trouble) && (stderr_message || !label_widget))
@@ -1381,7 +1399,6 @@ static void _set_trouble_message(dt_iop_module_t *const module, const char* cons
         gtk_label_set_text(GTK_LABEL(label_widget), msg);
         g_free(msg);
         gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
-        gtk_widget_set_visible(GTK_WIDGET(label_widget), TRUE);
       }
       // set the module's trouble flag
       dt_iop_set_module_in_trouble(module, TRUE);
@@ -1393,15 +1410,13 @@ static void _set_trouble_message(dt_iop_module_t *const module, const char* cons
     dt_iop_set_module_in_trouble(module, FALSE);
     if (label_widget)
     {
-      gtk_label_set_text(GTK_LABEL(label_widget), "");
-      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), "");
-      gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
+      gtk_widget_destroy(label_widget);
     }
   }
   else if (label_widget)
   {
     // hide the warning label; needed if the caller relies on this function to manage the visibility
-    gtk_widget_set_visible(GTK_WIDGET(label_widget), FALSE);
+    gtk_widget_destroy(label_widget);
   }
 }
 
@@ -2623,8 +2638,9 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   // show deprected message if any
   if(module->deprecated_msg())
   {
-    GtkWidget *lb = gtk_label_new(g_strdup(module->deprecated_msg()));
+    GtkWidget *lb = gtk_label_new(module->deprecated_msg());
     gtk_label_set_line_wrap(GTK_LABEL(lb), TRUE);
+    gtk_label_set_xalign(GTK_LABEL(lb), 0.0);
     gtk_widget_set_name(lb, "iop-plugin-deprecated");
     gtk_box_pack_start(GTK_BOX(iopw), lb, TRUE, TRUE, 0);
     gtk_widget_show(lb);
