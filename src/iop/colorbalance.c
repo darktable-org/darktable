@@ -105,7 +105,6 @@ typedef struct dt_iop_colorbalance_params_t
 
 typedef struct dt_iop_colorbalance_gui_data_t
 {
-  dt_pthread_mutex_t lock;
   GtkWidget *master_box;
   GtkWidget *main_label;
   GtkWidget *main_box;

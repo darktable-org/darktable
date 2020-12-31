@@ -1766,7 +1766,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          in, out, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 

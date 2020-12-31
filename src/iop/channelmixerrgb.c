@@ -100,10 +100,8 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
   GtkWidget *color_picker;
-  GtkWidget *warning_label;
   float xy[2];
   float XYZ[4];
-  dt_pthread_mutex_t lock;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
 typedef struct dt_iop_channelmixer_rbg_data_t
@@ -982,7 +980,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
 
   if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         g ? g->warning_label : NULL,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
@@ -1011,9 +1008,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       if(piece->pipe->type == DT_DEV_PIXELPIPE_FULL)
       {
         // detection on full image only
-        dt_pthread_mutex_lock(&g->lock);
+        dt_iop_gui_enter_critical_section(self);
         auto_detect_WB(in, data->illuminant_type, roi_in->width, roi_in->height, ch, RGB_to_XYZ, g->XYZ);
-        dt_pthread_mutex_unlock(&g->lock);
+        dt_iop_gui_leave_critical_section(self);
       }
 
       // passthrough pixels
@@ -1115,10 +1112,10 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
     return;
   }
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   p->x = g->XYZ[0];
   p->y = g->XYZ[1];
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   check_if_close_to_daylight(p->x, p->y, &p->temperature, &p->illuminant, &p->adaptation);
 
@@ -2023,29 +2020,31 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     if(!is_module_cat_on_pipe(self))
     {
       // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
-      dt_iop_set_module_trouble_message(self, g->warning_label,_("double CAT applied"),
+      dt_iop_set_module_trouble_message(self,_("double CAT applied"),
                                         _("you have 2 instances or more of color calibration,\n"
                                           "all performing chromatic adaptation.\n"
                                           "this can lead to inconsistencies, unless you\n"
-                                          "use them with masks or know what you are doing."));
+                                          "use them with masks or know what you are doing."),
+                                        "double CAT applied");
     }
     else if(!self->dev->proxy.wb_is_D65)
     {
       // our first and biggest problem : white balance module is being clever with WB coeffs
-      dt_iop_set_module_trouble_message(self, g->warning_label,_("white balance module error"),
+      dt_iop_set_module_trouble_message(self,_("white balance module error"),
                                         _("the white balance module is not using the camera\n"
                                           "reference illuminant, which will cause issues here\n"
                                           "with chromatic adaptation. either set it to reference\n"
-                                          "or disable chromatic adaptation here."));
+                                          "or disable chromatic adaptation here."),
+                                        "white balance error");
     }
     else
     {
-      dt_iop_set_module_trouble_message(self, g->warning_label, NULL, NULL);
+      dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
     }
   }
   else
   {
-    dt_iop_set_module_trouble_message(self, g->warning_label, NULL, NULL);
+    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
   }
 
   --darktable.gui->reset;
@@ -2119,7 +2118,6 @@ void gui_init(struct dt_iop_module_t *self)
   dt_iop_channelmixer_rgb_gui_data_t *g = IOP_GUI_ALLOC(channelmixer_rgb);
 
   g->XYZ[0] = NAN;
-  dt_pthread_mutex_init(&g->lock, NULL);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
@@ -2130,9 +2128,9 @@ void gui_init(struct dt_iop_module_t *self)
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), _("chromatic adaptation transform"));
 
-  g->warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(g->warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), g->warning_label, FALSE, FALSE, 4);
+  self->warning_label = dt_ui_label_new("");
+  gtk_label_set_line_wrap(GTK_LABEL(self->warning_label), TRUE);
+  gtk_box_pack_start(GTK_BOX(self->widget), self->warning_label, FALSE, FALSE, 4);
 
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
@@ -2259,7 +2257,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page", gtk_notebook_get_current_page (g->notebook));
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }

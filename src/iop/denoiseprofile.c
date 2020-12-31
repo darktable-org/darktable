@@ -1514,12 +1514,12 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
   const dt_iop_denoiseprofile_data_t *const d = (dt_iop_denoiseprofile_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors, NULL,
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(piece->module, NULL, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if (!dt_iop_alloc_image_buffers(piece->module, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   // adjust to zoom size:
@@ -1639,7 +1639,7 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
                              const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_denoiseprofile_data_t *const d = piece->data;
-  dt_iop_denoiseprofile_gui_data_t *g = self->gui_data;
+  dt_iop_denoiseprofile_gui_data_t *g = (dt_iop_denoiseprofile_gui_data_t*)self->gui_data;
 
   const int width = roi_in->width, height = roi_in->height;
   size_t npixels = (size_t)width * height;
@@ -1651,7 +1651,7 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   }
 
   float *restrict in;
-  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
+  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
   float wb[3];
