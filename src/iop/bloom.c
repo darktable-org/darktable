@@ -320,7 +320,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
-  tiling->factor = 2.0f + NUM_BUCKETS * 0.25f; // in + out + NUM_BUCKETS * 0.25 tmp
+  tiling->factor = 2.0f + 0.25f + 0.05f; // in + out + blurlightness + slice for dt_box_mean
+  tiling->factor_cl = 2.0f + NUM_BUCKETS * 0.25f; // in + out + NUM_BUCKETS * 0.25 tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 5 * radius; // This is a guess. TODO: check if that's sufficiently large

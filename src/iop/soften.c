@@ -398,7 +398,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float sigma = sqrtf((radius * (radius + 1) * BOX_ITERATIONS + 2) / 3.0f);
   const int wdh = ceilf(3.0f * sigma);
 
-  tiling->factor = 3.0f; // in + out + tmp
+  tiling->factor = 2.1f; // in + out + small slice for box_mean
+  tiling->factor_cl = 3.0f; // in + out + tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = wdh;
