@@ -154,7 +154,7 @@ typedef struct dt_control_t
   GtkAccelGroup *accelerators;
 
   // Accelerator group path lists
-  GSList *accelerator_list;
+  GList *accelerator_list;
 
   gboolean accel_initialising;
 

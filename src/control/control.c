@@ -189,7 +189,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
   if(s->accelerator_list)
   {
-    g_slist_free_full(s->accelerator_list, g_free);
+    g_list_free_full(s->accelerator_list, g_free);
   }
 }
 
