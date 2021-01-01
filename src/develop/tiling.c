@@ -622,8 +622,8 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = dt_conf_get_float("singlebuffer_limit") * 1024.0f * 1024.0f;
   singlebuffer = fmax(singlebuffer, 2.0f * 1024.0f * 1024.0f);
-  float factor = fmax(tiling.factor, 1.0f);
-  float maxbuf = fmax(tiling.maxbuf, 1.0f);
+  const float factor = fmax(tiling.factor, 1.0f);
+  const float maxbuf = fmax(tiling.maxbuf, 1.0f);
   singlebuffer = fmax(available / factor, singlebuffer);
 
   int width = roi_in->width;
@@ -744,7 +744,7 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
       dt_iop_roi_t oroi = { roi_out->x + tx * tile_wd, roi_out->y + ty * tile_ht, wd, ht, roi_out->scale };
 
       /* offsets of tile into ivoid and ovoid */
-      size_t ioffs = (ty * tile_ht) * ipitch + (tx * tile_wd) * in_bpp;
+      const size_t ioffs = (ty * tile_ht) * ipitch + (tx * tile_wd) * in_bpp;
       size_t ooffs = (ty * tile_ht) * opitch + (tx * tile_wd) * out_bpp;
 
 
@@ -889,8 +889,8 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
      reflected in high values of tiling.factor (take bilateral noise reduction as an example). */
   float singlebuffer = dt_conf_get_float("singlebuffer_limit") * 1024.0f * 1024.0f;
   singlebuffer = fmax(singlebuffer, 2.0f * 1024.0f * 1024.0f);
-  float factor = fmax(tiling.factor, 1.0f);
-  float maxbuf = fmax(tiling.maxbuf, 1.0f);
+  const float factor = fmax(tiling.factor, 1.0f);
+  const float maxbuf = fmax(tiling.maxbuf, 1.0f);
   singlebuffer = fmax(available / factor, singlebuffer);
 
   int width = _max(roi_in->width, roi_out->width);
@@ -929,7 +929,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
      direction. */
 
   /* for simplicity reasons we use only one alignment that fits to x and y requirements at the same time */
-  unsigned int xyalign = _lcm(tiling.xalign, tiling.yalign);
+  const unsigned int xyalign = _lcm(tiling.xalign, tiling.yalign);
 
   assert(xyalign != 0);
 
@@ -1077,7 +1077,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
       //_print_roi(&oroi_full, "tile oroi_full final");
 
       /* offsets of tile into ivoid and ovoid */
-      size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;
+      const size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;
       size_t ooffs = ((size_t)oroi_good.y - roi_out->y) * opitch
                      + ((size_t)oroi_good.x - roi_out->x) * out_bpp;
 
@@ -1233,10 +1233,10 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
   float headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
+  const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * darktable.opencl->dev[devid].max_mem_alloc);
-  float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
+  const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
   int width = _min(roi_in->width, darktable.opencl->dev[devid].max_image_width);
   int height = _min(roi_in->height, darktable.opencl->dev[devid].max_image_height);
 
@@ -1386,8 +1386,8 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
     {
       piece->pipe->tiling = 1;
 
-      size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
-      size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
+      const size_t wd = tx * tile_wd + width > roi_in->width ? roi_in->width - tx * tile_wd : width;
+      const size_t ht = ty * tile_ht + height > roi_in->height ? roi_in->height - ty * tile_ht : height;
 
       /* no need to process (end)tiles that are smaller than the total overlap area */
       if((wd <= 2 * overlap && tx > 0) || (ht <= 2 * overlap && ty > 0)) continue;
@@ -1402,7 +1402,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
 
 
       /* offsets of tile into ivoid and ovoid */
-      size_t ioffs = (ty * tile_ht) * ipitch + (tx * tile_wd) * in_bpp;
+      const size_t ioffs = (ty * tile_ht) * ipitch + (tx * tile_wd) * in_bpp;
       size_t ooffs = (ty * tile_ht) * opitch + (tx * tile_wd) * out_bpp;
 
 
@@ -1573,7 +1573,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   const int opitch = roi_out->width * out_bpp;
   const int max_bpp = _max(in_bpp, out_bpp);
 
-  float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
+  const float fullscale = fmax(roi_in->scale / roi_out->scale, sqrtf(((float)roi_in->width * roi_in->height)
                                                               / ((float)roi_out->width * roi_out->height)));
 
   /* inaccuracy for roi_in elements in roi_out -> roi_in calculations */
@@ -1600,10 +1600,10 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
   float headroom = dt_conf_get_float("opencl_memory_headroom") * 1024.0f * 1024.0f;
   headroom = fmin(fmax(headroom, 0.0f), (float)darktable.opencl->dev[devid].max_global_mem);
   const float available = darktable.opencl->dev[devid].max_global_mem - headroom;
-  float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
+  const float factor = fmax(tiling.factor_cl + pinned_buffer_overhead, 1.0f);
   const float singlebuffer = fmin(fmax((available - tiling.overhead) / factor, 0.0f),
                                   pinned_buffer_slack * darktable.opencl->dev[devid].max_mem_alloc);
-  float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
+  const float maxbuf = fmax(tiling.maxbuf_cl, 1.0f);
 
   int width = _min(_max(roi_in->width, roi_out->width), darktable.opencl->dev[devid].max_image_width);
   int height = _min(_max(roi_in->height, roi_out->height), darktable.opencl->dev[devid].max_image_height);
@@ -1767,8 +1767,8 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       piece->pipe->tiling = 1;
 
       /* the output dimensions of the good part of this specific tile */
-      size_t wd = (tx + 1) * tile_wd > roi_out->width ? roi_out->width - tx * tile_wd : tile_wd;
-      size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height - ty * tile_ht : tile_ht;
+      const size_t wd = (tx + 1) * tile_wd > roi_out->width ? roi_out->width - tx * tile_wd : tile_wd;
+      const size_t ht = (ty + 1) * tile_ht > roi_out->height ? roi_out->height - ty * tile_ht : tile_ht;
 
       /* roi_in and roi_out of good part: oroi_good easy to calculate based on number and dimension of tile.
          iroi_good is calculated by modify_roi_in() of respective module */
@@ -1847,9 +1847,9 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
       //_print_roi(&oroi_full, "tile oroi_full");
 
       /* offsets of tile into ivoid and ovoid */
-      size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;
-      size_t ooffs = ((size_t)oroi_good.y - roi_out->y) * opitch
-                     + ((size_t)oroi_good.x - roi_out->x) * out_bpp;
+      const size_t ioffs = ((size_t)iroi_full.y - roi_in->y) * ipitch + ((size_t)iroi_full.x - roi_in->x) * in_bpp;
+      const size_t ooffs = ((size_t)oroi_good.y - roi_out->y) * opitch
+                           + ((size_t)oroi_good.x - roi_out->x) * out_bpp;
 
       dt_print(DT_DEBUG_OPENCL,
                "[default_process_tiling_cl_roi] tile (%zu, %zu) with %d x %d at origin [%d, %d]\n", tx, ty,
@@ -2070,11 +2070,12 @@ int dt_tiling_piece_fits_host_memory(const size_t width, const size_t height, co
     dt_conf_set_int("host_memory_limit", host_memory_limit);
   }
 
-  float requirement = factor * width * height * bpp + overhead;
+  const float requirement = factor * width * height * bpp + overhead;
 
-  if(host_memory_limit == 0 || requirement <= host_memory_limit * 1024.0f * 1024.0f) return TRUE;
-
-  return FALSE;
+  if(host_memory_limit == 0 || requirement <= host_memory_limit * 1024.0f * 1024.0f)
+    return TRUE;
+  else
+    return FALSE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
