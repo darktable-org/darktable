@@ -727,13 +727,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
     const int max_filter_radius = (1u << max_scale); // 2 * 2^max_scale
 
-#ifdef PR7575_MERGED
     tiling->factor = 5.0f; // in + out + precond + tmp + reducebuffer
     tiling->factor_cl = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
-#else
-    tiling->factor = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
-#endif
     tiling->maxbuf = 1.0f;
+    tiling->maxbuf_cl = 1.0f;
     tiling->overhead = 0;
     tiling->overlap = max_filter_radius;
     tiling->xalign = 1;
