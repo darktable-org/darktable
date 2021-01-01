@@ -18,6 +18,7 @@
 #include "blend.h"
 #include "common/gaussian.h"
 #include "common/guided_filter.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/imageop.h"
@@ -291,12 +292,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
   if(mask_mode == DEVELOP_MASK_ENABLED || suppress_mask)
   {
     // blend uniformly (no drawn or parametric mask)
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) aligned(mask:64)\
-    dt_omp_firstprivate(buffsize, mask, opacity) schedule(static)
-#endif
-    for(size_t i = 0; i < buffsize; i++) mask[i] = opacity;
+    dt_iop_image_fill(mask,opacity,owidth,oheight,1);  //mask[k] = opacity;
   }
   else if(mask_mode & DEVELOP_MASK_RASTER)
   {
@@ -316,23 +312,16 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
       else
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask, raster_mask:64)\
-        dt_omp_firstprivate(buffsize, mask, opacity, raster_mask) \
-        schedule(static)
-#endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = raster_mask[i] * opacity;
+      {
+        dt_iop_image_scaled_copy(mask,raster_mask,opacity,owidth,oheight,1); //mask[k] = opacity * raster_mask[k];
+      }
       if(free_mask) dt_free_align(raster_mask);
     }
     else
     {
       // fallback for when the raster mask couldn't be applied
       const float value = d->raster_mask_invert ? 0.0 : 1.0;
-#ifdef _OPENMP
-  #pragma omp parallel for simd default(none) aligned(mask:64)\
-      dt_omp_firstprivate(buffsize, mask, value) schedule(static)
-#endif
-      for(size_t i = 0; i < buffsize; i++) mask[i] = value;
+      dt_iop_image_fill(mask,value,owidth,oheight,1);  //mask[k] = value;
     }
   }
   else
@@ -349,11 +338,7 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) aligned(mask:64)\
-        dt_omp_firstprivate(buffsize, mask) schedule(static)
-#endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0f - mask[i];
+        dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k];
       }
     }
     else if((!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
@@ -361,21 +346,13 @@ void dt_develop_blend_process(struct dt_iop_module_t *self, struct dt_dev_pixelp
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) aligned(mask:64)\
-      dt_omp_firstprivate(buffsize, mask, fill) schedule(static)
-#endif
-      for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
+      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) aligned(mask:64)\
-      dt_omp_firstprivate(buffsize, mask, fill) schedule(static)
-#endif
-      for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
+      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
 
     // get parametric mask (if any) and apply global opacity
@@ -712,23 +689,16 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
 #endif
         for(size_t i = 0; i < buffsize; i++) mask[i] = (1.0 - raster_mask[i]) * opacity;
       else
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-        dt_omp_firstprivate(buffsize, mask, opacity) \
-        shared(raster_mask)
-#endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = raster_mask[i] * opacity;
+      {
+        dt_iop_image_scaled_copy(mask,raster_mask,opacity,owidth,oheight,1); //mask[k] = opacity * raster_mask[k];
+      }
       if(free_mask) dt_free_align(raster_mask);
     }
     else
     {
       // fallback for when the raster mask couldn't be applied
       const float value = d->raster_mask_invert ? 0.0 : 1.0;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buffsize, mask, value)
-#endif
-      for(size_t i = 0; i < buffsize; i++) mask[i] = value;
+      dt_iop_image_fill(mask,value,owidth,oheight,1); //mask[k] = value;
     }
 
     err = dt_opencl_write_host_to_device(devid, mask, dev_mask_1, owidth, oheight, sizeof(float));
@@ -748,11 +718,7 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       if(d->mask_combine & DEVELOP_COMBINE_MASKS_POS)
       {
         // if we have a mask and this flag is set -> invert the mask
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buffsize, mask)
-#endif
-        for(size_t i = 0; i < buffsize; i++) mask[i] = 1.0f - mask[i];
+        dt_iop_image_invert(mask,1.0f,owidth,oheight,1); //mask[k] = 1.0f - mask[k]
       }
     }
     else if((!(self->flags() & IOP_FLAGS_NO_MASKS)) && (d->mask_mode & DEVELOP_MASK_MASK))
@@ -760,21 +726,13 @@ int dt_develop_blend_process_cl(struct dt_iop_module_t *self, struct dt_dev_pixe
       // no form defined but drawn mask active
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_MASKS_POS) ? 0.0f : 1.0f;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buffsize, fill, mask)
-#endif
-      for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
+      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
     else
     {
       // we fill the buffer with 1.0f or 0.0f depending on mask_combine
       const float fill = (d->mask_combine & DEVELOP_COMBINE_INCL) ? 0.0f : 1.0f;
-#ifdef _OPENMP
-  #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buffsize, fill, mask)
-#endif
-      for(size_t i = 0; i < buffsize; i++) mask[i] = fill;
+      dt_iop_image_fill(mask,fill,owidth,oheight,1); //mask[k] = fill;
     }
 
     // write mask from host to device
