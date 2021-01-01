@@ -390,7 +390,7 @@ static void _basics_free_item(dt_lib_modulegroups_basic_item_t *item)
 
 static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
 {
-  if(item->widget)
+  if(item->widget && item->widget_type != WIDGET_TYPE_ACTIVATE_BTN)
   {
     // put back the widget in its iop at the right place
     if(GTK_IS_CONTAINER(item->old_parent) && gtk_widget_get_parent(item->widget) == item->box)
@@ -422,15 +422,11 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
       gtk_widget_set_visible(item->widget, item->visible);
       gtk_widget_set_tooltip_text(item->widget, item->tooltip);
     }
-    g_free(item->tooltip);
-    item->tooltip = NULL;
     // put back label
     if(item->label && DT_IS_BAUHAUS_WIDGET(item->widget))
     {
       DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
       snprintf(bw->label, sizeof(bw->label), "%s", item->label);
-      g_free(item->label);
-      item->label = NULL;
     }
   }
   // cleanup item
@@ -441,6 +437,16 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
   item->widget = NULL;
   item->old_parent = NULL;
   item->module = NULL;
+  if(item->tooltip)
+  {
+    g_free(item->tooltip);
+    item->tooltip = NULL;
+  }
+  if(item->label)
+  {
+    g_free(item->label);
+    item->label = NULL;
+  }
 }
 
 static void _basics_hide(dt_lib_module_t *self)
