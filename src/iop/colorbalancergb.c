@@ -118,6 +118,11 @@ const char *aliases()
   return _("offset power slope|cdl|color grading|contrast|chroma_highlights|hue");
 }
 
+const char *deprecated_msg()
+{
+  return _("this module is experimental and the internal algo may slightly change before darktable 3.6. don't use it for serious work yet.");
+}
+
 const char *description(struct dt_iop_module_t *self)
 {
   return dt_iop_set_description(self, _("affect color, brightness and contrast"),
