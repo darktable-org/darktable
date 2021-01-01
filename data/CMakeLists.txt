@@ -40,7 +40,7 @@ file(GLOB PO_FILES "${CMAKE_CURRENT_SOURCE_DIR}/../po/*.po")
 add_custom_command(
 		OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
 		SOURCE ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
-		COMMAND ${intltool_merge_BIN} --desktop-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
+		COMMAND ${perl_BIN} ${intltool_merge_BIN} --desktop-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop
 		MAIN_DEPENDENCY ${CMAKE_CURRENT_BINARY_DIR}/darktable.desktop.in
 		DEPENDS ${PO_FILES}
 )
@@ -63,7 +63,7 @@ if(${VALIDATE_APPDATA_FILE})
     OUTPUT ${DARKTABLE_SHAREDIR}/appdata/darktable.appdata.xml
     SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/appdata
-    COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/appdata/darktable.appdata.xml
+    COMMAND ${perl_BIN} ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/appdata/darktable.appdata.xml
     COMMAND ${appstream_util_BIN} validate --nonet ${DARKTABLE_SHAREDIR}/appdata/darktable.appdata.xml
     MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
     DEPENDS ${PO_FILES}
@@ -73,7 +73,7 @@ else()
     OUTPUT ${DARKTABLE_SHAREDIR}/appdata/darktable.appdata.xml
     SOURCE ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
     COMMAND ${CMAKE_COMMAND} -E make_directory ${DARKTABLE_SHAREDIR}/appdata
-    COMMAND ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/appdata/darktable.appdata.xml
+    COMMAND ${perl_BIN} ${intltool_merge_BIN} --xml-style ${CMAKE_CURRENT_SOURCE_DIR}/../po ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in ${DARKTABLE_SHAREDIR}/appdata/darktable.appdata.xml
     MAIN_DEPENDENCY ${CMAKE_CURRENT_SOURCE_DIR}/darktable.appdata.xml.in
     DEPENDS ${PO_FILES}
   )
