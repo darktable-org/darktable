@@ -473,74 +473,75 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
         cairo_surface_t *tmp_surf = thumb->img_surf;
         thumb->img_surf = img_surf;
         if(tmp_surf && cairo_surface_get_reference_count(tmp_surf) > 0) cairo_surface_destroy(tmp_surf);
-        thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
-        thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
-      }
-
-      if(thumb->img_surf)
-      {
-        // and we want to resize the imagebox to fit in the imagearea
-        const int imgbox_w = MIN(image_w, thumb->img_width / darktable.gui->ppd_thb);
-        const int imgbox_h = MIN(image_h, thumb->img_height / darktable.gui->ppd_thb);
-        // we record the imagebox size before the change
-        int hh = 0;
-        int ww = 0;
-        gtk_widget_get_size_request(thumb->w_image, &ww, &hh);
-        // and we set the new size of the imagebox
-        _thumb_set_image_size(thumb, imgbox_w, imgbox_h);
-        // the imagebox size may have been slightly sanitized, so we get it again
-        int nhi = 0;
-        int nwi = 0;
-        gtk_widget_get_size_request(thumb->w_image, &nwi, &nhi);
-
-        // panning value need to be adjusted if the imagebox size as changed
-        thumb->zoomx = thumb->zoomx + (nwi - ww) / 2.0;
-        thumb->zoomy = thumb->zoomy + (nhi - hh) / 2.0;
-        // let's sanitize and apply panning values as we are sure the zoomed image is loaded now
-        // here we have to make sure to properly align according to ppd
-        thumb->zoomx
-            = CLAMP(thumb->zoomx, (nwi * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
-        thumb->zoomy
-            = CLAMP(thumb->zoomy, (nhi * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
-
-        // for overlay block, we need to resize it
-        if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
-      }
-
-      // if we don't have the right size of the image now, we reload it again
-      if(res != DT_VIEW_SURFACE_OK)
-      {
-        thumb->busy = TRUE;
-        if(!thumb->expose_again_timeout_id)
-          thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
-      }
-
-      // if needed we compute and draw here the big rectangle to show focused areas
-      if(res == DT_VIEW_SURFACE_OK && thumb->display_focus)
-      {
-        uint8_t *full_res_thumb = NULL;
-        int32_t full_res_thumb_wd, full_res_thumb_ht;
-        dt_colorspaces_color_profile_type_t color_space;
-        char path[PATH_MAX] = { 0 };
-        gboolean from_cache = TRUE;
-        dt_image_full_path(thumb->imgid, path, sizeof(path), &from_cache);
-        if(!dt_imageio_large_thumbnail(path, &full_res_thumb, &full_res_thumb_wd, &full_res_thumb_ht, &color_space))
-        {
-          // we look for focus areas
-          dt_focus_cluster_t full_res_focus[49];
-          const int frows = 5, fcols = 5;
-          dt_focus_create_clusters(full_res_focus, frows, fcols, full_res_thumb, full_res_thumb_wd,
-                                   full_res_thumb_ht);
-          // and we draw them on the image
-          cairo_t *cri = cairo_create(thumb->img_surf);
-          dt_focus_draw_clusters(cri, cairo_image_surface_get_width(thumb->img_surf),
-                                 cairo_image_surface_get_height(thumb->img_surf), thumb->imgid, full_res_thumb_wd,
-                                 full_res_thumb_ht, full_res_focus, frows, fcols, 1.0, 0, 0);
-          cairo_destroy(cri);
-        }
-        dt_free_align(full_res_thumb);
       }
     }
+
+    if(thumb->img_surf)
+    {
+      thumb->img_width = cairo_image_surface_get_width(thumb->img_surf);
+      thumb->img_height = cairo_image_surface_get_height(thumb->img_surf);
+      // and we want to resize the imagebox to fit in the imagearea
+      const int imgbox_w = MIN(image_w, thumb->img_width / darktable.gui->ppd_thb);
+      const int imgbox_h = MIN(image_h, thumb->img_height / darktable.gui->ppd_thb);
+      // we record the imagebox size before the change
+      int hh = 0;
+      int ww = 0;
+      gtk_widget_get_size_request(thumb->w_image, &ww, &hh);
+      // and we set the new size of the imagebox
+      _thumb_set_image_size(thumb, imgbox_w, imgbox_h);
+      // the imagebox size may have been slightly sanitized, so we get it again
+      int nhi = 0;
+      int nwi = 0;
+      gtk_widget_get_size_request(thumb->w_image, &nwi, &nhi);
+
+      // panning value need to be adjusted if the imagebox size as changed
+      thumb->zoomx = thumb->zoomx + (nwi - ww) / 2.0;
+      thumb->zoomy = thumb->zoomy + (nhi - hh) / 2.0;
+      // let's sanitize and apply panning values as we are sure the zoomed image is loaded now
+      // here we have to make sure to properly align according to ppd
+      thumb->zoomx
+          = CLAMP(thumb->zoomx, (nwi * darktable.gui->ppd_thb - thumb->img_width) / darktable.gui->ppd_thb, 0);
+      thumb->zoomy
+          = CLAMP(thumb->zoomy, (nhi * darktable.gui->ppd_thb - thumb->img_height) / darktable.gui->ppd_thb, 0);
+
+      // for overlay block, we need to resize it
+      if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
+    }
+
+    // if we don't have the right size of the image now, we reload it again
+    if(res != DT_VIEW_SURFACE_OK)
+    {
+      thumb->busy = TRUE;
+      if(!thumb->expose_again_timeout_id)
+        thumb->expose_again_timeout_id = g_timeout_add(250, _thumb_expose_again, thumb);
+    }
+
+    // if needed we compute and draw here the big rectangle to show focused areas
+    if(res == DT_VIEW_SURFACE_OK && thumb->display_focus)
+    {
+      uint8_t *full_res_thumb = NULL;
+      int32_t full_res_thumb_wd, full_res_thumb_ht;
+      dt_colorspaces_color_profile_type_t color_space;
+      char path[PATH_MAX] = { 0 };
+      gboolean from_cache = TRUE;
+      dt_image_full_path(thumb->imgid, path, sizeof(path), &from_cache);
+      if(!dt_imageio_large_thumbnail(path, &full_res_thumb, &full_res_thumb_wd, &full_res_thumb_ht, &color_space))
+      {
+        // we look for focus areas
+        dt_focus_cluster_t full_res_focus[49];
+        const int frows = 5, fcols = 5;
+        dt_focus_create_clusters(full_res_focus, frows, fcols, full_res_thumb, full_res_thumb_wd,
+                                 full_res_thumb_ht);
+        // and we draw them on the image
+        cairo_t *cri = cairo_create(thumb->img_surf);
+        dt_focus_draw_clusters(cri, cairo_image_surface_get_width(thumb->img_surf),
+                               cairo_image_surface_get_height(thumb->img_surf), thumb->imgid, full_res_thumb_wd,
+                               full_res_thumb_ht, full_res_focus, frows, fcols, 1.0, 0, 0);
+        cairo_destroy(cri);
+      }
+      dt_free_align(full_res_thumb);
+    }
+
 
     // here we are sure to have the right imagesurface
     if(res == DT_VIEW_SURFACE_OK)
