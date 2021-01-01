@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -269,7 +270,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   const int border_in_y = MAX(border_size_t - roi_out->y, 0);
 
   // fill the image with 0 so that the added border isn't part of the mask
-  memset(out, 0, sizeof(float) * roi_out->width * roi_out->height);
+  dt_iop_image_fill(out, 0.0f, roi_out->width, roi_out->height, 1);
 
   // blit image inside border and fill the output with previous processed out
 #ifdef _OPENMP
