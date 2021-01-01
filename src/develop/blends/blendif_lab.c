@@ -26,6 +26,7 @@
 #endif
 
 #include "common/colorspaces_inline_conversions.h"
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
@@ -231,10 +232,7 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
-#endif
-      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * mask[x];
+      dt_iop_image_mul_const(mask,global_opacity,owidth,oheight,1); //mask[k] *= global_opacity;
     }
   }
   else if(canceling_channel || !any_channel_active)
@@ -244,17 +242,11 @@ void dt_develop_blendif_lab_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
     // and depends on whether the mask combination is inclusive and whether the mask is inverted
     if((mask_inversed == 0) ^ (mask_inclusive == 0))
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
-#endif
-      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity;
+      dt_iop_image_fill(mask,global_opacity,owidth,oheight,1); //mask[k] = global_opacity;
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize) schedule(static)
-#endif
-      for(size_t x = 0; x < buffsize; x++) mask[x] = 0.0f;
+      dt_iop_image_fill(mask,0.0f,owidth,oheight,1); //mask[k] = 0.0f;
     }
   }
   else
