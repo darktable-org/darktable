@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -2799,7 +2800,7 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   start = start2 = dt_get_wtime();
 
   // empty the output buffer
-  memset(buffer, 0, sizeof(float) * width * height);
+  dt_iop_image_fill(buffer, 0.0f, width, height, 1);
 
   const guint nb_corner = g_list_length(form->points);
 
