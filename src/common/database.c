@@ -2435,7 +2435,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 
   char *label_text = g_markup_printf_escaped(_("the database schema has to be upgraded for\n"
                                                "\n"
-                                               "<span style=\"italic\">%s</span>\n"
+                                               "<span style='italic'>%s</span>\n"
                                                "\n"
                                                "do you want to proceed or quit now to do a backup\n"),
                                                dbname);
@@ -2782,7 +2782,7 @@ start:
 
       char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                    "\n"
-                                                   "<span style=\"italic\">%s</span>\n"
+                                                   "<span style='italic'>%s</span>\n"
                                                    "\n"
                                                    "it seems that the database is corrupted.\n"
                                                    "%s"
@@ -2960,7 +2960,7 @@ start:
 
     char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                  "\n"
-                                                 "<span style=\"italic\">%s</span>\n"
+                                                 "<span style='italic'>%s</span>\n"
                                                  "\n"
                                                  "it seems that the database is corrupted.\n"
                                                  "%s"
@@ -3294,7 +3294,7 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
 
   char *label_text = g_markup_printf_escaped(_("the database could use some maintenance\n"
                                                  "\n"
-                                                 "there's <span style=\"italic\">%s</span> to be freed"
+                                                 "there's <span style='italic'>%s</span> to be freed"
                                                  "\n\n"
                                                  "do you want to proceed now?\n\n"
                                                  "%s\n"
