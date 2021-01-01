@@ -1,4 +1,4 @@
-build/share/darktable/darktable.desktop.in
+build/bin/preferences_gen.h
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
 build/lib/darktable/plugins/introspection_basecurve.c
@@ -8,6 +8,7 @@ build/lib/darktable/plugins/introspection_bilateral.cc
 build/lib/darktable/plugins/introspection_bloom.c
 build/lib/darktable/plugins/introspection_borders.c
 build/lib/darktable/plugins/introspection_cacorrect.c
+build/lib/darktable/plugins/introspection_censorize.c
 build/lib/darktable/plugins/introspection_channelmixer.c
 build/lib/darktable/plugins/introspection_channelmixerrgb.c
 build/lib/darktable/plugins/introspection_clahe.c
@@ -79,7 +80,7 @@ build/lib/darktable/plugins/introspection_vignette.c
 build/lib/darktable/plugins/introspection_watermark.c
 build/lib/darktable/plugins/introspection_zonesystem.c
 build/lib/darktable/plugins/lighttable/tools/darktable_authors.h
-build/bin/preferences_gen.h
+build/share/darktable/darktable.desktop.in
 data/darktable.appdata.xml.in
 data/darktable.desktop.in
 src/bauhaus/bauhaus.c
@@ -133,8 +134,8 @@ src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/culling.c
 src/dtgtk/resetlabel.c
-src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbnail.c
+src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbtable.c
 src/external/wb_presets.c
 src/generate-cache/main.c
@@ -174,6 +175,7 @@ src/iop/bilateral.cc
 src/iop/bloom.c
 src/iop/borders.c
 src/iop/cacorrect.c
+src/iop/censorize.c
 src/iop/channelmixer.c
 src/iop/channelmixerrgb.c
 src/iop/choleski.h
@@ -289,8 +291,8 @@ src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
 src/libs/tools/timeline.c
-src/libs/tools/viewswitcher.c
 src/libs/tools/view_toolbox.c
+src/libs/tools/viewswitcher.c
 src/lua/lualib.c
 src/lua/preferences.c
 src/views/darkroom.c
