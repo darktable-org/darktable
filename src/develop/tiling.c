@@ -755,7 +755,8 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(ht, in_bpp, ipitch, ivoid, wd) \
-      shared(input, width, ioffs) \
+      dt_omp_sharedconst(ioffs) \
+      shared(input, width) \
       schedule(static)
 #endif
       for(size_t j = 0; j < ht; j++)
@@ -1104,7 +1105,7 @@ static void _default_process_tiling_roi(struct dt_iop_module_t *self, struct dt_
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
       dt_omp_firstprivate(in_bpp, ipitch, ivoid) \
-      shared(input, ioffs, iroi_full) \
+      dt_omp_sharedconst(ioffs) shared(input, iroi_full) \
       schedule(static)
 #endif
       for(size_t j = 0; j < iroi_full.height; j++)
@@ -1422,7 +1423,7 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(in_bpp, ipitch, ivoid) \
-        shared(input_buffer, width, ioffs, wd, ht) \
+        dt_omp_sharedconst(ioffs, wd, ht) shared(input_buffer, width) \
         schedule(static)
 #endif
         for(size_t j = 0; j < ht; j++)
@@ -1880,7 +1881,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(in_bpp, ipitch, ivoid) \
-        shared(input_buffer, width, ioffs, iroi_full) schedule(static)
+        dt_omp_sharedconst(ioffs) shared(input_buffer, width, iroi_full) schedule(static)
 #endif
         for(size_t j = 0; j < iroi_full.height; j++)
           memcpy((char *)input_buffer + j * iroi_full.width * in_bpp, (char *)ivoid + ioffs + j * ipitch,
@@ -1929,7 +1930,7 @@ static int _default_process_tiling_cl_roi(struct dt_iop_module_t *self, struct d
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
         dt_omp_firstprivate(ipitch, opitch, ovoid, out_bpp) \
-        shared(ooffs, output_buffer, oroi_full, oorigin, oregion) \
+        dt_omp_sharedconst(ooffs) shared(output_buffer, oroi_full, oorigin, oregion) \
         schedule(static)
 #endif
         for(size_t j = 0; j < oregion[1]; j++)
