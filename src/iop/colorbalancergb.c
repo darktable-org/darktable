@@ -110,7 +110,7 @@ typedef struct dt_iop_colorbalancergb_data_t
 
 const char *name()
 {
-  return _("color balance pro");
+  return _("color balance rgb");
 }
 
 const char *aliases()
