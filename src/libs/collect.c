@@ -1300,7 +1300,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     GList *sorted_names = NULL;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      char *name = g_strdup((const char *)sqlite3_column_text(stmt, 0));
+      const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
+      char *name = sqlite_name == NULL ? g_strdup("") : g_strdup(sqlite_name);
       char *name_folded = g_utf8_casefold(name, -1);
       gchar *collate_key = NULL;
 
