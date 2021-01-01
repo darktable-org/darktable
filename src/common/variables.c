@@ -16,6 +16,8 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/darktable.h"
+#include "bauhaus/bauhaus.h"
 #include "common/variables.h"
 #include "common/colorlabels.h"
 #include "common/darktable.h"
@@ -165,6 +167,10 @@ static inline gboolean has_prefix(char **str, const char *prefix)
 
 static char *get_base_value(dt_variables_params_t *params, char **variable)
 {
+#define R(c) ((guint)(c.red * 255))
+#define G(c) ((guint)(c.green * 255))
+#define B(c) ((guint)(c.blue * 255))
+
   char *result = NULL;
   gboolean escape = TRUE;
 
@@ -389,23 +395,34 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
         if(g_strcmp0(lb, "red") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">⚫ </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_RED];
+          result = dt_util_dstrcat(result,
+                                   "<span foreground=\"#%02x%02x%02x\">⬤ </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "yellow") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">⚫ </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_YELLOW];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">⬤ </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "green") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">⚫ </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_GREEN];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">⬤ </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "blue") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">⚫ </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_BLUE];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">⬤ </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "purple") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">⚫ </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_PURPLE];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">⬤ </span>",
+                                   R(c), G(c), B(c));
         }
       } while((res = g_list_next(res)) != NULL);
     }
@@ -423,23 +440,33 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
         const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
         if(g_strcmp0(lb, "red") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee0000\">🔴 </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_RED];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02x\">🔴 </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "yellow") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#eeee00\">🟡 </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_YELLOW];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">🟡 </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "green") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#00ee00\">🟢 </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_GREEN];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">🟢 </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "blue") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#0000ee\">🔵 </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_BLUE];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">🔵 </span>",
+                                   R(c), G(c), B(c));
         }
         else if(g_strcmp0(lb, "purple") == 0)
         {
-          result = dt_util_dstrcat(result, "<span foreground=\"#ee00ee\">🟣 </span>");
+          const GdkRGBA c = darktable.bauhaus->colorlabels[DT_COLORLABELS_PURPLE];
+          result = dt_util_dstrcat(result, "<span foreground=\"#%02x%02x%02X\">🟣 </span>",
+                                   R(c), G(c), B(c));
         }
       } while((res = g_list_next(res)) != NULL);
     }
@@ -588,6 +615,11 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     return e_res;
   }
   return result;
+
+#undef R
+#undef G
+#undef B
+
 }
 
 // bash style variable manipulation. all patterns are just simple string comparisons!
