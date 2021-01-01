@@ -977,9 +977,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
   dt_dev_masks_list_change(dev);
 
-  /* last set the group to update visibility of iop modules for new pipe */
-  dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
-
   /* cleanup histograms */
   g_list_foreach(dev->iop, (GFunc)dt_iop_cleanup_histogram, (gpointer)NULL);
 
@@ -1034,6 +1031,9 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
   //connect iop accelerators
   dt_iop_connect_accels_all();
+
+  /* last set the group to update visibility of iop modules for new pipe */
+  dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 }
 
 static void _view_darkroom_filmstrip_activate_callback(gpointer instance, int32_t imgid, gpointer user_data)
@@ -2970,9 +2970,6 @@ void enter(dt_view_t *self)
   /* ensure that filmstrip shows current image */
   dt_thumbtable_set_offset_image(dt_ui_thumbtable(darktable.gui->ui), dev->image_storage.id, TRUE);
 
-  // switch on groups as they were last time:
-  dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
-
   // get last active plugin:
   gchar *active_plugin = dt_conf_get_string("plugins/darkroom/active");
   if(active_plugin)
@@ -3021,6 +3018,9 @@ void enter(dt_view_t *self)
 
   //connect iop accelerators
   dt_iop_connect_accels_all();
+
+  // switch on groups as they were last time:
+  dt_dev_modulegroups_set(dev, dt_conf_get_int("plugins/darkroom/groups"));
 
   // connect to preference change for module header button hiding
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_PREFERENCES_CHANGE,

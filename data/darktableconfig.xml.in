@@ -2474,6 +2474,13 @@
     <longdescription>preset use for defining iop layout</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/modulegroups_basics_sections_labels</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show the name of the module of each basic widget</shortdescription>
+    <longdescription>show the name of the module of each basic widget</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/map/geotagging_search_url</name>
     <type>string</type>
     <default>https://nominatim.openstreetmap.org/search/%s?format=xml&amp;limit=%d&amp;polygon_text=1</default>

@@ -476,7 +476,9 @@ overshoot.right
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
 #lib-plugin-ui,
-#iop-plugin-ui
+#iop-plugin-ui,
+#basics-box,
+#basics-box-labels
 {
   color: @plugin_fg_color;
   background-color: @plugin_bg_color;
@@ -498,7 +500,8 @@ overshoot.right
 #blending-box #dt-button,
 #blending-box #dt-toggle-button,
 #blending-box #show_mask_button,
-#blending-box #keep-active
+#blending-box #keep-active,
+#basics-widget #dt-button
 {
   min-height: 1.3em;
   min-width: 1.3em;
@@ -584,7 +587,6 @@ overshoot.right
 #module-reset-button,
 #module-enable-button,
 #module-instance-button,
-#module-enable-button,
 #module-collapse-button,
 #module-always-enabled-button,
 #module-always-disabled-button
@@ -902,8 +904,7 @@ popover,
 combobox window,
 dialog combobox window,
 #bauhaus-combobox *,
-#bauhaus-slider *,
-#modulegroups-iop-popup
+#bauhaus-slider *
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
@@ -913,11 +914,6 @@ dialog combobox window,
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em 0;
-}
-
-#modulegroups-iop-popup viewport
-{
-  background-color: @tooltip_bg_color;
 }
 
 popover
@@ -1335,22 +1331,9 @@ margin: 0 2px;
 
 #modulegroups-header #dt-button,
 #modulegroups-preset #dt-button,
-#modulegroups-preset-activated #dt-button,
-#modulegroups-iop-popup-name,
-#modulegroups-iop-popup-cb
+#modulegroups-preset-activated #dt-button
 {
   border: 0;
-}
-
-#modulegroups_iop_title,
-#modulegroups-iop-popup-name
-{
-   padding: 0.2em 0.5em;
-}
-
-#modulegroups-iop-popup-cb
-{
-  margin-left: 2em;
 }
 
 #modulegroups-groups-title
@@ -1436,6 +1419,74 @@ margin: 0 2px;
 {
   background-color: #852A2A;
   padding: 0.45em;
+}
+
+#basics-box,
+#basics-box-labels
+{
+  padding-bottom: 0.75em;
+}
+
+#basics-box
+{
+  padding-top: 0.5em;
+}
+
+#basics-box #module-enable-button,
+#basics-box-labels #module-enable-button,
+#basics-link
+{
+  min-height: 1em;
+  min-width: 1em;
+  border: none;
+}
+
+#basics-box-labels #basics-widget,
+#basics-box-labels #section_label
+{
+  padding-top: 2px;
+  margin: 0 0.75em 0.25em 0.75em;
+}
+
+#basics-box #basics-widget
+{
+  margin: 0 0.75em 0.5em 0.75em;
+}
+
+#basics-box-labels #section_label
+{
+  margin-top: 1em;
+}
+
+#basics-widget.basics-widget_group_start
+{
+  padding-top: 0.5em;
+  border-top: 0.5px solid @section_label;
+}
+
+#basics-iop_name
+{
+  padding-left: 0.25em;
+}
+
+#basics-widget #bauhaus-combobox + #dt-button,
+#basics-widget #bauhaus-slider + #dt-button
+{
+  margin-left: 0.5em;
+}
+
+#modulegroups-popup *
+{
+ padding-top: 0.1em;
+ padding-bottom: 0.1em;
+}
+
+#modulegroups-popup-title *
+{
+  padding-left: 2em;
+  padding-bottom: 0.2em;
+  font-weight: bold;
+  color: @plugin_label_color;
 }
 
 /*---------------------------------------------------------------

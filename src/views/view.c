@@ -1565,7 +1565,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   // go through all accels to populate categories with valid ones
   GList *blocs = NULL;
   GList *bl = NULL;
-  GSList *l = darktable.control->accelerator_list;
+  GList *l = darktable.control->accelerator_list;
   while(l)
   {
     dt_accel_t *da = (dt_accel_t *)l->data;
@@ -1622,7 +1622,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
         }
       }
     }
-    l = g_slist_next(l);
+    l = g_list_next(l);
   }
 
   // we add the mouse actions too
