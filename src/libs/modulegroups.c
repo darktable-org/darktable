@@ -1626,11 +1626,7 @@ static void _manage_editor_groups_cleanup(dt_lib_module_t *self, gboolean editio
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
-  GList *l;
-  if(edition)
-    l = d->edit_groups;
-  else
-    l = d->groups;
+  GList *l = edition ? d->edit_groups : d->groups;
 
   while(l)
   {
@@ -1650,15 +1646,10 @@ static void _manage_editor_groups_cleanup(dt_lib_module_t *self, gboolean editio
   {
     g_list_free_full(d->groups, g_free);
     d->groups = NULL;
+    _basics_hide(self);
   }
 
-  if(edition)
-    l = d->edit_basics;
-  else
-  {
-    _basics_hide(self);
-    l = d->basics;
-  }
+  l = edition ? d->edit_basics : d->basics;
   while(l)
   {
     dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
@@ -1719,6 +1710,7 @@ static void _manage_editor_basics_update_list(dt_lib_module_t *self)
     gtk_widget_destroy(w);
     lw = g_list_next(lw);
   }
+  g_list_free(lw);
 
   // and we add the ones from the list
   GList *modules = g_list_last(darktable.develop->iop);
@@ -1770,20 +1762,12 @@ static void _basics_cleanup_list(dt_lib_module_t *self, gboolean edition)
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   // ensure here that there's no basics widget of a module not present in one other group
-  GList *l;
-  if(edition)
-    l = d->edit_basics;
-  else
-    l = d->basics;
+  GList *l = edition ? d->edit_basics : d->basics;
   while(l)
   {
     dt_lib_modulegroups_basic_item_t *item = (dt_lib_modulegroups_basic_item_t *)l->data;
     gboolean exists = FALSE;
-    GList *ll;
-    if(edition)
-      ll = d->edit_groups;
-    else
-      ll = d->groups;
+    GList *ll = edition ? d->edit_groups : d->groups;
     while(ll)
     {
       dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)ll->data;
