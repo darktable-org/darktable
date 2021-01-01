@@ -150,7 +150,7 @@ void dt_iop_image_copy(float *const __restrict__ out, const float *const __restr
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
     const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for simd aligned(in, out : 16) default(none) \
     dt_omp_firstprivate(in, out, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
       out[k] = in[k];
@@ -191,6 +191,196 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
     fprintf(stderr,"copy_image_roi called with inconsistent RoI!\n");
     //TODO
   }
+}
+
+void dt_iop_image_fill(float *const buf, const float fill_value, const size_t width, const size_t height,
+                       const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf:16) default(none) \
+  dt_omp_firstprivate(buf, fill_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] = fill_value;
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+  if (fill_value == 0.0f)
+  {
+    // take advantage of compiler intrinsic which is hopefully highly optimized
+    memset(buf, 0, sizeof(float) * nfloats);
+  }
+  else
+  {
+#ifdef _OPENMP
+#pragma simd aligned(buf:16)
+#endif
+    for (size_t k = 0; k < nfloats; k++)
+      buf[k] = fill_value;
+  }
+}
+
+void dt_iop_image_add_const(float *const buf, const float add_value, const size_t width, const size_t height,
+                            const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf:16) default(none) \
+  dt_omp_firstprivate(buf, add_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] += add_value;
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf:16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] += add_value;
+}
+
+void dt_iop_image_add_image(float *const buf, const float* const other_image,
+                            const size_t width, const size_t height, const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
+  dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] += other_image[k];
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf, other_image : 16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] += other_image[k];
+}
+
+void dt_iop_image_sub_image(float *const buf, const float* const other_image,
+                            const size_t width, const size_t height, const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
+  dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] -= other_image[k];
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf, other_image : 16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] -= other_image[k];
+}
+
+void dt_iop_image_invert(float *const buf, const float max_value, const size_t width, const size_t height,
+                         const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf:16) default(none) \
+  dt_omp_firstprivate(buf, max_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] = max_value - buf[k];
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf:16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] = max_value - buf[k];
+}
+
+void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_t width, const size_t height,
+                            const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf:16) default(none) \
+  dt_omp_firstprivate(buf, mul_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] *= mul_value;
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf:16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] *= mul_value;
+}
+
+void dt_iop_image_div_const(float *const buf, const float div_value, const size_t width, const size_t height,
+                            const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf:16) default(none) \
+  dt_omp_firstprivate(buf, div_value, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] /= div_value;
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf:16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] /= div_value;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
