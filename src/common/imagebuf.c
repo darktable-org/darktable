@@ -193,6 +193,32 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
   }
 }
 
+void dt_iop_image_scaled_copy(float *const restrict buf, const float *const restrict src, const float scale,
+                              const size_t width, const size_t height, const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+#ifdef _OPENMP
+  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+#pragma omp parallel for simd aligned(buf, src : 16) default(none) \
+  dt_omp_firstprivate(buf, src, scale, nfloats) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] = scale * src[k];
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf, src : 16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] = scale * src[k];
+}
+
 void dt_iop_image_fill(float *const buf, const float fill_value, const size_t width, const size_t height,
                        const size_t ch)
 {

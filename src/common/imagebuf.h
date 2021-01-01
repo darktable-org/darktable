@@ -94,6 +94,10 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
                            const dt_iop_roi_t *const __restrict__ roi_in,
                            const dt_iop_roi_t *const __restrict__ roi_out, const int zero_pad);
 
+// Copy one image buffer to another, multiplying each element by the specified scale factor
+void dt_iop_image_scaled_copy(float *const __restrict__ buf, const float *const __restrict__ src, const float scale,
+                              const size_t width, const size_t height, const size_t ch);
+
 // Fill an image buffer with a specified value.
 void dt_iop_image_fill(float *const buf, const float fill_value, const size_t width, const size_t height,
                        const size_t ch);
