@@ -511,7 +511,7 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void xy_to_uv(const float xy[2], float uv[4])
+static inline void xy_to_uv(const float xy[2], float uv[2])
 {
   // Convert to CIE1960 Yuv color space, usefull to compute CCT
   // https://en.wikipedia.org/wiki/CIE_1960_color_space
