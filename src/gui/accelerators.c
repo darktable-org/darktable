@@ -152,7 +152,7 @@ void dt_accel_register_global(const gchar *path, guint accel_key, GdkModifierTyp
   *(accel->module) = '\0';
   accel->local = FALSE;
   accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
 }
 
 void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
@@ -170,7 +170,7 @@ void dt_accel_register_view(dt_view_t *self, const gchar *path, guint accel_key,
   g_strlcpy(accel->module, self->module_name, sizeof(accel->module));
   accel->local = FALSE;
   accel->views = self->view(self);
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
 }
 
 void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *path, guint accel_key,
@@ -185,7 +185,7 @@ void dt_accel_register_iop(dt_iop_module_so_t *so, gboolean local, const gchar *
   g_strlcpy(accel->module, so->op, sizeof(accel->module));
   accel->local = local;
   accel->views = DT_VIEW_DARKROOM;
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
 }
 
 void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint accel_key, GdkModifierType mods)
@@ -221,7 +221,7 @@ void dt_accel_register_lib_as_view(gchar *view_name, const gchar *path, guint ac
   else if(strcmp(view_name, "tethering") == 0)
     accel->views = DT_VIEW_TETHERING;
 
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
 }
 
 void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t views, const gchar *path,
@@ -242,7 +242,7 @@ void dt_accel_register_lib_for_views(dt_lib_module_t *self, dt_view_type_flags_t
   accel->local = FALSE;
   // we get the views in which the lib will be displayed
   accel->views = views;
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
 }
 
 void dt_accel_register_lib(dt_lib_module_t *self, const gchar *path, guint accel_key, GdkModifierType mods)
@@ -312,7 +312,7 @@ void _accel_register_actions_iop(dt_iop_module_so_t *so, gboolean local, const g
     accel->local = local;
     accel->views = DT_VIEW_DARKROOM;
 
-    darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+    darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
   }
 }
 
@@ -346,7 +346,7 @@ void dt_accel_register_lua(const gchar *path, guint accel_key, GdkModifierType m
   *(accel->module) = '\0';
   accel->local = FALSE;
   accel->views = DT_VIEW_DARKROOM | DT_VIEW_LIGHTTABLE | DT_VIEW_TETHERING | DT_VIEW_MAP | DT_VIEW_PRINT | DT_VIEW_SLIDESHOW;
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
 }
 
 void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views, guint accel_key,
@@ -365,17 +365,17 @@ void dt_accel_register_manual(const gchar *full_path, dt_view_type_flags_t views
   *(accel->module) = '\0';
   accel->local = FALSE;
   accel->views = views;
-  darktable.control->accelerator_list = g_slist_prepend(darktable.control->accelerator_list, accel);
+  darktable.control->accelerator_list = g_list_prepend(darktable.control->accelerator_list, accel);
 }
 
 static dt_accel_t *_lookup_accel(const gchar *path)
 {
-  GSList *l = darktable.control->accelerator_list;
+  GList *l = darktable.control->accelerator_list;
   while(l)
   {
     dt_accel_t *accel = (dt_accel_t *)l->data;
     if(accel && !strcmp(accel->path, path)) return accel;
-    l = g_slist_next(l);
+    l = g_list_next(l);
   }
   return NULL;
 }
@@ -1097,9 +1097,9 @@ void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path)
 
   if(accel)
   {
-      darktable.control->accelerator_list = g_slist_remove(darktable.control->accelerator_list, accel);
+    darktable.control->accelerator_list = g_list_remove(darktable.control->accelerator_list, accel);
 
-      g_free(accel);
+    g_free(accel);
   }
 }
 
@@ -1122,19 +1122,19 @@ void dt_accel_deregister_lib(dt_lib_module_t *module, const gchar *path)
       l = g_slist_next(l);
     }
   }
-  l = darktable.control->accelerator_list;
-  while(l)
+  GList *ll = darktable.control->accelerator_list;
+  while(ll)
   {
-    dt_accel_t *accel = (dt_accel_t *)l->data;
+    dt_accel_t *accel = (dt_accel_t *)ll->data;
     if(accel && !strncmp(accel->path, build_path, 1024))
     {
-      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
-      l = NULL;
+      darktable.control->accelerator_list = g_list_delete_link(darktable.control->accelerator_list, ll);
+      ll = NULL;
       g_free(accel);
     }
     else
     {
-      l = g_slist_next(l);
+      ll = g_list_next(ll);
     }
   }
 }
@@ -1143,20 +1143,20 @@ void dt_accel_deregister_global(const gchar *path)
 {
   char build_path[1024];
   dt_accel_path_global(build_path, sizeof(build_path), path);
-  GSList *l = darktable.control->accelerator_list;
+  GList *l = darktable.control->accelerator_list;
   while(l)
   {
     dt_accel_t *accel = (dt_accel_t *)l->data;
     if(accel && !strncmp(accel->path, build_path, 1024))
     {
-      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
+      darktable.control->accelerator_list = g_list_delete_link(darktable.control->accelerator_list, l);
       gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
       l = NULL;
       g_free(accel);
     }
     else
     {
-      l = g_slist_next(l);
+      l = g_list_next(l);
     }
   }
 }
@@ -1165,20 +1165,20 @@ void dt_accel_deregister_lua(const gchar *path)
 {
   char build_path[1024];
   dt_accel_path_lua(build_path, sizeof(build_path), path);
-  GSList *l = darktable.control->accelerator_list;
+  GList *l = darktable.control->accelerator_list;
   while(l)
   {
     dt_accel_t *accel = (dt_accel_t *)l->data;
     if(accel && !strncmp(accel->path, build_path, 1024))
     {
-      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
+      darktable.control->accelerator_list = g_list_delete_link(darktable.control->accelerator_list, l);
       gtk_accel_group_disconnect(darktable.control->accelerators, accel->closure);
       l = NULL;
       g_free(accel);
     }
     else
     {
-      l = g_slist_next(l);
+      l = g_list_next(l);
     }
   }
 }
@@ -1203,19 +1203,19 @@ void dt_accel_deregister_manual(GSList *list, const gchar *full_path)
       l = g_slist_next(l);
     }
   }
-  l = darktable.control->accelerator_list;
-  while(l)
+  GList *ll = darktable.control->accelerator_list;
+  while(ll)
   {
-    dt_accel_t *accel = (dt_accel_t *)l->data;
+    dt_accel_t *accel = (dt_accel_t *)ll->data;
     if(accel && !strncmp(accel->path, build_path, 1024))
     {
-      darktable.control->accelerator_list = g_slist_delete_link(darktable.control->accelerator_list, l);
-      l = NULL;
+      darktable.control->accelerator_list = g_list_delete_link(darktable.control->accelerator_list, ll);
+      ll = NULL;
       g_free(accel);
     }
     else
     {
-      l = g_slist_next(l);
+      ll = g_list_next(ll);
     }
   }
 }
@@ -1297,7 +1297,7 @@ void dt_accel_rename_global(const gchar *path, const gchar *new_path)
 {
   char build_path[1024];
   dt_accel_path_global(build_path, sizeof(build_path), path);
-  GSList *l = darktable.control->accelerator_list;
+  GList *l = darktable.control->accelerator_list;
   while(l)
   {
     dt_accel_t *accel = (dt_accel_t *)l->data;
@@ -1314,7 +1314,7 @@ void dt_accel_rename_global(const gchar *path, const gchar *new_path)
     }
     else
     {
-      l = g_slist_next(l);
+      l = g_list_next(l);
     }
   }
 }
@@ -1323,7 +1323,7 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path)
 {
   char build_path[1024];
   dt_accel_path_lua(build_path, sizeof(build_path), path);
-  GSList *l = darktable.control->accelerator_list;
+  GList *l = darktable.control->accelerator_list;
   while(l)
   {
     dt_accel_t *accel = (dt_accel_t *)l->data;
@@ -1340,7 +1340,7 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path)
     }
     else
     {
-      l = g_slist_next(l);
+      l = g_list_next(l);
     }
   }
 }

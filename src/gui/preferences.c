@@ -897,7 +897,7 @@ static void init_tab_accels(GtkWidget *stack, dt_gui_accel_search_t *search_data
   gtk_stack_add_titled(GTK_STACK(stack), container, _("shortcuts"), _("shortcuts"));
 
   // Building the accelerator tree
-  g_slist_foreach(darktable.control->accelerator_list, tree_insert_accel, (gpointer)model);
+  g_list_foreach(darktable.control->accelerator_list, tree_insert_accel, (gpointer)model);
 
   // Setting a custom sort functions so expandable groups rise to the top
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model), A_TRANS_COLUMN, GTK_SORT_ASCENDING);
@@ -1377,12 +1377,12 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
 
     // First locate the accel list entry
     g_strlcpy(query.path, darktable.control->accel_remap_str, sizeof(query.path));
-    GSList *remapped = g_slist_find_custom(darktable.control->accelerator_list, (gpointer)&query, _accelcmp);
+    GList *remapped = g_list_find_custom(darktable.control->accelerator_list, (gpointer)&query, _accelcmp);
     const dt_accel_t *accel_current = (dt_accel_t *)remapped->data;
 
     // let's search for conflicts
     dt_accel_t *accel_conflict = NULL;
-    GSList *l = darktable.control->accelerator_list;
+    GList *l = darktable.control->accelerator_list;
     while (l)
     {
       dt_accel_t *a = (dt_accel_t *)l->data;
@@ -1398,7 +1398,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
           break;
         }
       }
-      l = g_slist_next(l);
+      l = g_list_next(l);
     }
 
     if(!accel_conflict)
@@ -1435,7 +1435,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
                                       event_mods, TRUE))
         {
           // Then remove conflicts
-          g_slist_foreach(darktable.control->accelerator_list, delete_matching_accels, (gpointer)(accel_current));
+          g_list_foreach(darktable.control->accelerator_list, delete_matching_accels, (gpointer)(accel_current));
         }
       }
     }
