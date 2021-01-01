@@ -327,8 +327,8 @@ static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece, const char
     {
       fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
       const size_t n = (size_t)width * height;
-      for(int k=0; k<n; k++)
-        fwrite(buf+4*k, sizeof(float), 3, f);
+      for(size_t k=0; k<n; k++)
+        fwrite(buf+4U*k, sizeof(float), 3, f);
       fclose(f);
     }
   }
@@ -1325,7 +1325,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 #ifdef _OPENMP
 #pragma omp simd aligned(buf1, out : 64)
 #endif
-  for (size_t k = 0; k < 4 * npixels; k++)
+  for (size_t k = 0; k < 4U * npixels; k++)
     out[k] += buf1[k];
 
   if(!d->use_new_vst)
@@ -1565,17 +1565,17 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 }
 #endif
 
-static void sum_rec(const unsigned npixels, const float *in, float *out)
+static void sum_rec(const size_t npixels, const float *in, float *out)
 {
   if(npixels <= 3)
   {
-    for(int c = 0; c < 3; c++)
+    for(size_t c = 0; c < 3; c++)
     {
       out[c] = 0.0;
     }
-    for(int i = 0; i < npixels; i++)
+    for(size_t i = 0; i < npixels; i++)
     {
-      for(int c = 0; c < 3; c++)
+      for(size_t c = 0; c < 3; c++)
       {
         out[c] += in[i * 4 + c];
       }
@@ -1583,43 +1583,43 @@ static void sum_rec(const unsigned npixels, const float *in, float *out)
     return;
   }
 
-  unsigned npixels_first_half = npixels >> 1;
-  unsigned npixels_second_half = npixels - npixels_first_half;
+  const size_t npixels_first_half = npixels >> 1;
+  const size_t npixels_second_half = npixels - npixels_first_half;
   sum_rec(npixels_first_half, in, out);
-  sum_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half);
+  sum_rec(npixels_second_half, in + 4U * npixels_first_half, out + 4U * npixels_first_half);
   for(int c = 0; c < 3; c++)
   {
-    out[c] += out[4 * npixels_first_half + c];
+    out[c] += out[4U * npixels_first_half + c];
   }
 }
 
 /* this gives (npixels-1)*V[X] */
-static void variance_rec(const unsigned npixels, const float *in, float *out, const float mean[3])
+static void variance_rec(const size_t npixels, const float *in, float *out, const float mean[3])
 {
   if(npixels <= 3)
   {
-    for(int c = 0; c < 3; c++)
+    for(size_t c = 0; c < 3; c++)
     {
       out[c] = 0.0;
     }
-    for(int i = 0; i < npixels; i++)
+    for(size_t i = 0; i < npixels; i++)
     {
-      for(int c = 0; c < 3; c++)
+      for(size_t c = 0; c < 3; c++)
       {
-        float diff = in[i * 4 + c] - mean[c];
+        const float diff = in[i * 4 + c] - mean[c];
         out[c] += diff * diff;
       }
     }
     return;
   }
 
-  unsigned npixels_first_half = npixels >> 1;
-  unsigned npixels_second_half = npixels - npixels_first_half;
+  const size_t npixels_first_half = npixels >> 1;
+  const size_t npixels_second_half = npixels - npixels_first_half;
   variance_rec(npixels_first_half, in, out, mean);
-  variance_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half, mean);
+  variance_rec(npixels_second_half, in + 4U * npixels_first_half, out + 4U * npixels_first_half, mean);
   for(int c = 0; c < 3; c++)
   {
-    out[c] += out[4 * npixels_first_half + c];
+    out[c] += out[4U * npixels_first_half + c];
   }
 }
 
