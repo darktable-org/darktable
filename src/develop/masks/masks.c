@@ -351,7 +351,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
     else if(gui->seg_selected >= 0)
       g_strlcat(msg, _("ctrl+click to add a node"), sizeof(msg));
     else if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg), _("shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"), opacity);
+      g_snprintf(msg, sizeof(msg), _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
   }
   else if(formtype & DT_MASKS_GRADIENT)
   {
@@ -372,27 +372,25 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
       g_strlcat(msg, _("ctrl+click to rotate"), sizeof(msg));
     else if(gui->form_selected)
       g_snprintf(msg, sizeof(msg),
-                 _("shift+click to switch feathering mode, ctrl+click to rotate\nshift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"), opacity);
+                 _("shift+click to switch feathering mode, ctrl+click to rotate\nscroll to set size,shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"), opacity);
   }
   else if(formtype & DT_MASKS_BRUSH)
   {
+    // TODO: check if it would be good idea to have same controlls on creation and for selected brush
     if(gui->creation)
       g_snprintf(msg, sizeof(msg),
-                 _("scroll to set brush size, shift+scroll to set hardness,\nctrl+scroll to set opacity (%d%%)"), opacity);
+                 _("scroll to set brush size, shift+scroll to set hardness\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->form_selected)
       g_snprintf(msg, sizeof(msg),
-                 _("scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"), opacity);
+                 _("scroll to set hardness, shift+scroll to set brush size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
     else if(gui->border_selected)
       g_strlcat(msg, _("scroll to set brush size"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_CIRCLE)
   {
-    if(gui->creation)
-      g_snprintf(msg, sizeof(msg),
-                 _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
-    else if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg),
-                 _("shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"), opacity);
+    // circle has same controls on creation and on edit
+    g_snprintf(msg, sizeof(msg),
+               _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
   }
 
   dt_control_hinter_message(darktable.control, msg);
