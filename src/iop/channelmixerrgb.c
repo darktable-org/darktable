@@ -1402,8 +1402,6 @@ void extract_color_checker(const float *const restrict in, float *const restrict
     A[k * 3 * 9 + 18 + 8] = w * LMS_test[2];
   }
 
-  fprintf(stdout, "optimize: %i\n", g->optimization);
-
   pseudo_solve_gaussian(A, Y, g->checker->patches * 3, 9, TRUE);
 
   // repack the matrix
