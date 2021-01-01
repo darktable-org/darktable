@@ -108,18 +108,9 @@ typedef struct dt_iop_colorbalancergb_data_t
   struct dt_iop_order_iccprofile_info_t *work_profile;
 } dt_iop_colorbalancergb_data_t;
 
-/*
-typedef struct dt_iop_colorbalance_global_data_t
-{
-  int kernel_colorbalance;
-  int kernel_colorbalance_cdl;
-  int kernel_colorbalance_lgg;
-} dt_iop_colorbalance_global_data_t;
-*/
-
 const char *name()
 {
-  return _("color balance rgb");
+  return _("color balance pro");
 }
 
 const char *aliases()
@@ -172,7 +163,7 @@ static inline void repack_3x3_to_3xSSE(const float input[9], float output[3][4])
 }
 
 
-static void mat3mul(float *dst, const float *const m1, const float *const m2)
+static void mat3mul4(float *dst, const float *const m1, const float *const m2)
 {
   for(int k = 0; k < 3; ++k)
   {
@@ -215,8 +206,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // Premultiply the pipe RGB -> XYZ and XYZ -> grading RGB matrices to spare 2 matrix products per pixel
   float DT_ALIGNED_ARRAY input_matrix[3][4];
   float DT_ALIGNED_ARRAY output_matrix[3][4];
-  mat3mul((float *)input_matrix, (float *)XYZ_to_gradRGB, (float *)RGB_to_XYZ);
-  mat3mul((float *)output_matrix, (float *)XYZ_to_RGB, (float *)gradRGB_to_XYZ);
+  mat3mul4((float *)input_matrix, (float *)XYZ_to_gradRGB, (float *)RGB_to_XYZ);
+  mat3mul4((float *)output_matrix, (float *)XYZ_to_RGB, (float *)gradRGB_to_XYZ);
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
@@ -312,28 +303,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 }
 
-/*
-void init_global(dt_iop_module_so_t *module)
-{
-  const int program = 8; // extended.cl, from programs.conf
-  dt_iop_colorbalance_global_data_t *gd
-      = (dt_iop_colorbalance_global_data_t *)malloc(sizeof(dt_iop_colorbalance_global_data_t));
-  module->data = gd;
-  gd->kernel_colorbalance = dt_opencl_create_kernel(program, "colorbalance");
-  gd->kernel_colorbalance_lgg = dt_opencl_create_kernel(program, "colorbalance_lgg");
-  gd->kernel_colorbalance_cdl = dt_opencl_create_kernel(program, "colorbalance_cdl");
-}
-
-void cleanup_global(dt_iop_module_so_t *module)
-{
-  dt_iop_colorbalance_global_data_t *gd = (dt_iop_colorbalance_global_data_t *)module->data;
-  dt_opencl_free_kernel(gd->kernel_colorbalance);
-  dt_opencl_free_kernel(gd->kernel_colorbalance_lgg);
-  dt_opencl_free_kernel(gd->kernel_colorbalance_cdl);
-  free(module->data);
-  module->data = NULL;
-}
-*/
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -416,7 +385,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
                                             {-0.67012691f,  1.91752954f,   0.39223917f, 0.f },
                                             { 0.06557547f, -0.07983082f,   0.75036927f, 0.f } };
     float DT_ALIGNED_ARRAY input_matrix[3][4];
-    mat3mul((float *)input_matrix, (float *)XYZ_to_gradingRGB, (float *)RGB_to_XYZ);
+    mat3mul4((float *)input_matrix, (float *)XYZ_to_gradingRGB, (float *)RGB_to_XYZ);
 
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
