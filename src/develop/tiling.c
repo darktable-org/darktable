@@ -54,7 +54,7 @@ static unsigned _gcd(unsigned a, unsigned b)
     b = a % b;
     a = t;
   }
-  return a;
+  return MAX(a, 1);
 }
 
 /* least common multiple */
