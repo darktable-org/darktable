@@ -126,6 +126,13 @@ void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_
 void dt_iop_image_div_const(float *const buf, const float div_value, const size_t width, const size_t height,
                             const size_t ch);
 
+// perform timings to determine the optimal threshold for switching to parallel operations, as well as the
+// maximal number of threads before saturating the memory bus
+void dt_iop_image_copy_benchmark();
+
+// load configurable settings from darktablerc
+void dt_iop_image_copy_configure();
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

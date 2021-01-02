@@ -19,6 +19,9 @@
 #include <stdarg.h>
 #include "common/imagebuf.h"
 
+static size_t parallel_imgop_minimum = 500000;
+static size_t parallel_imgop_maxthreads = 4;
+
 // Allocate one or more buffers as detailed in the given parameters.  If any allocation fails, free all of them,
 // set the module's trouble flag, and return FALSE.
 gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWidget *warn_label,
@@ -144,12 +147,12 @@ gboolean dt_iop_alloc_image_buffers(struct dt_iop_module_t *const module, GtkWid
 void dt_iop_image_copy(float *const __restrict__ out, const float *const __restrict__ in, const size_t nfloats)
 {
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(in, out : 16) default(none) \
     dt_omp_firstprivate(in, out, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -198,12 +201,12 @@ void dt_iop_image_scaled_copy(float *const restrict buf, const float *const rest
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf, src : 16) default(none) \
   dt_omp_firstprivate(buf, src, scale, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -224,12 +227,12 @@ void dt_iop_image_fill(float *const buf, const float fill_value, const size_t wi
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, fill_value, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -258,12 +261,12 @@ void dt_iop_image_add_const(float *const buf, const float add_value, const size_
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, add_value, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -284,12 +287,12 @@ void dt_iop_image_add_image(float *const buf, const float* const other_image,
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
   dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -310,12 +313,12 @@ void dt_iop_image_sub_image(float *const buf, const float* const other_image,
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf, other_image : 16) default(none) \
   dt_omp_firstprivate(buf, other_image, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -336,12 +339,12 @@ void dt_iop_image_invert(float *const buf, const float max_value, const size_t w
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, max_value, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -362,12 +365,12 @@ void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, mul_value, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -388,12 +391,12 @@ void dt_iop_image_div_const(float *const buf, const float div_value, const size_
 {
   const size_t nfloats = width * height * ch;
 #ifdef _OPENMP
-  if (nfloats > 500000)	// is the copy big enough to outweigh threading overhead?
+  if (nfloats > parallel_imgop_minimum)	// is the copy big enough to outweigh threading overhead?
   {
     // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
     // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
     // memory won't be able to take advantage of more than four cores).
-    const int nthreads = darktable.num_openmp_threads < 4 ? darktable.num_openmp_threads : 4;
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
 #pragma omp parallel for simd aligned(buf:16) default(none) \
   dt_omp_firstprivate(buf, div_value, nfloats) schedule(simd:static) num_threads(nthreads)
     for(size_t k = 0; k < nfloats; k++)
@@ -407,6 +410,23 @@ void dt_iop_image_div_const(float *const buf, const float div_value, const size_
 #endif
   for (size_t k = 0; k < nfloats; k++)
     buf[k] /= div_value;
+}
+
+// perform timings to determine the optimal threshold for switching to parallel operations, as well as the
+// maximal number of threads before saturating the memory bus
+void dt_iop_image_copy_benchmark()
+{
+  ///TODO
+}
+
+void dt_iop_image_copy_configure()
+{
+  int thresh = dt_conf_get_int("memcpy_parallel_threshold");
+  if (thresh > 0)
+    parallel_imgop_minimum = thresh;
+  int threads = dt_conf_get_int("memcpy_parallel_maxthreads");
+  if (threads > 0)
+    parallel_imgop_maxthreads = threads;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
