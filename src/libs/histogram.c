@@ -270,12 +270,12 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
   // then the image is already converted by the caller.
   if(in_profile_type != DT_COLORSPACE_NONE)
   {
-    dt_colorspaces_color_profile_type_t out_profile_type;
-    const char *out_profile_filename;
     const dt_iop_order_iccprofile_info_t *const profile_info_from
       = dt_ioppr_add_profile_info_to_list(dev, in_profile_type, in_profile_filename, INTENT_PERCEPTUAL);
-    dt_ioppr_get_histogram_profile_type(&out_profile_type, &out_profile_filename);
 
+    dt_colorspaces_color_profile_type_t out_profile_type;
+    const char *out_profile_filename;
+    dt_ioppr_get_histogram_profile_type(&out_profile_type, &out_profile_filename);
     if(out_profile_type != DT_COLORSPACE_NONE)
     {
       const dt_iop_order_iccprofile_info_t *const profile_info_to =

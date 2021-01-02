@@ -83,6 +83,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
         dt_conf_set_float("plugins/darkroom/spots/circle_border", masks_border);
       else
         dt_conf_set_float("plugins/darkroom/masks/circle/border", masks_border);
+      dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
     }
     else if(state == 0)
     {
@@ -102,6 +103,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
         dt_conf_set_float("plugins/darkroom/spots/circle_size", masks_size);
       else
         dt_conf_set_float("plugins/darkroom/masks/circle/size", masks_size);
+      dt_toast_log(_("size: %3.2f%%"), masks_size*100.0f);
     }
     return 1;
   }
@@ -138,6 +140,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
           dt_conf_set_float("plugins/darkroom/spots/circle_border", circle->border);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/border", circle->border);
+        dt_toast_log(_("feather size: %3.2f%%"), circle->border*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -154,6 +157,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
           dt_conf_set_float("plugins/darkroom/spots/circle_size", circle->radius);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/size", circle->radius);
+        dt_toast_log(_("size: %3.2f%%"), circle->radius*100.0f);
       }
       else
       {
