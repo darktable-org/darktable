@@ -395,7 +395,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(input_matrix) schedule(static) shared(LUT)
+      dt_omp_firstprivate(input_matrix) schedule(static) dt_omp_sharedconst(LUT)
 #endif
     for(size_t r = 0; r < STEPS; r++)
       for(size_t g = 0; g < STEPS; g++)
