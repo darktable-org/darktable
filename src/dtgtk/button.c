@@ -154,6 +154,7 @@ GType dtgtk_button_get_type()
 
 void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
 {
+  g_return_if_fail(button != NULL);
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
@@ -161,6 +162,7 @@ void dtgtk_button_set_paint(GtkDarktableButton *button, DTGTKCairoPaintIconFunc 
 
 void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
 {
+  g_return_if_fail(button != NULL);
   if(active)
     button->icon_flags |= CPF_ACTIVE;
   else
@@ -169,6 +171,7 @@ void dtgtk_button_set_active(GtkDarktableButton *button, gboolean active)
 
 void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color)
 {
+  g_return_if_fail(button != NULL);
   if(color)
   {
     button->fg = *color;
@@ -180,6 +183,7 @@ void dtgtk_button_override_color(GtkDarktableButton *button, GdkRGBA *color)
 
 void dtgtk_button_override_background_color(GtkDarktableButton *button, GdkRGBA *color)
 {
+  g_return_if_fail(button != NULL);
   if(color)
   {
     button->bg = *color;

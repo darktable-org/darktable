@@ -91,6 +91,7 @@ GType dtgtk_icon_get_type()
 
 void dtgtk_icon_set_paint(GtkWidget *icon, DTGTKCairoPaintIconFunc paint, gint paintflags, void *paintdata)
 {
+  g_return_if_fail(icon != NULL);
   DTGTK_ICON(icon)->icon = paint;
   DTGTK_ICON(icon)->icon_flags = paintflags;
   DTGTK_ICON(icon)->icon_data = paintdata;
