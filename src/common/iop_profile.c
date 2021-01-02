@@ -851,13 +851,29 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
   return profile_info;
 }
 
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
+static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
+                                        const char **profile_filename,
+                                        const gboolean force_normal_mode);
+
+static dt_iop_order_iccprofile_info_t *_get_histogram_profile_info(struct dt_develop_t *dev,
+                                                                   const int intent,
+                                                                   const gboolean force_normal_mode)
 {
   dt_colorspaces_color_profile_type_t histogram_profile_type;
   const char *histogram_profile_filename;
-  dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
+  _get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename, force_normal_mode);
   return dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
-                                           DT_INTENT_PERCEPTUAL);
+                                           intent);
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev)
+{
+  return _get_histogram_profile_info(dev, INTENT_PERCEPTUAL, FALSE);
+}
+
+dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info_for_overexposed(struct dt_develop_t *dev)
+{
+  return _get_histogram_profile_info(dev, INTENT_RELATIVE_COLORIMETRIC, TRUE);
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe)
@@ -997,10 +1013,12 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
     fprintf(stderr, "[dt_ioppr_get_export_profile_type] can't find colorout iop\n");
 }
 
-void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
-                                         const char **profile_filename)
+static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
+                                        const char **profile_filename,
+                                        const gboolean force_normal_mode)
 {
-  const dt_colorspaces_color_mode_t mode = darktable.color_profiles->mode;
+  const dt_colorspaces_color_mode_t mode = force_normal_mode
+      ? DT_PROFILE_NORMAL : darktable.color_profiles->mode;
 
   // if in gamut check use soft proof
   if(mode != DT_PROFILE_NORMAL || darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
@@ -1021,6 +1039,12 @@ void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *pr
     *profile_type = darktable.color_profiles->histogram_type;
     *profile_filename = darktable.color_profiles->histogram_filename;
   }
+}
+
+void dt_ioppr_get_histogram_profile_type(dt_colorspaces_color_profile_type_t *profile_type,
+                                         const char **profile_filename)
+{
+  return _get_histogram_profile_type(profile_type, profile_filename, FALSE);
 }
 
 
