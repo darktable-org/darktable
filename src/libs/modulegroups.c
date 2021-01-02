@@ -1266,7 +1266,8 @@ static void _manage_editor_module_update_list(dt_lib_modulegroups_group_t *gr, i
           gtk_widget_set_name(btn, "module-reset-button");
           gtk_widget_set_tooltip_text(btn, _("remove this module"));
           g_object_set_data(G_OBJECT(btn), "module_name", module->op);
-          g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_module_remove), gr);
+          g_object_set_data(G_OBJECT(btn), "group", gr);
+          g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_module_remove), self);
           gtk_box_pack_end(GTK_BOX(hb), btn, FALSE, TRUE, 0);
         }
         gtk_box_pack_start(GTK_BOX(gr->iop_box), hb, FALSE, TRUE, 0);
