@@ -2933,7 +2933,7 @@ static void rt_build_scaled_mask(float *const mask, dt_iop_roi_t *const roi_mask
     fprintf(stderr, "rt_build_scaled_mask: error allocating memory\n");
     goto cleanup;
   }
-  memset(mask_tmp, 0, sizeof(float) * roi_mask_scaled->width * roi_mask_scaled->height);
+  dt_iop_image_fill(mask_tmp, 0.0f, roi_mask_scaled->width, roi_mask_scaled->height, 1);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
