@@ -879,12 +879,14 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
           masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/spots/path_border", masks_border);
+          dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
           masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border);
+          dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
         }
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
