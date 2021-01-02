@@ -47,8 +47,8 @@
 // which version of the non-local means code should be used?  0=old (this file), 1=new (src/common/nlmeans_core.c)
 #define USE_NEW_IMPL_CL 0
 
-//check for regression
-//#define VALIDATE_SUMY2
+// should we dump the generated wavelet scales to files in /tmp ?
+//#define DEBUG_SCALES
 
 #define REDUCESIZE 64
 // number of intermediate buffers used by OpenCL code path.  Needs to match value in src/common/nlmeans_core.c
@@ -313,6 +313,29 @@ typedef struct dt_iop_denoiseprofile_global_data_t
 } dt_iop_denoiseprofile_global_data_t;
 
 static dt_noiseprofile_t dt_iop_denoiseprofile_get_auto_profile(dt_iop_module_t *self);
+
+#ifdef DEBUG_SCALES
+static void debug_dump_PFM(const dt_dev_pixelpipe_iop_t *const piece, const char *const namespec,
+                           const float* const restrict buf, const int width, const int height, const int scale)
+{
+  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW)
+  {
+    char filename[512];
+    snprintf(filename, sizeof(filename), namespec, scale);
+    FILE *f = g_fopen(filename, "wb");
+    if (f)
+    {
+      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
+      const size_t n = (size_t)width * height;
+      for(size_t k=0; k<n; k++)
+        fwrite(buf+4U*k, sizeof(float), 3, f);
+      fclose(f);
+    }
+  }
+}
+#else
+#define debug_dump_PFM(p,n,b,w,h,s)
+#endif
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
@@ -704,8 +727,10 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 
     const int max_filter_radius = (1u << max_scale); // 2 * 2^max_scale
 
-    tiling->factor = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
+    tiling->factor = 5.0f; // in + out + precond + tmp + reducebuffer
+    tiling->factor_cl = 3.5f + max_scale; // in + out + tmp + reducebuffer + scale buffers
     tiling->maxbuf = 1.0f;
+    tiling->maxbuf_cl = 1.0f;
     tiling->overhead = 0;
     tiling->overlap = max_filter_radius;
     tiling->xalign = 1;
@@ -1103,6 +1128,73 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   }
 }
 
+static void variance_stabilizing_xform(float thrs[4], const int scale, const int max_scale, const size_t npixels,
+                                       const float *const sum_y2, const dt_iop_denoiseprofile_data_t *const d)
+{
+  // variance stabilizing transform maps sigma to unity.
+  const float sigma = 1.0f;
+  // it is then transformed by wavelet scales via the 5 tap a-trous filter:
+  const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
+  const float sigma_band = powf(varf, scale) * sigma;
+  // determine thrs as bayesshrink
+  const float sb2 = sigma_band * sigma_band;
+  const float var_y[3] = { sum_y2[0] / (npixels - 1.0f),
+                           sum_y2[1] / (npixels - 1.0f),
+                           sum_y2[2] / (npixels - 1.0f) };
+  const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
+                           sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
+  // add 8.0 here because it seemed a little weak
+  float adjt[3] = { 8.0f, 8.0f, 8.0f };
+
+  int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
+
+  if(d->wavelet_color_mode == MODE_RGB)
+  {
+    // current scale number is scale+offset_scale
+    // for instance, largest scale is DT_IOP_DENOISE_PROFILE_BANDS
+    // max_scale only indicates the number of scales to process at THIS
+    // zoom level, it does NOT corresponds to the the maximum number of scales.
+    // in other words, max_scale is the maximum number of VISIBLE scales.
+    // That is why we have this "scale+offset_scale"
+    float band_force_exp_2
+      = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4;
+    for(int ch = 0; ch < 3; ch++)
+    {
+      adjt[ch] *= band_force_exp_2;
+    }
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4;
+    adjt[0] *= band_force_exp_2;
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4;
+    adjt[1] *= band_force_exp_2;
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4;
+    adjt[2] *= band_force_exp_2;
+  }
+  else
+  {
+    float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4;
+    adjt[0] *= band_force_exp_2;
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 *= band_force_exp_2;
+    band_force_exp_2 *= 4;
+    adjt[1] *= band_force_exp_2;
+    adjt[2] *= band_force_exp_2;
+  }
+  thrs[0] = adjt[0] * sb2 / std_x[0];
+  thrs[1] = adjt[1] * sb2 / std_x[1];
+  thrs[2] = adjt[2] * sb2 / std_x[2];
+  thrs[3] = 0.0f;
+}
+
 static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                              const void *const ivoid, void *const ovoid, const dt_iop_roi_t *const roi_in,
                              const dt_iop_roi_t *const roi_out, const eaw_dn_decompose_t decompose,
@@ -1110,7 +1202,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 {
   // this is called for preview and full pipe separately, each with its own pixelpipe piece.
   // get our data struct:
-  dt_iop_denoiseprofile_data_t *d = (dt_iop_denoiseprofile_data_t *)piece->data;
+  const dt_iop_denoiseprofile_data_t *const d = (dt_iop_denoiseprofile_data_t *)piece->data;
 
 #define MAX_MAX_SCALE DT_IOP_DENOISE_PROFILE_BANDS // hard limit
 
@@ -1135,22 +1227,26 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const int max_mult = 1u << (max_scale - 1);
   const int width = roi_in->width, height = roi_in->height;
   const size_t npixels = (size_t)width*height;
+  const float *const restrict in = (const float*)ivoid;
+  float *const restrict out = (float*)ovoid;
 
   // corner case of extremely small image. this is not really likely to happen but would
   // lead to out of bounds memory access
   if(width < 2 * max_mult || height < 2 * max_mult)
   {
-    memcpy(ovoid, ivoid, sizeof(float) * 4 * npixels);
+    memcpy(out, in, sizeof(float) * 4 * npixels);
     return;
   }
 
-  float *buf[MAX_MAX_SCALE];
-  float sum_y2[4*MAX_MAX_SCALE];
-  float *tmp = NULL;
-  float *buf1 = NULL, *buf2 = NULL;
-  for(int k = 0; k < max_scale; k++)
-    buf[k] = dt_alloc_align_float((size_t)4 * npixels);
-  tmp = dt_alloc_align_float((size_t)4 * npixels);
+  float *buf = NULL;
+  float *restrict precond = NULL;
+  float *restrict tmp = NULL;
+
+  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
+  {
+    dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
+    return;
+  }
 
   float wb[3];
   const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
@@ -1183,179 +1279,68 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   if(!d->use_new_vst)
   {
-    precondition((float *)ivoid, (float *)ovoid, width, height, aa, bb);
+    precondition(in, precond, width, height, aa, bb);
   }
   else if(d->wavelet_color_mode == MODE_RGB)
   {
-    precondition_v2((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], wb);
+    precondition_v2(in, precond, width, height, d->a[1] * compensate_p, p, d->b[1], wb);
   }
   else
   {
-    precondition_Y0U0V0((float *)ivoid, (float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], toY0U0V0);
+    precondition_Y0U0V0(in, precond, width, height, d->a[1] * compensate_p, p, d->b[1], toY0U0V0);
   }
 
-#if 0 // DEBUG: see what variance we have after transform
-  if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW)
-  {
-    const int n = width*height;
-    FILE *f = g_fopen("/tmp/transformed.pfm", "wb");
-    fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-    for(int k=0; k<n; k++)
-      fwrite(((float*)ovoid)+4*k, sizeof(float), 3, f);
-    fclose(f);
-  }
-#endif
+  debug_dump_PFM(piece,"/tmp/transformed.pfm",precond,width,height,0);
 
-  buf1 = (float *)ovoid;
-  buf2 = tmp;
+  float *restrict buf1 = precond;
+  float *restrict buf2 = tmp;
+
+  // clear the output buffer, which will be accumulating all of the detail scales
+  memset(out, 0, sizeof(float) * 4 * npixels);
 
   for(int scale = 0; scale < max_scale; scale++)
   {
     const float sigma = 1.0f;
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
     const float sigma_band = powf(varf, scale) * sigma;
-    decompose(buf2, buf1, buf[scale], sum_y2+4*scale, scale, 1.0f / (sigma_band * sigma_band), width, height);
-// DEBUG: clean out temporary memory:
-// memset(buf1, 0, sizeof(float)*4*width*height);
-#if 0 // DEBUG: print wavelet scales:
-    if((piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) != DT_DEV_PIXELPIPE_PREVIEW)
-    {
-      char filename[512];
-      snprintf(filename, sizeof(filename), "/tmp/coarse_%d.pfm", scale);
-      FILE *f = g_fopen(filename, "wb");
-      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(size_t k = 0; k < npixels; k++)
-        fwrite(buf2+4*k, sizeof(float), 3, f);
-      fclose(f);
-      snprintf(filename, sizeof(filename), "/tmp/detail_%d.pfm", scale);
-      f = g_fopen(filename, "wb");
-      fprintf(f, "PF\n%d %d\n-1.0\n", width, height);
-      for(size_t k = 0; k < npixels; k++)
-        fwrite(buf[scale]+4*k, sizeof(float), 3, f);
-      fclose(f);
-    }
-#endif
-    float *buf3 = buf2;
-    buf2 = buf1;
-    buf1 = buf3;
-  }
+    float sum_y2[4];
+    decompose(buf2, buf1, buf, sum_y2, scale, 1.0f / (sigma_band * sigma_band), width, height);
+    debug_dump_PFM(piece,"/tmp/coarse_%d.pfm",buf2,width,height,scale);
+    debug_dump_PFM(piece,"/tmp/detail_%d.pfm",buf,width,height,scale);
 
-  // now do everything backwards, so the result will end up in *ovoid
-  for(int scale = max_scale - 1; scale >= 0; scale--)
-  {
-#if 1
-    // variance stabilizing transform maps sigma to unity.
-    const float sigma = 1.0f;
-    // it is then transformed by wavelet scales via the 5 tap a-trous filter:
-    const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
-    const float sigma_band = powf(varf, scale) * sigma;
-    // determine thrs as bayesshrink
-#ifdef VALIDATE_SUMY2
-    // previous code did a single summation over the entire image, while current code does a line-by-line
-    //  summation (further split among threads).  This code prints out the results of the two approaches.
-    fprintf(stderr,"scale %d, incr sums:  %g %g %g\n",scale,sum_y2[4*scale],sum_y2[4*scale+1],sum_y2[4*scale+2]);
-    float sq[3] = { 0.0f };
-    for(int i = 0; i < npixels; i++)
-      for(int c = 0; c < 3; c++)
-        sq[c] += (buf[scale][4*i+c] * buf[scale][4*i+c]);
-    fprintf(stderr,"scale %d, continuous: %g %g %g\n",scale,sq[0],sq[1],sq[2]); // the result of the old method
-    float sq2[3] = { 0.0f };
-    for(int j = 0; j < height; j++)
-    {
-      float rowsum[3] = { 0.0f };
-      for(int i = 0; i < width; i++)
-        for(int c = 0; c < 3; c++)
-          rowsum[c] += (buf[scale][4*(j*width+i)+c] * buf[scale][4*(j*width+i)+c]);
-      for(int c = 0; c < 3; c++)
-        sq2[c] += rowsum[c];
-    }
-    fprintf(stderr,"scale %d, by rows:    %g %g %g\n",scale,sq2[0],sq2[1],sq2[2]); // approximately the new method
-#endif
-    const float sb2 = sigma_band * sigma_band;
-    const float var_y[3] = { sum_y2[4*scale] / (npixels - 1.0f),
-                             sum_y2[4*scale+1] / (npixels - 1.0f),
-                             sum_y2[4*scale+2] / (npixels - 1.0f) };
-    const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
-                             sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
-    // add 8.0 here because it seemed a little weak
-    float adjt[3] = { 8.0f, 8.0f, 8.0f };
-
-    int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
-
-    if(d->wavelet_color_mode == MODE_RGB)
-    {
-      // current scale number is scale+offset_scale
-      // for instance, largest scale is DT_IOP_DENOISE_PROFILE_BANDS
-      // max_scale only indicates the number of scales to process at THIS
-      // zoom level, it does NOT corresponds to the the maximum number of scales.
-      // in other words, max_scale is the maximum number of VISIBLE scales.
-      // That is why we have this "scale+offset_scale"
-      float band_force_exp_2
-          = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-      band_force_exp_2 *= band_force_exp_2;
-      band_force_exp_2 *= 4;
-      for(int ch = 0; ch < 3; ch++)
-      {
-        adjt[ch] *= band_force_exp_2;
-      }
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-      band_force_exp_2 *= band_force_exp_2;
-      band_force_exp_2 *= 4;
-      adjt[0] *= band_force_exp_2;
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-      band_force_exp_2 *= band_force_exp_2;
-      band_force_exp_2 *= 4;
-      adjt[1] *= band_force_exp_2;
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-      band_force_exp_2 *= band_force_exp_2;
-      band_force_exp_2 *= 4;
-      adjt[2] *= band_force_exp_2;
-    }
-    else
-    {
-      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-      band_force_exp_2 *= band_force_exp_2;
-      band_force_exp_2 *= 4;
-      adjt[0] *= band_force_exp_2;
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
-      band_force_exp_2 *= band_force_exp_2;
-      band_force_exp_2 *= 4;
-      adjt[1] *= band_force_exp_2;
-      adjt[2] *= band_force_exp_2;
-    }
-
-    const float DT_ALIGNED_PIXEL thrs[4] = { adjt[0] * sb2 / std_x[0],
-                                             adjt[1] * sb2 / std_x[1],
-                                             adjt[2] * sb2 / std_x[2],
-                                             0.0f };
-// const float std = (std_x[0] + std_x[1] + std_x[2])/3.0f;
-// const float thrs[4] = { adjt*sigma*sigma/std, adjt*sigma*sigma/std, adjt*sigma*sigma/std, 0.0f};
-// fprintf(stderr, "scale %d thrs %f %f %f = %f / %f %f %f \n", scale, thrs[0], thrs[1], thrs[2], sb2,
-// std_x[0], std_x[1], std_x[2]);
-#endif
     const float DT_ALIGNED_PIXEL boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-    synthesize(buf2, buf1, buf[scale], thrs, boost, width, height);
+    float DT_ALIGNED_PIXEL thrs[4];
+    variance_stabilizing_xform(thrs,scale,max_scale,npixels,sum_y2,d);
+    synthesize(out, out, buf, thrs, boost, width, height);
 
     float *buf3 = buf2;
     buf2 = buf1;
     buf1 = buf3;
   }
+
+  // add in the final residue
+#ifdef _OPENMP
+#pragma omp simd aligned(buf1, out : 64)
+#endif
+  for (size_t k = 0; k < 4U * npixels; k++)
+    out[k] += buf1[k];
 
   if(!d->use_new_vst)
   {
-    backtransform((float *)ovoid, width, height, aa, bb);
+    backtransform(out, width, height, aa, bb);
   }
   else if(d->wavelet_color_mode == MODE_RGB)
   {
-    backtransform_v2((float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb);
+    backtransform_v2(out, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb);
   }
   else
   {
-    backtransform_Y0U0V0((float *)ovoid, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb, toRGB);
+    backtransform_Y0U0V0(out, width, height, d->a[1] * compensate_p, p, d->b[1], d->bias - 0.5 * logf(in_scale), wb, toRGB);
   }
 
-  for(int k = 0; k < max_scale; k++) dt_free_align(buf[k]);
+  dt_free_align(buf);
   dt_free_align(tmp);
+  dt_free_align(precond);
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) dt_iop_alpha_copy(ivoid, ovoid, width, height);
 
@@ -1577,17 +1562,17 @@ static void process_nlmeans_sse(struct dt_iop_module_t *self, dt_dev_pixelpipe_i
 }
 #endif
 
-static void sum_rec(const unsigned npixels, const float *in, float *out)
+static void sum_rec(const size_t npixels, const float *in, float *out)
 {
   if(npixels <= 3)
   {
-    for(int c = 0; c < 3; c++)
+    for(size_t c = 0; c < 3; c++)
     {
       out[c] = 0.0;
     }
-    for(int i = 0; i < npixels; i++)
+    for(size_t i = 0; i < npixels; i++)
     {
-      for(int c = 0; c < 3; c++)
+      for(size_t c = 0; c < 3; c++)
       {
         out[c] += in[i * 4 + c];
       }
@@ -1595,43 +1580,43 @@ static void sum_rec(const unsigned npixels, const float *in, float *out)
     return;
   }
 
-  unsigned npixels_first_half = npixels >> 1;
-  unsigned npixels_second_half = npixels - npixels_first_half;
+  const size_t npixels_first_half = npixels >> 1;
+  const size_t npixels_second_half = npixels - npixels_first_half;
   sum_rec(npixels_first_half, in, out);
-  sum_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half);
+  sum_rec(npixels_second_half, in + 4U * npixels_first_half, out + 4U * npixels_first_half);
   for(int c = 0; c < 3; c++)
   {
-    out[c] += out[4 * npixels_first_half + c];
+    out[c] += out[4U * npixels_first_half + c];
   }
 }
 
 /* this gives (npixels-1)*V[X] */
-static void variance_rec(const unsigned npixels, const float *in, float *out, const float mean[3])
+static void variance_rec(const size_t npixels, const float *in, float *out, const float mean[3])
 {
   if(npixels <= 3)
   {
-    for(int c = 0; c < 3; c++)
+    for(size_t c = 0; c < 3; c++)
     {
       out[c] = 0.0;
     }
-    for(int i = 0; i < npixels; i++)
+    for(size_t i = 0; i < npixels; i++)
     {
-      for(int c = 0; c < 3; c++)
+      for(size_t c = 0; c < 3; c++)
       {
-        float diff = in[i * 4 + c] - mean[c];
+        const float diff = in[i * 4 + c] - mean[c];
         out[c] += diff * diff;
       }
     }
     return;
   }
 
-  unsigned npixels_first_half = npixels >> 1;
-  unsigned npixels_second_half = npixels - npixels_first_half;
+  const size_t npixels_first_half = npixels >> 1;
+  const size_t npixels_second_half = npixels - npixels_first_half;
   variance_rec(npixels_first_half, in, out, mean);
-  variance_rec(npixels_second_half, in + 4 * npixels_first_half, out + 4 * npixels_first_half, mean);
+  variance_rec(npixels_second_half, in + 4U * npixels_first_half, out + 4U * npixels_first_half, mean);
   for(int c = 0; c < 3; c++)
   {
-    out[c] += out[4 * npixels_first_half + c];
+    out[c] += out[4U * npixels_first_half + c];
   }
 }
 
