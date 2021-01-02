@@ -492,9 +492,14 @@ static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_siz
 #define for_each_channel(_var, ...) \
   _DT_Pragma(omp simd __VA_ARGS__) \
   for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < 4; _var++)
 #else
 #define for_each_channel(_var, ...) \
   for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  for (size_t _var = 0; _var < 4; _var++)
 #endif
 
 // copy the RGB channels of a pixel; includes the 'alpha' channel as well if faster due to vectorization, but
