@@ -1041,6 +1041,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
       }
+      dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
     }
     else if(state == 0)
     {
@@ -1065,6 +1066,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -4, masks_border);
       }
+      dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
     }
     dt_control_queue_redraw_center();
     return 1;
@@ -1108,12 +1110,14 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
           masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
+          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
           masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
+          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
         }
       }
       else
@@ -1125,6 +1129,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
           const float masks_hardness = point->hardness;
           point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+          dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
         }
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
