@@ -613,7 +613,7 @@ void gui_init(dt_iop_module_t *self)
   // start building top level widget
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
 
-  // Page CAT
+  // Page master
   self->widget = dt_ui_notebook_page(g->notebook, _("master"), _("global grading"));
 
   g->hue_angle = dt_bauhaus_slider_from_params(self, "hue_angle");
@@ -621,8 +621,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->hue_angle, 1.);
   dt_bauhaus_slider_set_format(g->hue_angle, "%.2f °");
   gtk_widget_set_tooltip_text(g->hue_angle, _("rotate all hues by an angle, at the same luminance"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->hue_angle), TRUE, TRUE, 0);
-
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("saturation grading")), FALSE, FALSE, 0);
 
   g->saturation_global = dt_bauhaus_slider_from_params(self, "saturation_global");
@@ -631,28 +629,24 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_step(g->saturation_global, .5);
   dt_bauhaus_slider_set_format(g->saturation_global, "%.2f °");
   gtk_widget_set_tooltip_text(g->saturation_global, _("add or remove saturation by an absolute amount"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_global), TRUE, TRUE, 0);
 
   g->saturation_shadows = dt_bauhaus_slider_from_params(self, "saturation_shadows");
   dt_bauhaus_slider_set_digits(g->saturation_shadows, 4);
   dt_bauhaus_slider_set_factor(g->saturation_shadows, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_shadows, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation_shadows, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_shadows), TRUE, TRUE, 0);
 
   g->saturation_midtones= dt_bauhaus_slider_from_params(self, "saturation_midtones");
   dt_bauhaus_slider_set_digits(g->saturation_midtones, 4);
   dt_bauhaus_slider_set_factor(g->saturation_midtones, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_midtones, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation_midtones, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_midtones), TRUE, TRUE, 0);
 
   g->saturation_highlights = dt_bauhaus_slider_from_params(self, "saturation_highlights");
   dt_bauhaus_slider_set_digits(g->saturation_highlights, 4);
   dt_bauhaus_slider_set_factor(g->saturation_highlights, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_highlights, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation_highlights, _("increase or decrease saturation proportionnaly to the original pixel saturation"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->saturation_highlights), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("chroma grading")), FALSE, FALSE, 0);
 
@@ -662,30 +656,26 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->chroma_global, 100.0f);
   dt_bauhaus_slider_set_format(g->chroma_global, "%.2f %%");
   gtk_widget_set_tooltip_text(g->chroma_global, _("increase colorfulness at same luminance globally"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma_global), TRUE, TRUE, 0);
 
   g->chroma_shadows = dt_bauhaus_slider_from_params(self, "chroma_shadows");
   dt_bauhaus_slider_set_digits(g->chroma_shadows, 4);
   dt_bauhaus_slider_set_factor(g->chroma_shadows, 100.0f);
   dt_bauhaus_slider_set_format(g->chroma_shadows, "%.2f %%");
   gtk_widget_set_tooltip_text(g->chroma_shadows, _("increase colorfulness at same luminance mostly in shadows"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma_shadows), TRUE, TRUE, 0);
 
   g->chroma_midtones = dt_bauhaus_slider_from_params(self, "chroma_midtones");
   dt_bauhaus_slider_set_digits(g->chroma_midtones, 4);
   dt_bauhaus_slider_set_factor(g->chroma_midtones, 100.0f);
   dt_bauhaus_slider_set_format(g->chroma_midtones, "%.2f %%");
   gtk_widget_set_tooltip_text(g->chroma_midtones, _("increase colorfulness at same luminance mostly in midtones"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma_midtones), TRUE, TRUE, 0);
 
   g->chroma_highlights = dt_bauhaus_slider_from_params(self, "chroma_highlights");
   dt_bauhaus_slider_set_digits(g->chroma_highlights, 4);
   dt_bauhaus_slider_set_factor(g->chroma_highlights, 100.0f);
   dt_bauhaus_slider_set_format(g->chroma_highlights, "%.2f %%");
   gtk_widget_set_tooltip_text(g->chroma_highlights, _("increase colorfulness at same luminance mostly in highlights"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->chroma_highlights), TRUE, TRUE, 0);
 
-
+  // Page 4-ways
   self->widget = dt_ui_notebook_page(g->notebook, _("4 ways"), _("selective color grading"));
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("global")), FALSE, FALSE, 0);
@@ -696,7 +686,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->global_Y, 4);
   dt_bauhaus_slider_set_format(g->global_Y, "%.2f %%");
   gtk_widget_set_tooltip_text(g->global_Y, _("global luminance offset"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->global_Y), TRUE, TRUE, 0);
 
   g->global_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "global_H"));
   dt_bauhaus_slider_set_feedback(g->global_H, 0);
@@ -704,7 +693,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->global_H, 4);
   dt_bauhaus_slider_set_format(g->global_H, "%.2f °");
   gtk_widget_set_tooltip_text(g->global_H, _("hue of the global color offset"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->global_H), TRUE, TRUE, 0);
 
   g->global_C = dt_bauhaus_slider_from_params(self, "global_C");
   dt_bauhaus_slider_set_soft_range(g->global_C, 0., 0.005);
@@ -712,7 +700,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->global_C, 100.0f);
   dt_bauhaus_slider_set_format(g->global_C, "%.2f %%");
   gtk_widget_set_tooltip_text(g->global_C, _("chroma of the global color offset"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->global_C), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("shadows")), FALSE, FALSE, 0);
 
@@ -722,7 +709,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->shadows_Y, 4);
   dt_bauhaus_slider_set_format(g->shadows_Y, "%.2f %%");
   gtk_widget_set_tooltip_text(g->shadows_Y, _("luminance gain in shadows"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->shadows_Y), TRUE, TRUE, 0);
 
   g->shadows_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "shadows_H"));
   dt_bauhaus_slider_set_feedback(g->shadows_H, 0);
@@ -730,7 +716,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->shadows_H, 4);
   dt_bauhaus_slider_set_format(g->shadows_H, "%.2f °");
   gtk_widget_set_tooltip_text(g->shadows_H, _("hue of the color gain in shadows"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->shadows_H), TRUE, TRUE, 0);
 
   g->shadows_C = dt_bauhaus_slider_from_params(self, "shadows_C");
   dt_bauhaus_slider_set_soft_range(g->shadows_C, 0., 0.1);
@@ -739,7 +724,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->shadows_C, 100.0f);
   dt_bauhaus_slider_set_format(g->shadows_C, "%.2f %%");
   gtk_widget_set_tooltip_text(g->shadows_C, _("chroma of the color gain in shadows"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->shadows_C), TRUE, TRUE, 0);
 
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
@@ -747,7 +731,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->shadows_weight, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->shadows_weight, 100.0f);
   gtk_widget_set_tooltip_text(g->shadows_weight, _("weight of the shadows over the whole tonal range"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->shadows_weight), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("midtones")), FALSE, FALSE, 0);
 
@@ -757,7 +740,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->midtones_Y, 4);
   dt_bauhaus_slider_set_format(g->midtones_Y, "%.2f %%");
   gtk_widget_set_tooltip_text(g->midtones_Y, _("luminance exponent in midtones"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->midtones_Y), TRUE, TRUE, 0);
 
   g->midtones_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "midtones_H"));
   dt_bauhaus_slider_set_feedback(g->midtones_H, 0);
@@ -765,7 +747,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->midtones_H, 4);
   dt_bauhaus_slider_set_format(g->midtones_H, "%.2f °");
   gtk_widget_set_tooltip_text(g->midtones_H, _("hue of the color exponent in midtones"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->midtones_H), TRUE, TRUE, 0);
 
   g->midtones_C = dt_bauhaus_slider_from_params(self, "midtones_C");
   dt_bauhaus_slider_set_soft_range(g->midtones_C, 0., 0.02);
@@ -774,7 +755,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->midtones_C, 100.0f);
   dt_bauhaus_slider_set_format(g->midtones_C, "%.2f %%");
   gtk_widget_set_tooltip_text(g->midtones_C, _("chroma of the color exponent in midtones"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->midtones_C), TRUE, TRUE, 0);
 
   g->midtones_weight = dt_bauhaus_slider_from_params(self, "midtones_weight");
   dt_bauhaus_slider_set_soft_range(g->midtones_weight, -2., +2.);
@@ -782,7 +762,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->midtones_weight, 4);
   dt_bauhaus_slider_set_format(g->midtones_weight, "%.2f EV");
   gtk_widget_set_tooltip_text(g->midtones_weight, _("peak white luminance value used to normalize the power function"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->midtones_weight), TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("highlights")), FALSE, FALSE, 0);
 
@@ -792,7 +771,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->highlights_Y, 4);
   dt_bauhaus_slider_set_format(g->highlights_Y, "%.2f %%");
   gtk_widget_set_tooltip_text(g->highlights_Y, _("luminance gain in highlights"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->highlights_Y), TRUE, TRUE, 0);
 
   g->highlights_H = dt_color_picker_new(self, DT_COLOR_PICKER_AREA, dt_bauhaus_slider_from_params(self, "highlights_H"));
   dt_bauhaus_slider_set_feedback(g->highlights_H, 0);
@@ -800,7 +778,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->highlights_H, 4);
   dt_bauhaus_slider_set_format(g->highlights_H, "%.2f °");
   gtk_widget_set_tooltip_text(g->highlights_H, _("hue of the color gain in highlights"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->highlights_H), TRUE, TRUE, 0);
 
   g->highlights_C = dt_bauhaus_slider_from_params(self, "highlights_C");
   dt_bauhaus_slider_set_soft_range(g->highlights_C, 0., 0.05);
@@ -809,7 +786,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_factor(g->highlights_C, 100.0f);
   dt_bauhaus_slider_set_format(g->highlights_C, "%.2f %%");
   gtk_widget_set_tooltip_text(g->highlights_C, _("chroma of the color gain in highlights"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->highlights_C), TRUE, TRUE, 0);
 
   g->highlights_weight = dt_bauhaus_slider_from_params(self, "highlights_weight");
   dt_bauhaus_slider_set_step(g->highlights_weight, 0.1);
@@ -817,7 +793,6 @@ void gui_init(dt_iop_module_t *self)
   dt_bauhaus_slider_set_format(g->highlights_weight, "%.2f %%");
   dt_bauhaus_slider_set_factor(g->highlights_weight, 100.0f);
   gtk_widget_set_tooltip_text(g->highlights_weight, _("weights of highlights over the whole tonal range"));
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->highlights_weight), TRUE, TRUE, 0);
 
   // paint backgrounds
   for(int i = 0; i < DT_BAUHAUS_SLIDER_MAX_STOPS; i++)
@@ -844,9 +819,8 @@ void gui_init(dt_iop_module_t *self)
     dt_bauhaus_slider_set_stop(g->midtones_Y, stop, Y, Y, Y);
   }
 
-  // pack the high-level widget
-  self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->notebook), FALSE, FALSE, 0);
+  // main widget is the notebook
+  self->widget = GTK_WIDGET(g->notebook);
 }
 
 
