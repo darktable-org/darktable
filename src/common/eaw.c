@@ -417,7 +417,7 @@ void eaw_decompose_sse2(float *const restrict out, const float *const restrict i
 #undef SUM_PIXEL_EPILOGUE_SSE
 #endif
 
-void eaw_synthesize(float *const restrict out, const float *const restrict in, const float *const restrict detail,
+void eaw_synthesize(float *const out, const float *const in, const float *const restrict detail,
                     const float *const restrict threshold, const float *const restrict boost,
                     const int32_t width, const int32_t height)
 {
@@ -445,7 +445,7 @@ void eaw_synthesize(float *const restrict out, const float *const restrict in, c
 }
 
 #if defined(__SSE2__)
-void eaw_synthesize_sse2(float *const restrict out, const float *const restrict in, const float *const restrict detail,
+void eaw_synthesize_sse2(float *const out, const float *const in, const float *const restrict detail,
                          const float *const restrict thrsf, const float *const restrict boostf,
                          const int32_t width, const int32_t height)
 {
