@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-02 19:09-0300\n"
-"PO-Revision-Date: 2021-01-02 17:52-0300\n"
+"PO-Revision-Date: 2021-01-03 00:15-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -6149,30 +6149,40 @@ msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>cancel</b>: right-click"
 msgstr ""
+"<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
+"<b>cancelar</b>: clique direito"
 
 #: ../src/develop/masks/masks.c:348
 msgid ""
 "<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
 "<b>finnish path</b>: right-click"
 msgstr ""
+"<b>adicionar nó</b>: clique, <b>adicionar nó nítido</b>:ctrl+clique\n"
+"<b>finalizar caminho</b>: clique direito"
 
 #: ../src/develop/masks/masks.c:350
 msgid ""
 "<b>move node</b>: drag, <b>remove node</b>: right-click\n"
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
+"<b>mover nó</b>: arrastar, <b>remover nó</b>: clique-direito\n"
+"<b>alternar modo entre nó suave/nítido</b>: ctrl+clique"
 
 #: ../src/develop/masks/masks.c:352
 msgid ""
 "<b>node curvature</b>: drag\n"
 "<b>reset curvature</b>: right-click"
 msgstr ""
+"<b>curvatura do nó</b>: arrastar\n"
+"<b>ressetar curvatura</b>: clique-direito"
 
 #: ../src/develop/masks/masks.c:354
 msgid ""
 "<b>move segment</b>: drag\n"
 "<b>add node</b>: ctrl+click"
 msgstr ""
+"<b>mover segmento</b>: arrastar\n"
+"<b>adicionar nó</b>: ctrl+clique"
 
 #: ../src/develop/masks/masks.c:356 ../src/develop/masks/masks.c:395
 #, c-format
@@ -6180,6 +6190,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>tamanho</b>: scroll, <b>tamanho do enevoamento</b>: shift+scroll\n"
+"<b>opacidade</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/masks.c:362
 #, c-format
@@ -6187,6 +6199,8 @@ msgid ""
 "<b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>compressão</b>: shift+scroll\n"
+"<b>opacidade</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/masks.c:364
 #, c-format
@@ -6194,6 +6208,8 @@ msgid ""
 "<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>curvatura</b>: scroll, <b>compressão</b>: shift+scroll\n"
+"<b>opacidade</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/masks.c:366
 msgid "<b>rotate</b>: drag"
@@ -6208,7 +6224,7 @@ msgstr ""
 
 #: ../src/develop/masks/masks.c:374
 msgid "<b>rotate</b>: ctrl+drag"
-msgstr ""
+msgstr "<b>girar</b>: ctrl+arrastar"
 
 #: ../src/develop/masks/masks.c:377
 #, c-format
@@ -6224,6 +6240,8 @@ msgid ""
 "<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>tamanho</b>: scroll, <b>dureza</b>: shift+scroll\n"
+"<b>opacidade</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/masks.c:387
 #, c-format
@@ -6231,10 +6249,12 @@ msgid ""
 "<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
 "<b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>dureza</b>: scroll, <b>tamanho</b>: shift+scroll\n"
+"<b>opacidade</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/masks.c:389
 msgid "<b>size</b>: scroll"
-msgstr ""
+msgstr "<b>tamanho</b>: scroll"
 
 #: ../src/develop/masks/masks.c:548
 #, c-format
@@ -6264,7 +6284,7 @@ msgstr "pincel #%d"
 #: ../src/develop/masks/masks.c:624
 #, c-format
 msgid "copy of %s"
-msgstr "cópiar de %s"
+msgstr "copiar de %s"
 
 #: ../src/develop/masks/masks.c:1472
 #, c-format
@@ -9820,6 +9840,22 @@ msgid ""
 "black offset : \t%+.4f\n"
 "exposure compensation : \t%+.2f EV"
 msgstr ""
+"\n"
+"<b>Relatório de qualidade de perfil : %s</b>\n"
+"ΔE entrada : \tméd. %.2f ; \tmax. %.2f\n"
+"WB ΔE : \tméd. %.2f ; \tmax. %.2f\n"
+"ΔE saída : \tméd. %.2f ; \tmax. %.2f\n"
+"\n"
+"<b>Dados do perfil</b>\n"
+"iluminante :  \t%.0f K \t%s \n"
+"matriz no espaço de adaptação:\n"
+"<tt>%+.4f \t%+.4f \t%+.4f\n"
+"%+.4f \t%+.4f \t%+.4f\n"
+"%+.4f \t%+.4f \t%+.4f</tt>\n"
+"\n"
+"<b>Valores de normalização</b>\n"
+"desvio de preto : \t%+.4f\n"
+"compensação de exposição : \t%+.2f EV"
 
 #. Update GUI label
 #: ../src/iop/channelmixerrgb.c:1598
@@ -9833,6 +9869,13 @@ msgid ""
 "black offset : \t%+.4f\n"
 "exposure compensation : \t%+.2f EV"
 msgstr ""
+"\n"
+"<b>Relatório de qualidade do perfil : %s</b>\n"
+"ΔE saída : \tméd. %.2f ; \tmax. %.2f\n"
+"\n"
+"<b>Valores de normalização</b>\n"
+"desvio de preto : \t%+.4f\n"
+"compensação de exposição : \t%+.2f EV"
 
 #: ../src/iop/channelmixerrgb.c:1669
 msgid "auto-detection of white balance completed"
@@ -10039,11 +10082,11 @@ msgstr "calibrar com uma tabela de cores"
 
 #: ../src/iop/channelmixerrgb.c:3487
 msgid "use a color checker target to autoset CAT and channels"
-msgstr ""
+msgstr "usar uma tabela de cores para autodefinir CAT e canais"
 
 #: ../src/iop/channelmixerrgb.c:3494
 msgid "chart"
-msgstr ""
+msgstr "cartão (tabela)"
 
 #: ../src/iop/channelmixerrgb.c:3495
 msgid "Xrite ColorChecker 24 pre-2014"
@@ -10063,7 +10106,7 @@ msgstr "Datacolor SpyderCheckr 48"
 
 #: ../src/iop/channelmixerrgb.c:3500
 msgid "choose the vendor and the type of your chart"
-msgstr ""
+msgstr "escolha a marca e o tipo da sua tabela"
 
 #: ../src/iop/channelmixerrgb.c:3504
 msgid "optimize for"
@@ -10094,6 +10137,11 @@ msgid ""
 "none is a trade-off between both\n"
 "the others are special behaviours to protect some hues"
 msgstr ""
+"escolha as cores que serão otimizadas com maior prioridade.\n"
+"cores neutras dão a menor média de delta E, mas um máximo elevado de delta E\n"
+"cores saturadas dão o menor mínimo de delta E, mas com um delta E médio bastante alto\n"
+"nenhum é um meio-termo entre os dois\n"
+"os outros são comportamentos especiais para proteger algumas matizes"
 
 #: ../src/iop/channelmixerrgb.c:3519
 msgid "normalize exposure"
@@ -10107,9 +10155,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:3526
-#, fuzzy
 msgid "patch scale"
-msgstr "tamanho do patch"
+msgstr "escala do patch"
 
 #: ../src/iop/channelmixerrgb.c:3527
 msgid ""
@@ -10120,20 +10167,19 @@ msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:3535
 msgid "the delta E is using the CIE 2000 formula."
-msgstr ""
+msgstr "o delta E está usando a fórmula CIE 2000"
 
 #: ../src/iop/channelmixerrgb.c:3541
 msgid "accept the computed profile and set it in the module"
-msgstr ""
+msgstr "aceitar o perfil calculado e definí-lo no módulo"
 
 #: ../src/iop/channelmixerrgb.c:3546
-#, fuzzy
 msgid "recompute the profile"
-msgstr "perfil  de entrada"
+msgstr "recalcular o perfil"
 
 #: ../src/iop/channelmixerrgb.c:3551
 msgid "check the output delta E"
-msgstr ""
+msgstr "verificar a saída delta E"
 
 #: ../src/iop/choleski.h:304 ../src/iop/choleski.h:402
 msgid ""
@@ -15277,15 +15323,15 @@ msgstr "coletar imagens"
 
 #: ../src/libs/collect.c:277
 msgid "today"
-msgstr ""
+msgstr "hoje"
 
 #: ../src/libs/collect.c:287
 msgid "last 24h"
-msgstr ""
+msgstr "últimas 24h"
 
 #: ../src/libs/collect.c:296
 msgid "last 30 days"
-msgstr ""
+msgstr "últimos 30 dias"
 
 #: ../src/libs/collect.c:418
 msgid "search filmroll"
