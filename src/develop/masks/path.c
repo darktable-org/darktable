@@ -1173,6 +1173,11 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
       {
         dt_masks_point_path_t *point
             = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_edited);
+        if(point == NULL)
+        {
+          gui->point_selected = -1;
+          return 1;
+        }
         if(point->state != DT_MASKS_POINT_STATE_NORMAL)
         {
           point->state = DT_MASKS_POINT_STATE_NORMAL;
@@ -1304,6 +1309,11 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
     }
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->point_selected);
+    if(point == NULL)
+    {
+      gui->point_selected = -1;
+      return 1;
+    }
     form->points = g_list_remove(form->points, point);
     free(point);
     // form->points = g_list_delete_link(form->points, g_list_nth(form->points, gui->point_selected));
@@ -1325,7 +1335,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
   {
     dt_masks_point_path_t *point
         = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->feather_selected);
-    if(point->state != DT_MASKS_POINT_STATE_NORMAL)
+    if(point != NULL && point->state != DT_MASKS_POINT_STATE_NORMAL)
     {
       point->state = DT_MASKS_POINT_STATE_NORMAL;
       _path_init_ctrl_points(form);
