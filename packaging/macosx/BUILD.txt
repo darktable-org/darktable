@@ -8,7 +8,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
     (practice showed that support for versions older than 10.7 isn't viable)
     and this line to /opt/local/etc/macports/variants.conf:
      +no_gnome +no_x11 +quartz -x11 -gnome
-    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, pugixml, librsvg and gmic
+    You will also need to add patches for gnutls, python (https://trac.macports.org/ticket/51736), GraphicsMagick, ImageMagick, libusb, pugixml, librsvg, and gmic
     (all fixes except for gmic are required due to set deployment target, gmic patch removes extra dependencies):
      $ mkdir -p ~/ports/devel/gnutls/files ~/ports/lang/python{37,38,39}/files ~/ports/graphics/GraphicsMagick/files ~/ports/graphics/ImageMagick/files ~/ports/textproc ~/ports/science
      $ cp -R "$(port dir gnutls)" ~/ports/devel
@@ -23,6 +23,8 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -Lo ~/ports/graphics/GraphicsMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gm-deployment_target.diff
      $ cp -R "$(port dir ImageMagick)" ~/ports/graphics
      $ curl -Lo ~/ports/graphics/ImageMagick/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/im-stdlib.diff
+     $ cp -R "$(port dir libusb)" ~/ports/devel
+     $ curl -Lo ~/ports/devel/libusb/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/libusb-no-clock_gettime.diff
      $ cp -R "$(port dir pugixml)" ~/ports/textproc
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/pugixml-stdlib.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir librsvg)" ~/ports/graphics
