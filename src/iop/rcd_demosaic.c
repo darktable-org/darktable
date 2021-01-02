@@ -323,8 +323,11 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #endif
   { 
     float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
     float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
+    memset(PQ_Dir, 0, sizeof(*PQ_Dir) * (RCD_TILESIZE * RCD_TILESIZE / 2));
     float *const cfa =    dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    memset(cfa, 0, sizeof(*cfa) * RCD_TILESIZE * RCD_TILESIZE);
     float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
 
     // No overlapping use so re-use same buffer; also note we use divide-by-2 index for lower mem pressure
