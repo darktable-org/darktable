@@ -2534,7 +2534,7 @@
     <shortdescription>colorbalance slider block layout</shortdescription>
     <longdescription>choose how to organise the slider blocks for lift, gamma and gain:\nlist - all sliders are shown in one long list (with headers),\ntabs - use tabs to switch between the blocks of sliders,\ncolumns - the blocks of sliders are shown next to each other (in narrow columns)</longdescription>
   </dtconfig>
-  <dtconfig prefs="darkroom" section="general">
+  <dtconfig prefs="darkroom" section="modules">
     <name>darkroom/ui/hide_header_buttons</name>
     <type>
       <enum>
