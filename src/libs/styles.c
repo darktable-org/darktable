@@ -771,6 +771,13 @@ void gui_reset(dt_lib_module_t *self)
 {
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
   GList *all_styles = dt_styles_get_list("");
+
+  if(all_styles == NULL)
+  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
+    return;
+  }
+
   const gint styles_cnt = g_list_length(all_styles);
   const gboolean can_delete = _ask_before_delete_style(styles_cnt);
 
