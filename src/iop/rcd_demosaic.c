@@ -205,6 +205,7 @@ static INLINE void approxit(float *out, const float *cfa, const float *sum, cons
       rgb[idx][2] = fmaxf(0.0f, cfa[idx]);
     }
   }
+  rgb[idx][3] = 0.0f;
 }
 
 static void rcd_border_interpolate(float *out, const float *cfa, const int *cfarray, const int width, const int height, int border, float scaler)
