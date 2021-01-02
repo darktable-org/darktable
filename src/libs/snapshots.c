@@ -395,7 +395,11 @@ void gui_init(dt_lib_module_t *self)
   {
     /* create snapshot button */
     d->snapshot[k].button = gtk_toggle_button_new_with_label(wdname);
-    gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[k].button)), GTK_ALIGN_START);
+    GtkWidget *label = gtk_bin_get_child(GTK_BIN(d->snapshot[k].button));
+    gtk_widget_set_halign(label, GTK_ALIGN_START);
+    gtk_label_set_xalign(GTK_LABEL(label), 0);
+    gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_MIDDLE);
+
     g_signal_connect(G_OBJECT(d->snapshot[k].button), "clicked",
                      G_CALLBACK(_lib_snapshots_toggled_callback), self);
 
@@ -429,7 +433,6 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
-#define ellipsize_button(button) gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(button))), PANGO_ELLIPSIZE_MIDDLE);
 static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -444,9 +447,8 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
     GtkWidget *b = d->snapshot[k].button;
     d->snapshot[k] = d->snapshot[k - 1];
     d->snapshot[k].button = b;
-    gtk_button_set_label(GTK_BUTTON(d->snapshot[k].button),
-                         gtk_button_get_label(GTK_BUTTON(d->snapshot[k - 1].button)));
-    gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[k].button)), GTK_ALIGN_START);
+    gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[k].button))),
+      gtk_label_get_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[k - 1].button)))));
   }
 
   /* update top slot with new snapshot */
@@ -465,9 +467,7 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
       name = _("unknown");
   }
   g_snprintf(label, sizeof(label), "%s (%d)", name, darktable.develop->history_end);
-  gtk_button_set_label(GTK_BUTTON(d->snapshot[0].button), label);
-  ellipsize_button(d->snapshot[0].button);
-  gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button)), GTK_ALIGN_START);
+  gtk_label_set_text(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->snapshot[0].button))), label);
 
   dt_lib_snapshot_t *s = d->snapshot + 0;
   s->zoom_y = dt_control_get_dev_zoom_y();
@@ -485,7 +485,6 @@ static void _lib_snapshots_add_button_clicked_callback(GtkWidget *widget, gpoint
   /* request a new snapshot for top slot */
   dt_dev_snapshot_request(darktable.develop, (const char *)&d->snapshot[0].filename);
 }
-#undef ellipsize_button
 
 static void _lib_snapshots_toggled_callback(GtkToggleButton *widget, gpointer user_data)
 {

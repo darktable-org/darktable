@@ -48,7 +48,7 @@ typedef struct dt_lib_tagging_t
   char keyword[1024];
   GtkEntry *entry;
   GtkTreeView *attached_view, *dictionary_view;
-  GtkWidget *attach_button, *detach_button, *new_button, *import_button, *export_button, *attached_window, *dictionary_window;
+  GtkWidget *attach_button, *detach_button, *new_button, *import_button, *export_button;
   GtkWidget *toggle_tree_button, *toggle_suggestion_button, *toggle_sort_button, *toggle_hide_button, *toggle_dttags_button;
   gulong tree_button_handler, suggestion_button_handler, sort_button_handler, hide_button_handler;
   gulong dttags_button_handler;
@@ -2194,52 +2194,6 @@ static gboolean _click_on_view_dictionary(GtkWidget *view, GdkEventButton *event
   return FALSE;
 }
 
-static gboolean _mouse_scroll_attached(GtkWidget *treeview, GdkEventScroll *event, dt_lib_module_t *self)
-{
-  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  if (event->state & GDK_CONTROL_MASK)
-  {
-    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
-    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
-    const gint max_height = DT_PIXEL_APPLY_DPI(500.0);
-    gint width, height;
-    gtk_widget_get_size_request (GTK_WIDGET(d->attached_window), &width, &height);
-    int delta_y;
-    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-    {
-      height = height + increment * delta_y;
-      height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-      gtk_widget_set_size_request(GTK_WIDGET(d->attached_window), -1, (gint)height);
-      dt_conf_set_int("plugins/lighttable/tagging/heightattachedwindow", (gint)height);
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
-static gboolean _mouse_scroll_dictionary(GtkWidget *treeview, GdkEventScroll *event, dt_lib_module_t *self)
-{
-  dt_lib_tagging_t *d = (dt_lib_tagging_t *)self->data;
-  if (event->state & GDK_CONTROL_MASK)
-  {
-    const gint increment = DT_PIXEL_APPLY_DPI(10.0);
-    const gint min_height = DT_PIXEL_APPLY_DPI(100.0);
-    const gint max_height = DT_PIXEL_APPLY_DPI(1000.0);
-    gint width, height;
-    gtk_widget_get_size_request (GTK_WIDGET(d->dictionary_window), &width, &height);
-    int delta_y;
-    if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-    {
-      height = height + increment * delta_y;
-      height = (height < min_height) ? min_height : (height > max_height) ? max_height : height;
-      gtk_widget_set_size_request(GTK_WIDGET(d->dictionary_window), -1, (gint)height);
-      dt_conf_set_int("plugins/lighttable/tagging/heightdictionarywindow", (gint)height);
-      return TRUE;
-    }
-  }
-  return FALSE;
-}
-
 static gboolean _row_tooltip_setup(GtkWidget *treeview, gint x, gint y, gboolean kb_mode,
       GtkTooltip* tooltip, dt_lib_module_t *self)
 {
@@ -2890,19 +2844,14 @@ void gui_init(dt_lib_module_t *self)
   GtkTreeStore *treestore;
   GtkTreeViewColumn *col;
   GtkCellRenderer *renderer;
-  gint height;
 
   // attached_view
   box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, 0));
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(box), TRUE, TRUE, 0);
-  w = gtk_scrolled_window_new(NULL, NULL);
-  d->attached_window = w;
-  height = dt_conf_get_int("plugins/lighttable/tagging/heightattachedwindow");
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(height ? height : 100));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   view = GTK_TREE_VIEW(gtk_tree_view_new());
+  w = dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightattachedwindow");
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->attached_view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
   liststore = gtk_list_store_new(DT_LIB_TAGGING_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
@@ -2927,6 +2876,7 @@ void gui_init(dt_lib_module_t *self)
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
+  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_tagname_show_attached, (gpointer)self, NULL);
 
@@ -2938,9 +2888,7 @@ void gui_init(dt_lib_module_t *self)
                                                   "\nctrl-wheel scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
-  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(_mouse_scroll_attached), (gpointer)self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
-  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(view));
 
   // attach/detach buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
@@ -3007,13 +2955,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(box, GTK_WIDGET(hbox), FALSE, TRUE, 0);
 
   // dictionary_view tree view
-  w = gtk_scrolled_window_new(NULL, NULL);
-  d->dictionary_window = w;
-  height = dt_conf_get_int("plugins/lighttable/tagging/heightdictionarywindow");
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(height ? height : 300));
-  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   view = GTK_TREE_VIEW(gtk_tree_view_new());
+  w = dt_ui_scroll_wrap(GTK_WIDGET(view), 200, "plugins/lighttable/tagging/heightdictionarywindow");
+  gtk_box_pack_start(box, w, TRUE, TRUE, 0);
   d->dictionary_view = view;
   gtk_tree_view_set_headers_visible(view, FALSE);
   liststore = gtk_list_store_new(DT_LIB_TAGGING_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
@@ -3048,6 +2992,7 @@ void gui_init(dt_lib_module_t *self)
   col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(view, col);
   renderer = gtk_cell_renderer_text_new();
+  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_set_cell_data_func(col, renderer, _tree_tagname_show_dictionary, (gpointer)self, NULL);
   gtk_tree_view_set_expander_column(view, col);
@@ -3058,8 +3003,6 @@ void gui_init(dt_lib_module_t *self)
                                                       "\nctrl-wheel scroll to resize the window"));
   dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
-  g_signal_connect(G_OBJECT(view), "scroll-event", G_CALLBACK(_mouse_scroll_dictionary), (gpointer)self);
-  gtk_container_add(GTK_CONTAINER(w), GTK_WIDGET(view));
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(d->dictionary_listfilter));
   g_object_unref(d->dictionary_listfilter);
   g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
