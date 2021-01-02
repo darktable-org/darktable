@@ -465,7 +465,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
               const float wt = gh(distortion * sharpness);
               const float *const inpx = in+4*col;
               const float DT_ALIGNED_PIXEL pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
-              for_each_channel(c,aligned(pixel,out:16))
+              for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
               }
@@ -483,7 +483,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
               const float wt = gh(fmaxf(0.0f, dissimilarity * sharpness - 2.0f));
               const float *const inpx = in + 4*col;
               const float DT_ALIGNED_PIXEL pixel[4] = { inpx[offset],  inpx[offset+1], inpx[offset+2], 1.0f };
-              for_each_channel(c,aligned(pixel,out:16))
+              for_four_channels(c,aligned(pixel,out:16))
               {
                 out[4*col+c] += pixel[c] * wt;
               }
