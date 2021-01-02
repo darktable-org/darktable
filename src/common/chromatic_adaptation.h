@@ -32,18 +32,6 @@ typedef enum dt_adaptation_t
 } dt_adaptation_t;
 
 
-#ifdef _OPENMP
-#pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
-#endif
-static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
-{
-  // specialized 3×3 dot products of 4×1 RGB-alpha pixels
-  v_out[0] = M[0][0] * v_in[0] + M[0][1] * v_in[1] + M[0][2] * v_in[2];
-  v_out[1] = M[1][0] * v_in[0] + M[1][1] * v_in[1] + M[1][2] * v_in[2];
-  v_out[2] = M[2][0] * v_in[0] + M[2][1] * v_in[1] + M[2][2] * v_in[2];
-}
-
-
 // modified LMS cone response space for Bradford transform
 // explanation here : https://onlinelibrary.wiley.com/doi/pdf/10.1002/9781119021780.app3
 // but coeffs are wrong in the above, so they come from :
