@@ -2178,7 +2178,7 @@ post_process_collect_info:
           }
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
                                                  roi_out->width, roi_out->height,
-                                                 DT_COLORSPACE_DISPLAY, "");
+                                                 darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
           dt_free_align(buf);
         }
       }
@@ -2186,7 +2186,7 @@ post_process_collect_info:
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
                                                roi_in.width, roi_in.height,
-                                               DT_COLORSPACE_DISPLAY, "");
+                                               darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
       }
     }
   }

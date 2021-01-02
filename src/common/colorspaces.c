@@ -1495,10 +1495,24 @@ dt_colorspaces_t *dt_colorspaces_init()
   for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    // FIXME: do want to filter out non-RGB profiles for cases besides histogram profile? colorin is OK with RGB or XYZ, print is OK with anything which LCMS likes, otherwise things are more choosey
+    const cmsColorSpaceSignature color_space = cmsGetColorSpace(prof->profile);
     prof->out_pos = ++out_pos;
     prof->display_pos = ++display_pos;
     prof->display2_pos = ++display2_pos;
-    prof->category_pos = ++category_pos;
+    if(color_space == cmsSigRgbData)
+    {
+      prof->category_pos = ++category_pos;
+    }
+    else
+    {
+      fprintf(stderr, "output profile `%s' color space `%c%c%c%c' not supported for histogram profile\n",
+              prof->name,
+              (char)(color_space>>24),
+              (char)(color_space>>16),
+              (char)(color_space>>8),
+              (char)(color_space));
+    }
     prof->work_pos = ++work_pos;
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);

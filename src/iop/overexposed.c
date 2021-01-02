@@ -117,6 +117,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 static void _get_histogram_profile_type(dt_colorspaces_color_profile_type_t *out_type, const gchar **out_filename)
 {
   // if in gamut check use soft proof
+  // FIXME: This isn't actually true -- we only use soft proof profile if it is chosen by the user as a histogram profile. Otherwise, if in gamut check, we still use the histogram profile.
   if(darktable.color_profiles->histogram_type == DT_COLORSPACE_SOFTPROOF)
   {
     *out_type = darktable.color_profiles->softproof_type;
@@ -151,6 +152,7 @@ static void _transform_image_colorspace(dt_iop_module_t *self, const float *cons
   const dt_iop_order_iccprofile_info_t *const profile_info_to
       = dt_ioppr_add_profile_info_to_list(self->dev, histogram_type, histogram_filename, INTENT_RELATIVE_COLORIMETRIC);
 
+  // FIXME: the histogram already does this work -- use that data instead?
   if(profile_info_from && profile_info_to)
     dt_ioppr_transform_image_colorspace_rgb(img_in, img_out, roi_in->width, roi_in->height, profile_info_from,
                                             profile_info_to, self->op);
