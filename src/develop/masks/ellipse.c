@@ -364,6 +364,8 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
         dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", rotation);
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", rotation);
+
+      dt_toast_log(_("rotation: %3.f°"), rotation);
     }
     else if((state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == GDK_SHIFT_MASK)
     {
@@ -400,6 +402,8 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
         dt_conf_set_float("plugins/darkroom/spots/ellipse_border", masks_border);
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/border", masks_border);
+
+      dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
     }
     else if(state == 0)
     {
@@ -441,6 +445,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
         dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_a", radius_a);
         dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_b", radius_b);
       }
+      dt_toast_log(_("size: %3.2f%%"), fmaxf(radius_a, radius_b)*100);
     }
     return 1;
   }
@@ -478,6 +483,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
           dt_conf_set_float("plugins/darkroom/spots/ellipse_rotation", ellipse->rotation);
         else
           dt_conf_set_float("plugins/darkroom/masks/ellipse/rotation", ellipse->rotation);
+        dt_toast_log(_("rotation: %3.f°"), ellipse->rotation);
       }
       // resize don't care where the mouse is inside a shape
       if((state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == GDK_SHIFT_MASK)
@@ -496,6 +502,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
           dt_conf_set_float("plugins/darkroom/spots/ellipse_border", ellipse->border);
         else
           dt_conf_set_float("plugins/darkroom/masks/ellipse/border", ellipse->border);
+        dt_toast_log(_("feather size: %3.2f%%"), ellipse->border*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -525,6 +532,7 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
           dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_a", ellipse->radius[0]);
           dt_conf_set_float("plugins/darkroom/masks/ellipse/radius_b", ellipse->radius[1]);
         }
+        dt_toast_log(_("size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
       }
       else
       {

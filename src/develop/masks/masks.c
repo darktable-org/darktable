@@ -342,57 +342,57 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
 
   if(formtype & DT_MASKS_PATH)
   {
-    if(gui->creation)
-      g_strlcat(msg, _("ctrl+click to add a sharp node"), sizeof(msg));
+    if(gui->creation && g_list_length(form->points) < 4)
+      g_strlcat(msg, _("<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n<b>cancel</b>: right-click"), sizeof(msg));
+    else if(gui->creation)
+      g_strlcat(msg, _("<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n<b>finnish path</b>: right-click"), sizeof(msg));
     else if(gui->point_selected >= 0)
-      g_strlcat(msg, _("ctrl+click to switch between smooth/sharp node"), sizeof(msg));
+      g_strlcat(msg, _("<b>move node</b>: drag, <b>remove node</b>: right-click\n<b>switch smooth/sharp mode</b>: ctrl+click"), sizeof(msg));
     else if(gui->feather_selected >= 0)
-      g_strlcat(msg, _("right-click to reset curvature"), sizeof(msg));
+      g_strlcat(msg, _("<b>node curvature</b>: drag\n<b>reset curvature</b>: right-click"), sizeof(msg));
     else if(gui->seg_selected >= 0)
-      g_strlcat(msg, _("ctrl+click to add a node"), sizeof(msg));
+      g_strlcat(msg, _("<b>move segment</b>: drag\n<b>add node</b>: ctrl+click"), sizeof(msg));
     else if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg), _("shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"), opacity);
+      g_snprintf(msg, sizeof(msg), _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   }
   else if(formtype & DT_MASKS_GRADIENT)
   {
     if(gui->creation)
       g_snprintf(msg, sizeof(msg),
-                 _("shift+scroll to change compression\nctrl+scroll to set opacity (%d%%)"), opacity);
+                 _("<b>compression</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
     else if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg), _("scroll to set curvature, shift+scroll to change compression\nctrl+scroll to set shape opacity (%d%%)"), opacity);
+      g_snprintf(msg, sizeof(msg), _("<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
     else if(gui->pivot_selected)
-      g_strlcat(msg, _("move to rotate shape"), sizeof(msg));
+      g_strlcat(msg, _("<b>rotate</b>: drag"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_ELLIPSE)
   {
     if(gui->creation)
       g_snprintf(msg, sizeof(msg),
-                 _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
+                 _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
     else if(gui->point_selected >= 0)
-      g_strlcat(msg, _("ctrl+click to rotate"), sizeof(msg));
+      g_strlcat(msg, _("<b>rotate</b>: ctrl+drag"), sizeof(msg));
     else if(gui->form_selected)
       g_snprintf(msg, sizeof(msg),
-                 _("shift+click to switch feathering mode, ctrl+click to rotate\nshift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%),"), opacity);
+                 _("<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   }
   else if(formtype & DT_MASKS_BRUSH)
   {
+    // TODO: check if it would be good idea to have same controlls on creation and for selected brush
     if(gui->creation)
       g_snprintf(msg, sizeof(msg),
-                 _("scroll to set brush size, shift+scroll to set hardness,\nctrl+scroll to set opacity (%d%%)"), opacity);
+                 _("<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
     else if(gui->form_selected)
       g_snprintf(msg, sizeof(msg),
-                 _("scroll to set hardness, ctrl+scroll to set shape opacity (%d%%)"), opacity);
+                 _("<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
     else if(gui->border_selected)
-      g_strlcat(msg, _("scroll to set brush size"), sizeof(msg));
+      g_strlcat(msg, _("<b>size</b>: scroll"), sizeof(msg));
   }
   else if(formtype & DT_MASKS_CIRCLE)
   {
-    if(gui->creation)
-      g_snprintf(msg, sizeof(msg),
-                 _("scroll to set size, shift+scroll to set feather size\nctrl+scroll to set shape opacity (%d%%)"), opacity);
-    else if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg),
-                 _("shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"), opacity);
+    // circle has same controls on creation and on edit
+    g_snprintf(msg, sizeof(msg),
+               _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   }
 
   dt_control_hinter_message(darktable.control, msg);

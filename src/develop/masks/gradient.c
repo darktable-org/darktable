@@ -91,6 +91,7 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
       else
         compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+      dt_toast_log(_("compression: %3.2f%%"), compression*100.0f);
     }
     return 1;
   }
@@ -119,6 +120,7 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
       dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index);
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", gradient->compression);
+      dt_toast_log(_("compression: %3.2f%%"), gradient->compression*100.0f);
       dt_masks_update_image(darktable.develop);
     }
     else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -128,6 +130,7 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
         gradient->curvature = fminf(gradient->curvature + 0.05f, 2.0f);
       else
         gradient->curvature = fmaxf(gradient->curvature - 0.05f, -2.0f);
+      dt_toast_log(_("curvature: %3.2f%%"), gradient->curvature*50.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index);
