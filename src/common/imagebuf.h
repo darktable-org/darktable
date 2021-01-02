@@ -94,6 +94,45 @@ void dt_iop_copy_image_roi(float *const __restrict__ out, const float *const __r
                            const dt_iop_roi_t *const __restrict__ roi_in,
                            const dt_iop_roi_t *const __restrict__ roi_out, const int zero_pad);
 
+// Copy one image buffer to another, multiplying each element by the specified scale factor
+void dt_iop_image_scaled_copy(float *const __restrict__ buf, const float *const __restrict__ src, const float scale,
+                              const size_t width, const size_t height, const size_t ch);
+
+// Fill an image buffer with a specified value.
+void dt_iop_image_fill(float *const buf, const float fill_value, const size_t width, const size_t height,
+                       const size_t ch);
+
+// Add a specified constant value to every element of the image buffer
+void dt_iop_image_add_const(float *const buf, const float add_value, const size_t width, const size_t height,
+                            const size_t ch);
+
+// Add the contents of another image buffer to the given buffer, element-wise
+void dt_iop_image_add_image(float *const buf, const float *const other_buf, const size_t width, const size_t height,
+                            const size_t ch);
+
+// Subtract the contents of another image buffer from the given buffer, element-wise
+void dt_iop_image_sub_image(float *const buf, const float *const other_buf, const size_t width, const size_t height,
+                            const size_t ch);
+
+// Subtract each element of the image buffer from the given constant value 
+void dt_iop_image_invert(float *const buf, const float max_value, const size_t width, const size_t height,
+                         const size_t ch);
+
+// Multiply every element of the image buffer by a specified constant value
+void dt_iop_image_mul_const(float *const buf, const float mul_value, const size_t width, const size_t height,
+                            const size_t ch);
+
+// Divide every element of the image buffer by a specified constant value
+void dt_iop_image_div_const(float *const buf, const float div_value, const size_t width, const size_t height,
+                            const size_t ch);
+
+// perform timings to determine the optimal threshold for switching to parallel operations, as well as the
+// maximal number of threads before saturating the memory bus
+void dt_iop_image_copy_benchmark();
+
+// load configurable settings from darktablerc
+void dt_iop_image_copy_configure();
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
