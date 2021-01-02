@@ -40,7 +40,6 @@ static void _thumbnail_btn_init(GtkDarktableThumbnailBtn *button)
 
 static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 {
-  g_return_val_if_fail(widget != NULL, FALSE);
   g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), FALSE);
 
   if(gtk_widget_get_allocated_height(widget) < 2 || gtk_widget_get_allocated_height(widget) < 2) return TRUE;
@@ -103,7 +102,6 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
-  g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), FALSE);
 
   int flags = gtk_widget_get_state_flags(widget);
   flags |= GTK_STATE_FLAG_PRELIGHT;
@@ -115,7 +113,6 @@ static gboolean _thumbnail_btn_enter_notify_callback(GtkWidget *widget, GdkEvent
 static gboolean _thumbnail_btn_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event)
 {
   g_return_val_if_fail(widget != NULL, FALSE);
-  g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), FALSE);
 
   int flags = gtk_widget_get_state_flags(widget);
   flags &= ~GTK_STATE_FLAG_PRELIGHT;
@@ -168,7 +165,6 @@ GType dtgtk_thumbnail_btn_get_type()
 
 gboolean dtgtk_thumbnail_btn_is_hidden(GtkWidget *widget)
 {
-  g_return_val_if_fail(widget != NULL, TRUE);
   g_return_val_if_fail(DTGTK_IS_THUMBNAIL_BTN(widget), TRUE);
 
   return DTGTK_THUMBNAIL_BTN(widget)->hidden;
