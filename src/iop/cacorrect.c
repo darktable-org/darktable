@@ -400,7 +400,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           blockdenomthr[2][2] = { { 0, 0 }, { 0, 0 } };
 
     // assign working space
-    const int buffersize = 3 * sizeof(float) * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
+    const size_t buffersize = sizeof(float) * 3 * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
     char *buffer = (char *)malloc(buffersize);
     char *data = (char *)(((uintptr_t)buffer + (uintptr_t)63) / 64 * 64);
 
