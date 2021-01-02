@@ -914,6 +914,208 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
   XYZ_D65[2] = XYZ[2];
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
+#endif
+static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
+{
+  // specialized 3×4 dot products of 4×1 RGB-alpha pixels
+  for(size_t i = 0; i < 3; ++i)
+  {
+    v_out[i] = 0.f;
+    for(size_t j = 0; j < 3; ++j)
+      v_out[i] += M[i][j] * v_in[j];
+  }
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LMS, XYZ: 16)
+#endif
+static inline void XYZ_to_LMS(const float XYZ[4], float LMS[4])
+{
+  // Convert CIE 1931 2° XYZ D50 to CIE 2006 LMS D65
+  /* XYZ is white-balanced from D50 to D65 using CAT16 which results in the following matrix :
+  * CAT_to_XYZ * WB * XYZ_to_CAT =
+  * [[  9.80760485e-01,  -4.25541784e-17,  -7.61959005e-19],
+  *  [  4.82934624e-17,   1.01555271e+00,  -7.63213113e-18],
+  *  [ -6.47162968e-19,  -5.69389701e-19,   1.30191586e+00]]
+  *
+  * See chromatic_adaptation.h for the details of the algo and D65/D50 values.
+  *
+  * The XYZ 2° D65 is then converted to CIE 2006 LMS using the approximation by
+  * Richard A. Kirk, Chromaticity coordinates for graphic arts based on CIE 2006 LMS
+  * with even spacing of Munsell colours
+  * https://doi.org/10.2352/issn.2169-2629.2019.27.38
+  * resulting in the following matrix :
+  * XYZ_to_LMS =
+  * [[0.257085, 0.859943, -0.031061],
+  *  [-0.394427, 1.175800, 0.196423],
+  *  [0.064856, -0.076250, 0.559067]]
+  */
+  const float mat[3][4] = { { 0.25213881,  0.87331744, -0.04043881, 0.  },
+                            {-0.38683842,  1.19408687,  0.25572622, 0.  },
+                            { 0.0636082 , -0.07743589,  0.72785819, 0.f } };
+  dot_product(XYZ, mat, LMS);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, LMS: 16)
+#endif
+static inline void LMS_to_XYZ(const float LMS[4], float XYZ[4])
+{
+  // Convert CIE 2006 LMS D65 to CIE 1931 2° XYZ D50 in one step
+  // going through CIE 2006 LMS -> CIE 2° XYZ D65 -> CIE 2° XYZ D50
+
+  /* The following matrix is the inverse of the above*/
+  const float mat[3][4] = { { 1.82871912, -1.30123107,  0.55877659, 0. },
+                            { 0.61270075,  0.38283494, -0.10046468, 0. },
+                            {-0.09462902,  0.1544451 ,  1.31437368, 0. } };
+  dot_product(LMS, mat, XYZ);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LMS, RGB: 16)
+#endif
+static inline void gradingRGB_to_LMS(const float RGB[4], float LMS[4])
+{
+  const float mat[3][4] = { { 0.95f, 0.38f, 0.00f, 0.f },
+                            { 0.05f, 0.62f, 0.03f, 0.f },
+                            { 0.00f, 0.00f, 0.97f, 0.f } };
+  dot_product(RGB, mat, LMS);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LMS, RGB: 16)
+#endif
+static inline void LMS_to_gradingRGB(const float LMS[4], float RGB[4])
+{
+  const float mat[3][4] = { {  1.0877193f, -0.66666667f,  0.02061856f, 0.f },
+                            { -0.0877193f,  1.66666667f, -0.05154639f, 0.f },
+                            {         0.f,          0.f,  1.03092784f, 0.f } };
+  dot_product(LMS, mat, RGB);
+}
+
+
+/*
+* Richard A. Kirk, Chromaticity coordinates for graphic arts based on CIE 2006 LMS
+* with even spacing of Munsell colours
+* https://doi.org/10.2352/issn.2169-2629.2019.27.38
+* The following takes the paper's direct transform but fixes the reverse transform
+* which is wrong. D65 coordinates are taken from CIE 1931 XYZ 2° and converted to
+* RGB
+*/
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych, LMS: 16)
+#endif
+static inline void LMS_to_Ych(const float LMS[4], float Ych[3])
+{
+  Ych[0] = fmaxf(0.68990272f * LMS[0] + 0.34832189f * LMS[1], 0.f);
+  const float a = LMS[0] + LMS[1] + LMS[2];
+
+  float lms[4];
+  for(size_t c = 0; c < 4; c++) lms[c] = (a == 0.f) ? 0.f : LMS[c] / a;
+
+  float rgb[4] = { 0.f };
+  LMS_to_gradingRGB(lms, rgb);
+  rgb[0] -= 0.18662246f;
+  rgb[1] -= 0.5847461f;
+
+  Ych[1] = hypotf(rgb[1], rgb[0]);
+  Ych[2] = atan2f(rgb[1], rgb[0]);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych, LMS: 16)
+#endif
+static inline void Ych_to_LMS(const float Ych[3], float LMS[4])
+{
+  // Ych is offset such that D65 point has c = 0
+  float rgb[4];
+  rgb[0] = fmaxf(Ych[1] * cosf(Ych[2]) + 0.18662246f, 0.f);
+  rgb[1] = fmaxf(Ych[1] * sinf(Ych[2]) + 0.5847461f, 0.f);
+
+  const float sum = rgb[0] + rgb[1];
+  if(fabsf(sum) > 1.f)
+  {
+    rgb[0] /= sum;
+    rgb[1] /= sum;
+  }
+
+  rgb[2] = 1.f - rgb[0] - rgb[1];
+  rgb[3] = 0.f;
+
+  float lms[4] = { 0.f };
+  gradingRGB_to_LMS(rgb, lms);
+  for(size_t c = 0; c < 4; c++) lms[c] = fmaxf(lms[c], 0.f);
+
+  const float a = 0.68990272f * lms[0] + 0.34832189f * lms[1];
+  for(size_t c = 0; c < 3; c++) LMS[c] = (a == 0.f) ? 0.f : lms[c] * Ych[0] / a;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, RGB: 16)
+#endif
+static inline void XYZ_to_gradingRGB(const float XYZ[4], float RGB[3])
+{
+  // fast path with collapsed matrices to go directly from CIE 1931 2° XYZ D50 to Filmlight grading RGB D65
+  // this should be numerically equivalent to XYZ_to_LMS() followed by LMS_to_gradingRGB()
+  // but saves one matrix product by collapsing the 2 matrices from the above functions
+  const float mat[3][4] = { { 0.53346004f,  0.15226970f , -0.19946283f, 0.f },
+                            {-0.67012691f,  1.91752954f,   0.39223917f, 0.f },
+                            { 0.06557547f, -0.07983082f,   0.75036927f, 0.f } };
+  dot_product(XYZ, mat, RGB);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, RGB: 16)
+#endif
+static inline void gradingRGB_to_XYZ(const float RGB[4], float XYZ[3])
+{
+  // inverse of the above
+  const float mat[3][4] = { { 1.67222161f, -0.11185000f,  0.50297636f, 0.f },
+                            { 0.60120746f,  0.47018395f, -0.08596569f, 0.f },
+                            {-0.08217531f,  0.05979694f,  1.27957582f, 0.f } };
+  dot_product(RGB, mat, XYZ);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych, RGB: 16)
+#endif
+static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3])
+{
+  Ych[0] = fmaxf(0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2], 0.f);
+  const float a = RGB[0] + RGB[1] + RGB[2];
+  for(size_t c = 0; c < 4; c++) RGB[c] = (a == 0.f) ? 0.f : RGB[c] / a;
+
+  RGB[0] -= 0.18662246f;
+  RGB[1] -= 0.5847461f;
+
+  Ych[1] = hypotf(RGB[1], RGB[0]);
+  Ych[2] = atan2f(RGB[1], RGB[0]);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych, RGB: 16)
+#endif
+static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3])
+{
+  RGB[0] = Ych[1] * cosf(Ych[2]) + 0.18662246f;
+  RGB[1] = Ych[1] * sinf(Ych[2]) + 0.5847461f;
+  RGB[2] = fmaxf(1.f - RGB[0] - RGB[1], 0.f);
+
+  const float a = (0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2]);
+  for(size_t c = 0; c < 3; ++c) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
+}
+
+
+
 #undef DT_RESTRICT
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
