@@ -22,6 +22,7 @@
 #include "common/debug.h"
 #include "common/histogram.h"
 #include "common/iop_profile.h"
+#include "common/imagebuf.h"
 #include "common/image_cache.h"
 #include "common/math.h"
 #include "control/conf.h"
@@ -203,7 +204,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   const int wf_width = ceilf(width / (float)bin_width);
   d->waveform_width = wf_width;
 
-  memset(wf_linear, 0, sizeof(float) * wf_width * wf_height * 4);
+  dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 4);
 
   // Every bin_width x height portion of the image is being described
   // in a 1 pixel x wf_height portion of the histogram.

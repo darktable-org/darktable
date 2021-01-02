@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "dwt.h"
@@ -275,7 +276,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
     printf("not enough memory for wavelet decomposition");
     goto cleanup;
   }
-  memset(layers, 0, sizeof(float) * p->ch * p->width * p->height);
+  dt_iop_image_fill(layers,0.0f,p->width,p->height,p->ch);
 
   if(p->merge_from_scale > 0)
   {
@@ -285,7 +286,7 @@ static void dwt_wavelet_decompose(float *img, dwt_params_t *const p, _dwt_layer_
       printf("not enough memory for wavelet decomposition");
       goto cleanup;
     }
-    memset(merged_layers, 0, sizeof(float) * p->ch * p->width * p->height);
+    dt_iop_image_fill(merged_layers,0.0f,p->width,p->height,p->ch);
   }
 
   // iterate over wavelet scales
@@ -537,7 +538,7 @@ void dwt_denoise(float *const img, const int width, const int height, const int 
   float *const interm = details + width * height;	// temporary storage for use during each pass
 
   // zero the accumulator
-  memset(details, 0, sizeof(float) * width * height);
+  dt_iop_image_fill(details, 0.0f, width, height, 1);
 
   for(int lev = 0; lev < bands; lev++)
   {
