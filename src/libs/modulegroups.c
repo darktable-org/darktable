@@ -659,7 +659,8 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     }
     else
     {
-      gchar *txt = dt_util_dstrcat(NULL, "%s (%s)\n\n%s", item->widget_name, item->module->name(), item->tooltip);
+      gchar *txt = dt_util_dstrcat(NULL, "%s (%s)\n\n%s\n\n%s", item->widget_name, item->module->name(),
+                                   item->tooltip, _("(some features may only be available in the full module)"));
       gtk_widget_set_tooltip_text(item->widget, txt);
       g_free(txt);
     }
