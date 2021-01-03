@@ -80,6 +80,41 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   memcpy(piece->data, p1, self->params_size);
 }
 
+static void normalize_manifolds(float *const restrict blurred_in, float *const restrict blurred_manifold_lower, float *const restrict blurred_manifold_higher, const size_t width, const size_t height, const dt_iop_cacorrectrgb_guide_channel_t guide)
+{
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
+  schedule(simd:static) aligned(blurred_in, blurred_manifold_lower, blurred_manifold_higher:64)
+#endif
+  for(size_t k = 0; k < width * height; k++)
+  {
+    // normalize
+    const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-6);
+    const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-6);
+    for(size_t c = 0; c < 3; c++)
+    {
+      blurred_manifold_higher[k * 4 + c] /= weighth;
+      blurred_manifold_lower[k * 4 + c] /= weightl;
+    }
+    // replace by average if weight is too small
+    if(weighth < 0.05f)
+    {
+      for(size_t c = 0; c < 3; c++)
+      {
+        blurred_manifold_higher[k * 4 + c] = blurred_in[k * 4 + c];
+      }
+    }
+    if(weightl < 0.05f)
+    {
+      for(size_t c = 0; c < 3; c++)
+      {
+        blurred_manifold_lower[k * 4 + c] = blurred_in[k * 4 + c];
+      }
+    }
+  }
+}
+
 static void ca_correct_rgb(const float* const restrict in, const size_t width, const size_t height,
                           const size_t ch, const float sigma,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
@@ -147,37 +182,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
 
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
-  schedule(simd:static) aligned(blurred_in, blurred_manifold_lower, blurred_manifold_higher:64)
-#endif
-  for(size_t k = 0; k < width * height; k++)
-  {
-    // normalize
-    const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-6);
-    const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-6);
-    for(size_t c = 0; c < 3; c++)
-    {
-      blurred_manifold_higher[k * 4 + c] /= weighth;
-      blurred_manifold_lower[k * 4 + c] /= weightl;
-    }
-    // replace by average if weight is too small
-    if(weighth < 0.05f)
-    {
-      for(size_t c = 0; c < 3; c++)
-      {
-        blurred_manifold_higher[k * 4 + c] = blurred_in[k * 4 + c];
-      }
-    }
-    if(weightl < 0.05f)
-    {
-      for(size_t c = 0; c < 3; c++)
-      {
-        blurred_manifold_lower[k * 4 + c] = blurred_in[k * 4 + c];
-      }
-    }
-  }
+  normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
 
   // refine the manifolds
   // improve result especially on very degraded images
@@ -227,43 +232,11 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
 
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
-  schedule(simd:static) aligned(blurred_in, blurred_manifold_lower, blurred_manifold_higher:64)
-#endif
-  for(size_t k = 0; k < width * height; k++)
-  {
-    // normalize
-    const float weighth = fmaxf(blurred_manifold_higher[k * 4 + 3], 1E-6);
-    const float weightl = fmaxf(blurred_manifold_lower[k * 4 + 3], 1E-6);
-    for(size_t c = 0; c < 3; c++)
-    {
-      blurred_manifold_higher[k * 4 + c] /= weighth;
-      blurred_manifold_lower[k * 4 + c] /= weightl;
-    }
-    // replace by average if weight is too small
-    if(weighth < 0.05f)
-    {
-      for(size_t c = 0; c < 3; c++)
-      {
-        blurred_manifold_higher[k * 4 + c] = blurred_in[k * 4 + c];
-      }
-    }
-    if(weightl < 0.05f)
-    {
-      for(size_t c = 0; c < 3; c++)
-      {
-        blurred_manifold_lower[k * 4 + c] = blurred_in[k * 4 + c];
-      }
-    }
-  }
-
   dt_gaussian_free(g);
-
   dt_free_align(manifold_lower);
   dt_free_align(manifold_higher);
+
+  normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
