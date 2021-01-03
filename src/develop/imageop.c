@@ -1050,7 +1050,7 @@ static gboolean _rename_module_key_press(GtkWidget *entry, GdkEventKey *event, d
     gtk_widget_destroy(entry);
     dt_iop_show_hide_header_buttons(module->header, NULL, TRUE, FALSE); // after removing entry
     dt_iop_gui_update_header(module);
-
+    dt_masks_group_update_name(module);
     return TRUE;
   }
 
