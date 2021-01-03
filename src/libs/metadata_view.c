@@ -361,6 +361,12 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                   -1, &stmt, NULL);
       if(sqlite3_step(stmt) == SQLITE_ROW) mouse_over_id = sqlite3_column_int(stmt, 0);
       sqlite3_finalize(stmt);
+
+      // Still -1 => no selection in progress
+      if(mouse_over_id == -1)
+      {
+        goto fill_minuses;
+      }
     }
   }
 
@@ -1208,6 +1214,9 @@ void gui_init(dt_lib_module_t *self)
   /* lets signup for mouse over image change signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
+                                  G_CALLBACK(_mouse_over_image_callback), self);
 
   /* lets signup for develop image changed signals */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
