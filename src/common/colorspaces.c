@@ -1403,7 +1403,7 @@ dt_colorspaces_t *dt_colorspaces_init()
                                      _("system display profile"), -1, -1, ++display_pos, ++category_pos, -1, -1));
   res->profiles = g_list_append(
       res->profiles, _create_profile(DT_COLORSPACE_DISPLAY2, dt_colorspaces_create_srgb_profile(),
-                                     _("system display profile"), -1, -1, -1, ++category_pos, -1, ++display2_pos));
+                                     _("system display profile (second window)"), -1, -1, -1, ++category_pos, -1, ++display2_pos));
   // we want a v4 with parametric curve for input and a v2 with point trc for output
   // see http://ninedegreesbelow.com/photography/lcms-make-icc-profiles.html#profile-variants-and-versions
   // TODO: what about display?
@@ -1661,7 +1661,7 @@ const char *dt_colorspaces_get_name(dt_colorspaces_color_profile_type_t type,
      case DT_COLORSPACE_WORK:
        return _("work profile");
      case DT_COLORSPACE_DISPLAY2:
-       return _("system display profile");
+       return _("system display profile (second window)");
      case DT_COLORSPACE_REC709:
        return _("gamma22 Rec709");
      case DT_COLORSPACE_PROPHOTO_RGB:
