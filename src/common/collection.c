@@ -1746,8 +1746,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       for (l = list; l != NULL; l = l->next)
         l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
-
-      query = dt_util_glist_to_str(" OR ", list);
+        
+      query = dt_util_dstrcat(NULL, "(%s)", dt_util_glist_to_str(" OR ", list));
       g_list_free(list);
 
       break;
