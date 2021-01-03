@@ -1046,7 +1046,7 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     box_cood[2] -= roi_in->x;
     box_cood[3] -= roi_in->y;
 
-    int box[4];
+    int DT_ALIGNED_ARRAY box[4];
 
     // re-order edges of bounding box
     box[0] = fminf(box_cood[0], box_cood[2]);
@@ -1146,7 +1146,10 @@ static void _auto_levels(const float *const img, const int width, const int heig
 void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const int ch = piece->colors;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
   const dt_iop_rgblevels_data_t *const d = (dt_iop_rgblevels_data_t *)piece->data;
   dt_iop_rgblevels_params_t *p = (dt_iop_rgblevels_params_t *)&d->params;
   dt_iop_rgblevels_gui_data_t *g = (dt_iop_rgblevels_gui_data_t *)self->gui_data;
@@ -1182,78 +1185,83 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
                           1.f / (d->params.levels[1][2] - d->params.levels[1][0]),
                           1.f / (d->params.levels[2][2] - d->params.levels[2][0]) };
 
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
+  const float *const restrict in = (const float*)ivoid;
+  float *const restrict out = (float*)ovoid;
+  if (d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS || d->params.preserve_colors == DT_RGB_NORM_NONE)
+  {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(work_profile, d, ch, ivoid, ovoid, roi_out, mult) \
+  dt_omp_firstprivate(npixels, in, out, work_profile, d, mult) \
   schedule(static)
 #endif
-  for(int k = 0; k < roi_out->height; k++)
-  {
-    float *in = (float *)ivoid + (size_t)k * ch * roi_out->width;
-    float *out = (float *)ovoid + (size_t)k * ch * roi_out->width;
-
-    for(int j = 0; j < roi_out->width; j++, in += ch, out += ch)
+    for(int k = 0; k < 4U*npixels; k += 4)
     {
-      if(d->params.autoscale == DT_IOP_RGBLEVELS_INDEPENDENT_CHANNELS || d->params.preserve_colors == DT_RGB_NORM_NONE)
+      for(int c = 0; c < 3; c++)
       {
-        for(int c = 0; c < 3; c++)
-        {
-          const float L_in = in[c];
+        const float L_in = in[k+c];
 
-          if(L_in <= d->params.levels[c][0])
-          {
-            // Anything below the lower threshold just clips to zero
-            out[c] = 0.0f;
-          }
-          else if(L_in >= d->params.levels[c][2])
-          {
-            const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
-            out[c] = powf(percentage, d->inv_gamma[c]);
-          }
-          else
-          {
-            // Within the expected input range we can use the lookup table
-            const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
-            out[c] = d->lut[c][CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
-          }
+        if(L_in <= d->params.levels[c][0])
+        {
+          // Anything below the lower threshold just clips to zero
+          out[k+c] = 0.0f;
+        }
+        else if(L_in >= d->params.levels[c][2])
+        {
+          const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
+          out[k+c] = powf(percentage, d->inv_gamma[c]);
+        }
+        else
+        {
+          // Within the expected input range we can use the lookup table
+          const float percentage = (L_in - d->params.levels[c][0]) * mult[c];
+          out[k+c] = d->lut[c][CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
+        }
+      }
+      out[k+3] = in[k+3];
+    }
+  }
+  else
+  {
+    const int ch_levels = 0;
+    const float mult_ch = mult[ch_levels];
+    const float *const restrict levels = d->params.levels[ch_levels];
+#ifdef _OPENMP
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(npixels, in, out, work_profile, d, levels, mult_ch, ch_levels) \
+  schedule(static)
+#endif
+    for(int k = 0; k < 4U*npixels; k += 4)
+    {
+      const float lum = dt_rgb_norm(in+k, d->params.preserve_colors, work_profile);
+      if(lum > levels[0])
+      {
+        float curve_lum;
+        const float percentage = (lum - levels[0]) * mult_ch;
+        if(lum >= levels[2])
+        {
+          curve_lum = powf(percentage, d->inv_gamma[ch_levels]);
+        }
+        else
+        {
+          // Within the expected input range we can use the lookup table
+          curve_lum = d->lut[ch_levels][CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
+        }
+
+        const float ratio = curve_lum / lum;
+
+        for_each_channel(c,aligned(in,out:16))
+        {
+          out[k+c] = (ratio * in[k+c]);
         }
       }
       else
       {
-        const int ch_levels = 0;
-
-        float ratio = 1.f;
-        const float lum = dt_rgb_norm(in, d->params.preserve_colors, work_profile);
-        if(lum > d->params.levels[ch_levels][0])
-        {
-          float curve_lum;
-          if(lum >= d->params.levels[ch_levels][2])
-          {
-            const float percentage = (lum - d->params.levels[ch_levels][0]) * mult[ch_levels];
-            curve_lum = powf(percentage, d->inv_gamma[ch_levels]);
-          }
-          else
-          {
-            // Within the expected input range we can use the lookup table
-            const float percentage = (lum - d->params.levels[ch_levels][0]) * mult[ch_levels];
-            curve_lum = d->lut[ch_levels][CLAMP((int)(percentage * 0x10000ul), 0, 0xffff)];
-          }
-
-          ratio = curve_lum / lum;
-
-          for(int c = 0; c < 3; c++)
-          {
-            out[c] = (ratio * in[c]);
-          }
-        }
-        else
-        {
-          for(int c = 0; c < 3; c++) out[c] = 0.f;
-        }
+        for_each_channel(c,aligned(out:16))
+          out[k+c] = 0.f;
       }
-
-      out[3] = in[3];
-    }
+      out[k+3] = in[k+3];
+   }
   }
 }
 
