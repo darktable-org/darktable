@@ -427,6 +427,14 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
   return TRUE;
 }
 
+static void _zoom_max(dt_culling_t *table, gboolean only_current, double posx, double posy)
+{
+  if(only_current)
+    _thumbs_zoom_add(table, 100000.0f, posx, posy, GDK_SHIFT_MASK);
+  else
+    _thumbs_zoom_add(table, 100000.0f, posx, posy, 0);
+}
+
 static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
@@ -536,7 +544,18 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
     if(zmax)
       dt_culling_zoom_fit(table, cur);
     else
-      dt_culling_zoom_max(table, cur);
+    {
+      int x = 0;
+      int y = 0;
+      if(g_list_length(table->list) > 0)
+      {
+        dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+        gdk_window_get_origin(gtk_widget_get_window(th->w_image_box), &x, &y);
+        x = event->x_root - x;
+        y = event->y_root - y;
+      }
+      _zoom_max(table, cur, x, y);
+    }
     return TRUE;
   }
 
@@ -1677,11 +1696,9 @@ void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current)
     x = gtk_widget_get_allocated_width(th->w_image_box) / 2.0;
     y = gtk_widget_get_allocated_height(th->w_image_box) / 2.0;
   }
-  if(only_current)
-    _thumbs_zoom_add(table, 100000.0f, x, y, GDK_SHIFT_MASK);
-  else
-    _thumbs_zoom_add(table, 100000.0f, x, y, 0);
+  _zoom_max(table, only_current, x, y);
 }
+
 void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current)
 {
   if(only_current)
