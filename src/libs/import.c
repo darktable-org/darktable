@@ -657,10 +657,20 @@ static int lua_register_widget(lua_State *L)
   return 0;
 }
 
+void init(dt_lib_module_t *self)
+{
+  lua_State *L = darktable.lua_state.state;
+  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
+  lua_pushlightuserdata(L,self);
+  lua_pushcclosure(L, lua_register_widget,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "register_widget");
+}
+#endif
+
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("import settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
@@ -701,7 +711,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   }
 
 #ifdef USE_LUA
-  gtk_box_pack_start(GTK_BOX(main_box), d->extra_lua_widgets , FALSE, FALSE, 0);
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  gtk_box_pack_start(GTK_BOX(main_box), d->extra_lua_widgets, FALSE, FALSE, 0);
   gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
 #endif
 
@@ -726,18 +737,6 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
-
-void init(dt_lib_module_t *self)
-{
-  lua_State *L = darktable.lua_state.state;
-  int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
-  lua_pushlightuserdata(L,self);
-  lua_pushcclosure(L, lua_register_widget,1);
-  dt_lua_gtk_wrap(L);
-  lua_pushcclosure(L, dt_lua_type_member_common, 1);
-  dt_lua_type_register_const_type(L, my_type, "register_widget");
-}
-#endif
 
 void gui_init(dt_lib_module_t *self)
 {
