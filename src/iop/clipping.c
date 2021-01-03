@@ -2558,9 +2558,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     const float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
-    cairo_arc(cr, bzx * wd, bzy * ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0 * M_PI);
+    cairo_arc(cr, bzx * wd, bzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d, 0, 2.0 * M_PI);
     cairo_stroke(cr);
-    cairo_arc(cr, pzx * wd, pzy * ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0 * M_PI);
+    cairo_arc(cr, pzx * wd, pzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d, 0, 2.0 * M_PI);
     cairo_stroke(cr);
     cairo_move_to(cr, bzx * wd, bzy * ht);
     cairo_line_to(cr, pzx * wd, pzy * ht);
