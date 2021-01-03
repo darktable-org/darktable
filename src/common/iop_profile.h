@@ -234,40 +234,20 @@ static inline float eval_exp(const float coeff[3], const float x)
 
 #ifdef _OPENMP
 #pragma omp declare simd \
-  aligned(rgb_in, rgb_out, unbounded_coeffs_in:16) \
-  aligned(lut_in:64) \
-  uniform(rgb_in, rgb_out, unbounded_coeffs_in, lut_in)
+  aligned(rgb_in, rgb_out, unbounded_coeffs:16) \
+  aligned(lut:64) \
+  uniform(rgb_in, rgb_out, unbounded_coeffs, lut)
 #endif
-static inline void _apply_trc_in(const float rgb_in[3], float rgb_out[3],
-                                float *const lut_in[3],
-                                const float unbounded_coeffs_in[3][3],
-                                const int lutsize)
+static inline void _apply_trc(const float rgb_in[3], float rgb_out[3],
+                              float *const lut[3],
+                              const float unbounded_coeffs[3][3],
+                              const int lutsize)
 {
   for(int c = 0; c < 3; c++)
   {
-    rgb_out[c] = (lut_in[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? extrapolate_lut(lut_in[c], rgb_in[c], lutsize)
-                                        : eval_exp(unbounded_coeffs_in[c], rgb_in[c]))
-                                        : rgb_in[c];
-  }
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd \
-  aligned(rgb_in, rgb_out, unbounded_coeffs_out:16) \
-  aligned(lut_out:64) \
-  uniform(rgb_in, rgb_out, unbounded_coeffs_out, lut_out)
-#endif
-static inline void _apply_trc_out(const float rgb_in[3], float rgb_out[3],
-                                  float *const lut_out[3],
-                                  const float unbounded_coeffs_out[3][3],
-                                  const int lutsize)
-{
-  for(int c = 0; c < 3; c++)
-  {
-    rgb_out[c] = (lut_out[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? extrapolate_lut(lut_out[c], rgb_in[c], lutsize)
-                                                        : eval_exp(unbounded_coeffs_out[c], rgb_in[c]))
-                                                        : rgb_in[c];
+    rgb_out[c] = (lut[c][0] >= 0.0f) ? ((rgb_in[c] < 1.0f) ? extrapolate_lut(lut[c], rgb_in[c], lutsize)
+                                     : eval_exp(unbounded_coeffs[c], rgb_in[c]))
+                                     : rgb_in[c];
   }
 }
 
@@ -320,7 +300,7 @@ static inline float dt_ioppr_get_rgb_matrix_luminance(const float rgb[3],
   if(nonlinearlut)
   {
     float linear_rgb[3] DT_ALIGNED_PIXEL;
-    _apply_trc_in(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
+    _apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
     luminance = matrix_in[3] * linear_rgb[0] + matrix_in[4] * linear_rgb[1] + matrix_in[5] * linear_rgb[2];
   }
   else
@@ -344,7 +324,7 @@ static inline void dt_ioppr_rgb_matrix_to_xyz(const float rgb[3], float xyz[3],
   if(nonlinearlut)
   {
     float linear_rgb[3] DT_ALIGNED_PIXEL;
-    _apply_trc_in(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
+    _apply_trc(rgb, linear_rgb, lut_in, unbounded_coeffs_in, lutsize);
     _ioppr_linear_rgb_matrix_to_xyz(linear_rgb, xyz, matrix_in);
   }
   else
@@ -366,7 +346,7 @@ static inline void dt_ioppr_xyz_to_rgb_matrix(const float xyz[3], float rgb[3],
   {
     float linear_rgb[3] DT_ALIGNED_PIXEL;
     _ioppr_xyz_to_linear_rgb_matrix(xyz, linear_rgb, matrix_out);
-    _apply_trc_out(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
+    _apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
   }
   else
     _ioppr_xyz_to_linear_rgb_matrix(xyz, rgb, matrix_out);
@@ -391,7 +371,7 @@ static inline void dt_ioppr_lab_to_rgb_matrix(const float lab[3], float rgb[3],
   {
     float linear_rgb[3] DT_ALIGNED_PIXEL;
     _ioppr_xyz_to_linear_rgb_matrix(xyz, linear_rgb, matrix_out);
-    _apply_trc_out(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
+    _apply_trc(linear_rgb, rgb, lut_out, unbounded_coeffs_out, lutsize);
   }
   else
   {
