@@ -186,6 +186,14 @@ jobs:
           - nofeatures
           - nofeatures_nosse
         include:
+          - os: { label: ubuntu-18.04, code: bionic }
+            btype: RelWithDebInfo
+            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
+            target: build
+          - os: { label: ubuntu-18.04, code: bionic }
+            btype: Release
+            compiler: { compiler: GNU7,   CC: gcc-7,    CXX: g++-7,      packages: gcc-7 g++-7 }
+            target: build
           - os: { label: ubuntu-latest, code: latest }
             btype: Debug
             compiler: { compiler: GNU9,   CC: gcc-9,    CXX: g++-9,      packages: gcc-9 g++-9 }
