@@ -243,22 +243,27 @@ void init_presets(dt_lib_module_t *self)
 {
   dt_lib_collect_params_t params;
 
-  memset(&params, 0, sizeof(params));
+#define CLEAR_PARAMS(r) {                \
+    memset(&params, 0, sizeof(params));  \
+    params.rules = 1;                    \
+    params.rule[0].mode = 0;             \
+    params.rule[0].item = r;             \
+  }
 
   // based on aspect-ratio
 
-  params.rules = 1;
-  params.rule[0].item = DT_COLLECTION_PROP_ASPECT_RATIO;
-  params.rule[0].mode = 0;
+  CLEAR_PARAMS(DT_COLLECTION_PROP_ASPECT_RATIO);
   g_strlcpy(params.rule[0].string, "= 1", PARAM_STRING_SIZE);
 
   dt_lib_presets_add(_("square"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
+  CLEAR_PARAMS(DT_COLLECTION_PROP_ASPECT_RATIO);
   g_strlcpy(params.rule[0].string, "> 1", PARAM_STRING_SIZE);
   dt_lib_presets_add(_("landscape"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
 
+  CLEAR_PARAMS(DT_COLLECTION_PROP_ASPECT_RATIO);
   g_strlcpy(params.rule[0].string, "< 1", PARAM_STRING_SIZE);
   dt_lib_presets_add(_("portrait"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
@@ -271,7 +276,7 @@ void init_presets(dt_lib_module_t *self)
   (void)localtime_r(&now, &tt);
   strftime(datetime, 100, "%Y:%m:%d", &tt);
 
-  params.rule[0].item = DT_COLLECTION_PROP_IMPORT_TIMESTAMP;
+  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
   dt_lib_presets_add(_("today"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
@@ -281,7 +286,7 @@ void init_presets(dt_lib_module_t *self)
   (void)localtime_r(&last24h, &tt);
   strftime(datetime, 100, "> %Y:%m:%d %H:%M", &tt);
 
-  params.rule[0].item = DT_COLLECTION_PROP_IMPORT_TIMESTAMP;
+  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
   dt_lib_presets_add(_("last 24h"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
@@ -290,10 +295,12 @@ void init_presets(dt_lib_module_t *self)
   (void)localtime_r(&last30d, &tt);
   strftime(datetime, 100, "> %Y:%m:%d", &tt);
 
-  params.rule[0].item = DT_COLLECTION_PROP_IMPORT_TIMESTAMP;
+  CLEAR_PARAMS(DT_COLLECTION_PROP_IMPORT_TIMESTAMP);
   g_strlcpy(params.rule[0].string, datetime, PARAM_STRING_SIZE);
   dt_lib_presets_add(_("last 30 days"), self->plugin_name, self->version(),
                        &params, sizeof(params), TRUE);
+
+#undef CLEAR_PARAMS
 }
 
 /* Update the params struct with active ruleset */
