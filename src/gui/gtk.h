@@ -365,6 +365,7 @@ static inline GtkWidget *dt_ui_label_new(const gchar *str)
 {
   GtkWidget *label = gtk_label_new(str);
   gtk_widget_set_halign(label, GTK_ALIGN_START);
+  gtk_label_set_xalign (GTK_LABEL(label), 0.0f);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   return label;
 };
