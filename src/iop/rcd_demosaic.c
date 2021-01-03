@@ -71,7 +71,7 @@
 #define w3 (3 * RCD_TILESIZE)
 #define w4 (4 * RCD_TILESIZE)
 
-#define eps 1e-5    // // Tolerance to avoid dividing by zero
+#define eps 1e-5    // Tolerance to avoid dividing by zero
 #define epssq 1e-10
 
 /* Some macros and inline functions taken from amaze_demosaic_RT */
@@ -172,37 +172,45 @@ static INLINE float intp(float a, float b, float c)
     return a * (b - c) + c;
 }
 
+// We might have negative data in input and want to normalise data 
+static INLINE float safe_in(float a, float scale)
+{
+  return fmaxf(0.0f, a) * scale;
+}
+
 /* End of macros and inline functions taken from amaze_demosaic_RT */
 
 // The border interpolation has been taken from rt, adapted to dt.
 // The original dcraw based code had much stronger color artefacts in the border region. 
-static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c)
+static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c, const float scaler)
 {
   float (*rgb)[4] = (void *)out;
   if(c == 1)
   {
-    rgb[idx][0] = (sum[0] / sum[3]);
-    rgb[idx][1] = CLIP(cfa[idx]);
-    rgb[idx][2] = (sum[2] / sum[5]);
+    rgb[idx][0] = (sum[0] / sum[3]) * scaler;
+    rgb[idx][1] = fmaxf(0.0f, cfa[idx]);
+    rgb[idx][2] = (sum[2] / sum[5]) * scaler;
   }
   else
   {
-    rgb[idx][1] =  (sum[1] / sum[4]);
+    rgb[idx][1] =  (sum[1] / sum[4]) * scaler;
     if (c == 0)
     {
-      rgb[idx][0] = CLIP(cfa[idx]);
-      rgb[idx][2] = (sum[2] / sum[5]);
+      rgb[idx][0] = fmaxf(0.0f, cfa[idx]);
+      rgb[idx][2] = (sum[2] / sum[5]) * scaler;
     }
     else
     {
-      rgb[idx][0] = (sum[0] / sum[3]);
-      rgb[idx][2] = CLIP(cfa[idx]);
+      rgb[idx][0] = (sum[0] / sum[3]) * scaler;
+      rgb[idx][2] = fmaxf(0.0f, cfa[idx]);
     }
   }
+  rgb[idx][3] = 0.0f;
 }
 
-static void rcd_border_interpolate(float *out, const float *cfa, const int *cfarray, const int width, const int height, int border)
+static void rcd_border_interpolate(float *out, const float *cfa, const int *cfarray, const int width, const int height, int border, float scaler)
 {
+  const float revscaler = 1.0f / scaler;
   for(int i = 0; i < height; i++)
   {
     float sum[6];
@@ -216,12 +224,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += CLIP(cfa[i1 * width + j1]);
+            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
     }
 
     for(int j = width - border; j < width; j++)
@@ -234,12 +242,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height ) && (j1 < width))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += CLIP(cfa[i1 * width + j1]);
+            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
     }
   }
   for(int i = 0; i < border; i++)
@@ -255,12 +263,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += CLIP(cfa[i1 * width + j1]);
+            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
     }
   }
   for(int i = height - border; i < height; i++)
@@ -276,12 +284,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 < width))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += CLIP(cfa[i1 * width + j1]);
+            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
     }
   }
 }
@@ -315,8 +323,11 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 #endif
   { 
     float *const VH_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    memset(VH_Dir, 0, sizeof(*VH_Dir) * RCD_TILESIZE * RCD_TILESIZE);
     float *const PQ_Dir = dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE / 2);
+    memset(PQ_Dir, 0, sizeof(*PQ_Dir) * (RCD_TILESIZE * RCD_TILESIZE / 2));
     float *const cfa =    dt_alloc_align_float((size_t) RCD_TILESIZE * RCD_TILESIZE);
+    memset(cfa, 0, sizeof(*cfa) * RCD_TILESIZE * RCD_TILESIZE);
     float (*const rgb)[RCD_TILESIZE * RCD_TILESIZE] = (void *)dt_alloc_align_float((size_t)3 * RCD_TILESIZE * RCD_TILESIZE);
 
     // No overlapping use so re-use same buffer; also note we use divide-by-2 index for lower mem pressure
@@ -353,12 +364,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 
           for(; col < colEnd - 1; col+=2, indx+=2, in_indx+=2)
           {
-            cfa[indx]     = rgb[c0][indx]     = CLIP(in[in_indx] * revscaler);
-            cfa[indx + 1] = rgb[c1][indx + 1] = CLIP(in[in_indx+1] * revscaler);
+            cfa[indx]   = rgb[c0][indx]   = safe_in(in[in_indx], revscaler);
+            cfa[indx+1] = rgb[c1][indx+1] = safe_in(in[in_indx+1], revscaler);
           }
           if(col < colEnd)
           {
-            cfa[indx] = rgb[c0][indx] = CLIP(in[indx] * revscaler);
+            cfa[indx]   = rgb[c0][indx]   = safe_in(in[indx], revscaler);
           }
         }
 
@@ -588,11 +599,12 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
           int col = colStart + RCD_BORDER;
           int o_idx = (row * width + col) * 4;
           int idx = (row - rowStart) * RCD_TILESIZE + col - colStart;
-          for(; col < colEnd - RCD_BORDER ; col++, o_idx += 4, idx++)
+          for(; col < colEnd - RCD_BORDER; col++, o_idx += 4, idx++)
           {
-            out[o_idx]   = scaler * CLIP(rgb[0][idx]);
-            out[o_idx+1] = scaler * CLIP(rgb[1][idx]);
-            out[o_idx+2] = scaler * CLIP(rgb[2][idx]);
+            out[o_idx]   = scaler * fmaxf(0.0f, rgb[0][idx]);
+            out[o_idx+1] = scaler * fmaxf(0.0f, rgb[1][idx]);
+            out[o_idx+2] = scaler * fmaxf(0.0f, rgb[2][idx]);
+            out[o_idx+3] = 0.0f;
           }
         }
       }
@@ -604,7 +616,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     dt_free_align(PQ_Dir);
   }
 
-  rcd_border_interpolate(out, in, cfarray, width, height, RCD_BORDER);
+  rcd_border_interpolate(out, in, cfarray, width, height, RCD_BORDER, scaler);
 }
 
 #ifdef __GNUC__
