@@ -1046,7 +1046,7 @@ static void _get_selected_area(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     box_cood[2] -= roi_in->x;
     box_cood[3] -= roi_in->y;
 
-    int box[4];
+    int DT_ALIGNED_ARRAY box[4];
 
     // re-order edges of bounding box
     box[0] = fminf(box_cood[0], box_cood[2]);
@@ -1250,14 +1250,15 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
         const float ratio = curve_lum / lum;
 
-        for(int c = 0; c < 3; c++)
+        for_each_channel(c,aligned(in,out:16))
         {
           out[k+c] = (ratio * in[k+c]);
         }
       }
       else
       {
-        for(int c = 0; c < 3; c++) out[k+c] = 0.f;
+        for_each_channel(c,aligned(out:16))
+          out[k+c] = 0.f;
       }
       out[k+3] = in[k+3];
    }
