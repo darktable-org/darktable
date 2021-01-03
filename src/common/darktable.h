@@ -457,6 +457,59 @@ static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_siz
 // return a pointer to the indicated thread's private buffer.
 #define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
 
+// Most code in dt assumes that the compiler is capable of auto-vectorization.  In some cases, this will yield
+// suboptimal code if the compiler in fact does NOT auto-vectorize.  Uncomment the following line for such a
+// compiler.
+//#define DT_NO_VECTORIZATION
+
+// For some combinations of compiler and architecture, the compiler may actually emit inferior code if given
+// a hint to vectorize a loop.  Uncomment the following line if such a combination is the compilation target.
+//#define DT_NO_SIMD_HINTS
+
+// To be able to vectorize per-pixel loops, we need to operate on all four channels, but if the compiler does
+// not auto-vectorize, doing so increases computation by 1/3 for a channel which typically is ignored anyway.
+// Select the appropriate number of channels over which to loop to produce the fastest code.
+#ifdef DT_NO_VECTORIZATION
+#define DT_PIXEL_SIMD_CHANNELS 3
+#else
+#define DT_PIXEL_SIMD_CHANNELS 4
+#endif
+
+// A macro which gives us a configurable shorthand to produce the optimal performance when processing all of the
+// channels in a pixel.  Its first argument is the name of the variable to be used inside the 'for' loop it creates,
+// while the optional second argument is a set of OpenMP directives, typically specifying variable alignment.
+// If indexing off of the begining of any buffer allocated with dt's image or aligned allocation functions, the
+// alignment to specify is 64; otherwise, use 16, as there may have been an odd number of pixels from the start.
+// Sample usage:
+//         for_each_channel(k,aligned(src,dest:16))
+//         {
+//           src[k] = dest[k] / 3.0f;
+//         }
+#if defined(_OPENMP) && defined(OPENMP_SIMD_) && !defined(DT_NO_SIMD_HINTS)
+//https://stackoverflow.com/questions/45762357/how-to-concatenate-strings-in-the-arguments-of-pragma
+#define _DT_Pragma_(x) _Pragma(#x)
+#define _DT_Pragma(x) _DT_Pragma_(x)
+#define for_each_channel(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < 4; _var++)
+#else
+#define for_each_channel(_var, ...) \
+  for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  for (size_t _var = 0; _var < 4; _var++)
+#endif
+
+// copy the RGB channels of a pixel; includes the 'alpha' channel as well if faster due to vectorization, but
+// subsequent code should ignore the value of the alpha unless explicitly set afterwards (since it might not have
+// been copied)
+static inline void copy_pixel(float *const __restrict__ out, const float *const __restrict__ in)
+{
+  for_each_channel(k,aligned(in,out:16)) out[k] = in[k];
+}
+
 static inline void dt_print_mem_usage()
 {
 #if defined(__linux__)
