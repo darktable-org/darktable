@@ -2791,19 +2791,11 @@ static int get_thumb_quality(int width, int height)
   // we check if we need ultra-high quality thumbnail for this size
   char *min = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
 
-  int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
-  int res = 0;
-  if (strcmp(min, "always")==0) res = 1;
-  else if (strcmp(min, "small")==0) res = ( level >= 1 );
-  else if (strcmp(min, "VGA")==0) res = ( level >= 2 );
-  else if (strcmp(min, "720p")==0) res = ( level >= 3 );
-  else if (strcmp(min, "1080p")==0) res = ( level >= 4 );
-  else if (strcmp(min, "WQXGA")==0) res = ( level >= 5 );
-  else if (strcmp(min, "4k")==0) res = ( level >= 6 );
-  else if (strcmp(min, "5K")==0) res = ( level >= 7 );
-
+  const int level = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, width, height);
+  const dt_mipmap_size_t min_s = dt_mipmap_cache_get_min_mip_from_pref(min);
   g_free(min);
-  return res;
+
+  return (level >= min_s);
 }
 
 // set flags for demosaic quality based on factors besides demosaic
@@ -4996,7 +4988,7 @@ void gui_update(struct dt_iop_module_t *self)
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
 
-  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
+  gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
   gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
   if(bayer)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
@@ -5056,7 +5048,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
 
-  gtk_widget_set_visible(g->demosaic_method_bayer, bayer); 
+  gtk_widget_set_visible(g->demosaic_method_bayer, bayer);
   gtk_widget_set_visible(g->demosaic_method_xtrans, !bayer);
   if(bayer)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_bayer, p->demosaicing_method);
