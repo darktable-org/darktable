@@ -978,7 +978,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
   }
 }
 
-void dt_styles_delete_by_name(const char *name)
+void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
 {
   int id = 0;
   if((id = dt_styles_get_id_by_name(name)) != 0)
@@ -1001,8 +1001,15 @@ void dt_styles_delete_by_name(const char *name)
     char tmp_accel[1024];
     snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+
+    if(raise)
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
+}
+
+void dt_styles_delete_by_name(const char *name)
+{
+  dt_styles_delete_by_name_adv(name, TRUE);
 }
 
 GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)
