@@ -35,6 +35,15 @@
 
 DT_MODULE(3)
 
+typedef enum dt_metadata_pref_cols_t
+{
+  DT_METADATA_PREF_COL_INDEX = 0, // display index
+  DT_METADATA_PREF_COL_NAME,      // displayed name
+  DT_METADATA_PREF_COL_VISIBLE,   // visibility
+  DT_METADATA_PREF_COL_PRIVATE,    // do not export
+  DT_METADATA_PREF_NUM_COLS
+} dt_metadata_pref_cols_t;
+
 typedef struct dt_lib_metadata_t
 {
   int imgsel;
@@ -47,7 +56,6 @@ typedef struct dt_lib_metadata_t
   gboolean editing;
   GtkWidget *clear_button;
   GtkWidget *apply_button;
-  GtkWidget *config_button;
   gboolean init_layout;
 } dt_lib_metadata_t;
 
@@ -394,57 +402,98 @@ static gboolean _metadata_selected(GtkWidget *listview, GdkEventButton *event, d
   return FALSE;
 }
 
-static void _config_button_clicked(GtkButton *button, dt_lib_module_t *self)
+static void _toggled_callback(gchar *path_str, gpointer user_data, const int column)
+{
+  GtkListStore *store = (GtkListStore *)user_data;
+  GtkTreeIter iter;
+  GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
+  gboolean toggle;
+
+  gtk_tree_model_get_iter(GTK_TREE_MODEL(store), &iter, path);
+  gtk_tree_model_get(GTK_TREE_MODEL(store), &iter, column, &toggle, -1);
+  gtk_list_store_set(store, &iter, column, !toggle, -1);
+
+  gtk_tree_path_free(path);
+}
+
+static void _visible_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar *path_str, gpointer user_data)
+{
+  _toggled_callback(path_str, user_data, DT_METADATA_PREF_COL_VISIBLE);
+}
+
+static void _private_toggled_callback(GtkCellRendererToggle *cell_renderer, gchar *path_str, gpointer user_data)
+{
+  _toggled_callback(path_str, user_data, DT_METADATA_PREF_COL_PRIVATE);
+}
+
+void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
                                        _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  GtkWidget *grid = gtk_grid_new();
-  gtk_container_add(GTK_CONTAINER(area), grid);
-  GtkWidget *label = gtk_label_new(_("metadata"));
-  gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
-  label = gtk_label_new(_("hidden"));
-  gtk_grid_attach(GTK_GRID(grid), label, 1, 0, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-            _("tick if the corresponding metadata is of no interest for you"
-              "\nit will be hidden from metadata editor, collection, image information and import module"
-              "\nneither will it be exported"));
-  label = gtk_label_new(_("private"));
-  gtk_grid_attach(GTK_GRID(grid), label, 2, 0, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(label),
-            _("tick if you want to keep this information private (not exported with images)"));
-  gchar *name[DT_METADATA_NUMBER];
-  GtkWidget *hidden[DT_METADATA_NUMBER];
-  GtkWidget *private[DT_METADATA_NUMBER];
-  gboolean hidden_v[DT_METADATA_NUMBER];
-  gboolean private_v[DT_METADATA_NUMBER];
+  GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(100));
+  gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_NEVER);
+  gtk_box_pack_start(GTK_BOX(area), w, TRUE, TRUE, 0);
+
+  GtkListStore *store = gtk_list_store_new(DT_METADATA_PREF_NUM_COLS,
+                                           G_TYPE_INT, G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN);
+  GtkTreeModel *model = GTK_TREE_MODEL(store);
+  GtkTreeIter iter;
+
+  char *name[DT_METADATA_NUMBER];
+  gboolean visible[DT_METADATA_NUMBER];
+  gboolean private[DT_METADATA_NUMBER];
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     const int type = dt_metadata_get_type_by_display_order(i);
     if(type != DT_METADATA_TYPE_INTERNAL)
     {
       name[i] = (gchar *)dt_metadata_get_name_by_display_order(i);
-      label = gtk_label_new(_(name[i]));
-      gtk_grid_attach(GTK_GRID(grid), label, 0, i+1, 1, 1);
-      gtk_widget_set_halign(label, GTK_ALIGN_START);
-      gtk_widget_set_hexpand(label, TRUE);
-      hidden[i] = gtk_check_button_new();
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name[i]);
       const uint32_t flag = dt_conf_get_int(setting);
       g_free(setting);
-      hidden_v[i] = flag & DT_METADATA_FLAG_HIDDEN;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(hidden[i]), hidden_v[i]);
-      gtk_grid_attach(GTK_GRID(grid), hidden[i], 1, i+1, 1, 1);
-      gtk_widget_set_halign(hidden[i], GTK_ALIGN_CENTER);
-      private[i] = gtk_check_button_new();
-      private_v[i] = flag & DT_METADATA_FLAG_PRIVATE;
-      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(private[i]), private_v[i]);
-      gtk_grid_attach(GTK_GRID(grid), private[i], 2, i+1, 1, 1);
-      gtk_widget_set_halign(private[i], GTK_ALIGN_CENTER);
+      visible[i] = !(flag & DT_METADATA_FLAG_HIDDEN);
+      private[i] = flag & DT_METADATA_FLAG_PRIVATE;
+      gtk_list_store_append(store, &iter);
+      gtk_list_store_set(store, &iter,
+                         DT_METADATA_PREF_COL_INDEX, i,
+                         DT_METADATA_PREF_COL_NAME, _(name[i]),
+                         DT_METADATA_PREF_COL_VISIBLE, visible[i],
+                         DT_METADATA_PREF_COL_PRIVATE, private[i],
+                         -1);
     }
   }
+
+  GtkWidget *view = gtk_tree_view_new_with_model(model);
+  g_object_unref(model);
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("metadata"), renderer,
+                                                    "text", DT_METADATA_PREF_COL_NAME, NULL);
+  gtk_tree_view_column_set_expand(column, TRUE);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+  renderer = gtk_cell_renderer_toggle_new();
+  g_signal_connect(renderer, "toggled", G_CALLBACK(_visible_toggled_callback), store);
+  column = gtk_tree_view_column_new_with_attributes(_("visible"), renderer,
+                                                    "active", DT_METADATA_PREF_COL_VISIBLE, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+  GtkWidget *header = gtk_tree_view_column_get_button(column);
+  gtk_widget_set_tooltip_text(header,
+                _("tick if the corresponding metadata is of interest for you"
+                "\nit will be visible from metadata editor, collection and import module"
+                "\nit will be also exported"));
+  renderer = gtk_cell_renderer_toggle_new();
+  g_signal_connect(renderer, "toggled", G_CALLBACK(_private_toggled_callback), store);
+  column = gtk_tree_view_column_new_with_attributes(_("private"), renderer,
+                                                    "active", DT_METADATA_PREF_COL_PRIVATE, NULL);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
+  header = gtk_tree_view_column_get_button(column);
+  gtk_widget_set_tooltip_text(header,
+                _("tick if you want to keep this information private (not exported with images)"));
+
+  gtk_container_add(GTK_CONTAINER(w), view);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -455,28 +504,35 @@ static void _config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   {
     gboolean meta_signal = FALSE;
     gboolean meta_remove = FALSE;
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+    while(valid)
     {
-      const int type = dt_metadata_get_type_by_display_order(i);
-      if(type != DT_METADATA_TYPE_INTERNAL)
+      gboolean new_visible;
+      gboolean new_private;
+      uint32_t i;
+      gtk_tree_model_get(model, &iter,
+                         DT_METADATA_PREF_COL_INDEX, &i,
+                         DT_METADATA_PREF_COL_VISIBLE, &new_visible,
+                         DT_METADATA_PREF_COL_PRIVATE, &new_private,
+                         -1);
+      if(i < DT_METADATA_NUMBER)
       {
         char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", name[i]);
         uint32_t flag = dt_conf_get_int(setting);
-        const gboolean hidden_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(hidden[i]));
-        if(hidden_nv !=  hidden_v[i])
+        if(new_visible !=  visible[i])
         {
-          flag = hidden_nv ? flag | DT_METADATA_FLAG_HIDDEN : flag & ~DT_METADATA_FLAG_HIDDEN;
+          flag = !new_visible ? flag | DT_METADATA_FLAG_HIDDEN : flag & ~DT_METADATA_FLAG_HIDDEN;
           meta_signal = TRUE;
-          meta_remove =  hidden_nv ? TRUE : meta_remove;
+          meta_remove =  !new_visible ? TRUE : meta_remove;
         }
-        const gboolean private_nv = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(private[i]));
-        if(private_nv != private_v[i])
+        if(new_private != private[i])
         {
-          flag = private_nv ? flag | DT_METADATA_FLAG_PRIVATE : flag & ~DT_METADATA_FLAG_PRIVATE;
+          flag = new_private ? flag | DT_METADATA_FLAG_PRIVATE : flag & ~DT_METADATA_FLAG_PRIVATE;
         }
         dt_conf_set_int(setting, flag);
         g_free(setting);
       }
+      valid = gtk_tree_model_iter_next(model, &iter);
     }
     if(meta_signal)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
@@ -484,6 +540,13 @@ static void _config_button_clicked(GtkButton *button, dt_lib_module_t *self)
   }
   _update_layout(self);
   gtk_widget_destroy(dialog);
+}
+
+void set_preferences(void *menu, dt_lib_module_t *self)
+{
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
 void init_key_accels(dt_lib_module_t *self)
@@ -665,12 +728,6 @@ void gui_init(dt_lib_module_t *self)
   d->apply_button = dt_ui_button_new(_("apply"), _("write metadata for selected images"), NULL);
   gtk_box_pack_start(hbox, d->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->apply_button), "clicked", G_CALLBACK(_apply_button_clicked), self);
-
-  d->config_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
-  gtk_widget_set_name(d->config_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->config_button, _("configure metadata"));
-  gtk_box_pack_start(hbox, d->config_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->config_button), "clicked", G_CALLBACK(_config_button_clicked), self);
 
   gtk_grid_attach(GTK_GRID(self->widget), GTK_WIDGET(hbox), 0, 1, 1, 1);
 
