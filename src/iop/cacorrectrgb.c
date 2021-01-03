@@ -126,34 +126,8 @@ static void ca_correct_rgb(const float* const restrict in, const size_t width, c
   float *const restrict blurred_manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
   float *const restrict blurred_manifold_lower = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
 
-  float minr = 10000000.0f;
-  float maxr = 0.0f;
-  float ming = 10000000.0f;
-  float maxg = 0.0f;
-  float minb = 10000000.0f;
-  float maxb = 0.0f;
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, width, height) \
-  schedule(simd:static) aligned(in:64) \
-  reduction(max:maxr, maxg, maxb)\
-  reduction(min:minr, ming, minb)
-#endif
-  for(size_t k = 0; k < width * height; k++)
-  {
-    const float pixelr = in[k * 4];
-    if(pixelr < minr) minr = pixelr;
-    if(pixelr > maxr) maxr = pixelr;
-    const float pixelg = in[k * 4 + 1];
-    if(pixelg < ming) ming = pixelg;
-    if(pixelg > maxg) maxg = pixelg;
-    const float pixelb = in[k * 4 + 2];
-    if(pixelb < minb) minb = pixelb;
-    if(pixelb > maxb) maxb = pixelb;
-  }
-
-  float max[4] = {maxr, maxg, maxb, 1.0f};
-  float min[4] = {fminf(minr, 0.0f), fminf(ming, 0.0f), fminf(minb, 0.0f), 0.0f};
+  float max[4] = {INFINITY, INFINITY, INFINITY, 1.0f};
+  float min[4] = {0.0f, 0.0f, 0.0f, 0.0f};
   dt_gaussian_t *g = dt_gaussian_init(width, height, 4, max, min, sigma, 0);
   if(!g) return;
   dt_gaussian_blur_4c(g, in, blurred_in);
