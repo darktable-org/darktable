@@ -144,7 +144,7 @@ static char* _get_user_locale()
   {
     NSLocale* locale_ns = [NSLocale currentLocale];
     NSString* locale_c;
-    if([locale_ns respondsToSelector: @selector(languageCode)] && [locale_ns respondsToSelector: @selector(languageCode)])
+    if([locale_ns respondsToSelector: @selector(languageCode)] && [locale_ns respondsToSelector: @selector(countryCode)])
     {
       locale_c = [NSString stringWithFormat: @"%@_%@", [locale_ns languageCode], [locale_ns countryCode]];
     }
