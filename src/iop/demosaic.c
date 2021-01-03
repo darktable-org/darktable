@@ -60,7 +60,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_VNG4 = 2,  // $DESCRIPTION: "VNG4"
   DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
   DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR = 4, // $DESCRIPTION: "photosite color (debug)"
-  DT_IOP_DEMOSAIC_RCD = 5, // // $DESCRIPTION: "RCD"
+  DT_IOP_DEMOSAIC_RCD = 5,   // $DESCRIPTION: "RCD"
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,           // $DESCRIPTION: "VNG"
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,   // $DESCRIPTION: "Markesteijn 1-pass"
@@ -2921,10 +2921,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       passthrough_color(tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans);
     }
-    else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
-    {
-      rcd_demosaic(piece, tmp, pixels, &roo, &roi, piece->pipe->dsc.filters);
-    }
     else if(piece->pipe->dsc.filters == 9u)
     {
       if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL))
@@ -2972,6 +2968,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           dt_colorspaces_cygm_to_rgb(tmp, roo.width*roo.height, data->CAM_to_RGB);
           dt_colorspaces_cygm_to_rgb(piece->pipe->dsc.processed_maximum, 1, data->CAM_to_RGB);
         }
+      }
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
+      {
+        rcd_demosaic(piece, tmp, pixels, &roo, &roi, piece->pipe->dsc.filters);
       }
       else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, piece->pipe->dsc.filters,
@@ -4991,7 +4991,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
   const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
-  const gboolean isrcd = (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD);
   const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
@@ -5005,7 +5004,7 @@ void gui_update(struct dt_iop_module_t *self)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
-  gtk_widget_set_visible(g->greeneq, !passing && !isrcd);
+  gtk_widget_set_visible(g->greeneq, !passing);
   gtk_widget_set_visible(g->color_smoothing, !passing);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
@@ -5052,7 +5051,6 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
   const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
-  const gboolean isrcd = (p->demosaicing_method == DT_IOP_DEMOSAIC_RCD);
   const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
@@ -5066,7 +5064,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_bauhaus_combobox_set_from_value(g->demosaic_method_xtrans, p->demosaicing_method);
 
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
-  gtk_widget_set_visible(g->greeneq, !passing && !isrcd);
+  gtk_widget_set_visible(g->greeneq, !passing);
   gtk_widget_set_visible(g->color_smoothing, !passing);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
