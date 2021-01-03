@@ -132,6 +132,7 @@ static void ca_correct_rgb(const float* const restrict in, const size_t width, c
   if(!g) return;
   dt_gaussian_blur_4c(g, in, blurred_in);
 
+  // construct the manifolds
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
 dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, height, guide) \
@@ -158,6 +159,20 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
 
   normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
 
+  // note that manifolds were constructed based on the value and average
+  // of the guide channel ONLY.
+  // this implies that the "higher" manifold in the channel c may be
+  // actually lower than the "lower" manifold of that channel.
+  // This happens in the following example:
+  // guide:  1_____
+  //               |_____0
+  // guided:        _____1
+  //         0_____|
+  // here the higher manifold of guide is equal to 1, its lower manifold is
+  // equal to 0. The higher manifold of the guided channel is equal to 0
+  // as it is the average of the values where the guide is higher than its
+  // average, and the lower manifold of the guided channel is equal to 1.
+
   // refine the manifolds
   // improve result especially on very degraded images
 #ifdef _OPENMP
@@ -172,8 +187,39 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
     float weighth = (pixelg >= avgg);
     float weightl = (pixelg <= avgg);
 
+    // in order to refine the manifolds, we will compute weights
+    // for which all channel will have a contribution.
+    // this will allow to avoid taking too much into account pixels
+    // that have wrong values due to the chromatic aberration
+    //
+    // for example, here:
+    // guide:  1_____
+    //               |_____0
+    // guided: 1______
+    //                |____0
+    //               ^ this pixel makes the estimated lower manifold erroneous
+    // here, the higher and lower manifolds values computed are:
+    // _______|_higher_|________lower_________|
+    // guide  |    1   |   0                  |
+    // guided |    1   |(1 + 4 * 0) / 5 = 0.2 |
+    //
+    // the lower manifold of the guided is 0.2 if we consider only the guide
+    // to determine weighth and weightl.
+    //
+    // at this step of the algorithm, we know if the higher manifold of guided
+    // is actually higher or lower than the lower manifold.
+    //
+    // we can refine the manifolds by computing weights that promote pixels that
+    // stretch the interval between the manifolds.
+    // i.e., in our case, we give higher weights to the pixels that are equal to
+    // 0 than to the pixel that is equal to 1 for the computation of the lower
+    // manifold
     for(size_t c = 0; c < 3; c++)
     {
+      // reminder: manifolds were constructed based on the value and average
+      // of the guide channel ONLY.
+      // this implies that the "higher" manifold in the channel c may be
+      // actually lower than the "lower" manifold of that channel.
       const float pixel = in[k * 4 + c];
       float high = blurred_manifold_higher[k * 4 + c];
       float low = blurred_manifold_lower[k * 4 + c];
