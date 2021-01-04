@@ -723,7 +723,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
-//    dt_import_metadata_evaluate(&metadata);
+    dt_import_metadata_evaluate(&metadata);
   }
 #ifdef USE_LUA
   detach_lua_widgets(d->extra_lua_widgets);
