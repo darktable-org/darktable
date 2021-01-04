@@ -129,6 +129,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {43.0f }, "colorzones", 0},
   { {44.0f }, "lowlight", 0},
   { {45.0f }, "monochrome", 0},
+  { {45.5f }, "diffuse", 0},
   { {46.0f }, "filmic", 0},
   { {46.5f }, "filmicrgb", 0},
   { {47.0f }, "colisa", 0},
@@ -227,6 +228,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {43.0f }, "rgblevels", 0},       // same
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
                                   //    on camera JPEG default look
+  { {44.5f }, "diffuse", 0},
   { {45.0f }, "filmic", 0},          // same, but different (parametric) approach
   { {46.0f }, "filmicrgb", 0},       // same, upgraded
   { {47.0f }, "colisa", 0},          // edit contrast while damaging colour
@@ -661,6 +663,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
+          _insert_before(iop_order_list, "filmicrgb", "diffuse");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
