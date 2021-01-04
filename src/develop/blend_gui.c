@@ -1545,7 +1545,7 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     {
       mi = gtk_menu_item_new_with_label(_("Lab"));
       if(module_blend_cst == DEVELOP_BLEND_CS_LAB)
-        gtk_widget_set_name(gtk_bin_get_child(GTK_BIN(mi)), "active-menu-item");
+        gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
       g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_LAB), NULL);
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
@@ -1553,14 +1553,14 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
 
     mi = gtk_menu_item_new_with_label(_("RGB (display)"));
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_DISPLAY)
-      gtk_widget_set_name(gtk_bin_get_child(GTK_BIN(mi)), "active-menu-item");
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_DISPLAY), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     mi = gtk_menu_item_new_with_label(_("RGB (scene)"));
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_SCENE)
-      gtk_widget_set_name(gtk_bin_get_child(GTK_BIN(mi)), "active-menu-item");
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);

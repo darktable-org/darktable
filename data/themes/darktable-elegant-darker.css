@@ -104,8 +104,7 @@ button,
 notebook tabs,
 #modules-tabs,
 #blending-tabs,
-tooltip label,
-#active-menu-item /* workaround for Pango issue in Windows not rendering bold for Roboto Light and Segoe UI Light */
+tooltip label
 {
     font-family: "Roboto",
                  "Segoe UI",
@@ -115,7 +114,13 @@ tooltip label,
                   sans-serif;
 }
 
-#active-menu-item /* this is optional, omitting it will make the active item slightly less visible */
+.active-menu-item /* needed for some Pango issues not rendering synthetic bold for all OS */
 {
+    font-family: "Roboto",
+                 "Segoe UI",
+                 "SF Pro Text",
+                 "Ubuntu",
+                 "Cantarell",
+                  sans-serif;
     font-weight: bold;
 }
