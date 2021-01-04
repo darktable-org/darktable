@@ -934,7 +934,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
     gboolean visible = TRUE;
     gtk_tree_model_get(d->sort_model, &iter,
                        DT_METADATA_COL_INDEX, &index,
-                       DT_METADATA_COL_NAME_L, &name,
+                       DT_METADATA_COL_NAME, &name,
                        DT_METADATA_COL_VISIBLE, &visible,
                        -1);
     if(_is_metadata_ui(index))
