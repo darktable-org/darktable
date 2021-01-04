@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-02 19:09-0300\n"
-"PO-Revision-Date: 2021-01-03 00:15-0300\n"
+"POT-Creation-Date: 2021-01-04 06:31-0300\n"
+"PO-Revision-Date: 2021-01-04 06:38-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -29,11 +29,11 @@ msgstr ""
 #: ../build/bin/preferences_gen.h:4358 ../build/bin/preferences_gen.h:4401
 #: ../build/bin/preferences_gen.h:4475 ../build/bin/preferences_gen.h:4520
 #: ../build/bin/preferences_gen.h:4556 ../build/bin/preferences_gen.h:4621
-#: ../build/bin/preferences_gen.h:4691 ../build/bin/preferences_gen.h:4789
-#: ../build/bin/preferences_gen.h:4849 ../build/bin/preferences_gen.h:4885
-#: ../build/bin/preferences_gen.h:4921 ../build/bin/preferences_gen.h:4957
-#: ../build/bin/preferences_gen.h:4993 ../build/bin/preferences_gen.h:5029
-#: ../build/bin/preferences_gen.h:5094 ../build/bin/preferences_gen.h:5188
+#: ../build/bin/preferences_gen.h:4699 ../build/bin/preferences_gen.h:4759
+#: ../build/bin/preferences_gen.h:4795 ../build/bin/preferences_gen.h:4831
+#: ../build/bin/preferences_gen.h:4867 ../build/bin/preferences_gen.h:4903
+#: ../build/bin/preferences_gen.h:4939 ../build/bin/preferences_gen.h:5004
+#: ../build/bin/preferences_gen.h:5069 ../build/bin/preferences_gen.h:5188
 #: ../build/bin/preferences_gen.h:5233 ../build/bin/preferences_gen.h:5277
 #: ../build/bin/preferences_gen.h:5342 ../build/bin/preferences_gen.h:5378
 #: ../build/bin/preferences_gen.h:5448 ../build/bin/preferences_gen.h:5489
@@ -101,10 +101,10 @@ msgstr "pasta"
 #: ../build/bin/preferences_gen.h:4336 ../build/bin/preferences_gen.h:4379
 #: ../build/bin/preferences_gen.h:4454 ../build/bin/preferences_gen.h:4534
 #: ../build/bin/preferences_gen.h:4599 ../build/bin/preferences_gen.h:4669
-#: ../build/bin/preferences_gen.h:4759 ../build/bin/preferences_gen.h:4827
-#: ../build/bin/preferences_gen.h:4863 ../build/bin/preferences_gen.h:4899
-#: ../build/bin/preferences_gen.h:4935 ../build/bin/preferences_gen.h:4971
-#: ../build/bin/preferences_gen.h:5007 ../build/bin/preferences_gen.h:5072
+#: ../build/bin/preferences_gen.h:4737 ../build/bin/preferences_gen.h:4773
+#: ../build/bin/preferences_gen.h:4809 ../build/bin/preferences_gen.h:4845
+#: ../build/bin/preferences_gen.h:4881 ../build/bin/preferences_gen.h:4917
+#: ../build/bin/preferences_gen.h:4982 ../build/bin/preferences_gen.h:5047
 #: ../build/bin/preferences_gen.h:5137 ../build/bin/preferences_gen.h:5247
 #: ../build/bin/preferences_gen.h:5356 ../build/bin/preferences_gen.h:5426
 #: ../build/bin/preferences_gen.h:5467 ../build/bin/preferences_gen.h:5532
@@ -150,8 +150,8 @@ msgstr "esconder predefinições nativas para módulos utilitários"
 #: ../build/bin/preferences_gen.h:3681 ../build/bin/preferences_gen.h:3717
 #: ../build/bin/preferences_gen.h:3753 ../build/bin/preferences_gen.h:3789
 #: ../build/bin/preferences_gen.h:3825 ../build/bin/preferences_gen.h:3941
-#: ../build/bin/preferences_gen.h:4534 ../build/bin/preferences_gen.h:4863
-#: ../build/bin/preferences_gen.h:4971 ../build/bin/preferences_gen.h:5356
+#: ../build/bin/preferences_gen.h:4534 ../build/bin/preferences_gen.h:4773
+#: ../build/bin/preferences_gen.h:4881 ../build/bin/preferences_gen.h:5356
 #: ../build/bin/preferences_gen.h:5628 ../build/bin/preferences_gen.h:5700
 #: ../build/bin/preferences_gen.h:5973 ../build/bin/preferences_gen.h:6217
 #: ../build/bin/preferences_gen.h:6891 ../build/bin/preferences_gen.h:6992
@@ -195,7 +195,7 @@ msgstr "esta opção alterna o comportamento do shift+clique no modo mesa de luz
 msgid "scroll to utility modules when expanded/collapsed"
 msgstr "deslizar para módulos utilitários quando expandido/recolhido"
 
-#: ../build/bin/preferences_gen.h:3792 ../build/bin/preferences_gen.h:5010
+#: ../build/bin/preferences_gen.h:3792 ../build/bin/preferences_gen.h:4920
 msgid ""
 "when this option is enabled then darktable will try to scroll the module to "
 "the top of the visible list"
@@ -220,8 +220,8 @@ msgid "show scrollbars for central view"
 msgstr "mostra barras de rolagem para visualização central"
 
 #: ../build/bin/preferences_gen.h:3861 ../build/bin/preferences_gen.h:3905
-#: ../build/bin/preferences_gen.h:4899 ../build/bin/preferences_gen.h:4935
-#: ../build/bin/preferences_gen.h:5007 ../build/bin/preferences_gen.h:5247
+#: ../build/bin/preferences_gen.h:4809 ../build/bin/preferences_gen.h:4845
+#: ../build/bin/preferences_gen.h:4917 ../build/bin/preferences_gen.h:5247
 #: ../build/bin/preferences_gen.h:5664 ../build/bin/preferences_gen.h:5757
 #: ../build/bin/preferences_gen.h:5793 ../build/bin/preferences_gen.h:5829
 #: ../build/bin/preferences_gen.h:5865 ../build/bin/preferences_gen.h:5901
@@ -275,8 +275,8 @@ msgstr ""
 msgid "high quality thumb processing from size"
 msgstr "miniaturas de alta qualidade processadas a partir do tamanho"
 
-#: ../build/bin/preferences_gen.h:3977 ../build/bin/preferences_gen.h:4705
-#: ../build/bin/preferences_gen.h:4759 ../build/bin/preferences_gen.h:6831
+#: ../build/bin/preferences_gen.h:3977 ../build/bin/preferences_gen.h:5083
+#: ../build/bin/preferences_gen.h:5137 ../build/bin/preferences_gen.h:6831
 msgctxt "preferences"
 msgid "always"
 msgstr "sempre"
@@ -557,48 +557,192 @@ msgstr ""
 "diminua para acelerar a renderização de pré-visualização; pode pode "
 "prejudicar a precisão do mascaramento"
 
-#: ../build/bin/preferences_gen.h:4694
+#: ../build/bin/preferences_gen.h:4682
+msgid "modules"
+msgstr "módulos"
+
+#: ../build/bin/preferences_gen.h:4702
+msgid "display of individual color channels"
+msgstr "mostrar canais individuais de cor"
+
+#: ../build/bin/preferences_gen.h:4713 ../build/bin/preferences_gen.h:4737
+msgctxt "preferences"
+msgid "false color"
+msgstr "falsa cor"
+
+#: ../build/bin/preferences_gen.h:4718
+msgctxt "preferences"
+msgid "grey scale"
+msgstr "escala de cinza"
+
+#: ../build/bin/preferences_gen.h:4740
+msgid ""
+"defines how color channels are displayed when activated in the parametric "
+"masks feature."
+msgstr ""
+"define como os canais de cor são mostrados ao ativar o módulo de máscaras "
+"paramétricas."
+
+#: ../build/bin/preferences_gen.h:4762
+msgid "hide built-in presets for processing modules"
+msgstr "esconder predefinição nativa de módulo de processamento"
+
+#: ../build/bin/preferences_gen.h:4776
+msgid ""
+"hides built-in presets of processing modules in both presets and favourites "
+"menu."
+msgstr ""
+"esconde predefinições nativas dos módulos de processamento nos menus de "
+"predefinições e favoritos."
+
+#: ../build/bin/preferences_gen.h:4798
+msgid "expand a single processing module at a time"
+msgstr "expandir um único módulo de processamento de cada vez"
+
+#: ../build/bin/preferences_gen.h:4812
+msgid "this option toggles the behavior of shift clicking in darkroom mode"
+msgstr "esta opção alterna o comportamento do shift+clique no modo sala escura"
+
+#: ../build/bin/preferences_gen.h:4834
+msgid "only collapse modules in current group"
+msgstr "somente colapsar módulos no grupo atual"
+
+#: ../build/bin/preferences_gen.h:4848
+msgid ""
+"if only expanding a single module at a time, only collapse other modules in "
+"the current group - ignore modules in other groups"
+msgstr ""
+"se estiver somente expandindo um único módulo por vez, somente colapsa "
+"outros módulos no mesmo grupo - ignora módulos em outros grupos"
+
+#: ../build/bin/preferences_gen.h:4870
+msgid "expand the module when it is activated, and collapse it when disabled"
+msgstr ""
+"expandir o módulo quando estiver ativado, e colapsá-lo quando estiver "
+"desabilitado"
+
+#: ../build/bin/preferences_gen.h:4884
+msgid ""
+"this option allows to expand or collapse automatically the module when it is "
+"enabled or disabled."
+msgstr ""
+"esta opção permite expandir o módulo quando estiver ativado, e colapsá-lo "
+"quando estiver desabilitado."
+
+#: ../build/bin/preferences_gen.h:4906
+msgid "scroll to processing modules when expanded/collapsed"
+msgstr "deslizar para módulos de processamento quando expandido/recolhido"
+
+#: ../build/bin/preferences_gen.h:4942
+msgid "white balance slider colors"
+msgstr "cores do deslizador de balanço de branco"
+
+#: ../build/bin/preferences_gen.h:4953 ../build/bin/preferences_gen.h:4982
+msgctxt "preferences"
+msgid "no color"
+msgstr "sem cor"
+
+#: ../build/bin/preferences_gen.h:4958
+msgctxt "preferences"
+msgid "illuminant color"
+msgstr "cor do iluminante"
+
+#: ../build/bin/preferences_gen.h:4963
+msgctxt "preferences"
+msgid "effect emulation"
+msgstr "emulação de efeito"
+
+#: ../build/bin/preferences_gen.h:4985
+msgid ""
+"visual indication of temperature adjustments.\n"
+"in 'illuminant color' mode slider colors represent the color of the light "
+"source,\n"
+"in 'effect emulation' slider colors represent the effect the adjustment "
+"would have on the scene"
+msgstr ""
+"indicação visual dos ajustes de temperatura.\n"
+"no modo 'cor do iluminante' as cores do deslizador representam a cor da "
+"fonte de luz,\n"
+"em 'emulação de efeito' as cores do deslizador representam o efeito que o "
+"ajuste teria na cena"
+
+#: ../build/bin/preferences_gen.h:5007
+msgid "colorbalance slider block layout"
+msgstr "layout do bloco do deslizador de balanço de cores"
+
+#: ../build/bin/preferences_gen.h:5018 ../build/bin/preferences_gen.h:5047
+msgctxt "preferences"
+msgid "list"
+msgstr "lista"
+
+#: ../build/bin/preferences_gen.h:5023
+msgctxt "preferences"
+msgid "tabs"
+msgstr "abas"
+
+#: ../build/bin/preferences_gen.h:5028
+msgctxt "preferences"
+msgid "columns"
+msgstr "colunas"
+
+#: ../build/bin/preferences_gen.h:5050
+msgid ""
+"choose how to organise the slider blocks for lift, gamma and gain:\n"
+"list - all sliders are shown in one long list (with headers),\n"
+"tabs - use tabs to switch between the blocks of sliders,\n"
+"columns - the blocks of sliders are shown next to each other (in narrow "
+"columns)"
+msgstr ""
+"escolha como organizar os blocos de deslizadores para elevação, gama e "
+"ganho:\n"
+"lista - todos os deslizadores são mostrados em uma list alonga (com "
+"cabeçalhos),\n"
+"abas - use abas para alternar entre os blocos de deslizadores,\n"
+"colunas - os blocos de deslizadores são mostrados uns ao lado dos outros (em "
+"colunas estreitas)"
+
+#: ../build/bin/preferences_gen.h:5072
 msgid "show right-side buttons in processing module headers"
 msgstr ""
 "mostrar botões do lado direito nos cabeçalhos de módulos de processamento"
 
-#: ../build/bin/preferences_gen.h:4710
+#: ../build/bin/preferences_gen.h:5088
 msgctxt "preferences"
 msgid "active"
 msgstr "ativo"
 
-#: ../build/bin/preferences_gen.h:4715
+#: ../build/bin/preferences_gen.h:5093
 msgctxt "preferences"
 msgid "dim"
 msgstr "dim"
 
-#: ../build/bin/preferences_gen.h:4720 ../build/bin/preferences_gen.h:7429
+#: ../build/bin/preferences_gen.h:5098 ../build/bin/preferences_gen.h:7429
 #: ../build/bin/preferences_gen.h:7465
 msgctxt "preferences"
 msgid "auto"
 msgstr "auto"
 
-#: ../build/bin/preferences_gen.h:4725
+#: ../build/bin/preferences_gen.h:5103
 msgctxt "preferences"
 msgid "fade"
 msgstr "esmaecer"
 
-#: ../build/bin/preferences_gen.h:4730
+#: ../build/bin/preferences_gen.h:5108
 msgctxt "preferences"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../build/bin/preferences_gen.h:4735
+#: ../build/bin/preferences_gen.h:5113
 msgctxt "preferences"
 msgid "smooth"
 msgstr "suave"
 
-#: ../build/bin/preferences_gen.h:4740
+#: ../build/bin/preferences_gen.h:5118
 msgctxt "preferences"
 msgid "glide"
 msgstr "deslizar"
 
-#: ../build/bin/preferences_gen.h:4762
+#: ../build/bin/preferences_gen.h:5140
 msgid ""
 "when the mouse is not over a module, the multi-instance, reset and preset "
 "buttons can be hidden:\n"
@@ -621,150 +765,6 @@ msgstr ""
 "encaixar - esconda os botões se o nome do módulo não couber,\n"
 "suave - atenuar gradualmente os botões em um cabeçalho simultameamente,\n"
 "deslizar - gradualmente esconder botões individuais conforme necessário"
-
-#: ../build/bin/preferences_gen.h:4772
-msgid "modules"
-msgstr "módulos"
-
-#: ../build/bin/preferences_gen.h:4792
-msgid "display of individual color channels"
-msgstr "mostrar canais individuais de cor"
-
-#: ../build/bin/preferences_gen.h:4803 ../build/bin/preferences_gen.h:4827
-msgctxt "preferences"
-msgid "false color"
-msgstr "falsa cor"
-
-#: ../build/bin/preferences_gen.h:4808
-msgctxt "preferences"
-msgid "grey scale"
-msgstr "escala de cinza"
-
-#: ../build/bin/preferences_gen.h:4830
-msgid ""
-"defines how color channels are displayed when activated in the parametric "
-"masks feature."
-msgstr ""
-"define como os canais de cor são mostrados ao ativar o módulo de máscaras "
-"paramétricas."
-
-#: ../build/bin/preferences_gen.h:4852
-msgid "hide built-in presets for processing modules"
-msgstr "esconder predefinição nativa de módulo de processamento"
-
-#: ../build/bin/preferences_gen.h:4866
-msgid ""
-"hides built-in presets of processing modules in both presets and favourites "
-"menu."
-msgstr ""
-"esconde predefinições nativas dos módulos de processamento nos menus de "
-"predefinições e favoritos."
-
-#: ../build/bin/preferences_gen.h:4888
-msgid "expand a single processing module at a time"
-msgstr "expandir um único módulo de processamento de cada vez"
-
-#: ../build/bin/preferences_gen.h:4902
-msgid "this option toggles the behavior of shift clicking in darkroom mode"
-msgstr "esta opção alterna o comportamento do shift+clique no modo sala escura"
-
-#: ../build/bin/preferences_gen.h:4924
-msgid "only collapse modules in current group"
-msgstr "somente colapsar módulos no grupo atual"
-
-#: ../build/bin/preferences_gen.h:4938
-msgid ""
-"if only expanding a single module at a time, only collapse other modules in "
-"the current group - ignore modules in other groups"
-msgstr ""
-"se estiver somente expandindo um único módulo por vez, somente colapsa "
-"outros módulos no mesmo grupo - ignora módulos em outros grupos"
-
-#: ../build/bin/preferences_gen.h:4960
-msgid "expand the module when it is activated, and collapse it when disabled"
-msgstr ""
-"expandir o módulo quando estiver ativado, e colapsá-lo quando estiver "
-"desabilitado"
-
-#: ../build/bin/preferences_gen.h:4974
-msgid ""
-"this option allows to expand or collapse automatically the module when it is "
-"enabled or disabled."
-msgstr ""
-"esta opção permite expandir o módulo quando estiver ativado, e colapsá-lo "
-"quando estiver desabilitado."
-
-#: ../build/bin/preferences_gen.h:4996
-msgid "scroll to processing modules when expanded/collapsed"
-msgstr "deslizar para módulos de processamento quando expandido/recolhido"
-
-#: ../build/bin/preferences_gen.h:5032
-msgid "white balance slider colors"
-msgstr "cores do deslizador de balanço de branco"
-
-#: ../build/bin/preferences_gen.h:5043 ../build/bin/preferences_gen.h:5072
-msgctxt "preferences"
-msgid "no color"
-msgstr "sem cor"
-
-#: ../build/bin/preferences_gen.h:5048
-msgctxt "preferences"
-msgid "illuminant color"
-msgstr "cor do iluminante"
-
-#: ../build/bin/preferences_gen.h:5053
-msgctxt "preferences"
-msgid "effect emulation"
-msgstr "emulação de efeito"
-
-#: ../build/bin/preferences_gen.h:5075
-msgid ""
-"visual indication of temperature adjustments.\n"
-"in 'illuminant color' mode slider colors represent the color of the light "
-"source,\n"
-"in 'effect emulation' slider colors represent the effect the adjustment "
-"would have on the scene"
-msgstr ""
-"indicação visual dos ajustes de temperatura.\n"
-"no modo 'cor do iluminante' as cores do deslizador representam a cor da "
-"fonte de luz,\n"
-"em 'emulação de efeito' as cores do deslizador representam o efeito que o "
-"ajuste teria na cena"
-
-#: ../build/bin/preferences_gen.h:5097
-msgid "colorbalance slider block layout"
-msgstr "layout do bloco do deslizador de balanço de cores"
-
-#: ../build/bin/preferences_gen.h:5108 ../build/bin/preferences_gen.h:5137
-msgctxt "preferences"
-msgid "list"
-msgstr "lista"
-
-#: ../build/bin/preferences_gen.h:5113
-msgctxt "preferences"
-msgid "tabs"
-msgstr "abas"
-
-#: ../build/bin/preferences_gen.h:5118
-msgctxt "preferences"
-msgid "columns"
-msgstr "colunas"
-
-#: ../build/bin/preferences_gen.h:5140
-msgid ""
-"choose how to organise the slider blocks for lift, gamma and gain:\n"
-"list - all sliders are shown in one long list (with headers),\n"
-"tabs - use tabs to switch between the blocks of sliders,\n"
-"columns - the blocks of sliders are shown next to each other (in narrow "
-"columns)"
-msgstr ""
-"escolha como organizar os blocos de deslizadores para elevação, gama e "
-"ganho:\n"
-"lista - todos os deslizadores são mostrados em uma list alonga (com "
-"cabeçalhos),\n"
-"abas - use abas para alternar entre os blocos de deslizadores,\n"
-"colunas - os blocos de deslizadores são mostrados uns ao lado dos outros (em "
-"colunas estreitas)"
 
 #: ../build/bin/preferences_gen.h:5168
 msgid "other views"
@@ -859,7 +859,7 @@ msgstr "pasta raiz do LUT 3D"
 #: ../src/gui/preferences.c:2106 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:180 ../src/imageio/storage/latex.c:107
-#: ../src/imageio/storage/latex.c:179 ../src/libs/styles.c:370
+#: ../src/imageio/storage/latex.c:179 ../src/libs/styles.c:384
 #: ../src/lua/preferences.c:631
 msgid "select directory"
 msgstr "selecione diretório"
@@ -1468,7 +1468,7 @@ msgstr ""
 #. tags
 #: ../build/bin/preferences_gen.h:7106 ../src/develop/lightroom.c:1510
 #: ../src/gui/import_metadata.c:217 ../src/libs/export_metadata.c:310
-#: ../src/libs/image.c:520 ../src/libs/metadata_view.c:148
+#: ../src/libs/image.c:520 ../src/libs/metadata_view.c:170
 msgid "tags"
 msgstr "etiquetas"
 
@@ -1574,8 +1574,8 @@ msgstr ""
 
 #. char *italic = g_strdup_printf("<i>%s</i>", _("other"));
 #. italic
-#: ../build/bin/preferences_gen.h:7363 ../src/libs/modulegroups.c:2157
-#: ../src/libs/modulegroups.c:2344 ../src/libs/tools/viewswitcher.c:145
+#: ../build/bin/preferences_gen.h:7363 ../src/libs/modulegroups.c:2158
+#: ../src/libs/modulegroups.c:2345 ../src/libs/tools/viewswitcher.c:145
 msgid "other"
 msgid_plural "others"
 msgstr[0] "outro"
@@ -1766,7 +1766,7 @@ msgstr "cisalhamento"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:257
 #: ../src/common/collection.c:688 ../src/gui/preferences.c:838
 #: ../src/gui/preferences.c:1983 ../src/gui/presets.c:525
-#: ../src/libs/camera.c:581 ../src/libs/metadata_view.c:124
+#: ../src/libs/camera.c:581 ../src/libs/metadata_view.c:151
 msgid "focal length"
 msgstr "distância focal"
 
@@ -1810,12 +1810,12 @@ msgstr "específico"
 #: ../build/lib/darktable/plugins/introspection_colorin.c:301
 #: ../build/lib/darktable/plugins/introspection_vignette.c:263
 #: ../src/common/history.c:883 ../src/common/history.c:886
-#: ../src/common/history.c:902 ../src/common/styles.c:1110
-#: ../src/common/styles.c:1114 ../src/develop/blend_gui.c:100
+#: ../src/common/history.c:902 ../src/common/styles.c:1117
+#: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:100
 #: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2799
 #: ../src/develop/develop.c:2170 ../src/imageio/format/avif.c:863
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
-#: ../src/iop/ashift.c:4704 ../src/iop/demosaic.c:5107
+#: ../src/iop/ashift.c:4704 ../src/iop/demosaic.c:5105
 #: ../src/libs/live_view.c:429
 msgid "off"
 msgstr "desligado"
@@ -1840,7 +1840,7 @@ msgstr "deslocamento de exposição"
 
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:146
 #: ../build/lib/darktable/plugins/introspection_basecurve.c:239
-#: ../src/libs/metadata_view.c:123
+#: ../src/libs/metadata_view.c:150
 msgid "exposure bias"
 msgstr "viés de exposição"
 
@@ -1867,8 +1867,8 @@ msgstr "preservar cores"
 #: ../src/iop/clipping.c:1864 ../src/iop/clipping.c:2124
 #: ../src/iop/clipping.c:2140 ../src/iop/clipping.c:2275
 #: ../src/iop/clipping.c:2302 ../src/iop/lens.cc:2228 ../src/iop/retouch.c:358
-#: ../src/libs/collect.c:1779 ../src/libs/colorpicker.c:636
-#: ../src/libs/export.c:1067 ../src/libs/live_view.c:345
+#: ../src/libs/collect.c:1786 ../src/libs/colorpicker.c:636
+#: ../src/libs/export.c:1066 ../src/libs/live_view.c:345
 #: ../src/libs/live_view.c:370 ../src/libs/live_view.c:379
 #: ../src/libs/print_settings.c:1475
 msgid "none"
@@ -1973,13 +1973,13 @@ msgstr "tamanho da borda"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:140
 #: ../build/lib/darktable/plugins/introspection_borders.c:271
-#: ../src/iop/borders.c:1050
+#: ../src/iop/borders.c:1051
 msgid "horizontal position"
 msgstr "posição horizontal"
 
 #: ../build/lib/darktable/plugins/introspection_borders.c:158
 #: ../build/lib/darktable/plugins/introspection_borders.c:283
-#: ../src/iop/borders.c:1061
+#: ../src/iop/borders.c:1062
 msgid "vertical position"
 msgstr "posição vertical"
 
@@ -2767,9 +2767,9 @@ msgstr "versão do gerador de splines"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:371
 #: ../src/common/darktable.c:913 ../src/common/variables.c:548
 #: ../src/develop/imageop_gui.c:302 ../src/imageio/format/pdf.c:667
-#: ../src/imageio/format/pdf.c:692 ../src/libs/export.c:1240
-#: ../src/libs/export.c:1246 ../src/libs/export.c:1253
-#: ../src/libs/metadata_view.c:308
+#: ../src/imageio/format/pdf.c:692 ../src/libs/export.c:1247
+#: ../src/libs/export.c:1253 ../src/libs/export.c:1260
+#: ../src/libs/metadata_view.c:381
 msgid "no"
 msgstr "não"
 
@@ -2898,9 +2898,9 @@ msgstr "detectar por 3 vizinhos"
 #: ../src/iop/bilat.c:426 ../src/iop/colorbalance.c:1882
 #: ../src/iop/denoiseprofile.c:3584 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:688 ../src/iop/profile_gamma.c:691
-#: ../src/libs/copy_history.c:359 ../src/libs/export.c:1333
+#: ../src/libs/copy_history.c:359 ../src/libs/export.c:1340
 #: ../src/libs/image.c:558 ../src/libs/print_settings.c:1516
-#: ../src/libs/styles.c:674 ../src/views/darkroom.c:2209
+#: ../src/libs/styles.c:688 ../src/views/darkroom.c:2209
 msgid "mode"
 msgstr "modo"
 
@@ -3103,7 +3103,7 @@ msgstr "ponto branco"
 #: ../src/common/collection.c:691 ../src/gui/preferences.c:830
 #: ../src/gui/preferences.c:1953 ../src/gui/presets.c:495
 #: ../src/iop/basicadj.c:592 ../src/iop/exposure.c:107
-#: ../src/iop/exposure.c:832 ../src/libs/metadata_view.c:122
+#: ../src/iop/exposure.c:832 ../src/libs/metadata_view.c:149
 msgid "exposure"
 msgstr "exposição"
 
@@ -3131,7 +3131,7 @@ msgid "brightness"
 msgstr "brilho"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:413
-#: ../src/libs/metadata_view.c:341
+#: ../src/libs/metadata_view.c:414
 msgid "unused"
 msgstr "não utilizado"
 
@@ -3162,7 +3162,7 @@ msgstr "apagar"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
 #: ../src/iop/watermark.c:1404 ../src/libs/image.c:574
-#: ../src/libs/modulegroups.c:2121
+#: ../src/libs/modulegroups.c:2122
 msgid "color"
 msgstr "cor"
 
@@ -3414,7 +3414,7 @@ msgid "scale on"
 msgstr "escala ativa"
 
 #: ../build/lib/darktable/plugins/introspection_watermark.c:285
-#: ../src/imageio/format/tiff.c:121 ../src/iop/borders.c:961
+#: ../src/imageio/format/tiff.c:121 ../src/iop/borders.c:962
 msgid "image"
 msgstr "imagem"
 
@@ -3513,17 +3513,17 @@ msgstr "Imprimir suas imagens"
 #: ../src/gui/presets.c:415 ../src/gui/styles_dialog.c:418
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/latex.c:107 ../src/iop/lut3d.c:1563
-#: ../src/libs/collect.c:418 ../src/libs/copy_history.c:100
+#: ../src/libs/collect.c:425 ../src/libs/copy_history.c:100
 #: ../src/libs/geotagging.c:474 ../src/libs/import.c:484
-#: ../src/libs/import.c:578 ../src/libs/lib.c:233 ../src/libs/styles.c:370
-#: ../src/libs/styles.c:502 ../src/libs/tagging.c:2248
+#: ../src/libs/import.c:578 ../src/libs/lib.c:233 ../src/libs/styles.c:384
+#: ../src/libs/styles.c:516 ../src/libs/tagging.c:2248
 #: ../src/libs/tagging.c:2289
 msgid "_cancel"
 msgstr "_cancela"
 
 #: ../src/chart/main.c:504 ../src/gui/preferences.c:1592
 #: ../src/gui/preferences.c:1758 ../src/gui/preferences.c:1875
-#: ../src/gui/styles_dialog.c:421 ../src/libs/styles.c:371
+#: ../src/gui/styles_dialog.c:421 ../src/libs/styles.c:385
 msgid "_save"
 msgstr "_salvar"
 
@@ -3691,19 +3691,19 @@ msgstr "data da foto"
 msgid "date-time taken"
 msgstr "data/hora da foto"
 
-#: ../src/common/collection.c:681 ../src/libs/metadata_view.c:109
+#: ../src/common/collection.c:681 ../src/libs/metadata_view.c:136
 msgid "import timestamp"
 msgstr "marca temporal (data/hora) de importação"
 
-#: ../src/common/collection.c:682 ../src/libs/metadata_view.c:110
+#: ../src/common/collection.c:682 ../src/libs/metadata_view.c:137
 msgid "change timestamp"
 msgstr "marca temporal (data/hora) de modificação"
 
-#: ../src/common/collection.c:683 ../src/libs/metadata_view.c:111
+#: ../src/common/collection.c:683 ../src/libs/metadata_view.c:138
 msgid "export timestamp"
 msgstr "marca temporal (data/hora) de exportação"
 
-#: ../src/common/collection.c:684 ../src/libs/metadata_view.c:112
+#: ../src/common/collection.c:684 ../src/libs/metadata_view.c:139
 msgid "print timestamp"
 msgstr "marca temporal (data/hora) de impressão"
 
@@ -3718,14 +3718,14 @@ msgstr "cor da etiqueta"
 
 #: ../src/common/collection.c:687 ../src/gui/preferences.c:822
 #: ../src/gui/preferences.c:1934 ../src/gui/presets.c:476
-#: ../src/libs/metadata_view.c:120
+#: ../src/libs/metadata_view.c:147
 msgid "lens"
 msgstr "lente"
 
 #. iso
 #: ../src/common/collection.c:689 ../src/gui/preferences.c:826
 #: ../src/gui/preferences.c:1940 ../src/gui/presets.c:482
-#: ../src/libs/camera.c:589 ../src/libs/metadata_view.c:126
+#: ../src/libs/camera.c:589 ../src/libs/metadata_view.c:153
 msgid "ISO"
 msgstr "ISO"
 
@@ -3733,11 +3733,11 @@ msgstr "ISO"
 #: ../src/common/collection.c:690 ../src/gui/preferences.c:834
 #: ../src/gui/preferences.c:1968 ../src/gui/presets.c:510
 #: ../src/libs/camera.c:576 ../src/libs/camera.c:578
-#: ../src/libs/metadata_view.c:121
+#: ../src/libs/metadata_view.c:148
 msgid "aperture"
 msgstr "abertura"
 
-#: ../src/common/collection.c:693 ../src/libs/metadata_view.c:105
+#: ../src/common/collection.c:693 ../src/libs/metadata_view.c:132
 #: ../src/libs/tools/filter.c:87
 msgid "filename"
 msgstr "nome do arquivo"
@@ -3751,8 +3751,8 @@ msgstr "geo-etiquetas"
 msgid "grouping"
 msgstr "agrupar"
 
-#: ../src/common/collection.c:696 ../src/libs/metadata_view.c:108
-#: ../src/libs/metadata_view.c:349
+#: ../src/common/collection.c:696 ../src/libs/metadata_view.c:135
+#: ../src/libs/metadata_view.c:422
 msgid "local copy"
 msgstr "cópia local"
 
@@ -3769,12 +3769,12 @@ msgstr "ordem dos módulos"
 #: ../src/iop/bilateral.cc:316 ../src/iop/channelmixer.c:625
 #: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3467
 #: ../src/iop/temperature.c:1878 ../src/iop/temperature.c:2031
-#: ../src/libs/collect.c:1680 ../src/views/darkroom.c:2525
+#: ../src/libs/collect.c:1687 ../src/views/darkroom.c:2525
 msgid "red"
 msgstr "vermelho"
 
 #: ../src/common/collection.c:1474 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1868 ../src/libs/collect.c:1680
+#: ../src/iop/temperature.c:1868 ../src/libs/collect.c:1687
 #: ../src/views/darkroom.c:2527
 msgid "yellow"
 msgstr "amarelo"
@@ -3784,7 +3784,7 @@ msgstr "amarelo"
 #: ../src/iop/bilateral.cc:321 ../src/iop/channelmixer.c:626
 #: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3468
 #: ../src/iop/temperature.c:1862 ../src/iop/temperature.c:1880
-#: ../src/iop/temperature.c:2032 ../src/libs/collect.c:1680
+#: ../src/iop/temperature.c:2032 ../src/libs/collect.c:1687
 #: ../src/views/darkroom.c:2526
 msgid "green"
 msgstr "verde"
@@ -3794,32 +3794,32 @@ msgstr "verde"
 #: ../src/iop/bilateral.cc:326 ../src/iop/channelmixer.c:627
 #: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3469
 #: ../src/iop/temperature.c:1882 ../src/iop/temperature.c:2033
-#: ../src/libs/collect.c:1680
+#: ../src/libs/collect.c:1687
 msgid "blue"
 msgstr "azul"
 
-#: ../src/common/collection.c:1480 ../src/libs/collect.c:1680
+#: ../src/common/collection.c:1480 ../src/libs/collect.c:1687
 msgid "purple"
 msgstr "roxo"
 
 #: ../src/common/collection.c:1494 ../src/common/collection.c:1502
-#: ../src/libs/collect.c:1640
+#: ../src/libs/collect.c:1647
 msgid "basic"
 msgstr "básico"
 
-#: ../src/common/collection.c:1496 ../src/libs/collect.c:1640
+#: ../src/common/collection.c:1496 ../src/libs/collect.c:1647
 msgid "auto applied"
 msgstr "auto aplicado"
 
-#: ../src/common/collection.c:1498 ../src/libs/collect.c:1640
+#: ../src/common/collection.c:1498 ../src/libs/collect.c:1647
 msgid "altered"
 msgstr "alterado"
 
-#: ../src/common/collection.c:1510 ../src/libs/collect.c:1283
+#: ../src/common/collection.c:1510 ../src/libs/collect.c:1290
 msgid "not tagged"
 msgstr "não etiquetado"
 
-#: ../src/common/collection.c:1511 ../src/libs/collect.c:1283
+#: ../src/common/collection.c:1511 ../src/libs/collect.c:1290
 #: ../src/libs/map_locations.c:749
 msgid "tagged"
 msgstr "etiquetado"
@@ -3828,20 +3828,20 @@ msgstr "etiquetado"
 msgid "tagged*"
 msgstr "etiquetado*"
 
-#: ../src/common/collection.c:1534 ../src/libs/collect.c:1652
+#: ../src/common/collection.c:1534 ../src/libs/collect.c:1659
 msgid "not copied locally"
 msgstr "não copiado localmente"
 
-#: ../src/common/collection.c:1587 ../src/libs/collect.c:1242
+#: ../src/common/collection.c:1587 ../src/libs/collect.c:1249
 msgid "insensitive"
 msgstr "não sensível"
 
 #. grouping
-#: ../src/common/collection.c:1828 ../src/libs/collect.c:1754
+#: ../src/common/collection.c:1828 ../src/libs/collect.c:1761
 msgid "group leaders"
 msgstr "representantes de grupo"
 
-#: ../src/common/collection.c:1860 ../src/libs/collect.c:1815
+#: ../src/common/collection.c:1860 ../src/libs/collect.c:1822
 msgid "not defined"
 msgstr "não definido"
 
@@ -4045,8 +4045,8 @@ msgstr ""
 #: ../src/common/darktable.c:913 ../src/common/database.c:3266
 #: ../src/common/variables.c:546 ../src/develop/imageop_gui.c:303
 #: ../src/imageio/format/pdf.c:668 ../src/imageio/format/pdf.c:693
-#: ../src/libs/export.c:1241 ../src/libs/export.c:1247
-#: ../src/libs/export.c:1254 ../src/libs/metadata_view.c:308
+#: ../src/libs/export.c:1248 ../src/libs/export.c:1254
+#: ../src/libs/export.c:1261 ../src/libs/metadata_view.c:381
 msgid "yes"
 msgstr "sim"
 
@@ -4326,7 +4326,7 @@ msgstr[0] "remover diretório vazio?"
 msgstr[1] "remover diretórios vazios?"
 
 #: ../src/common/film.c:311 ../src/gui/preferences.c:810
-#: ../src/gui/styles_dialog.c:445
+#: ../src/gui/styles_dialog.c:445 ../src/libs/metadata_view.c:1209
 msgid "name"
 msgstr "nome"
 
@@ -4342,8 +4342,8 @@ msgid "you need to copy history from an image before you paste it onto another"
 msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 
 #: ../src/common/history.c:883 ../src/common/history.c:886
-#: ../src/common/history.c:902 ../src/common/styles.c:1110
-#: ../src/common/styles.c:1114 ../src/develop/blend_gui.c:122
+#: ../src/common/history.c:902 ../src/common/styles.c:1117
+#: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:122
 #: ../src/develop/develop.c:2170 ../src/imageio/format/avif.c:861
 #: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:430
 msgid "on"
@@ -4544,7 +4544,7 @@ msgstr "perfil de escalonamento OpenCL ajustado para default."
 msgid "mm"
 msgstr "mm"
 
-#: ../src/common/pdf.h:89 ../src/libs/export.c:539 ../src/libs/export.c:1202
+#: ../src/common/pdf.h:89 ../src/libs/export.c:538 ../src/libs/export.c:1209
 #: ../src/libs/print_settings.c:1293
 msgid "cm"
 msgstr "cm"
@@ -4604,8 +4604,8 @@ msgstr "estilo com nome '%s' já existente"
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:410 ../src/common/styles.c:414
 #: ../src/common/styles.c:501 ../src/common/styles.c:585
-#: ../src/common/styles.c:1002 ../src/common/styles.c:1566
-#: ../src/common/styles.c:1585
+#: ../src/common/styles.c:1002 ../src/common/styles.c:1573
+#: ../src/common/styles.c:1592
 #, c-format
 msgctxt "accel"
 msgid "styles/apply %s"
@@ -4645,17 +4645,17 @@ msgstr[1] "estilos aplicados com sucesso"
 msgid "module `%s' version mismatch: %d != %d"
 msgstr "módulo `%s' versão incompatível: %d != %d"
 
-#: ../src/common/styles.c:1203
+#: ../src/common/styles.c:1210
 #, c-format
 msgid "failed to overwrite style file for %s"
 msgstr "falha o sobrescrever arquivo de estilo para %s"
 
-#: ../src/common/styles.c:1209
+#: ../src/common/styles.c:1216
 #, c-format
 msgid "style file for %s exists"
 msgstr "arquivo de estilo para  %s existente"
 
-#: ../src/common/styles.c:1457
+#: ../src/common/styles.c:1464
 #, c-format
 msgid "style %s was successfully imported"
 msgstr "estilo %s foi importado com sucesso"
@@ -4669,7 +4669,7 @@ msgid "below sea level"
 msgstr "abaixo do nível do mar"
 
 #: ../src/common/utility.c:517 ../src/iop/watermark.c:811
-#: ../src/libs/metadata_view.c:658
+#: ../src/libs/metadata_view.c:723
 msgid "m"
 msgstr "m"
 
@@ -5116,12 +5116,12 @@ msgstr "importando imagem %s"
 msgid "import image"
 msgstr "importar imagem"
 
-#: ../src/develop/blend.c:256 ../src/develop/blend.c:574
+#: ../src/develop/blend.c:257 ../src/develop/blend.c:551
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
 msgstr "omitida mesclagem no módulo '%s': roi is desigual"
 
-#: ../src/develop/blend.c:286 ../src/develop/blend.c:607
+#: ../src/develop/blend.c:287 ../src/develop/blend.c:584
 msgid "could not allocate buffer for blending"
 msgstr "não foi possível alocar buffer para mesclagem"
 
@@ -5398,12 +5398,12 @@ msgid "input image"
 msgstr "imagem de entrada"
 
 #: ../src/develop/blend_gui.c:763 ../src/develop/blend_gui.c:2027
-#: ../src/develop/imageop.c:3272
+#: ../src/develop/imageop.c:3273
 msgid "input"
 msgstr "entrada"
 
 #: ../src/develop/blend_gui.c:763 ../src/develop/blend_gui.c:2027
-#: ../src/develop/imageop.c:3274
+#: ../src/develop/imageop.c:3275
 msgid "output"
 msgstr "saída"
 
@@ -5923,12 +5923,12 @@ msgstr "excluir"
 msgid "rename"
 msgstr "renomear"
 
-#: ../src/develop/imageop.c:1224 ../src/develop/imageop.c:2601
+#: ../src/develop/imageop.c:1224 ../src/develop/imageop.c:2602
 #, c-format
 msgid "%s is switched on"
 msgstr "%s está ligado"
 
-#: ../src/develop/imageop.c:1224 ../src/develop/imageop.c:2601
+#: ../src/develop/imageop.c:1224 ../src/develop/imageop.c:2602
 #, c-format
 msgid "%s is switched off"
 msgstr "%s está desligado"
@@ -5948,7 +5948,7 @@ msgctxt "accel"
 msgid "fusion"
 msgstr "fusão"
 
-#: ../src/develop/imageop.c:2570
+#: ../src/develop/imageop.c:2571
 msgid ""
 "multiple instances actions\n"
 "middle-click creates new instance"
@@ -5956,7 +5956,7 @@ msgstr ""
 "ações em múltiplas instâncias\n"
 "click com botão do meio cria nova instância"
 
-#: ../src/develop/imageop.c:2581
+#: ../src/develop/imageop.c:2582
 msgid ""
 "reset parameters\n"
 "ctrl+click to reapply any automatic presets"
@@ -5965,12 +5965,12 @@ msgstr ""
 "ctrl+clique para reaplicar quaisquer predefinições automáticas"
 
 #. Adding the outer container
-#: ../src/develop/imageop.c:2589 ../src/gui/preferences.c:792
-#: ../src/libs/lib.c:1248 ../src/libs/modulegroups.c:2446
+#: ../src/develop/imageop.c:2590 ../src/gui/preferences.c:792
+#: ../src/libs/lib.c:1248 ../src/libs/modulegroups.c:2447
 msgid "presets"
 msgstr "predefinições"
 
-#: ../src/develop/imageop.c:2591
+#: ../src/develop/imageop.c:2592
 msgid ""
 "presets\n"
 "middle-click to apply on new instance"
@@ -5978,23 +5978,23 @@ msgstr ""
 "pre-configurações\n"
 "click com botão do meio aplica em nova instância"
 
-#: ../src/develop/imageop.c:2886 ../src/develop/imageop.c:2912
+#: ../src/develop/imageop.c:2887 ../src/develop/imageop.c:2913
 msgid "ERROR"
 msgstr "ERRO"
 
-#: ../src/develop/imageop.c:3271
+#: ../src/develop/imageop.c:3272
 msgid "purpose"
 msgstr "propósito"
 
-#: ../src/develop/imageop.c:3273
+#: ../src/develop/imageop.c:3274
 msgid "process"
 msgstr "processar"
 
-#: ../src/develop/imageop.c:3343
+#: ../src/develop/imageop.c:3344
 msgid "unsupported input"
 msgstr "entrada não suportada"
 
-#: ../src/develop/imageop.c:3344
+#: ../src/develop/imageop.c:3345
 msgid ""
 "you have placed this module at\n"
 "a position in the pipeline where\n"
@@ -6378,7 +6378,7 @@ msgstr "imagens agrupadas"
 msgid "fit"
 msgstr "ajustar"
 
-#: ../src/dtgtk/thumbtable.c:2077 ../src/libs/metadata_view.c:364
+#: ../src/dtgtk/thumbtable.c:2077 ../src/libs/metadata_view.c:437
 msgid "image rejected"
 msgstr "imagem rejeitada"
 
@@ -6855,9 +6855,10 @@ msgstr "armazena valor como padrão"
 msgid "reset value to default"
 msgstr "redefinir ao valor padrão"
 
-#: ../src/gui/camera_import_dialog.c:207 ../src/libs/collect.c:2714
+#: ../src/gui/camera_import_dialog.c:207 ../src/libs/collect.c:2721
 #: ../src/libs/export_metadata.c:269 ../src/libs/geotagging.c:420
-#: ../src/libs/import.c:667 ../src/libs/metadata.c:401 ../src/libs/styles.c:419
+#: ../src/libs/import.c:677 ../src/libs/metadata.c:433
+#: ../src/libs/metadata_view.c:1030 ../src/libs/styles.c:433
 #: ../src/libs/tagging.c:1343 ../src/libs/tagging.c:1430
 #: ../src/libs/tagging.c:1511 ../src/libs/tagging.c:1636
 #: ../src/libs/tagging.c:1910
@@ -7434,7 +7435,7 @@ msgid "normal images"
 msgstr "imagens normais"
 
 #: ../src/gui/preferences.c:94 ../src/gui/presets.c:57
-#: ../src/libs/metadata_view.c:344
+#: ../src/libs/metadata_view.c:417
 msgid "raw"
 msgstr "raw"
 
@@ -7444,7 +7445,7 @@ msgstr "HDR"
 
 #: ../src/gui/preferences.c:96 ../src/gui/presets.c:59
 #: ../src/iop/monochrome.c:77 ../src/libs/image.c:570
-#: ../src/libs/metadata_view.c:352
+#: ../src/libs/metadata_view.c:425
 msgid "monochrome"
 msgstr "monocromático"
 
@@ -7551,17 +7552,17 @@ msgstr "O darktable precisa ser reiniciado para as configurações terem efeito"
 
 #. exif
 #: ../src/gui/preferences.c:814 ../src/gui/preferences.c:1918
-#: ../src/gui/presets.c:462 ../src/libs/metadata_view.c:118
+#: ../src/gui/presets.c:462 ../src/libs/metadata_view.c:145
 msgid "model"
 msgstr "modelo"
 
 #: ../src/gui/preferences.c:818 ../src/gui/preferences.c:1926
-#: ../src/gui/presets.c:469 ../src/libs/metadata_view.c:119
+#: ../src/gui/presets.c:469 ../src/libs/metadata_view.c:146
 msgid "maker"
 msgstr "fabricante"
 
 #: ../src/gui/preferences.c:843 ../src/iop/basicadj.c:628
-#: ../src/iop/borders.c:1043 ../src/iop/levels.c:642 ../src/iop/rgblevels.c:987
+#: ../src/iop/borders.c:1044 ../src/iop/levels.c:642 ../src/iop/rgblevels.c:987
 msgid "auto"
 msgstr "auto"
 
@@ -7604,7 +7605,7 @@ msgstr ""
 "clique ou pressione enter novamente para circular pelos resultados"
 
 #. export button
-#: ../src/gui/preferences.c:967 ../src/libs/styles.c:708
+#: ../src/gui/preferences.c:967 ../src/libs/styles.c:722
 msgid "export..."
 msgstr "exportar..."
 
@@ -7630,14 +7631,14 @@ msgstr "conflito de atalhos"
 
 #: ../src/gui/preferences.c:1528 ../src/gui/preferences.c:2144
 #: ../src/gui/presets.c:189 ../src/libs/lib.c:381
-#: ../src/libs/modulegroups.c:3181
+#: ../src/libs/modulegroups.c:3182
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "você realmente deseja excluir a predefinição `%s'?"
 
 #: ../src/gui/preferences.c:1532 ../src/gui/preferences.c:2148
 #: ../src/gui/presets.c:193 ../src/libs/lib.c:385
-#: ../src/libs/modulegroups.c:3185
+#: ../src/libs/modulegroups.c:3186
 msgid "delete preset?"
 msgstr "excluir predefinição?"
 
@@ -7652,9 +7653,9 @@ msgid "select file to import"
 msgstr "selecione arquivo para importar"
 
 #: ../src/gui/preferences.c:1618 ../src/gui/preferences.c:1709
-#: ../src/libs/collect.c:419 ../src/libs/copy_history.c:101
+#: ../src/libs/collect.c:426 ../src/libs/copy_history.c:101
 #: ../src/libs/geotagging.c:475 ../src/libs/import.c:485
-#: ../src/libs/import.c:579 ../src/libs/styles.c:503
+#: ../src/libs/import.c:579 ../src/libs/styles.c:517
 msgid "_open"
 msgstr "_abrir"
 
@@ -7676,13 +7677,13 @@ msgstr "falha ao importar predefinição %s"
 msgid "select preset to import"
 msgstr "selecione configuração para importar"
 
-#: ../src/gui/preferences.c:1727 ../src/libs/styles.c:515
+#: ../src/gui/preferences.c:1727 ../src/libs/styles.c:529
 msgid "darktable style files"
 msgstr "arquivos de estilo do darktable"
 
 #: ../src/gui/preferences.c:1732 ../src/iop/lut3d.c:1595
 #: ../src/libs/copy_history.c:115 ../src/libs/geotagging.c:496
-#: ../src/libs/import.c:515 ../src/libs/styles.c:520
+#: ../src/libs/import.c:515 ../src/libs/styles.c:534
 msgid "all files"
 msgstr "todos arquivos"
 
@@ -7838,8 +7839,8 @@ msgstr "você realmente deseja atualizar a predefinição `%s'?"
 msgid "update preset?"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3357
-#: ../src/libs/modulegroups.c:3366
+#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3358
+#: ../src/libs/modulegroups.c:3367
 msgid "manage module layouts"
 msgstr "gerenciar layout dos módulos"
 
@@ -7864,7 +7865,7 @@ msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
 #: ../src/gui/presets.c:1307 ../src/libs/lib.c:668
-#: ../src/libs/modulegroups.c:3314
+#: ../src/libs/modulegroups.c:3315
 msgid "delete this preset"
 msgstr "exclui esta predefinição"
 
@@ -7885,7 +7886,7 @@ msgstr ""
 "estilo `%s' já existe.\n"
 "Deseja sobrescrever?"
 
-#: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:418
+#: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:432
 msgid "overwrite style?"
 msgstr "sobrescrever estilo?"
 
@@ -8166,13 +8167,13 @@ msgstr ""
 msgid "page orientation"
 msgstr "orientação da página"
 
-#: ../src/imageio/format/pdf.c:620 ../src/iop/borders.c:1044
-#: ../src/libs/collect.c:264 ../src/libs/print_settings.c:1286
+#: ../src/imageio/format/pdf.c:620 ../src/iop/borders.c:1045
+#: ../src/libs/collect.c:269 ../src/libs/print_settings.c:1286
 msgid "portrait"
 msgstr "retrato"
 
-#: ../src/imageio/format/pdf.c:621 ../src/iop/borders.c:1045
-#: ../src/libs/collect.c:260 ../src/libs/print_settings.c:1287
+#: ../src/imageio/format/pdf.c:621 ../src/iop/borders.c:1046
+#: ../src/libs/collect.c:264 ../src/libs/print_settings.c:1287
 msgid "landscape"
 msgstr "paisagem"
 
@@ -8196,7 +8197,7 @@ msgstr ""
 "exemplos: 10 mm, 1 inch"
 
 #. dpi
-#: ../src/imageio/format/pdf.c:651 ../src/libs/export.c:1207
+#: ../src/imageio/format/pdf.c:651 ../src/libs/export.c:1214
 msgid "dpi"
 msgstr "dpi"
 
@@ -8407,11 +8408,11 @@ msgid "create unique filename"
 msgstr "criar nome de arquivo único"
 
 #: ../src/imageio/storage/disk.c:204 ../src/libs/copy_history.c:361
-#: ../src/libs/image.c:560 ../src/libs/styles.c:421 ../src/libs/styles.c:676
+#: ../src/libs/image.c:560 ../src/libs/styles.c:435 ../src/libs/styles.c:690
 msgid "overwrite"
 msgstr "sobrescrever"
 
-#: ../src/imageio/storage/disk.c:205 ../src/libs/styles.c:420
+#: ../src/imageio/storage/disk.c:205 ../src/libs/styles.c:434
 msgid "skip"
 msgstr "pular"
 
@@ -8649,7 +8650,7 @@ msgstr "corretivo"
 msgid "linear, RGB, scene-referred"
 msgstr "linear, RGB, relativo à cena"
 
-#: ../src/iop/ashift.c:128 ../src/iop/borders.c:188 ../src/iop/clipping.c:322
+#: ../src/iop/ashift.c:128 ../src/iop/borders.c:189 ../src/iop/clipping.c:322
 #: ../src/iop/flip.c:103 ../src/iop/liquify.c:299
 msgid "geometric, RGB"
 msgstr "geométrico, RGB"
@@ -9153,7 +9154,7 @@ msgid "apply usual image adjustments"
 msgstr "aplicar ajustes usuais à imagem"
 
 #: ../src/iop/basicadj.c:141 ../src/iop/bilat.c:100 ../src/iop/bloom.c:80
-#: ../src/iop/borders.c:186 ../src/iop/censorize.c:83 ../src/iop/colisa.c:85
+#: ../src/iop/borders.c:187 ../src/iop/censorize.c:83 ../src/iop/colisa.c:85
 #: ../src/iop/colorcontrast.c:100 ../src/iop/colorize.c:105
 #: ../src/iop/colormapping.c:153 ../src/iop/colorzones.c:145
 #: ../src/iop/grain.c:425 ../src/iop/highpass.c:81 ../src/iop/levels.c:131
@@ -9385,118 +9386,118 @@ msgstr "força"
 msgid "the strength of bloom"
 msgstr "a força da luz suave"
 
-#: ../src/iop/borders.c:180
+#: ../src/iop/borders.c:181
 msgid "framing"
 msgstr "moldura"
 
-#: ../src/iop/borders.c:185
+#: ../src/iop/borders.c:186
 msgid "add solid borders or margins around the picture"
 msgstr "adicionar bordas sólidas ou margens ao redor da figura"
 
-#: ../src/iop/borders.c:187 ../src/iop/borders.c:189 ../src/iop/lut3d.c:142
+#: ../src/iop/borders.c:188 ../src/iop/borders.c:190 ../src/iop/lut3d.c:142
 msgid "linear or non-linear, RGB, display-referred"
 msgstr "linear ou não-linear, RGB, relativo à exibição"
 
-#: ../src/iop/borders.c:717
+#: ../src/iop/borders.c:718
 msgid "15:10 postcard white"
 msgstr "15:10 cartão-postal branco"
 
-#: ../src/iop/borders.c:722
+#: ../src/iop/borders.c:723
 msgid "15:10 postcard black"
 msgstr "15:10 cartão-postal preto"
 
-#: ../src/iop/borders.c:962
+#: ../src/iop/borders.c:963
 msgid "3:1"
 msgstr "3:1"
 
-#: ../src/iop/borders.c:963
+#: ../src/iop/borders.c:964
 msgid "95:33"
 msgstr "95:33"
 
-#: ../src/iop/borders.c:964
+#: ../src/iop/borders.c:965
 msgid "2:1"
 msgstr "2:1"
 
-#: ../src/iop/borders.c:965
+#: ../src/iop/borders.c:966
 msgid "16:9"
 msgstr "16:9"
 
-#: ../src/iop/borders.c:966 ../src/iop/clipping.c:2163
+#: ../src/iop/borders.c:967 ../src/iop/clipping.c:2163
 msgid "golden cut"
 msgstr "proporção áurea"
 
-#: ../src/iop/borders.c:967
+#: ../src/iop/borders.c:968
 msgid "3:2"
 msgstr "3:2"
 
-#: ../src/iop/borders.c:968
+#: ../src/iop/borders.c:969
 msgid "A4"
 msgstr "A4"
 
-#: ../src/iop/borders.c:969
+#: ../src/iop/borders.c:970
 msgid "DIN"
 msgstr "DIN"
 
-#: ../src/iop/borders.c:970
+#: ../src/iop/borders.c:971
 msgid "4:3"
 msgstr "4:3"
 
-#: ../src/iop/borders.c:971 ../src/iop/clipping.c:2153
-#: ../src/libs/collect.c:256
+#: ../src/iop/borders.c:972 ../src/iop/clipping.c:2153
+#: ../src/libs/collect.c:259
 msgid "square"
 msgstr "quadrado"
 
-#: ../src/iop/borders.c:972
+#: ../src/iop/borders.c:973
 msgid "constant border"
 msgstr "borda constante"
 
-#: ../src/iop/borders.c:973 ../src/iop/borders.c:999 ../src/iop/borders.c:1005
+#: ../src/iop/borders.c:974 ../src/iop/borders.c:1000 ../src/iop/borders.c:1006
 msgid "custom..."
 msgstr "personalizado..."
 
-#: ../src/iop/borders.c:994 ../src/iop/borders.c:1000
+#: ../src/iop/borders.c:995 ../src/iop/borders.c:1001
 msgid "center"
 msgstr "centro"
 
-#: ../src/iop/borders.c:995 ../src/iop/borders.c:1001
+#: ../src/iop/borders.c:996 ../src/iop/borders.c:1002
 msgid "1/3"
 msgstr "1/3"
 
-#: ../src/iop/borders.c:996 ../src/iop/borders.c:1002
+#: ../src/iop/borders.c:997 ../src/iop/borders.c:1003
 msgid "3/8"
 msgstr "3/8"
 
-#: ../src/iop/borders.c:997 ../src/iop/borders.c:1003
+#: ../src/iop/borders.c:998 ../src/iop/borders.c:1004
 msgid "5/8"
 msgstr "5/8"
 
-#: ../src/iop/borders.c:998 ../src/iop/borders.c:1004
+#: ../src/iop/borders.c:999 ../src/iop/borders.c:1005
 msgid "2/3"
 msgstr "2/3"
 
-#: ../src/iop/borders.c:1030
+#: ../src/iop/borders.c:1031
 msgid "size of the border in percent of the full image"
 msgstr "tamanho da borda em percentagem da imagem inteira"
 
-#: ../src/iop/borders.c:1034 ../src/iop/clipping.c:2250
+#: ../src/iop/borders.c:1035 ../src/iop/clipping.c:2250
 msgid "aspect"
 msgstr "proporção"
 
-#: ../src/iop/borders.c:1038
+#: ../src/iop/borders.c:1039
 msgid "select the aspect ratio or right click and type your own (w:h)"
 msgstr ""
 "selecionar a proporção ou clique botão direito e digite seu próprio (larg:"
 "alt)"
 
-#: ../src/iop/borders.c:1040
+#: ../src/iop/borders.c:1041
 msgid "set the custom aspect ratio"
 msgstr "defina a proporção (larg:alt)"
 
-#: ../src/iop/borders.c:1046
+#: ../src/iop/borders.c:1047
 msgid "aspect ratio orientation of the image with border"
 msgstr "orientação da proporção da imagem com borda"
 
-#: ../src/iop/borders.c:1053
+#: ../src/iop/borders.c:1054
 msgid ""
 "select the horizontal position ratio relative to top or right click and type "
 "your own (y:h)"
@@ -9504,11 +9505,11 @@ msgstr ""
 "selecione a relação de posição horizontal relativa ao topo ou clique o botão "
 "direito e digite seu próprio (y:alt)"
 
-#: ../src/iop/borders.c:1057
+#: ../src/iop/borders.c:1058
 msgid "custom horizontal position"
 msgstr "posição horizontal personalizada"
 
-#: ../src/iop/borders.c:1064
+#: ../src/iop/borders.c:1065
 msgid ""
 "select the vertical position ratio relative to left or right click and type "
 "your own (x:w)"
@@ -9516,39 +9517,39 @@ msgstr ""
 "selecione a relação de posição vertical relativa a esquerda ou clique o "
 "botão direito e digite seu próprio (x:lar)"
 
-#: ../src/iop/borders.c:1068
+#: ../src/iop/borders.c:1069
 msgid "custom vertical position"
 msgstr "posição vertical personalizada"
 
-#: ../src/iop/borders.c:1077
+#: ../src/iop/borders.c:1078
 msgid "size of the frame line in percent of min border width"
 msgstr "tamanho da linha de moldura em percentagem da largura mínima da borda"
 
-#: ../src/iop/borders.c:1084
+#: ../src/iop/borders.c:1085
 msgid "offset of the frame line beginning on picture side"
 msgstr "deslocamento da linha de moldura começando na borda da imagem"
 
-#: ../src/iop/borders.c:1091
+#: ../src/iop/borders.c:1092
 msgid "border color"
 msgstr "cor da borda"
 
-#: ../src/iop/borders.c:1095
+#: ../src/iop/borders.c:1096
 msgid "select border color"
 msgstr "selecionar cor da borda"
 
-#: ../src/iop/borders.c:1099
+#: ../src/iop/borders.c:1100
 msgid "pick border color from image"
 msgstr "selecione cor da borda da imagem"
 
-#: ../src/iop/borders.c:1103
+#: ../src/iop/borders.c:1104
 msgid "frame line color"
 msgstr "cor da linha de moldura"
 
-#: ../src/iop/borders.c:1107
+#: ../src/iop/borders.c:1108
 msgid "select frame line color"
 msgstr "selecionar cor da linha de moldura"
 
-#: ../src/iop/borders.c:1111
+#: ../src/iop/borders.c:1112
 msgid "pick frame line color from image"
 msgstr "selecione cor da linha de moldura da imagem"
 
@@ -10138,8 +10139,10 @@ msgid ""
 "the others are special behaviours to protect some hues"
 msgstr ""
 "escolha as cores que serão otimizadas com maior prioridade.\n"
-"cores neutras dão a menor média de delta E, mas um máximo elevado de delta E\n"
-"cores saturadas dão o menor mínimo de delta E, mas com um delta E médio bastante alto\n"
+"cores neutras dão a menor média de delta E, mas um máximo elevado de delta "
+"E\n"
+"cores saturadas dão o menor mínimo de delta E, mas com um delta E médio "
+"bastante alto\n"
 "nenhum é um meio-termo entre os dois\n"
 "os outros são comportamentos especiais para proteger algumas matizes"
 
@@ -10153,6 +10156,9 @@ msgid ""
 "useful when the chart is not lit by an even lighting,\n"
 "in which case luminance discrepancies would make color matching inaccurate."
 msgstr ""
+"descartar luminância do patch na calibração.\n"
+"útil quanto a tabela não está iluminada de maneira homogênea,\n"
+"de tal forma que as discrepâncias na luminância tornariam o casamento das cores impreciso."
 
 #: ../src/iop/channelmixerrgb.c:3526
 msgid "patch scale"
@@ -10164,6 +10170,9 @@ msgid ""
 "useful when the perspective correction is sloppy or\n"
 "the patches frame cast a shadows on the edges of the patch."
 msgstr ""
+"reduzir o raio dos patches para selecionar a parte aproximadamente central.\n"
+"útil quando a correção de perspectiva não é boa ou\n"
+"a moldura fazem sombra sobre as bordas do patch."
 
 #: ../src/iop/channelmixerrgb.c:3535
 msgid "the delta E is using the CIE 2000 formula."
@@ -10992,21 +11001,21 @@ msgstr "perfil de saída não suportado foi substituido por linear sRGB!"
 msgid "output intent"
 msgstr "intenção de saída"
 
-#: ../src/iop/colorout.c:871 ../src/libs/export.c:1290
+#: ../src/iop/colorout.c:871 ../src/libs/export.c:1297
 #: ../src/libs/print_settings.c:1245 ../src/libs/print_settings.c:1460
 #: ../src/views/darkroom.c:2376 ../src/views/darkroom.c:2384
 #: ../src/views/lighttable.c:1402 ../src/views/lighttable.c:1410
 msgid "perceptual"
 msgstr "perceptual"
 
-#: ../src/iop/colorout.c:872 ../src/libs/export.c:1291
+#: ../src/iop/colorout.c:872 ../src/libs/export.c:1298
 #: ../src/libs/print_settings.c:1246 ../src/libs/print_settings.c:1461
 #: ../src/views/darkroom.c:2377 ../src/views/darkroom.c:2385
 #: ../src/views/lighttable.c:1403 ../src/views/lighttable.c:1411
 msgid "relative colorimetric"
 msgstr "colorimétrico relativo"
 
-#: ../src/iop/colorout.c:873 ../src/libs/export.c:1292
+#: ../src/iop/colorout.c:873 ../src/libs/export.c:1299
 #: ../src/libs/print_settings.c:1247 ../src/libs/print_settings.c:1462
 #: ../src/views/darkroom.c:2378 ../src/views/darkroom.c:2386
 #: ../src/views/lighttable.c:1404 ../src/views/lighttable.c:1412
@@ -11014,7 +11023,7 @@ msgctxt "rendering intent"
 msgid "saturation"
 msgstr "saturação"
 
-#: ../src/iop/colorout.c:874 ../src/libs/export.c:1293
+#: ../src/iop/colorout.c:874 ../src/libs/export.c:1300
 #: ../src/libs/print_settings.c:1248 ../src/libs/print_settings.c:1463
 #: ../src/views/darkroom.c:2379 ../src/views/darkroom.c:2387
 #: ../src/views/lighttable.c:1405 ../src/views/lighttable.c:1413
@@ -11091,7 +11100,7 @@ msgctxt "accel"
 msgid "acquire"
 msgstr "aquisição"
 
-#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:492
+#: ../src/iop/colortransfer.c:130 ../src/libs/metadata.c:555
 msgctxt "accel"
 msgid "apply"
 msgstr "aplicar"
@@ -11119,8 +11128,8 @@ msgid "analyze this image"
 msgstr "analisar esta imagem"
 
 #. apply button
-#: ../src/iop/colortransfer.c:673 ../src/libs/metadata.c:665
-#: ../src/libs/styles.c:713
+#: ../src/iop/colortransfer.c:673 ../src/libs/metadata.c:728
+#: ../src/libs/styles.c:727
 msgid "apply"
 msgstr "aplicar"
 
@@ -11286,11 +11295,11 @@ msgstr ""
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cores não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:5094 ../src/iop/demosaic.c:5098
+#: ../src/iop/demosaic.c:5092 ../src/iop/demosaic.c:5096
 msgid "demosaicing raw data method"
 msgstr "método de interpolação cromática dados raw"
 
-#: ../src/iop/demosaic.c:5103
+#: ../src/iop/demosaic.c:5101
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -11300,35 +11309,35 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:5108
+#: ../src/iop/demosaic.c:5106
 msgid "one time"
 msgstr "uma vez"
 
-#: ../src/iop/demosaic.c:5109
+#: ../src/iop/demosaic.c:5107
 msgid "two times"
 msgstr "duas vezes"
 
-#: ../src/iop/demosaic.c:5110
+#: ../src/iop/demosaic.c:5108
 msgid "three times"
 msgstr "três vezes"
 
-#: ../src/iop/demosaic.c:5111
+#: ../src/iop/demosaic.c:5109
 msgid "four times"
 msgstr "quatro vezes"
 
-#: ../src/iop/demosaic.c:5112
+#: ../src/iop/demosaic.c:5110
 msgid "five times"
 msgstr "cinco vezes"
 
-#: ../src/iop/demosaic.c:5113
+#: ../src/iop/demosaic.c:5111
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:5116
+#: ../src/iop/demosaic.c:5114
 msgid "green channels matching method"
 msgstr "método de correspondência canal verde"
 
-#: ../src/iop/demosaic.c:5122
+#: ../src/iop/demosaic.c:5120
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -11407,7 +11416,7 @@ msgstr "variância de azul: "
 msgid "variance computed on the blue channel"
 msgstr "variância calculada no canal azul"
 
-#: ../src/iop/denoiseprofile.c:3577 ../src/libs/export.c:1266
+#: ../src/iop/denoiseprofile.c:3577 ../src/libs/export.c:1273
 #: ../src/libs/print_settings.c:1189 ../src/libs/print_settings.c:1409
 msgid "profile"
 msgstr "perfil"
@@ -11846,7 +11855,7 @@ msgstr ""
 
 #. geotagging
 #: ../src/iop/filmic.c:1662 ../src/iop/filmicrgb.c:3751
-#: ../src/libs/metadata_view.c:143
+#: ../src/libs/metadata_view.c:165
 msgid "latitude"
 msgstr "latitude"
 
@@ -11895,7 +11904,7 @@ msgstr ""
 "especificamente em luminâncias extremas\n"
 "diminua se sombras e/ou realces estão saturados demais."
 
-#: ../src/iop/filmic.c:1705 ../src/libs/export.c:1288
+#: ../src/iop/filmic.c:1705 ../src/libs/export.c:1295
 #: ../src/libs/print_settings.c:1244 ../src/libs/print_settings.c:1457
 msgid "intent"
 msgstr "intenção"
@@ -12113,7 +12122,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3093 ../src/iop/toneequal.c:3097
 #: ../src/iop/toneequal.c:3101 ../src/iop/toneequal.c:3105
 #: ../src/iop/toneequal.c:3109 ../src/iop/toneequal.c:3113
-#: ../src/iop/toneequal.c:3117 ../src/libs/metadata_view.c:509
+#: ../src/iop/toneequal.c:3117 ../src/libs/metadata_view.c:582
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f EV"
@@ -12920,7 +12929,7 @@ msgstr "escala"
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.cc:2369 ../src/libs/modulegroups.c:2122
+#: ../src/iop/lens.cc:2369 ../src/libs/modulegroups.c:2123
 msgid "correct"
 msgstr "corrigir"
 
@@ -13863,7 +13872,7 @@ msgstr ""
 msgid "toggle tool for picking median lightness in image"
 msgstr "alterna ferramenta para selecionar luminosidade media na imagem"
 
-#: ../src/iop/relight.c:286 ../src/libs/metadata_view.c:128
+#: ../src/iop/relight.c:286 ../src/libs/metadata_view.c:155
 #: ../src/libs/print_settings.c:1310
 msgid "width"
 msgstr "largura"
@@ -15321,61 +15330,61 @@ msgstr "balanço de branco"
 msgid "collect images"
 msgstr "coletar imagens"
 
-#: ../src/libs/collect.c:277
+#: ../src/libs/collect.c:282
 msgid "today"
 msgstr "hoje"
 
-#: ../src/libs/collect.c:287
+#: ../src/libs/collect.c:292
 msgid "last 24h"
 msgstr "últimas 24h"
 
-#: ../src/libs/collect.c:296
+#: ../src/libs/collect.c:301
 msgid "last 30 days"
 msgstr "últimos 30 dias"
 
-#: ../src/libs/collect.c:418
+#: ../src/libs/collect.c:425
 msgid "search filmroll"
 msgstr "procura rolo de filme"
 
-#: ../src/libs/collect.c:504
+#: ../src/libs/collect.c:511
 #, c-format
 msgid "problem selecting new path for the filmroll in %s"
 msgstr "problema selecionando novo caminho para o rolo de filme em %s"
 
-#: ../src/libs/collect.c:565
+#: ../src/libs/collect.c:572
 msgid "search filmroll..."
 msgstr "procura rolo de fime..."
 
-#: ../src/libs/collect.c:569
+#: ../src/libs/collect.c:576
 msgid "remove..."
 msgstr "remove..."
 
-#: ../src/libs/collect.c:1180
+#: ../src/libs/collect.c:1187
 msgid "uncategorized"
 msgstr "sem categoria"
 
-#: ../src/libs/collect.c:1652
+#: ../src/libs/collect.c:1659
 msgid "copied locally"
 msgstr "cópia local"
 
-#: ../src/libs/collect.c:1754
+#: ../src/libs/collect.c:1761
 msgid "group followers"
 msgstr "seguidores do grupo"
 
-#: ../src/libs/collect.c:2020 ../src/libs/collect.c:2035
-#: ../src/libs/collect.c:2596
+#: ../src/libs/collect.c:2027 ../src/libs/collect.c:2042
+#: ../src/libs/collect.c:2603
 msgid "clear this rule"
 msgstr "limpar esta regra"
 
-#: ../src/libs/collect.c:2024
+#: ../src/libs/collect.c:2031
 msgid "clear this rule or add new rules"
 msgstr "limpar esta regra ou adicionar nova regra"
 
-#: ../src/libs/collect.c:2081
+#: ../src/libs/collect.c:2088
 msgid "use <, <=, >, >=, <>, =, [;] as operators"
 msgstr "use <, <=, >, >=, <>, =, [;] como operadores"
 
-#: ../src/libs/collect.c:2086
+#: ../src/libs/collect.c:2093
 msgid ""
 "use <, <=, >, >=, <>, =, [;] as operators\n"
 "type dates in the form : YYYY:MM:DD HH:MM:SS (only the year is mandatory)"
@@ -15383,12 +15392,12 @@ msgstr ""
 "use <, <=, >, >=, <>, =, [;] como operadores\n"
 "digite datas no formato : YYYY:MM:DD HH:MM:SS (só o ano é obrigatório)"
 
-#: ../src/libs/collect.c:2093
+#: ../src/libs/collect.c:2100
 #, no-c-format
 msgid "use `%' as wildcard and `,' to separate values"
 msgstr "use `%' como curinga e `,' para separar valores"
 
-#: ../src/libs/collect.c:2099
+#: ../src/libs/collect.c:2106
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -15399,7 +15408,7 @@ msgstr ""
 "use `|%' para incluir todas as sub-hierarquias (ctrl-clique)\n"
 "use `*' para incluir a hierarquia e sub-hierarquias (shift-clique)"
 
-#: ../src/libs/collect.c:2109
+#: ../src/libs/collect.c:2116
 #, no-c-format
 msgid ""
 "use `%' as wildcard\n"
@@ -15410,72 +15419,75 @@ msgstr ""
 "use `|%' para incluir todas os sub-locais (ctrl-clique)\n"
 "use `*' para incluir os locais e sub-locais (shift-clique)"
 
-#: ../src/libs/collect.c:2118
+#: ../src/libs/collect.c:2125
 #, no-c-format
 msgid "use `%' as wildcard"
 msgstr "use `%' como curinga"
 
-#: ../src/libs/collect.c:2602
+#: ../src/libs/collect.c:2609
 msgid "narrow down search"
 msgstr "restringir pesquisa"
 
-#: ../src/libs/collect.c:2607
+#: ../src/libs/collect.c:2614
 msgid "add more images"
 msgstr "adiciona mais imagens"
 
-#: ../src/libs/collect.c:2612
+#: ../src/libs/collect.c:2619
 msgid "exclude images"
 msgstr "excluir imagens"
 
-#: ../src/libs/collect.c:2619
+#: ../src/libs/collect.c:2626
 msgid "change to: and"
 msgstr "muda para: and"
 
-#: ../src/libs/collect.c:2624
+#: ../src/libs/collect.c:2631
 msgid "change to: or"
 msgstr "muda para: ou"
 
-#: ../src/libs/collect.c:2629
+#: ../src/libs/collect.c:2636
 msgid "change to: except"
 msgstr "muda para: exceto"
 
-#: ../src/libs/collect.c:2659
+#: ../src/libs/collect.c:2666
 msgid "files"
 msgstr "arquivos"
 
-#: ../src/libs/collect.c:2664 ../src/libs/export_metadata.c:289
-#: ../src/libs/image.c:431 ../src/libs/image.c:536 ../src/libs/metadata.c:406
-#: ../src/libs/metadata.c:563
+#: ../src/libs/collect.c:2671 ../src/libs/export_metadata.c:289
+#: ../src/libs/image.c:431 ../src/libs/image.c:536 ../src/libs/metadata.c:473
+#: ../src/libs/metadata.c:626 ../src/libs/metadata_view.c:1073
 msgid "metadata"
 msgstr "metadados"
 
-#: ../src/libs/collect.c:2682
+#: ../src/libs/collect.c:2689
 msgid "times"
 msgstr "hora"
 
-#: ../src/libs/collect.c:2690
+#: ../src/libs/collect.c:2697
 msgid "capture details"
 msgstr "detalhes da captura da foto"
 
-#: ../src/libs/collect.c:2699 ../src/libs/tools/darktable.c:65
+#: ../src/libs/collect.c:2706 ../src/libs/tools/darktable.c:65
 msgid "darktable"
 msgstr "darktable"
 
-#: ../src/libs/collect.c:2712
+#: ../src/libs/collect.c:2719
 msgid "collect images settings"
 msgstr "preferências para coletar imagens"
 
-#: ../src/libs/collect.c:2715 ../src/libs/export_metadata.c:269
-#: ../src/libs/import.c:668 ../src/libs/metadata.c:401
-#: ../src/libs/tagging.c:1511 ../src/libs/tagging.c:1636
+#: ../src/libs/collect.c:2722 ../src/libs/export_metadata.c:269
+#: ../src/libs/import.c:678 ../src/libs/metadata.c:433
+#: ../src/libs/metadata_view.c:1030 ../src/libs/tagging.c:1511
+#: ../src/libs/tagging.c:1636
 msgid "save"
 msgstr "salvar"
 
-#: ../src/libs/collect.c:2728 ../src/libs/import.c:725
+#: ../src/libs/collect.c:2735 ../src/libs/export.c:1090
+#: ../src/libs/import.c:736 ../src/libs/metadata.c:547
+#: ../src/libs/metadata_view.c:1133
 msgid "preferences..."
 msgstr "preferências..."
 
-#: ../src/libs/collect.c:2774
+#: ../src/libs/collect.c:2781
 #, no-c-format
 msgid "type your query, use `%' as wildcard"
 msgstr "digite sua consulta, use `%' como curinga"
@@ -15656,11 +15668,11 @@ msgstr ""
 "descarta histórico de\n"
 "todas imagens selecionadas"
 
-#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:675
+#: ../src/libs/copy_history.c:360 ../src/libs/styles.c:689
 msgid "append"
 msgstr "anexa"
 
-#: ../src/libs/copy_history.c:362 ../src/libs/styles.c:677
+#: ../src/libs/copy_history.c:362 ../src/libs/styles.c:691
 msgid "how to handle existing history"
 msgstr "como gerenciar histórico existente"
 
@@ -15746,70 +15758,70 @@ msgstr "duplicar"
 msgid "create a duplicate of the image with same history stack"
 msgstr "cria uma duplicata da imagem com o memso histórico"
 
-#: ../src/libs/export.c:157
+#: ../src/libs/export.c:156
 msgid "export selected"
 msgstr "exportar selecionados"
 
-#: ../src/libs/export.c:312
+#: ../src/libs/export.c:311
 msgid "export to disk"
 msgstr "exportar para o disco"
 
-#: ../src/libs/export.c:492
+#: ../src/libs/export.c:491
 #, c-format
 msgid "which is equal to %s × %s px"
 msgstr "que é igual a %s x %s px"
 
 #. DT_DIMENSIONS_INCH
-#: ../src/libs/export.c:541
+#: ../src/libs/export.c:540
 msgctxt "unit"
 msgid "in"
 msgstr "in"
 
-#: ../src/libs/export.c:1096
+#: ../src/libs/export.c:1103
 msgid "storage options"
 msgstr "opções de armazenamento"
 
-#: ../src/libs/export.c:1103
+#: ../src/libs/export.c:1110
 msgid "target storage"
 msgstr "armazenar em"
 
-#: ../src/libs/export.c:1126
+#: ../src/libs/export.c:1133
 msgid "format options"
 msgstr "opções de formato"
 
-#: ../src/libs/export.c:1131
+#: ../src/libs/export.c:1138
 msgid "file format"
 msgstr "formato do arquivo"
 
-#: ../src/libs/export.c:1149
+#: ../src/libs/export.c:1156
 msgid "global options"
 msgstr "opções globais"
 
-#: ../src/libs/export.c:1154
+#: ../src/libs/export.c:1161
 msgid "set size"
 msgstr "definir tamanho"
 
-#: ../src/libs/export.c:1155
+#: ../src/libs/export.c:1162
 msgid "choose a method for setting the output size"
 msgstr "escolha um método para determinar o tamanho da saída"
 
-#: ../src/libs/export.c:1156
+#: ../src/libs/export.c:1163
 msgid "in pixels (for file)"
 msgstr "em pixels (para arquivo)"
 
-#: ../src/libs/export.c:1157
+#: ../src/libs/export.c:1164
 msgid "in cm (for print)"
 msgstr "em cm (para impressão)"
 
-#: ../src/libs/export.c:1158
+#: ../src/libs/export.c:1165
 msgid "in inch (for print)"
 msgstr "em polegadas (para impressão)"
 
-#: ../src/libs/export.c:1159
+#: ../src/libs/export.c:1166
 msgid "by scale (for file)"
 msgstr "por escala (para arquivo)"
 
-#: ../src/libs/export.c:1163 ../src/libs/export.c:1182
+#: ../src/libs/export.c:1170 ../src/libs/export.c:1189
 msgid ""
 "maximum output width limit.\n"
 "click middle mouse button to reset to 0."
@@ -15817,7 +15829,7 @@ msgstr ""
 "limite máximo para largura da saída.\n"
 "clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:1167 ../src/libs/export.c:1186
+#: ../src/libs/export.c:1174 ../src/libs/export.c:1193
 msgid ""
 "maximum output height limit.\n"
 "click middle mouse button to reset to 0."
@@ -15825,23 +15837,23 @@ msgstr ""
 "limite máximo para altura da saída.\n"
 "clique com o botão do meio para redefinir como 0."
 
-#: ../src/libs/export.c:1171
+#: ../src/libs/export.c:1178
 msgid "resolution in dot per inch"
 msgstr "resolução em pontos por polegada"
 
-#: ../src/libs/export.c:1200 ../src/libs/export.c:1212
+#: ../src/libs/export.c:1207 ../src/libs/export.c:1219
 msgid "x"
 msgstr "x"
 
-#: ../src/libs/export.c:1205
+#: ../src/libs/export.c:1212
 msgid "@"
 msgstr "@"
 
-#: ../src/libs/export.c:1214 ../src/libs/tools/global_toolbox.c:223
+#: ../src/libs/export.c:1221 ../src/libs/tools/global_toolbox.c:223
 msgid "px"
 msgstr "px"
 
-#: ../src/libs/export.c:1218
+#: ../src/libs/export.c:1225
 msgid ""
 "it can be an integer, decimal number or simple fraction.\n"
 "zero or empty values are equal to 1.\n"
@@ -15851,39 +15863,39 @@ msgstr ""
 "zero ou vazio são iguais a 1.\n"
 "clique com o botão do meio para redefinir em 1."
 
-#: ../src/libs/export.c:1239
+#: ../src/libs/export.c:1246
 msgid "allow upscaling"
 msgstr "permitir aumentar a escala"
 
-#: ../src/libs/export.c:1245
+#: ../src/libs/export.c:1252
 msgid "high quality resampling"
 msgstr "reamostragem de alta qualidade"
 
-#: ../src/libs/export.c:1248
+#: ../src/libs/export.c:1255
 msgid "do high quality resampling during export"
 msgstr "fazer reamostragem de alta qualidade durante exportação"
 
-#: ../src/libs/export.c:1252
+#: ../src/libs/export.c:1259
 msgid "store masks"
 msgstr "armazenar máscaras"
 
-#: ../src/libs/export.c:1255
+#: ../src/libs/export.c:1262
 msgid "store masks as layers in exported images. only works for some formats."
 msgstr ""
 "armazena máscaras como camadas nas imagens exportadas. só funciona com "
 "alguns formatos."
 
-#: ../src/libs/export.c:1268 ../src/libs/export.c:1289
+#: ../src/libs/export.c:1275 ../src/libs/export.c:1296
 #: ../src/libs/print_settings.c:1412 ../src/libs/print_settings.c:1459
 msgid "image settings"
 msgstr "configurações da imagem"
 
-#: ../src/libs/export.c:1279 ../src/libs/print_settings.c:1448
+#: ../src/libs/export.c:1286 ../src/libs/print_settings.c:1448
 #, c-format
 msgid "output ICC profiles in %s or %s"
 msgstr "perfil ICC de saída em  %s ou %s"
 
-#: ../src/libs/export.c:1296
+#: ../src/libs/export.c:1303
 #, c-format
 msgid ""
 "• perceptual : smoothly moves out-of-gamut colors into gamut,preserving "
@@ -15916,23 +15928,23 @@ msgstr ""
 "da mídia de destino e não faz mais nada. usado principalmente ao verificar "
 "cores (não serve para fotografia)."
 
-#: ../src/libs/export.c:1325 ../src/libs/print_settings.c:1473
+#: ../src/libs/export.c:1332 ../src/libs/print_settings.c:1473
 msgid "style"
 msgstr "estilo"
 
-#: ../src/libs/export.c:1328
+#: ../src/libs/export.c:1335
 msgid "temporary style to use while exporting"
 msgstr "estilo temporário a ser usado ao exportar"
 
-#: ../src/libs/export.c:1337 ../src/libs/print_settings.c:1518
+#: ../src/libs/export.c:1344 ../src/libs/print_settings.c:1518
 msgid "replace history"
 msgstr "colar histórico, eliminando a original"
 
-#: ../src/libs/export.c:1338 ../src/libs/print_settings.c:1519
+#: ../src/libs/export.c:1345 ../src/libs/print_settings.c:1519
 msgid "append history"
 msgstr "adicionar histórico ao final"
 
-#: ../src/libs/export.c:1343 ../src/libs/print_settings.c:1526
+#: ../src/libs/export.c:1350 ../src/libs/print_settings.c:1526
 msgid ""
 "whether the style items are appended to the history or replacing the history"
 msgstr ""
@@ -15940,17 +15952,13 @@ msgstr ""
 "o histórico"
 
 #. Export button
-#: ../src/libs/export.c:1366
+#: ../src/libs/export.c:1373
 msgid "export"
 msgstr "exportar"
 
-#: ../src/libs/export.c:1366
+#: ../src/libs/export.c:1373
 msgid "export with current settings"
 msgstr "exporta com configuração atual (ctrl-e)"
-
-#: ../src/libs/export.c:1372
-msgid "edit metadata exportation details"
-msgstr "editar detalhes de exportação de metadados"
 
 #. enable shortcut to export with current export settings:
 #: ../src/libs/export.c:2039 ../src/libs/styles.c:73
@@ -16188,55 +16196,55 @@ msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "analisa o arquivo GPX e atualiza a localização das imagens selecionadas"
 
-#: ../src/libs/histogram.c:109
+#: ../src/libs/histogram.c:110
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:771 ../src/libs/histogram.c:805
+#: ../src/libs/histogram.c:772 ../src/libs/histogram.c:806
 msgid "set mode to waveform"
 msgstr "mudar o modo para forma de onda"
 
-#: ../src/libs/histogram.c:774
+#: ../src/libs/histogram.c:775
 msgid "set mode to histogram"
 msgstr "mudar o modo para histograma"
 
-#: ../src/libs/histogram.c:789
+#: ../src/libs/histogram.c:790
 msgid "set scale to linear"
 msgstr "mudar escala para linear"
 
-#: ../src/libs/histogram.c:792
+#: ../src/libs/histogram.c:793
 msgid "set scale to logarithmic"
 msgstr "mudar escala para logarítmica"
 
-#: ../src/libs/histogram.c:802
+#: ../src/libs/histogram.c:803
 msgid "set mode to RGB parade"
 msgstr "mudar o modo para canais RGB separados"
 
-#: ../src/libs/histogram.c:818
+#: ../src/libs/histogram.c:819
 msgid "click to hide red channel"
 msgstr "clique para esconder o canal vermelho"
 
-#: ../src/libs/histogram.c:818
+#: ../src/libs/histogram.c:819
 msgid "click to show red channel"
 msgstr "clique para mostrar o canal vermelho"
 
-#: ../src/libs/histogram.c:823
+#: ../src/libs/histogram.c:824
 msgid "click to hide green channel"
 msgstr "clique para esconder o canal verde"
 
-#: ../src/libs/histogram.c:824
+#: ../src/libs/histogram.c:825
 msgid "click to show green channel"
 msgstr "clique para mostrar o canal verde"
 
-#: ../src/libs/histogram.c:829
+#: ../src/libs/histogram.c:830
 msgid "click to hide blue channel"
 msgstr "clique para esconder o canal azul"
 
-#: ../src/libs/histogram.c:829
+#: ../src/libs/histogram.c:830
 msgid "click to show blue channel"
 msgstr "clique para mostrar o canal azul"
 
-#: ../src/libs/histogram.c:836
+#: ../src/libs/histogram.c:837
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -16247,7 +16255,7 @@ msgstr ""
 "ctrl+scroll muda altura do display"
 
 #. connect callbacks
-#: ../src/libs/histogram.c:841 ../src/libs/histogram.c:1261
+#: ../src/libs/histogram.c:842 ../src/libs/histogram.c:1262
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -16257,46 +16265,46 @@ msgstr ""
 "clique duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:846
+#: ../src/libs/histogram.c:847
 msgid "ctrl+scroll to change display height"
 msgstr "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:1298
+#: ../src/libs/histogram.c:1299
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "histograma/esconder histograma"
 
-#: ../src/libs/histogram.c:1299
+#: ../src/libs/histogram.c:1300
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:1300
+#: ../src/libs/histogram.c:1301
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "histograma/alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:1301
+#: ../src/libs/histogram.c:1302
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:1302
+#: ../src/libs/histogram.c:1303
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "historgama/alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:1303
+#: ../src/libs/histogram.c:1304
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:1304
+#: ../src/libs/histogram.c:1305
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "histograma/alterna escala do histograma linear/logarítmica"
 
-#: ../src/libs/histogram.c:1305
+#: ../src/libs/histogram.c:1306
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "alterna escala do histograma linear/logarítmica"
@@ -16345,7 +16353,7 @@ msgstr "módulo habilitado por default"
 msgid "deprecated module"
 msgstr "módulo descontinuado"
 
-#: ../src/libs/history.c:803 ../src/libs/metadata_view.c:455
+#: ../src/libs/history.c:803 ../src/libs/metadata_view.c:528
 #: ../src/libs/snapshots.c:467
 msgid "unknown"
 msgstr "desconhecido"
@@ -16418,7 +16426,7 @@ msgid "physically delete from disk"
 msgstr "excluir fisicamente do disco"
 
 #. delete
-#: ../src/libs/image.c:442 ../src/libs/styles.c:698
+#: ../src/libs/image.c:442 ../src/libs/styles.c:712
 msgid "remove"
 msgstr "remover"
 
@@ -16538,7 +16546,7 @@ msgstr "determinar a (primeira) imagem selecionada como fonte de metadados"
 msgid "paste selected metadata on selected images"
 msgstr "escrever metadados para imagens selecionadas"
 
-#: ../src/libs/image.c:553 ../src/libs/metadata.c:661
+#: ../src/libs/image.c:553 ../src/libs/metadata.c:724
 msgid "clear"
 msgstr "remover"
 
@@ -16716,25 +16724,25 @@ msgstr "arquivo tem formato desconhecido!"
 msgid "import folder"
 msgstr "importar pasta"
 
-#: ../src/libs/import.c:665
+#: ../src/libs/import.c:675
 msgid "import settings"
 msgstr "configurações de importação"
 
 #. add import single image buttons
-#: ../src/libs/import.c:752
+#: ../src/libs/import.c:751
 msgid "image..."
 msgstr "imagem..."
 
-#: ../src/libs/import.c:752
+#: ../src/libs/import.c:751
 msgid "select one or more images to import"
 msgstr "selecione uma ou mais imagens para impotar"
 
 #. adding the import folder button
-#: ../src/libs/import.c:760
+#: ../src/libs/import.c:759
 msgid "folder..."
 msgstr "pasta..."
 
-#: ../src/libs/import.c:760
+#: ../src/libs/import.c:759
 msgid "select a folder to import as film roll"
 msgstr "selecione uma pasta para importar como rolo de filme"
 
@@ -16864,7 +16872,7 @@ msgstr "id"
 msgid "overlay another image over the live view"
 msgstr "sobrepor outra imagem sobre a exibição ao vivo"
 
-#: ../src/libs/live_view.c:387 ../src/libs/metadata_view.c:103
+#: ../src/libs/live_view.c:387 ../src/libs/metadata_view.c:130
 msgid "image id"
 msgstr "imagem id"
 
@@ -17138,55 +17146,53 @@ msgstr "limpar formas não usadas"
 msgid "created shapes"
 msgstr "formas criadas"
 
-#: ../src/libs/metadata.c:56
+#: ../src/libs/metadata.c:64
 msgid "metadata editor"
 msgstr "editor de metadados"
 
-#: ../src/libs/metadata.c:72 ../src/libs/metadata.c:108
+#: ../src/libs/metadata.c:80 ../src/libs/metadata.c:116
 msgid "<leave unchanged>"
 msgstr "<deixar sem modificações>"
 
-#: ../src/libs/metadata.c:400
+#: ../src/libs/metadata.c:432 ../src/libs/metadata_view.c:1029
 msgid "metadata settings"
 msgstr "configurações de metadados"
 
-#: ../src/libs/metadata.c:408
-msgid "hidden"
-msgstr "oculto"
+#: ../src/libs/metadata.c:479 ../src/libs/metadata_view.c:1084
+msgid "visible"
+msgstr "visível"
 
-#: ../src/libs/metadata.c:411
+#: ../src/libs/metadata.c:484
 msgid ""
-"tick if the corresponding metadata is of no interest for you\n"
-"it will be hidden from metadata editor, collection, image information and "
-"import module\n"
-"neither will it be exported"
+"tick if the corresponding metadata is of interest for you\n"
+"it will be visible from metadata editor, collection and import module\n"
+"it will be also exported"
 msgstr ""
-"escolha se o metadado correspondente não é de interesse para você\n"
-"ele será escondido do editor de metadados, coleção, informação da imagem e\n"
-"módulo de importação\n"
-"também não será exportado"
+"escolha se o metadado correspondente é de interesse para você\n"
+"ele será visível no editor de metadados, coleção, e módulo de importação\n"
+"também será exportado"
 
-#: ../src/libs/metadata.c:414 ../src/libs/tagging.c:1541
+#: ../src/libs/metadata.c:489 ../src/libs/tagging.c:1541
 #: ../src/libs/tagging.c:1680
 msgid "private"
 msgstr "privado"
 
-#: ../src/libs/metadata.c:417
+#: ../src/libs/metadata.c:494
 msgid ""
 "tick if you want to keep this information private (not exported with images)"
 msgstr ""
 "escolha se quiser manter esta informação privada (não exportada com a imagem)"
 
-#: ../src/libs/metadata.c:491
+#: ../src/libs/metadata.c:554
 msgctxt "accel"
 msgid "clear"
 msgstr "remover"
 
-#: ../src/libs/metadata.c:525
+#: ../src/libs/metadata.c:588
 msgid "metadata list"
 msgstr "lista de metadados"
 
-#: ../src/libs/metadata.c:619
+#: ../src/libs/metadata.c:682
 msgid ""
 "metadata text. ctrl-wheel scroll to resize the text box\n"
 " ctrl-enter inserts a new line (caution, may not be compatible with standard "
@@ -17202,133 +17208,129 @@ msgstr ""
 "neste caso, clique-direito dá possibilidade de escolher qual.\n"
 "pressione esc para sair da janela pop-up"
 
-#: ../src/libs/metadata.c:661
+#: ../src/libs/metadata.c:724
 msgid "remove metadata from selected images"
 msgstr "remover metadados para imagens selecionadas"
 
-#: ../src/libs/metadata.c:665
+#: ../src/libs/metadata.c:728
 msgid "write metadata for selected images"
 msgstr "escrever metadados para imagens selecionadas"
 
-#: ../src/libs/metadata.c:671
-msgid "configure metadata"
-msgstr "configurar metadados"
-
 #. <title>\0<description>\0<rights>\0<creator>\0<publisher>
-#: ../src/libs/metadata.c:724
+#: ../src/libs/metadata.c:781
 msgid "CC BY"
 msgstr "CC BY"
 
-#: ../src/libs/metadata.c:724
+#: ../src/libs/metadata.c:781
 msgid "Creative Commons Attribution (CC BY)"
 msgstr "Creative Commons Attribution (CC-BY)"
 
-#: ../src/libs/metadata.c:725
+#: ../src/libs/metadata.c:782
 msgid "CC BY-SA"
 msgstr "CC BY-SA"
 
-#: ../src/libs/metadata.c:725
+#: ../src/libs/metadata.c:782
 msgid "Creative Commons Attribution-ShareAlike (CC BY-SA)"
 msgstr "Creative Commons Attribution-ShareAlike (CC-BY-SA)"
 
-#: ../src/libs/metadata.c:726
+#: ../src/libs/metadata.c:783
 msgid "CC BY-ND"
 msgstr "CC BY-ND"
 
-#: ../src/libs/metadata.c:726
+#: ../src/libs/metadata.c:783
 msgid "Creative Commons Attribution-NoDerivs (CC BY-ND)"
 msgstr "Creative Commons Attribution-NoDerivs (CC-BY-ND)"
 
-#: ../src/libs/metadata.c:727
+#: ../src/libs/metadata.c:784
 msgid "CC BY-NC"
 msgstr "CC BY-NC"
 
-#: ../src/libs/metadata.c:727
+#: ../src/libs/metadata.c:784
 msgid "Creative Commons Attribution-NonCommercial (CC BY-NC)"
 msgstr "Creative Commons Attribution-NonCommercial (CC-BY-NC)"
 
-#: ../src/libs/metadata.c:728
+#: ../src/libs/metadata.c:785
 msgid "CC BY-NC-SA"
 msgstr "CC BY-NC-SA"
 
-#: ../src/libs/metadata.c:729
+#: ../src/libs/metadata.c:786
 msgid "Creative Commons Attribution-NonCommercial-ShareAlike (CC BY-NC-SA)"
 msgstr "Creative Commons Attribution-NonCommercial-ShareAlike (CC-BY-NC-SA)"
 
-#: ../src/libs/metadata.c:730
+#: ../src/libs/metadata.c:787
 msgid "CC BY-NC-ND"
 msgstr "CC BY-NC-ND"
 
-#: ../src/libs/metadata.c:731
+#: ../src/libs/metadata.c:788
 msgid "Creative Commons Attribution-NonCommercial-NoDerivs (CC BY-NC-ND)"
 msgstr "Creative Commons Attribution-NonCommercial-NoDerivs (CC-BY-NC-ND)"
 
-#: ../src/libs/metadata.c:732
+#: ../src/libs/metadata.c:789
 msgid "all rights reserved"
 msgstr "todos direitos reservados"
 
-#: ../src/libs/metadata.c:732
+#: ../src/libs/metadata.c:789
 msgid "all rights reserved."
 msgstr "todos direitos reservados."
 
 #. internal
-#: ../src/libs/metadata_view.c:102
+#: ../src/libs/metadata_view.c:129
 msgid "filmroll"
 msgstr "rolo de filme"
 
-#: ../src/libs/metadata_view.c:104
+#: ../src/libs/metadata_view.c:131
 msgid "group id"
 msgstr "identificação de grupo"
 
-#: ../src/libs/metadata_view.c:106
+#: ../src/libs/metadata_view.c:133
 msgid "version"
 msgstr "versão"
 
-#: ../src/libs/metadata_view.c:107 ../src/libs/tools/filter.c:93
+#: ../src/libs/metadata_view.c:134 ../src/libs/tools/filter.c:93
 msgid "full path"
 msgstr "caminho completo"
 
-#: ../src/libs/metadata_view.c:114
+#: ../src/libs/metadata_view.c:141
 msgid "flags"
 msgstr "flags"
 
-#: ../src/libs/metadata_view.c:125
+#: ../src/libs/metadata_view.c:152
 msgid "focus distance"
 msgstr "distância de foco"
 
-#: ../src/libs/metadata_view.c:127
+#: ../src/libs/metadata_view.c:154
 msgid "datetime"
 msgstr "data/hora"
 
-#: ../src/libs/metadata_view.c:129 ../src/libs/print_settings.c:1314
+#: ../src/libs/metadata_view.c:156 ../src/libs/print_settings.c:1314
 msgid "height"
 msgstr "altura"
 
-#: ../src/libs/metadata_view.c:131
+#: ../src/libs/metadata_view.c:157
 msgid "export width"
 msgstr "exportar largura"
 
-#: ../src/libs/metadata_view.c:132
+#: ../src/libs/metadata_view.c:158
 msgid "export height"
 msgstr "exportar altura"
 
-#: ../src/libs/metadata_view.c:144
+#: ../src/libs/metadata_view.c:166
 msgid "longitude"
 msgstr "longitude"
 
-#: ../src/libs/metadata_view.c:145
+#: ../src/libs/metadata_view.c:167
 msgid "elevation"
 msgstr "elevação"
 
-#: ../src/libs/metadata_view.c:149
+#: ../src/libs/metadata_view.c:171
 msgid "categories"
 msgstr "categorias"
 
-#: ../src/libs/metadata_view.c:160
+#: ../src/libs/metadata_view.c:178
 msgid "image information"
 msgstr "informação da imagem"
 
-#: ../src/libs/metadata_view.c:290
+#: ../src/libs/metadata_view.c:363
 #, c-format
 msgid ""
 "double click to jump to film roll\n"
@@ -17337,98 +17339,114 @@ msgstr ""
 "clique duplo para pular para rolo de filme\n"
 "%s"
 
-#: ../src/libs/metadata_view.c:342
+#: ../src/libs/metadata_view.c:415
 msgid "unused/deprecated"
 msgstr "não utilizado/obsoleto"
 
-#: ../src/libs/metadata_view.c:343
+#: ../src/libs/metadata_view.c:416
 msgid "ldr"
 msgstr "ldr"
 
-#: ../src/libs/metadata_view.c:345
+#: ../src/libs/metadata_view.c:418
 msgid "hdr"
 msgstr "hdr"
 
-#: ../src/libs/metadata_view.c:346
+#: ../src/libs/metadata_view.c:419
 msgid "marked for deletion"
 msgstr "marcado para remoção"
 
-#: ../src/libs/metadata_view.c:347
+#: ../src/libs/metadata_view.c:420
 msgid "auto-applying presets applied"
 msgstr "predefinições automáticas aplicadas"
 
-#: ../src/libs/metadata_view.c:348
+#: ../src/libs/metadata_view.c:421
 msgid "legacy flag. set for all new images"
 msgstr "flag de legado. selecione para todas as novas imagens"
 
-#: ../src/libs/metadata_view.c:350
+#: ../src/libs/metadata_view.c:423
 msgid "has .txt"
 msgstr "possui .txt"
 
-#: ../src/libs/metadata_view.c:351
+#: ../src/libs/metadata_view.c:424
 msgid "has .wav"
 msgstr "possui .wav"
 
-#: ../src/libs/metadata_view.c:369
+#: ../src/libs/metadata_view.c:442
 #, c-format
 msgid "image has %d star"
 msgid_plural "image has %d stars"
 msgstr[0] "a imagem tem %d estrela"
 msgstr[1] "a imagem tem %d estrelas"
 
-#: ../src/libs/metadata_view.c:456
+#: ../src/libs/metadata_view.c:529
 msgid "tiff"
 msgstr "tiff"
 
-#: ../src/libs/metadata_view.c:457
+#: ../src/libs/metadata_view.c:530
 msgid "png"
 msgstr "png"
 
-#: ../src/libs/metadata_view.c:458
+#: ../src/libs/metadata_view.c:531
 msgid "j2k"
 msgstr "j2k"
 
-#: ../src/libs/metadata_view.c:459
+#: ../src/libs/metadata_view.c:532
 msgid "jpeg"
 msgstr "jpeg"
 
-#: ../src/libs/metadata_view.c:460
+#: ../src/libs/metadata_view.c:533
 msgid "exr"
 msgstr "exr"
 
-#: ../src/libs/metadata_view.c:461
+#: ../src/libs/metadata_view.c:534
 msgid "rgbe"
 msgstr "rgbe"
 
-#: ../src/libs/metadata_view.c:462
+#: ../src/libs/metadata_view.c:535
 msgid "pfm"
 msgstr "pfm"
 
-#: ../src/libs/metadata_view.c:463
+#: ../src/libs/metadata_view.c:536
 msgid "GraphicsMagick"
 msgstr "GraphicsMagick"
 
-#: ../src/libs/metadata_view.c:464
+#: ../src/libs/metadata_view.c:537
 msgid "rawspeed"
 msgstr "rawspeed"
 
-#: ../src/libs/metadata_view.c:465
+#: ../src/libs/metadata_view.c:538
 msgid "netpnm"
 msgstr "netpnm"
 
-#: ../src/libs/metadata_view.c:466
+#: ../src/libs/metadata_view.c:539
 msgid "avif"
 msgstr "avif"
 
-#: ../src/libs/metadata_view.c:471
+#: ../src/libs/metadata_view.c:544
 #, c-format
 msgid "loader: %s"
 msgstr "carregador: %s"
 
-#: ../src/libs/metadata_view.c:785
+#: ../src/libs/metadata_view.c:915
 msgctxt "accel"
 msgid "jump to film roll"
 msgstr "pula para rolo de filme"
+
+#: ../src/libs/metadata_view.c:1079
+msgid ""
+"drag and drop one row at a time until you get the desired order\n"
+"untick to hide metadata which are not of interest for you\n"
+"if different settings are needed, use presets"
+msgstr ""
+"arraste uma linha por vez até conseguir a ordem desejada\n"
+"desmarque para esconder metadados que não são de interesse\n"
+"se configurações diferentes forem necessárias, use predefinições"
+
+#. FIXME
+#. gtk_widget_set_name(GTK_WIDGET(d->metadata[k]), "brightbg");
+#: ../src/libs/metadata_view.c:1220
+msgid "value"
+msgstr "valor"
 
 #: ../src/libs/modulegroups.c:41
 msgid "modules: default"
@@ -17447,8 +17465,8 @@ msgid "modulegroups"
 msgstr "grupos de módulos"
 
 #: ../src/libs/modulegroups.c:357 ../src/libs/modulegroups.c:376
-#: ../src/libs/modulegroups.c:2239 ../src/libs/modulegroups.c:2254
-#: ../src/libs/modulegroups.c:2264
+#: ../src/libs/modulegroups.c:2240 ../src/libs/modulegroups.c:2255
+#: ../src/libs/modulegroups.c:2265
 msgid "on-off"
 msgstr "liga-desliga"
 
@@ -17469,182 +17487,186 @@ msgstr ""
 "Esta ferramenta básica está desligada porque está escondida na configuração "
 "do módulo atual. Você precisa usar o módulo completo..."
 
-#: ../src/libs/modulegroups.c:689
+#: ../src/libs/modulegroups.c:663
+msgid "(some features may only be available in the full module)"
+msgstr "(algumas features podem só estar disponíveis no módulo completo)"
+
+#: ../src/libs/modulegroups.c:690
 #, c-format
 msgid "go to full version of module %s"
 msgstr "ir para versão completa do módulo %s"
 
-#: ../src/libs/modulegroups.c:1486 ../src/libs/modulegroups.c:1510
-#: ../src/libs/modulegroups.c:1526 ../src/libs/modulegroups.c:1544
+#: ../src/libs/modulegroups.c:1487 ../src/libs/modulegroups.c:1511
+#: ../src/libs/modulegroups.c:1527 ../src/libs/modulegroups.c:1545
 msgctxt "modulegroup"
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:1490
+#: ../src/libs/modulegroups.c:1491
 msgctxt "modulegroup"
 msgid "tone"
 msgstr "tom"
 
-#: ../src/libs/modulegroups.c:1493 ../src/libs/modulegroups.c:1529
-#: ../src/libs/modulegroups.c:1546
+#: ../src/libs/modulegroups.c:1494 ../src/libs/modulegroups.c:1530
+#: ../src/libs/modulegroups.c:1547
 msgctxt "modulegroup"
 msgid "color"
 msgstr "cor"
 
-#: ../src/libs/modulegroups.c:1497 ../src/libs/modulegroups.c:1531
-#: ../src/libs/modulegroups.c:1548
+#: ../src/libs/modulegroups.c:1498 ../src/libs/modulegroups.c:1532
+#: ../src/libs/modulegroups.c:1549
 msgctxt "modulegroup"
 msgid "correct"
 msgstr "corrigir"
 
-#: ../src/libs/modulegroups.c:1501 ../src/libs/modulegroups.c:1534
-#: ../src/libs/modulegroups.c:1551 ../src/libs/modulegroups.c:2125
+#: ../src/libs/modulegroups.c:1502 ../src/libs/modulegroups.c:1535
+#: ../src/libs/modulegroups.c:1552 ../src/libs/modulegroups.c:2126
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "efeito"
 
-#: ../src/libs/modulegroups.c:1504
+#: ../src/libs/modulegroups.c:1505
 msgid "modules: all"
 msgstr "módulos: todos"
 
-#: ../src/libs/modulegroups.c:1513 ../src/libs/modulegroups.c:1567
+#: ../src/libs/modulegroups.c:1514 ../src/libs/modulegroups.c:1568
 msgctxt "modulegroup"
 msgid "grading"
 msgstr "grading de cores"
 
-#: ../src/libs/modulegroups.c:1516 ../src/libs/modulegroups.c:1573
-#: ../src/libs/modulegroups.c:2129
+#: ../src/libs/modulegroups.c:1517 ../src/libs/modulegroups.c:1574
+#: ../src/libs/modulegroups.c:2130
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "efeitos"
 
-#: ../src/libs/modulegroups.c:1518
+#: ../src/libs/modulegroups.c:1519
 msgid "workflow: beginner"
 msgstr "fluxo de trabalho: iniciante"
 
-#: ../src/libs/modulegroups.c:1536
+#: ../src/libs/modulegroups.c:1537
 msgid "workflow: display-referred"
 msgstr "fluxo de trabalho: relativo à exibição"
 
-#: ../src/libs/modulegroups.c:1553
+#: ../src/libs/modulegroups.c:1554
 msgid "workflow: scene-referred"
 msgstr "fluxo de trabalho: relativo à cena"
 
-#: ../src/libs/modulegroups.c:1561
+#: ../src/libs/modulegroups.c:1562
 msgctxt "modulegroup"
 msgid "technical"
 msgstr "técnico"
 
-#: ../src/libs/modulegroups.c:1583
+#: ../src/libs/modulegroups.c:1584
 msgid "search only"
 msgstr "buscar apenas"
 
-#: ../src/libs/modulegroups.c:1590 ../src/libs/modulegroups.c:1889
-#: ../src/libs/modulegroups.c:2392
+#: ../src/libs/modulegroups.c:1591 ../src/libs/modulegroups.c:1890
+#: ../src/libs/modulegroups.c:2393
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "descontinuados/obsoletos"
 
-#: ../src/libs/modulegroups.c:1599
+#: ../src/libs/modulegroups.c:1600
 msgid "previous config"
 msgstr "configuração anterior"
 
-#: ../src/libs/modulegroups.c:1600
+#: ../src/libs/modulegroups.c:1601
 msgid "previous layout"
 msgstr "layout anterior"
 
-#: ../src/libs/modulegroups.c:1604
+#: ../src/libs/modulegroups.c:1605
 msgid "previous config with new layout"
 msgstr "configuração anterior com novo layout"
 
-#: ../src/libs/modulegroups.c:1742
+#: ../src/libs/modulegroups.c:1743
 msgid "remove this widget"
 msgstr "remover esta ferramenta"
 
-#: ../src/libs/modulegroups.c:1905
+#: ../src/libs/modulegroups.c:1906
 msgid "remove this module"
 msgstr "remover este módulo"
 
-#: ../src/libs/modulegroups.c:2114
+#: ../src/libs/modulegroups.c:2115
 msgid "click to add this module"
 msgstr "clique para adicionar este módulo"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2120
+#: ../src/libs/modulegroups.c:2121
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:2123
+#: ../src/libs/modulegroups.c:2124
 msgid "tone"
 msgstr "tom"
 
-#: ../src/libs/modulegroups.c:2126
+#: ../src/libs/modulegroups.c:2127
 msgid "technical"
 msgstr "técnico"
 
-#: ../src/libs/modulegroups.c:2127
+#: ../src/libs/modulegroups.c:2128
 msgid "grading"
 msgstr "grading de cores"
 
-#: ../src/libs/modulegroups.c:2143
+#: ../src/libs/modulegroups.c:2144
 msgid "click to remove this module"
 msgstr "clique para remover este módulo"
 
-#: ../src/libs/modulegroups.c:2165
+#: ../src/libs/modulegroups.c:2166
 msgid "recommended module"
 msgid_plural "recommended modules"
 msgstr[0] "módulo recomendado"
 msgstr[1] "módulos recomendados"
 
-#: ../src/libs/modulegroups.c:2174
+#: ../src/libs/modulegroups.c:2175
 msgid "already present module"
 msgid_plural "already present modules"
 msgstr[0] "módulo já presente"
 msgstr[1] "módulos já presentes"
 
-#: ../src/libs/modulegroups.c:2242 ../src/libs/modulegroups.c:2296
+#: ../src/libs/modulegroups.c:2243 ../src/libs/modulegroups.c:2297
 msgid "click to remove the widget"
 msgstr "clique para remover esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2257 ../src/libs/modulegroups.c:2265
-#: ../src/libs/modulegroups.c:2311 ../src/libs/modulegroups.c:2319
+#: ../src/libs/modulegroups.c:2258 ../src/libs/modulegroups.c:2266
+#: ../src/libs/modulegroups.c:2312 ../src/libs/modulegroups.c:2320
 msgid "click to add the widget"
 msgstr "clique para adicionar esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2352
+#: ../src/libs/modulegroups.c:2353
 msgid "recommended widget"
 msgid_plural "recommended widgets"
 msgstr[0] "ferramenta recomendada"
 msgstr[1] "ferramentas recomendadas"
 
-#: ../src/libs/modulegroups.c:2361
+#: ../src/libs/modulegroups.c:2362
 msgid "already present widget"
 msgid_plural "already present widgets"
 msgstr[0] "ferramenta já presente"
 msgstr[1] "ferramentas já presentes"
 
-#: ../src/libs/modulegroups.c:2432
+#: ../src/libs/modulegroups.c:2433
 msgid "show basic adjustement list"
 msgstr "mostrar lista de ajustes básicos"
 
-#: ../src/libs/modulegroups.c:2441
+#: ../src/libs/modulegroups.c:2442
 msgid "show only active modules"
 msgstr "mostrar apenas módulos ativos"
 
 #. search box
-#: ../src/libs/modulegroups.c:2450
+#: ../src/libs/modulegroups.c:2451
 msgid "search module"
 msgstr "buscar módulo"
 
-#: ../src/libs/modulegroups.c:2456
+#: ../src/libs/modulegroups.c:2457
 msgid "search modules by name or tag"
 msgstr "procurar módulos por nome ou etiqueta"
 
-#: ../src/libs/modulegroups.c:2464
+#: ../src/libs/modulegroups.c:2465
 msgid "clear text"
 msgstr "limpar texto"
 
-#: ../src/libs/modulegroups.c:2473
+#: ../src/libs/modulegroups.c:2474
 msgid ""
 "following modules are deprecated because they have internal design mistakes "
 "that can't be solved and alternatives that solve them.\n"
@@ -17655,116 +17677,116 @@ msgstr ""
 "que não podem ser resolvidos e há alternativa que os resolva.\n"
 "eles serão removidos para novas edições no próximo release."
 
-#: ../src/libs/modulegroups.c:2682
+#: ../src/libs/modulegroups.c:2683
 msgid "basic icon"
 msgstr "ícone de básico"
 
-#: ../src/libs/modulegroups.c:2692
+#: ../src/libs/modulegroups.c:2693
 msgid "active icon"
 msgstr "ícone ativo"
 
-#: ../src/libs/modulegroups.c:2702
+#: ../src/libs/modulegroups.c:2703
 msgid "color icon"
 msgstr "ícone de cor"
 
-#: ../src/libs/modulegroups.c:2712
+#: ../src/libs/modulegroups.c:2713
 msgid "correct icon"
 msgstr "ícone de correções"
 
-#: ../src/libs/modulegroups.c:2722
+#: ../src/libs/modulegroups.c:2723
 msgid "effect icon"
 msgstr "ícone de efeitos"
 
-#: ../src/libs/modulegroups.c:2732
+#: ../src/libs/modulegroups.c:2733
 msgid "favorites icon"
 msgstr "íconde de favoritos"
 
-#: ../src/libs/modulegroups.c:2742
+#: ../src/libs/modulegroups.c:2743
 msgid "tone icon"
 msgstr "ícone de tom"
 
-#: ../src/libs/modulegroups.c:2752
+#: ../src/libs/modulegroups.c:2753
 msgid "grading icon"
 msgstr "ícone de grading"
 
-#: ../src/libs/modulegroups.c:2762
+#: ../src/libs/modulegroups.c:2763
 msgid "technical icon"
 msgstr "ícone de técnico"
 
-#: ../src/libs/modulegroups.c:2794 ../src/libs/modulegroups.c:2796
+#: ../src/libs/modulegroups.c:2795 ../src/libs/modulegroups.c:2797
 msgid "basics widgets"
 msgstr "ferramentas básicas"
 
-#: ../src/libs/modulegroups.c:2817
+#: ../src/libs/modulegroups.c:2818
 msgid "add widgets to the list"
 msgstr "adicionar ferramenta à lista"
 
-#: ../src/libs/modulegroups.c:2847
+#: ../src/libs/modulegroups.c:2848
 msgid "move group to the left"
 msgstr "mover grupo para a esquerda"
 
-#: ../src/libs/modulegroups.c:2859
+#: ../src/libs/modulegroups.c:2860
 msgid "group icon"
 msgstr "ícone de grupo"
 
-#: ../src/libs/modulegroups.c:2866
+#: ../src/libs/modulegroups.c:2867
 msgid "group name"
 msgstr "nome do grupo"
 
-#: ../src/libs/modulegroups.c:2876
+#: ../src/libs/modulegroups.c:2877
 msgid "remove group"
 msgstr "remover grupo"
 
-#: ../src/libs/modulegroups.c:2889
+#: ../src/libs/modulegroups.c:2890
 msgid "move group to the right"
 msgstr "mover grupo para a direita"
 
-#: ../src/libs/modulegroups.c:2911
+#: ../src/libs/modulegroups.c:2912
 msgid "add module to the list"
 msgstr "adicionar módulo à lista"
 
-#: ../src/libs/modulegroups.c:2939 ../src/libs/tagging.c:3032
+#: ../src/libs/modulegroups.c:2940 ../src/libs/tagging.c:3032
 msgid "new"
 msgstr "novo"
 
-#: ../src/libs/modulegroups.c:3030
+#: ../src/libs/modulegroups.c:3031
 msgid "preset name : "
 msgstr "nome da predefinição : "
 
-#: ../src/libs/modulegroups.c:3032
+#: ../src/libs/modulegroups.c:3033
 msgid "preset name"
 msgstr "nome da predefinição"
 
 #. show search checkbox
-#: ../src/libs/modulegroups.c:3039
+#: ../src/libs/modulegroups.c:3040
 msgid "show search line"
 msgstr "mostrar linha de busca"
 
 #. show basics checkbox
-#: ../src/libs/modulegroups.c:3045
+#: ../src/libs/modulegroups.c:3046
 msgid "show basics widgets group"
 msgstr "mostrar grupo de ferramentas básicas"
 
-#: ../src/libs/modulegroups.c:3054
+#: ../src/libs/modulegroups.c:3055
 msgid "module groups"
 msgstr "grupos de módulos"
 
-#: ../src/libs/modulegroups.c:3093
+#: ../src/libs/modulegroups.c:3094
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
 "esta é uma predefinição nativa somente de leitura. duplique se quiser fazer "
 "mudanças"
 
-#: ../src/libs/modulegroups.c:3104
+#: ../src/libs/modulegroups.c:3105
 msgid "reset"
 msgstr "redefinir"
 
-#: ../src/libs/modulegroups.c:3304
+#: ../src/libs/modulegroups.c:3305
 msgid "duplicate this preset"
 msgstr "duplicar esta predefinição"
 
-#: ../src/libs/modulegroups.c:3330
+#: ../src/libs/modulegroups.c:3331
 msgid "add new empty preset"
 msgstr "adicionar nova predefinição vazia"
 
@@ -18111,20 +18133,20 @@ msgctxt "accel"
 msgid "import"
 msgstr "importar"
 
-#: ../src/libs/styles.c:326
+#: ../src/libs/styles.c:311
 #, c-format
 msgid "do you really want to remove %d style?"
 msgid_plural "do you really want to remove %d styles?"
 msgstr[0] "você realmente deseja excluir %d estilo?"
 msgstr[1] "você realmente deseja excluir %d estilos?"
 
-#: ../src/libs/styles.c:332
+#: ../src/libs/styles.c:317
 msgid "remove style?"
 msgid_plural "remove styles?"
 msgstr[0] "remover estilo?"
 msgstr[1] "remover estilos?"
 
-#: ../src/libs/styles.c:425
+#: ../src/libs/styles.c:439
 #, c-format
 msgid ""
 "style `%s' already exists.\n"
@@ -18133,20 +18155,20 @@ msgstr ""
 "estilo `%s' já existe.\n"
 "Deseja sobrescrever?\n"
 
-#: ../src/libs/styles.c:427
+#: ../src/libs/styles.c:441
 msgid "apply this option to all existing styles"
 msgstr "auto aplicar esta opção a todos os estilos existentes"
 
-#: ../src/libs/styles.c:490
+#: ../src/libs/styles.c:504
 #, c-format
 msgid "style %s was successfully exported"
 msgstr "estilo %s foi exportado com sucesso"
 
-#: ../src/libs/styles.c:502
+#: ../src/libs/styles.c:516
 msgid "select style"
 msgstr "selecionar estilo"
 
-#: ../src/libs/styles.c:644
+#: ../src/libs/styles.c:658
 msgid ""
 "available styles,\n"
 "doubleclick to apply"
@@ -18154,55 +18176,55 @@ msgstr ""
 "estilos disponíveis,\n"
 "clique duplo para aplicar"
 
-#: ../src/libs/styles.c:651 ../src/libs/styles.c:652
+#: ../src/libs/styles.c:665 ../src/libs/styles.c:666
 msgid "filter style names"
 msgstr "filtrar nomes de estilo"
 
-#: ../src/libs/styles.c:664
+#: ../src/libs/styles.c:678
 msgid "create duplicate"
 msgstr "cria duplicata"
 
-#: ../src/libs/styles.c:670
+#: ../src/libs/styles.c:684
 msgid "creates a duplicate of the image before applying style"
 msgstr "cria uma duplicata da imagem antes de aplica o estilo"
 
 #. create
-#: ../src/libs/styles.c:688
+#: ../src/libs/styles.c:702
 msgid "create..."
 msgstr "criar..."
 
-#: ../src/libs/styles.c:688
+#: ../src/libs/styles.c:702
 msgid "create styles from history stack of selected images"
 msgstr "cria estilos a partir do histórico das imagens selecionadas"
 
 #. edit
-#: ../src/libs/styles.c:693
+#: ../src/libs/styles.c:707
 msgid "edit..."
 msgstr "editar..."
 
-#: ../src/libs/styles.c:693
+#: ../src/libs/styles.c:707
 msgid "edit the selected styles in list above"
 msgstr "edita os estilos selecionados na lista acima"
 
-#: ../src/libs/styles.c:698
+#: ../src/libs/styles.c:712
 msgid "removes the selected styles in list above"
 msgstr "exclui os estilos selecionados na lista acima"
 
 #. import button
-#: ../src/libs/styles.c:703 ../src/libs/tagging.c:3036
+#: ../src/libs/styles.c:717 ../src/libs/tagging.c:3036
 msgctxt "verb"
 msgid "import..."
 msgstr "importar..."
 
-#: ../src/libs/styles.c:703
+#: ../src/libs/styles.c:717
 msgid "import styles from a style files"
 msgstr "importa estilo de um arquivo de estilo"
 
-#: ../src/libs/styles.c:708
+#: ../src/libs/styles.c:722
 msgid "export the selected styles into a style files"
 msgstr "exportar os estilos selecionados em um arquivo de estilo"
 
-#: ../src/libs/styles.c:713
+#: ../src/libs/styles.c:727
 msgid "apply the selected styles in list above to selected images"
 msgstr "aplica os estilos selecionados na lista acima às imagens selecionadas"
 
@@ -19760,6 +19782,15 @@ msgstr "atalhos"
 #: ../src/views/view.c:1673
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "edit metadata exportation details"
+#~ msgstr "editar detalhes de exportação de metadados"
+
+#~ msgid "hidden"
+#~ msgstr "oculto"
+
+#~ msgid "configure metadata"
+#~ msgstr "configurar metadados"
 
 #~ msgid "ctrl+click to add a sharp node"
 #~ msgstr "ctrl+clica para adicionar un nó agudo"
