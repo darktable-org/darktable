@@ -1168,6 +1168,19 @@ static void _set_ellipsize(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
   g_object_set(renderer, "ellipsize", ellipsize, NULL);
 }
 
+static gboolean _view_redraw(GtkWidget *view, cairo_t *cr, dt_lib_module_t *self)
+{
+  GtkTreeViewColumn *col0 = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
+  GtkTreeViewColumn *col1 = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 1);
+  const int width0 = gtk_tree_view_column_get_width(col0);
+  const int width1 = gtk_tree_view_column_get_width(col1);
+  // keep 1/3-2/3 ratio
+  const int w0 = (width0 + width1) / 3;
+  // strange. The logic would be to apply it on col0, but only works the other way
+  gtk_tree_view_column_set_fixed_width(col1, w0);
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui */
@@ -1202,6 +1215,7 @@ void gui_init(dt_lib_module_t *self)
   d->view = view;
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
   gtk_widget_set_name(view, "image-infos");
+  g_signal_connect(G_OBJECT(view), "draw", G_CALLBACK(_view_redraw), self);
   g_object_unref(filter_model);
 
   // metadata column
