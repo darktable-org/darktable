@@ -152,7 +152,7 @@ static inline float pixel_difference(const float* const pix1, const float* pix2,
   for_each_channel(i, aligned(sum:16))
   {
     const float diff = pix1[i] - pix2[i];
-    sum[i] = diff*diff*norm[i];
+    sum[i] = diff * diff * norm[i];
   }
   return sum[0] + sum[1] + sum[2];
 }
