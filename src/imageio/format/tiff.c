@@ -238,6 +238,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
     TIFFSetField(tif, TIFFTAG_PHOTOMETRIC, PHOTOMETRIC_MINISBLACK);
 
   TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+  TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
   int resolution = dt_conf_get_int("metadata/resolution");
@@ -414,6 +415,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
         TIFFSetField(tif, TIFFTAG_IMAGEWIDTH, (uint32_t)w);
         TIFFSetField(tif, TIFFTAG_IMAGELENGTH, (uint32_t)h);
         TIFFSetField(tif, TIFFTAG_PLANARCONFIG, PLANARCONFIG_CONTIG);
+        TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
 
 #ifdef MASKS_USE_SAME_FORMAT
         TIFFSetField(tif, TIFFTAG_SAMPLESPERPIXEL, layers);
