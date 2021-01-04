@@ -1201,6 +1201,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(filter_model));
   d->view = view;
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
+  gtk_widget_set_name(view, "image-infos");
   g_object_unref(filter_model);
 
   // metadata column
