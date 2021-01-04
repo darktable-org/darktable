@@ -114,7 +114,7 @@ tooltip label
                   sans-serif;
 }
 
-.active-menu-item /* needed for some Pango issues not rendering synthetic bold for all OS */
+.active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
 {
     font-family: "Roboto",
                  "Segoe UI",
