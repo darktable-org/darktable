@@ -714,34 +714,32 @@ static void _calculate_sel_on_tree(GtkTreeModel *model, GtkTreeIter *iter)
 static void _update_sel_on_tree(GtkTreeModel *model)
 {
   GList *tags = NULL;
-  const guint count = dt_tag_get_attached(-1, &tags, TRUE);
-  if(count > 0 && tags)
+  dt_tag_get_attached(-1, &tags, TRUE);
+  GtkTreeIter parent;
+  if(gtk_tree_model_get_iter_first(model, &parent))
   {
-    GtkTreeIter parent;
-    if(gtk_tree_model_get_iter_first(model, &parent))
+    _reset_sel_on_path_full(model, &parent, FALSE);
+    for (GList *tag = tags; tag; tag = g_list_next(tag))
     {
-      _reset_sel_on_path_full(model, &parent, FALSE);
-      for (GList *tag = tags; tag; tag = g_list_next(tag))
+      GtkTreeIter iter = parent;
+      if (_find_tag_iter_tagid(model, &iter, ((dt_tag_t *)tag->data)->id))
       {
-        GtkTreeIter iter = parent;
-        if (_find_tag_iter_tagid(model, &iter, ((dt_tag_t *)tag->data)->id))
+        if(GTK_IS_TREE_STORE(model))
         {
-          if(GTK_IS_TREE_STORE(model))
-          {
-            gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
-                               DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
-            _propagate_sel_to_parents(model, &iter);
-          }
-          else
-          {
-            gtk_list_store_set(GTK_LIST_STORE(model), &iter,
-                               DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
-          }
+          gtk_tree_store_set(GTK_TREE_STORE(model), &iter,
+                             DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
+          _propagate_sel_to_parents(model, &iter);
+        }
+        else
+        {
+          gtk_list_store_set(GTK_LIST_STORE(model), &iter,
+                             DT_LIB_TAGGING_COL_SEL, ((dt_tag_t *)tag->data)->select, -1);
         }
       }
     }
   }
-  dt_tag_free_result(&tags);
+  if(tags)
+    dt_tag_free_result(&tags);
 }
 
 // delete a tag in the tree (tree or list)
