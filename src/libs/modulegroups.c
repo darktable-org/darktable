@@ -3366,6 +3366,10 @@ static void _manage_show_window(dt_lib_module_t *self)
   gtk_widget_set_name(d->dialog, "modulegroups_manager");
   gtk_window_set_title(GTK_WINDOW(d->dialog), _("manage module layouts"));
 
+  // remove the small border
+  GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->dialog));
+  gtk_container_set_border_width(GTK_CONTAINER(content), 0);
+
   GtkWidget *hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *vb = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_widget_set_name(vb, "modulegroups-presets-list");
