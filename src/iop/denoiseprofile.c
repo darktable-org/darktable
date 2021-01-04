@@ -1245,7 +1245,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   float *restrict precond = NULL;
   float *restrict tmp = NULL;
 
-  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
+  if (!dt_iop_alloc_image_buffers(self, NULL, roi_in, roi_out, 4, &precond, 4, &tmp, 4, &buf, 0))
   {
     dt_iop_copy_image_roi(out, in, piece->colors, roi_in, roi_out, TRUE);
     return;
