@@ -1168,17 +1168,36 @@ static void _set_ellipsize(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
   g_object_set(renderer, "ellipsize", ellipsize, NULL);
 }
 
-static gboolean _view_redraw(GtkWidget *view, cairo_t *cr, dt_lib_module_t *self)
+static void _view_size(GtkWidget *view, GdkRectangle *allocation, dt_lib_module_t *self)
 {
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+
   GtkTreeViewColumn *col0 = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
   GtkTreeViewColumn *col1 = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 1);
-  const int width0 = gtk_tree_view_column_get_width(col0);
-  const int width1 = gtk_tree_view_column_get_width(col1);
-  // keep 1/3-2/3 ratio
-  const int w0 = (width0 + width1) / 3;
-  // strange. The logic would be to apply it on col0, but only works the other way
-  gtk_tree_view_column_set_fixed_width(col1, w0);
-  return FALSE;
+  GtkCellArea *area;
+  g_object_get(col0, "cell-area", &area, NULL);
+  GtkCellAreaContext *context = gtk_cell_area_create_context(area);
+  GtkTreeIter iter;
+  gint natural_width;
+  gboolean valid = gtk_tree_model_get_iter_first(d->filter_model, &iter);
+  while (valid)
+    {
+      gtk_cell_area_apply_attributes(area, d->filter_model, &iter, FALSE, FALSE);
+      gtk_cell_area_get_preferred_width(area, context, view, NULL, NULL);
+      valid = gtk_tree_model_iter_next(d->filter_model, &iter);
+    }
+  gtk_cell_area_context_get_preferred_width(context, NULL, &natural_width);
+  const int width = allocation->width / 3;
+  if(width < natural_width)
+  {
+    // share 1/3-2/3
+    gtk_tree_view_column_set_min_width(col1, width);
+  }
+  else
+  {
+    // keep column 0 fixed at natural width
+    gtk_tree_view_column_set_min_width(col1, allocation->width - 2 * natural_width);
+  }
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1215,7 +1234,7 @@ void gui_init(dt_lib_module_t *self)
   d->view = view;
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
   gtk_widget_set_name(view, "image-infos");
-  g_signal_connect(G_OBJECT(view), "draw", G_CALLBACK(_view_redraw), self);
+  g_signal_connect(G_OBJECT(view), "size-allocate", G_CALLBACK(_view_size), self);
   g_object_unref(filter_model);
 
   // metadata column
