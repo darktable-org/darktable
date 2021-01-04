@@ -163,6 +163,16 @@ dt_imageio_retval_t dt_imageio_open_j2k(dt_image_t *img, const char *filename, d
   // opj_set_warning_handler(d_codec, error_callback, stderr);
   // opj_set_info_handler(d_codec, error_callback, stderr);
 
+  /* Decode JPEG-2000 with using multiple threads */
+  if(!opj_codec_set_threads(d_codec, darktable.num_openmp_threads))
+  {
+    /* This may not seem like a critical error but failure to initialise the treads
+     is a symptom of major resource exhaustion, bail out as quickly as possible */
+    fprintf(stderr, "[j2k_open] Error: failed to setup the threads for decoder %s\n", parameters.infile);
+    opj_destroy_codec(d_codec);
+    return DT_IMAGEIO_FILE_CORRUPTED;
+  }
+
   /* setup the decoder decoding parameters using user parameters */
   if(!opj_setup_decoder(d_codec, &parameters))
   {
