@@ -104,7 +104,8 @@ button,
 notebook tabs,
 #modules-tabs,
 #blending-tabs,
-tooltip label
+tooltip label,
+.active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
 {
     font-family: "Roboto",
                  "Segoe UI",
@@ -114,13 +115,7 @@ tooltip label
                   sans-serif;
 }
 
-.active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
+.active-menu-item * /* this is optional, omitting it will make the selected menu item slightly less visible */
 {
-    font-family: "Roboto",
-                 "Segoe UI",
-                 "SF Pro Text",
-                 "Ubuntu",
-                 "Cantarell",
-                  sans-serif;
     font-weight: bold;
 }
