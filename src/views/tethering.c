@@ -301,7 +301,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
           // the histogram will have some relationship to a captured
           // image's profile, go with the standard work profile.
           // FIXME: can figure out the current default work colorspace via checking presets?
-          profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
+          profile_to = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
         }
         else if(darktable.color_profiles->histogram_type == DT_COLORSPACE_EXPORT)
         {

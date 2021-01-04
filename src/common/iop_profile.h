@@ -113,12 +113,6 @@ dt_ioppr_set_pipe_output_profile_info(struct dt_develop_t *dev,
  * histogram profile must not be cleanup()
  */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_develop_t *dev);
-/** returns a reference to the histogram profile info for use in overexposed iop
- * the rendering intent is set to relative colorimetric
- * the returned profile info doesn't depend on whether softproof mode / gamut check is enabled,
- * i.e. the chosen "histogram profile" is always used.
- */
-dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info_for_overexposed(struct dt_develop_t *dev);
 
 /** returns the active work/input/output profile on the pipe */
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe);

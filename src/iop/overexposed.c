@@ -139,7 +139,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float *const restrict out = __builtin_assume_aligned((float *const restrict)ovoid, 64);
 
   const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info_for_overexposed(dev);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info(dev);
 
   // display mask using histogram profile as output
   // FIXME: the histogram already does this work -- use that data instead?
@@ -404,7 +404,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const int height = roi_out->height;
 
   const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
-  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info_for_overexposed(dev);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info(dev);
 
   // display mask using histogram profile as output
   dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * ch);
