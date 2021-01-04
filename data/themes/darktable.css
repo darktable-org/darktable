@@ -312,6 +312,7 @@ textview
   min-height: 0;
   min-width: 0;
   padding: 0px;
+  font-family: sans;
 }
 
 entry
@@ -488,7 +489,7 @@ overshoot.right
 #lib-plugin-ui-main,
 #blending-box
 {
-  padding: 0.75em;
+  padding: 0.66em;
 }
 
 /* icon buttons in modules main body */
@@ -752,7 +753,7 @@ dialog .dialog-vbox scrolledwindow
 dialog button
 {
   padding: 2px;
-  margin: 1px 2px;
+  margin: 1px;
 }
 
 dialog headerbar
@@ -840,6 +841,12 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
     padding: 2px;
 }
 
+/* preferences module dialog window */
+.dialog-action-box
+{
+  margin-top: 5px;
+}
+
 /*--------------------------------------------------------
   - Bauhaus controls (sliders and comboboxes in modules) -
   --------------------------------------------------------*/
@@ -914,6 +921,12 @@ dialog combobox window,
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em 0;
+}
+
+menuitem arrow
+{
+  border: 0;
+  margin-right: 2px;
 }
 
 popover
@@ -1433,11 +1446,18 @@ margin: 0 2px;
 }
 
 #basics-box #module-enable-button,
-#basics-box-labels #module-enable-button,
-#basics-link
+#basics-box-labels #module-enable-button
 {
   min-height: 1em;
   min-width: 1em;
+  border: none;
+}
+
+#basics-link
+{
+  min-height: 1.1em;
+  min-width: 1.1em;
+  margin: 0 2px 2px 2px;
   border: none;
 }
 
@@ -1537,7 +1557,7 @@ filechooser .sidebar row:selected:hover .sidebar-label,
 #preferences_box .sidebar row,
 #preferences_box .sidebar row:selected
 {
-  border-left: 2px solid @plugin_bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
+  border-left: 2px solid @bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
 }
 
 filechooser row:selected .sidebar-icon,  /* set icon instead of border for filechooser dialog window */
@@ -1582,7 +1602,9 @@ filechooser widget treeview
   color: @field_fg;
 }
 
-treeview header button,
+treeview header widget button,
+#iop-plugin-ui treeview header button,
+#lib-plugin-ui treeview header button,
 #preferences_notebook header button,
 .accels_window_list header button
 {
@@ -1595,6 +1617,8 @@ treeview header button,
 }
 
 treeview header label,
+#iop-plugin-ui treeview header label,
+#lib-plugin-ui treeview header label,
 #preferences_notebook header button label,
 .accels_window_list header button label
 {
