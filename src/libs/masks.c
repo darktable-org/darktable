@@ -908,7 +908,8 @@ static void _tree_selection_change(GtkTreeSelection *selection, dt_lib_masks_t *
           gtk_tree_model_get_value(model, &iter, TREE_MODULE, &gv2);
           dt_iop_module_t *module = g_value_peek_pointer(&gv2);
           g_value_unset(&gv2);
-          if(module && (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
+          if(module && module->blend_data
+             && (module->flags() & IOP_FLAGS_SUPPORTS_BLENDING)
              && !(module->flags() & IOP_FLAGS_NO_MASKS))
           {
             dt_iop_gui_blend_data_t *bd = (dt_iop_gui_blend_data_t *)module->blend_data;
