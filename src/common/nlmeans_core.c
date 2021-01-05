@@ -157,6 +157,21 @@ static inline float pixel_difference(const float* const pix1, const float* pix2,
   return sum[0] + sum[1] + sum[2];
 }
 
+// optimized: pixel_difference(pix1, pix2, norm) - pixel_difference(pix3, pix4, norm)
+static inline float diff_of_pixels_diff(const float* const pix1, const float* pix2,
+                                        const float* const pix3, const float* pix4,
+                                        const float norm[4])
+{
+  float DT_ALIGNED_PIXEL sum[4] = { 0.f, 0.f, 0.f, 0.f };
+  for_each_channel(i, aligned(sum:16))
+  {
+    const float diff1 = pix1[i] - pix2[i];
+    const float diff2 = pix3[i] - pix4[i];
+    sum[i] = (diff1 * diff1 - diff2 * diff2) * norm[i];
+  }
+  return sum[0] + sum[1] + sum[2];
+}
+
 #if defined(__SSE2__)
 // compute the channel-normed squared difference between two pixels; don't do horizontal sum until later
 static inline __m128 channel_difference_sse2(const float* const pix1, const float* pix2, const float norm[4])
@@ -529,8 +544,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
 #else
               const float *const top_px = top_row + 4*col;
               const float *const bot_px = bot_row + 4*col;
-              const float diff = (pixel_difference(bot_px,bot_px+offset,params->norm)
-                                  - pixel_difference(top_px,top_px+offset,params->norm));
+              const float diff = diff_of_pixels_diff(bot_px,bot_px+offset,top_px,top_px+offset,params->norm);
               _mm_prefetch(bot_px+stride, _MM_HINT_T0);
               col_sums[col] += diff;
 #endif /* CACHE_PIXDIFFS */
