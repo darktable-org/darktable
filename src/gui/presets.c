@@ -1241,6 +1241,14 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
       isdefault = TRUE;
 
+    gchar *label;
+    if(isdefault)
+      label = g_strdup_printf("%s %s", name, _("(default)"));
+    else
+      label = g_strdup_printf("%s", name);
+    mi = gtk_menu_item_new_with_label(label);
+    g_free(label);
+
     if(module
        && !memcmp(params, op_params, MIN(op_params_size, params_size))
        && !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
@@ -1248,29 +1256,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     {
       active_preset = cnt;
       writeprotect = sqlite3_column_int(stmt, 2);
-      char *markup;
-      mi = gtk_menu_item_new_with_label("");
-      if(isdefault)
-      {
-        markup = g_markup_printf_escaped("<span weight=\"bold\">%s %s</span>", name, _("(default)"));
-      }
-      else
-        markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", name);
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_free(markup);
-    }
-    else
-    {
-      if(isdefault)
-      {
-        char *markup;
-        mi = gtk_menu_item_new_with_label("");
-        markup = g_markup_printf_escaped("%s %s", name, _("(default)"));
-        gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-        g_free(markup);
-      }
-      else
-        mi = gtk_menu_item_new_with_label((const char *)name);
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     }
 
     if(isdisabled)
@@ -1316,14 +1302,13 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
 
       if(darktable.gui->last_preset && found)
       {
-        char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>", _("update preset"),
-                                               darktable.gui->last_preset);
-        mi = gtk_menu_item_new_with_label("");
-        gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
+        char *label = g_strdup_printf("%s %s", _("update preset"), darktable.gui->last_preset);
+        mi = gtk_menu_item_new_with_label(label);
+        gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
         g_object_set_data_full(G_OBJECT(mi), "dt-preset-name", g_strdup(darktable.gui->last_preset), g_free);
         g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_update_preset), module);
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
-        g_free(markup);
+        g_free(label);
       }
     }
   }
