@@ -37,6 +37,7 @@ jobs:
 
   Linux-minimal:
     name: Linux-minimal.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    if: false
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -457,7 +458,7 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    needs: Linux-minimal
+    #needs: Linux-minimal
     runs-on: macos-latest
     strategy:
       fail-fast: true
@@ -486,9 +487,11 @@ jobs:
         run: |
           brew update > /dev/null || true
           brew unlink python@3.8
+          brew unlink gcc@8
+          brew unlink gcc@9
           sudo rm '/usr/local/bin/2to3'
           brew link --overwrite python@3.9 # workaround introduced 30.12.2021, replace asap.
-          brew upgrade
+          brew upgrade --ignore-pinned
           brew tap Homebrew/bundle
           cd src/.ci 
           brew bundle --verbose
