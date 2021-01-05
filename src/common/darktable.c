@@ -233,7 +233,7 @@ static void strip_semicolons_from_keymap(const char *path)
 
 int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean *single_image)
 {
-  int id = 0;
+  int32_t id = 0;
   if(input == NULL || input[0] == '\0') return 0;
 
   char *filename = dt_util_normalize_path(input);
