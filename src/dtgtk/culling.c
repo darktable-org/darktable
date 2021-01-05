@@ -416,7 +416,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
         // we take in account that the image may be smaller that the imagebox
         posx -= (gtk_widget_get_allocated_width(th->w_image_box) - iw) / 2;
         posy -= (gtk_widget_get_allocated_height(th->w_image_box) - ih) / 2;
-        // we change the value and samitize them
+        // we change the value and sanitize them
         th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, posx - (posx - th->zoomx) * z_ratio));
         th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, posy - (posy - th->zoomy) * z_ratio));
       }
