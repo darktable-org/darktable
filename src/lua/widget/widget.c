@@ -26,8 +26,8 @@
   use name to save/restore states as pref like other widgets
   have a way to save presets
   luastorage can't save presets
-dt_ui_section_label : make new lua widget
-widget names : implement for CSS ?
+dt_ui_section_label : make new lua widget - Done
+widget names : implement for CSS ? - Done
   */
 
 #pragma GCC diagnostic ignored "-Wshadow"
@@ -211,6 +211,24 @@ static int tooltip_member(lua_State *L)
   return 1;
 }
 
+static int name_member(lua_State *L)
+{
+  lua_widget widget;
+  luaA_to(L,lua_widget,&widget,1);
+  if(lua_gettop(L) > 2) {
+    if(lua_isnil(L,3)) {
+      gtk_widget_set_name(widget->widget,NULL);
+    } else {
+      const gchar * text = luaL_checkstring(L,3);
+      gtk_widget_set_name(widget->widget,text);
+    }
+    return 0;
+  }
+  const gchar* result = gtk_widget_get_name(widget->widget);
+  lua_pushstring(L,result);
+  return 1;
+}
+
 static int sensitive_member(lua_State *L)
 {
   lua_widget widget;
@@ -310,6 +328,9 @@ int dt_lua_init_widget(lua_State* L)
   lua_pushcfunction(L,tooltip_member);
   dt_lua_gtk_wrap(L);
   dt_lua_type_register(L, lua_widget, "tooltip");
+  lua_pushcfunction(L,name_member);
+  dt_lua_gtk_wrap(L);
+  dt_lua_type_register(L, lua_widget, "name");
   lua_pushcfunction(L,widget_gc);
   dt_lua_gtk_wrap(L);
   dt_lua_type_setmetafield(L,lua_widget,"__gc");
