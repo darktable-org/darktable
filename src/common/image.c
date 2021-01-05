@@ -1348,11 +1348,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 
   // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
-  if(flags > 5)
-  {
-    flags = 1;
-    dt_conf_set_int("ui_last/import_initial_rating", 1);
-  }
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
   // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
   char *extra_file = dt_image_get_audio_path_from_path(normalized_filename);
