@@ -1506,12 +1506,13 @@ dt_colorspaces_t *dt_colorspaces_init()
     }
     else
     {
-      fprintf(stderr, "output profile `%s' color space `%c%c%c%c' not supported for histogram profile\n",
-              prof->name,
-              (char)(color_space>>24),
-              (char)(color_space>>16),
-              (char)(color_space>>8),
-              (char)(color_space));
+      dt_print(DT_DEBUG_DEV,
+               "output profile `%s' color space `%c%c%c%c' not supported for histogram profile\n",
+               prof->name,
+               (char)(color_space>>24),
+               (char)(color_space>>16),
+               (char)(color_space>>8),
+               (char)(color_space));
     }
     prof->work_pos = ++work_pos;
   }
