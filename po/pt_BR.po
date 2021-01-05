@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 06:31-0300\n"
-"PO-Revision-Date: 2021-01-04 06:38-0300\n"
+"PO-Revision-Date: 2021-01-05 07:44-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -6221,6 +6221,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
 "<b>rotation</b>: ctrl+shift+scroll, <b>opacity</b>: ctrl+scroll (%d%%)"
 msgstr ""
+"<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll\n"
+"<b>rotação</b>: ctrl+shift+scroll, <b>opacidade</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/masks.c:374
 msgid "<b>rotate</b>: ctrl+drag"
@@ -6233,6 +6235,8 @@ msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll, <b>opacity</b>: ctrl"
 "+scroll (%d%%)"
 msgstr ""
+"<b>modo da névoa</b>: shift+click, <b>rotacionar</b>: ctrl+drag\n"
+"<b>tamanho</b>: scroll, <b>tamanho da névoa</b>: shift+scroll, <b>opacidade</b>: ctrl+scroll (%d%%)"
 
 #: ../src/develop/masks/masks.c:384
 #, c-format
