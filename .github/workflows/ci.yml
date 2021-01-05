@@ -320,7 +320,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.makefilesgen }}
+    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -333,7 +333,7 @@ jobs:
         target:
           - skiptest
           - nofeatures
-        #include:
+        include:
           # Uncomment if PR needs to generate windows package for testing.
           #- btype: Release
           #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
@@ -342,7 +342,7 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
-        makefilesgen:
+        generator:
           - MSYS Makefiles
           - Ninja
     defaults:
@@ -357,7 +357,7 @@ jobs:
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       TARGET: ${{ matrix.target }}
-      GENERATOR: ${{ matrix.makefilesgen }}
+      GENERATOR: ${{ matrix.generator }}
       # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: msys2/setup-msys2@v2
