@@ -320,7 +320,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.makefilesgen }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -342,7 +342,7 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
-        generator:
+        makefilesgen:
           - MSYS Makefiles
           - Ninja
     defaults:
@@ -356,8 +356,8 @@ jobs:
       INSTALL_PREFIX: ${{ github.workspace }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
+      GENERATOR: ${{ matrix.makefilesgen }}
       # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: msys2/setup-msys2@v2
