@@ -321,6 +321,7 @@ jobs:
 
   Win64:
     name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
+    needs: Linux-minimal
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -342,6 +343,7 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
+            generator: Ninja
         generator:
           - MSYS Makefiles
           - Ninja
