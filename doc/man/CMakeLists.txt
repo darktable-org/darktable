@@ -57,7 +57,7 @@ else()
       # create translated .pod
       add_custom_command(
         OUTPUT ${tmppod}
-        COMMAND ${perl_BIN} ${po4a-translate_BIN} -f pod -m ${pod} -p ${pofile} -l ${tmppod} -k 0
+        COMMAND sh -c "${po4a-translate_BIN} -f pod -m ${pod} -p ${pofile} -l ${tmppod} -k 0"
         DEPENDS ${pofile} ${pod}
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
       )

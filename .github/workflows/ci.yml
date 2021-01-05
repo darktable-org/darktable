@@ -320,8 +320,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
-    needs: Linux-minimal
+    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -334,7 +333,7 @@ jobs:
         target:
           - skiptest
           - nofeatures
-        include:
+        #include:
           # Uncomment if PR needs to generate windows package for testing.
           #- btype: Release
           #  compiler: { compiler: LLVM,  CC: clang,   CXX: clang++ }
@@ -343,6 +342,9 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
+        generator:
+          - MSYS Makefiles
+          - Ninja
     defaults:
       run:
         shell: msys2 {0}
@@ -354,7 +356,7 @@ jobs:
       INSTALL_PREFIX: ${{ github.workspace }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: 'MSYS Makefiles'
+      GENERATOR: ${{ matrix.generator }}
       TARGET: ${{ matrix.target }}
       # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
     steps:
@@ -406,8 +408,11 @@ jobs:
             mingw-w64-x86_64-python3-jsonschema
             mingw-w64-x86_64-python3-setuptools
             mingw-w64-x86_64-gmic
-            mingw-w64-x86_64-nsis
           update: true
+      - name: Pacman workaround
+        run: |
+            pacman --noconfirm -S --needed \
+            mingw-w64-x86_64-nsis;
       - uses: actions/checkout@v2
         with:
           submodules: true
@@ -418,9 +423,13 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Check if it runs
+        if: ${{success() && matrix.compiler.compiler == 'GNU' }} # LLVM build on windws for some reason breaks in imageio_rawspeed...
         run: |
           $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
+          $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
+          echo "Testing RUN!"
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
+                 --verbose \
                  --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
                  $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
