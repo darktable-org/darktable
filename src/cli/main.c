@@ -535,12 +535,11 @@ int main(int argc, char *arg[])
     else
     {
       dt_film_t film;
-      int id = 0;
       int filmid = 0;
 
       gchar *directory = g_path_get_dirname(input);
       filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, input, TRUE);
+      const int32_t id = dt_image_import(filmid, input, TRUE);
       g_free(directory);
       if(!id)
       {
