@@ -37,7 +37,6 @@ jobs:
 
   Linux-minimal:
     name: Linux-minimal.${{ matrix.os.code }}.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
-    if: false
     runs-on: ${{ matrix.os.label }}
     strategy:
       fail-fast: true
@@ -458,7 +457,7 @@ jobs:
 
   macOS:
     name: macOS.${{ matrix.compiler.compiler }}.${{ matrix.target }}
-    #needs: Linux-minimal
+    needs: Linux-minimal
     runs-on: macos-latest
     strategy:
       fail-fast: true
