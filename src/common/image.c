@@ -1495,6 +1495,9 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 
   const int res = dt_exif_xmp_read(img, dtfilename, 0);
 
+  // there is no XMP, set the rating, this is a new import
+  if(res) img->flags = flags;
+
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
