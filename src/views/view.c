@@ -934,7 +934,9 @@ int dt_view_get_image_to_act_on()
 dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
                                                   const gboolean quality)
 {
-  const double tt = dt_get_wtime();
+  double tt = 0;
+  if((darktable.unmuted & (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF)) == (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF))
+    tt = dt_get_wtime();
 
   dt_view_surface_value_t ret = DT_VIEW_SURFACE_KO;
   // if surface not null, clean it up
@@ -1079,9 +1081,18 @@ dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int heig
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   if(rgbbuf) free(rgbbuf);
 
-  dt_print(DT_DEBUG_LIGHTTABLE,
-           "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i created in %0.04f sec\n", imgid,
-           width, height, buf_wd, buf_ht, img_width, img_height, dt_get_wtime() - tt);
+  // logs
+  if((darktable.unmuted & (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF)) == (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF))
+  {
+    dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
+             "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i created in %0.04f sec\n",
+             imgid, width, height, buf_wd, buf_ht, img_width, img_height, dt_get_wtime() - tt);
+  }
+  else if(darktable.unmuted & DT_DEBUG_LIGHTTABLE)
+  {
+    dt_print(DT_DEBUG_LIGHTTABLE, "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i\n", imgid,
+             width, height, buf_wd, buf_ht, img_width, img_height);
+  }
 
   // we consider skull as ok as the image hasn't to be reload
   return ret;
