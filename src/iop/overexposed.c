@@ -125,7 +125,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, ch, &img_tmp, 0))
   {
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
-    return;
+    dt_control_log(_("module overexposed failed in buffer allocation"));
+    goto process_finish;
   }
 
   const float lower = exp2f(fminf(dev->overexposed.lower, -4.f));   // in EV
@@ -412,6 +413,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     err = CL_MEM_OBJECT_ALLOCATION_FAILURE;
     fprintf(stderr, "[overexposed process_cl] error allocating memory for color transformation\n");
+    dt_control_log(_("module overexposed failed in buffer allocation"));
     goto error;
   }
 
