@@ -320,7 +320,7 @@ jobs:
           ./run.sh --no-opencl --no-deltae --fast-fail
 
   Win64:
-    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}
+    name: Win64.${{ matrix.compiler.compiler }}.${{ matrix.target }}.${{ matrix.btype }}.${{ matrix.generator }}
     needs: Linux-minimal
     runs-on: windows-latest
     strategy:
@@ -343,6 +343,10 @@ jobs:
           - btype: Debug
             compiler: { compiler: GNU,  CC: gcc,   CXX: g++ }
             target: skiptest
+            generator: Ninja
+        generator:
+          - MSYS Makefiles
+          - Ninja
     defaults:
       run:
         shell: msys2 {0}
@@ -354,8 +358,8 @@ jobs:
       INSTALL_PREFIX: ${{ github.workspace }}/install
       ECO: ${{ matrix.eco }}
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
-      GENERATOR: 'MSYS Makefiles'
       TARGET: ${{ matrix.target }}
+      GENERATOR: ${{ matrix.generator }}
       # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: msys2/setup-msys2@v2
@@ -406,8 +410,11 @@ jobs:
             mingw-w64-x86_64-python3-jsonschema
             mingw-w64-x86_64-python3-setuptools
             mingw-w64-x86_64-gmic
-            mingw-w64-x86_64-nsis
           update: true
+      - name: Pacman workaround
+        run: |
+            pacman --noconfirm -S --needed \
+            mingw-w64-x86_64-nsis;
       - uses: actions/checkout@v2
         with:
           submodules: true
@@ -418,9 +425,13 @@ jobs:
           cmake -E make_directory "${INSTALL_PREFIX}"
           $(cygpath ${SRC_DIR})/.ci/ci-script.sh
       - name: Check if it runs
+        if: ${{success() && matrix.compiler.compiler == 'GNU' }} # LLVM build on windws for some reason breaks in imageio_rawspeed...
         run: |
           $(cygpath ${INSTALL_PREFIX})/bin/darktable.exe --version || true
+          $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe --version || true
+          echo "Testing RUN!"
           $(cygpath ${INSTALL_PREFIX})/bin/darktable-cli.exe \
+                 --verbose \
                  --width 2048 --height 2048 \
                  --hq true --apply-custom-presets false \
                  $(cygpath ${SRC_DIR})/src/tests/integration/images/mire1.cr2 \
@@ -475,9 +486,11 @@ jobs:
         run: |
           brew update > /dev/null || true
           brew unlink python@3.8
+          brew unlink gcc@8
+          brew unlink gcc@9
           sudo rm '/usr/local/bin/2to3'
           brew link --overwrite python@3.9 # workaround introduced 30.12.2021, replace asap.
-          brew upgrade
+          brew upgrade --ignore-pinned
           brew tap Homebrew/bundle
           cd src/.ci 
           brew bundle --verbose
