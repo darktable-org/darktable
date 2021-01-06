@@ -163,7 +163,7 @@ static void _update_atdetach_buttons(dt_lib_module_t *self)
     // check this is a darktable tag
     char *path;
     gtk_tree_model_get(model, &iter, DT_LIB_TAGGING_COL_PATH, &path, -1);
-    if(!g_str_has_prefix(path, "darktable|"))
+    if(!g_str_has_prefix(path, "darktable|") || g_str_has_prefix(path, "darktable|style|"))
       attached_tags_sel = TRUE;
     g_free(path);
   }
