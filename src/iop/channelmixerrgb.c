@@ -97,7 +97,9 @@ typedef enum dt_solving_strategy_t
   DT_SOLVE_OPTIMIZE_HIGH_SAT = 2,
   DT_SOLVE_OPTIMIZE_SKIN = 3,
   DT_SOLVE_OPTIMIZE_FOLIAGE = 4,
-  DT_SOLVE_OPTIMIZE_SKY = 5
+  DT_SOLVE_OPTIMIZE_SKY = 5,
+  DT_SOLVE_OPTIMIZE_AVG_DELTA_E = 6,
+  DT_SOLVE_OPTIMIZE_MAX_DELTA_E = 7,
 } dt_solving_strategy_t;
 
 
@@ -1370,7 +1372,12 @@ void extract_color_checker(const float *const restrict in, float *const restrict
       const float ref_hue = -1.93f;
       GET_WEIGHT;
     }
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_AVG_DELTA_E)
+      w = g->delta_E_in[k];
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_MAX_DELTA_E)
+      w = sqf(g->delta_E_in[k]);
 
+    w = sqrtf(w);
 
     // fill 3 rows of the y column vector
     for(size_t c = 0; c < 3; c++) Y[k * 3 + c] = w * LMS_ref[c];
@@ -3538,6 +3545,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->optimize, _("skin and soil colors"));
   dt_bauhaus_combobox_add(g->optimize, _("foliage colors"));
   dt_bauhaus_combobox_add(g->optimize, _("sky and water colors"));
+  dt_bauhaus_combobox_add(g->optimize, _("average delta E"));
+  dt_bauhaus_combobox_add(g->optimize, _("maximum delta E"));
   g_signal_connect(G_OBJECT(g->optimize), "value-changed", G_CALLBACK(optimize_changed_callback), self);
   gtk_widget_set_tooltip_text(g->optimize, _("choose the colors that will be optimized with higher priority.\n"
                                              "neutral colors gives the lowest average delta E but a high maximum delta E\n"
