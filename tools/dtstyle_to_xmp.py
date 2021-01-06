@@ -21,7 +21,7 @@ if path.exists(argv[2]):
 
 try:
     styletree = ET.parse(argv[1]) or die("This doesn't work for me")
-except:
+except ET.ParseError:
     print ("ERROR: input file:",argv[1],"is not a valid dtsyle-file.")
     exit(1)
 
@@ -89,7 +89,7 @@ for plugins in styleroot.findall('./style/plugin'):
 
         multi_name = plugins.find('multi_name')
         if multi_name != None:
-            if multi_name.text == None:
+            if multi_name.text is None:
                 li.set("darktable:multi_name","")
             else:
                 li.set("darktable:multi_name",multi_name.text)
