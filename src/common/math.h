@@ -114,6 +114,7 @@ static inline void mat3mulv(float *const __restrict__ dest, const float *const m
 
 // multiply two 3x3 matrices
 // dest needs to be different from m1 and m2
+// dest = m1 * m2 in this order
 static inline void mat3mul(float *const __restrict__ dest, const float *const __restrict__ m1, const float *const __restrict__ m2)
 {
   for(int k = 0; k < 3; k++)
