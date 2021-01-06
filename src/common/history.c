@@ -119,7 +119,6 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
 
   /* remove darktable|style|* tags */
   dt_tag_detach_by_string("darktable|style|%", imgid, FALSE, FALSE);
-  dt_tag_detach_by_string("dtstyle|%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
 
   /* unset change timestamp */
