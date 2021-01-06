@@ -216,7 +216,9 @@ void dt_check_opendir(const char* context, const char* directory)
   } 
 
 #if _WIN32
-  DWORD attribs = GetFileAttributesA(directory);
+  wchar_t *wdirectory = g_utf8_to_utf16 (directory, -1, NULL, NULL, NULL);
+  DWORD attribs = GetFileAttributesW(wdirectory);
+  g_free(wdirectory);
   if (attribs != INVALID_FILE_ATTRIBUTES &&
       (attribs & FILE_ATTRIBUTE_DIRECTORY))
   {
