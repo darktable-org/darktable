@@ -912,7 +912,7 @@
     </type>
     <default>never</default>
     <shortdescription>thumb use raw file instead of embedded JPEG from size</shortdescription>
-    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw datas instead of the embedded preview JPEG (better but slower).</longdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw file instead of the embedded preview JPEG (better but slower).</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
