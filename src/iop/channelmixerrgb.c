@@ -1009,7 +1009,8 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
 
 #define DEG_TO_RAD(x) (x * M_PI / 180.f)
 
-static inline void compute_patches_delta_E(const float *const restrict patches, const dt_color_checker_t *const checker,
+static inline void compute_patches_delta_E(const float *const restrict patches, const float *const restrict exposure,
+                                           const dt_color_checker_t *const checker,
                                            float *const restrict delta_E, float *const restrict avg_delta_E, float *const restrict max_delta_E)
 {
   // Compute the delta E
@@ -1021,7 +1022,12 @@ static inline void compute_patches_delta_E(const float *const restrict patches, 
   {
     // Convert to Lab
     float Lab_test[4];
-    dt_XYZ_to_Lab(patches + k * 4, Lab_test);
+    float XYZ_test[4];
+
+    // If exposure was normalized, denormalized it before
+    for(size_t c = 0; c < 4; c++) XYZ_test[c] = (exposure) ? patches[k * 4 + c] * exposure[k] : patches[k * 4 + c];
+    dt_XYZ_to_Lab(XYZ_test, Lab_test);
+
     const float *const restrict Lab_ref = checker->values[k].Lab;
 
     // Compute delta E 2000 to make your computer heat
@@ -1218,7 +1224,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
   float pre_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
+  compute_patches_delta_E(patches, patches_luminance, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
 
   /* find the scene illuminant */
 
@@ -1320,7 +1326,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // Compute the delta E
   float post_wb_delta_E = 0.f;
   float post_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &post_wb_delta_E, &post_wb_max_delta_E);
+  compute_patches_delta_E(patches, patches_luminance, g->checker, g->delta_E_in, &post_wb_delta_E, &post_wb_max_delta_E);
 
   /* Compute the matrix of mix */
   double *const restrict Y = dt_alloc_align(64, g->checker->patches * 3 * sizeof(double));
@@ -1432,7 +1438,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // Compute the delta E
   float post_mix_delta_E = 0.f;
   float post_mix_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &post_mix_delta_E, &post_mix_max_delta_E);
+  compute_patches_delta_E(patches, NULL, g->checker, g->delta_E_in, &post_mix_delta_E, &post_mix_max_delta_E);
 
   // get the temperature
   float temperature;
@@ -1582,7 +1588,7 @@ void validate_color_checker(const float *const restrict in,
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
   float pre_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
+  compute_patches_delta_E(patches, NULL, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
 
   gchar *diagnostic;
   if(pre_wb_delta_E <= 1.2f)
