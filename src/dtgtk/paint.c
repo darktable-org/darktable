@@ -1207,7 +1207,20 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
   if(color < DT_COLORLABELS_LAST)
   {
-    set_color(cr, darktable.bauhaus->colorlabels[color]);
+    GdkRGBA colorlabels[DT_COLORLABELS_LAST];
+    if(data != NULL)
+    {
+      memcpy(&colorlabels, data, sizeof(GdkRGBA) * DT_COLORLABELS_LAST);
+    }
+    else
+    {
+      colorlabels[DT_COLORLABELS_RED]    = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 };
+      colorlabels[DT_COLORLABELS_YELLOW] = (GdkRGBA){.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
+      colorlabels[DT_COLORLABELS_GREEN]  = (GdkRGBA){.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
+      colorlabels[DT_COLORLABELS_BLUE]   = (GdkRGBA){.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
+      colorlabels[DT_COLORLABELS_PURPLE] = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
+    }
+    set_color(cr, colorlabels[color]);
   }
   else if(color == 7)
   {
@@ -1346,40 +1359,54 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
 {
   PREAMBLE(1, 0, 0)
 
+  GdkRGBA colorlabels[DT_COLORLABELS_LAST];
+  if(data != NULL)
+  {
+    memcpy(&colorlabels, data, sizeof(GdkRGBA) * DT_COLORLABELS_LAST);
+  }
+  else
+  {
+    colorlabels[DT_COLORLABELS_RED]    = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 };
+    colorlabels[DT_COLORLABELS_YELLOW] = (GdkRGBA){.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
+    colorlabels[DT_COLORLABELS_GREEN]  = (GdkRGBA){.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
+    colorlabels[DT_COLORLABELS_BLUE]   = (GdkRGBA){.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
+    colorlabels[DT_COLORLABELS_PURPLE] = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
+  }
+
   const float r = 0.18;
 
   if(flags & CPF_DIRECTION_UP)
   {
     cairo_arc(cr, r, r, r, 0, 2.0f * M_PI);
-    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_RED]);
+    set_color(cr, colorlabels[DT_COLORLABELS_RED]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_DIRECTION_DOWN)
   {
     cairo_arc(cr, 1.0 - r, r, r, 0, 2.0f * M_PI);
-    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_YELLOW]);
+    set_color(cr, colorlabels[DT_COLORLABELS_YELLOW]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_DIRECTION_LEFT)
   {
     cairo_arc(cr, 0.5, 0.5, r, 0, 2.0f * M_PI);
-    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_GREEN]);
+    set_color(cr, colorlabels[DT_COLORLABELS_GREEN]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_DIRECTION_RIGHT)
   {
     cairo_arc(cr, r, 1.0 - r, r, 0, 2.0f * M_PI);
-    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_BLUE]);
+    set_color(cr, colorlabels[DT_COLORLABELS_BLUE]);
     cairo_fill(cr);
   }
 
   if(flags & CPF_BG_TRANSPARENT)
   {
     cairo_arc(cr, 1.0 - r, 1.0 - r, r, 0, 2.0f * M_PI);
-    set_color(cr, darktable.bauhaus->colorlabels[DT_COLORLABELS_PURPLE]);
+    set_color(cr, colorlabels[DT_COLORLABELS_PURPLE]);
     cairo_fill(cr);
   }
 
