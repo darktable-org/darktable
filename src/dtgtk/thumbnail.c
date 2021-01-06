@@ -1036,6 +1036,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
   gtk_widget_set_name(thumb->w_main, "thumb_main");
+  gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
   if(thumb->imgid > 0)
   {
@@ -1090,6 +1091,11 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_image_box);
     thumb->w_image = gtk_drawing_area_new();
+    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
+    if(thumb->container == DT_THUMBNAIL_CONTAINER_PREVIEW)
+      gtk_style_context_add_class(context, "dt_preview_thumb_image");
+    else if(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
+      gtk_style_context_add_class(context, "dt_culling_thumb_image");
     gtk_widget_set_name(thumb->w_image, "thumb_image");
     // we pre-set the size of the imagebox with the aspect ratio so the image is already centered
     const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
@@ -1106,10 +1112,15 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
         else
           ih = iw / ar;
       }
+      // rescale to ensure it stay in thumbnails bounds
+      const float scale = fminf(1.0, fminf((float)thumb->width / iw, (float)thumb->height / ih));
+      iw *= scale;
+      ih *= scale;
     }
-    gtk_widget_set_size_request(thumb->w_image, iw, ih);
+
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
+    gtk_widget_set_size_request(thumb->w_image, iw, ih);
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                               | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                               | GDK_POINTER_MOTION_HINT_MASK | GDK_POINTER_MOTION_MASK);
@@ -1266,7 +1277,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 }
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
-                                 gboolean zoomable, gboolean tooltip)
+                                 dt_thumbnail_container_t container, gboolean tooltip)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
@@ -1274,7 +1285,8 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   thumb->imgid = imgid;
   thumb->rowid = rowid;
   thumb->over = over;
-  thumb->zoomable = zoomable;
+  thumb->container = container;
+  thumb->zoomable = (container == DT_THUMBNAIL_CONTAINER_CULLING || container == DT_THUMBNAIL_CONTAINER_PREVIEW);
   thumb->zoom = 1.0f;
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
   thumb->tooltip = tooltip;
