@@ -811,6 +811,7 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   pref = dt_util_dstrcat(pref, "apply_metadata=%d,", dt_conf_get_bool("ui_last/import_apply_metadata") ? 1 : 0);
   pref = dt_util_dstrcat(pref, "recursive=%d,", dt_conf_get_bool("ui_last/import_recursive") ? 1 : 0);
   pref = dt_util_dstrcat(pref, "rating=%d,", dt_conf_get_int("ui_last/import_initial_rating"));
+  pref = dt_util_dstrcat(pref, "ignore_exif_rating=%d,", dt_conf_get_bool("ui_last/ignore_exif_rating") ? 1 : 0);
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     if(dt_metadata_get_type_by_display_order(i) != DT_METADATA_TYPE_INTERNAL)
@@ -847,6 +848,7 @@ const struct
   {"ui_last/import_apply_metadata", "apply_metadata", DT_BOOL},
   {"ui_last/import_recursive", "recursive", DT_BOOL},
   {"ui_last/import_initial_rating", "rating", DT_INT},
+  {"ui_last/ignore_exif_rating", "ignore_exif_rating", DT_BOOL},
   {"ui_last/import_last_tags", "tags", DT_STRING}
 };
 static const guint pref_n = G_N_ELEMENTS(_pref);
