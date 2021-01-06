@@ -3,17 +3,15 @@
 
 from __future__ import print_function
 import sys
-from sys import argv
 import os
 import xml.etree.ElementTree as ET
 import subprocess
-from subprocess import PIPE
 import shlex
 
 def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
-if len(argv) < 2 :
+if len(sys.argv) < 2 :
     sys.exit("Usage: extract_wb <file1> [file2] ...")
 
 IGNORED_PRESETS = {"Auto", "Kelvin", "Measured", "AsShot", "As Shot", "Preset",
@@ -94,7 +92,7 @@ for camera in xml_doc.getroot().findall('Camera'):
 
 found_presets = []
 
-for filename in argv[1:]:
+for filename in sys.argv[1:]:
     red = green = blue = maker = model = preset = None
     finetune = fl_count = rlevel = blevel = glevel = 0
     listed_presets = []
