@@ -52,25 +52,22 @@ typedef enum dt_metadata_pref_cols_t
   DT_METADATA_PREF_NUM_COLS
 } dt_metadata_pref_cols_t;
 
-typedef enum dt_metadata_cols_t
-{
-  DT_METADATA_COL_INDEX = 0,      // index
-  DT_METADATA_COL_NAME,           // metadata english name
-  DT_METADATA_COL_NAME_L,         // displayed name
-  DT_METADATA_COL_TOOLTIP,        // tooltip
-  DT_METADATA_COL_VALUE,          // metadata value
-  DT_METADATA_COL_VISIBLE,        // visibility
-  DT_METADATA_COL_ORDER,          // display order
-  DT_METADATA_NUM_COLS
-} dt_metadata_cols_t;
-
 typedef struct dt_lib_metadata_view_t
 {
-  GtkTreeModel *model;
-  GtkTreeModel *sort_model;
-  GtkTreeModel *filter_model;
-  GtkWidget *view;
+  GtkWidget *grid;
+  GList *metadata;
+  GObject *filmroll_event;
 } dt_lib_metadata_view_t;
+
+typedef struct dt_lib_metadata_info_t
+{
+  int index;          // md_xx value or index inserted by lua
+  int order;          // display order
+  char *name;         // metadata name
+  char *value;        // metadata value
+  char *tooltip;      // tooltip
+  gboolean visible;
+} dt_lib_metadata_info_t;
 
 enum
 {
@@ -215,23 +212,21 @@ static const char *_get_label(const int i)
   else return _labels[i];
 }
 
-/* initialize the labels text */
-static void _lib_metadata_view_init_labels(GtkTreeModel *model)
+#define NODATA_STRING "-"
+
+// initialize the metadata queue
+static void _lib_metadata_init_queue(dt_lib_module_t *self)
 {
-  GtkListStore *store = GTK_LIST_STORE(model);
-  for(int i = 0; i < md_size; i++)
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  d->metadata = NULL;
+  for(int i = md_size - 1; i >= 0; i--)
   {
-    GtkTreeIter iter;
-    gtk_list_store_append(store, &iter);
-    const char *name = _get_label(i);
-    gtk_list_store_set(store, &iter,
-                       DT_METADATA_COL_INDEX, i,
-                       DT_METADATA_COL_NAME, name,
-                       DT_METADATA_COL_NAME_L, _(name),
-                       DT_METADATA_COL_VALUE, "-",
-                       DT_METADATA_COL_VISIBLE, _is_metadata_ui(i),
-                       DT_METADATA_COL_ORDER, i,
-                       -1);
+    dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
+    m->name = (char *)_get_label(i);
+    m->value = g_strdup(NODATA_STRING);
+    m->index = m->order = i;
+    m->visible = _is_metadata_ui(i);
+    d->metadata = g_list_prepend(d->metadata, m);
   }
 }
 
@@ -254,35 +249,49 @@ static void _filter_non_printable(char *string, size_t length)
   }
 }
 
-#define NODATA_STRING "-"
-
-static void _get_index_iter(const int i, GtkTreeModel *model, GtkTreeIter *iter)
+static dt_lib_metadata_info_t *_get_metadata_per_index(const int index, dt_lib_module_t *self)
 {
-  char path_str[4];
-  snprintf(path_str, sizeof(path_str), "%d", i);
-  GtkTreePath *path = gtk_tree_path_new_from_string(path_str);
-  gtk_tree_model_get_iter(GTK_TREE_MODEL(model), iter, path);
-  gtk_tree_path_free(path);
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
+  {
+    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    if(m->index == index)
+    {
+      return m;
+    }
+  }
+  return NULL;
 }
 
 /* helper function for updating a metadata value */
-static void _metadata_update_value(const int i, const char *value, GtkTreeModel *model)
+static void _metadata_update_value(const int i, const char *value, dt_lib_module_t *self)
 {
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
   gboolean validated = g_utf8_validate(value, -1, NULL);
   const gchar *str = validated ? value : NODATA_STRING;
-  GtkTreeIter iter;
-  _get_index_iter(i, model, &iter);
-  gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_METADATA_COL_VALUE, str, -1);
+  dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
+  if(m)
+  {
+    if(m->value) g_free(m->value);
+    m->value = g_strdup(str);
+    GtkWidget *w_value = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, m->order);
+    gtk_label_set_text(GTK_LABEL(w_value), str);
+    const char *tooltip = m->tooltip ? m->tooltip : m->value;
+    gtk_widget_set_tooltip_text(GTK_WIDGET(w_value), tooltip);
+  }
 }
 
-static void _metadata_update_tooltip(const int i, const char *tooltip, GtkTreeModel *model)
+static void _metadata_update_tooltip(const int i, const char *tooltip, dt_lib_module_t *self)
 {
-  GtkTreeIter iter;
-  _get_index_iter(i, model, &iter);
-  gtk_list_store_set(GTK_LIST_STORE(model), &iter, DT_METADATA_COL_TOOLTIP, tooltip, -1);
+  dt_lib_metadata_info_t *m = _get_metadata_per_index(i, self);
+  if(m)
+  {
+    if(m->tooltip) g_free(m->tooltip);
+    m->tooltip = g_strdup(tooltip);
+  }
 }
 
-static void _metadata_update_timestamp(const int i, const time_t *value, GtkTreeModel *model)
+static void _metadata_update_timestamp(const int i, const time_t *value, dt_lib_module_t *self)
 {
   char datetime[200];
   // just %c is too long and includes a time zone that we don't know from exif
@@ -292,7 +301,7 @@ static void _metadata_update_timestamp(const int i, const time_t *value, GtkTree
     const gboolean valid_utf = g_utf8_validate(datetime, datetime_len, NULL);
     if(valid_utf)
     {
-      _metadata_update_value(i, datetime, model);
+      _metadata_update_value(i, datetime, self);
     }
     else
     {
@@ -300,19 +309,26 @@ static void _metadata_update_timestamp(const int i, const time_t *value, GtkTree
       gchar *local_datetime = g_locale_to_utf8(datetime,datetime_len,NULL,NULL, &error);
       if(local_datetime)
       {
-        _metadata_update_value(i, local_datetime, model);
+        _metadata_update_value(i, local_datetime, self);
         g_free(local_datetime);
       }
       else
       {
-        _metadata_update_value(i, NODATA_STRING, model);
+        _metadata_update_value(i, NODATA_STRING, self);
         fprintf(stderr, "[metadata timestamp] could not convert '%s' to UTF-8: %s\n", datetime, error->message);
         g_error_free(error);
       }
     }
   }
   else
-    _metadata_update_value(i, NODATA_STRING, model);
+    _metadata_update_value(i, NODATA_STRING, self);
+}
+
+static gint _lib_metadata_sort_order(gconstpointer a, gconstpointer b)
+{
+  dt_lib_metadata_info_t *ma = (dt_lib_metadata_info_t *)a;
+  dt_lib_metadata_info_t *mb = (dt_lib_metadata_info_t *)b;
+  return ma->order - mb->order;
 }
 
 #ifdef USE_LUA
@@ -321,8 +337,6 @@ static int lua_update_metadata(lua_State*L);
 /* update all values to reflect mouse over image id or no data at all */
 static void _metadata_view_update_values(dt_lib_module_t *self)
 {
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
-  GtkTreeModel *model = GTK_TREE_MODEL(d->model);
   int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
   if(mouse_over_id == -1)
@@ -358,48 +372,48 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     /* update all metadata */
 
     dt_image_film_roll(img, value, sizeof(value));
-    _metadata_update_value(md_internal_filmroll, value, model);
     char tooltip[512];
     snprintf(tooltip, sizeof(tooltip), _("double click to jump to film roll\n%s"), value);
-    _metadata_update_tooltip(md_internal_filmroll, tooltip, model);
+    _metadata_update_tooltip(md_internal_filmroll, tooltip, self);
+    _metadata_update_value(md_internal_filmroll, value, self);
 
     snprintf(value, sizeof(value), "%d", img->id);
-    _metadata_update_value(md_internal_imgid, value, model);
+    _metadata_update_value(md_internal_imgid, value, self);
 
     snprintf(value, sizeof(value), "%d", img->group_id);
-    _metadata_update_value(md_internal_groupid, value, model);
+    _metadata_update_value(md_internal_groupid, value, self);
 
-    _metadata_update_value(md_internal_filename, img->filename, model);
+    _metadata_update_value(md_internal_filename, img->filename, self);
 
     snprintf(value, sizeof(value), "%d", img->version);
-    _metadata_update_value(md_internal_version, value, model);
+    _metadata_update_value(md_internal_version, value, self);
 
     gboolean from_cache = FALSE;
     dt_image_full_path(img->id, pathname, sizeof(pathname), &from_cache);
-    _metadata_update_value(md_internal_fullpath, pathname, model);
+    _metadata_update_value(md_internal_fullpath, pathname, self);
 
     g_strlcpy(value, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(value));
-    _metadata_update_value(md_internal_local_copy, value, model);
+    _metadata_update_value(md_internal_local_copy, value, self);
 
     if (img->import_timestamp >=0)
-      _metadata_update_timestamp(md_internal_import_timestamp, &img->import_timestamp, model);
+      _metadata_update_timestamp(md_internal_import_timestamp, &img->import_timestamp, self);
     else
-      _metadata_update_value(md_internal_import_timestamp, NODATA_STRING, model);
+      _metadata_update_value(md_internal_import_timestamp, NODATA_STRING, self);
 
     if (img->change_timestamp >=0)
-      _metadata_update_timestamp(md_internal_change_timestamp, &img->change_timestamp, model);
+      _metadata_update_timestamp(md_internal_change_timestamp, &img->change_timestamp, self);
     else
-      _metadata_update_value(md_internal_change_timestamp, NODATA_STRING, model);
+      _metadata_update_value(md_internal_change_timestamp, NODATA_STRING, self);
 
     if (img->export_timestamp >=0)
-      _metadata_update_timestamp(md_internal_export_timestamp, &img->export_timestamp, model);
+      _metadata_update_timestamp(md_internal_export_timestamp, &img->export_timestamp, self);
     else
-      _metadata_update_value(md_internal_export_timestamp, NODATA_STRING, model);
+      _metadata_update_value(md_internal_export_timestamp, NODATA_STRING, self);
 
     if (img->print_timestamp >=0)
-      _metadata_update_timestamp(md_internal_print_timestamp, &img->print_timestamp, model);
+      _metadata_update_timestamp(md_internal_print_timestamp, &img->print_timestamp, self);
     else
-      _metadata_update_value(md_internal_print_timestamp, NODATA_STRING, model);
+      _metadata_update_value(md_internal_print_timestamp, NODATA_STRING, self);
 
     // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
 
@@ -548,9 +562,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       flags_tooltip = g_strjoinv("\n", tooltip_parts);
       g_free(loader_tooltip);
-
-      _metadata_update_value(md_internal_flags, value, model);
-      _metadata_update_tooltip(md_internal_flags, flags_tooltip, model);
+      _metadata_update_tooltip(md_internal_flags, flags_tooltip, self);
+      _metadata_update_value(md_internal_flags, value, self);
 
       g_free(star_string);
       g_free(flags_tooltip);
@@ -562,42 +575,42 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 #endif // SHOW_FLAGS
 
     /* EXIF */
-    _metadata_update_value(md_exif_model, img->camera_alias, model);
-    _metadata_update_value(md_exif_lens, img->exif_lens, model);
-    _metadata_update_value(md_exif_maker, img->camera_maker, model);
+    _metadata_update_value(md_exif_model, img->camera_alias, self);
+    _metadata_update_value(md_exif_lens, img->exif_lens, self);
+    _metadata_update_value(md_exif_maker, img->camera_maker, self);
 
     snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
-    _metadata_update_value(md_exif_aperture, value, model);
+    _metadata_update_value(md_exif_aperture, value, self);
 
     char *exposure_str = dt_util_format_exposure(img->exif_exposure);
-    _metadata_update_value(md_exif_exposure, exposure_str, model);
+    _metadata_update_value(md_exif_exposure, exposure_str, self);
     g_free(exposure_str);
 
     if(isnan(img->exif_exposure_bias))
     {
-      _metadata_update_value(md_exif_exposure_bias, NODATA_STRING, model);
+      _metadata_update_value(md_exif_exposure_bias, NODATA_STRING, self);
     }
     else
     {
       snprintf(value, sizeof(value), _("%+.2f EV"), img->exif_exposure_bias);
-      _metadata_update_value(md_exif_exposure_bias, value, model);
+      _metadata_update_value(md_exif_exposure_bias, value, self);
     }
 
     snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
-    _metadata_update_value(md_exif_focal_length, value, model);
+    _metadata_update_value(md_exif_focal_length, value, self);
 
     if(isnan(img->exif_focus_distance) || fpclassify(img->exif_focus_distance) == FP_ZERO)
     {
-      _metadata_update_value(md_exif_focus_distance, NODATA_STRING, model);
+      _metadata_update_value(md_exif_focus_distance, NODATA_STRING, self);
     }
     else
     {
       snprintf(value, sizeof(value), "%.2f m", img->exif_focus_distance);
-      _metadata_update_value(md_exif_focus_distance, value, model);
+      _metadata_update_value(md_exif_focus_distance, value, self);
     }
 
     snprintf(value, sizeof(value), "%.0f", img->exif_iso);
-    _metadata_update_value(md_exif_iso, value, model);
+    _metadata_update_value(md_exif_iso, value, self);
 
     struct tm tt_exif = { 0 };
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
@@ -607,37 +620,37 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       tt_exif.tm_mon--;
       tt_exif.tm_isdst = -1;
       const time_t exif_timestamp = mktime(&tt_exif);
-      _metadata_update_timestamp(md_exif_datetime, &exif_timestamp, model);
+      _metadata_update_timestamp(md_exif_datetime, &exif_timestamp, self);
     }
     else
-      _metadata_update_value(md_exif_datetime, img->exif_datetime_taken, model);
+      _metadata_update_value(md_exif_datetime, img->exif_datetime_taken, self);
 
     if(((img->p_width != img->width) || (img->p_height != img->height))  &&
        (img->p_width || img->p_height))
     {
       snprintf(value, sizeof(value), "%d (%d)", img->p_height, img->height);
-      _metadata_update_value(md_exif_height, value, model);
+      _metadata_update_value(md_exif_height, value, self);
       snprintf(value, sizeof(value), "%d (%d) ",img->p_width, img->width);
-      _metadata_update_value(md_exif_width, value, model);
+      _metadata_update_value(md_exif_width, value, self);
     }
     else {
     snprintf(value, sizeof(value), "%d", img->height);
-    _metadata_update_value(md_exif_height, value, model);
+    _metadata_update_value(md_exif_height, value, self);
     snprintf(value, sizeof(value), "%d", img->width);
-    _metadata_update_value(md_exif_width, value, model);
+    _metadata_update_value(md_exif_width, value, self);
     }
 
     if(img->verified_size)
     {
       snprintf(value, sizeof(value), "%d", img->final_height);
-    _metadata_update_value(md_height, value, model);
+    _metadata_update_value(md_height, value, self);
       snprintf(value, sizeof(value), "%d", img->final_width);
-    _metadata_update_value(md_width, value, model);
+    _metadata_update_value(md_width, value, self);
     }
     else
     {
-      _metadata_update_value(md_height, "-", model);
-      _metadata_update_value(md_width, "-", model);
+      _metadata_update_value(md_height, NODATA_STRING, self);
+      _metadata_update_value(md_width, NODATA_STRING, self);
     }
     /* XMP */
     for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -661,67 +674,67 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
         else
           g_strlcpy(value, NODATA_STRING, sizeof(value));
       }
-      _metadata_update_value(md_xmp_metadata+i, value, model);
+      _metadata_update_value(md_xmp_metadata+i, value, self);
     }
 
     /* geotagging */
     /* latitude */
     if(isnan(img->geoloc.latitude))
     {
-      _metadata_update_value(md_geotagging_lat, NODATA_STRING, model);
+      _metadata_update_value(md_geotagging_lat, NODATA_STRING, self);
     }
     else
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
         gchar *latitude = dt_util_latitude_str(img->geoloc.latitude);
-        _metadata_update_value(md_geotagging_lat, latitude, model);
+        _metadata_update_value(md_geotagging_lat, latitude, self);
         g_free(latitude);
       }
       else
       {
         const gchar NS = img->geoloc.latitude < 0 ? 'S' : 'N';
         snprintf(value, sizeof(value), "%c %09.6f", NS, fabs(img->geoloc.latitude));
-        _metadata_update_value(md_geotagging_lat, value, model);
+        _metadata_update_value(md_geotagging_lat, value, self);
       }
     }
     /* longitude */
     if(isnan(img->geoloc.longitude))
     {
-      _metadata_update_value(md_geotagging_lon, NODATA_STRING, model);
+      _metadata_update_value(md_geotagging_lon, NODATA_STRING, self);
     }
     else
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
         gchar *longitude = dt_util_longitude_str(img->geoloc.longitude);
-        _metadata_update_value(md_geotagging_lon, longitude, model);
+        _metadata_update_value(md_geotagging_lon, longitude, self);
         g_free(longitude);
       }
       else
       {
         const gchar EW = img->geoloc.longitude < 0 ? 'W' : 'E';
         snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->geoloc.longitude));
-        _metadata_update_value(md_geotagging_lon, value, model);
+        _metadata_update_value(md_geotagging_lon, value, self);
       }
     }
     /* elevation */
     if(isnan(img->geoloc.elevation))
     {
-      _metadata_update_value(md_geotagging_ele, NODATA_STRING, model);
+      _metadata_update_value(md_geotagging_ele, NODATA_STRING, self);
     }
     else
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
         gchar *elevation = dt_util_elevation_str(img->geoloc.elevation);
-        _metadata_update_value(md_geotagging_ele, elevation, model);
+        _metadata_update_value(md_geotagging_ele, elevation, self);
         g_free(elevation);
       }
       else
       {
         snprintf(value, sizeof(value), "%.2f %s", img->geoloc.elevation, _("m"));
-        _metadata_update_value(md_geotagging_ele, value, model);
+        _metadata_update_value(md_geotagging_ele, value, self);
       }
     }
 
@@ -768,8 +781,8 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       }
       if(tagstring) tagstring[strlen(tagstring)-2] = '\0';
     }
-    _metadata_update_value(md_tag_names, tagstring ? tagstring : NODATA_STRING, model);
-    _metadata_update_value(md_categories, categoriesstring ? categoriesstring : NODATA_STRING, model);
+    _metadata_update_value(md_tag_names, tagstring ? tagstring : NODATA_STRING, self);
+    _metadata_update_value(md_categories, categoriesstring ? categoriesstring : NODATA_STRING, self);
 
     g_free(tagstring);
     g_free(categoriesstring);
@@ -790,7 +803,7 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
 /* reset */
 fill_minuses:
-  for(int k = 0; k < md_size; k++) _metadata_update_value(k, NODATA_STRING, model);
+  for(int k = 0; k < md_size; k++) _metadata_update_value(k, NODATA_STRING, self);
 #ifdef USE_LUA
   dt_lua_async_call_alien(lua_update_metadata,
       0,NULL,NULL,
@@ -824,76 +837,11 @@ static void _jump_to()
   }
 }
 
-static gboolean _row_tooltip_setup(GtkWidget *view, gint x, gint y, gboolean kb_mode,
-      GtkTooltip* tooltip, dt_lib_module_t *self)
-{
-  gboolean res = FALSE;
-  GtkTreePath *path = NULL;
-  GtkTreeViewColumn *column = NULL;
-  // Get view path mouse position
-  if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), x, y, &path, &column, NULL, NULL))
-  {
-    gint x_offset = gtk_tree_view_column_get_x_offset(column);
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-    GtkTreeIter iter;
-    if (gtk_tree_model_get_iter(model, &iter, path))
-    {
-      char *value = NULL;
-      if(x_offset > 0)
-      {
-        char *text = NULL;
-        gtk_tree_model_get(model, &iter, DT_METADATA_COL_VALUE, &value,
-                                         DT_METADATA_COL_TOOLTIP, &text, -1);
-        if(text)
-        {
-          g_free(value);
-          value = text;
-        }
-        if(value && value[0] != '-')
-        {
-          gtk_tooltip_set_text(tooltip, value);
-          res = TRUE;
-        }
-      }
-      else
-      {
-        gtk_tree_model_get(model, &iter, DT_METADATA_COL_NAME_L, &value, -1);
-        gtk_tooltip_set_text(tooltip, value);
-        res = TRUE;
-      }
-      g_free(value);
-    }
-  }
-  gtk_tree_path_free(path);
-
-  return res;
-}
-
-static gboolean _filmroll_clicked(GtkWidget *view, GdkEventButton *event, gpointer null)
+static gboolean _filmroll_clicked(GtkWidget *widget, GdkEventButton *event, gpointer null)
 {
   if(event->type != GDK_2BUTTON_PRESS) return FALSE;
-  GtkTreePath *path = NULL;
-  // Get view path for row that was clicked
-  if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(view), (gint)event->x, (gint)event->y,
-                                   &path, NULL, NULL, NULL))
-  {
-    GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(view));
-    GtkTreeIter iter;
-    if(gtk_tree_model_get_iter(model, &iter, path))
-    {
-      char *name = NULL;
-      gtk_tree_model_get(model, &iter,
-                         DT_METADATA_COL_NAME, &name, -1);
-      if(name && !g_strcmp0(name, _get_label(md_internal_filmroll)))
-      {
-        g_free(name);
-        _jump_to();
-        return TRUE;
-      }
-      g_free(name);
-    }
-  }
-  return FALSE;
+  _jump_to();
+  return TRUE;
 }
 
 static gboolean _jump_to_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -925,22 +873,13 @@ static char *_get_current_configuration(dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
   char *pref = NULL;
-  GtkTreeIter iter;
-  gboolean valid = gtk_tree_model_get_iter_first(d->sort_model, &iter);
-  while(valid)
+
+  d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
+  for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    int index = 0;
-    char *name = NULL;
-    gboolean visible = TRUE;
-    gtk_tree_model_get(d->sort_model, &iter,
-                       DT_METADATA_COL_INDEX, &index,
-                       DT_METADATA_COL_NAME, &name,
-                       DT_METADATA_COL_VISIBLE, &visible,
-                       -1);
-    if(_is_metadata_ui(index))
-      pref = dt_util_dstrcat(pref, "%s%s,", visible ? "" : "|", name);
-    g_free(name);
-    valid = gtk_tree_model_iter_next(d->sort_model, &iter);
+    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    if(_is_metadata_ui(m->index))
+      pref = dt_util_dstrcat(pref, "%s%s,", m->visible ? "" : "|", m->name);
   }
   if(pref)
   {
@@ -949,17 +888,80 @@ static char *_get_current_configuration(dt_lib_module_t *self)
   return pref;
 }
 
-static void _apply_preferences(const char *pref, dt_lib_module_t *self)
+static void _lib_metadata_refill_grid(dt_lib_module_t *self)
 {
-  if(!pref || !pref[0]) return;
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
-  g_object_ref(d->filter_model);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
-  GList *prefs = dt_util_str_to_glist(",", pref);
-  int k = 0;
-  for(GList *meta = prefs; meta; meta = g_list_next(meta))
+  d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
+
+  int j = 0;
+  // initialize the grid with metadata queue content
+  for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
-    const char *name = (char *)meta->data;
+    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    GtkWidget *w_name = gtk_grid_get_child_at(GTK_GRID(d->grid), 0, j);
+    gtk_label_set_text(GTK_LABEL(w_name), _(m->name));
+    gtk_widget_set_tooltip_text(w_name, _(m->name));
+    GtkWidget *w_value = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, j);
+    gtk_label_set_text(GTK_LABEL(w_value), m->value);
+    const char *tooltip = m->tooltip ? m->tooltip : m->value;
+    gtk_widget_set_tooltip_text(w_value, tooltip);
+
+    const int i = m->index;
+    gtk_label_set_ellipsize(GTK_LABEL(w_value),
+                            i == md_exif_model || i == md_exif_lens || i == md_exif_maker
+                            ? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_MIDDLE);
+    if(i == md_internal_filmroll)
+    {
+      // film roll jump to:
+      if(d->filmroll_event)
+        g_signal_handlers_disconnect_by_func(d->filmroll_event, G_CALLBACK(_filmroll_clicked), NULL);
+      g_signal_connect(G_OBJECT(w_value), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
+      d->filmroll_event = G_OBJECT(w_value);
+    }
+
+    gtk_widget_set_visible(w_name, m->visible);
+    gtk_widget_set_visible(w_value, m->visible);
+    j++;
+  }
+}
+
+static void _lib_metadata_setup_grid(dt_lib_module_t *self)
+{
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+
+  int j = 0;
+  // initialize the grid with metadata queue content
+  for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
+  {
+    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    GtkWidget *w_name = gtk_label_new(_(m->name));
+    gtk_widget_set_halign(w_name, GTK_ALIGN_START);
+    gtk_label_set_xalign(GTK_LABEL(w_name), 0.0f);
+    gtk_label_set_ellipsize(GTK_LABEL(w_name), PANGO_ELLIPSIZE_END);
+    gtk_widget_set_tooltip_text(w_name, _(m->name));
+
+    GtkWidget *w_value= gtk_label_new(m->value);
+    gtk_widget_set_name(w_value, "brightbg");
+    gtk_label_set_selectable(GTK_LABEL(w_value), TRUE);
+    gtk_widget_set_halign(w_value, GTK_ALIGN_FILL);
+    gtk_label_set_xalign(GTK_LABEL(w_value), 0.0f);
+
+    gtk_grid_attach(GTK_GRID(d->grid), w_name, 0, j, 1, 1);
+    gtk_grid_attach(GTK_GRID(d->grid), w_value, 1, j, 1, 1);
+    j++;
+  }
+}
+
+static void _apply_preferences(const char *prefs_list, dt_lib_module_t *self)
+{
+  if(!prefs_list || !prefs_list[0]) return;
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+
+  GList *prefs = dt_util_str_to_glist(",", prefs_list);
+  int k = 0;
+  for(GList *pref = prefs; pref; pref = g_list_next(pref))
+  {
+    const char *name = (char *)pref->data;
     gboolean visible = TRUE;
     if(name)
     {
@@ -968,31 +970,23 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
         name++;
         visible = FALSE;
       }
-      GtkTreeIter iter;
-      gboolean valid = gtk_tree_model_get_iter_first(d->model, &iter);
-      while(valid)
+      for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
       {
-        char *text = NULL;
-        gtk_tree_model_get(d->model, &iter, DT_METADATA_COL_NAME, &text, -1);
-        if(name && !g_strcmp0(name, text))
+        dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+        if(name && !g_strcmp0(name, m->name))
         {
-          gtk_list_store_set(GTK_LIST_STORE(d->model), &iter,
-                                            DT_METADATA_COL_ORDER, k,
-                                            DT_METADATA_COL_VISIBLE, visible,
-                                            -1);
-          g_free(text);
+          m->order = k;
+          m->visible = visible;
           break;
         }
-        g_free(text);
-        valid = gtk_tree_model_iter_next(d->model, &iter);
       }
     }
     else continue;
     k++;
   }
   g_list_free_full(prefs, g_free);
-  gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->filter_model);
-  g_object_unref(d->filter_model);
+
+  _lib_metadata_refill_grid(self);
 }
 
 static void _save_preferences(dt_lib_module_t *self)
@@ -1040,31 +1034,19 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                                            G_TYPE_INT, G_TYPE_STRING, G_TYPE_BOOLEAN);
   GtkTreeModel *model = GTK_TREE_MODEL(store);
 
+  d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
+  for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    GtkTreeIter sort_iter;
-    gboolean valid = gtk_tree_model_get_iter_first(d->sort_model, &sort_iter);
-    while(valid)
-    {
-      GtkTreeIter iter;
-      int index;
-      gboolean visible;
-      char *name = NULL;
-      gtk_tree_model_get(d->sort_model, &sort_iter,
-                         DT_METADATA_COL_INDEX, &index,
-                         DT_METADATA_COL_NAME_L, &name,
-                         DT_METADATA_COL_VISIBLE, &visible,
-                         -1);
-      if(!_is_metadata_ui(index))
-        continue;
-      gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter,
-                         DT_METADATA_PREF_COL_INDEX, index,
-                         DT_METADATA_PREF_COL_NAME_L, name,
-                         DT_METADATA_PREF_COL_VISIBLE, visible,
-                         -1);
-      g_free(name);
-      valid = gtk_tree_model_iter_next(d->sort_model, &sort_iter);
-    }
+    GtkTreeIter iter;
+    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    if(!_is_metadata_ui(m->index))
+      continue;
+    gtk_list_store_append(store, &iter);
+    gtk_list_store_set(store, &iter,
+                       DT_METADATA_PREF_COL_INDEX, m->index,
+                       DT_METADATA_PREF_COL_NAME_L, _(m->name),
+                       DT_METADATA_PREF_COL_VISIBLE, m->visible,
+                       -1);
   }
 
   GtkWidget *view = gtk_tree_view_new_with_model(model);
@@ -1099,8 +1081,6 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   int i = 0;
   if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
   {
-    g_object_ref(d->filter_model);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), NULL);
     GtkTreeIter iter;
     gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
     while(valid)
@@ -1111,18 +1091,21 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                          DT_METADATA_PREF_COL_INDEX, &index,
                          DT_METADATA_PREF_COL_VISIBLE, &visible,
                          -1);
-      GtkTreeIter mv_iter;
-      _get_index_iter(index , d->model, &mv_iter);
-
-      gtk_list_store_set(GTK_LIST_STORE(d->model), &mv_iter,
-                         DT_METADATA_COL_ORDER, i,
-                         DT_METADATA_COL_VISIBLE, visible,
-                         -1);
-      valid = gtk_tree_model_iter_next(model, &iter);
+      for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
+      {
+        dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+        if(m->index == index)
+        {
+          m->order = i;
+          m->visible = visible;
+          break;
+        }
+      }
       i++;
+      valid = gtk_tree_model_iter_next(model, &iter);
     }
-    gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->filter_model);
-    g_object_unref(d->filter_model);
+
+    _lib_metadata_refill_grid(self);
     _save_preferences(self);
   }
   gtk_widget_destroy(dialog);
@@ -1157,96 +1140,24 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
-static void _set_ellipsize(GtkTreeViewColumn *col, GtkCellRenderer *renderer,
-                           GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
-{
-  int i;
-  gtk_tree_model_get(model, iter, DT_METADATA_COL_INDEX, &i, -1);
-  const int ellipsize = i == md_exif_model || i == md_exif_lens || i == md_exif_maker
-                        ? PANGO_ELLIPSIZE_END
-                        : PANGO_ELLIPSIZE_MIDDLE;
-  g_object_set(renderer, "ellipsize", ellipsize, NULL);
-}
-
-static gboolean _view_redraw(GtkWidget *view, cairo_t *cr, dt_lib_module_t *self)
-{
-  GtkTreeViewColumn *col0 = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 0);
-  GtkTreeViewColumn *col1 = gtk_tree_view_get_column(GTK_TREE_VIEW(view), 1);
-  const int width0 = gtk_tree_view_column_get_width(col0);
-  const int width1 = gtk_tree_view_column_get_width(col1);
-  // keep 1/3-2/3 ratio
-  const int w0 = (width0 + width1) / 3;
-  // strange. The logic would be to apply it on col0, but only works the other way
-  gtk_tree_view_column_set_fixed_width(col1, w0);
-  return FALSE;
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui */
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)g_malloc0(sizeof(dt_lib_metadata_view_t));
   self->data = (void *)d;
 
-  GtkListStore *store = gtk_list_store_new(DT_METADATA_NUM_COLS,
-                                           G_TYPE_INT,      // index
-                                           G_TYPE_STRING,  // name
-                                           G_TYPE_STRING,  // displayed name
-                                           G_TYPE_STRING,  // tooltip
-                                           G_TYPE_STRING,  // value
-                                           G_TYPE_BOOLEAN, // visibility
-                                           G_TYPE_INT      // order
-                                           );
-  d->model = GTK_TREE_MODEL(store);
+  _lib_metadata_init_queue(self);
 
-  _lib_metadata_view_init_labels(d->model);
+  GtkWidget *child_grid_window = gtk_grid_new();
+  d->grid = child_grid_window;
+  gtk_grid_set_column_spacing(GTK_GRID(child_grid_window), DT_PIXEL_APPLY_DPI(5));
 
-  GtkTreeModel *sort_model = gtk_tree_model_sort_new_with_model(d->model);
-  d->sort_model = sort_model;
-
-  gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(sort_model),
-                                      DT_METADATA_COL_ORDER,
-                                      GTK_SORT_ASCENDING);
-  GtkTreeModel *filter_model = gtk_tree_model_filter_new(sort_model, NULL);
-  d->filter_model = filter_model;
-  gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(filter_model),
-                                           DT_METADATA_COL_VISIBLE);
-
-  GtkWidget *view = gtk_tree_view_new_with_model(GTK_TREE_MODEL(filter_model));
-  d->view = view;
-  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(view), FALSE);
-  gtk_widget_set_name(view, "image-infos");
-  g_signal_connect(G_OBJECT(view), "draw", G_CALLBACK(_view_redraw), self);
-  g_object_unref(filter_model);
-
-  // metadata column
-  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-  GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes(_("name"), renderer,
-                                        "text", DT_METADATA_COL_NAME_L, NULL);
-  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
-  gtk_tree_view_column_set_expand(column, TRUE);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
-
-  // value column
-  renderer = gtk_cell_renderer_text_new();
-  g_object_set(renderer, "xalign", 0.0, NULL);
-  // FIXME
-  //  gtk_widget_set_name(GTK_WIDGET(d->metadata[k]), "brightbg");
-  column = gtk_tree_view_column_new_with_attributes(_("value"), renderer,
-                                        "text", DT_METADATA_COL_VALUE, NULL);
-  gtk_tree_view_column_set_expand(column, TRUE);
-  gtk_tree_view_column_set_cell_data_func(column, renderer, _set_ellipsize, self, NULL);
-  gtk_tree_view_append_column(GTK_TREE_VIEW(view), column);
-
-  // film roll jump to:
-  g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
-
-  g_object_set(G_OBJECT(view), "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(view), "query-tooltip", G_CALLBACK(_row_tooltip_setup), self);
-
-  self->widget = dt_ui_scroll_wrap(view, 100, "plugins/lighttable/metadata_view/windowheight");
-
+  self->widget = dt_ui_scroll_wrap(child_grid_window, 200, "plugins/lighttable/metadata_view/windowheight");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
+  gtk_widget_show_all(d->grid);
+  gtk_widget_set_no_show_all(d->grid, TRUE);
+  _lib_metadata_setup_grid(self);
   char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
   _apply_preferences(pref, self);
   g_free(pref);
@@ -1273,9 +1184,18 @@ void gui_init(dt_lib_module_t *self)
                             G_CALLBACK(_mouse_over_image_callback), self);
 }
 
+static void _free_metadata_queue(dt_lib_metadata_info_t *m)
+{
+  if(m->value) g_free(m->value);
+  if(m->tooltip) g_free(m->tooltip);
+  g_free(m);
+}
+
 void gui_cleanup(dt_lib_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+  g_list_free_full(d->metadata,  (GDestroyNotify)_free_metadata_queue);
   g_free(self->data);
   self->data = NULL;
 }
@@ -1283,18 +1203,14 @@ void gui_cleanup(dt_lib_module_t *self)
 void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
-  GtkTreeIter iter;
-  gboolean valid = gtk_tree_model_get_iter_first(d->model, &iter);
-  int i = 0;
-  while(valid)
+
+  for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    gtk_list_store_set(GTK_LIST_STORE(d->model), &iter,
-                       DT_METADATA_COL_ORDER, i,
-                       DT_METADATA_COL_VISIBLE, TRUE,
-                       -1);
-    valid = gtk_tree_model_iter_next(d->model, &iter);
-    i++;
+    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    m->order = m->index;
+    m->visible = _is_metadata_ui(m->index);
   }
+  _lib_metadata_refill_grid(self);
   _save_preferences(self);
 }
 
@@ -1302,7 +1218,6 @@ void gui_reset(dt_lib_module_t *self)
 static int lua_update_values(lua_State*L)
 {
   dt_lib_module_t *self = lua_touserdata(L, 1);
-  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
   dt_lua_module_entry_push(L,"lib",self->plugin_name);
   lua_getuservalue(L,2);
   lua_getfield(L,3,"values");
@@ -1312,7 +1227,7 @@ static int lua_update_values(lua_State*L)
   {
     lua_getfield(L,5,lua_tostring(L,-2));
     int index = lua_tointeger(L,-1);
-    _metadata_update_value(index,luaL_checkstring(L,7),d->model);
+    _metadata_update_value(index,luaL_checkstring(L,7),self);
     lua_pop(L,2);
   }
   return 0;
@@ -1360,27 +1275,39 @@ static int lua_register_info(lua_State *L)
   {
     lua_getfield(L,-1,"values");
     lua_pushstring(L,key);
-    lua_pushstring(L,"-");
+    lua_pushstring(L,NODATA_STRING);
     lua_settable(L,5);
     lua_pop(L,1);
   }
   {
-    GtkTreeIter iter;
     dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
-    gtk_list_store_append(GTK_LIST_STORE(d->model), &iter);
-    // get the row index
-    GtkTreePath *path = gtk_tree_model_get_path(d->model, &iter);
-    gint *i = gtk_tree_path_get_indices(path);
-    const int index = i[0];
-    gtk_tree_path_free(path);
-    gtk_list_store_set(GTK_LIST_STORE(d->model), &iter,
-                       DT_METADATA_COL_INDEX, index,
-                       DT_METADATA_COL_NAME, key,
-                       DT_METADATA_COL_NAME_L, key,
-                       DT_METADATA_COL_VALUE, "-",
-                       DT_METADATA_COL_VISIBLE, TRUE,
-                       DT_METADATA_COL_ORDER, index,
-                       -1);
+    dt_lib_metadata_info_t *m = g_malloc0(sizeof(dt_lib_metadata_info_t));
+    m->name = (char *)key;
+    m->value = g_strdup(NODATA_STRING);
+    const int index = g_list_length(d->metadata);
+    m->index = m->order = index;
+    m->visible = TRUE;
+
+    GtkWidget *w_name = gtk_label_new(_(m->name));
+    gtk_widget_set_halign(w_name, GTK_ALIGN_START);
+    gtk_label_set_xalign(GTK_LABEL(w_name), 0.0f);
+    gtk_label_set_ellipsize(GTK_LABEL(w_name), PANGO_ELLIPSIZE_END);
+    gtk_widget_set_tooltip_text(w_name, _(m->name));
+
+    gboolean validated = g_utf8_validate(m->value, -1, NULL);
+    const gchar *str = validated ? m->value : NODATA_STRING;
+
+    GtkWidget *w_value= gtk_label_new(str);
+    gtk_widget_set_name(w_value, "brightbg");
+    gtk_label_set_selectable(GTK_LABEL(w_value), TRUE);
+    gtk_widget_set_halign(w_value, GTK_ALIGN_FILL);
+    gtk_label_set_xalign(GTK_LABEL(w_value), 0.0f);
+    gtk_label_set_ellipsize(GTK_LABEL(w_value), PANGO_ELLIPSIZE_MIDDLE);
+    gtk_grid_attach(GTK_GRID(d->grid), w_name, 0, index, 1, 1);
+    gtk_grid_attach(GTK_GRID(d->grid), w_value, 1, index, 1, 1);
+
+    d->metadata = g_list_append(d->metadata, m);
+
     {
       lua_getfield(L,-1,"indexes");
       lua_pushstring(L,key);
