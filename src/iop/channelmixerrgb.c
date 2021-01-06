@@ -97,7 +97,9 @@ typedef enum dt_solving_strategy_t
   DT_SOLVE_OPTIMIZE_HIGH_SAT = 2,
   DT_SOLVE_OPTIMIZE_SKIN = 3,
   DT_SOLVE_OPTIMIZE_FOLIAGE = 4,
-  DT_SOLVE_OPTIMIZE_SKY = 5
+  DT_SOLVE_OPTIMIZE_SKY = 5,
+  DT_SOLVE_OPTIMIZE_AVG_DELTA_E = 6,
+  DT_SOLVE_OPTIMIZE_MAX_DELTA_E = 7,
 } dt_solving_strategy_t;
 
 
@@ -133,6 +135,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   gboolean run_profile;     // order a profiling at next pipeline recompute
   gboolean run_validation;  // order a profile validation at next pipeline recompute
   gboolean profile_ready;   // notify that a profile is ready to be applied
+  gboolean checker_ready;   // notify that a checker bounding box is ready to be used
   float mix[3][4];
 
   GtkWidget *start_profiling;
@@ -1009,7 +1012,8 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
 
 #define DEG_TO_RAD(x) (x * M_PI / 180.f)
 
-static inline void compute_patches_delta_E(const float *const restrict patches, const dt_color_checker_t *const checker,
+static inline void compute_patches_delta_E(const float *const restrict patches, const float *const restrict exposure,
+                                           const dt_color_checker_t *const checker,
                                            float *const restrict delta_E, float *const restrict avg_delta_E, float *const restrict max_delta_E)
 {
   // Compute the delta E
@@ -1021,7 +1025,12 @@ static inline void compute_patches_delta_E(const float *const restrict patches, 
   {
     // Convert to Lab
     float Lab_test[4];
-    dt_XYZ_to_Lab(patches + k * 4, Lab_test);
+    float XYZ_test[4];
+
+    // If exposure was normalized, denormalized it before
+    for(size_t c = 0; c < 4; c++) XYZ_test[c] = (exposure) ? patches[k * 4 + c] * exposure[k] : patches[k * 4 + c];
+    dt_XYZ_to_Lab(XYZ_test, Lab_test);
+
     const float *const restrict Lab_ref = checker->values[k].Lab;
 
     // Compute delta E 2000 to make your computer heat
@@ -1218,7 +1227,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
   float pre_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
+  compute_patches_delta_E(patches, patches_luminance, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
 
   /* find the scene illuminant */
 
@@ -1320,7 +1329,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // Compute the delta E
   float post_wb_delta_E = 0.f;
   float post_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &post_wb_delta_E, &post_wb_max_delta_E);
+  compute_patches_delta_E(patches, patches_luminance, g->checker, g->delta_E_in, &post_wb_delta_E, &post_wb_max_delta_E);
 
   /* Compute the matrix of mix */
   double *const restrict Y = dt_alloc_align(64, g->checker->patches * 3 * sizeof(double));
@@ -1363,7 +1372,12 @@ void extract_color_checker(const float *const restrict in, float *const restrict
       const float ref_hue = -1.93f;
       GET_WEIGHT;
     }
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_AVG_DELTA_E)
+      w = g->delta_E_in[k];
+    else if(g->optimization == DT_SOLVE_OPTIMIZE_MAX_DELTA_E)
+      w = sqf(g->delta_E_in[k]);
 
+    w = sqrtf(w);
 
     // fill 3 rows of the y column vector
     for(size_t c = 0; c < 3; c++) Y[k * 3 + c] = w * LMS_ref[c];
@@ -1432,7 +1446,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   // Compute the delta E
   float post_mix_delta_E = 0.f;
   float post_mix_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &post_mix_delta_E, &post_mix_max_delta_E);
+  compute_patches_delta_E(patches, NULL, g->checker, g->delta_E_in, &post_mix_delta_E, &post_mix_max_delta_E);
 
   // get the temperature
   float temperature;
@@ -1582,7 +1596,7 @@ void validate_color_checker(const float *const restrict in,
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
   float pre_wb_max_delta_E = 0.f;
-  compute_patches_delta_E(patches, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
+  compute_patches_delta_E(patches, NULL, g->checker, g->delta_E_in, &pre_wb_delta_E, &pre_wb_max_delta_E);
 
   gchar *diagnostic;
   if(pre_wb_delta_E <= 1.2f)
@@ -1806,20 +1820,25 @@ static inline void update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
 
 static inline void init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g, const float width, const float height)
 {
-  // top left
-  g->box[0].x = g->box[0].y = 10.;
+  if(!g->checker_ready)
+  {
+    // top left
+    g->box[0].x = g->box[0].y = 10.;
 
-  // top right
-  g->box[1].x = (width - 10.);
-  g->box[1].y = g->box[0].y;
+    // top right
+    g->box[1].x = (width - 10.);
+    g->box[1].y = g->box[0].y;
 
-  // bottom right
-  g->box[2].x = g->box[1].x;
-  g->box[2].y = (width - 10.) * g->checker->ratio;
+    // bottom right
+    g->box[2].x = g->box[1].x;
+    g->box[2].y = (width - 10.) * g->checker->ratio;
 
-  // bottom left
-  g->box[3].x = g->box[0].x;
-  g->box[3].y = g->box[2].y;
+    // bottom left
+    g->box[3].x = g->box[0].x;
+    g->box[3].y = g->box[2].y;
+
+    g->checker_ready = TRUE;
+  }
 
   update_bounding_box(g, 0.f, 0.f, width, height);
 }
@@ -1906,13 +1925,30 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   if(g == NULL) return 0;
-  if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
-  if(!g->is_cursor_close) return 0;
 
   dt_develop_t *dev = self->dev;
   const float wd = dev->preview_pipe->backbuf_width;
   const float ht = dev->preview_pipe->backbuf_height;
   if(wd == 0.f || ht == 0.f) return 0;
+
+  // double click : reset the perspective correction
+  if(type == GDK_DOUBLE_BUTTON_PRESS)
+  {
+    dt_iop_gui_enter_critical_section(self);
+    g->checker_ready = FALSE;
+    g->profile_ready = FALSE;
+    init_bounding_box(g, wd, ht);
+    dt_iop_gui_leave_critical_section(self);
+
+    dt_control_queue_redraw_center();
+    return 1;
+  }
+
+  // bounded box not inited, abort
+  if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
+
+  // cursor is not on a node, abort
+  if(!g->is_cursor_close) return 0;
 
   float pzx, pzy;
   dt_dev_get_pointer_zoom_pos(dev, x, y, &pzx, &pzy);
@@ -2149,6 +2185,7 @@ static void checker_changed_callback(GtkWidget *widget, gpointer user_data)
   if(wd == 0.f || ht == 0.f) return;
 
   dt_iop_gui_enter_critical_section(self);
+  g->checker_ready = FALSE;
   g->profile_ready = FALSE;
   init_bounding_box(g, wd, ht);
   dt_iop_gui_leave_critical_section(self);
@@ -2193,7 +2230,6 @@ static void start_profiling_callback(GtkWidget *togglebutton, dt_iop_module_t *s
 
   // init bounding box
   dt_iop_gui_enter_critical_section(self);
-  g->profile_ready = FALSE;
   init_bounding_box(g, wd, ht);
   dt_iop_gui_leave_critical_section(self);
 
@@ -3347,6 +3383,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->run_profile = FALSE;
   g->run_validation = FALSE;
   g->profile_ready = FALSE;
+  g->checker_ready = FALSE;
   g->delta_E_in = NULL;
 
   g->XYZ[0] = NAN;
@@ -3508,6 +3545,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->optimize, _("skin and soil colors"));
   dt_bauhaus_combobox_add(g->optimize, _("foliage colors"));
   dt_bauhaus_combobox_add(g->optimize, _("sky and water colors"));
+  dt_bauhaus_combobox_add(g->optimize, _("average delta E"));
+  dt_bauhaus_combobox_add(g->optimize, _("maximum delta E"));
   g_signal_connect(G_OBJECT(g->optimize), "value-changed", G_CALLBACK(optimize_changed_callback), self);
   gtk_widget_set_tooltip_text(g->optimize, _("choose the colors that will be optimized with higher priority.\n"
                                              "neutral colors gives the lowest average delta E but a high maximum delta E\n"
