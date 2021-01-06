@@ -167,7 +167,7 @@
     <shortdescription>enable disk backend for full preview cache</shortdescription>
     <longdescription>if enabled, write full preview to disk (.cache/darktable/) when evicted from the memory cache. note that this can take a lot of memory (several gigabytes for 20k images) and will never delete cached thumbnails again. it's safe though to delete these manually, if you want. light table performance will be increased greatly when zooming image in full preview mode.</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable" section="thumbs">
+  <dtconfig>
     <name>cache_color_managed</name>
     <type>bool</type>
     <default>true</default>
@@ -278,13 +278,6 @@
     <default>200</default>
     <shortdescription>timeout period of pixelpipe synchronization</shortdescription>
     <longdescription>time period (in units of 5ms) after which synchronization of preview and full pixelpipe is assumed to have failed. set to zero to omit pixelpipe synchronization. defaults to 200.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="lighttable" section="thumbs">
-    <name>never_use_embedded_thumb</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription>don't use embedded preview JPEG but half-size raw</shortdescription>
-    <longdescription>check this option to not use the embedded JPEG from the raw file but process the raw data. this is slower but gives you color managed thumbnails.</longdescription>
   </dtconfig>
   <dtconfig prefs="storage" section="xmp">
     <name>write_sidecar_files</name>
@@ -901,6 +894,25 @@
     <default>0</default>
     <shortdescription>last timeline zoom.</shortdescription>
     <longdescription/>
+  </dtconfig>
+  <dtconfig prefs="lighttable" section="thumbs">
+    <name>plugins/lighttable/thumbnail_raw_min_level</name>
+   <type>
+      <enum>
+        <option>always</option>
+        <option>small</option>
+        <option>VGA</option>
+        <option>720p</option>
+        <option>1080p</option>
+        <option>WQXGA</option>
+        <option>4K</option>
+        <option>5K</option>
+        <option>never</option>
+      </enum>
+    </type>
+    <default>never</default>
+    <shortdescription>thumb use raw file instead of embedded JPEG from size</shortdescription>
+    <longdescription>if the thumbnail size is greater than this value, it will be processed using raw datas instead of the embedded preview JPEG (better but slower).</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="thumbs">
     <name>plugins/lighttable/thumbnail_hq_min_level</name>
