@@ -281,7 +281,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     if(out_profile_type != DT_COLORSPACE_NONE)
     {
       const dt_iop_order_iccprofile_info_t *const profile_info_to =
-        dt_ioppr_add_profile_info_to_list(dev, out_profile_type, out_profile_filename, DT_INTENT_PERCEPTUAL);
+        dt_ioppr_add_profile_info_to_list(dev, out_profile_type, out_profile_filename, DT_INTENT_RELATIVE_COLORIMETRIC);
       img_display = dt_alloc_align_float((size_t)4 * width * height);
       if(!img_display) return;
       dt_ioppr_transform_image_colorspace_rgb(input, img_display, width, height, profile_info_from,
