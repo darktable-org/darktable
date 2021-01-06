@@ -1366,21 +1366,21 @@ gboolean dt_lib_is_visible(dt_lib_module_t *module)
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 {
   gchar *key = _get_lib_view_path(module, "_visible");
+  GtkWidget *widget;
   dt_conf_set_bool(key, visible);
   g_free(key);
   if(module->widget)
   {
     if(module->expander)
-    {
-      dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), visible);
-    }
+      widget = module->expander;
     else
-    {
-      if(visible)
-        gtk_widget_show_all(GTK_WIDGET(module->widget));
-      else
-        gtk_widget_hide(GTK_WIDGET(module->widget));
-    }
+      widget = module->widget;
+
+
+    if(visible)
+      gtk_widget_show_all(GTK_WIDGET(widget));
+    else
+      gtk_widget_hide(GTK_WIDGET(widget));
   }
 }
 
