@@ -82,12 +82,14 @@ static gboolean _thumbnail_btn_draw(GtkWidget *widget, cairo_t *cr)
 
     if(flags & CPF_DO_NOT_USE_BORDER)
     {
-      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags, bg_color);
+      DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0, 0, allocation.width, allocation.height, flags,
+                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
     }
     else
     {
       DTGTK_THUMBNAIL_BTN(widget)->icon(cr, 0.125 * allocation.width, 0.125 * allocation.height,
-                                        0.75 * allocation.width, 0.75 * allocation.height, flags, bg_color);
+                                        0.75 * allocation.width, 0.75 * allocation.height, flags,
+                                        DTGTK_THUMBNAIL_BTN(widget)->icon_data ? DTGTK_THUMBNAIL_BTN(widget)->icon_data : bg_color);
     }
   }
   // and eventually the image border
