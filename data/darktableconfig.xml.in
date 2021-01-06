@@ -2702,4 +2702,11 @@
     <shortdescription>active tab in tone equaliser module</shortdescription>
     <longdescription>which of simple, advanced or masking tabs will show at startup</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/collect/windowheight</name>
+    <type>int</type>
+    <default>500</default>
+    <shortdescription>height of the collect list</shortdescription>
+    <longdescription>maximum height the collect list in lighttable will grow to before scrolling</longdescription>
+  </dtconfig>
 </dtconfiglist>
