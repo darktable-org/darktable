@@ -2642,7 +2642,7 @@ spinbutton>button
 }
 
 /* Set image borders */
-.dt_preview #thumb_image
+.dt_preview #thumb_image, .dt_preview_thumb_image#thumb_image
 {
   margin : 10px;
 }
