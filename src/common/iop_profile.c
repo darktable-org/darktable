@@ -857,7 +857,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_histogram_profile_info(struct dt_de
   const char *histogram_profile_filename;
   dt_ioppr_get_histogram_profile_type(&histogram_profile_type, &histogram_profile_filename);
   return dt_ioppr_add_profile_info_to_list(dev, histogram_profile_type, histogram_profile_filename,
-                                           DT_INTENT_PERCEPTUAL);
+                                           DT_INTENT_RELATIVE_COLORIMETRIC);
 }
 
 dt_iop_order_iccprofile_info_t *dt_ioppr_get_pipe_work_profile_info(struct dt_dev_pixelpipe_t *pipe)
