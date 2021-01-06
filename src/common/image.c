@@ -1493,7 +1493,15 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
   g_strlcat(dtfilename, ".xmp", sizeof(dtfilename));
 
+  const gboolean xmp_exists = g_file_test(dtfilename, G_FILE_TEST_EXISTS);
+
   const int res = dt_exif_xmp_read(img, dtfilename, 0);
+
+  if(!xmp_exists && dt_conf_get_bool("ui_last/ignore_exif_rating"))
+  {
+    // initial import, import rating takes precendence on EXIF data
+    dt_image_set_xmp_rating(img, -2);
+  }
 
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);

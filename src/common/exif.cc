@@ -1356,7 +1356,7 @@ int dt_exif_read_from_blob(dt_image_t *img, uint8_t *blob, const int size)
   {
     Exiv2::ExifData exifData;
     Exiv2::ExifParser::decode(exifData, blob, size);
-    bool res = _exif_decode_exif_data(img, exifData);
+    const bool res = _exif_decode_exif_data(img, exifData);
     dt_exif_apply_default_metadata(img);
     return res ? 0 : 1;
   }
