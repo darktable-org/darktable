@@ -97,7 +97,9 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
   // default metadata
   GtkWidget *apply_metadata = metadata->apply_metadata;
   GtkWidget *grid = gtk_grid_new();
-  gtk_box_pack_start(GTK_BOX(metadata->box), grid, FALSE, FALSE, 0);
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_box_pack_start(GTK_BOX(metadata->box), grid, TRUE, TRUE, 0);
+  gtk_widget_set_name(metadata->box, "import-metadata-fields");
 
   // presets from the metadata plugin
   GtkCellRenderer *renderer;
@@ -153,8 +155,9 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"));
 
   GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+  gtk_widget_set_hexpand(presets, TRUE);
   renderer = gtk_cell_renderer_text_new();
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, FALSE);
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(presets), renderer, TRUE);
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", 0, NULL);
   gtk_grid_attach_next_to(GTK_GRID(grid), presets, label, GTK_POS_RIGHT, 1, 1);
   g_object_unref(model);
@@ -191,6 +194,7 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
         gtk_grid_attach(GTK_GRID(grid), metadata_label[i], 0, line++, 1, 1);
 
         metadata->metadata[i] = gtk_entry_new();
+        gtk_widget_set_hexpand(metadata->metadata[i], TRUE);
         setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
         gchar *str = dt_conf_get_string(setting);
         gtk_entry_set_text(GTK_ENTRY(metadata->metadata[i]), str);
@@ -219,7 +223,7 @@ void dt_import_metadata_dialog_new(dt_import_metadata_t *metadata)
   gtk_grid_attach(GTK_GRID(grid), label, 0, line, 1, 1);
 
   metadata->tags = gtk_entry_new();
-  gtk_widget_set_size_request(metadata->tags, DT_PIXEL_APPLY_DPI(300), -1);
+  gtk_widget_set_hexpand(metadata->tags, TRUE);
   gchar *str = dt_conf_get_string("ui_last/import_last_tags");
   gtk_widget_set_tooltip_text(metadata->tags, _("comma separated list of tags"));
   gtk_entry_set_text(GTK_ENTRY(metadata->tags), str);

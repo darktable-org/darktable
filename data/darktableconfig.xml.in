@@ -727,6 +727,13 @@
     <shortdescription>ignore exif rating</shortdescription>
     <longdescription>ignore exif rating. if not set and exif rating is found, it overrides 'initial import rating'</longdescription>
   </dtconfig>
+  <dtconfig dialog="import">
+    <name>ui_last/pref_before_import</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show import preferences before import action</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>plugins/capture/mode</name>
     <type>int</type>

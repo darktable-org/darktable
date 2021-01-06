@@ -65,13 +65,15 @@ DT_MODULE(1)
 static void _lib_import_ui_devices_update(dt_lib_module_t *self);
 #endif
 
+static void _menuitem_preferences(GtkWidget *widget, dt_lib_module_t *self);
+static void _apply_preferences(const char *pref, dt_lib_module_t *self);
+static char *_get_current_configuration(dt_lib_module_t *self);
 
 typedef struct dt_lib_import_t
 {
 #ifdef HAVE_GPHOTO2
   dt_camctl_listener_t camctl_listener;
 #endif
-  GtkWidget *expander;
   GtkButton *import_file;
   GtkButton *import_directory;
   GtkButton *import_camera;
@@ -79,7 +81,11 @@ typedef struct dt_lib_import_t
 
   GtkBox *devices;
   GtkBox *locked_devices;
-
+#ifdef HAVE_GPHOTO2
+  dt_camera_t *camera;
+#endif
+  int import_action;
+  gboolean ctrl_click;
 #ifdef USE_LUA
   GtkWidget *extra_lua_widgets;
 #endif
@@ -90,6 +96,14 @@ const char *name(dt_lib_module_t *self)
   return _("import");
 }
 
+typedef enum dt_import_actions_t
+{
+  DT_IMPORT_NONE = 0,
+  DT_IMPORT_FILE,
+  DT_IMPORT_FOLDER,
+  DT_IMPORT_FROM_CAMERA,
+  DT_TETHERED_SHOOT
+} dt_import_actions_t;
 
 const char **views(dt_lib_module_t *self)
 {
@@ -128,11 +142,12 @@ void connect_key_accels(dt_lib_module_t *self)
 #ifdef HAVE_GPHOTO2
 
 /* show import from camera dialog */
-static void _lib_import_from_camera_callback(GtkButton *button, gpointer data)
+static void _lib_import_from_camera_callback(GtkWidget *button, dt_lib_module_t *self)
 {
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   dt_camera_import_dialog_param_t *params
       = (dt_camera_import_dialog_param_t *)g_malloc0(sizeof(dt_camera_import_dialog_param_t));
-  params->camera = (dt_camera_t *)data;
+  params->camera = d->camera;
 
   dt_camera_import_dialog_new(params);
   if(params->result)
@@ -147,14 +162,36 @@ static void _lib_import_from_camera_callback(GtkButton *button, gpointer data)
   g_free(params);
 }
 
+static void _lib_import_from_camera_callback_pref(GtkWidget *button, GdkEventButton *event, dt_lib_module_t *self)
+{
+  if(event->type == GDK_BUTTON_PRESS && event->button == 1)
+  {
+    dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+    d->import_action = DT_IMPORT_FROM_CAMERA;
+    d->ctrl_click = event->state & GDK_CONTROL_MASK;
+    _menuitem_preferences(button, self);
+  }
+}
+
 /* enter tethering mode for camera */
-static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data)
+static void _lib_import_tethered_callback(GtkWidget *button, dt_lib_module_t *self)
 {
   /* select camera to work with before switching mode */
-  dt_camctl_select_camera(darktable.camctl, (dt_camera_t *)data);
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  dt_camctl_select_camera(darktable.camctl, d->camera);
   dt_ctl_switch_mode_to("tethering");
 }
 
+static void _lib_import_tethered_callback_pref(GtkWidget *button, GdkEventButton *event, dt_lib_module_t *self)
+{
+  if(event->type == GDK_BUTTON_PRESS && event->button == 1)
+  {
+    dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+    d->import_action = DT_TETHERED_SHOOT;
+    d->ctrl_click = event->state & GDK_CONTROL_MASK;
+    _menuitem_preferences(button, self);
+  }
+}
 
 /** update the device list */
 void _lib_import_ui_devices_update(dt_lib_module_t *self)
@@ -231,15 +268,16 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->tethered_shoot = GTK_BUTTON(tb);
       }
 
+      d->camera = camera;
       if(ib)
       {
-        g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), camera);
+        g_signal_connect(G_OBJECT(ib), "button-press-event", G_CALLBACK(_lib_import_from_camera_callback_pref), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(ib, "lighttable_panels.html#import_from_camera");
       }
       if(tb)
       {
-        g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
+        g_signal_connect(G_OBJECT(tb), "button-press-event", G_CALLBACK(_lib_import_tethered_callback_pref), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
         dt_gui_add_help_link(tb, "lighttable_panels.html#import_from_camera");
       }
@@ -478,7 +516,7 @@ static void _lib_import_update_preview(GtkFileChooser *file_chooser, gpointer da
   gtk_file_chooser_set_preview_widget_active(file_chooser, have_preview);
 }
 
-static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_import_t* d)
+static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
@@ -572,6 +610,17 @@ static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_import_t
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
+static void _lib_import_single_image_callback_pref(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  if(event->type == GDK_BUTTON_PRESS && event->button == 1)
+  {
+    dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+    d->import_action = DT_IMPORT_FILE;
+    d->ctrl_click = event->state & GDK_CONTROL_MASK;
+    _menuitem_preferences(widget, self);
+  }
+}
+
 static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
@@ -639,6 +688,17 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
   gtk_widget_queue_draw(dt_ui_center(darktable.gui->ui));
 }
 
+static void _lib_import_folder_callback_pref(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
+{
+  if(event->type == GDK_BUTTON_PRESS && event->button == 1)
+  {
+    dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+    d->import_action = DT_IMPORT_FOLDER;
+    d->ctrl_click = event->state & GDK_CONTROL_MASK;
+    _menuitem_preferences(widget, self);
+  }
+}
+
 #ifdef HAVE_GPHOTO2
 static void _camera_detected(gpointer instance, gpointer self)
 {
@@ -670,13 +730,54 @@ void init(dt_lib_module_t *self)
 }
 #endif
 
-void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
+static void _menuitem_preferences(GtkWidget *widget, dt_lib_module_t *self)
 {
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+  void (*callback)(GtkWidget *widget, dt_lib_module_t* self) = NULL;
+  GtkButton *button = NULL;
+  if(d->import_action == DT_IMPORT_FILE)
+  {
+    button = d->import_file;
+    callback = _lib_import_single_image_callback;
+  }
+  else if(d->import_action == DT_IMPORT_FOLDER)
+  {
+    button = d->import_directory;
+    callback = _lib_import_folder_callback;
+  }
+#ifdef HAVE_GPHOTO2
+  else if(d->import_action == DT_IMPORT_FROM_CAMERA)
+  {
+    button = d->import_camera;
+    callback = _lib_import_from_camera_callback;
+  }
+  else if(d->import_action == DT_TETHERED_SHOOT)
+  {
+    button = d->tethered_shoot;
+    callback = _lib_import_tethered_callback;
+  }
+#endif
+  const char *text = button ? gtk_button_get_label(button) : "";
+  gboolean pref_before = dt_conf_get_bool("ui_last/pref_before_import");
+  pref_before = d->ctrl_click ? !pref_before : pref_before;
+  d->ctrl_click = FALSE;
+  if(button && !pref_before)
+  {
+    callback(GTK_WIDGET(button), self);
+    return;
+  }
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("import settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                   _("cancel"), GTK_RESPONSE_NONE,
                                                   _("save"), GTK_RESPONSE_YES, NULL);
+  if(button)
+  {
+    GtkWidget *action = gtk_dialog_add_button(GTK_DIALOG(dialog), text, GTK_RESPONSE_ACCEPT);
+    gtk_widget_set_name(action, "import-action");
+  }
+
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   GtkWidget *grid = dt_prefs_init_dialog_import(dialog);
@@ -692,9 +793,9 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   while(b && !metadata.apply_metadata)
   {
     GList *widgets = gtk_container_get_children(GTK_CONTAINER(b));
-    for(GList *widget = widgets; widget; widget = g_list_next(widget))
+    for(GList *wl = widgets; wl; wl = g_list_next(wl))
     {
-      GtkWidget *w = GTK_WIDGET(widget->data);
+      GtkWidget *w = GTK_WIDGET(wl->data);
       const char *name = gtk_widget_get_name(w);
       if(!g_strcmp0("ui_last/import_apply_metadata", name))
       {
@@ -712,28 +813,59 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   }
 
 #ifdef USE_LUA
-  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   gtk_box_pack_start(GTK_BOX(main_box), d->extra_lua_widgets, FALSE, FALSE, 0);
   gtk_container_foreach(GTK_CONTAINER(d->extra_lua_widgets), reset_child, NULL);
 #endif
+
+  char *previous_prefs = _get_current_configuration(self);
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
 #endif
   gtk_widget_show_all(dialog);
 
-  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));
+  while(res == GTK_RESPONSE_YES)
   {
+    // save metadata prefs, others are already saved on GTK_RESPONSE_YES
     dt_import_metadata_evaluate(&metadata);
+    if(callback)
+    {
+      if(previous_prefs)
+        g_free(previous_prefs);
+      previous_prefs = _get_current_configuration(self);
+      res = gtk_dialog_run(GTK_DIALOG(dialog));
+    }
+    else
+      break;
   }
+  if(res == GTK_RESPONSE_ACCEPT)
+  {
+    if(callback)
+    {
+      // save metadata prefs, others are already saved on GTK_RESPONSE_ACCEPT
+      dt_import_metadata_evaluate(&metadata);
+      callback(GTK_WIDGET(button), self);
+      _apply_preferences(previous_prefs, self);
+    }
+  }
+  else if(res != GTK_RESPONSE_YES)
+  {
+    _apply_preferences(previous_prefs, self);
+  }
+
 #ifdef USE_LUA
   detach_lua_widgets(d->extra_lua_widgets);
 #endif
+  g_free(previous_prefs);
   gtk_widget_destroy(dialog);
 }
 
 void set_preferences(void *menu, dt_lib_module_t *self)
 {
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  d->import_action = DT_IMPORT_NONE;
+  d->ctrl_click = FALSE;
   GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
   g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
@@ -754,7 +886,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_single_image_callback), d);
+  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_lib_import_single_image_callback_pref), self);
 
   /* adding the import folder button */
   widget = dt_ui_button_new(_("folder..."), _("select a folder to import as film roll"), "lighttable_panels.html#import_from_fs");
@@ -762,7 +894,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_can_focus(widget, TRUE);
   gtk_widget_set_receives_default(widget, TRUE);
   gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(widget), "clicked", G_CALLBACK(_lib_import_folder_callback), self);
+  g_signal_connect(G_OBJECT(widget), "button-press-event", G_CALLBACK(_lib_import_folder_callback_pref), self);
   gtk_box_pack_start(GTK_BOX(self->widget), hbox, TRUE, TRUE, 0);
 
 #ifdef HAVE_GPHOTO2
@@ -804,15 +936,54 @@ void gui_cleanup(dt_lib_module_t *self)
   self->data = NULL;
 }
 
+const struct
+{
+  char *key;
+  char *name;
+  int type;
+} _pref[] = {
+  {"ui_last/import_ignore_jpegs", "ignore_jpegs", DT_BOOL},
+  {"ui_last/import_apply_metadata", "apply_metadata", DT_BOOL},
+  {"ui_last/import_recursive", "recursive", DT_BOOL},
+  {"ui_last/ignore_exif_rating", "ignore_exif_rating", DT_BOOL},
+  {"ui_last/pref_before_import", "pref_before", DT_BOOL},
+  {"ui_last/import_initial_rating", "rating", DT_INT},
+  // tags must be the last record (comma separated list)
+  {"ui_last/import_last_tags", "tags", DT_STRING}
+};
+static const guint pref_n = G_N_ELEMENTS(_pref);
+
+static int _get_key_index(const char *name)
+{
+  if(!name || !name[0]) return -1;
+  for(int i = 0; i < pref_n; i++)
+    if(!g_strcmp0(name, _pref[i].name))
+      return i;
+  return -1;
+}
+
 static char *_get_current_configuration(dt_lib_module_t *self)
 {
   char *pref = NULL;
 
-  pref = dt_util_dstrcat(pref, "ignore_jpeg=%d,", dt_conf_get_bool("ui_last/import_ignore_jpegs") ? 1 : 0);
-  pref = dt_util_dstrcat(pref, "apply_metadata=%d,", dt_conf_get_bool("ui_last/import_apply_metadata") ? 1 : 0);
-  pref = dt_util_dstrcat(pref, "recursive=%d,", dt_conf_get_bool("ui_last/import_recursive") ? 1 : 0);
-  pref = dt_util_dstrcat(pref, "rating=%d,", dt_conf_get_int("ui_last/import_initial_rating"));
-  pref = dt_util_dstrcat(pref, "ignore_exif_rating=%d,", dt_conf_get_bool("ui_last/ignore_exif_rating") ? 1 : 0);
+  for(int i = 0; i < pref_n - 1; i++)
+  {
+    if(_pref[i].type == DT_BOOL)
+    {
+      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name, dt_conf_get_bool(_pref[i].key) ? 1 : 0);
+    }
+    else if(_pref[i].type == DT_INT)
+    {
+      pref = dt_util_dstrcat(pref, "%s=%d,", _pref[i].name, dt_conf_get_int(_pref[i].key));
+    }
+    else if(_pref[i].type == DT_STRING)
+    {
+      char *s = dt_conf_get_string(_pref[i].key);
+      pref = dt_util_dstrcat(pref, "%s=%s,", _pref[i].name, s);
+      g_free(s);
+    }
+  }
+
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     if(dt_metadata_get_type_by_display_order(i) != DT_METADATA_TYPE_INTERNAL)
@@ -838,21 +1009,6 @@ static char *_get_current_configuration(dt_lib_module_t *self)
 
   return pref;
 }
-
-const struct
-{
-  char *key;
-  char *name;
-  int type;
-} _pref[] = {
-  {"ui_last/import_ignore_jpegs", "ignore_jpegs", DT_BOOL},
-  {"ui_last/import_apply_metadata", "apply_metadata", DT_BOOL},
-  {"ui_last/import_recursive", "recursive", DT_BOOL},
-  {"ui_last/import_initial_rating", "rating", DT_INT},
-  {"ui_last/ignore_exif_rating", "ignore_exif_rating", DT_BOOL},
-  {"ui_last/import_last_tags", "tags", DT_STRING}
-};
-static const guint pref_n = G_N_ELEMENTS(_pref);
 
 static void _apply_preferences(const char *pref, dt_lib_module_t *self)
 {
@@ -908,31 +1064,39 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
     value[0] = '\0';
     value++;
     char *metadata_name = (char *)iter->data;
-    if(g_str_has_prefix(metadata_name, "ignore_jpeg"))
-      dt_conf_set_bool("ui_last/import_ignore_jpegs", (value[0] == '1') ? TRUE : FALSE);
-    else if (g_str_has_prefix(metadata_name, "apply_metadata"))
-      dt_conf_set_bool("ui_last/import_apply_metadata", (value[0] == '1')  ? TRUE : FALSE);
-    else if (g_str_has_prefix(metadata_name, "recursive"))
-      dt_conf_set_bool("ui_last/import_recursive", (value[0] == '1')  ? TRUE : FALSE);
-    else if (g_str_has_prefix(metadata_name, "rating"))
-      dt_conf_set_int("ui_last/import_initial_rating", value[0] & DT_VIEW_RATINGS_MASK);
-    else if (g_str_has_prefix(metadata_name, "tags"))
+    const int i = _get_key_index(metadata_name);
+    if(i != -1)
     {
-      // get all the tags back - ugly but allow to keep readable presets
-      char *tags = g_strdup(value);
-      for(GList *iter2 = g_list_next(iter); iter2; iter2 = g_list_next(iter2))
+      if(_pref[i].type == DT_BOOL)
       {
-        if(strlen((char *)iter2->data))
-          tags = dt_util_dstrcat(tags, ",%s", (char *)iter2->data);
+        dt_conf_set_bool(_pref[i].key, (value[0] == '1') ? TRUE : FALSE);
       }
-      dt_conf_set_string("ui_last/import_last_tags", tags);
-      g_free(tags);
-      break;
+      else if(_pref[i].type == DT_INT)
+      {
+        dt_conf_set_int(_pref[i].key, (int)atol(value));
+      }
+      else if(_pref[i].type == DT_STRING)
+      {
+        if (!g_strcmp0(metadata_name, "tags"))
+        {
+          // get all the tags back - ugly but allow to keep readable presets
+          char *tags = g_strdup(value);
+          for(GList *iter2 = g_list_next(iter); iter2; iter2 = g_list_next(iter2))
+          {
+            if(strlen((char *)iter2->data))
+              tags = dt_util_dstrcat(tags, ",%s", (char *)iter2->data);
+          }
+          dt_conf_set_string("ui_last/import_last_tags", tags);
+          g_free(tags);
+          break;  // must be the last setting
+        }
+        else dt_conf_set_string(_pref[i].key, value);
+      }
     }
     else
     {
-      const int i = dt_metadata_get_keyid_by_name(metadata_name);
-      if(i == -1) continue;
+      const int j = dt_metadata_get_keyid_by_name(metadata_name);
+      if(j == -1) continue;
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
       const uint32_t flag = (dt_conf_get_int(setting) & ~DT_METADATA_FLAG_IMPORTED) |
                             ((value[0] == '1') ? DT_METADATA_FLAG_IMPORTED : 0);
