@@ -1152,6 +1152,12 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         nw = th_model->width;
         nh = th_model->height;
       }
+      else if(g_list_length(newlist) > 0)
+      {
+        dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_last(newlist)->data;
+        nw = th_model->width;
+        nh = th_model->height;
+      }
       dt_thumbnail_t *thumb;
       if(table->mode == DT_CULLING_MODE_PREVIEW)
         thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_PREVIEW,
@@ -1179,7 +1185,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   }
 
   // in rare cases, we can have less images than wanted
-  // although there's images before
+  // although there's images before (this shouldn't happen in preview)
   if(table->navigate_inside_selection && g_list_length(newlist) < table->thumbs_count
      && g_list_length(newlist) < _get_selection_count())
   {
@@ -1216,15 +1222,15 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           // trigger draw events
           int nw = 40;
           int nh = 40;
-          if(table->mode == DT_CULLING_MODE_PREVIEW)
+          if(g_list_length(table->list) > 0)
           {
-            nw = table->view_width;
-            nh = table->view_height;
+            dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(table->list)->data;
+            nw = th_model->width;
+            nh = th_model->height;
           }
-          else if(g_list_length(table->list) > 0)
+          else if(g_list_length(newlist) > 0)
           {
-            dt_thumbnail_t *th_model
-                = (dt_thumbnail_t *)g_list_nth_data(table->list, MIN(pos, g_list_length(table->list) - 1));
+            dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(newlist)->data;
             nw = th_model->width;
             nh = th_model->height;
           }
