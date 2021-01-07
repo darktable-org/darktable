@@ -5,6 +5,7 @@ elseif(NOT BINARY_PACKAGE_BUILD AND (NOT APPLE OR CMAKE_C_COMPILER_ID STREQUAL "
   CHECK_C_COMPILER_FLAG("-march=native" MARCHNATIVE)
   if(MARCHNATIVE)
     set(MARCH "-march=native")
+    add_definitions("-DNATIVE_ARCH")
   else()
     MESSAGE("-- Checking for -mtune=native support")
     CHECK_C_COMPILER_FLAG("-mtune=native" MTUNENATIVE)
