@@ -211,8 +211,9 @@ static void _metadata_update_value(GtkLabel *label, const char *value)
 static void _metadata_update_timestamp(GtkLabel *label, const time_t *value)
 {
   char datetime[200];
+  struct tm tm_val;
   // just %c is too long and includes a time zone that we don't know from exif
-  const size_t datetime_len = strftime(datetime, sizeof(datetime), "%a %x %X", localtime(value));
+  const size_t datetime_len = strftime(datetime, sizeof(datetime), "%a %x %X", localtime_r(value, &tm_val));
   if(datetime_len > 0)
   {
     const gboolean valid_utf = g_utf8_validate(datetime, datetime_len, NULL);
