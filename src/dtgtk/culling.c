@@ -1140,7 +1140,12 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       // draw events
       int nw = 40;
       int nh = 40;
-      if(g_list_length(table->list) > 0)
+      if(table->mode == DT_CULLING_MODE_PREVIEW)
+      {
+        nw = table->view_width;
+        nh = table->view_height;
+      }
+      else if(g_list_length(table->list) > 0)
       {
         dt_thumbnail_t *th_model
             = (dt_thumbnail_t *)g_list_nth_data(table->list, MIN(pos, g_list_length(table->list) - 1));
@@ -1211,7 +1216,12 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           // trigger draw events
           int nw = 40;
           int nh = 40;
-          if(g_list_length(table->list) > 0)
+          if(table->mode == DT_CULLING_MODE_PREVIEW)
+          {
+            nw = table->view_width;
+            nh = table->view_height;
+          }
+          else if(g_list_length(table->list) > 0)
           {
             dt_thumbnail_t *th_model
                 = (dt_thumbnail_t *)g_list_nth_data(table->list, MIN(pos, g_list_length(table->list) - 1));
