@@ -1533,7 +1533,6 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
   if(module_cst == DEVELOP_BLEND_CS_LAB || module_cst == DEVELOP_BLEND_CS_RGB_DISPLAY
       || module_cst == DEVELOP_BLEND_CS_RGB_SCENE)
   {
-    char *markup;
 
     mi = gtk_menu_item_new_with_label(_("reset to default blend colorspace"));
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_NONE), NULL);
@@ -1546,11 +1545,7 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     {
       mi = gtk_menu_item_new_with_label(_("Lab"));
       if(module_blend_cst == DEVELOP_BLEND_CS_LAB)
-      {
-        markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", _("Lab"));
-        gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-        g_free(markup);
-      }
+        gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
       g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_LAB), NULL);
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
@@ -1558,22 +1553,14 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
 
     mi = gtk_menu_item_new_with_label(_("RGB (display)"));
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_DISPLAY)
-    {
-      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", _("RGB (display)"));
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_free(markup);
-    }
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_DISPLAY), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     mi = gtk_menu_item_new_with_label(_("RGB (scene)"));
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_SCENE)
-    {
-      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", _("RGB (scene)"));
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_free(markup);
-    }
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
