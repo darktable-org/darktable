@@ -2728,4 +2728,11 @@
     <shortdescription>height of the collect list</shortdescription>
     <longdescription>maximum height the collect list in lighttable will grow to before scrolling</longdescription>
   </dtconfig>
+  <dtconfig>
+    <name>plugins/lighttable/metadata_view/visible</name>
+    <type>string</type>
+    <default>filmroll,image id,group id,filename,version,full path,local copy,import timestamp,change timestamp,export timestamp,print timestamp,flags,model,maker,lens,aperture,exposure,exposure bias,focal length,focus distance,ISO,datetime,width,height,export width,export height,title,description,creator,publisher,rights,notes,version name,latitude,longitude,elevation,tags,categories</default>
+    <shortdescription>show all items</shortdescription>
+    <longdescription>show all items as of init parameters</longdescription>
+  </dtconfig>
 </dtconfiglist>
