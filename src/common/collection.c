@@ -1388,7 +1388,7 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
     gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
     gchar *haystack = g_utf8_strdown(makermodel, -1);
-    if (!needle || g_strrstr(haystack, needle) != NULL)
+    if (!needle || g_strcmp0(haystack, needle) == 0)
     {
       if (exif)
       {
