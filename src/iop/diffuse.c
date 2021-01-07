@@ -281,7 +281,7 @@ inline static void sparse_scalar_product(const float *const buf, const size_t in
   #ifdef _OPENMP
   #pragma omp simd aligned(buf, filter:64) aligned(result:16)
   #endif
-  for(int c = 0; c < 4; ++c)
+  for(size_t c = 0; c < 4; ++c)
   {
     float acc = 0.0f;
     for(size_t k = 0; k < FSIZE; ++k)
@@ -382,11 +382,9 @@ static inline void wavelets_detail_level(const float *const restrict detail, con
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, HF, LF, detail)           \
-    schedule(simd                                                                                                 \
-             : static) aligned(HF, LF, detail : 64)
+    schedule(simd : static) aligned(HF, LF, detail : 64)
 #endif
-  for(size_t k = 0; k < height * width; k++)
-    for(size_t c = 0; c < 4; ++c) HF[4*k + c] = detail[4*k + c] - LF[4*k + c];
+  for(size_t k = 0; k < height * width * 4; k++) HF[k] = detail[k] - LF[k];
 }
 
 static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *const piece)
@@ -401,7 +399,7 @@ static int get_scales(const dt_iop_roi_t *roi_in, const dt_dev_pixelpipe_iop_t *
    * So we compute the level that solves 1. subject to 3. Of course, integer rounding doesn't make that 1:1
    * accurate.
    */
-  const float scale = roi_in->scale / piece->iscale;
+  const float scale = fmaxf(roi_in->scale / piece->iscale, 1.f);
   const size_t size = MAX(piece->buf_in.height * piece->iscale, piece->buf_in.width * piece->iscale);
   const int scales = floorf(log2f((2.0f * size * scale / ((FSIZE - 1) * FSIZE)) - 1.0f));
   return CLAMP(scales, 1, MAX_NUM_SCALES);
@@ -415,9 +413,9 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none)                                                          \
     dt_omp_firstprivate(width, height, ch, HF, LF, reconstructed, s, scales) schedule(simd : static) \
-    aligned(reconstructed, HF:64)
+    aligned(reconstructed, HF, LF:64)
 #endif
-  for(size_t k = 0; k < height * width * ch; ++k)
+  for(size_t k = 0; k < height * width * 4; ++k)
   {
     reconstructed[k] += (s == scales - 1) ? HF[k] + LF[k] : HF[k];
   }
@@ -427,36 +425,42 @@ inline static void wavelets_reconstruct_RGB(const float *const restrict HF, cons
 #define H 1              // spatial step
 #define KAPPA 0.25f    // 0.25 if h = 1, 1 if h = 2
 
-static void heat_PDE_inpanting(const float *const restrict input,
-                               float *const restrict output, const uint8_t *const restrict mask,
-                               const size_t width, const size_t height, const size_t ch, const int mult,
-                               const float texture, const float structure, const float zeroth, const float base_layer,
-                               const float edges_texture, const float regularization_texture,
-                               const float edges_structure, const float regularization_structure,
-                               const float regularization_zeroth,
-                               const float edges_base, const float regularization_base,
-                               const int respect_bokeh, const int radius)
+static inline void heat_PDE_inpanting(const float *const restrict input,
+                                      float *const restrict output, const uint8_t *const restrict mask,
+                                      const size_t width, const size_t height, const size_t ch, const int mult,
+                                      const float texture, const float structure, const float zeroth, const float base_layer,
+                                      const float edges_texture, const float regularization_texture,
+                                      const float edges_structure, const float regularization_structure,
+                                      const float regularization_zeroth,
+                                      const float edges_base, const float regularization_base,
+                                      const int respect_bokeh, const int radius)
 {
   // Simultaneous inpainting for image structure and texture using anisotropic heat transfer model
   // https://www.researchgate.net/publication/220663968
 
-  const float A = texture * KAPPA;
-  const float B = structure * KAPPA;
-  const float C = zeroth;
-  const float D = base_layer * KAPPA;
+  const float DT_ALIGNED_ARRAY ABCD[4] = { texture * KAPPA,
+                                           structure * KAPPA,
+                                           zeroth,
+                                           base_layer * KAPPA };
 
-  const int compute_texture = (A != 0.f);
-  const int compute_structure = (B != 0.f);
-  const int compute_base = (D != 0.f);
+  const int compute_base = (base_layer != 0.f);
+  const int compute_zero = (zeroth != 0.f);
+  const int compute_structure = (structure != 0.f);
+  const int compute_texture = (texture != 0.f);
+
+  const float bokeh_factor = (float)radius / (float)mult;
 
   const int has_mask = (mask != NULL);
 
+  const float *const restrict in = DT_IS_ALIGNED(input);
+  float *const restrict out = DT_IS_ALIGNED(output);
+
   #ifdef _OPENMP
   #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, output, mask, height, width, ch, A, B, C, D, \
-    compute_structure, compute_texture, compute_base, has_mask, mult, \
+  dt_omp_firstprivate(in, out, mask, height, width, ch, ABCD, \
+    has_mask, mult, compute_base, compute_zero, compute_structure, compute_texture, \
     edges_texture, edges_structure, edges_base, regularization_texture, regularization_structure, regularization_zeroth, regularization_base, \
-    respect_bokeh, radius) \
+    respect_bokeh, radius, bokeh_factor) \
   schedule(dynamic) collapse(2)
   #endif
   for(size_t i = 0; i < height; ++i)
@@ -468,55 +472,72 @@ static void heat_PDE_inpanting(const float *const restrict input,
 
       if(opacity)
       {
-        // neighbours
-        const size_t j_prev = CLAMP((int)(j - H), (int)0, (int)width - 1); // y
-        const size_t j_next = CLAMP((int)(j + H), (int)0, (int)width - 1); // y
-        const size_t i_prev = CLAMP((int)(i - H), (int)0, (int)height - 1); // x
-        const size_t i_next = CLAMP((int)(i + H), (int)0, (int)height - 1); // x
+        // build arrays of pointers to the pixels we will need here,
+        // to be super clear with compiler about cache management
+        const float DT_ALIGNED_ARRAY *restrict grad_pixel[9] = { NULL };
+        const float DT_ALIGNED_ARRAY *restrict lapl_pixel[9] = { NULL };
 
-        const size_t j_far_prev = CLAMP((int)(j - mult * H), (int)0, (int)width - 1); // y
-        const size_t j_far_next = CLAMP((int)(j + mult * H), (int)0, (int)width - 1); // y
-        const size_t i_far_prev = CLAMP((int)(i - mult * H), (int)0, (int)height - 1); // x
-        const size_t i_far_next = CLAMP((int)(i + mult * H), (int)0, (int)height - 1); // x
+        if(compute_base || compute_structure || compute_texture)
+        {
+          // local neighbours
+          const size_t j_grad[3] = { CLAMP((int)(j - H), (int)0, (int)width - 1),    // y - 1
+                                                                              j,     // y
+                                    CLAMP((int)(j + H), (int)0, (int)width - 1) };   // y + 1
 
-        const size_t DT_ALIGNED_ARRAY idx_grad[9]
-            = { (i_prev * width + j_prev) * ch, (i_prev * width + j) * ch, (i_prev * width + j_next) * ch,
-                (i * width + j_prev) * ch,      (i * width + j) * ch,      (i* width + j_next) * ch,
-                (i_next * width + j_prev) * ch, (i_next * width + j) * ch, (i_next * width + j_next) * ch };
+          const size_t i_grad[3] = { CLAMP((int)(i - H), (int)0, (int)height - 1),   // x - 1
+                                                                                i,   // x
+                                    CLAMP((int)(i + H), (int)0, (int)height - 1) };  // x + 1
 
-        const size_t DT_ALIGNED_ARRAY idx_lapl[9]
-            = { (i_far_prev * width + j_far_prev) * ch, (i_far_prev * width + j) * ch, (i_far_prev * width + j_far_next) * ch,
-                (i * width + j_far_prev) * ch,      (i * width + j) * ch,      (i* width + j_far_next) * ch,
-                (i_far_next * width + j_far_prev) * ch, (i_far_next * width + j) * ch, (i_far_next * width + j_far_next) * ch };
+          // non-local neighbours
+          const size_t j_lapl[3] = { CLAMP((int)(j - mult * H), (int)0, (int)width - 1),   // y - mult
+                                                                              j,           // y
+                                    CLAMP((int)(j + mult * H), (int)0, (int)width - 1) };  // y + mult
 
-        float DT_ALIGNED_ARRAY kern_grad[9][4] = { { 0.f } };
-        float DT_ALIGNED_ARRAY kern_lap[9][4] = { { 0.f } };
-        float DT_ALIGNED_ARRAY kern_base[9][4] = { { 0.f } };
+          const size_t i_lapl[3] = { CLAMP((int)(i - mult * H), (int)0, (int)height - 1),  // x - mult
+                                                                                i,         // x
+                                    CLAMP((int)(i + mult * H), (int)0, (int)height - 1) }; // x + mult
 
-        float DT_ALIGNED_PIXEL TV_grad[4] = { 1.f };
-        float DT_ALIGNED_PIXEL TV_lap[4] = { 1.f };
-        float DT_ALIGNED_PIXEL TV_zeroth[4] = { 1.f };
-        float DT_ALIGNED_PIXEL TV_base[4] = { 1.f };
+          for(size_t ii = 0; ii < 3; ii++)
+            for(size_t jj = 0; jj < 3; jj++)
+            {
+              if(compute_base || compute_structure)
+                grad_pixel[3 * ii + jj] = (const float *const restrict)__builtin_assume_aligned(in + (i_grad[ii] * width + j_grad[jj]) * ch, 16);
 
-        const float *const restrict north = __builtin_assume_aligned(input + idx_grad[1], 16);
-        const float *const restrict south = __builtin_assume_aligned(input + idx_grad[7], 16);
-        const float *const restrict east  = __builtin_assume_aligned(input + idx_grad[5], 16);
-        const float *const restrict west  = __builtin_assume_aligned(input + idx_grad[3], 16);
+              if(compute_texture)
+                lapl_pixel[3 * ii + jj] = (const float *const restrict)__builtin_assume_aligned(in + (i_lapl[ii] * width + j_lapl[jj]) * ch, 16);
+            }
+        }
 
-        const float *const restrict north_far = __builtin_assume_aligned(input + idx_lapl[1], 16);
-        const float *const restrict south_far = __builtin_assume_aligned(input + idx_lapl[7], 16);
-        const float *const restrict east_far  = __builtin_assume_aligned(input + idx_lapl[5], 16);
-        const float *const restrict west_far  = __builtin_assume_aligned(input + idx_lapl[3], 16);
+        // assert(grad_pixel[4] == lapl_pixel[4] == center)
+        const float *const restrict center = (const float *const restrict)__builtin_assume_aligned(in + index, 16);
+
+        const float *const restrict north  = grad_pixel[1];
+        const float *const restrict south  = grad_pixel[7];
+        const float *const restrict east   = grad_pixel[5];
+        const float *const restrict west   = grad_pixel[3];
+
+        const float *const restrict north_far = lapl_pixel[1];
+        const float *const restrict south_far = lapl_pixel[7];
+        const float *const restrict east_far  = lapl_pixel[5];
+        const float *const restrict west_far  = lapl_pixel[3];
+
+        float DT_ALIGNED_ARRAY kern_grad[9][4];
+        float DT_ALIGNED_ARRAY kern_lap[9][4];
+        float DT_ALIGNED_ARRAY kern_base[9][4];
+        float DT_ALIGNED_ARRAY TV[4][4] = { { 0.f } };
 
         // build the local anisotropic convolution filters
         #ifdef _OPENMP
-        #pragma omp simd aligned(north, south, west, east, TV_grad, TV_lap, north_far, south_far, east_far, west_far : 16) \
-          aligned(idx_grad, idx_lapl, kern_grad, kern_lap : 64)
+        #pragma omp simd aligned(north, south, west, east, north_far, south_far, east_far, west_far, center : 16) \
+          aligned(kern_grad, kern_lap, kern_base, TV : 64)
         #endif
         for(size_t c = 0; c < 4; c++)
         {
           // Compute the zeroth-order term
-          TV_zeroth[c] = expf(-fabsf(input[index + c]) / regularization_zeroth);
+          if(compute_zero)
+          {
+            TV[c][2] = expf(-fabsf(center[c]) / regularization_zeroth);
+          }
 
           if(compute_structure || compute_base)
           {
@@ -525,23 +546,22 @@ static void heat_PDE_inpanting(const float *const restrict input,
             const float grad_y = (east[c] - west[c]) / 2.0f;   // du(i, j) / dy
 
             // Find the dampening factor
-            const float TV = hypotf(grad_x, grad_y);
-            TV_grad[c] = expf(-TV / regularization_structure);
-            TV_base[c] = expf(-TV / regularization_base);
+            const float tv = hypotf(grad_x, grad_y);
 
             // Find the direction of the gradient
             const float theta = atan2f(grad_y, grad_x);
 
             // Find the gradient rotation coefficients for the matrix
-            float sin_theta = sinf(theta);
-            float cos_theta = cosf(theta);
+            const float sin_theta = sinf(theta);
+            const float cos_theta = cosf(theta);
             const float sin_theta2 = sqf(sin_theta);
             const float cos_theta2 = sqf(cos_theta);
 
             // Build the convolution kernel for the structure extraction
             if(compute_structure)
             {
-              const float c2 = expf(-TV / edges_structure);
+              const float c2 = expf(-tv / edges_structure);
+              TV[c][1] = expf(-tv / regularization_structure);
 
               const float a11 = cos_theta2 + c2 * sin_theta2;
               const float a12 = (c2 - 1.0f) * cos_theta * sin_theta;
@@ -565,7 +585,8 @@ static void heat_PDE_inpanting(const float *const restrict input,
             // Build the convolution kernel for the base
             if(compute_base)
             {
-              const float c2 = expf(-TV / edges_base);
+              const float c2 = expf(-tv / edges_base);
+              TV[c][3] = expf(-tv / regularization_base);
 
               const float a11 = cos_theta2 + c2 * sin_theta2;
               const float a12 = (c2 - 1.0f) * cos_theta * sin_theta;
@@ -574,37 +595,36 @@ static void heat_PDE_inpanting(const float *const restrict input,
               const float b11 = a12 / 2.0f;
               const float b22 = a11 + a22;
 
-              const float norm = b22 + 4.f * b11 + 2.f * a11 + 2.f * a22;
-
-              kern_base[0][c] = b11 / norm;
-              kern_base[1][c] = a22 / norm;
-              kern_base[2][c] = b11 / norm;
-              kern_base[3][c] = a11 / norm;
-              kern_base[4][c] = b22 / norm;
-              kern_base[5][c] = a11 / norm;
-              kern_base[6][c] = b11 / norm;
-              kern_base[7][c] = a22 / norm;
-              kern_base[8][c] = b11 / norm;
+              kern_base[0][c] = b11 / b22;
+              kern_base[1][c] = a22 / b22;
+              kern_base[2][c] = b11 / b22;
+              kern_base[3][c] = a11 / b22;
+              kern_base[4][c] = b22 / b22;
+              kern_base[5][c] = a11 / b22;
+              kern_base[6][c] = b11 / b22;
+              kern_base[7][c] = a22 / b22;
+              kern_base[8][c] = b11 / b22;
             }
           }
 
+          // Compute the non-local laplacian
           if(compute_texture)
           {
             // Compute the laplacian with centered finite differences - warning : x is vertical, y is horizontal
-            const float grad_x = south_far[c] + north_far[c] - 2.f * input[index + c]; // du(i, j) / dx
-            const float grad_y = east_far[c] + west_far[c] - 2.f * input[index + c];   // du(i, j) / dy
+            const float grad_x = south_far[c] + north_far[c] - 2.f * center[c]; // du(i, j) / dx
+            const float grad_y = east_far[c] + west_far[c] - 2.f * center[c];   // du(i, j) / dy
 
             // Find the dampening factor
-            const float TV = hypotf(grad_x, grad_y);
-            const float c2 = expf(-TV / edges_texture);
-            TV_lap[c] = expf(-TV / regularization_texture);
+            const float tv = hypotf(grad_x, grad_y);
+            const float c2 = expf(-tv / edges_texture);
+            TV[c][0] = expf(-tv / regularization_texture);
 
             // Find the direction of the gradient
             const float theta = atan2f(grad_y, grad_x);
 
             // Find the gradient rotation coefficients for the matrix
-            float sin_theta = sinf(theta);
-            float cos_theta = cosf(theta);
+            const float sin_theta = sinf(theta);
+            const float cos_theta = cosf(theta);
             const float sin_theta2 = sqf(sin_theta);
             const float cos_theta2 = sqf(cos_theta);
 
@@ -628,81 +648,73 @@ static void heat_PDE_inpanting(const float *const restrict input,
           }
         }
 
-        // Get the difference of gaussians as a metric of bokeh
-        const float bokeh = (respect_bokeh) ? 1.f - expf(- (float)radius * sqrtf(sqf(input[index]) + sqf(input[index + 1]) + sqf(input[index + 2])) / (float)mult) : 1.f;
+        // Get the difference of gaussians as a metric of bokeh and a generalized gaussian to find the fall-of
+        // This assumes we diffuse a wavelet high-pass details layer that is roughly equivalent to a second order derivative
+        const float bokeh = (respect_bokeh) ? 1.f - expf(- bokeh_factor * sqrtf(sqf(center[0]) + sqf(center[1]) + sqf(center[2]))) : 1.f;
 
-        float DT_ALIGNED_PIXEL grad[4] = { 0.f };
-        float DT_ALIGNED_PIXEL lapl[4] = { 0.f };
-        float DT_ALIGNED_PIXEL base[4] = { 0.f };
-
-        // Convolve anisotropic filters at current pixel
-        if(compute_structure || compute_base)
-        {
-          #ifdef _OPENMP
-          #pragma omp simd aligned(kern_grad, kern_base, input, idx_grad: 64) aligned(grad, base : 16)
-          #endif
-          for(size_t c = 0; c < 4; c++)
-          {
-            float acc1 = 0.f;
-            float acc2 = 0.f;
-
-            for(size_t k = 0; k < 9; k++)
-            {
-              const float pix = input[idx_grad[k] + c];
-
-              // Convolve first-order term (gradient)
-              acc1 += kern_grad[k][c] * pix;
-
-              // Convolve the base term
-              acc2 += kern_base[k][c] * pix;
-            }
-            grad[c] = acc1;
-            base[c] = acc2;
-          }
-        }
-
-        if(compute_texture)
-        {
-          #ifdef _OPENMP
-          #pragma omp simd aligned(kern_lap, input, idx_lapl: 64) aligned(lapl : 16)
-          #endif
-          for(size_t c = 0; c < 4; c++)
-          {
-            float acc2 = 0.f;
-
-            for(size_t k = 0; k < 9; k++)
-            {
-              // Convolve second-order term (laplacian)
-              acc2 += kern_lap[k][c] * input[idx_lapl[k] + c];
-            }
-            lapl[c] = acc2;
-          }
-        }
-
-        // Use a collaborative regularization_texture
-        const float TV_lap_min = fminf(fminf(TV_lap[0], TV_lap[1]), TV_lap[2]);
-        const float TV_grad_min = fminf(fminf(TV_grad[0], TV_grad[1]), TV_grad[2]);
-        const float TV_zeroth_min = fminf(fminf(TV_zeroth[0], TV_zeroth[1]), TV_zeroth[2]);
-        const float TV_base_min = fminf(fminf(TV_base[0], TV_base[1]), TV_base[2]);
-
-        // Update the solution
+        // Use a collaborative regularization
+        float DT_ALIGNED_ARRAY TV_RGB[4];
         #ifdef _OPENMP
-        #pragma omp simd aligned(input, output: 64) aligned(grad, lapl, base : 16)
+        #pragma omp simd aligned(TV, TV_RGB, ABCD: 64)
+        #endif
+        for(size_t k = 0; k < 4; k++)
+          TV_RGB[k] = ABCD[k] * fminf(fminf(TV[0][k], TV[1][k]), TV[2][k]);
+
+        // Convolve anisotropic filters at current pixel for directional derivatives
+        float DT_ALIGNED_ARRAY derivatives[4][4];
+        #ifdef _OPENMP
+        #pragma omp simd aligned(kern_grad, kern_base, kern_lap, in, derivatives, grad_pixel, lapl_pixel: 64)
         #endif
         for(size_t c = 0; c < 4; c++)
         {
-          output[index + c] = input[index + c] + bokeh * (A * lapl[c] * TV_lap_min +
-                                                          B * grad[c] * TV_grad_min -
-                                                          C * input[index + c] * TV_zeroth_min -
-                                                          D * base[c] * TV_base_min);
+          float acc1 = 0.f;
+          float acc2 = 0.f;
+          float acc3 = 0.f;
+
+          if(compute_base || compute_structure)
+          {
+            for(size_t k = 0; k < 9; k++)
+            {
+              // Convolve the base term
+              acc1 += kern_base[k][c] * grad_pixel[k][c];
+
+              // Convolve first-order term (gradient)
+              acc2 += kern_grad[k][c] * grad_pixel[k][c];
+            }
+          }
+
+          if(compute_texture)
+          {
+            for(size_t k = 0; k < 9; k++)
+            {
+              // Convolve second-order term (laplacian)
+              acc3 += kern_lap[k][c] * lapl_pixel[k][c];
+            }
+          }
+
+          derivatives[c][0] = acc3;
+          derivatives[c][1] = acc2;
+          derivatives[c][2] = -center[c];
+          derivatives[c][3] = -acc1;
+        }
+
+        // Update the solution
+        #ifdef _OPENMP
+        #pragma omp simd aligned(in, out, derivatives, TV_RGB: 64)
+        #endif
+        for(size_t c = 0; c < 4; c++)
+        {
+          float acc = 0.f;
+          for(size_t k = 0; k < 4; k++) acc += derivatives[c][k] * TV_RGB[k];
+          out[index + c] = center[c] + bokeh * acc;
         }
       }
       else
       {
         #ifdef _OPENMP
-        #pragma omp simd aligned(input, output: 64)
+        #pragma omp simd aligned(in, out: 64)
         #endif
-        for(size_t c = 0; c < 4; c++) output[index + c] = input[index + c];
+        for(size_t c = 0; c < 4; c++) out[index + c] = in[index + c];
       }
     }
 }
@@ -746,7 +758,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, float 
   gint success = TRUE;
 
   // wavelets scales - either the max kernel size at current resolution or 4 times the blur radius
-  const float zoom = roi_in->scale / piece->iscale;
+  const float zoom = fmaxf(roi_in->scale / piece->iscale, 1.f);
   const int current_zoom_scales = get_scales(roi_in, piece);
   int diffusion_scales;
   if(data->model == DT_DIFFUSE_GAUSSIAN)
@@ -769,12 +781,12 @@ static inline gint reconstruct_highlights(const float *const restrict in, float 
   float regularization_base = expf(-data->regularization_base);
 
   // wavelets scales buffers
-  float *const restrict LF_even = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch); // low-frequencies RGB
-  float *const restrict LF_odd = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // low-frequencies RGB
-  float *const restrict HF_RGB = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);  // high-frequencies RGB
+  float *const restrict LF_even = dt_alloc_align_float(roi_out->width * roi_out->height * ch); // low-frequencies RGB
+  float *const restrict LF_odd = dt_alloc_align_float(roi_out->width * roi_out->height * ch);  // low-frequencies RGB
+  float *const restrict HF_RGB = dt_alloc_align_float(roi_out->width * roi_out->height * ch);  // high-frequencies RGB
 
   // alloc a permanent reusable buffer for intermediate computations - avoid multiple alloc/free
-  float *const restrict temp1 = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+  float *const restrict temp1 = dt_alloc_align_float(roi_out->width * roi_out->height * ch);
 
   if(!LF_even || !LF_odd || !HF_RGB || !temp1)
   {
@@ -899,14 +911,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   }
 
   const size_t ch = 4;
-  float *restrict in = (float *const restrict)ivoid;
-  float *const restrict out = (float *const restrict)ovoid;
+  float *restrict in = DT_IS_ALIGNED((float *const restrict)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *const restrict)ovoid);
   float *restrict temp = NULL;
   uint8_t *restrict mask = NULL;
 
   if(data->threshold > 0.f)
   {
-    const float scale = piece->iscale / roi_in->scale;
+    const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
     const float blur = (float)data->radius / scale;
 
     // build a boolean mask, TRUE where image is above threshold
@@ -914,7 +926,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     build_mask(in, mask, data->threshold, roi_out->width, roi_out->height, ch);
 
     // init the inpainting area with blur
-    temp = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+    temp = dt_alloc_align_float(roi_out->width * roi_out->height * ch);
 
     float RGBmax[4], RGBmin[4];
     for(int k = 0; k < 4; k++)
