@@ -26,6 +26,7 @@
 #include "common/imageio_jpeg.h"
 #include "common/mipmap_cache.h"
 #include "common/metadata.h"
+#include "common/ratings.h"
 #include "control/conf.h"
 #include "control/control.h"
 #ifdef HAVE_GPHOTO2
@@ -914,7 +915,7 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
     else if (g_str_has_prefix(metadata_name, "recursive"))
       dt_conf_set_bool("ui_last/import_recursive", (value[0] == '1')  ? TRUE : FALSE);
     else if (g_str_has_prefix(metadata_name, "rating"))
-      dt_conf_set_int("ui_last/import_initial_rating", value[0] & 7);
+      dt_conf_set_int("ui_last/import_initial_rating", value[0] & DT_VIEW_RATINGS_MASK);
     else if (g_str_has_prefix(metadata_name, "tags"))
     {
       // get all the tags back - ugly but allow to keep readable presets
