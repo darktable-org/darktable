@@ -17,6 +17,7 @@
 */
 #include "control/jobs/film_jobs.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/film.h"
 #include <stdlib.h>
 
@@ -253,12 +254,15 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     g_free(cdn);
 
     /* import image */
-    dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
+    const int32_t imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
 
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
 
-
+    if((imgid & 3) == 3)
+    {
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+    }
   } while((image = g_list_next(image)) != NULL);
 
   g_list_free_full(images, g_free);

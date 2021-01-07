@@ -17,6 +17,7 @@
 */
 #include "control/jobs/camera_jobs.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/import_session.h"
 #include "common/utility.h"
 #include "control/conf.h"
@@ -282,7 +283,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE);
+  const int32_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE);
   dt_control_queue_redraw_center();
   gchar *basename = g_path_get_basename(filename);
   dt_control_log(ngettext("%d/%d imported to %s", "%d/%d imported to %s", t->import_count + 1),
@@ -292,6 +293,11 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
   t->fraction += 1.0 / g_list_length(t->images);
 
   dt_control_job_set_progress(t->job, t->fraction);
+
+  if((imgid & 3) == 3)
+  {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+  }
 
   if(t->import_count + 1 == g_list_length(t->images))
   {
