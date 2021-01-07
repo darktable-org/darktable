@@ -542,9 +542,9 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     {
       gtk_widget_set_sensitive(evb, FALSE);
       gtk_widget_set_sensitive(btn, FALSE);
-      gtk_widget_set_tooltip_text(lb, _("This basic widget is disabled as there's multiple instances "
+      gtk_widget_set_tooltip_text(lb, _("this basic widget is disabled as there's multiple instances "
                                         "for this module. You need to use the full module..."));
-      gtk_widget_set_tooltip_text(btn, _("This basic widget is disabled as there's multiple instances "
+      gtk_widget_set_tooltip_text(btn, _("this basic widget is disabled as there's multiple instances "
                                          "for this module. You need to use the full module..."));
     }
     else
@@ -647,14 +647,14 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     if(dt_iop_count_instances(item->module->so) > 1)
     {
       gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("This basic widget is disabled as there's multiple instances "
+      gtk_widget_set_tooltip_text(item->widget, _("this basic widget is disabled as there's multiple instances "
                                                   "for this module. You need to use the full module..."));
     }
     else if(!item->visible)
     {
       gtk_widget_show_all(item->widget);
       gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("This basic widget is disabled as it's hidden in the actual "
+      gtk_widget_set_tooltip_text(item->widget, _("this basic widget is disabled as it's hidden in the actual "
                                                   "module configuration. You need to use the full module..."));
     }
     else
