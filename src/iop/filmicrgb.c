@@ -1454,7 +1454,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   float *restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;
-  float *const restrict mask = dt_alloc_sse_ps(roi_out->width * roi_out->height);
+  float *const restrict mask = dt_alloc_sse_ps((size_t)roi_out->width * roi_out->height);
 
   // used to adjuste noise level depending on size. Don't amplify noise if magnified > 100%
   const float scale = fmaxf(piece->iscale / roi_in->scale, 1.f);
@@ -1475,14 +1475,14 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
   }
 
-  float *const restrict reconstructed = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+  float *const restrict reconstructed = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);
   const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
 
   // if fast mode is not in use
   if(!run_fast && recover_highlights && mask && reconstructed)
   {
     // init the blown areas with noise to create particles
-    float *const restrict inpainted =  dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+    float *const restrict inpainted =  dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);
     inpaint_noise(in, mask, inpainted, data->noise_level / scale, data->reconstruct_threshold, data->noise_distribution,
                   roi_out->width, roi_out->height, ch);
 
@@ -1495,8 +1495,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
     if(data->high_quality_reconstruction > 0 && success_1)
     {
-      float *const restrict norms = dt_alloc_sse_ps(roi_out->width * roi_out->height);
-      float *const restrict ratios = dt_alloc_sse_ps(roi_out->width * roi_out->height * ch);
+      float *const restrict norms = dt_alloc_sse_ps((size_t)roi_out->width * roi_out->height);
+      float *const restrict ratios = dt_alloc_sse_ps(ch * roi_out->width * roi_out->height);
 
       // reconstruct highlights PASS 2 on ratios
       if(norms && ratios)

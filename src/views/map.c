@@ -368,7 +368,7 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -393,7 +393,7 @@ static GdkPixbuf *_init_image_pin()
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -441,7 +441,7 @@ static GdkPixbuf *_init_place_pin()
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -509,7 +509,7 @@ static GdkPixbuf *_draw_ellipse(const float dlongitude, const float dlatitude,
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -564,7 +564,7 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude,
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,

@@ -345,7 +345,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   // local variables
   //   const int width = W, height = H;
   // temporary array to store simple interpolation of G
-  float *Gtmp = (float(*))calloc((height) * (width), sizeof *Gtmp);
+  float *Gtmp = (float(*))calloc((size_t)(height) * (width), sizeof *Gtmp);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
   float *RawDataTmp = (float *)malloc(sizeof(float) * height * width / 2 + 4);
@@ -368,7 +368,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
 
   // block CA shift values and weight assigned to block
   float *blockwt = (float *)buffer1;
-  float(*blockshifts)[2][2] = (float(*)[2][2])(buffer1 + (vblsz * hblsz * sizeof(float)));
+  float(*blockshifts)[2][2] = (float(*)[2][2])(buffer1 + (sizeof(float) * vblsz * hblsz));
 
   double fitparams[2][2][16];
 

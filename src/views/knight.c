@@ -349,7 +349,7 @@ static inline cairo_pattern_t *_new_sprite(const uint8_t *data, const int width,
                                            int *_stride, GList **bufs, GList **surfaces, GList **patterns)
 {
   const int32_t stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, width);
-  uint8_t *buf = (uint8_t *)malloc(stride * height);
+  uint8_t *buf = (uint8_t *)malloc((size_t)stride * height);
   for(int y = 0; y < height; y++) memcpy(&buf[y * stride], &(data[y * width]), sizeof(uint8_t) * width);
   cairo_surface_t *surface = cairo_image_surface_create_for_data(buf, CAIRO_FORMAT_A8, width, height, stride);
   cairo_pattern_t *pattern = cairo_pattern_create_for_surface(surface);

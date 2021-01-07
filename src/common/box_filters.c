@@ -463,7 +463,7 @@ static void blur_vertical_1ch(float *const restrict buf, const int height, const
   {
     float L = 0.0f;
     int hits = 0;
-    size_t index = (size_t)x - radius * width;
+    size_t index = (size_t)x - (size_t)radius * width;
     float *const restrict scanline = scanlines;
     for(int y = -radius; y < height; y++)
     {
@@ -562,7 +562,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
       __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       __m128 L = _mm_setzero_ps();
       int hits = 0;
-      size_t index = (size_t)x - radius * width;
+      size_t index = (size_t)x - (size_t)radius * width;
       for(int y = -radius; y < height; y++)
       {
         int op = y - radius - 1;

@@ -276,7 +276,7 @@ void process(struct dt_iop_module_t *const self, dt_dev_pixelpipe_iop_t *const p
     dt_omp_firstprivate(d, in, out, roi_out) \
     aligned(in, out:64) collapse(2)
 #endif
-  for(size_t k = 0; k < roi_out->height * roi_out->width * 4; k += 4)
+  for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * 4; k += 4)
   {
     for(size_t c = 0; c < 4; c++)
     {

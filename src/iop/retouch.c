@@ -2883,7 +2883,7 @@ static void rt_intersect_2_rois(dt_iop_roi_t *const roi_1, dt_iop_roi_t *const r
 static void rt_copy_in_to_out(const float *const in, const struct dt_iop_roi_t *const roi_in, float *const out,
                               const struct dt_iop_roi_t *const roi_out, const int ch, const int dx, const int dy)
 {
-  const int rowsize = MIN(roi_out->width, roi_in->width) * ch * sizeof(float);
+  const size_t rowsize = sizeof(float) * ch * MIN(roi_out->width, roi_in->width);
   const int xoffs = roi_out->x - roi_in->x - dx;
   const int yoffs = roi_out->y - roi_in->y - dy;
   const int y_to = MIN(roi_out->height, roi_in->height);
@@ -3493,7 +3493,7 @@ static void process_internal(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
      && (g->mask_display || display_wavelet_scale) && self->dev->gui_attached
      && (self == self->dev->gui_module) && (piece->pipe == self->dev->pipe))
   {
-    for(size_t j = 0; j < roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
+    for(size_t j = 0; j < (size_t)roi_rt->width * roi_rt->height * ch; j += ch) in_retouch[j + 3] = 0.f;
 
     piece->pipe->mask_display = g->mask_display ? DT_DEV_PIXELPIPE_DISPLAY_MASK : DT_DEV_PIXELPIPE_DISPLAY_PASSTHRU;
     piece->pipe->bypass_blendif = 1;

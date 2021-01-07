@@ -286,7 +286,7 @@ static void process_wavelets(struct dt_iop_module_t *self, struct dt_dev_pixelpi
 #ifdef _OPENMP
 #pragma omp simd aligned(buf1, out : 64)
 #endif
-  for (size_t k = 0; k < 4 * width * height; k++)
+  for (size_t k = 0; k < (size_t)4 * width * height; k++)
     out[k] += buf1[k];
 
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)

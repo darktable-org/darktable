@@ -968,7 +968,7 @@ dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int heig
 
   // we transfer cached image on a cairo_surface (with colorspace transform if needed)
   cairo_surface_t *tmp_surface = NULL;
-  uint8_t *rgbbuf = (uint8_t *)calloc(buf_wd * buf_ht * 4, sizeof(uint8_t));
+  uint8_t *rgbbuf = (uint8_t *)calloc((size_t)buf_wd * buf_ht * 4, sizeof(uint8_t));
   if(rgbbuf)
   {
     gboolean have_lock = FALSE;

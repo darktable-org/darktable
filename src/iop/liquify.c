@@ -894,7 +894,7 @@ static void build_round_stamp(float complex **pstamp,
   const float abs_strength = cabs(strength);
 
   float complex *restrict stamp =
-    calloc(sizeof(float complex), stamp_extent->width * stamp_extent->height);
+    calloc(sizeof(float complex), (size_t)stamp_extent->width * stamp_extent->height);
 
   // lookup table: map of distance from center point => warp
   const int table_size = iradius * LOOKUP_OVERSAMPLE;
@@ -1515,7 +1515,7 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
     (devid, sizeof(dt_iop_roi_t), (void *) roi_out);
 
   cl_mem_t dev_map = dt_opencl_copy_host_to_device_constant
-    (devid, map_extent->width * map_extent->height * sizeof(float complex), (void *) map);
+    (devid, sizeof(float complex) * map_extent->width * map_extent->height, (void *) map);
 
   cl_mem_t dev_map_extent = dt_opencl_copy_host_to_device_constant
     (devid, sizeof(cairo_rectangle_int_t), (void *) map_extent);
@@ -1524,7 +1524,7 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
     (devid, sizeof(dt_liquify_kernel_descriptor_t), (void *) &kdesc);
 
   cl_mem_t dev_kernel = dt_opencl_copy_host_to_device_constant
-    (devid, (kdesc.size * kdesc.resolution  + 1) * sizeof(float), (void *) k);
+    (devid, sizeof(float) * (kdesc.size * kdesc.resolution  + 1), (void *) k);
 
   if(dev_roi_in == NULL || dev_roi_out == NULL || dev_map == NULL || dev_map_extent == NULL
       || dev_kdesc == NULL || dev_kernel == NULL)

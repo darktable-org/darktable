@@ -688,7 +688,7 @@ static inline void apply_toneequalizer(const float *const restrict in,
                                        const size_t ch,
                                        const dt_iop_toneequalizer_data_t *const d)
 {
-  const size_t num_elem = roi_in->width * roi_in->height;
+  const size_t num_elem = (size_t)roi_in->width * roi_in->height;
   const int min_ev = -8;
   const int max_ev = 0;
   const float* restrict lut = d->correction_lut;

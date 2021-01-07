@@ -239,7 +239,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     const int height = roi_in->height;
     const int channels = piece->colors;
 
-    const size_t basebuffer = width * height * channels * sizeof(float);
+    const size_t basebuffer = sizeof(float) * channels * width * height;
 
     tiling->factor = 2.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
     tiling->maxbuf
@@ -255,7 +255,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     const int height = roi_in->height;
     const int channels = piece->colors;
 
-    const size_t basebuffer = width * height * channels * sizeof(float);
+    const size_t basebuffer = sizeof(float) * channels * width * height;
     const int rad = MIN(roi_in->width, ceilf(256 * roi_in->scale / piece->iscale));
 
     tiling->factor = 2.0f + (float)local_laplacian_memory_use(width, height) / basebuffer;

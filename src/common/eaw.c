@@ -459,7 +459,7 @@ void eaw_synthesize_sse2(float *const out, const float *const in, const float *c
   dt_omp_firstprivate(boost, detail, height, in, out, threshold, width, maski, mask) \
   schedule(static)
 #endif
-  for(size_t j = 0; j < width * height; j++)
+  for(size_t j = 0; j < (size_t)width * height; j++)
   {
     const __m128 *pin = (__m128 *)in + j;
     const __m128 *pdetail = (__m128 *)detail + j;

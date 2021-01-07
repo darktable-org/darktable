@@ -402,7 +402,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
   dt_omp_firstprivate(ch, data, desaturate, ivoid, ovoid, preserve_color, roi_out, saturation, EPS) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
+  for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * ch; k += ch)
   {
     float *in = ((float *)ivoid) + k;
     float *out = ((float *)ovoid) + k;
@@ -532,7 +532,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
                       zero, eps) \
   schedule(static)
 #endif
-  for(size_t k = 0; k < roi_out->height * roi_out->width * ch; k += ch)
+  for(size_t k = 0; k < (size_t)roi_out->height * roi_out->width * ch; k += ch)
   {
     float *in = ((float *)ivoid) + k;
     float *out = ((float *)ovoid) + k;

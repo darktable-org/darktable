@@ -295,7 +295,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const size_t basebuffer = width * height * channels * sizeof(float);
+  const size_t basebuffer = sizeof(float) * channels * width * height;
   const size_t bilat_mem = dt_bilateral_memory_use(width, height, sigma_s, sigma_r);
 
   tiling->factor = 2.0f + (float)bilat_mem / basebuffer;

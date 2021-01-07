@@ -1005,7 +1005,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if (clut && level)
   {
-    clut_cl = dt_opencl_copy_host_to_device_constant(devid, level * level * level * 3 * sizeof(float), (void *)clut);
+    clut_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * level * level * level, (void *)clut);
     if(clut_cl == NULL)
     {
       fprintf(stderr, "[lut3d process_cl] error allocating memory\n");
@@ -1083,22 +1083,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
       if (interpolation == DT_IOP_TETRAHEDRAL)
-        correct_pixel_tetrahedral(obuf, obuf, width * height, clut, level);
+        correct_pixel_tetrahedral(obuf, obuf, (size_t)width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(obuf, obuf, width * height, clut, level);
+        correct_pixel_trilinear(obuf, obuf, (size_t)width * height, clut, level);
       else
-        correct_pixel_pyramid(obuf, obuf, width * height, clut, level);
+        correct_pixel_pyramid(obuf, obuf, (size_t)width * height, clut, level);
       dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height,
         lut_profile, work_profile, "LUT profile to work profile");
     }
     else
     {
       if (interpolation == DT_IOP_TETRAHEDRAL)
-        correct_pixel_tetrahedral(ibuf, obuf, width * height, clut, level);
+        correct_pixel_tetrahedral(ibuf, obuf, (size_t)width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(ibuf, obuf, width * height, clut, level);
+        correct_pixel_trilinear(ibuf, obuf, (size_t)width * height, clut, level);
       else
-        correct_pixel_pyramid(ibuf, obuf, width * height, clut, level);
+        correct_pixel_pyramid(ibuf, obuf, (size_t)width * height, clut, level);
     }
   }
   else  // no clut

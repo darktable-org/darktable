@@ -206,7 +206,7 @@ void dt_bilateral_splat(const dt_bilateral_t *b, const float *const in)
       float y = CLAMPS(j / b->sigma_s, 0, b->size_y - 1);
       const int yi = MIN((int)y, b->size_y - 2);
       const float yf = y - yi;
-      const size_t base = (yi + slice_offset) * oy;
+      const size_t base = (size_t)(yi + slice_offset) * oy;
       for(int i = 0; i < b->width; i++)
       {
         size_t index = 4 * (j * b->width + i);

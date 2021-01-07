@@ -412,11 +412,11 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 1, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 2, sizeof(int), &height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 3, sizeof(cl_mem), &dev_m);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 4, flocopt.sizex * flocopt.sizey * sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_first, 4, sizeof(float) * flocopt.sizex * flocopt.sizey, NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_first, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
-      sizes[0] = reducesize * slocopt.sizex;
+      sizes[0] = (size_t)reducesize * slocopt.sizex;
       sizes[1] = 1;
       sizes[2] = 1;
       local[0] = slocopt.sizex;
@@ -425,13 +425,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 0, sizeof(cl_mem), &dev_m);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 1, sizeof(cl_mem), &dev_r);
       dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 2, sizeof(int), &bufsize);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, slocopt.sizex * sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_pixelmax_second, 3, sizeof(float) * slocopt.sizex, NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pixelmax_second, sizes, local);
       if(err != CL_SUCCESS) goto error;
 
       maximum = dt_alloc_align_float((size_t)reducesize);
       err = dt_opencl_read_buffer_from_device(devid, (void *)maximum, dev_r, 0,
-                                            (size_t)reducesize * sizeof(float), CL_TRUE);
+                                            sizeof(float) * reducesize, CL_TRUE);
       if(err != CL_SUCCESS) goto error;
 
       dt_opencl_release_mem_object(dev_r);
@@ -534,7 +534,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const size_t basebuffer = width * height * channels * sizeof(float);
+  const size_t basebuffer = sizeof(float) * channels * width * height;
 
   tiling->factor = 2.0f + (detail ? (float)dt_bilateral_memory_use2(width, height, sigma_s, sigma_r) / basebuffer : 0.0f);
   tiling->maxbuf

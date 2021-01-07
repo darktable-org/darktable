@@ -1568,7 +1568,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             // we abuse the empty output buffer on host for intermediate storage of data in
             // histogram_collect_cl()
-            size_t outbufsize = roi_out->width * roi_out->height * bpp;
+            size_t outbufsize = bpp * roi_out->width * roi_out->height;
 
             histogram_collect_cl(pipe->devid, piece, cl_mem_input, &roi_in, &(piece->histogram),
                                  piece->histogram_max, *output, outbufsize);
@@ -1578,7 +1578,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
                && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
             {
-              const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
+              const size_t buf_size = sizeof(uint32_t) * 4 * piece->histogram_stats.bins_count;
               module->histogram = realloc(module->histogram, buf_size);
               memcpy(module->histogram, piece->histogram, buf_size);
               module->histogram_stats = piece->histogram_stats;
@@ -2171,7 +2171,7 @@ post_process_collect_info:
         {
           const uint8_t *in = (uint8_t *)(*output);
           // FIXME: it would be nice to use dt_imageio_flip_buffers_ui8_to_float() but then we'd need to make another pass to convert RGB to BGR
-          for(size_t k = 0; k < roi_out->width * roi_out->height * 4; k += 4)
+          for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
           {
             for(size_t c = 0; c < 3; c++)
               buf[k + c] = in[k + 2 - c] / 255.0f;

@@ -368,7 +368,7 @@ static void dt_iop_colorreconstruct_bilateral_splat(dt_iop_colorreconstruct_bila
 #endif
   for(int j = 0; j < b->height; j++)
   {
-    size_t index = 4 * j * b->width;
+    size_t index = (size_t)4 * j * b->width;
     for(int i = 0; i < b->width; i++, index += 4)
     {
       float x, y, z, weight, m;
@@ -521,7 +521,7 @@ static void dt_iop_colorreconstruct_bilateral_slice(const dt_iop_colorreconstruc
 #endif
   for(int j = 0; j < roi->height; j++)
   {
-    size_t index = 4 * j * roi->width;
+    size_t index = (size_t)4 * j * roi->width;
     for(int i = 0; i < roi->width; i++, index += 4)
     {
       float x, y, z;
@@ -1176,7 +1176,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const size_t basebuffer = width * height * channels * sizeof(float);
+  const size_t basebuffer = sizeof(float) * channels * width * height;
 
   tiling->factor = 2.0f + (float)dt_iop_colorreconstruct_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
   tiling->maxbuf

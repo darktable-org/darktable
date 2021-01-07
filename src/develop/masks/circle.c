@@ -890,7 +890,7 @@ static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
 
   // we create a buffer of points with all points in the area
   const int w = *width, h = *height;
-  float *const restrict points = dt_alloc_align_float(w * h * 2);
+  float *const restrict points = dt_alloc_align_float((size_t)w * h * 2);
   if(points == NULL)
     return 0;
 
@@ -921,7 +921,7 @@ static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
   start2 = dt_get_wtime();
 
   // we back transform all this points
-  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, w * h))
+  if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, (size_t)w * h))
   {
     dt_free_align(points);
     return 0;
@@ -933,7 +933,7 @@ static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  *buffer = dt_alloc_align_float(w * h);
+  *buffer = dt_alloc_align_float((size_t)w * h);
   if(*buffer == NULL)
   {
     dt_free_align(points);
