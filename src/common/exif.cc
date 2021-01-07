@@ -2986,8 +2986,22 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           // prior to v3 there was no iop-order, all multi instances where grouped, use the multièpriority
           // to restore the order.
           GList *base_order = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, -1);
-          e->o.iop_order_f = ((dt_iop_order_entry_t *)(base_order->data))->o.iop_order_f
-            - entry->multi_priority / 100.0f;
+
+          if(base_order)
+            e->o.iop_order_f = ((dt_iop_order_entry_t *)(base_order->data))->o.iop_order_f
+              - entry->multi_priority / 100.0f;
+          else
+          {
+            fprintf(stderr,
+                    "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
+                    entry->operation);
+            g_list_free_full(iop_order_list, free);
+            g_list_free_full(history_entries, free_history_entry);
+            g_list_free_full(mask_entries_v3, free_mask_entry);
+            if(mask_entries) g_hash_table_destroy(mask_entries);
+            g_free(e);
+            return 1;
+          }
         }
         else
         {
