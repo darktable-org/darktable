@@ -4,7 +4,7 @@
   <dtconfig>
     <name>themes/usercss</name>
     <type>bool</type>
-    <default>true</default>
+    <default>false</default>
     <shortdescription>modify theme with user tweaks</shortdescription>
   </dtconfig>
   <dtconfig prefs="misc" section="accel">
