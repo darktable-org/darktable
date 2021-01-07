@@ -1160,6 +1160,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(d->grid, TRUE);
   _lib_metadata_setup_grid(self);
   char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
+  if (! strlen(pref))
+    gui_reset(self);
   _apply_preferences(pref, self);
   g_free(pref);
 
