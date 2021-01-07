@@ -1369,13 +1369,19 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
 {
   sqlite3_stmt *stmt;
   gchar *needle = NULL;
+  gboolean wildcard = FALSE;
 
   GHashTable *names = NULL;
   if (sanitized)
     names = g_hash_table_new(g_str_hash, g_str_equal);
 
   if (filter && filter[0] != '\0')
+  {
     needle = g_utf8_strdown(filter, -1);
+    wildcard = (needle && needle[strlen(needle) - 1] == '%') ? TRUE : FALSE;
+    if(wildcard)
+      needle[strlen(needle) - 1] = '\0';
+  }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT maker, model FROM main.images GROUP BY maker, model",
@@ -1388,7 +1394,8 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
     gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
     gchar *haystack = g_utf8_strdown(makermodel, -1);
-    if (!needle || g_strrstr(haystack, needle) != NULL)
+    if (!needle || (wildcard && g_strrstr(haystack, needle) != NULL)
+                || (!wildcard && !g_strcmp0(haystack, needle)))
     {
       if (exif)
       {
@@ -1746,7 +1753,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       for (l = list; l != NULL; l = l->next)
         l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
-        
+
       query = dt_util_dstrcat(NULL, "(%s)", dt_util_glist_to_str(" OR ", list));
       g_list_free(list);
 
