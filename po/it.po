@@ -7586,7 +7586,7 @@ msgid ""
 "/* Enter CSS theme tweaks here */\n"
 "\n"
 msgstr ""
-"/* Inserisci le modifiche al CSS qui /*\n"
+"/* Inserisci le modifiche al CSS qui */\n"
 "\n"
 
 #: ../src/gui/preferences.c:546
