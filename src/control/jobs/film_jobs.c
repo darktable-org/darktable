@@ -15,9 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "common/collection.h"
 #include "control/jobs/film_jobs.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/film.h"
 #include <stdlib.h>
 
@@ -254,12 +254,12 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     g_free(cdn);
 
     /* import image */
-    const int imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
+    const int32_t imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
 
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
 
-    if((imgid & 7) == 7)
+    if((imgid & 3) == 3)
     {
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
     }
