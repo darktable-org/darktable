@@ -787,13 +787,13 @@ static void _default_process_tiling_ptp(struct dt_iop_module_t *self, struct dt_
       {
         origin[0] += overlap;
         region[0] -= overlap;
-        ooffs += overlap * out_bpp;
+        ooffs += (size_t)overlap * out_bpp;
       }
       if(ty > 0)
       {
         origin[1] += overlap;
         region[1] -= overlap;
-        ooffs += overlap * opitch;
+        ooffs += (size_t)overlap * opitch;
       }
 
 /* copy "good" part of tile to output buffer */
@@ -1476,13 +1476,13 @@ static int _default_process_tiling_cl_ptp(struct dt_iop_module_t *self, struct d
       {
         origin[0] += overlap;
         region[0] -= overlap;
-        ooffs += overlap * out_bpp;
+        ooffs += (size_t)overlap * out_bpp;
       }
       if(ty > 0)
       {
         origin[1] += overlap;
         region[1] -= overlap;
-        ooffs += overlap * opitch;
+        ooffs += (size_t)overlap * opitch;
       }
 
       if(use_pinned_memory)

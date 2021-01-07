@@ -3047,7 +3047,7 @@ static int color_smoothing_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
     dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_color_smoothing, 4,
-                               (locopt.sizex + 2) * (locopt.sizey + 2) * 4 * sizeof(float), NULL);
+                               sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_color_smoothing, sizes, local);
     if(err != CL_SUCCESS) goto error;
 
@@ -3153,14 +3153,14 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 5, sizeof(int), &roi_in->x);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 6, sizeof(int), &roi_in->y);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_first, 7,
-                             flocopt.sizex * flocopt.sizey * 2 * sizeof(float), NULL);
+                             sizeof(float) * 2 * flocopt.sizex * flocopt.sizey, NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_first, fsizes,
                                                  flocal);
     if(err != CL_SUCCESS) goto error;
 
     dt_opencl_local_buffer_t slocopt
       = (dt_opencl_local_buffer_t){ .xoffset = 0, .xfactor = 1, .yoffset = 0, .yfactor = 1,
-                                    .cellsize = 2 * sizeof(float), .overhead = 0,
+                                    .cellsize = sizeof(float) * 2, .overhead = 0,
                                     .sizex = 1 << 16, .sizey = 1 };
 
     if(!dt_opencl_local_buffer_opt(devid, gd->kernel_green_eq_favg_reduce_second, &slocopt))
@@ -3171,12 +3171,12 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     dev_r = dt_opencl_alloc_device_buffer(devid, sizeof(float) * 2 * reducesize);
     if(dev_r == NULL) goto error;
 
-    size_t ssizes[3] = { reducesize * slocopt.sizex, 1, 1 };
+    size_t ssizes[3] = { (size_t)reducesize * slocopt.sizex, 1, 1 };
     size_t slocal[3] = { slocopt.sizex, 1, 1 };
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 0, sizeof(cl_mem), &dev_m);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 1, sizeof(cl_mem), &dev_r);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 2, sizeof(int), &bufsize);
-    dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 3, slocopt.sizex * 2 * sizeof(float), NULL);
+    dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_favg_reduce_second, 3, sizeof(float) * 2 * slocopt.sizex, NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_favg_reduce_second, ssizes,
                                                  slocal);
     if(err != CL_SUCCESS) goto error;
@@ -3184,7 +3184,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     sumsum = dt_alloc_align_float((size_t)2 * reducesize);
     if(sumsum == NULL) goto error;
     err = dt_opencl_read_buffer_from_device(devid, (void *)sumsum, dev_r, 0,
-                                            (size_t)reducesize * 2 * sizeof(float), CL_TRUE);
+                                            sizeof(float) * 2 * reducesize, CL_TRUE);
     if(err != CL_SUCCESS) goto error;
 
     float sum1 = 0.0f, sum2 = 0.0f;
@@ -3233,7 +3233,7 @@ static int green_equilibration_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_lavg, 6, sizeof(int), &roi_in->y);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_lavg, 7, sizeof(float), (void *)&threshold);
     dt_opencl_set_kernel_arg(devid, gd->kernel_green_eq_lavg, 8,
-                           (locopt.sizex + 4) * (locopt.sizey + 4) * sizeof(float), NULL);
+                           sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4), NULL);
     err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_green_eq_lavg, sizes, local);
     if(err != CL_SUCCESS) goto error;
   }
@@ -3335,7 +3335,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
                                  (void *)&piece->pipe->dsc.filters);
         dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 5, sizeof(float), (void *)&data->median_thrs);
         dt_opencl_set_kernel_arg(devid, gd->kernel_pre_median, 6,
-                             (locopt.sizex + 4) * (locopt.sizey + 4) * sizeof(float), NULL);
+                             sizeof(float) * (locopt.sizex + 4) * (locopt.sizey + 4), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_pre_median, sizes, local);
         if(err != CL_SUCCESS) goto error;
         dev_in = dev_aux;
@@ -3347,7 +3347,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
       {
         dt_opencl_local_buffer_t locopt
           = (dt_opencl_local_buffer_t){ .xoffset = 2*3, .xfactor = 1, .yoffset = 2*3, .yfactor = 1,
-                                        .cellsize = 1 * sizeof(float), .overhead = 0,
+                                        .cellsize = sizeof(float) * 1, .overhead = 0,
                                         .sizex = 1 << 8, .sizey = 1 << 8 };
 
         if(!dt_opencl_local_buffer_opt(devid, gd->kernel_ppg_green, &locopt))
@@ -3362,7 +3362,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 4, sizeof(uint32_t),
                                  (void *)&piece->pipe->dsc.filters);
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_green, 5,
-                             (locopt.sizex + 2*3) * (locopt.sizey + 2*3) * sizeof(float), NULL);
+                             sizeof(float) * (locopt.sizex + 2*3) * (locopt.sizey + 2*3), NULL);
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -3386,7 +3386,7 @@ static int process_default_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 4, sizeof(uint32_t),
                                  (void *)&piece->pipe->dsc.filters);
         dt_opencl_set_kernel_arg(devid, gd->kernel_ppg_redblue, 5,
-                             (locopt.sizex + 2) * (locopt.sizey + 2) * 4 * sizeof(float), NULL);
+                             sizeof(float) * 4 * (locopt.sizex + 2) * (locopt.sizey + 2), NULL);
 
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_ppg_redblue, sizes, local);
         if(err != CL_SUCCESS) goto error;
@@ -3734,7 +3734,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 4, sizeof(uint32_t), (void *)&filters4);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 5, sizeof(cl_mem), (void *)&dev_lookup);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_lin_interpolate, 6,
-                               (locopt.sizex + 2) * (locopt.sizey + 2) * sizeof(float), NULL);
+                               sizeof(float) * (locopt.sizex + 2) * (locopt.sizey + 2), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_lin_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -3772,7 +3772,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 8, sizeof(cl_mem), (void *)&dev_xtrans);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 9, sizeof(cl_mem), (void *)&dev_ips);
       dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 10, sizeof(cl_mem), (void *)&dev_code);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 11, (locopt.sizex + 4) * (locopt.sizey + 4) * 4 * sizeof(float), NULL);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_vng_interpolate, 11, sizeof(float) * 4 * (locopt.sizex + 4) * (locopt.sizey + 4), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_vng_interpolate, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4047,7 +4047,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
     for(int c = 1; c <= 3; c++)
     {
       err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, dev_rgb[0], dev_rgb[c], 0, 0,
-                                                    (size_t)width * height * 4 * sizeof(float));
+                                                    sizeof(float) * 4 * width * height);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -4075,7 +4075,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 8, sizeof(cl_mem), (void *)&dev_xtrans);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 9, sizeof(cl_mem), (void *)&dev_allhex);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_green_minmax, 10,
-                               (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3) * sizeof(float), NULL);
+                               sizeof(float) * (locopt_g1_g3.sizex + 2*3) * (locopt_g1_g3.sizey + 2*3), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_green_minmax, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4107,7 +4107,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 11, sizeof(cl_mem), (void *)&dev_xtrans);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 12, sizeof(cl_mem), (void *)&dev_allhex);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_green, 13,
-                               (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6) * 4 * sizeof(float), NULL);
+                               sizeof(float) * 4 * (locopt_g_interp.sizex + 2*6) * (locopt_g_interp.sizey + 2*6), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_green, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4122,7 +4122,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
         for(int c = 0; c < 4; c++)
         {
           err = dt_opencl_enqueue_copy_buffer_to_buffer(devid, dev_rgb[c], dev_rgb[c + 4], 0, 0,
-                                                        (size_t)width * height * 4 * sizeof(float));
+                                                        sizeof(float) * 4 * width * height);
           if(err != CL_SUCCESS) goto error;
         }
         // ... and process that second set of buffers
@@ -4183,7 +4183,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 10, 2 * sizeof(char), (void *)sgreen);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 11, sizeof(cl_mem), (void *)&dev_xtrans);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_solitary_green, 12,
-                                (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2) * 4 * sizeof(float), NULL);
+                                sizeof(float) * 4 * (locopt_rb_g.sizex + 2*2) * (locopt_rb_g.sizey + 2*2), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_solitary_green, sizes, local);
         if(err != CL_SUCCESS) goto error;
 
@@ -4214,7 +4214,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 7, 2 * sizeof(char), (void *)sgreen);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 8, sizeof(cl_mem), (void *)&dev_xtrans);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_red_and_blue, 9,
-                                (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3) * 4 * sizeof(float), NULL);
+                                sizeof(float) * 4 * (locopt_rb_br.sizex + 2*3) * (locopt_rb_br.sizey + 2*3), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_red_and_blue, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
@@ -4244,7 +4244,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 8, sizeof(cl_mem), (void *)&dev_xtrans);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 9, sizeof(cl_mem), (void *)&dev_allhex);
         dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_interpolate_twoxtwo, 10,
-                                (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2) * 4 * sizeof(float), NULL);
+                                sizeof(float) * 4 * (locopt_g22.sizex + 2*2) * (locopt_g22.sizey + 2*2), NULL);
         err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_interpolate_twoxtwo, sizes, local);
         if(err != CL_SUCCESS) goto error;
       }
@@ -4298,7 +4298,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 4, sizeof(int), (void *)&pad_yuv);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 5, sizeof(int), (void *)&d);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_differentiate, 6,
-                              (locopt_diff.sizex + 2*1) * (locopt_diff.sizey + 2*1) * 4 * sizeof(float), NULL);
+                              sizeof(float) * 4 * (locopt_diff.sizex + 2*1) * (locopt_diff.sizey + 2*1), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_differentiate, sizes_diff, local_diff);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4349,7 +4349,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 4, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 5, sizeof(int), (void *)&pad_homo);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_set, 6,
-                              (locopt_homo.sizex + 2*1) * (locopt_homo.sizey + 2*1) * sizeof(float), NULL);
+                              sizeof(float) * (locopt_homo.sizex + 2*1) * (locopt_homo.sizey + 2*1), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_set, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4380,7 +4380,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 3, sizeof(int), (void *)&height);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 4, sizeof(int), (void *)&pad_tile);
       dt_opencl_set_kernel_arg(devid, gd->kernel_markesteijn_homo_sum, 5,
-                              (locopt_homo_sum.sizex + 2*2) * (locopt_homo_sum.sizey + 2*2) * sizeof(char), NULL);
+                              sizeof(char) * (locopt_homo_sum.sizex + 2*2) * (locopt_homo_sum.sizey + 2*2), NULL);
       err = dt_opencl_enqueue_kernel_2d_with_local(devid, gd->kernel_markesteijn_homo_sum, sizes, local);
       if(err != CL_SUCCESS) goto error;
     }
@@ -4753,7 +4753,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   {
     tiling->factor = 1.0f + ioratio + smooth;
     tiling->maxbuf = 1.0f;
-    tiling->overhead = RCD_TILESIZE * RCD_TILESIZE * sizeof(float) * 8 * MAX(1, darktable.num_openmp_threads);
+    tiling->overhead = sizeof(float) * RCD_TILESIZE * RCD_TILESIZE * 8 * MAX(1, darktable.num_openmp_threads);
     tiling->xalign = 2;
     tiling->yalign = 2;
     tiling->overlap = 10;
