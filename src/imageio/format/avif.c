@@ -297,9 +297,9 @@ int write_image(struct dt_imageio_module_data_t *data,
           const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
           uint16_t *out_pixel = (uint16_t *)&out[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
 
-          out_pixel[0] = (uint16_t)(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f) + 0.5f);
-          out_pixel[1] = (uint16_t)(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f) + 0.5f);
-          out_pixel[2] = (uint16_t)(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f) + 0.5f);
+          out_pixel[0] = (uint16_t)roundf(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f));
+          out_pixel[1] = (uint16_t)roundf(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f));
+          out_pixel[2] = (uint16_t)roundf(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f));
       }
     }
     break;
@@ -318,9 +318,9 @@ int write_image(struct dt_imageio_module_data_t *data,
           const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
           uint8_t *out_pixel = (uint8_t *)&out[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
 
-          out_pixel[0] = (uint8_t)(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f) + 0.5f);
-          out_pixel[1] = (uint8_t)(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f) + 0.5f);
-          out_pixel[2] = (uint8_t)(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f) + 0.5f);
+          out_pixel[0] = (uint8_t)roundf(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f));
+          out_pixel[1] = (uint8_t)roundf(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f));
+          out_pixel[2] = (uint8_t)roundf(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f));
       }
     }
     break;

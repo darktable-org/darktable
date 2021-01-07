@@ -953,9 +953,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
         {
           // convert in place, this is unfortunately very serial..
-          const uint8_t r = CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff) + 0.5f;
-          const uint8_t g = CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff) + 0.5f;
-          const uint8_t b = CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff) + 0.5f;
+          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
+          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
+          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
           outbuf[4 * k + 0] = r;
           outbuf[4 * k + 1] = g;
           outbuf[4 * k + 2] = b;
@@ -972,9 +972,9 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
         for(size_t k = 0; k < (size_t)processed_width * processed_height; k++)
         {
           // convert in place, this is unfortunately very serial..
-          const uint8_t r = CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff) + 0.5f;
-          const uint8_t g = CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff) + 0.5f;
-          const uint8_t b = CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff) + 0.5f;
+          const uint8_t r = roundf(CLAMP(inbuf[4 * k + 0] * 0xff, 0, 0xff));
+          const uint8_t g = roundf(CLAMP(inbuf[4 * k + 1] * 0xff, 0, 0xff));
+          const uint8_t b = roundf(CLAMP(inbuf[4 * k + 2] * 0xff, 0, 0xff));
           outbuf[4 * k + 0] = r;
           outbuf[4 * k + 1] = g;
           outbuf[4 * k + 2] = b;
@@ -1008,7 +1008,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
       {
         // convert in place
         const size_t k = (size_t)processed_width * y + x;
-        for(int i = 0; i < 3; i++) buf16[4 * k + i] = CLAMP(buff[4 * k + i] * 0xffff, 0, 0xffff) + 0.5f;
+        for(int i = 0; i < 3; i++) buf16[4 * k + i] = roundf(CLAMP(buff[4 * k + i] * 0xffff, 0, 0xffff));
       }
   }
   // else output float, no further harm done to the pixels :)
