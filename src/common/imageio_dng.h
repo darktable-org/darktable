@@ -186,7 +186,7 @@ static inline void dt_imageio_write_dng(
   if(f)
   {
     dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel);
-    const int k = fwrite(pixel, sizeof(float), wd * ht, f);
+    const int k = fwrite(pixel, sizeof(float), (size_t)wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
     if(exif) dt_exif_write_blob(exif, exif_len, filename, 0);

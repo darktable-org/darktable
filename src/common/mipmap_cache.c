@@ -323,7 +323,7 @@ void dt_mipmap_cache_allocate_dynamic(void *data, dt_cache_entry_t *entry)
       int imgfw= 0, imgfh= 0;
       // be sure that we have the right size values
       dt_image_get_final_size(get_imgid(entry->key), &imgfw, &imgfh);
-      entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + (imgfw + 4) * (imgfh + 4) * 4;
+      entry->data_size = sizeof(struct dt_mipmap_buffer_dsc) + (size_t)(imgfw + 4) * (imgfh + 4) * 4;
     }
     else if(mip <= DT_MIPMAP_F)
     {
@@ -564,7 +564,7 @@ void dt_mipmap_cache_init(dt_mipmap_cache_t *cache)
     // header + buffer
   for(int k = DT_MIPMAP_F-1; k >= 0; k--)
     cache->buffer_size[k] = sizeof(struct dt_mipmap_buffer_dsc)
-                                + cache->max_width[k] * cache->max_height[k] * 4;
+                                + (size_t)cache->max_width[k] * cache->max_height[k] * 4;
 
   // clear stats:
   cache->mip_thumbs.stats_requests = 0;
