@@ -32,6 +32,7 @@ const guint dt_map_location_new(const char *const name)
   char *loc_name = g_strconcat(location_tag_prefix, name, NULL);
   guint locid = -1;
   dt_tag_new(loc_name, &locid);
+  g_free(loc_name);
   return locid;
 }
 

@@ -264,7 +264,7 @@ void process(struct dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, cons
   reduction(+ : avg_edge_chroma) \
   schedule(simd:static)
 #endif
-  for(size_t j = 0; j < height * width * 4; j += 4)
+  for(size_t j = 0; j < (size_t)height * width * 4; j += 4)
   {
     // edge-detect on color channels
     // method: difference of original to gaussian blurred image:
