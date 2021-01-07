@@ -2986,8 +2986,11 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           // prior to v3 there was no iop-order, all multi instances where grouped, use the multièpriority
           // to restore the order.
           GList *base_order = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, -1);
-          e->o.iop_order_f = ((dt_iop_order_entry_t *)(base_order->data))->o.iop_order_f
-            - entry->multi_priority / 100.0f;
+          if(base_order)
+            e->o.iop_order_f = ((dt_iop_order_entry_t *)(base_order->data))->o.iop_order_f
+              - entry->multi_priority / 100.0f;
+          else
+            e->o.iop_order_f = entry->iop_order;
         }
         else
         {
