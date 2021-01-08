@@ -2122,7 +2122,6 @@ static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
   if(darktable.gui->reset || (darktable.develop->gui_module == module)) return;
-  if(module && dt_dev_modulegroups_get(darktable.develop) == DT_MODULEGROUP_BASICS) return;
 
   if(darktable.develop->gui_module != module) darktable.develop->focus_hash++;
 
@@ -2186,6 +2185,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     dt_view_accels_refresh(darktable.view_manager);
 
   dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_queue_redraw_center();
 }
 
 
