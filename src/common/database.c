@@ -1774,11 +1774,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("DROP TABLE `history_hash_old`",
         "[init] can't drop table history_hash_old\n");
 
-    // needs index otherwise will slow down 
-    // see https://stackoverflow.com/questions/24259265/sqlite-bad-performance-with-on-delete-cascade
-    TRY_EXEC("CREATE INDEX `history_hash_index` ON `history_hash` ( `imgid` )",
-        "[init] can't add index history_hash_index\n");
- 
     // tagged images
     TRY_EXEC("ALTER TABLE `tagged_images` RENAME TO `tagged_images_old`",
          "[init] can't rename tagged_images\n");
@@ -2175,7 +2170,6 @@ static void _create_library_schema(dt_database_t *db)
                "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
                "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.history_hash_index ON history_hash ( imgid )", NULL, NULL, NULL);
 }
 
 /* create the current database schema and set the version in db_info accordingly */
