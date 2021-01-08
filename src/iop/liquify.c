@@ -1350,6 +1350,22 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   return 1;
 }
 
+static void start_drag(dt_iop_liquify_gui_data_t *g, dt_liquify_layer_enum_t layer, dt_liquify_path_data_t *elem)
+{
+  g->dragging.layer = layer;
+  g->dragging.elem = elem;
+}
+
+static void end_drag(dt_iop_liquify_gui_data_t *g)
+{
+  g->dragging = NOWHERE;
+}
+
+static gboolean is_dragging(dt_iop_liquify_gui_data_t *g)
+{
+  return g->dragging.elem != NULL;
+}
+
 int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count)
 {
   return _distort_xtransform(self, piece, points, points_count, TRUE);
@@ -1820,34 +1836,23 @@ static GList *interpolate_paths(dt_iop_liquify_params_t *p)
   return l;
 }
 
-#define STROKE_TEST \
-  if(do_hit_test) { if(cairo_in_stroke(cr, creal(*pt), cimag(*pt))) goto hit; continue; }
+#define FG_COLOR     set_source_rgba(cr, fg_color)
+#define BG_COLOR     set_source_rgba(cr, bg_color)
+#define VERYTHINLINE set_line_width (cr, scale / 2.0f, DT_LIQUIFY_UI_WIDTH_THINLINE)
+#define THINLINE     set_line_width (cr, scale, DT_LIQUIFY_UI_WIDTH_THINLINE)
+#define THICKLINE    set_line_width (cr, scale, DT_LIQUIFY_UI_WIDTH_THICKLINE)
 
-#define FILL_TEST \
-  if(do_hit_test) { if(cairo_in_fill(cr, creal(*pt), cimag(*pt)) || cairo_in_stroke(cr, creal(*pt), cimag(*pt))) goto hit; continue; }
-
-#define FG_COLOR  set_source_rgba(cr, fg_color)
-#define BG_COLOR  set_source_rgba(cr, bg_color)
-#define VERYTHINLINE  set_line_width (cr, (scale * pr_d) / 2.0f, DT_LIQUIFY_UI_WIDTH_THINLINE)
-#define THINLINE  set_line_width (cr, scale * pr_d, DT_LIQUIFY_UI_WIDTH_THINLINE)
-#define THICKLINE set_line_width (cr, scale * pr_d, DT_LIQUIFY_UI_WIDTH_THICKLINE)
-#define GET_UI_WIDTH_HITTEST(item) (GET_UI_WIDTH(item) * (do_hit_test ? 20.0f * darktable.develop->preview_downsampling / scale : 1.0f))
-
-static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
-                                     cairo_t *cr,
-                                     const float scale,
-                                     dt_iop_liquify_params_t *p,
-                                     GList *layers,
-                                     const float complex *pt)
+static void _draw_paths(dt_iop_module_t *module,
+                        cairo_t *cr,
+                        const float scale,
+                        dt_iop_liquify_params_t *p,
+                        GList *layers)
 {
-  const gboolean do_hit_test = pt != NULL;
-  const float pr_d = do_hit_test ? 20.0f * darktable.develop->preview_downsampling / scale : 1.0f;
-
-  dt_liquify_hit_t hit = NOWHERE;
-
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  GList *interpolated = do_hit_test ? NULL : interpolate_paths(p);
+
+  GList *interpolated = interpolate_paths(p);
+
 
   for(GList *l = layers; l != NULL; l = l->next)
   {
@@ -1855,23 +1860,18 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
     dt_liquify_rgba_t fg_color = dt_liquify_layers[layer].fg;
     dt_liquify_rgba_t bg_color = dt_liquify_layers[layer].bg;
 
-    if(do_hit_test && ((dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_HIT_TEST) == 0))
-      continue;
-
-    hit.layer = layer;
 
     if(dt_liquify_layers[layer].opacity < 1.0)
       cairo_push_group(cr);
 
     for(int k=0; k<MAX_NODES; k++)
     {
-      dt_liquify_path_data_t *data = &p->nodes[k];
-      const dt_liquify_path_data_t *prev = node_prev(p, data);
-
+      // this is an empty bin, old invalidated node, nothing more to do
       if(p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
         break;
 
-      hit.elem = data;
+      dt_liquify_path_data_t *data = &p->nodes[k];
+      const dt_liquify_path_data_t *prev = node_prev(p, data);
 
       if((dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_NODE_SELECTED)
          && !data->header.selected)
@@ -1969,20 +1969,18 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
                             crealf(point), cimagf(point));
           }
           THICKLINE; FG_COLOR;
-          STROKE_TEST;
           cairo_stroke_preserve(cr);
           THINLINE; BG_COLOR;
           cairo_stroke(cr);
         }
       }
-
-      if(layer == DT_LIQUIFY_LAYER_CENTERPOINT)
+      else if(layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         if(data->header.type == DT_LIQUIFY_PATH_MOVE_TO_V1
             || data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1
             || data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
         {
-          const float w = GET_UI_WIDTH_HITTEST(GIZMO);
+          const float w = GET_UI_WIDTH(GIZMO);
           switch (data->header.node_type)
           {
              case DT_LIQUIFY_NODE_TYPE_CUSP:
@@ -2001,7 +1999,6 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
                break;
           }
           THINLINE; BG_COLOR;
-          FILL_TEST;
           cairo_fill_preserve(cr);
           FG_COLOR;
           cairo_stroke(cr);
@@ -2030,8 +2027,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
             !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
         {
           THINLINE; BG_COLOR;
-          draw_circle(cr, data->node.ctrl1, GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
-          FILL_TEST;
+          draw_circle(cr, data->node.ctrl1, GET_UI_WIDTH(GIZMO_SMALL));
           cairo_fill_preserve(cr);
           FG_COLOR;
           cairo_stroke(cr);
@@ -2040,8 +2036,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
             data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
         {
           THINLINE; BG_COLOR;
-          draw_circle(cr, data->node.ctrl2, GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
-          FILL_TEST;
+          draw_circle(cr, data->node.ctrl2, GET_UI_WIDTH(GIZMO_SMALL));
           cairo_fill_preserve(cr);
           FG_COLOR;
           cairo_stroke(cr);
@@ -2062,8 +2057,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
       if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT)
       {
         THINLINE; BG_COLOR;
-        draw_circle(cr, warp->radius, GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
-        FILL_TEST;
+        draw_circle(cr, warp->radius, GET_UI_WIDTH(GIZMO_SMALL));
         cairo_fill_preserve(cr);
         FG_COLOR;
         cairo_stroke(cr);
@@ -2091,9 +2085,8 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
       {
         draw_triangle(cr, cmix(point, warp->radius, warp->control1),
                       cargf(warp->radius - point),
-                      GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
+                      GET_UI_WIDTH(GIZMO_SMALL));
         THINLINE; BG_COLOR;
-        FILL_TEST;
         cairo_fill_preserve(cr);
         FG_COLOR;
         cairo_stroke(cr);
@@ -2103,9 +2096,8 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
       {
         draw_triangle(cr, cmix(point, warp->radius, warp->control2),
                       cargf(-(warp->radius - point)),
-                      GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
+                      GET_UI_WIDTH(GIZMO_SMALL));
         THINLINE; BG_COLOR;
-        FILL_TEST;
         cairo_fill_preserve(cr);
         FG_COLOR;
         cairo_stroke(cr);
@@ -2118,7 +2110,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
         {
           const float complex pt = cmix(point, warp->strength,
                                         1.0 - 0.5
-                                        * (GET_UI_WIDTH_HITTEST(GIZMO_SMALL)
+                                        * (GET_UI_WIDTH(GIZMO_SMALL)
                                            / cabsf(warp->strength - point)));
           cairo_line_to(cr, crealf(pt), cimagf(pt));
         }
@@ -2136,9 +2128,8 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
         const float rot = get_rot(warp->type);
         draw_triangle(cr, warp->strength,
                       cargf(warp->strength - warp->point) + rot,
-                      GET_UI_WIDTH_HITTEST(GIZMO_SMALL));
+                      GET_UI_WIDTH(GIZMO_SMALL));
         THINLINE; BG_COLOR;
-        FILL_TEST;
         cairo_fill_preserve(cr);
         FG_COLOR;
         cairo_stroke(cr);
@@ -2153,77 +2144,6 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
   }
 
   g_list_free_full(interpolated, free);
-  return NOWHERE;
-
-hit:
-  g_list_free_full(interpolated, free);
-  cairo_new_path(cr); // otherwise a successful hit test would leave the path behind
-  return hit;
-}
-
-static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, const float scale, dt_iop_liquify_params_t *params)
-{
-  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  GList *layers = NULL;
-
-  for(dt_liquify_layer_enum_t layer = 0; layer < DT_LIQUIFY_LAYER_LAST; ++layer)
-  {
-    if(gtk_toggle_button_get_active(g->btn_point_tool)
-        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_POINT_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
-    if(gtk_toggle_button_get_active(g->btn_line_tool)
-        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_LINE_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
-    if(gtk_toggle_button_get_active(g->btn_curve_tool)
-        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_CURVE_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
-    if(gtk_toggle_button_get_active(g->btn_node_tool)
-        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_NODE_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
-  }
-
-  _draw_paths(module, cr, scale, params, layers, NULL);
-
-  g_list_free(layers);
-}
-
-static dt_liquify_hit_t hit_test_paths(struct dt_iop_module_t *module,
-                                       const float scale,
-                                       cairo_t *cr,
-                                       dt_iop_liquify_params_t *params,
-                                       float complex pt)
-{
-  dt_liquify_hit_t hit = NOWHERE;
-  GList *layers = NULL;
-
-  for(dt_liquify_layer_enum_t layer = 0; layer < DT_LIQUIFY_LAYER_LAST; ++layer)
-  {
-    if(dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_HIT_TEST)
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
-  }
-
-  layers = g_list_reverse(layers);
-  hit = _draw_paths(module, cr, scale, params, layers, &pt);
-  g_list_free(layers);
-  return hit;
-}
-
-// split a cubic bezier at t into two cubic beziers.
-
-static void casteljau(const float complex *p0, float complex *p1, float complex *p2, float complex *p3, const float t)
-{
-  const float complex p01 = *p0 + (*p1 - *p0) * t;
-  const float complex p12 = *p1 + (*p2 - *p1) * t;
-  const float complex p23 = *p2 + (*p3 - *p2) * t;
-
-  const float complex p012 = p01 + (p12 - p01) * t;
-  const float complex p123 = p12 + (p23 - p12) * t;
-
-  const float complex p0123 = p012 + (p123 - p012) * t;
-
-  *p1 = p01;
-  *p2 = p012;
-  *p3 = p0123;
 }
 
 /*
@@ -2278,6 +2198,217 @@ static float find_nearest_on_line_t(const float complex p0, const float complex 
   const float b     = cabsf(p1 - p0);         // |b|
   const float dotab = cdot(x - p0, p1 - p0);  // |a| * |b| * cos(phi)
   return dotab / (b * b);                     // |a| / |b| * cos(phi)
+}
+
+// split a cubic bezier at t into two cubic beziers.
+
+static void casteljau(const float complex *p0, float complex *p1, float complex *p2, float complex *p3, const float t)
+{
+  const float complex p01 = *p0 + (*p1 - *p0) * t;
+  const float complex p12 = *p1 + (*p2 - *p1) * t;
+  const float complex p23 = *p2 + (*p3 - *p2) * t;
+
+  const float complex p012 = p01 + (p12 - p01) * t;
+  const float complex p123 = p12 + (p23 - p12) * t;
+
+  const float complex p0123 = p012 + (p123 - p012) * t;
+
+  *p1 = p01;
+  *p2 = p012;
+  *p3 = p0123;
+}
+
+#define CHECK_HIT_PT(point)             \
+  const float d = cabsf(point - (*pt)); \
+  if(d < distance)                      \
+  {                                     \
+    distance = d;                       \
+    hit.layer = layer;                  \
+    hit.elem = data;                    \
+  }
+
+static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
+                                   dt_iop_liquify_params_t *p,
+                                   GList *layers,
+                                   const float complex *pt)
+{
+  dt_liquify_hit_t hit = NOWHERE;
+
+  float distance = FLT_MAX;
+
+  for(GList *l = layers; l != NULL; l = l->next)
+  {
+    const dt_liquify_layer_enum_t layer = (dt_liquify_layer_enum_t) GPOINTER_TO_INT(l->data);
+
+    if((dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_HIT_TEST) == 0)
+      continue;
+
+    for(int k=0; k<MAX_NODES; k++)
+    {
+      dt_liquify_path_data_t *data = &p->nodes[k];
+      const dt_liquify_path_data_t *prev = node_prev(p, data);
+
+      if(p->nodes[k].header.type == DT_LIQUIFY_PATH_INVALIDATED)
+        break;
+
+      if((dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_NODE_SELECTED)
+          && !data->header.selected)
+        continue;
+
+      if((dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_PREV_SELECTED)
+          && (!prev || !prev->header.selected))
+        continue;
+
+      const dt_liquify_warp_t *warp  = &data->warp;
+      const float complex point = data->warp.point;
+
+      if(layer == DT_LIQUIFY_LAYER_PATH)
+      {
+        if(data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1)
+        {
+          // remove 5% from start and end of line as non sensible area
+          // this is to avoid wrong interaction for center point on both
+          // sides.
+          const float complex deadzone = (point - prev->warp.point) / 20.0f;
+          const float complex lp1 = prev->warp.point + deadzone;
+          const float complex lp2 = point - deadzone;
+          const float t = find_nearest_on_line_t(lp1, lp2, *pt);
+
+          if(t > 0.0f && t < 1.0f)
+          {
+            const float complex linepoint = cmix(lp1, lp2, t);
+            const float d = cabsf(linepoint - *pt);
+            if(d < distance)
+            {
+              distance = d;
+              hit.layer = layer;
+              hit.elem = data;
+            }
+          }
+        }
+        else if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+        {
+          // remove 5% from start and end of line as non sensible area
+          // this is to avoid wrong interaction for center point on both
+          // sides.
+          const float complex deadzone = (point - prev->warp.point) / 20.0f;
+          const float complex lp1 = prev->warp.point + deadzone;
+          const float complex lp2 = point - deadzone;
+          const float t = find_nearest_on_curve_t(lp1, data->node.ctrl1, data->node.ctrl2, lp2, *pt, INTERPOLATION_POINTS);
+
+          if(t > 0.0f && t < 1.0f)
+          {
+            float complex curvepoint = lp2;
+            float complex p1 = data->node.ctrl1;
+            float complex p2 = data->node.ctrl2;
+            casteljau(&lp1, &p1, &p2, &curvepoint, t);
+
+            const float d = cabsf(curvepoint - *pt);
+            if(d < distance)
+            {
+              distance = d;
+              hit.layer = layer;
+              hit.elem = data;
+            }
+          }
+        }
+      }
+
+      if(layer == DT_LIQUIFY_LAYER_CENTERPOINT)
+      {
+        if(data->header.type == DT_LIQUIFY_PATH_MOVE_TO_V1
+            || data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1
+            || data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+        {
+          CHECK_HIT_PT(point);
+        }
+      }
+
+      if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
+      {
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT1 &&
+            !(prev && prev->header.node_type == DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH))
+        {
+          CHECK_HIT_PT(data->node.ctrl1);
+        }
+        if(layer == DT_LIQUIFY_LAYER_CTRLPOINT2 &&
+            data->header.node_type != DT_LIQUIFY_NODE_TYPE_AUTOSMOOTH)
+        {
+          CHECK_HIT_PT(data->node.ctrl2);
+        }
+      }
+
+      if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT)
+      {
+        CHECK_HIT_PT(warp->radius);
+      }
+
+      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1)
+      {
+        CHECK_HIT_PT(cmix(point, warp->radius, warp->control1));
+      }
+
+      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2)
+      {
+        CHECK_HIT_PT(cmix(point, warp->radius, warp->control2));
+      }
+
+      if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
+      {
+        const float complex p = warp->point - warp->strength;
+        CHECK_HIT_PT(warp->strength + 5.0f * (p / cabsf(p)));
+      }
+    }
+  }
+
+  if(distance < 10)
+    return hit;
+  else
+    return NOWHERE;
+}
+
+static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, const float scale, dt_iop_liquify_params_t *params)
+{
+  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+  GList *layers = NULL;
+
+  for(dt_liquify_layer_enum_t layer = 0; layer < DT_LIQUIFY_LAYER_LAST; ++layer)
+  {
+    if(gtk_toggle_button_get_active(g->btn_point_tool)
+        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_POINT_TOOL))
+      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+    if(gtk_toggle_button_get_active(g->btn_line_tool)
+        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_LINE_TOOL))
+      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+    if(gtk_toggle_button_get_active(g->btn_curve_tool)
+        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_CURVE_TOOL))
+      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+    if(gtk_toggle_button_get_active(g->btn_node_tool)
+        && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_NODE_TOOL))
+      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+  }
+
+  _draw_paths(module, cr, scale, params, layers);
+
+  g_list_free(layers);
+}
+
+static dt_liquify_hit_t _hit_test_paths(struct dt_iop_module_t *module,
+                                        dt_iop_liquify_params_t *params,
+                                        float complex pt)
+{
+  dt_liquify_hit_t hit = NOWHERE;
+  GList *layers = NULL;
+
+  for(dt_liquify_layer_enum_t layer = 0; layer < DT_LIQUIFY_LAYER_LAST; ++layer)
+  {
+    if(dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_HIT_TEST)
+      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+  }
+
+  hit = _hit_paths(module, params, layers, &pt);
+  g_list_free(layers);
+  return hit;
 }
 
 /**
@@ -2578,22 +2709,6 @@ static dt_liquify_path_data_t *alloc_curve_to(dt_iop_module_t *module, float com
   return (dt_liquify_path_data_t *)c;
 }
 
-static void start_drag(dt_iop_liquify_gui_data_t *g, dt_liquify_layer_enum_t layer, dt_liquify_path_data_t *elem)
-{
-  g->dragging.layer = layer;
-  g->dragging.elem = elem;
-}
-
-static void end_drag(dt_iop_liquify_gui_data_t *g)
-{
-  g->dragging = NOWHERE;
-}
-
-static gboolean is_dragging(dt_iop_liquify_gui_data_t *g)
-{
-  return g->dragging.elem != NULL;
-}
-
 static void unselect_all(dt_iop_liquify_params_t *p)
 {
   for(int k=0; k<MAX_NODES; k++)
@@ -2743,7 +2858,7 @@ int mouse_moved(struct dt_iop_module_t *module,
 
   if(!is_dragging(g))
   {
-    dt_liquify_hit_t hit = hit_test_paths(module, scale, g->fake_cr, &g->params, pt);
+    dt_liquify_hit_t hit = _hit_test_paths(module, &g->params, pt);
     dt_liquify_path_data_t *last_hovered = find_hovered(&g->params);
     if(hit.elem != last_hovered
        || (last_hovered && hit.elem
@@ -3011,7 +3126,7 @@ int button_pressed(struct dt_iop_module_t *module,
 
   if(!is_dragging(g))
     // while dragging you would always hit the dragged thing
-    g->last_hit = hit_test_paths(module, scale, g->fake_cr, &g->params, pt);
+    g->last_hit = _hit_test_paths(module, &g->params, pt);
 
   if(which == 2) goto done;
 
