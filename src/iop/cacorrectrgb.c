@@ -115,10 +115,10 @@ dt_omp_firstprivate(blurred_in, blurred_manifold_lower, blurred_manifold_higher,
   }
 }
 
-static void ca_correct_rgb(const float* const restrict in, const size_t width, const size_t height,
+static void get_manifolds(const float* const restrict in, const size_t width, const size_t height,
                           const size_t ch, const float sigma,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
-                          float* const restrict out)
+                          float* const restrict manifolds)
 {
   float *const restrict blurred_in = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
   float *const restrict manifold_higher = dt_alloc_sse_ps(dt_round_size_sse(width * height * ch));
@@ -260,15 +260,41 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, width, height, guide, blurred_in, blurred_manifold_higher, blurred_manifold_lower, out, sigma) \
-  schedule(simd:static) aligned(in, blurred_in, blurred_manifold_higher, blurred_manifold_lower, out)
+dt_omp_firstprivate(manifolds, blurred_manifold_lower, blurred_manifold_higher, width, height, guide) \
+  schedule(simd:static) aligned(manifolds, blurred_manifold_lower, blurred_manifold_higher:64)
+#endif
+  for(size_t k = 0; k < width * height; k++)
+  {
+    for(size_t c = 0; c < 3; c++)
+    {
+      manifolds[k * 8 + c] = blurred_manifold_higher[k * 4 + c];
+      manifolds[k * 8 + 4 + c] = blurred_manifold_lower[k * 4 + c];
+    }
+  }
+  dt_free_align(blurred_in);
+  dt_free_align(blurred_manifold_lower);
+  dt_free_align(blurred_manifold_higher);
+}
+
+static void apply_correction(const float* const restrict in,
+                          const float* const restrict manifolds,
+                          const size_t width, const size_t height,
+                          const size_t ch, const float sigma,
+                          const dt_iop_cacorrectrgb_guide_channel_t guide,
+                          float* const restrict out)
+
+{
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma) \
+  schedule(simd:static) aligned(in, manifolds, out)
 #endif
   for(size_t i = 0; i < height; i++)
   {
     for(size_t j = 0; j < width; j++)
     {
-      const float high_guide = fmaxf(blurred_manifold_higher[(i * width + j) * 4 + guide], 1E-6);
-      const float low_guide = fmaxf(blurred_manifold_lower[(i * width + j) * 4 + guide], 1E-6);
+      const float high_guide = fmaxf(manifolds[(i * width + j) * 8 + guide], 1E-6);
+      const float low_guide = fmaxf(manifolds[(i * width + j) * 8 + 4 + guide], 1E-6);
       const float log_high = logf(high_guide);
       const float log_low = logf(low_guide);
       for(size_t kc = 1; kc <= 2; kc++)
@@ -277,8 +303,8 @@ dt_omp_firstprivate(in, width, height, guide, blurred_in, blurred_manifold_highe
         const float pixelg = in[(i * width + j) * 4 + guide];
 
         const float log_pixg = logf(fminf(fmaxf(pixelg, low_guide), high_guide));
-        float ratio_high_manifolds = blurred_manifold_higher[(i * width + j) * 4 + c] / high_guide;
-        float ratio_low_manifolds = blurred_manifold_lower[(i * width + j) * 4 + c] / low_guide;
+        float ratio_high_manifolds = manifolds[(i * width + j) * 8 + c] / high_guide;
+        float ratio_low_manifolds = manifolds[(i * width + j) * 8 + 4 + c] / low_guide;
 
         float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
         dist = fminf(dist, 1.0f);
@@ -290,10 +316,6 @@ dt_omp_firstprivate(in, width, height, guide, blurred_in, blurred_manifold_highe
       out[(i * width + j) * 4 + 3] = in[(i * width + j) * 4 + 3];
     }
   }
-
-  dt_free_align(blurred_in);
-  dt_free_align(blurred_manifold_lower);
-  dt_free_align(blurred_manifold_higher);
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
@@ -306,16 +328,30 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const size_t height = roi_out->height;
   const float* in = (float*)ivoid;
   float* out = (float*)ovoid;
-  const float sigma = MAX(d->radius / scale, 1);
+  const float sigma = MAX(d->radius / scale, 1.0f);
 
-  if(ch != 4 || sigma < 0.5f)
+  if(ch != 4)
   {
     memcpy(out, in, width * height * ch * sizeof(float));
     return;
   }
 
   const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
-  ca_correct_rgb(in, width, height, ch, sigma, guide, out);
+
+  const size_t ds_width = width / 2;
+  const size_t ds_height = height / 2;
+  float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
+  float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 8));
+  // Downsample the image for speed-up
+  interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
+  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / 2.0f, guide, ds_manifolds);
+  dt_free_align(ds_in);
+  float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 8));
+  // upscale manifolds
+  interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 8);
+  dt_free_align(ds_manifolds);
+  apply_correction(in, manifolds, width, height, ch, sigma, guide, out);
+  dt_free_align(manifolds);
 }
 
 /** gui setup and update, these are needed. */
