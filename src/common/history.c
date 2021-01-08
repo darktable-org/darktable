@@ -489,11 +489,6 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   return module_added;
 }
 
-static inline gboolean _is_module_to_skip(const int flags)
-{
-  return flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN);
-}
-
 static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_imgid, GList *ops, const gboolean copy_full)
 {
   GList *modules_used = NULL;
@@ -566,7 +561,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
          && !(mod_src->default_enabled && mod_src->enabled
               && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
               && !dt_iop_is_hidden(mod_src))
-         && (copy_full || !_is_module_to_skip(mod_src->flags()))
+         && (copy_full || !dt_history_module_skip_copy(mod_src->flags()))
         )
       {
         mod_list = g_list_append(mod_list, mod_src);
@@ -645,7 +640,7 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
       {
         dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
 
-        if(_is_module_to_skip(module->flags()))
+        if(dt_history_module_skip_copy(module->flags()))
         {
           if(skip_modules)
             skip_modules = dt_util_dstrcat(skip_modules, ",");
