@@ -2485,6 +2485,8 @@ void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint fl
 {
   PREAMBLE(1, 0, 0)
 
+  cairo_set_line_width(cr, .1);
+
   //arrow
   cairo_move_to(cr, .5, .5);
   cairo_line_to(cr, 1., 0.);
