@@ -1861,7 +1861,7 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
     hit.layer = layer;
 
     if(dt_liquify_layers[layer].opacity < 1.0)
-        cairo_push_group(cr);
+      cairo_push_group(cr);
 
     for(int k=0; k<MAX_NODES; k++)
     {
@@ -1874,11 +1874,11 @@ static dt_liquify_hit_t _draw_paths(dt_iop_module_t *module,
       hit.elem = data;
 
       if((dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_NODE_SELECTED)
-          && !data->header.selected)
+         && !data->header.selected)
         continue;
 
       if((dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_PREV_SELECTED)
-          && (!prev || !prev->header.selected))
+         && (!prev || !prev->header.selected))
         continue;
 
       fg_color = dt_liquify_layers[layer].fg;
