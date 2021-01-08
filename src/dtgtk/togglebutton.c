@@ -188,6 +188,7 @@ GType dtgtk_togglebutton_get_type()
 void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPaintIconFunc paint,
                                   gint paintflags, void *paintdata)
 {
+  g_return_if_fail(button != NULL);
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
@@ -195,6 +196,7 @@ void dtgtk_togglebutton_set_paint(GtkDarktableToggleButton *button, DTGTKCairoPa
 
 void dtgtk_togglebutton_override_color(GtkDarktableToggleButton *button, GdkRGBA *color)
 {
+  g_return_if_fail(button != NULL);
   if(color)
   {
     button->fg = *color;
@@ -206,6 +208,7 @@ void dtgtk_togglebutton_override_color(GtkDarktableToggleButton *button, GdkRGBA
 
 void dtgtk_togglebutton_override_background_color(GtkDarktableToggleButton *button, GdkRGBA *color)
 {
+  g_return_if_fail(button != NULL);
   if(color)
   {
     button->bg = *color;
