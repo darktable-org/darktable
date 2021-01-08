@@ -47,7 +47,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 30
+#define CURRENT_DATABASE_VERSION_LIBRARY 31
 #define CURRENT_DATABASE_VERSION_DATA     8
 
 typedef struct dt_database_t
@@ -1674,6 +1674,43 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 30;
+  }
+  else if(version == 30)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // add second columns to speed up sorting
+    TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
+        "[init] can't drop history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `operation` )",
+        "[init] can't recreate history_imgid_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_filename_index`",
+        "[init] can't drop images_filename_index\n");
+    TRY_EXEC("CREATE INDEX `images_filename_index` ON `images` ( `filename`, `version` )",
+        "[init] can't recreate images_filename_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_film_id_index`",
+        "[init] can't drop images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_film_id_index` ON `images` ( `film_id`, `filename` )",
+        "[init] can't recreate images_film_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_group_id_index`",
+        "[init] can't drop images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_group_id_index` ON `images` ( `group_id`, `id` )",
+        "[init] can't recreate images_group_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `masks_history_imgid_index`",
+        "[init] can't drop masks_history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( `imgid`, `num` )",
+        "[init] can't recreate masks_history_imgid_index\n");
+
+    // map refinement: avoid full table scan
+    TRY_EXEC("CREATE INDEX `images_latlong_index` ON `images` ( `latitude` DESC, `longitude` DESC )",
+        "[init] can't drop images_latlong_index\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 31;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
