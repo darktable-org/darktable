@@ -21,8 +21,8 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
-#include "common/interpolation.h"
 #include "common/imagebuf.h"
+#include "common/interpolation.h"
 #include "common/math.h"
 #include "common/opencl.h"
 #include "control/conf.h"
@@ -36,6 +36,7 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "libs/modulegroups.h"
 
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
@@ -352,7 +353,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 static int gui_has_focus(struct dt_iop_module_t *self)
 {
-  return self->dev->gui_module == self;
+  return (self->dev->gui_module == self && dt_dev_modulegroups_get(darktable.develop) != DT_MODULEGROUP_BASICS);
 }
 
 static void keystone_get_matrix(float *k_space, float kxa, float kxb, float kxc, float kxd, float kya,

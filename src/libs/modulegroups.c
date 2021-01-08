@@ -883,43 +883,27 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       /* lets show/hide modules dependent on current group*/
       const gboolean show_deprecated
           = !strcmp(dt_conf_get_string("plugins/darkroom/modulegroups_preset"), _(DEPRECATED_PRESET_NAME));
+      gboolean show_module = TRUE;
       switch(d->current)
       {
         case DT_MODULEGROUP_BASICS:
         {
-          if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-          if(w) gtk_widget_hide(w);
+          show_module = FALSE;
         }
         break;
 
         case DT_MODULEGROUP_ACTIVE_PIPE:
         {
-          if(module->enabled)
-          {
-            if(w) gtk_widget_show(w);
-          }
-          else
-          {
-            if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            if(w) gtk_widget_hide(w);
-          }
+          show_module = module->enabled;
         }
         break;
 
         case DT_MODULEGROUP_NONE:
         {
           /* show all except hidden ones */
-          if(((!(module->flags() & IOP_FLAGS_DEPRECATED) || show_deprecated)
-              && _lib_modulegroups_test_visible(self, module->op))
-             || module->enabled)
-          {
-            if(w) gtk_widget_show(w);
-          }
-          else
-          {
-            if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            if(w) gtk_widget_hide(w);
-          }
+          show_module = (((!(module->flags() & IOP_FLAGS_DEPRECATED) || show_deprecated)
+                          && _lib_modulegroups_test_visible(self, module->op))
+                         || module->enabled);
         }
         break;
 
@@ -928,18 +912,22 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
           // show deprecated module in specific group deprecated
           gtk_widget_set_visible(d->deprecated, show_deprecated);
 
-          if(_lib_modulegroups_test_internal(self, d->current, module)
-             && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled || show_deprecated))
-          {
-            if(w) gtk_widget_show(w);
-          }
-          else
-          {
-            if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
-            if(w) gtk_widget_hide(w);
-          }
+          show_module = (_lib_modulegroups_test_internal(self, d->current, module)
+                         && (!(module->flags() & IOP_FLAGS_DEPRECATED) || module->enabled || show_deprecated));
         }
       }
+
+      if(show_module)
+      {
+        if(darktable.develop->gui_module == module && !module->expanded) dt_iop_request_focus(NULL);
+        if(w) gtk_widget_show(w);
+      }
+      else
+      {
+        if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
+        if(w) gtk_widget_hide(w);
+      }
+
     } while((modules = g_list_next(modules)) != NULL);
   }
   if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
