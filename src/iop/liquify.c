@@ -2312,8 +2312,7 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
           }
         }
       }
-
-      if(layer == DT_LIQUIFY_LAYER_CENTERPOINT)
+      else if(layer == DT_LIQUIFY_LAYER_CENTERPOINT)
       {
         if(data->header.type == DT_LIQUIFY_PATH_MOVE_TO_V1
             || data->header.type == DT_LIQUIFY_PATH_LINE_TO_V1
@@ -2321,6 +2320,23 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
         {
           CHECK_HIT_PT(point);
         }
+      }
+      else if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT)
+      {
+        CHECK_HIT_PT(warp->radius);
+      }
+      else if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1)
+      {
+        CHECK_HIT_PT(cmix(point, warp->radius, warp->control1));
+      }
+      else if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2)
+      {
+        CHECK_HIT_PT(cmix(point, warp->radius, warp->control2));
+      }
+      else if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
+      {
+        const float complex p = warp->point - warp->strength;
+        CHECK_HIT_PT(warp->strength + 5.0f * (p / cabsf(p)));
       }
 
       if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
@@ -2335,27 +2351,6 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
         {
           CHECK_HIT_PT(data->node.ctrl2);
         }
-      }
-
-      if(layer == DT_LIQUIFY_LAYER_RADIUSPOINT)
-      {
-        CHECK_HIT_PT(warp->radius);
-      }
-
-      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT1)
-      {
-        CHECK_HIT_PT(cmix(point, warp->radius, warp->control1));
-      }
-
-      if(layer == DT_LIQUIFY_LAYER_HARDNESSPOINT2)
-      {
-        CHECK_HIT_PT(cmix(point, warp->radius, warp->control2));
-      }
-
-      if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
-      {
-        const float complex p = warp->point - warp->strength;
-        CHECK_HIT_PT(warp->strength + 5.0f * (p / cabsf(p)));
       }
     }
   }
