@@ -676,6 +676,21 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
       gtk_box_pack_start(GTK_BOX(d->vbox_basic), sect, FALSE, FALSE, 0);
       gtk_widget_show_all(sect);
+
+
+
+      // and we add the link to the full iop
+      GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT, NULL);
+      gchar *tt = dt_util_dstrcat(NULL, _("go to full version of module %s"), item->module->name());
+      gtk_widget_set_tooltip_text(wbt, tt);
+      gtk_widget_set_name(wbt, "basics-link");
+      g_free(tt);
+      g_signal_connect(G_OBJECT(wbt), "button-press-event", G_CALLBACK(_basics_goto_module), item->module);
+      gtk_box_pack_end(GTK_BOX(item->box), wbt, FALSE, FALSE, 0);
+      gtk_widget_show(wbt);
+
+
+
     }
     else
     {
@@ -685,15 +700,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     }
   }
 
-  // and we add the link to the full iop
-  GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT, NULL);
-  gchar *tt = dt_util_dstrcat(NULL, _("go to full version of module %s"), item->module->name());
-  gtk_widget_set_tooltip_text(wbt, tt);
-  gtk_widget_set_name(wbt, "basics-link");
-  g_free(tt);
-  g_signal_connect(G_OBJECT(wbt), "button-press-event", G_CALLBACK(_basics_goto_module), item->module);
-  gtk_box_pack_end(GTK_BOX(item->box), wbt, FALSE, FALSE, 0);
-  gtk_widget_show(wbt);
 
   gtk_box_pack_start(GTK_BOX(d->vbox_basic), item->box, FALSE, FALSE, 0);
 }
