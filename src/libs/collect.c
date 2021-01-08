@@ -1146,16 +1146,18 @@ static gint neg_sort_folder_tag(gconstpointer a, gconstpointer b)
   return -g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
 }
 
-// create a key such that "darktable|" is coming first, and the rest is ordered such that sub tags are coming directly
-// behind their parent
+// create a key such that  _("not tagged") & "darktable|" are coming first,
+// and the rest is ordered such that sub tags are coming directly behind their parent
 static char *tag_collate_key(char *tag)
 {
   const size_t len = strlen(tag);
   char *result = g_malloc(len + 2);
-  if(g_str_has_prefix(tag, "darktable|"))
+  if(!g_strcmp0(tag, _("not tagged")))
     *result = '\1';
-  else
+  else if(g_str_has_prefix(tag, "darktable|"))
     *result = '\2';
+  else
+    *result = '\3';
   memcpy(result + 1, tag, len + 1);
   for(char *iter = result + 1; *iter; iter++)
     if(*iter == '|') *iter = '\1';
@@ -1266,6 +1268,14 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                   " WHERE %s"
                                   " GROUP BY name,tag_id", where_ext);
         g_free(sensitive);
+        query = dt_util_dstrcat(query, " UNION ALL "
+                                       "SELECT '%s' AS name, 0 as id, COUNT(*) AS count "
+                                       "FROM main.images AS mi "
+                                       "WHERE mi.id NOT IN"
+                                       "  (SELECT DISTINCT imgid FROM main.tagged_images AS ti"
+                                       "   JOIN data.tags AS t ON t.id = ti.tagid"
+                                       "   AND SUBSTR(name, 1, 10) <> 'darktable|')",
+                                _("not tagged"));
       }
       break;
       case DT_COLLECTION_PROP_GEOTAGGING:
@@ -1390,7 +1400,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         if(strlen(next_name) >= strlen(name) + 1 && next_name[strlen(name)] == '|')
           next_name[strlen(name)] = '\0';
 
-        if(g_strcmp0(next_name, name))
+        if(g_strcmp0(next_name, name) && g_strcmp0(name, _("not tagged")))
         {
           /* add uncategorized root iter if not exists */
           if(!uncategorized.stamp)
@@ -2227,8 +2237,9 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
           text = n_text;
         }
       }
-      else if(active == 0) // first filter is tag and the row is a leave
+      else if(active == 0 && g_strcmp0(text, _("not tagged")))
       {
+        // first filter is tag and the row is a leave
         uint32_t sort = DT_COLLECTION_SORT_NONE;
         gboolean descending = FALSE;
         const uint32_t tagid = dt_tag_get_tag_id_by_name(text);
