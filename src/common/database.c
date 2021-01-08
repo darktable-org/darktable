@@ -1707,7 +1707,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // map refinement: avoid full table scan
     TRY_EXEC("CREATE INDEX `images_latlong_index` ON `images` ( `latitude` DESC, `longitude` DESC )",
-        "[init] can't drop images_latlong_index\n");
+        "[init] can't create images_latlong_index\n");
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 31;
