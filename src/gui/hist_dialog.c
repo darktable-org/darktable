@@ -254,7 +254,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
 
       if(!(flags & IOP_FLAGS_HIDDEN))
       {
-        const gboolean is_safe = ((flags & IOP_FLAGS_UNSAFE_COPY) == 0);
+        const gboolean is_safe = !dt_history_module_skip_copy(flags);
 
         gtk_list_store_append(GTK_LIST_STORE(liststore), &iter);
         gtk_list_store_set(GTK_LIST_STORE(liststore), &iter,
