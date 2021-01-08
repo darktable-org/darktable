@@ -2185,6 +2185,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     dt_view_accels_refresh(darktable.view_manager);
 
   dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_queue_redraw_center();
 }
 
 
