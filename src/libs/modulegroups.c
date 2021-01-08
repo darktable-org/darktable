@@ -431,7 +431,7 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
     }
   }
   // cleanup item
-  if(item->box) gtk_widget_destroy(item->label_box);
+  if(item->label_box) gtk_widget_destroy(item->label_box);
   if(item->box) gtk_widget_destroy(item->box);
   if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
   item->box = NULL;
@@ -669,10 +669,8 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     }
   }
 
-  // if it's the first widget of a module, we want to show a separation
-  if(new_group)
-  {
-    if(dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
+  // if it's the first widget of a module, we want to show a header
+  if(new_group && dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
     {
       //we add a box
       item->label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -696,13 +694,6 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
       gtk_box_pack_start(GTK_BOX(d->vbox_basic), item->label_box, FALSE, FALSE, 0);
     }
-    else
-    {
-      // we just add a thin line on top of the widget to show delimitation
-      //GtkStyleContext *context = gtk_widget_get_style_context(item->box);
-      //gtk_style_context_add_class(context, "basics-widget_group_start");
-    }
-  }
 
 
   gtk_box_pack_start(GTK_BOX(d->vbox_basic), item->box, FALSE, FALSE, 0);
