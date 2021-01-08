@@ -1455,33 +1455,49 @@ margin: 0 2px;
 
 #basics-link
 {
-  min-height: 1.1em;
-  min-width: 1.1em;
-  margin: 0 2px 2px 2px;
+  min-height: 1em;
+  min-width: 1em;
+  margin: 0 0 0.3em 0.75em;
   border: none;
+}
+
+#basics-header-box #basics-link
+{
+  margin-bottom: 0;
 }
 
 #basics-box-labels #basics-widget,
 #basics-box-labels #section_label
 {
   padding-top: 2px;
-  margin: 0 0.75em 0.25em 0.75em;
+  margin-bottom: 0.25em;
 }
 
 #basics-box #basics-widget
 {
-  margin: 0 0.75em 0.5em 0.75em;
+  margin-bottom: 0.5em;
 }
 
 #basics-box-labels #section_label
 {
-  margin-top: 1em;
+  margin-top: 0.5em;
+  border: none;
 }
 
-#basics-widget.basics-widget_group_start
+#basics-module-hbox
 {
-  padding-top: 0.5em;
-  border-top: 0.5px solid @section_label;
+  margin: 0 0.75em;
+}
+
+#basics-header-box
+{
+  border-bottom: 0.5px solid @section_label;
+  margin: 0 0.75em 0.5em 0.75em;
+}
+
+#basics-header-box-first
+{
+  border: none;
 }
 
 #basics-iop_name
