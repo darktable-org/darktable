@@ -1451,13 +1451,13 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
                                 escaped_text);
       else
-        query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
+        query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder = '%s'))",
                                 escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
       query = dt_util_dstrcat(
-          query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
+          query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder = '%s' OR folder = '%s"
                  G_DIR_SEPARATOR_S "%%'))",
           escaped_text, escaped_text);
       break;
@@ -1746,8 +1746,8 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
       for (l = list; l != NULL; l = l->next)
         l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
-        
-      query = dt_util_dstrcat(NULL, "(%s)", dt_util_glist_to_str(" OR ", list));
+
+      query = dt_util_glist_to_str(" OR ", list);
       g_list_free(list);
 
       break;
