@@ -163,7 +163,7 @@ float dt_liquify_ui_widths [] =
     7.0, // DT_LIQUIFY_UI_WIDTH_GIZMO_SMALL
   100.0, // DT_LIQUIFY_UI_WIDTH_DEFAULT_RADIUS,
    50.0, // DT_LIQUIFY_UI_WIDTH_DEFAULT_STRENGTH,
-    4.0  // DT_LIQUIFY_UI_WIDTH_MIN_DRAG
+    3.0  // DT_LIQUIFY_UI_WIDTH_MIN_DRAG
 };
 
 typedef enum
@@ -2360,7 +2360,7 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
     }
   }
 
-  if(distance < 10)
+  if(distance < 15)
     return hit;
   else
     return NOWHERE;
