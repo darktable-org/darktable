@@ -148,11 +148,30 @@ static void destroy_pref_element(pref_element *elt)
 
 static pref_element *pref_list = NULL;
 
+// get all the darktablerc keys
+static int get_keys(lua_State *L)
+{
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  GList* keys = g_hash_table_get_keys(darktable.conf->table);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+
+  keys = g_list_sort(keys, (GCompareFunc) strcmp);
+  lua_newtable(L);
+  for(GList* key = keys; key != NULL; key = key->next)
+  {
+    lua_pushstring(L, key->data);
+    luaL_ref(L, -2);
+  }
+  g_list_free(keys);
+  return 1;
+}
+  
 static void get_pref_name(char *tgt, size_t size, const char *script, const char *name)
 {
   snprintf(tgt, size, "lua/%s/%s", script, name);
 }
 
+// read lua and darktable prefs
 static int read_pref(lua_State *L)
 {
   const char *script = luaL_checkstring(L, 1);
@@ -161,7 +180,10 @@ static int read_pref(lua_State *L)
   luaA_to(L, lua_pref_type, &i, 3);
 
   char pref_name[1024];
-  get_pref_name(pref_name, sizeof(pref_name), script, name);
+  if(strcmp(script, "darktable") != 0)
+    get_pref_name(pref_name, sizeof(pref_name), script, name);
+  else 
+    snprintf(pref_name, sizeof(pref_name), "%s", name);
   switch(i)
   {
     case pref_enum:
@@ -212,6 +234,7 @@ static int read_pref(lua_State *L)
   return 1;
 }
 
+// write lua prefs
 static int write_pref(lua_State *L)
 {
   const char *script = luaL_checkstring(L, 1);
@@ -253,6 +276,21 @@ static int write_pref(lua_State *L)
   return 0;
 }
 
+// destroy lua prefs
+static int destroy_pref(lua_State *L)
+{
+  gboolean result;
+  const char *script = luaL_checkstring(L, 1);
+  const char *name = luaL_checkstring(L, 2);
+
+  char pref_name[1024];
+  get_pref_name(pref_name, sizeof(pref_name), script, name);
+  dt_pthread_mutex_lock(&darktable.conf->mutex);
+  result = g_hash_table_remove(darktable.conf->table, pref_name);
+  dt_pthread_mutex_unlock(&darktable.conf->mutex);
+  lua_pushboolean(L, result);
+  return 1;
+}
 
 static void response_callback_enum(GtkDialog *dialog, gint response_id, pref_element *cur_elt)
 {
@@ -852,6 +890,12 @@ int dt_lua_init_preferences(lua_State *L)
 
   lua_pushcfunction(L, write_pref);
   lua_setfield(L, -2, "write");
+
+  lua_pushcfunction(L, destroy_pref);
+  lua_setfield(L, -2, "destroy");
+
+  lua_pushcfunction(L, get_keys);
+  lua_setfield(L, -2, "get_keys");
 
   lua_pop(L, 1);
   return 0;
