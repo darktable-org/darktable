@@ -2481,6 +2481,32 @@ void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
+void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  //arrow
+  cairo_move_to(cr, .5, .5);
+  cairo_line_to(cr, 1., 0.);
+  cairo_stroke(cr);
+  cairo_move_to(cr, .65, 0.);
+  cairo_line_to(cr, 1., 0.);
+  cairo_line_to(cr, 1., .35);
+  cairo_stroke(cr);
+
+  //rounded rectangle
+  cairo_move_to(cr, .8, .6);
+  cairo_line_to(cr, .8, .85);
+  cairo_arc (cr, .65, .85, .15, 0., .5 * M_PI);
+  cairo_line_to(cr, .15, 1.);
+  cairo_arc (cr, .15, .85, .15, .5 * M_PI, M_PI);
+  cairo_line_to(cr, 0., .35);
+  cairo_arc (cr, .15, .35, .15, M_PI, 1.5 * M_PI);
+  cairo_line_to(cr, .4, .2);
+  cairo_stroke(cr);
+
+  FINISH
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -680,7 +680,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
 
       // and we add the link to the full iop
-      GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT, NULL);
+      GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_link, CPF_STYLE_FLAT, NULL);
       gchar *tt = dt_util_dstrcat(NULL, _("go to full version of module %s"), item->module->name());
       gtk_widget_set_tooltip_text(wbt, tt);
       gtk_widget_set_name(wbt, "basics-link");
