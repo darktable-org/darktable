@@ -686,7 +686,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
   }
 
   // and we add the link to the full iop
-  GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_FLAT, NULL);
   gchar *tt = dt_util_dstrcat(NULL, _("go to full version of module %s"), item->module->name());
   gtk_widget_set_tooltip_text(wbt, tt);
   gtk_widget_set_name(wbt, "basics-link");
@@ -2650,7 +2650,7 @@ static void _manage_editor_group_icon_changed(GtkWidget *widget, GdkEventButton 
   gr->icon = g_strdup(ic);
   GtkWidget *pop = gtk_widget_get_parent(gtk_widget_get_parent(widget));
   GtkWidget *btn = gtk_popover_get_relative_to(GTK_POPOVER(pop));
-  dtgtk_button_set_paint(DTGTK_BUTTON(btn), _buttons_get_icon_fct(ic), CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT,
+  dtgtk_button_set_paint(DTGTK_BUTTON(btn), _buttons_get_icon_fct(ic), CPF_STYLE_FLAT,
                          NULL);
   gtk_popover_popdown(GTK_POPOVER(pop));
 }
@@ -2666,7 +2666,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
   GtkWidget *eb, *hb, *ic;
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_basic, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_basic, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("basic icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "basic");
@@ -2676,7 +2676,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_active, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_active, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("active icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "active");
@@ -2686,7 +2686,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_color, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_color, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("color icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "color");
@@ -2696,7 +2696,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_correct, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_correct, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("correct icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "correct");
@@ -2706,7 +2706,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_effect, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_effect, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("effect icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "effect");
@@ -2716,7 +2716,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_favorites, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_favorites, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("favorites icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "favorites");
@@ -2726,7 +2726,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_tone, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_tone, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("tone icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "tone");
@@ -2736,7 +2736,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_grading, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_grading, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("grading icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "grading");
@@ -2746,7 +2746,7 @@ static void _manage_editor_group_icon_popup(GtkWidget *btn, GdkEventButton *even
 
   eb = gtk_event_box_new();
   hb = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_technical, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+  ic = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_technical, CPF_STYLE_FLAT, NULL);
   gtk_box_pack_start(GTK_BOX(hb), ic, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(hb), gtk_label_new(_("technical icon")), TRUE, TRUE, 0);
   g_object_set_data(G_OBJECT(eb), "ic_name", "technical");
@@ -2774,7 +2774,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
   gtk_widget_set_name(hb3, "modulegroups-header-center");
   gtk_widget_set_hexpand(hb3, TRUE);
 
-  btn = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_basics, CPF_DO_NOT_USE_BORDER, NULL);
+  btn = dtgtk_button_new(dtgtk_cairo_paint_modulegroup_basics, 0, NULL);
   gtk_widget_set_name(btn, "modulegroups-group-icon");
   gtk_widget_set_sensitive(btn, FALSE);
   gtk_box_pack_start(GTK_BOX(hb3), btn, FALSE, TRUE, 0);
@@ -2802,7 +2802,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
   {
     GtkWidget *hb4 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
-                                     CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+                                     CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(bt, _("add widgets to the list"));
     gtk_widget_set_name(bt, "modulegroups-add-module-btn");
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_basics_add_popup), self);
@@ -2831,7 +2831,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   GtkWidget *btn = NULL;
   if(!d->edit_ro)
   {
-    btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_RIGHT | CPF_STYLE_FLAT,
+    btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT | CPF_STYLE_FLAT,
                            NULL);
     gtk_widget_set_tooltip_text(btn, _("move group to the left"));
     g_object_set_data(G_OBJECT(btn), "group", gr);
@@ -2843,7 +2843,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   gtk_widget_set_name(hb3, "modulegroups-header-center");
   gtk_widget_set_hexpand(hb3, TRUE);
 
-  btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), CPF_DO_NOT_USE_BORDER, NULL);
+  btn = dtgtk_button_new(_buttons_get_icon_fct(gr->icon), 0, NULL);
   gtk_widget_set_name(btn, "modulegroups-group-icon");
   gtk_widget_set_tooltip_text(btn, _("group icon"));
   gtk_widget_set_sensitive(btn, !d->edit_ro);
@@ -2861,7 +2861,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
 
   if(!d->edit_ro)
   {
-    btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_DO_NOT_USE_BORDER | CPF_STYLE_FLAT, NULL);
+    btn = dtgtk_button_new(dtgtk_cairo_paint_cancel, CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(btn, _("remove group"));
     g_object_set_data(G_OBJECT(btn), "group", gr);
     g_signal_connect(G_OBJECT(btn), "button-press-event", G_CALLBACK(_manage_editor_group_remove), self);
@@ -2873,7 +2873,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   // right arrow (not if pos == -1 which means this is the last group)
   if(!d->edit_ro)
   {
-    btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT,
+    btn = dtgtk_button_new(dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT | CPF_STYLE_FLAT,
                            NULL);
     gtk_widget_set_tooltip_text(btn, _("move group to the right"));
     g_object_set_data(G_OBJECT(btn), "group", gr);
@@ -2896,7 +2896,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
   {
     GtkWidget *hb4 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
-                                     CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+                                     CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
     gtk_widget_set_tooltip_text(bt, _("add module to the list"));
     gtk_widget_set_name(bt, "modulegroups-add-module-btn");
     g_object_set_data(G_OBJECT(bt), "group", gr);
@@ -3044,7 +3044,7 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   if(!d->edit_ro)
   {
     GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
-                                     CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+                                     CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_group_add), self);
     gtk_box_pack_start(GTK_BOX(hb1), bt, FALSE, FALSE, 0);
   }
@@ -3313,7 +3313,7 @@ static void _manage_preset_update_list(dt_lib_module_t *self)
   // and we finally add the "new preset" button
   GtkWidget *hb2 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *bt = dtgtk_button_new(dtgtk_cairo_paint_plus_simple,
-                                   CPF_DO_NOT_USE_BORDER | CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
+                                   CPF_DIRECTION_LEFT | CPF_STYLE_FLAT, NULL);
   g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_preset_add), self);
   gtk_widget_set_name(bt, "modulegroups-preset-add-btn");
   gtk_widget_set_tooltip_text(bt, _("add new empty preset"));
