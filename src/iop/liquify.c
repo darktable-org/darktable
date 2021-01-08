@@ -1350,7 +1350,7 @@ static void end_drag(dt_iop_liquify_gui_data_t *g)
   g->dragging = NOWHERE;
 }
 
-static gboolean is_dragging(dt_iop_liquify_gui_data_t *g)
+static gboolean is_dragging(const dt_iop_liquify_gui_data_t *g)
 {
   return g->dragging.elem != NULL;
 }
@@ -1837,18 +1837,17 @@ static void _draw_paths(dt_iop_module_t *module,
                         dt_iop_liquify_params_t *p,
                         GList *layers)
 {
+  const dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
+
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-
-  GList *interpolated = interpolate_paths(p);
-
+  GList *interpolated = is_dragging(g) ? NULL : interpolate_paths(p);
 
   for(GList *l = layers; l != NULL; l = l->next)
   {
     const dt_liquify_layer_enum_t layer = (dt_liquify_layer_enum_t) GPOINTER_TO_INT(l->data);
     dt_liquify_rgba_t fg_color = dt_liquify_layers[layer].fg;
     dt_liquify_rgba_t bg_color = dt_liquify_layers[layer].bg;
-
 
     if(dt_liquify_layers[layer].opacity < 1.0)
       cairo_push_group(cr);
