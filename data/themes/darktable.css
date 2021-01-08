@@ -1478,12 +1478,6 @@ margin: 0 2px;
   margin-top: 1em;
 }
 
-#basics-widget.basics-widget_group_start
-{
-  padding-top: 0.5em;
-  border-top: 0.5px solid @section_label;
-}
-
 #basics-iop_name
 {
   padding-left: 0.25em;
