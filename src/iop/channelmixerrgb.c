@@ -1185,8 +1185,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   for(int i = 0; i < 3; i++)
   {
     d->MIX[0][i] = p->red[i] / norm_R;
-    d->MIX[1][i] = p->green[i] / norm_B;
-    d->MIX[2][i] = p->blue[i] / norm_G;
+    d->MIX[1][i] = p->green[i] / norm_G;
+    d->MIX[2][i] = p->blue[i] / norm_B;
     d->saturation[i] = -p->saturation[i] - norm_sat;
     d->lightness[i] = p->lightness[i] - norm_light;
     d->grey[i] = p->grey[i] / norm_grey; // = NaN if (norm_grey == 0.f) but we don't care since (d->apply_grey == FALSE)
