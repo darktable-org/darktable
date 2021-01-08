@@ -267,8 +267,8 @@ dt_omp_firstprivate(manifolds, blurred_manifold_lower, blurred_manifold_higher, 
   {
     for(size_t c = 0; c < 3; c++)
     {
-      manifolds[k * 8 + c] = blurred_manifold_higher[k * 4 + c];
-      manifolds[k * 8 + 4 + c] = blurred_manifold_lower[k * 4 + c];
+      manifolds[k * 6 + c] = blurred_manifold_higher[k * 4 + c];
+      manifolds[k * 6 + 3 + c] = blurred_manifold_lower[k * 4 + c];
     }
   }
   dt_free_align(blurred_in);
@@ -289,32 +289,29 @@ static void apply_correction(const float* const restrict in,
 dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma) \
   schedule(simd:static) aligned(in, manifolds, out)
 #endif
-  for(size_t i = 0; i < height; i++)
+  for(size_t k = 0; k < width * height; k++)
   {
-    for(size_t j = 0; j < width; j++)
+    const float high_guide = fmaxf(manifolds[k * 6 + guide], 1E-6);
+    const float low_guide = fmaxf(manifolds[k * 6 + 3 + guide], 1E-6);
+    const float log_high = logf(high_guide);
+    const float log_low = logf(low_guide);
+    const float pixelg = in[k * 4 + guide];
+    const float log_pixg = logf(fminf(fmaxf(pixelg, low_guide), high_guide));
+    float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
+    dist = fminf(dist, 1.0f);
+
+    for(size_t kc = 1; kc <= 2; kc++)
     {
-      const float high_guide = fmaxf(manifolds[(i * width + j) * 8 + guide], 1E-6);
-      const float low_guide = fmaxf(manifolds[(i * width + j) * 8 + 4 + guide], 1E-6);
-      const float log_high = logf(high_guide);
-      const float log_low = logf(low_guide);
-      for(size_t kc = 1; kc <= 2; kc++)
-      {
-        size_t c = (guide + kc) % 3;
-        const float pixelg = in[(i * width + j) * 4 + guide];
+      const size_t c = (guide + kc) % 3;
+      const float ratio_high_manifolds = manifolds[k * 6 + c] / high_guide;
+      const float ratio_low_manifolds = manifolds[k * 6 + 3 + c] / low_guide;
 
-        const float log_pixg = logf(fminf(fmaxf(pixelg, low_guide), high_guide));
-        float ratio_high_manifolds = manifolds[(i * width + j) * 8 + c] / high_guide;
-        float ratio_low_manifolds = manifolds[(i * width + j) * 8 + 4 + c] / low_guide;
-
-        float dist = fabsf(log_high - log_pixg) / fmaxf(fabsf(log_high - log_low), 1E-6);
-        dist = fminf(dist, 1.0f);
-
-        float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, 1.0f - dist);
-        out[(i * width + j) * 4 + c] =  in[(i * width + j) * 4 + guide] * ratio;
-      }
-      out[(i * width + j) * 4 + guide] = in[(i * width + j) * 4 + guide];
-      out[(i * width + j) * 4 + 3] = in[(i * width + j) * 4 + 3];
+      const float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, 1.0f - dist);
+      out[k * 4 + c] =  pixelg * ratio;
     }
+
+    out[k * 4 + guide] = pixelg;
+    out[k * 4 + 3] = in[k * 4 + 3];
   }
 }
 
@@ -338,17 +335,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
 
-  const size_t ds_width = width / 2;
-  const size_t ds_height = height / 2;
+  const size_t ds_width = width / 3;
+  const size_t ds_height = height / 3;
   float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
-  float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 8));
+  // we use only one variable for both higher and lower manifolds in order
+  // to save time by doing only one bilinear interpolation instead of 2.
+  float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 6));
   // Downsample the image for speed-up
   interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
-  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / 2.0f, guide, ds_manifolds);
+  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / 3.0f, guide, ds_manifolds);
   dt_free_align(ds_in);
-  float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 8));
+  float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 6));
   // upscale manifolds
-  interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 8);
+  interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 6);
   dt_free_align(ds_manifolds);
   apply_correction(in, manifolds, width, height, ch, sigma, guide, out);
   dt_free_align(manifolds);
