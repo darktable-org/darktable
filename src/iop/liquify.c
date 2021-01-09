@@ -2843,7 +2843,6 @@ int mouse_moved(struct dt_iop_module_t *module,
   dt_pthread_mutex_lock(&g->lock);
 
   g->last_mouse_pos = pt;
-  const int dragged = detect_drag(g, scale, pt);
 
   // Don't hit test while dragging, you'd only hit the dragged thing
   // anyway.
@@ -2865,18 +2864,19 @@ int mouse_moved(struct dt_iop_module_t *module,
       handled = TRUE;
       goto done;
     }
-  }
 
-  if(dragged && !is_dragging(g) && g->last_hit.elem)
-  {
-    // start dragging
-    start_drag(g, g->last_hit.layer, g->last_hit.elem);
-    // nothing more to do, we will refresh on the next call anyway
-    // this makes the initial move of a node a bit more fluid.
-    goto done;
-  }
+    const gboolean dragged = detect_drag(g, scale, pt);
 
-  if(is_dragging(g))
+    if(dragged && g->last_hit.elem)
+    {
+      // start dragging
+      start_drag(g, g->last_hit.layer, g->last_hit.elem);
+      // nothing more to do, we will refresh on the next call anyway
+      // this makes the initial move of a node a bit more fluid.
+      goto done;
+    }
+  }
+  else // we are dragging
   {
     dt_liquify_path_data_t *d = g->dragging.elem;
     dt_liquify_path_data_t *n = node_next(&g->params, d);
