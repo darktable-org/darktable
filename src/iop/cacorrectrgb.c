@@ -40,15 +40,24 @@ typedef enum dt_iop_cacorrectrgb_guide_channel_t
   DT_CACORRECT_RGB_B = 2     // $DESCRIPTION: "blue"
 } dt_iop_cacorrectrgb_guide_channel_t;
 
+typedef enum dt_iop_cacorrectrgb_mode_t
+{
+  DT_CACORRECT_MODE_STANDARD = 0,  // $DESCRIPTION: "standard"
+  DT_CACORRECT_MODE_DARKEN = 1,    // $DESCRIPTION: "darken only"
+  DT_CACORRECT_MODE_BRIGHTEN = 2   // $DESCRIPTION: "brighten only"
+} dt_iop_cacorrectrgb_mode_t;
+
+
 typedef struct dt_iop_cacorrectrgb_params_t
 {
   dt_iop_cacorrectrgb_guide_channel_t guide_channel; // $DEFAULT: DT_CACORRECT_RGB_G $DESCRIPTION: "guide"
-  float radius; // $MIN: 1 $MAX: 400 $DEFAULT: 1 $DESCRIPTION: "radius"
+  float radius; // $MIN: 1 $MAX: 400 $DEFAULT: 5 $DESCRIPTION: "radius"
+  dt_iop_cacorrectrgb_mode_t mode; // $DEFAULT: DT_CACORRECT_MODE_STANDARD $DESCRIPTION: "correction mode"
 } dt_iop_cacorrectrgb_params_t;
 
 typedef struct dt_iop_cacorrectrgb_gui_data_t
 {
-  GtkWidget *guide_channel, *radius;
+  GtkWidget *guide_channel, *radius, *mode;
 } dt_iop_cacorrectrgb_gui_data_t;
 
 // this returns a translatable name
@@ -295,12 +304,13 @@ static void apply_correction(const float* const restrict in,
                           const size_t width, const size_t height,
                           const size_t ch, const float sigma,
                           const dt_iop_cacorrectrgb_guide_channel_t guide,
+                          const dt_iop_cacorrectrgb_mode_t mode,
                           float* const restrict out)
 
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma) \
+dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
   schedule(simd:static) aligned(in, manifolds, out)
 #endif
   for(size_t k = 0; k < width * height; k++)
@@ -321,7 +331,18 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma) \
       const float ratio_low_manifolds = manifolds[k * 6 + 3 + c] / low_guide;
 
       const float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, 1.0f - dist);
-      out[k * 4 + c] =  pixelg * ratio;
+      switch(mode)
+      {
+        case DT_CACORRECT_MODE_STANDARD:
+          out[k * 4 + c] = pixelg * ratio;
+          break;
+        case DT_CACORRECT_MODE_DARKEN:
+          out[k * 4 + c] = fminf(pixelg * ratio, in[k * 4 + c]);
+          break;
+        case DT_CACORRECT_MODE_BRIGHTEN:
+          out[k * 4 + c] = fmaxf(pixelg * ratio, in[k * 4 + c]);
+          break;
+      }
     }
 
     out[k * 4 + guide] = pixelg;
@@ -348,6 +369,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
 
   const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
+  const dt_iop_cacorrectrgb_mode_t mode = d->mode;
 
   const float downsize = 3.0f;
   const size_t ds_width = width / downsize;
@@ -364,7 +386,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // upscale manifolds
   interpolate_bilinear(ds_manifolds, ds_width, ds_height, manifolds, width, height, 6);
   dt_free_align(ds_manifolds);
-  apply_correction(in, manifolds, width, height, ch, sigma, guide, out);
+  apply_correction(in, manifolds, width, height, ch, sigma, guide, mode, out);
   dt_free_align(manifolds);
 }
 
@@ -375,7 +397,8 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_cacorrectrgb_params_t *p = (dt_iop_cacorrectrgb_params_t *)self->params;
 
   dt_bauhaus_combobox_set_from_value(g->guide_channel, p->guide_channel);
-  dt_bauhaus_slider_set(g->radius, p->radius);
+  dt_bauhaus_slider_set_soft(g->radius, p->radius);
+  dt_bauhaus_combobox_set_from_value(g->mode, p->mode);
 }
 
 /** optional: if this exists, it will be called to init new defaults if a new image is
@@ -385,7 +408,8 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_cacorrectrgb_params_t *d = (dt_iop_cacorrectrgb_params_t *)module->default_params;
 
   d->guide_channel = DT_CACORRECT_RGB_G;
-  d->radius = 1.0f;
+  d->radius = 5.0f;
+  d->mode = DT_CACORRECT_MODE_STANDARD;
 
   dt_iop_cacorrectrgb_gui_data_t *g = (dt_iop_cacorrectrgb_gui_data_t *)module->gui_data;
   if(g)
@@ -393,6 +417,7 @@ void reload_defaults(dt_iop_module_t *module)
     dt_bauhaus_combobox_set_default(g->guide_channel, d->guide_channel);
     dt_bauhaus_slider_set_default(g->radius, d->radius);
     dt_bauhaus_slider_set_soft_range(g->radius, 1.0, 20.0);
+    dt_bauhaus_combobox_set_default(g->mode, d->mode);
   }
 }
 
@@ -409,4 +434,14 @@ void gui_init(dt_iop_module_t *self)
                                            "have artefacts."));
   g->radius = dt_bauhaus_slider_from_params(self, "radius");
   gtk_widget_set_tooltip_text(g->radius, _("increase for stronger correction\n"));
+
+  gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_label_new(_("advanced parameters:")), TRUE, TRUE, 0);
+  g->mode = dt_bauhaus_combobox_from_params(self, "mode");
+  gtk_widget_set_tooltip_text(g->mode, _("correction mode to use.\n"
+                                         "can help with multiple\n"
+                                         "instances for very damaged\n"
+                                         "images.\n"
+                                         "darken only is particularly\n"
+                                         "efficient to correct blue\n"
+                                         "chromatic aberration."));
 }
