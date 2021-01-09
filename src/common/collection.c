@@ -907,7 +907,8 @@ gchar *dt_collection_get_sort_query(const dt_collection_t *collection)
         break;
 
       case DT_COLLECTION_SORT_FILENAME:
-        sq = dt_util_dstrcat(sq, "ORDER BY filename, %s, version", second_order);
+        if(!g_strcmp0("filename", second_order))
+            sq = dt_util_dstrcat(sq, "ORDER BY filename, %s, version", second_order);
         break;
 
       case DT_COLLECTION_SORT_ID:
