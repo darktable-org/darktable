@@ -1451,7 +1451,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
                                 escaped_text);
       else
-        query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder = '%s'))",
+        query = dt_util_dstrcat(query, "(film_id = (SELECT id FROM main.film_rolls WHERE folder = '%s'))",
                                 escaped_text);
       break;
 
