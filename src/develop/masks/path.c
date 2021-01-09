@@ -2406,7 +2406,6 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   int p0[2] = { 0 }, p1[2] = { 0 };
   float pf1[2] = { 0.0f };
   int last0[2] = { -100, -100 }, last1[2] = { -100, -100 };
-  nbp = 0;
   int next = 0;
   for(int i = nb_corner * 3; i < border_count; i++)
   {
