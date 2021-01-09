@@ -3295,11 +3295,6 @@ int button_released(struct dt_iop_module_t *module,
       const float radius = cabsf(g->temp->warp.radius - g->temp->warp.point);
       g->temp = alloc_curve_to(module, pt);
       if(!g->temp) goto done;
-      // user dragged, make it a symmetrical node
-      if(dragged)
-      {
-        g->temp->header.node_type = DT_LIQUIFY_NODE_TYPE_SYMMETRICAL;
-      }
       g->temp->warp.radius = pt + radius;
       g->temp->warp.strength = pt + strength;
       // links
