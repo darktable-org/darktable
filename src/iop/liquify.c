@@ -2825,7 +2825,7 @@ int mouse_moved(struct dt_iop_module_t *module,
                  int which)
 {
   dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) module->gui_data;
-  int handled = g->last_hit.elem ? 1 : 0;
+  gboolean handled = FALSE;
   float complex pt = 0.0f;
   float scale = 0.0f;
 
@@ -2853,7 +2853,7 @@ int mouse_moved(struct dt_iop_module_t *module,
         last_hovered->header.hovered = 0;
       // change in hover display
       dt_control_hinter_message(darktable.control, dt_liquify_layers[hit.layer].hint);
-      handled = 1;
+      handled = TRUE;
       goto done;
     }
   }
@@ -2862,6 +2862,9 @@ int mouse_moved(struct dt_iop_module_t *module,
   {
     // start dragging
     start_drag(g, g->last_hit.layer, g->last_hit.elem);
+    // nothing more to do, we will refresh on the next call anyway
+    // this makes the initial move of a node a bit more fluid.
+    goto done;
   }
 
   if(is_dragging(g))
@@ -2971,14 +2974,14 @@ int mouse_moved(struct dt_iop_module_t *module,
        default:
          break;
     }
-    handled = 1;
+    handled = TRUE;
   }
 
 done:
   dt_iop_gui_leave_critical_section(module);
   if(handled)
   {
-    sync_pipe(module, handled == 2);
+    sync_pipe(module, FALSE);
   }
   return handled;
 }
