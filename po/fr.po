@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-04 21:45+0100\n"
-"PO-Revision-Date: 2021-01-07 19:51+0100\n"
+"PO-Revision-Date: 2021-01-09 21:54+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -17642,7 +17642,7 @@ msgid ""
 "This basic widget is disabled as there's multiple instances for this module. "
 "You need to use the full module..."
 msgstr ""
-"Ce widget de base est désactivé car il y a plusieurs instances pour ce "
+"ce contrôle de base est désactivé car il y a plusieurs instances pour ce "
 "module. Vous devez utiliser le module complet..."
 
 #: ../src/libs/modulegroups.c:657
@@ -17650,7 +17650,7 @@ msgid ""
 "This basic widget is disabled as it's hidden in the actual module "
 "configuration. You need to use the full module..."
 msgstr ""
-"Ce widget de base est désactivé car il est caché dans la configuration "
+"ce contrôle de base est désactivé car il est caché dans la configuration "
 "réelle du module. Vous devez utiliser le module complet..."
 
 #: ../src/libs/modulegroups.c:663
@@ -17661,7 +17661,7 @@ msgstr ""
 #: ../src/libs/modulegroups.c:690
 #, c-format
 msgid "go to full version of module %s"
-msgstr "Aller au module complet %s"
+msgstr "aller au module complet %s"
 
 #: ../src/libs/modulegroups.c:1487 ../src/libs/modulegroups.c:1511
 #: ../src/libs/modulegroups.c:1527 ../src/libs/modulegroups.c:1545
@@ -17748,7 +17748,7 @@ msgstr "configuration précédente avec une nouvelle disposition"
 
 #: ../src/libs/modulegroups.c:1743
 msgid "remove this widget"
-msgstr "supprimer ce widget"
+msgstr "supprimer ce contrôle"
 
 #: ../src/libs/modulegroups.c:1906
 msgid "remove this module"
@@ -17793,23 +17793,23 @@ msgstr[1] "modules déjà présents"
 
 #: ../src/libs/modulegroups.c:2243 ../src/libs/modulegroups.c:2297
 msgid "click to remove the widget"
-msgstr "cliquer pour supprimer le widget"
+msgstr "cliquer pour supprimer le contrôle"
 
 #: ../src/libs/modulegroups.c:2258 ../src/libs/modulegroups.c:2266
 #: ../src/libs/modulegroups.c:2312 ../src/libs/modulegroups.c:2320
 msgid "click to add the widget"
-msgstr "cliquer pour ajouter le widget"
+msgstr "cliquer pour ajouter le contrôle"
 
 #: ../src/libs/modulegroups.c:2353
 msgid "recommended widget"
 msgid_plural "recommended widgets"
-msgstr[0] "widget recommandé"
+msgstr[0] "contrôle recommandé"
 msgstr[1] "modules recommandés"
 
 #: ../src/libs/modulegroups.c:2362
 msgid "already present widget"
 msgid_plural "already present widgets"
-msgstr[0] "widget déjà présent"
+msgstr[0] "contrôle déjà présent"
 msgstr[1] "modules déjà présents"
 
 #: ../src/libs/modulegroups.c:2433
@@ -17883,11 +17883,11 @@ msgstr "icône technique"
 
 #: ../src/libs/modulegroups.c:2795 ../src/libs/modulegroups.c:2797
 msgid "basics widgets"
-msgstr "widgets basiques"
+msgstr "contrôles basiques"
 
 #: ../src/libs/modulegroups.c:2818
 msgid "add widgets to the list"
-msgstr "ajoute un widget à la liste"
+msgstr "ajoute un contrôle à la liste"
 
 #: ../src/libs/modulegroups.c:2848
 msgid "move group to the left"
@@ -17933,7 +17933,7 @@ msgstr "montrer la zone de recherche"
 #. show basics checkbox
 #: ../src/libs/modulegroups.c:3046
 msgid "show basics widgets group"
-msgstr "affiche le groupe de widgets basiques"
+msgstr "affiche le groupe de contrôles basiques"
 
 #: ../src/libs/modulegroups.c:3055
 msgid "module groups"
