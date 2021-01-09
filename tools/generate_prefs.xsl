@@ -27,7 +27,7 @@
 }
 </xsl:variable>
 
-<xsl:variable name="dialog_start">(void)
+<xsl:variable name="dialog_start">(const gboolean noreset)
 {
   GtkWidget *widget, *label, *labelev, *viewport, *box;
   GtkWidget *grid = gtk_grid_new();
@@ -453,6 +453,10 @@ gboolean restart_required = FALSE;
   {
     const gboolean is_default = dt_conf_is_default("</xsl:text><xsl:value-of select="name"/><xsl:text>");
     GtkWidget *labdef;
+#ifdef DIALOG
+    if(!noreset)
+    {
+#endif
     if(is_default)
     {
        labdef = gtk_label_new("");
@@ -463,6 +467,13 @@ gboolean restart_required = FALSE;
        g_object_set(labdef, "tooltip-text", _("this setting has been modified"), (gchar *)0);
     }
     gtk_widget_set_name(labdef, "preference_non_default");
+#ifdef DIALOG
+    }
+    else
+    {
+    labdef = gtk_label_new("");
+    }
+#endif
     label = gtk_label_new(_("</xsl:text><xsl:value-of select="shortdescription"/><xsl:text>"));
     gtk_widget_set_halign(label, GTK_ALIGN_START);
     labelev = gtk_event_box_new();
@@ -487,16 +498,35 @@ gboolean restart_required = FALSE;
       g_object_set(labelev, "tooltip-text", _("not available on this system"), (gchar *)0);
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), dt_capabilities_check("</xsl:text><xsl:value-of select="@capability"/><xsl:text>") ? box : notavailable, 2, line++, 1, 1);
+#ifdef DIALOG
+    if(!noreset)
+    {
+#endif
     g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+#ifdef DIALOG
+    }
+#endif
 </xsl:text>
                 </xsl:when>
                 <xsl:otherwise>
                         <xsl:text>
     gtk_widget_set_name(widget, "</xsl:text><xsl:value-of select="name"/><xsl:text>");
+#ifdef DIALOG
+    if(noreset)
+    {
+      gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
+      gtk_grid_attach(GTK_GRID(grid), box, 1, line++, 1, 1);
+    }
+    else
+    {
+#endif
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), labdef, 1, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), box, 2, line++, 1, 1);
     g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(reset_widget_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), (gpointer)widget);
+#ifdef DIALOG
+    }
+#endif
 </xsl:text>
                 </xsl:otherwise>
         </xsl:choose>

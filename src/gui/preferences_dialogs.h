@@ -18,8 +18,8 @@
 
 #pragma once
 
-GtkWidget *dt_prefs_init_grid_collect(void);
-GtkWidget *dt_prefs_init_grid_import(void);
+GtkWidget *dt_prefs_init_grid_collect(const gboolean noreset);
+GtkWidget *dt_prefs_init_grid_import(const gboolean noreset);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

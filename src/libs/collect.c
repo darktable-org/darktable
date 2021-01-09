@@ -2731,7 +2731,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
                                                  _("done"), GTK_RESPONSE_YES, NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  GtkWidget *grid = dt_prefs_init_grid_collect();
+  GtkWidget *grid = dt_prefs_init_grid_collect(FALSE);
   gtk_box_pack_start(GTK_BOX(area), grid, FALSE, FALSE, 0);
 
 #ifdef GDK_WINDOWING_QUARTZ
