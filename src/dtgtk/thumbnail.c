@@ -1634,6 +1634,45 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
 
+  // for thumbtable, we need to set the size class to the image widget
+  if(thumb->container == DT_THUMBNAIL_CONTAINER_LIGHTTABLE)
+  {
+    // we get the corresponding size
+    gchar *txt = dt_conf_get_string("plugins/lighttable/thumbnail_sizes");
+    gchar **ts = g_strsplit(txt, "|", -1);
+    int i = 0;
+    while(ts[i])
+    {
+      const int s = g_ascii_strtoll(ts[i], NULL, 10);
+      if(thumb->width < s) break;
+      i++;
+    }
+    g_strfreev(ts);
+    g_free(txt);
+
+    gchar *cl = dt_util_dstrcat(NULL, "dt_thumbnails_%d", i);
+    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
+    if(!gtk_style_context_has_class(context, cl))
+    {
+      // we remove all previous size class if any
+      GList *l = gtk_style_context_list_classes(context);
+      while(l)
+      {
+        gchar *ll = (gchar *)l->data;
+        if(g_str_has_prefix(ll, "dt_thumbnails_"))
+        {
+          gtk_style_context_remove_class(context, ll);
+        }
+        l = g_list_next(l);
+      }
+      g_list_free(l);
+
+      // we set the new class
+      gtk_style_context_add_class(context, cl);
+    }
+    g_free(cl);
+  }
+
   // file extension
   _thumb_retrieve_margins(thumb);
   gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
