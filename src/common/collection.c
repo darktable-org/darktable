@@ -1593,7 +1593,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
       if(!strcmp(escaped_text, _("not tagged")))
       {
-        query = g_strdup_printf("(id NOT IN (SELECT imgid FROM main.tagged_images AS a "
+        query = g_strdup_printf("(id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images AS a "
                                        "JOIN data.tags AS b ON a.tagid = b.id "
                                        "AND SUBSTR(name, 1, 10) <> 'darktable|'))");
       }
