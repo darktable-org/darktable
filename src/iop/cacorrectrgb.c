@@ -182,11 +182,6 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
 #endif
   for(size_t k = 0; k < width * height; k++)
   {
-    const float pixelg = in[k * 4 + guide];
-    const float avgg = blurred_in[k * 4 + guide];
-    float weighth = (pixelg >= avgg);
-    float weightl = (pixelg <= avgg);
-
     // in order to refine the manifolds, we will compute weights
     // for which all channel will have a contribution.
     // this will allow to avoid taking too much into account pixels
@@ -214,40 +209,59 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
     // i.e., in our case, we give higher weights to the pixels that are equal to
     // 0 than to the pixel that is equal to 1 for the computation of the lower
     // manifold
-    for(size_t c = 0; c < 3; c++)
+    const float pixelg = in[k * 4 + guide];
+    const float avgg = blurred_in[k * 4 + guide];
+    if(pixelg > avgg)
     {
-      // reminder: manifolds were constructed based on the value and average
-      // of the guide channel ONLY.
-      // this implies that the "higher" manifold in the channel c may be
-      // actually lower than the "lower" manifold of that channel.
-      const float pixel = in[k * 4 + c];
-      float high = blurred_manifold_higher[k * 4 + c];
-      float low = blurred_manifold_lower[k * 4 + c];
-      float highc = fmaxf(high, low);
-      float lowc = fminf(high, low);
-      float log_diff_low = (pixel < lowc) ? 1.0f : fminf(fmaxf(pixel, 1E-6) / fmaxf(lowc, 1E-6), 2.0f);
-      float log_diff_high = (pixel > highc) ? 1.0f : fminf(fmaxf(highc, 1E-6) / fmaxf(pixel, 1E-6), 2.0f);
-      log_diff_low *= log_diff_low;
-      log_diff_high *= log_diff_high;
-      if(high > low)
+      // high manifold
+      float weighth = 1.0f;
+      for(size_t c = 0; c < 3; c++)
       {
-        weighth /= log_diff_high;
-        weightl /= log_diff_low;
+        // if pixel value is close to the low manifold, give it a smaller weight
+        // than if it is close to the high manifold
+        const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
+        const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
+        const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
+        float dist_manifolds = lowc - highc;
+        float sign = (dist_manifolds >= 0) - (dist_manifolds < 0);
+        dist_manifolds = fmaxf(fabsf(dist_manifolds), 1.0f);
+        float dist = fminf(fmaxf(1.0f - sign * (pixel - highc) / dist_manifolds, 0.0f), 1.0f);
+        dist *= dist;
+        dist *= dist;
+        weighth *= dist;
       }
-      else
+      for(size_t c = 0; c < 3; c++)
       {
-        weighth /= log_diff_low;
-        weightl /= log_diff_high;
+        const float pixel = in[k * 4 + c];
+        manifold_higher[k * 4 + c] = pixel * weighth;
       }
+      manifold_higher[k * 4 + 3] = weighth;
     }
-    for(size_t c = 0; c < 3; c++)
+    else
     {
-      const float pixel = in[k * 4 + c];
-      manifold_higher[k * 4 + c] = pixel * weighth;
-      manifold_lower[k * 4 + c] = pixel * weightl;
+      float weightl = 1.0f;
+      for(size_t c = 0; c < 3; c++)
+      {
+        // if pixel value is close to the high manifold, give it a smaller weight
+        // than if it is close to the low manifold
+        const float pixel = logf(fmaxf(in[k * 4 + c], 1E-6));
+        const float highc = logf(fmaxf(blurred_manifold_higher[k * 4 + c], 1E-6));
+        const float lowc = logf(fmaxf(blurred_manifold_lower[k * 4 + c], 1E-6));
+        float dist_manifolds = highc - lowc;
+        float sign = (dist_manifolds >= 0) - (dist_manifolds < 0);
+        dist_manifolds = fmaxf(fabsf(dist_manifolds), 1.0f);
+        float dist = fminf(fmaxf(1.0f - sign * (pixel - lowc) / dist_manifolds, 0.0f), 1.0f);
+        dist *= dist;
+        dist *= dist;
+        weightl *= dist;
+      }
+      for(size_t c = 0; c < 3; c++)
+      {
+        const float pixel = in[k * 4 + c];
+        manifold_lower[k * 4 + c] = pixel * weightl;
+      }
+      manifold_lower[k * 4 + 3] = weightl;
     }
-    manifold_higher[k * 4 + 3] = weighth;
-    manifold_lower[k * 4 + 3] = weightl;
   }
 
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
@@ -335,15 +349,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const dt_iop_cacorrectrgb_guide_channel_t guide = d->guide_channel;
 
-  const size_t ds_width = width / 3;
-  const size_t ds_height = height / 3;
+  const float downsize = 3.0f;
+  const size_t ds_width = width / downsize;
+  const size_t ds_height = height / downsize;
   float *const restrict ds_in = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * ch));
   // we use only one variable for both higher and lower manifolds in order
   // to save time by doing only one bilinear interpolation instead of 2.
   float *const restrict ds_manifolds = dt_alloc_sse_ps(dt_round_size_sse(ds_width * ds_height * 6));
   // Downsample the image for speed-up
   interpolate_bilinear(in, width, height, ds_in, ds_width, ds_height, 4);
-  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / 3.0f, guide, ds_manifolds);
+  get_manifolds(ds_in, ds_width, ds_height, ch, sigma / downsize, guide, ds_manifolds);
   dt_free_align(ds_in);
   float *const restrict manifolds = dt_alloc_sse_ps(dt_round_size_sse(width * height * 6));
   // upscale manifolds
