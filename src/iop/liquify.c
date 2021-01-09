@@ -276,8 +276,6 @@ typedef struct
   dt_liquify_path_data_t *temp;    ///< Points to the element under construction or NULL.
   dt_liquify_status_enum_t status; ///< Various flags.
 
-  cairo_t *fake_cr;     ///< A fake cairo context for hit testing and coordinate transform.
-
   GtkLabel *label;
   GtkToggleButton *btn_point_tool, *btn_line_tool, *btn_curve_tool, *btn_node_tool;
 
@@ -3596,7 +3594,6 @@ void gui_init(dt_iop_module_t *self)
 
   // A dummy surface for calculations only, no drawing.
   cairo_surface_t *cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, 1, 1);
-  g->fake_cr = cairo_create(cs);
   cairo_surface_destroy(cs);
 
   g->dragging = NOWHERE;
@@ -3663,11 +3660,6 @@ void gui_reset(dt_iop_module_t *self)
 
 void gui_cleanup(dt_iop_module_t *self)
 {
-  dt_iop_liquify_gui_data_t *g = (dt_iop_liquify_gui_data_t *) self->gui_data;
-
-  cairo_destroy(g->fake_cr);
-  dt_pthread_mutex_destroy(&g->lock);
-
   IOP_GUI_FREE;
 }
 
