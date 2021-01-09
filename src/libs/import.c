@@ -675,11 +675,11 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *dialog = gtk_dialog_new_with_buttons(_("import settings"), GTK_WINDOW(win),
                                                   GTK_DIALOG_DESTROY_WITH_PARENT,
-                                                  _("cancel"), GTK_RESPONSE_NONE,
-                                                  _("save"), GTK_RESPONSE_YES, NULL);
+                                                  _("done"), GTK_RESPONSE_YES, NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
-  GtkWidget *grid = dt_prefs_init_dialog_import(dialog);
+  GtkWidget *grid = dt_prefs_init_grid_import();
+  gtk_box_pack_start(GTK_BOX(area), grid, FALSE, FALSE, 0);
 
   GtkWidget *main_box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
   gtk_box_pack_start(GTK_BOX(area), main_box, TRUE, TRUE, 0);
