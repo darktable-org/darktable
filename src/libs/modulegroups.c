@@ -143,6 +143,8 @@ typedef struct dt_lib_modulegroups_t
   gboolean basics_show;
   GList *basics;
   GtkWidget *vbox_basic;
+  GtkWidget *mod_hbox_basic;
+  GtkWidget *mod_vbox_basic;
 } dt_lib_modulegroups_t;
 
 typedef enum dt_lib_modulegroup_iop_visibility_type_t
@@ -670,33 +672,50 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
   }
 
   // if it's the first widget of a module, we want to show a header
-  if(new_group && dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
+  if(new_group)
     {
-      //we add a box
-      item->label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-      gtk_widget_show(item->label_box);
+      // we create the module boxes
+      d->mod_hbox_basic = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_box_pack_start(GTK_BOX(d->vbox_basic), d->mod_hbox_basic, TRUE, TRUE, 0);
+      gtk_widget_show(d->mod_hbox_basic);
 
-      // we add the section label
-      GtkWidget *sect = dt_ui_section_label_new(item->module->name());
-      gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
-      gtk_box_pack_start(GTK_BOX(item->label_box), sect, TRUE, TRUE, 0);
-      gtk_widget_show_all(sect);
+      d->mod_vbox_basic = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+      gtk_box_pack_start(GTK_BOX(d->mod_hbox_basic), d->mod_vbox_basic, TRUE, TRUE, 0);
+      gtk_widget_show(d->mod_vbox_basic);
 
-      // we add the link to the full iop
+      // we create the link to the full iop
       GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_link, CPF_STYLE_FLAT, NULL);
+      gtk_widget_show(wbt);
       gchar *tt = dt_util_dstrcat(NULL, _("go to full version of module %s"), item->module->name());
       gtk_widget_set_tooltip_text(wbt, tt);
       gtk_widget_set_name(wbt, "basics-link");
       g_free(tt);
       g_signal_connect(G_OBJECT(wbt), "button-press-event", G_CALLBACK(_basics_goto_module), item->module);
-      gtk_box_pack_end(GTK_BOX(item->label_box), wbt, FALSE, FALSE, 0);
-      gtk_widget_show(wbt);
 
-      gtk_box_pack_start(GTK_BOX(d->vbox_basic), item->label_box, FALSE, FALSE, 0);
+      if (dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
+      {
+        //we add a box
+        item->label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_box_pack_start(GTK_BOX(d->vbox_basic), item->label_box, FALSE, FALSE, 0);
+        gtk_widget_show(item->label_box);
+
+        // we add the section label
+        GtkWidget *sect = dt_ui_section_label_new(item->module->name());
+        gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
+        gtk_box_pack_start(GTK_BOX(item->label_box), sect, TRUE, TRUE, 0);
+        gtk_widget_show(sect);
+
+        // we add the link to the full iop
+        gtk_box_pack_end(GTK_BOX(item->label_box), wbt, FALSE, FALSE, 0);
+      }
+      else
+      {
+        // we add the link to the full iop
+        gtk_box_pack_end(GTK_BOX(d->mod_hbox_basic), wbt, FALSE, FALSE, 0);
+      }
     }
 
-
-  gtk_box_pack_start(GTK_BOX(d->vbox_basic), item->box, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->mod_vbox_basic), item->box, FALSE, FALSE, 0);
 }
 
 static void _basics_show(dt_lib_module_t *self)
@@ -721,8 +740,8 @@ static void _basics_show(dt_lib_module_t *self)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     gboolean new_module = TRUE;      // we record if it's a new module or not to set css class
-    if(pos == 0 && !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
-      new_module = FALSE; // except for the first one as we don't want top separator
+   /* if(pos == 0 && !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
+      new_module = FALSE; // except for the first one as we don't want top separator*/
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->iop_order != INT_MAX)
     {
       // first, we add on-off buttons if any
