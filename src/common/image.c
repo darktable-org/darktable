@@ -2341,7 +2341,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
       (dt_database_get(darktable.db),
        "SELECT id"
        " FROM main.images"
-       " WHERE film_id IN (SELECT id FROM main.film_rolls "
+       " WHERE film_id = (SELECT id FROM main.film_rolls "
        "                   WHERE folder = ?1)"
        "   AND filename = ?2",
        -1, &stmt, NULL);
