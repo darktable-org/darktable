@@ -2325,7 +2325,7 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
       else if(layer == DT_LIQUIFY_LAYER_STRENGTHPOINT)
       {
         const float complex p = warp->point - warp->strength;
-        CHECK_HIT_PT(warp->strength + 5.0f * (p / cabsf(p)));
+        CHECK_HIT_PT(warp->strength +  (float)DT_PIXEL_APPLY_DPI(5) * (p / cabsf(p)));
       }
 
       if(data->header.type == DT_LIQUIFY_PATH_CURVE_TO_V1)
