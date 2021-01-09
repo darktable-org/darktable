@@ -196,7 +196,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   float *const wf_linear = d->waveform_linear;
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
-  // scaling.
+  // scaling. For a 3:2 image, "landscape" orientation, bin_width will
+  // generally be 4, for "portrait" it will generally be 3.
   // Note that waveform_stride is pre-initialized/hardcoded,
   // but waveform_width varies, depending on preview image
   // width and # of bins.
@@ -208,6 +209,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
 
   // Every bin_width x height portion of the image is being described
   // in a 1 pixel x wf_height portion of the histogram.
+  // NOTE: if constant is decreased, will brighten output
   const float brightness = wf_height / 40.0f;
   const float scale = brightness / (height * bin_width);
 
@@ -215,29 +217,29 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   const float _height = (float)(wf_height - 1);
 
   // count the colors
-  // note that threads must handle >= bin_width columns to not overwrite each other
-  // FIXME: instead outer loop could be by bin
   // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
-  // Quick and Dirty fix: parallelization breaks display of histogram and introduces massive lags on OSX
-#if defined(_OPENMP) && !defined(__APPLE__)
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(input, width, height, wf_width, bin_width, _height, scale) \
-  dt_omp_sharedconst(wf_linear) \
-  aligned(input, wf_linear:64) \
-  schedule(simd:static, bin_width)
+#if defined(_OPENMP)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(input, wf_linear, width, height, wf_width, bin_width, _height, scale) \
+  schedule(static)
 #endif
-  for(int x = 0; x < width; x++)
+  for(int bin = 0; bin < wf_width; bin++)
   {
-    float *const out = wf_linear + 4 * (x / bin_width);
-    for(int y = 0; y < height; y++)
+    const int x_from = bin * bin_width;
+    const int x_high = MIN(x_from + bin_width, width);
+    float *const restrict out = wf_linear + 4U * bin;
+    for(int x = x_from; x < x_high; x++)
     {
-      const float *const in = input + 4 * (y * width + x);
-      for(int k = 0; k < 3; k++)
+      for(int y = 0; y < height; y++)
       {
-        const float v = 1.0f - (8.0f / 9.0f) * in[2 - k];
-        // flipped from dt's CLAMPS so as to treat NaN's as 0 (NaN compares false)
-        const int out_y = (v < 1.0f ? (v > 0.0f ? v : 0.0f) : 1.0f) * _height;
-        out[4 * wf_width * out_y + k] += scale;
+        const float *const restrict in = input + 4U * (y * width + x);
+        for_each_channel(k,aligned(in,out:16))
+        {
+          const float v = 1.0f - (8.0f / 9.0f) * in[2 - k];
+          // flipped from dt's CLAMPS so as to treat NaN's as 0 (NaN compares false)
+          const int out_y = (v < 1.0f ? (v > 0.0f ? v : 0.0f) : 1.0f) * _height;
+          out[4 * wf_width * out_y + k] += scale;
+        }
       }
     }
   }
@@ -536,6 +538,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   {
     const float src = MIN(1.0f, wf_linear[p + ch]);
     // primaries: colors used to represent primary colors!
+    // FIXME: use for_each_channel() macro, can remove simd in OpenMP above?
     for(int k = 0; k < 3; k++)
       wf_display[p+k] = src * primaries_linear[ch][k];
     wf_display[p+3] = src;
@@ -559,6 +562,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   // FIXME: we could do this in place in wf_display, but it'd require care w/OpenMP
   for(int y = 0; y < wf_height; y++)
     for(int x = 0; x < wf_width; x++)
+      // FIXME: use for_four_channels() macro, can remove simd in OpenMP above?
       for(int k = 0; k < 4; k++)
         // linear -> display transform can return pixels > 1, hence limit these
         wf_8bit[(y * wf_stride + x * 4) + k] = MIN(255, (int)(wf_display[4 * (y * wf_width + x) + k] * 255.0f));
@@ -1238,7 +1242,9 @@ void gui_init(dt_lib_module_t *self)
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
   d->waveform_height  = 175;
+  // FIXME: use dt_iop_image_alloc()
   d->waveform_linear  = dt_alloc_align_float((size_t)4 * d->waveform_height * d->waveform_max_width);
+  // FIXME: use dt_iop_image_alloc()
   d->waveform_display = dt_alloc_align_float((size_t)4 * d->waveform_height * d->waveform_max_width);
   d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 4 * d->waveform_height * d->waveform_max_width);
 
