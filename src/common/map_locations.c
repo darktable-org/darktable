@@ -293,7 +293,7 @@ GList *dt_map_location_find_locations(const guint imgid)
                               "      i.longitude<=(l.longitude+delta1) AND"
                               "      i.latitude>=(l.latitude-delta2) AND"
                               "      i.latitude<=(l.latitude+delta2)))"
-                              " WHERE i.id = ?1",
+                              " WHERE i.id = ?1 AND i.latitude IS NOT NULL AND i.longitude IS NOT NULL",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, MAP_LOCATION_SHAPE_ELLIPSE);
