@@ -1839,7 +1839,15 @@ static void _draw_paths(dt_iop_module_t *module,
 
   cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
 
-  GList *interpolated = is_dragging(g) ? NULL : interpolate_paths(p);
+  // do not display any iterpolated items as slow when:
+  //   - we are dragging (pan)
+  //   - the button one is pressed
+  //   - exception for DT_LIQUIFY_LAYER_STRENGTHPOINT where we want to see the
+  //     interpolated strength lines.
+  GList *interpolated = (is_dragging(g) || g->last_button1_pressed_pos != -1)
+    && (g->last_hit.layer != DT_LIQUIFY_LAYER_STRENGTHPOINT)
+    ? NULL
+    : interpolate_paths(p);
 
   for(GList *l = layers; l != NULL; l = l->next)
   {
