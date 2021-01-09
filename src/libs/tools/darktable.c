@@ -48,6 +48,7 @@ typedef struct dt_lib_darktable_t
   int image_width, image_height;
   // text with logo font
   cairo_surface_t *text;
+  guint8 *text_img_buffer;
   int text_width, text_height;
 } dt_lib_darktable_t;
 
@@ -166,6 +167,8 @@ done:
 
   /* try to load program name as svg */
   d->text = dt_util_get_logo_text(DT_PIXEL_APPLY_DPI(-1.0));
+  if(d->text)
+    d->text_img_buffer = cairo_image_surface_get_data(d->text);
   /* no png fallback, we'll use text */
   d->text_width = d->text ? dt_cairo_image_surface_get_width(d->text) : 0;
   d->text_height = d->text ? dt_cairo_image_surface_get_height(d->text) : 0;
@@ -181,6 +184,7 @@ void gui_cleanup(dt_lib_module_t *self)
   cairo_surface_destroy(d->image);
   cairo_surface_destroy(d->text);
   free(d->image_buffer);
+  free(d->text_img_buffer);
   g_free(self->data);
   self->data = NULL;
 }
