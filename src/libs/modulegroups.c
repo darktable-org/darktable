@@ -65,6 +65,13 @@ typedef enum dt_lib_modulegroups_basic_item_parent_t
   GRID
 } dt_lib_modulegroups_basic_item_parent_t;
 
+typedef enum dt_lib_modulegroups_basic_item_position_t
+{
+  NORMAL,
+  NEW_MODULE,
+  FIRST_MODULE
+} dt_lib_modulegroups_basic_item_position_t;
+
 typedef enum dt_lib_modulegroups_basic_item_type_t
 {
   WIDGET_TYPE_NONE = 0,
@@ -502,7 +509,7 @@ static void _basics_on_off_callback2(GtkWidget *widget, GdkEventButton *e, dt_li
 }
 
 static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_item_t *item, DtBauhausWidget *bw,
-                               gboolean new_group)
+                               dt_lib_modulegroups_basic_item_position_t item_pos)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
@@ -671,8 +678,8 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     }
   }
 
-  // if it's the first widget of a module, we want to show a header
-  if(new_group)
+  // if it's the first widget of a module, we want to show a separation
+  if(item_pos != NORMAL)
     {
       // we create the module boxes
       d->mod_hbox_basic = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -694,9 +701,9 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
       if (dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
       {
-        //we add a box
+        //we add a box for the label
         item->label_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        gtk_box_pack_start(GTK_BOX(d->vbox_basic), item->label_box, FALSE, FALSE, 0);
+        gtk_box_pack_start(GTK_BOX(d->mod_vbox_basic), item->label_box, FALSE, FALSE, 0);
         gtk_widget_show(item->label_box);
 
         // we add the section label
@@ -712,6 +719,11 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       {
         // we add the link to the full iop
         gtk_box_pack_end(GTK_BOX(d->mod_hbox_basic), wbt, FALSE, FALSE, 0);
+
+        if (item_pos != FIRST_MODULE)
+          // we just add a thin line on top of the widget to show delimitation
+          gtk_style_context_add_class(gtk_widget_get_style_context(item->box), "basics-widget_group_start");
+        
       }
     }
 
@@ -735,13 +747,15 @@ static void _basics_show(dt_lib_module_t *self)
     gtk_widget_set_name(d->vbox_basic, "basics-box");
 
   int pos = 0;
+  dt_lib_modulegroups_basic_item_position_t item_pos = FIRST_MODULE;
   GList *modules = g_list_last(darktable.develop->iop);
   while(modules)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
-    gboolean new_module = TRUE;      // we record if it's a new module or not to set css class
-   /* if(pos == 0 && !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
-      new_module = FALSE; // except for the first one as we don't want top separator*/
+
+    // we record if it's a new module or not to set css class and box structure
+    if (item_pos != FIRST_MODULE) item_pos = NEW_MODULE;
+
     if(!dt_iop_is_hidden(module) && !(module->flags() & IOP_FLAGS_DEPRECATED) && module->iop_order != INT_MAX)
     {
       // first, we add on-off buttons if any
@@ -754,8 +768,8 @@ static void _basics_show(dt_lib_module_t *self)
           if(item->widget_type == WIDGET_TYPE_ACTIVATE_BTN)
           {
             item->module = module;
-            _basics_add_widget(self, item, NULL, new_module);
-            new_module = FALSE;
+            _basics_add_widget(self, item, NULL, item_pos);
+            item_pos = NORMAL;
             pos++;
           }
         }
@@ -785,8 +799,8 @@ static void _basics_show(dt_lib_module_t *self)
                 if(!strcmp(accel->path, tx))
                 {
                   item->module = module;
-                  _basics_add_widget(self, item, ww, new_module);
-                  new_module = FALSE;
+                  _basics_add_widget(self, item, ww, item_pos);
+                  item_pos = NORMAL;
                   pos++;
                   g_free(tx);
                   break;
