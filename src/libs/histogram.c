@@ -514,36 +514,30 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
 
 static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
 {
+  // map linear waveform data to a display colorspace
+  const float *const restrict wf_linear = d->waveform_linear;
+  float *const restrict wf_display = d->waveform_display;
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
-  const int wf_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
-  // unused 4th element is for speed
-  const float primaries_linear[3][4] = {
-    {darktable.bauhaus->graph_primaries[2].blue, darktable.bauhaus->graph_primaries[2].green, darktable.bauhaus->graph_primaries[2].red, 0.0f},
-    {darktable.bauhaus->graph_primaries[1].blue, darktable.bauhaus->graph_primaries[1].green, darktable.bauhaus->graph_primaries[1].red, 0.0f},
-    {darktable.bauhaus->graph_primaries[0].blue, darktable.bauhaus->graph_primaries[0].green, darktable.bauhaus->graph_primaries[0].red, 0.0f},
+  // colors used to represent primary colors
+  const GdkRGBA *const css_primaries = darktable.bauhaus->graph_primaries;
+  const float DT_ALIGNED_ARRAY primaries_linear[3][4] = {
+    {css_primaries[2].blue, css_primaries[2].green, css_primaries[2].red, 1.0f},
+    {css_primaries[1].blue, css_primaries[1].green, css_primaries[1].red, 1.0f},
+    {css_primaries[0].blue, css_primaries[0].green, css_primaries[0].red, 1.0f},
   };
-  const float *const wf_linear = d->waveform_linear;
-  float *const wf_display = d->waveform_display;
-  uint8_t *const wf_8bit = d->waveform_8bit;
-
-  // map linear waveform data to a display colorspace
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(wf_width, wf_height, wf_linear, primaries_linear, ch) \
-  dt_omp_sharedconst(wf_display) aligned(wf_linear, wf_display, primaries_linear:64) \
-  schedule(simd:static)
-#endif
-  for(int p = 0; p < wf_height * wf_width * 4; p += 4)
+  const size_t nfloats = 4U * wf_width * wf_height;
+  // this should be <= 250K iterations, hence not worth the overhead to thread
+  for(size_t p = 0; p < nfloats; p += 4)
   {
     const float src = MIN(1.0f, wf_linear[p + ch]);
-    // primaries: colors used to represent primary colors!
-    // FIXME: use for_each_channel() macro, can remove simd in OpenMP above?
-    for(int k = 0; k < 3; k++)
+    for_four_channels(k,aligned(wf_display,primaries_linear:64))
+    {
       wf_display[p+k] = src * primaries_linear[ch][k];
-    wf_display[p+3] = src;
+    }
   }
-  // this is a shortcut to change the gamma
+
+  // shortcut for a fast gamma change
   const dt_iop_order_iccprofile_info_t *profile_linear =
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
   const dt_iop_order_iccprofile_info_t *profile_work =
@@ -553,23 +547,25 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
                                           profile_linear, profile_work, "waveform gamma");
 
+  const size_t wf_width_floats = 4U * wf_width;
+  uint8_t *const restrict wf_8bit = d->waveform_8bit;
+  const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
+  // not enough iterations to be worth threading
+  for(size_t y = 0; y < wf_height; y++)
+  {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(wf_display, wf_width, wf_height, wf_stride) \
-  dt_omp_sharedconst(wf_8bit) aligned(wf_8bit, wf_display:64) \
-  schedule(simd:static) collapse(2)
+#pragma simd aligned(wf_display, wf_8bit : 64)
 #endif
-  // FIXME: we could do this in place in wf_display, but it'd require care w/OpenMP
-  for(int y = 0; y < wf_height; y++)
-    for(int x = 0; x < wf_width; x++)
-      // FIXME: use for_four_channels() macro, can remove simd in OpenMP above?
-      for(int k = 0; k < 4; k++)
-        // linear -> display transform can return pixels > 1, hence limit these
-        wf_8bit[(y * wf_stride + x * 4) + k] = MIN(255, (int)(wf_display[4 * (y * wf_width + x) + k] * 255.0f));
+    for(size_t k = 0; k < wf_width_floats; k++)
+    {
+      // linear -> display transform can return pixels > 1, hence limit these
+      wf_8bit[y * wf_8bit_stride + k] = MIN(255, (int)(wf_display[y * wf_width_floats + k] * 255.0f));
+    }
+  }
 
   cairo_surface_t *source
     = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
-                                             wf_width, wf_height, wf_stride);
+                                             wf_width, wf_height, wf_8bit_stride);
   cairo_set_source_surface(cr, source, 0.0, 0.0);
   cairo_paint_with_alpha(cr, 0.5);
   cairo_surface_destroy(source);
@@ -1242,10 +1238,8 @@ void gui_init(dt_lib_module_t *self)
   // of tonal gradation. 256 would match the # of bins in a regular
   // histogram.
   d->waveform_height  = 175;
-  // FIXME: use dt_iop_image_alloc()
-  d->waveform_linear  = dt_alloc_align_float((size_t)4 * d->waveform_height * d->waveform_max_width);
-  // FIXME: use dt_iop_image_alloc()
-  d->waveform_display = dt_alloc_align_float((size_t)4 * d->waveform_height * d->waveform_max_width);
+  d->waveform_linear  = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 4);
+  d->waveform_display = dt_iop_image_alloc(d->waveform_max_width, d->waveform_height, 4);
   d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 4 * d->waveform_height * d->waveform_max_width);
 
   // proxy functions and data so that pixelpipe or tether can
