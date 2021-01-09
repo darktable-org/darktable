@@ -1457,7 +1457,7 @@ margin: 0 2px;
 {
   min-height: 1em;
   min-width: 1em;
-  margin: 0.3em 0.75em 0 0.1em;
+  margin: 0.3em 0 0 0.1em;
   border: none;
 }
 
@@ -1475,13 +1475,20 @@ margin: 0 2px;
 
 #basics-box-labels #section_label
 {
-  margin-top: 1em;
+  margin: 1em 0.75em 0em 0.75em;
+  border: none;
 }
 
-#basics-widget.basics-widget_group_start
+#hbox-group-start
 {
   padding-top: 0.5em;
   border-top: 0.5px solid @section_label;
+}
+
+#basic-header-box
+{
+  border-bottom: 0.5px solid @section_label;
+  margin: 0 0.75em 0.5em 0.75em;
 }
 
 #basics-iop_name

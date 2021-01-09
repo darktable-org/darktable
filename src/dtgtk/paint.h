@@ -270,7 +270,7 @@ void dtgtk_cairo_paint_display_wavelet_scale(cairo_t *cr, gint x, gint y, gint w
 /** Paint a auto level icon for retouch */
 void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
-/** Paint a link icon for basic adjustments*/
+/** Paint a link icon for basic adjustments */
 void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
