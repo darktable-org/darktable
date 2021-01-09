@@ -384,9 +384,9 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
   {
     g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
-    const size_t bufsize = dt_round_size(size * sizeof(float), 64);
+    const size_t bufsize = dt_round_size_sse(sizeof(float) * size);
     a->size = bufsize / sizeof(float);
-    a->buffer = (float *)dt_alloc_align(64, bufsize);
+    a->buffer = dt_alloc_align_float(a->size);
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
              (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
@@ -409,7 +409,7 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
     float *oldbuffer = a->buffer;
     size_t oldsize = a->size;
     a->size *= 2;
-    a->buffer = (float *)dt_alloc_align(64, a->size * sizeof(float));
+    a->buffer = dt_alloc_align_float(a->size);
     if(a->buffer == NULL)
     {
       // not much we can do here except of emitting an error message
@@ -420,9 +420,9 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
       return;
     }
     memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
-    dt_free_align(oldbuffer);
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
              (unsigned long)a->size, a->buffer, oldbuffer);
+    dt_free_align(oldbuffer);
   }
   a->buffer[a->pos++] = value;
 }
@@ -449,9 +449,9 @@ void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
       return;
     }
     memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
-    dt_free_align(oldbuffer);
     dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
              (unsigned long)a->size, a->buffer, oldbuffer);
+    dt_free_align(oldbuffer);
   }
   memcpy(a->buffer + a->pos, values, n * sizeof(float));
   a->pos += n;
