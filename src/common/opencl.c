@@ -677,6 +677,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     if(!cl->dev || !devices)
     {
       free(cl->dev);
+      cl->dev = NULL;
       free(devices);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory\n");
       goto finally;
