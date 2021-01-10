@@ -1305,11 +1305,11 @@ void dt_accel_rename_global(const gchar *path, const gchar *new_path)
     {
       GtkAccelKey tmp_key
           = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, accel->closure));
+      GClosure* closure = g_closure_ref(accel->closure);
       dt_accel_deregister_global(path);
-      g_closure_ref(accel->closure);
       dt_accel_register_global(new_path, tmp_key.accel_key, tmp_key.accel_mods);
-      dt_accel_connect_global(new_path, accel->closure);
-      g_closure_unref(accel->closure);
+      dt_accel_connect_global(new_path, closure);
+      g_closure_unref(closure);
       l = NULL;
     }
     else
@@ -1331,11 +1331,11 @@ void dt_accel_rename_lua(const gchar *path, const gchar *new_path)
     {
       GtkAccelKey tmp_key
           = *(gtk_accel_group_find(darktable.control->accelerators, find_accel_internal, accel->closure));
+      GClosure* closure = g_closure_ref(accel->closure);
       dt_accel_deregister_lua(path);
-      g_closure_ref(accel->closure);
       dt_accel_register_lua(new_path, tmp_key.accel_key, tmp_key.accel_mods);
-      dt_accel_connect_lua(new_path, accel->closure);
-      g_closure_unref(accel->closure);
+      dt_accel_connect_lua(new_path, closure);
+      g_closure_unref(closure);
       l = NULL;
     }
     else
