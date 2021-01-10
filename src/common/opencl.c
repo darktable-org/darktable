@@ -700,6 +700,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
       devs += all_num_devices[n];
     }
   }
+  devs = NULL;
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
   if(num_devices == 0) goto finally;
@@ -717,6 +718,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     ++dev;
   }
   free(devices);
+  devices = NULL;
+
   if(dev > 0)
   {
     cl->num_devs = dev;
@@ -852,6 +855,9 @@ finally:
     setlocale(LC_ALL, locale);
     free(locale);
   }
+  if(devices)
+    free(devices);
+
   return;
 }
 
