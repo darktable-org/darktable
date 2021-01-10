@@ -311,6 +311,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
     {
       // function failed, profiles are not set, color will be wrong, exit.
       gdk_rgba_free(color_out);
+      g_strfreev(sample_parts);
       return FALSE;
     }
 
