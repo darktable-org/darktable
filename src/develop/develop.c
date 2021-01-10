@@ -1420,7 +1420,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 
   if(auto_apply_filmic || auto_apply_sharpen || auto_apply_cat)
   {
-    dt_lock_image(imgid);
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
@@ -1434,7 +1433,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
         _dev_insert_module(dev, module, imgid);
       }
     }
-    dt_unlock_image(imgid);
   }
 
   // select all presets from one of the following table and add them into memory.history. Note that
@@ -1562,7 +1560,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
 static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 {
   //start with those modules that cannot be disabled
-  dt_lock_image(imgid);
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
@@ -1588,7 +1585,6 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
       _dev_insert_module(dev, module, imgid);
     }
   }
-  dt_unlock_image(imgid);
 }
 
 static void _dev_merge_history(dt_develop_t *dev, const int imgid)
