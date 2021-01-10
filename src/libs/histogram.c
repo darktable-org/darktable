@@ -28,6 +28,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -88,6 +89,8 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
+  // drawable with scope image
+  GtkWidget *scope_draw;
   // mouse state
   gboolean dragging;
   int32_t button_down_x, button_down_y;
@@ -962,6 +965,30 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
   return TRUE;
 }
 
+static void _red_channel_toggle(GtkToggleButton *button, dt_lib_histogram_t *d)
+{
+  d->red = gtk_toggle_button_get_active(button);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button), d->red ? _("click to hide red channel") : _("click to show red channel"));
+  dt_conf_set_bool("plugins/darkroom/histogram/show_red", d->red);
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+static void _green_channel_toggle(GtkToggleButton *button, dt_lib_histogram_t *d)
+{
+  d->green = gtk_toggle_button_get_active(button);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button), d->green ? _("click to hide green channel") : _("click to show green channel"));
+  dt_conf_set_bool("plugins/darkroom/histogram/show_green", d->green);
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+static void _blue_channel_toggle(GtkToggleButton *button, dt_lib_histogram_t *d)
+{
+  d->blue = gtk_toggle_button_get_active(button);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(button), d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
+  dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
 static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
@@ -1264,34 +1291,78 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: is this used?
   gtk_widget_set_name(self->widget, "main-histogram");
 
-  GtkWidget *scope;
-
   /* create drawingarea */
-  scope = gtk_drawing_area_new();
+  d->scope_draw = gtk_drawing_area_new();
 
   // FIXME: these events become less important if are using widgets on top of this
-  gtk_widget_add_events(scope, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                                      darktable.gui->scroll_mask);
+  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
+                                       darktable.gui->scroll_mask);
 
   /* connect callbacks */
-  gtk_widget_set_tooltip_text(scope, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
-  g_signal_connect(G_OBJECT(scope), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
-  g_signal_connect(G_OBJECT(scope), "button-press-event",
+  gtk_widget_set_tooltip_text(d->scope_draw, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
+  g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "button-press-event",
                    G_CALLBACK(_lib_histogram_button_press_callback), self);
-  g_signal_connect(G_OBJECT(scope), "button-release-event",
+  g_signal_connect(G_OBJECT(d->scope_draw), "button-release-event",
                    G_CALLBACK(_lib_histogram_button_release_callback), self);
-  g_signal_connect(G_OBJECT(scope), "motion-notify-event",
+  g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
                    G_CALLBACK(_lib_histogram_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(scope), "leave-notify-event",
+  g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
                    G_CALLBACK(_lib_histogram_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(scope), "enter-notify-event",
+  g_signal_connect(G_OBJECT(d->scope_draw), "enter-notify-event",
                    G_CALLBACK(_lib_histogram_enter_notify_callback), self);
-  g_signal_connect(G_OBJECT(scope), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
-  g_signal_connect(G_OBJECT(scope), "configure-event",
+  g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "configure-event",
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 
-  gtk_container_add(GTK_CONTAINER(self->widget), scope);
+  gtk_container_add(GTK_CONTAINER(self->widget), d->scope_draw);
+
+  // a row of buttons
+  // FIXME: is the spacing in logical pixels? don't use DT_PIXEL_APPLY_DPI() and set this all via CSS
+  GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
+  gtk_widget_set_name(button_box, "button_box");
+  gtk_widget_set_valign(button_box, GTK_ALIGN_START);
+  gtk_widget_set_halign(button_box, GTK_ALIGN_START);
+  gtk_overlay_add_overlay(GTK_OVERLAY(self->widget), button_box);
+
+  // FIXME: make no mouseover effect on buttons, just as extant ones?
+  // FIXME: only make the draggable/scrolalble overlays visible if in darkroom view
+  // FIXME: how will change the colors of the red/green/blue buttons as the CSS of primaries changes?
+  // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them with the switch type checkbox being GtkStackSwitcher? -- if so, then the each of the histogram/waveform widgets will have its own associated "mode" button, drawable, and sensitive areas for scrolling
+
+  GtkWidget *button;
+
+  // FIXME: make the RGB togglebuttons be colored by CSS, or make custom draw as dtgtk_cairo_paint_rawoverexposed() with color for each
+  // red channel on/off
+  // FIXME: should each channel of scope be its own drawable, hence toggle will turn on/off visibility of a layer rather than request a redraw?
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  // FIXME: does gtk_toggle_button_set_active() call "toggled" which sets tooltip, hence delete next line?
+  // FIXME: or is it better to have a general tooltip rather than flipping it when the button is pressed?
+  gtk_widget_set_tooltip_text(button, d->red ? _("click to hide red channel") : _("click to show red channel"));
+  g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_red_channel_toggle), d);
+  gtk_widget_set_name(button, "red_channel_button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->red);
+  gtk_box_pack_start(GTK_BOX(button_box), button, FALSE, FALSE, 0);
+
+  // green channel on/off
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  gtk_widget_set_tooltip_text(button, d->green ? _("click to hide green channel") : _("click to show green channel"));
+  g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_green_channel_toggle), d);
+  gtk_widget_set_name(button, "green_channel_button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->green);
+  gtk_box_pack_start(GTK_BOX(button_box), button, FALSE, FALSE, 0);
+
+  // green channel on/off
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  gtk_widget_set_tooltip_text(button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
+  g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
+  gtk_widget_set_name(button, "blue_channel_button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->blue);
+  gtk_box_pack_start(GTK_BOX(button_box), button, FALSE, FALSE, 0);
+
+  // FIXME: use gtk_event_box_new() to catch scroll/drag events? or a transparent overlay at top/bottom, with gtk_widget_set_no_show_all() to hide except when mouse is over?
+  // FIXME: could use a GtkActionBar for the buttons at the top?
 
   /* set size of navigation draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
