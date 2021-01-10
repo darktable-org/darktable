@@ -738,6 +738,39 @@ overshoot.right
   margin-right: 0.5em;
 }
 
+/* scope/histogram */
+#main-histogram #button_box
+{
+  margin: 0.5em;
+}
+
+#main-histogram .toggle
+{
+  border: 1.1px solid alpha(@button_bg, 0.3);
+  min-height: 0.85em;
+  min-width: 0.85em;
+}
+
+#main-histogram .toggle:checked
+{
+  border-color: alpha(@button_checked_fg, 0.6);
+}
+
+#main-histogram #red_channel_button
+{
+  background-color: alpha(@graph_red, 0.333);
+}
+
+#main-histogram #green_channel_button
+{
+  background-color: alpha(@graph_green, 0.333);
+}
+
+#main-histogram #blue_channel_button
+{
+  background-color: alpha(@graph_blue, 0.333);
+}
+
 /*------------------
   - Dialog windows -
   ------------------*/
