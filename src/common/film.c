@@ -417,49 +417,7 @@ void dt_film_remove(const int id)
     return;
   }
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.tagged_images"
-                              " WHERE imgid IN (SELECT id FROM main.images WHERE film_id = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.history"
-                              " WHERE imgid IN (SELECT id FROM main.images WHERE film_id = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.masks_history"
-                              " WHERE imgid IN (SELECT id FROM main.images WHERE film_id = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.color_labels"
-                              " WHERE imgid IN (SELECT id FROM main.images WHERE film_id = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.meta_data"
-                              " WHERE id IN (SELECT id FROM main.images WHERE film_id = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.selected_images"
-                              " WHERE imgid IN (SELECT id FROM main.images WHERE film_id = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
+  // deletes from dependent tables are handled by foreign keys
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.images WHERE film_id = ?1", -1,
                               &stmt, NULL);
@@ -473,14 +431,7 @@ void dt_film_remove(const int id)
   }
   sqlite3_finalize(stmt);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "DELETE FROM main.images"
-                              " WHERE id IN (SELECT id FROM main.images WHERE film_id = ?1)",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, id);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-
+  // this removes the dependent images too due to foreign keys
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.film_rolls WHERE id = ?1", -1,
                               &stmt, NULL);
