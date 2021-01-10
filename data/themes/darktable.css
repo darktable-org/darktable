@@ -1465,30 +1465,36 @@ margin: 0 2px;
 #basics-box-labels #section_label
 {
   padding-top: 2px;
-  margin: 0 0.75em 0.25em 0.75em;
+  margin-bottom: 0.25em;
 }
 
 #basics-box #basics-widget
 {
-  margin: 0 0.75em 0.5em 0.75em;
+  margin: 0;
 }
 
 #basics-box-labels #section_label
 {
-  margin: 1em 0.75em 0em 0.75em;
+  margin-top: 1em;
   border: none;
 }
 
-#hbox-group-start
+#basics-module-hbox
 {
+  margin: 0 0.75em;
+}
+
+#basics-module-hbox-first
+{
+  margin: 0 0.75em;
   padding-top: 0.5em;
-  border-top: 0.5px solid @section_label;
+  /*border-top: 0.5px solid @section_label;*/
 }
 
 #basic-header-box
 {
   border-bottom: 0.5px solid @section_label;
-  margin: 0 0.75em 0.5em 0.75em;
+  margin: 0.5em 0.75em;
 }
 
 #basics-iop_name
