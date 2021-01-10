@@ -86,11 +86,21 @@ typedef enum dt_iop_demosaic_qual_flags_t
   DEMOSAIC_MEDIUM_QUAL             = 1 << 3
 } dt_iop_demosaic_qual_flags_t;
 
+typedef enum dt_iop_demosaic_smooth_t
+{
+  DEMOSAIC_SMOOTH_OFF = 0, // $DESCRIPTION: "disabled"
+  DEMOSAIC_SMOOTH_1 = 1,   // $DESCRIPTION: "once"
+  DEMOSAIC_SMOOTH_2 = 2,   // $DESCRIPTION: "twice"
+  DEMOSAIC_SMOOTH_3 = 3,   // $DESCRIPTION: "three times"
+  DEMOSAIC_SMOOTH_4 = 4,   // $DESCRIPTION: "four times"
+  DEMOSAIC_SMOOTH_5 = 5,   // $DESCRIPTION: "five times"
+} dt_iop_demosaic_smooth_t;
+
 typedef struct dt_iop_demosaic_params_t
 {
   dt_iop_demosaic_greeneq_t green_eq; // $DEFAULT: DT_IOP_GREEN_EQ_NO $DESCRIPTION: "match greens"
   float median_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "edge threshold"
-  uint32_t color_smoothing; // $DEFAULT: 0 $DESCRIPTION: "color smoothing"
+  dt_iop_demosaic_smooth_t color_smoothing; // $DEFAULT: DEMOSAIC_SMOOTH_OFF $DESCRIPTION: "color smoothing"
   dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_PPG $DESCRIPTION: "demosaicing method"
   uint32_t yet_unused_data_specific_to_demosaicing_method;
 } dt_iop_demosaic_params_t;
@@ -3001,7 +3011,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     const float mpixels = (roo.width * roo.height) / 1.0e6;
     const float tclock = end_time.clock - start_time.clock;
     const float uclock = end_time.user - start_time.user;
-    fprintf(stderr,"\n CPU `%s' %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us, smooth %i",
+    fprintf(stderr," process CPU `%s' %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us, smooth %i\n",
         method2string(demosaicing_method), mpixels, tclock, uclock, mpixels / tclock, data->color_smoothing);
   }
 }
@@ -4960,6 +4970,11 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
     }
   }
+  if(darktable.unmuted & DT_DEBUG_DEMOSAIC)
+  {
+    fprintf(stderr,"  committed parameters: method: `%s', smooth %i, green %i, CL %i, tiling %i\n",
+      method2string(d->demosaicing_method), d->color_smoothing, d->green_eq, piece->process_cl_ready, piece->process_tiling_ready); 
+  }
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
@@ -4995,6 +5010,9 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);
   gtk_widget_set_visible(g->color_smoothing, !passing);
+  dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
+  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
+  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
@@ -5009,10 +5027,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
   if(changed)
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
-
-  dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
-  dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
-  dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
 
   gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
@@ -5091,12 +5105,6 @@ void gui_init(struct dt_iop_module_t *self)
                                                 "set to 1.0 to ignore edges."));
 
   g->color_smoothing = dt_bauhaus_combobox_from_params(self, "color_smoothing");
-  dt_bauhaus_combobox_add(g->color_smoothing, _("off"));
-  dt_bauhaus_combobox_add(g->color_smoothing, _("one time"));
-  dt_bauhaus_combobox_add(g->color_smoothing, _("two times"));
-  dt_bauhaus_combobox_add(g->color_smoothing, _("three times"));
-  dt_bauhaus_combobox_add(g->color_smoothing, _("four times"));
-  dt_bauhaus_combobox_add(g->color_smoothing, _("five times"));
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
 
   g->greeneq = dt_bauhaus_combobox_from_params(self, "green_eq");
