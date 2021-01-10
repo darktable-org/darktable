@@ -42,9 +42,6 @@
 #include <string.h>
 #include <time.h>
 
-#define DEMOSAIC_TIMING 0 // Bitmask to help demosaicer debugging/tuning
-                          // 01 --> print more precise timing info
-                          // 02 --> demosaicers in development don't fallback to ppg
 #include "rcd_demosaic.c"
 
 DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
@@ -2871,7 +2868,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
-
+  gboolean info = (darktable.unmuted & DT_DEBUG_DEMOSAIC);
+  
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
@@ -2881,9 +2879,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if((qual_flags & DEMOSAIC_MEDIUM_QUAL)
   // only overwrite setting if quality << requested and in dr mode and not a special method
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
-  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR)
-  && !(DEMOSAIC_TIMING & 2))
+  && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
+
+  if(info) dt_get_times(&start_time);
 
   const float *const pixels = (float *)i;
 
@@ -2902,8 +2901,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.scale = 1.0f;
       tmp = (float *)dt_alloc_align_float((size_t)4 * roo.width * roo.height);
     }
-
-    if((darktable.unmuted & DT_DEBUG_PERF) || (DEMOSAIC_TIMING & 1)) dt_get_times(&start_time);
 
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
     {
@@ -2974,16 +2971,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
 
-    if((darktable.unmuted & DT_DEBUG_PERF) || (DEMOSAIC_TIMING & 1))
-    {
-      const float mpixels = (roo.width * roo.height) / 1.0e6;
-      dt_get_times(&end_time);
-      const float tclock = end_time.clock - start_time.clock;
-      const float uclock = end_time.user - start_time.user;
-      fprintf(stderr," CPU    `%s' did %.1fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
-        method2string(demosaicing_method), mpixels, tclock, uclock, mpixels / tclock);
-    }
-
     if(scaled)
     {
       roi = *roi_out;
@@ -3007,6 +2994,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   if(data->color_smoothing)
     color_smoothing(o, roi_out, data->color_smoothing);
+
+  if(info)
+  {
+    dt_get_times(&end_time);
+    const float mpixels = (roo.width * roo.height) / 1.0e6;
+    const float tclock = end_time.clock - start_time.clock;
+    const float uclock = end_time.user - start_time.user;
+    fprintf(stderr,"\n CPU `%s' %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us, smooth %i",
+        method2string(demosaicing_method), mpixels, tclock, uclock, mpixels / tclock, data->color_smoothing);
+  }
 }
 
 #ifdef HAVE_OPENCL
@@ -5114,7 +5111,6 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_stack_add_named(GTK_STACK(self->widget), label_non_raw, "non_raw");
   gtk_stack_add_named(GTK_STACK(self->widget), box_raw, "raw");
 }
-#undef DEMOSAIC_TIMING
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
