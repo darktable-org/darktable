@@ -703,7 +703,12 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   devs = NULL;
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
-  if(num_devices == 0) goto finally;
+  if(num_devices == 0)
+  {
+    if(devices)
+      free(devices);
+    goto finally;
+  } 
 
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
@@ -855,8 +860,6 @@ finally:
     setlocale(LC_ALL, locale);
     free(locale);
   }
-  if(devices)
-    free(devices);
 
   return;
 }
