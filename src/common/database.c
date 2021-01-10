@@ -47,7 +47,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 31
+#define CURRENT_DATABASE_VERSION_LIBRARY 32
 #define CURRENT_DATABASE_VERSION_DATA     8
 
 typedef struct dt_database_t
@@ -1679,12 +1679,47 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
-    // add foreign keys for database consistency. 
+    // add second columns to speed up sorting
+    TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
+        "[init] can't drop history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `operation` )",
+        "[init] can't recreate history_imgid_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_filename_index`",
+        "[init] can't drop images_filename_index\n");
+    TRY_EXEC("CREATE INDEX `images_filename_index` ON `images` ( `filename`, `version` )",
+        "[init] can't recreate images_filename_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_film_id_index`",
+        "[init] can't drop images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_film_id_index` ON `images` ( `film_id`, `filename` )",
+        "[init] can't recreate images_film_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_group_id_index`",
+        "[init] can't drop images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_group_id_index` ON `images` ( `group_id`, `id` )",
+        "[init] can't recreate images_group_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `masks_history_imgid_index`",
+        "[init] can't drop masks_history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( `imgid`, `num` )",
+        "[init] can't recreate masks_history_imgid_index\n");
+
+    // map refinement: avoid full table scan
+    TRY_EXEC("CREATE INDEX `images_latlong_index` ON `images` ( `latitude` DESC, `longitude` DESC )",
+        "[init] can't create images_latlong_index\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 31;
+  }
+  else if(version == 31)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // add foreign keys for database consistency. ON UPDATE CASCADE since you never know
+    // if a future version will change image_id 
     // Unfortunately sqlite does not support adding foreign keys to existing tables
     // so we have to rename the existing tables, recreate them and copy back the old values
-    TRY_EXEC("DELETE FROM `film_rolls` WHERE id NOT IN (SELECT film_id FROM `images`)",
-        "[init] can't delete orphaned filmrolls\n");
-
     // images first
     TRY_EXEC("ALTER TABLE `images` RENAME TO `images_old`",
         "[init] can't rename images\n");
@@ -1699,7 +1734,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       "color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER, write_timestamp INTEGER, "
       "history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
-      "FOREIGN KEY(film_id) REFERENCES film_rolls(id) )",
+      "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new images table\n");
 
     TRY_EXEC("INSERT INTO `images` SELECT * FROM `images_old`",
@@ -1727,7 +1762,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE INDEX `images_group_id_index` ON `images` ( `group_id`, `id` )",
         "[init] can't recreate images_group_id_index\n");
 
-    // map refinement
+    TRY_EXEC("DROP INDEX IF EXISTS `images_latlong_index`",
+        "[init] can't drop images_latlong_index\n");
     TRY_EXEC("CREATE INDEX `images_latlong_index` ON `images` ( latitude DESC, longitude DESC )",
         "[init] can't add images_latlong_index\n");
 
@@ -1740,7 +1776,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     TRY_EXEC("CREATE TABLE `history` (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, "
-      "multi_priority INTEGER, multi_name VARCHAR(256), FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
+      "multi_priority INTEGER, multi_name VARCHAR(256), "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new history table\n");
 
     TRY_EXEC("DELETE FROM `history_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
@@ -1762,7 +1799,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
          "[init] can't rename history_hash\n");
      
     TRY_EXEC("CREATE TABLE `history_hash` (imgid INTEGER PRIMARY KEY, basic_hash BLOB, auto_hash BLOB, current_hash BLOB, "
-      "mipmap_hash BLOB, FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
+      "mipmap_hash BLOB, FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new history_hash table\n");
 
     TRY_EXEC("DELETE FROM `history_hash_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
@@ -1779,7 +1816,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
          "[init] can't rename tagged_images\n");
      
     TRY_EXEC("CREATE TABLE `tagged_images` (imgid integer, tagid integer, position INTEGER, "
-        "primary key(imgid, tagid), FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
+        "primary key(imgid, tagid), FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new tagged_images table\n");
 
     TRY_EXEC("DELETE FROM `tagged_images_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
@@ -1811,7 +1848,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
      
     TRY_EXEC("CREATE TABLE masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, "
         "name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB, "
-        "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
+        "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new masks_history table\n");
 
     TRY_EXEC("DELETE FROM `masks_history_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
@@ -1822,14 +1859,68 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     TRY_EXEC("DROP INDEX IF EXISTS `masks_history_imgid_index`",
         "[init] can't drop masks_history_imgid_index\n");
-    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( `imgid`, `num` )",
+    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( imgid, num )",
         "[init] can't recreate masks_history_imgid_index\n");
 
     TRY_EXEC("DROP TABLE masks_history_old",
         "[init] can't drop table masks_history_old\n");
 
+    // color labels
+    TRY_EXEC("ALTER TABLE `color_labels` RENAME TO `color_labels_old`",
+         "[init] can't rename color_labels\n");
+    TRY_EXEC("CREATE TABLE `color_labels` (imgid INTEGER, color INTEGER, "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new color_labels table\n");
+    TRY_EXEC("INSERT INTO `color_labels` SELECT * FROM `color_labels_old`",
+         "[init] can't copy back from color_labels\n");
+
+    TRY_EXEC("DROP TABLE color_labels_old",
+        "[init] can't drop table color_labels_old\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX `color_labels_idx` ON `color_labels` (imgid, color)", 
+        "[init] can't recreate color_labels_idx\n");
+
+    // meta data
+    TRY_EXEC("ALTER TABLE `meta_data` RENAME TO `meta_data_old`",
+         "[init] can't rename meta_data\n");
+    TRY_EXEC("CREATE TABLE `meta_data` (id integer, key integer, value varchar, "
+      "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new meta_data table\n");
+    TRY_EXEC("INSERT INTO `meta_data` SELECT * FROM `meta_data_old`",
+         "[init] can't copy back from meta_data\n");
+
+    TRY_EXEC("DROP TABLE meta_data_old",
+        "[init] can't drop table meta_data_old\n");
+
+    TRY_EXEC("CREATE INDEX `metadata_index` ON `meta_data` (id, key)",
+         "[init] can't recreate metadata_index\n");
+
+    // selected images
+    TRY_EXEC("ALTER TABLE `selected_images` RENAME TO `selected_images_old`",
+         "[init] can't rename selected_images\n");
+    TRY_EXEC("CREATE TABLE `selected_images` (imgid INTEGER PRIMARY KEY, "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new selected_images table\n");
+    TRY_EXEC("INSERT INTO `selected_images` SELECT * FROM `selected_images_old`",
+         "[init] can't copy back selected_images meta_data\n");
+
+    TRY_EXEC("DROP TABLE selected_images_old",
+        "[init] can't drop table selected_images_old\n");
+
+    // module order
+    TRY_EXEC("ALTER TABLE `module_order` RENAME TO `module_order_old`",
+         "[init] can't rename module_order\n");
+    TRY_EXEC("CREATE TABLE `module_order` (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR, "
+        "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new module_order table\n");
+    TRY_EXEC("INSERT INTO `module_order` SELECT * FROM `module_order_old`",
+         "[init] can't copy back module_order meta_data\n");
+
+    TRY_EXEC("DROP TABLE module_order_old",
+        "[init] can't drop table module_order_old\n");
+
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
-    new_version = 31;
+    new_version = 32;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -2116,8 +2207,7 @@ static void _create_library_schema(dt_database_t *db)
       "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
       "aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
-      "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
-      "FOREIGN KEY(film_id) REFERENCES film_rolls(id))",
+      "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id, id)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id, filename)", NULL, NULL, NULL);
@@ -2125,25 +2215,25 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)", NULL, NULL, NULL);
 
   ////////////////////////////// selected_images
-  sqlite3_exec(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.selected_images (imgid INTEGER PRIMARY KEY, "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", NULL, NULL, NULL);
   ////////////////////////////// history
   sqlite3_exec(
       db->handle,
       "CREATE TABLE main.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), "
-      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256),"
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid, operation)", NULL, NULL, NULL);
   ////////////////////////////// masks history
   sqlite3_exec(db->handle,
                "CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
                "version INTEGER, points BLOB, points_count INTEGER, source BLOB, "
-               "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
+               "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
                NULL, NULL, NULL);
 
-  sqlite3_exec(db->handle,
-      "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid, num)",
+  sqlite3_exec(db->handle, "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid, num)",
       NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE INDEX main.images_latlong_index ON images (latitude DESC, longitude DESC)",
@@ -2151,24 +2241,27 @@ static void _create_library_schema(dt_database_t *db)
 
   ////////////////////////////// tagged_images
   sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, position INTEGER, "
-                           "PRIMARY KEY (imgid, tagid), "
-                           "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)", NULL, NULL, NULL);
+                           "PRIMARY KEY (imgid, tagid), FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", 
+              NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON selected_images (imgid)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON selected_images (position)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON tagged_images (imgid)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON tagged_images (position)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
-  sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER, "
+                "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
                NULL);
   ////////////////////////////// meta_data
-  sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR, "
+               "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
 
-  sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
+  sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR, "
+                "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
                "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
-               "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE)",
+               "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
                NULL, NULL, NULL);
 }
 
