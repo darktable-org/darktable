@@ -264,7 +264,10 @@ int dt_collection_update(const dt_collection_t *collection)
   if(darktable.gui && darktable.gui->grouping)
   {
     /* Show the expanded group... */
-    wq = dt_util_dstrcat(wq, " AND (group_id = %d OR "
+    wq = dt_util_dstrcat(wq, " AND (");
+    if(-1 != darktable.gui->expanded_group_id)
+      wq = dt_util_dstrcat(wq, "group_id = %d OR ", darktable.gui->expanded_group_id);
+    wq = dt_util_dstrcat(wq, 
                              /* ...and, in unexpanded groups, show the representative image.
                               * It's possible that the above WHERE clauses will filter out the representative
                               * image, so we have some logic here to pick the image id closest to the
@@ -274,11 +277,12 @@ int dt_collection_update(const dt_collection_t *collection)
                              "id IN (SELECT id FROM "
                              "(SELECT id, MIN(ABS(id-group_id)*2 + CASE WHEN (id-group_id) < 0 THEN 1 ELSE 0 END) "
                              "FROM main.images WHERE %s GROUP BY group_id)))",
-                         darktable.gui->expanded_group_id, wq_no_group);
+                         wq_no_group);
 
     /* Additionally, when a group is expanded, make sure the representative image wasn't filtered out.
      * This is important, because otherwise it may be impossible to collapse the group again. */
-    wq = dt_util_dstrcat(wq, " OR (id = %d)", darktable.gui->expanded_group_id);
+    if(-1 != darktable.gui->expanded_group_id)
+      wq = dt_util_dstrcat(wq, " OR (id = %d)", darktable.gui->expanded_group_id);
   }
 
   /* build select part includes where */
