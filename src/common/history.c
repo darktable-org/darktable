@@ -1558,7 +1558,7 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
   sqlite3_finalize(stmt);
 }
 
-const gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
+gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
 {
   gboolean status = FALSE;
   if(imgid == -1) return status;
@@ -1593,7 +1593,7 @@ void dt_history_hash_set_mipmap(const int32_t imgid)
   sqlite3_finalize(stmt);
 }
 
-const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
+dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
 {
   dt_history_hash_t status = 0;
   if(imgid == -1) return status;

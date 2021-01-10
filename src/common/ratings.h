@@ -25,7 +25,7 @@
 // first three bits of dt_view_image_over_t
 
 /** get rating tfor the specified image */
-const int dt_ratings_get(const int imgid);
+int dt_ratings_get(const int imgid);
 
 /** apply rating to the specified image */
 void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean toggle_on,

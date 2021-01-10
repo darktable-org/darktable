@@ -1695,7 +1695,7 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
   return tags;
 }
 
-const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
+gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
                                           gboolean *descending)
 {
   gboolean res = FALSE;
@@ -1721,10 +1721,10 @@ const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
   return res;
 }
 
-const uint32_t dt_tag_get_tag_id_by_name(const char * const name)
+uint32_t dt_tag_get_tag_id_by_name(const char * const name)
 {
+  if(!name) return 0;
   uint32_t tagid = 0;
-  if(!name) return tagid;
   char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
   const char *query = strcmp(sensitive, _("insensitive")) == 0
                       ? "SELECT T.id, T.flags FROM data.tags AS T "

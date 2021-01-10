@@ -733,12 +733,12 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
   return FALSE;
 }
 
-const int _combo_get_active_collection(GtkWidget *combo)
+int _combo_get_active_collection(GtkWidget *combo)
 {
   return GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(combo)) - 1;
 }
 
-const gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
+gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
 {
   const gboolean found = dt_bauhaus_combobox_set_from_value(combo, property + 1);
   // make sure we have a valid collection
