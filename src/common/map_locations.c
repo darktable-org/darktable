@@ -27,7 +27,7 @@ const char *location_tag = "darktable|locations";
 const char *location_tag_prefix = "darktable|locations|";
 
 // create a new location
-const guint dt_map_location_new(const char *const name)
+guint dt_map_location_new(const char *const name)
 {
   char *loc_name = g_strconcat(location_tag_prefix, name, NULL);
   guint locid = -1;
