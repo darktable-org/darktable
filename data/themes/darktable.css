@@ -1475,7 +1475,7 @@ margin: 0 2px;
 
 #basics-box #basics-widget
 {
-  margin: 0;
+  margin-bottom: 0.5em;
 }
 
 #basics-box-labels #section_label
