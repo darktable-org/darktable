@@ -115,7 +115,8 @@ static void get_language_names(GList *languages)
   JsonReader *reader = NULL;
   JsonParser *parser = NULL;
   GError *error = NULL;
-  char *filename;
+  char *filename = NULL;
+  char *saved_locale = NULL;
 #ifdef __APPLE__
   char *res_path = dt_osx_get_bundle_res_path();
 #endif
@@ -189,7 +190,7 @@ static void get_language_names(GList *languages)
     goto end;
   }
 
-  char *saved_locale = strdup(setlocale(LC_ALL, NULL));
+  saved_locale = strdup(setlocale(LC_ALL, NULL));
 
   int n_elements = json_reader_count_elements(reader);
   for(int i = 0; i < n_elements; i++)
