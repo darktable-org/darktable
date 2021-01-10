@@ -1271,7 +1271,7 @@ GList *dt_history_duplicate(GList *hist)
   {
     const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
 
-    dt_dev_history_item_t *new = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
+    dt_dev_history_item_t *new = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
 
     memcpy(new, old, sizeof(dt_dev_history_item_t));
 
@@ -1294,10 +1294,13 @@ GList *dt_history_duplicate(GList *hist)
       }
     }
 
-    new->params = malloc(params_size);
-    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    if(params_size > 0)
+    {
+      new->params = malloc(params_size);
+      memcpy(new->params, old->params, params_size);
+    }
 
-    memcpy(new->params, old->params, params_size);
+    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
     if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
