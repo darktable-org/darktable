@@ -1162,8 +1162,10 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
 
     if(lib->points)
       g_free(lib->points);
-    lib->points = (dt_geo_position_t *)calloc(img_count, sizeof(dt_geo_position_t));
+    lib->points = NULL;
     lib->nb_points = img_count;
+    if(img_count > 0)
+      lib->points = (dt_geo_position_t *)calloc(img_count, sizeof(dt_geo_position_t));
     dt_geo_position_t *p = lib->points;
     if(p)
     {
