@@ -193,7 +193,9 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
   const int wf_height = d->waveform_height;
-  float *const wf_linear = d->waveform_linear;
+  const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
+  float *const restrict wf_linear = DT_IS_ALIGNED((float *const restrict)d->waveform_linear);
+
   // Use integral sized bins for columns, as otherwise they will be
   // unequal and have banding. Rely on draw to smoothly do horizontal
   // scaling. For a 3:2 image, "landscape" orientation, bin_width will
@@ -216,29 +218,29 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   // 1.0 is at 8/9 of the height!
   const float _height = (float)(wf_height - 1);
 
+  const size_t in_stride = 4U * width;
+  const size_t out_stride = 4U * wf_width;
+
   // count the colors
   // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(input, wf_linear, width, height, wf_width, bin_width, _height, scale) \
+  dt_omp_firstprivate(in, wf_linear, width, height, wf_width, bin_width, in_stride, out_stride, _height, scale) \
   schedule(static)
 #endif
-  for(int bin = 0; bin < wf_width; bin++)
+  for(size_t out_x = 0; out_x < wf_width; out_x++)
   {
-    const int x_from = bin * bin_width;
-    const int x_high = MIN(x_from + bin_width, width);
-    float *const restrict out = wf_linear + 4U * bin;
-    for(int x = x_from; x < x_high; x++)
+    const size_t x_from = out_x * bin_width;
+    const size_t x_high = MIN(x_from + bin_width, width);
+    for(size_t in_x = x_from; in_x < x_high; in_x++)
     {
-      for(int y = 0; y < height; y++)
+      for(size_t in_y = 0; in_y < height; in_y++)
       {
-        const float *const restrict in = input + 4U * (y * width + x);
-        for_each_channel(k,aligned(in,out:16))
+        for_each_channel(k,aligned(in,wf_linear:16))
         {
-          const float v = 1.0f - (8.0f / 9.0f) * in[2 - k];
-          // flipped from dt's CLAMPS so as to treat NaN's as 0 (NaN compares false)
-          const int out_y = (v < 1.0f ? (v > 0.0f ? v : 0.0f) : 1.0f) * _height;
-          out[4 * wf_width * out_y + k] += scale;
+          const float v = 1.0f - (8.0f / 9.0f) * in[in_stride * in_y + 4U * in_x + (2U - k)];
+          const int out_y = isnan(v) ? 0 : CLAMPS((int) (v * _height), 0, _height);
+          wf_linear[out_stride * out_y + 4U * out_x + k] += scale;
         }
       }
     }
@@ -515,8 +517,8 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
 static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t *cr, int ch)
 {
   // map linear waveform data to a display colorspace
-  const float *const restrict wf_linear = d->waveform_linear;
-  float *const restrict wf_display = d->waveform_display;
+  const float *const restrict wf_linear = DT_IS_ALIGNED((const float *const restrict)d->waveform_linear);
+  float *const restrict wf_display = DT_IS_ALIGNED((float *const restrict)d->waveform_display);
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   // colors used to represent primary colors
@@ -548,7 +550,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
                                           profile_linear, profile_work, "waveform gamma");
 
   const size_t wf_width_floats = 4U * wf_width;
-  uint8_t *const restrict wf_8bit = d->waveform_8bit;
+  uint8_t *const restrict wf_8bit = DT_IS_ALIGNED((uint8_t *const restrict)d->waveform_8bit);
   const size_t wf_8bit_stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, wf_width);
   // not enough iterations to be worth threading
   for(size_t y = 0; y < wf_height; y++)
