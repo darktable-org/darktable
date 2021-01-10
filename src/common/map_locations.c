@@ -284,17 +284,18 @@ GList *dt_map_location_find_locations(const guint imgid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT l.tagid FROM main.images AS i"
                               "  JOIN data.locations AS l"
-                              "  ON (l.type = ?2 AND"
-                              "      ((((i.longitude-l.longitude)*(i.longitude-l.longitude))/"
-                                        "(delta1*delta1) +"
-                              "        ((i.latitude-l.latitude)*(i.latitude-l.latitude))/"
-                                        "(delta2*delta2)) <= 1)"
-                              "    OR (l.type = ?3 AND"
-                              "      i.longitude>=(l.longitude-delta1) AND"
-                              "      i.longitude<=(l.longitude+delta1) AND"
-                              "      i.latitude>=(l.latitude-delta2) AND"
-                              "      i.latitude<=(l.latitude+delta2)))"
-                              " WHERE i.id = ?1 AND i.latitude IS NOT NULL AND i.longitude IS NOT NULL",
+                              "  ON (l.type = ?2"
+                              "      AND ((((i.longitude-l.longitude)*(i.longitude-l.longitude))/"
+                                            "(delta1*delta1) +"
+                              "            ((i.latitude-l.latitude)*(i.latitude-l.latitude))/"
+                                            "(delta2*delta2)) <= 1)"
+                              "    OR (l.type = ?3"
+                              "        AND i.longitude>=(l.longitude-delta1)"
+                              "        AND i.longitude<=(l.longitude+delta1)"
+                              "        AND i.latitude>=(l.latitude-delta2)"
+                              "        AND i.latitude<=(l.latitude+delta2)))"
+                              " WHERE i.id = ?1 "
+                              "       AND i.latitude IS NOT NULL AND i.longitude IS NOT NULL",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, MAP_LOCATION_SHAPE_ELLIPSE);
@@ -317,16 +318,16 @@ GList *_map_location_find_images(const guint locid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT i.id FROM main.images AS i"
                               "  JOIN data.locations AS l"
-                              "  ON (l.type = ?2 AND"
-                              "      ((((i.longitude-l.longitude)*(i.longitude-l.longitude))/"
-                                        "(delta1*delta1) +"
-                              "        ((i.latitude-l.latitude)*(i.latitude-l.latitude))/"
-                                        "(delta2*delta2)) <= 1)"
-                              "   OR (l.type = ?3 AND"
-                              "      i.longitude>=(l.longitude-delta1) AND"
-                              "      i.longitude<=(l.longitude+delta1) AND"
-                              "      i.latitude>=(l.latitude-delta2) AND"
-                              "      i.latitude<=(l.latitude+delta2)))"
+                              "  ON (l.type = ?2"
+                              "      AND ((((i.longitude-l.longitude)*(i.longitude-l.longitude))/"
+                                            "(delta1*delta1) +"
+                              "            ((i.latitude-l.latitude)*(i.latitude-l.latitude))/"
+                                            "(delta2*delta2)) <= 1)"
+                              "   OR (l.type = ?3"
+                              "       AND i.longitude>=(l.longitude-delta1)"
+                              "       AND i.longitude<=(l.longitude+delta1)"
+                              "       AND i.latitude>=(l.latitude-delta2)"
+                              "       AND i.latitude<=(l.latitude+delta2)))"
                               "  WHERE l.tagid = ?1 ",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, locid);
