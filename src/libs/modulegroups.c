@@ -681,7 +681,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       // we create the module header box
       GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_widget_show(header_box);
-      gtk_widget_set_name(header_box, "basic-header-box");
+      gtk_widget_set_name(header_box, "basics-header-box");
       gtk_box_pack_start(GTK_BOX(d->vbox_basic), header_box, FALSE, FALSE, 0);
 
       // we create the module boxes
@@ -720,7 +720,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
         if (item_pos == FIRST_MODULE)
           // we just add a thin line on top of the widget to show delimitation
           // gtk_style_context_add_class(gtk_widget_get_style_context(d->mod_hbox_basic), "basics-widget_group_start");
-          gtk_widget_set_name(d->mod_hbox_basic, "basics-module-hbox-first");
+          gtk_widget_set_name(header_box, "basics-header-box-first");
         
       }
     }
