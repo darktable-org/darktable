@@ -3003,7 +3003,7 @@ int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_loca
     while(maxsizes[0] < *blocksizex || maxsizes[1] < *blocksizey
        || localmemsize < ((factors->xfactor * (*blocksizex) + factors->xoffset) *
                           (factors->yfactor * (*blocksizey) + factors->yoffset)) * factors->cellsize + factors->overhead
-       || workgroupsize < (*blocksizex) * (*blocksizey) || kernelworkgroupsize < (*blocksizex) * (*blocksizey))
+       || workgroupsize < (size_t)(*blocksizex) * (*blocksizey) || kernelworkgroupsize < (size_t)(*blocksizex) * (*blocksizey))
     {
       if(*blocksizex == 1 && *blocksizey == 1) return FALSE;
 
