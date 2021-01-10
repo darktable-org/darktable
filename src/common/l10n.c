@@ -270,6 +270,7 @@ static void get_language_names(GList *languages)
   {
     setlocale(LC_ALL, saved_locale);
     free(saved_locale);
+    saved_locale = NULL;
   }
 
   json_reader_end_member(reader); // 639-2
@@ -283,6 +284,7 @@ end:
   if(error) g_error_free(error);
   if(reader) g_object_unref(reader);
   if(parser) g_object_unref(parser);
+  if(saved_locale) free(saved_locale);
 
 #endif // HAVE_ISO_CODES
 }
