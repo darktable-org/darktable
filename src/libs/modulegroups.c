@@ -149,7 +149,6 @@ typedef struct dt_lib_modulegroups_t
   gboolean basics_show;
   GList *basics;
   GtkWidget *vbox_basic;
-  GtkWidget *mod_hbox_basic;
   GtkWidget *mod_vbox_basic;
 } dt_lib_modulegroups_t;
 
@@ -685,13 +684,12 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       gtk_box_pack_start(GTK_BOX(d->vbox_basic), header_box, FALSE, FALSE, 0);
 
       // we create the module box structure
-      d->mod_hbox_basic = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-      gtk_widget_set_name(d->mod_hbox_basic, "basics-module-hbox");
-      gtk_widget_show(d->mod_hbox_basic);
-      gtk_box_pack_start(GTK_BOX(d->vbox_basic), d->mod_hbox_basic, TRUE, TRUE, 0);
+      GtkWidget *hbox_basic = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+      gtk_widget_set_name(hbox_basic, "basics-module-hbox");
+      gtk_box_pack_start(GTK_BOX(d->vbox_basic), hbox_basic, TRUE, TRUE, 0);
       d->mod_vbox_basic = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-      gtk_widget_show(d->mod_vbox_basic);
-      gtk_box_pack_start(GTK_BOX(d->mod_hbox_basic), d->mod_vbox_basic, TRUE, TRUE, 0);
+      gtk_box_pack_start(GTK_BOX(hbox_basic), d->mod_vbox_basic, TRUE, TRUE, 0);
+      gtk_widget_show_all(hbox_basic);
 
       // we create the link to the full iop
       GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_link, CPF_STYLE_FLAT, NULL);
@@ -714,12 +712,11 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       }
       else
       {
-        // the link to the full iop is added to the module h box instead
-        gtk_box_pack_end(GTK_BOX(d->mod_hbox_basic), wbt, FALSE, FALSE, 0);
+        // if there is no section label, we add the link to the module hbox
+        gtk_box_pack_end(GTK_BOX(hbox_basic), wbt, FALSE, FALSE, 0);
 
         // if there is no label, we handle separately in css the first module header
         if (item_pos == FIRST_MODULE) gtk_widget_set_name(header_box, "basics-header-box-first");
-        
       }
     }
 
