@@ -1735,9 +1735,13 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       "color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER, write_timestamp INTEGER, "
       "history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
-      "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+      "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new images table\n");
-
+      
+    TRY_EXEC("DELETE FROM `images_old` WHERE group_id NOT IN (SELECT id from images_old)",
+        "[init] can't delete images with orphaned group ids\n");
+      
     TRY_EXEC("INSERT INTO `images` SELECT * FROM `images_old`",
         "[init] can't copy back from images_old\n");
 
