@@ -1258,31 +1258,40 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.histogram.process = dt_lib_histogram_process;
   darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
 
-  /* create drawingarea */
-  self->widget = gtk_drawing_area_new();
-  gtk_widget_set_name(self->widget, "main-histogram");
+  // create widgets
+  self->widget = gtk_overlay_new();
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+  // FIXME: is this used?
+  gtk_widget_set_name(self->widget, "main-histogram");
 
-  gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
+  GtkWidget *scope;
+
+  /* create drawingarea */
+  scope = gtk_drawing_area_new();
+
+  // FIXME: these events become less important if are using widgets on top of this
+  gtk_widget_add_events(scope, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
                                       darktable.gui->scroll_mask);
 
   /* connect callbacks */
-  gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
+  gtk_widget_set_tooltip_text(scope, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
+  g_signal_connect(G_OBJECT(scope), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
+  g_signal_connect(G_OBJECT(scope), "button-press-event",
                    G_CALLBACK(_lib_histogram_button_press_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-release-event",
+  g_signal_connect(G_OBJECT(scope), "button-release-event",
                    G_CALLBACK(_lib_histogram_button_release_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "motion-notify-event",
+  g_signal_connect(G_OBJECT(scope), "motion-notify-event",
                    G_CALLBACK(_lib_histogram_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "leave-notify-event",
+  g_signal_connect(G_OBJECT(scope), "leave-notify-event",
                    G_CALLBACK(_lib_histogram_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "enter-notify-event",
+  g_signal_connect(G_OBJECT(scope), "enter-notify-event",
                    G_CALLBACK(_lib_histogram_enter_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "configure-event",
+  g_signal_connect(G_OBJECT(scope), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
+  g_signal_connect(G_OBJECT(scope), "configure-event",
                    G_CALLBACK(_lib_histogram_configure_callback), self);
+
+  gtk_container_add(GTK_CONTAINER(self->widget), scope);
 
   /* set size of navigation draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
