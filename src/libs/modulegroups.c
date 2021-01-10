@@ -684,7 +684,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       gtk_widget_set_name(header_box, "basics-header-box");
       gtk_box_pack_start(GTK_BOX(d->vbox_basic), header_box, FALSE, FALSE, 0);
 
-      // we create the module boxes
+      // we create the module box structure
       d->mod_hbox_basic = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
       gtk_widget_set_name(d->mod_hbox_basic, "basics-module-hbox");
       gtk_widget_show(d->mod_hbox_basic);
@@ -704,7 +704,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
       if (dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
       {
-        // we add the section label and the link to the module header
+        // we add to the module header the section label and the link to the full iop
         GtkWidget *sect = dt_ui_section_label_new(item->module->name());
         gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
         gtk_widget_show(sect);
@@ -714,13 +714,11 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       }
       else
       {
-        // we add the link to the module h box
+        // the link to the full iop is added to the module h box instead
         gtk_box_pack_end(GTK_BOX(d->mod_hbox_basic), wbt, FALSE, FALSE, 0);
 
-        if (item_pos == FIRST_MODULE)
-          // we just add a thin line on top of the widget to show delimitation
-          // gtk_style_context_add_class(gtk_widget_get_style_context(d->mod_hbox_basic), "basics-widget_group_start");
-          gtk_widget_set_name(header_box, "basics-header-box-first");
+        // if there is no label, we handle separately in css the first module header
+        if (item_pos == FIRST_MODULE) gtk_widget_set_name(header_box, "basics-header-box-first");
         
       }
     }
