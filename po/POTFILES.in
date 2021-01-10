@@ -15,6 +15,7 @@ build/lib/darktable/plugins/introspection_clahe.c
 build/lib/darktable/plugins/introspection_clipping.c
 build/lib/darktable/plugins/introspection_colisa.c
 build/lib/darktable/plugins/introspection_colorbalance.c
+build/lib/darktable/plugins/introspection_colorbalancergb.c
 build/lib/darktable/plugins/introspection_colorchecker.c
 build/lib/darktable/plugins/introspection_colorcontrast.c
 build/lib/darktable/plugins/introspection_colorcorrection.c
@@ -183,6 +184,7 @@ src/iop/clahe.c
 src/iop/clipping.c
 src/iop/colisa.c
 src/iop/colorbalance.c
+src/iop/colorbalancergb.c
 src/iop/colorchecker.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
