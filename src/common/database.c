@@ -3261,10 +3261,6 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   {
     dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance problem. if no errors logged, it should work fine next time.\n");
   }
-  else
-  {
-
-  }
 }
 #undef ERRCHECK
 
