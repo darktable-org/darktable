@@ -1492,13 +1492,12 @@ margin: 0 2px;
 #basics-header-box
 {
   border-bottom: 0.5px solid @section_label;
-  margin: 0.5em 0.75em;
+  margin: 0 0.75em 0.5em 0.75em;
 }
 
 #basics-header-box-first
 {
   border: none;
-  margin: 0 0.75em 0.5em 0.75em;
 }
 
 #basics-iop_name
