@@ -105,7 +105,6 @@ typedef struct dt_lib_modulegroups_basic_item_t
 
 
   GtkWidget *box;
-  GtkWidget *header_box;
   dt_iop_module_t *module;
 } dt_lib_modulegroups_basic_item_t;
 
@@ -440,11 +439,9 @@ static void _basics_remove_widget(dt_lib_modulegroups_basic_item_t *item)
     }
   }
   // cleanup item
-  if(item->header_box) gtk_widget_destroy(item->header_box);
   if(item->box) gtk_widget_destroy(item->box);
   if(item->temp_widget) gtk_widget_destroy(item->temp_widget);
   item->box = NULL;
-  item->header_box = NULL;
   item->temp_widget = NULL;
   item->widget = NULL;
   item->old_parent = NULL;
@@ -702,19 +699,19 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       if (dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels"))
       {
         //we add a box for the module header with label and link to the full module
-        item->header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-        gtk_widget_show(item->header_box);
-        gtk_widget_set_name(item->header_box, "basic-header-box");
-        gtk_box_pack_start(GTK_BOX(d->mod_vbox_basic), item->header_box, FALSE, FALSE, 0);
+        GtkWidget *header_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+        gtk_widget_show(header_box);
+        gtk_widget_set_name(header_box, "basic-header-box");
+        gtk_box_pack_start(GTK_BOX(d->mod_vbox_basic), header_box, FALSE, FALSE, 0);
 
         // we add the section label
         GtkWidget *sect = dt_ui_section_label_new(item->module->name());
         gtk_label_set_xalign(GTK_LABEL(sect), 0.5); // we center the module name
         gtk_widget_show(sect);
-        gtk_box_pack_start(GTK_BOX(item->header_box), sect, TRUE, TRUE, 0);
+        gtk_box_pack_start(GTK_BOX(header_box), sect, TRUE, TRUE, 0);
 
         // we add the link to the full iop
-        gtk_box_pack_end(GTK_BOX(item->header_box), wbt, FALSE, FALSE, 0);
+        gtk_box_pack_end(GTK_BOX(header_box), wbt, FALSE, FALSE, 0);
       }
       else
       {
