@@ -3052,13 +3052,9 @@ static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocati
 
 void dt_ui_notebook_clear(GtkNotebook *notebook)
 {
-  gint notebook_pages = gtk_notebook_get_n_pages(notebook);
-  if(notebook_pages >= 2)
+  if(gtk_notebook_get_n_pages(notebook) >= 2)
     g_signal_handlers_disconnect_by_func(G_OBJECT(notebook), G_CALLBACK(notebook_size_callback), NULL);
-  for(gint tabs = notebook_pages; tabs > 0; --tabs)
-  {
-    gtk_notebook_remove_page(notebook, tabs - 1);
-  }
+  gtk_container_foreach(GTK_CONTAINER(notebook), (GtkCallback)gtk_widget_destroy, NULL);
 }
 
 GtkWidget *dt_ui_notebook_page(GtkNotebook *notebook, const char *text, const char *tooltip)
