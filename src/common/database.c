@@ -1721,6 +1721,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // Unfortunately sqlite does not support adding foreign keys to existing tables
     // so we have to rename the existing tables, recreate them and copy back the old values
     // images first
+    // needs to delete orphaned entries
     TRY_EXEC("ALTER TABLE `images` RENAME TO `images_old`",
         "[init] can't rename images\n");
 
@@ -1871,6 +1872,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE `color_labels` (imgid INTEGER, color INTEGER, "
       "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new color_labels table\n");
+
+    TRY_EXEC("DELETE FROM `color_labels_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned color_labels elements\n");
+
     TRY_EXEC("INSERT INTO `color_labels` SELECT * FROM `color_labels_old`",
          "[init] can't copy back from color_labels\n");
 
@@ -1886,6 +1891,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE `meta_data` (id integer, key integer, value varchar, "
       "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new meta_data table\n");
+
+    TRY_EXEC("DELETE FROM `meta_data_old` WHERE id NOT IN (SELECT id FROM `images`)",
+      "[init] can't delete orphaned meta_data elements\n");
+
     TRY_EXEC("INSERT INTO `meta_data` SELECT * FROM `meta_data_old`",
          "[init] can't copy back from meta_data\n");
 
@@ -1901,6 +1910,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE `selected_images` (imgid INTEGER PRIMARY KEY, "
       "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new selected_images table\n");
+
+    TRY_EXEC("DELETE FROM `selected_images_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+      "[init] can't delete orphaned selected_images elements\n");
+
     TRY_EXEC("INSERT INTO `selected_images` SELECT * FROM `selected_images_old`",
          "[init] can't copy back selected_images meta_data\n");
 
@@ -1913,6 +1926,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("CREATE TABLE `module_order` (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR, "
         "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new module_order table\n");
+
+    TRY_EXEC("DELETE FROM `module_order_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned module_order elements\n");
+
     TRY_EXEC("INSERT INTO `module_order` SELECT * FROM `module_order_old`",
          "[init] can't copy back module_order meta_data\n");
 
