@@ -248,7 +248,7 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   ////////////////////////////// meta_data
   _SQLITE3_EXEC(db->handle, "CREATE TABLE IF NOT EXISTS main.meta_data (id INTEGER, key INTEGER, value VARCHAR)",
                 NULL, NULL, NULL);
-  _SQLITE3_EXEC(db->handle, "CREATE INDEX IF NOT EXISTS main.metadata_index ON meta_data (id, key)", NULL, NULL,
+  _SQLITE3_EXEC(db->handle, "CREATE INDEX IF NOT EXISTS main.metadata_index ON meta_data (id, key, value)", NULL, NULL,
                 NULL);
   ////////////////////////////// presets
   _SQLITE3_EXEC(db->handle, "CREATE TABLE IF NOT EXISTS main.presets (name VARCHAR, description VARCHAR, "
@@ -1682,7 +1682,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // add second columns to speed up sorting
     TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
         "[init] can't drop history_imgid_index\n");
-    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `operation` )",
+    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `num` DESC )",
         "[init] can't recreate history_imgid_index\n");
 
     TRY_EXEC("DROP INDEX IF EXISTS `images_filename_index`",
@@ -1739,8 +1739,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new images table\n");
       
-    TRY_EXEC("DELETE FROM `images_old` WHERE group_id NOT IN (SELECT id from images_old)",
-        "[init] can't delete images with orphaned group ids\n");
+    TRY_EXEC("UPDATE `images_old` SET group_id=id WHERE group_id NOT IN (SELECT id from `images_old`)",
+        "[init] can't fix invalid group ids\n");
 
     TRY_EXEC("INSERT INTO `images` SELECT * FROM `images_old`",
         "[init] can't copy back from images_old\n");
@@ -1905,7 +1905,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("DROP TABLE meta_data_old",
         "[init] can't drop table meta_data_old\n");
 
-    TRY_EXEC("CREATE INDEX `metadata_index` ON `meta_data` (id, key)",
+    TRY_EXEC("CREATE INDEX `metadata_index` ON `meta_data` (id, key, value)",
          "[init] can't recreate metadata_index\n");
 
     // selected images
@@ -2248,7 +2248,7 @@ static void _create_library_schema(dt_database_t *db)
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256),"
       "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid, operation)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid, num DESC)", NULL, NULL, NULL);
   ////////////////////////////// masks history
   sqlite3_exec(db->handle,
                "CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
