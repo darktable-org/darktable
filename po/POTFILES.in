@@ -130,7 +130,14 @@ src/develop/develop.c
 src/develop/imageop.c
 src/develop/imageop_gui.c
 src/develop/lightroom.c
+src/develop/masks/brush.c
+src/develop/masks/circle.c
+src/develop/masks/ellipse.c
+src/develop/masks/gradient.c
+src/develop/masks/group.c
 src/develop/masks/masks.c
+src/develop/masks/masks.c
+src/develop/masks/path.c
 src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/culling.c
