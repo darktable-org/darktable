@@ -934,8 +934,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   // now that visibility has been updated set multi-show
   dt_dev_modules_update_multishow(darktable.develop);
 
-  // we show eventual basic panel
-  if(d->current == DT_MODULEGROUP_BASICS) _basics_show(self);
+  // we show eventual basic panel but only if no text in the search box
+  if(d->current == DT_MODULEGROUP_BASICS && !(text_entered && text_entered[0] != '\0')) _basics_show(self);
 }
 
 static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
