@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-10 10:53-0300\n"
-"PO-Revision-Date: 2021-01-10 11:35-0300\n"
+"POT-Creation-Date: 2021-01-11 18:26-0300\n"
+"PO-Revision-Date: 2021-01-11 18:54-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1813,7 +1813,7 @@ msgstr "específico"
 #: ../src/common/history.c:897 ../src/common/styles.c:1117
 #: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:100
 #: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2786
-#: ../src/develop/develop.c:2170 ../src/imageio/format/avif.c:863
+#: ../src/develop/develop.c:2170 ../src/imageio/format/avif.c:774
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4705 ../src/iop/demosaic.c:5097
 #: ../src/libs/live_view.c:429
@@ -1867,7 +1867,7 @@ msgstr "preservar cores"
 #: ../src/iop/clipping.c:1865 ../src/iop/clipping.c:2125
 #: ../src/iop/clipping.c:2141 ../src/iop/clipping.c:2276
 #: ../src/iop/clipping.c:2303 ../src/iop/lens.cc:2228 ../src/iop/retouch.c:358
-#: ../src/libs/collect.c:1796 ../src/libs/colorpicker.c:636
+#: ../src/libs/collect.c:1796 ../src/libs/colorpicker.c:632
 #: ../src/libs/export.c:1066 ../src/libs/live_view.c:345
 #: ../src/libs/live_view.c:370 ../src/libs/live_view.c:379
 #: ../src/libs/print_settings.c:1475
@@ -2644,12 +2644,12 @@ msgstr "atualização do modelo"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:838
+#: ../src/imageio/format/avif.c:749
 msgid "color mode"
 msgstr "modo de cor"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:410
-#: ../src/libs/colorpicker.c:295 ../src/libs/colorpicker.c:632
+#: ../src/libs/colorpicker.c:295 ../src/libs/colorpicker.c:628
 msgid "RGB"
 msgstr "RGB"
 
@@ -4005,7 +4005,7 @@ msgstr "linear XYZ"
 
 #: ../src/common/colorspaces.c:1469 ../src/common/colorspaces.c:1638
 #: ../src/develop/blend_gui.c:94 ../src/develop/blend_gui.c:1546
-#: ../src/libs/colorpicker.c:296 ../src/libs/colorpicker.c:633
+#: ../src/libs/colorpicker.c:296 ../src/libs/colorpicker.c:629
 msgid "Lab"
 msgstr "Lab"
 
@@ -4433,7 +4433,7 @@ msgstr "você precisa copiar o histórico de uma imagem antes de colar em outra"
 #: ../src/common/history.c:878 ../src/common/history.c:881
 #: ../src/common/history.c:897 ../src/common/styles.c:1117
 #: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:122
-#: ../src/develop/develop.c:2170 ../src/imageio/format/avif.c:861
+#: ../src/develop/develop.c:2170 ../src/imageio/format/avif.c:772
 #: ../src/iop/ashift.c:4706 ../src/libs/live_view.c:430
 msgid "on"
 msgstr "ligado"
@@ -6116,6 +6116,41 @@ msgid "%s has been imported"
 msgid_plural "%s have been imported"
 msgstr[0] "%s foi importado"
 msgstr[1] "%s foram importadas"
+
+#: ../src/develop/masks/brush.c:1050 ../src/develop/masks/brush.c:1138
+#, c-format
+msgid "hardness: %3.2f%%"
+msgstr "dureza: %3.2f%%"
+
+#: ../src/develop/masks/brush.c:1075 ../src/develop/masks/brush.c:1119
+#: ../src/develop/masks/brush.c:1126 ../src/develop/masks/circle.c:107
+#: ../src/develop/masks/circle.c:161 ../src/develop/masks/ellipse.c:448
+#: ../src/develop/masks/ellipse.c:535
+#, c-format
+msgid "size: %3.2f%%"
+msgstr "tamanho: %3.2f%%"
+
+#: ../src/develop/masks/circle.c:87 ../src/develop/masks/circle.c:144
+#: ../src/develop/masks/ellipse.c:406 ../src/develop/masks/ellipse.c:505
+#: ../src/develop/masks/path.c:893 ../src/develop/masks/path.c:900
+#, c-format
+msgid "feather size: %3.2f%%"
+msgstr "tamanho do enevoamento: %3.2f%%"
+
+#: ../src/develop/masks/ellipse.c:368 ../src/develop/masks/ellipse.c:486
+#, c-format
+msgid "rotation: %3.f°"
+msgstr "rotação: %3.f°"
+
+#: ../src/develop/masks/gradient.c:94 ../src/develop/masks/gradient.c:123
+#, c-format
+msgid "compression: %3.2f%%"
+msgstr "compressão: %3.2f%%"
+
+#: ../src/develop/masks/gradient.c:133
+#, c-format
+msgid "curvature: %3.2f%%"
+msgstr "curvatura: %3.2f%%"
 
 #: ../src/develop/masks/masks.c:157
 msgid "[SHAPE] remove shape"
@@ -8034,41 +8069,41 @@ msgstr "10 bit"
 msgid "12 bit"
 msgstr "12 bit"
 
-#: ../src/imageio/format/avif.c:339
+#: ../src/imageio/format/avif.c:343
 msgid "invalid AVIF bit depth!"
 msgstr "profundidade de bits AVIF inválida!"
 
-#: ../src/imageio/format/avif.c:745
+#: ../src/imageio/format/avif.c:653
 msgid "AVIF (8/10/12-bit)"
 msgstr "AVIF (8/10/12-bit)"
 
-#: ../src/imageio/format/avif.c:817 ../src/imageio/format/pdf.c:702
+#: ../src/imageio/format/avif.c:726 ../src/imageio/format/pdf.c:702
 #: ../src/imageio/format/png.c:525 ../src/imageio/format/tiff.c:812
 msgid "bit depth"
 msgstr "profundidade de bit"
 
-#: ../src/imageio/format/avif.c:828
+#: ../src/imageio/format/avif.c:739
 msgid "color information stored in an image, higher is better"
 msgstr "informação de cores guardada na imagem, mais alto é melhor"
 
-#: ../src/imageio/format/avif.c:840
+#: ../src/imageio/format/avif.c:751
 msgid "rgb colors"
 msgstr "cores RGB"
 
-#: ../src/imageio/format/avif.c:842
+#: ../src/imageio/format/avif.c:753
 msgid "grayscale"
 msgstr "tons de cinza"
 
-#: ../src/imageio/format/avif.c:846
+#: ../src/imageio/format/avif.c:757
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "gravar como tons de cinza reduzirá o tamanho para imagens em preto e branco"
 
-#: ../src/imageio/format/avif.c:859
+#: ../src/imageio/format/avif.c:770
 msgid "tiling"
 msgstr "ladrilhamento"
 
-#: ../src/imageio/format/avif.c:867
+#: ../src/imageio/format/avif.c:778
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -8080,11 +8115,11 @@ msgstr ""
 "torna a codificação mais rápida. o impacto na redução da qualidade é "
 "desprezível, mas aumenta o tamanho do arquivo."
 
-#: ../src/imageio/format/avif.c:884 ../src/imageio/format/webp.c:325
+#: ../src/imageio/format/avif.c:795 ../src/imageio/format/webp.c:325
 msgid "compression type"
 msgstr "tipo de compressão"
 
-#: ../src/imageio/format/avif.c:892
+#: ../src/imageio/format/avif.c:803
 msgid "the compression for the image"
 msgstr "a compressão para a imagem"
 
@@ -8093,13 +8128,13 @@ msgstr "a compressão para a imagem"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:909 ../src/imageio/format/j2k.c:653
+#: ../src/imageio/format/avif.c:820 ../src/imageio/format/j2k.c:653
 #: ../src/imageio/format/jpeg.c:592 ../src/imageio/format/webp.c:332
 #: ../src/libs/camera.c:595
 msgid "quality"
 msgstr "qualidade"
 
-#: ../src/imageio/format/avif.c:914
+#: ../src/imageio/format/avif.c:825
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -10644,7 +10679,7 @@ msgstr "método color-grading de mapeamento de cores"
 msgid "color control sliders"
 msgstr "controles de cor"
 
-#: ../src/iop/colorbalance.c:1888 ../src/libs/colorpicker.c:635
+#: ../src/iop/colorbalance.c:1888 ../src/libs/colorpicker.c:631
 msgid "HSL"
 msgstr "HSL"
 
@@ -10755,16 +10790,16 @@ msgid "color balance rgb"
 msgstr "balanço de cor rgb"
 
 #: ../src/iop/colorbalancergb.c:118
-#, fuzzy
 msgid "offset power slope|cdl|color grading|contrast|chroma_highlights|hue"
-msgstr ""
-"elevação de ganho de gama|cdl|grading de cores|contraste|saturação|matiz"
+msgstr "inclinação do deslocamento de potência|cdl|grading de cores|contraste|croma_realces|matiz"
 
 #: ../src/iop/colorbalancergb.c:123
 msgid ""
 "this module is experimental and the internal algo may slightly change before "
 "darktable 3.6. don't use it for serious work yet."
-msgstr "este módulo é experimental e o algoritmo interno pode mudar ligeiramente antes do relese do darktable 3.6. não use para trabalho sério ainda."
+msgstr ""
+"este módulo é experimental e o algoritmo interno pode mudar ligeiramente "
+"antes do relese do darktable 3.6. não use para trabalho sério ainda."
 
 #: ../src/iop/colorbalancergb.c:617
 msgid "global grading"
@@ -10787,7 +10822,9 @@ msgstr "adicionar ou remover saturação em quantidade absoluta"
 msgid ""
 "increase or decrease saturation proportionnaly to the original pixel "
 "saturation"
-msgstr "aumentar ou diminuir a saturação proporcionalmente à saturação original do pixel"
+msgstr ""
+"aumentar ou diminuir a saturação proporcionalmente à saturação original do "
+"pixel"
 
 #: ../src/iop/colorbalancergb.c:651
 msgid "chroma grading"
@@ -10799,15 +10836,21 @@ msgstr "aumentar o colorido (colorfulness) na mesma luminância globalmente"
 
 #: ../src/iop/colorbalancergb.c:664
 msgid "increase colorfulness at same luminance mostly in shadows"
-msgstr "aumentar o colorido (colorfulness) na mesma luminância principalmente nas sombras"
+msgstr ""
+"aumentar o colorido (colorfulness) na mesma luminância principalmente nas "
+"sombras"
 
 #: ../src/iop/colorbalancergb.c:670
 msgid "increase colorfulness at same luminance mostly in midtones"
-msgstr "aumentar o colorido (colorfulness) na mesma luminância principalmente nos meios-tons"
+msgstr ""
+"aumentar o colorido (colorfulness) na mesma luminância principalmente nos "
+"meios-tons"
 
 #: ../src/iop/colorbalancergb.c:676
 msgid "increase colorfulness at same luminance mostly in highlights"
-msgstr "aumentar o colorido (colorfulness) na mesma luminância principalmente nos realces"
+msgstr ""
+"aumentar o colorido (colorfulness) na mesma luminância principalmente nos "
+"realces"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:679
@@ -10860,7 +10903,9 @@ msgstr "croma do expoente de cor nos meios-tons"
 
 #: ../src/iop/colorbalancergb.c:764
 msgid "peak white luminance value used to normalize the power function"
-msgstr "valor de pico de luminância de branco usado para normalizar a função de potência"
+msgstr ""
+"valor de pico de luminância de branco usado para normalizar a função de "
+"potência"
 
 #: ../src/iop/colorbalancergb.c:773
 msgid "luminance gain in highlights"
@@ -15740,32 +15785,32 @@ msgctxt "accel"
 msgid "add sample"
 msgstr "adiciona amostra"
 
-#: ../src/libs/colorpicker.c:288 ../src/libs/colorpicker.c:622
+#: ../src/libs/colorpicker.c:288 ../src/libs/colorpicker.c:618
 msgid "mean"
 msgstr "média"
 
-#: ../src/libs/colorpicker.c:288 ../src/libs/colorpicker.c:623
+#: ../src/libs/colorpicker.c:288 ../src/libs/colorpicker.c:619
 msgid "min"
 msgstr "mín"
 
-#: ../src/libs/colorpicker.c:288 ../src/libs/colorpicker.c:624
+#: ../src/libs/colorpicker.c:288 ../src/libs/colorpicker.c:620
 msgid "max"
 msgstr "máx"
 
-#: ../src/libs/colorpicker.c:468
+#: ../src/libs/colorpicker.c:464
 msgid "hover to highlight sample on canvas, click to lock sample"
 msgstr ""
 "passe sobre para salientar amostra na tela, clique para bloquer amostra"
 
-#: ../src/libs/colorpicker.c:609 ../src/libs/colorpicker.c:654
+#: ../src/libs/colorpicker.c:605 ../src/libs/colorpicker.c:650
 msgid "click to (un)hide large color patch"
 msgstr "clique para esconder ou mostrar o patch grande de cor"
 
-#: ../src/libs/colorpicker.c:634
+#: ../src/libs/colorpicker.c:630
 msgid "LCh"
 msgstr "LCh"
 
-#: ../src/libs/colorpicker.c:644
+#: ../src/libs/colorpicker.c:640
 msgid ""
 "turn on color picker\n"
 "ctrl+click to select an area"
@@ -15774,15 +15819,15 @@ msgstr ""
 "ctrl+clique para selecionar uma área"
 
 #. Adding the live samples section
-#: ../src/libs/colorpicker.c:680
+#: ../src/libs/colorpicker.c:676
 msgid "live samples"
 msgstr "amostra em tempo real"
 
-#: ../src/libs/colorpicker.c:690
+#: ../src/libs/colorpicker.c:686
 msgid "display sample areas on image"
 msgstr "visualiza área de amostra na imagem"
 
-#: ../src/libs/colorpicker.c:699
+#: ../src/libs/colorpicker.c:695
 msgid "restrict histogram to selection"
 msgstr "restringe histograma a seleção"
 
