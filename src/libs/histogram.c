@@ -86,7 +86,7 @@ typedef struct dt_lib_histogram_t
   // waveform histogram buffer and dimensions
   float *waveform_linear, *waveform_display;
   uint8_t *waveform_8bit;
-  uint32_t waveform_width, waveform_height, waveform_max_width;
+  int waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
   // exposure params on mouse down
   float exposure, black;
@@ -203,8 +203,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   // Note that waveform_stride is pre-initialized/hardcoded,
   // but waveform_width varies, depending on preview image
   // width and # of bins.
-  const int bin_width = ceilf(width / (float)d->waveform_max_width);
-  const int wf_width = ceilf(width / (float)bin_width);
+  const size_t bin_width = ceilf(width / (float)d->waveform_max_width);
+  const size_t wf_width = ceilf(width / (float)bin_width);
   d->waveform_width = wf_width;
 
   dt_iop_image_fill(wf_linear, 0.0f, wf_width, wf_height, 4);
@@ -216,7 +216,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   const float scale = brightness / (height * bin_width);
 
   // 1.0 is at 8/9 of the height!
-  const float _height = (float)(wf_height - 1);
+  const size_t height_i = wf_height-1;
+  const float height_f = height_i;
 
   const size_t in_stride = 4U * width;
   const size_t out_stride = 4U * wf_width;
@@ -225,7 +226,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   // FIXME: could flip x/y axes here and when reading to make row-wise iteration?
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, wf_linear, width, height, wf_width, bin_width, in_stride, out_stride, _height, scale) \
+  dt_omp_firstprivate(in, wf_linear, width, height, wf_width, bin_width, in_stride, out_stride, height_f, height_i, scale) \
   schedule(static)
 #endif
   for(size_t out_x = 0; out_x < wf_width; out_x++)
@@ -239,7 +240,7 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
         for_each_channel(k,aligned(in,wf_linear:16))
         {
           const float v = 1.0f - (8.0f / 9.0f) * in[in_stride * in_y + 4U * in_x + (2U - k)];
-          const int out_y = isnan(v) ? 0 : CLAMPS((int) (v * _height), 0, _height);
+          const size_t out_y = isnan(v) ? 0 : MIN((size_t)fmaxf(v*height_f, 0.0f), height_i);
           wf_linear[out_stride * out_y + 4U * out_x + k] += scale;
         }
       }
