@@ -2277,7 +2277,7 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   memset(*buffer, 0, sizeof(float) * bufsize);
 
   // we write all the point around the path into the buffer
-  int nbp = border_count;
+  const int nbp = border_count;
   if(nbp > 2)
   {
     int lastx = (int)points[(nbp - 1) * 2];
