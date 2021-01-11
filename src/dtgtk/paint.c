@@ -1012,6 +1012,106 @@ void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
   FINISH
 }
 
+void dtgtk_cairo_paint_histogram_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.0, 1.0);
+  cairo_curve_to(cr, 0.3, 1.0, 0.3, 0.0, 0.5, 0.0);
+  cairo_curve_to(cr, 0.7, 0.0, 0.7, 1.0, 1.0, 1.0);
+  cairo_fill(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_pattern_t *pat;
+  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.0, 0.0, 0.0, 0.5);
+  cairo_pattern_add_color_stop_rgba(pat, 0.2, 0.2, 0.2, 0.2, 0.5);
+  cairo_pattern_add_color_stop_rgba(pat, 0.5, 1.0, 1.0, 1.0, 0.5);
+  cairo_pattern_add_color_stop_rgba(pat, 0.6, 1.0, 1.0, 1.0, 0.5);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.2, 0.2, 0.2, 0.5);
+
+  cairo_rectangle(cr, 0.0, 0.0, 0.3, 1.0);
+  cairo_set_source(cr, pat);
+  cairo_fill(cr);
+
+  cairo_save(cr);
+  cairo_scale(cr, 1.0, -1.0);
+  cairo_translate(cr, 0.0, -1.0);
+  cairo_rectangle(cr, 0.2, 0.0, 0.6, 1.0);
+  cairo_set_source(cr, pat);
+  cairo_fill(cr);
+  cairo_restore(cr);
+
+  cairo_rectangle(cr, 0.7, 0.0, 0.3, 1.0);
+  cairo_set_source(cr, pat);
+  cairo_fill(cr);
+
+  cairo_pattern_destroy(pat);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.0, 1.0);
+  cairo_line_to(cr, 1.0, 0.0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_logarithmic_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_move_to(cr, 0.0, 1.0);
+  cairo_curve_to(cr, 0.0, 0.33, 0.66, 0.0, 1.0, 0.0);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // FIXME: if make a mode comobox (histogram, waveform, RGB parade) then don't need this icon
+  // FIXME: improve this icon to make it look like a waveform in color
+  // FIXME: if don't improve, then just use dtgtk_cairo_paint_color()
+  cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
+  cairo_fill(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  // FIMXE: render as three waveform-ish patterns in the three primaries
+  const GdkRGBA *const primaries = darktable.bauhaus->graph_primaries;
+  cairo_set_source_rgba(cr, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha/3.0);
+  cairo_rectangle(cr, 0.0, 0.0, 1.0/3.0, 1.0);
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr, primaries[1].red, primaries[1].green, primaries[1].blue, primaries[1].alpha/3.0);
+  cairo_rectangle(cr, 1.0/3.0, 0.0, 1.0/3.0, 1.0);
+  cairo_fill(cr);
+  cairo_set_source_rgba(cr, primaries[2].red, primaries[2].green, primaries[2].blue, primaries[2].alpha/3.0);
+  cairo_rectangle(cr, 2.0/3.0, 0.0, 1.0/3.0, 1.0);
+  cairo_fill(cr);
+
+  FINISH
+}
+
 void dtgtk_cairo_paint_filmstrip(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   gdouble sw = 0.6;
