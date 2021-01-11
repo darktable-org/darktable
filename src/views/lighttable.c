@@ -878,9 +878,6 @@ void init_key_accels(dt_view_t *self)
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_w, 0);
   dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_w, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "sticky preview"), GDK_KEY_w, GDK_MOD1_MASK);
-  dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), GDK_KEY_w,
-                         GDK_MOD1_MASK | GDK_CONTROL_MASK);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
@@ -932,27 +929,6 @@ static gboolean _accel_reset_first_offset(GtkAccelGroup *accel_group, GObject *a
     return dt_thumbtable_reset_first_offset(dt_ui_thumbtable(darktable.gui->ui));
   }
   return FALSE;
-}
-
-static gboolean _accel_sticky_preview(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  // if we are alredy in preview mode, we exit
-  if(lib->preview_state)
-  {
-    _preview_quit(self);
-    return TRUE;
-  }
-
-  const int focus = GPOINTER_TO_INT(data);
-  const int mouse_over_id = dt_control_get_mouse_over_id();
-  if(mouse_over_id < 1) return TRUE;
-  _preview_enter(self, TRUE, focus, mouse_over_id);
-
-  return TRUE;
 }
 
 static gboolean _accel_culling_zoom_100(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1022,12 +998,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_lighttable_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
-
-  // sticky preview (non sticky is managed inside key_pressed)
-  closure = g_cclosure_new(G_CALLBACK(_accel_sticky_preview), GINT_TO_POINTER(FALSE), NULL);
-  dt_accel_connect_view(self, "sticky preview", closure);
-  closure = g_cclosure_new(G_CALLBACK(_accel_sticky_preview), GINT_TO_POINTER(TRUE), NULL);
-  dt_accel_connect_view(self, "sticky preview with focus detection", closure);
 
   // culling & preview zoom
   closure = g_cclosure_new(G_CALLBACK(_accel_culling_zoom_100), (gpointer)self, NULL);
