@@ -248,7 +248,7 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   ////////////////////////////// meta_data
   _SQLITE3_EXEC(db->handle, "CREATE TABLE IF NOT EXISTS main.meta_data (id INTEGER, key INTEGER, value VARCHAR)",
                 NULL, NULL, NULL);
-  _SQLITE3_EXEC(db->handle, "CREATE INDEX IF NOT EXISTS main.metadata_index ON meta_data (id, key)", NULL, NULL,
+  _SQLITE3_EXEC(db->handle, "CREATE INDEX IF NOT EXISTS main.metadata_index ON meta_data (id, key, value)", NULL, NULL,
                 NULL);
   ////////////////////////////// presets
   _SQLITE3_EXEC(db->handle, "CREATE TABLE IF NOT EXISTS main.presets (name VARCHAR, description VARCHAR, "
@@ -1905,7 +1905,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("DROP TABLE meta_data_old",
         "[init] can't drop table meta_data_old\n");
 
-    TRY_EXEC("CREATE INDEX `metadata_index` ON `meta_data` (id, key)",
+    TRY_EXEC("CREATE INDEX `metadata_index` ON `meta_data` (id, key, value)",
          "[init] can't recreate metadata_index\n");
 
     // selected images
