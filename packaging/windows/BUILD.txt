@@ -73,6 +73,19 @@ A) Native compile using MSYS2:  How to make a darktable windows installer (64 bi
         $ cmake --build . --target package
 	NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:
 		$ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
+		
+It is now possible to build darktable on Windows using Ninja rather than Make.  This offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems).  To use Ninja you need to install it from an MSYS terminal with:
+
+$ pacman -S mingw-w64-x86_64-ninja
+
+Be careful as there is also a version of Ninja for MSYS and this will not work here.  Now return to a MINGW64 terminal and use this sequence
+	$ mkdir build
+        $ cd build
+        $ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
+        $ cmake --build .
+	
+If you are in a hurry you can now run darktable by executing the darktable.exe found in the build/bin folder, install in /opt/darktable as described earlier, or create an install image.  If you like experimenting you could also install clang and use that instead of gcc/g++ as the toolchain.
+
 
 B) Cross compile on Linux
 
