@@ -1682,7 +1682,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // add second columns to speed up sorting
     TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
         "[init] can't drop history_imgid_index\n");
-    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `operation` )",
+    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `num` DESC )",
         "[init] can't recreate history_imgid_index\n");
 
     TRY_EXEC("DROP INDEX IF EXISTS `images_filename_index`",
@@ -2248,7 +2248,7 @@ static void _create_library_schema(dt_database_t *db)
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256),"
       "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid, operation)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid, num DESC)", NULL, NULL, NULL);
   ////////////////////////////// masks history
   sqlite3_exec(db->handle,
                "CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
