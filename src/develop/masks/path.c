@@ -507,7 +507,9 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
                                    dt_dev_pixelpipe_t *pipe, float **points, int *points_count,
                                    float **border, int *border_count, int source)
 {
-  double start2 = dt_get_wtime();
+  double start2 = 0.0;
+
+  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
 
   float wd = pipe->iwidth, ht = pipe->iheight;
   guint nb = g_list_length(form->points);
@@ -578,9 +580,11 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
   if(cw == 0) cw = -1;
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_points init took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we render all segments
   for(int k = 0; k < nb; k++)
@@ -671,9 +675,11 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_points point recurs %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we don't want the border to self-intersect
   int inter_count = 0;
@@ -682,9 +688,11 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
     inter_count = _path_find_self_intersection(intersections, nb, *border, *border_count);
 
     if(darktable.unmuted & DT_DEBUG_PERF)
+    {
       dt_print(DT_DEBUG_MASKS, "[masks %s] path_points self-intersect took %0.04f sec\n", form->name,
                dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
+      start2 = dt_get_wtime();
+    }
   }
 
   // and we transform them with all distorted modules
@@ -693,9 +701,11 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
     if(!border || dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *border, *border_count))
     {
       if(darktable.unmuted & DT_DEBUG_PERF)
+      {
         dt_print(DT_DEBUG_MASKS, "[masks %s] path_points transform took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
-      start2 = dt_get_wtime();
+        start2 = dt_get_wtime();
+      }
 
       if(border)
       {
@@ -734,7 +744,7 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, con
       if(darktable.unmuted & DT_DEBUG_PERF)
         dt_print(DT_DEBUG_MASKS, "[masks %s] path_points end took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
-//       start2 = dt_get_wtime();
+
       dt_masks_dynbuf_free(intersections);
       dt_free_align(border_init);
       return 1;
@@ -2188,8 +2198,10 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
                             float **buffer, int *width, int *height, int *posx, int *posy)
 {
   if(!module) return 0;
-  double start = dt_get_wtime();
-  double start2;
+  double start = 0.0;
+  double start2 = 0.0;
+
+  if(darktable.unmuted & DT_DEBUG_PERF) start = dt_get_wtime();
 
   // we get buffers for all points
   float *points = NULL, *border = NULL;
@@ -2203,8 +2215,10 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime() - start);
-  start = start2 = dt_get_wtime();
+    start = start2 = dt_get_wtime();
+  }
 
   // now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -2245,9 +2259,11 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   *posy = ymin - 2;
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill min max took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
@@ -2362,9 +2378,11 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
     }
   }
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   for(int yy = 0; yy < hb; yy++)
   {
@@ -2378,9 +2396,11 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // now we fill the falloff
   int p0[2] = { 0 }, p1[2] = { 0 };
@@ -2604,8 +2624,9 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
                                 const dt_iop_roi_t *roi, float *buffer)
 {
   if(!module) return 0;
-  double start = dt_get_wtime();
-  double start2;
+  double start = 0.0;
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start = dt_get_wtime();
 
   const int px = roi->x;
   const int py = roi->y;
@@ -2634,8 +2655,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path points took %0.04f sec\n", form->name, dt_get_wtime() - start);
-  start = start2 = dt_get_wtime();
+    start = start2 = dt_get_wtime();
+  }
 
   // empty the output buffer
   dt_iop_image_fill(buffer, 0.0f, width, height, 1);
@@ -2758,9 +2781,11 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill min max took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // deal with path if it does not lie outside of roi
   if(path_in_roi)
@@ -2783,9 +2808,11 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     path_encircles_roi = path_encircles_roi || !crop_success;
 
     if(darktable.unmuted & DT_DEBUG_PERF)
+    {
       dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill crop to roi took %0.04f sec\n", form->name,
                dt_get_wtime() - start2);
-    start2 = dt_get_wtime();
+      start2 = dt_get_wtime();
+    }
 
     if(path_encircles_roi)
     {
@@ -2836,9 +2863,11 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       }
 
       if(darktable.unmuted & DT_DEBUG_PERF)
+      {
         dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill draw path took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
-      start2 = dt_get_wtime();
+        start2 = dt_get_wtime();
+      }
 
       // we fill the inside plain
       // we don't need to deal with parts of shape outside of roi
@@ -2869,9 +2898,11 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
       }
 
       if(darktable.unmuted & DT_DEBUG_PERF)
+      {
         dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill plain took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
-      start2 = dt_get_wtime();
+        start2 = dt_get_wtime();
+      }
     }
     dt_free_align(cpoints);
   }
@@ -2951,8 +2982,10 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     dt_free_align(dpoints);
 
     if(darktable.unmuted & DT_DEBUG_PERF)
+    {
       dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill fill falloff took %0.04f sec\n", form->name,
                dt_get_wtime() - start2);
+    }
   }
 
   dt_free_align(points);

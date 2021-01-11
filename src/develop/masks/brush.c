@@ -542,7 +542,8 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
                                     float **border, int *border_count, float **payload, int *payload_count,
                                     int source)
 {
-  double start2 = dt_get_wtime();
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
 
   float wd = pipe->iwidth, ht = pipe->iheight;
 
@@ -634,9 +635,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   int start_stamp = 0;
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points init took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we render all segments first upwards, then downwards
   for(int n = 0; n < 2 * nb; n++)
@@ -836,9 +839,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   // *payload_count : -1);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points point recurs %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // and we transform them with all distorted modules
   if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
@@ -848,7 +853,6 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       if(darktable.unmuted & DT_DEBUG_PERF)
         dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points transform took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
-//       start2 = dt_get_wtime();
       return 1;
     }
   }
@@ -2639,8 +2643,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
                              float **buffer, int *width, int *height, int *posx, int *posy)
 {
   if(!module) return 0;
-  double start = dt_get_wtime();
-  double start2;
+  double start = 0.0;
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start = dt_get_wtime();
 
   // we get buffers for all points
   float *points = NULL, *border = NULL, *payload = NULL;
@@ -2655,8 +2660,10 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush points took %0.04f sec\n", form->name, dt_get_wtime() - start);
-  start = start2 = dt_get_wtime();
+    start = start2 = dt_get_wtime();
+  }
 
   // now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
@@ -2692,7 +2699,6 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
 
   // we allocate the buffer
   const size_t bufsize = (size_t)(*width) * (*height);
@@ -2777,8 +2783,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
                                  dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   if(!module) return 0;
-  double start = dt_get_wtime();
-  double start2;
+  double start = 0.0;
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start = dt_get_wtime();
 
   const int px = roi->x;
   const int py = roi->y;
@@ -2801,8 +2808,10 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush points took %0.04f sec\n", form->name, dt_get_wtime() - start);
-  start = start2 = dt_get_wtime();
+    start = start2 = dt_get_wtime();
+  }
 
   // empty the output buffer
   dt_iop_image_fill(buffer, 0.0f, width, height, 1);
@@ -2855,7 +2864,6 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
 
   // check if the path completely lies outside of roi -> we're done/mask remains empty
   if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)
