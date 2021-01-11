@@ -1421,6 +1421,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   if(auto_apply_filmic || auto_apply_sharpen || auto_apply_cat)
   {
     dt_lock_image(imgid);
+    GList* used_modules = dt_history_get_module_operations(imgid);
     for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
@@ -1428,12 +1429,13 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
       if(((auto_apply_filmic && strcmp(module->op, "filmicrgb") == 0)
           || (auto_apply_sharpen && strcmp(module->op, "sharpen") == 0)
           || (auto_apply_cat && strcmp(module->op, "channelmixerrgb") == 0))
-         && !dt_history_check_module_exists(imgid, module->op)
+         && !g_list_find_custom(used_modules, module->op, (GCompareFunc)strcmp)
          && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
       {
         _dev_insert_module(dev, module, imgid);
       }
     }
+    g_list_free_full(used_modules, g_free);
     dt_unlock_image(imgid);
   }
 
@@ -1563,11 +1565,13 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
 {
   //start with those modules that cannot be disabled
   dt_lock_image(imgid);
+  GList* used_modules = dt_history_get_module_operations(imgid);
+
   for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-    if(!dt_history_check_module_exists(imgid, module->op)
+    if(!g_list_find_custom(used_modules, module->op, (GCompareFunc)strcmp)
        && module->default_enabled
        && module->hide_enable_button
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
@@ -1580,7 +1584,7 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)modules->data;
 
-    if(!dt_history_check_module_exists(imgid, module->op)
+    if(!g_list_find_custom(used_modules, module->op, (GCompareFunc)strcmp)
        && module->default_enabled
        && !module->hide_enable_button
        && !(module->flags() & IOP_FLAGS_NO_HISTORY_STACK))
@@ -1588,6 +1592,7 @@ static void _dev_add_default_modules(dt_develop_t *dev, const int imgid)
       _dev_insert_module(dev, module, imgid);
     }
   }
+  g_list_free_full(used_modules, g_free);
   dt_unlock_image(imgid);
 }
 
