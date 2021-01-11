@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -67,64 +67,64 @@ char *dt_get_help_url(char *name)
   if(!strcmp(name, "softproof")) return "darkroom_bottom_panel.html#softproof";
   if(!strcmp(name, "gamut")) return "darkroom_bottom_panel.html#gamutcheck";
   // iop links
-  if(!strcmp(name, "ashift")) return "technical_group.html#perspective_correction";
+  if(!strcmp(name, "ashift")) return "modules.html#perspective_correction";
   if(!strcmp(name, "atrous")) return "effects_group.html#equalizer";
-  if(!strcmp(name, "basecurve")) return "technical_group.html#base_curve";
-  if(!strcmp(name, "bilateral")) return "technical_group.html#denoise_bilateral";
+  if(!strcmp(name, "basecurve")) return "modules.html#base_curve";
+  if(!strcmp(name, "bilateral")) return "modules.html#denoise_bilateral";
   if(!strcmp(name, "bilat")) return "effects_group.html#local_contrast";
   if(!strcmp(name, "bloom")) return "effects_group.html#bloom";
   if(!strcmp(name, "borders")) return "effects_group.html#framing";
-  if(!strcmp(name, "cacorrect")) return "technical_group.html#chromatic_aberrations";
+  if(!strcmp(name, "cacorrect")) return "modules.html#chromatic_aberrations";
   if(!strcmp(name, "channelmixer")) return "grading_group.html#channel_mixer";
   if(!strcmp(name, "clahe")) return NULL; // deprecated, replaced by bilat.c
-  if(!strcmp(name, "clipping")) return "technical_group.html#crop_and_rotate";
+  if(!strcmp(name, "clipping")) return "modules.html#crop_and_rotate";
   if(!strcmp(name, "colisa")) return "grading_group.html#contrast_brightness_saturation";
   if(!strcmp(name, "colorbalance")) return "grading_group.html#color_balance";
-  if(!strcmp(name, "colorchecker")) return "technical_group.html#color_look_up_table";
+  if(!strcmp(name, "colorchecker")) return "modules.html#color_look_up_table";
   if(!strcmp(name, "colorcontrast")) return "grading_group.html#color_contrast";
   if(!strcmp(name, "colorcorrection")) return "grading_group.html#color_correction";
-  if(!strcmp(name, "colorin")) return "technical_group.html#input_color_profile";
+  if(!strcmp(name, "colorin")) return "modules.html#input_color_profile";
   if(!strcmp(name, "colorize")) return "grading_group.html#colorize";
   if(!strcmp(name, "colormapping")) return "effects_group.html#color_mapping";
-  if(!strcmp(name, "colorout")) return "technical_group.html#output_color_profile";
-  if(!strcmp(name, "colorreconstruct")) return "technical_group.html#color_reconstruction";
+  if(!strcmp(name, "colorout")) return "modules.html#output_color_profile";
+  if(!strcmp(name, "colorreconstruct")) return "modules.html#color_reconstruction";
   if(!strcmp(name, "colortransfer")) return NULL; // deprecated
   if(!strcmp(name, "colorzones")) return "grading_group.html#color_zones";
-  if(!strcmp(name, "defringe")) return "technical_group.html#defringe";
-  if(!strcmp(name, "demosaic")) return "technical_group.html#demosaic";
-  if(!strcmp(name, "denoiseprofile")) return "technical_group.html#denoise_profiled";
-  if(!strcmp(name, "dither")) return "technical_group.html#dithering";
+  if(!strcmp(name, "defringe")) return "modules.html#defringe";
+  if(!strcmp(name, "demosaic")) return "modules.html#demosaic";
+  if(!strcmp(name, "denoiseprofile")) return "modules.html#denoise_profiled";
+  if(!strcmp(name, "dither")) return "modules.html#dithering";
   if(!strcmp(name, "equalizer")) return NULL; // deprecated, replaced by atrous.c
-  if(!strcmp(name, "exposure")) return "technical_group.html#exposure";
-  if(!strcmp(name, "filmic")) return "technical_group.html#filmic";
-  if(!strcmp(name, "filmicrgb")) return "technical_group.html#filmic";
-  if(!strcmp(name, "flip")) return "technical_group.html#orientation";
+  if(!strcmp(name, "exposure")) return "modules.html#exposure";
+  if(!strcmp(name, "filmic")) return "modules.html#filmic";
+  if(!strcmp(name, "filmicrgb")) return "modules.html#filmic";
+  if(!strcmp(name, "flip")) return "modules.html#orientation";
   if(!strcmp(name, "globaltonemap")) return "grading_group.html#global_tonemap";
   if(!strcmp(name, "graduatednd")) return "grading_group.html#graduated_density";
   if(!strcmp(name, "grain")) return "effects_group.html#grain";
-  if(!strcmp(name, "hazeremoval")) return "technical_group.html#haze_removal";
-  if(!strcmp(name, "highlights")) return "technical_group.html#highlight_reconstruction";
+  if(!strcmp(name, "hazeremoval")) return "modules.html#haze_removal";
+  if(!strcmp(name, "highlights")) return "modules.html#highlight_reconstruction";
   if(!strcmp(name, "highpass")) return "effects_group.html#highpass";
-  if(!strcmp(name, "hotpixels")) return "technical_group.html#hotpixels";
-  if(!strcmp(name, "invert")) return "technical_group.html#invert";
-  if(!strcmp(name, "lens")) return "technical_group.html#lens_correction";
+  if(!strcmp(name, "hotpixels")) return "modules.html#hotpixels";
+  if(!strcmp(name, "invert")) return "modules.html#invert";
+  if(!strcmp(name, "lens")) return "modules.html#lens_correction";
   if(!strcmp(name, "levels")) return "grading_group.html#levels";
   if(!strcmp(name, "liquify")) return "effects_group.html#liquify";
   if(!strcmp(name, "lowlight")) return "effects_group.html#low_light";
   if(!strcmp(name, "lowpass")) return "effects_group.html#lowpass";
-  if(!strcmp(name, "lut3d")) return "technical_group.html#lut3d";
+  if(!strcmp(name, "lut3d")) return "modules.html#lut3d";
   if(!strcmp(name, "monochrome")) return "effects_group.html#monochrome";
-  if(!strcmp(name, "negadoctor")) return "technical_group.html#negadoctor";
-  if(!strcmp(name, "nlmeans")) return "technical_group.html#denoise_non_local_means";
-  if(!strcmp(name, "profile_gamma")) return "technical_group.html#unbreak_input_profile";
-  if(!strcmp(name, "rawdenoise")) return "technical_group.html#raw_denoise";
-  if(!strcmp(name, "rawprepare")) return "technical_group.html#raw_black_white_point";
+  if(!strcmp(name, "negadoctor")) return "modules.html#negadoctor";
+  if(!strcmp(name, "nlmeans")) return "modules.html#denoise_non_local_means";
+  if(!strcmp(name, "profile_gamma")) return "modules.html#unbreak_input_profile";
+  if(!strcmp(name, "rawdenoise")) return "modules.html#raw_denoise";
+  if(!strcmp(name, "rawprepare")) return "modules.html#raw_black_white_point";
   if(!strcmp(name, "relight")) return "grading_group.html#fill_light";
   if(!strcmp(name, "retouch")) return "effects_group.html#retouch";
   if(!strcmp(name, "rgbcurve")) return "grading_group.html#rgbcurve";
   if(!strcmp(name, "rgblevels")) return "grading_group.html#rgblevels";
-  if(!strcmp(name, "rotatepixels")) return "technical_group.html#rotate_pixels";
-  if(!strcmp(name, "scalepixels")) return "technical_group.html#scale_pixels";
+  if(!strcmp(name, "rotatepixels")) return "modules.html#rotate_pixels";
+  if(!strcmp(name, "scalepixels")) return "modules.html#scale_pixels";
   if(!strcmp(name, "shadhi")) return "grading_group.html#shadows_and_highlights";
   if(!strcmp(name, "sharpen")) return "effects_group.html#sharpen";
   if(!strcmp(name, "soften")) return "effects_group.html#soften";
