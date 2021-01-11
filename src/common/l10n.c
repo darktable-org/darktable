@@ -116,7 +116,6 @@ static void get_language_names(GList *languages)
   JsonParser *parser = NULL;
   GError *error = NULL;
   char *filename = NULL;
-  char *saved_locale = NULL;
 #ifdef __APPLE__
   char *res_path = dt_osx_get_bundle_res_path();
 #endif
@@ -190,7 +189,7 @@ static void get_language_names(GList *languages)
     goto end;
   }
 
-  saved_locale = strdup(setlocale(LC_ALL, NULL));
+  char *saved_locale = strdup(setlocale(LC_ALL, NULL));
 
   int n_elements = json_reader_count_elements(reader);
   for(int i = 0; i < n_elements; i++)
@@ -199,6 +198,8 @@ static void get_language_names(GList *languages)
     if(!json_reader_is_object(reader))
     {
       fprintf(stderr, "[l10n] error: unexpected layout of `%s' (element %d)\n", filename, i);
+      free(saved_locale);
+      saved_locale = NULL;
       goto end;
     }
 
@@ -285,7 +286,6 @@ end:
   if(error) g_error_free(error);
   if(reader) g_object_unref(reader);
   if(parser) g_object_unref(parser);
-  if(saved_locale) free(saved_locale);
 
 #endif // HAVE_ISO_CODES
 }
