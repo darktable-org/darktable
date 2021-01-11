@@ -545,7 +545,8 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   double start2 = 0.0;
   if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
 
-  float wd = pipe->iwidth, ht = pipe->iheight;
+  const float wd = pipe->iwidth;
+  const float ht = pipe->iheight;
 
   *points = NULL;
   *points_count = 0;
@@ -2529,7 +2530,7 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
@@ -2579,7 +2580,7 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
@@ -2669,7 +2670,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
