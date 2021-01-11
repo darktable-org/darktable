@@ -345,6 +345,20 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
   // add a preview when creating an ellipse
   if(gui->creation)
   {
+    float radius_a = 0.0f;
+    float radius_b = 0.0f;
+
+    if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+    {
+      radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
+      radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
+    }
+    else
+    {
+      radius_a = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_a");
+      radius_b = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_b");
+    }
+
     if((state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       float rotation;
@@ -403,24 +417,10 @@ static int dt_ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, floa
       else
         dt_conf_set_float("plugins/darkroom/masks/ellipse/border", masks_border);
 
-      dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
+      dt_toast_log(_("feather size: %3.2f%%"), (masks_border/fmaxf(radius_a, radius_b))*100.0f);
     }
     else if(state == 0)
     {
-      float radius_a = 0.0f;
-      float radius_b = 0.0f;
-
-      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
-      {
-        radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
-        radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
-      }
-      else
-      {
-        radius_a = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_a");
-        radius_b = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_b");
-      }
-
       const float oldradius = radius_a;
 
       if(up && radius_a > 0.001f)
