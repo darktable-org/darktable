@@ -739,6 +739,7 @@ overshoot.right
 }
 
 /* scope/histogram */
+/* Note that there are some pretty odd #'s here to match the behavior of the legacy scope buttons */
 #main-histogram #button_box
 {
   margin: 0.5em;
@@ -751,9 +752,26 @@ overshoot.right
   min-width: 0.85em;
 }
 
-#main-histogram .toggle:checked
+#main-histogram #red_channel_button:checked,
+#main-histogram #green_channel_button:checked,
+#main-histogram #blue_channel_button:checked
 {
-  border-color: alpha(@button_checked_fg, 0.6);
+  border-color: alpha(@button_checked_fg, 0.56);
+}
+
+#main-histogram #scope_type_button,
+#main-histogram #histogram_scale_button,
+#main-histogram #waveform_type_button
+{
+  color: alpha(@button_checked_fg, 0.56);
+  background-color: alpha(@button_bg, 0.3);
+}
+
+#scope_type_button > #button-canvas,
+#histogram_scale_button > #button-canvas,
+#waveform_type_button > #button-canvas
+{
+  margin: -14px; /* not real pixels, this is used as a percent extra space */
 }
 
 #main-histogram #red_channel_button
