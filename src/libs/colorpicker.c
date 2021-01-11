@@ -303,11 +303,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
     float rgb[3];
     for(size_t c = 0; c < 3; c++) rgb[c] = picked_rgb[c];
 
-    GdkRGBA color_in;
-    color_in.red = rgb[0];
-    color_in.green = rgb[1];
-    color_in.blue = rgb[2];
-    color_in.alpha = 1.f;
+    GdkRGBA color_in = { rgb[0], rgb[1], rgb[2], 1.f };
 
     GdkRGBA *color_out = gdk_rgba_copy(&color_in);
 
