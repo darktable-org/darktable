@@ -114,8 +114,8 @@ GList *dt_history_get_items(int32_t imgid, gboolean enabled);
 /** get list of history items for image as a nice string */
 char *dt_history_get_items_as_string(int32_t imgid);
 
-/* check if a module exists in the history of corresponding image */
-gboolean dt_history_check_module_exists(int32_t imgid, const char *operation);
+/* get all modules in the history of corresponding image */
+GList *dt_history_get_module_operations(int32_t imgid);
 
 /** calculate history hash and save it to database*/
 void dt_history_hash_write_from_history(const int32_t imgid, const dt_history_hash_t type);
