@@ -1739,8 +1739,8 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
         "[init] can't create new images table\n");
       
-    TRY_EXEC("DELETE FROM `images_old` WHERE group_id NOT IN (SELECT id from images_old)",
-        "[init] can't delete images with orphaned group ids\n");
+    TRY_EXEC("UPDATE `images_old` SET group_id=id WHERE group_id NOT IN (SELECT id from `images_old`)",
+        "[init] can't fix invalid group ids\n");
 
     TRY_EXEC("INSERT INTO `images` SELECT * FROM `images_old`",
         "[init] can't copy back from images_old\n");
