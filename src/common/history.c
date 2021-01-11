@@ -1271,7 +1271,7 @@ GList *dt_history_duplicate(GList *hist)
   {
     const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
 
-    dt_dev_history_item_t *new = (dt_dev_history_item_t *)calloc(1, sizeof(dt_dev_history_item_t));
+    dt_dev_history_item_t *new = (dt_dev_history_item_t *)malloc(sizeof(dt_dev_history_item_t));
 
     memcpy(new, old, sizeof(dt_dev_history_item_t));
 
