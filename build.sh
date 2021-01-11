@@ -8,6 +8,7 @@ set -e
 DT_SRC_DIR=$(dirname "$0")
 DT_SRC_DIR=$(cd "$DT_SRC_DIR" && pwd -P)
 
+
 # ---------------------------------------------------------------------------
 # Set default values to option vars
 # ---------------------------------------------------------------------------
@@ -22,6 +23,8 @@ BUILD_GENERATOR_DEFAULT="Unix Makefiles"
 BUILD_GENERATOR="$BUILD_GENERATOR_DEFAULT"
 MAKE_TASKS=-1
 ADDRESS_SANITIZER=0
+DO_CLEAN_BUILD=0
+DO_CLEAN_INSTALL=0
 DO_CONFIG=1
 DO_BUILD=1
 DO_INSTALL=0
@@ -56,6 +59,26 @@ parse_args()
 	while [ "$#" -ge 1 ] ; do
 		option="$1"
 		case $option in
+		--clean-build)
+			DO_CLEAN_BUILD=1
+			;;
+		--fclean-build)
+			DO_CLEAN_BUILD=2
+			;;
+		--clean-install)
+			DO_CLEAN_INSTALL=1
+			;;
+		--fclean-install)
+			DO_CLEAN_INSTALL=2
+			;;
+		--clean-all)
+			DO_CLEAN_BUILD=1
+			DO_CLEAN_INSTALL=1
+			;;
+		--fclean-all)
+			DO_CLEAN_BUILD=2
+			DO_CLEAN_INSTALL=2
+			;;
 		--prefix)
 			INSTALL_PREFIX="$2"
 			shift
@@ -161,6 +184,21 @@ EOF
 # utility functions
 # ---------------------------------------------------------------------------
 
+log()
+{
+	local prefix
+	case $1 in
+		trace) prefix="[\x1b[32mTRACE\x1b[0m] " ;;
+		debug|dbg) prefix="[\x1b[35mDEBUG\x1b[0m] " ;;
+		info) prefix="[\x1b[36mINFO\x1b[0m] " ;;
+		warning|warn) prefix="[\x1b[33mWARNING\x1b[0m] " ;;
+		error|err) prefix="[\x1b[31mERROR\x1b[0m] " ;;
+		critical) prefix="[\x1b[31;01mCRITICAL\x1b[0m] " ;;
+	esac
+
+	echo -e "$2" |sed -e "s/^/$prefix/"
+}
+
 num_cpu()
 {
 	local ncpu
@@ -234,6 +272,19 @@ cmake_boolean_option()
 	esac
 }
 
+clean()
+{
+	local path_to_clean=$2
+	local option="-I"
+	local force=$1
+
+	echo
+	log warn "Cleaning directory [$path_to_clean]: it will erase all the files in this path"
+	[ $force -eq 2 ] && option="-f"
+
+	rm -r "$option" "$path_to_clean" || log err "Failed to remove [$path_to_clean]"
+}
+
 # ---------------------------------------------------------------------------
 # Let's process the user's wishes
 # ---------------------------------------------------------------------------
@@ -262,8 +313,6 @@ CMAKE_MORE_OPTIONS="${CMAKE_MORE_OPTIONS} ${CMAKE_PREFIX_PATH}"
 # Let's go
 # ---------------------------------------------------------------------------
 
-mkdir -p "$BUILD_DIR"
-
 cat <<EOF
 darktable build script
 
@@ -273,8 +322,25 @@ Build type:          $BUILD_TYPE
 Build generator:     $BUILD_GENERATOR
 Build tasks:         $MAKE_TASKS
 
-
 EOF
+
+# ---------------------------------------------------------------------------
+# Let's clean some things
+# ---------------------------------------------------------------------------
+
+if [ $DO_CLEAN_BUILD -gt 0 ] ; then
+	clean $DO_CLEAN_BUILD "$BUILD_DIR"
+fi
+
+if [ $DO_CLEAN_INSTALL -gt 0 ] ; then
+	clean $DO_CLEAN_INSTALL "$INSTALL_PREFIX"
+fi
+
+# ---------------------------------------------------------------------------
+# CMake
+# ---------------------------------------------------------------------------
+
+mkdir -p "$BUILD_DIR"
 
 if [ $ADDRESS_SANITIZER -ne 0 ] ; then
 	ASAN_FLAGS="CFLAGS=\"-fsanitize=address -fno-omit-frame-pointer\""
