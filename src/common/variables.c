@@ -167,10 +167,6 @@ static inline gboolean has_prefix(char **str, const char *prefix)
 
 static char *get_base_value(dt_variables_params_t *params, char **variable)
 {
-#define R(c) ((guint)(c.red * 255))
-#define G(c) ((guint)(c.green * 255))
-#define B(c) ((guint)(c.blue * 255))
-
   char *result = NULL;
   gboolean escape = TRUE;
 
@@ -392,12 +388,16 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     res = g_list_first(res);
     if(res != NULL)
     {
+      gboolean color_dot = has_prefix(variable, "LABELS_COLORICONS");
+      const char *colored_dots[] = { "🔴", "🟡", "🟢", "🔵", "🟣" };
       do
       {
+        const char *dot = color_dot ? colored_dots[GPOINTER_TO_INT(res->data)] : "⬤";
         const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res->data)];
         result = dt_util_dstrcat(result,
-                                  "<span foreground='#%02x%02x%02x'>⬤ </span>",
-                                  R(c), G(c), B(c));
+                                 "<span foreground='#%02x%02x%02x'>%s </span>",
+                                 (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255),
+                                 dot);
       } while((res = g_list_next(res)) != NULL);
     }
     g_list_free(res);
@@ -545,11 +545,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     return e_res;
   }
   return result;
-
-#undef R
-#undef G
-#undef B
-
 }
 
 // bash style variable manipulation. all patterns are just simple string comparisons!
