@@ -543,9 +543,9 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       gtk_widget_set_sensitive(evb, FALSE);
       gtk_widget_set_sensitive(btn, FALSE);
       gtk_widget_set_tooltip_text(lb, _("this basic widget is disabled as there's multiple instances "
-                                        "for this module. You need to use the full module..."));
+                                        "for this module. you need to use the full module..."));
       gtk_widget_set_tooltip_text(btn, _("this basic widget is disabled as there's multiple instances "
-                                         "for this module. You need to use the full module..."));
+                                         "for this module. you need to use the full module..."));
     }
     else
     {
