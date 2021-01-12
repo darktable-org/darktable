@@ -2916,7 +2916,7 @@ msgstr "AC bleu"
 
 #: ../build/lib/darktable/plugins/introspection_liquify.c:428
 msgid "invalidated"
-msgstr "invalivalidé"
+msgstr "invalidé"
 
 # lorsque l'action n'engendre pas de suppression physique, on emploie le terme "enlever"
 #: ../build/lib/darktable/plugins/introspection_liquify.c:429
