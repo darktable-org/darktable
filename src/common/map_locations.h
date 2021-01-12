@@ -57,7 +57,7 @@ typedef struct dt_map_location_t
 } dt_map_location_t;
 
 // create a new location
-const guint dt_map_location_new(const char *const name);
+guint dt_map_location_new(const char *const name);
 
 // remove a location
 void dt_map_location_delete(const guint locid);

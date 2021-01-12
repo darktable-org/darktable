@@ -1973,6 +1973,8 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
 
 void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size)
 {
+  g_return_val_if_fail(iop_order_list != NULL, NULL);
+  g_return_val_if_fail(size != NULL, NULL);
   // compute size of all modules
   *size = 0;
 
@@ -1983,6 +1985,9 @@ void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size)
     *size += strlen(entry->operation) + sizeof(int32_t) * 2;
     l = g_list_next(l);
   }
+
+  if(*size == 0)
+    return NULL;
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);

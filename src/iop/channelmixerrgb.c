@@ -1317,10 +1317,10 @@ void extract_color_checker(const float *const restrict in, float *const restrict
                            const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
                            const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4], const dt_adaptation_t kind)
 {
-  float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
+  float *const restrict patches = dt_alloc_sse_ps(g->checker->patches * 4);
   float *const restrict patches_luminance = dt_alloc_sse_ps(g->checker->patches);
 
-  dt_simd_memcpy(in, out, roi_in->width * roi_in->height * 4);
+  dt_simd_memcpy(in, out, (size_t)roi_in->width * roi_in->height * 4);
 
   gboolean normalize = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->normalize));
   extraction_result_t extraction_result = _extract_patches(out, roi_in, g, RGB_to_XYZ,

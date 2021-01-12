@@ -677,6 +677,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     if(!cl->dev || !devices)
     {
       free(cl->dev);
+      cl->dev = NULL;
       free(devices);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory\n");
       goto finally;
@@ -699,9 +700,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
       devs += all_num_devices[n];
     }
   }
+  devs = NULL;
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
-  if(num_devices == 0) goto finally;
+  if(num_devices == 0)
+  {
+    if(devices)
+      free(devices);
+    goto finally;
+  } 
 
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
@@ -716,6 +723,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     ++dev;
   }
   free(devices);
+  devices = NULL;
+
   if(dev > 0)
   {
     cl->num_devs = dev;
@@ -851,6 +860,7 @@ finally:
     setlocale(LC_ALL, locale);
     free(locale);
   }
+
   return;
 }
 
@@ -2996,7 +3006,7 @@ int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_loca
     while(maxsizes[0] < *blocksizex || maxsizes[1] < *blocksizey
        || localmemsize < ((factors->xfactor * (*blocksizex) + factors->xoffset) *
                           (factors->yfactor * (*blocksizey) + factors->yoffset)) * factors->cellsize + factors->overhead
-       || workgroupsize < (*blocksizex) * (*blocksizey) || kernelworkgroupsize < (*blocksizex) * (*blocksizey))
+       || workgroupsize < (size_t)(*blocksizex) * (*blocksizey) || kernelworkgroupsize < (size_t)(*blocksizex) * (*blocksizey))
     {
       if(*blocksizex == 1 && *blocksizey == 1) return FALSE;
 

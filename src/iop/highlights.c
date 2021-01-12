@@ -327,7 +327,7 @@ static inline void interpolate_color_xtrans(const void *const ivoid, void *const
   // dir is 1:left to right, -1: right to left
   int i = (dim == 0) ? 0 : other;
   int j = (dim == 0) ? other : 0;
-  const ssize_t offs = (dim ? roi_out->width : 1) * ((dir < 0) ? -1 : 1);
+  const ssize_t offs = (ssize_t)(dim ? roi_out->width : 1) * ((dir < 0) ? -1 : 1);
   const ssize_t offl = offs - (dim ? 1 : roi_out->width);
   const ssize_t offr = offs + (dim ? 1 : roi_out->width);
   int beg, end;

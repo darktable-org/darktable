@@ -66,7 +66,7 @@ const char *dt_metadata_get_name_by_display_order(const uint32_t order)
   return NULL;
 }
 
-const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
+dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
 {
   if(order < DT_METADATA_NUMBER)
   {
@@ -79,7 +79,7 @@ const dt_metadata_t dt_metadata_get_keyid_by_display_order(const uint32_t order)
   return -1;
 }
 
-const dt_metadata_t dt_metadata_get_keyid_by_name(const char* name)
+dt_metadata_t dt_metadata_get_keyid_by_name(const char* name)
 {
   if(!name) return -1;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -90,7 +90,7 @@ const dt_metadata_t dt_metadata_get_keyid_by_name(const char* name)
   return -1;
 }
 
-const int dt_metadata_get_type_by_display_order(const uint32_t order)
+int dt_metadata_get_type_by_display_order(const uint32_t order)
 {
   if(order < DT_METADATA_NUMBER)
   {
@@ -111,7 +111,7 @@ const char *dt_metadata_get_name(const uint32_t keyid)
     return NULL;
 }
 
-const dt_metadata_t dt_metadata_get_keyid(const char* key)
+dt_metadata_t dt_metadata_get_keyid(const char* key)
 {
   if(!key) return -1;
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -154,7 +154,7 @@ const char *dt_metadata_get_key_by_subkey(const char *subkey)
   return NULL;
 }
 
-const int dt_metadata_get_type(const uint32_t keyid)
+int dt_metadata_get_type(const uint32_t keyid)
 {
   if(keyid < DT_METADATA_NUMBER)
     return dt_metadata_def[keyid].type;
