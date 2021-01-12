@@ -1209,8 +1209,6 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
       if(module->dev->proxy.chroma_adaptation == module)
         module->dev->proxy.chroma_adaptation = NULL;
 
-      dt_iop_set_module_in_trouble(module, FALSE);
-
       dt_dev_add_history_item(module->dev, module, FALSE);
 
       if(dt_conf_get_bool("darkroom/ui/activate_expand") && module->expanded)
@@ -1349,39 +1347,28 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   _iop_gui_update_header(module);
 }
 
-void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean state)
-{
-  // we don't set disabled modules in trouble, that would be annoying
-  if(module->enabled)
-    module->has_trouble = state;
-  else
-    module->has_trouble = FALSE;
-
-  _iop_gui_update_header(module);
-}
-
 static void _set_trouble_message(dt_iop_module_t *const module, const char* const trouble_msg,
                                  const char* const trouble_tooltip, const char *const stderr_message)
 {
   GtkWidget *label_widget = NULL;
-  GtkWidget *iopw = NULL;
 
-  if(module && module->widget)
+  if(module && module->has_trouble && module->widget)
   {
-    iopw = gtk_widget_get_parent(module->widget);
-    GList *children = gtk_container_get_children(GTK_CONTAINER(iopw));
+    GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
     label_widget = g_list_nth_data(children, 0);
     g_list_free(children);
-    if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning")) label_widget = NULL;
+    if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
+      label_widget = NULL;
   }
 
   if(trouble_msg && *trouble_msg)
   {
-    if((!module || !module->has_trouble) && (stderr_message || !label_widget))
+    if((!module || !module->has_trouble) && (stderr_message || !module->widget))
     {
       const char *name = module ? module->name() : "?";
       fprintf(stderr,"[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
     }
+
     if(module && module->widget)
     {
       if(label_widget)
@@ -1395,29 +1382,29 @@ static void _set_trouble_message(dt_iop_module_t *const module, const char* cons
         gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
         gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
         gtk_widget_set_name(label_widget, "iop-plugin-warning");
+
+        GtkWidget *iopw = gtk_widget_get_parent(module->widget);
         gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
         gtk_box_reorder_child(GTK_BOX(iopw), label_widget, 0);
         gtk_widget_show(label_widget);
       }
 
-      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip ? trouble_tooltip : "");
+      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip);
+
       // set the module's trouble flag
-      dt_iop_set_module_in_trouble(module, TRUE);
+      module->has_trouble = TRUE;
+
+      _iop_gui_update_header(module);
     }
   }
   else if(module && module->has_trouble)
   {
     // no more trouble, so clear the trouble flag and remove the message area
-    dt_iop_set_module_in_trouble(module, FALSE);
-    if(label_widget)
-    {
-      gtk_widget_destroy(label_widget);
-    }
-  }
-  else if(label_widget)
-  {
-    // hide the warning label; needed if the caller relies on this function to manage the visibility
-    gtk_widget_destroy(label_widget);
+    module->has_trouble = FALSE;
+
+    _iop_gui_update_header(module);
+
+    if(label_widget) gtk_widget_destroy(label_widget);
   }
 }
 

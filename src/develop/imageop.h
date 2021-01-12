@@ -728,9 +728,6 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
 
-/** show in iop module header that the module is in trouble */
-void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
-
 /** Set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
  ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that
  ** message when the module does not have a warning-label widget (use %s for the module's name).  **/
