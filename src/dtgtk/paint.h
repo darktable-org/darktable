@@ -283,6 +283,8 @@ void dtgtk_cairo_paint_lt_mode_culling_dynamic(cairo_t *cr, gint x, gint y, gint
 /** Lighttable: Full Preview */
 void dtgtk_cairo_paint_lt_mode_fullpreview(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
+/** Paint a link icon for basic adjustments */
+void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
