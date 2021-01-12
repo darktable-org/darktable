@@ -973,13 +973,13 @@ static void _scope_type_toggle(GtkToggleButton *button, dt_lib_histogram_t *d)
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("set mode to waveform"));
       dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
-                                   dtgtk_cairo_paint_histogram_scope, CPF_BG_TRANSPARENT, NULL);
+                                   dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL);
       gtk_stack_set_visible_child_name(GTK_STACK(d->mode_stack), "histogram");
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("set mode to histogram"));
       dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
-                                   dtgtk_cairo_paint_waveform_scope, CPF_BG_TRANSPARENT, NULL);
+                                   dtgtk_cairo_paint_waveform_scope, CPF_NONE, NULL);
       gtk_stack_set_visible_child_name(GTK_STACK(d->mode_stack), "waveform");
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
@@ -1008,12 +1008,12 @@ static void _histogram_scale_toggle(GtkToggleButton *button, dt_lib_histogram_t 
     case DT_LIB_HISTOGRAM_LOGARITHMIC:
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("set scale to linear"));
       dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
-                                   dtgtk_cairo_paint_logarithmic_scale, CPF_BG_TRANSPARENT, NULL);
+                                   dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_LINEAR:
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("set scale to logarithmic"));
       dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
-                                   dtgtk_cairo_paint_linear_scale, CPF_BG_TRANSPARENT, NULL);
+                                   dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
       break;
     default:
       g_assert_not_reached();
@@ -1033,12 +1033,12 @@ static void _waveform_type_toggle(GtkToggleButton *button, dt_lib_histogram_t *d
     case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("set mode to RGB parade"));
       dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
-                                   dtgtk_cairo_paint_waveform_overlaid, CPF_BG_TRANSPARENT, NULL);
+                                   dtgtk_cairo_paint_waveform_overlaid, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
       gtk_widget_set_tooltip_text(GTK_WIDGET(button), _("set mode to waveform"));
       dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
-                                   dtgtk_cairo_paint_rgb_parade, CPF_BG_TRANSPARENT, NULL);
+                                   dtgtk_cairo_paint_rgb_parade, CPF_NONE, NULL);
       // FIXME: in RGB parade mode, hide the buttons to select channel, which are fairly senseless in this context
       break;
     default:
@@ -1408,16 +1408,18 @@ void gui_init(dt_lib_module_t *self)
 
   // a row of buttons
   // FIXME: make appear/disappear on mouseover
-  // FIXME: is the spacing in logical pixels? don't use DT_PIXEL_APPLY_DPI() and set this all via CSS padding
-  GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, DT_PIXEL_APPLY_DPI(10));
-  // FIXME: make button_box homogenous?
+  GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(button_box, "button_box");
   gtk_widget_set_valign(button_box, GTK_ALIGN_START);
   gtk_widget_set_halign(button_box, GTK_ALIGN_START);
+  // GtkButtonBox spreads out the icons, so we use GtkBox --
+  // homogeneous shouldn't be necessary as icons are equal size, but
+  // set it just to show the desired look
+  gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
   gtk_overlay_add_overlay(GTK_OVERLAY(self->widget), button_box);
 
-  // FIXME: only make the draggable/scrolalble overlays visible if in darkroom view
-  // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them with the switch type checkbox being GtkStackSwitcher? -- if so, then the each of the histogram/waveform widgets will have its own associated "mode" button, drawable, and sensitive areas for scrolling, but the channel buttons will be shared between them, or will modify the same underlying data
+  // FIXME: only make the draggable/scrollable overlays visible if in darkroom view
+  // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them? -- if so, then the each of the histogram/waveform widgets will have its own associated "mode" button, drawable, and sensitive areas for scrolling, but the channel buttons will be shared between them, or will modify the same underlying data
 
   // FIXME: make keyboard accelerators work for these
 
@@ -1425,12 +1427,9 @@ void gui_init(dt_lib_module_t *self)
   // a hack to finish init -- if we don't flip the tooltip text (and
   // icon) on toggle, this will be unnecessary
 
-  // FIXME: make the background of type/subtype buttons be opaque black, as with legacy buttons
-
   // scope type
   // FIXME: this should really be a combobox to allow for more types and not to have to swap the icon on button down
-  // FIXME: make CSS have this never have a border
-  GtkWidget *scope_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_histogram_scope, CPF_BG_TRANSPARENT, NULL);
+  GtkWidget *scope_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL);
   gtk_widget_set_name(scope_button, "scope_type_button");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(scope_button), d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM);
   gtk_box_pack_start(GTK_BOX(button_box), scope_button, FALSE, FALSE, 0);
@@ -1438,9 +1437,10 @@ void gui_init(dt_lib_module_t *self)
   // scope mode
   GtkWidget *button;
   d->mode_stack = gtk_stack_new();
+  gtk_widget_set_name(d->mode_stack, "scope_mode_stack");
 
   // histogram scale
-  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_logarithmic_scale, CPF_BG_TRANSPARENT, NULL);
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
   gtk_widget_set_name(button, "histogram_scale_button");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC);
   _histogram_scale_toggle(GTK_TOGGLE_BUTTON(button), d);
@@ -1448,7 +1448,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_stack_add_named(GTK_STACK(d->mode_stack), button, "histogram");
 
   // histogram scale
-  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_waveform_overlaid, CPF_BG_TRANSPARENT, NULL);
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_waveform_overlaid, CPF_NONE, NULL);
   gtk_widget_set_name(button, "waveform_type_button");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID);
   _waveform_type_toggle(GTK_TOGGLE_BUTTON(button), d);
@@ -1460,7 +1460,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(button_box), d->mode_stack, FALSE, FALSE, 0);
 
   // red channel on/off
-  // FIXME: should each channel of scope be its own drawable, hence toggle will turn on/off visibility of a layer rather than request a redraw?
+  // FIXME: should each channel of scope be its own drawable, hence toggle will turn on/off visibility of a layer rather than request a redraw? is better to have one drawable responsive to config (as now), as in the main case it'll be showing all three channels, and no need to merge channels on the fly?
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   // FIXME: better to have a general tooltip rather than flipping it when the button is pressed
   gtk_widget_set_name(button, "red_channel_button");
