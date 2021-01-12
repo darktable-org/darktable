@@ -314,7 +314,7 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb)
     int w = 0;
     int h = 0;
     gtk_widget_get_size_request(thumb->w_bottom_eb, &w, &h);
-    image_h = thumb->height - h;
+    image_h = thumb->height - MAX(0, h);
     gtk_widget_get_size_request(thumb->w_altered, &w, &h);
     if(!thumb->zoomable)
     {
@@ -350,8 +350,62 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb)
   int wi = 0;
   int hi = 0;
   gtk_widget_get_size_request(thumb->w_image, &wi, &hi);
-  const float scale = fminf((float)image_w / wi, (float)image_h / hi);
-  if(scale < 1.0f) gtk_widget_set_size_request(thumb->w_image, wi * scale, hi * scale);
+  if(wi <= 0 || hi <= 0)
+  {
+    // we arrive here if we are inside the creation process
+    float iw = image_w;
+    float ih = image_h;
+    // we can't rely on img->aspect_ratio as the value is round to 1 decimal, so not enough accurate
+    // so we compute it from the larger available mipmap
+    float ar = 0.0f;
+    for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
+    {
+      dt_mipmap_buffer_t tmp;
+      dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');
+      if(tmp.buf)
+      {
+        const int mipw = tmp.width;
+        const int miph = tmp.height;
+        dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
+        if(mipw > 0 && miph > 0)
+        {
+          ar = (float)mipw / miph;
+          break;
+        }
+      }
+    }
+    if(ar < 0.001)
+    {
+      // let's try with the aspect_ratio store in image structure, even if it's less accurate
+      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+      if(img)
+      {
+        ar = img->aspect_ratio;
+        dt_image_cache_read_release(darktable.image_cache, img);
+      }
+    }
+
+    if(ar > 0.001)
+    {
+      // we have a valid ratio, let's apply it
+      if(ar < 1.0)
+        iw = ih * ar;
+      else
+        ih = iw / ar;
+      // rescale to ensure it stay in thumbnails bounds
+      const float scale = fminf(1.0, fminf((float)image_w / iw, (float)image_h / ih));
+      iw *= scale;
+      ih *= scale;
+    }
+
+    gtk_widget_set_size_request(thumb->w_image, iw, ih);
+  }
+  else
+  {
+    const float scale = fminf((float)image_w / wi, (float)image_h / hi);
+    if(scale < 1.0f) gtk_widget_set_size_request(thumb->w_image, wi * scale, hi * scale);
+  }
+
   // and we set the size and margins of the imagebox
   gtk_widget_set_size_request(thumb->w_image_box, image_w, image_h);
   gtk_widget_set_margin_start(thumb->w_image_box, thumb->img_margin->left);
@@ -1036,6 +1090,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
   gtk_widget_set_name(thumb->w_main, "thumb_main");
+  gtk_widget_set_size_request(thumb->w_main, thumb->width, thumb->height);
 
   if(thumb->imgid > 0)
   {
@@ -1090,26 +1145,15 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_image_box);
     thumb->w_image = gtk_drawing_area_new();
+    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
+    if(thumb->container == DT_THUMBNAIL_CONTAINER_PREVIEW)
+      gtk_style_context_add_class(context, "dt_preview_thumb_image");
+    else if(thumb->container == DT_THUMBNAIL_CONTAINER_CULLING)
+      gtk_style_context_add_class(context, "dt_culling_thumb_image");
     gtk_widget_set_name(thumb->w_image, "thumb_image");
-    // we pre-set the size of the imagebox with the aspect ratio so the image is already centered
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
-    int iw = thumb->width;
-    int ih = thumb->height;
-    if(img)
-    {
-      const float ar = img->aspect_ratio;
-      dt_image_cache_read_release(darktable.image_cache, img);
-      if(ar > 0.0001)
-      {
-        if(ar < 1.0)
-          iw = ih * ar;
-        else
-          ih = iw / ar;
-      }
-    }
-    gtk_widget_set_size_request(thumb->w_image, iw, ih);
     gtk_widget_set_valign(thumb->w_image, GTK_ALIGN_CENTER);
     gtk_widget_set_halign(thumb->w_image, GTK_ALIGN_CENTER);
+    // the size will be defined at the end, inside dt_thumbnail_resize
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                               | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                               | GDK_POINTER_MOTION_HINT_MASK | GDK_POINTER_MOTION_MASK);
@@ -1120,7 +1164,6 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_show(thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), thumb->w_image);
     gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_main), thumb->w_image_box);
-    _thumb_retrieve_margins(thumb);
 
     // triangle to indicate current image(s) in filmstrip
     thumb->w_cursor = gtk_drawing_area_new();
@@ -1266,7 +1309,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
 }
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
-                                 gboolean zoomable, gboolean tooltip)
+                                 dt_thumbnail_container_t container, gboolean tooltip)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
@@ -1274,7 +1317,8 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   thumb->imgid = imgid;
   thumb->rowid = rowid;
   thumb->over = over;
-  thumb->zoomable = zoomable;
+  thumb->container = container;
+  thumb->zoomable = (container == DT_THUMBNAIL_CONTAINER_CULLING || container == DT_THUMBNAIL_CONTAINER_PREVIEW);
   thumb->zoom = 1.0f;
   thumb->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
   thumb->tooltip = tooltip;
@@ -1590,10 +1634,47 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   thumb->height = height;
   gtk_widget_set_size_request(thumb->w_main, width, height);
 
-  // we change the size and margins according to the size change. This will be refined after
-  _thumb_set_image_area(thumb);
+  // for thumbtable, we need to set the size class to the image widget
+  if(thumb->container == DT_THUMBNAIL_CONTAINER_LIGHTTABLE)
+  {
+    // we get the corresponding size
+    gchar *txt = dt_conf_get_string("plugins/lighttable/thumbnail_sizes");
+    gchar **ts = g_strsplit(txt, "|", -1);
+    int i = 0;
+    while(ts[i])
+    {
+      const int s = g_ascii_strtoll(ts[i], NULL, 10);
+      if(thumb->width < s) break;
+      i++;
+    }
+    g_strfreev(ts);
+    g_free(txt);
+
+    gchar *cl = dt_util_dstrcat(NULL, "dt_thumbnails_%d", i);
+    GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
+    if(!gtk_style_context_has_class(context, cl))
+    {
+      // we remove all previous size class if any
+      GList *l = gtk_style_context_list_classes(context);
+      while(l)
+      {
+        gchar *ll = (gchar *)l->data;
+        if(g_str_has_prefix(ll, "dt_thumbnails_"))
+        {
+          gtk_style_context_remove_class(context, ll);
+        }
+        l = g_list_next(l);
+      }
+      g_list_free(l);
+
+      // we set the new class
+      gtk_style_context_add_class(context, cl);
+    }
+    g_free(cl);
+  }
 
   // file extension
+  _thumb_retrieve_margins(thumb);
   gtk_widget_set_margin_start(thumb->w_ext, thumb->img_margin->left);
   gtk_widget_set_margin_top(thumb->w_ext, thumb->img_margin->top);
 
@@ -1612,8 +1693,13 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   gtk_label_set_attributes(GTK_LABEL(thumb->w_ext), attrlist);
   pango_attr_list_unref(attrlist);
 
-  // and the overlays
-  _thumb_resize_overlays(thumb);
+  // for overlays different than block, we compute their size here, so we have valid value for th image area compute
+  if(thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
+  // we change the size and margins according to the size change. This will be refined after
+  _thumb_set_image_area(thumb);
+
+  // and the overlays for the block only (the others have been done before)
+  if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
 
   // reset surface
   dt_thumbnail_image_refresh(thumb);
