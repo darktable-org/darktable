@@ -742,7 +742,12 @@ overshoot.right
 /* Note that there are some pretty odd #'s here to match the behavior of the legacy scope buttons */
 #main-histogram #button_box
 {
-  margin: 0.5em;
+  margin: 0.5em;   /* spacing between histogram buttons and the edge of histogram */
+}
+
+#main-histogram #button_box > *
+{
+  margin-left:.5em;  /* spacing between histogram button box widgets */
 }
 
 #main-histogram .toggle
@@ -756,15 +761,15 @@ overshoot.right
 #main-histogram #green_channel_button:checked,
 #main-histogram #blue_channel_button:checked
 {
-  border-color: alpha(@button_checked_fg, 0.56);
+  border-color: alpha(@button_checked_fg, 0.56);    /* hack to match legacy color of white with alpha of 0.5 */
 }
 
 #main-histogram #scope_type_button,
 #main-histogram #histogram_scale_button,
 #main-histogram #waveform_type_button
 {
-  color: alpha(@button_checked_fg, 0.56);
-  background-color: alpha(@button_bg, 0.3);
+  color: alpha(@button_checked_fg, 0.56);           /* hack to match legacy color of white with alpha of 0.5 */
+  background-color: alpha(darker(@button_bg),0.8);  /* hack to be close to legacy color */
 }
 
 #scope_type_button > #button-canvas,
