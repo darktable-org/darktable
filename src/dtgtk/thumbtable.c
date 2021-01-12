@@ -28,6 +28,7 @@
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
 #include "views/view.h"
+#include "bauhaus/bauhaus.h"
 
 // specials functions for GList globals actions
 static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
@@ -2115,27 +2116,10 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
       {
         do
         {
-          const char *lb = (char *)(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)));
-          if(g_strcmp0(lb, "red") == 0)
-          {
-            result = dt_util_dstrcat(result, "<span foreground='#ee0000'>⬤ </span>");
-          }
-          else if(g_strcmp0(lb, "yellow") == 0)
-          {
-            result = dt_util_dstrcat(result, "<span foreground='#eeee00'>⬤ </span>");
-          }
-          else if(g_strcmp0(lb, "green") == 0)
-          {
-            result = dt_util_dstrcat(result, "<span foreground='#00ee00'>⬤ </span>");
-          }
-          else if(g_strcmp0(lb, "blue") == 0)
-          {
-            result = dt_util_dstrcat(result, "<span foreground='#0000ee'>⬤ </span>");
-          }
-          else if(g_strcmp0(lb, "purple") == 0)
-          {
-            result = dt_util_dstrcat(result, "<span foreground='#ee00ee'>⬤ </span>");
-          }
+          const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res->data)];
+          result = dt_util_dstrcat(result,
+                                   "<span foreground='#%02x%02x%02x'>⬤ </span>",
+                                   (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
         } while((res = g_list_next(res)) != NULL);
       }
       g_list_free(res);
