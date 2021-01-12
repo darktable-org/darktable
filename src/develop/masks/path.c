@@ -846,6 +846,49 @@ static int dt_path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, f
                                  border_count, source);
 }
 
+static void _path_get_sizes(struct dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index, float *masks_size, float *feather_size)
+{
+  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  if(!gpt) return;
+
+  const int nb = g_list_length(form->points);
+  const float wd = darktable.develop->preview_pipe->backbuf_width;
+  const float ht = darktable.develop->preview_pipe->backbuf_height;
+
+  float p1[2] = { FLT_MAX, FLT_MAX };
+  float p2[2] = { FLT_MIN, FLT_MIN };
+
+  float fp1[2] = { FLT_MAX, FLT_MAX };
+  float fp2[2] = { FLT_MIN, FLT_MIN };
+
+  for(int i = nb * 3; i < gpt->points_count; i++)
+  {
+    // line
+    const float x = gpt->points[i * 2];
+    const float y = gpt->points[i * 2 + 1];
+
+    p1[0] = fminf(p1[0], x);
+    p2[0] = fmaxf(p2[0], x);
+    p1[1] = fminf(p1[1], y);
+    p2[1] = fmaxf(p2[1], y);
+
+    if(feather_size)
+    {
+      // feather
+      const float fx = gpt->border[i * 2];
+      const float fy = gpt->border[i * 2 + 1];
+
+      fp1[0] = fminf(fp1[0], fx);
+      fp2[0] = fmaxf(fp2[0], fx);
+      fp1[1] = fminf(fp1[1], fy);
+      fp2[1] = fmaxf(fp2[1], fy);
+    }
+  }
+
+  *masks_size = fmaxf((p2[0] - p1[0]) / wd, (p2[1] - p1[1]) / ht);
+  if(feather_size) *feather_size = fmaxf((fp2[0] - fp1[0]) / wd, (fp2[1] - fp1[1]) / ht);
+}
+
 static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                          uint32_t state, dt_masks_form_t *form, int parentid,
                                          dt_masks_form_gui_t *gui, int index)
@@ -873,6 +916,9 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
+        float masks_size, feather_size = 0.0f;
+        _path_get_sizes(module, form, gui, index, &masks_size, &feather_size);
+
         // do not exceed upper limit of 1.0
         for(int k = 0; k < nb; k++)
         {
@@ -890,14 +936,14 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/path_border");
           masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/spots/path_border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
+          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size *100.0f);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/path/border");
           masks_border = MAX(0.0005f, MIN(masks_border * amount, 0.5f));
           dt_conf_set_float("plugins/darkroom/masks/path/border", masks_border);
-          dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
+          dt_toast_log(_("feather size: %3.2f%%"), (feather_size - masks_size) / masks_size * 100.0f);
         }
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -949,6 +995,11 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
 
         // now the redraw/save stuff
         _path_init_ctrl_points(form);
+
+        float masks_size = 0.0f;
+        _path_get_sizes(module, form, gui, index, &masks_size, NULL);
+
+        dt_toast_log(_("size: %3.2f%%"), masks_size * 100.0f);
       }
       else
       {
