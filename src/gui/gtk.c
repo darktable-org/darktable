@@ -3010,6 +3010,7 @@ GdkModifierType dt_key_modifier_state()
 static void notebook_size_callback(GtkNotebook *notebook, GdkRectangle *allocation, gpointer *data)
 {
   const int n = gtk_notebook_get_n_pages(notebook);
+  g_return_if_fail(n > 0);
 
   GtkRequestedSize *sizes = g_malloc_n(n, sizeof(GtkRequestedSize));
 

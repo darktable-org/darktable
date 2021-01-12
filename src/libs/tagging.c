@@ -948,6 +948,8 @@ void *get_params(dt_lib_module_t *self, int *size)
       params = dt_util_dstrcat(params, "%d,", ((dt_tag_t *)taglist->data)->id);
     }
     dt_tag_free_result(&tags);
+    if(params == NULL)
+      return NULL;
     *size = strlen(params);
     params[*size-1]='\0';
   }

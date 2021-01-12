@@ -614,7 +614,7 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   const int width = g->width;
   const int height = g->height;
   const int channels = g->channels;
-  const int bpp = channels * sizeof(float);
+  const size_t bpp = sizeof(float) * channels;
   cl_mem dev_temp1 = g->dev_temp1;
   cl_mem dev_temp2 = g->dev_temp2;
 
@@ -676,8 +676,8 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, channels * sizeof(float), (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, channels * sizeof(float), (void *)&Labmin);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, sizeof(float) * channels, (void *)&Labmax);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, sizeof(float) * channels, (void *)&Labmin);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 
@@ -712,8 +712,8 @@ cl_int dt_gaussian_blur_cl(dt_gaussian_cl_t *g, cl_mem dev_in, cl_mem dev_out)
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 9, sizeof(float), (void *)&b2);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 10, sizeof(float), (void *)&coefp);
   dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 11, sizeof(float), (void *)&coefn);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, channels * sizeof(float), (void *)&Labmax);
-  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, channels * sizeof(float), (void *)&Labmin);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 12, sizeof(float) * channels, (void *)&Labmax);
+  dt_opencl_set_kernel_arg(devid, kernel_gaussian_column, 13, sizeof(float) * channels, (void *)&Labmin);
   err = dt_opencl_enqueue_kernel_2d(devid, kernel_gaussian_column, sizes);
   if(err != CL_SUCCESS) return err;
 

@@ -825,7 +825,6 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     memcpy(new_params + pos, metadata[1], metadata_len[1]);
     pos += metadata_len[1];
     memcpy(new_params + pos, metadata[2], metadata_len[2]);
-    pos += metadata_len[2];
 
     *new_size = new_params_size;
     *new_version = 2;
