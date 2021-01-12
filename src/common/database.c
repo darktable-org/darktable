@@ -1717,7 +1717,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
     // remove duplicates
-    TRY_EXEC("DELETE FROM main.meta_data WHERE rowid NOT IN (SELECT min(rowid) "
+    TRY_EXEC("DELETE FROM main.meta_data WHERE rowid NOT IN (SELECT MIN(rowid) "
              "FROM main.meta_data GROUP BY id, key)",
              "[init] can't remove duplicates from meta_data\n");
 
