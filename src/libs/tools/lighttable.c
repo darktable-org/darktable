@@ -111,6 +111,22 @@ static void _lib_lighttable_update_btn(dt_lib_module_t *self)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), (w == active));
     l = g_list_next(l);
   }
+
+  // and now we set the tooltips
+  if(d->fullpreview)
+    gtk_widget_set_tooltip_text(d->layout_preview, _("click to exit from full preview layout."));
+  else
+    gtk_widget_set_tooltip_text(d->layout_preview, _("click to enter full preview layout."));
+
+  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING || d->fullpreview)
+    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to enter culling layout in fixed mode."));
+  else
+    gtk_widget_set_tooltip_text(d->layout_culling_fix, _("click to exit culling layout."));
+
+  if(d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || d->fullpreview)
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to enter culling layout in dynamic mode."));
+  else
+    gtk_widget_set_tooltip_text(d->layout_culling_dynamic, _("click to exit culling layout."));
 }
 
 static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layout_t layout)
@@ -242,10 +258,12 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), d->layout_box, TRUE, TRUE, 0);
 
   d->layout_filemanager = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_grid, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(d->layout_filemanager, _("click to enter filemanager layout."));
   g_signal_connect(G_OBJECT(d->layout_filemanager), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_filemanager, TRUE, TRUE, 0);
   d->layout_zoomable = dtgtk_togglebutton_new(dtgtk_cairo_paint_lt_mode_zoom, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(d->layout_zoomable, _("click to enter zoomable lighttable layout."));
   g_signal_connect(G_OBJECT(d->layout_zoomable), "button-release-event",
                    G_CALLBACK(_lib_lighttable_layout_btn_release), self);
   gtk_box_pack_start(GTK_BOX(d->layout_box), d->layout_zoomable, TRUE, TRUE, 0);
@@ -526,7 +544,7 @@ void init_key_accels(dt_lib_module_t *self)
 {
   // view accels
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle filemanager layout"), 0, 0);
-  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle zoomable filemanager layout"), 0, 0);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle zoomable lighttable layout"), 0, 0);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling mode"), GDK_KEY_x, 0);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling dynamic mode"), GDK_KEY_x,
                                 GDK_CONTROL_MASK);
@@ -544,7 +562,7 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_lib_as_view(
       self, "lighttable", "toggle filemanager layout",
       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_filemanager), self, NULL));
-  dt_accel_connect_lib_as_view(self, "lighttable", "toggle zoomable filemanager layout",
+  dt_accel_connect_lib_as_view(self, "lighttable", "toggle zoomable lighttable layout",
                                g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_zoomable), self, NULL));
   dt_accel_connect_lib_as_view(
       self, "lighttable", "toggle culling dynamic mode",
