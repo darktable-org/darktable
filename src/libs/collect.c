@@ -733,12 +733,12 @@ static gboolean range_select(GtkTreeModel *model, GtkTreePath *path, GtkTreeIter
   return FALSE;
 }
 
-const int _combo_get_active_collection(GtkWidget *combo)
+int _combo_get_active_collection(GtkWidget *combo)
 {
   return GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(combo)) - 1;
 }
 
-const gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
+gboolean _combo_set_active_collection(GtkWidget *combo, const int property)
 {
   const gboolean found = dt_bauhaus_combobox_set_from_value(combo, property + 1);
   // make sure we have a valid collection
@@ -1052,8 +1052,7 @@ static GtkTreeModel *_create_filtered_model(GtkTreeModel *model, dt_lib_collect_
 
     if(level > 0)
     {
-      if(level > 0 &&
-         gtk_tree_model_iter_n_children(model, &iter) == 0 &&
+      if(gtk_tree_model_iter_n_children(model, &iter) == 0 &&
          gtk_tree_model_iter_parent(model, &child, &iter))
       {
         path = gtk_tree_model_get_path(model, &child);

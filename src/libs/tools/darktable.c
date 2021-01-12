@@ -179,8 +179,14 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
   cairo_surface_destroy(d->image);
-  cairo_surface_destroy(d->text);
   free(d->image_buffer);
+
+  // don't leak mem via text logo surface data
+  guint8 *text_img_buffer = NULL;
+  if(d->text)
+    text_img_buffer = cairo_image_surface_get_data(d->text);
+  cairo_surface_destroy(d->text);
+  free(text_img_buffer);
   g_free(self->data);
   self->data = NULL;
 }
