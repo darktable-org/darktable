@@ -556,7 +556,8 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 
     for(size_t c = 0; c < 3; c++)
       temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
-    float Y = 1.f;
+
+    /* WE START IN PIPELINE RGB */
 
     switch(kind)
     {
@@ -564,14 +565,20 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
-        // Do white balance in LMS
-        downscale_vector(temp_one, Y);
-          convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        // Convert to LMS
+        convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        {
+          // Do white balance
+          downscale_vector(temp_two, Y);
             bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
-          convert_bradford_LMS_to_XYZ(temp_one, temp_two);
-        upscale_vector(temp_two, Y);
+          upscale_vector(temp_one, Y);
+
+          // Compute the 3D mix - this is a rotation + homothety of the vector base
+          dot_product(temp_one, MIX, temp_two);
+        }
+        convert_bradford_LMS_to_XYZ(temp_two, temp_one);
 
         break;
       }
@@ -579,14 +586,20 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
-        // Do white balance in LMS
-        downscale_vector(temp_one, Y);
-          convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        // Convert to LMS
+        convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        {
+          // Do white balance
+          downscale_vector(temp_two, Y);
             bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
-          convert_bradford_LMS_to_XYZ(temp_one, temp_two);
-        upscale_vector(temp_two, Y);
+          upscale_vector(temp_one, Y);
+
+          // Compute the 3D mix - this is a rotation + homothety of the vector base
+          dot_product(temp_one, MIX, temp_two);
+        }
+        convert_bradford_LMS_to_XYZ(temp_two, temp_one);
 
         break;
       }
@@ -594,14 +607,20 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
-        // Do white balance in LMS
-        downscale_vector(temp_one, Y);
-          convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
+        // Convert to LMS
+        convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
+        {
+          // Do white balance
+          downscale_vector(temp_two, Y);
             CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one); // force full-adaptation
-          convert_CAT16_LMS_to_XYZ(temp_one, temp_two);
-        upscale_vector(temp_two, Y);
+          upscale_vector(temp_one, Y);
+
+          // Compute the 3D mix - this is a rotation + homothety of the vector base
+          dot_product(temp_one, MIX, temp_two);
+        }
+        convert_CAT16_LMS_to_XYZ(temp_two, temp_one);
 
         break;
       }
@@ -609,34 +628,60 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
         // Do white balance in XYZ
         downscale_vector(temp_one, Y);
           XYZ_adapt_D50(temp_one, illuminant, temp_two);
         upscale_vector(temp_two, Y);
 
+        // Compute the 3D mix in XYZ - this is a rotation + homothety of the vector base
+        dot_product(temp_two, MIX, temp_one);
+
         break;
       }
       case DT_ADAPTATION_RGB:
       case DT_ADAPTATION_LAST:
       {
-        // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
-        for(size_t c = 0; c < 3; ++c) temp_two[c] = temp_one[c];
         // No white balance.
+
+        // Compute the 3D mix in RGB - this is a rotation + homothety of the vector base
+        dot_product(temp_two, MIX, temp_one);
+
+        // Convert from RGB to XYZ
+        dot_product(temp_one, RGB_to_XYZ, temp_two);
+
+        for(size_t c = 0; c < 3; ++c) temp_one[c] = temp_two[c];
         break;
       }
     }
 
-    // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
-    convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
-      dot_product(temp_one, MIX, temp_two);
-    convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
+    /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
     // Gamut mapping happens in XYZ space no matter what
     gamut_mapping(temp_one, gamut, clip, temp_two);
-    convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
+
+    // convert to LMS, XYZ or pipeline RGB
+    switch(kind)
+    {
+      case DT_ADAPTATION_FULL_BRADFORD:
+      case DT_ADAPTATION_LINEAR_BRADFORD:
+      case DT_ADAPTATION_CAT16:
+      case DT_ADAPTATION_XYZ:
+      {
+        convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
+        break;
+      }
+      case DT_ADAPTATION_RGB:
+      case DT_ADAPTATION_LAST:
+      {
+        // Convert from XYZ to RGB
+        dot_product(temp_two, XYZ_to_RGB, temp_one);
+        break;
+      }
+    }
+
+    /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user param - DATA IS IN temp_one */
 
     // Clip in LMS
     if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
@@ -647,23 +692,42 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     // Clip in LMS
     if(clip) for(size_t c = 0; c < 3; c++) temp_two[c] = fmaxf(temp_two[c], 0.0f);
 
-    // Convert back LMS to XYZ
-    convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
-
-    // Clip in XYZ
-    if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
-
     // Save
     if(apply_grey)
     {
-      // Turn RGB into monochrome
-      const float grey_mix = fmaxf(scalar_product(temp_one, grey), 0.0f);
+      // Turn LMS, XYZ or pipeline RGB into monochrome
+      const float grey_mix = fmaxf(scalar_product(temp_two, grey), 0.0f);
 
       out[k] = out[k + 1] = out[k + 2] = grey_mix;
       out[k + 3] = in[k + 3]; // alpha mask
     }
     else
     {
+      // Convert back to XYZ
+      switch(kind)
+      {
+        case DT_ADAPTATION_FULL_BRADFORD:
+        case DT_ADAPTATION_LINEAR_BRADFORD:
+        case DT_ADAPTATION_CAT16:
+        case DT_ADAPTATION_XYZ:
+        {
+          convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
+          break;
+        }
+        case DT_ADAPTATION_RGB:
+        case DT_ADAPTATION_LAST:
+        {
+          // Convert from RBG to XYZ
+          dot_product(temp_two, RGB_to_XYZ, temp_one);
+          break;
+        }
+      }
+
+      /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+
+      // Clip in XYZ
+      if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
+
       // Convert back to RGB
       dot_product(temp_one, XYZ_to_RGB, temp_two);
 
