@@ -1117,6 +1117,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 
   GList *newlist = NULL;
   int nbnew = 0;
+  int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW && g_list_length(newlist) <= table->thumbs_count)
   {
@@ -1135,7 +1136,36 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     else
     {
       // we create a completly new thumb
-      dt_thumbnail_t *thumb = dt_thumbnail_new(40, 40, nid, nrow, table->overlays, TRUE, table->show_tooltips);
+      // we set its size to the thumb it replace in the list if any otherwise we set it to something > 0 to trigger
+      // draw events
+      int nw = 40;
+      int nh = 40;
+      if(table->mode == DT_CULLING_MODE_PREVIEW)
+      {
+        nw = table->view_width;
+        nh = table->view_height;
+      }
+      else if(g_list_length(table->list) > 0)
+      {
+        dt_thumbnail_t *th_model
+            = (dt_thumbnail_t *)g_list_nth_data(table->list, MIN(pos, g_list_length(table->list) - 1));
+        nw = th_model->width;
+        nh = th_model->height;
+      }
+      else if(g_list_length(newlist) > 0)
+      {
+        dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_last(newlist)->data;
+        nw = th_model->width;
+        nh = th_model->height;
+      }
+      dt_thumbnail_t *thumb;
+      if(table->mode == DT_CULLING_MODE_PREVIEW)
+        thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_PREVIEW,
+                                 table->show_tooltips);
+      else
+        thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_CULLING,
+                                 table->show_tooltips);
+
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
       double aspect_ratio = sqlite3_column_double(stmt, 2);
@@ -1151,10 +1181,11 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     }
     // if it's the offset, we record the imgid
     if(nrow == table->offset) table->offset_imgid = nid;
+    pos++;
   }
 
   // in rare cases, we can have less images than wanted
-  // although there's images before
+  // although there's images before (this shouldn't happen in preview)
   if(table->navigate_inside_selection && g_list_length(newlist) < table->thumbs_count
      && g_list_length(newlist) < _get_selection_count())
   {
@@ -1169,6 +1200,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
     if(stmt != NULL)
     {
+      pos = 0;
       while(sqlite3_step(stmt) == SQLITE_ROW && g_list_length(newlist) <= table->thumbs_count)
       {
         const int nrow = sqlite3_column_int(stmt, 0);
@@ -1186,7 +1218,30 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         else
         {
           // we create a completly new thumb
-          dt_thumbnail_t *thumb = dt_thumbnail_new(10, 10, nid, nrow, table->overlays, TRUE, table->show_tooltips);
+          // we set its size to the thumb it replace in the list if any otherwise we set it to something > 0 to
+          // trigger draw events
+          int nw = 40;
+          int nh = 40;
+          if(g_list_length(table->list) > 0)
+          {
+            dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(table->list)->data;
+            nw = th_model->width;
+            nh = th_model->height;
+          }
+          else if(g_list_length(newlist) > 0)
+          {
+            dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(newlist)->data;
+            nw = th_model->width;
+            nh = th_model->height;
+          }
+          dt_thumbnail_t *thumb;
+          if(table->mode == DT_CULLING_MODE_PREVIEW)
+            thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_PREVIEW,
+                                     table->show_tooltips);
+          else
+            thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_CULLING,
+                                     table->show_tooltips);
+
           thumb->display_focus = table->focus;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
           double aspect_ratio = sqlite3_column_double(stmt, 2);
@@ -1202,6 +1257,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         }
         // if it's the offset, we record the imgid
         if(nrow == table->offset) table->offset_imgid = nid;
+        pos++;
       }
       sqlite3_finalize(stmt);
     }
@@ -1489,8 +1545,11 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     // we add or move the thumb at the right position
     if(!gtk_widget_get_parent(thumb->w_main))
     {
+
       gtk_widget_set_margin_start(thumb->w_image_box, old_margin_x);
       gtk_widget_set_margin_top(thumb->w_image_box, old_margin_y);
+      // and we resize the thumb
+      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
       thumb->zoomx = old_zx;
       thumb->zoomy = old_zy;
@@ -1499,9 +1558,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     else
     {
       gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
+      // and we resize the thumb
+      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
     }
-    // and we resize the thumb
-    dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
 
     // we update the active images list
     darktable.view_manager->active_images
