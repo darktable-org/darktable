@@ -753,8 +753,8 @@ overshoot.right
 #main-histogram .toggle
 {
   border: 1.1px solid alpha(@button_bg, 0.3);
-  min-height: 0.85em;
-  min-width: 0.85em;
+  min-height: 1em;  /* FIXME: what happens if don't set these? -- what is the source */
+  min-width: 1em;
 }
 
 #main-histogram #red_channel_button:checked,

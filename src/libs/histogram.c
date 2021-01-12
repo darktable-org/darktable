@@ -1411,7 +1411,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(button_box, "button_box");
   gtk_widget_set_valign(button_box, GTK_ALIGN_START);
-  gtk_widget_set_halign(button_box, GTK_ALIGN_START);
+  gtk_widget_set_halign(button_box, GTK_ALIGN_END);
   // GtkButtonBox spreads out the icons, so we use GtkBox --
   // homogeneous shouldn't be necessary as icons are equal size, but
   // set it just to show the desired look
