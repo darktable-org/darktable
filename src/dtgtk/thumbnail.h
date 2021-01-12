@@ -45,6 +45,13 @@ typedef enum dt_thumbnail_overlay_t
   DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK
 } dt_thumbnail_overlay_t;
 
+typedef enum dt_thumbnail_container_t
+{
+  DT_THUMBNAIL_CONTAINER_LIGHTTABLE,
+  DT_THUMBNAIL_CONTAINER_CULLING,
+  DT_THUMBNAIL_CONTAINER_PREVIEW
+} dt_thumbnail_container_t;
+
 typedef enum dt_thumbnail_selection_mode_t
 {
   DT_THUMBNAIL_SEL_MODE_NORMAL = 0, // user can change selection with normal mouse click (+CTRL or +SHIFT)
@@ -58,6 +65,7 @@ typedef struct
   int width, height;         // current thumb size (with the background and the border)
   int x, y;                  // current position at screen
   int img_width, img_height; // current image size (can be greater than the image box in case of zoom)
+  dt_thumbnail_container_t container; // type of container of the thumbnail
 
   gboolean mouse_over;
   gboolean selected;
@@ -136,7 +144,7 @@ typedef struct
 } dt_thumbnail_t;
 
 dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
-                                 gboolean zoomable, gboolean tooltip);
+                                 dt_thumbnail_container_t container, gboolean tooltip);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
 GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
 void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force);
