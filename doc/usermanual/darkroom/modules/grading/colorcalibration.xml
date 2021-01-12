@@ -1,0 +1,151 @@
+<!DOCTYPE sect3 PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+    <!ENTITY % darktable_dtd SYSTEM "../../../dtd/darktable.dtd">
+    %darktable_dtd;
+    ]>
+<sect3 status="final" id="color_calibration">
+
+  <title>Color calibration</title>
+
+  <indexterm>
+    <primary>modules</primary>
+    <secondary>color calibration</secondary>
+  </indexterm>
+
+  <indexterm>
+    <primary>color calibration</primary>
+  </indexterm>
+
+  <sect4>
+
+    <title>Overview</title>
+
+    <para>   
+      A fully-featured color-space correction, white balance adjustment
+      and channel mixer. This simple yet powerful module can be used in
+      the following ways:
+
+      <itemizedlist>
+	<listitem><para>
+	  To adjust the white balance (chromatic adaptation), working in tandem
+	  with the [<emphasis>white balance</emphasis>](./white-balance.md)
+	  module. In this case, the _white balance_ module performs an initial white
+	  balance step (which is still required in order for the
+	  [<emphasis>demosaic</emphasis>](./demosaic.md) module to work
+	  effectively). The _color calibration_ module then calculates a more
+	  perceptually-accurate white balance after the input color profile has been applied.	 
+	</para></listitem>
+	
+	<listitem><para>
+	  As a simple RGB channel mixer, adjusting the output R, G and B
+	  channels based on the R, G and B input channels, to perform cross-talk color-grading. 
+	</para></listitem>
+	
+	<listitem><para>
+	  To adjust the color saturation and brightness of the pixels, based on
+	  the relative strength of the R, G and B channels of each pixel.
+	</para></listitem>
+	
+	<listitem><para>
+	  To produce a greyscale output based on the relative strengths of the
+	  R, G and B channels, in a way similar
+	  to the response of black and white film to a light spectrum
+	</para></listitem>
+	
+      </itemizedlist>
+    </para>
+  </sect4>
+
+  <sect4>
+    
+    <title>White Balance in the Chromatic Adaptation Transformation (CAT) tab</title>
+    
+    <para>
+      Chromatic adaptation aims to predict how all surfaces in the scene would look
+      if they had been lit by another illuminant. What we actually want to
+      predict, though, is how those surfaces would have looked if they had been
+      lit by the same illuminant as your monitor. White balance, on the other
+      hand, aims only at ensuring that whites are really whites (R = G = B) and
+      doesn’t really care about the rest of the color range.
+    </para>
+ 
+    <para>
+      Chromatic adaptation is controlled within the Chromatic Adaptation
+      Transformation (CAT) tab of the <emphasis>color calibration</emphasis>
+      module. When used in this way the _white balance_ module only needs
+      to perform a basic white balance operation assuming a D65 illuminant
+      ("camera reference" mode), which is expected by input color profiles.
+      The remainder of the white balance (chromatic adaptation) is then
+      performed by the <emphasis>color calibration</emphasis> module, on top
+      of those corrections performed by <emphasis>white balance</emphasis> and
+      <emphasis>input color profile</emphasis>. The use of custom matrices in
+      the <emphasis>input color profile</emphasis> module is therefore
+      discouraged and the coefficients in the <emphasis>white balance</emphasis>
+      module need to be accurate in order for this module to work in a predictable way.
+    </para>
+
+    <para>
+      The <emphasis>color calibration</emphasis> and <emphasis>white balance</emphasis> modules can be automatically applied to perform chromatic adaptation for new edits by setting the chromatic adaptation workflow option ([preferences > processing > auto-apply chromatic adaptation defaults](../../preferences-settings/processing.md)) to "modern". If you prefer to perform all white balancing within the <emphasis>white balance</emphasis> module, a "legacy" option is also available. Neither option precludes the use of other modules such as [<emphasis>color balance</emphasis>](./color-balance.md) further down the pixel pipeline for creative color grading.
+    </para>
+
+    <para>
+      By default, <emphasis>color calibration</emphasis> performs chromatic adaptation by:
+      <itemizedlist>
+	<listitem><para>
+	  reading the RAW file's Exif data to fetch the scene white balance set
+	  by the camera,
+	</para></listitem>
+	<listitem><para>
+	  adjusting this setting using the camera reference white balance from
+	  the _white balance_ module,
+	</para></listitem>
+	<listitem><para>
+	  further adjusting this setting with the input color profile in use (standard
+	  matrix only).
+	</para></listitem>
+      </itemizedlist>
+    </para>
+
+    <para>
+      The settings used in the <emphasis>white balance</emphasis> and <emphasis>input color profile</emphasis> modules (including any user presets) are ignored when building <emphasis>color calibration</emphasis>'s default settings, since the program cannot trace what has been done in these modules. DNG RAW files are also ignored since they can (but don't have to) interpolate between 2 embedded DNG profiles to perform white balancing, which can affect the settings. For these cases, you will have to configure the settings yourself and use your camera manufacturer's documentation to take the appropriate color correction steps.
+    </para>
+
+    <para>
+      It is also worth noting that, unlike the <emphasis>white balance</emphasis> module, <emphasis>color calibration</emphasis> can be used with [masks](../../darkroom/masking-and-blending/masks/_index.md). This means that you can selectively correct different parts of the image to account for differing light sources.
+    </para>
+
+    <para>
+      To achieve this, create an instance of the <emphasis>color calibration</emphasis> module to perform global adjustments using a mask to exclude those parts of the image that you wish to handle differently. Then create a second instance of the module reusing the mask from the first instance (inverted) using a [raster mask](../../darkroom/masking-and-blending/masks/raster.md).
+    </para>
+  </sect4>
+  <sect4>
+
+    <title>CAT tab workflow</title>
+
+    <para>
+      The default illuminant and color space used by the chromatic adaptation are initialised from the Exif metadata of the RAW file. There are 4 options available in the CAT tab to set these parameters manually:
+      <itemizedlist>
+	<listitem><para>
+	  Use the color-picker (to the right of the color patch) to select a neutral color from the image or, if one is unavailable, select the entire image. In this case, the algorithm finds the average color within the chosen area and sets that color as the illuminant. This method relies on the "grey-world" assumption, which predicts that the average color of a natural scene will be neutral. This method does not work for artificial scenes, for example those with painted surfaces.
+	</para></listitem>
+
+	<listitem><para>
+	  Select <emphasis>(AI) detect from edges</emphasis>, which uses a machine-learning technique to detect the illuminant using the entire image. This algorithm finds the average gradient color over the edges found in the image and sets that color as the illuminant. This method relies on the "grey-edge" assumption, which may fail if large chromatic aberrations are present. As with any edge-detection method, it is sensitive to noise and poorly suited to high-ISO images, but it is very well suited for artificial scenes where no neutral colors are available.
+	</para></listitem>
+
+	<listitem><para>
+	  Select <emphasis>(AI) detect from surfaces</emphasis>, which combines the two previous methods also using the entire image. This algorithm finds the average color within the image, giving greater weight to areas where sharp details are found and colors are strongly correlated. This makes it more immune to noise than the <emphasis>edge</emphasis> variant and more immune to legitimate non-neutral surfaces than the naïve average, but sharp colored textures (like green grass) are likely to make it fail.
+	</para></listitem>
+
+	<listitem><para>
+	  Select <emphasis>as shot in camera</emphasis> to restore the camera defaults and re-read the RAW Exif.
+	</para></listitem>
+      </itemizedlist>
+    </para>
+
+    <para>
+      The color patch shows the color of the currently calculated illuminant projected into sRGB space. The aim of the chromatic adaptation algorithm is to turn this color into pure white, which does not necessarily means shifting the image toward its <emphasis>perceptual</emphasis> opponent color. If the illuminant is properly set, the image will be given the same tint as shown in the color patch when the module is disabled.
+    </para>
+  </sect4>
+
+</sect3>
