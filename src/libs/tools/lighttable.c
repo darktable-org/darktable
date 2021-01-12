@@ -168,8 +168,9 @@ static void _lib_lighttable_set_layout(dt_lib_module_t *self, dt_lighttable_layo
       d->current_zoom = dt_conf_get_int("plugins/lighttable/images_in_row");
     }
 
-    gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC));
-    gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC));
+    gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
+    gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
+    gtk_range_set_value(GTK_RANGE(d->zoom), d->current_zoom);
 
     dt_conf_set_int("plugins/lighttable/layout", layout);
     if(layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
@@ -308,8 +309,8 @@ void gui_init(dt_lib_module_t *self)
                                                                  // fire a value-changed signal when setting
                                                                  // it to 1 => empty text box
 
-  gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC));
-  gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC));
+  gtk_widget_set_sensitive(d->zoom_entry, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
+  gtk_widget_set_sensitive(d->zoom, (d->layout != DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC && !d->fullpreview));
 
   darktable.view_manager->proxy.lighttable.module = self;
   darktable.view_manager->proxy.lighttable.set_zoom = _lib_lighttable_set_zoom;
@@ -333,11 +334,9 @@ static void _set_zoom(dt_lib_module_t *self, int zoom)
   {
     dt_conf_set_int("plugins/lighttable/culling_num_images", zoom);
   }
-  else
-    dt_conf_set_int("plugins/lighttable/images_in_row", zoom);
-
-  if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
+  else if(d->layout == DT_LIGHTTABLE_LAYOUT_FILEMANAGER || d->layout == DT_LIGHTTABLE_LAYOUT_ZOOMABLE)
   {
+    dt_conf_set_int("plugins/lighttable/images_in_row", zoom);
     dt_thumbtable_zoom_changed(dt_ui_thumbtable(darktable.gui->ui), d->current_zoom, zoom);
   }
 }
@@ -366,7 +365,7 @@ static gboolean _lib_lighttable_zoom_entry_changed(GtkWidget *entry, GdkEventKey
     {
       // reset
       int i = 0;
-      if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+      if(d->layout == DT_LIGHTTABLE_LAYOUT_CULLING || d->layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
         i = dt_conf_get_int("plugins/lighttable/culling_num_images");
       else
         i = dt_conf_get_int("plugins/lighttable/images_in_row");
