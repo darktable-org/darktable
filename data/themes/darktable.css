@@ -740,6 +740,10 @@ overshoot.right
 
 /* scope/histogram */
 /* Note that there are some pretty odd #'s here to match the behavior of the legacy scope buttons */
+#scope-draw
+{
+}
+
 #main-histogram #button_box
 {
   margin: 0.5em;   /* spacing between histogram buttons and the edge of histogram */
