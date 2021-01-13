@@ -1703,7 +1703,8 @@ progressbar progress
 
 /* Checkbutton check state */
 #lib-plugin-ui checkbutton check,
-#iop-plugin-ui checkbutton check
+#iop-plugin-ui checkbutton check,
+checkbutton check
 {
   margin: 5px 8px 5px 0;
 }
