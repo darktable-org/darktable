@@ -248,7 +248,7 @@ static gboolean _migrate_schema(dt_database_t *db, int version)
   ////////////////////////////// meta_data
   _SQLITE3_EXEC(db->handle, "CREATE TABLE IF NOT EXISTS main.meta_data (id INTEGER, key INTEGER, value VARCHAR)",
                 NULL, NULL, NULL);
-  _SQLITE3_EXEC(db->handle, "CREATE INDEX IF NOT EXISTS main.metadata_index ON meta_data (id, key, value)", NULL, NULL,
+  _SQLITE3_EXEC(db->handle, "CREATE INDEX IF NOT EXISTS main.metadata_index ON meta_data (id, key)", NULL, NULL,
                 NULL);
   ////////////////////////////// presets
   _SQLITE3_EXEC(db->handle, "CREATE TABLE IF NOT EXISTS main.presets (name VARCHAR, description VARCHAR, "
@@ -1682,7 +1682,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // add second columns to speed up sorting
     TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
         "[init] can't drop history_imgid_index\n");
-    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `num` DESC )",
+    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `operation` )",
         "[init] can't recreate history_imgid_index\n");
 
     TRY_EXEC("DROP INDEX IF EXISTS `images_filename_index`",
@@ -1716,6 +1716,12 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
+    // unique folder names in filmrolls
+    TRY_EXEC("DROP INDEX IF EXISTS `film_rolls_folder_index`",
+        "[init] can't drop film_rolls_folder_index\n");
+    TRY_EXEC("CREATE UNIQUE INDEX `film_rolls_folder_index` ON `film_rolls` (folder)",
+        "[init] can't add unique film_rolls_folder_index\n");
+    
     // add foreign keys for database consistency. ON UPDATE CASCADE since you never know
     // if a future version will change image_id 
     // Unfortunately sqlite does not support adding foreign keys to existing tables
@@ -1736,7 +1742,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       "history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
-      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
         "[init] can't create new images table\n");
       
     TRY_EXEC("UPDATE `images_old` SET group_id=id WHERE group_id NOT IN (SELECT id from `images_old`)",
@@ -1793,7 +1799,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
         "[init] can't drop history_imgid_index\n");
-    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `operation` )",
+    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `num` DESC )",
         "[init] can't recreate history_imgid_index\n");
 
     TRY_EXEC("DROP TABLE `history_old`",
@@ -2211,7 +2217,7 @@ static void _create_library_schema(dt_database_t *db)
                //                        case to _upgrade_library_schema_step when adding this!
                "folder VARCHAR(1024) NOT NULL)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
   ////////////////////////////// images
   sqlite3_exec(
       db->handle,
@@ -2230,7 +2236,7 @@ static void _create_library_schema(dt_database_t *db)
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
       "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
       "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
-      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
       NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id, id)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id, filename)", NULL, NULL, NULL);
@@ -2277,7 +2283,7 @@ static void _create_library_schema(dt_database_t *db)
   ////////////////////////////// meta_data
   sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR, "
                "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key, value)", NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR, "
                 "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
@@ -2411,7 +2417,7 @@ static void _sanitize_db(dt_database_t *db)
 
   // make sure film_roll folders don't end in "/", that will result in empty entries in the collect module
   sqlite3_exec(db->handle,
-               "UPDATE main.film_rolls SET folder = substr(folder, 1, length(folder) - 1) WHERE folder LIKE '%/'",
+               "UPDATE main.film_rolls SET folder = RTRIM(folder, '/') WHERE folder != RTRIM(folder, '/')",
                NULL, NULL, NULL);
 
 }
@@ -2911,6 +2917,7 @@ start:
   sqlite3_exec(db->handle, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA page_size = 32768", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
   /* now that we got functional databases that are locked for us we can make sure that the schema is set up */
 
