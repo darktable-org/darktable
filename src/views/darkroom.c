@@ -2169,7 +2169,7 @@ void gui_init(dt_view_t *self)
   dt_view_manager_view_toolbox_add(darktable.view_manager, dev->second_window.button, DT_VIEW_DARKROOM);
 
   const int dialog_width       = 350;
-  const int large_dialog_width = 450; // for dialog with profile names
+  const int large_dialog_width = 550; // for dialog with profile names
 
   /* Enable ISO 12646-compliant colour assessment conditions */
   dev->iso_12646.button
@@ -2202,7 +2202,7 @@ void gui_init(dt_view_t *self)
     g_object_set(G_OBJECT(dev->rawoverexposed.floating_window), "transitions-enabled", FALSE, NULL);
 #endif
 
-    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+    GtkWidget *vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
     gtk_container_add(GTK_CONTAINER(dev->rawoverexposed.floating_window), vbox);
 
     /** let's fill the encapsulating widgets */
@@ -2373,16 +2373,14 @@ void gui_init(dt_view_t *self)
     const int force_lcms2 = dt_conf_get_bool("plugins/lighttable/export/force_lcms2");
 
     GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(display_intent, NULL, N_("display intent"));
-    gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+    dt_bauhaus_widget_set_label(display_intent, NULL, N_("intent"));
     dt_bauhaus_combobox_add(display_intent, _("perceptual"));
     dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
     dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
     dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
     GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(display2_intent, NULL, N_("preview display intent"));
-    gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
+    dt_bauhaus_widget_set_label(display2_intent, NULL, N_("intent"));
     dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
     dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
     dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
@@ -2400,13 +2398,26 @@ void gui_init(dt_view_t *self)
     GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
     GtkWidget *softproof_profile = dt_bauhaus_combobox_new(NULL);
     GtkWidget *histogram_profile = dt_bauhaus_combobox_new(NULL);
-    dt_bauhaus_widget_set_label(softproof_profile, NULL, N_("softproof profile"));
+
     dt_bauhaus_widget_set_label(display_profile, NULL, N_("display profile"));
     dt_bauhaus_widget_set_label(display2_profile, NULL, N_("preview display profile"));
+    dt_bauhaus_widget_set_label(softproof_profile, NULL, N_("softproof profile"));
     dt_bauhaus_widget_set_label(histogram_profile, NULL, N_("histogram profile"));
-    gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
+
+    dt_bauhaus_combobox_set_entries_ellipsis(display_profile, PANGO_ELLIPSIZE_MIDDLE);
+    dt_bauhaus_combobox_set_entries_ellipsis(display2_profile, PANGO_ELLIPSIZE_MIDDLE);
+    dt_bauhaus_combobox_set_entries_ellipsis(softproof_profile, PANGO_ELLIPSIZE_MIDDLE);
+    dt_bauhaus_combobox_set_entries_ellipsis(histogram_profile, PANGO_ELLIPSIZE_MIDDLE);
+
     gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+
     gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
+
+    gtk_box_pack_start(GTK_BOX(vbox), softproof_profile, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), histogram_profile, TRUE, TRUE, 0);
 
     GList *l = darktable.color_profiles->profiles;
