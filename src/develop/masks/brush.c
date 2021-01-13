@@ -1026,9 +1026,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
   {
     if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
+      const float amount = up ? 0.97f : 1.03f;
       float masks_hardness;
-      float amount = 1.03f;
-      if(up) amount = 0.97f;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
@@ -1051,9 +1050,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     }
     else if(state == 0)
     {
+      const float amount = up ? 0.97f : 1.03f;
       float masks_border;
-      float amount = 1.03f;
-      if(up) amount = 0.97f;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
@@ -1097,8 +1095,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
-        float amount = 1.03f;
-        if(up) amount = 0.97f;
+        const float amount = up ? 0.97f : 1.03f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
         for(int k = 0; k < nb; k++)
         {
@@ -1128,8 +1125,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       }
       else
       {
-        float amount = 1.03f;
-        if(up) amount = 0.97f;
+        const float amount = up ? 0.97f : 1.03f;
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
