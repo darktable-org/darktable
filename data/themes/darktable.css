@@ -746,12 +746,12 @@ overshoot.right
 
 #main-histogram #button_box
 {
-  margin: 0.5em;   /* spacing between histogram buttons and the edge of histogram */
+  margin-top: 0.5em;   /* spacing between histogram buttons and top of scope */
 }
 
 #main-histogram #button_box > *
 {
-  margin-left:.5em;  /* spacing between histogram button box widgets */
+  margin-right: 0.5em;  /* spacing between histogram button box widgets, also provides right margin for buttons */
 }
 
 #main-histogram .toggle
