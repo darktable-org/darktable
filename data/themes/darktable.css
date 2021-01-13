@@ -775,32 +775,15 @@ dialog scrolledwindow
   margin: 0;
 }
 
-frame#import_metadata
+#left #lib-plugin-ui #import_metadata entry
 {
-  margin: 6px 6px 0px 6px;
-  padding: 0px 4px;
-}
-
-frame#import_metadata title *
-{
-  font-weight: bold;
-}
-
-frame#import_metadata label
-{
-  margin: 4px 3px 4px 2px;
+  margin: 1px 1px;
   padding: 0px;
 }
 
-frame#import_metadata entry
+#left #lib-plugin-ui #import_metadata checkbutton check
 {
-  margin: 2px 3px 2px 2px;
-  padding: 0px;
-}
-
-frame#import_metadata checkbutton
-{
-  margin: 0px;
+  margin: 1px;
   padding: 0px;
 }
 
@@ -1720,8 +1703,7 @@ progressbar progress
 
 /* Checkbutton check state */
 #lib-plugin-ui checkbutton check,
-#iop-plugin-ui checkbutton check,
-checkbutton:not(#import_metadata) check
+#iop-plugin-ui checkbutton check
 {
   margin: 5px 8px 5px 0;
 }
