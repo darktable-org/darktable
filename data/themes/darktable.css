@@ -2706,3 +2706,9 @@ spinbutton>button
 {
   margin: 0 0.2em;
 }
+
+.active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
+{
+    font-weight: bold;
+}
+

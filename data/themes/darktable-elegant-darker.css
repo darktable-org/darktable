@@ -115,7 +115,3 @@ tooltip label,
                   sans-serif;
 }
 
-.active-menu-item * /* this is optional, omitting it will make the selected menu item slightly less visible */
-{
-    font-weight: bold;
-}
