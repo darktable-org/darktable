@@ -666,6 +666,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
           _insert_before(iop_order_list, "ashift", "cacorrectrgb");
           _insert_before(iop_order_list, "graduatednd", "crop");
           _insert_before(iop_order_list, "channelmixerrgb", "diffuse");
+          _insert_before(iop_order_list, "filmic", "sigmoid");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
