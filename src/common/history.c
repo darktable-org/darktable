@@ -1246,7 +1246,6 @@ int dt_history_compress_on_list(const GList *imgs)
 
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
 {
-  dt_lock_image(imgid);
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
 
@@ -1258,7 +1257,6 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
   if (sqlite3_step(stmt) == SQLITE_ROW) result = TRUE;
   sqlite3_finalize(stmt);
 
-  dt_unlock_image(imgid);
   return result;
 }
 
