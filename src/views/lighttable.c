@@ -1361,7 +1361,7 @@ void gui_init(dt_view_t *self)
   // and the popup window
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
-  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), 350, -1);
+  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), 550, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
 #endif
@@ -1378,16 +1378,14 @@ void gui_init(dt_view_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display_intent, NULL, N_("display intent"));
-  gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(display_intent, NULL, N_("intent"));
   dt_bauhaus_combobox_add(display_intent, _("perceptual"));
   dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
   GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display2_intent, NULL, N_("preview display intent"));
-  gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(display2_intent, NULL, N_("intent"));
   dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
   dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
@@ -1395,11 +1393,16 @@ void gui_init(dt_view_t *self)
 
   GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_profile, NULL, N_("display profile"));
-  gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
 
   GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display2_profile, NULL, N_("preview display profile"));
+
+  // pack entries
+  gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
 
   for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
   {
