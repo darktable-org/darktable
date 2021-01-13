@@ -25,6 +25,8 @@ MAKE_TASKS=-1
 ADDRESS_SANITIZER=0
 DO_CLEAN_BUILD=0
 DO_CLEAN_INSTALL=0
+MANIFEST_FILE="$BUILD_DIR/install_manifest.txt"
+FORCE_CLEAN=0
 DO_CONFIG=1
 DO_BUILD=1
 DO_INSTALL=0
@@ -62,22 +64,15 @@ parse_args()
 		--clean-build)
 			DO_CLEAN_BUILD=1
 			;;
-		--fclean-build)
-			DO_CLEAN_BUILD=2
-			;;
 		--clean-install)
 			DO_CLEAN_INSTALL=1
-			;;
-		--fclean-install)
-			DO_CLEAN_INSTALL=2
 			;;
 		--clean-all)
 			DO_CLEAN_BUILD=1
 			DO_CLEAN_INSTALL=1
 			;;
-		--fclean-all)
-			DO_CLEAN_BUILD=2
-			DO_CLEAN_INSTALL=2
+		-f|--force)
+			FORCE_CLEAN=1
 			;;
 		--prefix)
 			INSTALL_PREFIX="$2"
@@ -274,13 +269,13 @@ cmake_boolean_option()
 
 clean()
 {
+	local force=$1
 	local path_to_clean=$2
 	local option="-I"
-	local force=$1
 
 	echo
 	log warn "Cleaning directory [$path_to_clean]: it will erase all the files in this path"
-	[ $force -eq 2 ] && option="-f"
+	[ $force -eq 1 ] && option="-f"
 
 	rm -r "$option" "$path_to_clean" || log err "Failed to remove [$path_to_clean]"
 }
@@ -327,14 +322,25 @@ EOF
 # ---------------------------------------------------------------------------
 # Let's clean some things
 # ---------------------------------------------------------------------------
+if [ $DO_CLEAN_INSTALL -gt 0 ] ; then
+	log info "Cleaning installation directory from $MANIFEST_FILE"
+	if [ -f $MANIFEST_FILE ]; then
+		for f in $(cat $MANIFEST_FILE); do
+			if [ -f "$f" ]; then
+				rm "$f" && log info "Removed: $f"
+			else
+				log warn "File not found: can't remove $f"
+			fi
+		done
+	else
+		log err "File not found: $MANIFEST_FILE"
+	fi
+fi
 
 if [ $DO_CLEAN_BUILD -gt 0 ] ; then
-	clean $DO_CLEAN_BUILD "$BUILD_DIR"
+	clean $FORCE_CLEAN "$BUILD_DIR"
 fi
 
-if [ $DO_CLEAN_INSTALL -gt 0 ] ; then
-	clean $DO_CLEAN_INSTALL "$INSTALL_PREFIX"
-fi
 
 # ---------------------------------------------------------------------------
 # CMake
