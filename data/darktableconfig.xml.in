@@ -661,14 +661,14 @@
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>ignore JPEG images when importing film rolls</shortdescription>
+    <shortdescription>ignore JPEG images</shortdescription>
     <longdescription>when having raw+JPEG images together in one directory it makes no sense to import both. with this flag one can ignore all JPEGs found.</longdescription>
   </dtconfig>
   <dtconfig>
     <name>ui_last/import_apply_metadata</name>
     <type>bool</type>
     <default>false</default>
-    <shortdescription>apply metadata on import</shortdescription>
+    <shortdescription>apply metadata</shortdescription>
     <longdescription>apply some metadata to all newly imported images.</longdescription>
   </dtconfig>
   <dtconfig>
@@ -717,7 +717,7 @@
     <name>ui_last/import_initial_rating</name>
     <type min="0" max="5">int</type>
     <default>1</default>
-    <shortdescription>initial import rating</shortdescription>
+    <shortdescription>initial rating</shortdescription>
     <longdescription>initial star rating for all images when importing a filmroll</longdescription>
   </dtconfig>
   <dtconfig>
