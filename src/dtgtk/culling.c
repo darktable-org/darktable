@@ -684,7 +684,7 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
 
   // if we are in dynamic mode, zoom = selection count
   if(table->mode == DT_CULLING_MODE_CULLING
-     && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC)
+     && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     sqlite3_stmt *stmt;
     int sel_count = 0;
@@ -889,7 +889,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
 
   const gboolean culling_dynamic
       = (table->mode == DT_CULLING_MODE_CULLING
-         && dt_view_lighttable_get_culling_zoom_mode(darktable.view_manager) == DT_LIGHTTABLE_ZOOM_DYNAMIC);
+         && dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC);
 
   // get first id
   sqlite3_stmt *stmt;

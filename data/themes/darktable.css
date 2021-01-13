@@ -2716,3 +2716,9 @@ spinbutton>button
   color: @bauhaus_fg_hover;
   background-color: rgba(20, 20, 20, 0.5);
 }
+
+/* lighttable toolbox */
+#lighttable_layouts_box *
+{
+  margin: 0 0.2em;
+}
