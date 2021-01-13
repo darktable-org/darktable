@@ -880,12 +880,14 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     // FIXME: is this enough to handle cursor change, don't need drawable to detect enter?
     if(prior_highlight != d->highlight)
     {
+#if 0
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT ||
          d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
         // FIXME: should really use named cursors, and this should be "grab" or "grabbing" depending on whether button is down
         dt_control_change_cursor(GDK_HAND1);
       else
         dt_control_change_cursor(GDK_LEFT_PTR);
+#endif
       // FIXME: this is right, only updates drawable -- make sure the other code is similarly ok and doesn't touch "self->widget" unnecessarily
       dt_control_queue_redraw_widget(widget);
     }
@@ -1153,32 +1155,38 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
 static gboolean _lib_histogram_button_release_callback(GtkWidget *widget, GdkEventButton *event,
                                                        gpointer user_data)
 {
+  // FIXME: just pass in dt_lib_histogram_t data
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   // FIXME: if grab pointer when dragging, should ungrab the pointer here and turn the cursor from "grabbing" to "grab" if still are over the widget
   d->dragging = FALSE;
+  //dt_control_change_cursor(GDK_LEFT_PTR);
   return TRUE;
 }
 
 static gboolean _lib_histogram_drawable_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                               gpointer user_data)
 {
-  // FIXME: do need this? does motion event take care of this?
-  // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
-  //dt_control_change_cursor(GDK_HAND1);
+  // FIXME: don't need to pass in any user_data
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if((cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(darktable.develop))
+  {
+    // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
+    dt_control_change_cursor(GDK_HAND1);
+  }
   return TRUE;
 }
 
 static gboolean _lib_histogram_drawable_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                               gpointer user_data)
 {
+  // FIXME: just pass in dt_lib_histogram_t data
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  // FIXME: if grab pointer when dragging, should not turn off dragging here
+  // FIXME: if grab pointer when dragging, should not turn off dragging here or change cursor
   d->dragging = FALSE;
   d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
-  // FIXME: need to unset cursor here if not dragging?
-  //dt_control_change_cursor(GDK_LEFT_PTR);
+  dt_control_change_cursor(GDK_LEFT_PTR);
   // FIXME: clears drag area highlights -- change to hiding them if they're a separate widget -- but probably best that the drawable essentially acts as its own widget -- but what happens if drag over the buttons, it'll lose the drag, unless it is grabbing mouse events
   // FIXME: be sure to redraw just the drawable -- not whole widget -- if are outside widget (and not dragging)
   dt_control_queue_redraw_widget(widget);
@@ -1192,7 +1200,7 @@ static gboolean _lib_histogram_eventbox_enter_notify_callback(GtkWidget *widget,
   const dt_lib_histogram_t *d = self->data;
   // FIXME: just pass in d->button_box
   // FIXME: show or show all?
-  // FIXME: can use CSS to show an element when mouse over a different element?
+  // FIXME: do this here, or when motion in drawable? -- we may need to do this here, so when enter view with mouse over histogram it is active
   gtk_widget_show(d->button_box);
   return TRUE;
 }
@@ -1203,7 +1211,6 @@ static gboolean _lib_histogram_eventbox_leave_notify_callback(GtkWidget *widget,
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   // FIXME: just pass in d->button_box
-  // FIXME: can use CSS to show an element when mouse leaves a different element?
   gtk_widget_hide(d->button_box);
   return TRUE;
 }
@@ -1223,7 +1230,6 @@ static gboolean _lib_histogram_button_enter_notify_callback(GtkWidget *widget, G
 static gboolean _lib_histogram_button_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                               gpointer user_data)
 {
-  // FIXME: can use CSS to hide/show buttonbox?
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   // FIXME: just pass in d->button_box
@@ -1377,9 +1383,13 @@ void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct
     DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_lib_histogram_preview_updated_callback), self);
   }
-  // hack: setting this on gui_init doesn't work
+  // hack: setting these on gui_init doesn't work
   gtk_stack_set_visible_child_name(GTK_STACK(d->mode_stack),
                                    d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? "waveform" : "histogram");
+  // button box should be hidden when enter view, unless mouse is over
+  // histogram, in which case gtk kindly generates enter events
+  gtk_widget_hide(d->button_box);
+
   // FIXME: set histogram data to blank if enter tether with no active image
 }
 
@@ -1484,7 +1494,7 @@ void gui_init(dt_lib_module_t *self)
 
   // a row of buttons
   // FIXME: if button_box widget is only stored globally to make it show/hide when enter/leave scope, then just pass it as a parameter to the enter/leave functions
-  // FIXME: button box margins "obscure" events to drawable below -- place button box in another widget which provides these margins and doesn't catch events
+  // FIXME: button box margins "obscure" events to drawable below -- place button box in another widget which provides these margins and doesn't catch events, or is it good that entire top-right of histogram is controls and there aren't thin ribbons of drawable receiving events?
   d->button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_widget_set_name(d->button_box, "button_box");
   gtk_widget_set_valign(d->button_box, GTK_ALIGN_START);
@@ -1568,11 +1578,14 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: could use a GtkActionBar for the buttons at the top?
 
   // The main widget is an overlay which has no window, and hence
-  // can't catch events. We need something on top to catch events. The
-  // drawable is below the buttons, and hence won't catch events for
-  // the buttons.
+  // can't catch events. We need something on top to catch events to
+  // show/hide the buttons. The drawable is below the buttons, and
+  // hence won't catch motion events for the buttons, and gets a leave
+  // event when the cursor moves over the buttons.
+  // FIXME: solve this by making the button box the size of the drawable, but have it not catch any events except enter/leave?
   GtkWidget *eventbox = gtk_event_box_new();
-  // FIXME: should make event box contain the overlay, or just be a top layer in the overlay?
+  // FIXME: should eventbox only contain the buttonbox, if its only job is to show the buttonbox?
+  // FIXME: can just make buttonbox the size of the widget with a CSS hover property to make it disappear (not opaque, as it would still be sensitive) when mouse is over it?
   gtk_container_add(GTK_CONTAINER(eventbox), overlay);
   //gtk_event_box_set_above_child(GTK_EVENT_BOX(self->widget), TRUE);
   //gtk_event_box_set_visible_window(GTK_EVENT_BOX(self->widget), FALSE);
@@ -1612,9 +1625,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->scope_draw), "configure-event",
                    G_CALLBACK(_lib_histogram_configure_callback), self);
 #endif
-
-  // FIXME: button box should be hidden when enter view, unless mouse is over histogram
-  gtk_widget_hide(d->button_box);
 
   // FIXME: do we even need to save self->widget? most references are to the drawable...
   // FIXME: how does reference counting of widgets work? do we need to dealloc or garbage collect them?
