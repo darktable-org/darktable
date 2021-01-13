@@ -66,6 +66,13 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
   // add a preview when creating a circle
   if(gui->creation)
   {
+    float masks_size = 0.0f;
+
+    if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
+      masks_size = dt_conf_get_float("plugins/darkroom/spots/circle_size");
+    else
+      masks_size = dt_conf_get_float("plugins/darkroom/masks/circle/size");
+
     if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
       float masks_border = 0.0f;
@@ -84,17 +91,10 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
         dt_conf_set_float("plugins/darkroom/spots/circle_border", masks_border);
       else
         dt_conf_set_float("plugins/darkroom/masks/circle/border", masks_border);
-      dt_toast_log(_("feather size: %3.2f%%"), masks_border*100.0f);
+      dt_toast_log(_("feather size: %3.2f%%"), (masks_border / masks_size)*100.0f);
     }
     else if(state == 0)
     {
-      float masks_size = 0.0f;
-
-      if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
-        masks_size = dt_conf_get_float("plugins/darkroom/spots/circle_size");
-      else
-        masks_size = dt_conf_get_float("plugins/darkroom/masks/circle/size");
-
       if(up && masks_size > 0.001f)
         masks_size *= 0.97f;
       else if(!up && masks_size < max_mask_size)
@@ -141,7 +141,7 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
           dt_conf_set_float("plugins/darkroom/spots/circle_border", circle->border);
         else
           dt_conf_set_float("plugins/darkroom/masks/circle/border", circle->border);
-        dt_toast_log(_("feather size: %3.2f%%"), circle->border*100.0f);
+        dt_toast_log(_("feather size: %3.2f%%"), (circle->border/circle->radius)*100.0f);
       }
       else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
