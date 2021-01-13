@@ -28,10 +28,10 @@
       <itemizedlist>
 	<listitem><para>
 	  To adjust the white balance (chromatic adaptation), working in tandem
-	  with the [<emphasis>white balance</emphasis>](./white-balance.md)
-	  module. In this case, the _white balance_ module performs an initial white
+	  with the <link linkend="whitebalance"><emphasis>white balance</emphasis></link>
+	  module. In this case, the <emphasis>white balance</emphasis> module performs an initial white
 	  balance step (which is still required in order for the
-	  [<emphasis>demosaic</emphasis>](./demosaic.md) module to work
+	  <link linkend="demosaic"><emphasis>demosaic</emphasis></link> module to work
 	  effectively). The _color calibration_ module then calculates a more
 	  perceptually-accurate white balance after the input color profile has been applied.	 
 	</para></listitem>
@@ -145,6 +145,29 @@
 
     <para>
       The color patch shows the color of the currently calculated illuminant projected into sRGB space. The aim of the chromatic adaptation algorithm is to turn this color into pure white, which does not necessarily means shifting the image toward its <emphasis>perceptual</emphasis> opponent color. If the illuminant is properly set, the image will be given the same tint as shown in the color patch when the module is disabled.
+    </para>
+
+    <para>
+      To the left of the color patch is the <emphasis>CCT</emphasis> (correlated
+      color temperature) approximation. This is the closest temperature, in
+      kelvin, to the illuminant currently in use. In most image processing
+      software it is customary to set the white balance using a combination of
+      temperature and tint. However, when the illuminant is far from daylight,
+      the CCT becomes inaccurate and irrelevant, and the CIE (International
+      Commission on Illumination) discourages its use in such conditions. The
+      CCT reading informs you of the closest CCT match found:
+      <itemizedlist>
+	<listitem><para>
+	  When the CCT is followed by <emphasis>(daylight)</emphasis>, this means that the current illuminant is close to an ideal daylight spectrum ± 0.5 %, and the CCT figure is therefore meaningful.
+	</para></listitem>
+	<listitem><para>
+	  When the CCT is followed by <emphasis>(black  body)</emphasis>, this means that the current illuminant is close to an ideal black body (Planckian) spectrum ± 0.5 %, and the CCT figure is therfore meaningful.
+	</para></listitem>
+	<listitem><para>
+	  When the CCT is followed by <emphasis>(invalid)</emphasis>, this means that the CCT figure is meaningless and most likely wrong, because we are too far from either a daylight or a black body light spectrum.
+	</para></listitem>
+      </itemizedlist>
+      
     </para>
   </sect4>
 
