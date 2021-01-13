@@ -135,7 +135,7 @@ void gui_init(dt_lib_module_t *self)
               height = DT_PIXEL_APPLY_DPI(png_height) * darktable.gui->ppd;
     const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_ARGB32, width);
 
-    d->image_buffer = (guint8 *)calloc(stride * height, sizeof(guint8));
+    d->image_buffer = (guint8 *)calloc((size_t)stride * height, sizeof(guint8));
     d->image
         = dt_cairo_image_surface_create_for_data(d->image_buffer, CAIRO_FORMAT_ARGB32, width, height, stride);
     if(cairo_surface_status(d->image) != CAIRO_STATUS_SUCCESS)
@@ -179,8 +179,14 @@ void gui_cleanup(dt_lib_module_t *self)
 {
   dt_lib_darktable_t *d = (dt_lib_darktable_t *)self->data;
   cairo_surface_destroy(d->image);
-  cairo_surface_destroy(d->text);
   free(d->image_buffer);
+
+  // don't leak mem via text logo surface data
+  guint8 *text_img_buffer = NULL;
+  if(d->text)
+    text_img_buffer = cairo_image_surface_get_data(d->text);
+  cairo_surface_destroy(d->text);
+  free(text_img_buffer);
   g_free(self->data);
   self->data = NULL;
 }

@@ -489,11 +489,6 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   return module_added;
 }
 
-static inline gboolean _is_module_to_skip(const int flags)
-{
-  return flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN);
-}
-
 static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_imgid, GList *ops, const gboolean copy_full)
 {
   GList *modules_used = NULL;
@@ -566,7 +561,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
          && !(mod_src->default_enabled && mod_src->enabled
               && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
               && !dt_iop_is_hidden(mod_src))
-         && (copy_full || !_is_module_to_skip(mod_src->flags()))
+         && (copy_full || !dt_history_module_skip_copy(mod_src->flags()))
         )
       {
         mod_list = g_list_append(mod_list, mod_src);
@@ -645,7 +640,7 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
       {
         dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
 
-        if(_is_module_to_skip(module->flags()))
+        if(dt_history_module_skip_copy(module->flags()))
         {
           if(skip_modules)
             skip_modules = dt_util_dstrcat(skip_modules, ",");
@@ -1299,10 +1294,13 @@ GList *dt_history_duplicate(GList *hist)
       }
     }
 
-    new->params = malloc(params_size);
-    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    if(params_size > 0)
+    {
+      new->params = malloc(params_size);
+      memcpy(new->params, old->params, params_size);
+    }
 
-    memcpy(new->params, old->params, params_size);
+    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
     if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
@@ -1560,7 +1558,7 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
   sqlite3_finalize(stmt);
 }
 
-const gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
+gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
 {
   gboolean status = FALSE;
   if(imgid == -1) return status;
@@ -1595,7 +1593,7 @@ void dt_history_hash_set_mipmap(const int32_t imgid)
   sqlite3_finalize(stmt);
 }
 
-const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
+dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
 {
   dt_history_hash_t status = 0;
   if(imgid == -1) return status;

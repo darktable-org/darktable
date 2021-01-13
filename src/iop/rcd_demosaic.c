@@ -64,7 +64,8 @@
 
 #define FCRCD(row, col) (cfarray[(((row) & 1)<<1) | ((col) & 1)])
 
-#define RCD_BORDER 9          // must be at least 9 to avoid tile-overlap errors
+#define RCD_BORDER 9          // avoid tile-overlap errors
+#define RCD_MARGIN 5          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (RCD_TILESIZE - 2 * RCD_BORDER)
 #define w1 RCD_TILESIZE
 #define w2 (2 * RCD_TILESIZE)
@@ -369,7 +370,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
           }
           if(col < colEnd)
           {
-            cfa[indx]   = rgb[c0][indx]   = safe_in(in[indx], revscaler);
+            cfa[indx]   = rgb[c0][indx]   = safe_in(in[in_indx], revscaler);
           }
         }
 
@@ -590,16 +591,22 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
               const float H_Est = (E_Grad * W_Est + W_Grad * E_Est) / (E_Grad + W_Grad);
 
               // R@G and B@G interpolation
-              rgb[c][indx] = rgb1 + intp(VH_Disc, V_Est, H_Est);
+//            rgb[c][indx] = rgb1 + (1.f - VH_Disc) * V_Est + VH_Disc * H_Est;
+              rgb[c][indx] = rgb1 + intp(VH_Disc, H_Est, V_Est);
             }
           }
         }
-        for(int row = rowStart + RCD_BORDER; row < rowEnd - RCD_BORDER; row++)
+          
+        // For the outermost tiles in all directions we can use a smaller border margin
+        const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? RCD_MARGIN : RCD_BORDER);
+        const int first_horizontal = colStart + ((tile_horizontal == 0) ? RCD_MARGIN : RCD_BORDER);
+        const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? RCD_MARGIN : RCD_BORDER);
+        for(int row = rowStart + ((tile_vertical == 0) ? RCD_MARGIN : RCD_BORDER); row < last_vertical; row++)
         {
-          int col = colStart + RCD_BORDER;
+          int col = first_horizontal;
           int o_idx = (row * width + col) * 4;
           int idx = (row - rowStart) * RCD_TILESIZE + col - colStart;
-          for(; col < colEnd - RCD_BORDER; col++, o_idx += 4, idx++)
+          for(; col < last_horizontal; col++, o_idx += 4, idx++)
           {
             out[o_idx]   = scaler * fmaxf(0.0f, rgb[0][idx]);
             out[o_idx+1] = scaler * fmaxf(0.0f, rgb[1][idx]);
@@ -609,14 +616,13 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         }
       }
     }
-
     dt_free_align(cfa);
     dt_free_align(rgb);
     dt_free_align(VH_Dir);
     dt_free_align(PQ_Dir);
   }
 
-  rcd_border_interpolate(out, in, cfarray, width, height, RCD_BORDER, scaler);
+  rcd_border_interpolate(out, in, cfarray, width, height, RCD_MARGIN, scaler);
 }
 
 #ifdef __GNUC__
@@ -625,6 +631,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 
 #undef FCRCD
 #undef RCD_BORDER
+#undef RCD_MARGIN
 #undef RCD_TILEVALID
 #undef w1
 #undef w2

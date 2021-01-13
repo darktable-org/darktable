@@ -131,11 +131,12 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   dt_solving_strategy_t optimization;
   float safety_margin;
 
-  double homography[9*9];   // the perspective correction matrix
-  gboolean run_profile;     // order a profiling at next pipeline recompute
-  gboolean run_validation;  // order a profile validation at next pipeline recompute
-  gboolean profile_ready;   // notify that a profile is ready to be applied
-  gboolean checker_ready;   // notify that a checker bounding box is ready to be used
+  double homography[9*9];          // the perspective correction matrix
+  double inverse_homography[9*9];  // The inverse perspective correction matrix
+  gboolean run_profile;            // order a profiling at next pipeline recompute
+  gboolean run_validation;         // order a profile validation at next pipeline recompute
+  gboolean profile_ready;          // notify that a profile is ready to be applied
+  gboolean checker_ready;          // notify that a checker bounding box is ready to be used
   float mix[3][4];
 
   GtkWidget *start_profiling;
@@ -578,7 +579,8 @@ static inline void loop_switch(const float *const restrict in, float *const rest
 
     for(size_t c = 0; c < 3; c++)
       temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
-    float Y = 1.f;
+
+    /* WE START IN PIPELINE RGB */
 
     switch(kind)
     {
@@ -586,14 +588,20 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
-        // Do white balance in LMS
-        downscale_vector(temp_one, Y);
-          convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        // Convert to LMS
+        convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        {
+          // Do white balance
+          downscale_vector(temp_two, Y);
             bradford_adapt_D50(temp_two, illuminant, p, TRUE, temp_one);
-          convert_bradford_LMS_to_XYZ(temp_one, temp_two);
-        upscale_vector(temp_two, Y);
+          upscale_vector(temp_one, Y);
+
+          // Compute the 3D mix - this is a rotation + homothety of the vector base
+          dot_product(temp_one, MIX, temp_two);
+        }
+        convert_bradford_LMS_to_XYZ(temp_two, temp_one);
 
         break;
       }
@@ -601,14 +609,20 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
-        // Do white balance in LMS
-        downscale_vector(temp_one, Y);
-          convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        // Convert to LMS
+        convert_XYZ_to_bradford_LMS(temp_one, temp_two);
+        {
+          // Do white balance
+          downscale_vector(temp_two, Y);
             bradford_adapt_D50(temp_two, illuminant, p, FALSE, temp_one);
-          convert_bradford_LMS_to_XYZ(temp_one, temp_two);
-        upscale_vector(temp_two, Y);
+          upscale_vector(temp_one, Y);
+
+          // Compute the 3D mix - this is a rotation + homothety of the vector base
+          dot_product(temp_one, MIX, temp_two);
+        }
+        convert_bradford_LMS_to_XYZ(temp_two, temp_one);
 
         break;
       }
@@ -616,14 +630,20 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
-        // Do white balance in LMS
-        downscale_vector(temp_one, Y);
-          convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
+        // Convert to LMS
+        convert_XYZ_to_CAT16_LMS(temp_one, temp_two);
+        {
+          // Do white balance
+          downscale_vector(temp_two, Y);
             CAT16_adapt_D50(temp_two, illuminant, 1.0f, TRUE, temp_one); // force full-adaptation
-          convert_CAT16_LMS_to_XYZ(temp_one, temp_two);
-        upscale_vector(temp_two, Y);
+          upscale_vector(temp_one, Y);
+
+          // Compute the 3D mix - this is a rotation + homothety of the vector base
+          dot_product(temp_one, MIX, temp_two);
+        }
+        convert_CAT16_LMS_to_XYZ(temp_two, temp_one);
 
         break;
       }
@@ -631,34 +651,60 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       {
         // Convert from RGB to XYZ
         dot_product(temp_two, RGB_to_XYZ, temp_one);
-        Y = temp_one[1];
+        const float Y = temp_one[1];
 
         // Do white balance in XYZ
         downscale_vector(temp_one, Y);
           XYZ_adapt_D50(temp_one, illuminant, temp_two);
         upscale_vector(temp_two, Y);
 
+        // Compute the 3D mix in XYZ - this is a rotation + homothety of the vector base
+        dot_product(temp_two, MIX, temp_one);
+
         break;
       }
       case DT_ADAPTATION_RGB:
       case DT_ADAPTATION_LAST:
       {
-        // Convert from RGB to XYZ
-        dot_product(temp_two, RGB_to_XYZ, temp_one);
-        for(size_t c = 0; c < 3; ++c) temp_two[c] = temp_one[c];
         // No white balance.
+
+        // Compute the 3D mix in RGB - this is a rotation + homothety of the vector base
+        dot_product(temp_two, MIX, temp_one);
+
+        // Convert from RGB to XYZ
+        dot_product(temp_one, RGB_to_XYZ, temp_two);
+
+        for(size_t c = 0; c < 3; ++c) temp_one[c] = temp_two[c];
         break;
       }
     }
 
-    // Compute the 3D mix in LMS - this is a rotation + homothety of the vector base
-    convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
-      dot_product(temp_one, MIX, temp_two);
-    convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
+    /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
     // Gamut mapping happens in XYZ space no matter what
     gamut_mapping(temp_one, gamut, clip, temp_two);
-    convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
+
+    // convert to LMS, XYZ or pipeline RGB
+    switch(kind)
+    {
+      case DT_ADAPTATION_FULL_BRADFORD:
+      case DT_ADAPTATION_LINEAR_BRADFORD:
+      case DT_ADAPTATION_CAT16:
+      case DT_ADAPTATION_XYZ:
+      {
+        convert_any_XYZ_to_LMS(temp_two, temp_one, kind);
+        break;
+      }
+      case DT_ADAPTATION_RGB:
+      case DT_ADAPTATION_LAST:
+      {
+        // Convert from XYZ to RGB
+        dot_product(temp_two, XYZ_to_RGB, temp_one);
+        break;
+      }
+    }
+
+    /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user param - DATA IS IN temp_one */
 
     // Clip in LMS
     if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
@@ -669,23 +715,42 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     // Clip in LMS
     if(clip) for(size_t c = 0; c < 3; c++) temp_two[c] = fmaxf(temp_two[c], 0.0f);
 
-    // Convert back LMS to XYZ
-    convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
-
-    // Clip in XYZ
-    if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
-
     // Save
     if(apply_grey)
     {
-      // Turn RGB into monochrome
-      const float grey_mix = fmaxf(scalar_product(temp_one, grey), 0.0f);
+      // Turn LMS, XYZ or pipeline RGB into monochrome
+      const float grey_mix = fmaxf(scalar_product(temp_two, grey), 0.0f);
 
       out[k] = out[k + 1] = out[k + 2] = grey_mix;
       out[k + 3] = in[k + 3]; // alpha mask
     }
     else
     {
+      // Convert back to XYZ
+      switch(kind)
+      {
+        case DT_ADAPTATION_FULL_BRADFORD:
+        case DT_ADAPTATION_LINEAR_BRADFORD:
+        case DT_ADAPTATION_CAT16:
+        case DT_ADAPTATION_XYZ:
+        {
+          convert_any_LMS_to_XYZ(temp_two, temp_one, kind);
+          break;
+        }
+        case DT_ADAPTATION_RGB:
+        case DT_ADAPTATION_LAST:
+        {
+          // Convert from RBG to XYZ
+          dot_product(temp_two, RGB_to_XYZ, temp_one);
+          break;
+        }
+      }
+
+      /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
+
+      // Clip in XYZ
+      if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
+
       // Convert back to RGB
       dot_product(temp_one, XYZ_to_RGB, temp_two);
 
@@ -1128,21 +1193,22 @@ static inline void compute_patches_delta_E(const float *const restrict patches, 
       w = expf(-sqf(delta_hue) / 2.f);
 
 
-void extract_color_checker(const float *const restrict in, float *const restrict out,
-                           const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
-                           const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4], const dt_adaptation_t kind)
+typedef struct {
+  float black;
+  float exposure;
+} extraction_result_t;
+
+static const extraction_result_t _extract_patches(const float *const restrict in, const dt_iop_roi_t *const roi_in,
+                                                  dt_iop_channelmixer_rgb_gui_data_t *g, const float RGB_to_XYZ[3][4],
+                                                  float *const restrict patches, float *const restrict patches_luminance,
+                                                  gboolean normalize)
 {
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
-
-  float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
-  float *const restrict patches_luminance = dt_alloc_sse_ps(g->checker->patches);
   const float radius = g->checker->radius * hypotf(width, height) * g->safety_margin;
 
   if(g->delta_E_in == NULL)
     g->delta_E_in = dt_alloc_sse_ps(g->checker->patches);
-
-  dt_simd_memcpy(in, out, width * height * 4);
 
   /* Get the average color over each patch */
   for(size_t k = 0; k < g->checker->patches; k++)
@@ -1158,30 +1224,51 @@ void extract_color_checker(const float *const restrict in, float *const restrict
 
     // apply patch coordinates transform depending on perspective
     point_t new_corners[4];
-    for(size_t c = 0; c < 4; c++) new_corners[c] = apply_homography(corners[c], g->homography);
+    // find the bounding box of the patch at the same time
+    size_t x_min = width - 1;
+    size_t x_max = 0;
+    size_t y_min = height - 1;
+    size_t y_max = 0;
+    for(size_t c = 0; c < 4; c++) {
+      new_corners[c] = apply_homography(corners[c], g->homography);
+      x_min = fminf(new_corners[c].x, x_min);
+      x_max = fmaxf(new_corners[c].x, x_max);
+      y_min = fminf(new_corners[c].y, y_min);
+      y_max = fmaxf(new_corners[c].y, y_max);
+    }
 
-    // find the orthogonal bounding box inside the patch
-    const size_t x_min = CLAMP((size_t)floorf(fmaxf(new_corners[0].x, new_corners[3].x)), 0, width - 1);
-    const size_t x_max = CLAMP((size_t)ceilf(fminf(new_corners[1].x, new_corners[2].x)), 0, width - 1);
-    const size_t y_min = CLAMP((size_t)floorf(fmaxf(new_corners[0].y, new_corners[1].y)), 0, height - 1);
-    const size_t y_max = CLAMP((size_t)ceilf(fminf(new_corners[2].y, new_corners[3].y)), 0, height - 1);
+    x_min = CLAMP((size_t)floorf(x_min), 0, width - 1);
+    x_max = CLAMP((size_t)ceilf(x_max), 0, width - 1);
+    y_min = CLAMP((size_t)floorf(y_min), 0, height - 1);
+    y_max = CLAMP((size_t)ceilf(y_max), 0, height - 1);
 
     // Get the average color on the patch
     patches[k * 4] = patches[k * 4 + 1] = patches[k * 4 + 2] = patches[k * 4 + 3] = 0.f;
     size_t num_elem = 0;
 
+    // Loop through the rectangular bounding box
     for(size_t j = y_min; j < y_max; j++)
       for(size_t i = x_min; i < x_max; i++)
       {
-        for(size_t c = 0; c < 3; c++)
-        {
-          patches[k * 4 + c] += in[(j * width + i) * 4 + c];
+        // Check if this pixel lies inside the sampling area and sample if it does
+        point_t current_point = { i + 0.5f, j + 0.5f };
+        current_point = apply_homography(current_point, g->inverse_homography);
+        current_point.x -= center.x;
+        current_point.y -= center.y;
 
-          // Debug : inpaint a black square in the preview to ensure the coordanites of
-          // overlay drawings and actual pixel processing match
-          // out[(j * width + i) * 4 + c] = 0.f;
+        if(current_point.x < radius && current_point.x > -radius &&
+           current_point.y < radius && current_point.y > -radius)
+        {
+          for(size_t c = 0; c < 3; c++)
+          {
+            patches[k * 4 + c] += in[(j * width + i) * 4 + c];
+
+            // Debug : inpaint a black square in the preview to ensure the coordanites of
+            // overlay drawings and actual pixel processing match
+            // out[(j * width + i) * 4 + c] = 0.f;
+          }
+          num_elem++;
         }
-        num_elem++;
       }
 
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] /= (float)num_elem;
@@ -1207,8 +1294,6 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
   const float black = XYZ_black_test[1] * exposure - XYZ_black_ref[1];
 
-  gboolean normalize = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->normalize));
-
   for(size_t k = 0; k < g->checker->patches; k++)
   {
     // compensate global exposure
@@ -1221,8 +1306,26 @@ void extract_color_checker(const float *const restrict in, float *const restrict
     float DT_ALIGNED_PIXEL XYZ_ref[4];
     dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = (normalize) ? XYZ[c] * XYZ_ref[1] / Y : XYZ[c];
-    patches_luminance[k] = (normalize) ? Y / XYZ_ref[1] : 1.f;
+    if(patches_luminance != NULL) patches_luminance[k] = (normalize) ? Y / XYZ_ref[1] : 1.f;
   }
+
+  const extraction_result_t result = { black, exposure };
+  return result;
+}
+
+void extract_color_checker(const float *const restrict in, float *const restrict out,
+                           const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
+                           const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4], const dt_adaptation_t kind)
+{
+  float *const restrict patches = dt_alloc_sse_ps(g->checker->patches * 4);
+  float *const restrict patches_luminance = dt_alloc_sse_ps(g->checker->patches);
+
+  dt_simd_memcpy(in, out, (size_t)roi_in->width * roi_in->height * 4);
+
+  gboolean normalize = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(g->normalize));
+  extraction_result_t extraction_result = _extract_patches(out, roi_in, g, RGB_to_XYZ,
+                                                           patches, patches_luminance,
+                                                           normalize);
 
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
@@ -1496,7 +1599,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
                                 g->mix[0][0], g->mix[0][1], g->mix[0][2],
                                 g->mix[1][0], g->mix[1][1], g->mix[1][2],
                                 g->mix[2][0], g->mix[2][1], g->mix[2][2],
-                                black, log2f(exposure));
+                                extraction_result.black, log2f(extraction_result.exposure));
   gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
 
   dt_free_align(patches);
@@ -1507,91 +1610,8 @@ void validate_color_checker(const float *const restrict in,
                             const dt_iop_roi_t *const roi_in, dt_iop_channelmixer_rgb_gui_data_t *g,
                             const float RGB_to_XYZ[3][4], const float XYZ_to_RGB[3][4])
 {
-  const size_t width = roi_in->width;
-  const size_t height = roi_in->height;
-
   float *const restrict patches = dt_alloc_sse_ps(4 * g->checker->patches);
-  const float radius = g->checker->radius * hypotf(width, height) * g->safety_margin;
-
-  if(g->delta_E_in == NULL)
-    g->delta_E_in = dt_alloc_sse_ps(g->checker->patches);
-
-  /* Get the average color over each patch */
-  for(size_t k = 0; k < g->checker->patches; k++)
-  {
-    // center of the patch in the ideal reference
-    const point_t center = { g->checker->values[k].x * width, g->checker->values[k].y * height };
-
-    // corners of the patch in the ideal reference
-    const point_t corners[4] = { {center.x - radius, center.y - radius},
-                                 {center.x + radius, center.y - radius},
-                                 {center.x + radius, center.y + radius},
-                                 {center.x - radius, center.y + radius} };
-
-    // apply patch coordinates transform depending on perspective
-    point_t new_corners[4];
-    for(size_t c = 0; c < 4; c++) new_corners[c] = apply_homography(corners[c], g->homography);
-
-    // find the orthogonal bounding box inside the patch
-    const size_t x_min = CLAMP((size_t)floorf(fmaxf(new_corners[0].x, new_corners[3].x)), 0, width - 1);
-    const size_t x_max = CLAMP((size_t)ceilf(fminf(new_corners[1].x, new_corners[2].x)), 0, width - 1);
-    const size_t y_min = CLAMP((size_t)floorf(fmaxf(new_corners[0].y, new_corners[1].y)), 0, height - 1);
-    const size_t y_max = CLAMP((size_t)ceilf(fminf(new_corners[2].y, new_corners[3].y)), 0, height - 1);
-
-    // Get the average color on the patch
-    patches[k * 4] = patches[k * 4 + 1] = patches[k * 4 + 2] = patches[k * 4 + 3] = 0.f;
-    size_t num_elem = 0;
-
-    for(size_t j = y_min; j < y_max; j++)
-      for(size_t i = x_min; i < x_max; i++)
-      {
-        for(size_t c = 0; c < 3; c++)
-        {
-          patches[k * 4 + c] += in[(j * width + i) * 4 + c];
-
-          // Debug : inpaint a black square in the preview to ensure the coordanites of
-          // overlay drawings and actual pixel processing match
-          // out[(j * width + i) * 4 + c] = 0.f;
-        }
-        num_elem++;
-      }
-
-    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] /= (float)num_elem;
-
-    // Convert to XYZ
-    float XYZ[3];
-    dot_product(patches + k * 4, RGB_to_XYZ, XYZ);
-    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
-  }
-
-  /* match global exposure */
-  // white exposure depends on camera settings and raw white point,
-  // we want our profile to be independant from that
-  float XYZ_white_ref[4];
-  float *XYZ_white_test = patches + g->checker->white * 4;
-  dt_Lab_to_XYZ(g->checker->values[g->checker->white].Lab, XYZ_white_ref);
-  const float exposure = XYZ_white_ref[1] / XYZ_white_test[1];
-
-  // black point is evaluated by rawspeed on each picture using the dark pixels
-  // we want our profile to be also independant from its discrepancies
-  float XYZ_black_ref[4];
-  float *XYZ_black_test = patches + g->checker->black * 4;
-  dt_Lab_to_XYZ(g->checker->values[g->checker->black].Lab, XYZ_black_ref);
-  const float black = XYZ_black_test[1] * exposure - XYZ_black_ref[1];
-
-  for(size_t k = 0; k < g->checker->patches; k++)
-  {
-    // compensate global exposure
-    float XYZ[3];
-    for(size_t c = 0; c < 3; c++) XYZ[c] = exposure * patches[k * 4 + c] - black;
-
-    // normalize patch exposure - if shooting close to the light source, the exposure might not be uniform over the surface
-    // we don't want the color calibration to try fighting exposure discrepancies, so pretend the exposure is spot-on.
-    // const float Y = XYZ[1];
-    // float DT_ALIGNED_PIXEL XYZ_ref[4];
-    // dt_Lab_to_XYZ(g->checker->values[k].Lab, XYZ_ref);
-    for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c]; //  *XYZ_ref[1] / Y;
-  }
+  extraction_result_t extraction_result = _extract_patches(in, roi_in, g, RGB_to_XYZ, patches, NULL, FALSE);
 
   // Compute the delta E
   float pre_wb_delta_E = 0.f;
@@ -1616,7 +1636,7 @@ void validate_color_checker(const float *const restrict in,
                                   "exposure compensation : \t%+.2f EV"),
                                 diagnostic,
                                 pre_wb_delta_E, pre_wb_max_delta_E,
-                                black, log2f(exposure));
+                                extraction_result.black, log2f(extraction_result.exposure));
   gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
 
   dt_free_align(patches);
@@ -1816,6 +1836,7 @@ static inline void update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
 
   // update the homography
   get_homography(g->ideal_box, g->box, g->homography);
+  get_homography(g->box, g->ideal_box, g->inverse_homography);
 }
 
 static inline void init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g, const float width, const float height)
@@ -2393,9 +2414,9 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   for(int i = 0; i < 3; i++)
   {
     d->MIX[0][i] = p->red[i] / norm_R;
-    d->MIX[1][i] = p->green[i] / norm_B;
-    d->MIX[2][i] = p->blue[i] / norm_G;
-    d->saturation[i] = -p->saturation[i] - norm_sat;
+    d->MIX[1][i] = p->green[i] / norm_G;
+    d->MIX[2][i] = p->blue[i] / norm_B;
+    d->saturation[i] = -p->saturation[i] + norm_sat;
     d->lightness[i] = p->lightness[i] - norm_light;
     d->grey[i] = p->grey[i] / norm_grey; // = NaN if (norm_grey == 0.f) but we don't care since (d->apply_grey == FALSE)
   }

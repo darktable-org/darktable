@@ -2481,6 +2481,187 @@ void dtgtk_cairo_paint_auto_levels(cairo_t *cr, gint x, gint y, gint w, gint h, 
   FINISH
 }
 
+void dtgtk_cairo_paint_lt_mode_grid(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.4, 0, 0)
+
+  cairo_rectangle(cr, 0.05, 0.2, 0.9, 0.6);
+  cairo_move_to(cr, 0.06, 0.5);
+  cairo_line_to(cr, 0.94, 0.5);
+  cairo_move_to(cr, 0.35, 0.21);
+  cairo_line_to(cr, 0.35, 0.79);
+  cairo_move_to(cr, 0.65, 0.21);
+  cairo_line_to(cr, 0.65, 0.79);
+  cairo_stroke(cr);
+
+  cairo_set_line_width(cr, 0.08);
+  cairo_rectangle(cr, 0.35, 0.5, 0.3, 0.3);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_lt_mode_zoom(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.4, 0, 0)
+
+  cairo_rectangle(cr, 0.3, 0.2, 0.5, 0.34);
+
+  cairo_move_to(cr, 0, 0.2);
+  cairo_line_to(cr, 0.2, 0.2);
+  cairo_line_to(cr, 0.2, 0.54);
+  cairo_line_to(cr, 0, 0.54);
+
+  cairo_move_to(cr, 1, 0.2);
+  cairo_line_to(cr, 0.9, 0.2);
+  cairo_line_to(cr, 0.9, 0.54);
+  cairo_line_to(cr, 1, 0.54);
+
+  cairo_move_to(cr, 0, 0.65);
+  cairo_line_to(cr, 0.2, 0.65);
+  cairo_line_to(cr, 0.2, 0.8);
+
+  cairo_move_to(cr, 0.3, 0.8);
+  cairo_line_to(cr, 0.3, 0.65);
+  cairo_line_to(cr, 0.8, 0.65);
+  cairo_line_to(cr, 0.8, 0.8);
+
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_lt_mode_culling_fixed(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.4, 0, 0)
+
+  cairo_rectangle(cr, 0.16, 0.22, 0.31, 0.56);
+  cairo_rectangle(cr, 0.53, 0.22, 0.31, 0.56);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.11, 0.4);
+  cairo_line_to(cr, 0, 0.5);
+  cairo_line_to(cr, 0.11, 0.6);
+  cairo_fill(cr);
+
+  cairo_move_to(cr, 0.89, 0.4);
+  cairo_line_to(cr, 1, 0.5);
+  cairo_line_to(cr, 0.89, 0.6);
+  cairo_fill(cr);
+
+// draw X
+  cairo_move_to(cr, 0.22, 0.36);
+  cairo_line_to(cr, 0.40, 0.64);
+  cairo_move_to(cr, 0.22, 0.64);
+  cairo_line_to(cr, 0.40, 0.36);
+
+// draw Y
+  cairo_move_to(cr, 0.59, 0.36);
+  cairo_line_to(cr, 0.68, 0.5);
+  cairo_line_to(cr, 0.77, 0.36);
+  cairo_move_to(cr, 0.68, 0.5);
+  cairo_line_to(cr, 0.68, 0.64);
+
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_lt_mode_culling_dynamic(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.4, 0, 0)
+
+  cairo_rectangle(cr, 0.16, 0.22, 0.31, 0.56);
+  cairo_rectangle(cr, 0.53, 0.22, 0.31, 0.56);
+  cairo_stroke(cr);
+
+// draw X
+  cairo_move_to(cr, 0.22, 0.36);
+  cairo_line_to(cr, 0.40, 0.64);
+  cairo_move_to(cr, 0.22, 0.64);
+  cairo_line_to(cr, 0.40, 0.36);
+
+// draw Y
+  cairo_move_to(cr, 0.59, 0.36);
+  cairo_line_to(cr, 0.68, 0.5);
+  cairo_line_to(cr, 0.77, 0.36);
+  cairo_move_to(cr, 0.68, 0.5);
+  cairo_line_to(cr, 0.68, 0.64);
+
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_lt_mode_fullpreview(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1.4, 0, 0)
+
+  cairo_rectangle(cr, 0.07, 0.22, 0.86, 0.56);
+  cairo_stroke(cr);
+
+  cairo_move_to(cr, 0.19, 0.29);
+  cairo_line_to(cr, 0.19, 0.43);
+  cairo_line_to(cr, 0.33, 0.29);
+  cairo_fill(cr);
+
+  cairo_move_to(cr, 0.19, 0.71);
+  cairo_line_to(cr, 0.19, 0.57);
+  cairo_line_to(cr, 0.33, 0.71);
+  cairo_fill(cr);
+
+  cairo_move_to(cr, 0.81, 0.71);
+  cairo_line_to(cr, 0.81, 0.57);
+  cairo_line_to(cr, 0.67, 0.71);
+  cairo_fill(cr);
+
+  cairo_move_to(cr, 0.81, 0.29);
+  cairo_line_to(cr, 0.81, 0.43);
+  cairo_line_to(cr, 0.67, 0.29);
+  cairo_fill(cr);
+
+  cairo_move_to(cr, 0.27, 0.37);
+  cairo_line_to(cr, 0.30, 0.40);
+  cairo_move_to(cr, 0.27, 0.63);
+  cairo_line_to(cr, 0.30, 0.60);
+  cairo_move_to(cr, 0.73, 0.63);
+  cairo_line_to(cr, 0.70, 0.60);
+  cairo_move_to(cr, 0.73, 0.37);
+  cairo_line_to(cr, 0.70, 0.40);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
+void dtgtk_cairo_paint_link(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
+{
+  PREAMBLE(1, 0, 0)
+
+  cairo_set_line_width(cr, .1);
+
+  //arrow
+  cairo_move_to(cr, .5, .5);
+  cairo_line_to(cr, 1., 0.);
+  cairo_stroke(cr);
+  cairo_move_to(cr, .65, 0.);
+  cairo_line_to(cr, 1., 0.);
+  cairo_line_to(cr, 1., .35);
+  cairo_stroke(cr);
+
+  //rounded rectangle
+  cairo_move_to(cr, .8, .6);
+  cairo_line_to(cr, .8, .85);
+  cairo_arc (cr, .65, .85, .15, 0., .5 * M_PI);
+  cairo_line_to(cr, .15, 1.);
+  cairo_arc (cr, .15, .85, .15, .5 * M_PI, M_PI);
+  cairo_line_to(cr, 0., .35);
+  cairo_arc (cr, .15, .35, .15, M_PI, 1.5 * M_PI);
+  cairo_line_to(cr, .4, .2);
+  cairo_stroke(cr);
+
+  FINISH
+}
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

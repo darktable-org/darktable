@@ -193,12 +193,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const int step = 1 << l;
 #if 1 // scale coefficients
       for(int j = 0; j < height; j += step)
-        for(int i = step / 2; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] *= coeff;
+        for(int i = step / 2; i < width; i += step) out[(size_t)chs * width * j + (size_t)chs * i + ch] *= coeff;
       for(int j = step / 2; j < height; j += step)
-        for(int i = 0; i < width; i += step) out[(size_t)chs * width * j + chs * i + ch] *= coeff;
+        for(int i = 0; i < width; i += step) out[(size_t)chs * width * j + (size_t)chs * i + ch] *= coeff;
       for(int j = step / 2; j < height; j += step)
         for(int i = step / 2; i < width; i += step)
-          out[(size_t)chs * width * j + chs * i + ch] *= coeff * coeff;
+          out[(size_t)chs * width * j + (size_t)chs * i + ch] *= coeff * coeff;
 #else // soft-thresholding (shrinkage)
 #define wshrink                                                                                              \
   (copysignf(fmaxf(0.0f, fabsf(out[(size_t)chs * width * j + chs * i + ch]) - (1.0 - coeff)),                \

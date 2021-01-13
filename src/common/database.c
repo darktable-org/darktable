@@ -1702,7 +1702,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     TRY_EXEC("DROP INDEX IF EXISTS `masks_history_imgid_index`",
         "[init] can't drop masks_history_imgid_index\n");
-    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( `imgid`, `num` )",
+    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( `imgid`, `num` DESC )",
         "[init] can't recreate masks_history_imgid_index\n");
 
     // map refinement: avoid full table scan
@@ -1716,12 +1716,22 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
   {
     sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
 
-    // unique folder names in filmrolls
-    TRY_EXEC("DROP INDEX IF EXISTS `film_rolls_folder_index`",
-        "[init] can't drop film_rolls_folder_index\n");
-    TRY_EXEC("CREATE UNIQUE INDEX `film_rolls_folder_index` ON `film_rolls` (folder)",
-        "[init] can't add unique film_rolls_folder_index\n");
-    
+    // remove duplicates
+    TRY_EXEC("DELETE FROM main.meta_data WHERE rowid NOT IN (SELECT MIN(rowid) "
+             "FROM main.meta_data GROUP BY id, key)",
+             "[init] can't remove duplicates from meta_data\n");
+
+    // recreate the index with UNIQUE option
+    TRY_EXEC("DROP INDEX IF EXISTS metadata_index",
+             "[init] can't drop metadata_index\n");
+    TRY_EXEC("CREATE UNIQUE INDEX main.metadata_index ON meta_data (id, key)",
+             "[init] can't create metadata_index\n");
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 32;
+  }
+   else if(version == 32)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
     // add foreign keys for database consistency. ON UPDATE CASCADE since you never know
     // if a future version will change image_id 
     // Unfortunately sqlite does not support adding foreign keys to existing tables
@@ -1911,7 +1921,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     TRY_EXEC("DROP TABLE meta_data_old",
         "[init] can't drop table meta_data_old\n");
 
-    TRY_EXEC("CREATE INDEX `metadata_index` ON `meta_data` (id, key, value)",
+    TRY_EXEC("CREATE INDEX `metadata_index` ON `meta_data` (id, key)",
          "[init] can't recreate metadata_index\n");
 
     // selected images
@@ -1947,7 +1957,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
         "[init] can't drop table module_order_old\n");
 
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
-    new_version = 32;
+    new_version = 33;
   }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
@@ -2217,7 +2227,7 @@ static void _create_library_schema(dt_database_t *db)
                //                        case to _upgrade_library_schema_step when adding this!
                "folder VARCHAR(1024) NOT NULL)",
                NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.film_rolls_folder_index ON film_rolls (folder)", NULL, NULL, NULL);
   ////////////////////////////// images
   sqlite3_exec(
       db->handle,
@@ -2254,6 +2264,7 @@ static void _create_library_schema(dt_database_t *db)
       "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256),"
       "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
       NULL, NULL, NULL);
+
   sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid, num DESC)", NULL, NULL, NULL);
   ////////////////////////////// masks history
   sqlite3_exec(db->handle,
@@ -2262,7 +2273,8 @@ static void _create_library_schema(dt_database_t *db)
                "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
                NULL, NULL, NULL);
 
-  sqlite3_exec(db->handle, "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid, num)",
+  sqlite3_exec(db->handle,
+      "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid, num)",
       NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE INDEX main.images_latlong_index ON images (latitude DESC, longitude DESC)",
@@ -2281,9 +2293,8 @@ static void _create_library_schema(dt_database_t *db)
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
                NULL);
   ////////////////////////////// meta_data
-  sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR, "
-               "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key, value)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR, "
                 "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
@@ -3507,10 +3518,6 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   if(calc_post_size >= calc_pre_size)
   {
     dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance problem. if no errors logged, it should work fine next time.\n");
-  }
-  else
-  {
-
   }
 }
 #undef ERRCHECK

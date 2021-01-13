@@ -228,7 +228,7 @@ gboolean dt_imageio_has_mono_preview(const char *filename)
 {
   dt_colorspaces_color_profile_type_t color_space;
   uint8_t *tmp = NULL;
-  int32_t thumb_width, thumb_height;
+  int32_t thumb_width, thumb_height = 0;
   gboolean mono = FALSE;
 
   if(dt_imageio_large_thumbnail(filename, &tmp, &thumb_width, &thumb_height, &color_space))
@@ -325,7 +325,7 @@ void dt_imageio_flip_buffers_ui8_to_float(float *out, const uint8_t *in, const f
     for(int j = 0; j < ht; j++)
       for(int i = 0; i < wd; i++)
         for(int k = 0; k < ch; k++)
-          out[4 * ((size_t)j * wd + i) + k] = (in[(size_t)j * stride + ch * i + k] - black) * scale;
+          out[4 * ((size_t)j * wd + i) + k] = (in[(size_t)j * stride + (size_t)ch * i + k] - black) * scale;
     return;
   }
   int ii = 0, jj = 0;

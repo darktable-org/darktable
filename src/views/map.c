@@ -368,7 +368,7 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -379,7 +379,10 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
 
 static GdkPixbuf *_init_image_pin()
 {
-  int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border), h = DT_PIXEL_APPLY_DPI(image_pin_size);
+  const size_t w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border);
+  const size_t h = DT_PIXEL_APPLY_DPI(image_pin_size);
+  g_return_val_if_fail(w > 0 && h > 0, NULL);
+
   float r, g, b, a;
   r = ((thumb_frame_color & 0xff000000) >> 24) / 255.0;
   g = ((thumb_frame_color & 0x00ff0000) >> 16) / 255.0;
@@ -393,7 +396,7 @@ static GdkPixbuf *_init_image_pin()
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -404,7 +407,10 @@ static GdkPixbuf *_init_image_pin()
 
 static GdkPixbuf *_init_place_pin()
 {
-  int w = DT_PIXEL_APPLY_DPI(place_pin_size), h = DT_PIXEL_APPLY_DPI(place_pin_size);
+  const size_t w = DT_PIXEL_APPLY_DPI(place_pin_size);
+  const size_t h = DT_PIXEL_APPLY_DPI(place_pin_size);
+  g_return_val_if_fail(w > 0 && h > 0, NULL);
+
   float r, g, b, a;
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
@@ -441,7 +447,7 @@ static GdkPixbuf *_init_place_pin()
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -509,7 +515,7 @@ static GdkPixbuf *_draw_ellipse(const float dlongitude, const float dlatitude,
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -564,7 +570,7 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude,
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -1156,8 +1162,10 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
 
     if(lib->points)
       g_free(lib->points);
-    lib->points = (dt_geo_position_t *)calloc(img_count, sizeof(dt_geo_position_t));
+    lib->points = NULL;
     lib->nb_points = img_count;
+    if(img_count > 0)
+      lib->points = (dt_geo_position_t *)calloc(img_count, sizeof(dt_geo_position_t));
     dt_geo_position_t *p = lib->points;
     if(p)
     {

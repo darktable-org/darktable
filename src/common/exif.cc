@@ -2986,8 +2986,22 @@ int dt_exif_xmp_read(dt_image_t *img, const char *filename, const int history_on
           // prior to v3 there was no iop-order, all multi instances where grouped, use the multièpriority
           // to restore the order.
           GList *base_order = dt_ioppr_get_iop_order_link(iop_order_list, entry->operation, -1);
-          e->o.iop_order_f = ((dt_iop_order_entry_t *)(base_order->data))->o.iop_order_f
-            - entry->multi_priority / 100.0f;
+
+          if(base_order)
+            e->o.iop_order_f = ((dt_iop_order_entry_t *)(base_order->data))->o.iop_order_f
+              - entry->multi_priority / 100.0f;
+          else
+          {
+            fprintf(stderr,
+                    "[exif] cannot get iop-order for module '%s', XMP may be corrupted\n",
+                    entry->operation);
+            g_list_free_full(iop_order_list, free);
+            g_list_free_full(history_entries, free_history_entry);
+            g_list_free_full(mask_entries_v3, free_mask_entry);
+            if(mask_entries) g_hash_table_destroy(mask_entries);
+            g_free(e);
+            return 1;
+          }
         }
         else
         {
@@ -3625,17 +3639,20 @@ static void _exif_xmp_read_data_export(Exiv2::XmpData &xmpData, const int imgid,
   }
   g_list_free_full(iop_list, free);
 
-  // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
-  if (!(metadata->flags & DT_META_EXIF))
-    xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
+  if(metadata->flags & DT_META_METADATA)
+  {
+    // Store datetime_taken as DateTimeOriginal to take into account the user's selected date/time
+    if (!(metadata->flags & DT_META_EXIF))
+      xmpData["Xmp.exif.DateTimeOriginal"] = datetime_taken;
 
-  // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
-  Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
-  if(pos != xmpData.end()) xmpData.erase(pos);
-  xmpData["Xmp.xmp.Rating"] = dt_image_get_xmp_rating_from_flags(stars);
+    // We have to erase the old ratings first as exiv2 seems to not change it otherwise.
+    Exiv2::XmpData::iterator pos = xmpData.findKey(Exiv2::XmpKey("Xmp.xmp.Rating"));
+    if(pos != xmpData.end()) xmpData.erase(pos);
+    xmpData["Xmp.xmp.Rating"] = dt_image_get_xmp_rating_from_flags(stars);
 
-  // The original file name
-  if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
+    // The original file name
+    if(filename) xmpData["Xmp.xmpMM.DerivedFrom"] = filename;
+  }
 
   // GPS data
   if (metadata->flags & DT_META_GEOTAG)

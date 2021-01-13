@@ -333,8 +333,8 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     roi.y = image.crop_y;
     for(int j=0;j<6;j++)
       for(int i = 0; i < 6; i++) d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.buf_dsc.xtrans);
-    d->pixels = calloc(datai->width * datai->height, sizeof(float));
-    d->weight = calloc(datai->width * datai->height, sizeof(float));
+    d->pixels = calloc((size_t)datai->width * datai->height, sizeof(float));
+    d->weight = calloc((size_t)datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
     d->ht = datai->height;
     d->orientation = image.orientation;

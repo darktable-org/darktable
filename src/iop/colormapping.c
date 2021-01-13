@@ -492,7 +492,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           = (data->target_var[i][1] > 0.0f) ? data->source_var[mapio[i]][1] / data->target_var[i][1] : 0.0f;
     }
 
-    const size_t npixels = height * width;
+    const size_t npixels = (size_t)height * width;
 // first get delta L of equalized L minus original image L, scaled to fit into [0 .. 100]
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -500,7 +500,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_omp_sharedconst(in, out, data, equalization)        \
     schedule(static)
 #endif
-    for(size_t k = 0; k < 4*npixels; k += 4)
+    for(size_t k = 0; k < npixels * 4; k += 4)
     {
       const float L = in[k];
       out[k] = 0.5f * ((L * (1.0f - equalization)
@@ -761,7 +761,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const int height = roi_in->height;
   const int channels = piece->colors;
 
-  const size_t basebuffer = width * height * channels * sizeof(float);
+  const size_t basebuffer = sizeof(float) * channels * width * height;
 
   tiling->factor = 3.0f + (float)dt_bilateral_memory_use(width, height, sigma_s, sigma_r) / basebuffer;
   tiling->maxbuf

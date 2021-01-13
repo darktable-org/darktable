@@ -595,7 +595,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float sigma_r = 100.0f; // does not depend on scale
   const float sigma_s = sigma;
 
-  const size_t basebuffer = width * height * channels * sizeof(float);
+  const size_t basebuffer = sizeof(float) * channels * width * height;
 
   if(d->shadhi_algo == SHADHI_ALGO_BILATERAL)
   {
