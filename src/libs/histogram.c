@@ -90,7 +90,11 @@ typedef struct dt_lib_histogram_t
   int waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
   // drawable with scope image
-  GtkWidget *scope_draw, *mode_stack;
+  GtkWidget *scope_draw;
+  // contains scope control buttons
+  GtkWidget *button_box;
+  // buttons which change between histogram and waveform scopes
+  GtkWidget *mode_stack;
   // mouse state
   gboolean dragging;
   int32_t button_down_x, button_down_y;
@@ -749,6 +753,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
                                                                         : event->x - d->button_down_x;
     const int range = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? allocation.height
                                                                        : allocation.width;
+    // FIXME: should limit exposure iop changes as bauhaus sliders do, for smoother interaction
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
       const float exposure = d->button_down_value + diff * 4.0f / (float)range;
@@ -1080,6 +1085,7 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
+    // FIXME: should limit exposure iop changes as bauhaus sliders do, for smoother interaction?
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     if(event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
@@ -1124,22 +1130,44 @@ static gboolean _lib_histogram_button_release_callback(GtkWidget *widget, GdkEve
   return TRUE;
 }
 
-static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                     gpointer user_data)
+static gboolean _lib_histogram_drawable_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                              gpointer user_data)
 {
   dt_control_change_cursor(GDK_HAND1);
   return TRUE;
 }
 
-static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                     gpointer user_data)
+static gboolean _lib_histogram_drawable_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                              gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   d->dragging = FALSE;
   d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
   dt_control_change_cursor(GDK_LEFT_PTR);
+  // FIXME: clears drag area highlights -- change to hiding them if they're a separate widget -- but probably best that the drawable essentially acts as its own widget -- but what happens if drag over the buttons, it'll lose the drag, unless it is grabbing mouse events
   dt_control_queue_redraw_widget(widget);
+  return TRUE;
+}
+
+static gboolean _lib_histogram_eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                              gpointer user_data)
+{
+  const dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  const dt_lib_histogram_t *d = self->data;
+  // FIXME: just pass in d->button_box
+  // FIXME: show or show all?
+  gtk_widget_show(d->button_box);
+  return TRUE;
+}
+
+static gboolean _lib_histogram_eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                              gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  // FIXME: just pass in d->button_box
+  gtk_widget_hide(d->button_box);
   return TRUE;
 }
 
@@ -1374,49 +1402,25 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
 
   // create widgets
-  self->widget = gtk_overlay_new();
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  // FIXME: is this used?
-  gtk_widget_set_name(self->widget, "main-histogram");
+  GtkWidget *overlay = gtk_overlay_new();
 
   /* create drawingarea */
   d->scope_draw = gtk_drawing_area_new();
-
-  // FIXME: these events become less important if are using widgets on top of this
-  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                       | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                                       darktable.gui->scroll_mask);
-
-  /* connect callbacks */
+  // FIXME: does double-click really reset?
   gtk_widget_set_tooltip_text(d->scope_draw, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
-  g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
-  g_signal_connect(G_OBJECT(d->scope_draw), "button-press-event",
-                   G_CALLBACK(_lib_histogram_button_press_callback), self);
-  g_signal_connect(G_OBJECT(d->scope_draw), "button-release-event",
-                   G_CALLBACK(_lib_histogram_button_release_callback), self);
-  g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
-                   G_CALLBACK(_lib_histogram_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
-                   G_CALLBACK(_lib_histogram_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(d->scope_draw), "enter-notify-event",
-                   G_CALLBACK(_lib_histogram_enter_notify_callback), self);
-  g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
-  g_signal_connect(G_OBJECT(d->scope_draw), "configure-event",
-                   G_CALLBACK(_lib_histogram_configure_callback), self);
-
-  gtk_container_add(GTK_CONTAINER(self->widget), d->scope_draw);
+  gtk_container_add(GTK_CONTAINER(overlay), d->scope_draw);
 
   // a row of buttons
-  // FIXME: make appear/disappear on mouseover
-  GtkWidget *button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(button_box, "button_box");
-  gtk_widget_set_valign(button_box, GTK_ALIGN_START);
-  gtk_widget_set_halign(button_box, GTK_ALIGN_END);
+  // FIXME: if button_box widget is only stored globally to make it show/hide when enter/leave scope, then just pass it as a parameter to the enter/leave functions
+  d->button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_widget_set_name(d->button_box, "button_box");
+  gtk_widget_set_valign(d->button_box, GTK_ALIGN_START);
+  gtk_widget_set_halign(d->button_box, GTK_ALIGN_END);
   // GtkButtonBox spreads out the icons, so we use GtkBox --
   // homogeneous shouldn't be necessary as icons are equal size, but
   // set it just to show the desired look
-  gtk_box_set_homogeneous(GTK_BOX(button_box), TRUE);
-  gtk_overlay_add_overlay(GTK_OVERLAY(self->widget), button_box);
+  gtk_box_set_homogeneous(GTK_BOX(d->button_box), TRUE);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box);
 
   // FIXME: only make the draggable/scrollable overlays visible if in darkroom view
   // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them? -- if so, then the each of the histogram/waveform widgets will have its own associated "mode" button, drawable, and sensitive areas for scrolling, but the channel buttons will be shared between them, or will modify the same underlying data
@@ -1432,7 +1436,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *scope_button = dtgtk_togglebutton_new(dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL);
   gtk_widget_set_name(scope_button, "scope_type_button");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(scope_button), d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM);
-  gtk_box_pack_start(GTK_BOX(button_box), scope_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->button_box), scope_button, FALSE, FALSE, 0);
 
   // scope mode
   GtkWidget *button;
@@ -1457,7 +1461,7 @@ void gui_init(dt_lib_module_t *self)
 
   _scope_type_toggle(GTK_TOGGLE_BUTTON(scope_button), d);
   g_signal_connect(G_OBJECT(scope_button), "toggled", G_CALLBACK(_scope_type_toggle), d);
-  gtk_box_pack_start(GTK_BOX(button_box), d->mode_stack, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->button_box), d->mode_stack, FALSE, FALSE, 0);
 
   // red channel on/off
   // FIXME: should each channel of scope be its own drawable, hence toggle will turn on/off visibility of a layer rather than request a redraw? is better to have one drawable responsive to config (as now), as in the main case it'll be showing all three channels, and no need to merge channels on the fly?
@@ -1467,7 +1471,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->red);
   _red_channel_toggle(GTK_TOGGLE_BUTTON(button), d);
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_red_channel_toggle), d);
-  gtk_box_pack_start(GTK_BOX(button_box), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->button_box), button, FALSE, FALSE, 0);
 
   // green channel on/off
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
@@ -1475,7 +1479,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->green);
   _green_channel_toggle(GTK_TOGGLE_BUTTON(button), d);
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_green_channel_toggle), d);
-  gtk_box_pack_start(GTK_BOX(button_box), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->button_box), button, FALSE, FALSE, 0);
 
   // blue channel on/off
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
@@ -1483,10 +1487,52 @@ void gui_init(dt_lib_module_t *self)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->blue);
   _blue_channel_toggle(GTK_TOGGLE_BUTTON(button), d);
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
-  gtk_box_pack_start(GTK_BOX(button_box), button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(d->button_box), button, FALSE, FALSE, 0);
 
   // FIXME: use gtk_event_box_new() to catch scroll/drag events? or a transparent overlay at top/bottom, with gtk_widget_set_no_show_all() to hide except when mouse is over?
   // FIXME: could use a GtkActionBar for the buttons at the top?
+
+  // The main widget is an overlay which has no window, and hence
+  // can't catch events. We need something on top to catch events. The
+  // drawable is below the buttons, and hence won't catch events for
+  // the buttons.
+  self->widget = gtk_event_box_new();
+  gtk_widget_set_name(self->widget, "main-histogram");
+  // FIXME: is this the right widget to have the help link?
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+  // FIXME: should make event box contain the overlay, or just be a top layer in the overlay?
+  gtk_container_add(GTK_CONTAINER(self->widget), overlay);
+  gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
+  // FIXME: the button box uses padding/margins so that the mouse doesn't show up as returned to the drawable until it is well outside of the buttons -- though maybe it is nice that it remains a pointer between the buttons?
+  g_signal_connect(G_OBJECT(self->widget), "enter-notify-event",
+                   G_CALLBACK(_lib_histogram_eventbox_enter_notify_callback), self);
+  g_signal_connect(G_OBJECT(self->widget), "leave-notify-event",
+                   G_CALLBACK(_lib_histogram_eventbox_leave_notify_callback), self);
+  // FIXME: button box should be hidden when enter view, unless mouse is over histogram
+  gtk_widget_hide(d->button_box);
+
+  // FIXME: these events become less important if are using widgets on top of this
+  // FIXME: GDK_POINTER_MOTION_MASK is deprecated, see https://developer.gnome.org/gdk3/stable/gdk3-Events.html#GdkEventMask
+  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK |
+                                       GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
+                                       GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
+
+  /* connect callbacks */
+  g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "enter-notify-event",
+                   G_CALLBACK(_lib_histogram_drawable_enter_notify_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
+                   G_CALLBACK(_lib_histogram_drawable_leave_notify_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "button-press-event",
+                   G_CALLBACK(_lib_histogram_button_press_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "button-release-event",
+                   G_CALLBACK(_lib_histogram_button_release_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
+                   G_CALLBACK(_lib_histogram_motion_notify_callback), self);
+  g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
+  // FIXME: don't need to catch configure event if it is only used to draw the custom buttons
+  g_signal_connect(G_OBJECT(d->scope_draw), "configure-event",
+                   G_CALLBACK(_lib_histogram_configure_callback), self);
 
   /* set size of navigation draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
