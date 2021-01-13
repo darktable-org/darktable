@@ -1280,14 +1280,6 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return 10;
 }
 
-dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.module)
-    return vm->proxy.lighttable.get_zoom_mode(vm->proxy.lighttable.module);
-  else
-    return DT_LIGHTTABLE_ZOOM_FIXED;
-}
-
 void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module) vm->proxy.lighttable.culling_init_mode(vm->proxy.lighttable.view);
@@ -1317,6 +1309,11 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
     return vm->proxy.lighttable.get_preview_state(vm->proxy.lighttable.view);
   else
     return FALSE;
+}
+
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean focus)
+{
+  if(vm->proxy.lighttable.module) vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, focus);
 }
 
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid)
