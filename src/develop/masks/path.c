@@ -910,8 +910,7 @@ static int dt_path_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     }
     else
     {
-      float amount = 1.03f;
-      if(up) amount = 0.97f;
+      const float amount = up ? 0.97f : 1.03f;
       guint nb = g_list_length(form->points);
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
