@@ -47,7 +47,7 @@
 #include <string.h>
 #include <time.h>
 
-DT_MODULE_INTROSPECTION(2, dt_iop_channelmixer_rgb_params_t)
+DT_MODULE_INTROSPECTION(3, dt_iop_channelmixer_rgb_params_t)
 
 /** Note :
  * we use finite-math-only and fast-math because divisions by zero are manually avoided in the code
@@ -70,8 +70,15 @@ DT_MODULE_INTROSPECTION(2, dt_iop_channelmixer_rgb_params_t)
 #define CHANNEL_SIZE 4
 #define NORM_MIN 1e-6f
 
+typedef enum dt_iop_channelmixer_rgb_version_t
+{
+  CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "version 1 (2020)"
+  CHANNELMIXERRGB_V_2 = 1  // $DESCRIPTION: "version 2 (2021)"
+} dt_iop_channelmixer_rgb_version_t;
+
 typedef struct dt_iop_channelmixer_rgb_params_t
 {
+  /* params of v1 and v2 */
   float red[CHANNEL_SIZE];         // $MIN: -2.0 $MAX: 2.0
   float green[CHANNEL_SIZE];       // $MIN: -2.0 $MAX: 2.0
   float blue[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
@@ -87,6 +94,12 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   float temperature;               // $MIN: 1667. $MAX: 25000. $DEFAULT: 5003.
   float gamut;                     // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "gamut compression"
   gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
+
+  /* params of v3 */
+  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_2 $DESCRIPTION: "saturation algorithm"
+
+  /* always add new params after this so we can import legacy params with memcpy on the common part of the struct */
+
 } dt_iop_channelmixer_rgb_params_t;
 
 
@@ -111,7 +124,7 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *scale_red_R, *scale_red_G, *scale_red_B;
   GtkWidget *scale_green_R, *scale_green_G, *scale_green_B;
   GtkWidget *scale_blue_R, *scale_blue_G, *scale_blue_B;
-  GtkWidget *scale_saturation_R, *scale_saturation_G, *scale_saturation_B;
+  GtkWidget *scale_saturation_R, *scale_saturation_G, *scale_saturation_B, *saturation_version;
   GtkWidget *scale_lightness_R, *scale_lightness_G, *scale_lightness_B;
   GtkWidget *scale_grey_R, *scale_grey_G, *scale_grey_B;
   GtkWidget *normalize_R, *normalize_G, *normalize_B, *normalize_sat, *normalize_light, *normalize_grey;
@@ -159,6 +172,7 @@ typedef struct dt_iop_channelmixer_rbg_data_t
   int clip;
   dt_adaptation_t adaptation;
   dt_illuminant_t illuminant_type;
+  dt_iop_channelmixer_rgb_version_t version;
 } dt_iop_channelmixer_rbg_data_t;
 
 
@@ -210,6 +224,41 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     n->normalize_grey = TRUE;
     return 0;
   }
+  if(old_version == 2 && new_version == 3)
+  {
+    typedef struct dt_iop_channelmixer_rgb_params_v2_t
+    {
+      float red[CHANNEL_SIZE];         // $MIN: -2.0 $MAX: 2.0
+      float green[CHANNEL_SIZE];       // $MIN: -2.0 $MAX: 2.0
+      float blue[CHANNEL_SIZE];        // $MIN: -2.0 $MAX: 2.0
+      float saturation[CHANNEL_SIZE];  // $MIN: -1.0 $MAX: 1.0
+      float lightness[CHANNEL_SIZE];   // $MIN: -1.0 $MAX: 1.0
+      float grey[CHANNEL_SIZE];        // $MIN: 0.0 $MAX: 1.0
+      gboolean normalize_R, normalize_G, normalize_B, normalize_sat, normalize_light, normalize_grey; // $DESCRIPTION: "normalize channels"
+      dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
+      dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
+      dt_illuminant_led_t illum_led;   // $DEFAULT: DT_ILLUMINANT_LED_B5 $DESCRIPTION: "LED source"
+      dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_LINEAR_BRADFORD
+      float x, y;                      // $DEFAULT: 0.333
+      float temperature;               // $MIN: 1667. $MAX: 25000. $DEFAULT: 5003.
+      float gamut;                     // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "gamut compression"
+      gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
+    } dt_iop_channelmixer_rgb_params_v2_t;
+
+    memcpy(new_params, old_params, sizeof(dt_iop_channelmixer_rgb_params_v2_t));
+    dt_iop_channelmixer_rgb_params_t *n = (dt_iop_channelmixer_rgb_params_t *)new_params;
+
+    // swap the saturation parameters for R and B to put them in natural order
+    const float R = n->saturation[0];
+    const float B = n->saturation[2];
+    n->saturation[0] = B;
+    n->saturation[2] = R;
+
+    // say that these params were created with legacy code
+    n->version = CHANNELMIXERRGB_V_1;
+
+    return 0;
+  }
   return 1;
 }
 
@@ -217,6 +266,8 @@ void init_presets(dt_iop_module_so_t *self)
 {
   dt_iop_channelmixer_rgb_params_t p;
   memset(&p, 0, sizeof(p));
+
+  p.version = CHANNELMIXERRGB_V_2;
 
   // bypass adaptation
   p.illuminant = DT_ILLUMINANT_PIPE;
@@ -527,7 +578,7 @@ static inline void gamut_mapping(const float input[4], const float compression, 
 #pragma omp declare simd aligned(input, output, saturation, lightness:16) uniform(saturation, lightness)
 #endif
 static inline void luma_chroma(const float input[4], const float saturation[4], const float lightness[4],
-                               float output[4])
+                               float output[4], const dt_iop_channelmixer_rgb_version_t version)
 {
   // Compute euclidean norm and flat lightness adjustment
   const float avg = (input[0] + input[1] + input[2]) / 3.0f;
@@ -539,8 +590,17 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
 
   // Compute ratios and a flat colorfulness adjustment for the whole pixel
   float coeff_ratio = 0.f;
-  for(size_t c = 0; c < 3; c++)
-    coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
+
+  if(version == CHANNELMIXERRGB_V_1)
+  {
+    for(size_t c = 0; c < 3; c++)
+      coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
+  }
+  else
+  {
+    for(size_t c = 0; c < 3; c++)
+      coeff_ratio += output[c] * saturation[c];
+  }
   coeff_ratio /= 3.f;
 
   // Adjust the RGB ratios with the pixel correction
@@ -563,11 +623,12 @@ static inline void loop_switch(const float *const restrict in, float *const rest
                                const size_t width, const size_t height, const size_t ch,
                                const float XYZ_to_RGB[3][4], const float RGB_to_XYZ[3][4], const float MIX[3][4],
                                const float illuminant[4], const float saturation[4], const float lightness[4], const float grey[4],
-                               const float p, const float gamut, const int clip, const int apply_grey, const dt_adaptation_t kind)
+                               const float p, const float gamut, const int clip, const int apply_grey, const dt_adaptation_t kind,
+                               const dt_iop_channelmixer_rgb_version_t version)
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(width, height, ch, in, out, XYZ_to_RGB, RGB_to_XYZ, MIX, illuminant, saturation, lightness, grey, p, gamut, clip, apply_grey, kind) \
+  dt_omp_firstprivate(width, height, ch, in, out, XYZ_to_RGB, RGB_to_XYZ, MIX, illuminant, saturation, lightness, grey, p, gamut, clip, apply_grey, kind, version) \
   aligned(in, out, XYZ_to_RGB, RGB_to_XYZ, MIX:64) aligned(illuminant, saturation, lightness, grey:16)\
   schedule(simd:static)
 #endif
@@ -710,7 +771,7 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     if(clip) for(size_t c = 0; c < 3; c++) temp_one[c] = fmaxf(temp_one[c], 0.0f);
 
     // Apply lightness / saturation adjustment
-    luma_chroma(temp_one, saturation, lightness, temp_two);
+    luma_chroma(temp_one, saturation, lightness, temp_two, version);
 
     // Clip in LMS
     if(clip) for(size_t c = 0; c < 3; c++) temp_two[c] = fmaxf(temp_two[c], 0.0f);
@@ -1746,7 +1807,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
                   XYZ_to_RGB, RGB_to_XYZ, data->MIX,
                   data->illuminant, data->saturation, data->lightness, data->grey,
-                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_FULL_BRADFORD);
+                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_FULL_BRADFORD, data->version);
       break;
     }
     case DT_ADAPTATION_LINEAR_BRADFORD:
@@ -1754,7 +1815,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
                   XYZ_to_RGB, RGB_to_XYZ, data->MIX,
                   data->illuminant, data->saturation, data->lightness, data->grey,
-                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_LINEAR_BRADFORD);
+                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_LINEAR_BRADFORD, data->version);
       break;
     }
     case DT_ADAPTATION_CAT16:
@@ -1762,7 +1823,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
                   XYZ_to_RGB, RGB_to_XYZ, data->MIX,
                   data->illuminant, data->saturation, data->lightness, data->grey,
-                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_CAT16);
+                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_CAT16, data->version);
       break;
     }
     case DT_ADAPTATION_XYZ:
@@ -1770,7 +1831,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
                   XYZ_to_RGB, RGB_to_XYZ, data->MIX,
                   data->illuminant, data->saturation, data->lightness, data->grey,
-                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_XYZ);
+                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_XYZ, data->version);
       break;
     }
     case DT_ADAPTATION_RGB:
@@ -1778,7 +1839,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       loop_switch(in, out, roi_out->width, roi_out->height, ch,
                   XYZ_to_RGB, RGB_to_XYZ, data->MIX,
                   data->illuminant, data->saturation, data->lightness, data->grey,
-                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_RGB);
+                  data->p, data->gamut, data->clip, data->apply_grey, DT_ADAPTATION_RGB, data->version);
       break;
     }
     case DT_ADAPTATION_LAST:
@@ -2394,6 +2455,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)p1;
   dt_iop_channelmixer_rbg_data_t *d = (dt_iop_channelmixer_rbg_data_t *)piece->data;
 
+  d->version = p->version;
+
   float norm_R = 1.0f;
   if(p->normalize_R) norm_R = p->red[0] + p->red[1] + p->red[2];
 
@@ -2421,6 +2484,13 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     d->saturation[i] = -p->saturation[i] + norm_sat;
     d->lightness[i] = p->lightness[i] - norm_light;
     d->grey[i] = p->grey[i] / norm_grey; // = NaN if (norm_grey == 0.f) but we don't care since (d->apply_grey == FALSE)
+  }
+
+  if(p->version == CHANNELMIXERRGB_V_1)
+  {
+    // for the v1 saturation algo, the effect of R and B coeffs is reversed
+    d->saturation[0] = -p->saturation[2] + norm_sat;
+    d->saturation[2] = -p->saturation[0] + norm_sat;
   }
 
   // just in case compiler feels clever and uses SSE 4×1 dot product
@@ -3085,6 +3155,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->scale_saturation_R, p->saturation[0]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_G, p->saturation[1]);
   dt_bauhaus_slider_set_soft(g->scale_saturation_B, p->saturation[2]);
+  dt_bauhaus_combobox_set(g->saturation_version, p->version);
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_sat), p->normalize_sat);
 
@@ -3528,7 +3599,8 @@ void gui_init(struct dt_iop_module_t *self)
   NOTEBOOK_PAGE(red, R, N_("R"), N_("red"), N_("red"), FALSE)
   NOTEBOOK_PAGE(green, G, N_("G"), N_("green"), N_("green"), FALSE)
   NOTEBOOK_PAGE(blue, B, N_("B"), N_("blue"), N_("blue"), FALSE)
-  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("colorfulness"), N_("colorfulness"), TRUE)
+  NOTEBOOK_PAGE(saturation, sat, N_("colorfulness"), N_("colorfulness"), N_("colorfulness"), FALSE)
+  g->saturation_version = dt_bauhaus_combobox_from_params(self, "version");
   NOTEBOOK_PAGE(lightness, light, N_("brightness"), N_("brightness"), N_("brightness"), FALSE)
   NOTEBOOK_PAGE(grey, grey, N_("grey"), N_("grey"), N_("grey"), FALSE)
 
