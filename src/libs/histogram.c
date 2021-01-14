@@ -1071,22 +1071,19 @@ void gui_init(dt_lib_module_t *self)
 
   /* create drawingarea */
   d->scope_draw = gtk_drawing_area_new();
-  // FIXME: be consistent about using hyphens or underscores
-  gtk_widget_set_name(d->scope_draw, "scope-draw");
   gtk_widget_set_tooltip_text(d->scope_draw, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
   gtk_container_add(GTK_CONTAINER(overlay), d->scope_draw);
 
+  // FIXME: clicking between or above/right of buttons makes the buttons disappear
   // a row of buttons
-  // FIXME: button box margins "obscure" events to drawable below -- place button box in another widget which provides these margins and doesn't catch events, or is it good that entire top-right of histogram is controls and there aren't thin ribbons of drawable receiving events?
-  d->button_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_widget_set_name(d->button_box, "button_box");
+  // NOTE: Button box and button margins "obscure" events to drawable
+  // below, hence the entire top-right of histogram doesn't pass
+  // events down. This is probably OK, compared to having ribbons of
+  // drawable events between/above the buttons.
+  d->button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(d->button_box), GTK_BUTTONBOX_EXPAND);
   gtk_widget_set_valign(d->button_box, GTK_ALIGN_START);
   gtk_widget_set_halign(d->button_box, GTK_ALIGN_END);
-  // GtkButtonBox spreads out the icons, so we use GtkBox --
-  // homogeneous shouldn't be necessary as icons are equal size, but
-  // set it just to show the desired look
-  // FIXME: can set GtkButtonBox to GTK_ALIGN_END to get rid of that behavior, then skip gtk_box_set_homogeneous()?
-  gtk_box_set_homogeneous(GTK_BOX(d->button_box), TRUE);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box);
 
   // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them? -- if so, then the each of the histogram/waveform widgets will have its own associated "mode" button, drawable, and sensitive areas for scrolling, but the channel buttons will be shared between them, or will modify the same underlying data
@@ -1100,19 +1097,18 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: this should really be a combobox to allow for more types and not to have to swap the icon on button down
   d->scope_type_button =
     GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL));
-  gtk_widget_set_name(GTK_WIDGET(d->scope_type_button), "scope_type_button");
+  gtk_widget_set_name(GTK_WIDGET(d->scope_type_button), "scope-type-button");
   gtk_toggle_button_set_active(d->scope_type_button,
                                d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM);
   gtk_box_pack_start(GTK_BOX(d->button_box), GTK_WIDGET(d->scope_type_button), FALSE, FALSE, 0);
 
   // scope mode
   d->mode_stack = gtk_stack_new();
-  gtk_widget_set_name(d->mode_stack, "scope_mode_stack");
 
   // histogram scale
   d->histogram_scale_button =
     GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL));
-  gtk_widget_set_name(GTK_WIDGET(d->histogram_scale_button), "histogram_scale_button");
+  gtk_widget_set_name(GTK_WIDGET(d->histogram_scale_button), "histogram-scale-button");
   gtk_toggle_button_set_active(d->histogram_scale_button,
                                d->histogram_scale_button == DT_LIB_HISTOGRAM_LOGARITHMIC);
   _histogram_scale_toggle(d->histogram_scale_button, d);
@@ -1122,7 +1118,7 @@ void gui_init(dt_lib_module_t *self)
   // histogram scale
   d->waveform_type_button =
     GTK_TOGGLE_BUTTON(dtgtk_togglebutton_new(dtgtk_cairo_paint_waveform_overlaid, CPF_NONE, NULL));
-  gtk_widget_set_name(GTK_WIDGET(d->waveform_type_button), "waveform_type_button");
+  gtk_widget_set_name(GTK_WIDGET(d->waveform_type_button), "waveform-type-button");
   gtk_toggle_button_set_active(d->waveform_type_button,
                                d->waveform_type_button == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID);
   _waveform_type_toggle(d->waveform_type_button, d);
@@ -1137,7 +1133,7 @@ void gui_init(dt_lib_module_t *self)
   // red channel on/off
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
   // FIXME: better to have a general tooltip rather than flipping it when the button is pressed
-  gtk_widget_set_name(button, "red_channel_button");
+  gtk_widget_set_name(button, "red-channel-button");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->red);
   _red_channel_toggle(GTK_TOGGLE_BUTTON(button), d);
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_red_channel_toggle), d);
@@ -1145,7 +1141,7 @@ void gui_init(dt_lib_module_t *self)
 
   // green channel on/off
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
-  gtk_widget_set_name(button, "green_channel_button");
+  gtk_widget_set_name(button, "green-channel-button");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->green);
   _green_channel_toggle(GTK_TOGGLE_BUTTON(button), d);
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_green_channel_toggle), d);
@@ -1153,7 +1149,7 @@ void gui_init(dt_lib_module_t *self)
 
   // blue channel on/off
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
-  gtk_widget_set_name(button, "blue_channel_button");
+  gtk_widget_set_name(button, "blue-channel-button");
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->blue);
   _blue_channel_toggle(GTK_TOGGLE_BUTTON(button), d);
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
@@ -1246,6 +1242,7 @@ void connect_key_accels(dt_lib_module_t *self)
                      g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
   dt_accel_connect_lib_as_view(self, "tethering", "cycle histogram modes",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
+  // FIXME: can connect these accelerators directly to the buttons
   dt_accel_connect_lib_as_view(self, "darkroom", "histogram/switch histogram mode",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
   dt_accel_connect_lib_as_view(self, "tethering", "switch histogram mode",
