@@ -695,6 +695,25 @@ overshoot.right
   margin: 2px 0 6px 0;
 }
 
+/* Control sections that can be expanded/collapsed need to be handled differently */
+
+#iop-plugin-ui .section-expander #section_label,
+#lib-plugin-ui .section-expander #section_label
+{
+  margin: 0;
+}
+
+#lib-plugin-ui .section-expander,
+#iop-plugin-ui .section-expander {
+  padding: 12px 0 6px 0;
+}
+
+#lib-plugin-ui .section-expander #control-button,
+#iop-plugin-ui .section-expander #control-button {
+  padding: 0;
+  margin: 0;
+}
+
 /* Special modules: image infos, navigation and search ones */
 #image-info
 {
