@@ -3418,10 +3418,6 @@ void gui_init(struct dt_iop_module_t *self)
   // Page CAT
   self->widget = dt_ui_notebook_page(g->notebook, _("CAT"), _("chromatic adaptation transform"));
 
-  self->warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(self->widget), self->warning_label, FALSE, FALSE, 4);
-
   g->adaptation = dt_bauhaus_combobox_from_params(self, N_("adaptation"));
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
                               _("choose the method to adapt the illuminant\n"
