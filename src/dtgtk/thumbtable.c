@@ -423,6 +423,18 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
+    // if the scrollbar is currently visible and we want to hide it
+    // we first ensure that with the width without the scrollbar, we won't need a scrollbar
+    if(gtk_widget_get_visible(darktable.gui->scrollbars.vscrollbar) && lbefore + lafter <= table->rows - 1)
+    {
+      const int nw = table->view_width + gtk_widget_get_allocated_width(darktable.gui->scrollbars.vscrollbar);
+      if((lbefore + lafter) * nw / table->thumbs_per_row >= table->view_height)
+      {
+        dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter + 1,
+                              table->rows - 1);
+        return TRUE;
+      }
+    }
     // in filemanager, no horizontal bar, and vertical bar reference is 1 thumb.
     dt_view_set_scrollbar(darktable.view_manager->current_view, 0, 0, 0, 0, lbefore, 0, lbefore + lafter,
                           table->rows - 1);
