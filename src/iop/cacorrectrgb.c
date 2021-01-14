@@ -155,7 +155,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, width, heig
     const float weightl = pixelg <= avg;
     for(size_t c = 0; c < 3; c++)
     {
-      const float pixel = in[k * 4 + c];
+      const float pixel = fmaxf(in[k * 4 + c], 1E-6);
       manifold_higher[k * 4 + c] = pixel * weighth;
       manifold_lower[k * 4 + c] = pixel * weightl;
     }
@@ -241,7 +241,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
       }
       for(size_t c = 0; c < 3; c++)
       {
-        const float pixel = in[k * 4 + c];
+        const float pixel = fmaxf(in[k * 4 + c], 1E-6);
         manifold_higher[k * 4 + c] = pixel * weighth;
       }
       manifold_higher[k * 4 + 3] = weighth;
@@ -266,7 +266,7 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
       }
       for(size_t c = 0; c < 3; c++)
       {
-        const float pixel = in[k * 4 + c];
+        const float pixel = fmaxf(in[k * 4 + c], 1E-6);
         manifold_lower[k * 4 + c] = pixel * weightl;
       }
       manifold_lower[k * 4 + 3] = weightl;
@@ -275,11 +275,12 @@ dt_omp_firstprivate(in, blurred_in, manifold_lower, manifold_higher, blurred_man
 
   dt_gaussian_blur_4c(g, manifold_higher, blurred_manifold_higher);
   dt_gaussian_blur_4c(g, manifold_lower, blurred_manifold_lower);
+  normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
+
   dt_gaussian_free(g);
   dt_free_align(manifold_lower);
   dt_free_align(manifold_higher);
 
-  normalize_manifolds(blurred_in, blurred_manifold_lower, blurred_manifold_higher, width, height, guide);
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
@@ -327,20 +328,33 @@ dt_omp_firstprivate(in, width, height, guide, manifolds, out, sigma, mode) \
     for(size_t kc = 1; kc <= 2; kc++)
     {
       const size_t c = (guide + kc) % 3;
+      const float pixelc = in[k * 4 + c];
+
+      const float diff_high_manifolds = manifolds[k * 6 + c] - high_guide;
+      const float diff_low_manifolds = manifolds[k * 6 + 3 + c] - low_guide;
+      const float diff = (diff_low_manifolds * dist) + (diff_high_manifolds * (1.0f - dist));
+      const float estimate_d = pixelg + diff;
+
       const float ratio_high_manifolds = manifolds[k * 6 + c] / high_guide;
       const float ratio_low_manifolds = manifolds[k * 6 + 3 + c] / low_guide;
+      const float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, (1.0f - dist));
+      const float estimate_r = pixelg * ratio;
 
-      const float ratio = powf(ratio_low_manifolds, dist) * powf(ratio_high_manifolds, 1.0f - dist);
+      float dist_dr = (pixelc - estimate_d) / (estimate_r - estimate_d);
+      dist_dr = fminf(dist_dr, 1.0f);
+      dist_dr = fmaxf(dist_dr, 0.0f);
+      const float outp = estimate_d * (1.0f - dist_dr) + estimate_r * dist_dr;
+
       switch(mode)
       {
         case DT_CACORRECT_MODE_STANDARD:
-          out[k * 4 + c] = pixelg * ratio;
+          out[k * 4 + c] = outp;
           break;
         case DT_CACORRECT_MODE_DARKEN:
-          out[k * 4 + c] = fminf(pixelg * ratio, in[k * 4 + c]);
+          out[k * 4 + c] = fminf(outp, in[k * 4 + c]);
           break;
         case DT_CACORRECT_MODE_BRIGHTEN:
-          out[k * 4 + c] = fmaxf(pixelg * ratio, in[k * 4 + c]);
+          out[k * 4 + c] = fmaxf(outp, in[k * 4 + c]);
           break;
       }
     }
