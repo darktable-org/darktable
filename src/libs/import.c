@@ -748,6 +748,8 @@ void gui_init(dt_lib_module_t *self)
   // collapsible section
   GtkWidget *destdisp_head = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *header_evb = gtk_event_box_new();
+  GtkStyleContext *context = gtk_widget_get_style_context(destdisp_head);
+  gtk_style_context_add_class(context, "section-expander");
   GtkWidget *destdisp = dt_ui_section_label_new(_("parameters"));
   gtk_container_add(GTK_CONTAINER(header_evb), destdisp);
 
