@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-14 21:48+0100\n"
-"PO-Revision-Date: 2021-01-14 21:44+0100\n"
+"PO-Revision-Date: 2021-01-14 22:30+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1945,7 +1945,7 @@ msgstr "gris moyen"
 #: ../build/lib/darktable/plugins/introspection_bilat.c:78
 #: ../build/lib/darktable/plugins/introspection_bilat.c:137
 msgid "midtone range"
-msgstr "étendue tons-moyens"
+msgstr "étendue tons moyens"
 
 #: ../build/lib/darktable/plugins/introspection_bilat.c:151
 msgid "bilateral grid"
@@ -2334,7 +2334,7 @@ msgstr "global"
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:305
 #: ../src/iop/colorbalancergb.c:735
 msgid "midtones"
-msgstr "tons-moyens"
+msgstr "tons moyens"
 
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:285
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:428
@@ -2938,7 +2938,7 @@ msgstr "granularité"
 #: ../build/lib/darktable/plugins/introspection_grain.c:70
 #: ../build/lib/darktable/plugins/introspection_grain.c:125
 msgid "midtones bias"
-msgstr "biais tons-moyens"
+msgstr "biais tons moyens"
 
 #: ../build/lib/darktable/plugins/introspection_highlights.c:80
 #: ../build/lib/darktable/plugins/introspection_highlights.c:139
@@ -3432,7 +3432,7 @@ msgstr "contraste"
 #: ../build/lib/darktable/plugins/introspection_velvia.c:44
 #: ../build/lib/darktable/plugins/introspection_velvia.c:91
 msgid "mid-tones bias"
-msgstr "biais tons-moyens"
+msgstr "biais tons moyens"
 
 #: ../build/lib/darktable/plugins/introspection_vibrance.c:33
 #: ../build/lib/darktable/plugins/introspection_vibrance.c:76
@@ -9450,7 +9450,7 @@ msgid ""
 "(reduce shadow and highlight contrast), increase for more powerful local "
 "contrast"
 msgstr ""
-"défini ce qui est compté comme tons-moyens. diminuer pour une meilleure "
+"défini ce qui est compté comme tons moyens. diminuer pour une meilleure "
 "compression dynamique (réduit le contraste des ombres et hautes lumières), "
 "augmenter pour un contraste local plus puissant"
 
@@ -10800,7 +10800,7 @@ msgstr "facteur bleu du gain/slope"
 
 #: ../src/iop/colorbalance.c:2082
 msgid "mid-tones"
-msgstr "tons-moyens"
+msgstr "tons moyens"
 
 #: ../src/iop/colorbalance.c:2088
 msgid "auto optimizers"
@@ -10829,8 +10829,8 @@ msgid ""
 "this module is experimental and the internal algo may slightly change before "
 "darktable 3.6. don't use it for serious work yet."
 msgstr ""
-"ce module est expérimentale et l'algorithme interne peut légèrement changer "
-"avant darktable 3.6. ne l'utiliser pas encore pour un travail sérieux."
+"ce module est expérimental et l'algorithme interne peut légèrement changer "
+"avant darktable 3.6. ne pas encore l'utiliser pour un travail sérieux."
 
 #: ../src/iop/colorbalancergb.c:617
 msgid "global grading"
@@ -10859,23 +10859,28 @@ msgstr ""
 
 #: ../src/iop/colorbalancergb.c:651
 msgid "chroma grading"
-msgstr "étalonnage couleur"
+msgstr "étalonnage chromatique"
 
 #: ../src/iop/colorbalancergb.c:658
 msgid "increase colorfulness at same luminance globally"
-msgstr ""
+msgstr "augmenter la saturation à la même luminance globalement"
 
 #: ../src/iop/colorbalancergb.c:664
 msgid "increase colorfulness at same luminance mostly in shadows"
 msgstr ""
+"augmenter la saturation à la même luminance essentiellement dans les ombres"
 
 #: ../src/iop/colorbalancergb.c:670
 msgid "increase colorfulness at same luminance mostly in midtones"
 msgstr ""
+"augmenter la saturation à la même luminance essentiellement dans les tons "
+"moyens"
 
 #: ../src/iop/colorbalancergb.c:676
 msgid "increase colorfulness at same luminance mostly in highlights"
 msgstr ""
+"augmenter la saturation à la même luminance essentiellement dans les hautes "
+"lumières"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:679
@@ -10883,79 +10888,70 @@ msgid "4 ways"
 msgstr "4 échelles"
 
 #: ../src/iop/colorbalancergb.c:679
-#, fuzzy
 msgid "selective color grading"
-msgstr "profil|lut|étalonnage des couleurs"
+msgstr "étalonnage sélectif des couleurs"
 
 #: ../src/iop/colorbalancergb.c:688
-#, fuzzy
 msgid "global luminance offset"
-msgstr "décalage du cadre interne"
+msgstr "compensation de la luminance globale"
 
 #: ../src/iop/colorbalancergb.c:695
-#, fuzzy
 msgid "hue of the global color offset"
-msgstr "change le contraste local"
+msgstr "teinte de l'offset couleur global"
 
 #: ../src/iop/colorbalancergb.c:702
-#, fuzzy
 msgid "chroma of the global color offset"
-msgstr "change le contraste local"
+msgstr "chroma de l'offset couleur global"
 
 #: ../src/iop/colorbalancergb.c:711
-#, fuzzy
 msgid "luminance gain in shadows"
-msgstr "teinte bleue des ombres"
+msgstr "gain de luminance dans les ombres"
 
 #: ../src/iop/colorbalancergb.c:718
-#, fuzzy
 msgid "hue of the color gain in shadows"
-msgstr "change le contraste local des ombres"
+msgstr "teinte du gain couleur dans les ombres"
 
 #: ../src/iop/colorbalancergb.c:726
-#, fuzzy
 msgid "chroma of the color gain in shadows"
-msgstr "change le contraste local des ombres"
+msgstr "chroma du gain couleur dans les ombres"
 
 #: ../src/iop/colorbalancergb.c:733
 msgid "weight of the shadows over the whole tonal range"
-msgstr ""
+msgstr "poids des ombres sur l'ensemble de la gamme tonale"
 
 #: ../src/iop/colorbalancergb.c:742
-#, fuzzy
 msgid "luminance exponent in midtones"
-msgstr "estimateur luminance"
+msgstr "exposant de luminance dans les tons moyens"
 
 #: ../src/iop/colorbalancergb.c:749
 msgid "hue of the color exponent in midtones"
-msgstr ""
+msgstr "teinte de l'exposant couleur dans les tons moyens"
 
 #: ../src/iop/colorbalancergb.c:757
 msgid "chroma of the color exponent in midtones"
-msgstr ""
+msgstr "chroma de l'exposant couleur dans les tons moyens"
 
 #: ../src/iop/colorbalancergb.c:764
 msgid "peak white luminance value used to normalize the power function"
 msgstr ""
+"valeur de pointe de la luminance blanche utilisée pour normaliser la "
+"fonction de puissance"
 
 #: ../src/iop/colorbalancergb.c:773
-#, fuzzy
 msgid "luminance gain in highlights"
-msgstr "ajouter du bruit dans les hautes lumières"
+msgstr "gain de luminance dans les hautes lumières"
 
 #: ../src/iop/colorbalancergb.c:780
-#, fuzzy
 msgid "hue of the color gain in highlights"
-msgstr "change le contraste local des hautes lumières"
+msgstr "teinte du gain couleur dans les hautes lumières"
 
 #: ../src/iop/colorbalancergb.c:788
-#, fuzzy
 msgid "chroma of the color gain in highlights"
-msgstr "change le contraste local des hautes lumières"
+msgstr "chroma du gain couleur dans les hautes lumières"
 
 #: ../src/iop/colorbalancergb.c:795
 msgid "weights of highlights over the whole tonal range"
-msgstr ""
+msgstr "poids des hautes lumières sur l'ensemble de la gamme tonale"
 
 #: ../src/iop/colorchecker.c:115
 msgid "color look up table"
@@ -12924,7 +12920,7 @@ msgid ""
 "greater the bias, the more pronounced the fall off of the grain in shadows "
 "and highlights"
 msgstr ""
-"quantité du biais des tons-moyens du modèle de réponse du papier "
+"quantité du biais des tons moyens du modèle de réponse du papier "
 "photographique. plus le biais est grand, plus prononcée est la diminution du "
 "grain dans les ombres et les hautes-lumières."
 
