@@ -191,9 +191,15 @@ typedef struct dt_undo_metadata_t
   GList *after;       // list of key/value after
 } dt_undo_metadata_t;
 
-static gboolean _compare_metadata(gconstpointer a, gconstpointer b)
+static GList *_list_find_custom(GList *list, gpointer data)
 {
-  return g_strcmp0(a, b);
+  for(GList *i = list; i; i = g_list_next(i))
+  {
+    if(i->data && !g_strcmp0(i->data, data))
+      return i;
+    i = g_list_next(i);
+  }
+  return NULL;
 }
 
 static gchar *_get_tb_removed_metadata_string_values(GList *before, GList *after)
@@ -204,7 +210,7 @@ static gchar *_get_tb_removed_metadata_string_values(GList *before, GList *after
 
   while(b)
   {
-    GList *same_key = g_list_find_custom(a, b->data, _compare_metadata);
+    GList *same_key = _list_find_custom(a, b->data);
     GList *b2 = g_list_next(b);
     gboolean different_value = FALSE;
     const char *value = (char *)b2->data; // if empty we can remove it
@@ -232,7 +238,7 @@ static gchar *_get_tb_added_metadata_string_values(const int img, GList *before,
 
   while(a)
   {
-    GList *same_key = g_list_find_custom(b, a->data, _compare_metadata);
+    GList *same_key = _list_find_custom(b, a->data);
     GList *a2 = g_list_next(a);
     gboolean different_value = FALSE;
     const char *value = (char *)a2->data; // if empty we don't add it to database
@@ -484,7 +490,7 @@ static void _metadata_add_metadata_to_list(GList **list, const GList *metadata)
   while(m)
   {
     GList *m2 = g_list_next(m);
-    GList *same_key = g_list_find_custom(*list, m->data, _compare_metadata);
+    GList *same_key = _list_find_custom(*list, m->data);
     GList *same2 = g_list_next(same_key);
     gboolean different_value = FALSE;
     if(same_key) different_value = g_strcmp0(same2->data, m2->data);
@@ -511,7 +517,7 @@ static void _metadata_remove_metadata_from_list(GList **list, const GList *metad
   const GList *m = metadata;
   while(m)
   {
-    GList *same_key = g_list_find_custom(*list, m->data, _compare_metadata);
+    GList *same_key = _list_find_custom(*list, m->data);
     if(same_key)
     {
       // same key for that image - remove metadata item
