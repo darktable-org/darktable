@@ -438,6 +438,8 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
+// FIXME: have different drawable for waveform and histogram in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
+// FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_times_t start_time = { 0 };
@@ -534,7 +536,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
 }
 
 static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
-                                                      gpointer user_data)
+                                                 gpointer user_data)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
@@ -591,6 +593,12 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     if(prior_highlight != d->highlight)
     {
       dt_control_queue_redraw_widget(widget);
+      if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+      {
+        printf("changing to hand cursor\n");
+        // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
+        dt_control_change_cursor(GDK_HAND1);
+      }
     }
   }
   // FIXME: is this code obsolete?
@@ -612,6 +620,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
 static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
+  printf("drawable button press\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
 
@@ -623,6 +632,7 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
     }
     else
     {
+      // FIXME: should change cursor from "grab" to "grabbing"
       d->dragging = TRUE;
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
         d->button_down_value = dt_dev_exposure_get_exposure(dev);
@@ -795,21 +805,10 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
 static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventButton *event,
                                                   gpointer user_data)
 {
+  printf("drawable button release callback\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->dragging = FALSE;
-  return TRUE;
-}
-
-// FIXME: move earlier
-static gboolean _drawable_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                gpointer user_data)
-{
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if((cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(darktable.develop))
-  {
-    // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
-    dt_control_change_cursor(GDK_HAND1);
-  }
+  // FIXME: should recalculate the highlight here as mouse may be be over a different part of a highlight
   return TRUE;
 }
 
@@ -818,35 +817,57 @@ static gboolean _drawable_leave_notify_callback(GtkWidget *widget, GdkEventCross
                                                 gpointer user_data)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  // FIXME: can just declare user_data to be of type dt_lib_histogram_t above?
   // if dragging, gtk keeps up motion notifications until mouse button
   // is released, at which point we'll get another leave event for
   // drawable if pointer is still outside of the widget
+
   if(!d->dragging)
   {
-    d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-    dt_control_change_cursor(GDK_LEFT_PTR);
-    dt_control_queue_redraw_widget(widget);
+    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+    {
+      printf("drawable leave: canceling highlight, changing pointer, redrawing drawable\n");
+      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_queue_redraw_widget(widget);
+    }
   }
-  return TRUE;
+  else
+  {
+    printf("drawable leave: dragging -- no more work done\n");
+  }
+  // FIXME: TRUE or FALSE?
+  return FALSE;
 }
 
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                gpointer user_data)
+                                                 gpointer user_data)
 {
-  GtkWidget *button_box = (GtkWidget *)user_data;
-  gtk_widget_show(button_box);
-  return TRUE;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  printf("eventbox enter notify, showing button_box\n");
+  gtk_widget_show(d->button_box);
+  // FIXME: TRUE or FALSE?
+  return FALSE;
 }
 
 static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                gpointer user_data)
+                                                 gpointer user_data)
 {
-  // note that if we are dragging the drawable and cursor goes outside
-  // of eventbox then the button is released, the eventbox doesn't
-  // receive a leave event until the button is released
-  GtkWidget *button_box = (GtkWidget *)user_data;
-  gtk_widget_hide(button_box);
-  return TRUE;
+  printf("eventbox leave crossing mode %d detail %d\n", event->mode, event->detail);
+  // when click between buttons on the buttonbox a leave event of mode
+  // GDK_CROSSING_UNGRAB is generated -- ignore that one
+  if(event->mode == GDK_CROSSING_NORMAL)
+  {
+    printf("eventbox leave: hiding buttons\n");
+    dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+    gtk_widget_hide(d->button_box);
+  }
+  else
+  {
+    printf("eventbox: it's an ungrab event -- ignoring\n");
+  }
+  // FIXME: TRUE or FALSE?
+  return FALSE;
 }
 
 // FIXME: move later
@@ -1068,11 +1089,21 @@ void gui_init(dt_lib_module_t *self)
 
   // create widgets
   GtkWidget *overlay = gtk_overlay_new();
+  // FIXME: is the overlay has focus-on-click true -- turn this off to not confuse things?
+  //g_object_set_property(G_OBJECT(overlay), "focus-on-click", gvalue(FALSE))
+  /*
+  GValue value = {
+    0,
+  };
+  g_value_init(&value, G_TYPE_INT);
+  g_value_set_int(&value, map_source);
+  g_object_set_property(G_OBJECT(lib->map), "map-source", &value);
+  g_value_unset(&value);
+  */
 
-  /* create drawingarea */
+  // drawingarea shows the scope, scale, and has draggable areas
   d->scope_draw = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(d->scope_draw, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
-  gtk_container_add(GTK_CONTAINER(overlay), d->scope_draw);
 
   // FIXME: clicking between or above/right of buttons makes the buttons disappear
   // a row of buttons
@@ -1080,11 +1111,11 @@ void gui_init(dt_lib_module_t *self)
   // below, hence the entire top-right of histogram doesn't pass
   // events down. This is probably OK, compared to having ribbons of
   // drawable events between/above the buttons.
+  // FIXME: could use gtk_widget_set_margin_end/top but then it won't be styleable
   d->button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_button_box_set_layout(GTK_BUTTON_BOX(d->button_box), GTK_BUTTONBOX_EXPAND);
   gtk_widget_set_valign(d->button_box, GTK_ALIGN_START);
   gtk_widget_set_halign(d->button_box, GTK_ALIGN_END);
-  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box);
 
   // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them? -- if so, then the each of the histogram/waveform widgets will have its own associated "mode" button, drawable, and sensitive areas for scrolling, but the channel buttons will be shared between them, or will modify the same underlying data
 
@@ -1162,26 +1193,46 @@ void gui_init(dt_lib_module_t *self)
   // event when the cursor moves over the buttons.
   // FIXME: solve this by making the button box the size of the drawable, but have it not catch any events except enter/leave?
   GtkWidget *eventbox = gtk_event_box_new();
+
+
+  // assemble the widgets
+  //
+  // |----- EventBox -----|
+  // |                    |
+  // |  |-- Overlay  --|  |
+  // |  |              |  |
+  // |  |  ButtonBox   |  |
+  // |  |              |  |
+  // |  |--------------|  |
+  // |  |              |  |
+  // |  |  DrawingArea |  |
+  // |  |              |  |
+  // |  |--------------|  |
+  // |                    |
+  // |--------------------|
+
+
+  gtk_container_add(GTK_CONTAINER(overlay), d->scope_draw);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box);
+  gtk_container_add(GTK_CONTAINER(eventbox), overlay);
+  self->widget = eventbox;
   // FIXME: should eventbox only contain the buttonbox, if its only job is to show the buttonbox?
   // FIXME: can just make buttonbox the size of the widget with a CSS hover property to make it disappear (not opaque, as it would still be sensitive) when mouse is over it?
-  gtk_container_add(GTK_CONTAINER(eventbox), overlay);
+  //gtk_overlay_add_overlay(GTK_OVERLAY(overlay), eventbox);
 
   gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
-                   G_CALLBACK(_eventbox_enter_notify_callback), d->button_box);
+                   G_CALLBACK(_eventbox_enter_notify_callback), d);
   g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
-                   G_CALLBACK(_eventbox_leave_notify_callback), d->button_box);
-
+                   G_CALLBACK(_eventbox_leave_notify_callback), d);
+  
   // FIXME: these events become less important if are using widgets on top of this
   // FIXME: GDK_POINTER_MOTION_MASK is deprecated, see https://developer.gnome.org/gdk3/stable/gdk3-Events.html#GdkEventMask
-  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK |
-                                       GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
+  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
                                        GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
 
   /* connect callbacks */
   g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
-  g_signal_connect(G_OBJECT(d->scope_draw), "enter-notify-event",
-                   G_CALLBACK(_drawable_enter_notify_callback), NULL);
   g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
                    G_CALLBACK(_drawable_leave_notify_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "button-press-event",
@@ -1196,7 +1247,6 @@ void gui_init(dt_lib_module_t *self)
 
   // FIXME: do we even need to save self->widget? most references are to the drawable...
   // FIXME: how does reference counting of widgets work? do we need to dealloc or garbage collect them?
-  self->widget = eventbox;
   gtk_widget_set_name(self->widget, "main-histogram");
   // FIXME: is this the right widget to have the help link?
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
@@ -1232,6 +1282,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib_as_view("tethering", NC_("accel", "switch histogram type"), 0, 0);
 }
 
+// see acdd4d2ff721e723e16f2b3280cf1a22d12d1a67 for comparison
 void connect_key_accels(dt_lib_module_t *self)
 {
   dt_accel_connect_lib_as_view(self, "darkroom", "histogram/hide histogram",
