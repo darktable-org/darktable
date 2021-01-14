@@ -1969,10 +1969,6 @@ void gui_init(struct dt_iop_module_t *self)
 
   GtkBox *box_enabled = GTK_BOX(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
 
-  self->warning_label = dt_ui_label_new("");
-  gtk_label_set_line_wrap(GTK_LABEL(self->warning_label), TRUE);
-  gtk_box_pack_start(GTK_BOX(box_enabled), self->warning_label, FALSE, FALSE, 4);
-
   g->mod_temp = NAN;
   for(int k = 0; k < 4; k++)
   {
