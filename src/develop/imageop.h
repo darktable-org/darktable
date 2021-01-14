@@ -384,7 +384,6 @@ typedef struct dt_iop_module_t
   GtkDarktableToggleButton *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
-  GtkWidget *warning_label;
 
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
@@ -729,11 +728,8 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
 
-/** show in iop module header that the module is in trouble */
-void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
-
 /** Set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
- ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that 
+ ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that
  ** message when the module does not have a warning-label widget (use %s for the module's name).  **/
 void dt_iop_set_module_trouble_message(dt_iop_module_t *module, char *const trouble_msg,
                                        const char *const trouble_tooltip, const char *stderr_message);
@@ -751,7 +747,7 @@ static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t 
 }
 #define IOP_GUI_ALLOC(module) \
   (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
-  
+
 #define IOP_GUI_FREE \
   dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){free(self->gui_data);} self->gui_data = NULL
 

@@ -633,7 +633,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       writeprotect = sqlite3_column_int(stmt, 2);
       char *markup;
       mi = gtk_menu_item_new_with_label("");
-      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", name);
+      markup = g_markup_printf_escaped("<span weight='bold'>%s</span>", name);
       gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
       g_free(markup);
     }

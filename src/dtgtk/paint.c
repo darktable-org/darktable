@@ -39,6 +39,14 @@
 #define FINISH { cairo_identity_matrix(cr); \
                  cairo_restore(cr); }
 
+const GdkRGBA _colorlabels[]
+  = { {.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 }, // red
+      {.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // yellow
+      {.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 }, // green
+      {.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // blue
+      {.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 }, // purple
+    };
+
 void dtgtk_cairo_paint_empty(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
   PREAMBLE(1, 0, 0)
@@ -1207,19 +1215,8 @@ void dtgtk_cairo_paint_label(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
   if(color < DT_COLORLABELS_LAST)
   {
-    GdkRGBA colorlabels[DT_COLORLABELS_LAST];
-    if(data != NULL)
-    {
-      memcpy(&colorlabels, data, sizeof(GdkRGBA) * DT_COLORLABELS_LAST);
-    }
-    else
-    {
-      colorlabels[DT_COLORLABELS_RED]    = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 };
-      colorlabels[DT_COLORLABELS_YELLOW] = (GdkRGBA){.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
-      colorlabels[DT_COLORLABELS_GREEN]  = (GdkRGBA){.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
-      colorlabels[DT_COLORLABELS_BLUE]   = (GdkRGBA){.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
-      colorlabels[DT_COLORLABELS_PURPLE] = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
-    }
+    const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
+
     set_color(cr, colorlabels[color]);
   }
   else if(color == 7)
@@ -1359,19 +1356,7 @@ void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h,
 {
   PREAMBLE(1, 0, 0)
 
-  GdkRGBA colorlabels[DT_COLORLABELS_LAST];
-  if(data != NULL)
-  {
-    memcpy(&colorlabels, data, sizeof(GdkRGBA) * DT_COLORLABELS_LAST);
-  }
-  else
-  {
-    colorlabels[DT_COLORLABELS_RED]    = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.0, .alpha = 1.0 };
-    colorlabels[DT_COLORLABELS_YELLOW] = (GdkRGBA){.red = 0.9, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
-    colorlabels[DT_COLORLABELS_GREEN]  = (GdkRGBA){.red = 0.0, .green = 0.9, .blue = 0.0, .alpha = 1.0 };
-    colorlabels[DT_COLORLABELS_BLUE]   = (GdkRGBA){.red = 0.0, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
-    colorlabels[DT_COLORLABELS_PURPLE] = (GdkRGBA){.red = 0.9, .green = 0.0, .blue = 0.9, .alpha = 1.0 };
-  }
+  const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
 
   const float r = 0.18;
 

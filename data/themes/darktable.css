@@ -1411,7 +1411,8 @@ margin: 0 2px;
 }
 
 #modulegroups-deprecated-msg,
-#iop-plugin-deprecated
+#iop-plugin-deprecated,
+#iop-plugin-warning
 {
   background-color: #852A2A;
   padding: 0.45em;
