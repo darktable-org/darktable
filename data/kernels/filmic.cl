@@ -708,7 +708,7 @@ kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF,
 
   const float4 i = read_imagef(reconstructed_read, sampleri, (int2)(x, y));
   const float4 o = i + alpha * (delta * details + residual);
-  write_imagef(reconstructed_write, (int2)(x, y), fmax(o, 0.f));
+  write_imagef(reconstructed_write, (int2)(x, y), o);
 }
 
 
