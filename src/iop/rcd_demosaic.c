@@ -41,7 +41,7 @@
 * 1. The calculated data at the tiling borders RCD_BORDER must be at least 9 to be stable.
 * 2. For the outermost tiles we only have to discard a 6 pixel border region interpolated otherwise.
 * 3. The tilesize has a significant influence on performance, the default is a good guess for modern
-*    x86/64 machines, tested on Xeon E-2288G, i5-8250U and AMD FX8350.
+*    x86/64 machines, tested on Xeon E-2288G, i5-8250U.
 */
 
 #ifndef RCD_TILESIZE
@@ -63,7 +63,7 @@
 #define FCRCD(row, col) (cfarray[(((row) & 1)<<1) | ((col) & 1)])
 
 #define RCD_BORDER 9          // avoid tile-overlap errors
-#define RCD_MARGIN 5          // for the outermost tiles we can have a smaller outer border
+#define RCD_MARGIN 6          // for the outermost tiles we can have a smaller outer border
 #define RCD_TILEVALID (RCD_TILESIZE - 2 * RCD_BORDER)
 #define w1 RCD_TILESIZE
 #define w2 (2 * RCD_TILESIZE)
@@ -95,35 +95,42 @@ static INLINE float sqrf(float a)
 
 // The border interpolation has been taken from rt, adapted to dt.
 // The original dcraw based code had much stronger color artefacts in the border region. 
-static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c, const float scaler)
+static INLINE void approxit(float *out, const float *cfa, const float *sum, const int idx, const int c)
 {
   float (*rgb)[4] = (void *)out;
   if(c == 1)
   {
-    rgb[idx][0] = (sum[0] / sum[3]) * scaler;
+    rgb[idx][0] = sum[0] / sum[3];
     rgb[idx][1] = fmaxf(0.0f, cfa[idx]);
-    rgb[idx][2] = (sum[2] / sum[5]) * scaler;
+    rgb[idx][2] = sum[2] / sum[5];
   }
   else
   {
-    rgb[idx][1] =  (sum[1] / sum[4]) * scaler;
+    rgb[idx][1] =  sum[1] / sum[4];
     if (c == 0)
     {
       rgb[idx][0] = fmaxf(0.0f, cfa[idx]);
-      rgb[idx][2] = (sum[2] / sum[5]) * scaler;
+      rgb[idx][2] = sum[2] / sum[5];
     }
     else
     {
-      rgb[idx][0] = (sum[0] / sum[3]) * scaler;
+      rgb[idx][0] = sum[0] / sum[3];
       rgb[idx][2] = fmaxf(0.0f, cfa[idx]);
     }
   }
   rgb[idx][3] = 0.0f;
 }
 
-static void rcd_border_interpolate(float *out, const float *cfa, const int *cfarray, const int width, const int height, int border, float scaler)
+static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, const float *cfa, dt_iop_roi_t *const roi_out,
+                                   const dt_iop_roi_t *const roi_in, const uint32_t filters, int border)
 {
-  const float revscaler = 1.0f / scaler;
+  const int width = roi_in->width;
+  const int height = roi_in->height;
+
+  if((width < 2 * border) || (height < 2 * border)) return;
+
+  const int cfarray[4] = {FC(roi_in->y, roi_in->x, filters), FC(roi_in->y, roi_in->x + 1, filters), FC(roi_in->y + 1, roi_in->x, filters), FC(roi_in->y + 1, roi_in->x + 1, filters)};
+
   for(int i = 0; i < height; i++)
   {
     float sum[6];
@@ -137,12 +144,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
+            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
     }
 
     for(int j = width - border; j < width; j++)
@@ -155,12 +162,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height ) && (j1 < width))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
+            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
     }
   }
   for(int i = 0; i < border; i++)
@@ -176,12 +183,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 > -1))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
+            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
     }
   }
   for(int i = height - border; i < height; i++)
@@ -197,12 +204,12 @@ static void rcd_border_interpolate(float *out, const float *cfa, const int *cfar
           if((i1 > -1) && (i1 < height) && (j1 < width))
           {
             const int c = FCRCD(i1, j1);
-            sum[c] += safe_in(cfa[i1 * width + j1], revscaler);
+            sum[c] += fmaxf(0.0f, cfa[i1 * width + j1]);
             sum[c + 3]++;
           }
         }
       }
-      approxit(out, cfa, sum, i * width + j, FCRCD(i, j), scaler); 
+      approxit(out, cfa, sum, i * width + j, FCRCD(i, j)); 
     }
   }
 }
@@ -325,6 +332,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
             float H_Stat = fmaxf(epssq, bufferH[col - 4] + bufferH[col - 3] + bufferH[col - 2]);
             VH_Dir[indx] = V_Stat / ( V_Stat + H_Stat );
           }
+          // rolling the line pointers
           float* tmp = V0; V0 = V1; V1 = V2; V2 = tmp;
         }
 
@@ -451,22 +459,20 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
 
             for(int c = 0; c <= 2; c += 2)
             {
-              const float rgbc_mw1 = rgb[c][indx - w1];
-              const float rgbc_pw1 = rgb[c][indx + w1];
-              const float rgbc_m1  = rgb[c][indx -  1];
-              const float rgbc_p1  = rgb[c][indx +  1];
+              const float SNabs = fabs(rgb[c][indx - w1] - rgb[c][indx + w1]);
+              const float EWabs = fabs(rgb[c][indx -  1] - rgb[c][indx +  1]);
 
               // Cardinal gradients
-              const float N_Grad = N1 + fabs(rgbc_mw1 - rgbc_pw1) + fabs(rgbc_mw1 - rgb[c][indx - w3]);
-              const float S_Grad = S1 + fabs(rgbc_pw1 - rgbc_mw1) + fabs(rgbc_pw1 - rgb[c][indx + w3]);
-              const float W_Grad = W1 + fabs(rgbc_m1  - rgbc_p1)  + fabs(rgbc_m1  - rgb[c][indx -  3]);
-              const float E_Grad = E1 + fabs(rgbc_p1  - rgbc_m1)  + fabs(rgbc_p1  - rgb[c][indx +  3]);
+              const float N_Grad = N1 + SNabs + fabs(rgb[c][indx - w1] - rgb[c][indx - w3]);
+              const float S_Grad = S1 + SNabs + fabs(rgb[c][indx + w1] - rgb[c][indx + w3]);
+              const float W_Grad = W1 + EWabs + fabs(rgb[c][indx -  1] - rgb[c][indx -  3]);
+              const float E_Grad = E1 + EWabs + fabs(rgb[c][indx +  1] - rgb[c][indx +  3]);
 
               // Cardinal colour differences
-              const float N_Est = rgbc_mw1 - rgb1mw1;
-              const float S_Est = rgbc_pw1 - rgb1pw1;
-              const float W_Est = rgbc_m1 - rgb1m1;
-              const float E_Est = rgbc_p1 - rgb1p1;
+              const float N_Est = rgb[c][indx - w1] - rgb1mw1;
+              const float S_Est = rgb[c][indx + w1] - rgb1pw1;
+              const float W_Est = rgb[c][indx -  1] - rgb1m1;
+              const float E_Est = rgb[c][indx +  1] - rgb1p1;
 
               // Vertical and horizontal estimations
               const float V_Est = (N_Grad * S_Est + S_Grad * N_Est) / (N_Grad + S_Grad);
@@ -504,8 +510,7 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
     dt_free_align(P_CDiff_Hpf);
     dt_free_align(Q_CDiff_Hpf);
   }
-
-  rcd_border_interpolate(out, in, cfarray, width, height, RCD_MARGIN, scaler);
+  rcd_border_interpolate(piece, out, in, roi_out, roi_in, filters, RCD_MARGIN);
 }
 
 #ifdef __GNUC__
