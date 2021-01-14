@@ -2113,7 +2113,7 @@ static int _manage_editor_module_so_add_sort(gconstpointer a, gconstpointer b)
   const int res = g_strcmp0(sa, sb);
   g_free(sa);
   g_free(sb);
-  return res;
+  return -res;
 }
 
 static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_group_t *gr, GCallback callback,
