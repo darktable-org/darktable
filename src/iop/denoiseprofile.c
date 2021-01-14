@@ -1147,6 +1147,7 @@ static void variance_stabilizing_xform(float thrs[4], const int scale, const int
   float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
   const int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
+  const int band_index = DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1);
 
   if(d->wavelet_color_mode == MODE_RGB)
   {
@@ -1157,33 +1158,33 @@ static void variance_stabilizing_xform(float thrs[4], const int scale, const int
     // in other words, max_scale is the maximum number of VISIBLE scales.
     // That is why we have this "scale+offset_scale"
     float band_force_exp_2
-      = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+      = d->force[DT_DENOISE_PROFILE_ALL][band_index];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4;
     for(int ch = 0; ch < 3; ch++)
     {
       adjt[ch] *= band_force_exp_2;
     }
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][band_index];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4;
     adjt[0] *= band_force_exp_2;
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][band_index];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4;
     adjt[1] *= band_force_exp_2;
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][band_index];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4;
     adjt[2] *= band_force_exp_2;
   }
   else
   {
-    float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][band_index];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4;
     adjt[0] *= band_force_exp_2;
-    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1)];
+    band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][band_index];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4;
     adjt[1] *= band_force_exp_2;
@@ -2160,11 +2161,11 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
   // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
   float toY0U0V0[9] = {1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f,
-                      0.5f,      0.0f,      -0.5f,
-                      0.25f,     -0.5f,     0.25f};
+                       0.5f,      0.0f,      -0.5f,
+                       0.25f,     -0.5f,     0.25f};
   float toRGB[9] = {0.0f, 0.0f, 0.0f,
-                  0.0f, 0.0f, 0.0f,
-                  0.0f, 0.0f, 0.0f};
+                    0.0f, 0.0f, 0.0f,
+                    0.0f, 0.0f, 0.0f};
   set_up_conversion_matrices(toY0U0V0, toRGB, wb);
   // update the coeffs with strength and scale
   for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * scale);
@@ -2342,6 +2343,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
     const int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
+    const int band_index = DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1);
 
     if(d->wavelet_color_mode == MODE_RGB)
     {
@@ -2351,33 +2353,33 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       // zoom level, it does NOT corresponds to the the maximum number of scales.
       // in other words, max_s is the maximum number of VISIBLE scales.
       // That is why we have this "s+offset_scale"
-      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_ALL][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_ALL][band_index];
       band_force_exp_2 *= band_force_exp_2;
       band_force_exp_2 *= 4;
       for(int ch = 0; ch < 3; ch++)
       {
         adjt[ch] *= band_force_exp_2;
       }
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_R][band_index];
       band_force_exp_2 *= band_force_exp_2;
       band_force_exp_2 *= 4;
       adjt[0] *= band_force_exp_2;
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_G][band_index];
       band_force_exp_2 *= band_force_exp_2;
       band_force_exp_2 *= 4;
       adjt[1] *= band_force_exp_2;
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_B][band_index];
       band_force_exp_2 *= band_force_exp_2;
       band_force_exp_2 *= 4;
       adjt[2] *= band_force_exp_2;
     }
     else
     {
-      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_Y0][band_index];
       band_force_exp_2 *= band_force_exp_2;
       band_force_exp_2 *= 4;
       adjt[0] *= band_force_exp_2;
-      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1)];
+      band_force_exp_2 = d->force[DT_DENOISE_PROFILE_U0V0][band_index];
       band_force_exp_2 *= band_force_exp_2;
       band_force_exp_2 *= 4;
       adjt[1] *= band_force_exp_2;
