@@ -5,6 +5,7 @@
         section
         (import|session|interface|other|tags|geoloc|slideshow|cpugpu|database|xmp|accel|general|modules|thumbs) #IMPLIED
         dialog (collect|import) #IMPLIED
+        ui (yes|no) #IMPLIED
         restart (true|false) #IMPLIED
         capability CDATA #IMPLIED
 >
