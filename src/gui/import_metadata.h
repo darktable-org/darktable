@@ -20,10 +20,7 @@ typedef struct dt_import_metadata_t
 {
   GtkWidget *box;   // widget where to put the metadata widgets
   GtkWidget *apply_metadata;
-  GtkWidget *presets;
-  GtkWidget *metadata[DT_METADATA_NUMBER];
-  GtkWidget *imported[DT_METADATA_NUMBER];
-  GtkWidget *tags;
+  GtkWidget *grid;
 } dt_import_metadata_t;
 
 void dt_import_metadata_init(dt_import_metadata_t *metadata);
