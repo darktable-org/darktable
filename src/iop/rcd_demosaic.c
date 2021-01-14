@@ -279,7 +279,6 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 0: fill data and make sure data are not negative.
         for(int row = rowStart; row < rowEnd; row++)
         {
-          
           int indx = (row - rowStart) * RCD_TILESIZE;
           int in_indx = (row * width + colStart);
           const int c0 = FCRCD(row, colStart);
