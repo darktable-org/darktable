@@ -579,7 +579,8 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
 
   GtkWidget *mi;
-  int active_preset = -1, cnt = 0, writeprotect = 0;
+  int active_preset = -1, cnt = 0;
+  gboolean selected_writeprotect = FALSE;
   sqlite3_stmt *stmt;
   // order like the pref value
   gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect, description"
@@ -598,19 +599,19 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // default vs built-in stuff
-    const int chk_writeprotect = sqlite3_column_int(stmt, 2);
-    if(hide_default && chk_writeprotect)
+    const gboolean writeprotect = sqlite3_column_int(stmt, 2);
+    if(hide_default && writeprotect)
     {
       // skip default module if set to hide them.
       continue;
     }
     if(last_wp == -1)
     {
-      last_wp = chk_writeprotect;
+      last_wp = writeprotect;
     }
-    else if(last_wp != chk_writeprotect)
+    else if(last_wp != writeprotect)
     {
-      last_wp = chk_writeprotect;
+      last_wp = writeprotect;
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
     }
 
@@ -630,7 +631,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     if(op_params_size == minfo->params_size && !memcmp(minfo->params, op_params, op_params_size))
     {
       active_preset = cnt;
-      writeprotect = sqlite3_column_int(stmt, 2);
+      selected_writeprotect = writeprotect;
       mi = gtk_menu_item_new_with_label(name);
       gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     }
@@ -646,17 +647,22 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   }
   sqlite3_finalize(stmt);
 
-  if(cnt > 0) gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  if(cnt > 0)
+  {
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    cnt = 0;
+  }
 
   if(minfo->module->manage_presets)
   {
     mi = gtk_menu_item_new_with_label(_("manage presets..."));
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_manage_presets), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    cnt++;
   }
   else if(active_preset >= 0) // FIXME: this doesn't seem to work.
   {
-    if(!writeprotect)
+    if(!selected_writeprotect)
     {
       mi = gtk_menu_item_new_with_label(_("edit this preset.."));
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), minfo);
@@ -665,6 +671,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       mi = gtk_menu_item_new_with_label(_("delete this preset"));
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      cnt++;
     }
   }
   else
@@ -691,11 +698,12 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       g_free(markup);
     }
+    cnt++;
   }
 
   if(minfo->module->set_preferences)
   {
-    if(minfo->params)
+    if(minfo->params && cnt>0)
     {
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
     }
