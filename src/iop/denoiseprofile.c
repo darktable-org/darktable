@@ -1146,7 +1146,7 @@ static void variance_stabilizing_xform(float thrs[4], const int scale, const int
   // add 8.0 here because it seemed a little weak
   float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
-  int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
+  const int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
 
   if(d->wavelet_color_mode == MODE_RGB)
   {
@@ -1310,7 +1310,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
     const float DT_ALIGNED_PIXEL boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     float DT_ALIGNED_PIXEL thrs[4];
-    variance_stabilizing_xform(thrs,scale,max_scale,npixels,sum_y2,d);
+    variance_stabilizing_xform(thrs, scale, max_scale, npixels, sum_y2, d);
     synthesize(out, out, buf, thrs, boost, width, height);
 
     float *buf3 = buf2;
@@ -2341,7 +2341,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     // add 8.0 here because it seemed a little weak
     float adjt[3] = { 8.0f, 8.0f, 8.0f };
 
-    int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
+    const int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
 
     if(d->wavelet_color_mode == MODE_RGB)
     {
