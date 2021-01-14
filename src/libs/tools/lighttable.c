@@ -539,6 +539,20 @@ static gboolean _lib_lighttable_key_accel_toggle_culling_zoom_mode(GtkAccelGroup
   return TRUE;
 }
 
+static gboolean _lib_lighttable_key_accel_exit_layout(GtkAccelGroup *accel_group, GObject *acceleratable,
+                                                      guint keyval, GdkModifierType modifier, gpointer data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)data;
+  dt_lib_tool_lighttable_t *d = (dt_lib_tool_lighttable_t *)self->data;
+
+  if(d->fullpreview)
+    _lib_lighttable_set_layout(self, d->layout);
+  else if(d->layout != d->base_layout)
+    _lib_lighttable_set_layout(self, d->base_layout);
+
+  return TRUE;
+}
+
 void init_key_accels(dt_lib_module_t *self)
 {
   // view accels
@@ -551,6 +565,7 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle sticky preview mode"), GDK_KEY_f, 0);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle sticky preview mode with focus detection"),
                                 GDK_KEY_f, GDK_CONTROL_MASK);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "exit current layout"), GDK_KEY_Escape, 0);
 }
 
 void connect_key_accels(dt_lib_module_t *self)
@@ -577,6 +592,9 @@ void connect_key_accels(dt_lib_module_t *self)
   dt_accel_connect_lib_as_view(
       self, "lighttable", "toggle sticky preview mode with focus detection",
       g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_toggle_preview_focus), self, NULL));
+
+  dt_accel_connect_lib_as_view(self, "lighttable", "exit current layout",
+                               g_cclosure_new(G_CALLBACK(_lib_lighttable_key_accel_exit_layout), self, NULL));
 }
 
 #ifdef USE_LUA
