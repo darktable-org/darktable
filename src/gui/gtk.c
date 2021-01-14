@@ -1439,7 +1439,7 @@ int dt_gui_gtk_init(dt_gui_gtk_t *gui)
   dt_accel_register_global(NC_("accel", "toggle header"), GDK_KEY_h, GDK_CONTROL_MASK);
   dt_accel_connect_global("toggle header", g_cclosure_new(G_CALLBACK(_toggle_header_accel_callback), NULL, NULL));
 
-  dt_accel_register_global(NC_("accel", "toggle filmstrip and timeline"), GDK_KEY_b, GDK_CONTROL_MASK);
+  dt_accel_register_global(NC_("accel", "toggle filmstrip and timeline"), GDK_KEY_f, GDK_CONTROL_MASK);
   dt_accel_connect_global("toggle filmstrip and timeline",
                           g_cclosure_new(G_CALLBACK(_toggle_filmstrip_accel_callback), NULL, NULL));
 
