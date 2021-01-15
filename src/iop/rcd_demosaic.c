@@ -122,7 +122,7 @@ static INLINE void approxit(float *out, const float *cfa, const float *sum, cons
 }
 
 static void rcd_border_interpolate(dt_dev_pixelpipe_iop_t *piece, float *out, const float *cfa, dt_iop_roi_t *const roi_out,
-                                   const dt_iop_roi_t *const roi_in, const uint32_t filters, int border)
+                                   const dt_iop_roi_t *const roi_in, const uint32_t filters, const int border)
 {
   const int width = roi_in->width;
   const int height = roi_in->height;
@@ -279,20 +279,11 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         // Step 0: fill data and make sure data are not negative.
         for(int row = rowStart; row < rowEnd; row++)
         {
-          int indx = (row - rowStart) * RCD_TILESIZE;
-          int in_indx = (row * width + colStart);
           const int c0 = FCRCD(row, colStart);
           const int c1 = FCRCD(row, colStart + 1);
-          int col = colStart;
-
-          for(; col < colEnd - 1; col+=2, indx+=2, in_indx+=2)
+          for(int col = colStart, indx = (row - rowStart) * RCD_TILESIZE, in_indx = row * width + colStart; col < colEnd; col++, indx++, in_indx++)
           {
-            cfa[indx]   = rgb[c0][indx]   = safe_in(in[in_indx], revscaler);
-            cfa[indx+1] = rgb[c1][indx+1] = safe_in(in[in_indx+1], revscaler);
-          }
-          if(col < colEnd)
-          {
-            cfa[indx]   = rgb[c0][indx]   = safe_in(in[in_indx], revscaler);
+            cfa[indx] = rgb[c0][indx] = rgb[c1][indx] = safe_in(in[in_indx], revscaler);
           }
         }
 
@@ -484,15 +475,13 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
         }
           
         // For the outermost tiles in all directions we can use a smaller border margin
+        const int first_vertical =   rowStart + ((tile_vertical == 0) ? RCD_MARGIN : RCD_BORDER);
         const int last_vertical =    rowEnd   - ((tile_vertical == num_vertical - 1)     ? RCD_MARGIN : RCD_BORDER);
         const int first_horizontal = colStart + ((tile_horizontal == 0) ? RCD_MARGIN : RCD_BORDER);
         const int last_horizontal =  colEnd   - ((tile_horizontal == num_horizontal - 1) ? RCD_MARGIN : RCD_BORDER);
-        for(int row = rowStart + ((tile_vertical == 0) ? RCD_MARGIN : RCD_BORDER); row < last_vertical; row++)
+        for(int row = first_vertical; row < last_vertical; row++)
         {
-          int col = first_horizontal;
-          int o_idx = (row * width + col) * 4;
-          int idx = (row - rowStart) * RCD_TILESIZE + col - colStart;
-          for(; col < last_horizontal; col++, o_idx += 4, idx++)
+          for(int col = first_horizontal, idx = (row - rowStart) * RCD_TILESIZE + col - colStart, o_idx = (row * width + col) * 4; col < last_horizontal; col++, o_idx += 4, idx++)
           {
             out[o_idx]   = scaler * fmaxf(0.0f, rgb[0][idx]);
             out[o_idx+1] = scaler * fmaxf(0.0f, rgb[1][idx]);
