@@ -138,8 +138,9 @@ void dt_confgen_init()
     <xsl:variable name="default" select="default"/>
     <xsl:variable name="name" select="name"/>
     <xsl:variable name="type" select="type"/>
-		<xsl:variable name="shortdescription" select="shortdescription"/>
-		<xsl:variable name="longdescription" select="longdescription"/>
+    <xsl:variable name="uui" select="@ui"/>
+    <xsl:variable name="shortdescription" select="shortdescription"/>
+    <xsl:variable name="longdescription" select="longdescription"/>
 
     <xsl:text>   // </xsl:text><xsl:value-of select="$name" />
     <xsl:text>&#xA;</xsl:text>
@@ -150,9 +151,9 @@ void dt_confgen_init()
 
     <xsl:apply-templates select="type"/>
 
-		<xsl:apply-templates select="shortdescription"/>
+    <xsl:apply-templates select="shortdescription"/>
 
-		<xsl:apply-templates select="longdescription"/>
+    <xsl:apply-templates select="longdescription"/>
 
     <xsl:text>&#xA;</xsl:text>
   </xsl:for-each>
@@ -198,17 +199,49 @@ void dt_confgen_init()
 </xsl:template>
 
 <xsl:template match="shortdescription">
-	<xsl:text>   _insert_shortdescription("</xsl:text><xsl:value-of select="../name" />
-	<xsl:text>", "</xsl:text><xsl:value-of select="."/>
-	<xsl:text>");</xsl:text>
-	<xsl:text>&#xA;</xsl:text>
+  <xsl:variable name="uui" select="../@ui"/>
+
+  <xsl:text>   _insert_shortdescription("</xsl:text><xsl:value-of select="../name" />
+  <xsl:if test="not($uui)">
+    <xsl:text>", "</xsl:text>
+  </xsl:if>
+  <xsl:if test="$uui = 'yes'">
+    <xsl:text>", _("</xsl:text>
+  </xsl:if>
+
+  <xsl:value-of select="."/>
+
+  <xsl:if test="not($uui)">
+    <xsl:text>");</xsl:text>
+  </xsl:if>
+  <xsl:if test="$uui = 'yes'">
+    <xsl:text>"));</xsl:text>
+  </xsl:if>
+
+  <xsl:text>&#xA;</xsl:text>
 </xsl:template>
 
 <xsl:template match="longdescription">
-	<xsl:text>   _insert_longdescription("</xsl:text><xsl:value-of select="../name" />
-	<xsl:text>", "</xsl:text><xsl:value-of select="."/>
-	<xsl:text>");</xsl:text>
-	<xsl:text>&#xA;</xsl:text>
+  <xsl:variable name="uui" select="../@ui"/>
+
+  <xsl:text>   _insert_longdescription("</xsl:text><xsl:value-of select="../name" />
+  <xsl:if test="not($uui)">
+    <xsl:text>", "</xsl:text>
+  </xsl:if>
+  <xsl:if test="$uui = 'yes'">
+    <xsl:text>", _("</xsl:text>
+  </xsl:if>
+
+  <xsl:value-of select="."/>
+
+  <xsl:if test="not($uui)">
+    <xsl:text>");</xsl:text>
+  </xsl:if>
+  <xsl:if test="$uui = 'yes'">
+    <xsl:text>"));</xsl:text>
+  </xsl:if>
+
+  <xsl:text>&#xA;</xsl:text>
 </xsl:template>
 
 <xsl:template match="default">
