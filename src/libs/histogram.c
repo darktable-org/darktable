@@ -944,7 +944,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       d->dragging = 1;
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
         d->exposure = dt_dev_exposure_get_exposure(dev);
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE)
+      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
         d->black = dt_dev_exposure_get_black(dev);
       d->button_down_x = event->x;
       d->button_down_y = event->y;
