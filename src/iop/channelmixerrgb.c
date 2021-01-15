@@ -1601,6 +1601,7 @@ void extract_color_checker(const float *const restrict in, float *const restrict
                                 g->mix[2][0], g->mix[2][1], g->mix[2][2],
                                 extraction_result.black, log2f(extraction_result.exposure));
   gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
+  g_free(text);
 
   dt_free_align(patches);
   dt_free_align(patches_luminance);
@@ -1638,6 +1639,7 @@ void validate_color_checker(const float *const restrict in,
                                 pre_wb_delta_E, pre_wb_max_delta_E,
                                 extraction_result.black, log2f(extraction_result.exposure));
   gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
+  g_free(text);
 
   dt_free_align(patches);
 }
@@ -2985,6 +2987,7 @@ static void update_approx_cct(dt_iop_module_t *self)
                                   "cannot be computed at all so you need to use a custom illuminant."));
   }
   gtk_label_set_text(GTK_LABEL(g->approx_cct), str);
+  g_free(str);
 }
 
 
