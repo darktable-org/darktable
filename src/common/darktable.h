@@ -498,7 +498,7 @@ static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_siz
   for (size_t _var = 0; _var < 4; _var++)
 #else
 #define for_each_channel(_var, ...) \
-  for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+  for (size_t _var = 0; _var < 3; _var++)
 #define for_four_channels(_var, ...) \
   for (size_t _var = 0; _var < 4; _var++)
 #endif
