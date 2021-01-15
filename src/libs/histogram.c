@@ -192,6 +192,10 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
+  // Note that, with current constants, the input buffer is from the
+  // preview pixelpipe and should be <= 1440x900x4. The output buffer
+  // will be <= 360x175x4. Hence process works with a relatively small
+  // quantity of data.
   const int wf_height = d->waveform_height;
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   float *const restrict wf_linear = DT_IS_ALIGNED((float *const restrict)d->waveform_linear);
@@ -237,7 +241,10 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *d, const float *
     {
       for(size_t in_y = 0; in_y < height; in_y++)
       {
-        for_each_channel(k,aligned(in,wf_linear:16))
+        // While it would be nice to use for_each_channel(), making
+        // the BGR/RGB flip doesn't allow for this. Regardless, the
+        // fourth channel will be ignored when waveform is drawn.
+        for(size_t k = 0; k < 3; k++)
         {
           const float v = 1.0f - (8.0f / 9.0f) * in[in_stride * in_y + 4U * in_x + (2U - k)];
           const size_t out_y = isnan(v) ? 0 : MIN((size_t)fmaxf(v*height_f, 0.0f), height_i);
