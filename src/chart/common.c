@@ -67,6 +67,23 @@ point_t apply_homography(point_t p, const double *h)
   return result;
 }
 
+double apply_homography_scaling(point_t p, const double *h)
+{
+  // The local scaling of areas by the homography mapping is given by
+  // the absolute value of its Jacobian determinant at point p.
+  const double x = p.x * h[0 * 3 + 0] + p.y * h[0 * 3 + 1] + h[0 * 3 + 2];
+  const double y = p.x * h[1 * 3 + 0] + p.y * h[1 * 3 + 1] + h[1 * 3 + 2];
+  const double s = p.x * h[2 * 3 + 0] + p.y * h[2 * 3 + 1] + h[2 * 3 + 2];
+
+  // Components of the Jacobian matrix, without division by s^2, which is factored
+  // out and done for the whole determinant.
+  const double J00 = h[0 * 3 + 0] * s - h[2 * 3 + 0] * x;
+  const double J01 = h[0 * 3 + 1] * s - h[2 * 3 + 1] * x;
+  const double J10 = h[1 * 3 + 0] * s - h[2 * 3 + 0] * y;
+  const double J11 = h[1 * 3 + 1] * s - h[2 * 3 + 1] * y;
+  return fabs(J00 * J11 - J01 * J10) / (s * s * s * s);
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces

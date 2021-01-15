@@ -48,12 +48,8 @@ typedef struct image_t
 
 int get_homography(const point_t *source, const point_t *target, double *h);
 point_t apply_homography(point_t p, const double *h);
-
-static inline double apply_homography_scaling(point_t p, const double *h)
-{
-  const double s =  p.x * h[2 * 3 + 0] + p.y * h[2 * 3 + 1] + h[2 * 3 + 2];
-  return s;
-}
+// Gives a factor of scaling areas at point p
+double apply_homography_scaling(point_t p, const double *h);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
