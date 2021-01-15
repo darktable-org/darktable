@@ -792,7 +792,8 @@ void gui_init(dt_lib_module_t *self)
 
   gtk_widget_show_all(self->widget);
   gtk_widget_set_no_show_all(self->widget, TRUE);
-_update_gui(self);
+
+  _update_gui(self);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
