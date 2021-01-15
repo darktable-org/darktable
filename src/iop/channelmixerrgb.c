@@ -1266,7 +1266,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
 {
   const size_t width = roi_in->width;
   const size_t height = roi_in->height;
-  const float radius = g->checker->radius * hypotf(width, height) * g->safety_margin;
+  const float radius_x = g->checker->radius * hypotf(1.f, g->checker->ratio) * g->safety_margin;
+  const float radius_y = radius_x / g->checker->ratio;
 
   if(g->delta_E_in == NULL)
     g->delta_E_in = dt_alloc_sse_ps(g->checker->patches);
@@ -1275,13 +1276,13 @@ static const extraction_result_t _extract_patches(const float *const restrict in
   for(size_t k = 0; k < g->checker->patches; k++)
   {
     // center of the patch in the ideal reference
-    const point_t center = { g->checker->values[k].x * width, g->checker->values[k].y * height };
+    const point_t center = { g->checker->values[k].x, g->checker->values[k].y };
 
     // corners of the patch in the ideal reference
-    const point_t corners[4] = { {center.x - radius, center.y - radius},
-                                 {center.x + radius, center.y - radius},
-                                 {center.x + radius, center.y + radius},
-                                 {center.x - radius, center.y + radius} };
+    const point_t corners[4] = { {center.x - radius_x, center.y - radius_y},
+                                 {center.x + radius_x, center.y - radius_y},
+                                 {center.x + radius_x, center.y + radius_y},
+                                 {center.x - radius_x, center.y + radius_y} };
 
     // apply patch coordinates transform depending on perspective
     point_t new_corners[4];
@@ -1317,8 +1318,8 @@ static const extraction_result_t _extract_patches(const float *const restrict in
         current_point.x -= center.x;
         current_point.y -= center.y;
 
-        if(current_point.x < radius && current_point.x > -radius &&
-           current_point.y < radius && current_point.y > -radius)
+        if(current_point.x < radius_x && current_point.x > -radius_x &&
+           current_point.y < radius_y && current_point.y > -radius_y)
         {
           for(size_t c = 0; c < 3; c++)
           {
@@ -1859,8 +1860,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
 
 
 static inline void update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
-                                       const float x_increment, const float y_increment,
-                                       const float width, const float height)
+                                       const float x_increment, const float y_increment)
 {
   // update box nodes
   for(size_t k = 0; k < 4; k++)
@@ -1871,31 +1871,6 @@ static inline void update_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g,
       g->box[k].y += y_increment;
     }
   }
-
-  // update barycenter
-  const float north = fmaxf(g->box[0].y, g->box[1].y);
-  const float south = fminf(g->box[2].y, g->box[3].y);
-  const float west = fmaxf(g->box[0].x, g->box[3].x);
-  const float east = fminf(g->box[1].x, g->box[2].x);
-  g->center_box.x = (west + east) / 2.f;
-  g->center_box.y = (north + south) / 2.f;
-
-  // update ideal box bounds
-  float y = height / 2.f;
-  float x = width / 2.f;
-  float x_center = x + (x - g->center_box.x) / width;
-  float y_center = y + (y - g->center_box.y) / height;
-  float ratio_y = 1.f;
-  float ratio_x = 1.f;
-
-  g->ideal_box[0].x = x_center - x * ratio_x;
-  g->ideal_box[0].y = y_center - y * ratio_y;
-  g->ideal_box[1].x = x_center + x * ratio_x;
-  g->ideal_box[1].y = y_center - y * ratio_y;
-  g->ideal_box[2].x = x_center + x * ratio_x;
-  g->ideal_box[2].y = y_center + y * ratio_y;
-  g->ideal_box[3].x = x_center - x * ratio_x;
-  g->ideal_box[3].y = y_center + y * ratio_y;
 
   // update the homography
   get_homography(g->ideal_box, g->box, g->homography);
@@ -1924,7 +1899,19 @@ static inline void init_bounding_box(dt_iop_channelmixer_rgb_gui_data_t *g, cons
     g->checker_ready = TRUE;
   }
 
-  update_bounding_box(g, 0.f, 0.f, width, height);
+  g->center_box.x = 0.5f;
+  g->center_box.y = 0.5f;
+
+  g->ideal_box[0].x = 0.f;
+  g->ideal_box[0].y = 0.f;
+  g->ideal_box[1].x = 1.f;
+  g->ideal_box[1].y = 0.f;
+  g->ideal_box[2].x = 1.f;
+  g->ideal_box[2].y = 1.f;
+  g->ideal_box[3].x = 0.f;
+  g->ideal_box[3].y = 1.f;
+
+  update_bounding_box(g, 0.f, 0.f);
 }
 
 
@@ -1958,7 +1945,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
     g->click_end.x = pzx;
     g->click_end.y = pzy;
 
-    update_bounding_box(g, g->click_end.x - g->click_start.x, g->click_end.y - g->click_start.y, wd, ht);
+    update_bounding_box(g, g->click_end.x - g->click_start.x, g->click_end.y - g->click_start.y);
 
     g->click_start.x = pzx;
     g->click_start.y = pzy;
@@ -2077,7 +2064,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   g->drag_drop = FALSE;
   g->click_end.x = pzx;
   g->click_end.y = pzy;
-  update_bounding_box(g, g->click_end.x - g->click_start.x, g->click_end.y - g->click_start.y, wd, ht);
+  update_bounding_box(g, g->click_end.x - g->click_start.x, g->click_end.y - g->click_start.y);
   dt_iop_gui_leave_critical_section(self);
 
   dt_control_queue_redraw_center();
@@ -2149,20 +2136,20 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // draw symmetry axes
   cairo_set_line_width(cr, 1.5 / zoom_scale);
   cairo_set_source_rgba(cr, 1., 1., 1., 1.);
-  const float x_top = (g->box[0].x + g->box[1].x) / 2.f;
-  const float x_bottom = (g->box[2].x + g->box[3].x) / 2.f;
-  const float y_top = (g->box[0].y + g->box[1].y) / 2.f;
-  const float y_bottom = (g->box[2].y + g->box[3].y) / 2.f;
-  cairo_move_to(cr, x_top, y_top);
-  cairo_line_to(cr, x_bottom, y_bottom);
+  const point_t top_ideal = { 0.5f, 1.f };
+  const point_t top = apply_homography(top_ideal, g->homography);
+  const point_t bottom_ideal = { 0.5f, 0.f };
+  const point_t bottom = apply_homography(bottom_ideal, g->homography);
+  cairo_move_to(cr, top.x, top.y);
+  cairo_line_to(cr, bottom.x, bottom.y);
   cairo_stroke(cr);
 
-  const float x_left = (g->box[0].x + g->box[3].x) / 2.f;
-  const float x_right = (g->box[1].x + g->box[2].x) / 2.f;
-  const float y_left = (g->box[0].y + g->box[3].y) / 2.f;
-  const float y_right = (g->box[1].y + g->box[2].y) / 2.f;
-  cairo_move_to(cr, x_left, y_left);
-  cairo_line_to(cr, x_right, y_right);
+  const point_t left_ideal = { 0.f, 0.5f };
+  const point_t left = apply_homography(left_ideal, g->homography);
+  const point_t right_ideal = { 1.f, 0.5f };
+  const point_t right = apply_homography(right_ideal, g->homography);
+  cairo_move_to(cr, left.x, left.y);
+  cairo_line_to(cr, right.x, right.y);
   cairo_stroke(cr);
 
   /* For debug : display center of the image and center of the ideal target
@@ -2176,22 +2163,25 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   cairo_stroke(cr);
   */
 
-  const float radius = g->checker->radius * hypotf(wd, ht) * g->safety_margin;
+  const float radius_x = g->checker->radius * hypotf(1.f, g->checker->ratio) * g->safety_margin;
+  const float radius_y = radius_x / g->checker->ratio;
 
   for(size_t k = 0; k < g->checker->patches; k++)
   {
     // center of the patch in the ideal reference
-    const point_t center = { g->checker->values[k].x * wd, g->checker->values[k].y * ht };
+    const point_t center = { g->checker->values[k].x, g->checker->values[k].y };
 
     // corners of the patch in the ideal reference
-    const point_t corners[4] = { {center.x - radius, center.y - radius},
-                                 {center.x + radius, center.y - radius},
-                                 {center.x + radius, center.y + radius},
-                                 {center.x - radius, center.y + radius} };
+    const point_t corners[4] = { {center.x - radius_x, center.y - radius_y},
+                                 {center.x + radius_x, center.y - radius_y},
+                                 {center.x + radius_x, center.y + radius_y},
+                                 {center.x - radius_x, center.y + radius_y} };
 
     // apply patch coordinates transform depending on perspective
     const point_t new_center = apply_homography(center, g->homography);
-    const double scaling = apply_homography_scaling(center, g->homography);
+    // apply_homography_scaling gives a scaling of areas. we need to scale the
+    // radius of the center circle so take a square root.
+    const float scaling = sqrtf(apply_homography_scaling(center, g->homography));
     point_t new_corners[4];
     for(size_t c = 0; c < 4; c++) new_corners[c] = apply_homography(corners[c], g->homography);
 
@@ -2234,7 +2224,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
                                work_profile->nonlinearlut);
 
     cairo_set_source_rgba(cr, RGB[0], RGB[1], RGB[2], 1.);
-    cairo_arc(cr, new_center.x, new_center.y, 0.5 * radius / scaling, 0, 2. * M_PI);
+    cairo_arc(cr, new_center.x, new_center.y, 0.25 * (radius_x + radius_y) * scaling, 0, 2. * M_PI);
     cairo_fill(cr);
   }
 }
