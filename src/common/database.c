@@ -1850,8 +1850,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     // old indices
     TRY_EXEC("DROP INDEX IF EXISTS tagged_images_imgid_index",
         "[init] can't drop tagged_images_imgid_index\n");
-    TRY_EXEC("CREATE INDEX tagged_images_imgid_index ON tagged_images (imgid)",
-        "[init] can't add index tagged_images_imgid_index\n");
     TRY_EXEC("DROP INDEX IF EXISTS tagged_images_position_index",
         "[init] can't drop tagged_images_position_index\n");
     TRY_EXEC("CREATE INDEX tagged_images_position_index ON tagged_images (position)",
@@ -2284,7 +2282,6 @@ static void _create_library_schema(dt_database_t *db)
                            "PRIMARY KEY (imgid, tagid),"
                            "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON tagged_images (imgid)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON tagged_images (position)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
   sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
