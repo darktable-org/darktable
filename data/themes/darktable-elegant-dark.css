@@ -86,6 +86,7 @@
 /* Lighttable and film-strip */
 @define-color thumbnail_bg_color @grey_55;
 @define-color thumbnail_star_bg_color @grey_40;
+@define-color thumbnail_star_hover_color @grey_85;
 @define-color thumbnail_fg_color @grey_60;
 @define-color thumbnail_selected_bg_color @grey_75;
 @define-color thumbnail_hover_bg_color @grey_90;
