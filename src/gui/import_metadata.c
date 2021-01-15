@@ -104,13 +104,12 @@ static void _apply_metadata_toggled(GtkWidget *widget, GtkWidget *grid)
   const gboolean default_metadata = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
   for(int i = 0; i < DT_METADATA_NUMBER + 2; i++)
   {
-    GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(grid), 1, i);
-    gtk_widget_set_sensitive(w, default_metadata);
+    for(int j = 0; j < 2 ; j++)
+    {
+      GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(grid), j, i);
+      gtk_widget_set_sensitive(w, default_metadata);
+    }
   }
-  GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(grid), 0, 0);
-  gtk_widget_set_sensitive(w, default_metadata);
-  w = gtk_grid_get_child_at(GTK_GRID(grid), 0, DT_METADATA_NUMBER + 1);
-  gtk_widget_set_sensitive(w, default_metadata);
 }
 
 static void _metadata_prefs_changed(gpointer instance, dt_import_metadata_t *metadata)
