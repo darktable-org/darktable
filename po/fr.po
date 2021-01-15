@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-14 21:48+0100\n"
-"PO-Revision-Date: 2021-01-14 22:30+0100\n"
+"PO-Revision-Date: 2021-01-15 21:06+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -6144,7 +6144,7 @@ msgstr "taille : %3.2f%%"
 #: ../src/develop/masks/path.c:938 ../src/develop/masks/path.c:945
 #, c-format
 msgid "feather size: %3.2f%%"
-msgstr "taille d'adoucissement : %3.2f%%"
+msgstr "adoucissement : %3.2f%%"
 
 #: ../src/develop/masks/ellipse.c:382 ../src/develop/masks/ellipse.c:486
 #, c-format
@@ -10284,7 +10284,7 @@ msgstr "couleurs du ciel et de l'eau"
 
 #: ../src/iop/channelmixerrgb.c:3569
 msgid "average delta E"
-msgstr "average delta E moyen"
+msgstr "delta E moyen"
 
 #: ../src/iop/channelmixerrgb.c:3570
 msgid "maximum delta E"
@@ -14011,11 +14011,12 @@ msgstr "sous- et sur-exposition"
 
 #: ../src/iop/overexposed.c:128 ../src/iop/overexposed.c:416
 msgid "module overexposed failed in buffer allocation"
-msgstr "le module surexposé a échoué dans l'allocation de la mémoire tampon"
+msgstr ""
+"le module sur-exposition a échoué dans l'allocation de la mémoire tampon"
 
 #: ../src/iop/overexposed.c:154 ../src/iop/overexposed.c:426
 msgid "module overexposed failed in color conversion"
-msgstr "le module surexposé a échoué dans la conversion des couleurs"
+msgstr "le module sur-exposition a échoué dans la conversion des couleurs"
 
 #: ../src/iop/profile_gamma.c:95
 msgid "unbreak input profile"
