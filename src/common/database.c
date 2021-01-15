@@ -2925,7 +2925,7 @@ start:
   sqlite3_exec(db->handle, "PRAGMA synchronous = OFF", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA page_size = 32768", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "PRAGMA PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
   /* now that we got functional databases that are locked for us we can make sure that the schema is set up */
 
