@@ -725,7 +725,7 @@
     <type>bool</type>
     <default>false</default>
     <shortdescription>ignore exif rating</shortdescription>
-    <longdescription>ignore exif rating. if not set and exif rating is found, it overrides 'initial import rating'</longdescription>
+    <longdescription>ignore exif rating. if not set and exif rating is found, it overrides 'initial rating'</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/capture/mode</name>
