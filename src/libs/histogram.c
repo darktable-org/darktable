@@ -91,7 +91,7 @@ typedef struct dt_lib_histogram_t
   // exposure params on mouse down
   float exposure, black;
   // mouse state
-  int32_t dragging;
+  gboolean dragging;
   int32_t button_down_x, button_down_y;
   // depends on mouse positon
   dt_lib_histogram_highlight_t highlight;
@@ -941,7 +941,7 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
     }
     else if(hooks_available)
     {
-      d->dragging = 1;
+      d->dragging = TRUE;
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
         d->exposure = dt_dev_exposure_get_exposure(dev);
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
@@ -1003,7 +1003,7 @@ static gboolean _lib_histogram_button_release_callback(GtkWidget *widget, GdkEve
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  d->dragging = 0;
+  d->dragging = FALSE;
   return TRUE;
 }
 
@@ -1019,7 +1019,7 @@ static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEvent
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  d->dragging = 0;
+  d->dragging = FALSE;
   d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
   dt_control_change_cursor(GDK_LEFT_PTR);
   dt_control_queue_redraw_widget(widget);
