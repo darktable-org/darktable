@@ -1091,9 +1091,6 @@ void dt_image_remove(const int32_t imgid)
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
     darktable.gui->expanded_group_id = new_group_id;
 
-   // explicitly enable foreign keys
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
-
   // due to foreign keys added in db version 33, 
   // all entries from tables having references to the images are deleted as well
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.images WHERE id = ?1", -1, &stmt,
