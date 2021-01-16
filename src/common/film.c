@@ -395,9 +395,6 @@ void dt_film_remove(const int id)
   sqlite3_stmt *stmt;
 
   gboolean remove_ok = TRUE;
-   
-  // explicitly enable foreign keys
-  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT id FROM main.images WHERE film_id = ?1", -1,
