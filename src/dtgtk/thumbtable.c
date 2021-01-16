@@ -156,7 +156,7 @@ void dt_thumbtable_set_overlays_mode(dt_thumbtable_t *table, dt_thumbnail_overla
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     dt_thumbnail_set_overlay(th, over, timeout);
     // and we resize the bottom area
-    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
     l = g_list_next(l);
   }
 
@@ -522,9 +522,9 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     {
       if(posy < table->view_height) // we don't load invisible thumbs
       {
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0), table->overlays,
-                                                 DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
+        dt_thumbnail_t *thumb = dt_thumbnail_new(
+            table->thumb_size, table->thumb_size, IMG_TO_FIT, sqlite3_column_int(stmt, 1),
+            sqlite3_column_int(stmt, 0), table->overlays, DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -567,9 +567,9 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
     {
       if(posy + table->thumb_size >= 0) // we don't load invisible thumbs
       {
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, sqlite3_column_int(stmt, 1),
-                                                 sqlite3_column_int(stmt, 0), table->overlays,
-                                                 DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
+        dt_thumbnail_t *thumb = dt_thumbnail_new(
+            table->thumb_size, table->thumb_size, IMG_TO_FIT, sqlite3_column_int(stmt, 1),
+            sqlite3_column_int(stmt, 0), table->overlays, DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
@@ -782,7 +782,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
     th->x = anchor_posx - (anchor_x - posx) * new_size;
     th->y = anchor_posy - (anchor_y - posy) * new_size;
     gtk_layout_move(GTK_LAYOUT(table->widget), th->w_main, th->x, th->y);
-    dt_thumbnail_resize(th, new_size, new_size, FALSE);
+    dt_thumbnail_resize(th, new_size, new_size, FALSE, IMG_TO_FIT);
     l = g_list_next(l);
   }
 
@@ -1126,7 +1126,7 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     dt_thumbnail_reload_infos(th);
-    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, IMG_TO_FIT);
     l = g_list_next(l);
   }
 }
@@ -1868,7 +1868,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
           thumb->y = posy;
           gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         }
-        dt_thumbnail_resize(thumb, table->thumb_size, table->thumb_size, FALSE);
+        dt_thumbnail_resize(thumb, table->thumb_size, table->thumb_size, FALSE, IMG_TO_FIT);
         newlist = g_list_append(newlist, thumb);
         // and we remove the thumb from the old list
         table->list = g_list_remove(table->list, thumb);
@@ -1876,8 +1876,9 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       else
       {
         // we create a completly new thumb
-        dt_thumbnail_t *thumb = dt_thumbnail_new(table->thumb_size, table->thumb_size, nid, nrow, table->overlays,
-                                                 DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
+        dt_thumbnail_t *thumb
+            = dt_thumbnail_new(table->thumb_size, table->thumb_size, IMG_TO_FIT, nid, nrow, table->overlays,
+                               DT_THUMBNAIL_CONTAINER_LIGHTTABLE, table->show_tooltips);
         if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
         {
           thumb->single_click = TRUE;
