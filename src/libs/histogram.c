@@ -88,11 +88,10 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
-  // exposure params on mouse down
-  float exposure, black;
   // mouse state
-  int32_t dragging;
+  gboolean dragging;
   int32_t button_down_x, button_down_y;
+  float button_down_value;
   // depends on mouse positon
   dt_lib_histogram_highlight_t highlight;
   // state set by buttons
@@ -742,12 +741,12 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
                                                                        : allocation.width;
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
-      const float exposure = d->exposure + diff * 4.0f / (float)range;
+      const float exposure = d->button_down_value + diff * 4.0f / (float)range;
       dt_dev_exposure_set_exposure(dev, exposure);
     }
     else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
     {
-      const float black = d->black - diff * .1f / (float)range;
+      const float black = d->button_down_value - diff * .1f / (float)range;
       dt_dev_exposure_set_black(dev, black);
     }
   }
@@ -941,11 +940,11 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
     }
     else if(hooks_available)
     {
-      d->dragging = 1;
+      d->dragging = TRUE;
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-        d->exposure = dt_dev_exposure_get_exposure(dev);
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-        d->black = dt_dev_exposure_get_black(dev);
+        d->button_down_value = dt_dev_exposure_get_exposure(dev);
+      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+        d->button_down_value = dt_dev_exposure_get_black(dev);
       d->button_down_x = event->x;
       d->button_down_y = event->y;
     }
@@ -1003,7 +1002,7 @@ static gboolean _lib_histogram_button_release_callback(GtkWidget *widget, GdkEve
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  d->dragging = 0;
+  d->dragging = FALSE;
   return TRUE;
 }
 
@@ -1019,7 +1018,7 @@ static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEvent
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  d->dragging = 0;
+  d->dragging = FALSE;
   d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
   dt_control_change_cursor(GDK_LEFT_PTR);
   dt_control_queue_redraw_widget(widget);
