@@ -982,29 +982,36 @@ dt_mipmap_size_t dt_mipmap_cache_get_min_mip_from_pref(char *value)
   return DT_MIPMAP_NONE;
 }
 
+void dt_mipmap_cache_remove_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, dt_mipmap_size_t mip)
+{
+  if(mip > DT_MIPMAP_8 || mip < DT_MIPMAP_0) return;
+  // get rid of all ldr thumbnails:
+  const uint32_t key = get_key(imgid, mip);
+  dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, mip)->cache, key, 'w');
+  if(entry)
+  {
+    ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
+    struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
+    dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
+    dt_cache_release(&_get_cache(cache, mip)->cache, entry);
+
+    // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
+    dt_cache_remove(&_get_cache(cache, mip)->cache, key);
+  }
+  else
+  {
+    // ugly, but avoids alloc'ing thumb if it is not there.
+    dt_mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, mip)->cache)->cleanup_data, imgid, mip);
+  }
+}
+
 void dt_mipmap_cache_remove(dt_mipmap_cache_t *cache, const uint32_t imgid)
 {
   // get rid of all ldr thumbnails:
 
   for(dt_mipmap_size_t k = DT_MIPMAP_0; k < DT_MIPMAP_F; k++)
   {
-    const uint32_t key = get_key(imgid, k);
-    dt_cache_entry_t *entry = dt_cache_testget(&_get_cache(cache, k)->cache, key, 'w');
-    if(entry)
-    {
-      ASAN_UNPOISON_MEMORY_REGION(entry->data, dt_mipmap_buffer_dsc_size);
-      struct dt_mipmap_buffer_dsc *dsc = (struct dt_mipmap_buffer_dsc *)entry->data;
-      dsc->flags |= DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE;
-      dt_cache_release(&_get_cache(cache, k)->cache, entry);
-
-      // due to DT_MIPMAP_BUFFER_DSC_FLAG_INVALIDATE, removes thumbnail from disc
-      dt_cache_remove(&_get_cache(cache, k)->cache, key);
-    }
-    else
-    {
-      // ugly, but avoids alloc'ing thumb if it is not there.
-      dt_mipmap_cache_unlink_ondisk_thumbnail((&_get_cache(cache, k)->cache)->cleanup_data, imgid, k);
-    }
+    dt_mipmap_cache_remove_at_size(cache, imgid, k);
   }
 }
 void dt_mipmap_cache_evict_at_size(dt_mipmap_cache_t *cache, const uint32_t imgid, dt_mipmap_size_t mip)
