@@ -59,10 +59,10 @@ typedef struct dt_culling_t
   gboolean selection_sync;            // should the selection follow current culling images
 
   gboolean select_desactivate;
-  
+
   // the global zoom level of all images in the culling view.
-  // scales images from 0 "image to fit" to 1 "image to fill".
-  float zoom_ratio;     
+  // scales images from 0 "image to fit" to 1 "100% zoom".
+  float zoom_ratio;
 
   gboolean panning;      // are we moving zoomed images ?
   double pan_x;          // last position during panning
