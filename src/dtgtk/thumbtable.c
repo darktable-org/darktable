@@ -1113,11 +1113,87 @@ static void _thumbtable_restore_scrollbars(dt_thumbtable_t *table)
   dt_ui_scrollbars_show(darktable.gui->ui, table->scrollbars);
 }
 
+// propose to discard cache in case of thumb generation setting change
+static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
+{
+  // we get "new values"
+  gchar *hq = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
+  dt_mipmap_size_t hql = dt_mipmap_cache_get_min_mip_from_pref(hq);
+  g_free(hq);
+  gchar *embedded = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  dt_mipmap_size_t embeddedl = dt_mipmap_cache_get_min_mip_from_pref(embedded);
+  g_free(embedded);
+
+  int min_level = 8;
+  int max_level = 0;
+  if(hql != table->pref_hq)
+  {
+    min_level = MIN(table->pref_hq, hql);
+    max_level = MAX(table->pref_hq, hql);
+  }
+  if(embeddedl != table->pref_embedded)
+  {
+    min_level = MIN(min_level, MIN(table->pref_embedded, embeddedl));
+    max_level = MAX(max_level, MAX(table->pref_embedded, embeddedl));
+  }
+
+  if(min_level < max_level)
+  {
+    GtkWidget *dialog;
+    GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+
+    gchar *txt
+        = dt_util_dstrcat(NULL, _("you have changed the settings related to how thumbnails are generated.\n"));
+    if(max_level >= DT_MIPMAP_8 && min_level == DT_MIPMAP_0)
+      txt = dt_util_dstrcat(txt, _("all cached thumbnails need to be invalidated.\n\n"));
+    else if(max_level >= DT_MIPMAP_8)
+      txt = dt_util_dstrcat(txt, _("cached thumbnails starting from level %d need to be invalidated.\n\n"),
+                            min_level);
+    else if(min_level == DT_MIPMAP_0)
+      txt = dt_util_dstrcat(txt, _("cached thumbnails below level %d need to be invalidated.\n\n"), max_level);
+    else
+      txt = dt_util_dstrcat(txt, _("cached thumbnails between level %d and %d need to be invalidated.\n\n"),
+                            min_level, max_level);
+
+    txt = dt_util_dstrcat(txt, _("do you want to that now ?"));
+
+    dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
+                                    GTK_BUTTONS_YES_NO, "%s", txt);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+    gtk_window_set_title(GTK_WINDOW(dialog), _("cached thumbnails invalidation"));
+    gint res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+    g_free(txt);
+    if(res == GTK_RESPONSE_YES)
+    {
+      sqlite3_stmt *stmt = NULL;
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT id FROM main.images", -1, &stmt, NULL);
+      while(sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        const int imgid = sqlite3_column_int(stmt, 0);
+        for(int i = max_level - 1; i >= min_level; i--)
+        {
+          dt_mipmap_cache_remove_at_size(darktable.mipmap_cache, imgid, i);
+        }
+      }
+      sqlite3_finalize(stmt);
+    }
+  }
+  // in any case, we update thumbtable prefs values to new ones
+  table->pref_hq = hql;
+  table->pref_embedded = embeddedl;
+}
+
 // called each time the preference change, to update specific parts
 static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
 {
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+
+  _thumbs_ask_for_discard(table);
 
   dt_thumbtable_full_redraw(table, TRUE);
 
@@ -1672,6 +1748,14 @@ dt_thumbtable_t *dt_thumbtable_new()
   dt_thumbtable_t *table = (dt_thumbtable_t *)calloc(1, sizeof(dt_thumbtable_t));
   table->widget = gtk_layout_new(NULL, NULL);
   dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
+
+  // get thumb generation pref for reference in case of change
+  gchar *tx = dt_conf_get_string("plugins/lighttable/thumbnail_hq_min_level");
+  table->pref_hq = dt_mipmap_cache_get_min_mip_from_pref(tx);
+  g_free(tx);
+  tx = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  table->pref_embedded = dt_mipmap_cache_get_min_mip_from_pref(tx);
+  g_free(tx);
 
   // set css name and class
   gtk_widget_set_name(table->widget, "thumbtable_filemanager");
