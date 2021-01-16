@@ -57,12 +57,28 @@ static void _import_metadata_changed(GtkWidget *widget, dt_import_metadata_t *me
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
 }
 
-static void _import_metadata_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+static gboolean _import_metadata_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
     gtk_entry_set_text(GTK_ENTRY(widget), "");
   }
+  return FALSE;
+}
+
+static gboolean _import_metadata_reset_all(GtkWidget *label, GdkEventButton *event, dt_import_metadata_t *metadata)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER + 1; i++)
+    {
+      GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, i + 1);
+      const gboolean visible = gtk_widget_get_visible(w);
+      if(visible)
+        gtk_entry_set_text(GTK_ENTRY(w), "");
+    }
+  }
+  return FALSE;
 }
 
 static void _import_metadata_toggled(GtkWidget *widget, dt_import_metadata_t *metadata)
@@ -230,8 +246,16 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_widget_set_visible(label, TRUE);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
   gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"));
+  GtkWidget *labelev = gtk_event_box_new();
+  gtk_widget_set_visible(labelev, TRUE);
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), label);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, 0, 1, 1);
+  gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"
+                                                   "\ndouble-click on a label to clear the corresponding entry"
+                                                   "\ndouble-click on 'preset' to clear all entries"));
+  g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
+                   G_CALLBACK(_import_metadata_reset_all), metadata);
 
   GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(metadata->m_model));
   gtk_widget_set_visible(presets, TRUE);
@@ -264,7 +288,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
     gtk_widget_set_visible(metadata_label, TRUE);
     gtk_widget_set_halign(metadata_label, GTK_ALIGN_START);
     gtk_label_set_ellipsize(GTK_LABEL(metadata_label), PANGO_ELLIPSIZE_END);
-    GtkWidget *labelev = gtk_event_box_new();
+    labelev = gtk_event_box_new();
     gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
     gtk_container_add(GTK_CONTAINER(labelev), metadata_label);
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, i + 1, 1, 1);
@@ -301,7 +325,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_widget_set_visible(label, TRUE);
   gtk_widget_set_halign(label, GTK_ALIGN_START);
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
-  GtkWidget *labelev = gtk_event_box_new();
+  labelev = gtk_event_box_new();
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_widget_set_visible(labelev, TRUE);
   gtk_container_add(GTK_CONTAINER(labelev), label);
