@@ -1730,6 +1730,7 @@ void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current)
   }
   else
   {
+    table->zoom_ratio = IMG_TO_FIT;
     GList *l = table->list;
     while(l)
     {
