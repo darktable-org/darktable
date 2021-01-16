@@ -24,7 +24,7 @@ typedef struct _help_url
   char *url;
 } dt_help_url;
 
-dt_help_url db[] =
+dt_help_url urls_db[] =
 {
   {"ratings",                    "star_ratings_and_color_labels.html#star_ratings_and_color_labels"},
   {"filter",                     "filtering_and_sort_order.html#filtering_and_sort_order"},
@@ -151,8 +151,8 @@ char *dt_get_help_url(char *name)
 {
   if(name==NULL) return NULL;
 
-  for(int k=0; k< sizeof(db)/2/sizeof(char *); k++)
-    if(!strcmp(db[k].name, name)) return db[k].url;
+  for(int k=0; k< sizeof(urls_db)/2/sizeof(char *); k++)
+    if(!strcmp(urls_db[k].name, name)) return urls_db[k].url;
 
   return NULL;
 }
