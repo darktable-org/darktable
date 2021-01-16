@@ -99,6 +99,10 @@ typedef struct dt_thumbtable_t
 
   // in lighttable preview or culling, we can navigate inside selection or inside full collection
   gboolean navigate_inside_selection;
+
+  // let's remember previous thumbnail generation settings to detect if they change
+  int pref_embedded;
+  int pref_hq;
 } dt_thumbtable_t;
 
 dt_thumbtable_t *dt_thumbtable_new();
