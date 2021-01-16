@@ -153,8 +153,10 @@
 }
 
 /* Make inactive stars more discrete when not hovered */
-
-#thumb_star
+.dt_overlays_always #thumb_star,
+.dt_overlays_always_extended #thumb_star,
+.dt_overlays_mixed #thumb_star,
+.dt_overlays_hover_block #thumb_star
 {
   color: shade(@thumbnail_font_color, 1.5);
 }

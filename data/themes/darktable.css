@@ -2384,13 +2384,6 @@ spinbutton>button
   color: shade(@thumbnail_font_color, 1.1);
 }
 
-/* Make inactive stars more discrete when not hovered */
-
-#thumb_star
-{
-  color: shade(@thumbnail_font_color, 1.4);
-}
-
 /* Reset color icons to be hidden in following modes, including culling/preview overlays hover block*/
 .dt_overlays_none .dt_thumb_btn,
 .dt_overlays_none #thumb_main:hover .dt_thumb_btn,
@@ -2400,6 +2393,15 @@ spinbutton>button
 {
   color: transparent;
   background-color: transparent;
+}
+
+/* Make inactive stars more discrete when not hovered */
+.dt_overlays_always #thumb_star,
+.dt_overlays_always_extended #thumb_star,
+.dt_overlays_mixed #thumb_star,
+.dt_overlays_hover_block #thumb_star
+{
+  color: shade(@thumbnail_font_color, 1.4);
 }
 
 /* Set hover and selected color icons, extension name and text infos */
