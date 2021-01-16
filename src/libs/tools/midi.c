@@ -276,7 +276,7 @@ void midi_config_load(MidiDevice *midi)
     if(read == 6)
     {
       g_strlcat(accelpath,"/dynamic",200);
-      GSList *al = darktable.control->accelerator_list;
+      GList *al = darktable.control->accelerator_list;
       dt_accel_t *da;
       while(al)
       {
@@ -284,7 +284,7 @@ void midi_config_load(MidiDevice *midi)
         if (!g_strcmp0(da->path, accelpath))
           break;
 
-        al = g_slist_next(al);
+        al = g_list_next(al);
       }
       if (al)
       {
@@ -527,7 +527,7 @@ static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_vie
 {
   if (new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
-    GSList *l = darktable.control->accelerator_list;
+    GList *l = darktable.control->accelerator_list;
     while(l)
     {
       dt_accel_t *da = (dt_accel_t *)l->data;
@@ -538,7 +538,7 @@ static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_vie
         break;
       }
 
-      l = g_slist_next(l);
+      l = g_list_next(l);
     }
     while(l)
     {
@@ -549,7 +549,7 @@ static void callback_view_changed(gpointer instance, dt_view_t *old_view, dt_vie
         g_signal_connect(G_OBJECT(da->closure->data), "value-changed", G_CALLBACK(callback_slider_changed), data);
       }
 
-      l = g_slist_next(l);
+      l = g_list_next(l);
     }
 
     dt_control_signal_connect(darktable.signals, DT_SIGNAL_DEVELOP_IMAGE_CHANGED,
@@ -758,7 +758,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
           {
             // store new mapping in table, overriding existing
 
-            GSList *al = darktable.control->accelerator_list;
+            GList *al = darktable.control->accelerator_list;
             dt_accel_t *da = NULL ;
             while(al)
             {
@@ -768,7 +768,7 @@ void aggregate_and_set_slider(MidiDevice *midi,
                   && da->closure->data == mapping_widget)
                 break;
 
-              al = g_slist_next(al);
+              al = g_list_next(al);
             }
 
             dt_toast_log(_("mapped to %s/%s"),
