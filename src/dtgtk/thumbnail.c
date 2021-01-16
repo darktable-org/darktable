@@ -355,9 +355,9 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb, float zoom_ratio)
     // we arrive here if we are inside the creation process
     float iw = image_w;
     float ih = image_h;
-    // we can't rely on img->aspect_ratio as the value is round to 1 decimal, so not enough accurate
-    // so we compute it from the larger available mipmap
-    float ar = 0.0f;
+    // we need to get proper dimensions for the image to determine the image_w size.
+    // we compute it from the larger available mipmap
+    gboolean found_image_dimensions = FALSE;
     for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
     {
       dt_mipmap_buffer_t tmp;
@@ -369,25 +369,29 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb, float zoom_ratio)
         dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
         if(mipw > 0 && miph > 0)
         {
-          ar = (float)mipw / miph;
+          found_image_dimensions = TRUE;
           iw = mipw;
           ih = miph;
           break;
         }
       }
     }
-    if(ar < 0.001)
+    if(!found_image_dimensions)
     {
-      // let's try with the aspect_ratio store in image structure, even if it's less accurate
       const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
       if(img)
       {
-        ar = img->aspect_ratio;
+        if (img->final_width > 0 && img->final_height > 0) 
+        {
+          found_image_dimensions = TRUE;
+          iw = img->final_width;
+          ih = img->final_height;
+        }
         dt_image_cache_read_release(darktable.image_cache, img);
       }
     }
 
-    if(ar > 0.001)
+    if(found_image_dimensions)
     {
       // we have a valid ratio, let's apply it
       const float scale_to_fit = fminf((float)image_w / iw, (float)image_h / ih);
@@ -1302,7 +1306,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     if(zoom_ratio == IMG_TO_FIT)
       thumb->w_zoom = gtk_label_new(_("fit"));
     else
-      thumb->w_zoom = gtk_label_new(_("mini"));
+      thumb->w_zoom = gtk_label_new("mini");
     gtk_widget_set_name(thumb->w_zoom, "thumb_zoom_label");
     gtk_widget_show(thumb->w_zoom);
     gtk_container_add(GTK_CONTAINER(thumb->w_zoom_eb), thumb->w_zoom);
