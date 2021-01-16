@@ -27,6 +27,7 @@ typedef struct dt_import_metadata_t
 void dt_import_metadata_init(dt_import_metadata_t *metadata);
 void dt_import_metadata_update(dt_import_metadata_t *metadata);
 void dt_import_metadata_cleanup(dt_import_metadata_t *metadata);
+void dt_import_metadata_reset(dt_import_metadata_t *metadata);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
