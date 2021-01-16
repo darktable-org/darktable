@@ -601,7 +601,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       }
     }
   }
-  // FIXME: is this code obsolete?
+  // FIXME: is this code obsolete for the deprecated GDK_POINTER_MOTION_HINT_MASK? it used gdk_window_get_pointer() in 2011, updated to gdk_window_get_device_position() to replace deprecated function in 2014, in 2016 added gtk 3.20 fixes to deal with seat code, but underlying motion hint may no longer be needed now that events are compressed?
   gint x, y; // notify gtk for motion_hint.
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(gtk_widget_get_window(widget),
@@ -775,6 +775,7 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
       /* set size of navigation draw area */
       const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
       dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
+      // FIXME: if do have to adjust self->widget instead of just drawing area widget, make this a scroll event handler on the whole widget
       gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
     }
     else
@@ -808,7 +809,9 @@ static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventBut
   printf("drawable button release callback\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->dragging = FALSE;
-  // FIXME: should recalculate the highlight here as mouse may be be over a different part of a highlight
+  // hack to recalculate the highlight as mouse may be over a different part of the widget
+  // FIXME: generate an event instead?
+  _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
   return TRUE;
 }
 
@@ -1191,9 +1194,6 @@ void gui_init(dt_lib_module_t *self)
   // show/hide the buttons. The drawable is below the buttons, and
   // hence won't catch motion events for the buttons, and gets a leave
   // event when the cursor moves over the buttons.
-  // FIXME: solve this by making the button box the size of the drawable, but have it not catch any events except enter/leave?
-  GtkWidget *eventbox = gtk_event_box_new();
-
 
   // assemble the widgets
   //
@@ -1211,14 +1211,11 @@ void gui_init(dt_lib_module_t *self)
   // |                    |
   // |--------------------|
 
-
+  GtkWidget *eventbox = gtk_event_box_new();
   gtk_container_add(GTK_CONTAINER(overlay), d->scope_draw);
   gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box);
   gtk_container_add(GTK_CONTAINER(eventbox), overlay);
   self->widget = eventbox;
-  // FIXME: should eventbox only contain the buttonbox, if its only job is to show the buttonbox?
-  // FIXME: can just make buttonbox the size of the widget with a CSS hover property to make it disappear (not opaque, as it would still be sensitive) when mouse is over it?
-  //gtk_overlay_add_overlay(GTK_OVERLAY(overlay), eventbox);
 
   gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
@@ -1226,8 +1223,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
                    G_CALLBACK(_eventbox_leave_notify_callback), d);
   
-  // FIXME: these events become less important if are using widgets on top of this
-  // FIXME: GDK_POINTER_MOTION_MASK is deprecated, see https://developer.gnome.org/gdk3/stable/gdk3-Events.html#GdkEventMask
   gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
                                        GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
 
@@ -1251,7 +1246,8 @@ void gui_init(dt_lib_module_t *self)
   // FIXME: is this the right widget to have the help link?
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
-  /* set size of navigation draw area */
+  /* set size of histogram draw area */
+  // FIXME: can just do the size request for the DrawingArea, and if so don't ever have to store and pass around self->widget?
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
 }
