@@ -36,7 +36,9 @@
     Last column: xmp flag - visibility depending on write xmp preferences
 */
 
-static void _import_metadata_changed(GtkWidget *widget, dt_import_metadata_t *metadata)
+static void _import_metadata_presets_update(dt_import_metadata_t *metadata);
+
+static void _import_metadata_save(GtkWidget *widget, dt_import_metadata_t *metadata)
 {
   const char *name = gtk_widget_get_name(widget);
   const int i = dt_metadata_get_keyid_by_name(name);
@@ -46,6 +48,11 @@ static void _import_metadata_changed(GtkWidget *widget, dt_import_metadata_t *me
     dt_conf_set_string(setting, gtk_entry_get_text(GTK_ENTRY(widget)));
     g_free(setting);
   }
+}
+
+static void _import_metadata_changed(GtkWidget *widget, dt_import_metadata_t *metadata)
+{
+  _import_metadata_save(widget, metadata);
   GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, 0);
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
 }
@@ -119,7 +126,10 @@ static void _metadata_prefs_changed(gpointer instance, dt_import_metadata_t *met
 
 static void _metadata_list_changed(gpointer instance, int type, dt_import_metadata_t *metadata)
 {
-  _update_layout(metadata);
+  if(type == DT_METADATA_SIGNAL_HIDDEN || type == DT_METADATA_SIGNAL_SHOWN)
+    _update_layout(metadata);
+  else if(type == DT_METADATA_SIGNAL_NEW_PRESETS)
+    _import_metadata_presets_update(metadata);
 }
 
 static void _metadata_presets_changed(GtkWidget *widget, dt_import_metadata_t *metadata)
@@ -145,7 +155,10 @@ static void _metadata_presets_changed(GtkWidget *widget, dt_import_metadata_t *m
         // make sure we don't provide values for hidden stuff
         if(visible)
         {
+          g_signal_handlers_block_by_func(w, _import_metadata_changed, metadata);
           gtk_entry_set_text(GTK_ENTRY(w), sv);
+          g_signal_handlers_unblock_by_func(w, _import_metadata_changed, metadata);
+          _import_metadata_save(w, metadata);
         }
       }
       g_value_unset(&value);
@@ -153,25 +166,10 @@ static void _metadata_presets_changed(GtkWidget *widget, dt_import_metadata_t *m
   }
 }
 
-void dt_import_metadata_init(dt_import_metadata_t *metadata)
+static void _import_metadata_presets_update(dt_import_metadata_t *metadata)
 {
-  // default metadata
-  GtkWidget *grid = gtk_grid_new();
-  metadata->grid = grid;
-  gtk_box_pack_start(GTK_BOX(metadata->box), grid, FALSE, FALSE, 0);
-  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
-  gtk_widget_show_all(grid);
-  gtk_widget_set_no_show_all(grid, TRUE);
-
-  // presets from the metadata plugin
+  gtk_list_store_clear(metadata->m_model);
   GtkTreeIter iter;
-  GType types[DT_METADATA_NUMBER + 1];
-  for(unsigned int i = 0; i < DT_METADATA_NUMBER + 1; i++)
-  {
-    types[i] = G_TYPE_STRING;
-  }
-  GtkListStore *model = gtk_list_store_newv(DT_METADATA_NUMBER + 1, types);
-
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT name, op_params FROM data.presets WHERE operation = 'metadata'",
@@ -195,16 +193,37 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
 
     if(op_params_size == total_len)
     {
-      gtk_list_store_append(model, &iter);
+      gtk_list_store_append(metadata->m_model, &iter);
       // column 0 give the name, the following ones the different metadata
-      gtk_list_store_set(model, &iter, 0, (char *)sqlite3_column_text(stmt, 0), -1);
+      gtk_list_store_set(metadata->m_model, &iter, 0, (char *)sqlite3_column_text(stmt, 0), -1);
       for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
       {
-        gtk_list_store_set(model, &iter, i+1, metadata_param[i], -1);
+        gtk_list_store_set(metadata->m_model, &iter, i+1, metadata_param[i], -1);
       }
     }
   }
   sqlite3_finalize(stmt);
+}
+
+void dt_import_metadata_init(dt_import_metadata_t *metadata)
+{
+  // default metadata
+  GtkWidget *grid = gtk_grid_new();
+  metadata->grid = grid;
+  gtk_box_pack_start(GTK_BOX(metadata->box), grid, FALSE, FALSE, 0);
+  gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(5));
+  gtk_widget_show_all(grid);
+  gtk_widget_set_no_show_all(grid, TRUE);
+
+  // presets from the metadata plugin
+  GType types[DT_METADATA_NUMBER + 1];
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER + 1; i++)
+  {
+    types[i] = G_TYPE_STRING;
+  }
+
+  metadata->m_model = gtk_list_store_newv(DT_METADATA_NUMBER + 1, types);
+  _import_metadata_presets_update(metadata);
 
   // grid headers
   GtkWidget *label = gtk_label_new(_("preset"));
@@ -214,7 +233,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
   gtk_widget_set_tooltip_text(GTK_WIDGET(label), _("metadata to be applied per default"));
 
-  GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+  GtkWidget *presets = gtk_combo_box_new_with_model(GTK_TREE_MODEL(metadata->m_model));
   gtk_widget_set_visible(presets, TRUE);
   gtk_widget_set_hexpand(presets, TRUE);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
@@ -222,7 +241,7 @@ void dt_import_metadata_init(dt_import_metadata_t *metadata)
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(presets), renderer, "text", 0, NULL);
   g_object_set(G_OBJECT(renderer), "ellipsize", PANGO_ELLIPSIZE_END, (gchar *)0);
   gtk_grid_attach(GTK_GRID(grid), presets, 1, 0, 1, 1);
-  g_object_unref(model);
+  g_object_unref(metadata->m_model);
 
   label = gtk_label_new(_("from xmp"));
   gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
