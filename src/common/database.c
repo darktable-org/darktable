@@ -1756,6 +1756,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
         "[init] can't create new images table\n");
 
+    // corner case: database inconsistency with images having invalid film id
+    TRY_EXEC("DELETE FROM `images_old` WHERE film_id NOT IN (SELECT id FROM `film_rolls`)",
+        "[init] can't delete images with invalid film id\n");
+
     TRY_EXEC("UPDATE `images_old` SET group_id=id WHERE group_id NOT IN (SELECT id from `images_old`)",
         "[init] can't fix invalid group ids\n");
 
