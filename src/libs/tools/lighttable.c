@@ -563,8 +563,8 @@ void init_key_accels(dt_lib_module_t *self)
                                 GDK_CONTROL_MASK);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle culling zoom mode"), GDK_KEY_less, 0);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle sticky preview mode"), GDK_KEY_f, 0);
-  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle sticky preview mode with focus detection"),
-                                GDK_KEY_f, GDK_CONTROL_MASK);
+  dt_accel_register_lib_as_view("lighttable", NC_("accel", "toggle sticky preview mode with focus detection"), 0,
+                                0);
   dt_accel_register_lib_as_view("lighttable", NC_("accel", "exit current layout"), GDK_KEY_Escape, 0);
 }
 
