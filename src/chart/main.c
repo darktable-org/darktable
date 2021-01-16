@@ -92,7 +92,7 @@ static void collect_reference_patches_foreach(gpointer key, gpointer value, gpoi
 static box_t *find_patch(GHashTable *table, gpointer key);
 static void get_boundingbox(const image_t *const image, point_t *bb);
 static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink);
-static void get_corners(const double *homography, box_t *box, point_t *corners);
+static void get_corners(const float *homography, box_t *box, point_t *corners);
 static void get_pixel_region(const image_t *const image, const point_t *const corners, int *x_start, int *y_start,
                              int *x_end, int *y_end);
 static void reset_bb(image_t *image);
@@ -136,7 +136,7 @@ static gboolean draw_image_callback(GtkWidget *widget, cairo_t *cr, gpointer use
 
   // draw overlay
   point_t bb[4];
-  double homography[9];
+  float homography[9];
   map_boundingbox_to_view(image, bb);
   // calculating the homography takes hardly any time, so we do it here instead of the move handler.
   // the benefits are that the window size is taken into account and image->bb can't disagree with the cached homography
@@ -1502,7 +1502,7 @@ static box_t *find_patch(GHashTable *table, gpointer key)
 static void get_xyz_sample_from_image(const image_t *const image, float shrink, box_t *box, float *xyz)
 {
   point_t bb[4];
-  double homography[9];
+  float homography[9];
   point_t corners[4];
   box_t inner_box;
   int x_start, y_start, x_end, y_end;
@@ -1578,7 +1578,7 @@ static box_t get_sample_box(chart_t *chart, box_t *outer_box, float shrink)
   return inner_box;
 }
 
-static void get_corners(const double *homography, box_t *box, point_t *corners)
+static void get_corners(const float *homography, box_t *box, point_t *corners)
 {
   corners[TOP_LEFT] = corners[TOP_RIGHT] = corners[BOTTOM_RIGHT] = corners[BOTTOM_LEFT] = box->p;
   corners[TOP_RIGHT].x += box->w;

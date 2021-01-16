@@ -46,7 +46,7 @@ void draw_cross(cairo_t *cr, point_t center)
   cairo_line_to(cr, center.x, center.y + 10);
 }
 
-void draw_box(cairo_t *cr, box_t box, const double *homography)
+void draw_box(cairo_t *cr, box_t box, const float *homography)
 {
   point_t p[4];
   p[TOP_LEFT] = p[TOP_RIGHT] = p[BOTTOM_RIGHT] = p[BOTTOM_LEFT] = box.p;
@@ -89,7 +89,7 @@ void draw_boundingbox(cairo_t *cr, point_t *bb)
   for(int i = 0; i < 4; i++) draw_line(cr, bb[i], bb[(i + 1) % 4]);
 }
 
-void draw_f_boxes(cairo_t *cr, const double *homography, chart_t *chart)
+void draw_f_boxes(cairo_t *cr, const float *homography, chart_t *chart)
 {
   GList *iter = chart->f_list;
   while(iter)
@@ -104,7 +104,7 @@ void draw_f_boxes(cairo_t *cr, const double *homography, chart_t *chart)
   }
 }
 
-static void _draw_boxes(cairo_t *cr, const double *homography, GHashTable *table)
+static void _draw_boxes(cairo_t *cr, const float *homography, GHashTable *table)
 {
   GHashTableIter table_iter;
   gpointer key, value;
@@ -117,17 +117,17 @@ static void _draw_boxes(cairo_t *cr, const double *homography, GHashTable *table
   }
 }
 
-void draw_d_boxes(cairo_t *cr, const double *homography, chart_t *chart)
+void draw_d_boxes(cairo_t *cr, const float *homography, chart_t *chart)
 {
   _draw_boxes(cr, homography, chart->d_table);
 }
 
-void draw_color_boxes_outline(cairo_t *cr, const double *homography, chart_t *chart)
+void draw_color_boxes_outline(cairo_t *cr, const float *homography, chart_t *chart)
 {
   _draw_boxes(cr, homography, chart->box_table);
 }
 
-void draw_color_boxes_inside(cairo_t *cr, const double *homography, chart_t *chart, float shrink, float line_width,
+void draw_color_boxes_inside(cairo_t *cr, const float *homography, chart_t *chart, float shrink, float line_width,
                                gboolean colored)
 {
   GHashTableIter table_iter;

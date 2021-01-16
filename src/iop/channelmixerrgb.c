@@ -144,12 +144,12 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   dt_solving_strategy_t optimization;
   float safety_margin;
 
-  double homography[9*9];          // the perspective correction matrix
-  double inverse_homography[9*9];  // The inverse perspective correction matrix
-  gboolean run_profile;            // order a profiling at next pipeline recompute
-  gboolean run_validation;         // order a profile validation at next pipeline recompute
-  gboolean profile_ready;          // notify that a profile is ready to be applied
-  gboolean checker_ready;          // notify that a checker bounding box is ready to be used
+  float homography[9];          // the perspective correction matrix
+  float inverse_homography[9];  // The inverse perspective correction matrix
+  gboolean run_profile;         // order a profiling at next pipeline recompute
+  gboolean run_validation;      // order a profile validation at next pipeline recompute
+  gboolean profile_ready;       // notify that a profile is ready to be applied
+  gboolean checker_ready;       // notify that a checker bounding box is ready to be used
   float mix[3][4];
 
   GtkWidget *start_profiling;
