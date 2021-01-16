@@ -937,7 +937,7 @@ static inline void backtransform_v2(float *const buf, const int wd, const int ht
 }
 
 static inline void precondition_Y0U0V0(const float *const in, float *const buf, const int wd, const int ht,
-                                       const float a, const float p[4], const float b, const float toY0U0V0[9])
+                                       const float a, const float p[4], const float b, const float toY0U0V0[3][4])
 {
   const float DT_ALIGNED_PIXEL expon[4] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
   const float DT_ALIGNED_PIXEL scale[4] = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
@@ -957,12 +957,12 @@ static inline void precondition_Y0U0V0(const float *const in, float *const buf, 
     {
       tmp[c] = powf(MAX(in[j+c] + b, 0.0f), expon[c]) * scale[c];
     }
-    for(int c = 0; c < 3; c++) //TODO: change 3x3 matrix to 3x4 for vectorization
+    for(int c = 0; c < 3; c++)
     {
       float sum = 0.0f;
-      for(int k = 0; k < 3; k++)
+      for_each_channel(k,aligned(toY0U0V0))
       {
-        sum += toY0U0V0[3 * c + k] * tmp[k];
+        sum += toY0U0V0[c][k] * tmp[k];
       }
       buf[j+c] = sum;
     }
@@ -970,7 +970,7 @@ static inline void precondition_Y0U0V0(const float *const in, float *const buf, 
 }
 
 static inline void backtransform_Y0U0V0(float *const buf, const int wd, const int ht, const float a, const float p[4],
-                                    const float b, const float bias, const float wb[4], const float toRGB[9])
+                                        const float b, const float bias, const float wb[4], const float toRGB[3][4])
 {
   const float DT_ALIGNED_PIXEL bias_wb[4] = { bias * wb[0], bias * wb[1], bias * wb[2], 0.0f };
   const float DT_ALIGNED_PIXEL expon[4] = {  1.0f / (1.0f - p[0] / 2.0f),
@@ -988,16 +988,14 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
 #endif
   for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
-    float DT_ALIGNED_PIXEL rgb[4]; // "unused" fourth element enables vectorization
-    for(int c = 0; c < 3; c++) //TODO: change 3x3 matrix to 3x4 for vectorization
+    float DT_ALIGNED_PIXEL rgb[4] = { 0.0f }; // "unused" fourth element enables vectorization
+    for(int k = 0; k < 3; k++)
     {
-      rgb[c] = 0.0f;
-      for(int k = 0; k < 3; k++)
+      for_each_channel(c,aligned(toRGB,buf))
       {
-        rgb[c] += toRGB[3 * c + k] * buf[j+k];
+        rgb[k] += toRGB[k][c] * buf[j+c];
       }
     }
-    rgb[3] = 0.0f;
     for_each_channel(c,aligned(buf))
     {
       const float x = MAX(rgb[c], 0.0f);
@@ -1049,40 +1047,43 @@ static void compute_wb_factors(float wb[4],const dt_iop_denoiseprofile_data_t *c
 
 // =====================================================================================
 
-static gboolean invert_matrix(const float in[9], float out[9])
+static gboolean invert_matrix(const float in[3][4], float out[3][4])
 {
   // use same notation as https://en.wikipedia.org/wiki/Invertible_matrix#Inversion_of_3_%C3%97_3_matrices
-  const float biga = in[4] * in[8] - in[5] * in[7];
-  const float bigb = -in[3] * in[8] + in[5] * in[6];
-  const float bigc = in[3] * in[7] - in[4] * in[6];
-  const float bigd = -in[1] * in[8] + in[2] * in[7];
-  const float bige = in[0] * in[8] - in[2] * in[6];
-  const float bigf = -in[0] * in[7] + in[1] * in[6];
-  const float bigg = in[1] * in[5] - in[2] * in[4];
-  const float bigh = -in[0] * in[5] + in[2] * in[3];
-  const float bigi = in[0] * in[4] - in[1] * in[3];
+  const float biga = in[1][1] * in[2][2] - in[1][2] * in[2][1];
+  const float bigb = -in[1][0] * in[2][2] + in[1][2] * in[2][0];
+  const float bigc = in[1][0] * in[2][1] - in[1][1] * in[2][0];
+  const float bigd = -in[0][1] * in[2][2] + in[0][2] * in[2][1];
+  const float bige = in[0][0] * in[2][2] - in[0][2] * in[2][0];
+  const float bigf = -in[0][0] * in[2][1] + in[0][1] * in[2][0];
+  const float bigg = in[0][1] * in[1][2] - in[0][2] * in[1][1];
+  const float bigh = -in[0][0] * in[1][2] + in[0][2] * in[1][0];
+  const float bigi = in[0][0] * in[1][1] - in[0][1] * in[1][0];
 
-  const float det = in[0] * biga + in[1] * bigb + in[2] * bigc;
+  const float det = in[0][0] * biga + in[0][1] * bigb + in[0][2] * bigc;
   if(det == 0.0f)
   {
     return FALSE;
   }
 
-  out[0] = 1.0f / det * biga;
-  out[1] = 1.0f / det * bigd;
-  out[2] = 1.0f / det * bigg;
-  out[3] = 1.0f / det * bigb;
-  out[4] = 1.0f / det * bige;
-  out[5] = 1.0f / det * bigh;
-  out[6] = 1.0f / det * bigc;
-  out[7] = 1.0f / det * bigf;
-  out[8] = 1.0f / det * bigi;
+  out[0][0] = 1.0f / det * biga;
+  out[0][1] = 1.0f / det * bigd;
+  out[0][2] = 1.0f / det * bigg;
+  out[0][3] = 0.0f;
+  out[1][0] = 1.0f / det * bigb;
+  out[1][1] = 1.0f / det * bige;
+  out[1][2] = 1.0f / det * bigh;
+  out[1][3] = 0.0f;
+  out[2][0] = 1.0f / det * bigc;
+  out[2][1] = 1.0f / det * bigf;
+  out[2][2] = 1.0f / det * bigi;
+  out[2][3] = 0.0f;
   return TRUE;
 }
 
 // create the white balance adaptative conversion matrices
 // supposes toY0U0V0 already contains the "normal" conversion matrix
-static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float wb[3])
+static void set_up_conversion_matrices(float toY0U0V0[3][4], float toRGB[3][4], float wb[4])
 {
   // for an explanation of the spirit of the choice of the coefficients of the
   // Y0U0V0 conversion matrix, see part 12.3.3 page 190 of
@@ -1101,9 +1102,10 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   // var(Y0) = 1/9 * (var(R) + var(G) + var(B)) = 1/3
   // var(sqrt(3)Y0) = 1
   sum_invwb *= sqrtf(3);
-  toY0U0V0[0] = sum_invwb / wb[0];
-  toY0U0V0[1] = sum_invwb / wb[1];
-  toY0U0V0[2] = sum_invwb / wb[2];
+  toY0U0V0[0][0] = sum_invwb / wb[0];
+  toY0U0V0[0][1] = sum_invwb / wb[1];
+  toY0U0V0[0][2] = sum_invwb / wb[2];
+  toY0U0V0[0][3] = 0.0f;
   // we also normalize the other line in a way that should give a variance of 1
   // if var(B/wb[B]) == 1, then var(B) = wb[B]^2
   // note that we don't change the coefs of U0 and V0 depending on white balance,
@@ -1112,20 +1114,23 @@ static void set_up_conversion_matrices(float toY0U0V0[9], float toRGB[9], float 
   // balance, we will not reduce/cancel the signal anymore.
   const float stddevU0 = sqrtf(0.5f * 0.5f * wb[0] * wb[0] + 0.5f * 0.5f * wb[2] * wb[2]);
   const float stddevV0 = sqrtf(0.25f * 0.25f * wb[0] * wb[0] + 0.5f * 0.5f * wb[1] * wb[1] + 0.25f * 0.25f * wb[2] * wb[2]);
-  toY0U0V0[3] /= stddevU0;
-  toY0U0V0[4] /= stddevU0;
-  toY0U0V0[5] /= stddevU0;
-  toY0U0V0[6] /= stddevV0;
-  toY0U0V0[7] /= stddevV0;
-  toY0U0V0[8] /= stddevV0;
+  toY0U0V0[1][0] /= stddevU0;
+  toY0U0V0[1][1] /= stddevU0;
+  toY0U0V0[1][2] /= stddevU0;
+  toY0U0V0[1][3] = 0.0f;
+  toY0U0V0[2][0] /= stddevV0;
+  toY0U0V0[2][1] /= stddevV0;
+  toY0U0V0[2][2] /= stddevV0;
+  toY0U0V0[2][3] = 0.0f;
   const gboolean is_invertible = invert_matrix(toY0U0V0, toRGB);
   if(!is_invertible)
   {
     // use standard form if whitebalance adapted matrix is not invertible
     float stddevY0 = sqrtf(1.0f / 9.0f * (wb[0] * wb[0] + wb[1] * wb[1] + wb[2] * wb[2]));
-    toY0U0V0[0] = 1.0f / (3.0f * stddevY0);
-    toY0U0V0[1] = 1.0f / (3.0f * stddevY0);
-    toY0U0V0[2] = 1.0f / (3.0f * stddevY0);
+    toY0U0V0[0][0] = 1.0f / (3.0f * stddevY0);
+    toY0U0V0[0][1] = 1.0f / (3.0f * stddevY0);
+    toY0U0V0[0][2] = 1.0f / (3.0f * stddevY0);
+    toY0U0V0[0][3] = 0.0f;
     invert_matrix(toY0U0V0, toRGB);
   }
 }
@@ -1265,17 +1270,20 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
 
   // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
-  float toY0U0V0[9] = {1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f,
-                       0.5f,      0.0f,      -0.5f,
-                       0.25f,     -0.5f,     0.25f};
-  float toRGB[9] = {0.0f, 0.0f, 0.0f,
-                   0.0f, 0.0f, 0.0f,
-                   0.0f, 0.0f, 0.0f};
+  float DT_ALIGNED_PIXEL toY0U0V0[3][4] = { { 1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f },
+                                            { 0.5f,      0.0f,      -0.5f }, 
+                                            {  0.25f,     -0.5f,     0.25f } };
+  float DT_ALIGNED_PIXEL toRGB[3][4] = { { 0.0f, 0.0f, 0.0f }, // "unused" fourth element enables vectorization
+                                         { 0.0f, 0.0f, 0.0f },
+                                         { 0.0f, 0.0f, 0.0f } };
   set_up_conversion_matrices(toY0U0V0, toRGB, wb);
   // update the coeffs with strength and scale
-  for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * in_scale);
-  for(int k = 0; k < 9; k++) toRGB[k] *= (d->strength * in_scale);
-
+  for(size_t k = 0; k < 3; k++)
+    for_each_channel(c)
+    {
+      toY0U0V0[k][c] /= (d->strength * in_scale);
+      toRGB[k][c] *= (d->strength * in_scale);
+    }
   for_each_channel(i) wb[i] *= d->strength * in_scale;
 
   // only use green channel + wb for now: (the "unused" fourth element enables vectorization)
@@ -2168,16 +2176,22 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
                        MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f), 1.0f};
 
   // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
-  float toY0U0V0[9] = {1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f,
-                       0.5f,      0.0f,      -0.5f,
-                       0.25f,     -0.5f,     0.25f};
-  float toRGB[9] = {0.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f,
-                    0.0f, 0.0f, 0.0f};
-  set_up_conversion_matrices(toY0U0V0, toRGB, wb);
+  float DT_ALIGNED_PIXEL toY0U0V0_tmp[3][4] = { { 1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f },
+                                                { 0.5f,      0.0f,      -0.5f },
+                                                { 0.25f,     -0.5f,     0.25f } };
+  float DT_ALIGNED_PIXEL toRGB_tmp[3][4] = { { 0.0f, 0.0f, 0.0f },  // "unused" fourth element enables vectorization
+                                             { 0.0f, 0.0f, 0.0f },
+                                             { 0.0f, 0.0f, 0.0f } };
+  set_up_conversion_matrices(toY0U0V0_tmp, toRGB_tmp, wb);
   // update the coeffs with strength and scale
-  for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * scale);
-  for(int k = 0; k < 9; k++) toRGB[k] *= (d->strength * scale);
+  float toY0U0V0[9]; //TODO: change OpenCL kernels to use 3x4 matrices
+  float toRGB[9] ;
+  for(size_t k = 0; k < 3; k++)
+    for_each_channel(c)
+    {
+      toRGB[3*k+c] = toRGB_tmp[k][c] * d->strength * scale;
+      toY0U0V0[3*k+c] = toY0U0V0_tmp[k][c] / (d->strength * scale);
+    }
 
   // update the coeffs with strength and scale
   for_each_channel(i) wb[i] *= d->strength * scale;
