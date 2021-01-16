@@ -1354,7 +1354,7 @@ void dtgtk_cairo_paint_audio(cairo_t *cr, gint x, gint y, gint w, gint h, gint f
 
 void dtgtk_cairo_paint_label_flower(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data)
 {
-  PREAMBLE(1, 0, 0)
+  PREAMBLE(1.1, 0, 0)
 
   const GdkRGBA *colorlabels = data != NULL ? data : _colorlabels;
 
