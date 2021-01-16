@@ -687,7 +687,7 @@ overshoot.right
 #iop-plugin-ui #section_label,
 #lib-plugin-ui #section_label
 {
-  margin: 12px 0 6px 0;
+  margin: 8px 0 6px 0;
 }
 
 #iop-plugin-ui #section_label.section_label_top,
@@ -705,8 +705,9 @@ overshoot.right
 }
 
 #lib-plugin-ui .section-expander,
-#iop-plugin-ui .section-expander {
-  padding: 12px 0 6px 0;
+#iop-plugin-ui .section-expander
+{
+  padding: 8px 0 6px 0;
 }
 
 #lib-plugin-ui .section-expander #control-button,
@@ -805,6 +806,11 @@ dialog scrolledwindow
 {
   margin: 1px;
   padding: 0px;
+}
+
+#import_metadata grid label
+{
+  margin: 0.2em 0;
 }
 
 /* Set import from camera or card dialog window */
@@ -2729,13 +2735,23 @@ spinbutton>button
 }
 
 /* lighttable toolbox */
-#lighttable_layouts_box *
+#lighttable_layouts_box,
+#footer-toolbar entry
+{
+  margin-right: 0.6em;
+}
+
+#footer-toolbar #dt-toggle-button
 {
   margin: 0 0.2em;
+}
+
+#lighttable_layouts_box #dt-toggle-button
+{
+  margin: 0 0.4em;
 }
 
 .active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
 {
     font-weight: bold;
 }
-
