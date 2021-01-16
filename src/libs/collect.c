@@ -2526,7 +2526,7 @@ static void metadata_changed(gpointer instance, int type, gpointer self)
 {
   dt_lib_module_t *dm = (dt_lib_module_t *)self;
   dt_lib_collect_t *d = (dt_lib_collect_t *)dm->data;
-  if(type != DT_METADATA_SIGNAL_NEW_VALUE)
+  if(type == DT_METADATA_SIGNAL_HIDDEN || type == DT_METADATA_SIGNAL_SHOWN)
   {
     // hidden/shown metadata have changed - update the collection list
     for(int i = 0; i < MAX_RULES; i++)
