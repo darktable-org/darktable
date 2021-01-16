@@ -996,6 +996,17 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
   dt_import_metadata_update(&d->metadata);
 }
 
+void gui_reset(dt_lib_module_t *self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  dt_gui_preferences_bool_reset(d->recursive);
+  dt_gui_preferences_bool_reset(d->ignore_jpegs);
+  dt_gui_preferences_bool_reset(d->ignore_exif);
+  dt_gui_preferences_int_reset(d->rating);
+  dt_gui_preferences_bool_reset(d->apply_metadata);
+  dt_import_metadata_reset(&d->metadata);
+}
+
 void init_presets(dt_lib_module_t *self)
 {
 }

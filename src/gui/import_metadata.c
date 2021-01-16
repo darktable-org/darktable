@@ -38,7 +38,7 @@
 
 static void _import_metadata_presets_update(dt_import_metadata_t *metadata);
 
-static void _import_metadata_save(GtkWidget *widget, dt_import_metadata_t *metadata)
+static void _metadata_save(GtkWidget *widget, dt_import_metadata_t *metadata)
 {
   const char *name = gtk_widget_get_name(widget);
   const int i = dt_metadata_get_keyid_by_name(name);
@@ -52,7 +52,7 @@ static void _import_metadata_save(GtkWidget *widget, dt_import_metadata_t *metad
 
 static void _import_metadata_changed(GtkWidget *widget, dt_import_metadata_t *metadata)
 {
-  _import_metadata_save(widget, metadata);
+  _metadata_save(widget, metadata);
   GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, 0);
   gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
 }
@@ -66,17 +66,31 @@ static gboolean _import_metadata_reset(GtkWidget *label, GdkEventButton *event, 
   return FALSE;
 }
 
+static void _metadata_reset_all(dt_import_metadata_t *metadata, const gboolean hard)
+{
+  for(unsigned int i = 0; i < DT_METADATA_NUMBER + 1; i++)
+  {
+    GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, i + 1);
+    const gboolean visible = gtk_widget_get_visible(w);
+    if(hard || visible)
+      gtk_entry_set_text(GTK_ENTRY(w), "");
+  }
+  if(hard)
+  {
+    // import module reset
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 2, i + 1);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), TRUE);
+    }
+  }
+}
+
 static gboolean _import_metadata_reset_all(GtkWidget *label, GdkEventButton *event, dt_import_metadata_t *metadata)
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER + 1; i++)
-    {
-      GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, i + 1);
-      const gboolean visible = gtk_widget_get_visible(w);
-      if(visible)
-        gtk_entry_set_text(GTK_ENTRY(w), "");
-    }
+    _metadata_reset_all(metadata, FALSE);
   }
   return FALSE;
 }
@@ -174,7 +188,7 @@ static void _metadata_presets_changed(GtkWidget *widget, dt_import_metadata_t *m
           g_signal_handlers_block_by_func(w, _import_metadata_changed, metadata);
           gtk_entry_set_text(GTK_ENTRY(w), sv);
           g_signal_handlers_unblock_by_func(w, _import_metadata_changed, metadata);
-          _import_metadata_save(w, metadata);
+          _metadata_save(w, metadata);
         }
       }
       g_value_unset(&value);
@@ -404,6 +418,10 @@ void dt_import_metadata_update(dt_import_metadata_t *metadata)
   g_free(tags);
 }
 
+void dt_import_metadata_reset(dt_import_metadata_t *metadata)
+{
+  _metadata_reset_all(metadata, TRUE);
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
