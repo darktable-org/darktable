@@ -740,69 +740,61 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
 }
 
 static inline void precondition(const float *const in, float *const buf, const int wd, const int ht,
-                                const float a[3], const float b[3])
+                                const float a[4], const float b[4])
 {
-  const float sigma2_plus_3_8[3]
+  const float DT_ALIGNED_PIXEL sigma2_plus_3_8[4]
       = { (b[0] / a[0]) * (b[0] / a[0]) + 3.f / 8.f,
           (b[1] / a[1]) * (b[1] / a[1]) + 3.f / 8.f,
-          (b[2] / a[2]) * (b[2] / a[2]) + 3.f / 8.f };
+          (b[2] / a[2]) * (b[2] / a[2]) + 3.f / 8.f,
+          0.0f };
+  const size_t npixels = (size_t)wd * ht;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, sigma2_plus_3_8, wd) \
+  dt_omp_firstprivate(buf, npixels, in, sigma2_plus_3_8) \
   shared(a) \
   schedule(static)
 #endif
-  for(int j = 0; j < ht; j++)
+  for(size_t j = 0; j < 4U * npixels; j += 4)
   {
-    float *buf2 = buf + (size_t)4 * j * wd;
-    const float *in2 = in + (size_t)4 * j * wd;
-    for(int i = 0; i < wd; i++)
+    for_each_channel(c,aligned(in,buf,a,sigma2_plus_3_8))
     {
-      for(int c = 0; c < 3; c++)
-      {
-        const float d = fmaxf(0.0f, in2[c] / a[c] + sigma2_plus_3_8[c]);
-        buf2[c] = 2.0f * sqrtf(d);
-      }
-      buf2 += 4;
-      in2 += 4;
+      const float d = fmaxf(0.0f, in[j+c] / a[c] + sigma2_plus_3_8[c]);
+      buf[j+c] = 2.0f * sqrtf(d);
     }
   }
 }
 
-static inline void backtransform(float *const buf, const int wd, const int ht, const float a[3],
-                                 const float b[3])
+static inline void backtransform(float *const buf, const int wd, const int ht, const float a[4],
+                                 const float b[4])
 {
-  const float sigma2_plus_1_8[3]
+  const float DT_ALIGNED_PIXEL sigma2_plus_1_8[4]
       = { (b[0] / a[0]) * (b[0] / a[0]) + 1.f / 8.f,
           (b[1] / a[1]) * (b[1] / a[1]) + 1.f / 8.f,
-          (b[2] / a[2]) * (b[2] / a[2]) + 1.f / 8.f };
+          (b[2] / a[2]) * (b[2] / a[2]) + 1.f / 8.f,
+          0.0f };
+  const size_t npixels = (size_t)wd * ht;
+  const float sqrt_3_2 = sqrtf(3.0f / 2.0f);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, sigma2_plus_1_8, wd) \
+  dt_omp_firstprivate(buf, npixels, sigma2_plus_1_8, sqrt_3_2)   \
   shared(a) \
   schedule(static)
 #endif
-  for(int j = 0; j < ht; j++)
+  for(size_t j = 0; j < 4U * npixels; j += 4)
   {
-    float *buf2 = buf + (size_t)4 * j * wd;
-    for(int i = 0; i < wd; i++)
+    for_each_channel(c,aligned(buf,sigma2_plus_1_8))
     {
-      for(int c = 0; c < 3; c++)
-      {
-        const float x = buf2[c], x2 = x * x;
-        // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
-        if(x < .5f)
-          buf2[c] = 0.0f;
-        else
-          buf2[c] = 1.f / 4.f * x2 + 1.f / 4.f * sqrtf(3.f / 2.f) / x - 11.f / 8.f / x2
-                    + 5.f / 8.f * sqrtf(3.f / 2.f) / (x * x2) - sigma2_plus_1_8[c];
-        // asymptotic form:
-        // buf2[c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
-        buf2[c] *= a[c];
-      }
-      buf2 += 4;
+      const float x = buf[j+c], x2 = x * x;
+      // closed form approximation to unbiased inverse (input range was 0..200 for fit, not 0..1)
+      buf[j+c] = (x < 0.5f)
+        ? 0.0f
+        : a[c] * (1.f / 4.f * x2 + 1.f / 4.f * sqrt_3_2 / x - 11.f / 8.f / x2
+                  + 5.f / 8.f * sqrt_3_2 / (x * x2) - sigma2_plus_1_8[c]);
+      // asymptotic form:
+      // buf[j+c] = fmaxf(0.0f, 1./4.*x*x - 1./8. - sigma2[c]);
+      buf[j+c] *= a[c];
     }
   }
 }
@@ -831,25 +823,26 @@ static inline void backtransform(float *const buf, const int wd, const int ht, c
 // is a suitable function.
 // This is the function we use here.
 static inline void precondition_v2(const float *const in, float *const buf, const int wd, const int ht,
-                                   const float a, const float p[3], const float b, const float wb[3])
+                                   const float a, const float p[4], const float b, const float wb[4])
 {
+  const size_t npixels = (size_t)wd * ht;
+  const float DT_ALIGNED_PIXEL expon[4] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
+  const float DT_ALIGNED_PIXEL denom[4] = { (-p[0] + 2) * sqrtf(a),
+                                            (-p[1] + 2) * sqrtf(a),
+                                            (-p[2] + 2) * sqrtf(a),
+                                            1.0f };
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, wd, a, p, b, wb) \
+  dt_omp_firstprivate(npixels, buf, in, b, wb) \
+  dt_omp_sharedconst(expon, denom) \
   schedule(static)
 #endif
-  for(int j = 0; j < ht; j++)
+  for(size_t j = 0; j < 4U * npixels; j += 4)
   {
-    float *buf2 = buf + (size_t)4 * j * wd;
-    const float *in2 = in + (size_t)4 * j * wd;
-    for(int i = 0; i < wd; i++)
+    for_each_channel(c,aligned(in,buf,wb))
     {
-      for(int c = 0; c < 3; c++)
-      {
-        buf2[c] = 2.0f * powf(MAX(in2[c] / wb[c] + b, 0.0f), -p[c] / 2 + 1) / ((-p[c] + 2) * sqrt(a));
-      }
-      buf2 += 4;
-      in2 += 4;
+      buf[j+c] = 2.0f * powf(MAX(in[j+c] / wb[c] + b, 0.0f), expon[c]) / denom[c];
     }
   }
 }
@@ -913,74 +906,81 @@ static inline void precondition_v2(const float *const in, float *const buf, cons
 // control the bias:
 // we replace the 2 * p * constant / (2 - p) part of delta by user
 // defined bias controller.
-static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a, const float p[3],
-                                    const float b, const float bias, const float wb[3])
+static inline void backtransform_v2(float *const buf, const int wd, const int ht, const float a, const float p[4],
+                                    const float b, const float bias, const float wb[4])
 {
+  const size_t npixels = (size_t)wd * ht;
+  const float DT_ALIGNED_PIXEL expon[4] = { 1.0f / (1.0f - p[0] / 2.0f),
+                                            1.0f / (1.0f - p[1] / 2.0f),
+                                            1.0f / (1.0f - p[2] / 2.0f),
+                                            1.0f };
+  const float DT_ALIGNED_PIXEL denom[4] = { 4.0f / (sqrtf(a) * (2.0f - p[0])),
+                                            4.0f / (sqrtf(a) * (2.0f - p[1])),
+                                            4.0f / (sqrtf(a) * (2.0f - p[2])),
+                                            1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, wd, a, p, b, bias, wb) \
+  dt_omp_firstprivate(npixels, buf, b, bias, wb)   \
+  dt_omp_sharedconst(expon,denom) \
   schedule(static)
 #endif
-  for(int j = 0; j < ht; j++)
+  for(size_t j = 0; j < 4U * npixels; j += 4)
   {
-    float *buf2 = buf + (size_t)4 * j * wd;
-    for(int i = 0; i < wd; i++)
+    for_each_channel(c,aligned(buf,wb))
     {
-      for(int c = 0; c < 3; c++)
-      {
-        const float x = MAX(buf2[c], 0.0f);
-        const float delta = x * x + bias;
-        const float denominator = 4.0f / (sqrtf(a) * (2.0f - p[c]));
-        const float z1 = (x + sqrtf(MAX(delta, 0.0f))) / denominator;
-        buf2[c] = powf(z1, 1.0f / (1.0f - p[c] / 2.0f)) - b;
-        buf2[c] *= wb[c];
-      }
-      buf2 += 4;
+      const float x = MAX(buf[j+c], 0.0f);
+      const float delta = x * x + bias;
+      const float z1 = (x + sqrtf(MAX(delta, 0.0f))) / denom[c];
+      buf[j+c] = wb[c] * (powf(z1, expon[c]) - b);
     }
   }
 }
 
 static inline void precondition_Y0U0V0(const float *const in, float *const buf, const int wd, const int ht,
-                                       const float a, const float p[3], const float b, const float toY0U0V0[9])
+                                       const float a, const float p[4], const float b, const float toY0U0V0[9])
 {
-  const float expon[3] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1 };
-  const float scale[3] = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
-                           2.0f / ((-p[1] + 2) * sqrtf(a)),
-                           2.0f / ((-p[2] + 2) * sqrtf(a)) };
+  const float DT_ALIGNED_PIXEL expon[4] = { -p[0] / 2 + 1, -p[1] / 2 + 1, -p[2] / 2 + 1, 1.0f };
+  const float DT_ALIGNED_PIXEL scale[4] = { 2.0f / ((-p[0] + 2) * sqrtf(a)),
+                                            2.0f / ((-p[1] + 2) * sqrtf(a)),
+                                            2.0f / ((-p[2] + 2) * sqrtf(a)),
+                                            1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0, expon, scale)       \
+  dt_omp_firstprivate(buf, ht, in, wd, b, toY0U0V0) \
+  dt_omp_sharedconst(expon, scale) \
   schedule(static)
 #endif
   for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
-    float *buf2 = buf + j;
-    const float *in2 = in + j;
-    float tmp[3];
-    for(int c = 0; c < 3; c++)
+    float DT_ALIGNED_PIXEL tmp[4]; // "unused" fourth element enables vectorization
+    for_each_channel(c,aligned(in))
     {
-      tmp[c] = powf(MAX(in2[c] + b, 0.0f), expon[c]) * scale[c];
+      tmp[c] = powf(MAX(in[j+c] + b, 0.0f), expon[c]) * scale[c];
     }
-    for(int c = 0; c < 3; c++)
+    for(int c = 0; c < 3; c++) //TODO: change 3x3 matrix to 3x4 for vectorization
     {
       float sum = 0.0f;
       for(int k = 0; k < 3; k++)
       {
         sum += toY0U0V0[3 * c + k] * tmp[k];
       }
-      buf2[c] = sum;
+      buf[j+c] = sum;
     }
   }
 }
 
-static inline void backtransform_Y0U0V0(float *const buf, const int wd, const int ht, const float a, const float p[3],
-                                    const float b, const float bias, const float wb[3], const float toRGB[9])
+static inline void backtransform_Y0U0V0(float *const buf, const int wd, const int ht, const float a, const float p[4],
+                                    const float b, const float bias, const float wb[4], const float toRGB[9])
 {
-  const float bias_wb[3] = { bias * wb[0], bias * wb[1], bias * wb[2] };
-  const float expon[3] = {  1.0f / (1.0f - p[0] / 2.0f),  1.0f / (1.0f - p[1] / 2.0f),  1.0f / (1.0f - p[2] / 2.0f) };
-  const float scale[3] = { (sqrtf(a) * (2.0f - p[0])) / 4.0f,
-                           (sqrtf(a) * (2.0f - p[1])) / 4.0f,
-                           (sqrtf(a) * (2.0f - p[2])) / 4.0f };
+  const float DT_ALIGNED_PIXEL bias_wb[4] = { bias * wb[0], bias * wb[1], bias * wb[2], 0.0f };
+  const float DT_ALIGNED_PIXEL expon[4] = {  1.0f / (1.0f - p[0] / 2.0f),
+                                             1.0f / (1.0f - p[1] / 2.0f),
+                                             1.0f / (1.0f - p[2] / 2.0f),
+                                             1.0f };
+  const float DT_ALIGNED_PIXEL scale[4] = { (sqrtf(a) * (2.0f - p[0])) / 4.0f,
+                                            (sqrtf(a) * (2.0f - p[1])) / 4.0f,
+                                            (sqrtf(a) * (2.0f - p[2])) / 4.0f,
+                                            1.0f };
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(buf, ht, wd, b, bias_wb, toRGB, expon, scale)  \
@@ -988,22 +988,22 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
 #endif
   for(size_t j = 0; j < (size_t)4 * ht * wd; j += 4)
   {
-    float *buf2 = buf + j;
-    float rgb[3];
-    for(int c = 0; c < 3; c++)
+    float DT_ALIGNED_PIXEL rgb[4]; // "unused" fourth element enables vectorization
+    for(int c = 0; c < 3; c++) //TODO: change 3x3 matrix to 3x4 for vectorization
     {
       rgb[c] = 0.0f;
       for(int k = 0; k < 3; k++)
       {
-        rgb[c] += toRGB[3 * c + k] * buf2[k];
+        rgb[c] += toRGB[3 * c + k] * buf[j+k];
       }
     }
-    for(int c = 0; c < 3; c++)
+    rgb[3] = 0.0f;
+    for_each_channel(c,aligned(buf))
     {
       const float x = MAX(rgb[c], 0.0f);
       const float delta = x * x + bias_wb[c];
       const float z1 = (x + sqrtf(MAX(delta, 0.0f))) * scale[c];
-      buf2[c] = powf(z1, expon[c]) - b;
+      buf[j+c] = powf(z1, expon[c]) - b;
     }
   }
 }
@@ -1014,15 +1014,15 @@ static inline void backtransform_Y0U0V0(float *const buf, const int wd, const in
 
 // called by: process_wavelets, nlmeans_precondition, nlmeans_precondition_cl, process_variance,
 //     process_wavelets_cl
-static void compute_wb_factors(float wb[3],const dt_iop_denoiseprofile_data_t *const d,
-                               const dt_dev_pixelpipe_iop_t *const piece, const float weights[3])
+static void compute_wb_factors(float wb[4],const dt_iop_denoiseprofile_data_t *const d,
+                               const dt_dev_pixelpipe_iop_t *const piece, const float weights[4])
 {
   const float wb_mean = (piece->pipe->dsc.temperature.coeffs[0] + piece->pipe->dsc.temperature.coeffs[1]
                          + piece->pipe->dsc.temperature.coeffs[2])
                         / 3.0f;
   // we init wb by the mean of the coeffs, which corresponds to the mean
   // amplification that is done in addition to the "ISO" related amplification
-  wb[0] = wb[1] = wb[2] = wb_mean;
+  wb[0] = wb[1] = wb[2] = wb[3] = wb_mean;
   if(d->fix_anscombe_and_nlmeans_norm)
   {
     if(wb_mean != 0.0f && d->wb_adaptive_anscombe)
@@ -1033,14 +1033,16 @@ static void compute_wb_factors(float wb[3],const dt_iop_denoiseprofile_data_t *c
     {
       // temperature coeffs are equal to 0 if we open a JPG image.
       // in this case consider them equal to 1.
-      for(int i = 0; i < 3; i++) wb[i] = 1.0f;
+      for_each_channel(i)
+        wb[i] = 1.0f;
     }
     // else, wb_adaptive_anscombe is false and our wb array is
     // filled with the wb_mean
   }
   else
   {
-    for(int i = 0; i < 3; i++) wb[i] = weights[i] * piece->pipe->dsc.processed_maximum[i];
+    for_each_channel(i)
+      wb[i] = weights[i] * piece->pipe->dsc.processed_maximum[i];
   }
   return;
 }
@@ -1138,13 +1140,16 @@ static void variance_stabilizing_xform(float thrs[4], const int scale, const int
   const float sigma_band = powf(varf, scale) * sigma;
   // determine thrs as bayesshrink
   const float sb2 = sigma_band * sigma_band;
-  const float var_y[3] = { sum_y2[0] / (npixels - 1.0f),
-                           sum_y2[1] / (npixels - 1.0f),
-                           sum_y2[2] / (npixels - 1.0f) };
-  const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
-                           sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
+  const float DT_ALIGNED_PIXEL var_y[4] = { sum_y2[0] / (npixels - 1.0f),
+                                            sum_y2[1] / (npixels - 1.0f),
+                                            sum_y2[2] / (npixels - 1.0f),
+                                            0.0f };
+  const float DT_ALIGNED_PIXEL std_x[4] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)),
+                                            sqrtf(MAX(1e-6f, var_y[1] - sb2)),
+                                            sqrtf(MAX(1e-6f, var_y[2] - sb2)),
+                                            1.0f };
   // add 8.0 here because it seemed a little weak
-  float adjt[3] = { 8.0f, 8.0f, 8.0f };
+  float DT_ALIGNED_PIXEL adjt[4] = { 8.0f, 8.0f, 8.0f, 0.0f };
 
   const int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
   const int band_index = DT_IOP_DENOISE_PROFILE_BANDS - (scale + offset_scale + 1);
@@ -1161,7 +1166,7 @@ static void variance_stabilizing_xform(float thrs[4], const int scale, const int
       = d->force[DT_DENOISE_PROFILE_ALL][band_index];
     band_force_exp_2 *= band_force_exp_2;
     band_force_exp_2 *= 4;
-    for(int ch = 0; ch < 3; ch++)
+    for_each_channel(ch)
     {
       adjt[ch] *= band_force_exp_2;
     }
@@ -1190,10 +1195,8 @@ static void variance_stabilizing_xform(float thrs[4], const int scale, const int
     adjt[1] *= band_force_exp_2;
     adjt[2] *= band_force_exp_2;
   }
-  thrs[0] = adjt[0] * sb2 / std_x[0];
-  thrs[1] = adjt[1] * sb2 / std_x[1];
-  thrs[2] = adjt[2] * sb2 / std_x[2];
-  thrs[3] = 0.0f;
+  for_each_channel(c)
+    thrs[c] = adjt[c] * sb2 / std_x[c];
 }
 
 static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
@@ -1249,14 +1252,15 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     return;
   }
 
-  float wb[3];
-  const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
+  float DT_ALIGNED_PIXEL wb[4];  // the "unused" fourth element enables vectorization
+  const float DT_ALIGNED_PIXEL wb_weights[4] = { 2.0f, 1.0f, 2.0f, 0.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
 
-  // adaptive p depending on white balance
-  const float p[3] = { MAX(d->shadows + 0.1 * logf(in_scale / wb[0]), 0.0f) ,
-                       MAX(d->shadows + 0.1 * logf(in_scale / wb[1]), 0.0f),
-                       MAX(d->shadows + 0.1 * logf(in_scale / wb[2]), 0.0f)};
+  // adaptive p depending on white balance (the "unused" fourth element enables vectorization
+  const float DT_ALIGNED_PIXEL p[4] = { MAX(d->shadows + 0.1 * logf(in_scale / wb[0]), 0.0f),
+                                        MAX(d->shadows + 0.1 * logf(in_scale / wb[1]), 0.0f),
+                                        MAX(d->shadows + 0.1 * logf(in_scale / wb[2]), 0.0f),
+                                        0.0f };
 
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
 
@@ -1272,11 +1276,11 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   for(int k = 0; k < 9; k++) toY0U0V0[k] /= (d->strength * in_scale);
   for(int k = 0; k < 9; k++) toRGB[k] *= (d->strength * in_scale);
 
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * in_scale;
+  for_each_channel(i) wb[i] *= d->strength * in_scale;
 
-  // only use green channel + wb for now:
-  const float aa[3] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2] };
-  const float bb[3] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2] };
+  // only use green channel + wb for now: (the "unused" fourth element enables vectorization)
+  const float DT_ALIGNED_PIXEL aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 0.0f };
+  const float DT_ALIGNED_PIXEL bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 0.0f };
 
   if(!d->use_new_vst)
   {
@@ -1304,7 +1308,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
     const float sigma = 1.0f;
     const float varf = sqrtf(2.0f + 2.0f * 4.0f * 4.0f + 6.0f * 6.0f) / 16.0f; // about 0.5
     const float sigma_band = powf(varf, scale) * sigma;
-    float sum_y2[4];
+    float DT_ALIGNED_PIXEL sum_y2[4];
     decompose(buf2, buf1, buf, sum_y2, scale, 1.0f / (sigma_band * sigma_band), width, height);
     debug_dump_PFM(piece,"/tmp/coarse_%d.pfm",buf2,width,height,scale);
     debug_dump_PFM(piece,"/tmp/detail_%d.pfm",buf,width,height,scale);
@@ -1402,20 +1406,22 @@ static float nlmeans_scattering(int *nbhood, const dt_iop_denoiseprofile_data_t 
 // called by process_nlmeans_cpu
 // must keep synchronized with nlmeans_precondition_cl below
 static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
-                                  const dt_dev_pixelpipe_iop_t *const piece, float wb[3],
+                                  const dt_dev_pixelpipe_iop_t *const piece, float wb[4],
                                   const void *const ivoid, const dt_iop_roi_t *const roi_in,
-                                  float scale, float *in, float aa[3], float bb[3], float p[3])
+                                  float scale, float *in, float aa[4], float bb[4], float p[4])
 {
-  const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };
+  // the "unused" fourth array element enables vectorization
+  const float DT_ALIGNED_PIXEL wb_weights[4] = { 1.0f, 1.0f, 1.0f, 0.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
 
   // adaptive p depending on white balance
   p[0] = MAX(d->shadows + 0.1 * logf(scale / wb[0]), 0.0f);
   p[1] = MAX(d->shadows + 0.1 * logf(scale / wb[1]), 0.0f);
   p[2] = MAX(d->shadows + 0.1 * logf(scale / wb[2]), 0.0f);
+  p[3] = 0.0f;
 
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++)
+  for_each_channel(i,aligned(wb,aa,bb))
   {
     wb[i] *= d->strength * scale;
     // only use green channel + wb for now:
@@ -1438,10 +1444,11 @@ static float nlmeans_precondition(const dt_iop_denoiseprofile_data_t *const d,
 // called by process_nlmeans_cl
 // must keep synchronized with nlmeans_precondition above
 static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d,
-                                     const dt_dev_pixelpipe_iop_t *const piece, float wb[3],
+                                     const dt_dev_pixelpipe_iop_t *const piece, float wb[4],
                                      float scale, float aa[4], float bb[4], float p[4])
 {
-  const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };
+  // the "unused" fourth element enables vectorization
+  const float DT_ALIGNED_PIXEL wb_weights[4] = { 1.0f, 1.0f, 1.0f, 0.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
   wb[3] = 0.0;
 
@@ -1452,7 +1459,7 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
   p[3] = 1.0f;
 
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++)
+  for_each_channel(i,aligned(wb,aa,bb))
   {
     wb[i] *= d->strength * scale;
     // only use green channel + wb for now:
@@ -1464,7 +1471,7 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(d->use_new_vst)
   {
-    for(int c = 0; c < 3; c++)
+    for_each_channel(c,aligned(aa,bb))
     {
       aa[c] = d->a[1] * compensate_p;
       bb[c] = d->b[1];
@@ -1477,8 +1484,8 @@ static float nlmeans_precondition_cl(const dt_iop_denoiseprofile_data_t *const d
 // called by process_nlmeans_cpu
 static void nlmeans_backtransform(const dt_iop_denoiseprofile_data_t *const d, float *ovoid,
                                   const dt_iop_roi_t *const roi_in, const float scale,
-                                  const float compensate_p, const float wb[3], const float aa[3],
-                                  const float bb[3], const float p[3])
+                                  const float compensate_p, const float wb[4], const float aa[4],
+                                  const float bb[4], const float p[4])
 {
   if(!d->use_new_vst)
   {
@@ -1519,10 +1526,10 @@ static void process_nlmeans_cpu(dt_dev_pixelpipe_iop_t *piece,
 
   // P == 0 : this will degenerate to a (fast) bilateral filter.
 
-  float wb[3];
-  float p[3];
-  float aa[3];
-  float bb[3];
+  float DT_ALIGNED_PIXEL wb[4]; // the "unused" fourth array element enables vectorization
+  float DT_ALIGNED_PIXEL p[4];
+  float DT_ALIGNED_PIXEL aa[4];
+  float DT_ALIGNED_PIXEL bb[4];
   const float compensate_p = nlmeans_precondition(d,piece,wb,ivoid,roi_in,scale,in,aa,bb,p);
 
   float norm2[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -1567,13 +1574,13 @@ static void sum_rec(const size_t npixels, const float *in, float *out)
 {
   if(npixels <= 3)
   {
-    for(size_t c = 0; c < 3; c++)
+    for_each_channel(c,aligned(out))
     {
       out[c] = 0.0;
     }
     for(size_t i = 0; i < npixels; i++)
     {
-      for(size_t c = 0; c < 3; c++)
+      for_each_channel(c,aligned(in,out))
       {
         out[c] += in[i * 4 + c];
       }
@@ -1585,24 +1592,24 @@ static void sum_rec(const size_t npixels, const float *in, float *out)
   const size_t npixels_second_half = npixels - npixels_first_half;
   sum_rec(npixels_first_half, in, out);
   sum_rec(npixels_second_half, in + 4U * npixels_first_half, out + 4U * npixels_first_half);
-  for(int c = 0; c < 3; c++)
+  for_each_channel(c,aligned(out))
   {
     out[c] += out[4U * npixels_first_half + c];
   }
 }
 
 /* this gives (npixels-1)*V[X] */
-static void variance_rec(const size_t npixels, const float *in, float *out, const float mean[3])
+static void variance_rec(const size_t npixels, const float *in, float *out, const float mean[4])
 {
   if(npixels <= 3)
   {
-    for(size_t c = 0; c < 3; c++)
+    for_each_channel(c,aligned(out))
     {
       out[c] = 0.0;
     }
     for(size_t i = 0; i < npixels; i++)
     {
-      for(size_t c = 0; c < 3; c++)
+      for_each_channel(c,aligned(in,out))
       {
         const float diff = in[i * 4 + c] - mean[c];
         out[c] += diff * diff;
@@ -1615,7 +1622,7 @@ static void variance_rec(const size_t npixels, const float *in, float *out, cons
   const size_t npixels_second_half = npixels - npixels_first_half;
   variance_rec(npixels_first_half, in, out, mean);
   variance_rec(npixels_second_half, in + 4U * npixels_first_half, out + 4U * npixels_first_half, mean);
-  for(int c = 0; c < 3; c++)
+  for_each_channel(c,aligned(out))
   {
     out[c] += out[4U * npixels_first_half + c];
   }
@@ -1641,17 +1648,18 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 4 | DT_IMGSZ_INPUT, &in, 0))
     return;
 
-  float wb[3];
-  const float wb_weights[3] = { 1.0f, 1.0f, 1.0f };
+  float DT_ALIGNED_PIXEL wb[4];  // the "unused" fourth element enables vectorization
+  const float DT_ALIGNED_PIXEL wb_weights[4] = { 1.0f, 1.0f, 1.0f, 0.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
 
   // adaptive p depending on white balance
-  const float p[3] = { MAX(d->shadows - 0.1 * logf(wb[0]), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[1]), 0.0f),
-                       MAX(d->shadows - 0.1 * logf(wb[2]), 0.0f)};
+  const float DT_ALIGNED_PIXEL p[4] = { MAX(d->shadows - 0.1 * logf(wb[0]), 0.0f),
+                                        MAX(d->shadows - 0.1 * logf(wb[1]), 0.0f),
+                                        MAX(d->shadows - 0.1 * logf(wb[2]), 0.0f),
+                                        0.0f };
 
   // update the coeffs with strength
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength;
+  for_each_channel(i) wb[i] *= d->strength;
 
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   precondition_v2((float *)ivoid, (float *)ovoid, roi_in->width, roi_in->height, d->a[1] * compensate_p, p, d->b[1], wb);
@@ -1660,14 +1668,14 @@ static void process_variance(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
   // we use out as a temporary buffer here
   // compute mean
   sum_rec(npixels, in, out);
-  float mean[3];
-  for(int c = 0; c < 3; c++)
+  float DT_ALIGNED_PIXEL mean[4]; // the "unused" fourth array element enables vectorization
+  for_each_channel(c,aligned(out))
   {
     mean[c] = out[c] / npixels;
   }
   variance_rec(npixels, in, out, mean);
-  float var[3];
-  for(int c = 0; c < 3; c++)
+  float DT_ALIGNED_PIXEL var[4]; // the "unused" fourth array element enables vectorization
+  for_each_channel(c,aligned(out))
   {
     var[c] = out[c] / (npixels - 1);
   }
@@ -1710,10 +1718,10 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float norm = nlmeans_norm(P,d);
   const float central_pixel_weight = d->central_pixel_weight * scale;
 
-  float wb[4];
-  float p[4];
-  float aa[4];
-  float bb[4];
+  float DT_ALIGNED_PIXEL wb[4];
+  float DT_ALIGNED_PIXEL p[4];
+  float DT_ALIGNED_PIXEL aa[4];
+  float DT_ALIGNED_PIXEL bb[4];
   (void)nlmeans_precondition_cl(d,piece,wb,scale,aa,bb,p);
 
   // allocate a buffer for a preconditioned copy of the image
@@ -1829,10 +1837,10 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   const float norm = nlmeans_norm(P,d);
   const float central_pixel_weight = d->central_pixel_weight * scale;
 
-  float wb[4];
-  float p[4];
-  float aa[4];
-  float bb[4];
+  float DT_ALIGNED_PIXEL wb[4];
+  float DT_ALIGNED_PIXEL p[4];
+  float DT_ALIGNED_PIXEL aa[4];
+  float DT_ALIGNED_PIXEL bb[4];
   (void)nlmeans_precondition_cl(d,piece,wb,scale,aa,bb,p);
 
   const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
@@ -2149,8 +2157,8 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     if(dev_detail[k] == NULL) goto error;
   }
 
-  float wb[4];
-  const float wb_weights[3] = { 2.0f, 1.0f, 2.0f };
+  float DT_ALIGNED_PIXEL wb[4];  // the "unused" fourth element enables vectorization
+  const float wb_weights[4] = { 2.0f, 1.0f, 2.0f, 0.0f };
   compute_wb_factors(wb,d,piece,wb_weights);
   wb[3] = 0.0f;
 
@@ -2172,7 +2180,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   for(int k = 0; k < 9; k++) toRGB[k] *= (d->strength * scale);
 
   // update the coeffs with strength and scale
-  for(int i = 0; i < 3; i++) wb[i] *= d->strength * scale;
+  for_each_channel(i) wb[i] *= d->strength * scale;
 
   float aa[4] = { d->a[1] * wb[0], d->a[1] * wb[1], d->a[1] * wb[2], 1.0f };
   float bb[4] = { d->b[1] * wb[0], d->b[1] * wb[1], d->b[1] * wb[2], 1.0f };
@@ -2181,7 +2189,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
   const float compensate_p = DT_IOP_DENOISE_PROFILE_P_FULCRUM / powf(DT_IOP_DENOISE_PROFILE_P_FULCRUM, d->shadows);
   if(d->use_new_vst)
   {
-    for(int c = 0; c < 3; c++)
+    for_each_channel(c)
     {
       aa[c] = d->a[1] * compensate_p;
       bb[c] = d->b[1];
@@ -2284,7 +2292,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
     const float sigma_band = powf(varf, s) * sigma;
 
     // determine thrs as bayesshrink
-    float sum_y2[3] = { 0.0f };
+    float sum_y2[4] = { 0.0f };
 
     size_t lsizes[3];
     size_t llocal[3];
@@ -2329,18 +2337,23 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
     for(int k = 0; k < reducesize; k++)
     {
-      for(int c = 0; c < 3; c++)
+      for_each_channel(c)
       {
         sum_y2[c] += sumsum[4 * k + c];
       }
     }
 
     const float sb2 = sigma_band * sigma_band;
-    const float var_y[3] = { sum_y2[0] / (npixels - 1.0f), sum_y2[1] / (npixels - 1.0f), sum_y2[2] / (npixels - 1.0f) };
-    const float std_x[3] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)), sqrtf(MAX(1e-6f, var_y[1] - sb2)),
-                             sqrtf(MAX(1e-6f, var_y[2] - sb2)) };
+    const float DT_ALIGNED_PIXEL var_y[4] = { sum_y2[0] / (npixels - 1.0f),
+                                              sum_y2[1] / (npixels - 1.0f),
+                                              sum_y2[2] / (npixels - 1.0f),
+                                              0.0f };
+    const float DT_ALIGNED_PIXEL std_x[4] = { sqrtf(MAX(1e-6f, var_y[0] - sb2)),
+                                              sqrtf(MAX(1e-6f, var_y[1] - sb2)),
+                                              sqrtf(MAX(1e-6f, var_y[2] - sb2)),
+                                              1.0f };
     // add 8.0 here because it seemed a little weak
-    float adjt[3] = { 8.0f, 8.0f, 8.0f };
+    float DT_ALIGNED_PIXEL adjt[4] = { 8.0f, 8.0f, 8.0f, 0.0f };
 
     const int offset_scale = DT_IOP_DENOISE_PROFILE_BANDS - max_scale;
     const int band_index = DT_IOP_DENOISE_PROFILE_BANDS - (s + offset_scale + 1);
@@ -2356,7 +2369,7 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       float band_force_exp_2 = d->force[DT_DENOISE_PROFILE_ALL][band_index];
       band_force_exp_2 *= band_force_exp_2;
       band_force_exp_2 *= 4;
-      for(int ch = 0; ch < 3; ch++)
+      for_each_channel(ch)
       {
         adjt[ch] *= band_force_exp_2;
       }
@@ -2386,10 +2399,13 @@ static int process_wavelets_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       adjt[2] *= band_force_exp_2;
     }
 
-    const float thrs[4] = { adjt[0] * sb2 / std_x[0], adjt[1] * sb2 / std_x[1], adjt[2] * sb2 / std_x[2], 0.0f };
+    const float DT_ALIGNED_PIXEL thrs[4] = { adjt[0] * sb2 / std_x[0],
+                                             adjt[1] * sb2 / std_x[1],
+                                             adjt[2] * sb2 / std_x[2],
+                                             0.0f };
     // fprintf(stderr, "scale %d thrs %f %f %f\n", s, thrs[0], thrs[1], thrs[2]);
 
-    const float boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    const float DT_ALIGNED_PIXEL boost[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
     dt_opencl_set_kernel_arg(devid, gd->kernel_denoiseprofile_synthesize, 0, sizeof(cl_mem),
                              (void *)&dev_buf1);
