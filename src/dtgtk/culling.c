@@ -317,6 +317,11 @@ static void _thumbs_move(dt_culling_t *table, int move)
   }
 }
 
+static void _set_table_zoom_ratio(dt_culling_t *table, dt_thumbnail_t *th)
+{
+  table->zoom_ratio = dt_thumbnail_get_zoom_ratio(th);
+}
+
 static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, double posy, int state)
 {
   const int max_in_memory_images = _get_max_in_memory_images();
@@ -363,6 +368,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
                 = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
             th->zoomy
                 = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
+            _set_table_zoom_ratio(table, th);
             dt_thumbnail_image_refresh(th);
           }
           break;
@@ -391,6 +397,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
               = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
           th->zoomy
               = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
+          _set_table_zoom_ratio(table, th);
           dt_thumbnail_image_refresh(th);
         }
         l = g_list_next(l);
@@ -420,6 +427,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
         th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, posx - (posx - th->zoomx) * z_ratio));
         th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, posy - (posy - th->zoomy) * z_ratio));
       }
+      _set_table_zoom_ratio(table, th);
       dt_thumbnail_image_refresh(th);
     }
   }
@@ -687,7 +695,8 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
     dt_thumbnail_reload_infos(th);
-    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
     l = g_list_next(l);
   }
 }
@@ -804,6 +813,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 {
   dt_culling_t *table = (dt_culling_t *)calloc(1, sizeof(dt_culling_t));
   table->mode = mode;
+  table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
 
@@ -893,6 +903,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   // init values
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
+  table->zoom_ratio = IMG_TO_FIT;
 
   // reset remaining zooming values if any
   GList *l = table->list;
@@ -1179,11 +1190,11 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       }
       dt_thumbnail_t *thumb;
       if(table->mode == DT_CULLING_MODE_PREVIEW)
-        thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_PREVIEW,
-                                 table->show_tooltips);
+        thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_PREVIEW, table->show_tooltips);
       else
-        thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_CULLING,
-                                 table->show_tooltips);
+        thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_CULLING, table->show_tooltips);
 
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -1255,11 +1266,11 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           }
           dt_thumbnail_t *thumb;
           if(table->mode == DT_CULLING_MODE_PREVIEW)
-            thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_PREVIEW,
-                                     table->show_tooltips);
+            thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                     DT_THUMBNAIL_CONTAINER_PREVIEW, table->show_tooltips);
           else
-            thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_CULLING,
-                                     table->show_tooltips);
+            thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                     DT_THUMBNAIL_CONTAINER_CULLING, table->show_tooltips);
 
           thumb->display_focus = table->focus;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -1530,7 +1541,6 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   if(!_compute_sizes(table, force)) return;
 
   // we store first image zoom and pos for new ones
-  float old_z = 1.0;
   float old_zx = 0.0;
   float old_zy = 0.0;
   int old_margin_x = 0;
@@ -1538,7 +1548,6 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   if(g_list_length(table->list) > 0)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-    old_z = thumb->zoom;
     old_zx = thumb->zoomx;
     old_zy = thumb->zoomy;
     old_margin_x = gtk_widget_get_margin_start(thumb->w_image_box);
@@ -1568,17 +1577,17 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       gtk_widget_set_margin_start(thumb->w_image_box, old_margin_x);
       gtk_widget_set_margin_top(thumb->w_image_box, old_margin_y);
       // and we resize the thumb
-      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
+      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE, table->zoom_ratio);
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
       thumb->zoomx = old_zx;
       thumb->zoomy = old_zy;
-      thumb->zoom = old_z;
     }
     else
     {
       gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
       // and we resize the thumb
-      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
+      const float zoom_ratio = thumb->zoom_100 > 1 ? thumb->zoom / thumb->zoom_100 : IMG_TO_FIT;
+      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE, zoom_ratio);
     }
 
     // we update the active images list
@@ -1769,7 +1778,8 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
     dt_thumbnail_set_overlay(th, over, timeout);
     th->tooltip = table->show_tooltips;
     // and we resize the bottom area
-    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
     l = g_list_next(l);
   }
 
