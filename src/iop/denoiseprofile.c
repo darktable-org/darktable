@@ -1774,7 +1774,7 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
 
   if (err == CL_SUCCESS)
   {
-    const float norm2[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    const float DT_ALIGNED_PIXEL norm2[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     const dt_nlmeans_param_t params =
       {
         .scattering = scattering,
@@ -1851,8 +1851,8 @@ static int process_nlmeans_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop
   float DT_ALIGNED_PIXEL bb[4];
   (void)nlmeans_precondition_cl(d,piece,wb,scale,aa,bb,p);
 
-  const float sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
-                            (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
+  const float DT_ALIGNED_PIXEL sigma2[4] = { (bb[0] / aa[0]) * (bb[0] / aa[0]), (bb[1] / aa[1]) * (bb[1] / aa[1]),
+                                             (bb[2] / aa[2]) * (bb[2] / aa[2]), 0.0f };
 
   const int devid = piece->pipe->devid;
   cl_mem dev_tmp = dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
