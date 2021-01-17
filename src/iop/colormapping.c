@@ -456,7 +456,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW && (data->flag & ACQUIRE))
   {
     dt_iop_gui_enter_critical_section(self);
-    if(g->buffer) free(g->buffer);
+    if(g->buffer) dt_free_align(g->buffer);
 
     g->buffer = dt_iop_image_alloc(width, height, 4);
     g->width = width;
@@ -565,7 +565,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       }
     }
 
-    free(weight_buf);
+    dt_free_align(weight_buf);
     free(var_ratio);
     free(mapio);
   }
@@ -615,7 +615,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     dt_iop_gui_enter_critical_section(self);
     dt_free_align(g->buffer);
 
-    g->buffer = malloc(sizeof(float) * ch * width * height);
+    g->buffer = dt_iop_image_alloc(width, height, ch);
     g->width = width;
     g->height = height;
     g->ch = ch;
@@ -1106,7 +1106,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(process_clusters), self);
 
   cmsDeleteTransform(g->xform);
-  free(g->buffer);
+  dt_free_align(g->buffer);
 
   IOP_GUI_FREE;
 }
