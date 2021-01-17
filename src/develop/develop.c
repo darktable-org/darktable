@@ -253,6 +253,14 @@ void dt_dev_invalidate_all(dt_develop_t *dev)
   dev->timestamp++;
 }
 
+void dt_dev_invalidate_preview(dt_develop_t *dev)
+{
+  dev->preview_status = DT_DEV_PIXELPIPE_DIRTY;
+  dev->timestamp++;
+  if(dev->pipe) dev->pipe->input_timestamp = dev->timestamp;
+  if(dev->preview2_pipe) dev->preview2_pipe->input_timestamp = dev->timestamp;
+}
+
 void dt_dev_process_preview_job(dt_develop_t *dev)
 {
   if(dev->image_loading)
@@ -2075,6 +2083,16 @@ void dt_dev_reprocess_center(dt_develop_t *dev)
   }
 }
 
+void dt_dev_reprocess_preview(dt_develop_t *dev)
+{
+  if(darktable.gui->reset || !dev || !dev->gui_attached) return;
+
+  dev->preview_pipe->changed |= DT_DEV_PIPE_SYNCH;
+  dev->preview_pipe->cache_obsolete = 1;
+
+  dt_dev_invalidate_preview(dev);
+  dt_control_queue_redraw_center();
+}
 
 void dt_dev_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float *zoom_y, dt_dev_zoom_t zoom,
                               int closeup, float *boxww, float *boxhh)
