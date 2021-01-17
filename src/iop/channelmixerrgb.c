@@ -1706,7 +1706,38 @@ void validate_color_checker(const float *const restrict in,
   dt_free_align(patches);
 }
 
+static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *self)
+{
+  dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+  if(self->enabled && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
+  {
+    // this module instance is doing chromatic adaptation
+    if(!is_module_cat_on_pipe(self))
+    {
+      // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
+      dt_iop_set_module_trouble_message(self, _("double CAT applied"),
+                                        _("you have 2 instances or more of color calibration,\n"
+                                          "all performing chromatic adaptation.\n"
+                                          "this can lead to inconsistencies, unless you\n"
+                                          "use them with masks or know what you are doing."),
+                                        "double CAT applied");
+      return;
+    }
+    else if(!self->dev->proxy.wb_is_D65)
+    {
+      // our first and biggest problem : white balance module is being clever with WB coeffs
+      dt_iop_set_module_trouble_message(self, _("white balance module error"),
+                                        _("the white balance module is not using the camera\n"
+                                          "reference illuminant, which will cause issues here\n"
+                                          "with chromatic adaptation. either set it to reference\n"
+                                          "or disable chromatic adaptation here."),
+                                        "white balance error");
+      return;
+    }
+  }
 
+  dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+}
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
              const void *const restrict ivoid, void *const restrict ovoid,
@@ -1719,6 +1750,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
   if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
+
+  // dt_iop_have_required_input_format() has reset the trouble message.
+  // we must set it again in case of any trouble.
+  _check_for_wb_issue_and_set_trouble_message(self);
 
   float DT_ALIGNED_ARRAY RGB_to_XYZ[3][4];
   float DT_ALIGNED_ARRAY XYZ_to_RGB[3][4];
@@ -3352,38 +3387,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   declare_cat_on_pipe(self, FALSE);
 
-  if(self->enabled && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
-  {
-    // this module instance is doing chromatic adaptation
-    if(!is_module_cat_on_pipe(self))
-    {
-      // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
-      dt_iop_set_module_trouble_message(self,_("double CAT applied"),
-                                        _("you have 2 instances or more of color calibration,\n"
-                                          "all performing chromatic adaptation.\n"
-                                          "this can lead to inconsistencies, unless you\n"
-                                          "use them with masks or know what you are doing."),
-                                        "double CAT applied");
-    }
-    else if(!self->dev->proxy.wb_is_D65)
-    {
-      // our first and biggest problem : white balance module is being clever with WB coeffs
-      dt_iop_set_module_trouble_message(self,_("white balance module error"),
-                                        _("the white balance module is not using the camera\n"
-                                          "reference illuminant, which will cause issues here\n"
-                                          "with chromatic adaptation. either set it to reference\n"
-                                          "or disable chromatic adaptation here."),
-                                        "white balance error");
-    }
-    else
-    {
-      dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
-    }
-  }
-  else
-  {
-    dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
-  }
+  _check_for_wb_issue_and_set_trouble_message(self);
 
   --darktable.gui->reset;
 }
