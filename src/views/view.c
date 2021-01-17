@@ -103,6 +103,8 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm)
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
   for(GList *iter = vm->views; iter; iter = g_list_next(iter)) dt_view_unload_module((dt_view_t *)iter->data);
+  g_list_free_full(vm->views, free);
+  vm->views = NULL;
 }
 
 const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm)
