@@ -77,8 +77,8 @@ int dt_grouping_remove_from_group(const int32_t image_id)
     }
     else
     {
-      //we've changed nothing, no point in raising signal, bail early
-      return img_group_id;
+      // no change was made, no point in raising signal, bailing early
+      return -1;
     }
   }
   else

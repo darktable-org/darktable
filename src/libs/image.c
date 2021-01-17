@@ -119,9 +119,9 @@ static void _ungroup_helper_function(void)
   {
     const int id = sqlite3_column_int(stmt, 0);
     const int new_group_id = dt_grouping_remove_from_group(id);
-    if(id != new_group_id)
+    if(new_group_id != -1)
     {
-      // new_group_id == imgid if image was ungrouped single image and no change to any group was made
+      // new_group_id == -1 if image to be ungrouped was a single image and no change to any group was made
       imgs = g_list_append(imgs, GINT_TO_POINTER(id));
     }
   }
