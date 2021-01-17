@@ -2980,6 +2980,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
+    if(info) dt_get_times(&end_time);
 
     if(scaled)
     {
@@ -3001,17 +3002,17 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                 piece->pipe->dsc.filters);
+    if(info) dt_get_times(&end_time);
   }
   if(data->color_smoothing)
     color_smoothing(o, roi_out, data->color_smoothing);
 
   if(info)
   {
-    dt_get_times(&end_time);
     const float mpixels = (roo.width * roo.height) / 1.0e6;
     const float tclock = end_time.clock - start_time.clock;
     const float uclock = end_time.user - start_time.user;
-    fprintf(stderr," process CPU `%s' %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us, smooth %i\n",
+    dt_print(DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF , "[demosaic] process CPU `%s' %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us, smooth %i\n",
         method2string(demosaicing_method), mpixels, tclock, uclock, mpixels / tclock, data->color_smoothing);
   }
 }
@@ -4971,7 +4972,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
     }
   }
 
-  dt_print(DT_DEBUG_DEMOSAIC, " committed parameters: method: `%s', smooth %i, green %i, CL %i, tiling %i\n",
+  dt_print(DT_DEBUG_DEMOSAIC, "[demosaic] committed parameters: method: `%s', smooth %i, green %i, CL %i, tiling %i\n",
       method2string(d->demosaicing_method), d->color_smoothing, d->green_eq, piece->process_cl_ready, piece->process_tiling_ready);
 }
 
