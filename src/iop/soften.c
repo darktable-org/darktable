@@ -151,15 +151,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float amount_1 = (1 - (d->amount) / 100.0);
 
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(amount, amount_1, in, out, npixels) \
-  schedule(simd:static) aligned(in, out : 64) \
-  collapse(2)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(amount, amount_1, npixels) \
+  dt_omp_sharedconst(in,out) \
+  schedule(simd:static)
 #endif
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
-    for(int c = 0; c < 4; c++)
+    for_each_channel(c,aligned(in,out:64))
     {
+      //note: CLIP is preventing GCC8 from vectorizing this loop....  TODO: Check if we can do without
       out[k + c] = ((in[k + c] * amount_1) + (CLIP(out[k + c]) * amount));
     }
   }
