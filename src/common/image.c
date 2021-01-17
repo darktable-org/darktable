@@ -1680,8 +1680,8 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         (dt_database_get(darktable.db),
          "SELECT id"
          " FROM main.images"
-         " WHERE filename IN (SELECT filename FROM main.images WHERE id = ?1)"
-         "   AND film_id IN (SELECT film_id FROM main.images WHERE id = ?1)",
+         " WHERE filename = (SELECT filename FROM main.images WHERE id = ?1)"
+         "   AND film_id = (SELECT film_id FROM main.images WHERE id = ?1)",
          -1, &duplicates_stmt, NULL);
 
       // first move xmp files of image and duplicates
@@ -2304,7 +2304,7 @@ void dt_image_synch_all_xmp(const gchar *pathname)
       (dt_database_get(darktable.db),
        "SELECT id"
        " FROM main.images"
-       " WHERE film_id IN (SELECT id FROM main.film_rolls "
+       " WHERE film_id = (SELECT id FROM main.film_rolls "
        "                   WHERE folder = ?1)"
        "   AND filename = ?2",
        -1, &stmt, NULL);
