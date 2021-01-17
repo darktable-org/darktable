@@ -317,11 +317,6 @@ static gboolean _lost_focus(GtkWidget *textview, GdkEventFocus *event, dt_lib_mo
   return FALSE;
 }
 
-void gui_reset(dt_lib_module_t *self)
-{
-  _update(self);
-}
-
 int position()
 {
   return 510;
@@ -345,6 +340,14 @@ static void _update_layout(dt_lib_module_t *self)
       gtk_widget_set_visible(w, (!hidden || type == DT_METADATA_TYPE_INTERNAL));
     }
   }
+}
+
+void gui_reset(dt_lib_module_t *self)
+{
+  dt_metadata_reset();
+  _update_layout(self);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
+                                DT_METADATA_SIGNAL_SHOWN);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
@@ -655,6 +658,24 @@ static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, d
   return TRUE;
 }
 
+static gboolean _metadata_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(widget));
+    gtk_text_buffer_set_text(buffer, "", -1);
+
+    GdkEventKey e = {0};
+    e.type = GDK_KEY_PRESS;
+    e.keyval = GDK_KEY_KP_Enter;
+    e.send_event = TRUE;
+    e.window = gtk_text_view_get_window(GTK_TEXT_VIEW(widget), GTK_TEXT_WINDOW_TEXT);
+    gboolean ret_val;
+    g_signal_emit_by_name(G_OBJECT(widget), "key-press-event", &e, &ret_val);
+  }
+  return FALSE;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
@@ -677,7 +698,10 @@ void gui_init(dt_lib_module_t *self)
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     GtkWidget *label = dt_ui_label_new(_(dt_metadata_get_name_by_display_order(i)));
-    gtk_grid_attach(grid, label, 0, i, 1, 1);
+    GtkWidget *labelev = gtk_event_box_new();
+    gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+    gtk_container_add(GTK_CONTAINER(labelev), label);
+    gtk_grid_attach(grid, labelev, 0, i, 1, 1);
     gtk_widget_set_tooltip_text(GTK_WIDGET(label),
               _("metadata text. ctrl-wheel scroll to resize the text box"
               "\n ctrl-enter inserts a new line (caution, may not be compatible with standard metadata)."
@@ -706,6 +730,8 @@ void gui_init(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(textview), "button-press-event", G_CALLBACK(_click_on_textview), self);
     g_signal_connect(textview, "grab-focus", G_CALLBACK(_got_focus), self);
     d->lost_focus_handler[i] = g_signal_connect(textview, "focus-out-event", G_CALLBACK(_lost_focus), self);
+    g_signal_connect(GTK_EVENT_BOX(labelev), "button-press-event",
+                     G_CALLBACK(_metadata_reset), textview);
     d->textview[i] = GTK_TEXT_VIEW(textview);
     gtk_widget_set_hexpand(textview, TRUE);
     gtk_widget_set_vexpand(textview, TRUE);

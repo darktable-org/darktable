@@ -94,6 +94,9 @@ int dt_metadata_get_type(const uint32_t keyid);
 /** init metadata flags */
 void dt_metadata_init();
 
+/** metadata flags back to default */
+void dt_metadata_reset();
+
 /** Set metadata for a specific image, or all selected for id == -1. */
 void dt_metadata_set(int id, const char *key, const char *value, const gboolean undo_on); // duplicate.c, lua/image.c
 
