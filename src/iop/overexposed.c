@@ -116,17 +116,20 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, piece->module, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
   dt_develop_t *dev = self->dev;
 
   const int ch = 4;
-  assert(piece->colors == ch);
 
   float *restrict img_tmp = NULL;
   if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, ch, &img_tmp, 0))
   {
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
     dt_control_log(_("module overexposed failed in buffer allocation"));
-    goto process_finish;
+    return;
   }
 
   const float lower = exp2f(fminf(dev->overexposed.lower, -4.f));   // in EV
@@ -175,24 +178,15 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       if(img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, upper_color : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = upper_color[c];
+        copy_pixel(out + k, upper_color);
       }
       else if(img_tmp[k + 0] <= lower && img_tmp[k + 1] <= lower && img_tmp[k + 2] <= lower)
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, lower_color : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = lower_color[c];
+        copy_pixel(out + k, lower_color);
       }
       else
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, in : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = in[k + c];
+        copy_pixel(out + k, in + k);
       }
     }
   }
@@ -216,27 +210,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       // luminance is out of bounds
       if(luminance >= upper)
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, upper_color : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = upper_color[c];
+        copy_pixel(out + k, upper_color);
       }
       else if(luminance <= lower)
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, lower_color : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = lower_color[c];
+        copy_pixel(out + k, lower_color);
       }
       // luminance is ok, so check for saturation
       else
       {
         float DT_ALIGNED_ARRAY saturation[4] = { 0.f };
 
-        #ifdef _OPENMP
-        #pragma simd aligned(saturation, img_tmp : 64)
-        #endif
-        for(int c = 0; c < 3; c++)
+        for_each_channel(c,aligned(saturation, img_tmp : 64))
         {
           saturation[c] = (img_tmp[k + c] - luminance);
           saturation[c] = sqrtf(saturation[c] * saturation[c] / (luminance * luminance + img_tmp[k + c] * img_tmp[k + c]));
@@ -246,28 +231,19 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         if(saturation[0] > upper || saturation[1] > upper || saturation[2] > upper ||
           img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
         {
-          #ifdef _OPENMP
-          #pragma simd aligned(out, upper_color : 64)
-          #endif
-          for(int c = 0; c < 3; c++) out[k + c] = upper_color[c];
+          copy_pixel(out + k, upper_color);
         }
 
         // saturation is fine but we got out-of-bounds RGB
         else if(img_tmp[k + 0] <= lower && img_tmp[k + 1] <= lower && img_tmp[k + 2] <= lower)
         {
-          #ifdef _OPENMP
-          #pragma simd aligned(out, lower_color : 64)
-          #endif
-          for(int c = 0; c < 3; c++) out[k + c] = lower_color[c];
+          copy_pixel(out + k, lower_color);
         }
 
         // evererything is fine
         else
         {
-          #ifdef _OPENMP
-          #pragma simd aligned(out, in : 64)
-          #endif
-          for(int c = 0; c < 3; c++) out[k + c] = in[k + c];
+          copy_pixel(out + k, in + k);
         }
       }
     }
@@ -291,25 +267,16 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(luminance >= upper)
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, upper_color : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = upper_color[c];
+        copy_pixel(out + k, upper_color);
       }
 
       else if(luminance <= lower)
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, lower_color : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = lower_color[c];
+        copy_pixel(out + k, lower_color);
       }
       else
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, in : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = in[k + c];
+        copy_pixel(out + k, in + k);
       }
     }
   }
@@ -333,10 +300,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       {
         float DT_ALIGNED_ARRAY saturation[4] = { 0.f };
 
-        #ifdef _OPENMP
-        #pragma simd aligned(saturation, img_tmp : 64)
-        #endif
-        for(int c = 0; c < 3; c++)
+        for_each_channel(c,aligned(saturation, img_tmp : 64))
         {
           saturation[c] = (img_tmp[k + c] - luminance);
           saturation[c] = sqrtf(saturation[c] * saturation[c] / (luminance * luminance + img_tmp[k + c] * img_tmp[k + c]));
@@ -346,33 +310,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         if(saturation[0] > upper || saturation[1] > upper || saturation[2] > upper ||
            img_tmp[k + 0] >= upper || img_tmp[k + 1] >= upper || img_tmp[k + 2] >= upper)
         {
-          #ifdef _OPENMP
-          #pragma simd aligned(out, upper_color : 64)
-          #endif
-          for(int c = 0; c < 3; c++) out[k + c] = upper_color[c];
+          copy_pixel(out + k, upper_color);
         }
         else if(img_tmp[k + 0] <= lower && img_tmp[k + 1] <= lower && img_tmp[k + 2] <= lower)
         {
-          #ifdef _OPENMP
-          #pragma simd aligned(out, lower_color : 64)
-          #endif
-          for(int c = 0; c < 3; c++) out[k + c] = lower_color[c];
+          copy_pixel(out + k, lower_color);
         }
         else
         {
-          #ifdef _OPENMP
-          #pragma simd aligned(out, out : 64)
-          #endif
-          for(int c = 0; c < 3; c++) out[k + c] = in[k + c];
+          copy_pixel(out + k, in + k);
         }
       }
 
       else
       {
-        #ifdef _OPENMP
-        #pragma simd aligned(out, in : 64)
-        #endif
-        for(int c = 0; c < 3; c++) out[k + c] = in[k + c];
+        copy_pixel(out + k, in + k);
       }
     }
   }
@@ -381,10 +333,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     _MM_SET_FLUSH_ZERO_MODE(oldMode);
   #endif
 
-process_finish:
   if(piece->pipe->mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK)
     dt_iop_alpha_copy(ivoid, ovoid, roi_out->width, roi_out->height);
 
+process_finish:
   dt_free_align(img_tmp);
 }
 
