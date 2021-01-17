@@ -960,8 +960,8 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
   free(imgs);
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT COUNT(*) FROM main.images WHERE filename IN (SELECT filename FROM "
-                              "main.images WHERE id = ?1) AND film_id IN (SELECT film_id FROM main.images WHERE "
+                              "SELECT COUNT(*) FROM main.images WHERE filename = (SELECT filename FROM "
+                              "main.images WHERE id = ?1) AND film_id = (SELECT film_id FROM main.images WHERE "
                               "id = ?1)", -1, &stmt, NULL);
   while(t)
   {
