@@ -1767,8 +1767,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   // supporting multiple instances (e.g. demosaic) may be added. Those
   // instances are properly merged in dt_dev_read_history_ext.
 
-  const char *preset_table[2] = { "data.presets", "main.legacy_presets" };
-  const int legacy = (image->flags & DT_IMAGE_NO_LEGACY_PRESETS) ? 0 : 1;
   char query[2048];
   // clang-format off
 
@@ -1780,7 +1778,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
            "       enabled, blendop_params, blendop_version,"
            "       ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1,"
            "       %s, multi_name_hand_edited"
-           " FROM %s"
+           " FROM data.presets"
            // only auto-applied presets matching the camera/lens/focal/format/exposure
            " WHERE ( (autoapply=1"
            "          AND ((?2 LIKE model AND ?3 LIKE maker)"
@@ -1822,7 +1820,6 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
                "  THEN multi_name"
                "  ELSE (ROW_NUMBER() OVER (PARTITION BY operation ORDER BY operation) - 1)"
                " END",
-           preset_table[legacy],
            is_display_referred ? "" : "basecurve");
   // clang-format on
 
