@@ -1203,7 +1203,7 @@ static gchar *_preset_retrieve_old_layout_updated()
   return ret;
 }
 
-static gchar *_preset_retrieve_old_layout(char *list, char *list_fav)
+static gchar *_preset_retrieve_old_layout(const char *list, const char *list_fav)
 {
   gchar *ret = NULL;
 
@@ -1341,6 +1341,8 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
     gchar *tx = _preset_retrieve_old_layout(list, fav);
     dt_lib_presets_add(pname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
     g_free(tx);
+    g_free(list);
+    g_free(fav);
   }
   sqlite3_finalize(stmt);
 
@@ -1489,10 +1491,13 @@ void init_presets(dt_lib_module_t *self)
 
   // we define here specific sequences which depends of user prefs
   gchar *basic_temp = NULL;
-  if(g_strcmp0(dt_conf_get_string("plugins/darkroom/chromatic-adaptation"), "modern") == 0)
+  gchar *chroma_adaptation = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
+  if(g_strcmp0(chroma_adaptation, "modern") == 0)
     basic_temp = dt_util_dstrcat(NULL, "channelmixerrgb/temperature");
   else
     basic_temp = dt_util_dstrcat(NULL, "temperature/temperature|temperature/tint");
+
+  g_free(chroma_adaptation);
 
   // all modules
   gchar *tx = NULL;
@@ -1592,6 +1597,8 @@ void init_presets(dt_lib_module_t *self)
                        "|soften|spots|vignette|watermark");
   dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
+
+  g_free(basic_temp);
 
   // search only (only active modules visibles)
   tx = NULL;
