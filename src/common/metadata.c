@@ -49,7 +49,8 @@ static const struct
   {"Xmp.dc.description", N_("description"), DT_METADATA_TYPE_USER, 1},
   {"Xmp.dc.rights", N_("rights"), DT_METADATA_TYPE_USER, 4},
   {"Xmp.acdsee.notes", N_("notes"), DT_METADATA_TYPE_USER, 5},
-  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6}
+  {"Xmp.darktable.version_name", N_("version name"), DT_METADATA_TYPE_OPTIONAL, 6},
+  {"Xmp.exif.DateTimeOriginal", N_("date time capture"), DT_METADATA_TYPE_USER, 7}
   // clang-format on
 };
 

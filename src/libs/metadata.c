@@ -1,4 +1,4 @@
-/*
+﻿/*
     This file is part of darktable,
     Copyright (C) 2010-2020 darktable developers.
 
@@ -33,7 +33,7 @@
 #endif
 #include <gdk/gdkkeysyms.h>
 
-DT_MODULE(3)
+DT_MODULE(4)
 
 typedef enum dt_metadata_pref_cols_t
 {
@@ -839,6 +839,17 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
     *new_size = new_params_size;
     *new_version = 3;
+    return new_params;
+  }
+  else if(old_version == 3)
+  {
+    size_t new_params_size = old_params_size + 1;
+    char *new_params = calloc(sizeof(char), new_params_size);
+
+    memcpy(new_params, old_params, old_params_size);
+
+    *new_size = new_params_size;
+    *new_version = 4;
     return new_params;
   }
   return NULL;

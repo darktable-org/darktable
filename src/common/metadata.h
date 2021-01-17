@@ -33,9 +33,9 @@ typedef enum dt_metadata_t
   DT_METADATA_XMP_DC_RIGHTS,
   DT_METADATA_XMP_ACDSEE_NOTES,
   DT_METADATA_XMP_VERSION_NAME,
+  DT_METADATA_XMP_EXIF_DATETIMEORIGINAL,
   DT_METADATA_NUMBER
-}
-dt_metadata_t;
+} dt_metadata_t;
 
 typedef enum dt_metadata_type_t
 {
