@@ -113,6 +113,24 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 //   dt_accel_connect_slider_iop(self, "color scheme", GTK_WIDGET(g->colorscheme));
 // }
 
+static int _check_if_lut_profile_and_warn_user(const dt_iop_order_iccprofile_info_t *const work_profile,
+                                               dt_clipping_preview_mode_t mode)
+{
+  if(isnan(work_profile->matrix_in[0])
+     && (mode == DT_CLIPPING_PREVIEW_GAMUT || mode == DT_CLIPPING_PREVIEW_LUMINANCE
+         || mode == DT_CLIPPING_PREVIEW_SATURATION))
+  {
+    // These preview modes require an input matrix to be present in the profile to calculate luminance.
+    // Tell the user about this and skip drawing any indicators.
+    dt_control_log(_("current histogram profile can't be used for chosen clipping preview mode.\n"
+                     "please choose a matrix profile as the histogram profile instead."));
+    return 1;
+  }
+
+  // All good
+  return 0;
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -142,12 +160,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_order_iccprofile_info_t *const current_profile = dt_ioppr_get_pipe_current_profile_info(self, piece->pipe);
   const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_get_histogram_profile_info(dev);
 
-  // display mask using histogram profile as output
-  // FIXME: the histogram already does this work -- use that data instead?
-  if(current_profile && work_profile)
-    dt_ioppr_transform_image_colorspace_rgb(in, img_tmp, roi_out->width, roi_out->height, current_profile,
-                                            work_profile, self->op);
-  else
+  if(!(current_profile && work_profile))
   {
     fprintf(stderr, "[overexposed process] can't create transform profile\n");
     dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
@@ -155,12 +168,22 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     goto process_finish;
   }
 
+  if(_check_if_lut_profile_and_warn_user(work_profile, dev->overexposed.mode))
+  {
+    dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+    goto process_finish;
+  }
 
-  #ifdef __SSE2__
-    // flush denormals to zero to avoid performance penalty if there are a lot of near-zero values
-    const unsigned int oldMode = _MM_GET_FLUSH_ZERO_MODE();
-    _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
-  #endif
+  // display mask using histogram profile as output
+  // FIXME: the histogram already does this work -- use that data instead?
+  dt_ioppr_transform_image_colorspace_rgb(in, img_tmp, roi_out->width, roi_out->height, current_profile,
+                                          work_profile, self->op);
+
+#ifdef __SSE2__
+  // flush denormals to zero to avoid performance penalty if there are a lot of near-zero values
+  const unsigned int oldMode = _MM_GET_FLUSH_ZERO_MODE();
+  _MM_SET_FLUSH_ZERO_MODE(_MM_FLUSH_ZERO_ON);
+#endif
 
   if(dev->overexposed.mode == DT_CLIPPING_PREVIEW_ANYRGB)
   {
@@ -417,15 +440,17 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
     goto error;
   }
 
-  if(current_profile && work_profile)
-    dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_tmp, roi_out->width, roi_out->height,
-                                               current_profile, work_profile, self->op);
-  else
+  if(!(current_profile && work_profile))
   {
     fprintf(stderr, "[overexposed process_cl] can't create transform profile\n");
     dt_control_log(_("module overexposed failed in color conversion"));
     goto error;
   }
+
+  if(_check_if_lut_profile_and_warn_user(work_profile, dev->overexposed.mode)) goto error;
+
+  dt_ioppr_transform_image_colorspace_rgb_cl(devid, dev_in, dev_tmp, roi_out->width, roi_out->height,
+                                             current_profile, work_profile, self->op);
 
   const int use_work_profile = (work_profile == NULL) ? 0 : 1;
   cl_mem dev_profile_info = NULL;
