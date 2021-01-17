@@ -1748,7 +1748,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
       extract_color_checker(in, out, roi_in, g, RGB_to_XYZ, XYZ_to_RGB, data->adaptation);
       g->run_profile = FALSE;
       dt_iop_gui_leave_critical_section(self);
-      exit = TRUE;
     }
 
     if(data->illuminant_type == DT_ILLUMINANT_DETECT_EDGES || data->illuminant_type == DT_ILLUMINANT_DETECT_SURFACES)
