@@ -266,6 +266,18 @@ void expose(
     dt_dev_process_preview2(dev);
   }
 
+  // an iop's process() might have changed its trouble message.
+  // perform any necessary updates.
+  ++darktable.gui->reset;
+  GList *modules = dev->iop;
+  while(modules)
+  {
+    dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
+    dt_iop_gui_update_warning_label(module);
+    modules = g_list_next(modules);
+  }
+  --darktable.gui->reset;
+
   dt_pthread_mutex_t *mutex = NULL;
   int stride;
   const float zoom_y = dt_control_get_dev_zoom_y();

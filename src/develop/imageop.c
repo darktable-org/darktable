@@ -215,7 +215,6 @@ void dt_iop_default_init(dt_iop_module_t *module)
   module->default_params = (dt_iop_params_t *)malloc(param_size);
 
   module->default_enabled = 0;
-  module->has_trouble = FALSE;
   module->gui_data = NULL;
 
   dt_introspection_field_t *i = module->so->get_introspection_linear();
@@ -459,7 +458,10 @@ int dt_iop_load_module_by_so(dt_iop_module_t *module, dt_iop_module_so_t *so, dt
   module->header = NULL;
   module->off = NULL;
   module->hide_enable_button = 0;
-  module->has_trouble = FALSE;
+  module->trouble_message = NULL;
+  module->trouble_tooltip = NULL;
+  module->trouble_message_updated = FALSE;
+  dt_pthread_mutex_init(&module->gui_lock, NULL);
   module->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   module->request_histogram = DT_REQUEST_ONLY_IN_GUI;
   module->histogram_stats.bins_count = 0;
@@ -1268,7 +1270,7 @@ static void _iop_panel_label(GtkWidget *lab, dt_iop_module_t *module)
   gtk_widget_set_name(lab, "iop-panel-label");
   char *module_name = dt_history_item_get_name_html(module);
 
-  if((module->has_trouble && module->enabled))
+  if(module->trouble_message && module->enabled)
   {
     char *saved_old_name = module_name;
     module_name = dt_iop_warning_message(module_name);
@@ -1348,80 +1350,38 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   _iop_gui_update_header(module);
 }
 
-static void _set_trouble_message(dt_iop_module_t *const module, const char* const trouble_msg,
-                                 const char* const trouble_tooltip, const char *const stderr_message)
+void dt_iop_set_module_trouble_message(dt_iop_module_t *const module, const gchar *trouble_msg,
+                                       const gchar *trouble_tooltip, const gchar *const stderr_message)
 {
-  GtkWidget *label_widget = NULL;
-
-  if(module && module->has_trouble && module->widget)
+  if(stderr_message || (module && !module->widget))
   {
-    GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
-    label_widget = g_list_nth_data(children, 0);
-    g_list_free(children);
-    if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
-      label_widget = NULL;
+    const char *name = module ? module->name() : "?";
+    g_printerr("[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
   }
 
-  if(trouble_msg && *trouble_msg)
+  if(!module) return;
+
+  dt_iop_gui_enter_critical_section(module);
+
+  // convert empty string to NULL for easier handling
+  if(trouble_msg && !(*trouble_msg)) trouble_msg = NULL;
+  if(trouble_tooltip && !(*trouble_tooltip)) trouble_tooltip = NULL;
+
+  // check if anything has changed. only consider tooltip if message is not empty
+  if(g_strcmp0(trouble_msg, module->trouble_message) == 0
+     && (!trouble_msg || g_strcmp0(trouble_tooltip, module->trouble_tooltip) == 0))
   {
-    if((!module || !module->has_trouble) && (stderr_message || !module->widget))
-    {
-      const char *name = module ? module->name() : "?";
-      fprintf(stderr,"[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
-    }
-
-    if(module && module->widget)
-    {
-      if(label_widget)
-      {
-        // set the warning message in the module's message area just below the header
-        gtk_label_set_text(GTK_LABEL(label_widget), trouble_msg);
-      }
-      else
-      {
-        label_widget = gtk_label_new(trouble_msg);;
-        gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
-        gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
-        gtk_widget_set_name(label_widget, "iop-plugin-warning");
-
-        GtkWidget *iopw = gtk_widget_get_parent(module->widget);
-        gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
-        gtk_box_reorder_child(GTK_BOX(iopw), label_widget, 0);
-        gtk_widget_show(label_widget);
-      }
-
-      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip);
-
-      // set the module's trouble flag
-      module->has_trouble = TRUE;
-
-      _iop_gui_update_header(module);
-    }
-  }
-  else if(module && module->has_trouble)
-  {
-    // no more trouble, so clear the trouble flag and remove the message area
-    module->has_trouble = FALSE;
-
-    _iop_gui_update_header(module);
-
-    if(label_widget) gtk_widget_destroy(label_widget);
-  }
-}
-
-void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
-                                       char* const trouble_msg, const char* const trouble_tooltip,
-                                       const char *const stderr_message)
-{
-  if(module && module->gui_data)
-  {
-    // keep LLVM happy by not having any conditional paths on the locks
-    dt_iop_gui_enter_critical_section(module);
-    _set_trouble_message(module, trouble_msg, trouble_tooltip, stderr_message);
     dt_iop_gui_leave_critical_section(module);
+    return;
   }
-  else
-    _set_trouble_message(module, trouble_msg, trouble_tooltip, stderr_message);
+
+  g_free(module->trouble_message);
+  g_free(module->trouble_tooltip);
+  module->trouble_message = g_strdup(trouble_msg);
+  module->trouble_tooltip = g_strdup(trouble_tooltip);
+  module->trouble_message_updated = TRUE;
+
+  dt_iop_gui_leave_critical_section(module);
 }
 
 static void _iop_gui_update_label(dt_iop_module_t *module)
@@ -1431,6 +1391,62 @@ static void _iop_gui_update_label(dt_iop_module_t *module)
   GtkWidget *lab = g_list_nth_data(childs, IOP_MODULE_LABEL);
   g_list_free(childs);
   _iop_panel_label(lab, module);
+}
+
+void dt_iop_gui_update_warning_label(dt_iop_module_t *module)
+{
+  g_assert(module);
+
+  dt_iop_gui_enter_critical_section(module);
+
+  if(!module->trouble_message_updated)
+  {
+    dt_iop_gui_leave_critical_section(module);
+    return;
+  }
+
+  dt_iop_gui_update_header(module);
+
+  if(!module->widget)
+  {
+    dt_iop_gui_leave_critical_section(module);
+    return;
+  }
+
+  GtkWidget *label_widget = NULL;
+  GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
+  label_widget = g_list_nth_data(children, 0);
+  g_list_free(children);
+  if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning")) label_widget = NULL;
+
+  if(module->trouble_message)
+  {
+    if(label_widget)
+    {
+      // set the warning message in the module's message area just below the header
+      gtk_label_set_text(GTK_LABEL(label_widget), module->trouble_message);
+    }
+    else
+    {
+      label_widget = gtk_label_new(module->trouble_message);
+      gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
+      gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
+      gtk_widget_set_name(label_widget, "iop-plugin-warning");
+
+      GtkWidget *iopw = gtk_widget_get_parent(module->widget);
+      gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
+      gtk_box_reorder_child(GTK_BOX(iopw), label_widget, 0);
+      gtk_widget_show(label_widget);
+    }
+
+    gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), module->trouble_tooltip);
+  }
+  else if(!module->trouble_message && label_widget)
+    gtk_widget_destroy(label_widget);
+
+  module->trouble_message_updated = FALSE;
+
+  dt_iop_gui_leave_critical_section(module);
 }
 
 void dt_iop_gui_init(dt_iop_module_t *module)
@@ -1798,6 +1814,9 @@ void dt_iop_cleanup_module(dt_iop_module_t *module)
   g_hash_table_destroy(module->raster_mask.source.masks);
   module->raster_mask.source.users = NULL;
   module->raster_mask.source.masks = NULL;
+  g_free(module->trouble_message);
+  g_free(module->trouble_tooltip);
+  dt_pthread_mutex_destroy(&module->gui_lock);
 }
 
 void dt_iop_unload_modules_so()
