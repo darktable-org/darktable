@@ -1330,7 +1330,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           }
 
           g_list_free(item_list);
-          g_list_free(iop_order_list);
+          g_list_free_full(iop_order_list, free);
 
           item_list = NULL;
         }
