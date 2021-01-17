@@ -654,8 +654,13 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
       // accumulate trackpad/touch scrolls until they make a unit
       // scroll, and only then tell caller that there is a scroll to
       // handle
+#ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
+      acc_x += (2.0 / 300.0) * (event->delta_x + 150) - 1;
+      acc_y += (2.0 / 300.0) * (event->delta_y + 150) - 1;
+#else
       acc_x += event->delta_x;
       acc_y += event->delta_y;
+#endif
       const gdouble amt_x = trunc(acc_x);
       const gdouble amt_y = trunc(acc_y);
       if(amt_x != 0 || amt_y != 0)
