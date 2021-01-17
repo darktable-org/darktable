@@ -1038,7 +1038,7 @@ void dt_history_compress_on_image(const int32_t imgid)
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "DELETE FROM main.masks_history"
                               " WHERE imgid = ?1 "
-                              "   AND num NOT IN (SELECT MAX(num)"
+                              "   AND num != (SELECT MAX(num)"
                               "                   FROM main.masks_history"
                               "                   WHERE imgid = ?1 AND num < ?2)", -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
