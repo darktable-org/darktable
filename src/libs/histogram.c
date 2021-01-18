@@ -537,7 +537,6 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
   dt_develop_t *dev = darktable.develop;
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   const gboolean hooks_available = (cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
-  // FIXME: as when dragging a bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -547,7 +546,7 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
                                                                         : event->x - d->button_down_x;
     const int range = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? allocation.height
                                                                        : allocation.width;
-    // FIXME: should limit exposure iop changes as bauhaus sliders do, for smoother interaction
+    // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
       const float exposure = d->button_down_value + diff * 4.0f / (float)range;
@@ -639,17 +638,6 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   return TRUE;
 }
 
-static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                  gpointer user_data)
-{
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  d->dragging = FALSE;
-  // hack to recalculate the highlight as mouse may be over a different part of the widget
-  // FIXME: generate an event instead?
-  _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
-  return TRUE;
-}
-
 static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
   if(event->state & GDK_CONTROL_MASK)
@@ -662,13 +650,12 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
-  // FIXME: should limit exposure iop changes as bauhaus sliders do, for smoother interaction?
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
     dt_develop_t *dev = darktable.develop;
     if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
-      // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
+      // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
         const float ce = dt_dev_exposure_get_exposure(dev);
@@ -682,6 +669,17 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
     }
   }
 
+  return TRUE;
+}
+
+static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventButton *event,
+                                                  gpointer user_data)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  d->dragging = FALSE;
+  // hack to recalculate the highlight as mouse may be over a different part of the widget
+  // FIXME: generate an event instead?
+  _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
   return TRUE;
 }
 
@@ -797,7 +795,7 @@ static void _waveform_type_toggle(GtkWidget *button, dt_lib_histogram_t *d)
   dt_control_queue_redraw_widget(d->scope_draw);
 }
 
-// FIXME: can these all be the same function with different user_data?
+// FIXME: can these all be the same function with different user_data? -- will be easier if not swapping tooltip
 static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
 {
   d->red = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
@@ -1179,17 +1177,13 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(eventbox), overlay);
   self->widget = eventbox;
 
+  gtk_widget_set_name(self->widget, "main-histogram");
+  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
+
   /* connect callbacks */
 
-  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
-  g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
-                   G_CALLBACK(_eventbox_enter_notify_callback), d);
-  g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
-                   G_CALLBACK(_eventbox_leave_notify_callback), d);
-  
   gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
                                        GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
-
   g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
                    G_CALLBACK(_drawable_leave_notify_callback), d);
@@ -1202,13 +1196,16 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event",
                    G_CALLBACK(_drawable_scroll_callback), d);
 
+  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
+  g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
+                   G_CALLBACK(_eventbox_enter_notify_callback), d);
+  g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
+                   G_CALLBACK(_eventbox_leave_notify_callback), d);
+
   // handles scroll-to-resize behavior
   gtk_widget_add_events(self->widget, darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(self->widget), "scroll-event",
                    G_CALLBACK(_lib_histogram_scroll_callback), NULL);
-
-  gtk_widget_set_name(self->widget, "main-histogram");
-  dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   /* set size of histogram draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
@@ -1241,7 +1238,6 @@ void init_key_accels(dt_lib_module_t *self)
   dt_accel_register_lib_as_view("tethering", NC_("accel", "switch histogram type"), 0, 0);
 }
 
-// see acdd4d2ff721e723e16f2b3280cf1a22d12d1a67 for comparison
 void connect_key_accels(dt_lib_module_t *self)
 {
   dt_accel_connect_lib_as_view(self, "darkroom", "histogram/hide histogram",
