@@ -619,6 +619,11 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_denoiseprofile_params_t p;
   memset(&p, 0, sizeof(p));
 
+  // set some default values
+  p.radius = 1.0;
+  p.nbhood = 7.0;
+
+  // then the wavelet ones
   p.mode = MODE_WAVELETS;
   p.wavelet_color_mode = MODE_Y0U0V0;
   p.strength = 3.0f;
@@ -1271,7 +1276,7 @@ static void process_wavelets(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_
 
   // conversion to Y0U0V0 space as defined in Secrets of image denoising cuisine
   float DT_ALIGNED_PIXEL toY0U0V0[3][4] = { { 1.0f/3.0f, 1.0f/3.0f, 1.0f/3.0f },
-                                            { 0.5f,      0.0f,      -0.5f }, 
+                                            { 0.5f,      0.0f,      -0.5f },
                                             {  0.25f,     -0.5f,     0.25f } };
   float DT_ALIGNED_PIXEL toRGB[3][4] = { { 0.0f, 0.0f, 0.0f }, // "unused" fourth element enables vectorization
                                          { 0.0f, 0.0f, 0.0f },
