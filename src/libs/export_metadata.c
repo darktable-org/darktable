@@ -56,7 +56,7 @@ typedef struct dt_lib_export_metadata_t
   GList *taglist;
 } dt_lib_export_metadata_t;
 
-GList *dt_exif_get_exiv2_taglist();
+const GList *dt_exif_get_exiv2_taglist();
 
 // find a string on the list
 static gboolean find_metadata_iter_per_text(GtkTreeModel *model, GtkTreeIter *iter, gint col, const char *text)
