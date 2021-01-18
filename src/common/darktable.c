@@ -1382,6 +1382,14 @@ void *dt_alloc_align(size_t alignment, size_t size)
   return malloc(aligned_size);
 #elif defined(_WIN32)
   return _aligned_malloc(aligned_size, alignment);
+#elif defined(_DEBUG)
+  // for a debug build, ensure that we get a crash if we use plain free() to release the allocated memory, by
+  // returning a pointer which isn't a valid memory block address
+  void *ptr = NULL;
+  if(posix_memalign(&ptr, alignment, aligned_size + alignment)) return NULL;
+  short *offset = (short*)(((char*)ptr) + alignment - sizeof(short));
+  *offset = alignment;
+  return ((char*)ptr) + alignment ;
 #else
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, aligned_size)) return NULL;
@@ -1406,6 +1414,16 @@ size_t dt_round_size_sse(const size_t size)
 void dt_free_align(void *mem)
 {
   _aligned_free(mem);
+}
+#elif defined(_DEBUG)
+void dt_free_align(void *mem)
+{
+  // on a debug build, we deliberately offset the returned pointer from dt_alloc_align, so eliminate the offset
+  if (mem)
+  {
+    short offset = ((short*)mem)[-1];
+    free(((char*)mem)-offset);
+  }
 }
 #endif
 

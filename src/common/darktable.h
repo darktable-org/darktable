@@ -335,6 +335,9 @@ size_t dt_round_size_sse(const size_t size);
 #ifdef _WIN32
 void dt_free_align(void *mem);
 #define dt_free_align_ptr dt_free_align
+#elif _DEBUG // debug build makes sure that we get a crash on using plain free() on an aligned allocation
+void dt_free_align(void *mem);
+#define dt_free_align_ptr dt_free_align
 #else
 #define dt_free_align(A) free(A)
 #define dt_free_align_ptr free
