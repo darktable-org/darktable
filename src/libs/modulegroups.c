@@ -2862,7 +2862,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_basics_add_popup), self);
     gtk_widget_set_halign(hb4, GTK_ALIGN_CENTER);
     gtk_box_pack_start(GTK_BOX(hb4), bt, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vb3), hb4, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vb2), hb4, FALSE, FALSE, 0);
   }
 
   gtk_container_add(GTK_CONTAINER(sw), vb3);
@@ -2957,7 +2957,7 @@ static GtkWidget *_manage_editor_group_init_modules_box(dt_lib_module_t *self, d
     g_signal_connect(G_OBJECT(bt), "button-press-event", G_CALLBACK(_manage_editor_module_add_popup), self);
     gtk_widget_set_halign(hb4, GTK_ALIGN_CENTER);
     gtk_box_pack_start(GTK_BOX(hb4), bt, FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(vb3), hb4, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vb2), hb4, FALSE, FALSE, 0);
   }
 
   gtk_container_add(GTK_CONTAINER(sw), vb3);
