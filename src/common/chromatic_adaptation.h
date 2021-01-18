@@ -83,9 +83,9 @@ static inline void convert_XYZ_to_CAT16_LMS(const float XYZ[4], float LMS[4])
 static inline void convert_CAT16_LMS_to_XYZ(const float LMS[4], float XYZ[4])
 {
   // Warning : output XYZ normalized with Y - you need to upscale later
-  static const float DT_ALIGNED_ARRAY LMS_to_XYZ[3][4] = { {  1.862068f, -1.011255f,  0.149187f },
-                                                           {  0.38752f ,  0.621447f, -0.008974f },
-                                                           { -0.015841f, -0.034123f,  1.049964f } };
+  static const float DT_ALIGNED_ARRAY LMS_to_XYZ[3][4] = { {  1.862068f, -1.011255f,  0.149187f, 0.f },
+                                                           {  0.38752f ,  0.621447f, -0.008974f, 0.f },
+                                                           { -0.015841f, -0.034123f,  1.049964f, 0.f } };
   dot_product(LMS, LMS_to_XYZ, XYZ);
 }
 
