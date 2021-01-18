@@ -590,7 +590,6 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       dt_control_queue_redraw_widget(widget);
       if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
       {
-        printf("changing to hand cursor\n");
         // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
         dt_control_change_cursor(GDK_HAND1);
       }
@@ -615,7 +614,6 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
 
 static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  printf("drawable button press\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
 
@@ -644,7 +642,6 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
 static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventButton *event,
                                                   gpointer user_data)
 {
-  printf("drawable button release callback\n");
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->dragging = FALSE;
   // hack to recalculate the highlight as mouse may be over a different part of the widget
@@ -657,7 +654,7 @@ static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *eve
 {
   if(event->state & GDK_CONTROL_MASK)
   {
-    // adjusts the overall widget size
+    // bubble to adjusting the overall widget size
     return FALSE;
   }
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
@@ -692,26 +689,16 @@ static gboolean _drawable_leave_notify_callback(GtkWidget *widget, GdkEventCross
                                                 gpointer user_data)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  // FIXME: can just declare user_data to be of type dt_lib_histogram_t above?
   // if dragging, gtk keeps up motion notifications until mouse button
   // is released, at which point we'll get another leave event for
   // drawable if pointer is still outside of the widget
-
-  if(!d->dragging)
+  if(!d->dragging && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
-    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
-    {
-      printf("drawable leave: canceling highlight, changing pointer, redrawing drawable\n");
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-      dt_control_change_cursor(GDK_LEFT_PTR);
-      dt_control_queue_redraw_widget(widget);
-    }
+    d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_queue_redraw_widget(widget);
   }
-  else
-  {
-    printf("drawable leave: dragging -- no more work done\n");
-  }
-  // FIXME: TRUE or FALSE?
+  // event should bubble up to the eventbox
   return FALSE;
 }
 
@@ -835,30 +822,20 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCross
                                                  gpointer user_data)
 {
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  printf("eventbox enter notify, showing button_box\n");
   gtk_widget_show(d->button_box);
-  // FIXME: TRUE or FALSE?
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                  gpointer user_data)
 {
-  printf("eventbox leave crossing mode %d detail %d\n", event->mode, event->detail);
-  // when click between buttons on the buttonbox a leave event of mode
-  // GDK_CROSSING_UNGRAB is generated -- ignore that one
-  if(event->mode == GDK_CROSSING_NORMAL)
+  // when click between buttons on the buttonbox a leave event is generated -- ignore it
+  if(!(event->mode == GDK_CROSSING_UNGRAB && event->detail == GDK_NOTIFY_INFERIOR))
   {
-    printf("eventbox leave: hiding buttons\n");
     dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
     gtk_widget_hide(d->button_box);
   }
-  else
-  {
-    printf("eventbox: it's an ungrab event -- ignoring\n");
-  }
-  // FIXME: TRUE or FALSE?
-  return FALSE;
+  return TRUE;
 }
 
 static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
@@ -890,12 +867,10 @@ static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
-// FIXME: rename to lose prefix
 static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
                                                    GObject *acceleratable, guint keyval,
                                                    GdkModifierType modifier, gpointer user_data)
 {
-  // FIXME: just pass in dt_lib_histogram_t
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
@@ -937,12 +912,10 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
-// FIXME: rename to lose prefix
 static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
                                                     GObject *acceleratable, guint keyval,
                                                     GdkModifierType modifier, gpointer user_data)
 {
-  // FIXME: just pass in dt_lib_histogram_t
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   // cancel dragging, as the draggable areas will have changed
@@ -952,12 +925,10 @@ static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
   return TRUE;
 }
 
-// FIXME: rename to lose prefix
 static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
                                                     GObject *acceleratable, guint keyval,
                                                     GdkModifierType modifier, gpointer user_data)
 {
-  // FIXME: just pass in dt_lib_histogram_t
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
@@ -983,7 +954,6 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   // preview pipe has already given process() the high quality
   // pre-gamma image. Now that preview pipe is complete, draw it
   // FIXME: it would be nice if process() just queued a redraw if not in live view, but then our draw code would have to have some other way to assure that the histogram image is current besides checking the pixelpipe to see if it has processed the current image
-  // FIXME: can just pass in scope_draw?
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   dt_control_queue_redraw_widget(d->scope_draw);
 }
@@ -1146,9 +1116,8 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->waveform_type_button), "toggled", G_CALLBACK(_waveform_type_toggle), d);
   gtk_stack_add_named(GTK_STACK(d->mode_stack), d->waveform_type_button, "waveform");
 
-  // this sets mode_stack based on scope type, hence must be run after mode_stack is set up
+  // toggle sets mode_stack based on scope type, hence must be run after mode_stack is set up
   _scope_type_toggle(d->scope_type_button, d);
-  // FIXME: move all signal connecting to later -- and toggling to initial states as well?
   g_signal_connect(G_OBJECT(d->scope_type_button), "toggled", G_CALLBACK(_scope_type_toggle), d);
   gtk_box_pack_start(GTK_BOX(d->button_box), d->mode_stack, FALSE, FALSE, 0);
 
@@ -1234,14 +1203,10 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(self->widget), "scroll-event",
                    G_CALLBACK(_lib_histogram_scroll_callback), NULL);
 
-  // FIXME: do we even need to save self->widget? most references are to the drawable...
-  // FIXME: how does reference counting of widgets work? do we need to dealloc or garbage collect them?
   gtk_widget_set_name(self->widget, "main-histogram");
-  // FIXME: is this the right widget to have the help link?
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
   /* set size of histogram draw area */
-  // FIXME: can just do the size request for the DrawingArea, and if so don't ever have to store and pass around self->widget?
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
 }
@@ -1283,7 +1248,6 @@ void connect_key_accels(dt_lib_module_t *self)
                      g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
   dt_accel_connect_lib_as_view(self, "tethering", "cycle histogram modes",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_cycle_mode_callback), self, NULL));
-  // FIXME: can connect these accelerators directly to the buttons
   dt_accel_connect_lib_as_view(self, "darkroom", "histogram/switch histogram mode",
                      g_cclosure_new(G_CALLBACK(_lib_histogram_change_mode_callback), self, NULL));
   dt_accel_connect_lib_as_view(self, "tethering", "switch histogram mode",
