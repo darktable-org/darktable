@@ -158,6 +158,8 @@ typedef struct dt_iop_channelmixer_rgb_gui_data_t
   GtkWidget *checkers_list, *optimize, *safety, *normalize, *label_delta_E, *button_profile, *button_validate, *button_commit;
 
   float *delta_E_in;
+
+  gchar *delta_E_label_text;
 } dt_iop_channelmixer_rgb_gui_data_t;
 
 typedef struct dt_iop_channelmixer_rbg_data_t
@@ -1640,30 +1642,25 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   g->profile_ready = TRUE;
 
   // Update GUI label
-  gchar *text = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
-                                  "input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-                                  "WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
-                                  "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
-                                  "<b>Profile data</b>\n"
-                                  "illuminant :  \t%.0f K \t%s \n"
-                                  "matrix in adaptation space:\n"
-                                  "<tt>%+.4f \t%+.4f \t%+.4f\n"
-                                  "%+.4f \t%+.4f \t%+.4f\n"
-                                  "%+.4f \t%+.4f \t%+.4f</tt>\n\n"
-                                  "<b>Normalization values</b>\n"
-                                  "black offset : \t%+.4f\n"
-                                  "exposure compensation : \t%+.2f EV"),
-                                diagnostic,
-                                pre_wb_delta_E, pre_wb_max_delta_E,
-                                post_wb_delta_E, post_wb_max_delta_E,
-                                post_mix_delta_E, post_mix_max_delta_E,
-                                temperature, string,
-                                g->mix[0][0], g->mix[0][1], g->mix[0][2],
-                                g->mix[1][0], g->mix[1][1], g->mix[1][2],
-                                g->mix[2][0], g->mix[2][1], g->mix[2][2],
-                                extraction_result.black, log2f(extraction_result.exposure));
-  gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
-  g_free(text);
+  g_free(g->delta_E_label_text);
+  g->delta_E_label_text
+      = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
+                          "input  ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+                          "WB ΔE : \tavg. %.2f ; \tmax. %.2f\n"
+                          "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
+                          "<b>Profile data</b>\n"
+                          "illuminant :  \t%.0f K \t%s \n"
+                          "matrix in adaptation space:\n"
+                          "<tt>%+.4f \t%+.4f \t%+.4f\n"
+                          "%+.4f \t%+.4f \t%+.4f\n"
+                          "%+.4f \t%+.4f \t%+.4f</tt>\n\n"
+                          "<b>Normalization values</b>\n"
+                          "black offset : \t%+.4f\n"
+                          "exposure compensation : \t%+.2f EV"),
+                        diagnostic, pre_wb_delta_E, pre_wb_max_delta_E, post_wb_delta_E, post_wb_max_delta_E,
+                        post_mix_delta_E, post_mix_max_delta_E, temperature, string, g->mix[0][0], g->mix[0][1],
+                        g->mix[0][2], g->mix[1][0], g->mix[1][1], g->mix[1][2], g->mix[2][0], g->mix[2][1],
+                        g->mix[2][2], extraction_result.black, log2f(extraction_result.exposure));
 
   dt_free_align(patches);
   dt_free_align(patches_luminance);
@@ -1692,16 +1689,14 @@ void validate_color_checker(const float *const restrict in,
     diagnostic = _("bad");
 
   // Update GUI label
-  gchar *text = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
-                                  "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
-                                  "<b>Normalization values</b>\n"
-                                  "black offset : \t%+.4f\n"
-                                  "exposure compensation : \t%+.2f EV"),
-                                diagnostic,
-                                pre_wb_delta_E, pre_wb_max_delta_E,
-                                extraction_result.black, log2f(extraction_result.exposure));
-  gtk_label_set_markup(GTK_LABEL(g->label_delta_E), text);
-  g_free(text);
+  g_free(g->delta_E_label_text);
+  g->delta_E_label_text = g_strdup_printf(_("\n<b>Profile quality report : %s</b>\n"
+                                            "output ΔE : \tavg. %.2f ; \tmax. %.2f\n\n"
+                                            "<b>Normalization values</b>\n"
+                                            "black offset : \t%+.4f\n"
+                                            "exposure compensation : \t%+.2f EV"),
+                                          diagnostic, pre_wb_delta_E, pre_wb_max_delta_E, extraction_result.black,
+                                          log2f(extraction_result.exposure));
 
   dt_free_align(patches);
 }
@@ -2438,6 +2433,15 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
 
+static void _preview_pipe_finished_callback(gpointer instance, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+
+  dt_iop_gui_enter_critical_section(self);
+  gtk_label_set_markup(GTK_LABEL(g->label_delta_E), g->delta_E_label_text);
+  dt_iop_gui_leave_critical_section(self);
+}
 
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
@@ -3470,11 +3474,14 @@ void gui_init(struct dt_iop_module_t *self)
   g->profile_ready = FALSE;
   g->checker_ready = FALSE;
   g->delta_E_in = NULL;
+  g->delta_E_label_text = NULL;
 
   g->XYZ[0] = NAN;
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_UI_PIPE_FINISHED,
                             G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
+                                  G_CALLBACK(_preview_pipe_finished_callback), self);
 
   // Init GTK notebook
   g->notebook = GTK_NOTEBOOK(gtk_notebook_new());
@@ -3686,6 +3693,7 @@ void gui_cleanup(struct dt_iop_module_t *self)
   self->request_color_pick = DT_REQUEST_COLORPICK_OFF;
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
                                      G_CALLBACK(_develop_ui_pipe_finished_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_preview_pipe_finished_callback), self);
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   dt_conf_set_int("plugins/darkroom/channelmixerrgb/gui_page", gtk_notebook_get_current_page (g->notebook));
@@ -3695,6 +3703,8 @@ void gui_cleanup(struct dt_iop_module_t *self)
     dt_free_align(g->delta_E_in);
     g->delta_E_in = NULL;
   }
+
+  g_free(g->delta_E_label_text);
 
   IOP_GUI_FREE;
 }
