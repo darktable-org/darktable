@@ -45,7 +45,7 @@ int dt_grouping_remove_from_group(const int32_t image_id)
   GList *imgs = NULL;
 
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, image_id, 'r');
-  int img_group_id = img->group_id;
+  const int img_group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
   if(img_group_id == image_id)
   {
@@ -64,15 +64,22 @@ int dt_grouping_remove_from_group(const int32_t image_id)
       imgs = g_list_prepend(imgs, GINT_TO_POINTER(other_id));
     }
     sqlite3_finalize(stmt);
-
-    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                "UPDATE main.images SET group_id = ?1 WHERE group_id = ?2 AND id != ?3", -1, &stmt,
-                                NULL);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, new_group_id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img_group_id);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, image_id);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
+    if(new_group_id != -1)
+    {
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                  "UPDATE main.images SET group_id = ?1 WHERE group_id = ?2 AND id != ?3", -1, &stmt,
+                                  NULL);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, new_group_id);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, img_group_id);
+      DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, image_id);
+      sqlite3_step(stmt);
+      sqlite3_finalize(stmt);
+    }
+    else
+    {
+      // no change was made, no point in raising signal, bailing early
+      return -1;
+    }
   }
   else
   {
