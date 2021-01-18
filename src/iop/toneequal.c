@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2018-2020 darktable developers.
+    Copyright (C) 2018-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -85,6 +85,7 @@
 #include "common/interpolation.h"
 #include "common/luminance_mask.h"
 #include "common/opencl.h"
+#include "common/collection.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -2365,7 +2366,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
     g->mask_display = FALSE;
     dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), FALSE);
     dt_dev_reprocess_center(self->dev);
-    dt_control_hinter_message(darktable.control, "");
+    dt_collection_hint_message(darktable.collection);
   }
   else
   {
