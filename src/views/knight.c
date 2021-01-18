@@ -525,9 +525,9 @@ static dt_knight_explosion_t *_new_explosion(float x, float y, int ttl, cairo_pa
 }
 
 // change the bunker graphics by subtracting an explosion sprite
-static void _destroy_bunker(dt_knight_t *d, int bunker, int hit_x, int hit_y)
+static void _destroy_bunker(dt_knight_t *d, int bunker_idx, int hit_x, int hit_y)
 {
-  uint8_t *buf = d->bunker_buf[bunker];
+  uint8_t *buf = d->bunker_buf[bunker_idx];
   // the explosion has stride == width
   const uint8_t *ex = explosions[EXPLOSION_SHOT];
 
@@ -748,20 +748,20 @@ static gboolean _event_loop_game(dt_knight_t *d)
     // check aliens
     for(int i = 0; i < N_ALIENS_Y * N_ALIENS_X; i++)
     {
-      dt_knight_alien_t *alien = &d->aliens[i];
-      if(!alien->alive) continue;
-      if(d->player_shot.x >= alien->x - half_gap
-         && d->player_shot.x <= alien->x + ALIEN_TARGET_WIDTH + half_gap
-         && d->player_shot.y >= alien->y - SHOT_LENGTH && d->player_shot.y <= alien->y + ALIEN_TARGET_HEIGHT)
+      dt_knight_alien_t *curr_alien = &d->aliens[i];
+      if(!curr_alien->alive) continue;
+      if(d->player_shot.x >= curr_alien->x - half_gap
+         && d->player_shot.x <= curr_alien->x + ALIEN_TARGET_WIDTH + half_gap
+         && d->player_shot.y >= curr_alien->y - SHOT_LENGTH && d->player_shot.y <= curr_alien->y + ALIEN_TARGET_HEIGHT)
       {
         // we hit an alien
         d->freeze = ALIEN_DEATH_TIME;
         d->player_shot.active = FALSE;
-        alien->alive = FALSE;
+        curr_alien->alive = FALSE;
         d->n_aliens--;
-        d->score_1 += alien->points;
+        d->score_1 += curr_alien->points;
         dt_knight_explosion_t *explosion
-            = _new_explosion(alien->x, alien->y, ALIEN_DEATH_TIME, d->explosion_sprite[EXPLOSION_ALIEN]);
+            = _new_explosion(curr_alien->x, curr_alien->y, ALIEN_DEATH_TIME, d->explosion_sprite[EXPLOSION_ALIEN]);
         d->explosions = g_list_append(d->explosions, explosion);
         if(d->alien_next_to_move == i) d->alien_next_to_move = _next_alien(d->aliens, d->alien_next_to_move);
         break;
@@ -867,25 +867,25 @@ static gboolean _event_loop_game(dt_knight_t *d)
       const int next = _next_alien(d->aliens, d->alien_next_to_move);
       const int next_x = next % N_ALIENS_X;
       const int next_y = next / N_ALIENS_X;
-      dt_knight_alien_t *alien = &d->aliens[d->alien_next_to_move];
+      dt_knight_alien_t *alien_tm = &d->aliens[d->alien_next_to_move];
       switch(d->alien_direction)
       {
         case ALIEN_LEFT:
-          alien->x -= STEP_SIZE * ALIEN_TARGET_WIDTH;
+          alien_tm->x -= STEP_SIZE * ALIEN_TARGET_WIDTH;
           if((next_y > y || (next_y == y && next_x < x) || next == d->alien_next_to_move)
              && _leftest(d->aliens) - STEP_SIZE * ALIEN_TARGET_WIDTH < 0.0)
             d->alien_direction = ALIEN_DOWN_THEN_RIGHT;
           break;
         case ALIEN_RIGHT:
-          alien->x += STEP_SIZE * ALIEN_TARGET_WIDTH;
+          alien_tm->x += STEP_SIZE * ALIEN_TARGET_WIDTH;
           if((next_y > y || (next_y == y && next_x < x) || next == d->alien_next_to_move)
              && _rightest(d->aliens) + ALIEN_TARGET_WIDTH + STEP_SIZE * ALIEN_TARGET_WIDTH > 1.0)
             d->alien_direction = ALIEN_DOWN_THEN_LEFT;
           break;
         case ALIEN_DOWN_THEN_LEFT:
         case ALIEN_DOWN_THEN_RIGHT:
-          alien->y += 0.5 * ALIEN_TARGET_HEIGHT;
-          if(alien->y + ALIEN_TARGET_HEIGHT >= PLAYER_Y + 0.5 * PLAYER_TARGET_HEIGHT)
+          alien_tm->y += 0.5 * ALIEN_TARGET_HEIGHT;
+          if(alien_tm->y + ALIEN_TARGET_HEIGHT >= PLAYER_Y + 0.5 * PLAYER_TARGET_HEIGHT)
           {
             d->freeze = 3.0 * 1000.0 / LOOP_SPEED;
             d->total_freeze = TRUE;
@@ -897,10 +897,10 @@ static gboolean _event_loop_game(dt_knight_t *d)
       }
 
       // when going over a bunker it (the bunker) gets destroyed
-      _walk_over_bunker(d, alien->x, alien->y, ALIEN_TARGET_WIDTH, ALIEN_TARGET_HEIGHT);
+      _walk_over_bunker(d, alien_tm->x, alien_tm->y, ALIEN_TARGET_WIDTH, ALIEN_TARGET_HEIGHT);
 
       // allow the last one to go really fast, but keep it animating
-      if(!(i == 0 && d->alien_next_to_move == next)) alien->frame = 1 - alien->frame;
+      if(!(i == 0 && d->alien_next_to_move == next)) alien_tm->frame = 1 - alien_tm->frame;
       d->alien_next_to_move = next;
     }
   }

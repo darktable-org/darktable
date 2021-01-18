@@ -297,7 +297,7 @@ static inline void dt_color_checker_get_coordinates(const dt_color_checker_t *co
 }
 
 // find a patch matching a name
-static inline const dt_color_checker_patch *const dt_color_checker_get_patch_by_name(const dt_color_checker_t *const target_checker,
+static inline const dt_color_checker_patch* dt_color_checker_get_patch_by_name(const dt_color_checker_t *const target_checker,
                                                                               const char *name, size_t *index)
 {
   size_t idx = -1;

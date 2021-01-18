@@ -31,7 +31,7 @@ void dt_exif_set_exiv2_taglist();
 
 /** get the list of available tags from Exvi2 */
 /** must not be freed */
-const GList * const dt_exif_get_exiv2_taglist();
+const GList* dt_exif_get_exiv2_taglist();
 
 /** read metadata from file with full path name, XMP data trumps IPTC data trumps EXIF data, store to image
  * struct. returns 0 on success. */
