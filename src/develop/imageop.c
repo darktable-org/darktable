@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    Copyright (C) 2009-2020 darktable developers.
+    Copyright (C) 2009-2021 darktable developers.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/exif.h"
+#include "common/collection.h"
 #include "common/dtpthread.h"
 #include "common/imageio_rawspeed.h"
 #include "common/interpolation.h"
@@ -2084,8 +2085,8 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     /* redraw the expander */
     gtk_widget_queue_draw(darktable.develop->gui_module->expander);
 
-    /* and finally remove hinter messages */
-    dt_control_hinter_message(darktable.control, "");
+    /* and finally collection restore hinter messages */
+    dt_collection_hint_message(darktable.collection);
 
     // we also remove the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
