@@ -731,6 +731,10 @@ static void _scope_type_toggle(GtkWidget *button, dt_lib_histogram_t *d)
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   if(cv)  // this may be called on init, before in a view
   {
+    // redraw scope now, even if it isn't up to date, so that there is
+    // immediate feedback on button press even though there will be a
+    // lag to process the scope data
+    dt_control_queue_redraw_widget(d->scope_draw);
     const dt_view_type_flags_t view_type = cv->view(cv);
     if(view_type == DT_VIEW_DARKROOM)
       dt_dev_process_preview(darktable.develop);
