@@ -301,6 +301,103 @@ static gboolean _event_cursor_draw(GtkWidget *widget, cairo_t *cr, gpointer user
   return TRUE;
 }
 
+// zoom_ratio is 0-1 based, where 0 is "img to fit" and 1 "zoom to 100%". returns a thumb->zoom value
+static float _zoom_ratio_to_thumb_zoom(float zoom_ratio, float zoom_100)
+{
+  return (zoom_100 - 1) * zoom_ratio + 1;
+}
+
+// converts a thumb->zoom value based on it's zoom_100 (max value) to a 0-1 based zoom_ratio.
+static float _thumb_zoom_to_zoom_ratio(float zoom, float zoom_100)
+{
+  return (zoom - 1) / (zoom_100 - 1);
+}
+
+// given max_width & max_height, the width and height is calculated to fit an image in a "img to fit" mode
+// (everything is visible)
+static void _get_dimensions_for_img_to_fit(dt_thumbnail_t *thumb, int max_width, int max_height, float *width,
+                                           float *height)
+{
+  float iw = max_width;
+  float ih = max_height;
+
+  // we can't rely on img->aspect_ratio as the value is round to 1 decimal, so not enough accurate
+  // so we compute it from the larger available mipmap
+  float ar = 0.0f;
+  for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
+  {
+    dt_mipmap_buffer_t tmp;
+    dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');
+    if(tmp.buf)
+    {
+      const int mipw = tmp.width;
+      const int miph = tmp.height;
+      dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
+      if(mipw > 0 && miph > 0)
+      {
+        ar = (float)mipw / miph;
+        break;
+      }
+    }
+  }
+
+  if(ar < 0.001)
+  {
+    // let's try with the aspect_ratio store in image structure, even if it's less accurate
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+    if(img)
+    {
+      ar = img->aspect_ratio;
+      dt_image_cache_read_release(darktable.image_cache, img);
+    }
+  }
+
+  if(ar > 0.001)
+  {
+    // we have a valid ratio, let's apply it
+    if(ar < 1.0)
+      iw = ih * ar;
+    else
+      ih = iw / ar;
+    // rescale to ensure it stay in thumbnails bounds
+    const float scale = fminf(1.0, fminf((float)max_width / iw, (float)max_height / ih));
+    iw *= scale;
+    ih *= scale;
+  }
+
+  *width = iw;
+  *height = ih;
+}
+
+// retrieves image zoom100 and final_width/final_height to calculate the dimensions of the zoomed image.
+static void _get_dimensions_for_zoomed_img(dt_thumbnail_t *thumb, int max_width, int max_height, float zoom_ratio,
+                                           float *width, float *height)
+{
+  float iw = max_width;
+  float ih = max_height;
+  // we need to get proper dimensions for the image to determine the image_w size.
+  // calling dt_thumbnail_get_zoom100 is used to get the max zoom, but also to ensure that final_width and
+  // height are available.
+  const float zoom_100 = dt_thumbnail_get_zoom100(thumb);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  if(img)
+  {
+    if(img->final_width > 0 && img->final_height > 0)
+    {
+      iw = img->final_width;
+      ih = img->final_height;
+    }
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+
+  // scale first to "img to fit", then apply the zoom ratio to get the resulting final (zoomed) image
+  // dimensions, while making sure to still fit in the imagebox.
+  const float scale_to_fit = fminf((float)max_width / iw, (float)max_height / ih);
+  thumb->zoom = _zoom_ratio_to_thumb_zoom(zoom_ratio, zoom_100);
+  *width = MIN(iw * scale_to_fit * thumb->zoom, max_width);
+  *height = MIN(ih * scale_to_fit * thumb->zoom, max_height);
+}
+
 static void _thumb_set_image_area(dt_thumbnail_t *thumb, float zoom_ratio)
 {
   // let's ensure we have the right margins
@@ -355,56 +452,11 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb, float zoom_ratio)
     // we arrive here if we are inside the creation process
     float iw = image_w;
     float ih = image_h;
-    // we need to get proper dimensions for the image to determine the image_w size.
-    // we compute it from the larger available mipmap
-    gboolean found_image_dimensions = FALSE;
-    for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
-    {
-      dt_mipmap_buffer_t tmp;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');
-      if(tmp.buf)
-      {
-        const int mipw = tmp.width;
-        const int miph = tmp.height;
-        dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
-        if(mipw > 0 && miph > 0)
-        {
-          found_image_dimensions = TRUE;
-          iw = mipw;
-          ih = miph;
-          break;
-        }
-      }
-    }
-    if(!found_image_dimensions)
-    {
-      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
-      if(img)
-      {
-        if (img->final_width > 0 && img->final_height > 0) 
-        {
-          found_image_dimensions = TRUE;
-          iw = img->final_width;
-          ih = img->final_height;
-        }
-        dt_image_cache_read_release(darktable.image_cache, img);
-      }
-    }
 
-    if(found_image_dimensions)
-    {
-      // we have a valid ratio, let's apply it
-      const float scale_to_fit = fminf((float)image_w / iw, (float)image_h / ih);
-      float zoom_scale = 1.0f;
-      if(zoom_ratio != IMG_TO_FIT)
-      {
-        const float zoom_100 = dt_thumbnail_get_zoom100(thumb);
-        zoom_scale = (zoom_100 - 1) * zoom_ratio + 1;
-        thumb->zoom = zoom_scale;
-      }
-      iw = MIN(iw * scale_to_fit * zoom_scale, image_w);
-      ih = MIN(ih * scale_to_fit * zoom_scale, image_h);
-    }
+    if(zoom_ratio == IMG_TO_FIT)
+      _get_dimensions_for_img_to_fit(thumb, image_w, image_h, &iw, &ih);
+    else
+      _get_dimensions_for_zoomed_img(thumb, image_w, image_h, zoom_ratio, &iw, &ih);
 
     gtk_widget_set_size_request(thumb->w_image, iw, ih);
   }
@@ -1863,7 +1915,7 @@ float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb)
   if(thumb->zoom_100 < 1.0f) // we only compute the sizes if needed
     dt_thumbnail_get_zoom100(thumb);
 
-  return (thumb->zoom - 1) / (thumb->zoom_100 - 1);
+  return _thumb_zoom_to_zoom_ratio(thumb->zoom, thumb->zoom_100);
 }
 
 // force the reload of image infos
