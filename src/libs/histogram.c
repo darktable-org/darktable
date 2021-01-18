@@ -653,10 +653,14 @@ static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventBut
   return TRUE;
 }
 
-// FIXME: should split into _lib_histogram_scroll_callback() at main widget level which handles resize scrolls, and _drawable_scroll_callback which handles exposure changes
-static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  if(event->state & GDK_CONTROL_MASK)
+  {
+    // adjusts the overall widget size
+    return FALSE;
+  }
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   int delta_y;
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
@@ -664,31 +668,19 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   // FIXME: should limit exposure iop changes as bauhaus sliders do, for smoother interaction?
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    if(event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
+    dt_develop_t *dev = darktable.develop;
+    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
-      /* set size of navigation draw area */
-      const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
-      dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
-      // FIXME: if do have to adjust self->widget instead of just drawing area widget, make this a scroll event handler on the whole widget
-      gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
-    }
-    else
-    {
-      dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-      dt_develop_t *dev = darktable.develop;
-      if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+      // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
+      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
-        // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
-        if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-        {
-          const float ce = dt_dev_exposure_get_exposure(dev);
-          dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
-        }
-        else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-        {
-          const float cb = dt_dev_exposure_get_black(dev);
-          dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
-        }
+        const float ce = dt_dev_exposure_get_exposure(dev);
+        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+      }
+      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+      {
+        const float cb = dt_dev_exposure_get_black(dev);
+        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
       }
     }
   }
@@ -867,6 +859,20 @@ static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCross
   }
   // FIXME: TRUE or FALSE?
   return FALSE;
+}
+
+static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) &&
+     event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
+  {
+    /* set size of navigation draw area */
+    const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
+    dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
+    gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(histheight));
+  }
+  return TRUE;
 }
 
 static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
@@ -1200,6 +1206,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_container_add(GTK_CONTAINER(eventbox), overlay);
   self->widget = eventbox;
 
+  /* connect callbacks */
+
   gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
   g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
                    G_CALLBACK(_eventbox_enter_notify_callback), d);
@@ -1209,7 +1217,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
                                        GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
 
-  /* connect callbacks */
   g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
                    G_CALLBACK(_drawable_leave_notify_callback), d);
@@ -1219,9 +1226,13 @@ void gui_init(dt_lib_module_t *self)
                    G_CALLBACK(_drawable_button_release_callback), d);
   g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
                    G_CALLBACK(_drawable_motion_notify_callback), d);
-  // FIXME: connect the scroll-to-resize behavior to the main widget?
   g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event",
-                   G_CALLBACK(_lib_histogram_scroll_callback), self);
+                   G_CALLBACK(_drawable_scroll_callback), d);
+
+  // handles scroll-to-resize behavior
+  gtk_widget_add_events(self->widget, darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(self->widget), "scroll-event",
+                   G_CALLBACK(_lib_histogram_scroll_callback), NULL);
 
   // FIXME: do we even need to save self->widget? most references are to the drawable...
   // FIXME: how does reference counting of widgets work? do we need to dealloc or garbage collect them?
