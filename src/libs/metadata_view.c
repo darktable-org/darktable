@@ -332,6 +332,13 @@ static gint _lib_metadata_sort_order(gconstpointer a, gconstpointer b)
   return ma->order - mb->order;
 }
 
+static gint _lib_metadata_sort_index(gconstpointer a, gconstpointer b)
+{
+  dt_lib_metadata_info_t *ma = (dt_lib_metadata_info_t *)a;
+  dt_lib_metadata_info_t *mb = (dt_lib_metadata_info_t *)b;
+  return ma->index - mb->index;
+}
+
 #ifdef USE_LUA
 static int lua_update_metadata(lua_State*L);
 #endif
@@ -1021,7 +1028,8 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
 
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
+                                       GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_ACCEPT,
                                        _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -1035,10 +1043,10 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
                                            G_TYPE_INT, G_TYPE_STRING, G_TYPE_BOOLEAN);
   GtkTreeModel *model = GTK_TREE_MODEL(store);
 
+  GtkTreeIter iter;
   d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_order);
   for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
   {
-    GtkTreeIter iter;
     dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
     if(!_is_metadata_ui(m->index))
       continue;
@@ -1079,10 +1087,29 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 #endif
   gtk_widget_show_all(dialog);
 
-  int i = 0;
-  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));
+  while(res == GTK_RESPONSE_ACCEPT)
   {
-    GtkTreeIter iter;
+    gtk_tree_model_get_iter_first(model, &iter);
+    d->metadata = g_list_sort(d->metadata, _lib_metadata_sort_index);
+    for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
+    {
+      dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+      if(!_is_metadata_ui(m->index))
+        continue;
+      gtk_list_store_set(store, &iter,
+                         DT_METADATA_PREF_COL_INDEX, m->index,
+                         DT_METADATA_PREF_COL_NAME_L, _(m->name),
+                         DT_METADATA_PREF_COL_VISIBLE, TRUE,
+                         -1);
+      gtk_tree_model_iter_next(model, &iter);
+    }
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+  }
+
+  int i = 0;
+  if(res == GTK_RESPONSE_YES)
+  {
     gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
     while(valid)
     {
@@ -1141,6 +1168,19 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   return 0;
 }
 
+static void _display_default(dt_lib_module_t *self)
+{
+  dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+
+  for(GList *meta = d->metadata; meta; meta= g_list_next(meta))
+  {
+    dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    m->order = m->index;
+    m->visible = _is_metadata_ui(m->index);
+  }
+  _lib_metadata_refill_grid(self);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   /* initialize ui */
@@ -1160,10 +1200,9 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(d->grid, TRUE);
   _lib_metadata_setup_grid(self);
   char *pref = dt_conf_get_string("plugins/lighttable/metadata_view/visible");
-  if (strlen(pref))
-    _apply_preferences(pref, self);
-  else
-    gui_reset(self);
+  if(!strlen(pref))
+    _display_default(self);
+  _apply_preferences(pref, self);
   g_free(pref);
 
   /* lets signup for mouse over image change signals */
