@@ -627,7 +627,7 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
     }
     else
     {
-      // FIXME: should change cursor from "grab" to "grabbing"
+      // FIXME: should change cursor from "grab" to "grabbing", but this would mean rewriting dt_control_change_cursor() to use gdk_cursor_new_from_name()
       d->dragging = TRUE;
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
         d->button_down_value = dt_dev_exposure_get_exposure(dev);
@@ -639,6 +639,88 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
   }
 
   return TRUE;
+}
+
+static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventButton *event,
+                                                  gpointer user_data)
+{
+  printf("drawable button release callback\n");
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  d->dragging = FALSE;
+  // hack to recalculate the highlight as mouse may be over a different part of the widget
+  // FIXME: generate an event instead?
+  _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
+  return TRUE;
+}
+
+// FIXME: should split into _lib_histogram_scroll_callback() at main widget level which handles resize scrolls, and _drawable_scroll_callback which handles exposure changes
+static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  int delta_y;
+  // note are using unit rather than smooth scroll events, as
+  // exposure changes can get laggy if handling a multitude of smooth
+  // scroll events
+  // FIXME: should limit exposure iop changes as bauhaus sliders do, for smoother interaction?
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
+  {
+    if(event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
+    {
+      /* set size of navigation draw area */
+      const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
+      dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
+      // FIXME: if do have to adjust self->widget instead of just drawing area widget, make this a scroll event handler on the whole widget
+      gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
+    }
+    else
+    {
+      dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+      dt_develop_t *dev = darktable.develop;
+      if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+      {
+        // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
+        if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
+        {
+          const float ce = dt_dev_exposure_get_exposure(dev);
+          dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+        }
+        else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+        {
+          const float cb = dt_dev_exposure_get_black(dev);
+          dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
+        }
+      }
+    }
+  }
+
+  return TRUE;
+}
+
+static gboolean _drawable_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                gpointer user_data)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  // FIXME: can just declare user_data to be of type dt_lib_histogram_t above?
+  // if dragging, gtk keeps up motion notifications until mouse button
+  // is released, at which point we'll get another leave event for
+  // drawable if pointer is still outside of the widget
+
+  if(!d->dragging)
+  {
+    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+    {
+      printf("drawable leave: canceling highlight, changing pointer, redrawing drawable\n");
+      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
+      dt_control_change_cursor(GDK_LEFT_PTR);
+      dt_control_queue_redraw_widget(widget);
+    }
+  }
+  else
+  {
+    printf("drawable leave: dragging -- no more work done\n");
+  }
+  // FIXME: TRUE or FALSE?
+  return FALSE;
 }
 
 static void _scope_type_toggle(GtkWidget *button, dt_lib_histogram_t *d)
@@ -757,90 +839,6 @@ static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
   dt_control_queue_redraw_widget(d->scope_draw);
 }
 
-// FIXME: move earlier and rename
-static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  int delta_y;
-  // note are using unit rather than smooth scroll events, as
-  // exposure changes can get laggy if handling a multitude of smooth
-  // scroll events
-  // FIXME: should limit exposure iop changes as bauhaus sliders do, for smoother interaction?
-  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
-  {
-    if(event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
-    {
-      /* set size of navigation draw area */
-      const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
-      dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
-      // FIXME: if do have to adjust self->widget instead of just drawing area widget, make this a scroll event handler on the whole widget
-      gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
-    }
-    else
-    {
-      dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-      dt_develop_t *dev = darktable.develop;
-      if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
-      {
-        // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
-        if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-        {
-          const float ce = dt_dev_exposure_get_exposure(dev);
-          dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
-        }
-        else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-        {
-          const float cb = dt_dev_exposure_get_black(dev);
-          dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
-        }
-      }
-    }
-  }
-
-  return TRUE;
-}
-
-// FIXME: move earlier?
-static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                  gpointer user_data)
-{
-  printf("drawable button release callback\n");
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  d->dragging = FALSE;
-  // hack to recalculate the highlight as mouse may be over a different part of the widget
-  // FIXME: generate an event instead?
-  _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
-  return TRUE;
-}
-
-// FIXME: move earlier
-static gboolean _drawable_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                gpointer user_data)
-{
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
-  // FIXME: can just declare user_data to be of type dt_lib_histogram_t above?
-  // if dragging, gtk keeps up motion notifications until mouse button
-  // is released, at which point we'll get another leave event for
-  // drawable if pointer is still outside of the widget
-
-  if(!d->dragging)
-  {
-    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
-    {
-      printf("drawable leave: canceling highlight, changing pointer, redrawing drawable\n");
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
-      dt_control_change_cursor(GDK_LEFT_PTR);
-      dt_control_queue_redraw_widget(widget);
-    }
-  }
-  else
-  {
-    printf("drawable leave: dragging -- no more work done\n");
-  }
-  // FIXME: TRUE or FALSE?
-  return FALSE;
-}
-
 static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                  gpointer user_data)
 {
@@ -871,7 +869,6 @@ static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCross
   return FALSE;
 }
 
-// FIXME: move later
 static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
                                                  GObject *acceleratable, guint keyval,
                                                  GdkModifierType modifier, gpointer data)
@@ -1093,35 +1090,18 @@ void gui_init(dt_lib_module_t *self)
 
   // create widgets
   GtkWidget *overlay = gtk_overlay_new();
-  // FIXME: is the overlay has focus-on-click true -- turn this off to not confuse things?
-  //g_object_set_property(G_OBJECT(overlay), "focus-on-click", gvalue(FALSE))
-  /*
-  GValue value = {
-    0,
-  };
-  g_value_init(&value, G_TYPE_INT);
-  g_value_set_int(&value, map_source);
-  g_object_set_property(G_OBJECT(lib->map), "map-source", &value);
-  g_value_unset(&value);
-  */
 
-  // drawingarea shows the scope, scale, and has draggable areas
+  // shows the scope, scale, and has draggable areas
   d->scope_draw = gtk_drawing_area_new();
   gtk_widget_set_tooltip_text(d->scope_draw, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
 
-  // FIXME: clicking between or above/right of buttons makes the buttons disappear
-  // a row of buttons
-  // NOTE: Button box and button margins "obscure" events to drawable
-  // below, hence the entire top-right of histogram doesn't pass
-  // events down. This is probably OK, compared to having ribbons of
-  // drawable events between/above the buttons.
-  // FIXME: could use gtk_widget_set_margin_end/top but then it won't be styleable
+  // a row of control buttons
   d->button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
   gtk_button_box_set_layout(GTK_BUTTON_BOX(d->button_box), GTK_BUTTONBOX_EXPAND);
   gtk_widget_set_valign(d->button_box, GTK_ALIGN_START);
   gtk_widget_set_halign(d->button_box, GTK_ALIGN_END);
 
-  // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them? -- if so, then the each of the histogram/waveform widgets will have its own associated "mode" button, drawable, and sensitive areas for scrolling, but the channel buttons will be shared between them, or will modify the same underlying data
+  // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them?
 
   // note that are calling toggle callback by hand for each button as
   // a hack to finish init -- if we don't flip the tooltip text (and
@@ -1192,14 +1172,14 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
   gtk_box_pack_start(GTK_BOX(d->button_box), button, FALSE, FALSE, 0);
 
+  // assemble the widgets
+
   // The main widget is an overlay which has no window, and hence
   // can't catch events. We need something on top to catch events to
   // show/hide the buttons. The drawable is below the buttons, and
   // hence won't catch motion events for the buttons, and gets a leave
   // event when the cursor moves over the buttons.
 
-  // assemble the widgets
-  //
   // |----- EventBox -----|
   // |                    |
   // |  |-- Overlay  --|  |
