@@ -20,6 +20,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/exif.h"
+#include "common/collection.h"
 #include "common/dtpthread.h"
 #include "common/imagebuf.h"
 #include "common/imageio_rawspeed.h"
@@ -2151,8 +2152,10 @@ void dt_iop_request_focus(dt_iop_module_t *module)
     /* redraw the expander */
     gtk_widget_queue_draw(darktable.develop->gui_module->expander);
 
-    /* and finally remove hinter messages */
-    dt_control_hinter_message(darktable.control, "");
+    /* and finally restore default hinter message */
+//    dt_control_hinter_message(darktable.control, "");
+    dt_collection_hint_message(darktable.collection);
+    
 
     // we also remove the focus css class
     GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
