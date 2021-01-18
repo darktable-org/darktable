@@ -2187,7 +2187,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
   free(g);
 }
 
-static int _get_grid_nb_lines(GtkGrid *grid)
+static int
+_get_grid_nb_lines(GtkGrid *grid)
 {
   int line = 0;
   gboolean not_empty = TRUE;
@@ -2203,9 +2204,17 @@ static int _get_grid_nb_lines(GtkGrid *grid)
   return line;
 }
 
-static void _gui_preferences_bool_callback(GtkWidget *widget, gpointer data)
+static void
+_gui_preferences_bool_callback(GtkWidget *widget, gpointer data)
 {
   dt_conf_set_bool((char *)data, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+}
+
+void dt_gui_preferences_bool_reset(GtkWidget *widget)
+{
+  const char *key = gtk_widget_get_name(widget);
+  const gboolean def = dt_confgen_get_bool(key, DT_DEFAULT);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), def);
 }
 
 static gboolean
@@ -2213,9 +2222,7 @@ _gui_preferences_bool_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    const char *key = gtk_widget_get_name(widget);
-    const gboolean def = dt_confgen_get_bool(key, DT_DEFAULT);
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), def);
+    dt_gui_preferences_bool_reset(widget);
     return TRUE;
   }
   return FALSE;
@@ -2249,9 +2256,17 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key)
   return w;
 }
 
-static void _gui_preferences_int_callback(GtkWidget *widget, gpointer data)
+static void
+_gui_preferences_int_callback(GtkWidget *widget, gpointer data)
 {
   dt_conf_set_int((char *)data, gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+}
+
+void dt_gui_preferences_int_reset(GtkWidget *widget)
+{
+  const char *key = gtk_widget_get_name(widget);
+  const int def = dt_confgen_get_int(key, DT_DEFAULT);
+  gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), def);
 }
 
 static gboolean
@@ -2259,9 +2274,7 @@ _gui_preferences_int_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *w
 {
   if(event->type == GDK_2BUTTON_PRESS)
   {
-    const char *key = gtk_widget_get_name(widget);
-    const int def = dt_confgen_get_int(key, DT_DEFAULT);
-    gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), def);
+    dt_gui_preferences_int_reset(widget);
     return TRUE;
   }
   return FALSE;
