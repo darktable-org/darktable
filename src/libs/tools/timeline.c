@@ -1473,7 +1473,7 @@ void gui_init(dt_lib_module_t *self)
   /* creating timeline box*/
   d->timeline = gtk_event_box_new();
 
-  gtk_widget_add_events(d->timeline, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
+  gtk_widget_add_events(d->timeline, GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                          | GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask
                                          | GDK_LEAVE_NOTIFY_MASK);
 

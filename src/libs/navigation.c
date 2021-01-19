@@ -116,8 +116,8 @@ void gui_init(dt_lib_module_t *self)
   /* create drawingarea */
   self->widget = gtk_drawing_area_new();
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
-  gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
-                                      | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
+  gtk_widget_set_events(self->widget, GDK_EXPOSURE_MASK
+                                      | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                       | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK);
 
   /* connect callbacks */
@@ -390,18 +390,6 @@ static gboolean _lib_navigation_motion_notify_callback(GtkWidget *widget, GdkEve
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
   _lib_navigation_set_position(self, event->x, event->y, allocation.width, allocation.height);
-  gint x, y; // notify gtk for motion_hint.
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_window_get_device_position(event->window,
-      gdk_seat_get_pointer(gdk_display_get_default_seat(
-          gdk_window_get_display(event->window))),
-      &x, &y, 0);
-#else
-  gdk_window_get_device_position(event->window,
-                                 gdk_device_manager_get_client_pointer(
-                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-                                 &x, &y, NULL);
-#endif
   return TRUE;
 }
 
