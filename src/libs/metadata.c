@@ -565,7 +565,6 @@ void set_preferences(void *menu, dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-//  dt_accel_register_lib(self, NC_("accel", "clear"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "apply"), 0, 0);
 }
 
@@ -573,7 +572,6 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-//  dt_accel_connect_button_lib(self, "clear", d->clear_button);
   dt_accel_connect_button_lib(self, "apply", d->apply_button);
 }
 
@@ -639,8 +637,6 @@ static gboolean _click_on_textview(GtkWidget *textview, GdkEventButton *event, d
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
   GtkTreeViewColumn *col = gtk_tree_view_column_new_with_attributes(_("metadata"), renderer, "text", 0, NULL);
   gtk_tree_view_append_column(listview, col);
-//  gtk_tree_view_column_set_resizable(col, TRUE);
-//  g_object_set_qdata_full(G_OBJECT(renderer), g_quark_from_static_string("listview"), (gpointer)listview, NULL);
   g_object_set(G_OBJECT(renderer), "wrap-mode", PANGO_WRAP_WORD, NULL);
   g_object_set(G_OBJECT(renderer), "wrap-width", metadata_allocation.width, NULL);
   g_signal_connect(GTK_WIDGET(dialog), "configure-event", G_CALLBACK(_metadata_list_size_changed), renderer);
