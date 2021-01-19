@@ -912,6 +912,7 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
   for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
   {
     dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+    m->order = j;
     GtkWidget *w_name = gtk_grid_get_child_at(GTK_GRID(d->grid), 0, j);
     gtk_label_set_text(GTK_LABEL(w_name), _(m->name));
     gtk_widget_set_tooltip_text(w_name, _(m->name));
@@ -927,7 +928,7 @@ static void _lib_metadata_refill_grid(dt_lib_module_t *self)
     if(i == md_internal_filmroll)
     {
       // film roll jump to:
-      if(d->filmroll_event)
+      if(d->filmroll_event && GTK_IS_WIDGET(d->filmroll_event))
         g_signal_handlers_disconnect_by_func(d->filmroll_event, G_CALLBACK(_filmroll_clicked), NULL);
       g_signal_connect(G_OBJECT(w_value), "button-press-event", G_CALLBACK(_filmroll_clicked), NULL);
       d->filmroll_event = G_OBJECT(w_value);
@@ -1295,9 +1296,16 @@ static int lua_update_metadata(lua_State*L)
   lua_pushnil(L);
   while(lua_next(L, 5) != 0)
   {
-    lua_pushvalue(L,-1);
-    luaA_push(L,dt_lua_image_t,&imgid);
-    lua_call(L,1,1);
+    if(imgid > 0)
+    {
+      lua_pushvalue(L,-1);
+      luaA_push(L,dt_lua_image_t,&imgid);
+      lua_call(L,1,1);
+    }
+    else
+    {
+      lua_pushstring(L, "-");
+    }
     lua_pushvalue(L,7);
     lua_pushvalue(L,9);
     lua_settable(L,6);
@@ -1375,6 +1383,81 @@ static int lua_register_info(lua_State *L)
   return 0;
 }
 
+static int lua_destroy_info(lua_State *L)
+{
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  dt_lua_module_entry_push(L,"lib",self->plugin_name);
+  lua_getuservalue(L,-1);
+  const char* key = luaL_checkstring(L,1);
+  {
+    lua_getfield(L,-1,"callbacks");
+    lua_pushstring(L,key);
+    lua_pushnil(L);
+    lua_settable(L,4);
+    lua_pop(L,1);
+  }
+  {
+    lua_getfield(L,-1,"values");
+    lua_pushstring(L,key);
+    lua_pushnil(L);
+    lua_settable(L,4);
+    lua_pop(L,1);
+  }
+  lua_getfield(L,-1,"indexes");
+  lua_getfield(L,-1,key);
+  const int index = lua_tointeger(L,-1);
+  lua_pop(L,1);
+  {
+    lua_pushstring(L,key);
+    lua_pushnil(L);
+    lua_settable(L,4);
+  }
+  // decrement all indexes > index
+  lua_pushnil(L);
+  while(lua_next(L,-2) != 0) {
+    int i = lua_tointeger(L,-1);
+    if(i > index)
+    {
+      lua_pop(L,1);
+      lua_pushvalue(L,-1);
+      i--;
+      lua_pushinteger(L,i);
+      lua_settable(L,-4);
+    }
+    else lua_pop(L,1);
+  }
+
+  {
+    dt_lib_metadata_view_t *d = (dt_lib_metadata_view_t *)self->data;
+    // find metadata key in the list and remove it
+    GList *tbr = NULL;
+    for(GList *meta = d->metadata; meta; meta = g_list_next(meta))
+    {
+      dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)meta->data;
+      if(!g_strcmp0(key, m->name))
+      {
+        tbr = meta;
+      }
+      else if(m->index > index)
+      {
+        m->index--;
+      }
+    }
+    if(tbr)
+    {
+      dt_lib_metadata_info_t *m = (dt_lib_metadata_info_t *)tbr->data;
+      d->metadata = g_list_remove_link(d->metadata, tbr);
+      g_free(m->value);
+      if(m->tooltip) g_free(m->tooltip);
+      g_free(m);
+      g_list_free(tbr);
+      gtk_grid_remove_row(GTK_GRID(d->grid), 0);
+      _lib_metadata_refill_grid(self);
+    }
+  }
+  return 0;
+}
+
 void init(struct dt_lib_module_t *self)
 {
   lua_State *L = darktable.lua_state.state;
@@ -1384,6 +1467,12 @@ void init(struct dt_lib_module_t *self)
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_info");
+
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, lua_destroy_info,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "destroy_info");
 
   dt_lua_module_entry_push(L,"lib",self->plugin_name);
   lua_getuservalue(L,-1);
