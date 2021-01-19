@@ -594,19 +594,6 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       }
     }
   }
-  // FIXME: is this code obsolete for the deprecated GDK_POINTER_MOTION_HINT_MASK? it used gdk_window_get_pointer() in 2011, updated to gdk_window_get_device_position() to replace deprecated function in 2014, in 2016 added gtk 3.20 fixes to deal with seat code, but underlying motion hint may no longer be needed now that events are compressed?
-  gint x, y; // notify gtk for motion_hint.
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_window_get_device_position(gtk_widget_get_window(widget),
-      gdk_seat_get_pointer(gdk_display_get_default_seat(
-          gdk_window_get_display(event->window))),
-      &x, &y, 0);
-#else
-  gdk_window_get_device_position(event->window,
-                                 gdk_device_manager_get_client_pointer(
-                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-                                 &x, &y, NULL);
-#endif
 
   return TRUE;
 }
