@@ -531,7 +531,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->preview = dtgtk_drawing_area_new_with_aspect_ratio(1.0);
   g_signal_connect(G_OBJECT(g->preview), "size-allocate", G_CALLBACK(size_allocate_callback), self);
   g_signal_connect(G_OBJECT(g->preview), "draw", G_CALLBACK(dt_iop_zonesystem_preview_draw), self);
-  gtk_widget_add_events(GTK_WIDGET(g->preview), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(g->preview), GDK_POINTER_MOTION_MASK
                                                 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                 | GDK_LEAVE_NOTIFY_MASK);
 
@@ -550,7 +550,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(g->zones), "button-release-event",
                    G_CALLBACK(dt_iop_zonesystem_bar_button_release), self);
   g_signal_connect(G_OBJECT(g->zones), "scroll-event", G_CALLBACK(dt_iop_zonesystem_bar_scrolled), self);
-  gtk_widget_add_events(GTK_WIDGET(g->zones), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(g->zones), GDK_POINTER_MOTION_MASK
                                               | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                               | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   gtk_widget_set_size_request(g->zones, -1, DT_PIXEL_APPLY_DPI(40));

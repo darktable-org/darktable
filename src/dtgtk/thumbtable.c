@@ -1683,7 +1683,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   table->offset = MAX(1, dt_conf_get_int("plugins/lighttable/recentcollect/pos0"));
 
   // set widget signals
-  gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_set_events(table->widget, GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
                                            | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                            | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
   gtk_widget_set_app_paintable(table->widget, TRUE);
