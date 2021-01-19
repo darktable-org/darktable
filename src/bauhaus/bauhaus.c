@@ -401,8 +401,6 @@ static gboolean dt_bauhaus_popup_motion_notify(GtkWidget *widget, GdkEventMotion
     default:
       break;
   }
-  // throttling using motion hint:
-  // gdk_event_request_motions(event);
   return TRUE;
 }
 
@@ -631,7 +629,7 @@ void dt_bauhaus_init()
   gtk_window_set_gravity(GTK_WINDOW(darktable.bauhaus->popup_window), GDK_GRAVITY_STATIC);
 
   gtk_widget_set_can_focus(darktable.bauhaus->popup_area, TRUE);
-  gtk_widget_add_events(darktable.bauhaus->popup_area, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(darktable.bauhaus->popup_area, GDK_POINTER_MOTION_MASK
                                                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                        | GDK_KEY_PRESS_MASK | GDK_LEAVE_NOTIFY_MASK
                                                        | darktable.gui->scroll_mask);
@@ -721,7 +719,7 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
     }
   }
 
-  gtk_widget_add_events(GTK_WIDGET(w), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(w), GDK_POINTER_MOTION_MASK
                                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                        | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                                        | GDK_FOCUS_CHANGE_MASK
@@ -2776,8 +2774,6 @@ static gboolean dt_bauhaus_slider_motion_notify(GtkWidget *widget, GdkEventMotio
       dt_bauhaus_slider_set_normalized(w, (event->x / allocation.width - l) / (r - l));
     }
   }
-  // not sure if needed:
-  // gdk_event_request_motions(event);
   return TRUE;
 }
 

@@ -1304,7 +1304,7 @@ void gui_init(struct dt_iop_module_t *self)
   g->area = dtgtk_drawing_area_new_with_aspect_ratio(4.0/6.0);
   gtk_box_pack_start(GTK_BOX(self->widget), g->area, TRUE, TRUE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK);
   g_signal_connect(G_OBJECT(g->area), "draw", G_CALLBACK(checker_draw), self);

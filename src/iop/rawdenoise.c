@@ -801,17 +801,6 @@ static gboolean rawdenoise_motion_notify(GtkWidget *widget, GdkEventMotion *even
     c->x_move = -1;
     gtk_widget_queue_draw(widget);
   }
-  gint x, y;
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_window_get_device_position(
-      event->window, gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(event->window))), &x,
-      &y, 0);
-#else
-  gdk_window_get_device_position(
-      event->window,
-      gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-      &x, &y, NULL);
-#endif
   return TRUE;
 }
 
@@ -934,7 +923,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->channel_tabs), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(box_raw), GTK_WIDGET(c->area), FALSE, FALSE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(rawdenoise_draw), self);

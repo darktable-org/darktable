@@ -264,7 +264,7 @@ void gui_init(struct dt_iop_module_t *self)
                                                      "bright means highlights, dark means shadows. "
                                                      "use mouse wheel to change saturation."));
 
-  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(g->area), GDK_POINTER_MOTION_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
                                                  | darktable.gui->scroll_mask);

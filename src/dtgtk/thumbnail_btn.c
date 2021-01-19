@@ -134,8 +134,8 @@ GtkWidget *dtgtk_thumbnail_btn_new(DTGTKCairoPaintIconFunc paint, gint paintflag
   button->icon = paint;
   button->icon_flags = paintflags;
   button->icon_data = paintdata;
-  gtk_widget_set_events(GTK_WIDGET(button), GDK_EXPOSURE_MASK | GDK_POINTER_MOTION_MASK
-                                                | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
+  gtk_widget_set_events(GTK_WIDGET(button), GDK_EXPOSURE_MASK
+                                                | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                                                 | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                                 | GDK_ENTER_NOTIFY_MASK | GDK_ALL_EVENTS_MASK);
   gtk_widget_set_app_paintable(GTK_WIDGET(button), TRUE);

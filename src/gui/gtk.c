@@ -1768,7 +1768,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_hexpand(ocda, TRUE);
   gtk_widget_set_vexpand(ocda, TRUE);
   gtk_widget_set_app_paintable(cda, TRUE);
-  gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK
+  gtk_widget_set_events(cda, GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK
                              | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
                              | darktable.gui->scroll_mask);
   gtk_widget_set_can_focus(cda, TRUE);
@@ -2364,6 +2364,7 @@ static gboolean _panel_handle_motion_callback(GtkWidget *w, GdkEventButton *e, g
   if(darktable.gui->widgets.panel_handle_dragging)
   {
     gint x, y, sx, sy;
+    // FIXME: can work with the event x,y to skip the gdk_window_get_device_position() call?
 #if GTK_CHECK_VERSION(3, 20, 0)
     gdk_window_get_device_position(e->window,
                                    gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_window_get_display(
@@ -2431,8 +2432,7 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   gtk_widget_set_valign(handle, GTK_ALIGN_CENTER);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
-                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                    | GDK_POINTER_MOTION_HINT_MASK);
+                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-left");
   g_signal_connect(G_OBJECT(handle), "button-press-event", G_CALLBACK(_panel_handle_button_callback), handle);
   g_signal_connect(G_OBJECT(handle), "button-release-event", G_CALLBACK(_panel_handle_button_callback), handle);
@@ -2472,8 +2472,7 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   gtk_widget_set_valign(handle, GTK_ALIGN_CENTER);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
-                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                    | GDK_POINTER_MOTION_HINT_MASK);
+                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-right");
   g_signal_connect(G_OBJECT(handle), "button-press-event", G_CALLBACK(_panel_handle_button_callback), handle);
   g_signal_connect(G_OBJECT(handle), "button-release-event", G_CALLBACK(_panel_handle_button_callback), handle);
@@ -2539,8 +2538,7 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
   gtk_widget_set_valign(handle, GTK_ALIGN_START);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
-                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                    | GDK_POINTER_MOTION_HINT_MASK);
+                                    | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   gtk_widget_set_name(GTK_WIDGET(handle), "panel-handle-bottom");
   g_signal_connect(G_OBJECT(handle), "button-press-event", G_CALLBACK(_panel_handle_button_callback), handle);
   g_signal_connect(G_OBJECT(handle), "button-release-event", G_CALLBACK(_panel_handle_button_callback), handle);

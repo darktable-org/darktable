@@ -370,7 +370,7 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
   gtk_widget_set_size_request(GTK_WIDGET(c->area), 195, 195);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | darktable.gui.scroll_mask);
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_LEAVE_NOTIFY_MASK | darktable.gui.scroll_mask);
   g_signal_connect (G_OBJECT (c->area), "draw",
                     G_CALLBACK (dt_iop_equalizer_expose), self);
   g_signal_connect (G_OBJECT (c->area), "button-press-event",
@@ -629,8 +629,6 @@ static gboolean dt_iop_equalizer_motion_notify(GtkWidget *widget, GdkEventMotion
     c->x_move = -1;
   }
   gtk_widget_queue_draw(widget);
-  gint x, y;
-  gdk_window_get_device_position(event->window, gdk_device_manager_get_client_pointer(gdk_display_get_device_manager(gdk_window_get_display(event->window))), &x, &y, NULL);
 
   return TRUE;
 }

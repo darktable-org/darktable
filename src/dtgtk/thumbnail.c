@@ -1120,7 +1120,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     thumb->w_back = gtk_event_box_new();
     gtk_widget_set_events(thumb->w_back, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                              | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                             | GDK_POINTER_MOTION_HINT_MASK | GDK_POINTER_MOTION_MASK);
+                                             | GDK_POINTER_MOTION_MASK);
     gtk_widget_set_name(thumb->w_back, "thumb_back");
     g_signal_connect(G_OBJECT(thumb->w_back), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     g_signal_connect(G_OBJECT(thumb->w_back), "leave-notify-event", G_CALLBACK(_event_main_leave), thumb);
@@ -1156,7 +1156,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     // the size will be defined at the end, inside dt_thumbnail_resize
     gtk_widget_set_events(thumb->w_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
                                               | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
-                                              | GDK_POINTER_MOTION_HINT_MASK | GDK_POINTER_MOTION_MASK);
+                                              | GDK_POINTER_MOTION_MASK);
     g_signal_connect(G_OBJECT(thumb->w_image), "draw", G_CALLBACK(_event_image_draw), thumb);
     g_signal_connect(G_OBJECT(thumb->w_image), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
     g_signal_connect(G_OBJECT(thumb->w_image), "enter-notify-event", G_CALLBACK(_event_image_enter_leave), thumb);
