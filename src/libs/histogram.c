@@ -28,6 +28,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/develop.h"
+#include "dtgtk/button.h"
 #include "gui/accelerators.h"
 #include "gui/draw.h"
 #include "gui/gtk.h"
@@ -42,15 +43,9 @@ DT_MODULE(1)
 
 typedef enum dt_lib_histogram_highlight_t
 {
-  DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET = 0,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_IN_WIDGET,
+  DT_LIB_HISTOGRAM_HIGHLIGHT_NONE = 0,
   DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_MODE,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_RED,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_GREEN,
-  DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE,
+  DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE
 } dt_lib_histogram_highlight_t;
 
 typedef enum dt_lib_histogram_scope_type_t
@@ -88,7 +83,13 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   dt_pthread_mutex_t lock;
-  // mouse state
+  GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
+  GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
+  GtkWidget *scope_type_button;        // GtkToggleButton -- histogram/waveform control
+  GtkWidget *histogram_scale_button;   // GtkToggleButton -- logarithmic/linear control
+  GtkWidget *waveform_type_button;     // GtkToggleButton -- overlaid/parade control
+  GtkWidget *mode_stack;               // GtkStack -- contains scope-dependent control buttons
+  // drag to change parameters
   gboolean dragging;
   int32_t button_down_x, button_down_y;
   float button_down_value;
@@ -99,9 +100,6 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_scale_t histogram_scale;
   dt_lib_histogram_waveform_type_t waveform_type;
   gboolean red, green, blue;
-  // button locations
-  float type_x, mode_x, red_x, green_x, blue_x;
-  float button_w, button_h, button_y, button_spacing;
 } dt_lib_histogram_t;
 
 const char *name(dt_lib_module_t *self)
@@ -318,182 +316,6 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     dt_free_align(img_display);
 }
 
-static void _draw_color_toggle(cairo_t *cr, float x, float y, float width, float height, gboolean state,
-                               const GdkRGBA color)
-{
-  // FIXME: use dtgtk_cairo_paint_color()
-  // FIXME: add "cairo_set_source_rgb_with_alpha()" to make cases such as this less verbose
-  cairo_set_source_rgba(cr, color.red, color.green, color.blue, color.alpha/3.0);
-  const float border = MIN(width * .05, height * .05);
-  cairo_rectangle(cr, x + border, y + border, width - 2.0 * border, height - 2.0 * border);
-  cairo_fill_preserve(cr);
-  if(state)
-    cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  else
-    cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
-  cairo_set_line_width(cr, border);
-  cairo_stroke(cr);
-}
-
-static void _draw_type_toggle(cairo_t *cr, float x, float y, float width, float height, int type)
-{
-  cairo_save(cr);
-  cairo_translate(cr, x, y);
-
-  // border
-  const float border = MIN(width * .05, height * .05);
-  set_color(cr, darktable.bauhaus->graph_border);
-  cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
-  cairo_fill_preserve(cr);
-  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
-  cairo_set_line_width(cr, border);
-  cairo_stroke(cr);
-
-  // icon
-  // FIXME: move to dtgtk/paint
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
-  switch(type)
-  {
-    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      cairo_curve_to(cr, 0.3 * width, height - 2.0 * border, 0.3 * width, 2.0 * border,
-                     0.5 * width, 2.0 * border);
-      cairo_curve_to(cr, 0.7 * width, 2.0 * border, 0.7 * width, height - 2.0 * border,
-                     width - 2.0 * border, height - 2.0 * border);
-      cairo_fill(cr);
-      break;
-    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-    {
-      cairo_pattern_t *pattern;
-      pattern = cairo_pattern_create_linear(0.0, 1.5 * border, 0.0, height - 3.0 * border);
-
-      cairo_pattern_add_color_stop_rgba(pattern, 0.0, 0.0, 0.0, 0.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.2, 0.2, 0.2, 0.2, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.5, 1.0, 1.0, 1.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 0.6, 1.0, 1.0, 1.0, 0.5);
-      cairo_pattern_add_color_stop_rgba(pattern, 1.0, 0.2, 0.2, 0.2, 0.5);
-
-      cairo_rectangle(cr, 1.5 * border, 1.5 * border, (width - 3.0 * border) * 0.3, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
-      cairo_fill(cr);
-
-      cairo_save(cr);
-      cairo_scale(cr, 1, -1);
-      cairo_translate(cr, 0, -height);
-      cairo_rectangle(cr, 1.5 * border + (width - 3.0 * border) * 0.2, 1.5 * border,
-                      (width - 3.0 * border) * 0.6, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
-      cairo_fill(cr);
-      cairo_restore(cr);
-
-      cairo_rectangle(cr, 1.5 * border + (width - 3.0 * border) * 0.7, 1.5 * border,
-                      (width - 3.0 * border) * 0.3, height - 3.0 * border);
-      cairo_set_source(cr, pattern);
-      cairo_fill(cr);
-
-      cairo_pattern_destroy(pattern);
-      break;
-    }
-  }
-  cairo_restore(cr);
-}
-
-static void _draw_histogram_scale_toggle(cairo_t *cr, float x, float y, float width, float height, int mode)
-{
-  cairo_save(cr);
-  cairo_translate(cr, x, y);
-
-  // border
-  const float border = MIN(width * .05, height * .05);
-  set_color(cr, darktable.bauhaus->graph_border);
-  cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
-  cairo_fill_preserve(cr);
-  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
-  cairo_set_line_width(cr, border);
-  cairo_stroke(cr);
-
-  // icon
-  // FIXME: move to dtgtk/paint
-  cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.5);
-  cairo_move_to(cr, 2.0 * border, height - 2.0 * border);
-  switch(mode)
-  {
-    case DT_LIB_HISTOGRAM_LINEAR:
-      cairo_line_to(cr, width - 2.0 * border, 2.0 * border);
-      cairo_stroke(cr);
-      break;
-    case DT_LIB_HISTOGRAM_LOGARITHMIC:
-      cairo_curve_to(cr, 2.0 * border, 0.33 * height, 0.66 * width, 2.0 * border, width - 2.0 * border,
-                     2.0 * border);
-      cairo_stroke(cr);
-      break;
-  }
-  cairo_restore(cr);
-}
-
-static void _draw_waveform_mode_toggle(cairo_t *cr, float x, float y, float width, float height, int mode)
-{
-  cairo_save(cr);
-  cairo_translate(cr, x, y);
-
-  // border
-  const float border = MIN(width * .05, height * .05);
-  // FIXME: move to dtgtk/paint
-  switch(mode)
-  {
-    case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
-    {
-      cairo_set_source_rgba(cr, 1.0, 1.0, 1.0, 0.33);
-      cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
-      cairo_fill_preserve(cr);
-      break;
-    }
-    case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
-    {
-      const GdkRGBA *const primaries = darktable.bauhaus->graph_primaries;
-      cairo_set_source_rgba(cr, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha/3.0);
-      cairo_rectangle(cr, border, border, width / 3.0, height - 2.0 * border);
-      cairo_fill(cr);
-      cairo_set_source_rgba(cr, primaries[1].red, primaries[1].green, primaries[1].blue, primaries[1].alpha/3.0);
-      cairo_rectangle(cr, width / 3.0, border, width / 3.0, height - 2.0 * border);
-      cairo_fill(cr);
-      cairo_set_source_rgba(cr, primaries[2].red, primaries[2].green, primaries[2].blue, primaries[2].alpha/3.0);
-      cairo_rectangle(cr, width * 2.0 / 3.0, border, width / 3.0, height - 2.0 * border);
-      cairo_fill(cr);
-      cairo_rectangle(cr, border, border, width - 2.0 * border, height - 2.0 * border);
-      break;
-    }
-  }
-
-  cairo_set_source_rgba(cr, 0.0, 0.0, 0.0, 0.5);
-  cairo_set_line_width(cr, border);
-  cairo_stroke(cr);
-
-  cairo_restore(cr);
-}
-
-static gboolean _lib_histogram_configure_callback(GtkWidget *widget, GdkEventConfigure *event, gpointer user_data)
-{
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-
-  // FIXME: gtk-ize this, use buttons packed in a GtkBox
-  const int width = event->width;
-  // mode and color buttons position on first expose or widget size change
-  // FIXME: should the button size depend on histogram width or just be set to something reasonable
-  d->button_spacing = 0.02 * width;
-  d->button_w = 0.06 * width;
-  d->button_h = 0.06 * width;
-  d->button_y = d->button_spacing;
-  const float offset = d->button_w + d->button_spacing;
-  d->blue_x = width - offset;
-  d->green_x = d->blue_x - offset;
-  d->red_x = d->green_x - offset;
-  d->mode_x = d->red_x - offset;
-  d->type_x = d->mode_x - offset;
-
-  return TRUE;
-}
 
 static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
                                           int width, int height, const uint8_t mask[3])
@@ -611,13 +433,14 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
+// FIXME: have different drawable for waveform and histogram in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
+// FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
+static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
 
   GtkAllocation allocation;
@@ -692,27 +515,6 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   }
   dt_pthread_mutex_unlock(&d->lock);
 
-  // buttons to control the display of the histogram: linear/log, r, g, b
-  if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET)
-  {
-    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
-    _draw_type_toggle(cr, d->type_x, d->button_y, d->button_w, d->button_h, d->scope_type);
-    switch(d->scope_type)
-    {
-      case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-        _draw_histogram_scale_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->histogram_scale);
-        break;
-      case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-        _draw_waveform_mode_toggle(cr, d->mode_x, d->button_y, d->button_w, d->button_h, d->waveform_type);
-        break;
-      case DT_LIB_HISTOGRAM_SCOPE_N:
-        g_assert_not_reached();
-    }
-    _draw_color_toggle(cr, d->red_x, d->button_y, d->button_w, d->button_h, d->red, darktable.bauhaus->graph_primaries[0]);
-    _draw_color_toggle(cr, d->green_x, d->button_y, d->button_w, d->button_h, d->green, darktable.bauhaus->graph_primaries[1]);
-    _draw_color_toggle(cr, d->blue_x, d->button_y, d->button_w, d->button_h, d->blue, darktable.bauhaus->graph_primaries[2]);
-  }
-
   cairo_destroy(cr);
   cairo_set_source_surface(crf, cst, 0, 0);
   cairo_paint(crf);
@@ -728,15 +530,13 @@ static gboolean _lib_histogram_draw_callback(GtkWidget *widget, cairo_t *crf, gp
   return TRUE;
 }
 
-static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
-                                                      gpointer user_data)
+static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMotion *event,
+                                                 gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
   const gboolean hooks_available = (cv->view(cv) == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
-  // FIXME: as when dragging a bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
 
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -746,6 +546,7 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
                                                                         : event->x - d->button_down_x;
     const int range = d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? allocation.height
                                                                        : allocation.width;
+    // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
     if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
     {
       const float exposure = d->button_down_value + diff * 4.0f / (float)range;
@@ -765,106 +566,35 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
     const float posy = y / (float)(allocation.height);
     const dt_lib_histogram_highlight_t prior_highlight = d->highlight;
 
-    // FIXME: rather than roll button code from scratch, take advantage of bauhaus/gtk button code?
-    if(posx < 0.0f || posx > 1.0f || posy < 0.0f || posy > 1.0f)
+    // FIXME: make just one tooltip for the widget depending on whether it is draggable or not, and set it when enter the view
+    if(!hooks_available)
     {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
+      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
+      gtk_widget_set_tooltip_text(widget, _("ctrl+scroll to change display height"));
     }
-    // FIXME: simplify this, check for y position, and if it's in range, check for x, and set highlight, and depending on that draw tooltip
-    // FIXME: or alternately use copy_path_flat(), append_path(p), in_fill() and keep around the rectangles for each button
-    else if(x > d->type_x && x < d->type_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE;
-      switch(d->scope_type)
-      {
-        case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-          gtk_widget_set_tooltip_text(widget, _("set mode to waveform"));
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-          gtk_widget_set_tooltip_text(widget, _("set mode to histogram"));
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_N:
-          g_assert_not_reached();
-      }
-    }
-    else if(x > d->mode_x && x < d->mode_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_MODE;
-      switch(d->scope_type)
-      {
-        case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-          switch(d->histogram_scale)
-          {
-            case DT_LIB_HISTOGRAM_LOGARITHMIC:
-              gtk_widget_set_tooltip_text(widget, _("set scale to linear"));
-              break;
-            case DT_LIB_HISTOGRAM_LINEAR:
-              gtk_widget_set_tooltip_text(widget, _("set scale to logarithmic"));
-              break;
-            default:
-              g_assert_not_reached();
-          }
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-          switch(d->waveform_type)
-          {
-            case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
-              gtk_widget_set_tooltip_text(widget, _("set mode to RGB parade"));
-              break;
-            case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
-              gtk_widget_set_tooltip_text(widget, _("set mode to waveform"));
-              break;
-            default:
-              g_assert_not_reached();
-          }
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_N:
-          g_assert_not_reached();
-      }
-    }
-    else if(x > d->red_x && x < d->red_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_RED;
-      gtk_widget_set_tooltip_text(widget, d->red ? _("click to hide red channel") : _("click to show red channel"));
-    }
-    else if(x > d->green_x && x < d->green_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_GREEN;
-      gtk_widget_set_tooltip_text(widget, d->green ? _("click to hide green channel")
-                                                 : _("click to show green channel"));
-    }
-    else if(x > d->blue_x && x < d->blue_x + d->button_w && y > d->button_y && y < d->button_y + d->button_h)
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE;
-      gtk_widget_set_tooltip_text(widget, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
-    }
-    else if(hooks_available &&
-            ((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
-             (posy > 7.0f/9.0f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM)))
+    // FIXME: could a GtkRange be used to do this work?
+    else if((posx < 0.2f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM) ||
+            (posy > 7.0f/9.0f && d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM))
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT;
       gtk_widget_set_tooltip_text(widget, _("drag to change black point,\ndoubleclick resets\nctrl+scroll to change display height"));
     }
-    else if(hooks_available)
+    else
     {
       d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE;
       gtk_widget_set_tooltip_text(widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
     }
-    else
-    {
-      d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_IN_WIDGET;
-      gtk_widget_set_tooltip_text(widget, _("ctrl+scroll to change display height"));
-    }
     if(prior_highlight != d->highlight)
     {
-      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT ||
-         d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-        dt_control_change_cursor(GDK_HAND1);
-      else
-        dt_control_change_cursor(GDK_LEFT_PTR);
       dt_control_queue_redraw_widget(widget);
+      if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+      {
+        // FIXME: should really use named cursors, and differentiate between "grab" and "grabbing"
+        dt_control_change_cursor(GDK_HAND1);
+      }
     }
   }
+  // FIXME: is this code obsolete for the deprecated GDK_POINTER_MOTION_HINT_MASK? it used gdk_window_get_pointer() in 2011, updated to gdk_window_get_device_position() to replace deprecated function in 2014, in 2016 added gtk 3.20 fixes to deal with seat code, but underlying motion hint may no longer be needed now that events are compressed?
   gint x, y; // notify gtk for motion_hint.
 #if GTK_CHECK_VERSION(3, 20, 0)
   gdk_window_get_device_position(gtk_widget_get_window(widget),
@@ -881,72 +611,20 @@ static gboolean _lib_histogram_motion_notify_callback(GtkWidget *widget, GdkEven
   return TRUE;
 }
 
-static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEventButton *event,
-                                                     gpointer user_data)
+static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   dt_develop_t *dev = darktable.develop;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  const dt_view_type_flags_t view_type = cv->view(cv);
-  const gboolean hooks_available = (view_type == DT_VIEW_DARKROOM) && dt_dev_exposure_hooks_available(dev);
 
-  if(event->type == GDK_2BUTTON_PRESS && hooks_available &&
-     (d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT || d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE))
+  if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
   {
-    dt_dev_exposure_reset_defaults(dev);
-  }
-  else
-  {
-    // FIXME: this handles repeated-click events in buttons weirdly, as it confuses them with doubleclicks
-    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_TYPE)
+    if(event->type == GDK_2BUTTON_PRESS)
     {
-      d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
-      dt_conf_set_string("plugins/darkroom/histogram/mode",
-                         dt_lib_histogram_scope_type_names[d->scope_type]);
-      // generate data for changed scope and trigger widget redraw
-      if(view_type == DT_VIEW_DARKROOM)
-        dt_dev_process_preview(dev);
-      else
-        dt_control_queue_redraw_center();
+      dt_dev_exposure_reset_defaults(dev);
     }
-    if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_MODE)
+    else
     {
-      switch(d->scope_type)
-      {
-        case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-          d->histogram_scale = (d->histogram_scale + 1) % DT_LIB_HISTOGRAM_N;
-          dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                             dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
-          // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
-          darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-          d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
-          dt_conf_set_string("plugins/darkroom/histogram/waveform",
-                             dt_lib_histogram_waveform_type_names[d->waveform_type]);
-          break;
-        case DT_LIB_HISTOGRAM_SCOPE_N:
-          g_assert_not_reached();
-      }
-    }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_RED)
-    {
-      d->red = !d->red;
-      dt_conf_set_bool("plugins/darkroom/histogram/show_red", d->red);
-    }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_GREEN)
-    {
-      d->green = !d->green;
-      dt_conf_set_bool("plugins/darkroom/histogram/show_green", d->green);
-    }
-    else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLUE)
-    {
-      d->blue = !d->blue;
-      dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
-    }
-    else if(hooks_available)
-    {
+      // FIXME: should change cursor from "grab" to "grabbing", but this would mean rewriting dt_control_change_cursor() to use gdk_cursor_new_from_name()
       d->dragging = TRUE;
       if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
         d->button_down_value = dt_dev_exposure_get_exposure(dev);
@@ -956,47 +634,37 @@ static gboolean _lib_histogram_button_press_callback(GtkWidget *widget, GdkEvent
       d->button_down_y = event->y;
     }
   }
-  // update for good measure
-  dt_control_queue_redraw_widget(self->widget);
 
   return TRUE;
 }
 
-static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
+  if(event->state & GDK_CONTROL_MASK)
+  {
+    // bubble to adjusting the overall widget size
+    return FALSE;
+  }
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   int delta_y;
   // note are using unit rather than smooth scroll events, as
   // exposure changes can get laggy if handling a multitude of smooth
   // scroll events
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y))
   {
-    if(event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
+    dt_develop_t *dev = darktable.develop;
+    if(d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
     {
-      /* set size of navigation draw area */
-      const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
-      dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
-      gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
-    }
-    else
-    {
-      dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-      dt_develop_t *dev = darktable.develop;
-      const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-      const dt_view_type_flags_t view_type = cv->view(cv);
-      if(view_type == DT_VIEW_DARKROOM && dt_dev_exposure_hooks_available(dev))
+      // FIXME: see dt_bauhaus_slider_postponed_value_change(): delay processing until the pixelpipe can update based on dev->preview_average_delay for smoother interaction
+      if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
       {
-        // FIXME: as with bauhaus widget, delay processing the next event until the pixelpipe can update based on dev->preview_average_delay
-        if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_EXPOSURE)
-        {
-          const float ce = dt_dev_exposure_get_exposure(dev);
-          dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
-        }
-        else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
-        {
-          const float cb = dt_dev_exposure_get_black(dev);
-          dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
-        }
+        const float ce = dt_dev_exposure_get_exposure(dev);
+        dt_dev_exposure_set_exposure(dev, ce - 0.15f * delta_y);
+      }
+      else if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
+      {
+        const float cb = dt_dev_exposure_get_black(dev);
+        dt_dev_exposure_set_black(dev, cb + 0.001f * delta_y);
       }
     }
   }
@@ -1004,37 +672,191 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
   return TRUE;
 }
 
-static gboolean _lib_histogram_button_release_callback(GtkWidget *widget, GdkEventButton *event,
-                                                       gpointer user_data)
+static gboolean _drawable_button_release_callback(GtkWidget *widget, GdkEventButton *event,
+                                                  gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   d->dragging = FALSE;
+  // hack to recalculate the highlight as mouse may be over a different part of the widget
+  // FIXME: generate an event instead?
+  _drawable_motion_notify_callback(widget, (GdkEventMotion *)event, user_data);
   return TRUE;
 }
 
-static gboolean _lib_histogram_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                     gpointer user_data)
+static gboolean _drawable_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                gpointer user_data)
 {
-  dt_control_change_cursor(GDK_HAND1);
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  // if dragging, gtk keeps up motion notifications until mouse button
+  // is released, at which point we'll get another leave event for
+  // drawable if pointer is still outside of the widget
+  if(!d->dragging && d->highlight != DT_LIB_HISTOGRAM_HIGHLIGHT_NONE)
+  {
+    d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_NONE;
+    dt_control_change_cursor(GDK_LEFT_PTR);
+    dt_control_queue_redraw_widget(widget);
+  }
+  // event should bubble up to the eventbox
+  return FALSE;
+}
+
+static void _scope_type_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  // FIXME: make this a combobox -- simplifies this code and reflects what it really is doing, and adds room for other scopes (e.g. vectorscope)
+  d->scope_type = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)) ?
+    DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM : DT_LIB_HISTOGRAM_SCOPE_WAVEFORM;
+  switch(d->scope_type)
+  {
+    case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
+      gtk_widget_set_tooltip_text(button, _("set mode to waveform"));
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
+                                   dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL);
+      gtk_stack_set_visible_child_name(GTK_STACK(d->mode_stack), "histogram");
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
+      gtk_widget_set_tooltip_text(button, _("set mode to histogram"));
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
+                                   dtgtk_cairo_paint_waveform_scope, CPF_NONE, NULL);
+      gtk_stack_set_visible_child_name(GTK_STACK(d->mode_stack), "waveform");
+      break;
+    case DT_LIB_HISTOGRAM_SCOPE_N:
+      g_assert_not_reached();
+  }
+  dt_conf_set_string("plugins/darkroom/histogram/mode",
+                     dt_lib_histogram_scope_type_names[d->scope_type]);
+
+  // generate data for changed scope and trigger widget redraw
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv)  // this may be called on init, before in a view
+  {
+    // redraw scope now, even if it isn't up to date, so that there is
+    // immediate feedback on button press even though there will be a
+    // lag to process the scope data
+    dt_control_queue_redraw_widget(d->scope_draw);
+    const dt_view_type_flags_t view_type = cv->view(cv);
+    if(view_type == DT_VIEW_DARKROOM)
+      dt_dev_process_preview(darktable.develop);
+    else
+      dt_control_queue_redraw_center();
+  }
+}
+
+static void _histogram_scale_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  // FIXME: make this a combobox -- simplifies this code and reflects what it really is doing
+  d->histogram_scale = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)) ?
+    DT_LIB_HISTOGRAM_LOGARITHMIC : DT_LIB_HISTOGRAM_LINEAR;
+  switch(d->histogram_scale)
+  {
+    case DT_LIB_HISTOGRAM_LOGARITHMIC:
+      gtk_widget_set_tooltip_text(button, _("set scale to linear"));
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
+                                   dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_LINEAR:
+      gtk_widget_set_tooltip_text(button, _("set scale to logarithmic"));
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
+                                   dtgtk_cairo_paint_linear_scale, CPF_NONE, NULL);
+      break;
+    default:
+      g_assert_not_reached();
+  }
+  dt_conf_set_string("plugins/darkroom/histogram/histogram",
+                     dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
+  // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
+  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+static void _waveform_type_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  // FIXME: make this a combobox -- simplifies this code and reflects what it really is doing
+  // FIXME: add other waveform types -- RGB parade overlaid top-to-bottom rather than left to right, possibly waveform calculated sideways (another button?)
+  d->waveform_type = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button)) ?
+    DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID : DT_LIB_HISTOGRAM_WAVEFORM_PARADE;
+  switch(d->waveform_type)
+  {
+    case DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID:
+      gtk_widget_set_tooltip_text(button, _("set mode to RGB parade"));
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
+                                   dtgtk_cairo_paint_waveform_overlaid, CPF_NONE, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_WAVEFORM_PARADE:
+      gtk_widget_set_tooltip_text(button, _("set mode to waveform"));
+      dtgtk_togglebutton_set_paint(DTGTK_TOGGLEBUTTON(button),
+                                   dtgtk_cairo_paint_rgb_parade, CPF_NONE, NULL);
+      // FIXME: in RGB parade mode, hide the buttons to select channel, which are fairly senseless in this context
+      break;
+    default:
+      g_assert_not_reached();
+  }
+  dt_conf_set_string("plugins/darkroom/histogram/waveform",
+                     dt_lib_histogram_waveform_type_names[d->waveform_type]);
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+// FIXME: can these all be the same function with different user_data? -- will be easier if not swapping tooltip
+static void _red_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  d->red = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  gtk_widget_set_tooltip_text(button, d->red ? _("click to hide red channel") : _("click to show red channel"));
+  dt_conf_set_bool("plugins/darkroom/histogram/show_red", d->red);
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+static void _green_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  d->green = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  gtk_widget_set_tooltip_text(button, d->green ? _("click to hide green channel") : _("click to show green channel"));
+  dt_conf_set_bool("plugins/darkroom/histogram/show_green", d->green);
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+static void _blue_channel_toggle(GtkWidget *button, dt_lib_histogram_t *d)
+{
+  d->blue = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(button));
+  gtk_widget_set_tooltip_text(button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
+  dt_conf_set_bool("plugins/darkroom/histogram/show_blue", d->blue);
+  dt_control_queue_redraw_widget(d->scope_draw);
+}
+
+static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                 gpointer user_data)
+{
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  gtk_widget_show(d->button_box);
   return TRUE;
 }
 
-static gboolean _lib_histogram_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
-                                                     gpointer user_data)
+static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                 gpointer user_data)
 {
-  dt_lib_module_t *self = (dt_lib_module_t *)user_data;
-  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  d->dragging = FALSE;
-  d->highlight = DT_LIB_HISTOGRAM_HIGHLIGHT_OUTSIDE_WIDGET;
-  dt_control_change_cursor(GDK_LEFT_PTR);
-  dt_control_queue_redraw_widget(widget);
+  // when click between buttons on the buttonbox a leave event is generated -- ignore it
+  if(!(event->mode == GDK_CROSSING_UNGRAB && event->detail == GDK_NOTIFY_INFERIOR))
+  {
+    dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+    gtk_widget_hide(d->button_box);
+  }
+  return TRUE;
+}
+
+static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
+{
+  int delta_y;
+  if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) &&
+     event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
+  {
+    /* set size of navigation draw area */
+    const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);
+    dt_conf_set_int("plugins/darkroom/histogram/height", histheight);
+    gtk_widget_set_size_request(widget, -1, DT_PIXEL_APPLY_DPI(histheight));
+  }
   return TRUE;
 }
 
 static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer data)
+                                                 GObject *acceleratable, guint keyval,
+                                                 GdkModifierType modifier, gpointer data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)data;
 
@@ -1048,84 +870,66 @@ static gboolean _lib_histogram_collapse_callback(GtkAccelGroup *accel_group,
 }
 
 static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer user_data)
+                                                   GObject *acceleratable, guint keyval,
+                                                   GdkModifierType modifier, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
 
   // The cycle order is Hist log -> Lin -> Waveform -> parade (update logic on more scopes)
-
-  dt_lib_histogram_scope_type_t old_scope = d->scope_type;
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      d->histogram_scale = (d->histogram_scale + 1);
-      if(d->histogram_scale == DT_LIB_HISTOGRAM_N)
+      if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
       {
-        d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
-        d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
-        d->scope_type = DT_LIB_HISTOGRAM_SCOPE_WAVEFORM;
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->histogram_scale_button), FALSE);
+      }
+      else
+      {
+        // cancel dragging, as the draggable areas will have changed
+        d->dragging = FALSE;
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->histogram_scale_button), TRUE);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->waveform_type_button), TRUE);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->scope_type_button), FALSE);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      d->waveform_type = (d->waveform_type + 1);
-      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N)
+      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
       {
-        d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
-        d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
-        d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->waveform_type_button), FALSE);
+      }
+      else
+      {
+        // cancel dragging, as the draggable areas will have changed
+        d->dragging = FALSE;
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->histogram_scale_button), TRUE);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->waveform_type_button), TRUE);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->scope_type_button), TRUE);
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
-  }
-  dt_conf_set_string("plugins/darkroom/histogram/mode",
-                     dt_lib_histogram_scope_type_names[d->scope_type]);
-  dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                     dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
-  dt_conf_set_string("plugins/darkroom/histogram/waveform",
-                     dt_lib_histogram_waveform_type_names[d->waveform_type]);
-  // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
-  darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
-
-  if(d->scope_type != old_scope)
-  {
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view(cv) == DT_VIEW_DARKROOM)
-      dt_dev_process_preview(darktable.develop);
-    else
-      dt_control_queue_redraw_center();
-  }
-  else
-  {
-    // still update appearance
-    dt_control_queue_redraw_widget(self->widget);
   }
 
   return TRUE;
 }
 
 static gboolean _lib_histogram_change_mode_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer user_data)
+                                                    GObject *acceleratable, guint keyval,
+                                                    GdkModifierType modifier, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
-  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  d->scope_type = (d->scope_type + 1) % DT_LIB_HISTOGRAM_SCOPE_N;
-  dt_conf_set_string("plugins/darkroom/histogram/mode",
-                     dt_lib_histogram_scope_type_names[d->scope_type]);
-  if(cv->view(cv) == DT_VIEW_DARKROOM)
-    dt_dev_process_preview(darktable.develop);
-  else
-    dt_control_queue_redraw_center();
+  // cancel dragging, as the draggable areas will have changed
+  d->dragging = FALSE;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->scope_type_button),
+                               d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM);
   return TRUE;
 }
 
 static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
-                                                GObject *acceleratable, guint keyval,
-                                                GdkModifierType modifier, gpointer user_data)
+                                                    GObject *acceleratable, guint keyval,
+                                                    GdkModifierType modifier, gpointer user_data)
 {
   dt_lib_module_t *self = (dt_lib_module_t *)user_data;
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
@@ -1133,21 +937,16 @@ static gboolean _lib_histogram_change_type_callback(GtkAccelGroup *accel_group,
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      d->histogram_scale = (d->histogram_scale + 1) % DT_LIB_HISTOGRAM_N;
-      dt_conf_set_string("plugins/darkroom/histogram/histogram",
-                         dt_lib_histogram_histogram_scale_names[d->histogram_scale]);
-      darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
-      // FIXME: this should really redraw current iop if its background is a histogram (check request_histogram)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->histogram_scale_button),
+                                   d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      d->waveform_type = (d->waveform_type + 1) % DT_LIB_HISTOGRAM_WAVEFORM_N;
-      dt_conf_set_string("plugins/darkroom/histogram/waveform",
-                         dt_lib_histogram_waveform_type_names[d->waveform_type]);
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->waveform_type_button),
+                                   d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_PARADE);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
   }
-  dt_control_queue_redraw_widget(self->widget);
   return TRUE;
 }
 
@@ -1157,16 +956,25 @@ static void _lib_histogram_preview_updated_callback(gpointer instance, dt_lib_mo
   // preview pipe has already given process() the high quality
   // pre-gamma image. Now that preview pipe is complete, draw it
   // FIXME: it would be nice if process() just queued a redraw if not in live view, but then our draw code would have to have some other way to assure that the histogram image is current besides checking the pixelpipe to see if it has processed the current image
-  dt_control_queue_redraw_widget(self->widget);
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
+  dt_control_queue_redraw_widget(d->scope_draw);
 }
 
 void view_enter(struct dt_lib_module_t *self, struct dt_view_t *old_view, struct dt_view_t *new_view)
 {
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)self->data;
   if(new_view->view(new_view) == DT_VIEW_DARKROOM)
   {
     DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW_PIPE_FINISHED,
                               G_CALLBACK(_lib_histogram_preview_updated_callback), self);
   }
+  // hack: setting these on gui_init doesn't work
+  gtk_stack_set_visible_child_name(GTK_STACK(d->mode_stack),
+                                   d->scope_type == DT_LIB_HISTOGRAM_SCOPE_WAVEFORM ? "waveform" : "histogram");
+  // button box should be hidden when enter view, unless mouse is over
+  // histogram, in which case gtk kindly generates enter events
+  gtk_widget_hide(d->button_box);
+
   // FIXME: set histogram data to blank if enter tether with no active image
 }
 
@@ -1258,33 +1066,148 @@ void gui_init(dt_lib_module_t *self)
   darktable.lib->proxy.histogram.process = dt_lib_histogram_process;
   darktable.lib->proxy.histogram.is_linear = d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR;
 
-  /* create drawingarea */
-  self->widget = gtk_drawing_area_new();
+  // create widgets
+  GtkWidget *overlay = gtk_overlay_new();
+
+  // shows the scope, scale, and has draggable areas
+  d->scope_draw = gtk_drawing_area_new();
+  gtk_widget_set_tooltip_text(d->scope_draw, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
+
+  // a row of control buttons
+  d->button_box = gtk_button_box_new(GTK_ORIENTATION_HORIZONTAL);
+  gtk_button_box_set_layout(GTK_BUTTON_BOX(d->button_box), GTK_BUTTONBOX_EXPAND);
+  gtk_widget_set_valign(d->button_box, GTK_ALIGN_START);
+  gtk_widget_set_halign(d->button_box, GTK_ALIGN_END);
+
+  // FIXME: should histogram/waveform each be its own widget, and a GtkStack to switch between them?
+
+  // note that are calling toggle callback by hand for each button as
+  // a hack to finish init -- if we don't flip the tooltip text (and
+  // icon) on toggle, this will be unnecessary
+
+  // FIXME: can style these buttons as flat -- at least the non-channel ones -- to be closer to darktable defaults?
+  // scope type
+  // FIXME: this should really be a combobox to allow for more types and not to have to swap the icon on button down
+  d->scope_type_button =
+    dtgtk_togglebutton_new(dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL);
+  gtk_widget_set_name(d->scope_type_button, "scope-type-button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->scope_type_button),
+                               d->scope_type == DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM);
+  gtk_box_pack_start(GTK_BOX(d->button_box), d->scope_type_button, FALSE, FALSE, 0);
+
+  // scope mode
+  d->mode_stack = gtk_stack_new();
+
+  // histogram scale
+  d->histogram_scale_button =
+    dtgtk_togglebutton_new(dtgtk_cairo_paint_logarithmic_scale, CPF_NONE, NULL);
+  gtk_widget_set_name(d->histogram_scale_button, "histogram-scale-button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->histogram_scale_button),
+                               d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC);
+  _histogram_scale_toggle(d->histogram_scale_button, d);
+  g_signal_connect(G_OBJECT(d->histogram_scale_button), "toggled", G_CALLBACK(_histogram_scale_toggle), d);
+  gtk_stack_add_named(GTK_STACK(d->mode_stack), d->histogram_scale_button, "histogram");
+
+  // histogram scale
+  d->waveform_type_button =
+    dtgtk_togglebutton_new(dtgtk_cairo_paint_waveform_overlaid, CPF_NONE, NULL);
+  gtk_widget_set_name(d->waveform_type_button, "waveform-type-button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->waveform_type_button),
+                               d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID);
+  _waveform_type_toggle(d->waveform_type_button, d);
+  g_signal_connect(G_OBJECT(d->waveform_type_button), "toggled", G_CALLBACK(_waveform_type_toggle), d);
+  gtk_stack_add_named(GTK_STACK(d->mode_stack), d->waveform_type_button, "waveform");
+
+  // toggle sets mode_stack based on scope type, hence must be run after mode_stack is set up
+  _scope_type_toggle(d->scope_type_button, d);
+  g_signal_connect(G_OBJECT(d->scope_type_button), "toggled", G_CALLBACK(_scope_type_toggle), d);
+  gtk_box_pack_start(GTK_BOX(d->button_box), d->mode_stack, FALSE, FALSE, 0);
+
+  GtkWidget *button;
+  // red channel on/off
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  // FIXME: better to have a general tooltip rather than flipping it when the button is pressed
+  gtk_widget_set_name(button, "red-channel-button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->red);
+  _red_channel_toggle(button, d);
+  g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_red_channel_toggle), d);
+  gtk_box_pack_start(GTK_BOX(d->button_box), button, FALSE, FALSE, 0);
+
+  // green channel on/off
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  gtk_widget_set_name(button, "green-channel-button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->green);
+  _green_channel_toggle(button, d);
+  g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_green_channel_toggle), d);
+  gtk_box_pack_start(GTK_BOX(d->button_box), button, FALSE, FALSE, 0);
+
+  // blue channel on/off
+  button = dtgtk_togglebutton_new(dtgtk_cairo_paint_color, CPF_NONE, NULL);
+  gtk_widget_set_name(button, "blue-channel-button");
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), d->blue);
+  _blue_channel_toggle(button, d);
+  g_signal_connect(G_OBJECT(button), "toggled", G_CALLBACK(_blue_channel_toggle), d);
+  gtk_box_pack_start(GTK_BOX(d->button_box), button, FALSE, FALSE, 0);
+
+  // assemble the widgets
+
+  // The main widget is an overlay which has no window, and hence
+  // can't catch events. We need something on top to catch events to
+  // show/hide the buttons. The drawable is below the buttons, and
+  // hence won't catch motion events for the buttons, and gets a leave
+  // event when the cursor moves over the buttons.
+
+  // |----- EventBox -----|
+  // |                    |
+  // |  |-- Overlay  --|  |
+  // |  |              |  |
+  // |  |  ButtonBox   |  |
+  // |  |              |  |
+  // |  |--------------|  |
+  // |  |              |  |
+  // |  |  DrawingArea |  |
+  // |  |              |  |
+  // |  |--------------|  |
+  // |                    |
+  // |--------------------|
+
+  GtkWidget *eventbox = gtk_event_box_new();
+  gtk_container_add(GTK_CONTAINER(overlay), d->scope_draw);
+  gtk_overlay_add_overlay(GTK_OVERLAY(overlay), d->button_box);
+  gtk_container_add(GTK_CONTAINER(eventbox), overlay);
+  self->widget = eventbox;
+
   gtk_widget_set_name(self->widget, "main-histogram");
   dt_gui_add_help_link(self->widget, dt_get_help_url(self->plugin_name));
 
-  gtk_widget_add_events(self->widget, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK
-                                      | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                                      darktable.gui->scroll_mask);
-
   /* connect callbacks */
-  gtk_widget_set_tooltip_text(self->widget, _("drag to change exposure,\ndoubleclick resets\nctrl+scroll to change display height"));
-  g_signal_connect(G_OBJECT(self->widget), "draw", G_CALLBACK(_lib_histogram_draw_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-press-event",
-                   G_CALLBACK(_lib_histogram_button_press_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "button-release-event",
-                   G_CALLBACK(_lib_histogram_button_release_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "motion-notify-event",
-                   G_CALLBACK(_lib_histogram_motion_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "leave-notify-event",
-                   G_CALLBACK(_lib_histogram_leave_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "enter-notify-event",
-                   G_CALLBACK(_lib_histogram_enter_notify_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "scroll-event", G_CALLBACK(_lib_histogram_scroll_callback), self);
-  g_signal_connect(G_OBJECT(self->widget), "configure-event",
-                   G_CALLBACK(_lib_histogram_configure_callback), self);
 
-  /* set size of navigation draw area */
+  gtk_widget_add_events(d->scope_draw, GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK | GDK_BUTTON_PRESS_MASK |
+                                       GDK_BUTTON_RELEASE_MASK | darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(d->scope_draw), "draw", G_CALLBACK(_drawable_draw_callback), d);
+  g_signal_connect(G_OBJECT(d->scope_draw), "leave-notify-event",
+                   G_CALLBACK(_drawable_leave_notify_callback), d);
+  g_signal_connect(G_OBJECT(d->scope_draw), "button-press-event",
+                   G_CALLBACK(_drawable_button_press_callback), d);
+  g_signal_connect(G_OBJECT(d->scope_draw), "button-release-event",
+                   G_CALLBACK(_drawable_button_release_callback), d);
+  g_signal_connect(G_OBJECT(d->scope_draw), "motion-notify-event",
+                   G_CALLBACK(_drawable_motion_notify_callback), d);
+  g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event",
+                   G_CALLBACK(_drawable_scroll_callback), d);
+
+  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
+  g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
+                   G_CALLBACK(_eventbox_enter_notify_callback), d);
+  g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
+                   G_CALLBACK(_eventbox_leave_notify_callback), d);
+
+  // handles scroll-to-resize behavior
+  gtk_widget_add_events(self->widget, darktable.gui->scroll_mask);
+  g_signal_connect(G_OBJECT(self->widget), "scroll-event",
+                   G_CALLBACK(_lib_histogram_scroll_callback), NULL);
+
+  /* set size of histogram draw area */
   const float histheight = dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f;
   gtk_widget_set_size_request(self->widget, -1, DT_PIXEL_APPLY_DPI(histheight));
 }
