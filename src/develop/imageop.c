@@ -216,6 +216,9 @@ void dt_iop_default_init(dt_iop_module_t *module)
 
   module->default_enabled = 0;
   module->gui_data = NULL;
+  module->trouble_message = NULL;
+  module->trouble_tooltip = NULL;
+  module->trouble_message_updated = FALSE;
 
   dt_introspection_field_t *i = module->so->get_introspection_linear();
   while(i->header.type != DT_INTROSPECTION_TYPE_NONE)
