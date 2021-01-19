@@ -738,6 +738,64 @@ overshoot.right
   margin-right: 0.5em;
 }
 
+/* scope/histogram */
+/* Note that there are some pretty odd #'s here to match the behavior of the legacy scope buttons */
+#main-histogram buttonbox
+{
+  margin-top: 0.5em;   /* spacing between histogram buttons and top of scope */
+}
+
+#main-histogram buttonbox > *
+{
+  margin-right: 0.5em;  /* spacing between histogram button box widgets, also provides right margin for buttons */
+}
+
+#main-histogram .toggle
+{
+  border: 1.1px solid alpha(@button_bg, 0.3);
+  min-height: 1em;  /* FIXME: what happens if don't set these? -- what is the source */
+  min-width: 1em;
+}
+
+#scope-type-button,
+#histogram-scale-button,
+#waveform-type-button
+{
+  color: alpha(@button_checked_fg, 0.56);           /* hack to match legacy color of white with alpha of 0.5 */
+  background-color: alpha(darker(@button_bg),0.8);  /* hack to be close to legacy color */
+}
+
+#scope-type-button > #button-canvas,
+#histogram-scale-button > #button-canvas,
+#waveform-type-button > #button-canvas
+{
+  /* hack to make icons larger to match legacy appearance */
+  margin: -14px; /* not real pixels, this is used as a percent extra space */
+}
+
+#red-channel-button
+{
+  background-color: alpha(@graph_red, 0.333);
+}
+
+#green-channel-button
+{
+  background-color: alpha(@graph_green, 0.333);
+}
+
+#blue-channel-button
+{
+  background-color: alpha(@graph_blue, 0.333);
+}
+
+#red-channel-button:checked,
+#green-channel-button:checked,
+#blue-channel-button:checked
+{ /* legacy behavior: checking channel buttons makes a lighter border, doesn't change interior */
+  /* FIXME: would be better to decrease alpha of unchecked channels? */
+  border-color: alpha(@button_checked_fg, 0.56);    /* hack to match legacy color of white with alpha of 0.5 */
+}
+
 /*------------------
   - Dialog windows -
   ------------------*/
