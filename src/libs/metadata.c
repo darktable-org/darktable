@@ -54,7 +54,6 @@ typedef struct dt_lib_metadata_t
   char *setting_name[DT_METADATA_NUMBER];
   GtkGrid *metadata_grid;
   gboolean editing;
-  GtkWidget *clear_button;
   GtkWidget *apply_button;
   gboolean init_layout;
 } dt_lib_metadata_t;
@@ -184,7 +183,6 @@ static void _update(dt_lib_module_t *self)
   }
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->apply_button), imgs_count > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->clear_button), imgs_count > 0);
 }
 
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
@@ -195,17 +193,6 @@ static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
                                         int next, dt_lib_module_t *self)
 {
-  _update(self);
-}
-
-static void _clear_button_clicked(GtkButton *button, dt_lib_module_t *self)
-{
-  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  d->editing = FALSE;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
-  dt_metadata_clear(imgs, TRUE);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  dt_image_synch_xmps(imgs);
   _update(self);
 }
 
@@ -344,10 +331,13 @@ static void _update_layout(dt_lib_module_t *self)
 
 void gui_reset(dt_lib_module_t *self)
 {
-  dt_metadata_reset();
-  _update_layout(self);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_METADATA_CHANGED,
-                                DT_METADATA_SIGNAL_SHOWN);
+  dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+  d->editing = FALSE;
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+  dt_metadata_clear(imgs, TRUE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  dt_image_synch_xmps(imgs);
+  _update(self);
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
@@ -432,7 +422,8 @@ static void _private_toggled_callback(GtkCellRendererToggle *cell_renderer, gcha
 void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT,
+  GtkWidget *dialog = gtk_dialog_new_with_buttons(_("metadata settings"), GTK_WINDOW(win),
+                                       GTK_DIALOG_DESTROY_WITH_PARENT, _("default"), GTK_RESPONSE_ACCEPT,
                                        _("cancel"), GTK_RESPONSE_NONE, _("save"), GTK_RESPONSE_YES, NULL);
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
@@ -503,7 +494,27 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 #endif
   gtk_widget_show_all(dialog);
 
-  if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_YES)
+  int res = gtk_dialog_run(GTK_DIALOG(dialog));
+  while(res == GTK_RESPONSE_ACCEPT)
+  {
+    gtk_tree_model_get_iter_first(model, &iter);
+    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
+    {
+      // mimic dt_metadata_init() without saving at this stage
+      const int type = dt_metadata_get_type_by_display_order(i);
+      if(type != DT_METADATA_TYPE_INTERNAL)
+      {
+        gtk_list_store_set(store, &iter,
+                           DT_METADATA_PREF_COL_VISIBLE, type == DT_METADATA_TYPE_OPTIONAL ? FALSE : TRUE,
+                           DT_METADATA_PREF_COL_PRIVATE, FALSE,
+                           -1);
+        gtk_tree_model_iter_next(model, &iter);
+      }
+    }
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+  }
+
+  if(res == GTK_RESPONSE_YES)
   {
     gboolean meta_signal = FALSE;
     gboolean meta_remove = FALSE;
@@ -554,7 +565,7 @@ void set_preferences(void *menu, dt_lib_module_t *self)
 
 void init_key_accels(dt_lib_module_t *self)
 {
-  dt_accel_register_lib(self, NC_("accel", "clear"), 0, 0);
+//  dt_accel_register_lib(self, NC_("accel", "clear"), 0, 0);
   dt_accel_register_lib(self, NC_("accel", "apply"), 0, 0);
 }
 
@@ -562,7 +573,7 @@ void connect_key_accels(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  dt_accel_connect_button_lib(self, "clear", d->clear_button);
+//  dt_accel_connect_button_lib(self, "clear", d->clear_button);
   dt_accel_connect_button_lib(self, "apply", d->apply_button);
 }
 
@@ -743,14 +754,9 @@ void gui_init(dt_lib_module_t *self)
 
   d->init_layout = FALSE;
 
-  // clear/apply buttons
-
   GtkBox *hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->clear_button = dt_ui_button_new(_("clear"), _("remove metadata from selected images"), NULL);
-  gtk_box_pack_start(hbox, d->clear_button, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->clear_button), "clicked", G_CALLBACK(_clear_button_clicked), self);
-
+  // apply button
   d->apply_button = dt_ui_button_new(_("apply"), _("write metadata for selected images"), NULL);
   gtk_box_pack_start(hbox, d->apply_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->apply_button), "clicked", G_CALLBACK(_apply_button_clicked), self);
