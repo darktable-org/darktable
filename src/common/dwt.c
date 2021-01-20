@@ -131,9 +131,10 @@ static void dwt_decompose_vert(float *const restrict out, const float *const res
     // for the top edge, this means we can simply use the absolute value of row-vscale; for the bottom edge,
     //   we need to reflect around height
     const size_t rowstart = (size_t)4 * row * width;
+    const size_t above_row = (row > vscale) ? row - vscale : vscale - row;
     const size_t below_row = (row + vscale < height) ? (row + vscale) : 2*(height-1) - (row + vscale);
     const float* const restrict center = in + rowstart;
-    const float* const restrict above = in + 4 * abs(row - vscale) * width;
+    const float* const restrict above = in + 4 * above_row * width;
     const float* const restrict below = in + 4 * below_row * width;
     float* const restrict temprow = out + rowstart;
     for (size_t col = 0; col < 4*width; col += 4)
