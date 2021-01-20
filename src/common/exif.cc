@@ -1431,7 +1431,8 @@ int dt_exif_read(dt_image_t *img, const char *path)
   if(!stat(path, &statbuf))
   {
     struct tm result;
-    strftime(img->exif_datetime_taken, 20, "%Y:%m:%d %H:%M:%S", localtime_r(&statbuf.st_mtime, &result));
+    strftime(img->exif_datetime_taken, DT_DATETIME_LENGTH, "%Y:%m:%d %H:%M:%S",
+             localtime_r(&statbuf.st_mtime, &result));
   }
 
   try
@@ -1848,7 +1849,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
       // DateTimeOriginal is to be kept.
       // For us "keeping" it means to write out what we have in DB to support people adding a time offset in
       // the geotagging module.
-      gchar new_datetime[20];
+      gchar new_datetime[DT_DATETIME_LENGTH];
       dt_gettime(new_datetime, sizeof(new_datetime));
       exifData["Exif.Image.DateTime"] = new_datetime;
       exifData["Exif.Image.DateTimeOriginal"] = cimg->exif_datetime_taken;
@@ -4143,7 +4144,7 @@ gboolean dt_exif_get_datetime_taken(const uint8_t *data, size_t size, time_t *da
     read_metadata_threadsafe(image);
     Exiv2::ExifData &exifData = image->exifData();
 
-    char exif_datetime_taken[20];
+    char exif_datetime_taken[DT_DATETIME_LENGTH];
     _find_datetime_taken(exifData, pos, exif_datetime_taken);
 
     if(*exif_datetime_taken)
