@@ -743,9 +743,6 @@ static inline void loop_switch(const float *const restrict in, float *const rest
         // Convert from RGB to XYZ
         dot_product(temp_one, RGB_to_XYZ, temp_two);
 
-        #ifdef _OPENMP
-        #pragma omp simd aligned(temp_one, temp_two:16)
-        #endif
         for(size_t c = 0; c < 3; ++c) temp_one[c] = temp_two[c];
         break;
       }
@@ -779,18 +776,12 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     /* FROM HERE WE ARE IN LMS, XYZ OR PIPELINE RGB depending on user param - DATA IS IN temp_one */
 
     // Clip in LMS
-    #ifdef _OPENMP
-    #pragma omp simd aligned(temp_one:16)
-    #endif
     for(size_t c = 0; c < 3; c++) temp_one[c] = (clip) ? fmaxf(temp_one[c], 0.0f) : temp_one[c];
 
     // Apply lightness / saturation adjustment
     luma_chroma(temp_one, saturation, lightness, temp_two, version);
 
     // Clip in LMS
-    #ifdef _OPENMP
-    #pragma omp simd aligned(temp_two:16)
-    #endif
     for(size_t c = 0; c < 3; c++) temp_two[c] = (clip) ? fmaxf(temp_two[c], 0.0f) : temp_two[c];
 
     // Save
@@ -827,19 +818,11 @@ static inline void loop_switch(const float *const restrict in, float *const rest
       /* FROM HERE WE ARE MANDATORILY IN XYZ - DATA IS IN temp_one */
 
       // Clip in XYZ
-      #ifdef _OPENMP
-      #pragma omp simd aligned(temp_one:16)
-      #endif
       for(size_t c = 0; c < 3; c++) temp_one[c] = (clip) ? fmaxf(temp_one[c], 0.0f) : temp_one[c];
 
       // Convert back to RGB
       dot_product(temp_one, XYZ_to_RGB, temp_two);
-
-      #ifdef _OPENMP
-      #pragma omp simd aligned(temp_two:16) aligned(out:64)
-      #endif
       for(size_t c = 0; c < 3; c++) out[k + c] = (clip) ? fmaxf(temp_two[c], 0.0f) : temp_two[c];
-
       out[k + 3] = in[k + 3]; // alpha mask
     }
   }
