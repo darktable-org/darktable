@@ -476,20 +476,6 @@ static int get_white_balance_coeff(struct dt_iop_module_t *self, float custom_wb
 
 
 #ifdef _OPENMP
-#pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
-#endif
-static inline float scalar_product(const float v_1[4], const float v_2[4])
-{
-  // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
-  // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
-  // we force an order of computation similar to SSE4 _mm_dp_ps() hoping the compiler will get the clue
-  float DT_ALIGNED_PIXEL premul[4] = { 0.f };
-  for(size_t c = 0; c < 3; c++) premul[c] = v_1[c] * v_2[c];
-  return premul[0] + premul[1] + premul[2];
-}
-
-
-#ifdef _OPENMP
 #pragma omp declare simd aligned(vector:16)
 #endif
 static inline float euclidean_norm(const float vector[4])

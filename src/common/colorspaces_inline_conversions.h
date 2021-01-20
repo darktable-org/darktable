@@ -915,17 +915,31 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
 }
 
 #ifdef _OPENMP
+#pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
+#endif
+static inline float scalar_product(const float v_1[4], const float v_2[4])
+{
+  // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
+  // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
+  // we force an order of computation similar to SSE4 _mm_dp_ps() hoping the compiler will get the clue
+  float acc = 0.f;
+
+#ifdef _OPENMP
+#pragma omp simd aligned(v_1, v_2:16) reduction(+:acc)
+#endif
+  for(size_t c = 0; c < 3; c++) acc += v_1[c] * v_2[c];
+
+  return acc;
+}
+
+
+#ifdef _OPENMP
 #pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
 #endif
 static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
-  for(size_t i = 0; i < 3; ++i)
-  {
-    v_out[i] = 0.f;
-    for(size_t j = 0; j < 3; ++j)
-      v_out[i] += M[i][j] * v_in[j];
-  }
+  for(size_t i = 0; i < 3; ++i) v_out[i] = scalar_product(v_in, M[i]);
 }
 
 #ifdef _OPENMP
