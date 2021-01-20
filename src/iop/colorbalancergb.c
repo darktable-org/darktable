@@ -72,14 +72,14 @@ typedef struct dt_iop_colorbalancergb_params_t
   float chroma_highlights;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
   float chroma_global;         // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
   float chroma_midtones;       // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
-  float saturation_global;     // $MIN: -5.0 $MAX: 5.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+  float saturation_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
   float saturation_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
   float saturation_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
   float saturation_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
   float hue_angle;             // $MIN: -180. $MAX: 180. $DEFAULT: 0.0 $DESCRIPTION: "hue shift"
 
   /* params of v2 */
-  float purity_global;     // $MIN: -5.0 $MAX: 5.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
+  float purity_global;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "global"
   float purity_highlights; // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "highlights"
   float purity_midtones;   // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "midtones"
   float purity_shadows;    // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "shadows"
@@ -109,9 +109,9 @@ typedef struct dt_iop_colorbalancergb_data_t
   float highlights[4];
   float midtones[4];
   float midtones_Y;
-  float chroma_highlights, chroma_global, chroma_shadows, chroma_midtones;
-  float saturation_global, saturation_highlights, saturation_midtones, saturation_shadows;
-  float purity_global, purity_highlights, purity_midtones, purity_shadows;
+  float chroma_global, chroma[4];
+  float saturation_global, saturation[4];
+  float purity_global, purity[4];
   float hue_angle;
   float shadows_weight, midtones_weight, highlights_weight;
   float *gamut_LUT;
@@ -198,6 +198,9 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     // Copy the common part of the params struct
     memcpy(new_params, old_params, sizeof(dt_iop_colorbalancergb_params_v1_t));
 
+    dt_iop_colorbalancergb_params_t *n = (dt_iop_colorbalancergb_params_t *)new_params;
+    n->saturation_global /= 180.f / M_PI;
+
     return 0;
   }
   return 1;
@@ -276,36 +279,49 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   float white_grading_RGB[4] = { 0.f };
   dot_product(white_pipe_RGB, input_matrix, white_grading_RGB);
   const float sum_white = white_grading_RGB[0] + white_grading_RGB[1] + white_grading_RGB[2];
-  for(size_t c = 0; c < 4; c++) white_grading_RGB[c] /= sum_white;
+  for_four_channels(c) white_grading_RGB[c] /= sum_white;
 
   const float *const restrict in = __builtin_assume_aligned(((const float *const restrict)ivoid), 64);
   float *const restrict out = __builtin_assume_aligned(((float *const restrict)ovoid), 64);
   const float *const restrict gamut_LUT = __builtin_assume_aligned(((const float *const restrict)d->gamut_LUT), 64);
 
+  const float *const restrict global = __builtin_assume_aligned((const float *const restrict)d->global, 16);
+  const float *const restrict highlights = __builtin_assume_aligned((const float *const restrict)d->highlights, 16);
+  const float *const restrict shadows = __builtin_assume_aligned((const float *const restrict)d->shadows, 16);
+  const float *const restrict midtones = __builtin_assume_aligned((const float *const restrict)d->midtones, 16);
+
+  const float *const restrict chroma = __builtin_assume_aligned((const float *const restrict)d->chroma, 16);
+  const float *const restrict saturation = __builtin_assume_aligned((const float *const restrict)d->saturation, 16);
+  const float *const restrict purity = __builtin_assume_aligned((const float *const restrict)d->purity, 16);
+
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) aligned(in, out: 64)\
-      dt_omp_firstprivate(in, out, roi_in, roi_out, d, input_matrix, output_matrix, gamut_LUT, white_grading_RGB) schedule(static)
+#pragma omp parallel for simd default(none) aligned(in, out, gamut_LUT: 64) aligned(global, highlights, shadows, midtones, chroma, saturation, purity:16)\
+      dt_omp_firstprivate(in, out, roi_in, roi_out, d, input_matrix, output_matrix, gamut_LUT, white_grading_RGB, \
+        global, highlights, shadows, midtones, chroma, saturation, purity) schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)4 * roi_in->width * roi_out->height; k += 4)
   {
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
     float *const restrict pix_out = __builtin_assume_aligned(out + k, 16);
 
-    float Ych[4] = { 0.f };
-    float RGB[4] = { 0.f };
+    float DT_ALIGNED_PIXEL Ych[4] = { 0.f };
+    float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
 
-    for(size_t c = 0; c < 4; ++c) Ych[c] = fmaxf(pix_in[c], 0.0f);
+    for_four_channels(c) Ych[c] = fmaxf(pix_in[c], 0.0f);
     dot_product(Ych, input_matrix, RGB);
     gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
 
     // Sanitize input : no negative luminance
     float Y = fmaxf(Ych[0], 0.f);
+    const int is_black = (Y == 0.f);
 
     // Opacities for luma masks
     const float x_offset = (Y - 0.1845f) / 0.1845f;
+
     const float alpha = 1.f / (1.f + expf(x_offset * d->shadows_weight));         // opacity of shadows
+    const float gamma = expf(-0.1845f * x_offset * x_offset / (d->shadows_weight * d->highlights_weight));
     const float beta = 1.f / (1.f + expf(- x_offset * d->highlights_weight));     // opacity of highlights
-    const float gamma = expf(- 0.1845f * x_offset * x_offset / (d->shadows_weight * d->highlights_weight) / 0.1845);
+    const float DT_ALIGNED_PIXEL opacities[4] = { alpha, gamma, beta, 0.f };
     const float alpha_comp = 1.f - alpha;
     const float beta_comp = 1.f - beta;
 
@@ -313,31 +329,25 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     Ych[2] += d->hue_angle;
 
     // Get max allowed chroma in working RGB gamut at current output hue
-    const float max_chroma_h = (Y == 0.f) ? 0.f : gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
-    float C = (Y == 0.f) ? 0.f : fminf(Ych[1], max_chroma_h);
+    const float max_chroma_h = (is_black) ? 0.f : gamut_LUT[CLAMP((size_t)(LUT_ELEM / 2. * (Ych[2] + M_PI) / M_PI), 0, LUT_ELEM - 1)];
+    float C = (is_black) ? 0.f : fminf(Ych[1], max_chroma_h);
 
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
-    const float boost_shadows_chroma = alpha * d->chroma_shadows;
-    const float boost_highlights_chroma = beta * d->chroma_highlights;
-    const float boost_midtones_chroma = gamma * d->chroma_midtones;
-    float chroma_boost = 1.f + d->chroma_global + (boost_shadows_chroma + boost_highlights_chroma + boost_midtones_chroma) * max_chroma_h / d->max_chroma;
-    Ych[1] = fminf(C * fmaxf(chroma_boost, 0.f), max_chroma_h);
+    const float chroma_boost = fmaxf(1.f + (d->chroma_global + scalar_product(opacities, chroma)) * max_chroma_h / d->max_chroma, 0.f);
+    Ych[1] = fminf(C * chroma_boost, max_chroma_h);
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
 
     /* Color balance */
-
-    // global
-    const float *const restrict global = __builtin_assume_aligned(d->global, 16);
-    for(size_t c = 0; c < 4; ++c) RGB[c] = RGB[c] + global[c];
-
-    // 3 ways : shadows, highlights, midtones
-    const float *const restrict highlights = __builtin_assume_aligned(d->highlights, 16);
-    const float *const restrict shadows = __builtin_assume_aligned(d->shadows, 16);
-    const float *const restrict midtones = __builtin_assume_aligned(d->midtones, 16);
-    for(size_t c = 0; c < 4; ++c)
+    for_four_channels(c)
     {
+      // global : offset
+      RGB[c] = RGB[c] + global[c];
+
+      //  highlights, shadows : 2 slopes with masking
       RGB[c] *= beta_comp * (alpha_comp + alpha * shadows[c]) + beta * highlights[c];
       // factorization of : (RGB[c] * (1.f - alpha) + RGB[c] * d->shadows[c] * alpha) * (1.f - beta)  + RGB[c] * d->highlights[c] * beta;
+
+      // midtones : power with sign preservation
       const float sign = (RGB[c] < 0.f) ? -1.f : 1.f;
       RGB[c] = sign * powf(fabsf(RGB[c]) / d->midtones_weight, midtones[c]) * d->midtones_weight;
     }
@@ -366,53 +376,42 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     dt_XYZ_2_JzAzBz(Ych, Jab);
 
     // Convert to JCh
-    float J = Jab[0];
-    C = hypotf(Jab[1], Jab[2]);                           // chroma : distance to achromatic at same luminance
-    float h = (C == 0.f) ? 0.f : atan2f(Jab[2], Jab[1]);  // hue : angle over the plane of constant luminance
-    float T = atan2f(C, J);                               // angle of saturation
+    float JC[2] = { Jab[0], hypotf(Jab[1], Jab[2]) };               // brightness/chroma vector
+    const float h = (JC[1] == 0.f) ? 0.f : atan2f(Jab[2], Jab[1]);  // hue : (a, b) angle
 
+    // Project JC to S, the saturation eigenvector, with orthogonal vector O.
+    // Note : O should be = (C * cosf(T) - J * sinf(T)) = 0 since S is the eigenvector,
+    // so we add the chroma projected along the orthogonal axis to get some control value
+    const float T = atan2f(JC[1], JC[0]); // angle of the eigenvector over the hue plane
     const float sin_T = sinf(T);
     const float cos_T = cosf(T);
-    const float offset = C / cos_T;
+    const float DT_ALIGNED_PIXEL M_rot_dir[2][2] = { {  cos_T,  sin_T },
+                                                     { -sin_T,  cos_T } };
+    const float DT_ALIGNED_PIXEL M_rot_inv[2][2] = { {  cos_T, -sin_T },
+                                                     {  sin_T,  cos_T } };
+    const float offset = C * cos_T;
 
-    // Project C and J over the saturation eigenvector.
-    // Note : O should be = (C * cosf(T) - J * sinf(T))
-    // but since S is the eigenvector, its orthogonal direction has no value and O = 0
-    // so we add the distance between the achromatic axis and the current chromaticity
-    // along the orthogonal axis to get some control value
-    float S = C * sin_T + J * cos_T;
-    float O = offset;
-    float radius = hypotf(S, O);
-    O /= (radius > 0.f) ? radius : 1.f;
-    S /= (radius > 0.f) ? radius : 1.f;
+    float SO[2] = { JC[0] * M_rot_dir[0][0] + JC[1] * M_rot_dir[0][1], offset };
 
-    // Saturation : mix of chroma and luminance
-    const float boost_shadows_sat = alpha * d->saturation_shadows;
-    const float boost_highlights_sat = beta * d->saturation_highlights;
-    const float boost_midtones_sat = gamma * d->saturation_midtones;
-    const float boost_sat = 1.f + Y * (boost_shadows_sat + boost_midtones_sat + boost_highlights_sat);
-    O = O * boost_sat + d->saturation_global;
-    O = fmaxf(O, 0.f);
+    // Purity & Saturation : mix of chroma and luminance
+    const float boosts[2] = { 1.f + SO[0] * scalar_product(opacities, purity),      // move in S direction
+                              1.f + SO[0] * scalar_product(opacities, saturation) };// move in O direction
 
-    // Purity : mix of chroma and luminance
-    const float boost_shadows_pur = alpha * d->purity_shadows;
-    const float boost_highlights_pur = beta * d->purity_highlights;
-    const float boost_midtones_pur = gamma * d->purity_midtones;
-    const float boost_pur = 1.f + Y * (boost_shadows_pur + boost_midtones_pur + boost_highlights_pur);
-    S = S * boost_pur + d->purity_global;
-    S = fmaxf(S, 0.f);
+    const float offsets[2] = { SO[0] * d->purity_global,      // move in S direction
+                               SO[0] * d->saturation_global };// move in O direction
 
-    // Project back to JCh
-    O *= radius;
-    S *= radius;
-    O -= offset;
-    C = fmaxf(S * sin_T + O * cos_T, 0.f);
-    J = fmaxf(S * cos_T - O * sin_T, 0.f);
+    SO[0] = fmaxf(DT_FMA(SO[0], boosts[0], offsets[0]), 0.f);
+    SO[1] = fmaxf(DT_FMA(SO[1], boosts[1], offsets[1]), 0.f);
+
+    // Project back to JCh, that is rotate back of -T angle
+    SO[1] -= offset;
+    JC[0] = fmaxf(SO[0] * M_rot_inv[0][0] + SO[1] * M_rot_inv[0][1], 0.f);
+    JC[1] = fmaxf(SO[0] * M_rot_inv[1][0] + SO[1] * M_rot_inv[1][1], 0.f);
 
     // Project back to JzAzBz
-    Jab[0] = J;
-    Jab[1] = C * cosf(h);
-    Jab[2] = C * sinf(h);
+    Jab[0] = JC[0];
+    Jab[1] = JC[1] * cosf(h);
+    Jab[2] = JC[1] * sinf(h);
 
     dt_JzAzBz_2_XYZ(Jab, Ych);
     dot_product(Ych, XYZ_to_RGB_D65, RGB);
@@ -424,7 +423,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
     dot_product(RGB, output_matrix, pix_out);
-    for(size_t c = 0; c < 4; ++c) pix_out[c] = fmaxf(pix_out[c], 0.f);
+    for_four_channels(c) pix_out[c] = fmaxf(pix_out[c], 0.f);
   }
 }
 
@@ -436,21 +435,22 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   dt_iop_colorbalancergb_params_t *p = (dt_iop_colorbalancergb_params_t *)p1;
 
   d->chroma_global = p->chroma_global;
-  d->chroma_highlights = p->chroma_highlights;
-  d->chroma_midtones = p->chroma_midtones;
-  d->chroma_shadows = p->chroma_shadows;
+  d->chroma[0] = p->chroma_shadows;
+  d->chroma[1] = p->chroma_midtones;
+  d->chroma[2] = p->chroma_highlights;
+  d->chroma[3] = 0.f;
 
-  d->saturation_global = p->saturation_global / 100.f;
+  d->saturation_global = p->saturation_global;
+  d->saturation[0] = p->saturation_shadows;
+  d->saturation[1] = p->saturation_midtones;
+  d->saturation[2] = p->saturation_highlights;
+  d->saturation[3] = 0.f;
 
-  d->saturation_highlights = p->saturation_highlights;
-  d->saturation_midtones = p->saturation_midtones;
-  d->saturation_shadows = p->saturation_shadows;
-
-  d->purity_global = p->purity_global / 100.f;
-
-  d->purity_highlights = p->purity_highlights;
-  d->purity_midtones = p->purity_midtones;
-  d->purity_shadows = p->purity_shadows;
+  d->purity_global = p->purity_global;
+  d->purity[0] = p->purity_shadows;
+  d->purity[1] = p->purity_midtones;
+  d->purity[2] = p->purity_highlights;
+  d->purity[3] = 0.f;
 
   d->hue_angle = M_PI * p->hue_angle / 180.f;
 
@@ -523,7 +523,7 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     float white_grading_RGB[4] = { 0.f };
     dot_product(white_pipe_RGB, input_matrix, white_grading_RGB);
     const float sum_white = white_grading_RGB[0] + white_grading_RGB[1] + white_grading_RGB[2];
-    for(size_t c = 0; c < 4; c++) white_grading_RGB[c] /= sum_white;
+    for_four_channels(c) white_grading_RGB[c] /= sum_white;
 
     // make RGB values vary between [0; 1] in working space, convert to Ych and get the max(c(h)))
 #ifdef _OPENMP
@@ -791,9 +791,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("perceptual saturation grading")), FALSE, FALSE, 0);
 
   g->saturation_global = dt_bauhaus_slider_from_params(self, "saturation_global");
-  dt_bauhaus_slider_set_soft_range(g->saturation_global, -15., 15.);
+  dt_bauhaus_slider_set_soft_range(g->saturation_global, -0.5, 0.5);
   dt_bauhaus_slider_set_digits(g->saturation_global, 4);
   dt_bauhaus_slider_set_step(g->saturation_global, .5);
+  dt_bauhaus_slider_set_factor(g->saturation_global, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_global, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation_global, _("add or remove saturation by an absolute amount"));
 
@@ -819,9 +820,10 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), dt_ui_section_label_new(_("perceptual purity grading")), FALSE, FALSE, 0);
 
   g->purity_global = dt_bauhaus_slider_from_params(self, "purity_global");
-  dt_bauhaus_slider_set_soft_range(g->purity_global, -15., 15.);
+  dt_bauhaus_slider_set_soft_range(g->purity_global, -0.5, 0.5);
   dt_bauhaus_slider_set_digits(g->purity_global, 4);
   dt_bauhaus_slider_set_step(g->purity_global, .5);
+  dt_bauhaus_slider_set_factor(g->purity_global, 100.0f);
   dt_bauhaus_slider_set_format(g->purity_global, "%.2f %%");
   gtk_widget_set_tooltip_text(g->purity_global, _("add or remove purity by an absolute amount"));
 
