@@ -307,7 +307,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float DT_ALIGNED_PIXEL Ych[4] = { 0.f };
     float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
 
-    for_four_channels(c) Ych[c] = fmaxf(pix_in[c], 0.0f);
+    for(size_t c = 0; c < 4; ++c) Ych[c] = fmaxf(pix_in[c], 0.0f);
     dot_product(Ych, input_matrix, RGB);
     gradingRGB_to_Ych(RGB, Ych, white_grading_RGB);
 
