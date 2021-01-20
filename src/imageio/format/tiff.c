@@ -241,7 +241,7 @@ int write_image(dt_imageio_module_data_t *d_tmp, const char *filename, const voi
   TIFFSetField(tif, TIFFTAG_ORIENTATION, ORIENTATION_TOPLEFT);
   TIFFSetField(tif, TIFFTAG_ROWSPERSTRIP, TIFFDefaultStripSize(tif, 0));
 
-  int resolution = dt_conf_get_int("metadata/resolution");
+  const int resolution = dt_conf_get_int("metadata/resolution");
   if(resolution > 0)
   {
     TIFFSetField(tif, TIFFTAG_XRESOLUTION, (float)resolution);
