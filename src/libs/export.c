@@ -965,6 +965,7 @@ static void _print_dpi_changed(GtkWidget *widget, gpointer user_data)
   const int dpi = atoi(gtk_entry_get_text(GTK_ENTRY(d->print_dpi)));
 
   dt_conf_set_int(CONFIG_PREFIX "print_dpi", dpi);
+  dt_conf_set_int("metadata/resolution", dpi);
 
   _resync_pixel_dimensions(d);
   _size_in_px_update(d);
