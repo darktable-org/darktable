@@ -546,7 +546,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
     dt_masks_set_edit_mode(data->module, DT_MASKS_EDIT_OFF);
     gtk_widget_hide(GTK_WIDGET(data->masks_box));
   }
-  else
+  else if(data->masks_support)
   {
     for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->masks_shapes[n]), FALSE);
@@ -2097,9 +2097,13 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   }
   dt_bauhaus_combobox_set(bd->masks_combo, 0);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_polarity),
-                               bp->mask_combine & DEVELOP_COMBINE_MASKS_POS);
+  if(bd->masks_support)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_polarity),
+                                 bp->mask_combine & DEVELOP_COMBINE_MASKS_POS);
+  }
 
   // update buttons status
   for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
