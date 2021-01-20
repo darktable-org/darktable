@@ -644,9 +644,6 @@ static inline void loop_switch(const float *const restrict in, float *const rest
     float DT_ALIGNED_PIXEL temp_one[4];
     float DT_ALIGNED_PIXEL temp_two[4];
 
-    #ifdef _OPENMP
-    #pragma omp simd aligned(temp_two:16) aligned(in:64)
-    #endif
     for(size_t c = 0; c < 3; c++) temp_two[c] = (clip) ? fmaxf(in[k + c], 0.0f) : in[k + c];
 
     /* WE START IN PIPELINE RGB */
