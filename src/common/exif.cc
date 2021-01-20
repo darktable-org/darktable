@@ -1732,7 +1732,7 @@ int dt_exif_read_blob(uint8_t **buf, const char *path, const int imgid, const in
     if(out_width > 0) exifData["Exif.Photo.PixelXDimension"] = (uint32_t)out_width;
     if(out_height > 0) exifData["Exif.Photo.PixelYDimension"] = (uint32_t)out_height;
 
-    int resolution = dt_conf_get_int("metadata/resolution");
+    const int resolution = dt_conf_get_int("metadata/resolution");
     if(resolution > 0)
     {
       exifData["Exif.Image.XResolution"] = Exiv2::Rational(resolution, 1);
