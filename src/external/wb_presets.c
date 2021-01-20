@@ -2663,6 +2663,14 @@ const wb_data wb_preset[] =
   { "Fujifilm", "X-Pro2", DaylightFluorescent, 0, { 2.463576, 1, 1.602649, 0 } },
   { "Fujifilm", "X-Pro2", WhiteFluorescent   , 0, { 1.973510, 1, 2.513245, 0 } },
   { "Fujifilm", "X-Pro2", Underwater         , 0, { 1.943709, 1, 1.827815, 0 } },
+  
+  { "Fujifilm", "X-Pro3", Daylight           , 0, { 1.8675496688741722, 1, 1.8079470198675496, 0 } },
+  { "Fujifilm", "X-Pro3", Cloudy             , 0, { 2.013245033112583, 1, 1.5463576158940397, 0 } },
+  { "Fujifilm", "X-Pro3", Incandescent       , 0, { 1.2516556291390728, 1, 2.771523178807947, 0 } },
+  { "Fujifilm", "X-Pro3", DayWhiteFluorescent, 0, { 2.013245033112583, 1, 1.9701986754966887, 0 } },
+  { "Fujifilm", "X-Pro3", DaylightFluorescent, 0, { 2.3642384105960264, 1, 1.576158940397351, 0 } },
+  { "Fujifilm", "X-Pro3", WhiteFluorescent   , 0, { 1.9304635761589404, 1, 2.486754966887417, 0 } },
+  { "Fujifilm", "X-Pro3", Underwater         , 0, { 1.8675496688741722, 1, 1.8079470198675496, 0 } },
 
   { "Kodak", "DCS Pro 14N", Daylight, 0,	{ 1, 1.055126, 1.353602, 0 } },
   { "Kodak", "DCS Pro 14N", Tungsten, 0,	{ 1, 1.337688, 2.218852, 0 } },
