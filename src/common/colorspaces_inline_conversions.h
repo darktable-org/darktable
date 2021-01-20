@@ -915,17 +915,31 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
 }
 
 #ifdef _OPENMP
+#pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
+#endif
+static inline float scalar_product(const float v_1[4], const float v_2[4])
+{
+  // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
+  // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
+  // we force an order of computation similar to SSE4 _mm_dp_ps() hoping the compiler will get the clue
+  float acc = 0.f;
+
+#ifdef _OPENMP
+#pragma omp simd aligned(v_1, v_2:16) reduction(+:acc)
+#endif
+  for(size_t c = 0; c < 3; c++) acc += v_1[c] * v_2[c];
+
+  return acc;
+}
+
+
+#ifdef _OPENMP
 #pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
 #endif
 static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
 {
   // specialized 3×4 dot products of 4×1 RGB-alpha pixels
-  for(size_t i = 0; i < 3; ++i)
-  {
-    v_out[i] = 0.f;
-    for(size_t j = 0; j < 3; ++j)
-      v_out[i] += M[i][j] * v_in[j];
-  }
+  for(size_t i = 0; i < 3; ++i) v_out[i] = scalar_product(v_in, M[i]);
 }
 
 #ifdef _OPENMP
@@ -1006,56 +1020,12 @@ static inline void LMS_to_gradingRGB(const float LMS[4], float RGB[4])
 * RGB
 */
 
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, LMS: 16)
-#endif
-static inline void LMS_to_Ych(const float LMS[4], float Ych[3])
-{
-  Ych[0] = fmaxf(0.68990272f * LMS[0] + 0.34832189f * LMS[1], 0.f);
-  const float a = LMS[0] + LMS[1] + LMS[2];
-
-  float lms[4];
-  for(size_t c = 0; c < 4; c++) lms[c] = (a == 0.f) ? 0.f : LMS[c] / a;
-
-  float rgb[4] = { 0.f };
-  LMS_to_gradingRGB(lms, rgb);
-  rgb[0] -= 0.18662246f;
-  rgb[1] -= 0.5847461f;
-
-  Ych[1] = hypotf(rgb[1], rgb[0]);
-  Ych[2] = atan2f(rgb[1], rgb[0]);
-}
-
-
-#ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, LMS: 16)
-#endif
-static inline void Ych_to_LMS(const float Ych[3], float LMS[4])
-{
-  // Ych is offset such that D65 point has c = 0
-  float rgb[4];
-  rgb[0] = fmaxf(Ych[1] * cosf(Ych[2]) + 0.18662246f, 0.f);
-  rgb[1] = fmaxf(Ych[1] * sinf(Ych[2]) + 0.5847461f, 0.f);
-
-  const float sum = rgb[0] + rgb[1];
-  if(fabsf(sum) > 1.f)
-  {
-    rgb[0] /= sum;
-    rgb[1] /= sum;
-  }
-
-  rgb[2] = 1.f - rgb[0] - rgb[1];
-  rgb[3] = 0.f;
-
-  float lms[4] = { 0.f };
-  gradingRGB_to_LMS(rgb, lms);
-  for(size_t c = 0; c < 4; c++) lms[c] = fmaxf(lms[c], 0.f);
-
-  const float a = 0.68990272f * lms[0] + 0.34832189f * lms[1];
-  for(size_t c = 0; c < 3; c++) LMS[c] = (a == 0.f) ? 0.f : lms[c] * Ych[0] / a;
-}
-
+// coordinates of D65 white point in normalized grading RGB :
+// D65_gradingRGB = [ 0.18600766,  0.5908061,   0.22318624 ]
+// they don't need to be true to measured CIE 1931 2° observer D65
+// but need to be tweaked such that sRGB = [1, 1, 1] yields c = 0 in Ych
+// otherwise highlights get shifted to green or magenta
+// Accurate CIE 1931 2° observer D65 projected directly is [ 0.18662246,  0.5847461 ,  0.22863145]
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(XYZ, RGB: 16)
@@ -1086,29 +1056,35 @@ static inline void gradingRGB_to_XYZ(const float RGB[4], float XYZ[3])
 
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, RGB: 16)
+#pragma omp declare simd aligned(Ych, RGB, D65_pipe: 16) uniform(D65_pipe)
 #endif
-static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3])
+static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *const DT_RESTRICT D65_pipe)
 {
+  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
+  const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
+
   Ych[0] = fmaxf(0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2], 0.f);
   const float a = RGB[0] + RGB[1] + RGB[2];
   for(size_t c = 0; c < 4; c++) RGB[c] = (a == 0.f) ? 0.f : RGB[c] / a;
 
-  RGB[0] -= 0.18662246f;
-  RGB[1] -= 0.5847461f;
+  RGB[0] -= D65[0];
+  RGB[1] -= D65[1];
 
   Ych[1] = hypotf(RGB[1], RGB[0]);
-  Ych[2] = atan2f(RGB[1], RGB[0]);
+  Ych[2] = (Ych[1] == 0.f) ? 0.f : atan2f(RGB[1], RGB[0]);
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(Ych, RGB: 16)
+#pragma omp declare simd aligned(Ych, RGB, D65_pipe: 16) uniform(D65_pipe)
 #endif
-static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3])
+static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3], const float *const DT_RESTRICT D65_pipe)
 {
-  RGB[0] = Ych[1] * cosf(Ych[2]) + 0.18662246f;
-  RGB[1] = Ych[1] * sinf(Ych[2]) + 0.5847461f;
-  RGB[2] = fmaxf(1.f - RGB[0] - RGB[1], 0.f);
+  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
+  const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
+
+  RGB[0] = Ych[1] * cosf(Ych[2]) + D65[0];
+  RGB[1] = Ych[1] * sinf(Ych[2]) + D65[1];
+  RGB[2] = 1.f - RGB[0] - RGB[1];
 
   const float a = (0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2]);
   for(size_t c = 0; c < 3; ++c) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
