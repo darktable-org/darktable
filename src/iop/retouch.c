@@ -1857,7 +1857,8 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
       {
         // got focus, show all shapes
-        if(bd->masks_shown == DT_MASKS_EDIT_OFF) dt_masks_set_edit_mode(self, DT_MASKS_EDIT_FULL);
+        if(bd->masks_shown == DT_MASKS_EDIT_OFF)
+          dt_masks_set_edit_mode(self, DT_MASKS_EDIT_FULL);
 
         rt_show_forms_for_current_scale(self);
 
