@@ -115,7 +115,7 @@ static void dwt_get_image_layer(float *const layer, dwt_params_t *const p)
 static void dwt_decompose_vert(float *const restrict out, const float *const restrict in,
                                const size_t height, const size_t width, const size_t lev)
 {
-  const int vscale = MIN(1 << lev, height-1);  //(int because we need a signed difference below)
+  const size_t vscale = MIN(1 << lev, height-1);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(height, width, vscale) \
