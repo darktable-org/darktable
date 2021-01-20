@@ -90,8 +90,8 @@ gboolean dt_culling_key_move(dt_culling_t *table, dt_culling_move_t move);
 // because this may means that other images have changed
 void dt_culling_change_offset_image(dt_culling_t *table, int offset);
 
-void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current);
-void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current);
+void dt_culling_zoom_max(dt_culling_t *table);
+void dt_culling_zoom_fit(dt_culling_t *table);
 
 // set the overlays type
 void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over);
