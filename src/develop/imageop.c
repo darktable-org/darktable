@@ -2645,7 +2645,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   gtk_widget_set_halign(hw[IOP_MODULE_LABEL], GTK_ALIGN_START);
   gtk_widget_set_halign(hw[IOP_MODULE_INSTANCE], GTK_ALIGN_END);
 
-  // show deprected message if any
+  // show deprecated message if any
   if(module->deprecated_msg())
   {
     GtkWidget *lb = gtk_label_new(module->deprecated_msg());
