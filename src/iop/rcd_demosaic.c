@@ -70,8 +70,8 @@
 #define w3 (3 * RCD_TILESIZE)
 #define w4 (4 * RCD_TILESIZE)
 
-#define eps 1e-5              // Tolerance to avoid dividing by zero
-#define epssq 1e-10
+#define eps 1e-5f              // Tolerance to avoid dividing by zero
+#define epssq 1e-10f
 
 static INLINE float intp(float a, float b, float c)
 {   // taken from rt code
