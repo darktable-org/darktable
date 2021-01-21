@@ -301,7 +301,104 @@ static gboolean _event_cursor_draw(GtkWidget *widget, cairo_t *cr, gpointer user
   return TRUE;
 }
 
-static void _thumb_set_image_area(dt_thumbnail_t *thumb)
+// zoom_ratio is 0-1 based, where 0 is "img to fit" and 1 "zoom to 100%". returns a thumb->zoom value
+static float _zoom_ratio_to_thumb_zoom(float zoom_ratio, float zoom_100)
+{
+  return (zoom_100 - 1) * zoom_ratio + 1;
+}
+
+// converts a thumb->zoom value based on it's zoom_100 (max value) to a 0-1 based zoom_ratio.
+static float _thumb_zoom_to_zoom_ratio(float zoom, float zoom_100)
+{
+  return (zoom - 1) / (zoom_100 - 1);
+}
+
+// given max_width & max_height, the width and height is calculated to fit an image in a "img to fit" mode
+// (everything is visible)
+static void _get_dimensions_for_img_to_fit(dt_thumbnail_t *thumb, int max_width, int max_height, float *width,
+                                           float *height)
+{
+  float iw = max_width;
+  float ih = max_height;
+
+  // we can't rely on img->aspect_ratio as the value is round to 1 decimal, so not enough accurate
+  // so we compute it from the larger available mipmap
+  float ar = 0.0f;
+  for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
+  {
+    dt_mipmap_buffer_t tmp;
+    dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');
+    if(tmp.buf)
+    {
+      const int mipw = tmp.width;
+      const int miph = tmp.height;
+      dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
+      if(mipw > 0 && miph > 0)
+      {
+        ar = (float)mipw / miph;
+        break;
+      }
+    }
+  }
+
+  if(ar < 0.001)
+  {
+    // let's try with the aspect_ratio store in image structure, even if it's less accurate
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+    if(img)
+    {
+      ar = img->aspect_ratio;
+      dt_image_cache_read_release(darktable.image_cache, img);
+    }
+  }
+
+  if(ar > 0.001)
+  {
+    // we have a valid ratio, let's apply it
+    if(ar < 1.0)
+      iw = ih * ar;
+    else
+      ih = iw / ar;
+    // rescale to ensure it stay in thumbnails bounds
+    const float scale = fminf(1.0, fminf((float)max_width / iw, (float)max_height / ih));
+    iw *= scale;
+    ih *= scale;
+  }
+
+  *width = iw;
+  *height = ih;
+}
+
+// retrieves image zoom100 and final_width/final_height to calculate the dimensions of the zoomed image.
+static void _get_dimensions_for_zoomed_img(dt_thumbnail_t *thumb, int max_width, int max_height, float zoom_ratio,
+                                           float *width, float *height)
+{
+  float iw = max_width;
+  float ih = max_height;
+  // we need to get proper dimensions for the image to determine the image_w size.
+  // calling dt_thumbnail_get_zoom100 is used to get the max zoom, but also to ensure that final_width and
+  // height are available.
+  const float zoom_100 = dt_thumbnail_get_zoom100(thumb);
+  const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
+  if(img)
+  {
+    if(img->final_width > 0 && img->final_height > 0)
+    {
+      iw = img->final_width;
+      ih = img->final_height;
+    }
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+
+  // scale first to "img to fit", then apply the zoom ratio to get the resulting final (zoomed) image
+  // dimensions, while making sure to still fit in the imagebox.
+  const float scale_to_fit = fminf((float)max_width / iw, (float)max_height / ih);
+  thumb->zoom = _zoom_ratio_to_thumb_zoom(zoom_ratio, zoom_100);
+  *width = MIN(iw * scale_to_fit * thumb->zoom, max_width);
+  *height = MIN(ih * scale_to_fit * thumb->zoom, max_height);
+}
+
+static void _thumb_set_image_area(dt_thumbnail_t *thumb, float zoom_ratio)
 {
   // let's ensure we have the right margins
   _thumb_retrieve_margins(thumb);
@@ -355,48 +452,11 @@ static void _thumb_set_image_area(dt_thumbnail_t *thumb)
     // we arrive here if we are inside the creation process
     float iw = image_w;
     float ih = image_h;
-    // we can't rely on img->aspect_ratio as the value is round to 1 decimal, so not enough accurate
-    // so we compute it from the larger available mipmap
-    float ar = 0.0f;
-    for(int k = DT_MIPMAP_7; k >= DT_MIPMAP_0; k--)
-    {
-      dt_mipmap_buffer_t tmp;
-      dt_mipmap_cache_get(darktable.mipmap_cache, &tmp, thumb->imgid, k, DT_MIPMAP_TESTLOCK, 'r');
-      if(tmp.buf)
-      {
-        const int mipw = tmp.width;
-        const int miph = tmp.height;
-        dt_mipmap_cache_release(darktable.mipmap_cache, &tmp);
-        if(mipw > 0 && miph > 0)
-        {
-          ar = (float)mipw / miph;
-          break;
-        }
-      }
-    }
-    if(ar < 0.001)
-    {
-      // let's try with the aspect_ratio store in image structure, even if it's less accurate
-      const dt_image_t *img = dt_image_cache_get(darktable.image_cache, thumb->imgid, 'r');
-      if(img)
-      {
-        ar = img->aspect_ratio;
-        dt_image_cache_read_release(darktable.image_cache, img);
-      }
-    }
 
-    if(ar > 0.001)
-    {
-      // we have a valid ratio, let's apply it
-      if(ar < 1.0)
-        iw = ih * ar;
-      else
-        ih = iw / ar;
-      // rescale to ensure it stay in thumbnails bounds
-      const float scale = fminf(1.0, fminf((float)image_w / iw, (float)image_h / ih));
-      iw *= scale;
-      ih *= scale;
-    }
+    if(zoom_ratio == IMG_TO_FIT)
+      _get_dimensions_for_img_to_fit(thumb, image_w, image_h, &iw, &ih);
+    else
+      _get_dimensions_for_zoomed_img(thumb, image_w, image_h, zoom_ratio, &iw, &ih);
 
     gtk_widget_set_size_request(thumb->w_image, iw, ih);
   }
@@ -445,7 +505,7 @@ static gboolean _event_image_draw(GtkWidget *widget, cairo_t *cr, gpointer user_
   {
     int image_w = 0;
     int image_h = 0;
-    _thumb_set_image_area(thumb);
+    _thumb_set_image_area(thumb, IMG_TO_FIT);
     gtk_widget_get_size_request(thumb->w_image_box, &image_w, &image_h);
 
     if(v->view(v) == DT_VIEW_DARKROOM && dev->preview_pipe->output_imgid == thumb->imgid
@@ -1085,7 +1145,7 @@ static gboolean _event_main_drag_motion(GtkWidget *widget, GdkDragContext *dc, g
   return TRUE;
 }
 
-GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
+GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
 {
   // main widget (overlay)
   thumb->w_main = gtk_overlay_new();
@@ -1295,21 +1355,24 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb)
     gtk_widget_set_name(thumb->w_zoom_eb, "thumb_zoom");
     gtk_widget_set_valign(thumb->w_zoom_eb, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_zoom_eb, GTK_ALIGN_START);
-    thumb->w_zoom = gtk_label_new("mini");
+    if(zoom_ratio == IMG_TO_FIT)
+      thumb->w_zoom = gtk_label_new(_("fit"));
+    else
+      thumb->w_zoom = gtk_label_new("mini");
     gtk_widget_set_name(thumb->w_zoom, "thumb_zoom_label");
     gtk_widget_show(thumb->w_zoom);
     gtk_container_add(GTK_CONTAINER(thumb->w_zoom_eb), thumb->w_zoom);
     gtk_overlay_add_overlay(GTK_OVERLAY(overlays_parent), thumb->w_zoom_eb);
 
-    dt_thumbnail_resize(thumb, thumb->width, thumb->height, TRUE);
+    dt_thumbnail_resize(thumb, thumb->width, thumb->height, TRUE, zoom_ratio);
   }
   gtk_widget_show(thumb->w_main);
   g_object_ref(G_OBJECT(thumb->w_main));
   return thumb->w_main;
 }
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
-                                 dt_thumbnail_container_t container, gboolean tooltip)
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int imgid, int rowid,
+                                 dt_thumbnail_overlay_t over, dt_thumbnail_container_t container, gboolean tooltip)
 {
   dt_thumbnail_t *thumb = calloc(1, sizeof(dt_thumbnail_t));
   thumb->width = width;
@@ -1344,7 +1407,7 @@ dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt
   _image_get_infos(thumb);
 
   // we create the widget
-  dt_thumbnail_create_widget(thumb);
+  dt_thumbnail_create_widget(thumb, zoom_ratio);
 
   // let's see if the images are selected or active or mouse_overed
   _dt_active_images_callback(NULL, thumb);
@@ -1620,7 +1683,7 @@ static void _thumb_resize_overlays(dt_thumbnail_t *thumb)
   }
 }
 
-void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force)
+void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force, float zoom_ratio)
 {
   int w = 0;
   int h = 0;
@@ -1696,7 +1759,7 @@ void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean 
   // for overlays different than block, we compute their size here, so we have valid value for th image area compute
   if(thumb->over != DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
   // we change the size and margins according to the size change. This will be refined after
-  _thumb_set_image_area(thumb);
+  _thumb_set_image_area(thumb, zoom_ratio);
 
   // and the overlays for the block only (the others have been done before)
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK) _thumb_resize_overlays(thumb);
@@ -1845,6 +1908,14 @@ float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb)
   }
 
   return thumb->zoom_100;
+}
+
+float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb)
+{
+  if(thumb->zoom_100 < 1.0f) // we only compute the sizes if needed
+    dt_thumbnail_get_zoom100(thumb);
+
+  return _thumb_zoom_to_zoom_ratio(thumb->zoom, thumb->zoom_100);
 }
 
 // force the reload of image infos

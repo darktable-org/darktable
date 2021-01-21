@@ -938,9 +938,9 @@ static gboolean _accel_culling_zoom_100(GtkAccelGroup *accel_group, GObject *acc
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(lib->preview_state)
-    dt_culling_zoom_max(lib->preview, FALSE);
+    dt_culling_zoom_max(lib->preview);
   else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-    dt_culling_zoom_max(lib->culling, FALSE);
+    dt_culling_zoom_max(lib->culling);
   else
     return FALSE;
 
@@ -954,9 +954,9 @@ static gboolean _accel_culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acc
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(lib->preview_state)
-    dt_culling_zoom_fit(lib->preview, FALSE);
+    dt_culling_zoom_fit(lib->preview);
   else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-    dt_culling_zoom_fit(lib->culling, FALSE);
+    dt_culling_zoom_fit(lib->culling);
   else
     return FALSE;
 
