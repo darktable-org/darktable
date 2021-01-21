@@ -24,6 +24,7 @@
 #include <gtk/gtk.h>
 
 #define MAX_STARS 5
+#define IMG_TO_FIT 0.0f
 
 typedef enum dt_thumbnail_border_t
 {
@@ -143,11 +144,11 @@ typedef struct
   gboolean busy; // should we show the busy message ?
 } dt_thumbnail_t;
 
-dt_thumbnail_t *dt_thumbnail_new(int width, int height, int imgid, int rowid, dt_thumbnail_overlay_t over,
+dt_thumbnail_t *dt_thumbnail_new(int width, int height, float zoom_ratio, int imgid, int rowid, dt_thumbnail_overlay_t over,
                                  dt_thumbnail_container_t container, gboolean tooltip);
 void dt_thumbnail_destroy(dt_thumbnail_t *thumb);
-GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb);
-void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force);
+GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio);
+void dt_thumbnail_resize(dt_thumbnail_t *thumb, int width, int height, gboolean force, float zoom_ratio);
 void dt_thumbnail_set_group_border(dt_thumbnail_t *thumb, dt_thumbnail_border_t border);
 void dt_thumbnail_set_mouseover(dt_thumbnail_t *thumb, gboolean over);
 
@@ -171,6 +172,8 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb);
 void dt_thumbnail_image_refresh_position(dt_thumbnail_t *thumb);
 // get the maximal zoom value (to show 1:1 image)
 float dt_thumbnail_get_zoom100(dt_thumbnail_t *thumb);
+// get the zoom ratio from 0 ("image to fit") to 1 ("max zoom value")
+float dt_thumbnail_get_zoom_ratio(dt_thumbnail_t *thumb);
 
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

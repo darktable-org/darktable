@@ -25,6 +25,7 @@
 #include "views/view.h"
 
 #define FULL_PREVIEW_IN_MEMORY_LIMIT 9
+#define ZOOM_MAX 100000.0f
 
 static inline float _absmul(float a, float b)
 {
@@ -317,7 +318,82 @@ static void _thumbs_move(dt_culling_t *table, int move)
   }
 }
 
-static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, double posy, int state)
+static void _set_table_zoom_ratio(dt_culling_t *table, dt_thumbnail_t *th)
+{
+  table->zoom_ratio = dt_thumbnail_get_zoom_ratio(th);
+}
+
+static void _get_root_offset(GtkWidget *w_image_box, float x_root, float y_root, int *x_offset, int *y_offset)
+{
+  gdk_window_get_origin(gtk_widget_get_window(w_image_box), x_offset, y_offset);
+  *x_offset = x_root - *x_offset;
+  *y_offset = y_root - *y_offset;
+}
+
+static gboolean _zoom_and_shift(dt_thumbnail_t *th, const int x_offset, const int y_offset, const float zoom_delta)
+{
+  float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
+  if(zd == th->zoom)
+    return FALSE; // delta_zoom did not change this thumbnail's zoom factor
+
+  const float z_ratio = zd / th->zoom;
+  th->zoom = zd;
+
+  int posx = x_offset;
+  int posy = y_offset;
+
+  const int iw = gtk_widget_get_allocated_width(th->w_image);
+  const int ih = gtk_widget_get_allocated_height(th->w_image);
+
+  // we center the zoom around cursor position
+  if(posx >= 0 && posy >= 0)
+  {
+    // we take in account that the image may be smaller that the imagebox
+    posx -= (gtk_widget_get_allocated_width(th->w_image_box) - iw) / 2;
+    posy -= (gtk_widget_get_allocated_height(th->w_image_box) - ih) / 2;
+  }
+
+  // we change the value and sanitize them
+  th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, posx - (posx - th->zoomx) * z_ratio));
+  th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, posy - (posy - th->zoomy) * z_ratio));
+
+  dt_thumbnail_image_refresh(th);
+
+  return TRUE;
+}
+
+static gboolean _zoom_to_x_root(dt_thumbnail_t *th, const float x_root, const float y_root, const float zoom_delta)
+{
+  int x_offset = 0;
+  int y_offset = 0;
+
+  _get_root_offset(th->w_image_box, x_root, y_root, &x_offset, &y_offset);
+
+  return _zoom_and_shift(th, x_offset, y_offset, zoom_delta);
+}
+
+static gboolean _zoom_to_center(dt_thumbnail_t *th, const float zoom_delta)
+{
+  float zd = CLAMP(th->zoom + zoom_delta, 1.0f, th->zoom_100);
+  if(zd == th->zoom)
+    return FALSE; // delta_zoom did not change this thumbnail's zoom factor
+
+  const float z_ratio = zd / th->zoom;
+  th->zoom = zd;
+  // we center the zoom around center of the shown image
+  int iw = 0;
+  int ih = 0;
+  gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
+  th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
+  th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
+
+  dt_thumbnail_image_refresh(th);
+
+  return TRUE;
+}
+
+static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, const float x_root,
+                                 const float y_root, int state)
 {
   const int max_in_memory_images = _get_max_in_memory_images();
   if(table->mode == DT_CULLING_MODE_CULLING && table->thumbs_count > max_in_memory_images)
@@ -348,23 +424,8 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
         if(th->imgid == mouseid)
         {
-          float zd = th->zoom + val;
-          if(zd < 1.0f) zd = 1.0f;
-          if(zd > th->zoom_100) zd = th->zoom_100;
-          if(zd != th->zoom)
-          {
-            const float z_ratio = zd / th->zoom;
-            th->zoom = zd;
-            // we center the zoom around center of the shown image
-            int iw = 0;
-            int ih = 0;
-            gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
-            th->zoomx
-                = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
-            th->zoomy
-                = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
-            dt_thumbnail_image_refresh(th);
-          }
+          if(_zoom_to_x_root(th, x_root, y_root, zoom_delta))
+            _set_table_zoom_ratio(table, th);
           break;
         }
         l = g_list_next(l);
@@ -372,27 +433,33 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
     }
     else
     {
+      const int mouseid = dt_control_get_mouse_over_id();
+      int x_offset = 0;
+      int y_offset = 0;
+      gboolean to_pointer = FALSE;
+
+      // get the offset for the image under the cursor
       l = table->list;
       while(l)
       {
         dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-        float zd = th->zoom + val;
-        if(zd < 1.0f) zd = 1.0f;
-        if(zd > th->zoom_100) zd = th->zoom_100;
-        if(zd != th->zoom)
+        if(th->imgid == mouseid)
         {
-          const float z_ratio = zd / th->zoom;
-          th->zoom = zd;
-          // we center the zoom around center of the shown image
-          int iw = 0;
-          int ih = 0;
-          gtk_widget_get_size_request(th->w_image_box, &iw, &ih);
-          th->zoomx
-              = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, iw / 2.0 - (iw / 2.0 - th->zoomx) * z_ratio));
-          th->zoomy
-              = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, ih / 2.0 - (ih / 2.0 - th->zoomy) * z_ratio));
-          dt_thumbnail_image_refresh(th);
+          _get_root_offset(th->w_image_box, x_root, y_root, &x_offset, &y_offset);
+          to_pointer = TRUE;
+          break;
         }
+        l = g_list_next(l);
+      }
+
+      // apply the offset to all images
+      l = table->list;
+      while(l)
+      {
+        dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+        if(to_pointer == TRUE ? _zoom_and_shift(th, x_offset, y_offset, zoom_delta)
+                              : _zoom_to_center(th, zoom_delta))
+          _set_table_zoom_ratio(table, th);
         l = g_list_next(l);
       }
     }
@@ -401,30 +468,67 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, float val, double posx, do
   {
     // FULL PREVIEW or CULLING with 1 image
     dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-    float zd = th->zoom + val;
-    if(zd < 1.0f) zd = 1.0f;
-    if(zd > th->zoom_100) zd = th->zoom_100;
-    if(zd != th->zoom)
-    {
-      const float z_ratio = zd / th->zoom;
-      th->zoom = zd;
-      // we center the zoom around cursor position
-      if(posx >= 0.0f && posy >= 0.0f)
-      {
-        const int iw = gtk_widget_get_allocated_width(th->w_image);
-        const int ih = gtk_widget_get_allocated_height(th->w_image);
-        // we take in account that the image may be smaller that the imagebox
-        posx -= (gtk_widget_get_allocated_width(th->w_image_box) - iw) / 2;
-        posy -= (gtk_widget_get_allocated_height(th->w_image_box) - ih) / 2;
-        // we change the value and samitize them
-        th->zoomx = fmaxf(iw - th->img_width * z_ratio, fminf(0.0f, posx - (posx - th->zoomx) * z_ratio));
-        th->zoomy = fmaxf(ih - th->img_height * z_ratio, fminf(0.0f, posy - (posy - th->zoomy) * z_ratio));
-      }
-      dt_thumbnail_image_refresh(th);
-    }
+    if(_zoom_to_x_root(th, x_root, y_root, zoom_delta))
+      _set_table_zoom_ratio(table, th);
   }
 
   return TRUE;
+}
+
+static void _zoom_thumb_fit(dt_thumbnail_t *th)
+{
+  th->zoom = 1.0;
+  th->zoomx = 0;
+  th->zoomy = 0;
+  dt_thumbnail_image_refresh(th);
+}
+
+static gboolean _zoom_thumb_max(dt_thumbnail_t *th, float x_root, float y_root)
+{
+  dt_thumbnail_get_zoom100(th);
+  return _zoom_to_x_root(th, x_root, y_root, ZOOM_MAX);
+}
+
+// toggle zoom max / zoom fit of image currently having mouse over id
+static void _toggle_zoom_current(dt_culling_t *table, float x_root, float y_root)
+{
+  GList *l = table->list;
+  const int id = dt_control_get_mouse_over_id();
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->imgid == id)
+    {
+      if(th->zoom_100 < 1.0 || th->zoom < th->zoom_100)
+        _zoom_thumb_max(th, x_root, y_root);
+      else
+        _zoom_thumb_fit(th);
+      break;
+    }
+    l = g_list_next(l);
+  }
+}
+
+// toggle zoom max / zoom fit of all images in culling table
+static void _toggle_zoom_all(dt_culling_t *table, float x_root, float y_root)
+{
+  gboolean zmax = TRUE;
+  GList *l = table->list;
+  while(l)
+  {
+    dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+    if(th->zoom_100 < 1.0 || th->zoom < th->zoom_100)
+    {
+      zmax = FALSE;
+      break;
+    }
+    l = g_list_next(l);
+  }
+
+  if(zmax)
+    dt_culling_zoom_fit(table);
+  else
+    _thumbs_zoom_add(table, ZOOM_MAX, x_root, y_root, 0);
 }
 
 static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_data)
@@ -437,32 +541,14 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
   {
     if((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
     {
-      int x = 0;
-      int y = 0;
-      if(table->mode == DT_CULLING_MODE_PREVIEW && g_list_length(table->list) > 0)
-      {
-        dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-        gdk_window_get_origin(gtk_widget_get_window(th->w_image_box), &x, &y);
-        x = e->x_root - x;
-        y = e->y_root - y;
-      }
-
       // zooming
-      if(delta < 0)
-      {
-        _thumbs_zoom_add(table, 0.5f, x, y, e->state);
-      }
-      else
-      {
-        _thumbs_zoom_add(table, -0.5f, x, y, e->state);
-      }
+      const float zoom_delta = delta < 0 ? 0.5f : -0.5f;
+      _thumbs_zoom_add(table, zoom_delta, e->x_root, e->y_root, e->state);
     }
     else
     {
-      if(delta < 0)
-        _thumbs_move(table, -1);
-      else
-        _thumbs_move(table, 1);
+      const int move = delta < 0 ? -1 : 1;
+      _thumbs_move(table, -move);
     }
   }
   return TRUE;
@@ -517,26 +603,11 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
 
   if(event->button == 2)
   {
-    // middle toggle zoom max / zoom fit
-    gboolean zmax = TRUE;
-    GList *l = table->list;
-    while(l)
-    {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-      if(th->zoom_100 < 1.0 || th->zoom < th->zoom_100)
-      {
-        zmax = FALSE;
-        break;
-      }
-      l = g_list_next(l);
-    }
     // if shift is pressed, we work only with image hovered
-    gboolean cur = FALSE;
-    if(event->state & GDK_SHIFT_MASK) cur = TRUE;
-    if(zmax)
-      dt_culling_zoom_fit(table, cur);
+    if(event->state & GDK_SHIFT_MASK)
+      _toggle_zoom_current(table, event->x_root, event->y_root);
     else
-      dt_culling_zoom_max(table, cur);
+      _toggle_zoom_all(table, event->x_root, event->y_root);
     return TRUE;
   }
 
@@ -668,7 +739,8 @@ static void _dt_pref_change_callback(gpointer instance, gpointer user_data)
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
     th->overlay_timeout_duration = dt_conf_get_int("plugins/lighttable/overlay_timeout");
     dt_thumbnail_reload_infos(th);
-    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
     l = g_list_next(l);
   }
 }
@@ -785,6 +857,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
 {
   dt_culling_t *table = (dt_culling_t *)calloc(1, sizeof(dt_culling_t));
   table->mode = mode;
+  table->zoom_ratio = IMG_TO_FIT;
   table->widget = gtk_layout_new(NULL, NULL);
   // TODO dt_gui_add_help_link(table->widget, dt_get_help_url("lighttable_filemanager"));
 
@@ -874,6 +947,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
   // init values
   table->navigate_inside_selection = FALSE;
   table->selection_sync = FALSE;
+  table->zoom_ratio = IMG_TO_FIT;
 
   // reset remaining zooming values if any
   GList *l = table->list;
@@ -1160,11 +1234,11 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       }
       dt_thumbnail_t *thumb;
       if(table->mode == DT_CULLING_MODE_PREVIEW)
-        thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_PREVIEW,
-                                 table->show_tooltips);
+        thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_PREVIEW, table->show_tooltips);
       else
-        thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_CULLING,
-                                 table->show_tooltips);
+        thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                 DT_THUMBNAIL_CONTAINER_CULLING, table->show_tooltips);
 
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -1236,11 +1310,11 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           }
           dt_thumbnail_t *thumb;
           if(table->mode == DT_CULLING_MODE_PREVIEW)
-            thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_PREVIEW,
-                                     table->show_tooltips);
+            thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                     DT_THUMBNAIL_CONTAINER_PREVIEW, table->show_tooltips);
           else
-            thumb = dt_thumbnail_new(nw, nh, nid, nrow, table->overlays, DT_THUMBNAIL_CONTAINER_CULLING,
-                                     table->show_tooltips);
+            thumb = dt_thumbnail_new(nw, nh, table->zoom_ratio, nid, nrow, table->overlays,
+                                     DT_THUMBNAIL_CONTAINER_CULLING, table->show_tooltips);
 
           thumb->display_focus = table->focus;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
@@ -1511,7 +1585,6 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   if(!_compute_sizes(table, force)) return;
 
   // we store first image zoom and pos for new ones
-  float old_z = 1.0;
   float old_zx = 0.0;
   float old_zy = 0.0;
   int old_margin_x = 0;
@@ -1519,7 +1592,6 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   if(g_list_length(table->list) > 0)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-    old_z = thumb->zoom;
     old_zx = thumb->zoomx;
     old_zy = thumb->zoomy;
     old_margin_x = gtk_widget_get_margin_start(thumb->w_image_box);
@@ -1549,17 +1621,17 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       gtk_widget_set_margin_start(thumb->w_image_box, old_margin_x);
       gtk_widget_set_margin_top(thumb->w_image_box, old_margin_y);
       // and we resize the thumb
-      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
+      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE, table->zoom_ratio);
       gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
       thumb->zoomx = old_zx;
       thumb->zoomy = old_zy;
-      thumb->zoom = old_z;
     }
     else
     {
       gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, thumb->x, thumb->y);
       // and we resize the thumb
-      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE);
+      const float zoom_ratio = thumb->zoom_100 > 1 ? thumb->zoom / thumb->zoom_100 : IMG_TO_FIT;
+      dt_thumbnail_resize(thumb, thumb->width, thumb->height, FALSE, zoom_ratio);
     }
 
     // we update the active images list
@@ -1667,53 +1739,27 @@ void dt_culling_change_offset_image(dt_culling_t *table, int imgid)
   _thumbs_refocus(table);
 }
 
-void dt_culling_zoom_max(dt_culling_t *table, gboolean only_current)
+void dt_culling_zoom_max(dt_culling_t *table)
 {
-  double x = 0;
-  double y = 0;
+  float x = 0;
+  float y = 0;
   if(table->mode == DT_CULLING_MODE_PREVIEW && g_list_length(table->list) > 0)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
     x = gtk_widget_get_allocated_width(th->w_image_box) / 2.0;
     y = gtk_widget_get_allocated_height(th->w_image_box) / 2.0;
   }
-  if(only_current)
-    _thumbs_zoom_add(table, 100000.0f, x, y, GDK_SHIFT_MASK);
-  else
-    _thumbs_zoom_add(table, 100000.0f, x, y, 0);
+  _thumbs_zoom_add(table, ZOOM_MAX, x, y, 0);
 }
-void dt_culling_zoom_fit(dt_culling_t *table, gboolean only_current)
+
+void dt_culling_zoom_fit(dt_culling_t *table)
 {
-  if(only_current)
+  table->zoom_ratio = IMG_TO_FIT;
+  GList *l = table->list;
+  while(l)
   {
-    const int mouseid = dt_control_get_mouse_over_id();
-    GList *l = table->list;
-    while(l)
-    {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-      if(th->imgid == mouseid)
-      {
-        th->zoom = 1.0;
-        th->zoomx = 0;
-        th->zoomy = 0;
-        dt_thumbnail_image_refresh(th);
-        break;
-      }
-      l = g_list_next(l);
-    }
-  }
-  else
-  {
-    GList *l = table->list;
-    while(l)
-    {
-      dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
-      th->zoom = 1.0;
-      th->zoomx = 0;
-      th->zoomy = 0;
-      dt_thumbnail_image_refresh(th);
-      l = g_list_next(l);
-    }
+    _zoom_thumb_fit((dt_thumbnail_t *)l->data);
+    l = g_list_next(l);
   }
 }
 
@@ -1752,7 +1798,8 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
     dt_thumbnail_set_overlay(th, over, timeout);
     th->tooltip = table->show_tooltips;
     // and we resize the bottom area
-    dt_thumbnail_resize(th, th->width, th->height, TRUE);
+    const float zoom_ratio = th->zoom_100 > 1 ? th->zoom / th->zoom_100 : table->zoom_ratio;
+    dt_thumbnail_resize(th, th->width, th->height, TRUE, zoom_ratio);
     l = g_list_next(l);
   }
 
