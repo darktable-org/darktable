@@ -208,7 +208,7 @@ static int database_numindex(lua_State *L)
 
 static int database_get_image(lua_State *L)
 {
-  int img_id = luaL_checkinteger(L, -1);
+  const int img_id = luaL_checkinteger(L, -1);
   if(img_id < 1)
   {
     return luaL_error(L, "incorrect image id in database");
