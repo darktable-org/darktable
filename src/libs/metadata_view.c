@@ -1034,7 +1034,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   GtkWidget *area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
 
   GtkWidget *w = gtk_scrolled_window_new(NULL, NULL);
-  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(300));
+  gtk_widget_set_size_request(w, -1, DT_PIXEL_APPLY_DPI(600));
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(w), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
   gtk_scrolled_window_set_overlay_scrolling(GTK_SCROLLED_WINDOW(w), FALSE);
   gtk_box_pack_start(GTK_BOX(area), w, TRUE, TRUE, 0);
