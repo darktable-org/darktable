@@ -304,17 +304,17 @@ gboolean dt_image_altered(const int32_t imgid);
 /** returns TRUE if if current has is basic, FALSE otherwise. */
 gboolean dt_image_basic(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
-double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise);
+float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise);
 /** set the image raw aspect ratio */
 void dt_image_set_raw_aspect_ratio(const int32_t imgid);
 /** set the image final/cropped aspect ratio */
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise);
+void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio, const gboolean raise);
 /** set the image final/cropped aspect ratio if different from stored*/
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise);
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float aspect_ratio, const gboolean raise);
 /** reset the image final/cropped aspect ratio to 0.0 */
-void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise);
+void dt_image_reset_aspect_ratio(const int32_t imgid, const gboolean raise);
 /** get the ratio of cropped raw sensor data */
-double dt_image_get_sensor_ratio(const dt_image_t *img);
+float dt_image_get_sensor_ratio(const dt_image_t *img);
 /** returns the orientation bits of the image from exif. */
 static inline dt_image_orientation_t dt_image_orientation(const dt_image_t *img)
 {
