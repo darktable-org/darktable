@@ -196,13 +196,11 @@ static int database_numindex(lua_State *L)
   {
     int imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
-    sqlite3_finalize(stmt);
   }
   else
-  {
-    sqlite3_finalize(stmt);
     lua_pushnil(L);
-  }
+  
+  sqlite3_finalize(stmt);
   return 1;
 }
 
@@ -222,13 +220,11 @@ static int database_get_image(lua_State *L)
   {
     int imgid = sqlite3_column_int(stmt, 0);
     luaA_push(L, dt_lua_image_t, &imgid);
-    sqlite3_finalize(stmt);
   }
   else
-  {
-    sqlite3_finalize(stmt);
     lua_pushnil(L);
-  }
+
+  sqlite3_finalize(stmt);
   return 1;
 }
 
