@@ -1242,12 +1242,12 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 
       thumb->display_focus = table->focus;
       thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
-      double aspect_ratio = sqlite3_column_double(stmt, 2);
-      if(!aspect_ratio || aspect_ratio < 0.0001)
+      float aspect_ratio = sqlite3_column_double(stmt, 2);
+      if(!aspect_ratio || aspect_ratio < 0.0001f)
       {
         aspect_ratio = dt_image_set_aspect_ratio(nid, FALSE);
         // if an error occurs, let's use 1:1 value
-        if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
+        if(aspect_ratio < 0.0001f) aspect_ratio = 1.0f;
       }
       thumb->aspect_ratio = aspect_ratio;
       newlist = g_list_append(newlist, thumb);
@@ -1318,12 +1318,12 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 
           thumb->display_focus = table->focus;
           thumb->sel_mode = DT_THUMBNAIL_SEL_MODE_DISABLED;
-          double aspect_ratio = sqlite3_column_double(stmt, 2);
-          if(!aspect_ratio || aspect_ratio < 0.0001)
+          float aspect_ratio = sqlite3_column_double(stmt, 2);
+          if(!aspect_ratio || aspect_ratio < 0.0001f)
           {
             aspect_ratio = dt_image_set_aspect_ratio(nid, FALSE);
             // if an error occurs, let's use 1:1 value
-            if(aspect_ratio < 0.0001) aspect_ratio = 1.0;
+            if(aspect_ratio < 0.0001f) aspect_ratio = 1.0f;
           }
           thumb->aspect_ratio = aspect_ratio;
           newlist = g_list_prepend(newlist, thumb);
@@ -1381,7 +1381,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   while(l)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-    const double aspect_ratio = thumb->aspect_ratio;
+    const float aspect_ratio = thumb->aspect_ratio;
     thumb->width = (gint)(sqrt(aspect_ratio) * 100);
     thumb->height = (gint)(1 / sqrt(aspect_ratio) * 100);
     thumb->x = thumb->y = 0;

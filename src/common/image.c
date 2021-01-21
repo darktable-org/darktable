@@ -771,7 +771,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
    The database does **not** hold the cropped width & height so we fill the data
    when starting to develop.
 */
-double dt_image_get_sensor_ratio(const struct dt_image_t *img)
+float dt_image_get_sensor_ratio(const struct dt_image_t *img)
 {
   if(img->p_height >0)
     return (double)img->p_width / (double)img->p_height;
@@ -794,7 +794,7 @@ void dt_image_set_raw_aspect_ratio(const int32_t imgid)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise)
+void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio, const gboolean raise)
 {
   if (aspect_ratio > .0f)
   {
@@ -813,7 +813,7 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboo
   }
 }
 
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise)
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float aspect_ratio, const gboolean raise)
 {
   if (aspect_ratio > .0f)
   {
@@ -837,7 +837,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_r
   }
 }
 
-void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise)
+void dt_image_reset_aspect_ratio(const int32_t imgid, const gboolean raise)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -853,10 +853,10 @@ void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise)
                                g_list_append(NULL, GINT_TO_POINTER(imgid)));
 }
 
-double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise)
+float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise)
 {
   dt_mipmap_buffer_t buf;
-  double aspect_ratio = 0.0;
+  float aspect_ratio = 0.0;
 
   // mipmap cache must be initialized, otherwise we'll update next call
   if(darktable.mipmap_cache)
@@ -865,7 +865,7 @@ double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise)
 
     if(buf.buf && buf.height && buf.width)
     {
-      aspect_ratio = (double)buf.width / (double)buf.height;
+      aspect_ratio = (float)buf.width / (float)buf.height;
       dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
     }
 
@@ -1091,7 +1091,7 @@ void dt_image_remove(const int32_t imgid)
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
     darktable.gui->expanded_group_id = new_group_id;
 
-  // due to foreign keys added in db version 33, 
+  // due to foreign keys added in db version 33,
   // all entries from tables having references to the images are deleted as well
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.images WHERE id = ?1", -1, &stmt,
                               NULL);
