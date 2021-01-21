@@ -622,7 +622,10 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
     sqlite3_stmt *stmt = NULL;
 
     query = dt_util_dstrcat
-      (query, "SELECT id FROM main.images WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
+      (query,
+       "SELECT id"
+       " FROM main.images"
+       " WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
