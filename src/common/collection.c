@@ -1982,7 +1982,8 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       // for changing offsets, thumbtable needs to know the first untouched imageid after the list
       // we do this here
-      const int id0 = GPOINTER_TO_INT(g_list_nth_data(list, 0));
+
+      // 1. create a string with all the imgids of the list to be used inside IN sql query
       gchar *txt = NULL;
       GList *l = g_list_first(list);
       int i = 0;
@@ -1996,15 +1997,18 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
         l = g_list_next(l);
         i++;
       }
+      // 2. search the first imgid not in the list but AFTER the list (or in a gap inside the list)
+      // we need to be carefull that some images in the list may not be present on screen (collapsed groups)
       gchar *query = dt_util_dstrcat(NULL,
                                      "SELECT imgid"
                                      " FROM memory.collected_images"
                                      " WHERE imgid NOT IN (%s)"
                                      "  AND rowid > (SELECT rowid"
                                      "              FROM memory.collected_images"
-                                     "              WHERE imgid=%d)"
+                                     "              WHERE imgid IN (%s)"
+                                     "              ORDER BY rowid LIMIT 1)"
                                      " ORDER BY rowid LIMIT 1",
-                                     txt, id0);
+                                     txt, txt);
       sqlite3_stmt *stmt2;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
       if(sqlite3_step(stmt2) == SQLITE_ROW)
@@ -2013,7 +2017,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       }
       sqlite3_finalize(stmt2);
       g_free(query);
-      // if next is still unvalid, let's try to find the first untouched image before the list
+      // 3. if next is still unvalid, let's try to find the first untouched image BEFORE the list
       if(next < 0)
       {
         query = dt_util_dstrcat(NULL,
@@ -2022,9 +2026,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
                                 " WHERE imgid NOT IN (%s)"
                                 "   AND rowid < (SELECT rowid"
                                 "                FROM memory.collected_images"
-                                "                WHERE imgid=%d)"
+                                "                WHERE imgid IN (%s)"
+                                "                ORDER BY rowid LIMIT 1)"
                                 " ORDER BY rowid DESC LIMIT 1",
-                                txt, id0);
+                                txt, txt);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
         if(sqlite3_step(stmt2) == SQLITE_ROW)
         {
