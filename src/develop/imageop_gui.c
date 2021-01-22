@@ -402,17 +402,27 @@ static void _send_button_press_event(GtkWidget *w, guint state)
   gdk_event_free(event);
 }
 
+static gboolean _widget_visible(GtkWidget *w)
+{
+  GtkWidget *parent = gtk_widget_get_parent(w);
+  return gtk_widget_get_visible(w) &&
+         gtk_widget_get_visible(parent) &&
+         gtk_widget_get_visible(gtk_widget_get_parent(parent));
+}
+
 static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer widget)
 {
-  _send_button_press_event(widget, 0);
+  if(_widget_visible(widget))
+    _send_button_press_event(widget, 0);
   return TRUE;
 }
 
 static gboolean _ctrl_press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer widget)
 {
-  _send_button_press_event(widget, GDK_CONTROL_MASK);
+  if(_widget_visible(widget))
+    _send_button_press_event(widget, GDK_CONTROL_MASK);
   return TRUE;
 }
 
