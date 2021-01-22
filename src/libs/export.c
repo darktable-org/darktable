@@ -853,6 +853,16 @@ static void _dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
     gtk_widget_hide(GTK_WIDGET(d->print_size));
     dt_conf_set_string(CONFIG_PREFIX "resizing", "scaling");
   }
+  if(d_type == DT_DIMENSIONS_CM || d_type == DT_DIMENSIONS_INCH)
+  {
+    // set dpi to user-set dpi
+    dt_conf_set_int("metadata/resolution", dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
+  }
+  else
+  {
+    // reset export dpi to default value for scale/pixel specific export
+    dt_conf_set_int("metadata/resolution", dt_confgen_get_int("metadata/resolution", DT_DEFAULT));
+  }
   _size_in_px_update(d);
 }
 
