@@ -1848,8 +1848,8 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
 
-  const char *mes11 = offset ? "adding time offset to %d image" : "setting date time to %d image";
-  const char *mes12 = offset ? "adding time offset to %d images" : "setting date time to %d images";
+  const char *mes11 = offset ? N_("adding time offset to %d image") : N_("setting date time to %d image");
+  const char *mes12 = offset ? N_("adding time offset to %d images") : N_("setting date time to %d images");
   snprintf(message, sizeof(message), ngettext(mes11, mes12, total), total);
   dt_control_job_set_progress_message(job, message);
 
