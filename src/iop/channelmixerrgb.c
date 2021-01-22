@@ -1044,11 +1044,11 @@ static void declare_cat_on_pipe(struct dt_iop_module_t *self, gboolean preset)
   }
 }
 
-static inline gboolean is_module_cat_on_pipe(struct dt_iop_module_t *self)
+static inline gboolean _is_another_module_cat_on_pipe(struct dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
   if(!g) return FALSE;
-  return self->dev->proxy.chroma_adaptation == self;
+  return self->dev->proxy.chroma_adaptation && self->dev->proxy.chroma_adaptation != self;
 }
 
 
@@ -1690,12 +1690,14 @@ void validate_color_checker(const float *const restrict in,
 static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
-  if(self->enabled && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
+  if(self->enabled
+     && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
   {
     // this module instance is doing chromatic adaptation
-    if(!is_module_cat_on_pipe(self))
+    if(_is_another_module_cat_on_pipe(self))
     {
-      // our second biggest problem : another channelmixerrgb instance is doing CAT earlier in the pipe
+      // our second biggest problem : another channelmixerrgb instance is doing CAT
+      // earlier in the pipe.
       dt_iop_set_module_trouble_message(self, _("double CAT applied"),
                                         _("you have 2 instances or more of color calibration,\n"
                                           "all performing chromatic adaptation.\n"
