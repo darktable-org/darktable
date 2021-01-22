@@ -155,6 +155,9 @@ typedef struct dt_image_geoloc_t
 } dt_image_geoloc_t;
 
 struct dt_cache_entry_t;
+
+#define DT_DATETIME_LENGTH 20
+
 // TODO: add color labels and such as cacheable
 // __attribute__ ((aligned (128)))
 typedef struct dt_image_t
@@ -172,7 +175,7 @@ typedef struct dt_image_t
   char exif_maker[64];
   char exif_model[64];
   char exif_lens[128];
-  char exif_datetime_taken[20];
+  char exif_datetime_taken[DT_DATETIME_LENGTH];
 
   char camera_maker[64];
   char camera_model[64];
@@ -374,6 +377,10 @@ void dt_image_synch_all_xmp(const gchar *pathname);
 
 // add an offset to the exif_datetime_taken field
 void dt_image_add_time_offset(const int32_t imgid, const long int offset);
+// set datetime to exif_datetime_taken field
+void dt_image_set_datetime(const int32_t imgid, const char *datetime);
+// return image datetime string into the given buffer (size = DT_DATETIME_LENGTH)
+void dt_image_get_datetime(const int32_t imgid, char *datetime);
 
 /** helper function to get the audio file filename that is accompanying the image. g_free() after use */
 char *dt_image_get_audio_path(const int32_t imgid);
