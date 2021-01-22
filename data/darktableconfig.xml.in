@@ -2428,9 +2428,9 @@
   </dtconfig>
   <dtconfig>
     <name>metadata/resolution</name>
-    <type>int</type>
+    <type min="72" max="9600">int</type>
     <default>300</default>
-    <shortdescription/>
+    <shortdescription>DPI value for exported files</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="storage" section="xmp">
