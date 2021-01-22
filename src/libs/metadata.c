@@ -182,9 +182,9 @@ static void _update(dt_lib_module_t *self)
     {
       if(sqlite3_column_bytes(stmt, 1))
       {
-        const uint32_t key = sqlite3_column_int(stmt, 0);
+        const uint32_t key = (uint32_t)sqlite3_column_int(stmt, 0);
         char *value = g_strdup((char *)sqlite3_column_text(stmt, 1));
-        const uint32_t count = sqlite3_column_int(stmt, 2);
+        const uint32_t count = (uint32_t)sqlite3_column_int(stmt, 2);
         metadata_count[key] = (count == imgs_count) ? 2 : 1;  // if = all images have the same metadata
         metadata[key] = g_list_append(metadata[key], value);
       }
