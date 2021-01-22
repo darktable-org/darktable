@@ -751,20 +751,36 @@ overshoot.right
   margin-right: 0.5em;  /* spacing between histogram button box widgets, also provides right margin for buttons */
 }
 
+/* set background color and color of scope/histogram buttons */
+#scope-type-button,
+#histogram-scale-button,
+#waveform-type-button
+{
+  color: alpha(@button_checked_fg, 0.56);
+  background-color: alpha(darker(@button_bg),0.8);
+}
+
+#scope-type-button:hover,
+#histogram-scale-button:hover,
+#waveform-type-button:hover
+{
+  color: @button_fg;
+}
+
 /* set channel buttons at inactive state */
 #red-channel-button
 {
-  background-color: alpha(@graph_red, 0.25);
+  background-color: alpha(@graph_red, 0.2);
 }
 
 #green-channel-button
 {
-  background-color: alpha(@graph_green, 0.25);
+  background-color: alpha(@graph_green, 0.2);
 }
 
 #blue-channel-button
 {
-  background-color: alpha(@graph_blue, 0.25);
+  background-color: alpha(@graph_blue, 0.2);
 }
 
 /* set now them to active state */
@@ -783,9 +799,6 @@ overshoot.right
 }
 
 /* set border of all active buttons */
-#scope-type-button,
-#histogram-scale-button,
-#waveform-type-button,
 #red-channel-button:checked,
 #green-channel-button:checked,
 #blue-channel-button:checked
