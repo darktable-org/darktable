@@ -1148,7 +1148,7 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
   }
 }
 
-static void display_wb_error(struct dt_iop_module_t *self)
+static void _display_wb_error(struct dt_iop_module_t *self)
 {
   // this module instance is doing chromatic adaptation
   dt_iop_temperature_gui_data_t *g = (dt_iop_temperature_gui_data_t *)self->gui_data;
@@ -1178,7 +1178,7 @@ static void display_wb_error(struct dt_iop_module_t *self)
 
 void gui_focus(struct dt_iop_module_t *self, gboolean in)
 {
-  display_wb_error(self);
+  _display_wb_error(self);
 }
 
 
@@ -1349,7 +1349,7 @@ void gui_update(struct dt_iop_module_t *self)
   color_rgb_sliders(self);
   color_finetuning_slider(self);
 
-  display_wb_error(self);
+  _display_wb_error(self);
 
   gtk_widget_queue_draw(self->widget);
 }
@@ -1647,7 +1647,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   dt_bauhaus_combobox_set(g->presets, DT_IOP_TEMP_USER);
 
-  display_wb_error(self);
+  _display_wb_error(self);
 }
 
 static gboolean btn_toggled(GtkWidget *togglebutton, GdkEventButton *event, dt_iop_module_t *self)
@@ -1947,7 +1947,7 @@ static void _preference_changed(gpointer instance, gpointer user_data)
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
 {
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
-  display_wb_error(self);
+  _display_wb_error(self);
 }
 
 
@@ -2137,7 +2137,7 @@ void gui_reset(struct dt_iop_module_t *self)
   color_finetuning_slider(self);
   color_rgb_sliders(self);
   color_temptint_sliders(self);
-  display_wb_error(self);
+  _display_wb_error(self);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
