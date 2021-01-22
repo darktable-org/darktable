@@ -168,6 +168,8 @@ static const char *_labels[] = {
   N_("categories"),
 };
 
+static const char *VARIOUS = N_("<various>");
+
 static gboolean _dndactive = FALSE;
 
 const char *name(dt_lib_module_t *self)
@@ -276,6 +278,13 @@ static void _metadata_update_value(const int i, const char *value, dt_lib_module
     m->value = g_strdup(str);
     GtkWidget *w_value = gtk_grid_get_child_at(GTK_GRID(d->grid), 1, m->order);
     gtk_label_set_text(GTK_LABEL(w_value), str);
+    if (g_strcmp0(str, VARIOUS) == 0)
+    {
+      const char *format = "<span style=\"italic\">\%s</span>";
+      char *markup = g_markup_printf_escaped (format, str);
+      gtk_label_set_markup (GTK_LABEL (w_value), markup);
+      g_free (markup);
+    }
     const char *tooltip = m->tooltip ? m->tooltip : m->value;
     gtk_widget_set_tooltip_text(GTK_WIDGET(w_value), tooltip);
   }
@@ -339,104 +348,14 @@ static gint _lib_metadata_sort_index(gconstpointer a, gconstpointer b)
   return ma->index - mb->index;
 }
 
-#ifdef USE_LUA
-static int lua_update_metadata(lua_State*L);
-#endif
-/* update all values to reflect mouse over image id or no data at all */
-static void _metadata_view_update_values(dt_lib_module_t *self)
-{
-  int32_t mouse_over_id = dt_control_get_mouse_over_id();
-
-  if(mouse_over_id == -1)
-  {
-    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-    if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
-    {
-      mouse_over_id = darktable.develop->image_storage.id;
-    }
-    else
-    {
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid FROM main.selected_images LIMIT 1",
-                                  -1, &stmt, NULL);
-      if(sqlite3_step(stmt) == SQLITE_ROW) mouse_over_id = sqlite3_column_int(stmt, 0);
-      sqlite3_finalize(stmt);
-
-      // Still -1 => no selection in progress
-      if(mouse_over_id == -1)
-      {
-        goto fill_minuses;
-      }
-    }
-  }
-
-  if(mouse_over_id >= 0)
-  {
-    char value[512];
-    char pathname[PATH_MAX] = { 0 };
-
-    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, mouse_over_id, 'r');
-    if(!img) goto fill_minuses;
-    if(img->film_id == -1)
-    {
-      dt_image_cache_read_release(darktable.image_cache, img);
-      goto fill_minuses;
-    }
-
-    /* update all metadata */
-
-    dt_image_film_roll(img, value, sizeof(value));
-    char tooltip[512];
-    snprintf(tooltip, sizeof(tooltip), _("double click to jump to film roll\n%s"), value);
-    _metadata_update_tooltip(md_internal_filmroll, tooltip, self);
-    _metadata_update_value(md_internal_filmroll, value, self);
-
-    snprintf(value, sizeof(value), "%d", img->id);
-    _metadata_update_value(md_internal_imgid, value, self);
-
-    snprintf(value, sizeof(value), "%d", img->group_id);
-    _metadata_update_value(md_internal_groupid, value, self);
-
-    _metadata_update_value(md_internal_filename, img->filename, self);
-
-    snprintf(value, sizeof(value), "%d", img->version);
-    _metadata_update_value(md_internal_version, value, self);
-
-    gboolean from_cache = FALSE;
-    dt_image_full_path(img->id, pathname, sizeof(pathname), &from_cache);
-    _metadata_update_value(md_internal_fullpath, pathname, self);
-
-    g_strlcpy(value, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(value));
-    _metadata_update_value(md_internal_local_copy, value, self);
-
-    if (img->import_timestamp >=0)
-      _metadata_update_timestamp(md_internal_import_timestamp, &img->import_timestamp, self);
-    else
-      _metadata_update_value(md_internal_import_timestamp, NODATA_STRING, self);
-
-    if (img->change_timestamp >=0)
-      _metadata_update_timestamp(md_internal_change_timestamp, &img->change_timestamp, self);
-    else
-      _metadata_update_value(md_internal_change_timestamp, NODATA_STRING, self);
-
-    if (img->export_timestamp >=0)
-      _metadata_update_timestamp(md_internal_export_timestamp, &img->export_timestamp, self);
-    else
-      _metadata_update_value(md_internal_export_timestamp, NODATA_STRING, self);
-
-    if (img->print_timestamp >=0)
-      _metadata_update_timestamp(md_internal_print_timestamp, &img->print_timestamp, self);
-    else
-      _metadata_update_value(md_internal_print_timestamp, NODATA_STRING, self);
-
-    // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
-
-    // the bits of the flags
 #if SHOW_FLAGS
+static void _metadata_get_flags(const dt_image_t *const img, char *const text, char *const tooltip, const size_t tooltip_size)
     {
       #define EMPTY_FIELD '.'
       #define FALSE_FIELD '.'
       #define TRUE_FIELD '!'
+
+  #define FLAG_NB 15
 
       char *flags_tooltip = NULL;
       char *flag_descriptions[] = { N_("unused"),
@@ -452,10 +371,10 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
                                     N_("has .wav"),
                                     N_("monochrome")
       };
-      char *tooltip_parts[15] = { 0 };
+  char *tooltip_parts[FLAG_NB] = { 0 };
       int next_tooltip_part = 0;
 
-      memset(value, EMPTY_FIELD, sizeof(value));
+  gchar *value = g_strnfill(FLAG_NB, EMPTY_FIELD);
 
       int stars = img->flags & 0x7;
       char *star_string = NULL;
@@ -556,56 +475,310 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
 
       flags_tooltip = g_strjoinv("\n", tooltip_parts);
       g_free(loader_tooltip);
-      _metadata_update_tooltip(md_internal_flags, flags_tooltip, self);
-      _metadata_update_value(md_internal_flags, value, self);
 
+  (void)g_strlcpy(text, value, FLAG_NB);
+  (void)g_strlcpy(tooltip, flags_tooltip, tooltip_size);
+
+  g_free(value);
       g_free(star_string);
       g_free(flags_tooltip);
 
       #undef EMPTY_FIELD
       #undef FALSE_FIELD
       #undef TRUE_FIELD
+  #undef FLAG_NB
     }
 #endif // SHOW_FLAGS
 
-    /* EXIF */
-    _metadata_update_value(md_exif_model, img->camera_alias, self);
-    _metadata_update_value(md_exif_lens, img->exif_lens, self);
-    _metadata_update_value(md_exif_maker, img->camera_maker, self);
+#ifdef USE_LUA
+static int lua_update_metadata(lua_State*L);
+#endif
 
-    snprintf(value, sizeof(value), "f/%.1f", img->exif_aperture);
-    _metadata_update_value(md_exif_aperture, value, self);
+/* update all values to reflect mouse over image id or no data at all */
+static void _metadata_view_update_values(dt_lib_module_t *self)
+{
+  //uint32_t ids_size = 0u;
+  GArray *const ids = g_array_new(FALSE, FALSE, sizeof(int));
+  int32_t mouse_over_id = dt_control_get_mouse_over_id();
 
-    char *exposure_str = dt_util_format_exposure(img->exif_exposure);
-    _metadata_update_value(md_exif_exposure, exposure_str, self);
-    g_free(exposure_str);
+  int32_t count = 0;
 
-    if(isnan(img->exif_exposure_bias))
+//  printf("--- count=%d / mouse_over_id=%d\n", count, mouse_over_id);
+
+  if(mouse_over_id == -1)
     {
-      _metadata_update_value(md_exif_exposure_bias, NODATA_STRING, self);
+    const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+    if(cv->view(cv) == DT_VIEW_DARKROOM)
+    {
+      mouse_over_id = darktable.develop->image_storage.id;
     }
     else
     {
-      snprintf(value, sizeof(value), _("%+.2f EV"), img->exif_exposure_bias);
-      _metadata_update_value(md_exif_exposure_bias, value, self);
+      sqlite3_stmt *stmt;
+
+      //SELECT COUNT(imgid), imgid FROM main.selected_images
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "SELECT imgid, COUNT(imgid) FROM main.selected_images",
+                                  -1, &stmt, NULL);
+      if (sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        mouse_over_id = sqlite3_column_int(stmt, 0);
+        count = sqlite3_column_int(stmt, 1);
     }
+      sqlite3_finalize(stmt);
 
-    snprintf(value, sizeof(value), "%.0f mm", img->exif_focal_length);
-    _metadata_update_value(md_exif_focal_length, value, self);
+      // Still -1 => no selection in progress
+      if(count == 0)
+      {
+        goto fill_minuses;
+      }
+    }
+  }
+  else
+  {
+    count = 1;
+  }
+//  printf("count=%d / mouse_over_id=%d\n", count, mouse_over_id);
 
-    if(isnan(img->exif_focus_distance) || fpclassify(img->exif_focus_distance) == FP_ZERO)
+  char metadata[md_size][PATH_MAX] = {{0}};
+  gboolean skip[md_size] = {false};
+
+  if (count > 1)
     {
-      _metadata_update_value(md_exif_focus_distance, NODATA_STRING, self);
+    gchar *const images = dt_view_get_images_to_act_on_query(FALSE);
+    sqlite3_stmt *stmt = NULL;
+    gchar *query = dt_util_dstrcat(NULL, "SELECT COUNT(DISTINCT film_id), "
+                                         "2, " //id always different
+                                         "COUNT(DISTINCT group_id), "
+                                         "COUNT(DISTINCT filename), "
+                                         "COUNT(DISTINCT version), "
+                                         "2, " //chemin
+                                         "2, " //copie locale
+                                         "COUNT(DISTINCT import_timestamp), "
+                                         "COUNT(DISTINCT change_timestamp), "
+                                         "COUNT(DISTINCT export_timestamp), "
+                                         "COUNT(DISTINCT print_timestamp), "
+                                         #if SHOW_FLAGS
+                                         "COUNT(DISTINCT flags), "
+                                         #endif
+                                         "COUNT(DISTINCT model), "
+                                         "COUNT(DISTINCT maker), "
+                                         "COUNT(DISTINCT lens), "
+                                         "COUNT(DISTINCT aperture), "
+                                         "COUNT(DISTINCT exposure), "
+                                         "COUNT(DISTINCT IFNULL(exposure_bias, '')), "
+                                         "COUNT(DISTINCT focal_length), "
+                                         "COUNT(DISTINCT focus_distance), "
+                                         "COUNT(DISTINCT iso), "
+                                         "COUNT(DISTINCT datetime_taken), "
+                                         "COUNT(DISTINCT width), "
+                                         "COUNT(DISTINCT height), "
+                                         "2, " //exported width
+                                         "2, " //exported height
+                                         "(SELECT count(distinct value) FROM meta_data WHERE key = 2 AND id in (%s)), " //titre
+                                         "(SELECT count(distinct value) FROM meta_data WHERE key = 3 AND id in (%s)), " //description
+                                         "(SELECT count(distinct value) FROM meta_data WHERE key = 0 AND id in (%s)), " //auteur
+                                         "(SELECT count(distinct value) FROM meta_data WHERE key = 1 AND id in (%s)), " //diffuseur
+                                         "(SELECT count(distinct value) FROM meta_data WHERE key = 4 AND id in (%s)), " //droits
+                                         "(SELECT count(distinct value) FROM meta_data WHERE key = 5 AND id in (%s)), " //notes
+                                         "(SELECT count(distinct value) FROM meta_data WHERE key = 6 AND id in (%s)), " //nom de version
+                                         "COUNT(DISTINCT latitude), "
+                                         "COUNT(DISTINCT longitude), "
+                                         "COUNT(DISTINCT altitude), "
+                                         "2, " //keywords
+                                         "2 " //catégories
+                                         "FROM main.images "
+                                         "WHERE id IN (%s)",
+                                   images, images, images, images, images, images, images, images);
+    double tt = dt_get_wtime();
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    printf("Requête: %0.06f\n", dt_get_wtime()-tt);
+    g_free(query);
+
+    if (sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      for (int32_t md = 0; md < md_size; md++)
+      {
+//        printf("md=%d -> %d\n", md, sqlite3_column_int(stmt, md));
+        if (sqlite3_column_int(stmt, md) > 1)
+        {
+          skip[md] = true;
+           //_metadata_update_value(md, VARIOUS, self);
     }
     else
     {
-      snprintf(value, sizeof(value), "%.2f m", img->exif_focus_distance);
-      _metadata_update_value(md_exif_focus_distance, value, self);
+          skip[md] = false;
+//          const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
+//          (void)g_strlcpy(metadata[i], "data", sizeof(metadata[i]));
+//          const dt_image_t *img = dt_image_cache_get(darktable.image_cache, g_array_index(ids, int, 0), 'r');
+//          _metadata_update_value(md, "data", self);
+        }
+      }
+    }
+    sqlite3_finalize(stmt);
     }
 
-    snprintf(value, sizeof(value), "%.0f", img->exif_iso);
-    _metadata_update_value(md_exif_iso, value, self);
+  //gboolean cease[md_size] = {false};
+  char tooltip_filmroll[300] = {0};
+#if SHOW_FLAGS
+  char tooltip_flags[300] = {0};
+#endif
 
+    int img_id = mouse_over_id; //g_array_index(ids, int, i);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, img_id, 'r');
+
+    if (!img) goto fill_minuses;
+
+    if (img->film_id == -1)
+    {
+      dt_image_cache_read_release(darktable.image_cache, img);
+      goto fill_minuses;
+    }
+
+    // Update the metadata values
+    for (int32_t md = 0; md < md_size; md++)
+      {
+        if (skip[md] == true)
+        {
+//          printf("md=%d -- skipped\n", md);
+          _metadata_update_value(md, VARIOUS, self);
+          continue;
+        }
+
+        char text[PATH_MAX] = {0};
+
+        switch (md)
+        {
+          case md_internal_filmroll:
+            dt_image_film_roll(img, text, sizeof(text));
+            snprintf(tooltip_filmroll, sizeof(tooltip_filmroll), _("double click to jump to film roll\n%s"), text);
+            _metadata_update_tooltip(md_internal_filmroll, tooltip_filmroll, self);
+            _metadata_update_value(md_internal_filmroll, text, self);
+            break;
+
+          case md_internal_imgid:
+            (void)g_snprintf(text, sizeof(text), "%d", img->id);
+            _metadata_update_value(md_internal_imgid, text, self);
+            break;
+
+          case md_internal_groupid:
+            (void)g_snprintf(text, sizeof(text), "%d", img->group_id);
+            _metadata_update_value(md_internal_groupid, text, self);
+            break;
+
+          case md_internal_filename:
+            _metadata_update_value(md_internal_filename, img->filename, self);
+            break;
+
+          case md_internal_version:
+            (void)g_snprintf(text, sizeof(text), "%d", img->version);
+            _metadata_update_value(md_internal_version, text, self);
+            break;
+
+          case md_internal_fullpath:
+          {
+            gboolean from_cache = FALSE;
+            dt_image_full_path(img->id, text, sizeof(text), &from_cache);
+            _metadata_update_value(md_internal_fullpath, text, self);
+          }
+            break;
+
+          case md_internal_local_copy:
+            (void)g_strlcpy(text, (img->flags & DT_IMAGE_LOCAL_COPY) ? _("yes") : _("no"), sizeof(text));
+            _metadata_update_value(md_internal_local_copy, text, self);
+            break;
+
+          case md_internal_import_timestamp:
+            if (img->import_timestamp >= 0)
+              _metadata_update_timestamp(md_internal_import_timestamp, &img->import_timestamp, self);
+            else
+              _metadata_update_value(md_internal_import_timestamp, NODATA_STRING, self);
+            break;
+
+          case md_internal_change_timestamp:
+            if (img->change_timestamp >=0)
+              _metadata_update_timestamp(md_internal_change_timestamp, &img->change_timestamp, self);
+            else
+              _metadata_update_value(md_internal_change_timestamp, NODATA_STRING, self);
+            break;
+
+          case md_internal_export_timestamp:
+            if (img->export_timestamp >=0)
+              _metadata_update_timestamp(md_internal_export_timestamp, &img->export_timestamp, self);
+            else
+              _metadata_update_value(md_internal_export_timestamp, NODATA_STRING, self);
+            break;
+
+          case md_internal_print_timestamp:
+            if (img->print_timestamp >=0)
+              _metadata_update_timestamp(md_internal_print_timestamp, &img->print_timestamp, self);
+            else
+              _metadata_update_value(md_internal_print_timestamp, NODATA_STRING, self);
+            break;
+
+            // TODO: decide if this should be removed for a release. maybe #ifdef'ing to only add it to git compiles?
+#if SHOW_FLAGS
+          case md_internal_flags:
+            _metadata_get_flags(img, text, tooltip_flags, sizeof(tooltip_flags));
+            _metadata_update_tooltip(md_internal_flags, tooltip_flags, self);
+            _metadata_update_value(md_internal_flags, text, self);
+            break;
+#endif // SHOW_FLAGS
+
+          case md_exif_model:
+            _metadata_update_value(md_exif_model, img->camera_alias, self);
+            break;
+
+          case md_exif_maker:
+            _metadata_update_value(md_exif_maker, img->camera_maker, self);
+            break;
+
+          case md_exif_lens:
+            _metadata_update_value(md_exif_lens, img->exif_lens, self);
+            break;
+
+          case md_exif_aperture:
+            (void)g_snprintf(text, sizeof(text), "f/%.1f", (double)img->exif_aperture);
+            _metadata_update_value(md_exif_aperture, text, self);
+            break;
+
+          case md_exif_exposure:
+          {
+            gchar *const str = dt_util_format_exposure(img->exif_exposure);
+            _metadata_update_value(md_exif_exposure, str, self);
+            g_free(str);
+          }
+            break;
+
+          case md_exif_exposure_bias:
+            g_strlcpy(text, NODATA_STRING, sizeof(text));
+            if (!(isnan(img->exif_exposure_bias)))
+            {
+              (void)g_snprintf(text, sizeof(text), _("%+.2f EV"), (double)img->exif_exposure_bias);
+            }
+            _metadata_update_value(md_exif_exposure_bias, text, self);
+            break;
+
+          case md_exif_focal_length:
+            (void)g_snprintf(text, sizeof(text), "%.0f mm", (double)img->exif_focal_length);
+            _metadata_update_value(md_exif_focal_length, text, self);
+            break;
+
+          case md_exif_focus_distance:
+            (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
+            if(!(isnan(img->exif_focus_distance) || (fpclassify(img->exif_focus_distance) == FP_ZERO) ))
+            {
+              (void)g_snprintf(text, sizeof(text), "%.2f m", (double)img->exif_focus_distance);
+            }
+            _metadata_update_value(md_exif_focus_distance, text, self);
+            break;
+
+          case md_exif_iso:
+            (void)g_snprintf(text, sizeof(text), "%.0f", (double)img->exif_iso);
+            _metadata_update_value(md_exif_iso, text, self);
+            break;
+
+          case md_exif_datetime:
+          {
     struct tm tt_exif = { 0 };
     if(sscanf(img->exif_datetime_taken, "%d:%d:%d %d:%d:%d", &tt_exif.tm_year, &tt_exif.tm_mon,
       &tt_exif.tm_mday, &tt_exif.tm_hour, &tt_exif.tm_min, &tt_exif.tm_sec) == 6)
@@ -617,82 +790,79 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       _metadata_update_timestamp(md_exif_datetime, &exif_timestamp, self);
     }
     else
-      _metadata_update_value(md_exif_datetime, img->exif_datetime_taken, self);
+              _metadata_update_value(md_exif_datetime, metadata[md_exif_datetime], self);
+          }
+            break;
 
-    if(((img->p_width != img->width) || (img->p_height != img->height))  &&
-       (img->p_width || img->p_height))
+          case md_exif_width:
+            if (img->p_width && (img->p_width != img->width))
     {
-      snprintf(value, sizeof(value), "%d (%d)", img->p_height, img->height);
-      _metadata_update_value(md_exif_height, value, self);
-      snprintf(value, sizeof(value), "%d (%d) ",img->p_width, img->width);
-      _metadata_update_value(md_exif_width, value, self);
+              (void)g_snprintf(text, sizeof(text), "%d (%d)", img->p_width, img->width);
+              _metadata_update_value(md_exif_width, text, self);
     }
-    else {
-    snprintf(value, sizeof(value), "%d", img->height);
-    _metadata_update_value(md_exif_height, value, self);
-    snprintf(value, sizeof(value), "%d", img->width);
-    _metadata_update_value(md_exif_width, value, self);
+            else
+            {
+              (void)g_snprintf(text, sizeof(text), "%d", img->width);
+              _metadata_update_value(md_exif_width, text, self);
     }
+            break;
 
-    if(img->verified_size)
+          case md_exif_height:
+            if (img->p_height && (img->p_height != img->height))
     {
-      snprintf(value, sizeof(value), "%d", img->final_height);
-    _metadata_update_value(md_height, value, self);
-      snprintf(value, sizeof(value), "%d", img->final_width);
-    _metadata_update_value(md_width, value, self);
+              (void)g_snprintf(text, sizeof(text), "%d (%d)", img->p_height, img->height);
+              _metadata_update_value(md_exif_height, text, self);
     }
     else
     {
-      _metadata_update_value(md_height, NODATA_STRING, self);
-      _metadata_update_value(md_width, NODATA_STRING, self);
+              (void)g_snprintf(text, sizeof(text), "%d", img->height);
+              _metadata_update_value(md_exif_height, text, self);
     }
-    /* XMP */
-    for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
-    {
-      const uint32_t keyid = dt_metadata_get_keyid_by_display_order(i);
-      const gchar *key = dt_metadata_get_key(keyid);
-      const gboolean hidden = dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL;
-      if(hidden)
-      {
-        g_strlcpy(value, NODATA_STRING, sizeof(value));
-      }
-      else
-      {
-        GList *res = dt_metadata_get(img->id, key, NULL);
-        if(res)
-        {
-          g_strlcpy(value, (char *)res->data, sizeof(value));
-          _filter_non_printable(value, sizeof(value));
-          g_list_free_full(res, &g_free);
-        }
-        else
-          g_strlcpy(value, NODATA_STRING, sizeof(value));
-      }
-      _metadata_update_value(md_xmp_metadata+i, value, self);
-    }
+            break;
 
-    /* geotagging */
-    /* latitude */
-    if(isnan(img->geoloc.latitude))
+          case md_width:
+            (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
+            if(img->verified_size)
+    {
+              (void)g_snprintf(text, sizeof(text), "%d", img->final_width);
+      }
+            _metadata_update_value(md_width, text, self);
+            break;
+
+          case md_height:
+            (void)g_strlcpy(text, NODATA_STRING, sizeof(text));
+            if(img->verified_size)
+      {
+              (void)g_snprintf(text, sizeof(text), "%d", img->final_height);
+        }
+            _metadata_update_value(md_height, text, self);
+            break;
+
+//          case md_xmp_metadata: //managed below the switch()
+//            break;
+          case md_geotagging_lat:
+            if (isnan(img->geoloc.latitude))
     {
       _metadata_update_value(md_geotagging_lat, NODATA_STRING, self);
     }
     else
     {
-      if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
+              if (dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *latitude = dt_util_latitude_str(img->geoloc.latitude);
+                gchar *latitude = dt_util_latitude_str((float)img->geoloc.latitude);
         _metadata_update_value(md_geotagging_lat, latitude, self);
         g_free(latitude);
       }
       else
       {
         const gchar NS = img->geoloc.latitude < 0 ? 'S' : 'N';
-        snprintf(value, sizeof(value), "%c %09.6f", NS, fabs(img->geoloc.latitude));
-        _metadata_update_value(md_geotagging_lat, value, self);
+                (void)g_snprintf(text, sizeof(text), "%c %09.6f", NS, fabs(img->geoloc.latitude));
+                _metadata_update_value(md_geotagging_lat, text, self);
       }
     }
-    /* longitude */
+            break;
+
+          case md_geotagging_lon:
     if(isnan(img->geoloc.longitude))
     {
       _metadata_update_value(md_geotagging_lon, NODATA_STRING, self);
@@ -701,18 +871,20 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *longitude = dt_util_longitude_str(img->geoloc.longitude);
+                gchar *longitude = dt_util_longitude_str((float)img->geoloc.longitude);
         _metadata_update_value(md_geotagging_lon, longitude, self);
         g_free(longitude);
       }
       else
       {
         const gchar EW = img->geoloc.longitude < 0 ? 'W' : 'E';
-        snprintf(value, sizeof(value), "%c %010.6f", EW, fabs(img->geoloc.longitude));
-        _metadata_update_value(md_geotagging_lon, value, self);
+                (void)g_snprintf(text, sizeof(text), "%c %010.6f", EW, fabs(img->geoloc.longitude));
+                _metadata_update_value(md_geotagging_lon, text, self);
       }
     }
-    /* elevation */
+            break;
+
+          case md_geotagging_ele:
     if(isnan(img->geoloc.elevation))
     {
       _metadata_update_value(md_geotagging_ele, NODATA_STRING, self);
@@ -721,37 +893,40 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
     {
       if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location"))
       {
-        gchar *elevation = dt_util_elevation_str(img->geoloc.elevation);
+                gchar *elevation = dt_util_elevation_str((float)img->geoloc.elevation);
         _metadata_update_value(md_geotagging_ele, elevation, self);
         g_free(elevation);
       }
       else
       {
-        snprintf(value, sizeof(value), "%.2f %s", img->geoloc.elevation, _("m"));
-        _metadata_update_value(md_geotagging_ele, value, self);
+                (void)g_snprintf(text, sizeof(text), "%.2f %s", img->geoloc.elevation, _("m"));
+                _metadata_update_value(md_geotagging_ele, text, self);
       }
     }
+            break;
 
-    /* tags */
+          case md_tag_names:
+          case md_categories:
+          {
     GList *tags = NULL;
     char *tagstring = NULL;
     char *categoriesstring = NULL;
-    if(dt_tag_get_attached(mouse_over_id, &tags, TRUE))
+            if(dt_tag_get_attached(img->id, &tags, TRUE))
     {
-      gint length = 0;
+              uint64_t length = 0u;
       for(GList *taglist = tags; taglist; taglist = g_list_next(taglist))
       {
         const char *tagname = ((dt_tag_t *)taglist->data)->leave;
         if (!(((dt_tag_t *)taglist->data)->flags & DT_TF_CATEGORY))
         {
           // tags - just keywords
-          length = length + strlen(tagname) + 2;
-          if(length < 45)
+                  length = length + strlen(tagname) + 2u;
+                  if(length < 45u)
             tagstring = dt_util_dstrcat(tagstring, "%s, ", tagname);
           else
           {
             tagstring = dt_util_dstrcat(tagstring, "\n%s, ", tagname);
-            length = strlen(tagname) + 2;
+                    length = strlen(tagname) + 2u;
           }
         }
         else
@@ -775,16 +950,64 @@ static void _metadata_view_update_values(dt_lib_module_t *self)
       }
       if(tagstring) tagstring[strlen(tagstring)-2] = '\0';
     }
-    _metadata_update_value(md_tag_names, tagstring ? tagstring : NODATA_STRING, self);
-    _metadata_update_value(md_categories, categoriesstring ? categoriesstring : NODATA_STRING, self);
+
+            _metadata_update_value(md, tagstring ? tagstring : NODATA_STRING, self);
 
     g_free(tagstring);
     g_free(categoriesstring);
     dt_tag_free_result(&tags);
+          }
+            break;
 
-    /* release img */
+          default:
+            break;
+        }
+
+        //cases not handled by switch
+        if (md >= md_xmp_metadata && md < (md_xmp_metadata + DT_METADATA_NUMBER))
+        {
+          g_strlcpy(text, NODATA_STRING, sizeof(text));
+
+          const uint32_t keyid = dt_metadata_get_keyid_by_display_order((uint32_t)(md - md_xmp_metadata));
+          const gchar *key = dt_metadata_get_key(keyid);
+          const gboolean hidden = dt_metadata_get_type(keyid) == DT_METADATA_TYPE_INTERNAL;
+          if(! hidden)
+          {
+            GList *res = dt_metadata_get(img->id, key, NULL);
+            if(res)
+            {
+              g_strlcpy(text, (char *)res->data, sizeof(text));
+              _filter_non_printable(text, sizeof(text));
+              g_list_free_full(res, &g_free);
+            }
+          }
+          _metadata_update_value(md, text, self);
+        }
+
+//        //compute text value regarding other imgs
+//        if (metadata[md][0] == '\0')
+//        {
+//          strncpy(metadata[md], text, sizeof(metadata[md]));
+//        }
+//        else if (g_strcmp0(text, metadata[md]) != 0)
+//        {
+//          strncpy(metadata[md], VARIOUS, sizeof(metadata[md]));
+//          //cease[md] = true;
+//        }
+//        else
+//        {
+//          //leave the value, metadata is the same
+//        }
+      }
     dt_image_cache_read_release(darktable.image_cache, img);
+  //}
 
+  (void)g_array_free(ids, TRUE);
+
+  return;
+
+  if(mouse_over_id >= 0)
+  {
 #ifdef USE_LUA
     dt_lua_async_call_alien(lua_update_metadata,
         0,NULL,NULL,
