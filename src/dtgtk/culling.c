@@ -548,7 +548,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
     else
     {
       const int move = delta < 0 ? -1 : 1;
-      _thumbs_move(table, -move);
+      _thumbs_move(table, move);
     }
   }
   return TRUE;
