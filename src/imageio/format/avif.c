@@ -229,6 +229,8 @@ int write_image(struct dt_imageio_module_data_t *data,
   const size_t height = d->global.height;
   const size_t bit_depth = d->bit_depth > 0 ? d->bit_depth : 0;
   enum avif_color_mode_e color_mode = d->color_mode;
+  /* TODO: Allow the user to select the range in the gui? */
+  avifRange requestedRange = AVIF_RANGE_FULL;
 
   switch(color_mode)
   {
@@ -237,19 +239,28 @@ int write_image(struct dt_imageio_module_data_t *data,
       {
         case AVIF_COMP_LOSSLESS:
           format = AVIF_PIXEL_FORMAT_YUV444;
+          requestedRange = AVIF_RANGE_FULL;
           break;
         case AVIF_COMP_LOSSY:
           if(d->quality > 90)
           {
               format = AVIF_PIXEL_FORMAT_YUV444;
+              requestedRange = AVIF_RANGE_FULL;
+          }
+          else if(d->quality > 85)
+          {
+              format = AVIF_PIXEL_FORMAT_YUV422;
+              requestedRange = AVIF_RANGE_FULL;
           }
           else if(d->quality > 80)
           {
               format = AVIF_PIXEL_FORMAT_YUV422;
+              requestedRange = AVIF_RANGE_LIMITED;
           }
           else
           {
             format = AVIF_PIXEL_FORMAT_YUV420;
+            requestedRange = AVIF_RANGE_LIMITED;
           }
           break;
       }
@@ -368,6 +379,9 @@ int write_image(struct dt_imageio_module_data_t *data,
       }
     }
   }
+
+  /* Set the YUV range before conversion. */
+  image->yuvRange = requestedRange;
 
   avifRGBImageSetDefaults(&rgb, image);
   rgb.format = AVIF_RGB_FORMAT_RGB;
