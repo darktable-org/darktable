@@ -202,7 +202,7 @@ void dt_image_cache_print(dt_image_cache_t *cache)
 dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, char mode)
 {
   if(imgid <= 0) return NULL;
-  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, imgid, mode);
+  dt_cache_entry_t *entry = dt_cache_get(&cache->cache, (uint32_t)imgid, mode);
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
   img->cache_entry = entry;
@@ -212,7 +212,7 @@ dt_image_t *dt_image_cache_get(dt_image_cache_t *cache, const int32_t imgid, cha
 dt_image_t *dt_image_cache_testget(dt_image_cache_t *cache, const int32_t imgid, char mode)
 {
   if(imgid <= 0) return NULL;
-  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, imgid, mode);
+  dt_cache_entry_t *entry = dt_cache_testget(&cache->cache, (uint32_t)imgid, mode);
   if(!entry) return 0;
   ASAN_UNPOISON_MEMORY_REGION(entry->data, sizeof(dt_image_t));
   dt_image_t *img = (dt_image_t *)entry->data;
