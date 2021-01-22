@@ -2276,7 +2276,6 @@ static void checker_changed_callback(GtkWidget *widget, gpointer user_data)
   if(wd == 0.f || ht == 0.f) return;
 
   dt_iop_gui_enter_critical_section(self);
-  g->checker_ready = FALSE;
   g->profile_ready = FALSE;
   init_bounding_box(g, wd, ht);
   dt_iop_gui_leave_critical_section(self);
@@ -3122,6 +3121,8 @@ void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev
 
 void gui_reset(dt_iop_module_t *self)
 {
+  dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
+  g->is_profiling_started = FALSE;
   dt_iop_color_picker_reset(self, TRUE);
   gui_changed(self, NULL, NULL);
 }
@@ -3187,8 +3188,6 @@ void gui_update(struct dt_iop_module_t *self)
 
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->normalize_grey), p->normalize_grey);
 
-  gui_changed(self, NULL, NULL);
-
   dt_iop_gui_enter_critical_section(self);
 
   const int i = dt_conf_get_int("darkroom/modules/channelmixerrgb/colorchecker");
@@ -3208,7 +3207,10 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_iop_gui_leave_critical_section(self);
 
+  g->is_profiling_started = FALSE;
   gtk_widget_hide(g->collapsible);
+  dt_bauhaus_widget_set_quad_paint(g->start_profiling, dtgtk_cairo_paint_solid_arrow, CPF_STYLE_BOX | CPF_DIRECTION_LEFT, NULL);
+  gui_changed(self, NULL, NULL);
 }
 
 void init(dt_iop_module_t *module)
