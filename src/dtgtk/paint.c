@@ -1028,28 +1028,32 @@ void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint 
 {
   PREAMBLE(1, 0, 0)
 
+  cairo_pattern_t *p_src = cairo_get_source(cr);
+  double r, g, b, a;
+  cairo_pattern_get_rgba(p_src, &r, &g, &b, &a);
+
   cairo_pattern_t *pat;
   pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
 
-  cairo_pattern_add_color_stop_rgba(pat, 0.0, 0.0, 0.0, 0.0, 0.5);
-  cairo_pattern_add_color_stop_rgba(pat, 0.2, 0.2, 0.2, 0.2, 0.5);
-  cairo_pattern_add_color_stop_rgba(pat, 0.5, 1.0, 1.0, 1.0, 0.5);
-  cairo_pattern_add_color_stop_rgba(pat, 0.6, 1.0, 1.0, 1.0, 0.5);
-  cairo_pattern_add_color_stop_rgba(pat, 1.0, 0.2, 0.2, 0.2, 0.5);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, r, g, b, a * 0.0);
+  cairo_pattern_add_color_stop_rgba(pat, 0.1, r, g, b, a * 0.1);
+  cairo_pattern_add_color_stop_rgba(pat, 0.5, r, g, b, a * 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 0.6, r, g, b, a * 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, r, g, b, a * 0.2);
 
-  cairo_rectangle(cr, 0.0, 0.0, 0.3, 1.0);
+  cairo_rectangle(cr, 0.0, 0.0, 0.3, 0.9);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
 
   cairo_save(cr);
   cairo_scale(cr, 1.0, -1.0);
   cairo_translate(cr, 0.0, -1.0);
-  cairo_rectangle(cr, 0.2, 0.0, 0.6, 1.0);
+  cairo_rectangle(cr, 0.25, 0.0, 0.5, 1.0);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
   cairo_restore(cr);
 
-  cairo_rectangle(cr, 0.7, 0.0, 0.3, 1.0);
+  cairo_rectangle(cr, 0.7, 0.0, 0.3, 0.9);
   cairo_set_source(cr, pat);
   cairo_fill(cr);
 
@@ -1084,11 +1088,23 @@ void dtgtk_cairo_paint_waveform_overlaid(cairo_t *cr, gint x, gint y, gint w, gi
 {
   PREAMBLE(1, 0, 0)
 
-  // FIXME: if make a mode comobox (histogram, waveform, RGB parade) then don't need this icon
-  // FIXME: improve this icon to make it look like a waveform in color
-  // FIXME: if don't improve, then just use dtgtk_cairo_paint_color()
-  cairo_rectangle(cr, 0.0, 0.0, 1.0, 1.0);
+  cairo_pattern_t *p_src = cairo_get_source(cr);
+  double r, g, b, a;
+  cairo_pattern_get_rgba(p_src, &r, &g, &b, &a);
+
+  cairo_pattern_t *pat;
+  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, r, g * 0.7, b * 0.9, a * 0.2);
+  cairo_pattern_add_color_stop_rgba(pat, 0.4, r * 0.9, g, b * 0.9, a * 0.8);
+  cairo_pattern_add_color_stop_rgba(pat, 0.7, r, g * 0.9, b, a * 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, r * 0.7, g * 0.5, b, a * 0.2);
+
+  cairo_rectangle(cr, 0.0, 0.15, 1.0, 0.7);
+  cairo_set_source(cr, pat);
   cairo_fill(cr);
+
+  cairo_pattern_destroy(pat);
 
   FINISH
 }
@@ -1097,17 +1113,35 @@ void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
-  // FIMXE: render as three waveform-ish patterns in the three primaries
   const GdkRGBA *const primaries = darktable.bauhaus->graph_primaries;
-  cairo_set_source_rgba(cr, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha/3.0);
-  cairo_rectangle(cr, 0.0, 0.0, 1.0/3.0, 1.0);
+  cairo_pattern_t *pat;
+
+  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha * 0.2);
+  cairo_pattern_add_color_stop_rgba(pat, 0.4, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha * 0.7);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, primaries[0].red, primaries[0].green, primaries[0].blue, primaries[0].alpha * 0.3);
+  cairo_rectangle(cr, 0.0, 0.1, 1.0/3.0, 0.7);
+  cairo_set_source(cr, pat);
   cairo_fill(cr);
-  cairo_set_source_rgba(cr, primaries[1].red, primaries[1].green, primaries[1].blue, primaries[1].alpha/3.0);
-  cairo_rectangle(cr, 1.0/3.0, 0.0, 1.0/3.0, 1.0);
+  cairo_pattern_destroy(pat);
+
+  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, primaries[1].red, primaries[1].green, 0.0, primaries[1].alpha * 0.1);
+  cairo_pattern_add_color_stop_rgba(pat, 0.6, primaries[1].red, primaries[1].green, 0.0, primaries[1].alpha * 0.8);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, primaries[1].red, primaries[1].green, 0.0, primaries[1].alpha * 0.4);
+  cairo_rectangle(cr, 1.0/3.0, 0.2, 1.0/3.0, 0.7);
+  cairo_set_source(cr, pat);
   cairo_fill(cr);
-  cairo_set_source_rgba(cr, primaries[2].red, primaries[2].green, primaries[2].blue, primaries[2].alpha/3.0);
-  cairo_rectangle(cr, 2.0/3.0, 0.0, 1.0/3.0, 1.0);
+  cairo_pattern_destroy(pat);
+
+  pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);
+  cairo_pattern_add_color_stop_rgba(pat, 0.0, primaries[2].red, 0.0, primaries[2].blue, primaries[2].alpha * 0.4);
+  cairo_pattern_add_color_stop_rgba(pat, 0.5, primaries[2].red, 0.0, primaries[2].blue, primaries[2].alpha * 0.9);
+  cairo_pattern_add_color_stop_rgba(pat, 1.0, primaries[2].red, 0.0, primaries[2].blue, primaries[2].alpha * 0.5);
+  cairo_rectangle(cr, 2.0/3.0, 0.1, 1.0/3.0, 0.7);
+  cairo_set_source(cr, pat);
   cairo_fill(cr);
+  cairo_pattern_destroy(pat);
 
   FINISH
 }
