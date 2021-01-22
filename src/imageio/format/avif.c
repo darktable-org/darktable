@@ -280,77 +280,14 @@ int write_image(struct dt_imageio_module_data_t *data,
            avif_get_compression_string(d->compression_type),
            d->quality);
 
-  avifRGBImageSetDefaults(&rgb, image);
-  rgb.format = AVIF_RGB_FORMAT_RGB;
-
-  avifRGBImageAllocatePixels(&rgb);
-
-  const float max_channel_f = (float)((1 << bit_depth) - 1);
-
-  const size_t rowbytes = rgb.rowBytes;
-
-  const float *const restrict in_data = (const float *)in;
-  uint8_t *const restrict out = (uint8_t *)rgb.pixels;
-
-  switch(bit_depth)
-  {
-    case 12:
-    case 10:
-    {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_data, width, height, out, rowbytes, max_channel_f) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
-    for(size_t y = 0; y < height; y++)
-    {
-      for(size_t x = 0; x < width; x++)
-      {
-          const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
-          uint16_t *out_pixel = (uint16_t *)&out[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
-
-          out_pixel[0] = (uint16_t)roundf(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f));
-          out_pixel[1] = (uint16_t)roundf(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f));
-          out_pixel[2] = (uint16_t)roundf(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f));
-      }
-    }
-    break;
-    }
-    case 8:
-    {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(in_data, width, height, out, rowbytes, max_channel_f) \
-  schedule(simd:static) \
-  collapse(2)
-#endif
-    for(size_t y = 0; y < height; y++)
-    {
-      for(size_t x = 0; x < width; x++)
-      {
-          const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
-          uint8_t *out_pixel = (uint8_t *)&out[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
-
-          out_pixel[0] = (uint8_t)roundf(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f));
-          out_pixel[1] = (uint8_t)roundf(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f));
-          out_pixel[2] = (uint8_t)roundf(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f));
-      }
-    }
-    break;
-    }
-    default:
-      dt_control_log(_("invalid AVIF bit depth!"));
-      rc = 1;
-      goto out;
-  }
-
-  avifImageRGBToYUV(image, &rgb);
-
   if(imgid > 0)
   {
     gboolean use_icc = FALSE;
 
+    /*
+     * Set these in advance so any upcoming RGB -> YUV use the proper
+     * coefficients.
+     */
     switch(over_type)
     {
       case DT_COLORSPACE_SRGB:
@@ -431,6 +368,74 @@ int write_image(struct dt_imageio_module_data_t *data,
       }
     }
   }
+
+  avifRGBImageSetDefaults(&rgb, image);
+  rgb.format = AVIF_RGB_FORMAT_RGB;
+
+  avifRGBImageAllocatePixels(&rgb);
+
+  const float max_channel_f = (float)((1 << bit_depth) - 1);
+
+  const size_t rowbytes = rgb.rowBytes;
+
+  const float *const restrict in_data = (const float *)in;
+  uint8_t *const restrict out = (uint8_t *)rgb.pixels;
+
+  switch(bit_depth)
+  {
+    case 12:
+    case 10:
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in_data, width, height, out, rowbytes, max_channel_f) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+    for(size_t y = 0; y < height; y++)
+    {
+      for(size_t x = 0; x < width; x++)
+      {
+          const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
+          uint16_t *out_pixel = (uint16_t *)&out[(y * rowbytes) + (3 * sizeof(uint16_t) * x)];
+
+          out_pixel[0] = (uint16_t)roundf(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f));
+          out_pixel[1] = (uint16_t)roundf(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f));
+          out_pixel[2] = (uint16_t)roundf(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f));
+      }
+    }
+    break;
+    }
+    case 8:
+    {
+#ifdef _OPENMP
+#pragma omp parallel for simd default(none) \
+  dt_omp_firstprivate(in_data, width, height, out, rowbytes, max_channel_f) \
+  schedule(simd:static) \
+  collapse(2)
+#endif
+    for(size_t y = 0; y < height; y++)
+    {
+      for(size_t x = 0; x < width; x++)
+      {
+          const float *in_pixel = &in_data[(size_t)4 * ((y * width) + x)];
+          uint8_t *out_pixel = (uint8_t *)&out[(y * rowbytes) + (3 * sizeof(uint8_t) * x)];
+
+          out_pixel[0] = (uint8_t)roundf(CLAMP(in_pixel[0] * max_channel_f, 0, max_channel_f));
+          out_pixel[1] = (uint8_t)roundf(CLAMP(in_pixel[1] * max_channel_f, 0, max_channel_f));
+          out_pixel[2] = (uint8_t)roundf(CLAMP(in_pixel[2] * max_channel_f, 0, max_channel_f));
+      }
+    }
+    break;
+    }
+    default:
+      dt_control_log(_("invalid AVIF bit depth!"));
+      rc = 1;
+      goto out;
+  }
+
+  avifImageRGBToYUV(image, &rgb);
+
 
   avifImageSetMetadataExif(image, exif, exif_len);
 
