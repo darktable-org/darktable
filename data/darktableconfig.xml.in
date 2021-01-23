@@ -540,7 +540,7 @@
     <shortdescription>maximum fps of live view update in tethering view</shortdescription>
     <longdescription>going too fast will result in too many redraws without a real benefit</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable" section="general">
+  <dtconfig dialog="collect">
     <name>plugins/collect/filmroll_sort</name>
     <type>
       <enum>
@@ -550,14 +550,28 @@
     </type>
     <default>id</default>
     <shortdescription>sort film rolls by</shortdescription>
-    <longdescription>sets the collections-list order for film rolls</longdescription>
+    <longdescription>order by import time (id) or by foldername</longdescription>
   </dtconfig>
   <dtconfig dialog="collect">
-    <name>plugins/collect/descending</name>
+    <name>plugins/collect/filmroll_descending</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>sort collection recent to older</shortdescription>
-    <longdescription>changes the default collections-list order for folders, times and dates to run from recent to older</longdescription>
+    <shortdescription>sort film rolls descending</shortdescription>
+    <longdescription>true to sort film rolls (by id or folder) from recent to older</longdescription>
+  </dtconfig>
+  <dtconfig dialog="collect">
+    <name>plugins/collect/folder_descending</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>sort folder descending</shortdescription>
+    <longdescription>true to sort folders from recent to older</longdescription>
+  </dtconfig>
+  <dtconfig dialog="collect">
+    <name>plugins/collect/timedate_descending</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>sort times and dates descending</shortdescription>
+    <longdescription>true to sort time and date fields from recent to older</longdescription>
   </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_mean</name>
