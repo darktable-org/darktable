@@ -588,9 +588,14 @@ void gui_init(dt_imageio_module_format_t *self)
   GtkWidget *box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   self->widget = box;
   // quality slider
-  g->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
+  g->quality = dt_bauhaus_slider_new_with_range(NULL,
+                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MIN),
+                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_MAX),
+                                                1,
+                                                dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT),
+                                                0);
   dt_bauhaus_widget_set_label(g->quality, NULL, N_("quality"));
-  dt_bauhaus_slider_set_default(g->quality, 95);
+  dt_bauhaus_slider_set_default(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
   gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(g->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(g->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
   // TODO: add more options: subsample dreggn
@@ -604,7 +609,7 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_jpeg_gui_data_t *g = (dt_imageio_jpeg_gui_data_t *)self->gui_data;
-  dt_bauhaus_slider_set(g->quality, dt_conf_get_int("plugins/imageio/format/jpeg/quality"));
+  dt_bauhaus_slider_set(g->quality, dt_confgen_get_int("plugins/imageio/format/jpeg/quality", DT_DEFAULT));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
