@@ -1018,7 +1018,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   cx[num_tonecurve - 1] = cy[num_tonecurve - 1] = 100.0; // fix white
   for(int k = 1; k < num_tonecurve-1; k++)
   {
-    float rgb[3], Lab[3] = { 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL rgb[4], Lab[4] = { 0.0f, 0.0f, 0.0f };
     Lab[0] = grays[6*k+0];
     dt_Lab_to_prophotorgb(Lab, rgb);
     cx[k] = rgb[0];
@@ -1032,7 +1032,7 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
   // now unapply the curve:
   for(int k = 0; k < N; k++)
   {
-    float rgb[3], Lab[3] = { 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL rgb[4], Lab[4] = { 0.0f, 0.0f, 0.0f };
     Lab[0] = target_L[k];
     Lab[1] = target_a[k];
     Lab[2] = target_b[k];
@@ -1420,7 +1420,7 @@ static void get_Lab_from_box(box_t *box, float *Lab)
   {
     case DT_COLORSPACE_XYZ:
     {
-      float XYZ[3];
+      float DT_ALIGNED_PIXEL XYZ[4];
       for(int i = 0; i < 3; i++) XYZ[i] = box->color[i] * 0.01;
       dt_XYZ_to_Lab(XYZ, Lab);
       break;
@@ -1467,7 +1467,7 @@ static void collect_source_patches_foreach(gpointer key, gpointer value, gpointe
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   box_t *box = (box_t *)value;
-  float xyz[3] /*, lab[3], srgb[3]*/;
+  float DT_ALIGNED_PIXEL xyz[4] /*, lab[4], srgb[4]*/;
 
   box_t *patch = find_patch(self->picked_source_patches, key);
 
@@ -1480,7 +1480,7 @@ static void collect_reference_patches_foreach(gpointer key, gpointer value, gpoi
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
   box_t *patch = (box_t *)value;
-  float xyz[3];
+  float DT_ALIGNED_PIXEL xyz[4];
 
   get_xyz_sample_from_image(&self->reference, self->reference.shrink, patch, xyz);
 

@@ -445,7 +445,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
     {
-      float XYZ[3];
+      float DT_ALIGNED_PIXEL XYZ[4];
       dt_Lab_to_XYZ(in + k, XYZ);
       for(int c=0;c<3;c++)
         XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0x10000ul), 0, 0xffff)]
@@ -454,7 +454,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB)
     {
-      float rgb[3] = {0, 0, 0};
+      float DT_ALIGNED_PIXEL rgb[4] = {0, 0, 0};
       dt_Lab_to_prophotorgb(in + k, rgb);
       if(d->preserve_colors == DT_RGB_NORM_NONE)
       {
@@ -694,8 +694,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // derive curve for XYZ:
     for(int k=0;k<0x10000;k++)
     {
-      float XYZ[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
-      float Lab[3] = {0.0};
+      float DT_ALIGNED_PIXEL XYZ[4] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
+      float DT_ALIGNED_PIXEL Lab[4] = {0.0};
       dt_XYZ_to_Lab(XYZ, Lab);
       Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
       dt_Lab_to_XYZ(Lab, XYZ);
@@ -707,8 +707,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     // derive curve for rgb:
     for(int k=0;k<0x10000;k++)
     {
-      float rgb[3] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
-      float Lab[3] = {0.0};
+      float DT_ALIGNED_PIXEL rgb[4] = {k/(float)0x10000, k/(float)0x10000, k/(float)0x10000};
+      float DT_ALIGNED_PIXEL Lab[4] = {0.0};
       dt_prophotorgb_to_Lab(rgb, Lab);
       Lab[0] = d->table[ch_L][CLAMP((int)(Lab[0]/100.0f * 0x10000), 0, 0xffff)];
       dt_Lab_to_prophotorgb(Lab, rgb);
