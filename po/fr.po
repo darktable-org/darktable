@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-22 22:40+0100\n"
-"PO-Revision-Date: 2021-01-22 22:41+0100\n"
+"POT-Creation-Date: 2021-01-23 15:54+0100\n"
+"PO-Revision-Date: 2021-01-23 15:55+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -1820,7 +1820,7 @@ msgstr "spécifique"
 #: ../src/common/history.c:897 ../src/common/styles.c:1117
 #: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:100
 #: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2790
-#: ../src/develop/develop.c:2188 ../src/imageio/format/avif.c:793
+#: ../src/develop/develop.c:2188 ../src/imageio/format/avif.c:795
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:429
 msgid "off"
@@ -2692,7 +2692,7 @@ msgstr "mise à niveau du modèle"
 
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:257
 #: ../build/lib/darktable/plugins/introspection_denoiseprofile.c:388
-#: ../src/imageio/format/avif.c:768
+#: ../src/imageio/format/avif.c:770
 msgid "color mode"
 msgstr "mode couleur"
 
@@ -4493,7 +4493,7 @@ msgstr ""
 #: ../src/common/history.c:878 ../src/common/history.c:881
 #: ../src/common/history.c:897 ../src/common/styles.c:1117
 #: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:122
-#: ../src/develop/develop.c:2188 ../src/imageio/format/avif.c:791
+#: ../src/develop/develop.c:2188 ../src/imageio/format/avif.c:793
 #: ../src/iop/ashift.c:4706 ../src/libs/live_view.c:430
 msgid "on"
 msgstr "activé(e)"
@@ -5239,6 +5239,26 @@ msgstr "ajout du décalage horaire à %d images"
 #, c-format
 msgid "setting date time to %d images"
 msgstr "définit heure et date à %d images"
+
+#: ../src/control/jobs/control_jobs.c:1873
+#, c-format
+msgid "added time offset to %d image"
+msgstr "décalage horaire ajouté à %d image"
+
+#: ../src/control/jobs/control_jobs.c:1873
+#, c-format
+msgid "set date time to %d image"
+msgstr "heure et date définit à %d image"
+
+#: ../src/control/jobs/control_jobs.c:1874
+#, c-format
+msgid "added time offset to %d images"
+msgstr "décalage horaire ajouté à %d image"
+
+#: ../src/control/jobs/control_jobs.c:1874
+#, c-format
+msgid "set date time to %d images"
+msgstr "heure et date définit à %d images"
 
 #: ../src/control/jobs/control_jobs.c:1915
 msgid "time offset"
@@ -8142,41 +8162,41 @@ msgstr "10 bits"
 msgid "12 bit"
 msgstr "12 bits"
 
-#: ../src/imageio/format/avif.c:446
+#: ../src/imageio/format/avif.c:448
 msgid "invalid AVIF bit depth!"
 msgstr "AVIF nombre de bit invalide"
 
-#: ../src/imageio/format/avif.c:672
+#: ../src/imageio/format/avif.c:674
 msgid "AVIF (8/10/12-bit)"
 msgstr "AVIF (8/10/12-bits)"
 
-#: ../src/imageio/format/avif.c:745 ../src/imageio/format/pdf.c:702
+#: ../src/imageio/format/avif.c:747 ../src/imageio/format/pdf.c:702
 #: ../src/imageio/format/png.c:525 ../src/imageio/format/tiff.c:812
 msgid "bit depth"
 msgstr "bits"
 
-#: ../src/imageio/format/avif.c:758
+#: ../src/imageio/format/avif.c:760
 msgid "color information stored in an image, higher is better"
 msgstr "information couleur stockée dans l'image, plus grand est meilleur"
 
-#: ../src/imageio/format/avif.c:770
+#: ../src/imageio/format/avif.c:772
 msgid "rgb colors"
 msgstr "couleurs rgb"
 
-#: ../src/imageio/format/avif.c:772
+#: ../src/imageio/format/avif.c:774
 msgid "grayscale"
 msgstr "échelle de gris"
 
-#: ../src/imageio/format/avif.c:776
+#: ../src/imageio/format/avif.c:778
 msgid "saving as grayscale will reduce the size for black & white images"
 msgstr ""
 "enregistrer en échelle de gris réduira la taille des images en noir & blanc"
 
-#: ../src/imageio/format/avif.c:789
+#: ../src/imageio/format/avif.c:791
 msgid "tiling"
 msgstr "tuilage"
 
-#: ../src/imageio/format/avif.c:797
+#: ../src/imageio/format/avif.c:799
 msgid ""
 "tile an image into segments.\n"
 "\n"
@@ -8188,11 +8208,11 @@ msgstr ""
 "permet un encode plus rapide. l'impacte sur la qualité est négligeable, mais "
 "accroît la taille du fichier."
 
-#: ../src/imageio/format/avif.c:814 ../src/imageio/format/webp.c:325
+#: ../src/imageio/format/avif.c:816 ../src/imageio/format/webp.c:325
 msgid "compression type"
 msgstr "type de compression"
 
-#: ../src/imageio/format/avif.c:822
+#: ../src/imageio/format/avif.c:824
 msgid "the compression for the image"
 msgstr "compression de l'images"
 
@@ -8201,13 +8221,13 @@ msgstr "compression de l'images"
 #. step
 #. default
 #. digits
-#: ../src/imageio/format/avif.c:839 ../src/imageio/format/j2k.c:653
+#: ../src/imageio/format/avif.c:841 ../src/imageio/format/j2k.c:653
 #: ../src/imageio/format/jpeg.c:592 ../src/imageio/format/webp.c:332
 #: ../src/libs/camera.c:595
 msgid "quality"
 msgstr "qualité"
 
-#: ../src/imageio/format/avif.c:844
+#: ../src/imageio/format/avif.c:846
 msgid ""
 "the quality of an image, less quality means fewer details.\n"
 "\n"
@@ -20385,12 +20405,6 @@ msgstr "action"
 
 #~ msgid "black and white"
 #~ msgstr "noir et blanc"
-
-#, c-format
-#~ msgid "added time offset to %d image"
-#~ msgid_plural "added time offset to %d images"
-#~ msgstr[0] "décalage horaire ajouté à %d image"
-#~ msgstr[1] "décalage horaire ajouté à %d images"
 
 #~ msgid ""
 #~ "enter the time shown on the selected picture\n"
