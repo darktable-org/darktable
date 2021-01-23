@@ -407,10 +407,10 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     float *in = ((float *)ivoid) + k;
     float *out = ((float *)ovoid) + k;
 
-    float XYZ[3];
+    float DT_ALIGNED_PIXEL XYZ[4];
     dt_Lab_to_XYZ(in, XYZ);
 
-    float rgb[3] = { 0.0f };
+    float DT_ALIGNED_PIXEL rgb[4] = { 0.0f };
     dt_XYZ_to_prophotorgb(XYZ, rgb);
 
     float concavity, luma;
@@ -452,7 +452,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
     else
     {
-      int index[3];
+      int DT_ALIGNED_ARRAY index[4];
 
       for(int c = 0; c < 3; c++)
       {
@@ -700,7 +700,7 @@ static void apply_auto_grey(dt_iop_module_t *self)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
 
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
   dt_Lab_to_XYZ(self->picked_color, XYZ);
 
   const float grey = XYZ[1];
@@ -727,7 +727,7 @@ static void apply_auto_black(dt_iop_module_t *self)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
 
   const float noise = powf(2.0f, -16.0f);
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
 
   // Black
   dt_Lab_to_XYZ(self->picked_color_min, XYZ);
@@ -755,7 +755,7 @@ static void apply_auto_white_point_source(dt_iop_module_t *self)
   dt_iop_filmic_gui_data_t *g = (dt_iop_filmic_gui_data_t *)self->gui_data;
 
   const float noise = powf(2.0f, -16.0f);
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
 
   // White
   dt_Lab_to_XYZ(self->picked_color_max, XYZ);
@@ -814,7 +814,7 @@ static void apply_autotune(dt_iop_module_t *self)
   dt_iop_filmic_params_t *p = (dt_iop_filmic_params_t *)self->params;
 
   const float noise = powf(2.0f, -16.0f);
-  float XYZ[3] = { 0.0f };
+  float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f };
 
   // Grey
   dt_Lab_to_XYZ(self->picked_color, XYZ);
