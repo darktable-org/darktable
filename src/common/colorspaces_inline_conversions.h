@@ -524,22 +524,13 @@ static inline void dt_XYZ_to_prophotorgb(const float *const XYZ, float *const rg
     { -0.2556075f,  1.5081673f, 0.0000000f, 0.0f },
     { -0.0511118f,  0.0205351f, 1.2118128f, 0.0f }
   };
-  // Use a temp variable to accumulate the results.  GCC8 will optimize away the memory accesses for the
-  // temp array, while it writes the intermediate values out to 'rgb' after each iteration if we don't use
-  // the temp.  That cuts total memory bandwidth by a third.
-  float DT_ALIGNED_PIXEL result[4] = { 0.0f };
-  for(int c = 0; c < 3; c++)
-    for_each_channel(r)
-    {
-      result[r] += xyz_to_rgb_transpose[c][r] * XYZ[c];
-    }
-  copy_pixel(rgb, result);
+  dt_apply_transposed_color_matrix(XYZ,xyz_to_rgb_transpose,rgb);
 }
 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(rgb, XYZ)
 #endif
-static /*inline*/ void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XYZ)
+static inline void dt_prophotorgb_to_XYZ(const float *const rgb, float *const XYZ)
 {
   // transpose and pad the conversion matrix to enable vectorization
   const float rgb_to_xyz_transpose[3][4] = {
@@ -548,20 +539,7 @@ static /*inline*/ void dt_prophotorgb_to_XYZ(const float *const rgb, float *cons
     { 0.1351917f, 0.7118741f, 0.0000000f, 0.0f },
     { 0.0313534f, 0.0000857f, 0.8252100f, 0.0f }
   };
-#if 1
   dt_apply_transposed_color_matrix(rgb,rgb_to_xyz_transpose,XYZ);
-#else
-  // Use a temp variable to accumulate the results.  GCC8 will optimize away the memory accesses for the
-  // temp array, while it writes the intermediate values out to 'rgb' after each iteration if we don't use
-  // the temp.  That cuts total memory bandwidth by a third.
-  float DT_ALIGNED_PIXEL result[4] = { 0.0f };
-  for(int c = 0; c < 3; c++)
-    for_each_channel(r)
-    {
-      result[r] += rgb_to_xyz_transpose[c][r] * rgb[c];
-    }
-  copy_pixel(XYZ, result);
-#endif
 }
 
 
