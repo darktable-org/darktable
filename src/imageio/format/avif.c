@@ -229,8 +229,6 @@ int write_image(struct dt_imageio_module_data_t *data,
   const size_t height = d->global.height;
   const size_t bit_depth = d->bit_depth > 0 ? d->bit_depth : 0;
   enum avif_color_mode_e color_mode = d->color_mode;
-  /* TODO: Allow the user to select the range in the gui? */
-  avifRange requestedRange = AVIF_RANGE_FULL;
 
   switch(color_mode)
   {
@@ -239,28 +237,19 @@ int write_image(struct dt_imageio_module_data_t *data,
       {
         case AVIF_COMP_LOSSLESS:
           format = AVIF_PIXEL_FORMAT_YUV444;
-          requestedRange = AVIF_RANGE_FULL;
           break;
         case AVIF_COMP_LOSSY:
           if(d->quality > 90)
           {
               format = AVIF_PIXEL_FORMAT_YUV444;
-              requestedRange = AVIF_RANGE_FULL;
-          }
-          else if(d->quality > 85)
-          {
-              format = AVIF_PIXEL_FORMAT_YUV422;
-              requestedRange = AVIF_RANGE_FULL;
           }
           else if(d->quality > 80)
           {
               format = AVIF_PIXEL_FORMAT_YUV422;
-              requestedRange = AVIF_RANGE_LIMITED;
           }
           else
           {
             format = AVIF_PIXEL_FORMAT_YUV420;
-            requestedRange = AVIF_RANGE_LIMITED;
           }
           break;
       }
@@ -380,8 +369,21 @@ int write_image(struct dt_imageio_module_data_t *data,
     }
   }
 
-  /* Set the YUV range before conversion. */
-  image->yuvRange = requestedRange;
+  /*
+   * Set the YUV range before conversion.
+   *
+   * Limited range (aka "studio range", "studio swing", etc) is simply when you
+   * cut off the ends of the actual range you have to avoid the actual minimum
+   * and maximum of the signal. For example, instead of having full range 8bpc
+   * ([0-255]) in each channel, you'd only use [16-235]. Anything 16 or below
+   * is treated as a 0.0 signal, and anything 235 or higher is treated as a 1.0
+   * signal.
+   *
+   * The *reason* this exists, is largely vestigial from the analog era.
+   *
+   * For picture we always want the full range.
+   */
+  image->yuvRange = AVIF_RANGE_FULL;
 
   avifRGBImageSetDefaults(&rgb, image);
   rgb.format = AVIF_RGB_FORMAT_RGB;
