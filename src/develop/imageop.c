@@ -1348,80 +1348,13 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
   _iop_gui_update_header(module);
 }
 
-static void _set_trouble_message(dt_iop_module_t *const module, const char* const trouble_msg,
-                                 const char* const trouble_tooltip, const char *const stderr_message)
-{
-  GtkWidget *label_widget = NULL;
-
-  if(module && module->has_trouble && module->widget)
-  {
-    GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
-    label_widget = g_list_nth_data(children, 0);
-    g_list_free(children);
-    if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
-      label_widget = NULL;
-  }
-
-  if(trouble_msg && *trouble_msg)
-  {
-    if((!module || !module->has_trouble) && (stderr_message || !module->widget))
-    {
-      const char *name = module ? module->name() : "?";
-      fprintf(stderr,"[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
-    }
-
-    if(module && module->widget)
-    {
-      if(label_widget)
-      {
-        // set the warning message in the module's message area just below the header
-        gtk_label_set_text(GTK_LABEL(label_widget), trouble_msg);
-      }
-      else
-      {
-        label_widget = gtk_label_new(trouble_msg);;
-        gtk_label_set_line_wrap(GTK_LABEL(label_widget), TRUE);
-        gtk_label_set_xalign(GTK_LABEL(label_widget), 0.0);
-        gtk_widget_set_name(label_widget, "iop-plugin-warning");
-
-        GtkWidget *iopw = gtk_widget_get_parent(module->widget);
-        gtk_box_pack_start(GTK_BOX(iopw), label_widget, TRUE, TRUE, 0);
-        gtk_box_reorder_child(GTK_BOX(iopw), label_widget, 0);
-        gtk_widget_show(label_widget);
-      }
-
-      gtk_widget_set_tooltip_text(GTK_WIDGET(label_widget), trouble_tooltip);
-
-      // set the module's trouble flag
-      module->has_trouble = TRUE;
-
-      _iop_gui_update_header(module);
-    }
-  }
-  else if(module && module->has_trouble)
-  {
-    // no more trouble, so clear the trouble flag and remove the message area
-    module->has_trouble = FALSE;
-
-    _iop_gui_update_header(module);
-
-    if(label_widget) gtk_widget_destroy(label_widget);
-  }
-}
-
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
-                                       char* const trouble_msg, const char* const trouble_tooltip,
+                                       const char* const trouble_msg,
+                                       const char* const trouble_tooltip,
                                        const char *const stderr_message)
 {
-  if(module && module->gui_data)
-  {
-    // keep LLVM happy by not having any conditional paths on the locks
-    dt_iop_gui_enter_critical_section(module);
-    _set_trouble_message(module, trouble_msg, trouble_tooltip, stderr_message);
-    dt_iop_gui_leave_critical_section(module);
-  }
-  else
-    _set_trouble_message(module, trouble_msg, trouble_tooltip, stderr_message);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
+                                module, trouble_msg, trouble_tooltip, stderr_message);
 }
 
 static void _iop_gui_update_label(dt_iop_module_t *module)
