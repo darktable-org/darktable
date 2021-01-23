@@ -848,13 +848,13 @@ void gui_init(dt_imageio_module_format_t *self)
    * Quality combo box
    */
   gui->quality = dt_bauhaus_slider_new_with_range(NULL,
-                                                  5, /* min */
-                                                  100, /* max */
+                                                  dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_MIN), /* min */
+                                                  dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_MAX), /* max */
                                                   1, /* step */
-                                                  92, /* default */
+                                                  dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT), /* default */
                                                   0); /* digits */
   dt_bauhaus_widget_set_label(gui->quality,  NULL, N_("quality"));
-  dt_bauhaus_slider_set_default(gui->quality, 95);
+  dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT));
   dt_bauhaus_slider_set_format(gui->quality, "%.2f%%");
 
   gtk_widget_set_tooltip_text(gui->quality,
@@ -913,6 +913,17 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 void gui_reset(dt_imageio_module_format_t *self)
 {
   dt_imageio_avif_gui_t *gui = (dt_imageio_avif_gui_t *)self->gui_data;
+
+  const enum avif_color_mode_e color_mode = dt_confgen_get_int("plugins/imageio/format/avif/color_mode", DT_DEFAULT);
+  const enum avif_tiling_e tiling = dt_confgen_get_int("plugins/imageio/format/avif/tiling", DT_DEFAULT);
+  const enum avif_compression_type_e compression_type = dt_confgen_get_int("plugins/imageio/format/avif/compression_type", DT_DEFAULT);
+  const uint32_t quality = dt_confgen_get_int("plugins/imageio/format/avif/quality", DT_DEFAULT);
+
+  dt_bauhaus_combobox_set(gui->bit_depth, 0); //8bpp
+  dt_bauhaus_combobox_set(gui->color_mode, color_mode);
+  dt_bauhaus_combobox_set(gui->tiling, tiling);
+  dt_bauhaus_combobox_set(gui->compression_type, compression_type);
+  dt_bauhaus_slider_set(gui->quality, quality);
 
   compression_type_changed(GTK_WIDGET(gui->compression_type), self);
   quality_changed(GTK_WIDGET(gui->quality), self);

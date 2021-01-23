@@ -562,23 +562,23 @@ void gui_reset(dt_lib_module_t *self)
   // make sure we don't do anything useless:
   if(!dt_control_running()) return;
   dt_lib_export_t *d = (dt_lib_export_t *)self->data;
-  dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
+  gtk_entry_set_text(GTK_ENTRY(d->width), dt_confgen_get(CONFIG_PREFIX "width", DT_DEFAULT));
+  gtk_entry_set_text(GTK_ENTRY(d->height), dt_confgen_get(CONFIG_PREFIX "width", DT_DEFAULT));
+  dt_bauhaus_combobox_set(d->dimensions_type, dt_confgen_get_int(CONFIG_PREFIX "dimensions_type", DT_DEFAULT));
   _print_size_update_display(d);
 
   // Set storage
-  gchar *storage_name = dt_conf_get_string(CONFIG_PREFIX "storage_name");
-  const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
-  g_free(storage_name);
+  const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(dt_confgen_get(CONFIG_PREFIX "storage_name", DT_DEFAULT)));
   dt_bauhaus_combobox_set(d->storage, storage_index);
 
-  dt_bauhaus_combobox_set(d->upscale, dt_conf_get_bool(CONFIG_PREFIX "upscale") ? 1 : 0);
-  dt_bauhaus_combobox_set(d->high_quality, dt_conf_get_bool(CONFIG_PREFIX "high_quality_processing") ? 1 : 0);
-  dt_bauhaus_combobox_set(d->export_masks, dt_conf_get_bool(CONFIG_PREFIX "export_masks") ? 1 : 0);
+  dt_bauhaus_combobox_set(d->upscale, dt_confgen_get_bool(CONFIG_PREFIX "upscale", DT_DEFAULT) ? 1 : 0);
+  dt_bauhaus_combobox_set(d->high_quality, dt_confgen_get_bool(CONFIG_PREFIX "high_quality_processing", DT_DEFAULT) ? 1 : 0);
+  dt_bauhaus_combobox_set(d->export_masks, dt_confgen_get_bool(CONFIG_PREFIX "export_masks", DT_DEFAULT) ? 1 : 0);
 
-  dt_bauhaus_combobox_set(d->intent, dt_conf_get_int(CONFIG_PREFIX "iccintent") + 1);
+  dt_bauhaus_combobox_set(d->intent, dt_confgen_get_int(CONFIG_PREFIX "iccintent", DT_DEFAULT) + 1);
 
   // iccprofile
-  const int icctype = dt_conf_get_int(CONFIG_PREFIX "icctype");
+  int icctype = dt_confgen_get_int(CONFIG_PREFIX "icctype", DT_DEFAULT);
   gchar *iccfilename = dt_conf_get_string(CONFIG_PREFIX "iccprofile");
   dt_bauhaus_combobox_set(d->profile, 0);
   if(icctype != DT_COLORSPACE_NONE)
@@ -600,18 +600,17 @@ void gui_reset(dt_lib_module_t *self)
   // style
   // set it to none if the var is not set or the style doesn't exist anymore
   gboolean rc = FALSE;
-  gchar *style = dt_conf_get_string(CONFIG_PREFIX "style");
-  if(style != NULL)
+  const char *style = dt_confgen_get(CONFIG_PREFIX "style", DT_DEFAULT);
+  if(style != NULL && strlen(style) > 0)
   {
     rc = dt_bauhaus_combobox_set_from_text(d->style, style);
     if(rc == FALSE) dt_bauhaus_combobox_set(d->style, 0);
-    g_free(style);
   }
   else
     dt_bauhaus_combobox_set(d->style, 0);
 
   // style mode to overwrite as it was the initial behavior
-  dt_bauhaus_combobox_set(d->style_mode, dt_conf_get_bool(CONFIG_PREFIX "style_append"));
+  dt_bauhaus_combobox_set(d->style_mode, dt_confgen_get_bool(CONFIG_PREFIX "style_append", DT_DEFAULT));
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 

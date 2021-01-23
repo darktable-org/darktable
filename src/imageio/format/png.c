@@ -535,7 +535,12 @@ void gui_init(dt_imageio_module_format_t *self)
   g_signal_connect(G_OBJECT(gui->bit_depth), "value-changed", G_CALLBACK(bit_depth_changed), NULL);
 
   // Compression level slider
-  gui->compression = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 5, 0);
+  gui->compression = dt_bauhaus_slider_new_with_range(NULL,
+                                                      dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MIN),
+                                                      dt_confgen_get_int("plugins/imageio/format/png/compression", DT_MAX),
+                                                      1,
+                                                      dt_confgen_get_int("plugins/imageio/format/png/compression", DT_DEFAULT),
+                                                      0);
   dt_bauhaus_widget_set_label(gui->compression, NULL, N_("compression"));
   dt_bauhaus_slider_set(gui->compression, compression);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compression), TRUE, TRUE, 0);
@@ -549,6 +554,9 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_png_gui_t *gui = (dt_imageio_png_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(gui->bit_depth, 0); // 8bpp
+  dt_bauhaus_slider_set(gui->compression, dt_confgen_get_int("plugins/imageio/format/png/compression", DT_DEFAULT));
 }
 
 int flags(dt_imageio_module_data_t *data)

@@ -354,6 +354,8 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_xcf_gui_t *gui = (dt_imageio_xcf_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(gui->bpp, 2); // bpp = 32
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
