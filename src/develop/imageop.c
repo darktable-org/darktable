@@ -1356,7 +1356,7 @@ void dt_iop_gui_update_header(dt_iop_module_t *module)
 void dt_iop_set_module_trouble_message(dt_iop_module_t *const module, const gchar *trouble_msg,
                                        const gchar *trouble_tooltip, const gchar *const stderr_message)
 {
-  if((stderr_message || trouble_msg) && (module && !module->widget))
+  if(stderr_message || (module && !module->widget))
   {
     const char *name = module ? module->name() : "?";
     g_printerr("[%s] %s\n", name, stderr_message ? stderr_message : trouble_msg);
