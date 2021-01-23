@@ -241,6 +241,9 @@ typedef enum dt_signal_t
   /* \brief This signal is raised when metadata view needs update */
   DT_SIGNAL_METADATA_UPDATE,
 
+  /* \brief This signal is raised when a module is in trouble and message is to be displayed */
+  DT_SIGNAL_TROUBLE_MESSAGE,
+
   /* do not touch !*/
   DT_SIGNAL_COUNT
 } dt_signal_t;
