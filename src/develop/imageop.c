@@ -2159,44 +2159,45 @@ static void popup_callback(GtkButton *button, dt_iop_module_t *module)
 
 void dt_iop_request_focus(dt_iop_module_t *module)
 {
-  if(darktable.gui->reset || (darktable.develop->gui_module == module)) return;
+  dt_iop_module_t *out_focus_module = darktable.develop->gui_module;
 
-  if(darktable.develop->gui_module != module) darktable.develop->focus_hash++;
+  if(darktable.gui->reset || (out_focus_module == module)) return;
+
+  darktable.develop->gui_module = module;
+  darktable.develop->focus_hash++;
 
   /* lets lose the focus of previous focus module*/
-  if(darktable.develop->gui_module)
+  if(out_focus_module)
   {
-    if(darktable.develop->gui_module->gui_focus)
-      darktable.develop->gui_module->gui_focus(darktable.develop->gui_module, FALSE);
+    if(out_focus_module->gui_focus)
+      out_focus_module->gui_focus(out_focus_module, FALSE);
 
-    dt_iop_color_picker_reset(darktable.develop->gui_module, TRUE);
+    dt_iop_color_picker_reset(out_focus_module, TRUE);
 
-    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(darktable.develop->gui_module), GTK_STATE_FLAG_NORMAL,
-                               TRUE);
+    gtk_widget_set_state_flags(dt_iop_gui_get_pluginui(out_focus_module), GTK_STATE_FLAG_NORMAL, TRUE);
 
-    if(darktable.develop->gui_module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
+    if(out_focus_module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
-    dt_accel_disconnect_locals_iop(darktable.develop->gui_module);
+    dt_iop_connect_accels_multi(out_focus_module->so);
+    dt_accel_disconnect_locals_iop(out_focus_module);
 
     /* reset mask view */
     dt_masks_reset_form_gui();
 
     /* do stuff needed in the blending gui */
-    dt_iop_gui_blending_lose_focus(darktable.develop->gui_module);
+    dt_iop_gui_blending_lose_focus(out_focus_module);
 
     /* redraw the expander */
-    gtk_widget_queue_draw(darktable.develop->gui_module->expander);
+    gtk_widget_queue_draw(out_focus_module->expander);
 
     /* and finally collection restore hinter messages */
     dt_collection_hint_message(darktable.collection);
 
     // we also remove the focus css class
-    GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(darktable.develop->gui_module));
+    GtkWidget *iop_w = gtk_widget_get_parent(dt_iop_gui_get_pluginui(out_focus_module));
     GtkStyleContext *context = gtk_widget_get_style_context(iop_w);
     gtk_style_context_remove_class(context, "dt_module_focus");
   }
-
-  darktable.develop->gui_module = module;
 
   /* set the focus on module */
   if(module)
@@ -2205,6 +2206,7 @@ void dt_iop_request_focus(dt_iop_module_t *module)
 
     if(module->operation_tags_filter()) dt_dev_invalidate_from_gui(darktable.develop);
 
+    dt_iop_connect_accels_multi(module->so);
     dt_accel_connect_locals_iop(module);
 
     if(module->gui_focus) module->gui_focus(module, TRUE);
@@ -3080,6 +3082,7 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 {
   /*
    decide which module instance keyboard shortcuts will be applied to based on user preferences, as follows
+    - Use the focused module, if it is an instance of this module type. Otherwise
     - prefer expanded instances (when selected and instances of the module are expanded on the RHS of the screen, collapsed instances will be ignored)
     - prefer enabled instances (when selected, after applying the above rule, if instances of the module are active, inactive instances will be ignored)
     - prefer unmasked instances (when selected, after applying the above rules, if instances of the module are unmasked, masked instances will be ignored)
@@ -3092,27 +3095,33 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 
   if(darktable.develop->gui_attached)
   {
-    dt_iop_module_t *accel_mod_new = NULL;  //The module to which accelerators are to be attached
+    dt_iop_module_t *accel_mod_new = NULL;  // The module to which accelerators are to be attached
 
-    int best_score = -1;
-
-    for(GList *iop_mods = g_list_last(darktable.develop->iop);
-        iop_mods;
-        iop_mods = g_list_previous(iop_mods))
+    // if any instance has focus, use that one
+    if(darktable.develop->gui_module && darktable.develop->gui_module->so == module)
+      accel_mod_new = darktable.develop->gui_module;
+    else
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
+      int best_score = -1;
 
-      if(mod->so == module && mod->iop_order != INT_MAX)
+      for(GList *iop_mods = g_list_last(darktable.develop->iop);
+          iop_mods;
+          iop_mods = g_list_previous(iop_mods))
       {
-        int score = (mod->expanded ? prefer_expanded : 0)
-                  + (mod->enabled ? prefer_enabled : 0)
-                  + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED ||
-                    mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED ? prefer_unmasked : 0);
+        dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
 
-        if(score + prefer_first > best_score)
+        if(mod->so == module && mod->iop_order != INT_MAX)
         {
-          best_score = score;
-          accel_mod_new = mod;
+          int score = (mod->expanded ? prefer_expanded : 0)
+                    + (mod->enabled ? prefer_enabled : 0)
+                    + (mod->blend_params->mask_mode == DEVELOP_MASK_DISABLED ||
+                      mod->blend_params->mask_mode == DEVELOP_MASK_ENABLED ? prefer_unmasked : 0);
+
+          if(score + prefer_first > best_score)
+          {
+            best_score = score;
+            accel_mod_new = mod;
+          }
         }
       }
     }
