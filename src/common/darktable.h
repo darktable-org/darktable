@@ -109,7 +109,7 @@ typedef unsigned int u_int;
 // GCC 9 recognizes it as valid, but does not do anything with it
 // GCC 10+ ???
 #if (__clang__+0 >= 10 || __GNUC__ >= 9)
-#  define dt_omp_nontemporal(var, ...) nontemporal(var, __VA_ARGS__)
+#  define dt_omp_nontemporal(...) nontemporal(__VA_ARGS__)
 #else
 // GCC7/8 only support OpenMP 4.5, which does not have the nontemporal() directive.
 #  define dt_omp_nontemporal(var, ...)
