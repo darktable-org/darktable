@@ -275,7 +275,10 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
 /** process, all real work is done here.
     NOTE: process() must never use the Gtk+ API. All GUI modifications must be
-          done in the Gtk+ thread.
+          done in the Gtk+ thread. This is to be conducted in gui_update or
+          gui_changed. If process detect a state and something it to be change on the UI
+          a signal should be used (raise a signal here) and a corresponding callback
+          must be connected to this signal.
 */
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
