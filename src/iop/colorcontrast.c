@@ -38,11 +38,6 @@
 #include <xmmintrin.h>
 #endif
 
-//TODO: move to darktable.h, figure out how to detect OpenMP 5.0+
-//#define dt_omp_nontemporal(var, ...) nontemporal(var, __VA_ARGS__)
-//GCC8 only supports OpenMP 4.5, which doesn't have nontemporal()
-#define dt_omp_nontemporal(var, ...)
-
 DT_MODULE_INTROSPECTION(2, dt_iop_colorcontrast_params_t)
 
 typedef struct dt_iop_colorcontrast_params1_t

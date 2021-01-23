@@ -104,6 +104,18 @@ typedef unsigned int u_int;
 #endif /* _OPENMP */
 #endif /* dt_omp_sharedconst */
 
+#ifndef dt_omp_nontemporal
+// Clang 10+ supports the nontemporal() OpenMP directive
+// GCC 9 recognizes it as valid, but does not do anything with it
+// GCC 10+ ???
+#if (__clang__+0 >= 10 || __GNUC__ >= 9)
+#  define dt_omp_nontemporal(var, ...) nontemporal(var, __VA_ARGS__)
+#else
+// GCC7/8 only support OpenMP 4.5, which does not have the nontemporal() directive.
+#  define dt_omp_nontemporal(var, ...)
+#endif
+#endif /* dt_omp_nontemporal */
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
@@ -505,6 +517,20 @@ static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_siz
 #define for_four_channels(_var, ...) \
   for (size_t _var = 0; _var < 4; _var++)
 #endif
+
+// copy the RGB channels of a pixel using nontemporal stores if possible; includes the 'alpha' channel as well
+// if faster due to vectorization, but subsequent code should ignore the value of the alpha unless explicitly
+// set afterwards (since it might not have been copied).  NOTE: nontemporal stores will actually be *slower*
+// if we immediately access the pixel again.  This function should only be used when processing an entire
+// image before doing anything else with the destination buffer.
+static inline void copy_pixel_nontemporal(float *const __restrict__ out, const float *const __restrict__ in)
+{
+#if (__clang__+0 > 7) && (__clang__+0 < 10)
+  for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
+#else
+  for_each_channel(k,aligned(in,out:16) dt_omp_nontemporal(out)) out[k] = in[k];
+#endif
+}
 
 // copy the RGB channels of a pixel; includes the 'alpha' channel as well if faster due to vectorization, but
 // subsequent code should ignore the value of the alpha unless explicitly set afterwards (since it might not have
