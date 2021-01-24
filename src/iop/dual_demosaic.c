@@ -46,7 +46,7 @@ static void fast_blur(float *const restrict src, float *const restrict out, cons
   {
     for(int j = -4; j <= 4; j++)
     {
-      if( (sqrf(i) + sqrf(j)) <= sqrf(3.0 * 1.5) )
+      if( (sqrf(i) + sqrf(j)) <= sqrf(3.0f * sigma) )
       {
         kernel[i + 4][j + 4] = expf( (sqrf(i) + sqrf(j)) / temp);
         sum += kernel[i + 4][j + 4];
