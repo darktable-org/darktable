@@ -2222,7 +2222,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       text = n_text;
     }
     else if(item == DT_COLLECTION_PROP_TAG ||
-            item == DT_COLLECTION_PROP_GEOTAGGING)
+            item == DT_COLLECTION_PROP_GEOTAGGING ||
+            item == DT_COLLECTION_PROP_FOLDERS)
     {
       if(gtk_tree_model_iter_has_child(model, &iter))
       {
