@@ -1204,6 +1204,19 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     gtk_widget_set_valign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_set_halign(thumb->w_image_box, GTK_ALIGN_START);
     gtk_widget_show(thumb->w_image_box);
+    // we add a eventbox which cover all the w_image_box otherwise event don't work in areas not covered by w_image
+    // itself
+    GtkWidget *evt_image = gtk_event_box_new();
+    gtk_widget_set_valign(evt_image, GTK_ALIGN_FILL);
+    gtk_widget_set_halign(evt_image, GTK_ALIGN_FILL);
+    gtk_widget_set_events(evt_image, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_STRUCTURE_MASK
+                                         | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK
+                                         | GDK_POINTER_MOTION_MASK);
+    g_signal_connect(G_OBJECT(evt_image), "motion-notify-event", G_CALLBACK(_event_main_motion), thumb);
+    g_signal_connect(G_OBJECT(evt_image), "enter-notify-event", G_CALLBACK(_event_image_enter_leave), thumb);
+    g_signal_connect(G_OBJECT(evt_image), "leave-notify-event", G_CALLBACK(_event_image_enter_leave), thumb);
+    gtk_widget_show(evt_image);
+    gtk_overlay_add_overlay(GTK_OVERLAY(thumb->w_image_box), evt_image);
     thumb->w_image = gtk_drawing_area_new();
     GtkStyleContext *context = gtk_widget_get_style_context(thumb->w_image);
     if(thumb->container == DT_THUMBNAIL_CONTAINER_PREVIEW)
