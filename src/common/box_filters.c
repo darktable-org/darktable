@@ -31,6 +31,10 @@
 #include <xmmintrin.h>
 #endif
 
+#ifdef __GNUC__
+#pragma GCC optimize ("finite-math-only")
+#endif
+
 static void blur_horizontal_1ch(float *const restrict buf, const int height, const int width, const int radius,
                                 float *const restrict scanlines)
 {
@@ -153,7 +157,7 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
   return;
 }
 
-static void blur_horizontal_4ch(float *const restrict buf, const int height, const int width, const int radius,
+static void blur_horizontal_4ch(float *const restrict buf, const size_t height, const size_t width, const size_t radius,
                                 float *const restrict scanlines)
 {
 #ifdef _OPENMP
@@ -166,47 +170,35 @@ static void blur_horizontal_4ch(float *const restrict buf, const int height, con
   {
     float *const restrict scanline = scanlines + 4 * dt_get_thread_num() * width;
     float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
-    int hits = 0;
+    size_t hits = 0;
     const size_t index = (size_t)4 * y * width;
     // add up the left half of the window
-    for (int x = 0; x < radius && x < width ; x++)
+    for (size_t x = 0; x < radius && x < width ; x++)
     {
       hits++;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf)
-#endif
-      for (int c = 0; c < 4; c++)
+      for_four_channels(c,aligned(buf))
         L[c] += buf[index+4*x + c];
     }
     // process the blur up to the point where we start removing values
-    int x;
+    size_t x;
     for (x = 0; x <= radius && x < width; x++)
     {
-      const int np = x + radius;
+      const size_t np = x + radius;
       if(np < width)
       {
         hits++;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf)
-#endif
-        for (int c = 0; c < 4; c++)
+        for_four_channels(c,aligned(buf))
           L[c] += buf[index + 4*np + c];
       }
-#ifdef _OPENMP
-#pragma omp simd aligned(scanline)
-#endif
-      for (int c = 0; c < 4; c++)
+      for_four_channels(c,aligned(scanline))
         scanline[4*x + c] = L[c] / hits;
     }
     // process the blur for the bulk of the scan line
     for(; x + radius < width; x++)
     {
       const int op = x - radius - 1;
-      const int np = x + radius;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf, scanline)
-#endif
-      for (int c = 0; c < 4; c++)
+      const size_t np = x + radius;
+      for_four_channels(c,aligned(buf, scanline))
       {
         L[c] -= buf[index + 4*op + c];
         L[c] += buf[index + 4*np + c];
@@ -218,10 +210,7 @@ static void blur_horizontal_4ch(float *const restrict buf, const int height, con
     {
       const int op = x - radius - 1;
       hits--;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf, scanline)
-#endif
-      for (int c = 0; c < 4; c++)
+      for_four_channels(c, aligned(buf, scanline))
       {
         L[c] -= buf[index + 4*op + c];
         scanline[4*x + c] = L[c] / hits;
@@ -230,10 +219,7 @@ static void blur_horizontal_4ch(float *const restrict buf, const int height, con
     // copy blurred values back to original location in buffer
     for(x = 0; x < width; x++)
     {
-#ifdef _OPENMP
-#pragma omp simd aligned(buf, scanline)
-#endif
-      for (int c = 0; c < 4; c++)
+      for_four_channels(c, aligned(buf, scanline))
         buf[index + 4*x + c] = scanline[4*x + c];
     }
   }
@@ -241,7 +227,7 @@ static void blur_horizontal_4ch(float *const restrict buf, const int height, con
 }
 
 #ifdef __SSE2__
-static void blur_vertical_1ch_sse(float *const restrict buf, const int height, const int width, const int radius,
+static void blur_vertical_1ch_sse(float *const restrict buf, const size_t height, const size_t width, const size_t radius,
                                   float *const restrict scanline)
 {
   __m128 L = { 0, 0, 0, 0 };
@@ -257,7 +243,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   // process the blur up to the point where we start removing values
   for (size_t y = 0; y <= radius && y < height; y++)
   {
-    const int np = y + radius;
+    const size_t np = y + radius;
     if(np < height)
     {
       L += _mm_loadu_ps(buf+np*width);
@@ -268,8 +254,8 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   // process the blur for the rest of the scan line
   for (size_t y = radius+1 ; y < height; y++)
   {
-    const int op = y - radius - 1;
-    const int np = y + radius;
+    const size_t op = y - radius - 1;
+    const size_t np = y + radius;
     L -= _mm_loadu_ps(buf+op*width);
     hits -= one;
     if(np < height)
@@ -292,7 +278,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
 #endif /* __SSE2__ */
 
 #ifdef __SSE2__
-static void blur_vertical_4ch_sse(float *const restrict buf, const int height, const int width, const int radius,
+static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height, const size_t width, const size_t radius,
                                   __m128 *const restrict scanline)
 {
   __m128 L[4] = { _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0) };
@@ -302,38 +288,38 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const int height, c
   for (size_t y = 0; y < radius && y < height; y++)
   {
     size_t index = y * width;
-    for (int c = 0; c < 4; c++)
+    for (size_t c = 0; c < 4; c++)
       L[c] += _mm_loadu_ps(buf + 4 * (index + c)); // use unaligned load since width is not necessarily a multiple of 4
     hits += one;
   }
   // process the blur up to the point where we start removing values
   for (size_t y = 0; y <= radius && y < height; y++)
   {
-    const int np = y + radius;
+    const size_t np = y + radius;
     if(np < height)
     {
-      for (int c = 0; c < 4; c++)
+      for (size_t c = 0; c < 4; c++)
         L[c] += _mm_loadu_ps(buf + 4 * (np*width + c));
       hits += one;
     }
-    for (int c = 0; c < 4; c++)
+    for (size_t c = 0; c < 4; c++)
       scanline[4*y+c] = L[c] / hits;
   }
   // process the blur for the rest of the scan line
   for (size_t y = radius+1 ; y < height; y++)
   {
-    const int op = y - radius - 1;
-    const int np = y + radius;
-    for (int c = 0; c < 4; c++)
+    const size_t op = y - radius - 1;
+    const size_t np = y + radius;
+    for (size_t c = 0; c < 4; c++)
       L[c] -= _mm_loadu_ps(buf + 4 * (op*width + c));
     hits -= one;
     if(np < height)
     {
-      for (int c = 0; c < 4; c++)
+      for (size_t c = 0; c < 4; c++)
         L[c] += _mm_loadu_ps(buf + 4 * (np*width + c));
       hits += one;
     }
-    for (int c = 0; c < 4; c++)
+    for (size_t c = 0; c < 4; c++)
       scanline[4*y+c] = L[c] / hits;
   }
 
@@ -350,7 +336,7 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const int height, c
 #endif /* __SSE2__ */
 
 // invoked inside an OpenMP parallel for, so no need to parallelize
-static void blur_vertical_4wide(float *const restrict buf, const int height, const int width, const int radius,
+static void blur_vertical_4wide(float *const restrict buf, const size_t height, const size_t width, const size_t radius,
                                 float *const restrict scanline)
 {
 #ifdef __SSE2__
@@ -362,16 +348,13 @@ static void blur_vertical_4wide(float *const restrict buf, const int height, con
 #endif /* __SSE2__ */
 
   float DT_ALIGNED_PIXEL L[4] = { 0, 0, 0, 0 };
-  int hits = 0;
+  size_t hits = 0;
   // add up the left half of the window
   for (size_t y = 0; y < radius && y < height; y++)
   {
     size_t index = y * width;
     hits++;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf : 16)
-#endif
-    for (int c = 0; c < 4; c++)
+    for_four_channels(c,aligned(buf : 16))
     {
       L[c] += buf[index+c];
     }
@@ -379,21 +362,15 @@ static void blur_vertical_4wide(float *const restrict buf, const int height, con
   // process the blur up to the point where we start removing values
   for (size_t y = 0; y <= radius && y < height; y++)
   {
-    const int np = y + radius;
-    const int npoffset = np * width;
+    const size_t np = y + radius;
+    const size_t npoffset = np * width;
     if(np < height)
     {
       hits++;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf : 16)
-#endif
-      for (int c = 0; c < 4; c++)
+      for_four_channels(c,aligned(buf : 16))
         L[c] += buf[npoffset+c];
     }
-#ifdef _OPENMP
-#pragma omp simd aligned(scanline : 16)
-#endif
-    for (int c = 0; c < 4; c++)
+    for_four_channels(c,aligned(scanline : 16))
     {
       scanline[4*y + c] = L[c] / hits;
     }
@@ -401,48 +378,36 @@ static void blur_vertical_4wide(float *const restrict buf, const int height, con
   // process the blur for the rest of the scan line
   for (size_t y = radius+1; y < height; y++)
   {
-    const int op = y - radius - 1;
-    const int np = y + radius;
-    const int opoffset = op * width;
-    const int npoffset = np * width;
-    if(op >= 0)
+    const size_t np = y + radius;
+    if(y >= radius-1)
     {
+      const size_t op = y - radius - 1;
+      const size_t opoffset = op * width;
       hits--;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf : 16)
-#endif
-      for (int c = 0; c < 4; c++)
+      for_four_channels(c,aligned(buf : 16))
         L[c] -= buf[opoffset + c];
     }
     if(np < height)
     {
+      const size_t npoffset = np * width;
       hits++;
-#ifdef _OPENMP
-#pragma omp simd aligned(buf : 16)
-#endif
-      for (int c = 0; c < 4; c++)
+      for_four_channels(c,aligned(buf : 16))
         L[c] += buf[npoffset + c];
     }
-#ifdef _OPENMP
-#pragma omp simd aligned(scanline : 16)
-#endif
-    for (int c = 0; c < 4; c++)
+    for_four_channels(c,aligned(scanline : 16))
       scanline[4*y + c] = L[c] / hits;
   }
 
   // copy blurred values back to original location in buffer
   for (size_t y = 0; y < height; y++)
   {
-#ifdef _OPENMP
-#pragma omp simd aligned(buf, scanline : 16)
-#endif
-    for (int c = 0; c < 4; c++)
+    for_four_channels(c,aligned(buf, scanline : 16))
       buf[y * width + c] = scanline[4*y + c];
   }
   return;
 }
 
-static void blur_vertical_1ch(float *const restrict buf, const int height, const int width, const int radius,
+static void blur_vertical_1ch(float *const restrict buf, const size_t height, const size_t width, const size_t radius,
                               float *const restrict scanlines)
 {
   /* vertical pass on L channel */
@@ -462,7 +427,7 @@ static void blur_vertical_1ch(float *const restrict buf, const int height, const
   for(int x = width & ~3; x < width; x++)
   {
     float L = 0.0f;
-    int hits = 0;
+    size_t hits = 0;
     size_t index = (size_t)x - (size_t)radius * width;
     float *const restrict scanline = scanlines;
     for(int y = -radius; y < height; y++)
@@ -489,13 +454,13 @@ static void blur_vertical_1ch(float *const restrict buf, const int height, const
   return;
 }
 
-static void dt_box_mean_1ch(float *const buf, const int height, const int width, const int radius,
-                            const int iterations)
+static void dt_box_mean_1ch(float *const buf, const size_t height, const size_t width, const size_t radius,
+                            const unsigned iterations)
 {
-  const int size = MAX(width,height);
+  const size_t size = MAX(width,height);
   float *const restrict scanlines = dt_alloc_align_float(dt_get_num_threads() * size * 4);
 
-  for(int iteration = 0; iteration < iterations; iteration++)
+  for(unsigned iteration = 0; iteration < iterations; iteration++)
   {
     blur_horizontal_1ch(buf, height, width, radius, scanlines);
     blur_vertical_1ch(buf, height, width, radius, scanlines);
@@ -505,12 +470,12 @@ static void dt_box_mean_1ch(float *const buf, const int height, const int width,
 }
 
 static void dt_box_mean_4ch(float *const buf, const int height, const int width, const int radius,
-                            const int iterations)
+                            const unsigned iterations)
 {
   const int size = MAX(width,height);
   float *const restrict scanlines = dt_alloc_align_float(dt_get_num_threads() * size * 4);
 
-  for(int iteration = 0; iteration < iterations; iteration++)
+  for(unsigned iteration = 0; iteration < iterations; iteration++)
   {
     blur_horizontal_4ch(buf, height, width, radius, scanlines);
 #ifdef _OPENMP
@@ -531,14 +496,14 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
 }
 
 #ifdef __SSE2__
-static void dt_box_mean_4ch_sse(float *const buf, const int height, const int width, const int radius,
-                                const int iterations)
+static void dt_box_mean_4ch_sse(float *const buf, const size_t height, const size_t width, const size_t radius,
+                                const unsigned iterations)
 {
   const int size = MAX(width,height);
 
   __m128 *const scanline_buf = dt_alloc_align(64, sizeof(__m128) * dt_get_num_threads() * size * 4);
 
-  for(int iteration = 0; iteration < BOX_ITERATIONS; iteration++)
+  for(unsigned iteration = 0; iteration < iterations; iteration++)
   {
     blur_horizontal_4ch(buf, height, width, radius, (float*)scanline_buf);
 
@@ -549,7 +514,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
   dt_omp_sharedconst(buf, scanline_buf) \
   schedule(static)
 #endif
-    for (int col = 0; col < (width & ~3); col += 4)
+    for (size_t col = 0; col < (width & ~3); col += 4)
     {
       __m128 *const restrict scanline = scanline_buf + 4 * dt_get_thread_num() * height;
       blur_vertical_4ch_sse(buf + 4 * col, height, width, radius, scanline);
@@ -557,7 +522,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
     // finish up the leftover 0-3 columns of pixels
     const int opoffs = -(radius + 1) * width;
     const int npoffs = (radius)*width;
-    for(int x = (width & ~3); x < width; x++)
+    for(size_t x = (width & ~3); x < width; x++)
     {
       __m128 *scanline = scanline_buf + size * dt_get_thread_num();
       __m128 L = _mm_setzero_ps();
@@ -592,7 +557,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
 #endif /* __SSE2__ */
 
 static inline void box_mean_2ch(float *const restrict in, const size_t height, const size_t width,
-                                const int radius, const int iterations)
+                                const int radius, const unsigned iterations)
 {
   // Compute in-place a box average (filter) on a multi-channel image over a window of size 2*radius + 1
   // We make use of the separable nature of the filter kernel to speed-up the computation
@@ -602,7 +567,7 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
   float *const restrict temp = dt_alloc_align_float(Ndim * dt_get_num_threads());
   if (temp == NULL) return;
 
-  for (int iteration = 0; iteration < iterations; iteration++)
+  for (unsigned iteration = 0; iteration < iterations; iteration++)
   {
     blur_horizontal_2ch(in, height, width, radius, temp);
     blur_vertical_1ch(in, height, 2*width, radius, temp);
@@ -610,8 +575,8 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
   dt_free_align(temp);
 }
 
-void dt_box_mean(float *const buf, const int height, const int width, const int ch,
-                 const int radius, const int iterations)
+void dt_box_mean(float *const buf, const size_t height, const size_t width, const int ch,
+                 const int radius, const unsigned iterations)
 {
   if (ch == 1)
   {
@@ -639,7 +604,7 @@ void dt_box_mean(float *const buf, const int height, const int width, const int 
 // input array x has stride 1, output array y has stride stride_y
 static inline void box_max_1d(int N, const float *const restrict x, float *const restrict y, size_t stride_y, int w)
 {
-  float m = -(INFINITY);
+  float m = -(FLT_MAX);
   for(int i = 0; i < MIN(w + 1, N); i++)
     m = MAX(x[i], m);
   for(int i = 0; i < N; i++)
@@ -650,7 +615,7 @@ static inline void box_max_1d(int N, const float *const restrict x, float *const
     // rescan the window to determine the new maximum
     if(i - w >= 0 && x[i - w] == m)
     {
-      m = -(INFINITY);
+      m = -(FLT_MAX);
       for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
         m = MAX(x[j], m);
     }
@@ -660,62 +625,65 @@ static inline void box_max_1d(int N, const float *const restrict x, float *const
   }
 }
 
+static inline void update_max_16wide(float m[16], const float *const restrict base)
+{
+#ifdef _OPENMP
+#pragma omp simd aligned(base)
+#endif
+    for (size_t c = 0; c < 16; c++)
+    {
+      m[c] = fmaxf(m[c], base[c]);
+    }
+}
+
 // calculate the one-dimensional moving maximum on four adjacent columns over a window of size 2*w+1
 // input array x has stride 16, output array y has stride stride_y and we will write 16 consecutive elements
 //  every stride_y elements (thus processing a cache line at a time)
 static inline void box_max_vert_16wide(const int N, const float *const restrict x, float *const restrict y,
                                       const int stride_y, const int w)
 {
-  float DT_ALIGNED_PIXEL m[16] = { -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
-                                  -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
-                                  -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY),
-                                  -(INFINITY), -(INFINITY), -(INFINITY), -(INFINITY) };
-  for(int i = 0; i < MIN(w + 1, N); i++)
-#ifdef _OPENMP
-#pragma omp simd aligned(m, x)
-#endif
-    for (int c = 0; c < 16; c++)
-      m[c] = MAX(x[16*i + c], m[c]);
-  for(int i = 0; i < N; i++)
+  float DT_ALIGNED_ARRAY m[16] = { -(FLT_MAX), -(FLT_MAX), -(FLT_MAX), -(FLT_MAX),
+                                   -(FLT_MAX), -(FLT_MAX), -(FLT_MAX), -(FLT_MAX),
+                                   -(FLT_MAX), -(FLT_MAX), -(FLT_MAX), -(FLT_MAX),
+                                   -(FLT_MAX), -(FLT_MAX), -(FLT_MAX), -(FLT_MAX) };
+  for(size_t i = 0; i < MIN(w + 1, N); i++)
+  {
+    update_max_16wide(m,x + 16 * i);
+  }
+  for(size_t i = 0; i < N; i++)
   {
     // store maximum of current window at center position
+    float *const restrict out_base = y + i * stride_y;
 #ifdef _OPENMP
-#pragma omp simd aligned(m, y)
+#pragma omp simd aligned(y)
 #endif
-    for (int c = 0; c < 16; c++)
-      y[i * stride_y + c] = m[c];
+    for (size_t c = 0; c < 16; c++)
+      out_base[c] = m[c];
     // If the earliest member of the current window is the max, we need to
     // rescan the window to determine the new maximum
     if (i >= w)
     {
 #ifdef _OPENMP
-#pragma omp simd aligned(m, x)
+#pragma omp simd
 #endif
-      for (int c = 0; c < 16; c++)
+      for (size_t c = 0; c < 16; c++)
+        m[c] = -(FLT_MAX);
+      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
       {
-//        if(x[16 * (i - w) + c] == m[c]) //prevents vectorization
-        {
-          m[c] = -(INFINITY);
-          for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-            m[c] = MAX(x[16*j+c], m[c]);
-        }
+        update_max_16wide(m,x + 16*j);
       }
     }
     // if the window has not yet exceeded the end of the row/column, update the maximum value
     if(i + w + 1 < N)
     {
-#ifdef _OPENMP
-#pragma omp simd aligned(m, x)
-#endif
-      for (int c = 0; c < 16; c++)
-        m[c] = MAX(x[16 * (i + w + 1) + c], m[c]);
+      update_max_16wide(m, x + (16 * (i + w + 1)));
     }
   }
 }
 
 // calculate the two-dimensional moving maximum over a box of size (2*w+1) x (2*w+1)
 // does the calculation in-place if input and output images are identical
-static void box_max_1ch(float *const buf, const int height, const int width, const int w)
+static void box_max_1ch(float *const buf, const size_t height, const size_t width, const unsigned w)
 {
   float *const restrict scratch_buffers = dt_alloc_align_float(dt_get_num_threads() * MAX(width,16*height));
 #ifdef _OPENMP
@@ -740,8 +708,13 @@ static void box_max_1ch(float *const buf, const int height, const int width, con
   {
     float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
     for (size_t row = 0; row < height; row++)
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(scratch,buf)
+#endif
       for (size_t c = 0; c < 16; c++)
         scratch[16*row+c] = buf[row * width + col + c];
+    }
     box_max_vert_16wide(height, scratch, buf + col, width, w);
   }
   for (size_t col = width & ~15 ; col < width; col++)
@@ -756,7 +729,7 @@ static void box_max_1ch(float *const buf, const int height, const int width, con
 
 
 // in-place calculate the two-dimensional moving maximum over a box of size (2*radius+1) x (2*radius+1)
-void dt_box_max(float *const buf, const int height, const int width, const int ch, const int radius)
+void dt_box_max(float *const buf, const size_t height, const size_t width, const int ch, const int radius)
 {
   if (ch == 1)
     box_max_1ch(buf, height, width, radius);
@@ -767,7 +740,10 @@ void dt_box_max(float *const buf, const int height, const int width, const int c
 // input array x has stride 1, output array y has stride stride_y
 static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, int w)
 {
-  float m = INFINITY;
+  float m = FLT_MAX;
+#ifdef _OPENMP
+#pragma omp simd aligned(x) reduction(min : m)
+#endif
   for(int i = 0; i < MIN(w + 1, N); i++)
     m = MIN(x[i], m);
   for(int i = 0; i < N; i++)
@@ -775,7 +751,7 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
     y[i * stride_y] = m;
     if(i - w >= 0 && x[i - w] == m)
     {
-      m = INFINITY;
+      m = FLT_MAX;
       for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
         m = MIN(x[j], m);
     }
@@ -784,55 +760,58 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
   }
 }
 
+static inline void update_min_16wide(float m[16], const float *const restrict base)
+{
+#ifdef _OPENMP
+#pragma omp simd aligned(base)
+#endif
+    for (size_t c = 0; c < 16; c++)
+    {
+      m[c] = fminf(m[c], base[c]);
+    }
+}
+
 // calculate the one-dimensional moving minimum on four adjacent columns over a window of size 2*w+1
 // input array x has stride 16, output array y has stride stride_y and we will write 16 consecutive elements
 //  every stride_y elements (thus processing a cache line at a time)
 static inline void box_min_vert_16wide(const int N, const float *const restrict x, float *const restrict y,
                                       const int stride_y, const int w)
 {
-  float DT_ALIGNED_PIXEL m[16] = { INFINITY, INFINITY, INFINITY, INFINITY,
-                                   INFINITY, INFINITY, INFINITY, INFINITY,
-                                   INFINITY, INFINITY, INFINITY, INFINITY,
-                                   INFINITY, INFINITY, INFINITY, INFINITY };
-  for(int i = 0; i < MIN(w + 1, N); i++)
-#ifdef _OPENMP
-#pragma omp simd aligned(m, x)
-#endif
-    for (int c = 0; c < 16; c++)
-      m[c] = MIN(x[16*i + c], m[c]);
-  for(int i = 0; i < N; i++)
+  float DT_ALIGNED_ARRAY m[16] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX,
+                                   FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX,
+                                   FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX,
+                                   FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
+  for(size_t i = 0; i < MIN(w + 1, N); i++)
+  {
+    update_min_16wide(m, x + 16*i);
+  }
+  for(size_t i = 0; i < N; i++)
   {
     // store minimum of current window at center position
+    float *const restrict out_base = y + i * stride_y;
 #ifdef _OPENMP
 #pragma omp simd aligned(m, y)
 #endif
-    for (int c = 0; c < 16; c++)
-      y[i * stride_y + c] = m[c];
+    for (size_t c = 0; c < 16; c++)
+      out_base[c] = m[c];
     // If the earliest member of the current window is the min, we need to
     // rescan the window to determine the new minimum
     if (i >= w)
     {
 #ifdef _OPENMP
-#pragma omp simd aligned(m, x)
+#pragma omp simd
 #endif
-      for (int c = 0; c < 16; c++)
+      for (size_t c = 0; c < 16; c++)
+        m[c] = FLT_MAX;
+      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
       {
-//        if(x[16 * (i - w) + c] == m[c]) //prevents vectorization
-        {
-          m[c] = INFINITY;
-          for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
-            m[c] = MIN(x[16*j+c], m[c]);
-        }
+        update_min_16wide(m,x + 16*j);
       }
     }
     // if the window has not yet exceeded the end of the row/column, update the minimum value
     if(i + w + 1 < N)
     {
-#ifdef _OPENMP
-#pragma omp simd aligned(m, x)
-#endif
-      for (int c = 0; c < 16; c++)
-        m[c] = MIN(x[16 * (i + w + 1) + c], m[c]);
+      update_min_16wide(m, x  + (16 * (i + w + 1)));
     }
   }
 }
@@ -840,7 +819,7 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
 
 // calculate the two-dimensional moving minimum over a box of size (2*w+1) x (2*w+1)
 // does the calculation in-place if input and output images are identical
-static void box_min_1ch(float *const buf, const int height, const int width, const int w)
+static void box_min_1ch(float *const buf, const size_t height, const size_t width, const int w)
 {
   float *const restrict scratch_buffers = dt_alloc_align_float(dt_get_num_threads() * MAX(width,16*height));
 #ifdef _OPENMP
@@ -861,12 +840,17 @@ static void box_min_1ch(float *const buf, const int height, const int width, con
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
-  for(int col = 0; col < (width & ~15); col += 16)
+  for(size_t col = 0; col < (width & ~15); col += 16)
   {
     float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
     for (size_t row = 0; row < height; row++)
+    {
+#ifdef _OPENMP
+#pragma omp simd aligned(scratch,buf)
+#endif
       for (size_t c = 0; c < 16; c++)
         scratch[16*row+c] = buf[row * width + col + c];
+    }
     box_min_vert_16wide(height, scratch, buf + col, width, w);
   }
   for (size_t col = width & ~15 ; col < width; col++)
@@ -880,7 +864,7 @@ static void box_min_1ch(float *const buf, const int height, const int width, con
   dt_free_align(scratch_buffers);
 }
 
-void dt_box_min(float *const buf, const int height, const int width, const int ch, const int radius)
+void dt_box_min(float *const buf, const size_t height, const size_t width, const int ch, const int radius)
 {
   if (ch == 1)
     box_min_1ch(buf, height, width, radius);
