@@ -44,9 +44,10 @@
 
 #include "rcd_demosaic.c"
 
-DT_MODULE_INTROSPECTION(3, dt_iop_demosaic_params_t)
+DT_MODULE_INTROSPECTION(4, dt_iop_demosaic_params_t)
 
 #define DEMOSAIC_XTRANS 1024 // masks for non-Bayer demosaic ops
+#define DEMOSAIC_DUAL 2048   // masks for dual demosaicing methods
 #define REDUCESIZE 64
 
 typedef enum dt_iop_demosaic_method_t
@@ -58,14 +59,16 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME = 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
   DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR = 4, // $DESCRIPTION: "photosite color (debug)"
   DT_IOP_DEMOSAIC_RCD = 5,   // $DESCRIPTION: "RCD"
+  DT_IOP_DEMOSAIC_RCD_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_RCD, // $DESCRIPTION: "RCD + VNG4"
+  DT_IOP_DEMOSAIC_AMAZE_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_AMAZE, // $DESCRIPTION: "AMaZE + VNG4"
   // methods for x-trans images
   DT_IOP_DEMOSAIC_VNG = DEMOSAIC_XTRANS | 0,           // $DESCRIPTION: "VNG"
   DT_IOP_DEMOSAIC_MARKESTEIJN = DEMOSAIC_XTRANS | 1,   // $DESCRIPTION: "Markesteijn 1-pass"
   DT_IOP_DEMOSAIC_MARKESTEIJN_3 = DEMOSAIC_XTRANS | 2, // $DESCRIPTION: "Markesteijn 3-pass (slow)"
   DT_IOP_DEMOSAIC_PASSTHR_MONOX = DEMOSAIC_XTRANS | 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
   DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4,           // $DESCRIPTION: "frequency domain chroma (slow)"
-  DT_IOP_DEMOSAIC_PASSTHR_COLORX = DEMOSAIC_XTRANS | 5 // $DESCRIPTION: "photosite color (debug)"
-
+  DT_IOP_DEMOSAIC_PASSTHR_COLORX = DEMOSAIC_XTRANS | 5, // $DESCRIPTION: "photosite color (debug)"
+  DT_IOP_DEMOSAIC_MARKEST3_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_MARKESTEIJN_3 // $DESCRIPTION: "Markesteijn 3-pass + VNG" 
 } dt_iop_demosaic_method_t;
 
 typedef enum dt_iop_demosaic_greeneq_t
@@ -103,6 +106,7 @@ typedef struct dt_iop_demosaic_params_t
   dt_iop_demosaic_smooth_t color_smoothing; // $DEFAULT: DEMOSAIC_SMOOTH_OFF $DESCRIPTION: "color smoothing"
   dt_iop_demosaic_method_t demosaicing_method; // $DEFAULT: DT_IOP_DEMOSAIC_PPG $DESCRIPTION: "demosaicing method"
   uint32_t yet_unused_data_specific_to_demosaicing_method;
+  float dual_thrs; // $MIN: 0.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "switch dual threshold"
 } dt_iop_demosaic_params_t;
 
 typedef struct dt_iop_demosaic_gui_data_t
@@ -112,6 +116,9 @@ typedef struct dt_iop_demosaic_gui_data_t
   GtkWidget *color_smoothing;
   GtkWidget *demosaic_method_bayer;
   GtkWidget *demosaic_method_xtrans;
+  GtkWidget *dual_thrs;
+  GtkWidget *dual_mask;
+  gint show_mask;
 } dt_iop_demosaic_gui_data_t;
 
 typedef struct dt_iop_demosaic_global_data_t
@@ -163,6 +170,7 @@ typedef struct dt_iop_demosaic_data_t
   uint32_t yet_unused_data_specific_to_demosaicing_method;
   float median_thrs;
   double CAM_to_RGB[3][4];
+  float dual_thrs;
 } dt_iop_demosaic_data_t;
 
 // Implemented on amaze_demosaic_RT.cc
@@ -207,6 +215,25 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
+  typedef struct dt_iop_demosaic_params_t dt_iop_demosaic_params_v4_t;
+  typedef struct dt_iop_demosaic_params_v3_t
+  {
+    dt_iop_demosaic_greeneq_t green_eq;
+    float median_thrs;
+    uint32_t color_smoothing;
+    dt_iop_demosaic_method_t demosaicing_method;
+    uint32_t yet_unused_data_specific_to_demosaicing_method;
+  } dt_iop_demosaic_params_v3_t;
+
+  if(old_version == 3 && new_version == 4)
+  {
+    dt_iop_demosaic_params_v3_t *o = (dt_iop_demosaic_params_v3_t *)old_params;
+    dt_iop_demosaic_params_v4_t *n = (dt_iop_demosaic_params_v4_t *)new_params;
+    memcpy(n, o, sizeof *o);
+    n->dual_thrs = 0.0f;
+    return 0;
+  }
+
   if(old_version == 2 && new_version == 3)
   {
     dt_iop_demosaic_params_t *o = (dt_iop_demosaic_params_t *)old_params;
@@ -257,6 +284,12 @@ static const char* method2string(dt_iop_demosaic_method_t method)
     case DT_IOP_DEMOSAIC_RCD:
       string = "RCD";
       break;
+    case DT_IOP_DEMOSAIC_RCD_VNG:
+      string = "RCD + VNG4";
+      break;
+    case DT_IOP_DEMOSAIC_AMAZE_VNG:
+      string = "AMaZE + VNG4";
+      break;
     case DT_IOP_DEMOSAIC_VNG:
       string = "VNG (xtrans)";
       break;
@@ -265,6 +298,9 @@ static const char* method2string(dt_iop_demosaic_method_t method)
       break;
     case DT_IOP_DEMOSAIC_MARKESTEIJN_3:
       string = "Markesteijn-3 (xtrans)";
+      break;
+    case DT_IOP_DEMOSAIC_MARKEST3_VNG:
+      string = "Markesteijn 3-pass + VNG"; 
       break;
     case DT_IOP_DEMOSAIC_FDC:
       string = "Frequency Domain Chroma (xtrans)";
@@ -2867,6 +2903,8 @@ static int demosaic_qual_flags(const dt_dev_pixelpipe_iop_t *const piece,
   return flags;
 }
 
+#include "dual_demosaic.c"
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -2878,8 +2916,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   dt_iop_roi_t roo = *roi_out;
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
-  const gboolean info = (darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF));
-  
+  const gboolean info = ((darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF)) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+  gboolean showmask = FALSE;
+  if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL) // && mask)
+  {
+    dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+    showmask = (g->show_mask);
+  }
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])piece->pipe->dsc.xtrans;
 
   dt_iop_demosaic_data_t *data = (dt_iop_demosaic_data_t *)piece->data;
@@ -2892,7 +2935,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   && (demosaicing_method != DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR))
     demosaicing_method = (piece->pipe->dsc.filters != 9u) ? DT_IOP_DEMOSAIC_PPG : DT_IOP_DEMOSAIC_MARKESTEIJN;
 
-  if(info) dt_get_times(&start_time);
 
   const float *const pixels = (float *)i;
 
@@ -2911,6 +2953,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       roo.scale = 1.0f;
       tmp = (float *)dt_alloc_align_float((size_t)4 * roo.width * roo.height);
     }
+    if(info) dt_get_times(&start_time);
 
     if(demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME)
     {
@@ -2922,7 +2965,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
     else if(piece->pipe->dsc.filters == 9u)
     {
-      if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL))
+      if(demosaicing_method == DT_IOP_DEMOSAIC_MARKEST3_VNG)
+        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, 3);       
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL))
         xtrans_fdc_interpolate(self, tmp, pixels, &roo, &roi, xtrans);
       else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL))
         xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans,
@@ -2959,7 +3004,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         }
       }
 
-      if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
+      else if(demosaicing_method == DT_IOP_DEMOSAIC_VNG4 || (img->flags & DT_IMAGE_4BAYER))
       {
         vng_interpolate(tmp, in, &roo, &roi, piece->pipe->dsc.filters, xtrans, qual_flags & DEMOSAIC_ONLY_VNG_LINEAR);
         if (img->flags & DT_IMAGE_4BAYER)
@@ -2968,11 +3013,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           dt_colorspaces_cygm_to_rgb(piece->pipe->dsc.processed_maximum, 1, data->CAM_to_RGB);
         }
       }
-      else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
+      else if((demosaicing_method & ~DEMOSAIC_DUAL) == DT_IOP_DEMOSAIC_RCD)
       {
         rcd_demosaic(piece, tmp, pixels, &roo, &roi, piece->pipe->dsc.filters);
       }
-      else if(demosaicing_method != DT_IOP_DEMOSAIC_AMAZE)
+      else if((demosaicing_method & ~DEMOSAIC_DUAL) != DT_IOP_DEMOSAIC_AMAZE)
         demosaic_ppg(tmp, in, &roo, &roi, piece->pipe->dsc.filters,
                      data->median_thrs); // wanted ppg or zoomed out a lot and quality is limited to 1
       else
@@ -2980,7 +3025,21 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
       if(!(img->flags & DT_IMAGE_4BAYER) && data->green_eq != DT_IOP_GREEN_EQ_NO) dt_free_align(in);
     }
-    if(info) dt_get_times(&end_time);
+
+    if(info)
+    {
+      const float mpixels = (roo.width * roo.height) / 1.0e6;
+      dt_get_times(&end_time);
+      const float tclock = end_time.clock - start_time.clock;
+      const float uclock = end_time.user - start_time.user;
+      fprintf(stderr," [demosaic] process CPU `%s' did %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us\n",
+        method2string(demosaicing_method & ~DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
+    }
+
+    if(demosaicing_method & DEMOSAIC_DUAL)
+    {
+      dual_demosaic(piece, tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, showmask, data->dual_thrs);
+    }
 
     if(scaled)
     {
@@ -3002,19 +3061,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else
       dt_iop_clip_and_zoom_demosaic_half_size_f((float *)o, pixels, &roo, &roi, roo.width, roi.width,
                                                 piece->pipe->dsc.filters);
-    if(info) dt_get_times(&end_time);
   }
   if(data->color_smoothing)
     color_smoothing(o, roi_out, data->color_smoothing);
-
-  if(info)
-  {
-    const float mpixels = (roo.width * roo.height) / 1.0e6;
-    const float tclock = end_time.clock - start_time.clock;
-    const float uclock = end_time.user - start_time.user;
-    dt_print(DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF , "[demosaic] process CPU `%s' %.2fmpix, %.4f secs (%.4f CPU), %.2f pix/us, smooth %i\n",
-        method2string(demosaicing_method), mpixels, tclock, uclock, mpixels / tclock, data->color_smoothing);
-  }
 }
 
 #ifdef HAVE_OPENCL
@@ -4699,7 +4748,7 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float smooth = data->color_smoothing ? ioratio : 0.0f;
   const float greeneq
       = ((piece->pipe->dsc.filters != 9u) && (data->green_eq != DT_IOP_GREEN_EQ_NO)) ? 0.25f : 0.0f;
-  const dt_iop_demosaic_method_t demosaicing_method = data->demosaicing_method;
+  const dt_iop_demosaic_method_t demosaicing_method = data->demosaicing_method & ~DEMOSAIC_DUAL;
 
   const int qual_flags = demosaic_qual_flags(piece, &self->dev->image_storage, roi_out);
   const int full_scale_demosaicing = qual_flags & DEMOSAIC_FULL_SCALE;
@@ -4759,7 +4808,13 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   }
   else if(demosaicing_method == DT_IOP_DEMOSAIC_RCD)
   {
-    tiling->factor = 1.0f + ioratio + smooth;
+    tiling->factor = 1.0f + ioratio;
+    if(full_scale_demosaicing && unscaled)
+      tiling->factor += fmax(1.0f + greeneq, smooth);  // + tmp + geeneq | + smooth
+    else if(full_scale_demosaicing)
+      tiling->factor += fmax(2.0f + greeneq, smooth);  // + tmp + aux + greeneq | + smooth
+    else
+      tiling->factor += smooth;                        // + smooth
     tiling->maxbuf = 1.0f;
     tiling->overhead = sizeof(float) * RCD_TILESIZE * RCD_TILESIZE * 8 * MAX(1, darktable.num_openmp_threads);
     tiling->xalign = 2;
@@ -4783,6 +4838,14 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
     tiling->xalign = 6; // covering Bayer pattern for VNG4 as well as xtrans for VNG
     tiling->yalign = 6; // covering Bayer pattern for VNG4 as well as xtrans for VNG
     tiling->overlap = 6;
+  }
+  if(data->demosaicing_method & DEMOSAIC_DUAL)
+  {
+    // make sure VNG4 is also possible
+    tiling->factor += 1.0f;
+    tiling->xalign = MAX(6, tiling->xalign);
+    tiling->yalign = MAX(6, tiling->yalign);
+    tiling->overlap = MAX(6, tiling->overlap);
   }
   return;
 }
@@ -4891,32 +4954,29 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
   d->green_eq = p->green_eq;
   d->color_smoothing = p->color_smoothing;
   d->median_thrs = p->median_thrs;
-
+  d->dual_thrs = p->dual_thrs;
   d->demosaicing_method = p->demosaicing_method;
 
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME
-     || p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
+  const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
+                            (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX));
+
+  if(!(p->demosaicing_method == DT_IOP_DEMOSAIC_PPG))
+    d->median_thrs = 0.0f;
+  if(passing)
   {
+    d->green_eq = DT_IOP_GREEN_EQ_NO;
+    d->color_smoothing = 0;
+  }
+
+  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME ||
+     p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX)
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME;
-    d->green_eq = DT_IOP_GREEN_EQ_NO;
-    d->color_smoothing = 0;
-    d->median_thrs = 0.0f;
-  }
 
-  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR
-     || p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX)
-  {
+  if(p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR ||
+     p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_COLORX)
     d->demosaicing_method = DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR;
-    d->green_eq = DT_IOP_GREEN_EQ_NO;
-    d->color_smoothing = 0;
-    d->median_thrs = 0.0f;
-  }
-
-  if((d->demosaicing_method == DT_IOP_DEMOSAIC_AMAZE) ||
-     (d->demosaicing_method == DT_IOP_DEMOSAIC_RCD))
-  {
-    d->median_thrs = 0.0f;
-  }
 
   // OpenCL only supported by some of the demosaicing methods
   switch(d->demosaicing_method)
@@ -4937,6 +4997,15 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       piece->process_cl_ready = 0;
       break;
     case DT_IOP_DEMOSAIC_RCD:
+      piece->process_cl_ready = 0;
+      break;
+    case DT_IOP_DEMOSAIC_RCD_VNG:
+      piece->process_cl_ready = 0;
+      break;
+    case DT_IOP_DEMOSAIC_AMAZE_VNG:
+      piece->process_cl_ready = 0;
+      break;
+    case DT_IOP_DEMOSAIC_MARKEST3_VNG:
       piece->process_cl_ready = 0;
       break;
     case DT_IOP_DEMOSAIC_VNG:
@@ -4994,6 +5063,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
   const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
+  const gboolean isdual = (p->demosaicing_method & DEMOSAIC_DUAL);
   const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
@@ -5009,9 +5079,18 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);
   gtk_widget_set_visible(g->color_smoothing, !passing);
+  gtk_widget_set_visible(g->dual_mask, isdual);
+  gtk_widget_set_visible(g->dual_thrs, isdual);
   dt_bauhaus_slider_set(g->median_thrs, p->median_thrs);
   dt_bauhaus_combobox_set(g->color_smoothing, p->color_smoothing);
   dt_bauhaus_combobox_set(g->greeneq, p->green_eq);
+  dt_bauhaus_slider_set(g->dual_thrs, p->dual_thrs);
+
+  g->show_mask = FALSE;
+  dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
+  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, g->show_mask);
+
+  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
@@ -5026,8 +5105,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
   if(changed)
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
-
-  gtk_stack_set_visible_child_name(GTK_STACK(self->widget), self->default_enabled ? "raw" : "non_raw");
 }
 
 void reload_defaults(dt_iop_module_t *module)
@@ -5053,6 +5130,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 
   const gboolean bayer = (self->dev->image_storage.buf_dsc.filters != 9u);
   const gboolean isppg = (p->demosaicing_method == DT_IOP_DEMOSAIC_PPG);
+  const gboolean isdual = (p->demosaicing_method & DEMOSAIC_DUAL);
   const gboolean passing = ((p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_MONOCHROME) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHROUGH_COLOR) ||
                             (p->demosaicing_method == DT_IOP_DEMOSAIC_PASSTHR_MONOX) ||
@@ -5068,6 +5146,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   gtk_widget_set_visible(g->median_thrs, bayer && isppg);
   gtk_widget_set_visible(g->greeneq, !passing);
   gtk_widget_set_visible(g->color_smoothing, !passing);
+  gtk_widget_set_visible(g->dual_mask, isdual);
+  gtk_widget_set_visible(g->dual_thrs, isdual);
 
   dt_image_t *img = dt_image_cache_get(darktable.image_cache, self->dev->image_storage.id, 'w');
   int changed = img->flags & DT_IMAGE_MONOCHROME_BAYER;
@@ -5083,18 +5163,31 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     dt_imageio_update_monochrome_workflow_tag(self->dev->image_storage.id, mask_bw);
 }
 
+static void show_mask_callback(GtkWidget *slider, gpointer user_data)
+{
+  dt_iop_module_t *self = (dt_iop_module_t *)user_data;
+  if(darktable.gui->reset) return;
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->off), TRUE);
+  dt_iop_demosaic_gui_data_t *g = (dt_iop_demosaic_gui_data_t *)self->gui_data;
+  g->show_mask = !(g->show_mask);
+  dt_bauhaus_widget_set_quad_active(g->dual_mask, g->show_mask);
+  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, g->show_mask);
+  dt_dev_reprocess_center(self->dev);
+}
+
 void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_demosaic_gui_data_t *g = IOP_GUI_ALLOC(demosaic);
+  g->show_mask = FALSE;
 
   GtkWidget *box_raw = self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   g->demosaic_method_bayer = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
-  for(int i=0;i<6;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 6);
+  for(int i=0;i<7;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_bayer, 8);
   gtk_widget_set_tooltip_text(g->demosaic_method_bayer, _("demosaicing raw data method"));
 
   g->demosaic_method_xtrans = dt_bauhaus_combobox_from_params(self, "demosaicing_method");
-  for(int i=0;i<6;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
+  for(int i=0;i<8;i++) dt_bauhaus_combobox_remove_at(g->demosaic_method_xtrans, 0);
   gtk_widget_set_tooltip_text(g->demosaic_method_xtrans, _("demosaicing raw data method"));
 
   g->median_thrs = dt_bauhaus_slider_from_params(self, "median_thrs");
@@ -5102,6 +5195,17 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_digits(g->median_thrs, 3);
   gtk_widget_set_tooltip_text(g->median_thrs, _("threshold for edge-aware median.\nset to 0.0 to switch off.\n"
                                                 "set to 1.0 to ignore edges."));
+  g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
+  dt_bauhaus_slider_set_step(g->dual_thrs, 0.01);
+  dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
+  gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content.\n"
+                                                "set to 1.0 for flat content."));
+  g->dual_mask = dt_bauhaus_combobox_new(self);
+  dt_bauhaus_widget_set_label(g->dual_mask, NULL, N_("display blending mask"));
+  dt_bauhaus_widget_set_quad_paint(g->dual_mask, dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_DO_NOT_USE_BORDER, NULL);
+  dt_bauhaus_widget_set_quad_toggle(g->dual_mask, TRUE);
+  g_signal_connect(G_OBJECT(g->dual_mask), "quad-pressed", G_CALLBACK(show_mask_callback), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), g->dual_mask, FALSE, FALSE, 0);
 
   g->color_smoothing = dt_bauhaus_combobox_from_params(self, "color_smoothing");
   gtk_widget_set_tooltip_text(g->color_smoothing, _("how many color smoothing median steps after demosaicing"));
