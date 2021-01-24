@@ -540,7 +540,7 @@
     <shortdescription>maximum fps of live view update in tethering view</shortdescription>
     <longdescription>going too fast will result in too many redraws without a real benefit</longdescription>
   </dtconfig>
-  <dtconfig prefs="lighttable" section="general">
+  <dtconfig dialog="collect">
     <name>plugins/collect/filmroll_sort</name>
     <type>
       <enum>
@@ -557,7 +557,7 @@
     <type>bool</type>
     <default>true</default>
     <shortdescription>sort collection recent to older</shortdescription>
-    <longdescription>changes the default collections-list order for folders, times and dates to run from recent to older</longdescription>
+    <longdescription>changes the default collections-list order for film rolls, folders, times and dates to run from recent to older</longdescription>
   </dtconfig>
   <dtconfig>
     <name>ui_last/colorpicker_mean</name>
