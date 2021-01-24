@@ -375,7 +375,7 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
     for(size_t y = 0; y < stride; y += ch)
     {
       float *const restrict in = __builtin_assume_aligned(image_out + y, 16);
-      float xyz[3] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
+      float xyz[4] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
       _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
       dt_XYZ_to_Lab(xyz, in);
     }
@@ -392,7 +392,7 @@ static inline void _transform_rgb_to_lab_matrix(const float *const restrict imag
       const float *const restrict in = __builtin_assume_aligned(image_in + y, 16);
       float *const restrict out = __builtin_assume_aligned(image_out + y, 16);
 
-      float xyz[3] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
+      float xyz[4] DT_ALIGNED_PIXEL; // already inited in _ioppr_linear_rgb_matrix_to_xyz()
       _ioppr_linear_rgb_matrix_to_xyz(in, xyz, matrix);
       dt_XYZ_to_Lab(xyz, out);
     }

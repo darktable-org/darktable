@@ -174,6 +174,24 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #endif
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(in,out)
+#endif
+static inline void dt_apply_transposed_color_matrix(const float *const in, const float matrix[3][4],
+                                                    float *const out)
+{
+  // Use a temp variable to accumulate the results.  GCC8 will optimize away the memory accesses for the
+  // temp array, while it writes the intermediate values to 'out' after each iteration if we don't use
+  // the temp.  That cuts total memory bandwidth by a third.
+  float DT_ALIGNED_PIXEL result[4] = { 0.0f };
+  for(int c = 0; c < 3; c++)
+    for_each_channel(r)
+    {
+      result[r] += matrix[c][r] * in[c];
+    }
+  copy_pixel(out, result);
+}
+
+#ifdef _OPENMP
 #pragma omp declare simd
 #endif
 static inline float cbrt_5f(float f)
@@ -391,42 +409,20 @@ static inline void dt_Lch_to_xyY(const float Lch[3], float xyY[3])
   dt_Luv_to_xyY(Luv, xyY);
 }
 
-/** uses D50 white point. */
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline void dt_XYZ_to_sRGB(const float *const XYZ, float *const sRGB)
-{
-  const float xyz_to_srgb_matrix[3][3] = { { 3.1338561, -1.6168667, -0.4906146 },
-                                           { -0.9787684, 1.9161415, 0.0334540 },
-                                           { 0.0719453, -0.2289914, 1.4052427 } };
-
-  // XYZ -> sRGB
-  float rgb[3] = { 0, 0, 0 };
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  // linear sRGB -> gamma corrected sRGB
-  for(int c = 0; c < 3; c++)
-    sRGB[c] = rgb[c] <= 0.0031308 ? 12.92 * rgb[c] : (1.0 + 0.055) * powf(rgb[c], 1.0 / 2.4) - 0.055;
-}
-
-
 /** Uses D50 **/
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
 static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRGB)
 {
-  // linear sRGB == Rec709 with no gamma
-  const float xyz_to_srgb_matrix[3][3] = { {  3.1338561f, -1.6168667f, -0.4906146f },
-                                           { -0.9787684f,  1.9161415f,  0.0334540f },
-                                           {  0.0719453f, -0.2289914f,  1.4052427f } };
+  // transpose and pad the conversion matrix to enable vectorization
+  const float xyz_to_srgb_matrix_transposed[3][4] DT_ALIGNED_PIXEL =
+    { {  3.1338561f, -0.9787684f,  0.0719453f, 0.0f },
+      { -1.6168667f,  1.9161415f, -0.2289914f, 0.0f },
+      { -0.4906146f,  0.0334540f,  1.4052427f, 0.0f } };
 
-  // XYZ -> sRGB
-  float rgb[3] = { 0, 0, 0 };
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  for(int r = 0; r < 3; r++) sRGB[r] = rgb[r];
+  // XYZ -> linear sRGB
+  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_matrix_transposed, sRGB);
 }
 
 
@@ -437,27 +433,42 @@ static inline void dt_XYZ_to_Rec709_D50(const float *const XYZ, float *const sRG
 static inline void dt_XYZ_to_Rec709_D65(const float *const XYZ, float *const sRGB)
 {
   // linear sRGB == Rec709 with no gamma
-  const float xyz_to_srgb_matrix[3][3] = { {  3.2404542f, -1.5371385f, -0.4985314f },
-                                           { -0.9692660f,  1.8760108f,  0.0415560f },
-                                           {  0.0556434f, -0.2040259f,  1.0572252f } };
+  // transpose and pad the conversion matrix to enable vectorization
+  const float xyz_to_srgb_transposed[3][4] DT_ALIGNED_PIXEL = {
+    {  3.2404542f, -0.9692660f,  0.0556434f, 0.0f },
+    { -1.5371385f,  1.8760108f, -0.2040259f, 0.0f },
+    { -0.4985314f,  0.0415560f,  1.0572252f, 0.0f },
+  };
+  // XYZ -> linear sRGB
+  dt_apply_transposed_color_matrix(XYZ, xyz_to_srgb_transposed, sRGB);
+}
 
-  // XYZ -> sRGB
-  float rgb[3] = { 0, 0, 0 };
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) rgb[r] += xyz_to_srgb_matrix[r][c] * XYZ[c];
-  for(int r = 0; r < 3; r++) sRGB[r] = rgb[r];
+
+/** uses D50 white point. */
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, sRGB)
+#endif
+static inline void dt_XYZ_to_sRGB(const float *const XYZ, float *const sRGB)
+{
+  // XYZ -> linear sRGB
+  float DT_ALIGNED_PIXEL rgb[4];
+  dt_XYZ_to_Rec709_D50(XYZ, rgb);
+  // linear sRGB -> gamma corrected sRGB
+  for(size_t c = 0; c < 3; c++)
+    sRGB[c] = rgb[c] <= 0.0031308f ? 12.92f * rgb[c] : (1.0f + 0.055f) * powf(rgb[c], 1.0f / 2.4f) - 0.055f;
 }
 
 
 /** uses D50 white point and clips the output to [0..1]. */
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(XYZ, sRGB)
 #endif
 static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const sRGB)
 {
-  dt_XYZ_to_sRGB(XYZ, sRGB);
+  float DT_ALIGNED_PIXEL result[4];
+  dt_XYZ_to_sRGB(XYZ, result);
 
-  for(int i = 0; i < 3; i++) sRGB[i] = CLIP(sRGB[i]);
+  for(int i = 0; i < 3; i++) sRGB[i] = CLIP(result[i]);
 }
 
 
@@ -467,50 +478,27 @@ static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const s
 static inline void dt_Rec709_to_XYZ_D50(const float *const DT_RESTRICT sRGB, float *const DT_RESTRICT XYZ_D50)
 {
   // Conversion matrix from http://www.brucelindbloom.com/Eqn_RGB_XYZ_Matrix.html
+  // (transpose and pad the conversion matrix to enable vectorization)
   const float M[3][4] DT_ALIGNED_PIXEL = {
-      { 0.4360747f, 0.3850649f, 0.1430804f, 0.0f },
-      { 0.2225045f, 0.7168786f, 0.0606169f, 0.0f },
-      { 0.0139322f, 0.0971045f, 0.7141733f, 0.0f },
+    { 0.4360747f, 0.2225045f, 0.0139322f, 0.0f },
+    { 0.3850649f, 0.7168786f, 0.0971045f, 0.0f },
+    { 0.1430804f, 0.0606169f, 0.7141733f, 0.0f }
   };
-
-  // sRGB -> XYZ
-  for(size_t x = 0; x < 3; x++)
-      XYZ_D50[x] = M[x][0] * sRGB[0] + M[x][1] * sRGB[1] + M[x][2] * sRGB[2];
+  dt_apply_transposed_color_matrix(sRGB, M, XYZ_D50);
 }
 
 
 #ifdef _OPENMP
-#pragma omp declare simd
+#pragma omp declare simd aligned(sRGB, XYZ)
 #endif
 static inline void dt_sRGB_to_XYZ(const float *const sRGB, float *const XYZ)
 {
-  const float srgb_to_xyz[3][3] = { { 0.4360747, 0.3850649, 0.1430804 },
-                                    { 0.2225045, 0.7168786, 0.0606169 },
-                                    { 0.0139322, 0.0971045, 0.7141733 } };
-
-  // sRGB -> XYZ
-  XYZ[0] = XYZ[1] = XYZ[2] = 0.0;
-  float rgb[3] = { 0 };
+  float DT_ALIGNED_PIXEL rgb[4] = { 0 };
   // gamma corrected sRGB -> linear sRGB
   for(int c = 0; c < 3; c++)
-    rgb[c] = sRGB[c] <= 0.04045 ? sRGB[c] / 12.92 : powf((sRGB[c] + 0.055) / (1 + 0.055), 2.4);
-  for(int r = 0; r < 3; r++)
-    for(int c = 0; c < 3; c++) XYZ[r] += srgb_to_xyz[r][c] * rgb[c];
-}
-
-static inline void dt_apply_transposed_color_matrix(const float *const in, const float matrix[3][4],
-                                                    float *const out)
-{
-  // Use a temp variable to accumulate the results.  GCC8 will optimize away the memory accesses for the
-  // temp array, while it writes the intermediate values out to 'rgb' after each iteration if we don't use
-  // the temp.  That cuts total memory bandwidth by a third.
-  float DT_ALIGNED_PIXEL result[4] = { 0.0f };
-  for(int c = 0; c < 3; c++)
-    for_each_channel(r)
-    {
-      result[r] += matrix[c][r] * in[c];
-    }
-  copy_pixel(out, result);
+    rgb[c] = sRGB[c] <= 0.04045f ? sRGB[c] / 12.92f : powf((sRGB[c] + 0.055f) / (1.0f + 0.055f), 2.4f);
+  // linear sRGB -> XYZ
+  dt_Rec709_to_XYZ_D50(rgb, XYZ);
 }
 
 #ifdef _OPENMP

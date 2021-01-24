@@ -705,7 +705,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
 
       if(!clipping)
       {
-        float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         for(int c = 0; c < 3; c++)
         {
@@ -720,7 +720,7 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
       }
       else
       {
-        float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           nRGB[c] = 0.0f;
@@ -730,13 +730,13 @@ static void process_cmatrix_bm(struct dt_iop_module_t *self, dt_dev_pixelpipe_io
           }
         }
 
-        float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
         }
 
-        float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           XYZ[c] = 0.0f;
@@ -771,7 +771,7 @@ static void process_cmatrix_fastpath_simple(struct dt_iop_module_t *self, dt_dev
     float *in = (float *)ivoid + (size_t)ch * k;
     float *out = (float *)ovoid + (size_t)ch * k;
 
-    float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
     for(int c = 0; c < 3; c++)
     {
@@ -805,7 +805,7 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
     float *in = (float *)ivoid + (size_t)ch * k;
     float *out = (float *)ovoid + (size_t)ch * k;
 
-    float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
     {
       nRGB[c] = 0.0f;
@@ -815,13 +815,13 @@ static void process_cmatrix_fastpath_clipping(struct dt_iop_module_t *self, dt_d
       }
     }
 
-    float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
     {
       cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
     }
 
-    float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+    float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
     for(int c = 0; c < 3; c++)
     {
       XYZ[c] = 0.0f;
@@ -885,7 +885,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
 
       if(!clipping)
       {
-        float _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL _xyz[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 
         for(int c = 0; c < 3; c++)
         {
@@ -900,7 +900,7 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
       }
       else
       {
-        float nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL nRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           nRGB[c] = 0.0f;
@@ -910,13 +910,13 @@ static void process_cmatrix_proper(struct dt_iop_module_t *self, dt_dev_pixelpip
           }
         }
 
-        float cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL cRGB[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           cRGB[c] = CLAMP(nRGB[c], 0.0f, 1.0f);
         }
 
-        float XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
+        float DT_ALIGNED_PIXEL XYZ[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
         for(int c = 0; c < 3; c++)
         {
           XYZ[c] = 0.0f;

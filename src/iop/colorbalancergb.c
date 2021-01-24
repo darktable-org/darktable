@@ -901,9 +901,9 @@ static void paint_chroma_slider(GtkWidget *w, const float hue)
     const float x = x_min + stop * x_range;
     const float h = DEG_TO_RAD(hue);
 
-    float RGB[4] = { 0.f };
-    float Ych[4] = { 0.75f, x, h, 0.f };
-    float LMS[4] = { 0.f };
+    float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
+    float DT_ALIGNED_PIXEL Ych[4] = { 0.75f, x, h, 0.f };
+    float DT_ALIGNED_PIXEL LMS[4] = { 0.f };
     Ych_to_gradingRGB(Ych, LMS, NULL);
     gradingRGB_to_XYZ(LMS, Ych);
     dt_XYZ_to_Rec709_D65(Ych, RGB);
@@ -1609,9 +1609,9 @@ void gui_init(dt_iop_module_t *self)
   {
     const float stop = ((float)i / (float)(DT_BAUHAUS_SLIDER_MAX_STOPS - 1));
     const float h = DEG_TO_RAD(stop * (360.f));
-    float RGB[4] = { 0.f };
-    float Ych[4] = { 0.75f, 0.2f, h, 0.f };
-    float LMS[4] = { 0.f };
+    float DT_ALIGNED_PIXEL RGB[4] = { 0.f };
+    float DT_ALIGNED_PIXEL Ych[4] = { 0.75f, 0.2f, h, 0.f };
+    float DT_ALIGNED_PIXEL LMS[4] = { 0.f };
     Ych_to_gradingRGB(Ych, LMS, NULL);
     gradingRGB_to_XYZ(LMS, Ych);
     dt_XYZ_to_Rec709_D65(Ych, RGB);
