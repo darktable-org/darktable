@@ -786,9 +786,9 @@ static int _select_base_display_color(dt_iop_module_t *self, float *picked_color
                                  || self->picked_color_max[0] < 0.0f || self->picked_color[0] == 0.0f);
   if(!select_by_picker)
   {
-    float rgb[3] = { 0.0f, 0.3f, 0.7f };
-    float xyz[3];
-    float lab[3];
+    float DT_ALIGNED_PIXEL rgb[4] = { 0.0f, 0.3f, 0.7f };
+    float DT_ALIGNED_PIXEL xyz[4];
+    float DT_ALIGNED_PIXEL lab[4];
     dt_sRGB_to_XYZ(rgb, xyz);
     dt_XYZ_to_Lab(xyz, lab);
     dt_Lab_2_LCH(lab, picked_color);
@@ -972,8 +972,8 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
   Lab[1] *= Lab[0] / L0 * clip2;                                                                                  \
   Lab[2] *= Lab[0] / L0 * clip2;                                                                                  \
                                                                                                                   \
-  float xyz[3];                                                                                                   \
-  float rgb[3];                                                                                                   \
+  float DT_ALIGNED_PIXEL xyz[4];                                                                                  \
+  float DT_ALIGNED_PIXEL rgb[4];                                                                                  \
   dt_Lab_to_XYZ(Lab, xyz);                                                                                        \
   dt_XYZ_to_sRGB(xyz, rgb);                                                                                       \
                                                                                                                   \

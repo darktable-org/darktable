@@ -1142,8 +1142,8 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
   for(size_t k = 0; k < checker->patches; k++)
   {
     // Convert to Lab
-    float Lab_test[4];
-    float XYZ_test[4];
+    float DT_ALIGNED_PIXEL Lab_test[4];
+    float DT_ALIGNED_PIXEL XYZ_test[4];
 
     // If exposure was normalized, denormalized it before
     for(size_t c = 0; c < 4; c++) XYZ_test[c] = patches[k * 4 + c];
@@ -1399,11 +1399,11 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   dt_Lab_to_XYZ(g->checker->values[g->checker->middle_grey].Lab, XYZ_grey_ref);
 
   // find test grey patch
-  float XYZ_grey_test[4];
+  float DT_ALIGNED_PIXEL XYZ_grey_test[4];
   for(size_t c = 0; c < 3; c++) XYZ_grey_test[c] = patches[g->checker->middle_grey * 4 + c];
 
   // compute reference illuminant
-  float D50_XYZ[4];
+  float DT_ALIGNED_PIXEL D50_XYZ[4];
   illuminant_xy_to_XYZ(0.34567f, 0.35850f, D50_XYZ);
 
   // normalize luminances - note : illuminant is normalized by definition
@@ -1416,17 +1416,17 @@ void extract_color_checker(const float *const restrict in, float *const restrict
   }
 
   // convert XYZ to LMS
-  float LMS_grey_ref[4], LMS_grey_test[4], D50_LMS[4];
+  float DT_ALIGNED_PIXEL LMS_grey_ref[4], LMS_grey_test[4], D50_LMS[4];
   convert_any_XYZ_to_LMS(XYZ_grey_ref, LMS_grey_ref, kind);
   convert_any_XYZ_to_LMS(XYZ_grey_test, LMS_grey_test, kind);
   convert_any_XYZ_to_LMS(D50_XYZ, D50_LMS, kind);
 
   // solve the equation to find the scene illuminant
-  float illuminant[4] = { .0f };
+  float DT_ALIGNED_PIXEL illuminant[4] = { 0.0f };
   for(size_t c = 0; c < 3; c++) illuminant[c] = D50_LMS[c] * LMS_grey_test[c] / LMS_grey_ref[c];
 
   // convert back the illuminant to XYZ then xyY
-  float illuminant_XYZ[4], illuminant_xyY[4] = { .0f };
+  float DT_ALIGNED_PIXEL illuminant_XYZ[4], illuminant_xyY[4] = { .0f };
   convert_any_LMS_to_XYZ(illuminant, illuminant_XYZ, kind);
   const float Y_illu = illuminant_XYZ[1];
   for(size_t c = 0; c < 3; c++) illuminant_XYZ[c] /= Y_illu;
@@ -2766,7 +2766,7 @@ static void _convert_GUI_colors(dt_iop_channelmixer_rgb_params_t *p,
   }
   else
   {
-    float XYZ[4];
+    float DT_ALIGNED_PIXEL XYZ[4];
     if(work_profile)
     {
       dt_ioppr_rgb_matrix_to_xyz(LMS, XYZ, work_profile->matrix_in, work_profile->lut_in,

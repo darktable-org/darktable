@@ -1111,8 +1111,10 @@ void color_temptint_sliders(struct dt_iop_module_t *self)
 
       const cmsCIEXYZ cmsXYZ_temp = temperature_tint_to_XYZ(K,cur_tint);
       const cmsCIEXYZ cmsXYZ_tint = temperature_tint_to_XYZ(cur_temp, tint);
-      float sRGB_temp[3], XYZ_temp[3] = {cmsXYZ_temp.X, cmsXYZ_temp.Y, cmsXYZ_temp.Z};
-      float sRGB_tint[3], XYZ_tint[3] = {cmsXYZ_tint.X, cmsXYZ_tint.Y, cmsXYZ_tint.Z};
+      float DT_ALIGNED_PIXEL XYZ_temp[4] = {cmsXYZ_temp.X, cmsXYZ_temp.Y, cmsXYZ_temp.Z};
+      float DT_ALIGNED_PIXEL XYZ_tint[4] = {cmsXYZ_tint.X, cmsXYZ_tint.Y, cmsXYZ_tint.Z};
+      float DT_ALIGNED_PIXEL sRGB_temp[4];
+      float DT_ALIGNED_PIXEL sRGB_tint[4];
 
       dt_XYZ_to_Rec709_D65(XYZ_temp, sRGB_temp);
       dt_XYZ_to_Rec709_D65(XYZ_tint, sRGB_tint);

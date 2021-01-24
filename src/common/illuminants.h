@@ -195,7 +195,7 @@ static inline void illuminant_xy_to_XYZ(const float x, const float y, float XYZ[
 static inline void illuminant_xy_to_RGB(const float x, const float y, float RGB[4])
 {
   // Get an sRGB preview of current illuminant
-  float XYZ[4];
+  float DT_ALIGNED_PIXEL XYZ[4];
   illuminant_xy_to_XYZ(x, y, XYZ);
 
   // Fixme : convert to RGB display space instead of sRGB but first the display profile should be global in dt,

@@ -1304,7 +1304,7 @@ static int detail_enhance(const float *const in, float *const out, const int wid
 #endif
   for(size_t index = 0; index < 4*npixels; index += 4)
   {
-    float XYZ[3];
+    float DT_ALIGNED_PIXEL XYZ[4];
     sRGB_to_XYZ(in + index, XYZ);
     dt_XYZ_to_Lab(XYZ, out + index);
   }

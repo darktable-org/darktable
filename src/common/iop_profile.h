@@ -393,7 +393,7 @@ static inline void dt_ioppr_rgb_matrix_to_lab(const float rgb[3], float lab[3],
                                               const float unbounded_coeffs_in[3][3],
                                               const int lutsize, const int nonlinearlut)
 {
-  float xyz[3] DT_ALIGNED_PIXEL = { 0.f };
+  float xyz[4] DT_ALIGNED_PIXEL = { 0.f };
   dt_ioppr_rgb_matrix_to_xyz(rgb, xyz, matrix_in, lut_in, unbounded_coeffs_in, lutsize, nonlinearlut);
   dt_XYZ_to_Lab(xyz, lab);
 }
