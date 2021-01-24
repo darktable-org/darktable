@@ -191,6 +191,8 @@ void dtgtk_cairo_paint_camera(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 void dtgtk_cairo_paint_histogram_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint waveform scope icon */
 void dtgtk_cairo_paint_waveform_scope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
+/** paint vectorscope icon */
+void dtgtk_cairo_paint_vectorscope(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint linear scale icon */
 void dtgtk_cairo_paint_linear_scale(cairo_t *cr, gint x, gint y, gint w, gint h, gint flags, void *data);
 /** paint logarithmic scale icon */
