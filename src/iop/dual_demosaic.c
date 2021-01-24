@@ -46,13 +46,8 @@ static void fast_blur(float *const restrict src, float *const restrict out, cons
   {
     for(int j = -4; j <= 4; j++)
     {
-      if( (sqrf(i) + sqrf(j)) <= sqrf(3.0f * sigma) )
-      {
-        kernel[i + 4][j + 4] = expf( (sqrf(i) + sqrf(j)) / temp);
-        sum += kernel[i + 4][j + 4];
-      }
-      else
-        kernel[i + 4][j + 4] = 0.f;
+      kernel[i + 4][j + 4] = expf( (sqrf(i) + sqrf(j)) / temp);
+      sum += kernel[i + 4][j + 4];
     }
   }
   for(int i = 0; i < 9; i++)
@@ -93,15 +88,15 @@ static void fast_blur(float *const restrict src, float *const restrict out, cons
     for(int col = 4; col < width - 4; col++)
     {
       const int i = row * width + col;
-      const float val = c42 * ((src[i - w4 - 2] + src[i - w4 + 2]) + (src[i - w2 - 4] + src[i - w2 + 4]) + (src[i + w2 - 4] + src[i + w2 + 4]) + (src[i + w4 - 2] + src[i + w4 + 2])) +
-                        c41 * ((src[i - w4 - 1] + src[i - w4 + 1]) + (src[i - w1 - 4] + src[i - w1 + 4]) + (src[i + w1 - 4] + src[i + w1 + 4]) + (src[i + w4 - 1] + src[i + w4 + 1])) +
+      const float val = c42 * (src[i - w4 - 2] + src[i - w4 + 2] + src[i - w2 - 4] + src[i - w2 + 4] + src[i + w2 - 4] + src[i + w2 + 4] + src[i + w4 - 2] + src[i + w4 + 2]) +
+                        c41 * (src[i - w4 - 1] + src[i - w4 + 1] + src[i - w1 - 4] + src[i - w1 + 4] + src[i + w1 - 4] + src[i + w1 + 4] + src[i + w4 - 1] + src[i + w4 + 1]) +
                         c40 * (src[i - w4] + src[i - 4] + src[i + 4] + src[i + w4]) +
                         c33 * (src[i - w3 - 3] + src[i - w3 + 3] + src[i + w3 - 3] + src[i + w3 + 3]) +
-                        c32 * ((src[i - w3 - 2] + src[i - w3 + 2]) + (src[i - w2 - 3] + src[i - w2 + 3]) + (src[i + w2 - 3] + src[i + w2 + 3]) + (src[i + w3 - 2] + src[i + w3 + 2])) +
-                        c31 * ((src[i - w3 - 1] + src[i - w3 + 1]) + (src[i - w1 - 3] + src[i - w1 + 3]) + (src[i + w1 - 3] + src[i + w1 + 3]) + (src[i + w3 - 1] + src[i + w3 + 1])) +
+                        c32 * (src[i - w3 - 2] + src[i - w3 + 2] + src[i - w2 - 3] + src[i - w2 + 3] + src[i + w2 - 3] + src[i + w2 + 3] + src[i + w3 - 2] + src[i + w3 + 2]) +
+                        c31 * (src[i - w3 - 1] + src[i - w3 + 1] + src[i - w1 - 3] + src[i - w1 + 3] + src[i + w1 - 3] + src[i + w1 + 3] + src[i + w3 - 1] + src[i + w3 + 1]) +
                         c30 * (src[i - w3] + src[i - 3] + src[i + 3] + src[i + w3]) +
                         c22 * (src[i - w2 - 2] + src[i - w2 + 2] + src[i + w2 - 2] + src[i + w2 + 2]) +
-                        c21 * ((src[i - w2 - 1] + src[i - w2 + 1]) + (src[i - w1 - 2] + src[i - w1 + 2]) + (src[i + w1 - 2] + src[i + w1 + 2]) + (src[i + w2 - 1] + src[i + w2 + 1])) +
+                        c21 * (src[i - w2 - 1] + src[i - w2 + 1] + src[i - w1 - 2] + src[i - w1 + 2] + src[i + w1 - 2] + src[i + w1 + 2] + src[i + w2 - 1] + src[i + w2 + 1]) +
                         c20 * (src[i - w2] + src[i - 2] + src[i + 2] + src[i + w2]) +
                         c11 * (src[i - w1 - 1] + src[i - w1 + 1] + src[i + w1 - 1] + src[i + w1 + 1]) +
                         c10 * (src[i - w1] + src[i - 1] + src[i + 1] + src[i + w1]) +
