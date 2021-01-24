@@ -80,7 +80,7 @@ static void fast_blur(float *const restrict src, float *const restrict out, cons
 #ifdef _OPENMP
   #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(src, out) \
-  shared(c42, c41, c40, c33, c32, c31, c30, c22, c21, c20, c11, c10, c00, w1, w2, w3, w4, width, height) \
+  dt_omp_sharedconst(c42, c41, c40, c33, c32, c31, c30, c22, c21, c20, c11, c10, c00, w1, w2, w3, w4, width, height) \
   schedule(simd:static) aligned(src, out : 64) 
  #endif
   for(int row = 4; row < height - 4; row++)
