@@ -2453,6 +2453,7 @@
       <enum>
         <option>histogram</option>
         <option>waveform</option>
+        <option>vectorscope</option>
       </enum>
     </type>
     <default>histogram</default>
