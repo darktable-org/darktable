@@ -1462,7 +1462,7 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
   }
 }
 
-static inline int dt_get_num_atom_cores()
+static inline int _get_num_atom_cores()
 {
 #if defined(__linux__)
   int count = 0;
@@ -1539,7 +1539,7 @@ static inline int dt_get_num_atom_cores()
 #endif
 }
 
-static inline size_t dt_get_total_memory()
+static inline size_t _get_total_memory()
 {
 #if defined(__linux__)
   FILE *f = g_fopen("/proc/meminfo", "rb");
@@ -1578,9 +1578,9 @@ static inline size_t dt_get_total_memory()
 
 void dt_configure_performance()
 {
-  const int atom_cores = dt_get_num_atom_cores();
+  const int atom_cores = _get_num_atom_cores();
   const size_t threads = dt_get_num_threads();
-  const size_t mem = dt_get_total_memory();
+  const size_t mem = _get_total_memory();
   const size_t bits = CHAR_BIT * sizeof(void *);
   gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
 
