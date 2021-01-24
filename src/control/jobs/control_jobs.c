@@ -1623,10 +1623,20 @@ void dt_control_move_images()
   dt_osx_disallow_fullscreen(filechooser);
 #endif
 
+  gchar *copymove_path = dt_conf_get_string("ui_last/copymove_path");
+  if(copymove_path != NULL)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), copymove_path);
+    g_free(copymove_path);
+  }
+
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/copymove_path", folder);
+    g_free(folder);
   }
   gtk_widget_destroy(filechooser);
 
@@ -1685,11 +1695,20 @@ void dt_control_copy_images()
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
+  gchar *copymove_path = dt_conf_get_string("ui_last/copymove_path");
+  if(copymove_path != NULL)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), copymove_path);
+    g_free(copymove_path);
+  }
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/copymove_path", folder);
+    g_free(folder);
   }
   gtk_widget_destroy(filechooser);
 

@@ -20,6 +20,7 @@
 #include "common/darktable.h"
 #include "common/debug.h"
 #include "common/history.h"
+#include "common/image_cache.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "control/jobs.h"
@@ -95,6 +96,10 @@ static void write_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
 static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+  if(!imgs)
+    return;
+  const guint act_on_cnt = g_list_length((GList *)imgs);
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"),
@@ -102,6 +107,40 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
+  if(act_on_cnt == 1)
+  {
+    //single image to load xmp to, assume we want to load from same dir
+    const int imgid = GPOINTER_TO_INT(imgs->data);
+    const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+    if(img && img->film_id != -1)
+    {
+      char pathname[PATH_MAX] = { 0 };
+      dt_image_film_roll_directory(img, pathname, sizeof(pathname));
+      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), pathname);
+    }
+    else
+    {
+      // handle situation where there's some problem with cache/film_id
+      // i guess that's impossible, but better safe than sorry ;)
+      gchar *import_path = dt_conf_get_string("ui_last/import_path");
+      if(import_path != NULL)
+      {
+        gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
+        g_free(import_path);
+      }
+    }
+    dt_image_cache_read_release(darktable.image_cache, img);
+  }
+  else
+  {
+    // multiple images, use "last import" preference
+    gchar *import_path = dt_conf_get_string("ui_last/import_path");
+    if(import_path != NULL)
+    {
+      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
+      g_free(import_path);
+    }
+  }
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -119,7 +158,6 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   {
     char *dtfilename;
     dtfilename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
-    const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
     if(dt_history_load_and_apply_on_list(dtfilename, imgs) != 0)
     {
       GtkWidget *dialog
@@ -139,7 +177,13 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
                                     g_list_copy((GList *)imgs), 0);
       dt_control_queue_redraw_center();
     }
-
+    if(act_on_cnt > 0)
+    {
+      //remember last import path if applying history to multiple images
+      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+      dt_conf_set_string("ui_last/import_path", folder);
+      g_free(folder);
+    }
     g_free(dtfilename);
   }
   gtk_widget_destroy(filechooser);

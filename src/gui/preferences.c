@@ -1595,7 +1595,7 @@ static void import_export(GtkButton *button, gpointer data)
     dt_osx_disallow_fullscreen(chooser);
 #endif
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(chooser), TRUE);
-    gchar *exported_path = dt_conf_get_string("ui_last/exported_path");
+    gchar *exported_path = dt_conf_get_string("ui_last/export_path");
     if(exported_path != NULL)
     {
       gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(chooser), exported_path);
@@ -1759,7 +1759,12 @@ static void export_preset(GtkButton *button, gpointer data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
+  gchar *import_path = dt_conf_get_string("ui_last/export_path");
+  if(import_path != NULL)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
+    g_free(import_path);
+  }
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -1789,6 +1794,10 @@ static void export_preset(GtkButton *button, gpointer data)
     sqlite3_finalize(stmt);
 
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
+
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/export_path", folder);
+    g_free(folder);
 
     g_free(filedir);
   }
@@ -2108,6 +2117,12 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
 #ifdef GDK_WINDOWING_QUARTZ
     dt_osx_disallow_fullscreen(filechooser);
 #endif
+    gchar *import_path = dt_conf_get_string("ui_last/export_path");
+    if(import_path != NULL)
+    {
+      gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
+      g_free(import_path);
+    }
 
     // save if accepted
 
@@ -2117,6 +2132,9 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pre
       dt_presets_save_to_file(g->rowid, name, filedir);
       dt_control_log(_("preset %s was successfully saved"), name);
       g_free(filedir);
+      gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+      dt_conf_set_string("ui_last/export_path", folder);
+      g_free(folder);
     }
 
     gtk_widget_destroy(GTK_WIDGET(filechooser));
