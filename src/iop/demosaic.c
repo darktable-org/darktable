@@ -30,6 +30,7 @@
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "develop/imageop_gui.h"
+#include "common/colorspaces_inline_conversions.h"
 #include "develop/tiling.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
