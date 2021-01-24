@@ -72,7 +72,7 @@ static inline void _write_pixel(const float *const restrict in, uint8_t *const r
   for(size_t c = 0; c < 3; c++)
     pixel[c] = in[c] <= 0.0031308f ? 12.92f * in[c] : (1.0f + 0.055f) * powf(in[c], 1.0f / 2.4f) - 0.055f;
 
-  // the output of this module is BGR(A) instead of RGBA; the channel-swapping keeps us from using for_each_channel
+  // the output of this module is BGR(A) instead of RGBA; can't use for_each_channel here due to the index swap
   for(size_t c = 0; c < 3; c++)
   {
     const float value = roundf(255.0f * (pixel[c] * (1.0f - alpha) + mask_color[c] * alpha));
@@ -108,7 +108,7 @@ static inline void _XYZ_to_REC_709_normalized(const float *const restrict XYZ, f
 static void _channel_display_monochrome(const float *const restrict in, uint8_t *const restrict out,
                                         const size_t buffsize, const float alpha)
 {
-  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
+  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow; "unused" element enables vectorization
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static) aligned(in, out: 64) aligned(mask_color: 16) \
