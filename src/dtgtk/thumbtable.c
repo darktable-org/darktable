@@ -1441,17 +1441,22 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
     // if the previous hovered image isn't here anymore, try to hover "next" image
     if(old_hover > 0 && next > 0)
     {
-      in_list = FALSE;
-      gboolean in_list_next = FALSE;
-      l = table->list;
-      while(l)
+      // except for darkroom when mouse is not in filmstrip (the active image primes)
+      const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
+      if(table->mouse_inside || v->view(v) != DT_VIEW_DARKROOM)
       {
-        dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-        if(thumb->imgid == old_hover) in_list = TRUE;
-        if(thumb->imgid == next) in_list_next = TRUE;
-        l = g_list_next(l);
+        in_list = FALSE;
+        gboolean in_list_next = FALSE;
+        l = table->list;
+        while(l)
+        {
+          dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+          if(thumb->imgid == old_hover) in_list = TRUE;
+          if(thumb->imgid == next) in_list_next = TRUE;
+          l = g_list_next(l);
+        }
+        if(!in_list && in_list_next) dt_control_set_mouse_over_id(next);
       }
-      if(!in_list && in_list_next) dt_control_set_mouse_over_id(next);
     }
     dt_control_queue_redraw_center();
   }
