@@ -1938,7 +1938,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
   if(!self->enabled) return 0;
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  if(g == NULL) return 0;
+  if(g == NULL || !g->is_profiling_started) return 0;
   if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
 
   dt_develop_t *dev = self->dev;
@@ -2012,7 +2012,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
   if(!self->enabled) return 0;
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  if(g == NULL) return 0;
+  if(g == NULL || !g->is_profiling_started) return 0;
 
   dt_develop_t *dev = self->dev;
   const float wd = dev->preview_pipe->backbuf_width;
@@ -2061,7 +2061,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
   if(!self->enabled) return 0;
 
   dt_iop_channelmixer_rgb_gui_data_t *g = (dt_iop_channelmixer_rgb_gui_data_t *)self->gui_data;
-  if(g == NULL) return 0;
+  if(g == NULL || !g->is_profiling_started) return 0;
   if(g->box[0].x == -1.0f || g->box[1].y == -1.0f) return 0;
   if(!g->is_cursor_close || !g->drag_drop) return 0;
 
