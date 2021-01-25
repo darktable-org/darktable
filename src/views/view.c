@@ -844,6 +844,8 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     {
       // collumn 3
       _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+      // be absolutely sure we have the id in the list (in darkroom, the active image can be out of collection)
+      if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
     }
   }
   else
@@ -857,6 +859,8 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       {
         const int id = GPOINTER_TO_INT(ll->data);
         _images_to_act_on_insert_in_list(&l, id, only_visible);
+        // be absolutely sure we have the id in the list (in darkroom, the active image can be out of collection)
+        if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
         ll = g_slist_next(ll);
       }
     }

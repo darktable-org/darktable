@@ -2945,6 +2945,7 @@ void enter(dt_view_t *self)
   // change active image
   dt_view_active_images_reset(FALSE);
   dt_view_active_images_add(dev->image_storage.id, TRUE);
+  dt_ui_thumbtable(darktable.gui->ui)->mouse_inside = FALSE; // consider mouse outside filmstrip by default
 
   dt_control_set_dev_zoom(DT_ZOOM_FIT);
   dt_control_set_dev_zoom_x(0);
