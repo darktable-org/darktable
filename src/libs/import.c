@@ -822,9 +822,7 @@ const struct
   {"ui_last/import_apply_metadata", "apply_metadata", DT_BOOL},
   {"ui_last/import_recursive", "recursive", DT_BOOL},
   {"ui_last/ignore_exif_rating", "ignore_exif_rating", DT_BOOL},
-  {"ui_last/import_initial_rating", "rating", DT_INT},
-  // tags must be the last record (comma separated list)
-  {"ui_last/import_last_tags", "tags", DT_STRING}
+  {"ui_last/import_initial_rating", "rating", DT_INT}
 };
 static const guint pref_n = G_N_ELEMENTS(_pref);
 
@@ -863,7 +861,7 @@ static void _set_default_preferences(dt_lib_module_t *self)
       }
     }
   }
-
+  // metadata
   for(int i = 0; i < DT_METADATA_NUMBER; i++)
   {
     if(dt_metadata_get_type(i) != DT_METADATA_TYPE_INTERNAL)
@@ -877,6 +875,11 @@ static void _set_default_preferences(dt_lib_module_t *self)
       dt_conf_set_string(setting, "");
       g_free(setting);
     }
+  }
+  // tags
+  {
+    dt_conf_set_bool("ui_last/import_last_tags_imported", TRUE);
+    dt_conf_set_string("ui_last/import_last_tags", "");
   }
 }
 
@@ -920,8 +923,9 @@ static char *_get_current_configuration(dt_lib_module_t *self)
     }
   }
   // must be the last (comma separated list)
+  const gboolean imported = dt_conf_get_bool("ui_last/import_last_tags_imported");
   char *tags_value = dt_conf_get_string("ui_last/import_last_tags");
-  pref = dt_util_dstrcat(pref, "%s=%s,", "tags", tags_value);
+  pref = dt_util_dstrcat(pref, "%s=%d%s,", "tags", imported ? 1 : 0, tags_value);
   g_free(tags_value);
   if(pref && *pref) pref[strlen(pref) - 1] = '\0';
 
@@ -945,6 +949,7 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
     const int i = _get_key_index(metadata_name);
     if(i != -1)
     {
+      // standard preferences
       if(_pref[i].type == DT_BOOL)
       {
         dt_conf_set_bool(_pref[i].key, (value[0] == '1') ? TRUE : FALSE);
@@ -955,24 +960,12 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
       }
       else if(_pref[i].type == DT_STRING)
       {
-        if (!g_strcmp0(metadata_name, "tags"))
-        {
-          // get all the tags back - ugly but allow to keep readable presets
-          char *tags = g_strdup(value);
-          for(GList *iter2 = g_list_next(iter); iter2; iter2 = g_list_next(iter2))
-          {
-            if(strlen((char *)iter2->data))
-              tags = dt_util_dstrcat(tags, ",%s", (char *)iter2->data);
-          }
-          dt_conf_set_string("ui_last/import_last_tags", tags);
-          g_free(tags);
-          break;  // must be the last setting
-        }
-        else dt_conf_set_string(_pref[i].key, value);
+        dt_conf_set_string(_pref[i].key, value);
       }
     }
-    else
+    else if(g_strcmp0(metadata_name, "tags"))
     {
+      // metadata
       const int j = dt_metadata_get_keyid_by_name(metadata_name);
       if(j == -1) continue;
       char *setting = dt_util_dstrcat(NULL, "plugins/lighttable/metadata/%s_flag", metadata_name);
@@ -984,6 +977,27 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
       setting = dt_util_dstrcat(NULL, "ui_last/import_last_%s", metadata_name);
       dt_conf_set_string(setting, value);
       g_free(setting);
+    }
+    else
+    {
+      // tags
+      if(value[0] == '0' || value[0] == '1')
+      {
+        dt_conf_set_bool("ui_last/import_last_tags_imported", (value[0] == '1'));
+        value++;
+      }
+      else
+        dt_conf_set_bool("ui_last/import_last_tags_imported", TRUE);
+      // get all the tags back - ugly but allow to keep readable presets
+      char *tags = g_strdup(value);
+      for(GList *iter2 = g_list_next(iter); iter2; iter2 = g_list_next(iter2))
+      {
+        if(strlen((char *)iter2->data))
+          tags = dt_util_dstrcat(tags, ",%s", (char *)iter2->data);
+      }
+      dt_conf_set_string("ui_last/import_last_tags", tags);
+      g_free(tags);
+      break;  // must be the last setting
     }
   }
 

@@ -49,8 +49,7 @@ typedef enum dt_metadata_signal_t
 {
   DT_METADATA_SIGNAL_SHOWN,       // metadata set as shown
   DT_METADATA_SIGNAL_HIDDEN,      // metadata set as hidden
-  DT_METADATA_SIGNAL_NEW_VALUE,   // metadata value changed
-  DT_METADATA_SIGNAL_NEW_PRESETS  // metadata presets changed
+  DT_METADATA_SIGNAL_NEW_VALUE    // metadata value changed
 }
 dt_metadata_signal_t;
 
