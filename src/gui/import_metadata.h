@@ -22,6 +22,7 @@ typedef struct dt_import_metadata_t
   GtkWidget *apply_metadata;
   GtkWidget *grid;
   GtkListStore *m_model;
+  GtkListStore *t_model;
 } dt_import_metadata_t;
 
 void dt_import_metadata_init(dt_import_metadata_t *metadata);

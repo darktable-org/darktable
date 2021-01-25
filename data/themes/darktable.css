@@ -881,6 +881,11 @@ dialog scrolledwindow
   margin: 0.2em 0;
 }
 
+#import_presets
+{
+  font-style: italic;
+}
+
 /* Set import from camera or card dialog window */
 dialog .dialog-vbox notebook stack /* set top margin ; between tabs and text below */
 {
