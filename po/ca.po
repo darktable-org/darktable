@@ -11761,8 +11761,8 @@ msgid "film roll"
 msgstr "rodet"
 
 #: ../src/libs/collect.h:32
-msgid "folders"
-msgstr "carpetes"
+msgid "folder"
+msgstr "carpeta"
 
 #: ../src/libs/collect.h:32
 msgid "camera"

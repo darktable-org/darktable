@@ -11657,8 +11657,8 @@ msgid "film roll"
 msgstr "filmrull"
 
 #: ../src/libs/collect.h:32
-msgid "folders"
-msgstr "mapper"
+msgid "folder"
+msgstr "mappe"
 
 #: ../src/libs/collect.h:32
 msgid "camera"
@@ -15256,4 +15256,4 @@ msgstr "Funksjon"
 
 #~ msgid "automatic in RGB"
 #~ msgstr "automatisk i RGB"
-
+

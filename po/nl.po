@@ -1462,8 +1462,8 @@ msgid "film roll"
 msgstr "map"
 
 #: ../src/common/collection.c:675
-msgid "folders"
-msgstr "mappen"
+msgid "folder"
+msgstr "map"
 
 #: ../src/common/collection.c:676
 msgid "camera"

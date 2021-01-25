@@ -3378,8 +3378,8 @@ msgid "film roll"
 msgstr "rolka filmu"
 
 #: ../src/common/collection.c:676
-msgid "folders"
-msgstr "katalogi"
+msgid "folder"
+msgstr "katalogu"
 
 #: ../src/common/collection.c:677
 msgid "camera"

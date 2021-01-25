@@ -11841,7 +11841,7 @@ msgid "film roll"
 msgstr "sesión"
 
 #: ../src/libs/collect.h:32
-msgid "folders"
+msgid "folder"
 msgstr ""
 
 #: ../src/libs/collect.h:32

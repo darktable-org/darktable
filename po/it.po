@@ -3703,8 +3703,8 @@ msgid "film roll"
 msgstr "Rullino"
 
 #: ../src/common/collection.c:676
-msgid "folders"
-msgstr "Cartelle"
+msgid "folder"
+msgstr "Cartella"
 
 #: ../src/common/collection.c:677
 msgid "camera"

@@ -3530,8 +3530,8 @@ msgid "film roll"
 msgstr "גליל פילם"
 
 #: ../src/common/collection.c:676
-msgid "folders"
-msgstr "תיקיות"
+msgid "folder"
+msgstr "תיקיה"
 
 #: ../src/common/collection.c:677
 msgid "camera"

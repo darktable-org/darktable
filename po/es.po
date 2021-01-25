@@ -3639,8 +3639,8 @@ msgid "film roll"
 msgstr "carrete"
 
 #: ../src/common/collection.c:676
-msgid "folders"
-msgstr "carpetas"
+msgid "folder"
+msgstr "carpeta"
 
 #: ../src/common/collection.c:677
 msgid "camera"

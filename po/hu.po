@@ -3603,8 +3603,8 @@ msgid "film roll"
 msgstr "filmtekercs"
 
 #: ../src/common/collection.c:676
-msgid "folders"
-msgstr "könyvtárak"
+msgid "folder"
+msgstr "könyvtár"
 
 #: ../src/common/collection.c:677
 msgid "camera"

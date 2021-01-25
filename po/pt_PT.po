@@ -11706,8 +11706,8 @@ msgid "film roll"
 msgstr "rolo de filme"
 
 #: ../src/libs/collect.h:32
-msgid "folders"
-msgstr "pastas"
+msgid "folder"
+msgstr "pasta"
 
 #: ../src/libs/collect.h:32
 msgid "camera"

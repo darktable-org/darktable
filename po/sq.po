@@ -11604,8 +11604,8 @@ msgid "film roll"
 msgstr "filmi"
 
 #: ../src/libs/collect.h:32
-msgid "folders"
-msgstr "dosjet"
+msgid "folder"
+msgstr "dosje"
 
 #: ../src/libs/collect.h:32
 msgid "camera"

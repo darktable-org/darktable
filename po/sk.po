@@ -3604,8 +3604,8 @@ msgid "film roll"
 msgstr "filmová kazeta"
 
 #: ../src/common/collection.c:676
-msgid "folders"
-msgstr "priečinky"
+msgid "folder"
+msgstr "priečinok"
 
 #: ../src/common/collection.c:677
 msgid "camera"
