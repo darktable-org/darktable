@@ -586,7 +586,7 @@ static void _raise_signal_tag_changed(dt_lib_module_t *self)
 }
 
 // find a tag on the tree
-static gboolean _find_tag_iter_tagid(GtkTreeModel *model, GtkTreeIter *iter, gint tagid)
+static gboolean _find_tag_iter_tagid(GtkTreeModel *model, GtkTreeIter *iter, const gint tagid)
 {
   gint tag;
   do
@@ -608,7 +608,7 @@ static gboolean _find_tag_iter_tagid(GtkTreeModel *model, GtkTreeIter *iter, gin
 }
 
 // calculate the indeterminated state (1) where needed on the tree
-static void _calculate_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean root)
+static void _calculate_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, const gboolean root)
 {
   GtkTreeIter child, parent = *iter;
   do
@@ -625,7 +625,7 @@ static void _calculate_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, gbool
 }
 
 // reset the indeterminated selection (1) on the tree
-static void _reset_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean root)
+static void _reset_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, const gboolean root)
 {
   GtkTreeIter child, parent = *iter;
   do
@@ -645,7 +645,7 @@ static void _reset_sel_on_path(GtkTreeModel *model, GtkTreeIter *iter, gboolean 
 }
 
 // reset all selection (1 & 2) on the tree
-static void _reset_sel_on_path_full(GtkTreeModel *model, GtkTreeIter *iter, gboolean root)
+static void _reset_sel_on_path_full(GtkTreeModel *model, GtkTreeIter *iter, const gboolean root)
 {
   GtkTreeIter child, parent = *iter;
   do
@@ -967,26 +967,41 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     gchar **tokens = g_strsplit(buf, ",", 0);
     if(tokens)
     {
+      GList *tags = NULL;
       gchar **entry = tokens;
-      gboolean some_attached = FALSE;
       while(*entry)
       {
-        guint tagid = strtoul(*entry, NULL, 0);
-        // attach tag on images to act on
-        const gboolean attached = dt_tag_attach(tagid, -1, TRUE, TRUE);
-        if(attached) some_attached = TRUE;
-
-        _update_attached_count(tagid, d->dictionary_view, d->tree_flag);
-
+        const guint tagid = strtoul(*entry, NULL, 0);
+        tags = g_list_prepend(tags, GINT_TO_POINTER(tagid));
         entry++;
       }
       g_strfreev(tokens);
-      if(some_attached)
+      GList *tags_r = dt_tag_get_tags(-1, TRUE);
+      const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
+      dt_tag_set_tags(tags, imgs, TRUE, TRUE, TRUE);
+      gboolean change = FALSE;
+      for(GList *tag = tags; tag; tag = g_list_next(tag))
+      {
+        _update_attached_count(GPOINTER_TO_INT(tag->data), d->dictionary_view, d->tree_flag);
+        change = TRUE;
+      }
+      for(GList *tag = tags_r; tag; tag = g_list_next(tag))
+      {
+        if(!g_list_find(tags, tag->data))
+        {
+          _update_attached_count(GPOINTER_TO_INT(tag->data), d->dictionary_view, d->tree_flag);
+          change = TRUE;
+        }
+      }
+
+      if(change)
       {
         _init_treeview(self, 0);
         _raise_signal_tag_changed(self);
         dt_image_synch_xmp(-1);
       }
+      g_list_free(tags);
+      g_list_free(tags_r);
     }
   }
   return 0;

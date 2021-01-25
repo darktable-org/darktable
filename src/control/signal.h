@@ -116,6 +116,9 @@ typedef enum dt_signal_t
   /** \brief This signal is raised only when a filmroll is removed */
   DT_SIGNAL_FILMROLLS_REMOVED,
 
+  /* \brief This signal is raised when a preset is created/updated/deleted */
+  DT_SIGNAL_PRESETS_CHANGED,
+
   /** \brief This signal is raised when darktable.develop is initialized.
       \note any modules that wants to access darktable->develop should connect
       to this signal to be sure darktable.develop is initialized.
