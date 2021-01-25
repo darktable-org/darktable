@@ -4006,7 +4006,11 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     }
     catch(Exiv2::AnyError &e)
     {
+#ifdef HAVE_EXIV2_027_OR_NEWER
       if(e.code() == Exiv2::kerTooLargeJpegSegment)
+#else
+      if(e.code() == 37)
+#endif
       {
         _remove_xmp_keys(xmpData, "Xmp.darktable.history");
         _remove_xmp_keys(xmpData, "Xmp.darktable.masks_history");
