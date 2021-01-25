@@ -379,12 +379,6 @@ endforeach(lib)
 
 # Require exiv2 >= 0.24 to make sure everything we need is available
 find_package(Exiv2 0.24 REQUIRED)
-if(NOT Exiv2_VERSION VERSION_LESS 0.27)
-  add_definitions("-DHAVE_EXIV2_027_OR_NEWER")
-  message(STATUS "Exiv2 version 0.27 or newer")
-else()
-  message(STATUS "Exiv2 version older than 0.27, some features may be downgraded")
-endif()
 include_directories(SYSTEM ${Exiv2_INCLUDE_DIRS})
 list(APPEND LIBS ${Exiv2_LIBRARIES})
 add_definitions(${Exiv2_DEFINITIONS})
