@@ -207,6 +207,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
     sqlite3_finalize(stmt);
 
     dt_gui_store_last_preset(name);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(g->plugin_name));
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->original_name);
@@ -313,6 +315,8 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(minfo->plugin_name));
   }
 }
 
@@ -402,6 +406,8 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(minfo->plugin_name));
   }
   g_free(name);
 }
@@ -936,7 +942,12 @@ void dt_lib_init_presets(dt_lib_module_t *module)
     sqlite3_finalize(stmt);
   }
 
-  if(module->init_presets) module->init_presets(module);
+  if(module->init_presets)
+  {
+    module->init_presets(module);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(module->plugin_name));
+  }
 }
 
 static void dt_lib_init_module(void *m)

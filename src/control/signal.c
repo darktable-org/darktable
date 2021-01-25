@@ -80,6 +80,12 @@ static void _image_info_changed_destroy_callback(gpointer instance, gpointer img
   }
 }
 
+// callback for the destructor of DT_SIGNAL_PRESETS_CHANGED
+static void _presets_changed_destroy_callback(gpointer instance, gpointer module, gpointer user_data)
+{
+  g_free(module);
+}
+
 // callback for the destructor of DT_SIGNAL_GEOTAG_CHANGED
 static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, const int locid, gpointer user_data)
 {
@@ -129,7 +135,8 @@ static dt_signal_description _signal_description[DT_SIGNAL_COUNT] = {
     FALSE }, // DT_SIGNAL_FILMROLLS_IMPORTED
   { "dt-filmrolls-removed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,
     FALSE }, // DT_SIGNAL_FILMROLLS_REMOVED
-
+  { "dt-presets-changed", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_generic, 1, pointer_arg,
+    G_CALLBACK(_presets_changed_destroy_callback), FALSE }, // DT_SIGNAL_PRESETS_CHANGED
 
   /* Develop related signals */
   { "dt-develop-initialized", NULL, NULL, G_TYPE_NONE, g_cclosure_marshal_VOID__VOID, 0, NULL, NULL,

@@ -706,6 +706,13 @@
     <shortdescription>comma separated tags to be applied when importing</shortdescription>
     <longdescription/>
   </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_last_tags_imported</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>import tags from xmp</shortdescription>
+    <longdescription/>
+  </dtconfig>
   <dtconfig>
     <name>ui_last/import_last_directory</name>
     <type>string</type>
