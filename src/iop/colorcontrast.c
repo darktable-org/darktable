@@ -17,6 +17,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -136,6 +137,17 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
   return 1;
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(in,out:64) aligned(slope,offset,low,high)
+#endif
+static inline void clamped_scaling(float *const restrict out, const float *const restrict in,
+                                   const float slope[4], const float offset[4],
+                                   const float low[4], const float high[4])
+{
+  for_each_channel(c,dt_omp_nontemporal(out))
+    out[c] = CLAMPS(in[c] * slope[c] + offset[c], low[c], high[c]);
+}
+
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -149,42 +161,44 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
-  const float *const restrict in = (const float *const)ivoid;
-  float *const restrict out = (float *const)ovoid;
+  const float *const restrict in = DT_IS_ALIGNED((const float *const)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *const)ovoid);
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
+
+  const float DT_ALIGNED_PIXEL slope[4] = { 1.0f, d->a_steepness, d->b_steepness, 1.0f };
+  const float DT_ALIGNED_PIXEL offset[4] = { 0.0f, d->a_offset, d->b_offset, 0.0f };
+  const float DT_ALIGNED_PIXEL lowlimit[4] = { -INFINITY, -128.0f, -128.0f, -INFINITY };
+  const float DT_ALIGNED_PIXEL highlimit[4] = { INFINITY, 128.0f, 128.0f, INFINITY };
 
   if(d->unbound)
   {
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(in, out) \
-    dt_omp_sharedconst(d, npixels) \
-    aligned(in, out : 64) \
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, out, npixels, slope, offset) \
     schedule(static)
 #endif
     for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
     {
-      out[k] = in[k];
-      out[k + 1] = (in[k + 1] * d->a_steepness) + d->a_offset;
-      out[k + 2] = (in[k + 2] * d->b_steepness) + d->b_offset;
-      out[k + 3] = in[k + 3];
+      for_each_channel(c,dt_omp_nontemporal(out))
+      {
+        out[k + c] = (in[k + c] * slope[c]) + offset[c];
+      }
     }
   }
   else
   {
+
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-    dt_omp_firstprivate(in, out) \
-    dt_omp_sharedconst(d, npixels) \
-    aligned(in, out : 64) \
+#pragma omp parallel for default(none) \
+    dt_omp_firstprivate(in, out, npixels, slope, offset, lowlimit, highlimit) \
     schedule(static)
 #endif
-    for(size_t k = 0; k < (size_t)4 * npixels; k += 4)
+    for(size_t k = 0; k < npixels; k ++)
     {
-      out[k] = in[k];
-      out[k + 1] = CLAMP((in[k + 1] * d->a_steepness) + d->a_offset, -128.0f, 128.0f);
-      out[k + 2] = CLAMP((in[k + 2] * d->b_steepness) + d->b_offset, -128.0f, 128.0f);
-      out[k + 3] = in[k + 3];
+      // the inner per-pixel loop needs to be declared in a separate vectorizable function to convince the
+      // compiler that it doesn't need to check for overlap or misalignment of the buffers for *every* pixel,
+      // which actually makes the code slower than not vectorizing....
+      clamped_scaling(out + 4*k, in + 4*k, slope, offset, lowlimit, highlimit);
     }
   }
 }
