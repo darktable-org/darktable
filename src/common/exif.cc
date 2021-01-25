@@ -4006,7 +4006,7 @@ int dt_exif_xmp_attach_export(const int imgid, const char *filename, void *metad
     }
     catch(Exiv2::AnyError &e)
     {
-#ifdef HAVE_EXIV2_027_OR_NEWER
+#if EXIV2_VERSION >= EXIV2_MAKE_VERSION(0,27,0)
       if(e.code() == Exiv2::kerTooLargeJpegSegment)
 #else
       if(e.code() == 37)
