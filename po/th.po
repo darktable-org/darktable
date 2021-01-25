@@ -11340,7 +11340,7 @@ msgid "film roll"
 msgstr "ม้วนฟิล์ม"
 
 #: ../src/libs/collect.h:32
-msgid "folder"
+msgid "folders"
 msgstr "โฟลเดอร์"
 
 #: ../src/libs/collect.h:32

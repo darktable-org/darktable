@@ -11690,7 +11690,7 @@ msgid "film roll"
 msgstr "фотоплівка"
 
 #: ../src/libs/collect.h:32
-msgid "folder"
+msgid "folders"
 msgstr "теки"
 
 #: ../src/libs/collect.h:32

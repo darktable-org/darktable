@@ -11426,7 +11426,7 @@ msgid "film roll"
 msgstr "胶卷"
 
 #: ../src/libs/collect.h:32
-msgid "folder"
+msgid "folders"
 msgstr "文件夹"
 
 #: ../src/libs/collect.h:32

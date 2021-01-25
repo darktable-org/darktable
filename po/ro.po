@@ -11866,7 +11866,7 @@ msgstr "rola de film"
 
 #: ../src/libs/collect.h:32
 #, fuzzy
-msgid "folder"
+msgid "folders"
 msgstr "folder"
 
 #: ../src/libs/collect.h:32

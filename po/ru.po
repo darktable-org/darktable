@@ -3557,8 +3557,8 @@ msgid "film roll"
 msgstr "Съёмка"
 
 #: ../src/common/collection.c:676
-msgid "folder"
-msgstr "Каталог"
+msgid "folders"
+msgstr "Каталоги"
 
 #: ../src/common/collection.c:677
 msgid "camera"

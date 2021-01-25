@@ -11653,8 +11653,8 @@ msgid "film roll"
 msgstr "φιλμ"
 
 #: ../src/libs/collect.h:32
-msgid "folder"
-msgstr "Φάκελο"
+msgid "folders"
+msgstr "φάκελοι"
 
 #: ../src/libs/collect.h:32
 msgid "camera"

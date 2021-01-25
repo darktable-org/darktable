@@ -11633,7 +11633,7 @@ msgid "film roll"
 msgstr "フィルムロール"
 
 #: ../src/libs/collect.h:32
-msgid "folder"
+msgid "folders"
 msgstr "フォルダ"
 
 #: ../src/libs/collect.h:32

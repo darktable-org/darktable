@@ -3806,8 +3806,8 @@ msgid "film roll"
 msgstr "rolo de filme"
 
 #: ../src/common/collection.c:676
-msgid "folder"
-msgstr "pasta"
+msgid "folders"
+msgstr "pastas"
 
 #: ../src/common/collection.c:677
 msgid "camera"

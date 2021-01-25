@@ -1298,7 +1298,7 @@ msgid "film roll"
 msgstr "膠卷"
 
 #: ../src/common/collection.c:559
-msgid "folder"
+msgid "folders"
 msgstr "資料夾"
 
 #: ../src/common/collection.c:560

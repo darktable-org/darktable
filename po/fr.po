@@ -3816,8 +3816,8 @@ msgid "film roll"
 msgstr "pellicule"
 
 #: ../src/common/collection.c:679
-msgid "folder"
-msgstr "dossier"
+msgid "folders"
+msgstr "dossiers"
 
 #: ../src/common/collection.c:680
 msgid "camera"
