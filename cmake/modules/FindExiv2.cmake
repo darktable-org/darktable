@@ -44,10 +44,6 @@ if(Exiv2_PKGCONF_VERSION VERSION_LESS Exiv2_FIND_VERSION)
   message(FATAL_ERROR "Exiv2 version check failed.  Version ${Exiv2_PKGCONF_VERSION} was found, at least version ${Exiv2_FIND_VERSION} is required")
 endif(Exiv2_PKGCONF_VERSION VERSION_LESS Exiv2_FIND_VERSION)
 
-if (Exiv2_PKGCONF_VERSION)
-  set(Exiv2_VERSION "${Exiv2_PKGCONF_VERSION}")
-endif()
-
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Exiv2 DEFAULT_MSG Exiv2_LIBRARY Exiv2_INCLUDE_DIR)
 
