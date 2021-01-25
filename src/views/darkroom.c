@@ -182,7 +182,7 @@ void cleanup(dt_view_t *self)
   free(dev);
 }
 
-static cairo_status_t write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
+static cairo_status_t _write_snapshot_data(void *closure, const unsigned char *data, unsigned int length)
 {
   const int fd = GPOINTER_TO_INT(closure);
   ssize_t res = write(fd, data, length);
@@ -564,7 +564,7 @@ void expose(
        FIXME: add checks so that we don't make snapshots of preview pipe image surface.
     */
     const int fd = g_open(darktable.develop->proxy.snapshot.filename, O_CREAT | O_WRONLY | O_BINARY, 0600);
-    cairo_surface_write_to_png_stream(image_surface, write_snapshot_data, GINT_TO_POINTER(fd));
+    cairo_surface_write_to_png_stream(image_surface, _write_snapshot_data, GINT_TO_POINTER(fd));
     close(fd);
   }
 
