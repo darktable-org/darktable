@@ -86,6 +86,8 @@ typedef struct dt_lib_histogram_t
   int waveform_width, waveform_height, waveform_max_width;
   uint8_t *vectorscope_alpha;
   int vectorscope_diameter, vectorscope_alpha_stride;
+  // FIXME: DT_ALIGNED_PIXEL? make [4]?
+  float hist_profile_primaries[3][2];
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -256,6 +258,35 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(!histogram_profile) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
 
+  // FIXME: can get primaries via transforming R/G/B to XYZ or do need to look directly in profile for this (via querying LCMS)
+  // FIXME: test all this work by making a LCMS path and comparing output -- or at least against XYZ values in profile
+  // FIXME: align? make [4]? figure out in code?
+  float primaries_rgb[3][3] = { {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0} };
+  float max_diam = 0.0f;
+  for(int k=0; k<3; k++)
+  {
+    // FIXME: DT_ALIGNED_PIXEL? make [4]?
+    float XYZ[3];
+    // FIXME: make [3]?
+    float DT_ALIGNED_PIXEL Jab[4];
+    dt_ioppr_rgb_matrix_to_xyz(primaries_rgb[k], XYZ,
+                               histogram_profile->matrix_in, histogram_profile->lut_in,
+                               histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
+                               histogram_profile->nonlinearlut);
+    dt_XYZ_2_JzAzBz(XYZ, Jab);
+    max_diam = MAX(max_diam, hypotf(Jab[1], Jab[2]));
+    d->hist_profile_primaries[k][0] = Jab[1];
+    d->hist_profile_primaries[k][1] = Jab[2];
+  }
+  // scale primaries for display
+  for(int k=0; k<3; k++)
+  {
+    d->hist_profile_primaries[k][0] /= max_diam;
+    d->hist_profile_primaries[k][1] /= max_diam;
+  }
+  // FIXME: is this an optimization or unneeded code? should max_diam be const?
+  const float max_radius = max_diam / 2.0f;
+
   // FIXME: pre-allocate?
   int *const restrict binned = dt_alloc_align(64, vs_diameter * vs_diameter * sizeof(int));
   memset(binned, 0, vs_diameter * vs_diameter * sizeof(int));
@@ -270,6 +301,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
     // FIXME: DT_ALIGNED_PIXEL? make [4]?
     float XYZ[3];
+    // FIXME: don't need to init this!?
     float DT_ALIGNED_PIXEL Jab[4] = { 0.f };
 
     // FIXME: optimize
@@ -280,13 +312,17 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     // FIXME: we never use the J value -- don't calculate it?
     dt_XYZ_2_JzAzBz(XYZ, Jab);
 
-    // FIXME: max/min based on the histogram profile primaries as max dimensions
-    // FIXME: leave out values that are > than max (if that is possible...?) rather than clipping
-    const int out_x = CLAMP((int)(vs_diameter * (Jab[1] + 0.02f) / 0.04f), 0, vs_diameter-1);
-    const int out_y = CLAMP((int)(vs_diameter * (Jab[2] + 0.02f) / 0.04f), 0, vs_diameter-1);
+    const int out_x = vs_diameter * (Jab[1] + max_radius) / max_diam;
+    const int out_y = vs_diameter * (Jab[2] + max_radius) / max_diam;
 
-    int *const restrict bin_out = __builtin_assume_aligned(binned + out_y * vs_diameter + out_x, 8);
-    (*bin_out)++;
+    // clip (not clamp) any out-of-scale values, so there aren't light edges
+    // FIXME: should the output buffer be the dimensions of the current drawable widget -- rather than square -- so it doesn't lose data to the sides?
+    if(out_x >= 0 && out_x < vs_diameter-1 && out_y >= 0 && out_y <= vs_diameter-1)
+    {
+      int *const restrict bin_out = __builtin_assume_aligned(binned + out_y * vs_diameter + out_x, 8);
+      // FIXME: make a "false color" variant view
+      (*bin_out)++;
+    }
   }
 
   // FIXME: do same gamma trick here as in waveform
@@ -302,7 +338,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     for(int out_x = 0; out_x < vs_diameter; out_x++)
     {
       const int c = binned[vs_diameter * out_y + out_x];
-      // FIXME: use cache
+      // FIXME: use cache or linear interpolate from pre-calculated
       out_alpha[out_x] = CLAMP(powf(c * scale, gamma) * 255.0f, 0, 255);
     }
   }
@@ -530,26 +566,42 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
 }
 
 static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
-                                            int width, int height, int scale)
+                                            int width, int height)
 {
   // FIXME: bail if vectorscope not calculated...
   const int vs_diameter = d->vectorscope_diameter;
   const int min_size = MIN(width, height);
 
   cairo_save(cr);
+  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   // FIXME: should draw with more transparency, as w/other scopes?
   cairo_translate(cr, width / 2., height / 2.);
+
   // FIXME: which way to orient graph? and can do this when generate the graph?
   // traditional vectorscope is oriented with x-axis Y -> B, y-axis C -> R
   // but CIE 1976 UCS is graphed x-axis as u (G -> M), y-axis as v (B -> Y)
   // FIXME: for hiding 2nd axis, aL view, lightness on y-axis should be flipped
   //cairo_rotate(cr, M_PI * -0.5);
-  cairo_scale(cr, scale, scale);
+
+  // graticule: histogram profile primaries
+  // FIXME: also add dots for input/work/output profiles
+  // FIXME: this should really be drawn in _draw_vectorscope_lines() but then would need to calculate them on display rather than on process -- in case process hasn't run yet?
+  for(int k=0; k<3; k++)
+  {
+    set_color(cr, darktable.bauhaus->graph_primaries[k]);
+    // FIXME: tune dot sizes
+    cairo_arc(cr, d->hist_profile_primaries[k][0] * min_size * 0.5,
+              d->hist_profile_primaries[k][1] * min_size * 0.5, min_size/30.0, 0., M_PI * 2.);
+    cairo_fill(cr);
+  }
+
+  // the vectorscope graph itself
+  // FIXME: the vectorscope hard-clips on the left/right for huge #'s -- instead could catch configure event, size buffers to aspect ratio, and then never clip -- or simply in calc decrease diameter by ~ 25% then increase correspondingly here, so less likely to clip -- and/or darw some sort of gradient mask over the edges so that they fade out
+
   cairo_translate(cr, min_size * -0.5, min_size * -0.5);
   // FIXME: use ppd?
   // FIXME: do need to cast to double if use ppd?
   cairo_scale(cr, darktable.gui->ppd*(double)min_size/vs_diameter, darktable.gui->ppd*(double)min_size/vs_diameter);
-  cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
 
   cairo_set_source_rgb(cr, 1., 1., 1.);
   cairo_surface_t *alpha
@@ -581,7 +633,7 @@ static void _draw_vectorscope_lines(cairo_t *cr, int width, int height, int scal
   // scale-independent line width looks better
   cairo_set_line_width(cr, cairo_get_line_width(cr) / scale);
 
-  // FIXME: are these meaningful?
+  // FIXME: are these meaningful? -- drop the circles
   // concentric circles
   cairo_arc(cr, 0., 0., min_size*0.5, 0., M_PI * 2.);
   cairo_stroke(cr);
@@ -695,7 +747,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
         break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
         // FIXME: have some way to bail out if the vectorscope data isn't ready?
-        _lib_histogram_draw_vectorscope(d, cr, width, height, 1);
+        _lib_histogram_draw_vectorscope(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
       // FIXME: use dt_unreachable_codepath_with_desc()
@@ -952,6 +1004,10 @@ static void _scope_type_update(const dt_lib_histogram_t *d)
       gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to histogram"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
                              dtgtk_cairo_paint_vectorscope, CPF_NONE, NULL);
+      // FIXME: needed? will tooltip text display on button if it's not sensitive?
+      gtk_widget_set_tooltip_text(d->scope_view_button, NULL);
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+                             dtgtk_cairo_paint_empty, CPF_NONE, NULL);
       gtk_widget_set_sensitive(d->scope_view_button, FALSE);
       gtk_widget_set_sensitive(d->red_channel_button, FALSE);
       gtk_widget_set_sensitive(d->green_channel_button, FALSE);
