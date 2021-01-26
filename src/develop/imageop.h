@@ -398,13 +398,8 @@ typedef struct dt_iop_module_t
   GSList *accel_closures;
   GSList *accel_closures_local;
   gboolean local_closures_connected;
-  /** message set in case the module has troubles (bad settings) - if set (not NULL), show a warning sign next to
-   * module label */
-  gchar *trouble_message;
-  /** tooltip assigned to the module's trouble label */
-  gchar *trouble_tooltip;
-  /** flags whether the trouble message has been updated and requires rerendering */
-  gboolean trouble_message_updated;
+  /** flag in case the module has troubles (bad settings) - if TRUE, show a warning sign next to module label */
+  gboolean has_trouble;
   /** the corresponding SO object */
   dt_iop_module_so_t *so;
 
@@ -734,10 +729,12 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
 
 /** Set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
- ** or NULL, clear the trouble flag.  If 'stderr_message' is non-NULL/non-empty, print a message to stderr.
- ** (use %s for the module's name). If the module has no GUI, trouble_msg will be printed to stderr. **/
-void dt_iop_set_module_trouble_message(dt_iop_module_t *module, const gchar *trouble_msg,
-                                       const gchar *trouble_tooltip, const gchar *stderr_message);
+ ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that
+ ** message when the module does not have a warning-label widget (use %s for the module's name).  **/
+void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
+                                       const char *const trouble_msg,
+                                       const char *const trouble_tooltip,
+                                       const char *stderr_message);
 
 // format modules description going in tooltips
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
@@ -747,23 +744,17 @@ char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
 static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
 {
   module->gui_data = (dt_iop_gui_data_t*)calloc(1, size);
+  dt_pthread_mutex_init(&module->gui_lock,NULL);
   return module->gui_data;
 }
 #define IOP_GUI_ALLOC(module) \
   (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
 
-#define IOP_GUI_FREE                                                                                              \
-  do                                                                                                              \
-  {                                                                                                               \
-    free(self->gui_data);                                                                                         \
-    self->gui_data = NULL;                                                                                        \
-  } while(0)
+#define IOP_GUI_FREE \
+  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){free(self->gui_data);} self->gui_data = NULL
 
 /* return a warning message, prefixed by the special character ⚠ */
 char *dt_iop_warning_message(const char *message);
-
-/* update the module's warning label */
-void dt_iop_gui_update_warning_label(dt_iop_module_t *module);
 
 /** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
  ** output buffer, set the module's trouble message, and return FALSE */
