@@ -59,6 +59,7 @@ typedef struct dt_lib_geotagging_t
   uint32_t imgid;
   GtkWidget *apply_offset;
   GtkWidget *apply_datetime;
+  GtkWidget *timezone;
   GList *timezones;
 } dt_lib_geotagging_t;
 
@@ -133,7 +134,6 @@ static gboolean _lib_geotagging_filter_gpx(const GtkFileFilterInfo *filter_info,
 
 static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   /* bring a filechooser to select the gpx file to apply to selection */
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
@@ -162,63 +162,19 @@ static void _lib_geotagging_gpx_callback(GtkWidget *widget, dt_lib_module_t *sel
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  // add time zone selection
-  GtkWidget *extra_box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  GtkWidget *label = gtk_label_new(_("camera time zone"));
-  gtk_widget_set_tooltip_text(label, _("most cameras don't store the time zone in EXIF. "
-                                       "give the correct time zone so the GPX data can be correctly matched"));
-
-  GtkCellRenderer *renderer;
-  GtkTreeIter tree_iter;
-  GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING /*display*/, G_TYPE_STRING /*name*/);
-
-  GtkWidget *tz_selection = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
-  renderer = gtk_cell_renderer_text_new();
-  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tz_selection), renderer, FALSE);
-  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tz_selection), renderer, "text", 0, NULL);
-
-  int i = 0;
-  gchar *old_tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  for(GList *iter = d->timezones; iter; iter = g_list_next(iter))
-  {
-    tz_tuple_t *tz_tuple = (tz_tuple_t *)iter->data;
-    gtk_list_store_append(model, &tree_iter);
-    gtk_list_store_set(model, &tree_iter, 0, tz_tuple->display, 1, tz_tuple->name, -1);
-    if(i == 0 || !strcmp(tz_tuple->name, old_tz)) gtk_combo_box_set_active(GTK_COMBO_BOX(tz_selection), i);
-    i++;
-  }
-  g_free(old_tz);
-
-  gtk_box_pack_start(GTK_BOX(extra_box), label, FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(extra_box), tz_selection, FALSE, FALSE, 0);
-  gtk_widget_show_all(extra_box);
-  gtk_file_chooser_set_extra_widget(GTK_FILE_CHOOSER(filechooser), extra_box);
-
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
     dt_conf_set_string("ui_last/gpx_last_directory", folder);
     g_free(folder);
 
-    gchar *tz;
-    if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(tz_selection), &tree_iter) == TRUE)
-    {
-      GValue value = { 0, };
-      gtk_tree_model_get_value(GTK_TREE_MODEL(model), &tree_iter, 1, &value);
-      tz = g_strdup((gchar *)g_value_get_string(&value));
-      g_value_unset(&value);
-    }
-    else
-      tz = g_strdup("UTC");
-    dt_conf_set_string("plugins/lighttable/geotagging/tz", tz);
+    gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
     gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
     dt_control_gpx_apply(filename, -1, tz);
     g_free(filename);
     g_free(tz);
   }
 
-  g_object_unref(model);
-  gtk_widget_destroy(extra_box);
   gtk_widget_destroy(filechooser);
   //   dt_control_queue_redraw_center();
 }
@@ -716,6 +672,78 @@ static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_l
   }
 }
 
+static void _timezone_save(dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+  const gchar *tz = gtk_entry_get_text(GTK_ENTRY(d->timezone));
+
+  gchar *name = NULL;
+  for(GList *iter = d->timezones; iter; iter = g_list_next(iter))
+  {
+    tz_tuple_t *tz_tuple = (tz_tuple_t *)iter->data;
+    if(!strcmp(tz_tuple->display, tz))
+      name = tz_tuple->name;
+  }
+  dt_conf_set_string("plugins/lighttable/geotagging/tz", name ? name : "UTC");
+  gtk_entry_set_text(GTK_ENTRY(d->timezone), name ? name : "UTC");
+}
+
+static gboolean _timezone_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
+{
+  switch(event->keyval)
+  {
+    case GDK_KEY_Return:
+    case GDK_KEY_KP_Enter:
+      _timezone_save(self);
+      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      return TRUE;
+    case GDK_KEY_Escape:
+      gtk_window_set_focus(GTK_WINDOW(dt_ui_main_window(darktable.gui->ui)), NULL);
+      return TRUE;
+    case GDK_KEY_Tab:
+      return TRUE;
+    default:
+      break;
+  }
+  return FALSE;
+}
+
+static gboolean _completion_match_func(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter,
+                                       gpointer user_data)
+{
+  gboolean res = FALSE;
+
+  GtkEditable *e = (GtkEditable *)gtk_entry_completion_get_entry(completion);
+  if(!GTK_IS_EDITABLE(e))
+    return FALSE;
+
+  GtkTreeModel *model = gtk_entry_completion_get_model(completion);
+  const int column = gtk_entry_completion_get_text_column(completion);
+
+  if(gtk_tree_model_get_column_type(model, column) != G_TYPE_STRING)
+    return FALSE;
+
+  char *tag = NULL;
+  gtk_tree_model_get(model, iter, column, &tag, -1);
+  if(tag)
+  {
+    char *normalized = g_utf8_normalize(tag, -1, G_NORMALIZE_ALL);
+    if(normalized)
+    {
+      char *casefold = g_utf8_casefold(normalized, -1);
+      if(casefold)
+      {
+        res = g_strstr_len(casefold, -1, key) != NULL;
+      }
+      g_free(casefold);
+    }
+    g_free(normalized);
+    g_free(tag);
+  }
+
+  return res;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)malloc(sizeof(dt_lib_geotagging_t));
@@ -728,10 +756,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   int line = 0;
 
-  GtkWidget *label = gtk_label_new(_("date time"));
-  gtk_widget_set_hexpand(label, TRUE);
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  GtkWidget *label = dt_ui_label_new(_("date time"));
   gtk_grid_attach(grid, label, 0, line, 1, 1);
   gtk_widget_set_tooltip_text(label, _("enter the new date time (yyyy:mm:dd hh:mm:ss)"
                                        "\nkey in the new numbers or scroll over the cell"));
@@ -741,10 +766,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_hexpand(box, TRUE);
   gtk_grid_attach(grid, box, 1, line++, 1, 1);
 
-  label = gtk_label_new(_("original date time"));
-  gtk_widget_set_hexpand(label, TRUE);
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  label = dt_ui_label_new(_("original date time"));
   gtk_grid_attach(grid, label, 0, line, 1, 1);
 
   box = _gui_init_datetime(&d->dt0, 1, self);
@@ -752,10 +774,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_hexpand(box, TRUE);
   gtk_grid_attach(grid, box, 1, line++, 1, 1);
 
-  label = gtk_label_new(_("date time offset"));
-  gtk_widget_set_hexpand(label, TRUE);
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
-  gtk_label_set_ellipsize(GTK_LABEL(label), PANGO_ELLIPSIZE_END);
+  label = dt_ui_label_new(_("date time offset"));
   gtk_grid_attach(grid, label, 0, line, 1, 1);
   gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss)"));
 
@@ -774,6 +793,46 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_hexpand(d->apply_datetime, TRUE);
   gtk_grid_attach(grid, d->apply_datetime , 1, line++, 1, 1);
   g_signal_connect(G_OBJECT(d->apply_datetime), "clicked", G_CALLBACK(_apply_datetime_callback), self);
+
+  // time zone entry
+  label = dt_ui_label_new(_("camera time zone"));
+  gtk_widget_set_tooltip_text(label, _("most cameras don't store the time zone in EXIF. "
+                                       "give the correct time zone so the GPX data can be correctly matched"));
+  gtk_grid_attach(grid, label , 0, line, 1, 1);
+
+  d->timezone = gtk_entry_new();
+  gtk_entry_set_text(GTK_ENTRY(d->timezone), dt_conf_get_string("plugins/lighttable/geotagging/tz"));
+  gtk_grid_attach(grid, d->timezone, 1, line++, 1, 1);
+
+  GtkCellRenderer *renderer;
+  GtkTreeIter tree_iter;
+  GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING /*display*/, G_TYPE_STRING /*name*/);
+  GtkWidget *tz_selection = gtk_combo_box_new_with_model(GTK_TREE_MODEL(model));
+  renderer = gtk_cell_renderer_text_new();
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tz_selection), renderer, FALSE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tz_selection), renderer, "text", 0, NULL);
+
+  gchar *old_tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
+  for(GList *iter = d->timezones; iter; iter = g_list_next(iter))
+  {
+    tz_tuple_t *tz_tuple = (tz_tuple_t *)iter->data;
+    gtk_list_store_append(model, &tree_iter);
+    gtk_list_store_set(model, &tree_iter, 0, tz_tuple->display, 1, tz_tuple->name, -1);
+    if(!strcmp(tz_tuple->name, old_tz))
+      gtk_entry_set_text(GTK_ENTRY(d->timezone), tz_tuple->display);
+  }
+  g_free(old_tz);
+
+  // add entry completion
+  GtkEntryCompletion *completion = gtk_entry_completion_new();
+  gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(model));
+  gtk_entry_completion_set_text_column(completion, 0);
+  gtk_entry_completion_set_inline_completion(completion, TRUE);
+  gtk_entry_completion_set_popup_set_width(completion, FALSE);
+  gtk_entry_completion_set_match_func(completion, _completion_match_func, NULL, NULL);
+  gtk_entry_set_completion(GTK_ENTRY(d->timezone), completion);
+  dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->timezone));
+  g_signal_connect(G_OBJECT(d->timezone), "key-press-event", G_CALLBACK(_timezone_key_pressed), self);
 
   // gpx
   GtkWidget *button = dt_ui_button_new(_("apply GPX track file..."),
@@ -811,6 +870,7 @@ void gui_cleanup(dt_lib_module_t *self)
   {
     dt_gui_key_accel_block_on_focus_disconnect(d->dt.widget[i]);
   }
+  dt_gui_key_accel_block_on_focus_disconnect(d->timezone);
   g_list_free_full(d->timezones, free_tz_tuple);
   d->timezones = NULL;
   free(self->data);
