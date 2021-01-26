@@ -385,6 +385,7 @@ static int compute_slice_width(const int width)
   return sl_width;
 }
 
+__DT_CLONE_TARGETS__
 void nlmeans_denoise(const float *const inbuf, float *const outbuf,
                      const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out,
                      const dt_nlmeans_param_t *const params)
