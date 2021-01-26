@@ -2944,7 +2944,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_tag_name_changed), (gpointer)self);
-  g_signal_connect(G_OBJECT(w), "key-press-event", G_CALLBACK(_key_pressed), (gpointer)self);
   d->entry = GTK_ENTRY(w);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->entry));
 
@@ -3071,6 +3070,9 @@ void gui_init(dt_lib_module_t *self)
     d->completion = completion;
   }
   else d->completion = NULL;
+
+  // completion works better if this happens after completion connection
+  g_signal_connect(G_OBJECT(d->entry), "key-press-event", G_CALLBACK(_key_pressed), (gpointer)self);
 
   /* connect to mouse over id */
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
