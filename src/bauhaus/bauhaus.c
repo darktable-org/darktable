@@ -544,9 +544,12 @@ void dt_bauhaus_load_theme()
   gtk_style_context_lookup_color(ctx, "graph_fg_active", &darktable.bauhaus->graph_fg_active);
   gtk_style_context_lookup_color(ctx, "graph_overlay", &darktable.bauhaus->graph_overlay);
   gtk_style_context_lookup_color(ctx, "inset_histogram", &darktable.bauhaus->inset_histogram);
-  gtk_style_context_lookup_color(ctx, "graph_red", &darktable.bauhaus->graph_primaries[0]);
-  gtk_style_context_lookup_color(ctx, "graph_green", &darktable.bauhaus->graph_primaries[1]);
-  gtk_style_context_lookup_color(ctx, "graph_blue", &darktable.bauhaus->graph_primaries[2]);
+  gtk_style_context_lookup_color(ctx, "graph_red", &darktable.bauhaus->graph_colors[0]);
+  gtk_style_context_lookup_color(ctx, "graph_green", &darktable.bauhaus->graph_colors[1]);
+  gtk_style_context_lookup_color(ctx, "graph_blue", &darktable.bauhaus->graph_colors[2]);
+  gtk_style_context_lookup_color(ctx, "graph_cyan", &darktable.bauhaus->graph_colors[3]);
+  gtk_style_context_lookup_color(ctx, "graph_magenta", &darktable.bauhaus->graph_colors[4]);
+  gtk_style_context_lookup_color(ctx, "graph_yellow", &darktable.bauhaus->graph_colors[5]);
   gtk_style_context_lookup_color(ctx, "colorlabel_red",
                                  &darktable.bauhaus->colorlabels[DT_COLORLABELS_RED]);
   gtk_style_context_lookup_color(ctx, "colorlabel_yellow",

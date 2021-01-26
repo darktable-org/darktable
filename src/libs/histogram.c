@@ -87,7 +87,7 @@ typedef struct dt_lib_histogram_t
   uint8_t *vectorscope_alpha;
   int vectorscope_diameter, vectorscope_alpha_stride;
   // FIXME: DT_ALIGNED_PIXEL? make [4]?
-  float hist_profile_primaries[3][2];
+  float vectorscope_graticule[6][2];
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -263,33 +263,35 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   //color_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
   //color_profile = dt_ioppr_get_pipe_output_profile_info(pipe);
 
-  // FIXME: can get primaries via transforming R/G/B to XYZ or do need to look directly in profile for this (via querying LCMS)
-  // FIXME: test all this work by making a LCMS path and comparing output -- or at least against XYZ values in profile
+  // get profile primaries/secondaries in JzAzBz
+  // there's no guarantee that there is a chromaticity tag in the
+  // profile, so simply feed RGB colors through profile to PCS then
+  // JzAzBz
   // FIXME: render not just the primaries but the bounding box between them -- presumably in XYZ so would need to render some points and interpolate -- at which point just build another image buffer for the overlay?
   // FIXME: align? make [4]? figure out in code?
-  float primaries_rgb[3][3] = { {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0} };
+  float in_rgb[6][3] = { {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0},
+                         {0.0, 1.0, 1.0}, {1.0, 0.0, 1.0}, {1.0, 1.0, 0.0}};
   float max_diam = 0.0f;
-  for(int k=0; k<3; k++)
+  for(int k=0; k<6; k++)
   {
     // FIXME: DT_ALIGNED_PIXEL? make [4]? why init?
     float XYZ_D50[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
     float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
     float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-    // FIXME: how do we know this is in D50? -- at least the results look right for known profiles
-    dt_ioppr_rgb_matrix_to_xyz(primaries_rgb[k], XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
+    dt_ioppr_rgb_matrix_to_xyz(in_rgb[k], XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
                                histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
                                histogram_profile->nonlinearlut);
     dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
     dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
     max_diam = MAX(max_diam, hypotf(JzAzBz[1], JzAzBz[2]));
-    d->hist_profile_primaries[k][0] = JzAzBz[1];
-    d->hist_profile_primaries[k][1] = JzAzBz[2];
+    d->vectorscope_graticule[k][0] = JzAzBz[1];
+    d->vectorscope_graticule[k][1] = JzAzBz[2];
   }
-  // scale primaries for display
-  for(int k=0; k<3; k++)
+  // scale graticule chromaticity to display
+  for(int k=0; k<6; k++)
   {
-    d->hist_profile_primaries[k][0] /= max_diam;
-    d->hist_profile_primaries[k][1] /= max_diam;
+    d->vectorscope_graticule[k][0] /= max_diam;
+    d->vectorscope_graticule[k][1] /= max_diam;
   }
   // FIXME: is this an optimization or unneeded code? should max_diam be const?
   const float max_radius = max_diam / 2.0f;
@@ -313,10 +315,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
 
     // NOTE: code cribbed from rgb_to_JzCzhz() in color_picker.c
     // FIXME: is there a way to optimize this whole chain of conversions?
-    // FIXME: why is this D50 output?
+    // this goes to the PCS which has standard illuminant D50
     dt_ioppr_rgb_matrix_to_xyz(pix_in, XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
                                histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
                                histogram_profile->nonlinearlut);
+    // but our conversion to JzAzBz depends on XYZ in D65, so one more step
     dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
     dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
 
@@ -474,7 +477,7 @@ static void _lib_histogram_draw_histogram(dt_lib_histogram_t *d, cairo_t *cr,
   for(int k = 0; k < 3; k++)
     if(mask[k])
     {
-      set_color(cr, darktable.bauhaus->graph_primaries[k]);
+      set_color(cr, darktable.bauhaus->graph_colors[k]);
       dt_draw_histogram_8(cr, d->histogram, 4, k, d->histogram_scale == DT_LIB_HISTOGRAM_LINEAR);
     }
   cairo_pop_group_to_source(cr);
@@ -491,7 +494,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   const int wf_height = d->waveform_height;
   // colors used to represent primary colors
   // FIXME: force a redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
-  const GdkRGBA *const css_primaries = darktable.bauhaus->graph_primaries;
+  const GdkRGBA *const css_primaries = darktable.bauhaus->graph_colors;
   const float DT_ALIGNED_ARRAY primaries_linear[3][4] = {
     {css_primaries[2].blue, css_primaries[2].green, css_primaries[2].red, 1.0f},
     {css_primaries[1].blue, css_primaries[1].green, css_primaries[1].red, 1.0f},
@@ -588,30 +591,29 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // FIXME: which way to orient graph? and can do this when generate the graph?
   // traditional vectorscope is oriented with x-axis Y -> B, y-axis C -> R
   // but CIE 1976 UCS is graphed x-axis as u (G -> M), y-axis as v (B -> Y)
-  // FIXME: for hiding 2nd axis, aL view, lightness on y-axis should be flipped
-  //cairo_rotate(cr, M_PI * -0.5);
+  cairo_scale(cr, 1., -1.);
+  cairo_rotate(cr, M_PI * 0.5);
 
-  // graticule: histogram profile primaries
+  // graticule: histogram profile primaries/secondaries
   // FIXME: also add dots for input/work/output profiles
-  // FIXME: this should really be drawn in _draw_vectorscope_lines() but then would need to calculate them on display rather than on process -- in case process hasn't run yet?
-  for(int k=0; k<3; k++)
+  const GdkRGBA *const colors = darktable.bauhaus->graph_colors;
+  for(int k=0; k<6; k++)
   {
-    set_color(cr, darktable.bauhaus->graph_primaries[k]);
-    // FIXME: tune dot sizes
-    cairo_arc(cr, d->hist_profile_primaries[k][0] * min_size * 0.5,
-              d->hist_profile_primaries[k][1] * min_size * 0.5, min_size/30.0, 0., M_PI * 2.);
+    cairo_set_source_rgba(cr, colors[k].red, colors[k].green, colors[k].blue, colors[k].alpha * 0.7);
+    cairo_arc(cr, d->vectorscope_graticule[k][0] * min_size * 0.5,
+              d->vectorscope_graticule[k][1] * min_size * 0.5, min_size/(k<3 ? 40.0 : 50.0), 0., M_PI * 2.);
     cairo_fill(cr);
   }
 
   // the vectorscope graph itself
-  // FIXME: the vectorscope hard-clips on the left/right for huge #'s -- instead could catch configure event, size buffers to aspect ratio, and then never clip -- or simply in calc decrease diameter by ~ 25% then increase correspondingly here, so less likely to clip -- and/or darw some sort of gradient mask over the edges so that they fade out
+  // FIXME: the vectorscope hard-clips on the left/right for huge #'s -- instead could catch configure event, size buffers to aspect ratio, and then never clip -- or simply in calc decrease diameter by ~ 25% then increase correspondingly here, so less likely to clip -- and/or draw some sort of gradient mask over the edges so that they fade out
 
   cairo_translate(cr, min_size * -0.5, min_size * -0.5);
   // FIXME: use ppd?
   // FIXME: do need to cast to double if use ppd?
   cairo_scale(cr, darktable.gui->ppd*(double)min_size/vs_diameter, darktable.gui->ppd*(double)min_size/vs_diameter);
 
-  cairo_set_source_rgb(cr, 1., 1., 1.);
+  cairo_set_source_rgba(cr, 1., 1., 1., 0.7);
   cairo_surface_t *alpha
     = dt_cairo_image_surface_create_for_data(d->vectorscope_alpha, CAIRO_FORMAT_A8,
                                              vs_diameter, vs_diameter, d->vectorscope_alpha_stride);
@@ -620,41 +622,21 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _draw_vectorscope_lines(cairo_t *cr, int width, int height, int scale)
+static void _draw_vectorscope_lines(cairo_t *cr, int width, int height)
 {
   const double min_size = MIN(width, height);
-  const double w_ctr = min_size / 30.0f;
-  // FIXME: should this vary with ppd?
-  const double half_dashes = 8.0;
-  const double quarter_dashes = 4.0;
+  const double w_ctr = min_size / 15.0f;
 
   cairo_save(cr);
   cairo_translate(cr, width/2., height/2.);
 
   // central crosshair
+  cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   dt_draw_line(cr, -w_ctr, 0.0f, w_ctr, 0.0f);
   cairo_stroke(cr);
   dt_draw_line(cr, 0.0f, -w_ctr, 0.0f, w_ctr);
   cairo_stroke(cr);
 
-  cairo_scale(cr, scale, scale);
-  // scale-independent line width looks better
-  cairo_set_line_width(cr, cairo_get_line_width(cr) / scale);
-
-  // FIXME: are these meaningful? -- drop the circles
-  // concentric circles
-  cairo_arc(cr, 0., 0., min_size*0.5, 0., M_PI * 2.);
-  cairo_stroke(cr);
-  cairo_set_dash(cr, &half_dashes, 1, 0.);
-  cairo_arc(cr, 0., 0., min_size*0.25, 0., M_PI * 2.);
-  cairo_stroke(cr);
-  cairo_set_dash(cr, &quarter_dashes, 1, 0.);
-  cairo_arc(cr, 0., 0., min_size*0.125, 0., M_PI * 2.);
-  cairo_stroke(cr);
-  cairo_arc(cr, 0., 0., min_size*0.375, 0., M_PI * 2.);
-  cairo_stroke(cr);
-
-  // FIXME: draw a graticule option showing primary (and secondary?) colors of the histogram profile
   // FIXME: draw more sophisticated view of primaries (input, working, output)
   // from Sobotka:
   // 1. The input encoding primaries. How dd the image start out life? What is valid data within that? What is invalid introduced by error of camera virtual primaries solving or math such as resampling an image such that negative lobes result?
@@ -725,8 +707,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
       // FIXME: draw this after?
-      // FIXME: what about scale?
-      _draw_vectorscope_lines(cr, width, height, 1);
+      _draw_vectorscope_lines(cr, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       // FIXME: use dt_unreachable_codepath_with_desc()
