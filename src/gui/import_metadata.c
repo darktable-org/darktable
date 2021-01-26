@@ -548,6 +548,11 @@ void dt_import_metadata_update(dt_import_metadata_t *metadata)
   g_signal_handlers_block_by_func(w, _import_metadata_toggled, metadata);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), imported);
   g_signal_handlers_unblock_by_func(w, _import_metadata_toggled, metadata);
+
+  w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, DT_META_META_HEADER);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
+  w = gtk_grid_get_child_at(GTK_GRID(metadata->grid), 1, DT_META_TAGS_HEADER);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(w), -1);
 }
 
 void dt_import_metadata_reset(dt_import_metadata_t *metadata)
