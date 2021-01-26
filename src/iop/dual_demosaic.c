@@ -196,7 +196,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   dt_times_t start_blend = { 0 }, end_blend = { 0 };
   if(info) dt_get_times(&start_blend);
 
-  float contrastf = dual_threshold / 100.0f;
+  const float contrastf = dual_threshold / 100.0f;
   blend_images(rgb_data, blend, tmp, width, height, contrastf, dual_mask);
 
   if(dual_mask)

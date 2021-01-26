@@ -301,7 +301,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
       string = "Markesteijn-3 (xtrans)";
       break;
     case DT_IOP_DEMOSAIC_MARKEST3_VNG:
-      string = "Markesteijn 3-pass + VNG"; 
+      string = "Markesteijn 3-pass + VNG4"; 
       break;
     case DT_IOP_DEMOSAIC_FDC:
       string = "Frequency Domain Chroma (xtrans)";
@@ -2918,6 +2918,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   roo.x = roo.y = 0;
   // roi_out->scale = global scale: (iscale == 1.0, always when demosaic is on)
   const gboolean info = ((darktable.unmuted & (DT_DEBUG_DEMOSAIC | DT_DEBUG_PERF)) && (piece->pipe->type == DT_DEV_PIXELPIPE_FULL));
+  const gboolean run_fast = (piece->pipe->type & DT_DEV_PIXELPIPE_FAST) == DT_DEV_PIXELPIPE_FAST;
   gboolean showmask = FALSE;
   if(self->dev->gui_attached && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
   {
@@ -3037,7 +3038,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         method2string(demosaicing_method & ~DEMOSAIC_DUAL), mpixels, tclock, uclock, mpixels / tclock);
     }
 
-    if(demosaicing_method & DEMOSAIC_DUAL)
+    if((demosaicing_method & DEMOSAIC_DUAL) && !run_fast)
     {
       dual_demosaic(piece, tmp, pixels, &roo, &roi, piece->pipe->dsc.filters, xtrans, showmask, data->dual_thrs);
     }
