@@ -300,7 +300,7 @@ static void blur_horizontal_4ch(float *const restrict buf, const size_t height, 
 
 #ifdef __SSE2__
 static void blur_vertical_1ch_sse(float *const restrict buf, const int height, const int width, const int radius,
-                                  float *const restrict scanline)
+                                  __m128 *const restrict scratch)
 {
   __m128 L = { 0, 0, 0, 0 };
   __m128 hits = { 0, 0, 0, 0 };
@@ -308,61 +308,8 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   // add up the top half of the window
   for (size_t y = 0; y < radius && y < height; y++)
   {
-    size_t index = y * width;
-    L += _mm_loadu_ps(buf + index);	// use unaligned load since width is not necessarily a multiple of 4
     hits += one;
-  }
-  // process the blur up to the point where we start removing values
-  for (size_t y = 0; y <= radius && y < height; y++)
-  {
-    const int np = y + radius;
-    if(np < height)
-    {
-      L += _mm_loadu_ps(buf+np*width);
-      hits += one;
-    }
-    _mm_store_ps(scanline+4*y, L / hits);
-  }
-  // process the blur for the rest of the scan line
-  for (size_t y = radius+1 ; y < height; y++)
-  {
-    const int op = y - radius - 1;
-    const int np = y + radius;
-    L -= _mm_loadu_ps(buf+op*width);
-    hits -= one;
-    if(np < height)
-    {
-      L += _mm_loadu_ps(buf+np*width);
-      hits += one;
-    }
-    _mm_store_ps(scanline+4*y, L / hits);
-  }
-
-  // copy blurred values back to original location in buffer
-  for (size_t y = 0; y < height; y++)
-  {
-    // use unaligned store since width is not necessarily a multiple of four
-    // use the faster aligned load since we've ensured that scanline is aligned
-    _mm_storeu_ps(buf + y*width, _mm_load_ps(scanline + 4*y));
-  }
-  return;
-}
-#endif /* __SSE2__ */
-
-#ifdef __SSE2__
-static void blur_vertical_4ch_sse(float *const restrict buf, const int height, const int width, const int radius,
-                                  __m128 *const restrict scanline)
-{
-  __m128 L[4] = { _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0) };
-  __m128 hits = _mm_set1_ps(0);
-  const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
-  // add up the top half of the window
-  for (size_t y = 0; y < radius && y < height; y++)
-  {
-    size_t index = y * width;
-    for (int c = 0; c < 4; c++)
-      L[c] += _mm_loadu_ps(buf + 4 * (index + c)); // use unaligned load since width is not necessarily a multiple of 4
-    hits += one;
+    L += _mm_loadu_ps(buf + y*width);	// use unaligned load since width is not necessarily a multiple of 4
   }
   // process the blur up to the point where we start removing values
   size_t y;
@@ -370,38 +317,29 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const int height, c
   {
     const int np = y + radius;
     hits += one;
-    for (int c = 0; c < 4; c++)
-      L[c] += _mm_loadu_ps(buf + 4 * (np*width + c));
-    for (int c = 0; c < 4; c++)
-      scanline[4*y+c] = L[c] / hits;
+    L += _mm_loadu_ps(buf+np*width);
+    scratch[y] = L / hits;
   }
   // process the blur for the bulk of the scan line
   for ( ; y < height-radius; y++)
   {
-    const int op = y - radius - 1;
-    const int np = y + radius;
-    for (int c = 0; c < 4; c++)
-    {
-      L[c] -= _mm_loadu_ps(buf + 4 * (op*width + c));
-      // we're now done with the orig value, so store the final result while this line is still in cache
-      _mm_storeu_ps(buf + 4 * (op*width + c), scanline[4*op+c]);
-      L[c] += _mm_loadu_ps(buf + 4 * (np*width + c));
-      scanline[4*y+c] = L[c] / hits;
-    }
+    const size_t op = y - radius - 1;
+    const size_t np = y + radius;
+    L -= _mm_loadu_ps(buf + op*width);
+    L += _mm_loadu_ps(buf + np*width);
+    // we're now done with the orig value, so store the final result while this line is still in cache
+    _mm_storeu_ps(buf + op*width, scratch[op]);
+    scratch[y] = L / hits;
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
   for ( ; y < height; y++)
   {
-    const int op = y - radius - 1;
+    const size_t op = y - radius - 1;
     hits -= one;
-    for (int c = 0; c < 4; c++)
-    {
-      L[c] -= _mm_loadu_ps(buf + 4 * (op*width + c));
-      // we're now done with the orig value, so store the final result while this line is still in cache
-      _mm_storeu_ps(buf + 4 * (op*width + c), scanline[4*op+c]);
-    }
-    for (int c = 0; c < 4; c++)
-      scanline[4*y+c] = L[c] / hits;
+    L -= _mm_loadu_ps(buf + op*width);
+    // we're now done with the orig value, so store the final result while this line is still in cache
+    _mm_storeu_ps(buf + op*width, scratch[op]);
+    scratch[y] = L / hits;
   }
 
   // copy remaining blurred values back to original location in buffer
@@ -409,12 +347,138 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const int height, c
   {
     // use unaligned store since width is not necessarily a multiple of four
     // use the faster aligned load since we've ensured that scanline is aligned
-    for (int c = 0; c < 4; c++)
-      _mm_storeu_ps(buf + 4 * (y*width+c), scanline[4*y+c]);
+    _mm_storeu_ps(buf + y*width, scratch[y]);
   }
   return;
 }
 #endif /* __SSE2__ */
+
+#ifdef __SSE2__
+static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height, const size_t width,
+                                  const size_t radius, __m128 *const restrict scanline)
+{
+  __m128 L[4] = { _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0) };
+  __m128 hits = { 0.0f, 0.0f, 0.0f, 0.0f };
+  const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
+  // add up the top half of the window
+  for (size_t y = 0; y < MIN(radius, height); y++)
+  {
+    hits += one;
+    for (size_t c = 0; c < 4; c++)
+      L[c] += _mm_loadu_ps(buf + y*width + 4*c); // use unaligned load since width is not necessarily a multiple of 4
+  }
+  // process the blur up to the point where we start removing values
+  size_t y;
+  for (y = 0; y <= MIN(radius, height-1); y++)
+  {
+    const size_t np = y + radius;
+    hits += one;
+    for (size_t c = 0; c < 4; c++)
+    {
+      L[c] += _mm_loadu_ps(buf + np*width + 4*c);
+      scanline[4*y+c] = L[c] / hits;
+    }
+  }
+  // process the blur for the bulk of the scan line
+  for ( ; y < height-radius; y++)
+  {
+    const size_t op = y - radius - 1;
+    const size_t np = y + radius;
+    for (size_t c = 0; c < 4; c++)
+    {
+      L[c] -= _mm_loadu_ps(buf + op*width + 4*c);
+      L[c] += _mm_loadu_ps(buf + np*width + 4*c);
+      // we're now done with the orig value, so store the final result while this line is still in cache
+      _mm_storeu_ps(buf + op*width + 4*c, scanline[4*op + c]);
+      scanline[4*y + c] = L[c] / hits;
+    }
+  }
+  // process the blur for the end of the scan line, where we don't have any more values to add to the mean
+  for ( ; y < height; y++)
+  {
+    const size_t op = y - radius - 1;
+    hits -= one;
+    for (size_t c = 0; c < 4; c++)
+    {
+      L[c] -= _mm_loadu_ps(buf + op*width + 4*c);
+      // we're now done with the orig value, so store the final result while this line is still in cache
+      _mm_storeu_ps(buf + op*width + 4*c, scanline[4*op + c]);
+      scanline[4*y + c] = L[c] / hits;
+    }
+  }
+
+  // copy remaining blurred values back to original location in buffer
+  for (y = (height>radius)?(height-radius-1):0; y < height; y++)
+  {
+    // use unaligned store since width is not necessarily a multiple of four
+    // use the faster aligned load since we've ensured that scanline is aligned
+    for (size_t c = 0; c < 4; c++)
+      _mm_storeu_ps(buf + y*width + 4*c, scanline[4*y + c]);
+  }
+  return;
+}
+#endif /* __SSE2__ */
+
+// invoked inside an OpenMP parallel for, so no need to parallelize
+static void blur_vertical_1wide(float *const restrict buf, const size_t height, const size_t width,
+                                const size_t radius, float *const restrict scratch)
+{
+  // To improve cache hit rates, we copy the final result from the scratch space back to the original
+  // location in the buffer as soon as we finish the final read of the buffer.  To reduce the working
+  // set and further improve cache hits, we can treat the scratch space as a circular buffer and cycle
+  // through it repeatedly.  To use a simple bitmask instead of a division, the size we cycle through
+  // needs to be the power of two larger than the window size (2*radius+1).
+  size_t mask = 1;
+  for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
+
+  float L = 0.0f;
+  size_t hits = 0;
+  // add up the left half of the window
+  for (size_t y = 0; y < MIN(radius, height); y++)
+  {
+    hits++;
+    L += buf[y*width];
+  }
+  // process up to the point where we start removing values from the moving average
+  size_t y;
+  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  {
+    const size_t np = y + radius;
+    hits++;
+    L += buf[np*width];
+    scratch[y&mask] = L / hits;
+  }
+  // process the bulk of the column
+  for( ; y < height-radius; y++)
+  {
+    const size_t op = y - radius - 1;
+    const size_t np = y + radius;
+    L -= buf[op*width];
+    L += buf[np*width];
+    // we're now done with the original value, so store the final result while this line is still in cache
+    buf[op*width] = scratch[op&mask];
+    // update the means
+    scratch[y&mask] = L / hits;
+  }
+  // process the end of the column, where we don't have any more values to add to the mean
+  for( ; y < height; y++)
+  {
+    const size_t op = y - radius - 1;
+    hits--;
+    L -= buf[op*width];
+    // we're now done with the original value, so store the final result while this line is still in cache
+    buf[op*width] = scratch[op&mask];
+    // update the means
+    scratch[y&mask] = L / hits;
+  }
+
+  // copy remaining blurred values back to original location in buffer
+  for (y = (height>radius)?(height-radius-1):0; y < height; y++)
+  {
+    buf[y*width] = scratch[y&mask];
+  }
+  return;
+}
 
 // invoked inside an OpenMP parallel for, so no need to parallelize
 static void blur_vertical_4wide(float *const restrict buf, const size_t height, const size_t width, const size_t radius,
@@ -423,7 +487,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
 #ifdef __SSE2__
   if (darktable.codepath.SSE2)
   {
-    blur_vertical_1ch_sse(buf, height, width, radius, scratch);
+    blur_vertical_1ch_sse(buf, height, width, radius, (__m128*)scratch);
     return;
   }
 #endif /* __SSE2__ */
@@ -488,14 +552,6 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
 static void blur_vertical_16wide(float *const restrict buf, const size_t height, const size_t width,
                                  const size_t radius, float *const restrict scratch)
 {
-#ifdef __SSE2__
-  if (darktable.codepath.SSE2)
-  {
-    blur_vertical_4ch_sse(buf, height, width, radius, (__m128*)scratch);
-    return;
-  }
-#endif /* __SSE2__ */
-
   // To improve cache hit rates, we copy the final result from the scratch space back to the original
   // location in the buffer as soon as we finish the final read of the buffer.  To reduce the working
   // set and further improve cache hits, we can treat the scratch space as a circular buffer and cycle
@@ -512,7 +568,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
     hits++;
     add_16wide(L, buf + y * width);
   }
-  // process the blur up to the point where we start removing values
+  // process the blur up to the point where we start removing values from the moving average
   size_t y;
   for (y = 0; y <= MIN(radius, height-radius-1); y++)
   {
@@ -554,63 +610,75 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
 }
 
 static void blur_vertical_1ch(float *const restrict buf, const size_t height, const size_t width, const size_t radius,
-                              float *const restrict scanlines)
+                              float *const restrict scanlines, const size_t eff_height)
 {
-  /* vertical pass on L channel */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(radius, height, width) \
+  shared(darktable) \
   dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
 #endif
-  for(int x = 0; x < (width & ~3); x += 4)
+  for(int x = 0; x < width; x += 16)
   {
-    float *const restrict scanline = scanlines + 4 * dt_get_thread_num() * height;
-    blur_vertical_4wide(buf + x, height, width, radius, scanline);
-  }
-  // handle the 0..3 remaining columns
-  const int opoffs = -(radius + 1) * width;
-  const int npoffs = radius*width;
-  for(int x = width & ~3; x < width; x++)
-  {
-    float L = 0.0f;
-    size_t hits = 0;
-    size_t index = (size_t)x - (size_t)radius * width;
-    float *const restrict scanline = scanlines;
-    for(int y = -radius; y < height; y++)
+    float *const restrict scratch = scanlines + 16 * dt_get_thread_num() * eff_height;
+    if (x + 16 <= width)
     {
-      const int op = y - radius - 1;
-      const int np = y + radius;
-      if(op >= 0)
+#ifdef __SSE2__
+      if (darktable.codepath.SSE2)
       {
-        L -= buf[index + opoffs];
-        hits--;
+        blur_vertical_4ch_sse(buf + x, height, width, radius, (__m128*)scratch);
       }
-      if(np < height)
+      else
+#endif /* __SSE2__ */
       {
-        L += buf[index + npoffs];
-        hits++;
+        blur_vertical_16wide(buf + x, height, width, radius, scratch);
       }
-      if(y >= 0) scanline[y] = L / hits;
-      index += width;
     }
-
-    for(int y = 0; y < height; y++)
-      buf[(size_t)y * width + x] = scanline[y];
+    else
+    {
+      // handle the leftover 1..15 columns, first in groups of four, then the final 0..3 singly
+      int col = x;
+      for( ; col < (width & ~3); col += 4)
+        blur_vertical_4wide(buf + col, height, width, radius, scratch);
+      for( ; col < width; col++)
+        blur_vertical_1wide(buf + col, height, width, radius, scratch);
+    }
   }
   return;
+}
+
+// determine the size of the scratch buffer needed for vertical passes of the box-mean filter
+//   for plainC code: filter_window = 2**ceil(lg2(2*radius+1))
+//   for SSE code: filter_window = height;
+static size_t _compute_effective_height(const size_t height, const size_t radius)
+{
+  size_t eff_height = height;
+#ifdef __SSE2__
+  if (!darktable.codepath.SSE2)
+#endif
+  {
+    eff_height = 2;
+    for(size_t r = (2*radius+1); r > 1 ; r >>= 1) eff_height <<= 1;
+    eff_height = MIN(eff_height,height);
+  }
+  return eff_height;
 }
 
 static void dt_box_mean_1ch(float *const buf, const size_t height, const size_t width, const size_t radius,
                             const unsigned iterations)
 {
-  const size_t size = MAX(width,height);
-  float *const restrict scanlines = dt_alloc_align_float(dt_get_num_threads() * size * 4);
+  // scratch space needed per thread:
+  //   width floats to store one row during horizontal pass
+  //   16*filter_window floats for vertical pass
+  const size_t eff_height = _compute_effective_height(height,radius);
+  const size_t size = MAX(width,16*eff_height);
+  float *const restrict scanlines = dt_alloc_align_float(dt_get_num_threads() * size);
 
   for(unsigned iteration = 0; iteration < iterations; iteration++)
   {
     blur_horizontal_1ch(buf, height, width, radius, scanlines);
-    blur_vertical_1ch(buf, height, width, radius, scanlines);
+    blur_vertical_1ch(buf, height, width, radius, scanlines, eff_height);
   }
 
   dt_free_align(scanlines);
@@ -621,17 +689,8 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
 {
   // scratch space needed per thread:
   //   4*width floats to store one row during horizontal pass
-  //   16*filter_window floats for vertical pass (where filter_window = 2**ceil(lg2(2*radius+1))
-  //   16*height for vertical pass using SSE codepath
-  int eff_height = height;
-#ifdef __SSE2__
-  if (!darktable.codepath.SSE2)
-#endif
-  {
-    eff_height = 2;
-    for(size_t r = (2*radius+1); r > 1 ; r >>= 1) eff_height <<= 1;
-    eff_height = MIN(eff_height,height);
-  }
+  //   16*filter_window floats for vertical pass
+  const size_t eff_height = _compute_effective_height(height,radius);
   const size_t size = MAX(4*width,16*eff_height);
   float *const restrict scanlines = dt_alloc_align_float(dt_get_num_threads() * size);
 
@@ -641,14 +700,25 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(width, height, radius)  \
+  shared(darktable) \
   dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
 #endif
     for (size_t col = 0; col < (width & ~3); col += 4)
     {
-      float *const restrict scanline = scanlines + 16 * dt_get_thread_num() * height;
-      // we need to multiply width by 4 to get the correct stride for the vertical blur
-      blur_vertical_16wide(buf + 4 * col, height, 4*width, radius, scanline);
+      float *const restrict scratch = scanlines + 16 * dt_get_thread_num() * eff_height;
+#ifdef __SSE2__
+      if (darktable.codepath.SSE2)
+      {
+        // we need to multiply width by 4 to get the correct stride for the vertical blur  //!!!
+        blur_vertical_4ch_sse(buf + 4 * col, height, 4*width, radius, (__m128*)scratch);
+      }
+      else
+#endif /* __SSE2__ */
+      {
+        // we need to multiply width by 4 to get the correct stride for the vertical blur
+        blur_vertical_16wide(buf + 4 * col, height, 4*width, radius, scratch);
+      }
     }
     // handle the 0..3 remaining columns
     for (size_t col = (width & ~3); col < width; col++)
@@ -683,7 +753,7 @@ static void dt_box_mean_4ch_sse(float *const buf, const int height, const int wi
     for (int col = 0; col < (width & ~3); col += 4)
     {
       __m128 *const restrict scanline = scanline_buf + 4 * dt_get_thread_num() * height;
-      blur_vertical_4ch_sse(buf + 4 * col, height, width, radius, scanline);
+      blur_vertical_4ch_sse(buf + 4 * col, height, 4*width, radius, scanline);
     }
     // finish up the leftover 0-3 columns of pixels
     const int opoffs = -(radius + 1) * width;
@@ -729,14 +799,15 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
   // We make use of the separable nature of the filter kernel to speed-up the computation
   // by convolving along columns and rows separately (complexity O(2 × radius) instead of O(radius²)).
 
-  const size_t Ndim = MAX(width,height) * 2 * 2;
+  const size_t eff_height = _compute_effective_height(height, radius);
+  const size_t Ndim = MAX(4*width,16*eff_height);
   float *const restrict temp = dt_alloc_align_float(Ndim * dt_get_num_threads());
   if (temp == NULL) return;
 
   for (unsigned iteration = 0; iteration < iterations; iteration++)
   {
     blur_horizontal_2ch(in, height, width, radius, temp);
-    blur_vertical_1ch(in, height, 2*width, radius, temp);
+    blur_vertical_1ch(in, height, 2*width, radius, temp, eff_height);
   }
   dt_free_align(temp);
 }
