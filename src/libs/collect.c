@@ -1836,13 +1836,12 @@ static void list_view(dt_lib_collect_rule_t *dr)
         {
           gchar *order_by = NULL;
           if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
-            order_by = g_strdup("film_rolls_id");
+            order_by = g_strdup("film_rolls_id DESC");
           else
-            order_by = g_strdup("folder");
-
-          gchar *order_direction = g_strdup("");
-          if(dt_conf_get_bool("plugins/collect/descending"))
-            order_direction = g_strdup(" DESC");
+            if(dt_conf_get_bool("plugins/collect/descending"))
+              order_by = g_strdup("folder DESC");
+            else
+              order_by = g_strdup("folder");
 
           g_snprintf(query, sizeof(query),
                      "SELECT folder, film_rolls_id, COUNT(*) AS count"
@@ -1852,10 +1851,9 @@ static void list_view(dt_lib_collect_rule_t *dr)
                      "   ON film_id = film_rolls_id "
                      " WHERE %s"
                      " GROUP BY folder"
-                     " ORDER BY %s %s", where_ext, order_by, order_direction);
+                     " ORDER BY %s", where_ext, order_by);
 
           g_free(order_by);
-          g_free(order_direction);
         }
         break;
     }
