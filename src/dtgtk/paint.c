@@ -1126,7 +1126,7 @@ void dtgtk_cairo_paint_rgb_parade(cairo_t *cr, gint x, gint y, gint w, gint h, g
 {
   PREAMBLE(1, 0, 0)
 
-  const GdkRGBA *const primaries = darktable.bauhaus->graph_primaries;
+  const GdkRGBA *const primaries = darktable.bauhaus->graph_colors;
   cairo_pattern_t *pat;
 
   pat = cairo_pattern_create_linear(0.0, 0.0, 0.0, 1.0);

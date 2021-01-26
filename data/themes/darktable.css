@@ -164,6 +164,9 @@
 @define-color graph_red rgb(237,30,20);
 @define-color graph_green rgb(28,235,26);
 @define-color graph_blue rgb(14,14,233);
+@define-color graph_cyan rgb(20,210,253);
+@define-color graph_magenta rgb(220,14,240);
+@define-color graph_yellow rgb(240,235,26);
 
 @define-color colorlabel_red rgb(230,0,0);
 @define-color colorlabel_green rgb(0,230,0);
