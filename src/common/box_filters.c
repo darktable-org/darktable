@@ -315,7 +315,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   size_t y;
   for (y = 0; y <= MIN(radius, height-1); y++)
   {
-    const int np = y + radius;
+    const size_t np = y + radius;
     hits += one;
     L += _mm_loadu_ps(buf+np*width);
     scratch[y] = L / hits;
@@ -443,7 +443,8 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
   size_t y;
   for (y = 0; y <= MIN(radius, height-radius-1); y++)
   {
-    const size_t np = y + radius;
+    // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
+    const int np = y + radius;
     hits++;
     L += buf[np*width];
     scratch[y&mask] = L / hits;
@@ -451,8 +452,8 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
   // process the bulk of the column
   for( ; y < height-radius; y++)
   {
-    const size_t op = y - radius - 1;
-    const size_t np = y + radius;
+    const int op = y - radius - 1;
+    const int np = y + radius;
     L -= buf[op*width];
     L += buf[np*width];
     // we're now done with the original value, so store the final result while this line is still in cache
@@ -463,7 +464,7 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
   // process the end of the column, where we don't have any more values to add to the mean
   for( ; y < height; y++)
   {
-    const size_t op = y - radius - 1;
+    const int op = y - radius - 1;
     hits--;
     L -= buf[op*width];
     // we're now done with the original value, so store the final result while this line is still in cache
@@ -572,7 +573,8 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
   size_t y;
   for (y = 0; y <= MIN(radius, height-radius-1); y++)
   {
-    const size_t np = y + radius;
+    // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
+    const int np = y + radius;
     hits++;
     add_16wide(L, buf + np*width);
     store_scaled_16wide(scratch + 16*(y&mask), L, hits);
@@ -580,8 +582,8 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
   // process the blur for the bulk of the scan line
   for ( ; y < height-radius; y++)
   {
-    const size_t op = y - radius - 1;
-    const size_t np = y + radius;
+    const int op = y - radius - 1;
+    const int np = y + radius;
     sub_16wide(L, buf + op*width);
     // we're now done with the orig value, so store the final result while this line is still in cache
     store_16wide(buf + op*width, scratch + 16*(op&mask));
@@ -592,7 +594,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
   for ( ; y < height; y++)
   {
-    const size_t op = y - radius - 1;
+    const int op = y - radius - 1;
     hits--;
     sub_16wide(L, buf + op*width);
     // we're now done with the orig value, so store the final result while this line is still in cache
