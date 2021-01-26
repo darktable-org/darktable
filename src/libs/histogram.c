@@ -257,11 +257,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(!histogram_profile) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
 
-  // FIXME: for purposes of interesting display, can we figure out other relevant profile primaries?
-  //color_profile = dt_ioppr_get_pipe_input_profile_info(pipe);
-  //color_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
-  //color_profile = dt_ioppr_get_pipe_output_profile_info(pipe);
-
   // get profile primaries/secondaries in JzAzBz
   // there's no guarantee that there is a chromaticity tag in the
   // profile, so simply feed RGB colors through profile to PCS then
@@ -356,7 +351,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   {
     dt_times_t end_time = { 0 };
     dt_get_times(&end_time);
-    fprintf(stderr, "vectorscope took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
+    fprintf(stderr, "final vectorscope took %.3f secs (%.3f CPU)\n", end_time.clock - start_time.clock, end_time.user - start_time.user);
   }
 }
 
@@ -592,12 +587,18 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile primaries/secondaries
   // FIXME: also add dots for input/work/output profiles
+  // FIXME: add gamut bounding lines to connect the dots (which need to be plotted in XYZ?)
+  // from Sobotka:
+  // 1. The input encoding primaries. How dd the image start out life? What is valid data within that? What is invalid introduced by error of camera virtual primaries solving or math such as resampling an image such that negative lobes result?
+  // 2. The working reference primaries. How did 1. end up in 2.? Are there negative and therefore nonsensical values in the working space? Should a gamut mapping pass be applied before work, between 1. and 2.?
+  // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
   const GdkRGBA *const colors = darktable.bauhaus->graph_colors;
   for(int k=0; k<6; k++)
   {
-    cairo_set_source_rgba(cr, colors[k].red, colors[k].green, colors[k].blue, colors[k].alpha * 0.7);
+    // FIXME: if/when have a color vectorscope, make these dots gray to complement it
+    cairo_set_source_rgba(cr, colors[k].red, colors[k].green, colors[k].blue, colors[k].alpha * (k<3 ? 0.7 : 0.5));
     cairo_arc(cr, d->vectorscope_graticule[k][0] * min_size * 0.5,
-              d->vectorscope_graticule[k][1] * min_size * 0.5, min_size/(k<3 ? 40.0 : 50.0), 0., M_PI * 2.);
+              d->vectorscope_graticule[k][1] * min_size * 0.5, min_size/(k<3 ? 40.0 : 60.0), 0., M_PI * 2.);
     cairo_fill(cr);
   }
 
@@ -631,12 +632,6 @@ static void _draw_vectorscope_lines(cairo_t *cr, int width, int height)
   cairo_stroke(cr);
   dt_draw_line(cr, 0.0f, -w_ctr, 0.0f, w_ctr);
   cairo_stroke(cr);
-
-  // FIXME: draw more sophisticated view of primaries (input, working, output)
-  // from Sobotka:
-  // 1. The input encoding primaries. How dd the image start out life? What is valid data within that? What is invalid introduced by error of camera virtual primaries solving or math such as resampling an image such that negative lobes result?
-  // 2. The working reference primaries. How did 1. end up in 2.? Are there negative and therefore nonsensical values in the working space? Should a gamut mapping pass be applied before work, between 1. and 2.?
-  // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
 
   cairo_restore(cr);
 }
