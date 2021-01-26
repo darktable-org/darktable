@@ -258,25 +258,32 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(!histogram_profile) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
 
+  // FIXME: for purposes of interesting display, can we figure out other relevant profile primaries?
+  //color_profile = dt_ioppr_get_pipe_input_profile_info(pipe);
+  //color_profile = dt_ioppr_get_pipe_work_profile_info(pipe);
+  //color_profile = dt_ioppr_get_pipe_output_profile_info(pipe);
+
   // FIXME: can get primaries via transforming R/G/B to XYZ or do need to look directly in profile for this (via querying LCMS)
   // FIXME: test all this work by making a LCMS path and comparing output -- or at least against XYZ values in profile
+  // FIXME: render not just the primaries but the bounding box between them -- presumably in XYZ so would need to render some points and interpolate -- at which point just build another image buffer for the overlay?
   // FIXME: align? make [4]? figure out in code?
   float primaries_rgb[3][3] = { {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0} };
   float max_diam = 0.0f;
   for(int k=0; k<3; k++)
   {
-    // FIXME: DT_ALIGNED_PIXEL? make [4]?
-    float XYZ[3];
-    // FIXME: make [3]?
-    float DT_ALIGNED_PIXEL Jab[4];
-    dt_ioppr_rgb_matrix_to_xyz(primaries_rgb[k], XYZ,
-                               histogram_profile->matrix_in, histogram_profile->lut_in,
+    // FIXME: DT_ALIGNED_PIXEL? make [4]? why init?
+    float XYZ_D50[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    // FIXME: how do we know this is in D50? -- at least the results look right for known profiles
+    dt_ioppr_rgb_matrix_to_xyz(primaries_rgb[k], XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
                                histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
                                histogram_profile->nonlinearlut);
-    dt_XYZ_2_JzAzBz(XYZ, Jab);
-    max_diam = MAX(max_diam, hypotf(Jab[1], Jab[2]));
-    d->hist_profile_primaries[k][0] = Jab[1];
-    d->hist_profile_primaries[k][1] = Jab[2];
+    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+    dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
+    max_diam = MAX(max_diam, hypotf(JzAzBz[1], JzAzBz[2]));
+    d->hist_profile_primaries[k][0] = JzAzBz[1];
+    d->hist_profile_primaries[k][1] = JzAzBz[2];
   }
   // scale primaries for display
   for(int k=0; k<3; k++)
@@ -299,21 +306,22 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   {
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
 
-    // FIXME: DT_ALIGNED_PIXEL? make [4]?
-    float XYZ[3];
-    // FIXME: don't need to init this!?
-    float DT_ALIGNED_PIXEL Jab[4] = { 0.f };
+    // FIXME: DT_ALIGNED_PIXEL? make [4]? why init? to 0's?
+    float XYZ_D50[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
 
-    // FIXME: optimize
-    dt_ioppr_rgb_matrix_to_xyz(pix_in, XYZ, histogram_profile->matrix_in, histogram_profile->lut_in,
+    // NOTE: code cribbed from rgb_to_JzCzhz() in color_picker.c
+    // FIXME: is there a way to optimize this whole chain of conversions?
+    // FIXME: why is this D50 output?
+    dt_ioppr_rgb_matrix_to_xyz(pix_in, XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
                                histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
                                histogram_profile->nonlinearlut);
-    // FIXME: is XYZ color-adapated? should be D65
-    // FIXME: we never use the J value -- don't calculate it?
-    dt_XYZ_2_JzAzBz(XYZ, Jab);
+    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+    dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
 
-    const int out_x = vs_diameter * (Jab[1] + max_radius) / max_diam;
-    const int out_y = vs_diameter * (Jab[2] + max_radius) / max_diam;
+    const int out_x = vs_diameter * (JzAzBz[1] + max_radius) / max_diam;
+    const int out_y = vs_diameter * (JzAzBz[2] + max_radius) / max_diam;
 
     // clip (not clamp) any out-of-scale values, so there aren't light edges
     // FIXME: should the output buffer be the dimensions of the current drawable widget -- rather than square -- so it doesn't lose data to the sides?
