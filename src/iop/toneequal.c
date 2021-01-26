@@ -1645,7 +1645,7 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->exposure_boost, p->exposure_boost);
 
   show_guiding_controls(self);
-  gui_cache_init(self);
+  invalidate_luminance_cache(self);
 
   dt_bauhaus_widget_set_quad_active(GTK_WIDGET(g->show_luminance_mask), g->mask_display);
 }
