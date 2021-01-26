@@ -86,8 +86,7 @@ typedef struct dt_lib_histogram_t
   int waveform_width, waveform_height, waveform_max_width;
   uint8_t *vectorscope_alpha;
   int vectorscope_diameter, vectorscope_alpha_stride;
-  // FIXME: DT_ALIGNED_PIXEL? make [4]?
-  float vectorscope_graticule[6][2];
+  float vectorscope_graticule[6][2] DT_ALIGNED_PIXEL;
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -268,16 +267,14 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // profile, so simply feed RGB colors through profile to PCS then
   // JzAzBz
   // FIXME: render not just the primaries but the bounding box between them -- presumably in XYZ so would need to render some points and interpolate -- at which point just build another image buffer for the overlay?
-  // FIXME: align? make [4]? figure out in code?
-  float in_rgb[6][3] = { {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0},
-                         {0.0, 1.0, 1.0}, {1.0, 0.0, 1.0}, {1.0, 1.0, 0.0}};
+  float in_rgb[6][3] DT_ALIGNED_PIXEL = { {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0},
+                                          {0.0, 1.0, 1.0}, {1.0, 0.0, 1.0}, {1.0, 1.0, 0.0}};
   float max_diam = 0.0f;
   for(int k=0; k<6; k++)
   {
-    // FIXME: DT_ALIGNED_PIXEL? make [4]? why init?
-    float XYZ_D50[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-    float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-    float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
+    float XYZ_D50[3] DT_ALIGNED_PIXEL;
+    float XYZ_D65[3] DT_ALIGNED_PIXEL;
+    float JzAzBz[3] DT_ALIGNED_PIXEL;
     dt_ioppr_rgb_matrix_to_xyz(in_rgb[k], XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
                                histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
                                histogram_profile->nonlinearlut);
@@ -293,28 +290,31 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     d->vectorscope_graticule[k][0] /= max_diam;
     d->vectorscope_graticule[k][1] /= max_diam;
   }
-  // FIXME: is this an optimization or unneeded code? should max_diam be const?
-  const float max_radius = max_diam / 2.0f;
 
   // FIXME: pre-allocate?
-  int *const restrict binned = dt_alloc_align(64, vs_diameter * vs_diameter * sizeof(int));
-  memset(binned, 0, vs_diameter * vs_diameter * sizeof(int));
+  float *const restrict binned = dt_iop_image_alloc(vs_diameter, vs_diameter, 1);
+  dt_iop_image_fill(binned, 0.0f, vs_diameter, vs_diameter, 1);
+  // FIXME: faster to have bins just record count and multiply by scale after?
+  const float scale = 4.0f * (vs_diameter * vs_diameter) / (width * height * 255.0f);
 
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
+  const size_t nfloats = 4 * width * height;
 
   // count into bins
-  // FIXME: use OpenMP
-  for(size_t k = 0; k < (size_t)4 * width * height; k += 4)
+#if defined(_OPENMP)
+#pragma omp parallel for default(none) \
+  dt_omp_firstprivate(in, binned, nfloats, histogram_profile, vs_diameter, max_diam, scale) \
+  schedule(static)
+#endif
+  for(size_t k = 0; k < nfloats; k += 4)
   {
+    float XYZ_D50[4] DT_ALIGNED_PIXEL;
+    float XYZ_D65[4] DT_ALIGNED_PIXEL;
+    float JzAzBz[4] DT_ALIGNED_PIXEL;
+
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
-
-    // FIXME: DT_ALIGNED_PIXEL? make [4]? why init? to 0's?
-    float XYZ_D50[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-    float XYZ_D65[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-    float JzAzBz[3] DT_ALIGNED_PIXEL = { 0.0f, 0.0f, 0.0f };
-
     // NOTE: code cribbed from rgb_to_JzCzhz() in color_picker.c
-    // FIXME: is there a way to optimize this whole chain of conversions?
+    // FIXME: is there a way to optimize this chain of conversions?
     // this goes to the PCS which has standard illuminant D50
     dt_ioppr_rgb_matrix_to_xyz(pix_in, XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
                                histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
@@ -323,36 +323,32 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
     dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
 
-    const int out_x = vs_diameter * (JzAzBz[1] + max_radius) / max_diam;
-    const int out_y = vs_diameter * (JzAzBz[2] + max_radius) / max_diam;
+    const int out_x = vs_diameter * (JzAzBz[1] / max_diam + 0.5f);
+    const int out_y = vs_diameter * (JzAzBz[2] / max_diam + 0.5f);
 
     // clip (not clamp) any out-of-scale values, so there aren't light edges
     // FIXME: should the output buffer be the dimensions of the current drawable widget -- rather than square -- so it doesn't lose data to the sides?
     if(out_x >= 0 && out_x < vs_diameter-1 && out_y >= 0 && out_y <= vs_diameter-1)
     {
-      int *const restrict bin_out = __builtin_assume_aligned(binned + out_y * vs_diameter + out_x, 8);
+      float *const restrict bin_out = binned + out_y * vs_diameter + out_x;
       // FIXME: make a "false color" variant view
-      (*bin_out)++;
+      *bin_out += scale;
     }
   }
 
   // FIXME: do same gamma trick here as in waveform
   // FIXME: make the gamma code local to simplify, just need interpolation function
-  const float scale = 4.0f * (vs_diameter * vs_diameter) / (width * height * 255.0f);
   const float gamma = 1.0f / 1.5f;
 
-  // FIXME: use OpenMP
-  for(int out_y = 0; out_y < vs_diameter; out_y++)
-  {
-    // FIXME: be smarter with pointers
-    uint8_t *const out_alpha = vs_alpha + (vs_alpha_stride * out_y);
+  // loop appears to be too small to benefit w/OpenMP
+  for(size_t out_y = 0; out_y < vs_diameter; out_y++)
     for(int out_x = 0; out_x < vs_diameter; out_x++)
     {
-      const int c = binned[vs_diameter * out_y + out_x];
+      const float *const restrict bin_in = binned + out_y * vs_diameter + out_x;
+      uint8_t *const restrict alpha_out = vs_alpha + out_y * vs_alpha_stride + out_x;
       // FIXME: use cache or linear interpolate from pre-calculated
-      out_alpha[out_x] = CLAMP(powf(c * scale, gamma) * 255.0f, 0, 255);
+      *alpha_out = CLAMP(powf(*bin_in, gamma) * 255.0f, 0, 255);
     }
-  }
 
   dt_free_align(binned);
 
@@ -609,9 +605,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // FIXME: the vectorscope hard-clips on the left/right for huge #'s -- instead could catch configure event, size buffers to aspect ratio, and then never clip -- or simply in calc decrease diameter by ~ 25% then increase correspondingly here, so less likely to clip -- and/or draw some sort of gradient mask over the edges so that they fade out
 
   cairo_translate(cr, min_size * -0.5, min_size * -0.5);
-  // FIXME: use ppd?
-  // FIXME: do need to cast to double if use ppd?
-  cairo_scale(cr, darktable.gui->ppd*(double)min_size/vs_diameter, darktable.gui->ppd*(double)min_size/vs_diameter);
+  // FIXME: use ppd? if not, cast min_size to double
+  cairo_scale(cr, darktable.gui->ppd*min_size/vs_diameter, darktable.gui->ppd*min_size/vs_diameter);
 
   cairo_set_source_rgba(cr, 1., 1., 1., 0.7);
   cairo_surface_t *alpha
@@ -706,7 +701,6 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
       dt_draw_waveform_lines(cr, 0, 0, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      // FIXME: draw this after?
       _draw_vectorscope_lines(cr, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
