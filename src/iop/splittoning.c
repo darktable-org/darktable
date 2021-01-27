@@ -159,8 +159,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_splittoning_data_t *const data = (dt_iop_splittoning_data_t *)piece->data;
   const float compress = (data->compress / 110.0) / 2.0; // Don't allow 100% compression..
 
-  const float *const restrict in = (float*)ivoid;
-  float *const restrict out = (float*)ovoid;
+  const float *const restrict in = DT_IS_ALIGNED((float*)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float*)ovoid);
   const int npixels = roi_out->width * roi_out->height;
 
 #ifdef _OPENMP
@@ -173,31 +173,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     float h, s, l;
     rgb2hsl(in+k, &h, &s, &l);
-    if(l < data->balance - compress || l > data->balance + compress)
+    if(l < data->balance - compress)
     {
-      h = l < data->balance ? data->shadow_hue : data->highlight_hue;
-      s = l < data->balance ? data->shadow_saturation : data->highlight_saturation;
-      const double ra = l < data->balance ? CLIP((fabs(-data->balance + compress + l) * 2.0))
-                               : CLIP((fabs(-data->balance - compress + l) * 2.0));
-      const double la = (1.0 - ra);
+      float DT_ALIGNED_PIXEL mixrgb[4];
+      hsl2rgb(mixrgb, data->shadow_hue, data->shadow_saturation, l);
 
-      float DT_ALIGNED_PIXEL mixrgb[3];
-      hsl2rgb(mixrgb, h, s, l);
+      const float ra = CLIP((data->balance - compress - l) * 2.0f);
+      const float la = (1.0f - ra);
 
-      out[k+0] = CLIP(in[k+0] * la + mixrgb[0] * ra);
-      out[k+1] = CLIP(in[k+1] * la + mixrgb[1] * ra);
-      out[k+2] = CLIP(in[k+2] * la + mixrgb[2] * ra);
-      out[k+3] = in[k+3];
+      for_each_channel(c,aligned(in,out))
+        out[k+c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
+    }
+    else if(l > data->balance + compress)
+    {
+      float DT_ALIGNED_PIXEL mixrgb[4];
+      hsl2rgb(mixrgb, data->highlight_hue, data->highlight_saturation, l);
+
+      const float ra = CLIP((l - (data->balance + compress)) * 2.0f);
+      const float la = (1.0f - ra);
+
+      for_each_channel(c,aligned(in,out))
+        out[k+c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out)
-#endif
-      for(int c = 0; c < 4; c++)
-      {
-        out[k+c] = in[k+c];
-      }
+      copy_pixel(out + k, in +k);
     }
 
   }
