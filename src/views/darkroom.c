@@ -3650,9 +3650,14 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   zoom_y += mouse_off_y / (proch * scale);
   zoom = DT_ZOOM_FREE;
   closeup = 0;
+
+  const gboolean constrained = !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK);
   if(up)
   {
-    if((scale == 1.0f || scale == 2.0f) && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
+    if(fitscale <= 1.0f && (scale == 1.0f || scale == 2.0f) && constrained) return; // for large image size
+    else if(fitscale > 1.0f && fitscale <= 2.0f && scale == 2.0f && constrained) return; // for medium image size
+
+    // calculate new scale
     if(scale >= 16.0f)
       return;
     else if(scale >= 8.0f)
@@ -3661,21 +3666,21 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
       scale = 8.0;
     else if(scale >= 2.0f)
       scale = 4.0;
-    else if(scale < fitscale)
-      scale += .05f * (1.0f - fitscale);
+    else if(scale >= fitscale)
+      scale += .1f * fabsf(1.0f - fitscale);
     else
-      scale += .1f * (1.0f - fitscale);
+      scale += .05f * fabsf(1.0f - fitscale);
   }
   else
   {
-    if(scale == fitscale && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
-      return;
-    else if(scale < 0.5 * fitscale)
-      return;
-    else if(scale <= fitscale)
-      scale -= .05f * (1.0f - fitscale);
+    if(fitscale <= 2.0f && ((scale == fitscale && constrained) || scale < 0.5 * fitscale)) return; // for large and medium image size
+    else if(fitscale > 2.0f && scale < 1.0f) return; // for small image size
+
+    // calculate new scale
+    if(scale <= fitscale)
+      scale -= .05f * fabsf(1.0f - fitscale);
     else if(scale <= 2.0f)
-      scale -= .1f * (1.0f - fitscale);
+      scale -= .1f * fabsf(1.0f - fitscale);
     else if(scale <= 4.0f)
       scale = 2.0f;
     else if(scale <= 8.0f)
@@ -3683,10 +3688,21 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
     else
       scale = 8.0f;
   }
-  // we want to be sure to stop at 1:1 and FIT levels
-  if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f;
-  if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
-  scale = fmaxf(fminf(scale, 16.0f), 0.5 * fitscale);
+
+  if (fitscale <= 1.0f) // for large image size, stop at 1:1 and FIT levels, minimum at 0.5 * FIT
+  {
+    if((scale - 1.0) * (oldscale - 1.0) < 0) scale = 1.0f;
+    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
+    scale = fmaxf(scale, 0.5 * fitscale);
+  }
+  else if (fitscale > 1.0f && fitscale <= 2.0f) // for medium image size, stop at 2:1 and FIT levels, minimum at 0.5 * FIT
+  {
+    if((scale - 2.0) * (oldscale - 2.0) < 0) scale = 2.0f;
+    if((scale - fitscale) * (oldscale - fitscale) < 0) scale = fitscale;
+    scale = fmaxf(scale, 0.5 * fitscale);
+  }
+  else scale = fmaxf(scale, 1.0f); // for small image size, minimum at 1:1
+  scale = fminf(scale, 16.0f);
 
   // for 200% zoom we want pixel doubling instead of interpolation
   if(scale > 15.9999f)
