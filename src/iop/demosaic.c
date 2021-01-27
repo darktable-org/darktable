@@ -301,7 +301,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
       string = "Markesteijn-3 (xtrans)";
       break;
     case DT_IOP_DEMOSAIC_MARKEST3_VNG:
-      string = "Markesteijn 3-pass + VNG4"; 
+      string = "Markesteijn 3-pass + VNG4";
       break;
     case DT_IOP_DEMOSAIC_FDC:
       string = "Frequency Domain Chroma (xtrans)";
@@ -2968,7 +2968,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     else if(piece->pipe->dsc.filters == 9u)
     {
       if(demosaicing_method == DT_IOP_DEMOSAIC_MARKEST3_VNG)
-        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, 3);       
+        xtrans_markesteijn_interpolate(tmp, pixels, &roo, &roi, xtrans, 3);
       else if(demosaicing_method == DT_IOP_DEMOSAIC_FDC && (qual_flags & DEMOSAIC_XTRANS_FULL))
         xtrans_fdc_interpolate(self, tmp, pixels, &roo, &roi, xtrans);
       else if(demosaicing_method >= DT_IOP_DEMOSAIC_MARKESTEIJN && (qual_flags & DEMOSAIC_XTRANS_FULL))
