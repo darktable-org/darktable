@@ -11,7 +11,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: \n"
+"Project-Id-Version: darktable 3.4.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-07 20:50+0800\n"
 "PO-Revision-Date: 2021-01-25 07:20+0800\n"
@@ -1744,7 +1744,7 @@ msgstr[0] "移除 %d 张图像"
 #: ../src/control/jobs/control_jobs.c:743
 #, c-format
 msgid "could not send %s to trash%s%s"
-msgstr "无法把 %s 放到回收站"
+msgstr "无法把 %s 放到回收站 %s%s"
 
 #: ../src/control/jobs/control_jobs.c:744
 #, c-format
@@ -2807,7 +2807,7 @@ msgstr "ctrl + 单击添加一个锚点"
 #, c-format
 msgid ""
 "shift+scroll to set feather size, ctrl+scroll to set shape opacity (%d%%)"
-msgstr "shift + 滚轮设置羽化大小，ctrl + 滚轮设置形状不透明度"
+msgstr "shift + 滚轮设置羽化大小，ctrl + 滚轮设置形状不透明度 (%d%%)"
 
 #: ../src/develop/masks/masks.c:344
 #, c-format
@@ -2825,7 +2825,7 @@ msgid ""
 "ctrl+scroll to set shape opacity (%d%%)"
 msgstr ""
 "滚轮设置大小，shift + 滚轮设置羽化大小，\n"
-"ctrl + 滚轮设置形状不透明度。"
+"ctrl + 滚轮设置形状不透明度 (%d%%)。"
 
 #: ../src/develop/masks/masks.c:354
 msgid "ctrl+click to rotate"
@@ -2846,7 +2846,7 @@ msgid ""
 "ctrl+scroll to set opacity (%d%%)"
 msgstr ""
 "滚轮设置画笔大小，shift + 滚轮设置硬度，\n"
-"ctrl + 滚轮设置不透明度。"
+"ctrl + 滚轮设置不透明度 (%d%%)"
 
 #: ../src/develop/masks/masks.c:366
 #, c-format
@@ -16502,12 +16502,10 @@ msgstr "版本名称"
 msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
 msgstr[0] "是否要将%d个图像放到回收站？"
-msgstr[1] "是否要将%d个图像放到回收站？"
 
 msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
 msgstr[0] "是否要从集合中删除%d个图像？"
-msgstr[1] "是否要从集合中删除%d个图像？"
 
 msgid "working..."
 msgstr "工作中..."
