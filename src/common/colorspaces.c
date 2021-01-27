@@ -1109,21 +1109,17 @@ void rgb2hsl(const float rgb[3], float *h, float *s, float *l)
   *l = lv;
 }
 
+// for efficiency, 'hue' must be pre-scaled to be in 0..6
 static inline float hue2rgb(float m1, float m2, float hue)
 {
-  if(hue < 0.0)
-    hue += 1.0;
-  else if(hue > 1.0)
-    hue -= 1.0;
-
-  if(hue < 1.0 / 6.0)
-    return (m1 + (m2 - m1) * hue * 6.0);
-  else if(hue < 1.0 / 2.0)
+  // compute the value for one of the RGB channels from the hue angle.
+  // If 1 <= angle < 3, return m2; if 4 <= angle <= 6, return m1; otherwise, linearly interpolate between m1 and m2.
+  if(hue < 1.0f)
+    return (m1 + (m2 - m1) * hue);
+  else if(hue < 3.0f)
     return m2;
-  else if(hue < 2.0 / 3.0)
-    return (m1 + (m2 - m1) * ((2.0 / 3.0) - hue) * 6.0);
   else
-    return m1;
+    return hue < 4.0f ? (m1 + (m2 - m1) * (4.0f - hue)) : m1;
 }
 
 void hsl2rgb(float rgb[3], float h, float s, float l)
@@ -1136,9 +1132,10 @@ void hsl2rgb(float rgb[3], float h, float s, float l)
   }
   m2 = l < 0.5 ? l * (1.0 + s) : l + s - l * s;
   m1 = (2.0 * l - m2);
-  rgb[0] = hue2rgb(m1, m2, h + (1.0 / 3.0));
+  h *= 6.0f;  // pre-scale hue angle
+  rgb[0] = hue2rgb(m1, m2, h < 4.0f ? h + 2.0f : h - 4.0f);
   rgb[1] = hue2rgb(m1, m2, h);
-  rgb[2] = hue2rgb(m1, m2, h - (1.0 / 3.0));
+  rgb[2] = hue2rgb(m1, m2, h > 2.0f ? h - 2.0f : h + 4.0f);
 }
 
 static dt_colorspaces_color_profile_t *_create_profile(dt_colorspaces_color_profile_type_t type,
