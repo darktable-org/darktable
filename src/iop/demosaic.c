@@ -231,7 +231,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     dt_iop_demosaic_params_v3_t *o = (dt_iop_demosaic_params_v3_t *)old_params;
     dt_iop_demosaic_params_v4_t *n = (dt_iop_demosaic_params_v4_t *)new_params;
     memcpy(n, o, sizeof *o);
-    n->dual_thrs = 0.0f;
+    n->dual_thrs = 0.15f;
     return 0;
   }
 
