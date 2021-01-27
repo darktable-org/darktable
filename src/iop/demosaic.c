@@ -69,7 +69,7 @@ typedef enum dt_iop_demosaic_method_t
   DT_IOP_DEMOSAIC_PASSTHR_MONOX = DEMOSAIC_XTRANS | 3, // $DESCRIPTION: "passthrough (monochrome) (experimental)"
   DT_IOP_DEMOSAIC_FDC = DEMOSAIC_XTRANS | 4,           // $DESCRIPTION: "frequency domain chroma (slow)"
   DT_IOP_DEMOSAIC_PASSTHR_COLORX = DEMOSAIC_XTRANS | 5, // $DESCRIPTION: "photosite color (debug)"
-  DT_IOP_DEMOSAIC_MARKEST3_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_MARKESTEIJN_3 // $DESCRIPTION: "Markesteijn 3-pass + VNG" 
+  DT_IOP_DEMOSAIC_MARKEST3_VNG = DEMOSAIC_DUAL | DT_IOP_DEMOSAIC_MARKESTEIJN_3 // $DESCRIPTION: "Markesteijn 3-pass + VNG"
 } dt_iop_demosaic_method_t;
 
 typedef enum dt_iop_demosaic_greeneq_t
@@ -301,7 +301,7 @@ static const char* method2string(dt_iop_demosaic_method_t method)
       string = "Markesteijn-3 (xtrans)";
       break;
     case DT_IOP_DEMOSAIC_MARKEST3_VNG:
-      string = "Markesteijn 3-pass + VNG4";
+      string = "Markesteijn 3-pass + VNG";
       break;
     case DT_IOP_DEMOSAIC_FDC:
       string = "Frequency Domain Chroma (xtrans)";
