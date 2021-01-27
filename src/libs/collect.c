@@ -1832,14 +1832,17 @@ static void list_view(dt_lib_collect_rule_t *dr)
           }
         }
         else
+        // filmroll
         {
           gchar *order_by = NULL;
           if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
-            order_by = g_strdup("ORDER BY film_rolls_id DESC");
+            order_by = g_strdup("film_rolls_id DESC");
           else
-            order_by = g_strdup("ORDER BY folder");
+            if(dt_conf_get_bool("plugins/collect/descending"))
+              order_by = g_strdup("folder DESC");
+            else
+              order_by = g_strdup("folder");
 
-          // filmroll
           g_snprintf(query, sizeof(query),
                      "SELECT folder, film_rolls_id, COUNT(*) AS count"
                      " FROM main.images AS mi"
@@ -1847,7 +1850,8 @@ static void list_view(dt_lib_collect_rule_t *dr)
                      "       FROM main.film_rolls)"
                      "   ON film_id = film_rolls_id "
                      " WHERE %s"
-                     " GROUP BY folder %s", where_ext, order_by);
+                     " GROUP BY folder"
+                     " ORDER BY %s", where_ext, order_by);
 
           g_free(order_by);
         }
@@ -2738,6 +2742,7 @@ void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
   gtk_widget_show_all(dialog);
   gtk_dialog_run(GTK_DIALOG(dialog));
   gtk_widget_destroy(dialog);
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
 }
 
 void set_preferences(void *menu, dt_lib_module_t *self)

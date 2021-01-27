@@ -676,7 +676,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
   switch(prop)
   {
     case DT_COLLECTION_PROP_FILMROLL:         return _("film roll");
-    case DT_COLLECTION_PROP_FOLDERS:          return _("folders");
+    case DT_COLLECTION_PROP_FOLDERS:          return _("folder");
     case DT_COLLECTION_PROP_CAMERA:           return _("camera");
     case DT_COLLECTION_PROP_TAG:              return _("tag");
     case DT_COLLECTION_PROP_DAY:              return _("date taken");
