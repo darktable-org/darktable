@@ -71,9 +71,17 @@ typedef enum dt_lib_histogram_waveform_type_t
   DT_LIB_HISTOGRAM_WAVEFORM_N // needs to be the last one
 } dt_lib_histogram_waveform_type_t;
 
+typedef enum dt_lib_histogram_vectorscope_type_t
+{
+  DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV = 0,
+  DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ,
+  DT_LIB_HISTOGRAM_VECTORSCOPE_N // needs to be the last one
+} dt_lib_histogram_vectorscope_type_t;
+
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform", "vectorscope" };
 const gchar *dt_lib_histogram_histogram_scale_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
+const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "CIELUV", "JzAzBz" };
 
 typedef struct dt_lib_histogram_t
 {
@@ -105,6 +113,7 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_scope_type_t scope_type;
   dt_lib_histogram_scale_t histogram_scale;
   dt_lib_histogram_waveform_type_t waveform_type;
+  dt_lib_histogram_vectorscope_type_t vectorscope_type;
   gboolean red, green, blue;
 } dt_lib_histogram_t;
 
@@ -242,6 +251,39 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   }
 }
 
+#ifdef _OPENMP
+#pragma omp declare simd aligned(rgb, Luv:16)
+#endif
+static inline void rgb_to_chroma(const float rgb[4],
+                                 float Luv[4],
+                                 dt_iop_order_iccprofile_info_t *prof,
+                                 dt_lib_histogram_vectorscope_type_t cs)
+{
+  float XYZ_D50[4] DT_ALIGNED_PIXEL;
+  // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
+  // FIXME: is there a way to optimize this chain of conversions?
+  // this goes to the PCS which has standard illuminant D50
+  dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, prof->matrix_in, prof->lut_in,
+                             prof->unbounded_coeffs_in, prof->lutsize,
+                             prof->nonlinearlut);
+  if(cs == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+  {
+    // FIXME: do have to worry about chromatic adaptation?
+    float xyY_D50[4] DT_ALIGNED_PIXEL;
+    dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+    // FIXME: this is u*v* (D50 corrected), more helpful than u'v', yes?
+    dt_xyY_to_Luv(xyY_D50, Luv);
+  }
+  else
+  {
+    // FIXME: some of these hops can be faster by pre-multipying matrices? see colorbalancergb
+    float XYZ_D65[4] DT_ALIGNED_PIXEL;
+    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+    // AzBz masquerading as uv
+    dt_XYZ_2_JzAzBz(XYZ_D65, Luv);
+  }
+}
+
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
   dt_times_t start_time = { 0 };
@@ -250,9 +292,10 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const int vs_diameter = d->vectorscope_diameter;
   const int vs_alpha_stride = d->vectorscope_alpha_stride;
   uint8_t *const vs_alpha = d->vectorscope_alpha;
+  const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
   // FIXME: is this available from caller?
-  // FIXME: why convert in caller to histogram profile if we're going to convert again here?
+  // FIXME: why convert in caller to histogram profile if we're going to convert again here? instead just use the matrix of whatever the input is to dt_lib_histogram_process(), as in theory the conversion XYZ -> histogram_matrix_out -> RGB -> histogram_matrix_in -> XYZ is a noop, can just do pipeline RGB -> XYZ
   dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
   if(!histogram_profile) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
@@ -261,23 +304,17 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // there's no guarantee that there is a chromaticity tag in the
   // profile, so simply feed RGB colors through profile to PCS then
   // JzAzBz
-  // FIXME: render not just the primaries but the bounding box between them -- presumably in XYZ so would need to render some points and interpolate -- at which point just build another image buffer for the overlay?
-  float in_rgb[6][3] DT_ALIGNED_PIXEL = { {1.0, 0.0, 0.0}, {0.0, 1.0, 0.0}, {0.0, 0.0, 1.0},
-                                          {0.0, 1.0, 1.0}, {1.0, 0.0, 1.0}, {1.0, 1.0, 0.0}};
+  // FIXME: render the gamut triangle -- presumably in xyY so would need to render some points and interpolate -- at which point just build another image buffer for the overlay?
+  float in_rgb[6][4] DT_ALIGNED_PIXEL = { {1.f, 0.f, 0.f, 1.f}, {0.f, 1.f, 0.f, 1.f}, {0.f, 0.f, 1.f, 1.f},
+                                          {0.f, 1.f, 1.f, 1.f}, {1.f, 0.f, 1.f, 1.f}, {1.f, 1.f, 0.f, 1.f} };
   float max_diam = 0.0f;
   for(int k=0; k<6; k++)
   {
-    float XYZ_D50[3] DT_ALIGNED_PIXEL;
-    float XYZ_D65[3] DT_ALIGNED_PIXEL;
-    float JzAzBz[3] DT_ALIGNED_PIXEL;
-    dt_ioppr_rgb_matrix_to_xyz(in_rgb[k], XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
-                               histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
-                               histogram_profile->nonlinearlut);
-    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-    dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
-    max_diam = MAX(max_diam, hypotf(JzAzBz[1], JzAzBz[2]));
-    d->vectorscope_graticule[k][0] = JzAzBz[1];
-    d->vectorscope_graticule[k][1] = JzAzBz[2];
+    float Luv[4] DT_ALIGNED_PIXEL;
+    rgb_to_chroma(in_rgb[k], Luv, histogram_profile, vs_type);
+    max_diam = MAX(max_diam, hypotf(Luv[1], Luv[2]));
+    d->vectorscope_graticule[k][0] = Luv[1];
+    d->vectorscope_graticule[k][1] = Luv[2];
   }
   // scale graticule chromaticity to display
   for(int k=0; k<6; k++)
@@ -298,28 +335,26 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // count into bins
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, binned, nfloats, histogram_profile, vs_diameter, max_diam, scale) \
+  dt_omp_firstprivate(in, binned, nfloats, histogram_profile, vs_diameter, max_diam, scale, vs_type) \
   schedule(static)
 #endif
   for(size_t k = 0; k < nfloats; k += 4)
   {
-    float XYZ_D50[4] DT_ALIGNED_PIXEL;
-    float XYZ_D65[4] DT_ALIGNED_PIXEL;
-    float JzAzBz[4] DT_ALIGNED_PIXEL;
-
+    // Are there are unnecessary color math hops? Right now the data
+    // comes into dt_lib_histogram_process() in a known profile
+    // (usually from pixelpipe). Then (usually) it gets converted to
+    // the histogram profile. Here it gets converted to XYZ D50 before
+    // making its way to L*u*v* or JzAzBz:
+    //   RGB (pixelpipe) -> XYZ(PCS, D50) -> RGB (histogram) -> XYZ (PCS, D50) -> chromaticity
+    // Given that the histogram profile is "well behaved" and the
+    // conversion to histogram profile is relative colorimetric, how
+    // does this compare to:
+    //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
+    float Luv[4] DT_ALIGNED_PIXEL;
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
-    // NOTE: code cribbed from rgb_to_JzCzhz() in color_picker.c
-    // FIXME: is there a way to optimize this chain of conversions?
-    // this goes to the PCS which has standard illuminant D50
-    dt_ioppr_rgb_matrix_to_xyz(pix_in, XYZ_D50, histogram_profile->matrix_in, histogram_profile->lut_in,
-                               histogram_profile->unbounded_coeffs_in, histogram_profile->lutsize,
-                               histogram_profile->nonlinearlut);
-    // but our conversion to JzAzBz depends on XYZ in D65, so one more step
-    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-    dt_XYZ_2_JzAzBz(XYZ_D65, JzAzBz);
-
-    const int out_x = vs_diameter * (JzAzBz[1] / max_diam + 0.5f);
-    const int out_y = vs_diameter * (JzAzBz[2] / max_diam + 0.5f);
+    rgb_to_chroma(pix_in, Luv, histogram_profile, vs_type);
+    const int out_x = vs_diameter * (Luv[1] / max_diam + 0.5f);
+    const int out_y = vs_diameter * (Luv[2] / max_diam + 0.5f);
 
     // clip (not clamp) any out-of-scale values, so there aren't light edges
     // FIXME: should the output buffer be the dimensions of the current drawable widget -- rather than square -- so it doesn't lose data to the sides?
@@ -406,7 +441,8 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
 
   // Convert pixelpipe output to histogram profile. If in tether view,
   // then the image is already converted by the caller.
-  // FIXME: do conversion in-place in the processing to save an extra buffer? -- will need logic from _transform_matrix_rgb() -- or better yet a per-pixel callback within _transform_matrix_rgb()-ish code
+  // FIXME: do conversion in-place in the processing to save an extra buffer? -- at least for waveform, which already has to touch each pixel -- will need logic from _transform_matrix_rgb() -- or better yet a per-pixel callback within _transform_matrix_rgb()-ish code
+  // FIXME: in case of vectorscope, it needs XYZ data, so skip this conversion and instead it's enough that it has input & in_profile_type -- though then we don't see the result of a relative colorimetric conversion to the histogram profile...
   if(in_profile_type != DT_COLORSPACE_NONE)
   {
     const dt_iop_order_iccprofile_info_t *const profile_info_from
@@ -583,7 +619,10 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // traditional vectorscope is oriented with x-axis Y -> B, y-axis C -> R
   // but CIE 1976 UCS is graphed x-axis as u (G -> M), y-axis as v (B -> Y)
   cairo_scale(cr, 1., -1.);
-  cairo_rotate(cr, M_PI * 0.5);
+  /*
+  if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
+    cairo_rotate(cr, M_PI * 0.5);
+  */
 
   // graticule: histogram profile primaries/secondaries
   // FIXME: also add dots for input/work/output profiles
@@ -957,6 +996,41 @@ static void _waveform_view_update(const dt_lib_histogram_t *d)
   }
 }
 
+static void _vectorscope_view_update(const dt_lib_histogram_t *d)
+{
+  // FIXME: add a "false color" variant
+  switch(d->vectorscope_type)
+  {
+    case DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV:
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to JzAzBz"));
+      // FIXME: need icon
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_LEFT, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to CIELUV"));
+      // FIXME: need icon
+      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
+                             dtgtk_cairo_paint_arrow, CPF_DIRECTION_RIGHT, NULL);
+      break;
+    case DT_LIB_HISTOGRAM_WAVEFORM_N:
+      g_assert_not_reached();
+  }
+
+  // redraw scope now for immediate visual feedback
+  dt_control_queue_redraw_widget(d->scope_draw);
+
+  // generate data for changed view and trigger widget redraw
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv)
+  {
+    if(cv->view(cv) == DT_VIEW_DARKROOM)
+      dt_dev_process_preview(darktable.develop);
+    else
+      dt_control_queue_redraw_center();
+  }
+}
+
 static void _scope_type_update(const dt_lib_histogram_t *d)
 {
   switch(d->scope_type)
@@ -965,7 +1039,6 @@ static void _scope_type_update(const dt_lib_histogram_t *d)
       gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to waveform"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
                              dtgtk_cairo_paint_histogram_scope, CPF_NONE, NULL);
-      gtk_widget_set_sensitive(d->scope_view_button, TRUE);
       gtk_widget_set_sensitive(d->red_channel_button, TRUE);
       gtk_widget_set_sensitive(d->green_channel_button, TRUE);
       gtk_widget_set_sensitive(d->blue_channel_button, TRUE);
@@ -982,14 +1055,10 @@ static void _scope_type_update(const dt_lib_histogram_t *d)
       gtk_widget_set_tooltip_text(d->scope_type_button, _("set mode to histogram"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_type_button),
                              dtgtk_cairo_paint_vectorscope, CPF_NONE, NULL);
-      // FIXME: needed? will tooltip text display on button if it's not sensitive?
-      gtk_widget_set_tooltip_text(d->scope_view_button, NULL);
-      dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
-                             dtgtk_cairo_paint_empty, CPF_NONE, NULL);
-      gtk_widget_set_sensitive(d->scope_view_button, FALSE);
       gtk_widget_set_sensitive(d->red_channel_button, FALSE);
       gtk_widget_set_sensitive(d->green_channel_button, FALSE);
       gtk_widget_set_sensitive(d->blue_channel_button, FALSE);
+      _vectorscope_view_update(d);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       g_assert_not_reached();
@@ -1035,7 +1104,11 @@ static void _scope_view_clicked(GtkWidget *button, dt_lib_histogram_t *d)
       dt_control_queue_redraw_widget(d->scope_draw);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      // noop -- currently only one view & button should be insensitive
+      d->vectorscope_type = (d->vectorscope_type + 1) % DT_LIB_HISTOGRAM_VECTORSCOPE_N;
+      dt_conf_set_string("plugins/darkroom/histogram/vectorscope",
+                         dt_lib_histogram_vectorscope_type_names[d->vectorscope_type]);
+      _vectorscope_view_update(d);
+      dt_control_queue_redraw_widget(d->scope_draw);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       // FIXME: use dt_unreachable_codepath_with_desc()
@@ -1267,6 +1340,12 @@ void gui_init(dt_lib_module_t *self)
   for(dt_lib_histogram_waveform_type_t i=0; i<DT_LIB_HISTOGRAM_WAVEFORM_N; i++)
     if(g_strcmp0(str, dt_lib_histogram_waveform_type_names[i]) == 0)
       d->waveform_type = i;
+  g_free(str);
+
+  str = dt_conf_get_string("plugins/darkroom/histogram/vectorscope");
+  for(dt_lib_histogram_vectorscope_type_t i=0; i<DT_LIB_HISTOGRAM_VECTORSCOPE_N; i++)
+    if(g_strcmp0(str, dt_lib_histogram_vectorscope_type_names[i]) == 0)
+      d->vectorscope_type = i;
   g_free(str);
 
   d->histogram = (uint32_t *)calloc(4 * HISTOGRAM_BINS, sizeof(uint32_t));
