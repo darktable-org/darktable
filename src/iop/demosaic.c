@@ -5200,6 +5200,8 @@ void gui_init(struct dt_iop_module_t *self)
   g->dual_thrs = dt_bauhaus_slider_from_params(self, "dual_thrs");
   dt_bauhaus_slider_set_step(g->dual_thrs, 0.01);
   dt_bauhaus_slider_set_digits(g->dual_thrs, 2);
+  dt_bauhaus_slider_set_factor(g->dual_thrs, 100);
+  dt_bauhaus_slider_set_format(g->dual_thrs, "%.0f%%");
   gtk_widget_set_tooltip_text(g->dual_thrs, _("contrast threshold for dual demosaic.\nset to 0.0 for high frequency content.\n"
                                                 "set to 1.0 for flat content."));
   g->dual_mask = dt_bauhaus_combobox_new(self);
