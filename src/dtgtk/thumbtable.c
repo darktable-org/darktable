@@ -30,6 +30,10 @@
 #include "views/view.h"
 #include "bauhaus/bauhaus.h"
 
+#ifdef GDK_WINDOWING_QUARTZ
+#include "osx/osx.h"
+#endif
+
 // specials functions for GList globals actions
 static gint _list_compare_by_imgid(gconstpointer a, gconstpointer b)
 {
