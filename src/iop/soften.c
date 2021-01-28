@@ -160,8 +160,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     for_each_channel(c,aligned(in,out:64))
     {
-      //note: CLIP is preventing GCC8 from vectorizing this loop....  TODO: Check if we can do without
-      out[k + c] = ((in[k + c] * amount_1) + (CLIP(out[k + c]) * amount));
+      out[k + c] = ((in[k + c] * amount_1) + (out[k + c] * amount));
     }
   }
 }
@@ -216,7 +215,7 @@ void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, c
 #endif
   for(size_t k = 0; k < 4 * npixels; k += 4)
   {
-    _mm_store_ps(&out[k], ((_mm_load_ps(&in[k]) * amount_1) + (MM_CLIP_PS(_mm_load_ps(&out[k])) * amount)));
+    _mm_store_ps(&out[k], ((_mm_load_ps(&in[k]) * amount_1) + (_mm_load_ps(&out[k]) * amount)));
   }
 }
 #endif
