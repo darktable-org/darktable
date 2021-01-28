@@ -1554,6 +1554,7 @@ dt_colorspaces_t *dt_colorspaces_init()
     // so filter out any profile that doesn't implement the relative colorimetric intent as a matrix (+ TRC).
     // For discussion, see e.g.
     // https://github.com/darktable-org/darktable/issues/7660#issuecomment-760143437
+    // For the working profile we also require a matrix profile.
     const gboolean is_valid_matrix_profile
         = dt_colorspaces_get_matrix_from_output_profile(prof->profile, NULL, NULL, NULL, NULL, 0,
                                                         DT_INTENT_RELATIVE_COLORIMETRIC)
@@ -1567,15 +1568,13 @@ dt_colorspaces_t *dt_colorspaces_init()
     if(is_valid_matrix_profile)
     {
       prof->category_pos = ++category_pos;
+      prof->work_pos = ++work_pos;
     }
     else
     {
       dt_print(DT_DEBUG_DEV,
-               "output profile `%s' color space `%c%c%c%c' not supported for histogram profile\n",
-               prof->name,
-               (char)(color_space>>24),
-               (char)(color_space>>16),
-               (char)(color_space>>8),
+               "output profile `%s' color space `%c%c%c%c' not supported for work or histogram profile\n",
+               prof->name, (char)(color_space >> 24), (char)(color_space >> 16), (char)(color_space >> 8),
                (char)(color_space));
 
       if(res->histogram_type == prof->type
@@ -1592,7 +1591,6 @@ dt_colorspaces_t *dt_colorspaces_init()
         res->histogram_filename[0] = '\0';
       }
     }
-    prof->work_pos = ++work_pos;
   }
   res->profiles = g_list_concat(res->profiles, temp_profiles);
 
