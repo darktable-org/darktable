@@ -410,6 +410,35 @@ void dt_iop_image_div_const(float *const buf, const float div_value, const size_
     buf[k] /= div_value;
 }
 
+// elementwise: buf = lammda*buf + (1-lambda)*other
+void dt_iop_image_linear_blend(float *const restrict buf, const float lambda, const float *const restrict other,
+                               const size_t width, const size_t height, const size_t ch)
+{
+  const size_t nfloats = width * height * ch;
+  const float lambda_1 = 1.0f - lambda;
+#ifdef _OPENMP
+  if (nfloats > parallel_imgop_minimum/2) // is the task big enough to outweigh threading overhead?
+  {
+    // we can gain a little by using a small number of threads in parallel, but not much since the memory bus
+    // quickly saturates (basically, each core can saturate a memory channel, so a system with quad-channel
+    // memory won't be able to take advantage of more than four cores).
+    const int nthreads = MIN(darktable.num_openmp_threads,parallel_imgop_maxthreads);
+#pragma omp parallel for simd aligned(buf:16) default(none) \
+  dt_omp_firstprivate(buf, lambda, lambda_1,  nfloats) \
+  dt_omp_sharedconst(other) schedule(simd:static) num_threads(nthreads)
+    for(size_t k = 0; k < nfloats; k++)
+      buf[k] = lambda*buf[k] + lambda_1*other[k];
+    return;
+  }
+#endif // _OPENMP
+  // no OpenMP, or image too small to bother parallelizing
+#ifdef _OPENMP
+#pragma simd aligned(buf:16)
+#endif
+  for (size_t k = 0; k < nfloats; k++)
+    buf[k] = lambda*buf[k] + lambda_1*other[k];
+}
+
 // perform timings to determine the optimal threshold for switching to parallel operations, as well as the
 // maximal number of threads before saturating the memory bus
 void dt_iop_image_copy_benchmark()
