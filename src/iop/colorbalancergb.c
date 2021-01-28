@@ -790,7 +790,6 @@ void gui_init(dt_iop_module_t *self)
   g->saturation_global = dt_bauhaus_slider_from_params(self, "saturation_global");
   dt_bauhaus_slider_set_soft_range(g->saturation_global, -0.5, 0.5);
   dt_bauhaus_slider_set_digits(g->saturation_global, 4);
-  // dt_bauhaus_slider_set_step(g->saturation_global, .5);
   dt_bauhaus_slider_set_factor(g->saturation_global, 100.0f);
   dt_bauhaus_slider_set_format(g->saturation_global, "%.2f %%");
   gtk_widget_set_tooltip_text(g->saturation_global, _("add or remove saturation by an absolute amount"));
@@ -819,7 +818,6 @@ void gui_init(dt_iop_module_t *self)
   g->purity_global = dt_bauhaus_slider_from_params(self, "purity_global");
   dt_bauhaus_slider_set_soft_range(g->purity_global, -0.5, 0.5);
   dt_bauhaus_slider_set_digits(g->purity_global, 4);
-  // dt_bauhaus_slider_set_step(g->purity_global, .5);
   dt_bauhaus_slider_set_factor(g->purity_global, 100.0f);
   dt_bauhaus_slider_set_format(g->purity_global, "%.2f %%");
   gtk_widget_set_tooltip_text(g->purity_global, _("add or remove purity by an absolute amount"));
