@@ -151,6 +151,8 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
                                                   const int intent)
 {
   // create an OpenCL processable matrix + tone curves from an cmsHPROFILE:
+  // NOTE: may be invoked with matrix and LUT pointers set to null to find
+  // out if the profile can be created at all.
 
   // check this first:
   if(!prof || !cmsIsMatrixShaper(prof)) return 1;
@@ -171,23 +173,24 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
 
   if(!red_curve || !green_curve || !blue_curve || !red_color || !green_color || !blue_color) return 2;
 
-  matrix[0] = red_color->X;
-  matrix[1] = green_color->X;
-  matrix[2] = blue_color->X;
-  matrix[3] = red_color->Y;
-  matrix[4] = green_color->Y;
-  matrix[5] = blue_color->Y;
-  matrix[6] = red_color->Z;
-  matrix[7] = green_color->Z;
-  matrix[8] = blue_color->Z;
+  float matrix_tmp[9];
+  matrix_tmp[0] = red_color->X;
+  matrix_tmp[1] = green_color->X;
+  matrix_tmp[2] = blue_color->X;
+  matrix_tmp[3] = red_color->Y;
+  matrix_tmp[4] = green_color->Y;
+  matrix_tmp[5] = blue_color->Y;
+  matrix_tmp[6] = red_color->Z;
+  matrix_tmp[7] = green_color->Z;
+  matrix_tmp[8] = blue_color->Z;
 
   // some camera ICC profiles claim to have color locations for red, green and blue base colors defined,
   // but in fact these are all set to zero. we catch this case here.
   float sum = 0.0f;
-  for(int k = 0; k < 9; k++) sum += matrix[k];
+  for(int k = 0; k < 9; k++) sum += matrix_tmp[k];
   if(sum == 0.0f) return 3;
 
-  if(input)
+  if(input && lutr && lutg && lutb)
   {
     // mark as linear, if they are:
     if(cmsIsToneCurveLinear(red_curve))
@@ -207,8 +210,8 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
   {
     // invert profile->XYZ matrix for output profiles
     float tmp[9];
-    memcpy(tmp, matrix, sizeof(float) * 9);
-    if(mat3inv(matrix, tmp)) return 3;
+    memcpy(tmp, matrix_tmp, sizeof(float) * 9);
+    if(mat3inv(matrix_tmp, tmp)) return 3;
     // also need to reverse gamma, to apply reverse before matrix multiplication:
     cmsToneCurve *rev_red = cmsReverseToneCurveEx(0x8000, red_curve);
     cmsToneCurve *rev_green = cmsReverseToneCurveEx(0x8000, green_curve);
@@ -220,23 +223,31 @@ static int dt_colorspaces_get_matrix_from_profile(cmsHPROFILE prof, float *matri
       cmsFreeToneCurve(rev_blue);
       return 4;
     }
-    // pass on tonecurves, in case lutsize > 0:
-    if(cmsIsToneCurveLinear(red_curve))
-      lutr[0] = -1.0f;
-    else
-      for(int k = 0; k < lutsize; k++) lutr[k] = cmsEvalToneCurveFloat(rev_red, k / (lutsize - 1.0f));
-    if(cmsIsToneCurveLinear(green_curve))
-      lutg[0] = -1.0f;
-    else
-      for(int k = 0; k < lutsize; k++) lutg[k] = cmsEvalToneCurveFloat(rev_green, k / (lutsize - 1.0f));
-    if(cmsIsToneCurveLinear(blue_curve))
-      lutb[0] = -1.0f;
-    else
-      for(int k = 0; k < lutsize; k++) lutb[k] = cmsEvalToneCurveFloat(rev_blue, k / (lutsize - 1.0f));
+
+    if(lutr && lutg && lutb)
+    {
+      // pass on tonecurves, in case lutsize > 0:
+      if(cmsIsToneCurveLinear(red_curve))
+        lutr[0] = -1.0f;
+      else
+        for(int k = 0; k < lutsize; k++) lutr[k] = cmsEvalToneCurveFloat(rev_red, k / (lutsize - 1.0f));
+      if(cmsIsToneCurveLinear(green_curve))
+        lutg[0] = -1.0f;
+      else
+        for(int k = 0; k < lutsize; k++) lutg[k] = cmsEvalToneCurveFloat(rev_green, k / (lutsize - 1.0f));
+      if(cmsIsToneCurveLinear(blue_curve))
+        lutb[0] = -1.0f;
+      else
+        for(int k = 0; k < lutsize; k++) lutb[k] = cmsEvalToneCurveFloat(rev_blue, k / (lutsize - 1.0f));
+    }
+
     cmsFreeToneCurve(rev_red);
     cmsFreeToneCurve(rev_green);
     cmsFreeToneCurve(rev_blue);
   }
+
+  if(matrix) memcpy(matrix, matrix_tmp, sizeof(float) * 9);
+
   return 0;
 }
 
@@ -1475,46 +1486,6 @@ dt_colorspaces_t *dt_colorspaces_init()
                                                      _("BRG (for testing)"), ++in_pos, ++out_pos, ++display_pos,
                                                      -1, -1, ++display2_pos));
 
-  // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
-  GList *temp_profiles;
-
-  // read {userconfig,datadir}/color/in/*.icc, in this order.
-  temp_profiles = load_profile_from_dir("in");
-  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
-  {
-    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
-    prof->in_pos = ++in_pos;
-  }
-  res->profiles = g_list_concat(res->profiles, temp_profiles);
-
-  // read {conf,data}dir/color/out/*.icc
-  temp_profiles = load_profile_from_dir("out");
-  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
-  {
-    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
-    // FIXME: do want to filter out non-RGB profiles for cases besides histogram profile? colorin is OK with RGB or XYZ, print is OK with anything which LCMS likes, otherwise things are more choosey
-    const cmsColorSpaceSignature color_space = cmsGetColorSpace(prof->profile);
-    prof->out_pos = ++out_pos;
-    prof->display_pos = ++display_pos;
-    prof->display2_pos = ++display2_pos;
-    if(color_space == cmsSigRgbData)
-    {
-      prof->category_pos = ++category_pos;
-    }
-    else
-    {
-      dt_print(DT_DEBUG_DEV,
-               "output profile `%s' color space `%c%c%c%c' not supported for histogram profile\n",
-               prof->name,
-               (char)(color_space>>24),
-               (char)(color_space>>16),
-               (char)(color_space>>8),
-               (char)(color_space));
-    }
-    prof->work_pos = ++work_pos;
-  }
-  res->profiles = g_list_concat(res->profiles, temp_profiles);
-
   // init display profile and softproof/gama checking from conf
   res->display_type = dt_conf_get_int("ui_last/color/display_type");
   res->display2_type = dt_conf_get_int("ui_last/color/display2_type");
@@ -1540,8 +1511,8 @@ dt_colorspaces_t *dt_colorspaces_init()
   // sanity checks to ensure the profile filenames are present
 
   if((unsigned int)res->display_type >= DT_COLORSPACE_LAST
-    || (res->display_type == DT_COLORSPACE_FILE
-        && (!res->display_filename[0] || !g_file_test(res->display_filename, G_FILE_TEST_IS_REGULAR))))
+     || (res->display_type == DT_COLORSPACE_FILE
+         && (!res->display_filename[0] || !g_file_test(res->display_filename, G_FILE_TEST_IS_REGULAR))))
     res->display_type = DT_COLORSPACE_DISPLAY;
 
   if((unsigned int)res->display2_type >= DT_COLORSPACE_LAST
@@ -1550,14 +1521,81 @@ dt_colorspaces_t *dt_colorspaces_init()
     res->display2_type = DT_COLORSPACE_DISPLAY2;
 
   if((unsigned int)res->softproof_type >= DT_COLORSPACE_LAST
-    || (res->softproof_type == DT_COLORSPACE_FILE
-        && (!res->softproof_filename[0] || !g_file_test(res->softproof_filename, G_FILE_TEST_IS_REGULAR))))
+     || (res->softproof_type == DT_COLORSPACE_FILE
+         && (!res->softproof_filename[0] || !g_file_test(res->softproof_filename, G_FILE_TEST_IS_REGULAR))))
     res->softproof_type = DT_COLORSPACE_SRGB;
 
   if((unsigned int)res->histogram_type >= DT_COLORSPACE_LAST
-    || (res->histogram_type == DT_COLORSPACE_FILE
-        && (!res->histogram_filename[0] || !g_file_test(res->histogram_filename, G_FILE_TEST_IS_REGULAR))))
+     || (res->histogram_type == DT_COLORSPACE_FILE
+         && (!res->histogram_filename[0] || !g_file_test(res->histogram_filename, G_FILE_TEST_IS_REGULAR))))
     res->histogram_type = DT_COLORSPACE_SRGB;
+
+  // temporary list of profiles to be added, we keep this separate to be able to sort it before adding
+  GList *temp_profiles;
+
+  // read {userconfig,datadir}/color/in/*.icc, in this order.
+  temp_profiles = load_profile_from_dir("in");
+  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    prof->in_pos = ++in_pos;
+  }
+  res->profiles = g_list_concat(res->profiles, temp_profiles);
+
+  // read {conf,data}dir/color/out/*.icc
+  temp_profiles = load_profile_from_dir("out");
+  for(GList *iter = temp_profiles; iter; iter = g_list_next(iter))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)iter->data;
+    // FIXME: do want to filter out non-RGB profiles for cases besides histogram profile? colorin is OK with RGB or XYZ, print is OK with anything which LCMS likes, otherwise things are more choosey
+    const cmsColorSpaceSignature color_space = cmsGetColorSpace(prof->profile);
+    // The relative colorimetric intent is used for the histogram, clipping indicators and the global color picker.
+    // Some of these also rely on the profile matrix. LUT profiles don't make much sense in these applications
+    // so filter out any profile that doesn't implement the relative colorimetric intent as a matrix (+ TRC).
+    // For discussion, see e.g.
+    // https://github.com/darktable-org/darktable/issues/7660#issuecomment-760143437
+    const gboolean is_valid_matrix_profile
+        = dt_colorspaces_get_matrix_from_output_profile(prof->profile, NULL, NULL, NULL, NULL, 0,
+                                                        DT_INTENT_RELATIVE_COLORIMETRIC)
+              == 0
+          && dt_colorspaces_get_matrix_from_input_profile(prof->profile, NULL, NULL, NULL, NULL, 0,
+                                                          DT_INTENT_RELATIVE_COLORIMETRIC)
+                 == 0;
+    prof->out_pos = ++out_pos;
+    prof->display_pos = ++display_pos;
+    prof->display2_pos = ++display2_pos;
+    if(is_valid_matrix_profile)
+    {
+      prof->category_pos = ++category_pos;
+    }
+    else
+    {
+      dt_print(DT_DEBUG_DEV,
+               "output profile `%s' color space `%c%c%c%c' not supported for histogram profile\n",
+               prof->name,
+               (char)(color_space>>24),
+               (char)(color_space>>16),
+               (char)(color_space>>8),
+               (char)(color_space));
+
+      if(res->histogram_type == prof->type
+         && (prof->type != DT_COLORSPACE_FILE
+             || dt_colorspaces_is_profile_equal(prof->filename, res->histogram_filename)))
+      {
+        // bad histogram profile selected, we must reset it to sRGB
+        const char *name = dt_colorspaces_get_name(prof->type, prof->filename);
+        dt_control_log(_("profile `%s' not usable as histogram profile. it has been replaced by sRGB!"), name);
+        fprintf(stderr,
+                "[colorspaces] profile `%s' not usable as histogram profile. it has been replaced by sRGB!\n",
+                name);
+        res->histogram_type = DT_COLORSPACE_SRGB;
+        res->histogram_filename[0] = '\0';
+      }
+    }
+    prof->work_pos = ++work_pos;
+  }
+  res->profiles = g_list_concat(res->profiles, temp_profiles);
+
 
   if((unsigned int)res->mode > DT_PROFILE_GAMUTCHECK) res->mode = DT_PROFILE_NORMAL;
 
