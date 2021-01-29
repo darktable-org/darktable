@@ -1189,7 +1189,7 @@ GList* dt_image_find_duplicates(const char* filename)
 }
 
 // Search for duplicate's sidecar files and import them if found and not in DB yet
-static void _image_read_duplicates(const uint32_t id, const char *filename)
+static int _image_read_duplicates(const uint32_t id, const char *filename)
 {
   int count_xmps_processed = 0;
   gchar pattern[PATH_MAX] = { 0 };
@@ -1274,6 +1274,7 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
   }
 
   g_list_free_full(files, g_free);
+  return count_xmps_processed;
 }
 
 static uint32_t _image_import_internal(const int32_t film_id, const char *filename,
@@ -1500,7 +1501,10 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
-  if(res != 0)
+  // read all sidecar files
+  const int nb_xmp = _image_read_duplicates(id, normalized_filename);
+
+  if(res != 0 && !nb_xmp)
   {
     // Search for Lightroom sidecar file, import tags if found
     dt_lightroom_import(id, NULL, TRUE);
@@ -1518,9 +1522,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 
   // make sure that there are no stale thumbnails left
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
-
-  // read all sidecar files
-  _image_read_duplicates(id, normalized_filename);
 
   //synch database entries to xmp
   dt_image_synch_all_xmp(normalized_filename);
