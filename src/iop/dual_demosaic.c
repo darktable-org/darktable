@@ -122,12 +122,9 @@ static void blend_images(float *const restrict rgb_data, float *const restrict b
   dt_omp_firstprivate(luminance, rgb_data, width, height) \
   schedule(simd:static) aligned(luminance, rgb_data : 64) 
 #endif
-  for(int row = 0; row < height; row++)
+  for(size_t idx =0; idx < (size_t) width * height; idx++)
   {
-    for(int col = 0, idx = row * width, oidx = idx * 4; col < width; col++, idx++, oidx += 4)
-    {
-      luminance[idx] = lab_f(0.3333333f * (rgb_data[oidx] + rgb_data[oidx + 1] + rgb_data[oidx + 2]));
-    }
+    luminance[idx] = lab_f(0.3333333f * (rgb_data[4 * idx] + rgb_data[4 * idx + 1] + rgb_data[4 * idx + 2]));
   }
     
   const float scale = 1.0f / 16.0f;

@@ -193,9 +193,11 @@ static inline float cbrta_halleyf(const float a, const float R)
   return b;
 }
 
+/* this produces a crash in Windows with gcc -Ofast #8025
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
+*/
 static inline float lab_f(const float x)
 {
   const float epsilon = 216.0f / 24389.0f;
