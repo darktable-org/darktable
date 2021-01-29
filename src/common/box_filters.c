@@ -35,6 +35,14 @@
 #pragma GCC optimize ("finite-math-only")
 #endif
 
+#if defined(__SSE__)
+#define PREFETCH_NTA(addr) _mm_prefetch(addr, _MM_HINT_NTA)
+#elif defined(__GNUC__) && __GNUC__ > 7
+#define PREFETCH_NTA(addr) __builtin_prefetch(addr,1,0)
+#else
+#define PREFETCH_NTA(addr)
+#endif
+
 static void blur_horizontal_1ch(float *const restrict buf, const int height, const int width, const int radius,
                                 float *const restrict scanlines)
 {
@@ -160,28 +168,26 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
 // Put the to-be-vectorized loop into a function by itself to nudge the compiler into actually vectorizing...
 // With optimization enabled, this gets inlined and interleaved with other instructions as though it had been
 // written in place, so we get a net win from better vectorization.
-static void add_4wide(float *const restrict accum, const float *const restrict values)
+static void load_add_4wide(float *const restrict out, float *const restrict accum, const float *const restrict values)
 {
   for_four_channels(c,aligned(accum,values))
-    accum[c] += values[c];
-}
-
-// Put the to-be-vectorized loop into a function by itself to nudge the compiler into actually vectorizing...
-// With optimization enabled, this gets inlined and interleaved with other instructions as though it had been
-// written in place, so we get a net win from better vectorization.
-static void add_16wide(float *const restrict accum, const float *const restrict values)
-{
-#ifdef _OPENMP
-#pragma omp simd aligned(accum : 64) aligned(values : 16)
-#endif
-  for(size_t c = 0; c < 16; c++)
-    accum[c] += values[c];
+  {
+    const float v = values[c];
+    accum[c] += v;
+    out[c] = v;
+  }
 }
 
 static void sub_4wide(float *const restrict accum, const float *const restrict values)
 {
   for_four_channels(c,aligned(accum,values))
     accum[c] -= values[c];
+}
+
+static void store_scaled_4wide(float *const restrict out, const float *const restrict in, const float scale)
+{
+  for_four_channels(c,aligned(in,out))
+    out[c] = in[c] / scale;
 }
 
 static void sub_16wide(float *const restrict accum, const float *const restrict values)
@@ -193,12 +199,27 @@ static void sub_16wide(float *const restrict accum, const float *const restrict 
     accum[c] -= values[c];
 }
 
-// Copy the result back to the original buffer.  We don't declare 'out' to be aligned because this function
-// can be used for a one-channel image whose width is not a multiple of 4, and makihg the compiler use an aligned
-// vector store will result in crashes.
-static void store_4wide(float *const restrict out, const float *const restrict in)
+// copy 16 floats from a possibly-unaligned buffer into aligned temporary space, and also add to accumulator
+static void load_add_16wide(float *const restrict out, float *const restrict accum, const float *const restrict in)
 {
-  for_four_channels(c,aligned(in : 16))
+#ifdef _OPENMP
+#pragma omp simd aligned(accum, out : 64)
+#endif
+  for (size_t c = 0; c < 16; c++)
+  {
+    const float v = in[c];
+    accum[c] += v;
+    out[c] = v;
+  }
+}
+
+// copy 16 floats from a possibly-unaligned buffer into aligned temporary space
+static void load_16wide(float *const restrict out, const float *const restrict in)
+{
+#ifdef _OPENMP
+#pragma omp simd aligned(out : 64)
+#endif
+  for (size_t c = 0; c < 16; c++)
     out[c] = in[c];
 }
 
@@ -212,16 +233,10 @@ static void store_16wide(float *const restrict out, const float *const restrict 
     out[c] = in[c];
 }
 
-static void store_scaled_4wide(float *const restrict out, const float *const restrict in, const float scale)
-{
-  for_four_channels(c,aligned(in,out))
-    out[c] = in[c] / scale;
-}
-
 static void store_scaled_16wide(float *const restrict out, const float *const restrict in, const float scale)
 {
 #ifdef _OPENMP
-#pragma omp simd aligned(in,out : 64)
+#pragma omp simd aligned(in : 64)
 #endif
   for(size_t c = 0; c < 16; c++)
     out[c] = in[c] / scale;
@@ -308,8 +323,11 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   // add up the top half of the window
   for (size_t y = 0; y < radius && y < height; y++)
   {
+    PREFETCH_NTA(buf + (y+16)*width);
     hits += one;
-    L += _mm_loadu_ps(buf + y*width);	// use unaligned load since width is not necessarily a multiple of 4
+    const __m128 v = _mm_loadu_ps(buf + y*width); // use unaligned load since width is not necessarily a multiple of 4
+    L += v;
+    scratch[y] = v;
   }
   // process the blur up to the point where we start removing values
   size_t y;
@@ -317,37 +335,34 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   {
     const size_t np = y + radius;
     hits += one;
-    L += _mm_loadu_ps(buf+np*width);
-    scratch[y] = L / hits;
+    PREFETCH_NTA(buf + (np+16)*width);
+    const __m128 v = _mm_loadu_ps(buf+np*width);
+    L += v;
+    scratch[np] = v;
+    // store the final result back into user buffer
+    _mm_storeu_ps(buf + y*width, L / hits);
   }
   // process the blur for the bulk of the scan line
   for ( ; y < height-radius; y++)
   {
-    const size_t op = y - radius - 1;
     const size_t np = y + radius;
-    L -= _mm_loadu_ps(buf + op*width);
-    L += _mm_loadu_ps(buf + np*width);
-    // we're now done with the orig value, so store the final result while this line is still in cache
-    _mm_storeu_ps(buf + op*width, scratch[op]);
-    scratch[y] = L / hits;
+    const size_t op = y - radius - 1;
+    PREFETCH_NTA(buf + (np+16)*width);
+    const __m128 v = _mm_loadu_ps(buf + np*width);
+    L -= scratch[op];
+    L += v;
+    scratch[np] = v;
+    // store the final result back into user buffer
+    _mm_storeu_ps(buf + y*width, L / hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
   for ( ; y < height; y++)
   {
     const size_t op = y - radius - 1;
     hits -= one;
-    L -= _mm_loadu_ps(buf + op*width);
-    // we're now done with the orig value, so store the final result while this line is still in cache
-    _mm_storeu_ps(buf + op*width, scratch[op]);
-    scratch[y] = L / hits;
-  }
-
-  // copy remaining blurred values back to original location in buffer
-  for (y = (height>radius)?(height-radius-1):0; y < height; y++)
-  {
-    // use unaligned store since width is not necessarily a multiple of four
-    // use the faster aligned load since we've ensured that scanline is aligned
-    _mm_storeu_ps(buf + y*width, scratch[y]);
+    L -= scratch[op];
+    // store the final result back into user buffer
+    _mm_storeu_ps(buf + y*width, L / hits);
   }
   return;
 }
@@ -355,7 +370,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
 
 #ifdef __SSE2__
 static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height, const size_t width,
-                                  const size_t radius, __m128 *const restrict scanline)
+                                  const size_t radius, __m128 *const restrict scratch)
 {
   __m128 L[4] = { _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0) };
   __m128 hits = { 0.0f, 0.0f, 0.0f, 0.0f };
@@ -363,9 +378,14 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
   // add up the top half of the window
   for (size_t y = 0; y < MIN(radius, height); y++)
   {
+    PREFETCH_NTA(buf + (y+16)*width);
     hits += one;
     for (size_t c = 0; c < 4; c++)
-      L[c] += _mm_loadu_ps(buf + y*width + 4*c); // use unaligned load since width is not necessarily a multiple of 4
+    {
+      const __m128 v = _mm_loadu_ps(buf + y*width + 4*c); // use unaligned load since width may not be a multiple of 4
+      L[c] += v;
+      scratch[4*y+c] = v;
+    }
   }
   // process the blur up to the point where we start removing values
   size_t y;
@@ -373,24 +393,29 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
   {
     const size_t np = y + radius;
     hits += one;
+    PREFETCH_NTA(buf + (np+16)*width);
     for (size_t c = 0; c < 4; c++)
     {
-      L[c] += _mm_loadu_ps(buf + np*width + 4*c);
-      scanline[4*y+c] = L[c] / hits;
+      const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
+      L[c] += v;
+      scratch[4*np+c] = v;
+      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
     }
   }
   // process the blur for the bulk of the scan line
   for ( ; y < height-radius; y++)
   {
-    const size_t op = y - radius - 1;
     const size_t np = y + radius;
+    const size_t op = y - radius - 1;
+    PREFETCH_NTA(buf + (np+16)*width);
     for (size_t c = 0; c < 4; c++)
     {
-      L[c] -= _mm_loadu_ps(buf + op*width + 4*c);
-      L[c] += _mm_loadu_ps(buf + np*width + 4*c);
-      // we're now done with the orig value, so store the final result while this line is still in cache
-      _mm_storeu_ps(buf + op*width + 4*c, scanline[4*op + c]);
-      scanline[4*y + c] = L[c] / hits;
+      const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
+      L[c] -= scratch[4*op + c];
+      L[c] += v;
+      scratch[4*np+c] = v;
+      // store the final result while this line is still in cache
+      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
     }
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
@@ -400,20 +425,10 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
     hits -= one;
     for (size_t c = 0; c < 4; c++)
     {
-      L[c] -= _mm_loadu_ps(buf + op*width + 4*c);
-      // we're now done with the orig value, so store the final result while this line is still in cache
-      _mm_storeu_ps(buf + op*width + 4*c, scanline[4*op + c]);
-      scanline[4*y + c] = L[c] / hits;
+      L[c] -= scratch[4*op + c];
+      // store the final result
+      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
     }
-  }
-
-  // copy remaining blurred values back to original location in buffer
-  for (y = (height>radius)?(height-radius-1):0; y < height; y++)
-  {
-    // use unaligned store since width is not necessarily a multiple of four
-    // use the faster aligned load since we've ensured that scanline is aligned
-    for (size_t c = 0; c < 4; c++)
-      _mm_storeu_ps(buf + y*width + 4*c, scanline[4*y + c]);
   }
   return;
 }
@@ -437,7 +452,9 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
   for (size_t y = 0; y < MIN(radius, height); y++)
   {
     hits++;
-    L += buf[y*width];
+    const float v = buf[y*width];
+    L += v;
+    scratch[y&mask] = v;
   }
   // process up to the point where we start removing values from the moving average
   size_t y;
@@ -446,37 +463,31 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    L += buf[np*width];
-    scratch[y&mask] = L / hits;
+    const float v = buf[np*width];
+    L += v;
+    scratch[np&mask] = v;
+    buf[y*width] = L / hits;
   }
   // process the bulk of the column
   for( ; y < height-radius; y++)
   {
     const int op = y - radius - 1;
     const int np = y + radius;
-    L -= buf[op*width];
-    L += buf[np*width];
-    // we're now done with the original value, so store the final result while this line is still in cache
-    buf[op*width] = scratch[op&mask];
+    L -= scratch[op&mask];
+    const float v = buf[np*width];
+    L += v;
+    scratch[np&mask] = v;
     // update the means
-    scratch[y&mask] = L / hits;
+    buf[y*width] = L / hits;
   }
   // process the end of the column, where we don't have any more values to add to the mean
   for( ; y < height; y++)
   {
     const int op = y - radius - 1;
     hits--;
-    L -= buf[op*width];
-    // we're now done with the original value, so store the final result while this line is still in cache
-    buf[op*width] = scratch[op&mask];
+    L -= scratch[op&mask];
     // update the means
-    scratch[y&mask] = L / hits;
-  }
-
-  // copy remaining blurred values back to original location in buffer
-  for (y = (height>radius)?(height-radius-1):0; y < height; y++)
-  {
-    buf[y*width] = scratch[y&mask];
+    buf[y*width] = L / hits;
   }
   return;
 }
@@ -506,8 +517,9 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
   // add up the left half of the window
   for (size_t y = 0; y < MIN(radius, height); y++)
   {
+    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
-    add_4wide(L, buf + y * width);
+    load_add_4wide(scratch + 4*(y&mask), L, buf + y * width);
   }
   // process the blur up to the point where we start removing values
   size_t y;
@@ -516,35 +528,27 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    add_4wide(L, buf + np*width);
-    store_scaled_4wide(scratch + 4*(y&mask), L, hits);
+    PREFETCH_NTA(buf + (np+16)*width);
+    load_add_4wide(scratch + 4*(np&mask), L, buf + np*width);
+    store_scaled_4wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the scan line
   for ( ; y < height-radius; y++)
   {
-    const int op = y - radius - 1;
     const int np = y + radius;
-    sub_4wide(L, buf + op*width);
-    // we're now done with the orig value, so store the final result while this line is still in cache
-    store_4wide(buf + op*width, scratch + 4*(op&mask));
-    add_4wide(L, buf + np*width);
-    store_scaled_4wide(scratch + 4*(y&mask), L, hits);
+    const int op = y - radius - 1;
+    PREFETCH_NTA(buf + (np+16)*width);
+    sub_4wide(L, scratch + 4*(op&mask));
+    load_add_4wide(scratch + 4*(np&mask), L, buf + np*width);
+    store_scaled_4wide(buf + y*width, L, hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
   for ( ; y < height; y++)
   {
     const int op = y - radius - 1;
     hits--;
-    sub_4wide(L, buf + op*width);
-    // we're now done with the orig value, so store the final result while this line is still in cache
-    store_4wide(buf + op*width, scratch + 4*(op&mask));
-    store_scaled_4wide(scratch + 4*(y&mask), L, hits);
-  }
-
-  // copy remaining blurred values back to original location in buffer
-  for (y = (height>radius)?(height-radius-1):0; y < height; y++)
-  {
-    store_4wide(buf + y*width, scratch + 4*(y&mask));
+    sub_4wide(L, scratch + 4*(op&mask));
+    store_scaled_4wide(buf + y*width, L, hits);
   }
   return;
 }
@@ -566,8 +570,9 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
   // add up the left half of the window
   for (size_t y = 0; y < MIN(radius, height); y++)
   {
+    PREFETCH_NTA(buf + (y+16)*width);
     hits++;
-    add_16wide(L, buf + y * width);
+    load_add_16wide(scratch + 16 * (y&mask), L, buf + y*width);
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t y;
@@ -576,37 +581,29 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
     hits++;
-    add_16wide(L, buf + np*width);
-    store_scaled_16wide(scratch + 16*(y&mask), L, hits);
+    PREFETCH_NTA(buf + (np+16)*width);
+    load_add_16wide(scratch + 16 * (np&mask), L, buf + np*width);
+    store_scaled_16wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the scan line
   for ( ; y < height-radius; y++)
   {
-    const int op = y - radius - 1;
     const int np = y + radius;
-    sub_16wide(L, buf + op*width);
-    // we're now done with the orig value, so store the final result while this line is still in cache
-    store_16wide(buf + op*width, scratch + 16*(op&mask));
-    add_16wide(L, buf + np*width);
+    const int op = y - radius - 1;
+    PREFETCH_NTA(buf + (np+16)*width);
+    sub_16wide(L, scratch + 16*(op&mask));
+    load_add_16wide(scratch + 16*(np&mask), L, buf + np*width);
     // update the means
-    store_scaled_16wide(scratch + 16*(y&mask), L, hits);
+    store_scaled_16wide(buf + y*width, L, hits);
   }
   // process the blur for the end of the scan line, where we don't have any more values to add to the mean
   for ( ; y < height; y++)
   {
     const int op = y - radius - 1;
     hits--;
-    sub_16wide(L, buf + op*width);
-    // we're now done with the orig value, so store the final result while this line is still in cache
-    store_16wide(buf + op*width, scratch + 16*(op&mask));
+    sub_16wide(L, scratch + 16*(op&mask));
     // update the means
-    store_scaled_16wide(scratch + 16*(y&mask), L, hits);
-  }
-
-  // copy remaining blurred values back to original location in buffer
-  for (y = (height>radius)?(height-radius-1):0; y < height; y++)
-  {
-    store_16wide(buf + y*width, scratch + 16*(y&mask));
+    store_scaled_16wide(buf + y*width, L, hits);
   }
   return;
 }
@@ -876,16 +873,6 @@ static void set_16wide(float *const restrict out, const float value)
 #endif
   for (size_t c = 0; c < 16; c++)
     out[c] = value;
-}
-
-// copy 16 floats from a possibly-unaligned buffer into aligned temporary space
-static void load_16wide(float *const restrict out, const float *const restrict in)
-{
-#ifdef _OPENMP
-#pragma omp simd aligned(out : 64)
-#endif
-  for (size_t c = 0; c < 16; c++)
-    out[c] = in[c];
 }
 
 static inline void update_max_16wide(float m[16], const float *const restrict base)
