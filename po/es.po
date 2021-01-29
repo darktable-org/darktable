@@ -21156,9 +21156,6 @@ msgstr "Acción"
 #~ msgid "luma (use on 2nd instance)"
 #~ msgstr "luma (usar en un 2º módulo)"
 
-#~ msgid "[facebook] unexpected URL format\n"
-#~ msgstr "[facebook] formato de url inesperado\n"
-
 #~ msgid ""
 #~ "step 1: a new window or tab of your browser should have been loaded. you "
 #~ "have to login into your facebook account there and authorize darktable to "
@@ -21192,15 +21189,6 @@ msgstr "Acción"
 #~ msgid "authentication failed"
 #~ msgstr "Fallo de autenticación"
 
-#~ msgid ""
-#~ "a new window or tab of your browser should have been loaded. you have to "
-#~ "login into your facebook account there and authorize darktable to upload "
-#~ "photos before continuing."
-#~ msgstr ""
-#~ "Se cargará una nueva ventana o pestaña del navegador. Debe ingresar en su "
-#~ "cuenta de facebook y antes de continuar, autorice que darktable pueda "
-#~ "subir las fotos."
-
 #~ msgid "new account"
 #~ msgstr "nueva cuenta"
 
@@ -21212,9 +21200,6 @@ msgstr "Acción"
 
 #~ msgid "logout"
 #~ msgstr "desconectarse"
-
-#~ msgid "facebook webalbum"
-#~ msgstr "álbum en facebook"
 
 #~ msgid "summary"
 #~ msgstr "sumario"
@@ -21240,40 +21225,14 @@ msgstr "Acción"
 #~ msgid "unable to export photo to webalbum"
 #~ msgstr "no se pudo exportar la foto al album web"
 
-#~ msgid "%d/%d exported to facebook webalbum"
-#~ msgid_plural "%d/%d exported to facebook webalbum"
-#~ msgstr[0] "%d/%d exportado al álbum web de facebook"
-#~ msgstr[1] "%d/%d exportados al álbum web de facebook"
-
-#~ msgid "flickr authentication: %s"
-#~ msgstr "Autenticación en flickr: %s"
-
-#~ msgid ""
-#~ "step 1: a new window or tab of your browser should have been loaded. you "
-#~ "have to login into your flickr account there and authorize darktable to "
-#~ "upload photos before continuing."
-#~ msgstr ""
-#~ "Paso 1: Se cargará una nueva ventana o pestaña del navegador. Debe "
-#~ "ingresar en su cuenta de flickr y antes de continuar, autorice que "
-#~ "darktable pueda subir las fotos."
-
 #~ msgid "step 2: click the OK button once you are done."
 #~ msgstr "Paso 2: Una vez terminado, pulse el botón Aceptar."
 
 #~ msgid "flickr authentication"
 #~ msgstr "autenticación flickr"
 
-#~ msgid "flickr webalbum"
-#~ msgstr "álbum en flickr"
-
 #~ msgid "without album"
 #~ msgstr "sin álbum"
-
-#~ msgid "flickr user"
-#~ msgstr "usuario"
-
-#~ msgid "flickr login"
-#~ msgstr "Acceso a Flickr"
 
 #~ msgid "friends + family"
 #~ msgstr "amigos + familia"
@@ -21574,26 +21533,6 @@ msgstr "Acción"
 #~ "darktable 32-bit."
 
 #~ msgid ""
-#~ "warning!\n"
-#~ "you are using a 32-bit build of darktable.\n"
-#~ "the 32-bit build has severely limited virtual address space.\n"
-#~ "we have had numerous reports that darktable exhibits sporadic issues and "
-#~ "crashes when using 32-bit builds.\n"
-#~ "we strongly recommend you switch to a proper 64-bit build.\n"
-#~ "otherwise, you are GUARANTEED to experience issues which cannot be "
-#~ "fixed.\n"
-#~ msgstr ""
-#~ "Advertencia:\n"
-#~ "Está utilizando una versión de darktable de 32-bit.\n"
-#~ "la versión de 32-bit tiene un espacio virtual asignado limitado.\n"
-#~ "hemos tenido numerosos reportes que indican que darktable presenta "
-#~ "problemas y errores esporádicos al utilizar versiones de 32-bit.\n"
-#~ "Le recomendamos encarecidamente que cambie a una versión de 64-bit "
-#~ "correspondiente.\n"
-#~ "De otra forma, le GARANTIZAMOS que experimentará problemas que no podrán "
-#~ "ser solucionados.\n"
-
-#~ msgid ""
 #~ "pick GUI color from image\n"
 #~ "cntrl + click to select an area"
 #~ msgstr ""
@@ -21885,18 +21824,6 @@ msgstr "Acción"
 #~ msgid "Beta RGB (compatible)"
 #~ msgstr "Beta RGB (compatible)"
 
-#~ msgctxt "accel"
-#~ msgid "deflicker"
-#~ msgstr "deflicker"
-
-#~ msgctxt "accel"
-#~ msgid "deflicker-percentile"
-#~ msgstr "deflicker-percentil"
-
-#~ msgctxt "accel"
-#~ msgid "deflicker-level"
-#~ msgstr "deflicker-nivel"
-
 #~ msgid "rotate by -90"
 #~ msgstr "rotar -90"
 
@@ -21908,9 +21835,6 @@ msgstr "Acción"
 
 #~ msgid "cache locally"
 #~ msgstr "cache local"
-
-#~ msgid "error creating GUI, see stderr"
-#~ msgstr "error creando interfaz de usuario. ver stderr"
 
 #~ msgid "error creating GUI, DT_SIMPLE_GUI_NONE could not be found"
 #~ msgstr ""
@@ -22261,11 +22185,6 @@ msgstr "Acción"
 #~ msgid "this image has not been indexed yet."
 #~ msgstr "esta imagen no ha sido indexada aún."
 
-#~ msgid "re-indexing %d image"
-#~ msgid_plural "re-indexing %d images"
-#~ msgstr[0] "re-indexar %d imagen"
-#~ msgstr[1] "re-indexar %d imágenes"
-
 #~ msgid "select an image as target for search of similar images"
 #~ msgstr ""
 #~ "seleccione una imagen como objetivo para la busqueda de imagenes similares"
@@ -22296,19 +22215,6 @@ msgstr "Acción"
 
 #~ msgid "public album"
 #~ msgstr "album publico"
-
-#~ msgid ""
-#~ "darktable has trapped an illegal instruction which probably means that an "
-#~ "invalid processor optimized codepath is used for your cpu, please try "
-#~ "reproduce the crash running 'gdb darktable' from the console and post the "
-#~ "backtrace log to mailing list with information about your CPU and where "
-#~ "you got the package from."
-#~ msgstr ""
-#~ "darktable ha detectado una instrucción ilegal lo que probablemente "
-#~ "indique que esté empleando un paquete optimizado para un procesador "
-#~ "diferente al suyo. intente reproducir el error ejecutando 'gdb darktable' "
-#~ "desde una terminal y envíe el informe de error a la lista de correo con "
-#~ "información acerca de su CPU y de dónde descargó el paquete"
 
 #~ msgid "SIMD extensions found: "
 #~ msgstr "se encontraron extensiones SIMD: "
@@ -22576,15 +22482,6 @@ msgstr "Acción"
 #~ "$(HOME_FOLDER) - carpeta home\n"
 #~ "$(DESLKOP_FOLDER) - carpeta de escritorio"
 
-#~ msgid ""
-#~ "set the aspect ratio (w:h)\n"
-#~ "press ctrl-x to swap sides"
-#~ msgstr ""
-#~ "fijar el aspecto de la proporción (an:al)\n"
-#~ "presionar Ctrl+x para intercambiar las caras"
-
-#~ msgid "swap the aspect ratio (ctrl-x)"
-#~ msgstr "intercambiar el aspecto de la proporción (Ctrl+x)"
 
 #~ msgid "flip guides horizontally"
 #~ msgstr "girar guías horizontalmente"
@@ -22653,21 +22550,6 @@ msgstr "Acción"
 
 #~ msgid "image cache file backup"
 #~ msgstr "copia del archivo cache de imagen"
-
-#~ msgid ""
-#~ "creates backup of cachefile to prevent loss of thumbnails generated at "
-#~ "crashes etc (needs a restart)."
-#~ msgstr ""
-#~ "crea copia del archivo cache para prevenir la perdida de las miniaturas "
-#~ "generadas en cuelges, etc ( necesita reinicarse)."
-
-#~ msgid "how many threads to use in background"
-#~ msgstr "cuántos hilos usar en segundo plano"
-
-#, fuzzy
-#~ msgctxt "accel"
-#~ msgid "sigma"
-#~ msgstr "sigma x"
 
 #~ msgid "the strength of lighten"
 #~ msgstr "fuerza de la iluminación"
@@ -22739,16 +22621,9 @@ msgstr "Acción"
 #~ msgid "0 - original"
 #~ msgstr "0 - original"
 
-#~ msgid "make images public"
-#~ msgstr "hacer las imágenes públicas"
-
 #~ msgctxt "gammaslider"
 #~ msgid "linear"
 #~ msgstr "lineal"
-
-#~ msgctxt "gammaslider"
-#~ msgid "gamma"
-#~ msgstr "gamma"
 
 #~ msgid ""
 #~ "abscissa: input, ordinate: output \n"
@@ -22776,13 +22651,6 @@ msgstr "Acción"
 #~ msgctxt "accel"
 #~ msgid "scroll forward"
 #~ msgstr "desplazar adelante"
-
-#~ msgid ""
-#~ "switch on green equilibration before demosaicing.\n"
-#~ "necessary for some mid-range cameras such as the EOS 400D."
-#~ msgstr ""
-#~ "cambiar en  equilibrio de verde antes del demosaico.\n"
-#~ "necesario para algunas cámaras de rango medio como la EOS 400D."
 
 #~ msgctxt "accel"
 #~ msgid "down"
@@ -22856,29 +22724,6 @@ msgstr "Acción"
 #~ msgid "create a style from the current history stack"
 #~ msgstr "crear un estilo usando su histórico de acciones actual"
 
-#~ msgid "denoising (extra slow)"
-#~ msgstr "reducción ruido (extra lento)"
-
-#~ msgid "strength of stuck pixel correction threshold"
-#~ msgstr "strength of stuck pixel correction threshold"
-
-#~ msgid "full resolution image buffers to keep in main memory cache"
-#~ msgstr ""
-#~ "buffers de la imagen a resolución completa para mantener en la memoria "
-#~ "caché principal"
-
-#~ msgid ""
-#~ "how many full-resolution floating point buffers of loaded raw images to "
-#~ "keep in main memory at maximum.  set this variable to num_threads + 1 if "
-#~ "you want multithreaded export (keep one for darkroom mode).  be warned: "
-#~ "every thread will need about 1GB of memory (needs a restart)."
-#~ msgstr ""
-#~ "cuantos buffers de coma flotante a resolución completa, de las imágenes "
-#~ "raw cargadas mantener en la memoria principal al máximo. fijar esta "
-#~ "variable a num_hilos+1 si desea exportar con multihilos ( mantener uno "
-#~ "para el modo cuarto oscuro ). aviso: cada hilo necesitará cerca de 1Gb de "
-#~ "memoria ( necesita reinicarse)."
-
 #~ msgid "( --- )"
 #~ msgstr "( --- )"
 
@@ -22903,19 +22748,6 @@ msgstr "Acción"
 #~ "4 estrellas\n"
 #~ "5 estrellas\n"
 #~ "rechazada"
-
-#~ msgid ""
-#~ "filename\n"
-#~ "time\n"
-#~ "rating\n"
-#~ "id\n"
-#~ "color label"
-#~ msgstr ""
-#~ "nombre de archivo\n"
-#~ "fecha\n"
-#~ "valoración\n"
-#~ "id\n"
-#~ "etiqueta de color"
 
 #~ msgid ""
 #~ "mean\n"
@@ -23003,11 +22835,6 @@ msgstr "Acción"
 #~ msgid "author information"
 #~ msgstr "información del autor"
 
-#~ msgid ""
-#~ "do you really want to remove this film roll and all its images from the "
-#~ "collection?"
-#~ msgstr "desea eliminar esta sesión y todas sus imágenes de la colección?"
-
 #~ msgid "devices"
 #~ msgstr "perifericos"
 
@@ -23019,9 +22846,6 @@ msgstr "Acción"
 
 #~ msgid "luma (L)"
 #~ msgstr "luminosidad (L)"
-
-#~ msgid "doubleclick to select"
-#~ msgstr "doble click para seleccionar"
 
 #~ msgid "O"
 #~ msgstr "O"
@@ -23056,12 +22880,6 @@ msgstr "Acción"
 
 #~ msgid "height of the exported image"
 #~ msgstr "alto de la imagen exportada"
-
-#~ msgid "height of the exported image, or 0 if no scaling should be done."
-#~ msgstr "alto de la imagen exportada, o 0 si no se escala."
-
-#~ msgid "how many images are in one row"
-#~ msgstr "cuantas imágenes hay en una columna"
 
 #~ msgid ""
 #~ "how many smallest-size thumbnails to keep in main memory at maximum. this "
@@ -23101,9 +22919,6 @@ msgstr "Acción"
 #~ "seleccionar un diseño para la mesa de luz: 0 -con zoom o 1 - gestor de "
 #~ "archivos."
 
-#~ msgid "small thumbnails to keep in main memory cache"
-#~ msgstr "miniaturas pequeñas para mantener en la memoria cache principal"
-
 #~ msgid "subpath pattern in storage for captured images"
 #~ msgstr "patrón de subruta en almacenamiento de imágenes capturadas"
 
@@ -23111,14 +22926,6 @@ msgstr "Acción"
 #~ msgstr ""
 #~ "nombre del directorio de copia de seguridad para buscar en dispositivos "
 #~ "montados"
-
-#~ msgid "this overrides the per-image settings, if not set to `image'."
-#~ msgstr ""
-#~ "esto sobreescribe la configuración para la imagen, si no se establece a "
-#~ "`imagen'."
-
-#~ msgid "which layout should lighttable mode show"
-#~ msgstr "que diseño debería de mostrar el modo caja de luz"
 
 #~ msgid "width of the exported image, or 0 if no scaling should be done."
 #~ msgstr "ancho de la imagen exportada, o 0 si no se debe escalar."
@@ -23128,14 +22935,6 @@ msgstr "Acción"
 
 #~ msgid "raw import"
 #~ msgstr "importar raw"
-
-#~ msgid ""
-#~ "warning: these are cryptic low level settings!\n"
-#~ "you probably don't have to change them."
-#~ msgstr ""
-#~ "cuidado: estas son configuraciones \n"
-#~ "crípticas de bajo nivel. probablemente\n"
-#~ "no deba cambiarlas"
 
 #~ msgid "median passes"
 #~ msgstr "pase medio"
@@ -23169,13 +22968,6 @@ msgstr "Acción"
 #~ msgid "green equilibration"
 #~ msgstr "equilibrado de verde"
 
-#~ msgid ""
-#~ "work around unequal green channels in some mid-range\n"
-#~ "cameras, e.g. canon eos 400d"
-#~ msgstr ""
-#~ "trabajar alrededor de canales desiguales de verde en algunas cámaras\n"
-#~ "de rango medio, p.ej. canon eos 400d"
-
 #~ msgid "dcb enhance"
 #~ msgstr "mejora dcb"
 
@@ -23185,31 +22977,6 @@ msgstr "Acción"
 #~ msgstr ""
 #~ "desactiva los ajustes por defecto de la imagen si los bordes son dentados "
 #~ "o si prefiere un demosaico mas suave."
-
-#~ msgid "dcb iterations"
-#~ msgstr "iteracciones dcb"
-
-#~ msgid ""
-#~ "number of DCB correction routines passes(the default is zero)\n"
-#~ "this helps if you see lots of wrong interpolation directions, just "
-#~ "remember that it may produce new artifacts\n"
-#~ "usually 0 or 1 should work fine, in some situations even 10 is not enough."
-#~ msgstr ""
-#~ "numero de pasadas de rutinas de corrección DCB (por defecto es cero)\n"
-#~ "esto ayuda si ve cantidad de direcciones de interpolación incorrectas, "
-#~ "solo recordar que puede producir nuevos artifactos\n"
-#~ "usualmente 0 o 1 debería funcionar bien, en algunas situaciones incluso "
-#~ "10 no es suficiente."
-
-#~ msgid "fbdd denoising"
-#~ msgstr "fbdd reducción ruido"
-
-#~ msgctxt "fbdd noise"
-#~ msgid "none"
-#~ msgstr "ninguna"
-
-#~ msgid "luma+chroma"
-#~ msgstr "luma+chroma"
 
 #~ msgid ""
 #~ "fbdd turns on pre-demosaicing luma (and optionally chroma) noise reduction"
@@ -23223,21 +22990,8 @@ msgstr "Acción"
 #~ msgid "refine interpolated pixels"
 #~ msgstr "refinar pixeles interpolados"
 
-#~ msgid "edge median passes"
-#~ msgstr "pase borde medio"
-
-#~ msgid ""
-#~ "number of passes an edge-sensitive median filter to differential color "
-#~ "planes"
-#~ msgstr ""
-#~ "numero de pases de un filtro mediano sensible a bordes para diferenciar "
-#~ "planos de color"
-
 #~ msgid "ca autocorrect"
 #~ msgstr "autocorrección ca"
-
-#~ msgid "artificial ca autocorrection from AMaZE"
-#~ msgstr "autocorrection ca artificial de AMaZE"
 
 #~ msgid ""
 #~ "reset raw loading parameters\n"
@@ -23334,77 +23088,17 @@ msgstr "Acción"
 #~ msgid "optional DCB refinement...\n"
 #~ msgstr "refinamiento opcional DCB...\n"
 
-#~ msgid ""
-#~ "how many most-recently used thumbnail mipmaps should be kept in the "
-#~ "database cache when darktable closes."
-#~ msgstr ""
-#~ "cuantos mipmaps de las miniaturas mas recientemente utilizadas deben "
-#~ "mantenerse en la cache de la base de datos cuando se cierra darktable."
-
-#~ msgid ""
-#~ "how many smallest-size most-recently used thumbnail mipmaps should be "
-#~ "kept in the database cache when darktable closes. these do not need a lot "
-#~ "of memory and provide fast visual feedback for lighttable mode."
-#~ msgstr ""
-#~ "cuantos mipmaps de tamaño mínimo de las miniaturas mas recientemente "
-#~ "utilizadas deben mantenerse en la cache de la base de datos cuando se "
-#~ "cierra darktable. estos no necesitan un gran cantidad de memoria y "
-#~ "producen una visualización rápida en el modo mesa de luz."
-
 #~ msgid "thumbnails to keep in database"
 #~ msgstr "miniaturas para mantener en la base de datos"
-
-#~ msgid "very small thumbnails to keep in database"
-#~ msgstr "miniaturas muy pequeñas para mantener en la base de datos"
-
-#~ msgid ""
-#~ "1-turns on pre demosaicing FBDD image denoising\n"
-#~ "2-with additional chroma noise reduction.\n"
-#~ "works with all demosaicing methods"
-#~ msgstr ""
-#~ "1-activar pre demosaico FBDD reduccion de ruido de imagen\n"
-#~ "2-con reducción de ruido croma adicional.\n"
-#~ "trabaja con todos los metodos de demosaico"
 
 #~ msgid "select $(FILE_DIRECTORY)"
 #~ msgstr "seleccionar $(FILE_DIRECTORY)"
 
-#~ msgid "picasa"
-#~ msgstr "picasa"
-
 #~ msgid "file on harddrive"
 #~ msgstr "archivo en disco duro"
 
-#~ msgid "8-bit tiff"
-#~ msgstr "8-bit tiff"
-
 #~ msgid "fixed aspect ratio"
 #~ msgstr "relación de aspecto fijo"
-
-#~ msgid "store as default for this camera"
-#~ msgstr "almacenar como por defecto para esta cámara"
-
-#~ msgid "remove default for this camera"
-#~ msgstr "eliminar por defecto para esta cámara"
-
-#~ msgid "crop h"
-#~ msgstr "recorte abajo"
-
-#~ msgid "black white red"
-#~ msgstr "byn rojo"
-
-#~ msgid ""
-#~ "demosaic treating RGGB as\n"
-#~ "four distinct colors,\n"
-#~ "use if you get mazing artifacts"
-#~ msgstr ""
-#~ "demosaico tratando RGGB\n"
-#~ "como cuatro colores distintos.\n"
-#~ "usar si se obtienen artifactos."
-
-#, fuzzy
-#~ msgid "the amount of local contrast to apply"
-#~ msgstr "la cantidad de saturación a aplicar"
 
 #~ msgid ""
 #~ "leave black and white,\n"
@@ -23428,9 +23122,6 @@ msgstr "Acción"
 #~ msgid "rebuild"
 #~ msgstr "Reconstruire"
 
-#~ msgid "auto wb"
-#~ msgstr "Balance des blancs auto"
-
 #~ msgid ""
 #~ "write a history file for\n"
 #~ "physically delete"
@@ -23438,20 +23129,8 @@ msgstr "Acción"
 #~ "Écrire l'historique pour\n"
 #~ "suppression physique"
 
-#, fuzzy
-#~ msgid "X profile"
-#~ msgstr "perfil"
-
 #~ msgid "gray box"
 #~ msgstr "recuadro gris"
-
-#, fuzzy
-#~ msgid "original temperature"
-#~ msgstr "temperatura en"
-
-#, fuzzy
-#~ msgid "intended temperature"
-#~ msgstr "temperatura en"
 
 #~ msgid ""
 #~ "8-bit jpg\n"
@@ -23475,18 +23154,6 @@ msgstr "Acción"
 
 #~ msgid "sigma b"
 #~ msgstr "sigma b"
-
-#~ msgid "camera whitebalance"
-#~ msgstr "balance de blancos de la camara"
-
-#, fuzzy
-#~ msgid "snapshot %d"
-#~ msgstr "instantaneas"
-
-#, fuzzy
-#~ msgctxt "modulename"
-#~ msgid "temperature"
-#~ msgstr "temperatura en"
 
 #~ msgid "the amount of saturation to apply to highlights"
 #~ msgstr "establecer la cantidad de saturación en las altas luces"
