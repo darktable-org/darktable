@@ -1162,6 +1162,7 @@ void dtgtk_cairo_paint_luv(cairo_t *cr, gint x, gint y, gint w, gint h, gint fla
 {
   PREAMBLE(1, 0, 0)
 
+  // FIXME: change icon to "u*v*"
   cairo_move_to(cr, 0.0, 0.0);
   cairo_line_to(cr, 0.0, 1.0);
   cairo_line_to(cr, 0.7, 1.0);
@@ -1183,6 +1184,7 @@ void dtgtk_cairo_paint_jzazbz(cairo_t *cr, gint x, gint y, gint w, gint h, gint 
 {
   PREAMBLE(1, 0, 0)
 
+  // FIXME: change icon to "AzBz" or just "z"
   cairo_move_to(cr, 0.4, 0.0);
   cairo_curve_to(cr, 0.45, 1.0, 0.1, 1.0, 0.0, 0.8);
   cairo_stroke(cr);

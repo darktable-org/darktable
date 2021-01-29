@@ -2488,11 +2488,11 @@
     <name>plugins/darkroom/histogram/vectorscope</name>
     <type>
       <enum>
-        <option>Luv</option>
-        <option>JzAzBz</option>
+        <option>u*v*</option>
+        <option>AzBz</option>
       </enum>
     </type>
-    <default>Luv</default>
+    <default>u*v*</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
