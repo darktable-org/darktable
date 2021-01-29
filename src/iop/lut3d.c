@@ -882,15 +882,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
           const int max_shaper = atoll(token[2]);
           if (max_shaper > min_shaper)
           {
-            level = nb_token;
-            if(level > 256)
-            {
-              fprintf(stderr, "[lut3d] error - LUT 3D size %d > 256\n", level);
-              dt_control_log(_("error - lut 3D size %d exceeds the maximum supported"), level);
-              free(line);
-              fclose(cube_file);
-              return 0;
-            }
+            level = nb_token; // max nb_token = 50 < 256
             if(max_shaper < 128)
             {
               fprintf(stderr, "[lut3d] error - the maximum shaper lut value %d is too low\n", max_shaper);
