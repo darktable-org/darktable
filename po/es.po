@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.4\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2020-12-15 01:21-0600\n"
-"PO-Revision-Date: 2020-12-14 02:16-0600\n"
+"PO-Revision-Date: 2021-01-28 23:21-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -43,7 +43,7 @@ msgstr "desplazamiento horizontal"
 #: ../build/lib/darktable/plugins/introspection_ashift.c:132
 #: ../build/lib/darktable/plugins/introspection_ashift.c:253
 msgid "shear"
-msgstr "cortar"
+msgstr "recortar"
 
 #. focal length
 #: ../build/lib/darktable/plugins/introspection_ashift.c:138
@@ -8470,7 +8470,7 @@ msgstr "Distorsiona automáticamente la perspectiva"
 #: ../src/iop/retouch.c:207 ../src/iop/sharpen.c:96 ../src/iop/spots.c:62
 #: ../src/iop/temperature.c:202
 msgid "corrective"
-msgstr "correctivo"
+msgstr "Correctivo"
 
 #: ../src/iop/ashift.c:125 ../src/iop/ashift.c:127 ../src/iop/atrous.c:131
 #: ../src/iop/basicadj.c:142 ../src/iop/bilateral.cc:99
@@ -8558,7 +8558,7 @@ msgstr "Efectúa la corrección del desplazamiento de lente en una dirección"
 
 #: ../src/iop/ashift.c:4821
 msgid "shear the image along one diagonal"
-msgstr "Recortar la imagen de acuerdo a la diagonal"
+msgstr "Corta la imagen de acuerdo a la diagonal"
 
 #: ../src/iop/ashift.c:4822
 msgid "display guide lines overlay"
@@ -8807,11 +8807,11 @@ msgstr "luma"
 
 #: ../src/iop/atrous.c:1370
 msgid "change lightness at each feature size"
-msgstr "cambiar luminosidad en cada parte"
+msgstr "Cambia la luminosidad en cada parte"
 
 #: ../src/iop/atrous.c:1371
 msgid "change color saturation at each feature size"
-msgstr "cambiar saturación de color en cada parte"
+msgstr "Cambia la saturación de color en cada parte"
 
 #: ../src/iop/atrous.c:1372
 msgid "edges"
@@ -8822,8 +8822,8 @@ msgid ""
 "change edge halos at each feature size\n"
 "only changes results of luma and chroma tabs"
 msgstr ""
-"cambia el borde de los halos para cada tamaño\n"
-"solo cambia los resultados de las pestañas de luma y crominancia"
+"Cambia los halos de contorno en cada nivel de detalle.\n"
+"Sólo afecta los resultados de las pestañas de luma y crominancia."
 
 #: ../src/iop/atrous.c:1396 ../src/iop/colorzones.c:2429
 msgid "make effect stronger or weaker"
@@ -10046,7 +10046,7 @@ msgstr "Ajusta el aspecto de la imagen"
 
 #: ../src/iop/colisa.c:321
 msgid "color saturation adjustment"
-msgstr "ajuste de saturación de color"
+msgstr "Ajusta la saturación de color"
 
 #: ../src/iop/colorbalance.c:149
 msgid "color balance"
@@ -10060,7 +10060,7 @@ msgstr ""
 
 #: ../src/iop/colorbalance.c:159
 msgid "affect color, brightness and contrast"
-msgstr "Modifican el color, el brillo y el contraste."
+msgstr "Modifica el color, el brillo y el contraste"
 
 #: ../src/iop/colorbalance.c:163
 msgid "non-linear, Lab, scene-referred"
@@ -10278,7 +10278,7 @@ msgstr "perfil | LUT | calibración de color"
 msgid "perform color space corrections and apply looks"
 msgstr ""
 "Realiza correcciones en el espacio de color\n"
-"y aplica los ajustes correspondientes."
+"y aplica los ajustes correspondientes"
 
 #: ../src/iop/colorchecker.c:126 ../src/iop/colorchecker.c:128
 #: ../src/iop/colorize.c:106 ../src/iop/colormapping.c:153
@@ -10395,7 +10395,7 @@ msgid ""
 "increase saturation and separation between\n"
 "opposite colors"
 msgstr ""
-"incrementar la separación y la saturación entre\n"
+"Incrementa la separación y la saturación entre\n"
 "colores opuestos"
 
 #: ../src/iop/colorcontrast.c:335
@@ -10895,7 +10895,7 @@ msgstr "Radio para detección de halos"
 
 #: ../src/iop/defringe.c:427
 msgid "threshold for defringe, higher values mean less defringing"
-msgstr "Umbral para reducir halos. Valores significan menor reducción"
+msgstr "Umbral para reducir halos. Valores mayores indican menor reducción."
 
 #: ../src/iop/demosaic.c:170
 msgid "demosaic"
@@ -22481,7 +22481,6 @@ msgstr "Acción"
 #~ "$(PICTURE_FOLDER) - carpeta imágenes\n"
 #~ "$(HOME_FOLDER) - carpeta home\n"
 #~ "$(DESLKOP_FOLDER) - carpeta de escritorio"
-
 
 #~ msgid "flip guides horizontally"
 #~ msgstr "girar guías horizontalmente"
