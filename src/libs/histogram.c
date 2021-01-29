@@ -1017,14 +1017,14 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
       g_assert_not_reached();
   }
 
-  // redraw empty scope for immediate visual feedback
-  d->vectorscope_graticule[0][0] = NAN;
-  dt_control_queue_redraw_widget(d->scope_draw);
-
   // generate data for changed view and trigger widget redraw
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv)
+  if(cv)  // this may be called by _scope_type_update() on init, before in a view
   {
+    // redraw empty scope for immediate visual feedback
+    d->vectorscope_graticule[0][0] = NAN;
+    dt_control_queue_redraw_widget(d->scope_draw);
+
     if(cv->view(cv) == DT_VIEW_DARKROOM)
       dt_dev_process_preview(darktable.develop);
     else
@@ -1216,7 +1216,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      if(d->histogram_scale == DT_LIB_HISTOGRAM_N-1)
+      if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
@@ -1232,7 +1232,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N-1)
+      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
@@ -1248,7 +1248,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_N-1)
+      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
