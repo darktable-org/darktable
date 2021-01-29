@@ -176,11 +176,20 @@ static inline __m128 dt_prophotoRGB_to_XYZ_sse2(__m128 rgb)
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
+/* This crashes on windows #8025
+   static inline float cbrt_5f(float f)
+  {
+    uint32_t *p = (uint32_t *)&f;
+    *p = *p / 3 + 709921077;
+    return f;
+  }
+*/
 static inline float cbrt_5f(float f)
 {
-  uint32_t *p = (uint32_t *)&f;
-  *p = *p / 3 + 709921077;
-  return f;
+  union { float f ; uint32_t i; } floatint;
+  floatint.f = f;
+  floatint.i = floatint.i / 3 + 709921077;
+  return floatint.f;
 }
 
 #ifdef _OPENMP
