@@ -1,6 +1,6 @@
 How to make disk image with darktable application bundle (64 bit Intel only):
 
-1). Install MacPorts (instructions and prerequisites can be found on official website, use Xcode version less than 12.2, or install the Big Sur patch mentioned below to use Xcode 12.2 and later). Please use default installation path (/opt/local).
+1). Install MacPorts (instructions and prerequisites can be found on official website, use Xcode version less than 12.2), please use default installation path (/opt/local).
     They will need some tuning, so before you build anything add these lines to /opt/local/etc/macports/macports.conf:
      buildfromsource always
      macosx_deployment_target 10.7
@@ -31,12 +31,7 @@ How to make disk image with darktable application bundle (64 bit Intel only):
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/librsvg-nocargo.patch | patch -d ~/ports -p0
      $ cp -R "$(port dir gmic)" ~/ports/science
      $ curl -L https://raw.github.com/darktable-org/darktable/master/packaging/macosx/gmic-minimal.patch | patch -d ~/ports -p0
-
-In case of Big Sur, download the following additional patch:
-     $ cp -R "$(port dir cairo)" ~/ports/graphics 
-     $ curl -Lo ~/ports/graphics/cairo/files/patch.diff https://raw.github.com/darktable-org/darktable/master/packaging/macosx/cairo-big-sur.diff
-
-    Once all the patches have been downloaded, append this line:
+    then append this line:
      patchfiles-append patch.diff
     to ~/ports/*/*/Portfile files you just copied (except for pugixml, librsvg and gmic) and run:
      $ portindex ~/ports
