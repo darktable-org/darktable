@@ -73,15 +73,16 @@ typedef enum dt_lib_histogram_waveform_type_t
 
 typedef enum dt_lib_histogram_vectorscope_type_t
 {
-  DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV = 0,
+  DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV = 0,   // CIE 1976 u*v*
   DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ,
   DT_LIB_HISTOGRAM_VECTORSCOPE_N // needs to be the last one
 } dt_lib_histogram_vectorscope_type_t;
 
+// FIXME: are these lists available from the enum/options in darktableconfig.xml?
 const gchar *dt_lib_histogram_scope_type_names[DT_LIB_HISTOGRAM_SCOPE_N] = { "histogram", "waveform", "vectorscope" };
 const gchar *dt_lib_histogram_histogram_scale_names[DT_LIB_HISTOGRAM_N] = { "logarithmic", "linear" };
 const gchar *dt_lib_histogram_waveform_type_names[DT_LIB_HISTOGRAM_WAVEFORM_N] = { "overlaid", "parade" };
-const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "CIELUV", "JzAzBz" };
+const gchar *dt_lib_histogram_vectorscope_type_names[DT_LIB_HISTOGRAM_VECTORSCOPE_N] = { "u*v*", "AzBz" };
 
 typedef struct dt_lib_histogram_t
 {
@@ -252,16 +253,15 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
 }
 
 #ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, Luv:16)
+#pragma omp declare simd aligned(rgb, chromaticity:16)
 #endif
-static inline void rgb_to_chroma(const float rgb[4],
-                                 float Luv[4],
-                                 dt_iop_order_iccprofile_info_t *prof,
-                                 dt_lib_histogram_vectorscope_type_t cs)
+static inline void rgb_to_chromaticity(const float rgb[4],
+                                       float chromaticity[4],
+                                       dt_iop_order_iccprofile_info_t *prof,
+                                       dt_lib_histogram_vectorscope_type_t cs)
 {
   float XYZ_D50[4] DT_ALIGNED_PIXEL;
   // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
-  // FIXME: is there a way to optimize this chain of conversions?
   // this goes to the PCS which has standard illuminant D50
   dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, prof->matrix_in, prof->lut_in,
                              prof->unbounded_coeffs_in, prof->lutsize,
@@ -272,15 +272,14 @@ static inline void rgb_to_chroma(const float rgb[4],
     float xyY_D50[4] DT_ALIGNED_PIXEL;
     dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
     // FIXME: this is u*v* (D50 corrected), more helpful than u'v', yes?
-    dt_xyY_to_Luv(xyY_D50, Luv);
+    dt_xyY_to_Luv(xyY_D50, chromaticity);
   }
   else
   {
-    // FIXME: some of these hops can be faster by pre-multipying matrices? see colorbalancergb
+    // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
     float XYZ_D65[4] DT_ALIGNED_PIXEL;
     dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-    // AzBz masquerading as uv
-    dt_XYZ_2_JzAzBz(XYZ_D65, Luv);
+    dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
   }
 }
 
@@ -310,14 +309,14 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   float max_diam = 0.0f;
   for(int k=0; k<6; k++)
   {
-    float Luv[4] DT_ALIGNED_PIXEL;
-    rgb_to_chroma(in_rgb[k], Luv, histogram_profile, vs_type);
-    max_diam = MAX(max_diam, hypotf(Luv[1], Luv[2]));
-    d->vectorscope_graticule[k][0] = Luv[1];
-    d->vectorscope_graticule[k][1] = Luv[2];
+    // FIXME: hacky store of coordinates in 2nd/3rd elements of array
+    float chromaticity[4] DT_ALIGNED_PIXEL;
+    rgb_to_chromaticity(in_rgb[k], chromaticity, histogram_profile, vs_type);
+    max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
+    d->vectorscope_graticule[k][0] = chromaticity[1];
+    d->vectorscope_graticule[k][1] = chromaticity[2];
   }
   // scale graticule chromaticity to display
-  // FIXME: if use CIELUV, don't scale so there is a well-known appearance?
   for(int k=0; k<6; k++)
   {
     d->vectorscope_graticule[k][0] /= max_diam;
@@ -351,11 +350,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     // conversion to histogram profile is relative colorimetric, how
     // does this compare to:
     //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
-    float Luv[4] DT_ALIGNED_PIXEL;
+    float chromaticity[4] DT_ALIGNED_PIXEL;
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
-    rgb_to_chroma(pix_in, Luv, histogram_profile, vs_type);
-    const int out_x = vs_diameter * (Luv[1] / max_diam + 0.5f);
-    const int out_y = vs_diameter * (Luv[2] / max_diam + 0.5f);
+    rgb_to_chromaticity(pix_in, chromaticity, histogram_profile, vs_type);
+    const int out_x = vs_diameter * (chromaticity[1] / max_diam + 0.5f);
+    const int out_y = vs_diameter * (chromaticity[2] / max_diam + 0.5f);
 
     // clip (not clamp) any out-of-scale values, so there aren't light edges
     // FIXME: should the output buffer be the dimensions of the current drawable widget -- rather than square -- so it doesn't lose data to the sides?
@@ -613,7 +612,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   cairo_save(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
-  // FIXME: should draw with more transparency, as w/other scopes?
   cairo_translate(cr, width / 2., height / 2.);
 
   // FIXME: which way to orient graph? and can do this when generate the graph?
@@ -660,12 +658,16 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 static void _draw_vectorscope_lines(cairo_t *cr, int width, int height)
 {
   const double min_size = MIN(width, height);
-  const double w_ctr = min_size / 15.0f;
+  // FIXME: need DT_PIXEL_APPLY_DPI()?
+  const double w_ctr = min_size / 25.0f;
 
   cairo_save(cr);
   cairo_translate(cr, width/2., height/2.);
 
+  // FIXME: a polar coordinate style grid would be interesting/helpful for, as currently the scaling changes based on histogram profile, and this would give some sort of reference
+
   // central crosshair
+  set_color(cr, darktable.bauhaus->graph_overlay);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   dt_draw_line(cr, -w_ctr, 0.0f, w_ctr, 0.0f);
   cairo_stroke(cr);
@@ -1002,16 +1004,16 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   switch(d->vectorscope_type)
   {
     case DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to JzAzBz"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to AzBz"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
-                             dtgtk_cairo_paint_luv, CPF_DIRECTION_LEFT, NULL);
+                             dtgtk_cairo_paint_luv, CPF_NONE, NULL);
       break;
     case DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ:
-      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to CIELUV"));
+      gtk_widget_set_tooltip_text(d->scope_view_button, _("set view to u*v*"));
       dtgtk_button_set_paint(DTGTK_BUTTON(d->scope_view_button),
-                             dtgtk_cairo_paint_jzazbz, CPF_DIRECTION_RIGHT, NULL);
+                             dtgtk_cairo_paint_jzazbz, CPF_NONE, NULL);
       break;
-    case DT_LIB_HISTOGRAM_WAVEFORM_N:
+    case DT_LIB_HISTOGRAM_VECTORSCOPE_N:
       g_assert_not_reached();
   }
 
@@ -1214,7 +1216,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
   switch(d->scope_type)
   {
     case DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM:
-      if(d->histogram_scale == DT_LIB_HISTOGRAM_LOGARITHMIC)
+      if(d->histogram_scale == DT_LIB_HISTOGRAM_N-1)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
@@ -1230,7 +1232,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_WAVEFORM:
-      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID)
+      if(d->waveform_type == DT_LIB_HISTOGRAM_WAVEFORM_N-1)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
@@ -1246,7 +1248,7 @@ static gboolean _lib_histogram_cycle_mode_callback(GtkAccelGroup *accel_group,
       }
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_N-1)
       {
         _scope_view_clicked(d->scope_view_button, d);
       }
