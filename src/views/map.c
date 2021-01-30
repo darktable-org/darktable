@@ -278,7 +278,7 @@ static int zoom_member(lua_State *L)
     // lua can have temporarily false values but it will fix itself when entering map
     // unfortunately we can't get the min max when lib->map doesn't exist
     luaL_checktype(L, 3, LUA_TNUMBER);
-    int zoom = luaL_checkinteger(L, 3);
+    const int zoom = luaL_checkinteger(L, 3);
     if(dt_view_manager_get_current_view(darktable.view_manager) != module)
     {
       dt_conf_set_int("plugins/map/zoom", zoom);
@@ -313,10 +313,10 @@ static float deg2rad(float deg)
 
 static int latlon2zoom(int pix_height, int pix_width, float lat1, float lat2, float lon1, float lon2)
 {
-  float lat1_m = atanh(sinf(lat1));
-  float lat2_m = atanh(sinf(lat2));
-  int zoom_lon = LOG2((double)(2 * pix_width * M_PI) / (TILESIZE * (lon2 - lon1)));
-  int zoom_lat = LOG2((double)(2 * pix_height * M_PI) / (TILESIZE * (lat2_m - lat1_m)));
+  const float lat1_m = atanh(sinf(lat1));
+  const float lat2_m = atanh(sinf(lat2));
+  const int zoom_lon = LOG2((double)(2 * pix_width * M_PI) / (TILESIZE * (lon2 - lon1)));
+  const int zoom_lat = LOG2((double)(2 * pix_height * M_PI) / (TILESIZE * (lat2_m - lat1_m)));
   return MIN(zoom_lon, zoom_lat);
 }
 
@@ -333,9 +333,10 @@ static int latlon2zoom(int pix_height, int pix_width, float lat1, float lat2, fl
 static void osm_gps_map_zoom_fit_bbox(OsmGpsMap *map, float latitude1, float latitude2, float longitude1, float longitude2)
 {
   GtkAllocation allocation;
-  int zoom;
   gtk_widget_get_allocation(GTK_WIDGET (map), &allocation);
-  zoom = latlon2zoom(allocation.height, allocation.width, deg2rad(latitude1), deg2rad(latitude2), deg2rad(longitude1), deg2rad(longitude2));
+  const int zoom = latlon2zoom(allocation.height, allocation.width,
+                               deg2rad(latitude1), deg2rad(latitude2),
+                               deg2rad(longitude1), deg2rad(longitude2));
   osm_gps_map_set_center(map, (latitude1 + latitude2) / 2, (longitude1 + longitude2) / 2);
   osm_gps_map_set_zoom(map, zoom);
 }
@@ -347,7 +348,8 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
   char text[8] = {0};
   snprintf(text, sizeof(text), "%d", nb_images > 99999 ? 99999 : nb_images);
 
-  int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border), h = DT_PIXEL_APPLY_DPI(image_pin_size);
+  const int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border);
+  const int h = DT_PIXEL_APPLY_DPI(image_pin_size);
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
@@ -368,7 +370,7 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = (size_t)w * h * 4;
+  const size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -396,7 +398,7 @@ static GdkPixbuf *_init_image_pin()
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = (size_t)w * h * 4;
+  const size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -2322,7 +2324,7 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
     {
       if(lib->selected_images)
       {
-        int imgid = GPOINTER_TO_INT(lib->selected_images->data);
+        const int imgid = GPOINTER_TO_INT(lib->selected_images->data);
         gchar pathname[PATH_MAX] = { 0 };
         gboolean from_cache = TRUE;
         dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
@@ -2379,7 +2381,7 @@ static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext 
 static gboolean _view_map_prefs_changed(dt_map_t *lib)
 {
   gboolean prefs_changed = FALSE;
-  int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
+  const int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
   gboolean filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
 
   if(lib->max_images_drawn != max_images_drawn) prefs_changed = TRUE;
