@@ -213,16 +213,6 @@ static void load_add_16wide(float *const restrict out, float *const restrict acc
   }
 }
 
-// copy 16 floats from a possibly-unaligned buffer into aligned temporary space
-static void load_16wide(float *const restrict out, const float *const restrict in)
-{
-#ifdef _OPENMP
-#pragma omp simd aligned(out : 64)
-#endif
-  for (size_t c = 0; c < 16; c++)
-    out[c] = in[c];
-}
-
 // copy 16 floats from aligned temporary space back to the possibly-unaligned user buffer
 static void store_16wide(float *const restrict out, const float *const restrict in)
 {
@@ -317,6 +307,9 @@ static void blur_horizontal_4ch(float *const restrict buf, const size_t height, 
 static void blur_vertical_1ch_sse(float *const restrict buf, const int height, const int width, const int radius,
                                   __m128 *const restrict scratch)
 {
+  size_t mask = 1;
+  for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
+
   __m128 L = { 0, 0, 0, 0 };
   __m128 hits = { 0, 0, 0, 0 };
   const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -327,7 +320,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
     hits += one;
     const __m128 v = _mm_loadu_ps(buf + y*width); // use unaligned load since width is not necessarily a multiple of 4
     L += v;
-    scratch[y] = v;
+    scratch[y&mask] = v;
   }
   // process the blur up to the point where we start removing values
   size_t y;
@@ -338,7 +331,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
     PREFETCH_NTA(buf + (np+16)*width);
     const __m128 v = _mm_loadu_ps(buf+np*width);
     L += v;
-    scratch[np] = v;
+    scratch[np&mask] = v;
     // store the final result back into user buffer
     _mm_storeu_ps(buf + y*width, L / hits);
   }
@@ -349,9 +342,9 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
     const size_t op = y - radius - 1;
     PREFETCH_NTA(buf + (np+16)*width);
     const __m128 v = _mm_loadu_ps(buf + np*width);
-    L -= scratch[op];
+    L -= scratch[op&mask];
     L += v;
-    scratch[np] = v;
+    scratch[np&mask] = v;
     // store the final result back into user buffer
     _mm_storeu_ps(buf + y*width, L / hits);
   }
@@ -360,7 +353,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   {
     const size_t op = y - radius - 1;
     hits -= one;
-    L -= scratch[op];
+    L -= scratch[op&mask];
     // store the final result back into user buffer
     _mm_storeu_ps(buf + y*width, L / hits);
   }
@@ -372,6 +365,9 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
 static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height, const size_t width,
                                   const size_t radius, __m128 *const restrict scratch)
 {
+  size_t mask = 1;
+  for(size_t r = (2*radius+1); r > 1 ; r >>= 1) mask = (mask << 1) | 1;
+
   __m128 L[4] = { _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0), _mm_set1_ps(0) };
   __m128 hits = { 0.0f, 0.0f, 0.0f, 0.0f };
   const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -384,7 +380,7 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
     {
       const __m128 v = _mm_loadu_ps(buf + y*width + 4*c); // use unaligned load since width may not be a multiple of 4
       L[c] += v;
-      scratch[4*y+c] = v;
+      scratch[4*(y&mask)+c] = v;
     }
   }
   // process the blur up to the point where we start removing values
@@ -398,7 +394,7 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
     {
       const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
       L[c] += v;
-      scratch[4*np+c] = v;
+      scratch[4*(np&mask)+c] = v;
       _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
     }
   }
@@ -411,9 +407,9 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
     for (size_t c = 0; c < 4; c++)
     {
       const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
-      L[c] -= scratch[4*op + c];
+      L[c] -= scratch[4*(op&mask) + c];
       L[c] += v;
-      scratch[4*np+c] = v;
+      scratch[4*(np&mask)+c] = v;
       // store the final result while this line is still in cache
       _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
     }
@@ -425,7 +421,7 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
     hits -= one;
     for (size_t c = 0; c < 4; c++)
     {
-      L[c] -= scratch[4*op + c];
+      L[c] -= scratch[4*(op&mask) + c];
       // store the final result
       _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
     }
@@ -652,15 +648,9 @@ static void blur_vertical_1ch(float *const restrict buf, const size_t height, co
 //   for SSE code: filter_window = height;
 static size_t _compute_effective_height(const size_t height, const size_t radius)
 {
-  size_t eff_height = height;
-#ifdef __SSE2__
-  if (!darktable.codepath.SSE2)
-#endif
-  {
-    eff_height = 2;
-    for(size_t r = (2*radius+1); r > 1 ; r >>= 1) eff_height <<= 1;
-    eff_height = MIN(eff_height,height);
-  }
+  size_t eff_height = 2;
+  for(size_t r = (2*radius+1); r > 1 ; r >>= 1) eff_height <<= 1;
+  eff_height = MIN(eff_height,height);
   return eff_height;
 }
 
@@ -878,7 +868,7 @@ static void set_16wide(float *const restrict out, const float value)
 static inline void update_max_16wide(float m[16], const float *const restrict base)
 {
 #ifdef _OPENMP
-#pragma omp simd aligned(m, base)
+#pragma omp simd aligned(m, base : 64)
 #endif
   for (size_t c = 0; c < 16; c++)
   {
@@ -886,11 +876,24 @@ static inline void update_max_16wide(float m[16], const float *const restrict ba
   }
 }
 
+static inline void load_update_max_16wide(float *const restrict out, float m[16], const float *const restrict base)
+{
+#ifdef _OPENMP
+#pragma omp simd aligned(out, m : 64)
+#endif
+  for (size_t c = 0; c < 16; c++)
+  {
+    const float v = base[c];
+    out[c] = v;
+    m[c] = fmaxf(m[c], v);
+  }
+}
+
 // calculate the one-dimensional moving maximum on four adjacent columns over a window of size 2*w+1
-// input array x has stride 16, output array y has stride stride_y and we will write 16 consecutive elements
-//  every stride_y elements (thus processing a cache line at a time)
-static inline void box_max_vert_16wide(const int N, const float *const restrict x, float *const restrict y,
-                                      const int stride_y, const int w)
+// input/output array 'buf' has stride 'stride' and we will write 16 consecutive elements every stride elements
+// (thus processing a cache line at a time)
+static inline void box_max_vert_16wide(const int N, float *const restrict scratch, float *const restrict buf,
+                                       const int stride, const int w, const size_t mask)
 {
   float DT_ALIGNED_ARRAY m[16] = { -(FLT_MAX), -(FLT_MAX), -(FLT_MAX), -(FLT_MAX),
                                    -(FLT_MAX), -(FLT_MAX), -(FLT_MAX), -(FLT_MAX),
@@ -898,26 +901,29 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
                                    -(FLT_MAX), -(FLT_MAX), -(FLT_MAX), -(FLT_MAX) };
   for(size_t i = 0; i < MIN(w + 1, N); i++)
   {
-    update_max_16wide(m,x + 16 * i);
+    PREFETCH_NTA(buf + stride*(i+24));
+    load_update_max_16wide(scratch + 16 * (i&mask),m, buf + stride*i);
   }
   for(size_t i = 0; i < N; i++)
   {
+    PREFETCH_NTA(buf + stride*(i+24));
     // store maximum of current window at center position
-    store_16wide(y + i * stride_y, m);
+    store_16wide(buf + stride * i, m);
     // If the earliest member of the current window is the max, we need to
     // rescan the window to determine the new maximum
     if (i >= w)
     {
       set_16wide(m, -(FLT_MAX));  // reset max values to lowest possible
-      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
+      for(int j = i - w + 1; j < MIN(i + w + 1, N); j++)
       {
-        update_max_16wide(m,x + 16*j);
+        update_max_16wide(m,scratch + 16*(j&mask));
       }
     }
     // if the window has not yet exceeded the end of the row/column, update the maximum value
-    if(i + w + 1 < N)
+    const size_t n = i + w + 1;
+    if(n < N)
     {
-      update_max_16wide(m, x + (16 * (i + w + 1)));
+      load_update_max_16wide(scratch + 16 * (n&mask), m, buf + stride * n);
     }
   }
 }
@@ -926,7 +932,10 @@ static inline void box_max_vert_16wide(const int N, const float *const restrict 
 // does the calculation in-place if input and output images are identical
 static void box_max_1ch(float *const buf, const size_t height, const size_t width, const unsigned w)
 {
-  float *const restrict scratch_buffers = dt_alloc_align_float(dt_get_num_threads() * MAX(width,16*height));
+  const size_t eff_height = _compute_effective_height(height, w);
+  const size_t scratch_size = MAX(width,MAX(height,16*eff_height));
+  size_t allocsize;
+  float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(w, width, height, buf)    \
@@ -941,18 +950,14 @@ static void box_max_1ch(float *const buf, const size_t height, const size_t widt
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none)           \
-  dt_omp_firstprivate(w, width, height, buf) \
+  dt_omp_firstprivate(w, width, height, buf, allocsize) \
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
   for(int col = 0; col < (width & ~15); col += 16)
   {
-    float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
-    for (size_t row = 0; row < height; row++)
-    {
-      load_16wide(scratch + 16*row, buf + row*width + col);
-    }
-    box_max_vert_16wide(height, scratch, buf + col, width, w);
+    float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
+    box_max_vert_16wide(height, scratch, buf + col, width, w, eff_height-1);
   }
   for (size_t col = width & ~15 ; col < width; col++)
   {
@@ -1003,7 +1008,7 @@ static inline void box_min_1d(int N, const float *x, float *y, size_t stride_y, 
 static inline void update_min_16wide(float m[16], const float *const restrict base)
 {
 #ifdef _OPENMP
-#pragma omp simd aligned(m, base)
+#pragma omp simd aligned(m, base : 64)
 #endif
   for (size_t c = 0; c < 16; c++)
   {
@@ -1011,11 +1016,24 @@ static inline void update_min_16wide(float m[16], const float *const restrict ba
   }
 }
 
+static inline void load_update_min_16wide(float *const restrict out, float m[16], const float *const restrict base)
+{
+#ifdef _OPENMP
+#pragma omp simd aligned(out, m : 64)
+#endif
+  for (size_t c = 0; c < 16; c++)
+  {
+    const float v = base[c];
+    out[c] = v;
+    m[c] = fminf(m[c], v);
+  }
+}
+
 // calculate the one-dimensional moving minimum on four adjacent columns over a window of size 2*w+1
-// input array x has stride 16, output array y has stride stride_y and we will write 16 consecutive elements
-//  every stride_y elements (thus processing a cache line at a time)
-static inline void box_min_vert_16wide(const int N, const float *const restrict x, float *const restrict y,
-                                      const int stride_y, const int w)
+// input/output array 'buf' has stride 'stride' and we will write 16 consecutive elements every stride elements
+// (thus processing a cache line at a time)
+static inline void box_min_vert_16wide(const int N, float *const restrict scratch, float *const restrict buf,
+                                       const int stride, const int w, const size_t mask)
 {
   float DT_ALIGNED_ARRAY m[16] = { FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX,
                                    FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX,
@@ -1023,26 +1041,29 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
                                    FLT_MAX, FLT_MAX, FLT_MAX, FLT_MAX };
   for(size_t i = 0; i < MIN(w + 1, N); i++)
   {
-    update_min_16wide(m, x + 16*i);
+    PREFETCH_NTA(buf + stride*(i+24));
+    load_update_min_16wide(scratch + 16*(i&mask), m, buf + stride*i);
   }
   for(size_t i = 0; i < N; i++)
   {
+    PREFETCH_NTA(buf + stride*(i+24));
     // store minimum of current window at center position
-    store_16wide(y + i * stride_y, m);
+    store_16wide(buf + i * stride, m);
     // If the earliest member of the current window is the min, we need to
     // rescan the window to determine the new minimum
     if (i >= w)
     {
       set_16wide(m, FLT_MAX);  // reset min values to the highest possible
-      for(int j = i - w + 1; j < MIN(i + w + 2, N); j++)
+      for(int j = i - w + 1; j < MIN(i + w + 1, N); j++)
       {
-        update_min_16wide(m,x + 16*j);
+        update_min_16wide(m,scratch + 16*(j&mask));
       }
     }
     // if the window has not yet exceeded the end of the row/column, update the minimum value
-    if(i + w + 1 < N)
+    const size_t n = i + w + 1;
+    if(n < N)
     {
-      update_min_16wide(m, x  + (16 * (i + w + 1)));
+      load_update_min_16wide(scratch + 16 * (n&mask), m, buf + stride * n);
     }
   }
 }
@@ -1052,7 +1073,10 @@ static inline void box_min_vert_16wide(const int N, const float *const restrict 
 // does the calculation in-place if input and output images are identical
 static void box_min_1ch(float *const buf, const size_t height, const size_t width, const int w)
 {
-  float *const restrict scratch_buffers = dt_alloc_align_float(dt_get_num_threads() * MAX(width,16*height));
+  const size_t eff_height = _compute_effective_height(height, w);
+  const size_t scratch_size = MAX(width,MAX(height,16*eff_height));
+  size_t allocsize;
+  float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(w, width, height, buf)    \
@@ -1067,18 +1091,14 @@ static void box_min_1ch(float *const buf, const size_t height, const size_t widt
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none)           \
-  dt_omp_firstprivate(w, width, height, buf) \
+  dt_omp_firstprivate(w, width, height, buf,allocsize) \
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
   for(size_t col = 0; col < (width & ~15); col += 16)
   {
-    float *const restrict scratch = scratch_buffers + 16 * height * dt_get_thread_num();
-    for (size_t row = 0; row < height; row++)
-    {
-      load_16wide(scratch + 16*row, buf + row*width + col);
-    }
-    box_min_vert_16wide(height, scratch, buf + col, width, w);
+    float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
+    box_min_vert_16wide(height, scratch, buf + col, width, w, eff_height-1);
   }
   for (size_t col = width & ~15 ; col < width; col++)
   {
