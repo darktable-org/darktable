@@ -655,8 +655,8 @@ gboolean dt_gui_get_scroll_unit_deltas(const GdkEventScroll *event, int *delta_x
       // scroll, and only then tell caller that there is a scroll to
       // handle
 #ifdef GDK_WINDOWING_QUARTZ // on macOS deltas need to be scaled
-      acc_x += (2.0 / 300.0) * (event->delta_x + 150) - 1;
-      acc_y += (2.0 / 300.0) * (event->delta_y + 150) - 1;
+      acc_x += event->delta_x / 50;
+      acc_y += event->delta_y / 50;
 #else
       acc_x += event->delta_x;
       acc_y += event->delta_y;
