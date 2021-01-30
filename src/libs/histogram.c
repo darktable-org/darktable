@@ -115,6 +115,7 @@ typedef struct dt_lib_histogram_t
   dt_lib_histogram_scale_t histogram_scale;
   dt_lib_histogram_waveform_type_t waveform_type;
   dt_lib_histogram_vectorscope_type_t vectorscope_type;
+  double vectorscope_angle;
   gboolean red, green, blue;
 } dt_lib_histogram_t;
 
@@ -268,7 +269,7 @@ static inline void rgb_to_chromaticity(const float rgb[4],
                              prof->nonlinearlut);
   if(cs == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
   {
-    // FIXME: do have to worry about chromatic adaptation?
+    // FIXME: do have to worry about chromatic adaptation? this assumes that the white point is D50 -- if we have a D65 whitepoint profile, should we instead adapt to D65 then convert to L*u*v* with a D65 whitepoint?
     float xyY_D50[4] DT_ALIGNED_PIXEL;
     dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
     // FIXME: this is u*v* (D50 corrected), more helpful than u'v', yes?
@@ -613,13 +614,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_save(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_translate(cr, width / 2., height / 2.);
+  cairo_rotate(cr, d->vectorscope_angle);
 
-  // FIXME: which way to orient graph? and can do this when generate the graph?
-  // traditional vectorscope is oriented with x-axis Y -> B, y-axis C -> R
-  // but CIE 1976 UCS is graphed x-axis as u (G -> M), y-axis as v (B -> Y)
+  // traditional video editor's vectorscope is oriented with x-axis Y
+  // -> B, y-axis C -> R but CIE 1976 UCS is graphed x-axis as u (G ->
+  // M), y-axis as v (B -> Y), so do that and keep to the proper color
+  // math
   cairo_scale(cr, 1., -1.);
-  if(d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_JZAZBZ)
-    cairo_rotate(cr, M_PI * 0.5);
 
   // graticule: histogram profile primaries/secondaries
   // FIXME: also add dots for input/work/output profiles
@@ -1360,6 +1361,9 @@ void gui_init(dt_lib_module_t *self)
     if(g_strcmp0(str, dt_lib_histogram_vectorscope_type_names[i]) == 0)
       d->vectorscope_type = i;
   g_free(str);
+
+  int a = dt_conf_get_int("plugins/darkroom/histogram/vectorscope/angle");
+  d->vectorscope_angle = a * M_PI / 180.0;
 
   d->histogram = (uint32_t *)calloc(4 * HISTOGRAM_BINS, sizeof(uint32_t));
   d->histogram_max = 0;

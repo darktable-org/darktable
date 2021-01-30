@@ -2497,6 +2497,13 @@
     <longdescription/>
   </dtconfig>
   <dtconfig>
+    <name>plugins/darkroom/histogram/vectorscope/angle</name>
+    <type>int</type>
+    <default>270</default>
+    <shortdescription/>
+    <longdescription>Angle in degrees to orient the vectorscope. 0 is the color science proper orientation (see CIE 1976 UCS diagram). 270 is what video editors are used to when using a vectorscope (with red/magenta in 12:00 position).</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/darkroom/histogram/show_red</name>
     <type>bool</type>
     <default>true</default>
