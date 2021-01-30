@@ -26,6 +26,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
 #include "common/colorspaces.h"
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -147,78 +148,10 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   dt_box_mean(out, roi_out->height, roi_out->width, 4, radius, BOX_ITERATIONS);
 
-  const float amount = (d->amount / 100.0);
-  const float amount_1 = (1 - (d->amount) / 100.0);
-
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
-  dt_omp_firstprivate(amount, amount_1, in, out, npixels) \
-  schedule(simd:static) aligned(in, out : 64) \
-  collapse(2)
-#endif
-  for(size_t k = 0; k < 4 * npixels; k += 4)
-  {
-    for(int c = 0; c < 4; c++)
-    {
-      out[k + c] = ((in[k + c] * amount_1) + (CLIP(out[k + c]) * amount));
-    }
-  }
+  const float amt = d->amount / 100.0f;
+  dt_iop_image_linear_blend(out, amt, in, roi_out->width, roi_out->height, 4);
 }
 
-#if defined(__SSE__)
-void process_sse2(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
-                  void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
-{
-  dt_iop_soften_data_t *const data = (dt_iop_soften_data_t *)piece->data;
-  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
-                                         ivoid, ovoid, roi_in, roi_out))
-    return; // image has been copied through to output and module's trouble flag has been updated
-
-  const float brightness = 1.0 / exp2f(-data->brightness);
-  const float saturation = data->saturation / 100.0;
-
-  const float *const restrict in = (const float *const)ivoid;
-  float *const restrict out = (float *const)ovoid;
-
-  const size_t npixels = (size_t)roi_out->width * roi_out->height;
-/* create overexpose image and then blur */
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, brightness, saturation) \
-  dt_omp_sharedconst(in, out) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < 4 * npixels; k += 4)
-  {
-    float h, s, l;
-    rgb2hsl(&in[k], &h, &s, &l);
-    s *= saturation;
-    l *= brightness;
-    hsl2rgb(&out[k], h, CLIP(s), CLIP(l));
-  }
-
-  const float w = piece->iwidth * piece->iscale;
-  const float h = piece->iheight * piece->iscale;
-  int mrad = sqrt(w * w + h * h) * 0.01;
-  int rad = mrad * (fmin(100.0, data->size + 1) / 100.0);
-  const int radius = MIN(mrad, ceilf(rad * roi_in->scale / piece->iscale));
-
-  dt_box_mean(out, roi_out->height, roi_out->width, 4, radius, BOX_ITERATIONS);
-
-  const __m128 amount = _mm_set1_ps(data->amount / 100.0);
-  const __m128 amount_1 = _mm_set1_ps(1 - (data->amount) / 100.0);
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, amount, amount_1, roi_out) \
-  dt_omp_sharedconst(in, out, data) \
-  schedule(static)
-#endif
-  for(size_t k = 0; k < 4 * npixels; k += 4)
-  {
-    _mm_store_ps(&out[k], ((_mm_load_ps(&in[k]) * amount_1) + (MM_CLIP_PS(_mm_load_ps(&out[k])) * amount)));
-  }
-}
-#endif
 
 #ifdef HAVE_OPENCL
 int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem dev_in, cl_mem dev_out,
