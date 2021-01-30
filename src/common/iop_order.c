@@ -73,7 +73,7 @@ const char *dt_iop_order_string(const dt_iop_order_t order)
 //
 // in the new code only the iop-order as int is used to order the module on the GUI.
 
-// @@_NEW_MOUDLE: For new module it is required to insert the new module name in both lists below.
+// @@_NEW_MODULE: For new module it is required to insert the new module name in both lists below.
 
 const dt_iop_order_entry_t legacy_order[] = {
   { { 1.0f }, "rawprepare", 0},
@@ -657,7 +657,7 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
         }
         else
         {
-          // @@_NEW_MOUDLE: For new module it is required to insert the new module name in the iop-order list here.
+          // @@_NEW_MODULE: For new module it is required to insert the new module name in the iop-order list here.
           //                The insertion can be done depending on the current iop-order list kind.
           _insert_before(iop_order_list, "nlmeans", "negadoctor");
           _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
