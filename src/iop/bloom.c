@@ -152,7 +152,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out, blurlightness) \
+  shared(blurlightness) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(size_t k = 0; k < npixels; k++)
