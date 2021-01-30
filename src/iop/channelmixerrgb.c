@@ -1125,6 +1125,7 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
 }
 
 #define DEG_TO_RAD(x) (x * M_PI / 180.f)
+#define RAD_TO_DEG(x) (x * 180.f / M_PI)
 
 static inline void compute_patches_delta_E(const float *const restrict patches,
                                            const dt_color_checker_t *const checker,
@@ -1160,52 +1161,64 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
     C_avg_7 *= C_avg_7;            // C_avg⁸
     C_avg_7 /= C_avg;              // C_avg⁷
     const float C_avg_7_ratio_sqrt = sqrtf(C_avg_7 / (C_avg_7 + 6103515625.f)); // 25⁷ = 6103515625
-    const float a_ref_prime = Lab_ref[1] + Lab_ref[1] / 2.f * (1.f - C_avg_7_ratio_sqrt);
-    const float a_test_prime = Lab_test[1] + Lab_test[1] / 2.f * (1.f - C_avg_7_ratio_sqrt);
-    const float C_test_prime = hypotf(a_ref_prime, Lab_ref[2]);
-    const float C_ref_prime = hypotf(a_test_prime, Lab_test[2]);
+    const float a_ref_prime = Lab_ref[1] * (1.f + 0.5f * (1.f - C_avg_7_ratio_sqrt));
+    const float a_test_prime = Lab_test[1] * (1.f + 0.5f * (1.f - C_avg_7_ratio_sqrt));
+    const float C_ref_prime = hypotf(a_ref_prime, Lab_ref[2]);
+    const float C_test_prime = hypotf(a_test_prime, Lab_test[2]);
     const float DC_prime = C_ref_prime - C_test_prime;
     const float C_avg_prime = (C_ref_prime + C_test_prime) / 2.f;
     float h_ref_prime = atan2f(Lab_ref[2], a_ref_prime);
     float h_test_prime = atan2f(Lab_test[2], a_test_prime);
 
-    // Get the hue angles from [-pi ; pi] back to [0 ; 2 pi]
+    // Comply with recommendations, h = 0° where C = 0 by convention
+    if(C_ref_prime == 0.f) h_ref_prime = 0.f;
+    if(C_test_prime == 0.f) h_test_prime = 0.f;
+
+    // Get the hue angles from [-pi ; pi] back to [0 ; 2 pi],
+    // again, to comply with specifications
     if(h_ref_prime < 0.f) h_ref_prime = 2.f * M_PI - h_ref_prime;
     if(h_test_prime < 0.f) h_test_prime = 2.f * M_PI - h_test_prime;
 
-    float Dh_prime = h_test_prime - h_ref_prime;
-    const float Dh_prime_abs = fabsf(Dh_prime);
-    if(C_test_prime == 0.f || C_ref_prime == 0.f)
-      Dh_prime = 0.f;
-    else if(Dh_prime_abs <= M_PI)
-      ;
-    else if(Dh_prime_abs > M_PI && (h_test_prime <= h_ref_prime))
-      Dh_prime += 2.f * M_PI;
-    else if(Dh_prime_abs > M_PI && (h_test_prime > h_ref_prime))
-      Dh_prime -= 2.f * M_PI;
+    // Convert to degrees, again to comply with specs
+    h_ref_prime = RAD_TO_DEG(h_ref_prime);
+    h_test_prime = RAD_TO_DEG(h_test_prime);
 
-    const float DH_prime = 2.f * sqrtf(C_test_prime * C_ref_prime) * sinf(Dh_prime / 2.f);
+    float Dh_prime = h_test_prime - h_ref_prime;
+    float Dh_prime_abs = fabsf(Dh_prime);
+    if(C_test_prime == 0.f && C_ref_prime == 0.f)
+      Dh_prime = 0.f;
+    else if(Dh_prime_abs <= 180.f)
+      ;
+    else if(Dh_prime_abs > 180.f && (h_test_prime <= h_ref_prime))
+      Dh_prime += 360.f;
+    else if(Dh_prime_abs > 180.f && (h_test_prime > h_ref_prime))
+      Dh_prime -= 360.f;
+
+    // update abs(Dh_prime) for later
+    Dh_prime_abs = fabsf(Dh_prime);
+
+    const float DH_prime = 2.f * sqrtf(C_test_prime * C_ref_prime) * sinf(DEG_TO_RAD(Dh_prime) / 2.f);
     float H_avg_prime = h_ref_prime + h_test_prime;
     if(C_test_prime == 0.f || C_ref_prime == 0.f)
       ;
-    else if(Dh_prime_abs <= M_PI)
+    else if(Dh_prime_abs <= 180.f)
       H_avg_prime /= 2.f;
-    else if(Dh_prime_abs > M_PI && (H_avg_prime < 2.f * M_PI))
-      H_avg_prime = (H_avg_prime + 2.f * M_PI) / 2.f;
-    else if(Dh_prime_abs > M_PI && (H_avg_prime >= 2.f * M_PI))
-      H_avg_prime = (H_avg_prime - 2.f * M_PI) / 2.f;
+    else if(Dh_prime_abs > 180.f && (H_avg_prime < 360.f))
+      H_avg_prime = (H_avg_prime + 360.f) / 2.f;
+    else if(Dh_prime_abs > 180.f && (H_avg_prime >= 360.f))
+      H_avg_prime = (H_avg_prime - 360.f) / 2.f;
 
     const float T = 1.f
-                    - 0.17f * cosf(H_avg_prime - M_PI / 6.f)
-                    + 0.24f * cosf(2.f * H_avg_prime)
-                    + 0.32f * cosf(3.f * H_avg_prime + DEG_TO_RAD(6.f))
-                    - 0.20f * cosf(4.f * H_avg_prime - DEG_TO_RAD(63.f));
+                    - 0.17f * cosf(DEG_TO_RAD(H_avg_prime) - DEG_TO_RAD(30.f))
+                    + 0.24f * cosf(2.f * DEG_TO_RAD(H_avg_prime))
+                    + 0.32f * cosf(3.f * DEG_TO_RAD(H_avg_prime) + DEG_TO_RAD(6.f))
+                    - 0.20f * cosf(4.f * DEG_TO_RAD(H_avg_prime) - DEG_TO_RAD(63.f));
 
     const float S_L = 1.f + (0.015f * sqf(L_avg - 50.f)) / sqrtf(20.f + sqf(L_avg - 50.f));
     const float S_C = 1.f + 0.045f * C_avg_prime;
     const float S_H = 1.f + 0.015f * C_avg_prime * T;
     const float R_T = -2.f * C_avg_7_ratio_sqrt
-                      * sinf(M_PI / 3.f * expf(-sqf((H_avg_prime - DEG_TO_RAD(275.f)) / DEG_TO_RAD(25.f))));
+                      * sinf(DEG_TO_RAD(60.f) * expf(-sqf((H_avg_prime - 275.f) / 25.f)));
 
     // roll the drum, here goes the Delta E, finally…
     const float DE = sqrtf(sqf(DL / S_L) + sqf(DC_prime / S_C) + sqf(DH_prime / S_H)
@@ -1520,9 +1533,9 @@ void extract_color_checker(const float *const restrict in, float *const restrict
       GET_WEIGHT;
     }
     else if(g->optimization == DT_SOLVE_OPTIMIZE_AVG_DELTA_E)
-      w = g->delta_E_in[k];
+      w = g->delta_E_in[k] / 100.f;
     else if(g->optimization == DT_SOLVE_OPTIMIZE_MAX_DELTA_E)
-      w = sqf(g->delta_E_in[k]);
+      w = sqf(g->delta_E_in[k] / 100.f);
 
     w = sqrtf(w);
 
