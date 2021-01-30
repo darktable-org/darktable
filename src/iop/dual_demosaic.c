@@ -23,10 +23,6 @@
    Also the code for fast_blur has been taken from rawtherapee capturesharpening,
    implemented also by Ingo Weyrich.
 */
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("-Ofast")
-#endif
 
 static INLINE float calcBlendFactor(float val, float threshold)
 {
@@ -114,14 +110,6 @@ static void fast_blur(float *const restrict src, float *const restrict out, cons
   }
 }
 
-// the following function produces a crash in Windows with gcc -Ofast (#8025), therefore we disable it
-// TODO: for the moment only for this function, but if other issues will emerge, we will have to disable -Ofast more in general
-#ifdef _WIN32
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
-#endif
-
 static void blend_images(float *const restrict rgb_data, float *const restrict blend, float *const restrict tmp, const int width, const int height, const float threshold, const gboolean dual_mask)
 {
   float *const luminance = blend; // re-use this as temporary data
@@ -169,14 +157,6 @@ static void blend_images(float *const restrict rgb_data, float *const restrict b
   }
   fast_blur(tmp, blend, width, height, 2.0f);
 }
-
-// re-enabling gcc -Ofast
-#ifdef _WIN32
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("-Ofast")
-#endif
-#endif
 
 // dual_demosaic is always called **after** the high-frequency demosaicer (rcd, amaze or one of the non-bayer demosaicers)
 // and expects the data available in rgb_data as rgba quadruples. 
@@ -256,8 +236,3 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   dt_free_align(blend);
   dt_free_align(vng_image);
 }
-
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
-
