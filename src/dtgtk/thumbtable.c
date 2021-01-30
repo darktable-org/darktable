@@ -1159,7 +1159,7 @@ static void _thumbs_ask_for_discard(dt_thumbtable_t *table)
       txt = dt_util_dstrcat(txt, _("cached thumbnails between level %d and %d need to be invalidated.\n\n"),
                             min_level, max_level);
 
-    txt = dt_util_dstrcat(txt, _("do you want to that now ?"));
+    txt = dt_util_dstrcat(txt, _("do you want to do that now?"));
 
     dialog = gtk_message_dialog_new(GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION,
                                     GTK_BUTTONS_YES_NO, "%s", txt);
