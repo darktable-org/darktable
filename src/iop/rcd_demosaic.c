@@ -48,12 +48,6 @@
   #define RCD_TILESIZE 112
 #endif
 
-// Make sure we use -Ofast only in the rcd code section
-#ifdef __GNUC__
-  #pragma GCC push_options
-  #pragma GCC optimize ("-Ofast")
-#endif
-
 #ifdef __GNUC__
   #define INLINE __inline
 #else
@@ -500,10 +494,6 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   }
   rcd_border_interpolate(piece, out, in, roi_out, roi_in, filters, RCD_MARGIN);
 }
-
-#ifdef __GNUC__
-  #pragma GCC pop_options
-#endif
 
 #undef FCRCD
 #undef RCD_BORDER
