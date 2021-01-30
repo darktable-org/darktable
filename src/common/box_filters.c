@@ -609,7 +609,7 @@ static void blur_vertical_1ch(float *const restrict buf, const size_t height, co
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width) \
+  dt_omp_firstprivate(radius, height, width, eff_height) \
   shared(darktable) \
   dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
@@ -687,7 +687,7 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
     blur_horizontal_4ch(buf, height, width, radius, scanlines);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(width, height, radius)  \
+  dt_omp_firstprivate(width, height, radius, eff_height) \
   shared(darktable) \
   dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
@@ -939,7 +939,7 @@ static void box_max_1ch(float *const buf, const size_t height, const size_t widt
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none)           \
-  dt_omp_firstprivate(w, width, height, buf, allocsize) \
+  dt_omp_firstprivate(w, width, height, buf, allocsize, eff_height) \
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
@@ -948,6 +948,7 @@ static void box_max_1ch(float *const buf, const size_t height, const size_t widt
     float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
     box_max_vert_16wide(height, scratch, buf + col, width, w, eff_height-1);
   }
+  // handle the leftover 0..15 columns
   for (size_t col = width & ~15 ; col < width; col++)
   {
     float *const restrict scratch = scratch_buffers;
@@ -1080,7 +1081,7 @@ static void box_min_1ch(float *const buf, const size_t height, const size_t widt
   }
 #ifdef _OPENMP
 #pragma omp parallel for default(none)           \
-  dt_omp_firstprivate(w, width, height, buf,allocsize) \
+  dt_omp_firstprivate(w, width, height, buf,allocsize, eff_height) \
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
@@ -1089,6 +1090,7 @@ static void box_min_1ch(float *const buf, const size_t height, const size_t widt
     float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
     box_min_vert_16wide(height, scratch, buf + col, width, w, eff_height-1);
   }
+  // handle the leftover 0..15 columns
   for (size_t col = width & ~15 ; col < width; col++)
   {
     float *const restrict scratch = scratch_buffers;
