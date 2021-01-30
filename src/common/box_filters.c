@@ -644,8 +644,7 @@ static void blur_vertical_1ch(float *const restrict buf, const size_t height, co
 }
 
 // determine the size of the scratch buffer needed for vertical passes of the box-mean filter
-//   for plainC code: filter_window = 2**ceil(lg2(2*radius+1))
-//   for SSE code: filter_window = height;
+// filter_window = 2**ceil(lg2(2*radius+1))
 static size_t _compute_effective_height(const size_t height, const size_t radius)
 {
   size_t eff_height = 2;
@@ -696,18 +695,8 @@ static void dt_box_mean_4ch(float *const buf, const int height, const int width,
     for (size_t col = 0; col < (width & ~3); col += 4)
     {
       float *const restrict scratch = scanlines + 16 * dt_get_thread_num() * eff_height;
-#ifdef __SSE2__
-      if (darktable.codepath.SSE2)
-      {
-        // we need to multiply width by 4 to get the correct stride for the vertical blur  //!!!
-        blur_vertical_4ch_sse(buf + 4 * col, height, 4*width, radius, (__m128*)scratch);
-      }
-      else
-#endif /* __SSE2__ */
-      {
-        // we need to multiply width by 4 to get the correct stride for the vertical blur
-        blur_vertical_16wide(buf + 4 * col, height, 4*width, radius, scratch);
-      }
+      // we need to multiply width by 4 to get the correct stride for the vertical blur
+      blur_vertical_16wide(buf + 4 * col, height, 4*width, radius, scratch);
     }
     // handle the 0..3 remaining columns
     for (size_t col = (width & ~3); col < width; col++)
