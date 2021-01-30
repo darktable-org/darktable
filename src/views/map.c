@@ -877,11 +877,14 @@ static GdkPixbuf *_draw_location(dt_map_t *lib, int *width, int *height,
   if(shape == MAP_LOCATION_SHAPE_ELLIPSE)
   {
     draw = _draw_ellipse(pixel_lon, pixel_lat, main);
-    if(pixel_lon > pixel_lat) pixel_lat = pixel_lon;
-    else pixel_lon = pixel_lat;
+    if(pixel_lon > pixel_lat)
+      pixel_lat = pixel_lon;
+    else
+      pixel_lon = pixel_lat;
   }
   else if(shape == MAP_LOCATION_SHAPE_RECTANGLE)
     draw = _draw_rectangle(pixel_lon, pixel_lat, main);
+
   if(width) *width = (int)pixel_lon;
   if(height) *height = (int)pixel_lat;
   return draw;
@@ -896,8 +899,7 @@ static OsmGpsMapImage *_view_map_draw_location(dt_map_t *lib, const int shape,
   OsmGpsMapImage *location = NULL;
   if(draw)
   {
-    location = osm_gps_map_image_add_with_alignment(lib->map, lat, lon,
-                                                    draw, 0.5, 0.5);
+    location = osm_gps_map_image_add_with_alignment(lib->map, lat, lon, draw, 0.5, 0.5);
     g_object_unref(draw);
   }
   return location;
