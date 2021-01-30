@@ -1504,7 +1504,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // read all sidecar files
   const int nb_xmp = _image_read_duplicates(id, normalized_filename);
 
-  if(res != 0 && !nb_xmp)
+  if((res != 0) && (nb_xmp == 0))
   {
     // Search for Lightroom sidecar file, import tags if found
     dt_lightroom_import(id, NULL, TRUE);
