@@ -767,7 +767,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
     dt_develop_t *dev = module->dev;
 
     dt_ioppr_get_work_profile_type(dev, &type, &filename);
-    if(filename) profile = dt_ioppr_add_profile_info_to_list(dev, type, filename, DT_INTENT_PERCEPTUAL);
+    if(filename) profile = dt_ioppr_add_profile_info_to_list(dev, type, filename, DT_INTENT_RELATIVE_COLORIMETRIC);
   }
 
   return profile;

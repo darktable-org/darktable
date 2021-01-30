@@ -296,8 +296,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
   const int preserve_colors = d->preserve_colors;
 
-  const dt_iop_order_iccprofile_info_t *const work_profile
-    = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_add_profile_info_to_list(
+      self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
 
   cl_mem dev_profile_info = NULL;
   cl_mem dev_profile_lut = NULL;
@@ -375,8 +375,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return; // image has been copied through to output and module's trouble flag has been updated
 
   const dt_iop_tonecurve_data_t *const restrict d = (dt_iop_tonecurve_data_t *)(piece->data);
-  const dt_iop_order_iccprofile_info_t *const work_profile
-    = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_add_profile_info_to_list(
+      self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   const float xm_L = 1.0f / d->unbounded_coeffs_L[0];
   const float xm_ar = 1.0f / d->unbounded_coeffs_ab[0];
   const float xm_al = 1.0f - 1.0f / d->unbounded_coeffs_ab[3];

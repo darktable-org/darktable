@@ -317,7 +317,7 @@ static void _expose_tethered_mode(dt_view_t *self, cairo_t *cr, int32_t width, i
         {
           // FIXME: if liveview image is tagged and we can read its colorspace, use that
           const dt_iop_order_iccprofile_info_t *const profile_from
-              = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", INTENT_PERCEPTUAL);
+              = dt_ioppr_add_profile_info_to_list(dev, DT_COLORSPACE_SRGB, "", DT_INTENT_RELATIVE_COLORIMETRIC);
           dt_ioppr_transform_image_colorspace_rgb(tmp_f, tmp_f, pw, ph, profile_from, profile_to,
                                                   "live view histogram");
         }

@@ -483,7 +483,8 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
     p->type_work = type_work;
     g_strlcpy(p->filename_work, filename_work, sizeof(p->filename_work));
 
-    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_add_profile_info_to_list(self->dev, p->type_work, p->filename_work, DT_INTENT_PERCEPTUAL);
+    const dt_iop_order_iccprofile_info_t *const work_profile = dt_ioppr_add_profile_info_to_list(
+        self->dev, p->type_work, p->filename_work, DT_INTENT_RELATIVE_COLORIMETRIC);
     if(work_profile == NULL || isnan(work_profile->matrix_in[0]) || isnan(work_profile->matrix_out[0]))
     {
       fprintf(stderr, "[colorin] can't extract matrix from colorspace `%s', it will be replaced by Rec2020 RGB!\n", p->filename_work);
@@ -1724,7 +1725,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   }
 
   // commit color profiles to pipeline
-  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work, DT_INTENT_PERCEPTUAL);
+  dt_ioppr_set_pipe_work_profile_info(self->dev, piece->pipe, d->type_work, d->filename_work,
+                                      DT_INTENT_RELATIVE_COLORIMETRIC);
   dt_ioppr_set_pipe_input_profile_info(self->dev, piece->pipe, d->type, d->filename, p->intent, d->cmatrix);
 }
 

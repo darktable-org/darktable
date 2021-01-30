@@ -374,10 +374,10 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   }
 
   // shortcut for a fast gamma change
-  const dt_iop_order_iccprofile_info_t *profile_linear =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_PERCEPTUAL);
-  const dt_iop_order_iccprofile_info_t *profile_work =
-    dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
+  const dt_iop_order_iccprofile_info_t *profile_linear = dt_ioppr_add_profile_info_to_list(
+      darktable.develop, DT_COLORSPACE_LIN_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
+  const dt_iop_order_iccprofile_info_t *profile_work = dt_ioppr_add_profile_info_to_list(
+      darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_RELATIVE_COLORIMETRIC);
   // in place transform will preserve alpha
   // dt's transform is approx. 2x faster than LCMS here
   // FIXME: optimize by just doing the extrapolate_lut() work and make our own sensible LUT with enough resolution to provide continuous tone
