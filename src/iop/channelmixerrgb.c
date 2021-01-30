@@ -89,7 +89,7 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   dt_illuminant_t illuminant;      // $DEFAULT: DT_ILLUMINANT_D
   dt_illuminant_fluo_t illum_fluo; // $DEFAULT: DT_ILLUMINANT_FLUO_F3 $DESCRIPTION: "F source"
   dt_illuminant_led_t illum_led;   // $DEFAULT: DT_ILLUMINANT_LED_B5 $DESCRIPTION: "LED source"
-  dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_LINEAR_BRADFORD
+  dt_adaptation_t adaptation;      // $DEFAULT: DT_ADAPTATION_CAT16
   float x, y;                      // $DEFAULT: 0.333
   float temperature;               // $MIN: 1667. $MAX: 25000. $DEFAULT: 5003.
   float gamut;                     // $MIN: 0.0 $MAX: 4.0 $DEFAULT: 1.0 $DESCRIPTION: "gamut compression"
@@ -1103,9 +1103,6 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
   // Check the error between original and test chromaticity
   if(delta_bb < 0.005f || delta_daylight < 0.005f)
   {
-    // Bradford is more accurate for daylight
-    if(adaptation) *adaptation = DT_ADAPTATION_LINEAR_BRADFORD;
-
     if(illuminant)
     {
       if(delta_bb < delta_daylight)
@@ -1118,10 +1115,10 @@ static void check_if_close_to_daylight(const float x, const float y, float *temp
   {
     // error is too big to use a CCT-based model, we fall back to a custom/freestyle chroma selection for the illuminant
     if(illuminant) *illuminant = DT_ILLUMINANT_CUSTOM;
-
-    // CAT16 is less accurate but more robust for non-daylight (produces fewer out-of-gamut colors)
-    if(adaptation) *adaptation = DT_ADAPTATION_CAT16;
   }
+
+  // CAT16 is more accurate no matter the illuminant
+  if(adaptation) *adaptation = DT_ADAPTATION_CAT16;
 }
 
 #define DEG_TO_RAD(x) (x * M_PI / 180.f)
