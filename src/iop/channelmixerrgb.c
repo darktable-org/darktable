@@ -1252,7 +1252,7 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
         delta_hue += 2.f * M_PI;                                  \
       else if(fabsf(delta_hue) > M_PI && (hue > ref_hue))         \
         delta_hue -= 2.f * M_PI;                                  \
-      w = expf(-sqf(delta_hue) / 2.f);
+      w = sqrtf(expf(-sqf(delta_hue) / 2.f));
 
 
 typedef struct {
@@ -1533,11 +1533,9 @@ void extract_color_checker(const float *const restrict in, float *const restrict
       GET_WEIGHT;
     }
     else if(g->optimization == DT_SOLVE_OPTIMIZE_AVG_DELTA_E)
-      w = g->delta_E_in[k] / 100.f;
+      w = sqrtf(sqrtf(g->delta_E_in[k] / 100.f));
     else if(g->optimization == DT_SOLVE_OPTIMIZE_MAX_DELTA_E)
-      w = sqf(g->delta_E_in[k] / 100.f);
-
-    w = sqrtf(w);
+      w = sqrtf(g->delta_E_in[k] / 100.f);
 
     // fill 3 rows of the y column vector
     for(size_t c = 0; c < 3; c++) Y[k * 3 + c] = w * LMS_ref[c];
