@@ -248,10 +248,10 @@ const dt_iop_order_entry_t v30_order[] = {
   { {67.0f }, "splittoning", 0},     // creative module
   { {68.0f }, "vignette", 0},        // creative module
   { {69.0f }, "colorreconstruct", 0},// try to salvage blown areas before ICC intents in LittleCMS2 do things with them.
+  { {69.5f }, "overexposed", 0},
   { {70.0f }, "colorout", 0},
   { {71.0f }, "clahe", 0},
   { {72.0f }, "finalscale", 0},
-  { {73.0f }, "overexposed", 0},
   { {74.0f }, "rawoverexposed", 0},
   { {75.0f }, "dither", 0},
   { {76.0f }, "borders", 0},
