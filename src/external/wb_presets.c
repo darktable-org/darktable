@@ -2513,13 +2513,13 @@ const wb_data wb_preset[] =
   
   
   /* Fujifilm X100V firmware 1.10 */
+  { "Fujifilm", "X100V", Daylight, 0,                 { 1.784768, 1, 1.768212, 0 } },
   { "Fujifilm", "X100V", Cloudy, 0,                   { 1.94702, 1, 1.516556, 0 } },
-  { "Fujifilm", "X100V", Daylight Fluorescent, 0,     { 2.327815, 1, 1.536424, 0 } },
-  { "Fujifilm", "X100V", Day White Fluorescent, 0,    { 1.980132, 1, 1.907285, 0 } },
-  { "Fujifilm", "X100V", White Fluorescent, 0,        { 1.887417, 1, 2.42053, 0 } },
+  { "Fujifilm", "X100V", DaylightFluorescent, 0,     { 2.327815, 1, 1.536424, 0 } },
+  { "Fujifilm", "X100V", DayWhiteFluorescent, 0,    { 1.980132, 1, 1.907285, 0 } },
+  { "Fujifilm", "X100V", WhiteFluorescent, 0,        { 1.887417, 1, 2.42053, 0 } },
   { "Fujifilm", "X100V", Incandescent, 0,             { 1.192053, 1, 2.701987, 0 } },
   { "Fujifilm", "X100V", Underwater, 0,               { 1.778146, 1, 1.751656, 0 } },
-  { "Fujifilm", "X100V", Daylight, 0,                 { 1.784768, 1, 1.768212, 0 } },
 
 
   { "Fujifilm", "X20", Daylight           , 0, { 1.688742, 1, 1.850993, 0 } },
