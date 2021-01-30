@@ -1182,7 +1182,7 @@ static inline void compute_patches_delta_E(const float *const restrict patches,
 
     float Dh_prime = h_test_prime - h_ref_prime;
     float Dh_prime_abs = fabsf(Dh_prime);
-    if(C_test_prime == 0.f && C_ref_prime == 0.f)
+    if(C_test_prime == 0.f || C_ref_prime == 0.f)
       Dh_prime = 0.f;
     else if(Dh_prime_abs <= 180.f)
       ;
