@@ -20,6 +20,7 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
@@ -107,31 +108,38 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
-  const float *const restrict in = (float *)ivoid;
-  float *const restrict out = (float *)ovoid;
+  float *restrict blurlightness;
+  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &blurlightness, 0))
+  {
+    // out of memory, so just copy image through to output
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, TRUE);
+    return;
+  }
+
+  const float *const restrict in = DT_IS_ALIGNED((float *)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *)ovoid);
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
   /* gather light by threshold */
-  float *const restrict blurlightness = dt_alloc_align_float(npixels);
-//  memcpy(out, in, npixels * 4 * sizeof(float));  //TODO: do we need this?
-
   const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
   const float scale = 1.0f / exp2f(-1.0f * (fmin(100.0f, data->strength + 1.0f) / 100.0f));
 
+  const float threshold = data->threshold;
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, npixels, scale) \
-  dt_omp_sharedconst(data, blurlightness) \
+  dt_omp_firstprivate(npixels, scale, threshold) \
+  shared(blurlightness) \
+  dt_omp_sharedconst(in) \
   schedule(static)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
     const float L = in[4*k] * scale;
-    blurlightness[k] = (L > data->threshold) ? L : 0.0f;
+    blurlightness[k] = (L > threshold) ? L : 0.0f;
   }
 
   /* horizontal blur into memchannel lightness */
@@ -144,7 +152,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out, blurlightness) \
+  shared(blurlightness) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(size_t k = 0; k < npixels; k++)
