@@ -170,7 +170,7 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
 // written in place, so we get a net win from better vectorization.
 static void load_add_4wide(float *const restrict out, float *const restrict accum, const float *const restrict values)
 {
-  for_four_channels(c,aligned(accum,values))
+  for_four_channels(c,aligned(accum))
   {
     const float v = values[c];
     accum[c] += v;
@@ -180,13 +180,13 @@ static void load_add_4wide(float *const restrict out, float *const restrict accu
 
 static void sub_4wide(float *const restrict accum, const float *const restrict values)
 {
-  for_four_channels(c,aligned(accum,values))
+  for_four_channels(c,aligned(accum))
     accum[c] -= values[c];
 }
 
 static void store_scaled_4wide(float *const restrict out, const float *const restrict in, const float scale)
 {
-  for_four_channels(c,aligned(in,out))
+  for_four_channels(c,aligned(in))
     out[c] = in[c] / scale;
 }
 
