@@ -602,7 +602,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
      do that only in the darkroom as there is nothing to be saved
      when in the lighttable (and it would write over current history stack) */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
+  if(cv->view(cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
   const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
 
