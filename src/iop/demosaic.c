@@ -5042,9 +5042,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
       dt_control_log(_("`%s' color matrix not found for 4bayer image!"), camera);
     }
   }
-
-  dt_print(DT_DEBUG_DEMOSAIC, "[demosaic] committed parameters: method: `%s', smooth %i, green %i, CL %i, tiling %i\n",
-      method2string(d->demosaicing_method), d->color_smoothing, d->green_eq, piece->process_cl_ready, piece->process_tiling_ready);
 }
 
 void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
