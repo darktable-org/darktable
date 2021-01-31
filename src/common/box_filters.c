@@ -48,11 +48,11 @@
 #endif
 
 static void blur_horizontal_1ch(float *const restrict buf, const int height, const int width, const int radius,
-                                float *const restrict scanlines)
+                                float *const restrict scanlines, const size_t padded_size)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width) \
+  dt_omp_firstprivate(radius, height, width, padded_size) \
   dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
 #endif
@@ -61,7 +61,7 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
     float L = 0;
     int hits = 0;
     const size_t index = (size_t)y * width;
-    float *const restrict scanline = scanlines + dt_get_thread_num() * width;
+    float *const restrict scanline = dt_get_perthread(scanlines,padded_size);
     // add up the left half of the window
     for (int x = 0; x < radius && x < width ; x++)
     {
@@ -105,17 +105,17 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
 }
 
 static void blur_horizontal_2ch(float *const restrict buf, const int height, const int width, const int radius,
-                                float *const restrict scanlines)
+                                float *const restrict scanlines, const size_t padded_size)
 {
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(radius, height, width) \
+  dt_omp_firstprivate(radius, height, width, padded_size)   \
   dt_omp_sharedconst(buf, scanlines) \
   schedule(static)
 #endif
   for(int y = 0; y < height; y++)
   {
-    float *const restrict scanline = scanlines + 2 * dt_get_thread_num() * width;
+    float *const restrict scanline = dt_get_perthread(scanlines, padded_size);
     float L1 = 0.0f, L2 = 0.0f;
     int hits = 0;
     const size_t index = (size_t)2 * y * width;
@@ -1028,7 +1028,7 @@ static void dt_box_mean_1ch(float *const buf, const size_t height, const size_t 
 
   for(unsigned iteration = 0; iteration < iterations; iteration++)
   {
-    blur_horizontal_1ch(buf, height, width, radius, scanlines);
+    blur_horizontal_1ch(buf, height, width, radius, scanlines, padded_size);
     blur_vertical_1ch(buf, height, width, radius, scanlines, padded_size);
   }
 
@@ -1065,7 +1065,7 @@ static void box_mean_vert_1ch_Kahan(float *const buf, const int height, const si
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(width, height, radius, padded_size) \
-  dt_omp_sharedconst(buf, scanlines) \
+  dt_omp_sharedconst(buf, scratch_buf) \
   schedule(static)
 #endif
   for (size_t col = 0; col < width; col += 16)
@@ -1131,7 +1131,7 @@ static inline void box_mean_2ch(float *const restrict in, const size_t height, c
 
   for (unsigned iteration = 0; iteration < iterations; iteration++)
   {
-    blur_horizontal_2ch(in, height, width, radius, temp);
+    blur_horizontal_2ch(in, height, width, radius, temp, padded_size);
     blur_vertical_1ch(in, height, 2*width, radius, temp, padded_size);
   }
   dt_free_align(temp);
