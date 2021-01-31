@@ -1303,13 +1303,13 @@ static void box_max_1ch(float *const buf, const size_t height, const size_t widt
   float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(w, width, height, buf)    \
+  dt_omp_firstprivate(w, width, height, buf, allocsize) \
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
   {
-    float *const restrict scratch = scratch_buffers + width * dt_get_thread_num();
+    float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
     memcpy(scratch, buf + row * width, sizeof(float) * width);
     box_max_1d(width, scratch, buf + row * width, 1, w);
   }
@@ -1445,13 +1445,13 @@ static void box_min_1ch(float *const buf, const size_t height, const size_t widt
   float *const restrict scratch_buffers = dt_alloc_perthread_float(scratch_size,&allocsize);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(w, width, height, buf)    \
+  dt_omp_firstprivate(w, width, height, buf, allocsize) \
   dt_omp_sharedconst(scratch_buffers) \
   schedule(static)
 #endif
   for(size_t row = 0; row < height; row++)
   {
-    float *const restrict scratch = scratch_buffers + width * dt_get_thread_num();
+    float *const restrict scratch = dt_get_perthread(scratch_buffers,allocsize);
     memcpy(scratch, buf + row * width, sizeof(float) * width);
     box_min_1d(width, scratch, buf + row * width, 1, w);
   }
