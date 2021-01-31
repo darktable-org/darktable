@@ -60,11 +60,13 @@
      handling of math interrupts
      handling of rounding 
      handling of overflows
+
+   The 'fp-contract=fast' option enables fused multiply&add if available 
 */
 
 #ifdef __GNUC__
   #pragma GCC push_options
-  #pragma GCC optimize ("fast-math") 
+  #pragma GCC optimize ("fast-math", "fp-contract=fast") 
 #endif
 
 #ifdef __GNUC__
