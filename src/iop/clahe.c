@@ -121,8 +121,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
   const float slope = data->slope;
 
-  const size_t destbuf_size = roi_out->width;
-  float *const dest_buf = malloc(sizeof(float) * dt_get_num_threads() * destbuf_size);
+  size_t destbuf_size;
+  float *const restrict dest_buf = dt_alloc_perthread_float(roi_out->width, &destbuf_size);
 
 // CLAHE
 #ifdef _OPENMP
@@ -144,7 +144,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     int hist[BINS + 1];
     int clippedhist[BINS + 1];
 
-    float *dest = dest_buf + destbuf_size * dt_get_thread_num();
+    float *dest = dt_get_perthread(dest_buf, destbuf_size);
 
     /* initially fill histogram */
     memset(hist, 0, sizeof(int) * (BINS + 1));
@@ -245,7 +245,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     }
   }
 
-  free(dest_buf);
+  dt_free_align(dest_buf);
 
   // Cleanup
   free(luminance);

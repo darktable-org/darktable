@@ -183,27 +183,28 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
 
   const uint16_t *const raw = (const uint16_t *const)buf.buf;
-  float *const out = (float *const)ovoid;
+  float *const restrict out = DT_IS_ALIGNED((float *const)ovoid);
 
   // NOT FROM THE PIPE !!!
   const uint32_t filters = image->buf_dsc.filters;
   const uint8_t(*const xtrans)[6] = (const uint8_t(*const)[6])image->buf_dsc.xtrans;
 
   // acquire temp memory for distorted pixel coords
-  const size_t coordbufsize = (size_t)roi_out->width * 2;
-  float *coordbuf = dt_alloc_align_float(coordbufsize * dt_get_num_threads());
+  size_t coordbufsize;
+  float *const restrict coordbuf = dt_alloc_perthread_float(2*roi_out->width, &coordbufsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for SIMD() default(none) \
   dt_omp_firstprivate(ch, color, coordbufsize, d, \
                       dt_iop_rawoverexposed_colors, filters, iop_order, mode, \
                       out, raw, roi_in, roi_out, xtrans) \
-  shared(self, coordbuf, buf) \
+  dt_omp_sharedconst(coordbuf) \
+  shared(self, buf) \
   schedule(static)
 #endif
   for(int j = 0; j < roi_out->height; j++)
   {
-    float *bufptr = coordbuf + (size_t)coordbufsize * dt_get_thread_num();
+    float *const restrict bufptr = dt_get_perthread(coordbuf, coordbufsize);
 
     // here are all the pixels of this row
     for(int i = 0; i < roi_out->width; i++)
