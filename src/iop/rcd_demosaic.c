@@ -48,6 +48,25 @@
   #define RCD_TILESIZE 112
 #endif
 
+/* We don't want to use the -Ofast option in dt as it effects are not well specified and there have been issues
+   leading to crashes. 
+   But we can use the 'fast-math' option in code sections if input data and algorithms are well defined.
+    
+   We have defined input data and make sure there are no divide-by-zero or overflows by chosen eps
+   Reordering of instructions might lead to a slight loss of presision whigh is not significant here.  
+   Not necessary in this code section
+     threadsafe handling of errno
+     signed zero handling
+     handling of math interrupts
+     handling of rounding 
+     handling of overflows
+*/
+
+#ifdef __GNUC__
+  #pragma GCC push_options
+  #pragma GCC optimize ("fast-math") 
+#endif
+
 #ifdef __GNUC__
   #define INLINE __inline
 #else
@@ -76,7 +95,7 @@ static INLINE float intp(float a, float b, float c)
     return a * (b - c) + c;
 }
 
-// We might have negative data in input and want to normalise data 
+// We might have negative data in input and also want to normalise 
 static INLINE float safe_in(float a, float scale)
 {
   return fmaxf(0.0f, a) * scale;
@@ -494,6 +513,11 @@ static void rcd_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict ou
   }
   rcd_border_interpolate(piece, out, in, roi_out, roi_in, filters, RCD_MARGIN);
 }
+
+// revert rcd specific aggressive optimizing 
+#ifdef __GNUC__
+  #pragma GCC pop_options
+#endif
 
 #undef FCRCD
 #undef RCD_BORDER
