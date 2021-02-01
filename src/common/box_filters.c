@@ -314,7 +314,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   __m128 hits = { 0, 0, 0, 0 };
   const __m128 one = { 1.0f, 1.0f, 1.0f, 1.0f };
   // add up the top half of the window
-  for (size_t y = 0; y < radius && y < height; y++)
+  for (size_t y = 0; y < MIN(radius, height); y++)
   {
     PREFETCH_NTA(buf + (y+16)*width);
     hits += one;
@@ -324,7 +324,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= MIN(radius, height-1); y++)
+  for (y = 0; y <= MIN(radius, height-radius-1); y++)
   {
     const size_t np = y + radius;
     hits += one;
@@ -336,7 +336,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
     _mm_storeu_ps(buf + y*width, L / hits);
   }
   // process the blur for the bulk of the scan line
-  for ( ; y < height-radius; y++)
+  for ( ; y + radius < height; y++)
   {
     const size_t np = y + radius;
     const size_t op = y - radius - 1;
@@ -385,7 +385,7 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= MIN(radius, height-1); y++)
+  for (y = 0; y <= MIN(radius, height-radius-1); y++)
   {
     const size_t np = y + radius;
     hits += one;
@@ -399,11 +399,11 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
     }
   }
   // process the blur for the bulk of the scan line
-  for ( ; y < height-radius; y++)
+  for ( ; y + radius < height; y++)
   {
     const size_t np = y + radius;
     const size_t op = y - radius - 1;
-    PREFETCH_NTA(buf + (np+16)*width);
+    PREFETCH_NTA(buf + (np+32)*width);
     for (size_t c = 0; c < 4; c++)
     {
       const __m128 v = _mm_loadu_ps(buf + np*width + 4*c);
@@ -465,7 +465,7 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
     buf[y*width] = L / hits;
   }
   // process the bulk of the column
-  for( ; y < height-radius; y++)
+  for( ; y + radius < height; y++)
   {
     const int op = y - radius - 1;
     const int np = y + radius;
@@ -529,7 +529,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
     store_scaled_4wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the scan line
-  for ( ; y < height-radius; y++)
+  for ( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
@@ -582,7 +582,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
     store_scaled_16wide(buf + y*width, L, hits);
   }
   // process the blur for the bulk of the scan line
-  for ( ; y < height-radius; y++)
+  for ( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
