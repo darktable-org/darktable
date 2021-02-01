@@ -58,6 +58,7 @@ typedef struct dt_lib_geotagging_t
   time_t offset;
   uint32_t imgid;
   GtkWidget *apply_offset;
+  GtkWidget *lock_offset;
   GtkWidget *apply_datetime;
   GtkWidget *timezone;
   GList *timezones;
@@ -420,8 +421,10 @@ static void _display_offset(const time_t offset_int, const gboolean valid, dt_li
     for(int i = 2; i < 6; i++)
       gtk_entry_set_text(GTK_ENTRY(d->of.widget[i]), "-");
   }
+  const gboolean locked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->lock_offset));
   gtk_widget_set_sensitive(d->apply_offset, d->imgid && valid && !off2 && offset_int);
-  gtk_widget_set_sensitive(d->apply_datetime, d->imgid);
+  gtk_widget_set_sensitive(d->lock_offset, locked || (d->imgid && valid && !off2 && offset_int));
+  gtk_widget_set_sensitive(d->apply_datetime, d->imgid && !locked);
 }
 
 static void _display_datetime(dt_lib_datetime_t *dtw, const time_t datetime)
@@ -484,10 +487,14 @@ static time_t _read_datetime_entry(dt_lib_module_t *self)
 static void _datetime_changed(GtkWidget *entry, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-  d->datetime = _read_datetime_entry(self);
-  if(d->datetime > 0)
-    d->offset = d->datetime - d->datetime0;
-  _display_offset(d->offset, d->datetime > 0, self);
+  const gboolean locked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->lock_offset));
+  if(!locked)
+  {
+    d->datetime = _read_datetime_entry(self);
+    if(d->datetime > 0)
+      d->offset = d->datetime - d->datetime0;
+    _display_offset(d->offset, d->datetime > 0, self);
+  }
 }
 
 static time_t _get_datetime_from_text(const char *text)
@@ -528,9 +535,13 @@ static time_t _get_image_datetime(dt_lib_module_t *self)
 static void _refresh_image_datetime(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+  const gboolean locked = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->lock_offset));
   time_t datetime = _get_image_datetime(self);
-  d->datetime = d->datetime0 = datetime;
+  d->datetime0 = datetime;
   _display_datetime(&d->dt0, datetime);
+  if(datetime && locked)
+    datetime += d->offset;
+  d->datetime = datetime;
   _display_datetime(&d->dt, datetime);
 }
 
@@ -744,6 +755,17 @@ static gboolean _completion_match_func(GtkEntryCompletion *completion, const gch
   return res;
 }
 
+static void _toggle_lock_button_callback(GtkToggleButton *button, dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+  const gboolean locked = gtk_toggle_button_get_active(button);
+  for(int i = 0; i < 6; i++)
+  {
+    gtk_widget_set_sensitive(d->dt.widget[i], !locked);
+  }
+  gtk_widget_set_sensitive(d->apply_datetime, d->imgid && !locked);
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)malloc(sizeof(dt_lib_geotagging_t));
@@ -764,7 +786,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *box = _gui_init_datetime(&d->dt, 0, self);
   gtk_widget_set_halign(box, GTK_ALIGN_END);
   gtk_widget_set_hexpand(box, TRUE);
-  gtk_grid_attach(grid, box, 1, line++, 1, 1);
+  gtk_grid_attach(grid, box, 1, line++, 2, 1);
 
   label = dt_ui_label_new(_("original date time"));
   gtk_grid_attach(grid, label, 0, line, 1, 1);
@@ -772,16 +794,22 @@ void gui_init(dt_lib_module_t *self)
   box = _gui_init_datetime(&d->dt0, 1, self);
   gtk_widget_set_halign(box, GTK_ALIGN_END);
   gtk_widget_set_hexpand(box, TRUE);
-  gtk_grid_attach(grid, box, 1, line++, 1, 1);
+  gtk_grid_attach(grid, box, 1, line++, 2, 1);
 
   label = dt_ui_label_new(_("date time offset"));
   gtk_grid_attach(grid, label, 0, line, 1, 1);
   gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss)"));
 
+  d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
+  gtk_widget_set_tooltip_text(d->lock_offset, _("lock date time offset value to apply it onto another selection"));
+  gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_END);
+  gtk_grid_attach(grid, d->lock_offset, 1, line, 1, 1);
+  g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
+
   box = _gui_init_datetime(&d->of, 2, self);
   gtk_widget_set_halign(box, GTK_ALIGN_END);
   gtk_widget_set_hexpand(box, TRUE);
-  gtk_grid_attach(grid, box, 1, line++, 1, 1);
+  gtk_grid_attach(grid, box, 2, line++, 1, 1);
 
   // apply
   d->apply_offset = dt_ui_button_new(_("apply offset"), _("apply offset to selected images"), NULL);
@@ -791,7 +819,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->apply_datetime = dt_ui_button_new(_("apply date time"), _("apply the same date time to selected images"), NULL);
   gtk_widget_set_hexpand(d->apply_datetime, TRUE);
-  gtk_grid_attach(grid, d->apply_datetime , 1, line++, 1, 1);
+  gtk_grid_attach(grid, d->apply_datetime , 1, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->apply_datetime), "clicked", G_CALLBACK(_apply_datetime_callback), self);
 
   // time zone entry
@@ -802,7 +830,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->timezone = gtk_entry_new();
   gtk_entry_set_text(GTK_ENTRY(d->timezone), dt_conf_get_string("plugins/lighttable/geotagging/tz"));
-  gtk_grid_attach(grid, d->timezone, 1, line++, 1, 1);
+  gtk_grid_attach(grid, d->timezone, 1, line++, 2, 1);
 
   GtkCellRenderer *renderer;
   GtkTreeIter tree_iter;
@@ -838,7 +866,7 @@ void gui_init(dt_lib_module_t *self)
   GtkWidget *button = dt_ui_button_new(_("apply GPX track file..."),
                             _("parses a GPX file and updates location of selected images"), NULL);
   g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_lib_geotagging_gpx_callback), self);
-  gtk_grid_attach(grid, button, 0, line++, 2, 1);
+  gtk_grid_attach(grid, button, 0, line++, 3, 1);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), TRUE, TRUE, 0);
 
