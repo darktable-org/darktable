@@ -580,14 +580,12 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
-  const size_t nthreads = dt_get_num_threads();
-  float *squared_sums = dt_alloc_align_float(nthreads * 3);
-  for(int i = 0; i < 3*nthreads; i++)
-    squared_sums[i] = 0.0f;
+  size_t scratch_size;
+  float *squared_sums = dt_calloc_perthread_float(3, &scratch_size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width, squared_sums) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width, squared_sums, scratch_size) \
   schedule(static)
 #endif
   for(int rowid = 0; rowid < height; rowid++)
@@ -659,16 +657,17 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
       }
       SUM_PIXEL_EPILOGUE;
     }
-    int tnum = dt_get_thread_num();
+    float *const sq = dt_get_perthread(squared_sums, scratch_size);
     for(i = 0; i < 3; i++)
-      squared_sums[3*tnum+i] += sum_sq[i];
+      sq[i] += sum_sq[i];
   }
   // reduce the per-thread sums to a single value
+  size_t nthreads = dt_get_num_threads();
   for(int c = 0; c < 3; c++)
   {
     sum_squared[c] = 0.0f;
-    for(int i = 0; i < nthreads; i++)
-      sum_squared[c] += squared_sums[3*i+c];
+    for(size_t i = 0; i < nthreads; i++)
+      sum_squared[c] += dt_get_bythread(squared_sums,scratch_size,i)[c];
   }
   dt_free_align(squared_sums);
 }
