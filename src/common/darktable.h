@@ -467,6 +467,18 @@ static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_siz
 {
   return (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
 }
+// Allocate floats, cleared to zero
+static inline float *dt_calloc_perthread_float(const size_t n, size_t* padded_size)
+{
+  float *const buf = (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
+  if (buf)
+  {
+    for (size_t i = 0; i < *padded_size * dt_get_num_threads(); i++)
+      buf[i] = 0.0f;
+  }
+  return buf;
+}
+
 // Given the buffer and object count returned by dt_alloc_perthread, return the current thread's private buffer.
 #define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
 // Given the buffer and object count returned by dt_alloc_perthread and a thread count in 0..dt_get_num_threads(),

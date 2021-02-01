@@ -412,15 +412,14 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
 #else
   const size_t scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
 #endif /* CACHE_PIXDIFFS */
-  const size_t padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
-  const size_t numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align_float(numthreads * padded_scratch_size);
+  size_t padded_scratch_size;
+  float *const restrict scratch_buf = dt_alloc_perthread_float(scratch_size, &padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
-      dt_omp_firstprivate(patches, num_patches, scratch_buf, chk_height, chk_width, radius) \
-      dt_omp_sharedconst(params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
+      dt_omp_firstprivate(patches, num_patches, scratch_buf, padded_scratch_size, chk_height, chk_width, radius) \
+      dt_omp_sharedconst(params, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
       schedule(static) \
       collapse(2)
 #endif
@@ -430,8 +429,7 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
     {
       // locate our scratch space within the big buffer allocated above
       // we'll offset by chunk_left so that we don't have to subtract on every access
-      size_t tnum = dt_get_thread_num();
-      float *const col_sums = scratch_buf + tnum * padded_scratch_size + (radius+1) - chunk_left;
+      float *const col_sums = dt_get_perthread(scratch_buf, padded_scratch_size) + (radius+1) - chunk_left;
       // determine which horizontal slice of the image to process
       const int chunk_bot = MIN(chunk_top + chk_height, roi_out->height);
       // determine which vertical slice of the image to process
@@ -637,15 +635,14 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
 #else
   const size_t scratch_size = SLICE_WIDTH + 2*radius + 1 + 48; // getting false sharing without the +48....
 #endif /* CACHE_PIXDIFFS_SSE */
-  const size_t padded_scratch_size = 16*((scratch_size+15)/16); // round up to a full cache line
-  const size_t numthreads = dt_get_num_threads() ;
-  float *scratch_buf = dt_alloc_align_float((size_t)numthreads * padded_scratch_size);
+  size_t padded_scratch_size;
+  float *const restrict scratch_buf = dt_alloc_perthread_float(scratch_size, &padded_scratch_size);
   const int chk_height = compute_slice_height(roi_out->height);
   const int chk_width = compute_slice_width(roi_out->width);
 #ifdef _OPENMP
 #pragma omp parallel for default(none) num_threads(darktable.num_openmp_threads) \
-      dt_omp_firstprivate(patches, num_patches, scratch_buf, chk_height, chk_width, radius) \
-      dt_omp_sharedconst(params, padded_scratch_size, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
+      dt_omp_firstprivate(patches, num_patches, scratch_buf, padded_scratch_size, chk_height, chk_width, radius) \
+      dt_omp_sharedconst(params, roi_out, outbuf, inbuf, stride, center_norm, skip_blend, weight, invert) \
       schedule(static) \
       collapse(2)
 #endif
@@ -655,8 +652,7 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
     {
       // locate our scratch space within the big buffer allocated above
       // we'll offset by chunk_left so that we don't have to subtract on every access
-      size_t tnum = dt_get_thread_num();
-      float *const col_sums = scratch_buf + tnum * padded_scratch_size + (radius+1) - chunk_left;
+      float *const col_sums = dt_get_perthread(scratch_buf, padded_scratch_size) + (radius+1) - chunk_left;
       // determine which horizontal slice of the image to process
       const int chunk_bot = MIN(chunk_top + chk_height, roi_out->height);
       // determine which vertical slice of the image to process
