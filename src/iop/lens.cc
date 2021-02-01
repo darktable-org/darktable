@@ -2101,12 +2101,18 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
   // update gui to show/hide tca sliders if tca_override was changed
-  if(w == g->tca_override)
+  if(!w || w == g->tca_override)
   {
-    gui_update(self);
+    // show tca sliders only iff tca_overwrite is set
+    gtk_widget_set_visible(g->tca_r, p->tca_override);
+    gtk_widget_set_visible(g->tca_b, p->tca_override);
   }
 
-  p->modified = 1;
+  if(w)
+  {
+    // user did modify something with some widget
+    p->modified = 1;
+  }
 }
 
 
@@ -2444,9 +2450,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   dt_bauhaus_combobox_set(g->reverse, p->inverse);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override), p->tca_override);
-  // show tca sliders only iff tca_overwrite is set
-  gtk_widget_set_visible(g->tca_r, p->tca_override);
-  gtk_widget_set_visible(g->tca_b, p->tca_override);
   dt_bauhaus_slider_set(g->tca_r, p->tca_r);
   dt_bauhaus_slider_set(g->tca_b, p->tca_b);
   dt_bauhaus_slider_set(g->scale, p->scale);
@@ -2482,6 +2485,8 @@ void gui_update(struct dt_iop_module_t *self)
     lens_set(self, NULL);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
+
+  gui_changed(self, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
