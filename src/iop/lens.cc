@@ -404,19 +404,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       // acquire temp memory for distorted pixel coords
       const size_t bufsize = (size_t)roi_out->width * 2 * 3;
 
-      // TODO: Should this be migrated to dt_alloc__perthread_float?
-      void *buf = dt_alloc_align_float(bufsize * dt_get_num_threads());
+      size_t padded_bufsize;
+      float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(bufsize, ch, ch_width, d, interpolation, ivoid, \
-                          mask_display, ovoid, roi_in, roi_out) \
-      shared(buf, modifier) \
+      dt_omp_firstprivate(padded_bufsize, ch, ch_width, d, interpolation, ivoid, mask_display, ovoid, roi_in, roi_out)	\
+      dt_omp_sharedconst(buf)						\
+      shared(modifier)							\
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
-        float *bufptr = ((float *)buf) + (size_t)bufsize * dt_get_thread_num();
+        float *bufptr = dt_get_perthread(buf, padded_bufsize);
         modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, bufptr);
 
         // reverse transform the global coords from lf to our buffer
@@ -509,17 +509,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t buf2size = (size_t)roi_out->width * 2 * 3;
-      void *buf2 = dt_alloc_align_float(buf2size * dt_get_num_threads());
+      size_t padded_buf2size;
+      float *const buf2 = dt_alloc_perthread_float(buf2size, &padded_buf2size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out) \
-      shared(buf2, buf, modifier) \
+      dt_omp_firstprivate(padded_buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out) \
+      dt_omp_sharedconst(buf2)						\
+      shared(buf, modifier)						\
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
-        float *buf2ptr = ((float *)buf2) + (size_t)buf2size * dt_get_thread_num();
+        float *buf2ptr = dt_get_perthread(buf2, padded_buf2size);
         modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width,
                                                   1, buf2ptr);
         // reverse transform the global coords from lf to our buffer
@@ -953,17 +955,19 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-  float *buf = (float *)dt_alloc_align_float(bufsize * dt_get_num_threads());
+  size_t padded_bufsize;
+  float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(bufsize, d, in, interpolation, out, roi_in, roi_out) \
-  shared(buf, modifier) \
+  dt_omp_firstprivate(padded_bufsize, d, in, interpolation, out, roi_in, roi_out) \
+  dt_omp_sharedconst(buf) \
+  shared(modifier) \
   schedule(static)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
-    float *bufptr = buf + bufsize * dt_get_thread_num();
+    float *bufptr = dt_get_perthread(buf, padded_bufsize);
     modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, bufptr);
 
     // reverse transform the global coords from lf to our buffer
