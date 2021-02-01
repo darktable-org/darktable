@@ -279,6 +279,21 @@ static inline void rgb_to_chromaticity(const float rgb[4],
   {
     // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
     float XYZ_D65[4] DT_ALIGNED_PIXEL;
+    // If the profile whitepoint is D65, its RGB -> XYZ conversion
+    // matrix has been adapted to D50 (PCS standard) via
+    // Bradford. Hence using Bradford againt o adapt back to D65 gives
+    // a pretty clean reversal (to approx. 4 significant digits) of
+    // the transform.
+    // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
+    /*
+    // CAT16
+    const float M[3][4] DT_ALIGNED_ARRAY = {
+      {  9.80760485e-01,  -4.25541784e-17,  -7.61959005e-19},
+      {  4.82934624e-17,   1.01555271e+00,  -7.63213113e-18},
+      { -6.47162968e-19,  -5.69389701e-19,   1.30191586e+00}};
+    for(size_t x = 0; x < 3; x++)
+      XYZ_D65[x] = M[x][0] * XYZ_D50[0] + M[x][1] * XYZ_D50[1] + M[x][2] * XYZ_D50[2];
+    */
     dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
     dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
   }
@@ -318,6 +333,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     d->vectorscope_graticule[k][1] = chromaticity[2];
   }
   // scale graticule chromaticity to display
+  // FIXME: should really center top/bottom points rather than whitepoint?
   for(int k=0; k<6; k++)
   {
     d->vectorscope_graticule[k][0] /= max_diam;
@@ -610,6 +626,8 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 {
   const int vs_diameter = d->vectorscope_diameter;
   const int min_size = MIN(width, height);
+
+  // FIXME: draw a gray background behind the vectorscope square, the left/right dark with some data there (primaries, whitepoint, etc.)
 
   cairo_save(cr);
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
