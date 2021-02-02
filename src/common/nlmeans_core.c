@@ -429,7 +429,8 @@ void nlmeans_denoise(const float *const inbuf, float *const outbuf,
     {
       // locate our scratch space within the big buffer allocated above
       // we'll offset by chunk_left so that we don't have to subtract on every access
-      float *const col_sums = dt_get_perthread(scratch_buf, padded_scratch_size) + (radius+1) - chunk_left;
+      float *const restrict tmpbuf = dt_get_perthread(scratch_buf, padded_scratch_size);
+      float *const col_sums =  tmpbuf + (radius+1) - chunk_left;
       // determine which horizontal slice of the image to process
       const int chunk_bot = MIN(chunk_top + chk_height, roi_out->height);
       // determine which vertical slice of the image to process
@@ -652,7 +653,8 @@ void nlmeans_denoise_sse2(const float *const inbuf, float *const outbuf,
     {
       // locate our scratch space within the big buffer allocated above
       // we'll offset by chunk_left so that we don't have to subtract on every access
-      float *const col_sums = dt_get_perthread(scratch_buf, padded_scratch_size) + (radius+1) - chunk_left;
+      float *const restrict tmpbuf = dt_get_perthread(scratch_buf, padded_scratch_size);
+      float *const col_sums =  tmpbuf + (radius+1) - chunk_left;
       // determine which horizontal slice of the image to process
       const int chunk_bot = MIN(chunk_top + chk_height, roi_out->height);
       // determine which vertical slice of the image to process
