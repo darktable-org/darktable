@@ -333,8 +333,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     float C = (is_black) ? 0.f : fminf(Ych[1], max_chroma_h);
 
     // Linear chroma : distance to achromatic at constant luminance in scene-referred
-    const float chroma_boost = fmaxf(1.f + (d->chroma_global + scalar_product(opacities, chroma)) * max_chroma_h / d->max_chroma, 0.f);
-    Ych[1] = fminf(C * chroma_boost, max_chroma_h);
+    // - in case we desaturate, we do so by a constant factor
+    // - in case we resaturate, we normalize the correction by the max chroma allowed at current hue
+    //   to prevent users from pushing saturated colors outside of gamut while the low-sat ones
+    //   are still muted.
+    const float chroma_boost = d->chroma_global + scalar_product(opacities, chroma);
+    const float chroma_norm = (chroma_boost > 0.f) ? max_chroma_h / d->max_chroma : 1.f;
+    const float chroma_factor = fmaxf(1.f + chroma_boost * chroma_norm, 0.f);
+    Ych[1] = fminf(C * chroma_factor, max_chroma_h);
     Ych_to_gradingRGB(Ych, RGB, white_grading_RGB);
 
     /* Color balance */
@@ -550,6 +556,8 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
     for(size_t k = 0; k < LUT_ELEM; k++)
       if(d->max_chroma < LUT[k]) d->max_chroma = LUT[k];
   }
+
+  fprintf(stdout, "max chroma : %f\n", d->max_chroma);
 }
 
 void init_pipe(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
