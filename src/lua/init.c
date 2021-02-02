@@ -151,7 +151,6 @@ void dt_lua_init(lua_State *L, const char *lua_command)
     (*cur_type)(L);
     cur_type++;
   }
-  dt_lua_debug_stack(L);
   assert(lua_gettop(L)
          == 0); // if you are here, you have probably added an initialisation function that is not stack clean
 

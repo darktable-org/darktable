@@ -100,17 +100,16 @@ int dt_lua_event_trigger_wrapper(lua_State *L)
 
 void dt_lua_event_add(lua_State *L, const char *evt_name)
 {
-  // 1 dt_lua_event_list table
-  // 2 function to register a new event instance (callback)
-  // 3 function to destroy an existing event instance
-  // 4 event handler to call when event occurs
+  // 1 function to register a new event instance (callback)
+  // 2 function to destroy an existing event instance
+  // 3 event handler to call when event occurs
 
   // check we have the correct number of arguments
   int args = lua_gettop(L);
 
-  if(args != 4)
+  if(args != 3)
   {
-    lua_pop(L, args - 1);
+    lua_pop(L, args);
     dt_print(DT_DEBUG_LUA, "LUA ERROR : %s: wrong number of args for %s, expected 4, got %d\n", __FUNCTION__, evt_name, args);
     return;
   }
@@ -552,9 +551,6 @@ int dt_lua_init_early_events(lua_State *L)
   lua_pushstring(L, "register_event");
   lua_pushcfunction(L, &lua_register_event);
   lua_settable(L, -3);
-  lua_pop(L, 1);
-  lua_getfield(L, LUA_REGISTRYINDEX, "dt_lua_event_list");
-  dt_lua_push_darktable_lib(L);
   lua_pushstring(L, "destroy_event");
   lua_pushcfunction(L, &lua_destroy_event);
   lua_settable(L, -3);
