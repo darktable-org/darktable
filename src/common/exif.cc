@@ -485,13 +485,17 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
       }
     }
 
-    GList *tags = NULL;
-    // preserve dt tags which are not saved in xmp file
-    if(!exif_read) dt_tag_set_tags(tags, imgs, TRUE, TRUE, FALSE);
-    if(FIND_XMP_TAG("Xmp.lr.hierarchicalSubject"))
-      _exif_import_tags(img, pos);
-    else if(FIND_XMP_TAG("Xmp.dc.subject"))
-      _exif_import_tags(img, pos);
+    if(dt_conf_get_bool("write_sidecar_files") ||
+       dt_conf_get_bool("ui_last/import_last_tags_imported"))
+    {
+      GList *tags = NULL;
+      // preserve dt tags which are not saved in xmp file
+      if(!exif_read) dt_tag_set_tags(tags, imgs, TRUE, TRUE, FALSE);
+      if(FIND_XMP_TAG("Xmp.lr.hierarchicalSubject"))
+        _exif_import_tags(img, pos);
+      else if(FIND_XMP_TAG("Xmp.dc.subject"))
+        _exif_import_tags(img, pos);
+    }
 
     /* read gps location */
     if(FIND_XMP_TAG("Xmp.exif.GPSLatitude"))
