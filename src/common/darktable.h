@@ -137,7 +137,7 @@ typedef unsigned int u_int;
 #define DT_ALIGNED_PIXEL __attribute__((aligned(16)))
 
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
-#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64);
+#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
 #ifndef _RELEASE
 #include "common/poison.h"
