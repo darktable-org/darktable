@@ -355,6 +355,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   const int wf_width = d->waveform_width;
   const int wf_height = d->waveform_height;
   // colors used to represent primary colors
+  // FIXME: force a redraw when colors have changed via user entering new CSS in preferences -- is there a signal for this?
   const GdkRGBA *const css_primaries = darktable.bauhaus->graph_primaries;
   const float DT_ALIGNED_ARRAY primaries_linear[3][4] = {
     {css_primaries[2].blue, css_primaries[2].green, css_primaries[2].red, 1.0f},
@@ -379,6 +380,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
     dt_ioppr_add_profile_info_to_list(darktable.develop, DT_COLORSPACE_HLG_REC2020, "", DT_INTENT_PERCEPTUAL);
   // in place transform will preserve alpha
   // dt's transform is approx. 2x faster than LCMS here
+  // FIXME: optimize by just doing the extrapolate_lut() work and make our own sensible LUT with enough resolution to provide continuous tone
   dt_ioppr_transform_image_colorspace_rgb(wf_display, wf_display, wf_width, wf_height,
                                           profile_linear, profile_work, "waveform gamma");
 
@@ -397,6 +399,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
       wf_8bit[y * wf_8bit_stride + k] = MIN(255, (int)(wf_display[y * wf_width_floats + k] * 255.0f));
     }
   }
+  // FIXME: everything up to here should be invariant (unless CSS changes) so put it in process rather than draw
 
   cairo_surface_t *source
     = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
@@ -435,7 +438,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
   cairo_restore(cr);
 }
 
-// FIXME: have different drawable for waveform and histogram in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
+// FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
 // FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
@@ -995,38 +998,23 @@ void gui_init(dt_lib_module_t *self)
   d->green = dt_conf_get_bool("plugins/darkroom/histogram/show_green");
   d->blue = dt_conf_get_bool("plugins/darkroom/histogram/show_blue");
 
-  gchar *mode = dt_conf_get_string("plugins/darkroom/histogram/mode");
-  if(g_strcmp0(mode, "histogram") == 0)
-    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
-  else if(g_strcmp0(mode, "waveform") == 0)
-    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_WAVEFORM;
-  else if(g_strcmp0(mode, "linear") == 0)
-  { // update legacy conf
-    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","linear");
-  }
-  else if(g_strcmp0(mode, "logarithmic") == 0)
-  { // update legacy conf
-    d->scope_type = DT_LIB_HISTOGRAM_SCOPE_HISTOGRAM;
-    dt_conf_set_string("plugins/darkroom/histogram/mode","histogram");
-    dt_conf_set_string("plugins/darkroom/histogram/histogram","logarithmic");
-  }
-  g_free(mode);
+  gchar *str = dt_conf_get_string("plugins/darkroom/histogram/mode");
+  for(dt_lib_histogram_scope_type_t i=0; i<DT_LIB_HISTOGRAM_SCOPE_N; i++)
+    if(g_strcmp0(str, dt_lib_histogram_scope_type_names[i]) == 0)
+      d->scope_type = i;
+  g_free(str);
 
-  gchar *histogram_scale = dt_conf_get_string("plugins/darkroom/histogram/histogram");
-  if(g_strcmp0(histogram_scale, "linear") == 0)
-    d->histogram_scale = DT_LIB_HISTOGRAM_LINEAR;
-  else if(g_strcmp0(histogram_scale, "logarithmic") == 0)
-    d->histogram_scale = DT_LIB_HISTOGRAM_LOGARITHMIC;
-  g_free(histogram_scale);
+  str = dt_conf_get_string("plugins/darkroom/histogram/histogram");
+  for(dt_lib_histogram_scale_t i=0; i<DT_LIB_HISTOGRAM_N; i++)
+    if(g_strcmp0(str, dt_lib_histogram_histogram_scale_names[i]) == 0)
+      d->histogram_scale = i;
+  g_free(str);
 
-  gchar *waveform_type = dt_conf_get_string("plugins/darkroom/histogram/waveform");
-  if(g_strcmp0(waveform_type, "overlaid") == 0)
-    d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_OVERLAID;
-  else if(g_strcmp0(waveform_type, "parade") == 0)
-    d->waveform_type = DT_LIB_HISTOGRAM_WAVEFORM_PARADE;
-  g_free(waveform_type);
+  str = dt_conf_get_string("plugins/darkroom/histogram/waveform");
+  for(dt_lib_histogram_waveform_type_t i=0; i<DT_LIB_HISTOGRAM_WAVEFORM_N; i++)
+    if(g_strcmp0(str, dt_lib_histogram_waveform_type_names[i]) == 0)
+      d->waveform_type = i;
+  g_free(str);
 
   d->histogram = (uint32_t *)calloc(4 * HISTOGRAM_BINS, sizeof(uint32_t));
   d->histogram_max = 0;
