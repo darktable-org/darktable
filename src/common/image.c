@@ -1189,7 +1189,7 @@ GList* dt_image_find_duplicates(const char* filename)
 }
 
 // Search for duplicate's sidecar files and import them if found and not in DB yet
-static int _image_read_duplicates(const uint32_t id, const char *filename)
+static int _image_read_duplicates(const uint32_t id, const char *filename, const gboolean clear_selection)
 {
   int count_xmps_processed = 0;
   gchar pattern[PATH_MAX] = { 0 };
@@ -1256,7 +1256,8 @@ static int _image_read_duplicates(const uint32_t id, const char *filename)
       dt_image_cache_read_release(darktable.image_cache, img);
     }
     // make sure newid is not selected
-    dt_selection_clear(darktable.selection);
+    if(clear_selection) dt_selection_clear(darktable.selection);
+
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, newid, 'w');
     (void)dt_exif_xmp_read(img, xmpfilename, 0);
     img->version = version;
@@ -1277,8 +1278,8 @@ static int _image_read_duplicates(const uint32_t id, const char *filename)
   return count_xmps_processed;
 }
 
-static uint32_t _image_import_internal(const int32_t film_id, const char *filename,
-                                       gboolean override_ignore_jpegs, gboolean lua_locking)
+static uint32_t _image_import_internal(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
+                                       gboolean lua_locking, gboolean raise_signals)
 {
   char *normalized_filename = dt_util_normalize_path(filename);
   if(!normalized_filename
@@ -1335,7 +1336,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'w');
     img->flags &= ~DT_IMAGE_REMOVE;
     dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
-    _image_read_duplicates(id, normalized_filename);
+    _image_read_duplicates(id, normalized_filename, raise_signals);
     dt_image_synch_all_xmp(normalized_filename);
     g_free(ext);
     g_free(normalized_filename);
@@ -1502,7 +1503,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
   // read all sidecar files
-  const int nb_xmp = _image_read_duplicates(id, normalized_filename);
+  const int nb_xmp = _image_read_duplicates(id, normalized_filename, raise_signals);
 
   if((res != 0) && (nb_xmp == 0))
   {
@@ -1545,11 +1546,13 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     dt_lua_unlock();
 #endif
 
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, id);
-  GList *imgs = NULL;
-  imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
-                                g_list_copy((GList *)imgs), 0);
+  if(raise_signals)
+  {
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, id);
+    GList *imgs = NULL;
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy((GList *)imgs), 0);
+  }
 
   // the following line would look logical with new_tags_set being the return value
   // from dt_tag_new above, but this could lead to too rapid signals, being able to lock up the
@@ -1558,14 +1561,15 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   return id;
 }
 
-uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
+uint32_t dt_image_import(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
+                         gboolean raise_signals)
 {
-  return _image_import_internal(film_id, filename, override_ignore_jpegs, TRUE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, TRUE, raise_signals);
 }
 
 uint32_t dt_image_import_lua(const int32_t film_id, const char *filename, gboolean override_ignore_jpegs)
 {
-  return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE);
+  return _image_import_internal(film_id, filename, override_ignore_jpegs, FALSE, TRUE);
 }
 
 void dt_image_init(dt_image_t *img)

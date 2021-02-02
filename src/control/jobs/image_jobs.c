@@ -76,7 +76,7 @@ static int32_t dt_image_import_job_run(dt_job_t *job)
   snprintf(message, sizeof(message), _("importing image %s"), params->filename);
   dt_control_job_set_progress_message(job, message);
 
-  const int id = dt_image_import(params->film_id, params->filename, TRUE);
+  const int id = dt_image_import(params->film_id, params->filename, TRUE, TRUE);
   if(id)
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
