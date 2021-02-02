@@ -752,17 +752,13 @@ overshoot.right
 }
 
 /* set background color and color of scope/histogram buttons */
-#scope-type-button,
-#histogram-scale-button,
-#waveform-type-button
+#main-histogram #dt-button
 {
   color: alpha(@button_checked_fg, 0.56);
   background-color: alpha(darker(@button_bg),0.8);
 }
 
-#scope-type-button:hover,
-#histogram-scale-button:hover,
-#waveform-type-button:hover
+#main-histogram #dt-button:hover
 {
   color: @button_fg;
 }
@@ -798,12 +794,17 @@ overshoot.right
   background-color: alpha(@graph_blue, 0.66);
 }
 
-/* set border of all active buttons */
-#red-channel-button:checked,
-#green-channel-button:checked,
-#blue-channel-button:checked
+/* set border of all active color channel buttons */
+#main-histogram .toggle:checked
 {
   border-color: alpha(@button_checked_fg, 0.33);    /* just set a really tight border to better check quickly active state*/
+}
+
+
+#main-histogram #dt-button:disabled,
+#main-histogram .toggle:disabled
+{
+  opacity: 0.2;
 }
 
 /*------------------
