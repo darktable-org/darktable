@@ -2050,16 +2050,6 @@ static void _manage_direct_basics_module_toggle(GtkWidget *widget, dt_lib_module
   _manage_direct_save(self);
 }
 
-static void _manage_direct_basics_hide(GtkWidget *widget, dt_lib_module_t *self)
-{
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-
-  _basics_hide(self);
-  d->basics_show = FALSE;
-
-  _manage_direct_save(self);
-}
-
 static void _manage_editor_basics_add(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -2397,16 +2387,6 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
     gtk_widget_set_name(smt, "modulegroups-popup-title");
     gtk_widget_set_sensitive(smt, FALSE);
     gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, 0);
-  }
-
-  // and we add an entry to completly hide basics widgets group at the beginning
-  if(toggle)
-  {
-    GtkWidget *rm = gtk_menu_item_new_with_label(_("hide the basics widgets group"));
-    gtk_widget_set_name(rm, "modulegroups-popup-title");
-    gtk_widget_set_tooltip_text(GTK_WIDGET(rm), _("to see it again, use the presets manager"));
-    g_signal_connect(G_OBJECT(rm), "activate", G_CALLBACK(_manage_direct_basics_hide), self);
-    gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(rm), 0);
   }
 
   gtk_widget_show_all(pop);
