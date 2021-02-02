@@ -1,4 +1,4 @@
-/*
+﻿/*
     This file is part of darktable,
     Copyright (C) 2019-2020 darktable developers.
 
@@ -92,7 +92,7 @@ typedef struct dt_iop_lensfun_params_t
   lfLensType target_geom; // $DEFAULT: LF_RECTILINEAR $DESCRIPTION: "geometry"
   char camera[128];
   char lens[128];
-  int tca_override; // $DEFAULT: 0
+  gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA overwrite"
   float tca_r; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA red"
   float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
   int modified; // $DEFAULT: 0 did user changed anything from automatically detected?
@@ -108,7 +108,7 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkMenu *camera_menu;
   GtkWidget *lens_model;
   GtkMenu *lens_menu;
-  GtkWidget *modflags, *target_geom, *reverse, *tca_r, *tca_b, *scale;
+  GtkWidget *modflags, *target_geom, *reverse, *tca_override, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
   GList *modifiers;
@@ -2102,10 +2102,21 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  if(p->tca_r != 1.0 || p->tca_b != 1.0) p->tca_override = 1;
+  // update gui to show/hide tca sliders if tca_override was changed
+  if(!w || w == g->tca_override)
+  {
+    // show tca sliders only iff tca_overwrite is set
+    gtk_widget_set_visible(g->tca_r, p->tca_override);
+    gtk_widget_set_visible(g->tca_b, p->tca_override);
+  }
 
-  p->modified = 1;
+  if(w)
+  {
+    // user did modify something with some widget
+    p->modified = 1;
+  }
 }
 
 
@@ -2374,6 +2385,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->reverse, _("distort"));
   gtk_widget_set_tooltip_text(g->reverse, _("correct distortions or apply them"));
 
+  g->tca_override = dt_bauhaus_toggle_from_params(self, "tca_override");
+
   // override linear tca (if not 1.0):
   g->tca_r = dt_bauhaus_slider_from_params(self, "tca_r");
   dt_bauhaus_slider_set_digits(g->tca_r, 5);
@@ -2440,6 +2453,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   dt_bauhaus_combobox_set(g->reverse, p->inverse);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override), p->tca_override);
   dt_bauhaus_slider_set(g->tca_r, p->tca_r);
   dt_bauhaus_slider_set(g->tca_b, p->tca_b);
   dt_bauhaus_slider_set(g->scale, p->scale);
@@ -2475,6 +2489,8 @@ void gui_update(struct dt_iop_module_t *self)
     lens_set(self, NULL);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
+
+  gui_changed(self, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
