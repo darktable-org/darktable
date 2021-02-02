@@ -2187,7 +2187,7 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
 
   if((toggle && nba > 0) || nbr > 0)
   {
-    GtkWidget *smt = gtk_menu_item_new_with_label("add module (other)");
+    GtkWidget *smt = gtk_menu_item_new_with_label((nbr > 0) ? "add module (other)" : "add module");
     gtk_widget_set_name(smt, "modulegroups-popup-title");
     gtk_widget_set_sensitive(smt, FALSE);
     gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, nba + nbr);
@@ -2374,7 +2374,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
   // we add the titles if we have recommended widgets
   if((toggle && nba > 0) || nbr > 0)
   {
-    GtkWidget *smt = gtk_menu_item_new_with_label("add widget (other)");
+    GtkWidget *smt = gtk_menu_item_new_with_label((nbr > 0) ? "add widget (other)" : "add widget");
     gtk_widget_set_name(smt, "modulegroups-popup-title");
     gtk_widget_set_sensitive(smt, FALSE);
     gtk_menu_shell_insert(GTK_MENU_SHELL(pop), smt, nba + nbr);
