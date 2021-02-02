@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-01-31 18:46-0300\n"
-"PO-Revision-Date: 2021-02-01 21:09-0300\n"
+"POT-Creation-Date: 2021-02-02 07:50-0300\n"
+"PO-Revision-Date: 2021-02-03 18:42-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -1692,7 +1692,9 @@ msgstr "ordena a coleção em ordem descendente"
 msgid ""
 "sort the following collections in descending order: 'film roll' by folder, "
 "'folder', 'times' (e.g. 'date taken')"
-msgstr "ordena as seguintes coleções em ordem descentente: 'rolo de filme' por pasta, 'pasta', 'tempos' (por exemplo 'data da foto')"
+msgstr ""
+"ordena as seguintes coleções em ordem descentente: 'rolo de filme' por "
+"pasta, 'pasta', 'tempos' (por exemplo 'data da foto')"
 
 #: ../build/bin/conf_gen.h:660
 msgid "ignore JPEG images"
@@ -1804,7 +1806,7 @@ msgstr "ajuste de proporção"
 
 #: ../build/lib/darktable/plugins/introspection_ashift.c:162
 #: ../build/lib/darktable/plugins/introspection_ashift.c:273
-#: ../src/iop/lens.cc:2291
+#: ../src/iop/lens.cc:2306
 msgid "lens model"
 msgstr "modelo da lente"
 
@@ -1882,7 +1884,7 @@ msgstr "preservar cores"
 #: ../src/iop/basecurve.c:2099 ../src/iop/channelmixerrgb.c:3628
 #: ../src/iop/clipping.c:1865 ../src/iop/clipping.c:2125
 #: ../src/iop/clipping.c:2141 ../src/iop/clipping.c:2276
-#: ../src/iop/clipping.c:2303 ../src/iop/lens.cc:2228 ../src/iop/retouch.c:358
+#: ../src/iop/clipping.c:2303 ../src/iop/lens.cc:2243 ../src/iop/retouch.c:358
 #: ../src/libs/collect.c:1795 ../src/libs/colorpicker.c:633
 #: ../src/libs/export.c:1077 ../src/libs/live_view.c:345
 #: ../src/libs/live_view.c:370 ../src/libs/live_view.c:379
@@ -2571,9 +2573,8 @@ msgstr "método de interpolação cromática"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:114
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:177
-#, fuzzy
 msgid "switch dual threshold"
-msgstr "limite para switch duplo"
+msgstr "limiar para dual"
 
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:191
 #: ../build/lib/darktable/plugins/introspection_demosaic.c:198
@@ -3074,9 +3075,14 @@ msgstr "modo"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:142
 #: ../build/lib/darktable/plugins/introspection_lens.cc:261
-#: ../src/iop/lens.cc:2343
+#: ../src/iop/lens.cc:2358
 msgid "geometry"
 msgstr "geometria"
+
+#: ../build/lib/darktable/plugins/introspection_lens.cc:172
+#: ../build/lib/darktable/plugins/introspection_lens.cc:281
+msgid "TCA overwrite"
+msgstr "sobrescrever TCA"
 
 #: ../build/lib/darktable/plugins/introspection_lens.cc:178
 #: ../build/lib/darktable/plugins/introspection_lens.cc:285
@@ -3677,7 +3683,7 @@ msgstr "Imprimir suas imagens"
 #: ../src/imageio/storage/disk.c:121 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/latex.c:107 ../src/iop/lut3d.c:1555
 #: ../src/libs/collect.c:425 ../src/libs/copy_history.c:105
-#: ../src/libs/geotagging.c:140 ../src/libs/import.c:489
+#: ../src/libs/geotagging.c:141 ../src/libs/import.c:489
 #: ../src/libs/import.c:583 ../src/libs/lib.c:235 ../src/libs/styles.c:384
 #: ../src/libs/styles.c:524 ../src/libs/tagging.c:2263
 #: ../src/libs/tagging.c:2304
@@ -3906,7 +3912,7 @@ msgid "filename"
 msgstr "nome do arquivo"
 
 #: ../src/common/collection.c:697 ../src/develop/lightroom.c:1532
-#: ../src/libs/geotagging.c:80
+#: ../src/libs/geotagging.c:81
 msgid "geotagging"
 msgstr "geo-etiquetas"
 
@@ -3929,7 +3935,7 @@ msgstr "ordem dos módulos"
 
 #: ../src/common/collection.c:1482 ../src/develop/blend_gui.c:1819
 #: ../src/develop/blend_gui.c:1846 ../src/develop/lightroom.c:828
-#: ../src/iop/bilateral.cc:316 ../src/iop/channelmixer.c:625
+#: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
 #: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3589
 #: ../src/iop/temperature.c:1878 ../src/iop/temperature.c:2029
 #: ../src/libs/collect.c:1696 ../src/views/darkroom.c:2602
@@ -3944,7 +3950,7 @@ msgstr "amarelo"
 
 #: ../src/common/collection.c:1486 ../src/develop/blend_gui.c:1822
 #: ../src/develop/blend_gui.c:1849 ../src/develop/lightroom.c:832
-#: ../src/iop/bilateral.cc:321 ../src/iop/channelmixer.c:626
+#: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
 #: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3590
 #: ../src/iop/temperature.c:1862 ../src/iop/temperature.c:1880
 #: ../src/iop/temperature.c:2030 ../src/libs/collect.c:1696
@@ -3954,7 +3960,7 @@ msgstr "verde"
 
 #: ../src/common/collection.c:1488 ../src/develop/blend_gui.c:1825
 #: ../src/develop/blend_gui.c:1852 ../src/develop/lightroom.c:834
-#: ../src/iop/bilateral.cc:326 ../src/iop/channelmixer.c:627
+#: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
 #: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3591
 #: ../src/iop/temperature.c:1882 ../src/iop/temperature.c:2031
 #: ../src/libs/collect.c:1696
@@ -4708,7 +4714,7 @@ msgstr ""
 msgid "opencl scheduling profile set to default."
 msgstr "perfil de escalonamento OpenCL ajustado para default."
 
-#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1884
+#: ../src/common/pdf.h:88 ../src/iop/lens.cc:1888
 #: ../src/libs/print_settings.c:1292
 msgid "mm"
 msgstr "mm"
@@ -5257,27 +5263,27 @@ msgstr "adicionando compensação de tempo a %d imagens"
 #: ../src/control/jobs/control_jobs.c:1871
 #, c-format
 msgid "setting date time to %d images"
-msgstr "definindo data/hora em %d imagens"
+msgstr "defininda data/hora em %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1892
-#, fuzzy, c-format
+#, c-format
 msgid "added time offset to %d image"
 msgstr "compensação de tempo adicionada a %d imagem"
 
 #: ../src/control/jobs/control_jobs.c:1892
-#, fuzzy, c-format
+#, c-format
 msgid "set date time to %d image"
-msgstr "definindo data/hora em %d imagem"
+msgstr "defininda data/hora em %d imagem"
 
 #: ../src/control/jobs/control_jobs.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid "added time offset to %d images"
 msgstr "compensação de tempo adicionada a %d imagem"
 
 #: ../src/control/jobs/control_jobs.c:1893
-#, fuzzy, c-format
+#, c-format
 msgid "set date time to %d images"
-msgstr "definindo data/hora em %d imagens"
+msgstr "definida data/hora em %d imagens"
 
 #: ../src/control/jobs/control_jobs.c:1934
 msgid "time offset"
@@ -7601,7 +7607,7 @@ msgid "golden spiral"
 msgstr "espiral áurea"
 
 #: ../src/gui/guides.c:444 ../src/imageio/format/pdf.c:679
-#: ../src/iop/denoiseprofile.c:3528 ../src/iop/lens.cc:2234
+#: ../src/iop/denoiseprofile.c:3528 ../src/iop/lens.cc:2249
 #: ../src/iop/rawdenoise.c:896 ../src/libs/tools/filter.c:175
 msgid "all"
 msgstr "tudo"
@@ -7946,7 +7952,7 @@ msgstr "selecione arquivo para importar"
 
 #: ../src/gui/preferences.c:1618 ../src/gui/preferences.c:1709
 #: ../src/libs/collect.c:426 ../src/libs/copy_history.c:106
-#: ../src/libs/geotagging.c:141 ../src/libs/import.c:490
+#: ../src/libs/geotagging.c:142 ../src/libs/import.c:490
 #: ../src/libs/import.c:584 ../src/libs/styles.c:525
 msgid "_open"
 msgstr "_abrir"
@@ -7974,7 +7980,7 @@ msgid "darktable style files"
 msgstr "arquivos de estilo do darktable"
 
 #: ../src/gui/preferences.c:1732 ../src/iop/lut3d.c:1587
-#: ../src/libs/copy_history.c:154 ../src/libs/geotagging.c:162
+#: ../src/libs/copy_history.c:154 ../src/libs/geotagging.c:163
 #: ../src/libs/import.c:520 ../src/libs/styles.c:547
 msgid "all files"
 msgstr "todos arquivos"
@@ -9633,24 +9639,24 @@ msgstr ""
 msgid "linear, RGB"
 msgstr "linear, RGB"
 
-#: ../src/iop/bilateral.cc:311 ../src/iop/clahe.c:335 ../src/iop/dither.c:887
+#: ../src/iop/bilateral.cc:312 ../src/iop/clahe.c:335 ../src/iop/dither.c:887
 #: ../src/iop/lowpass.c:584 ../src/iop/shadhi.c:695 ../src/iop/sharpen.c:718
 msgid "radius"
 msgstr "raio"
 
-#: ../src/iop/bilateral.cc:312
+#: ../src/iop/bilateral.cc:313
 msgid "spatial extent of the gaussian"
 msgstr "extensão espacial do gaussiano"
 
-#: ../src/iop/bilateral.cc:317
+#: ../src/iop/bilateral.cc:318
 msgid "how much to blur red"
 msgstr "quando desfoque vermelho"
 
-#: ../src/iop/bilateral.cc:322
+#: ../src/iop/bilateral.cc:323
 msgid "how much to blur green"
 msgstr "quanto desfoque verde"
 
-#: ../src/iop/bilateral.cc:327
+#: ../src/iop/bilateral.cc:328
 msgid "how much to blur blue"
 msgstr "quando desfoque azul"
 
@@ -11756,16 +11762,16 @@ msgstr ""
 "reconstrói pixels RGB completamente de uma leitura de array de filtro de "
 "sensor colorido"
 
-#: ../src/iop/demosaic.c:5042
+#: ../src/iop/demosaic.c:5043
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "`%s' matriz de cores não encontrada para imagem 4bayer!"
 
-#: ../src/iop/demosaic.c:5186 ../src/iop/demosaic.c:5190
+#: ../src/iop/demosaic.c:5187 ../src/iop/demosaic.c:5191
 msgid "demosaicing raw data method"
 msgstr "método de interpolação cromática dados raw"
 
-#: ../src/iop/demosaic.c:5195
+#: ../src/iop/demosaic.c:5196
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -11775,7 +11781,7 @@ msgstr ""
 "defina 0.0 para desativar.\n"
 "defina 1.0 para ignorar bordas."
 
-#: ../src/iop/demosaic.c:5200
+#: ../src/iop/demosaic.c:5201
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content.\n"
@@ -11785,19 +11791,19 @@ msgstr ""
 "defina em 0.0 para conteúdo de alta frequência.\n"
 "defina em 1.0 para conteúdo plano."
 
-#: ../src/iop/demosaic.c:5203
+#: ../src/iop/demosaic.c:5204
 msgid "display blending mask"
 msgstr "mostrar máscara de mesclagem"
 
-#: ../src/iop/demosaic.c:5210
+#: ../src/iop/demosaic.c:5211
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "quantos passos de suavização média após interpolação cromática"
 
-#: ../src/iop/demosaic.c:5213
+#: ../src/iop/demosaic.c:5214
 msgid "green channels matching method"
 msgstr "método de correspondência canal verde"
 
-#: ../src/iop/demosaic.c:5219
+#: ../src/iop/demosaic.c:5220
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -12138,7 +12144,7 @@ msgid "magic lantern defaults"
 msgstr "dafault para magic lantern"
 
 #: ../src/iop/exposure.c:299 ../src/iop/rawoverexposed.c:173
-#: ../src/iop/rawoverexposed.c:289
+#: ../src/iop/rawoverexposed.c:290
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
 msgstr "falha em obter buffer raw da imagem `%s'"
@@ -13240,7 +13246,7 @@ msgstr "corrigir falhas ópticas de lentes"
 msgid "geometric and reconstruction, RGB"
 msgstr "geométrico e reconstrução, RGB"
 
-#: ../src/iop/lens.cc:1560
+#: ../src/iop/lens.cc:1564
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -13253,15 +13259,15 @@ msgstr ""
 "encaixe:\t\t%s\n"
 "fator de corte:\t%.1f"
 
-#: ../src/iop/lens.cc:1773
+#: ../src/iop/lens.cc:1777
 msgid "camera/lens not found - please select manually"
 msgstr "câmera/lente não encontrados - favor selecionar manualmente"
 
-#: ../src/iop/lens.cc:1776
+#: ../src/iop/lens.cc:1780
 msgid "try to locate your camera/lens in the above two menus"
 msgstr "tente localizar sua câmera/lente nos dois menus acima"
 
-#: ../src/iop/lens.cc:1839
+#: ../src/iop/lens.cc:1843
 #, c-format
 msgid ""
 "maker:\t\t%s\n"
@@ -13280,142 +13286,142 @@ msgstr ""
 "tipo:\t\t%s\n"
 "montagem:\t\t%s"
 
-#: ../src/iop/lens.cc:1885
+#: ../src/iop/lens.cc:1889
 msgid "focal length (mm)"
 msgstr "distância focal (mm)"
 
-#: ../src/iop/lens.cc:1909
+#: ../src/iop/lens.cc:1913
 msgid "f/"
 msgstr "f/"
 
-#: ../src/iop/lens.cc:1910
+#: ../src/iop/lens.cc:1914
 msgid "f-number (aperture)"
 msgstr "f-número (abertura)"
 
-#: ../src/iop/lens.cc:1924
+#: ../src/iop/lens.cc:1928
 msgid "d"
 msgstr "d"
 
-#: ../src/iop/lens.cc:1925
+#: ../src/iop/lens.cc:1929
 msgid "distance to subject"
 msgstr "distância do objeto"
 
-#: ../src/iop/lens.cc:2240
+#: ../src/iop/lens.cc:2255
 msgid "distortion & TCA"
 msgstr "distorção & TCA"
 
-#: ../src/iop/lens.cc:2246
+#: ../src/iop/lens.cc:2261
 msgid "distortion & vignetting"
 msgstr "distorção & vinheta"
 
-#: ../src/iop/lens.cc:2252
+#: ../src/iop/lens.cc:2267
 msgid "TCA & vignetting"
 msgstr "TCA & vinheta"
 
-#: ../src/iop/lens.cc:2258
+#: ../src/iop/lens.cc:2273
 msgid "only distortion"
 msgstr "apenas distorção"
 
-#: ../src/iop/lens.cc:2264
+#: ../src/iop/lens.cc:2279
 msgid "only TCA"
 msgstr "apenas TCA"
 
-#: ../src/iop/lens.cc:2270
+#: ../src/iop/lens.cc:2285
 msgid "only vignetting"
 msgstr "apenas vinheta"
 
-#: ../src/iop/lens.cc:2279
+#: ../src/iop/lens.cc:2294
 msgid "camera model"
 msgstr "modelo da câmera"
 
-#: ../src/iop/lens.cc:2283
+#: ../src/iop/lens.cc:2298
 msgid "find camera"
 msgstr "encontrar câmera"
 
-#: ../src/iop/lens.cc:2295
+#: ../src/iop/lens.cc:2310
 msgid "find lens"
 msgstr "encontrar lentes"
 
 #. Page CORRECTIONS
-#: ../src/iop/lens.cc:2328 ../src/iop/negadoctor.c:881
+#: ../src/iop/lens.cc:2343 ../src/iop/negadoctor.c:881
 msgid "corrections"
 msgstr "correções"
 
-#: ../src/iop/lens.cc:2330
+#: ../src/iop/lens.cc:2345
 msgid "which corrections to apply"
 msgstr "quais correções a aplicar"
 
-#: ../src/iop/lens.cc:2345
+#: ../src/iop/lens.cc:2360
 msgid "target geometry"
 msgstr "geometria alvo"
 
-#: ../src/iop/lens.cc:2346
+#: ../src/iop/lens.cc:2361
 msgid "rectilinear"
 msgstr "retilínea"
 
-#: ../src/iop/lens.cc:2347
+#: ../src/iop/lens.cc:2362
 msgid "fish-eye"
 msgstr "olho de peixe"
 
-#: ../src/iop/lens.cc:2348
+#: ../src/iop/lens.cc:2363
 msgid "panoramic"
 msgstr "panorâmica"
 
-#: ../src/iop/lens.cc:2349
+#: ../src/iop/lens.cc:2364
 msgid "equirectangular"
 msgstr "equirectangular"
 
-#: ../src/iop/lens.cc:2351
+#: ../src/iop/lens.cc:2366
 msgid "orthographic"
 msgstr "ortográfica"
 
-#: ../src/iop/lens.cc:2352
+#: ../src/iop/lens.cc:2367
 msgid "stereographic"
 msgstr "estereográfica"
 
-#: ../src/iop/lens.cc:2353
+#: ../src/iop/lens.cc:2368
 msgid "equisolid angle"
 msgstr "ângulo equisólido"
 
-#: ../src/iop/lens.cc:2354
+#: ../src/iop/lens.cc:2369
 msgid "thoby fish-eye"
 msgstr "olho de peixe thoby"
 
 #. scale
-#: ../src/iop/lens.cc:2360 ../src/iop/vignette.c:988
+#: ../src/iop/lens.cc:2375 ../src/iop/vignette.c:988
 #: ../src/iop/watermark.c:1451
 msgid "scale"
 msgstr "escala"
 
-#: ../src/iop/lens.cc:2365
+#: ../src/iop/lens.cc:2380
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.cc:2369 ../src/libs/modulegroups.c:2155
+#: ../src/iop/lens.cc:2384 ../src/libs/modulegroups.c:2155
 msgid "correct"
 msgstr "corrigir"
 
-#: ../src/iop/lens.cc:2370
+#: ../src/iop/lens.cc:2385
 msgid "distort"
 msgstr "distorções"
 
-#: ../src/iop/lens.cc:2371
+#: ../src/iop/lens.cc:2386
 msgid "correct distortions or apply them"
 msgstr "corrige ou aplica distorções"
 
-#: ../src/iop/lens.cc:2376
+#: ../src/iop/lens.cc:2393
 msgid "Transversal Chromatic Aberration red"
 msgstr "Aberrações Cromáticas Transversais vermelho"
 
-#: ../src/iop/lens.cc:2380
+#: ../src/iop/lens.cc:2397
 msgid "Transversal Chromatic Aberration blue"
 msgstr "Aberrações Cromáticas Transversais azul"
 
-#: ../src/iop/lens.cc:2385
+#: ../src/iop/lens.cc:2402
 msgid "corrections done: "
 msgstr "correções feitas: "
 
-#: ../src/iop/lens.cc:2387
+#: ../src/iop/lens.cc:2404
 msgid "which corrections have actually been done"
 msgstr "quais correções foram realizadas efetivamente"
 
@@ -16606,19 +16612,19 @@ msgstr "adicionar uma etiqueta de metadados de saída"
 msgid "delete metadata tag"
 msgstr "excluir etiqueta de metadados"
 
-#: ../src/libs/geotagging.c:140
+#: ../src/libs/geotagging.c:141
 msgid "open GPX file"
 msgstr "abrir arquivo GPX"
 
-#: ../src/libs/geotagging.c:157
+#: ../src/libs/geotagging.c:158
 msgid "GPS data exchange format"
 msgstr "formato de intercâmbio de dados GPS"
 
-#: ../src/libs/geotagging.c:759
+#: ../src/libs/geotagging.c:781
 msgid "date time"
 msgstr "data/hora"
 
-#: ../src/libs/geotagging.c:761
+#: ../src/libs/geotagging.c:783
 msgid ""
 "enter the new date time (yyyy:mm:dd hh:mm:ss)\n"
 "key in the new numbers or scroll over the cell"
@@ -16626,41 +16632,45 @@ msgstr ""
 "entre o novo valor de data/hora (yyyy:mm:dd hh:mm:ss)\n"
 "digite os novos valores ou use o scroll na célula"
 
-#: ../src/libs/geotagging.c:769
+#: ../src/libs/geotagging.c:791
 msgid "original date time"
 msgstr "data/hora original"
 
-#: ../src/libs/geotagging.c:777
+#: ../src/libs/geotagging.c:799
 msgid "date time offset"
 msgstr "intervalo de tempo"
 
-#: ../src/libs/geotagging.c:779
+#: ../src/libs/geotagging.c:801
 msgid "offset or difference ([-]dd hh:mm:ss)"
 msgstr "deslocamento ou diferença ([-]dd hh:mm:ss)"
 
+#: ../src/libs/geotagging.c:804
+msgid "lock date time offset value to apply it onto another selection"
+msgstr "travar valor de deslocamento de tempo para aplicar em outra seleção"
+
 #. apply
-#: ../src/libs/geotagging.c:787
+#: ../src/libs/geotagging.c:815
 msgid "apply offset"
 msgstr "aplicar deslocamento (intervalo de tempo)"
 
-#: ../src/libs/geotagging.c:787
+#: ../src/libs/geotagging.c:815
 msgid "apply offset to selected images"
 msgstr "aplicar intervalo de tempo nas imagens selecionadas"
 
-#: ../src/libs/geotagging.c:792
+#: ../src/libs/geotagging.c:820
 msgid "apply date time"
 msgstr "aplicar data/hora"
 
-#: ../src/libs/geotagging.c:792
+#: ../src/libs/geotagging.c:820
 msgid "apply the same date time to selected images"
 msgstr "aplica a mesma data/hora nas imagens selecionadas"
 
 #. time zone entry
-#: ../src/libs/geotagging.c:798
+#: ../src/libs/geotagging.c:826
 msgid "camera time zone"
 msgstr "fuso horário da câmera"
 
-#: ../src/libs/geotagging.c:799
+#: ../src/libs/geotagging.c:827
 msgid ""
 "most cameras don't store the time zone in EXIF. give the correct time zone "
 "so the GPX data can be correctly matched"
@@ -16669,24 +16679,24 @@ msgstr ""
 "horário correto para que os dados GPX possam ser processados corretamente"
 
 #. gpx
-#: ../src/libs/geotagging.c:838
+#: ../src/libs/geotagging.c:866
 msgid "apply GPX track file..."
 msgstr "aplica arquivo de trilha GPX..."
 
-#: ../src/libs/geotagging.c:839
+#: ../src/libs/geotagging.c:867
 msgid "parses a GPX file and updates location of selected images"
 msgstr ""
 "analisa o arquivo GPX e atualiza a localização das imagens selecionadas"
 
-#: ../src/libs/histogram.c:107
+#: ../src/libs/histogram.c:109
 msgid "histogram"
 msgstr "histograma"
 
-#: ../src/libs/histogram.c:573
+#: ../src/libs/histogram.c:578
 msgid "ctrl+scroll to change display height"
 msgstr "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:580
+#: ../src/libs/histogram.c:585
 msgid ""
 "drag to change black point,\n"
 "doubleclick resets\n"
@@ -16696,7 +16706,7 @@ msgstr ""
 "clique duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:585 ../src/libs/histogram.c:1061
+#: ../src/libs/histogram.c:590 ../src/libs/histogram.c:1060
 msgid ""
 "drag to change exposure,\n"
 "doubleclick resets\n"
@@ -16706,86 +16716,90 @@ msgstr ""
 "clique duplo reinicializa\n"
 "ctrl+scroll muda altura do display"
 
-#: ../src/libs/histogram.c:698 ../src/libs/histogram.c:772
-msgid "set mode to waveform"
-msgstr "mudar o modo para forma de onda"
-
-#: ../src/libs/histogram.c:704
-msgid "set mode to histogram"
-msgstr "mudar o modo para histograma"
-
-#: ../src/libs/histogram.c:739
+#: ../src/libs/histogram.c:700
 msgid "set scale to linear"
 msgstr "mudar escala para linear"
 
-#: ../src/libs/histogram.c:744
+#: ../src/libs/histogram.c:705
 msgid "set scale to logarithmic"
 msgstr "mudar escala para logarítmica"
 
-#: ../src/libs/histogram.c:767
-msgid "set mode to RGB parade"
-msgstr "mudar o modo para canais RGB separados"
+#: ../src/libs/histogram.c:722
+msgid "set view to RGB parade"
+msgstr "mudar o modo para parada RGB (canais separados)"
 
-#: ../src/libs/histogram.c:789
+#: ../src/libs/histogram.c:730
+msgid "set view to waveform"
+msgstr "mudar o modo para forma de onda"
+
+#: ../src/libs/histogram.c:747
+msgid "set mode to waveform"
+msgstr "mudar o modo para forma de onda"
+
+#: ../src/libs/histogram.c:756
+msgid "set mode to histogram"
+msgstr "mudar o modo para histograma"
+
+#: ../src/libs/histogram.c:814 ../src/libs/histogram.c:1087
 msgid "click to hide red channel"
 msgstr "clique para esconder o canal vermelho"
 
-#: ../src/libs/histogram.c:789
+#: ../src/libs/histogram.c:814 ../src/libs/histogram.c:1087
 msgid "click to show red channel"
 msgstr "clique para mostrar o canal vermelho"
 
-#: ../src/libs/histogram.c:797
+#: ../src/libs/histogram.c:822 ../src/libs/histogram.c:1093
 msgid "click to hide green channel"
 msgstr "clique para esconder o canal verde"
 
-#: ../src/libs/histogram.c:797
+#: ../src/libs/histogram.c:822 ../src/libs/histogram.c:1093
 msgid "click to show green channel"
 msgstr "clique para mostrar o canal verde"
 
-#: ../src/libs/histogram.c:805
+#: ../src/libs/histogram.c:830 ../src/libs/histogram.c:1099
 msgid "click to hide blue channel"
 msgstr "clique para esconder o canal azul"
 
-#: ../src/libs/histogram.c:805
+#: ../src/libs/histogram.c:830 ../src/libs/histogram.c:1099
 msgid "click to show blue channel"
 msgstr "clique para mostrar o canal azul"
 
-#: ../src/libs/histogram.c:1218
+#: ../src/libs/histogram.c:1195
 msgctxt "accel"
 msgid "histogram/hide histogram"
 msgstr "histograma/esconder histograma"
 
-#: ../src/libs/histogram.c:1219
+#: ../src/libs/histogram.c:1196
 msgctxt "accel"
 msgid "hide histogram"
 msgstr "esconder histograma"
 
-#: ../src/libs/histogram.c:1220
+#: ../src/libs/histogram.c:1197
 msgctxt "accel"
 msgid "histogram/cycle histogram modes"
 msgstr "histograma/alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:1221
+#: ../src/libs/histogram.c:1198
 msgctxt "accel"
 msgid "cycle histogram modes"
 msgstr "alterna ciclicamente opções de histograma"
 
-#: ../src/libs/histogram.c:1222
+#: ../src/libs/histogram.c:1199
 msgctxt "accel"
 msgid "histogram/switch histogram mode"
 msgstr "historgama/alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:1223
+#: ../src/libs/histogram.c:1200
 msgctxt "accel"
 msgid "switch histogram mode"
 msgstr "alterna modo histograma/forma de onda"
 
-#: ../src/libs/histogram.c:1224
+#: ../src/libs/histogram.c:1201
 msgctxt "accel"
 msgid "histogram/switch histogram type"
 msgstr "histograma/alterna escala do histograma linear/logarítmica"
 
-#: ../src/libs/histogram.c:1225
+#: ../src/libs/histogram.c:1202
 msgctxt "accel"
 msgid "switch histogram type"
 msgstr "alterna escala do histograma linear/logarítmica"
