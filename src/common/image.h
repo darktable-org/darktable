@@ -276,7 +276,8 @@ int dt_image_get_xmp_rating_from_flags(const int flags);
 /** finds all xmp duplicates for the given image in the database. */
 GList* dt_image_find_duplicates(const char* filename);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from threads other than lua.*/
-uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
+uint32_t dt_image_import(int32_t film_id, const char *filename, gboolean override_ignore_jpegs,
+                         gboolean raise_signals);
 /** imports a new image from raw/etc file and adds it to the data base and image cache. Use from lua thread.*/
 uint32_t dt_image_import_lua(int32_t film_id, const char *filename, gboolean override_ignore_jpegs);
 /** removes the given image from the database. */

@@ -545,7 +545,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_import_t
       filename = (char *)it->data;
       gchar *directory = g_path_get_dirname((const gchar *)filename);
       filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, filename, TRUE);
+      id = dt_image_import(filmid, filename, TRUE, TRUE);
       if(!id) dt_control_log(_("error loading file `%s'"), filename);
       g_free(filename);
       g_free(directory);

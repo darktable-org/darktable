@@ -254,8 +254,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     g_free(cdn);
 
     /* import image */
-    const int32_t imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
-
+    const int32_t imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE, FALSE);
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
 
