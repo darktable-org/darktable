@@ -49,6 +49,7 @@
 static int dt_lua_init_init(lua_State*L)
 {
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L,"exit");
   return 0;
