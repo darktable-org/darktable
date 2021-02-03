@@ -137,7 +137,7 @@ typedef unsigned int u_int;
 #define DT_ALIGNED_PIXEL __attribute__((aligned(16)))
 
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
-#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64);
+#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
 #ifndef _RELEASE
 #include "common/poison.h"
@@ -480,10 +480,10 @@ static inline float *dt_calloc_perthread_float(const size_t n, size_t* padded_si
 }
 
 // Given the buffer and object count returned by dt_alloc_perthread, return the current thread's private buffer.
-#define dt_get_perthread(buf, padsize) ((buf) + ((padsize) * dt_get_thread_num()))
+#define dt_get_perthread(buf, padsize) DT_IS_ALIGNED((buf) + ((padsize) * dt_get_thread_num()))
 // Given the buffer and object count returned by dt_alloc_perthread and a thread count in 0..dt_get_num_threads(),
 // return a pointer to the indicated thread's private buffer.
-#define dt_get_bythread(buf, padsize, tnum) ((buf) + ((padsize) * (tnum)))
+#define dt_get_bythread(buf, padsize, tnum) DT_IS_ALIGNED((buf) + ((padsize) * (tnum)))
 
 // Most code in dt assumes that the compiler is capable of auto-vectorization.  In some cases, this will yield
 // suboptimal code if the compiler in fact does NOT auto-vectorize.  Uncomment the following line for such a

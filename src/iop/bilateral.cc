@@ -156,7 +156,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       const float *in = ((float *)ivoid) + ch * ((size_t)j * roi_in->width + rad);
       float *out = ((float *)ovoid) + ch * ((size_t)j * roi_out->width + rad);
-      float *weights = dt_get_perthread(weights_buf, padded_weights_size);
+      float *weights = (float*)dt_get_perthread(weights_buf, padded_weights_size);
       float *w = weights + rad * wd + rad;
       float sumw;
       for(int i = rad; i < roi_out->width - rad; i++)
