@@ -667,7 +667,10 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
   {
     sum_squared[c] = 0.0f;
     for(size_t i = 0; i < nthreads; i++)
-      sum_squared[c] += dt_get_bythread(squared_sums,scratch_size,i)[c];
+    {
+      float *const sq = dt_get_bythread(squared_sums,scratch_size,i);
+      sum_squared[c] += sq[c];
+    }
   }
   dt_free_align(squared_sums);
 }
