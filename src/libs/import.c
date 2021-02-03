@@ -598,6 +598,9 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
+    // hide the dialog as soon as possible
+    gtk_widget_hide(filechooser);
+
     gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
     dt_conf_set_string("ui_last/import_last_directory", folder);
     g_free(folder);
