@@ -387,7 +387,7 @@ void dt_map_location_update_locations(const guint imgid, const GList *tags)
 }
 
 // update location's images - remove old ones and add new ones
-void dt_map_location_update_images(const guint locid)
+gboolean dt_map_location_update_images(const guint locid)
 {
   // get previous images
   GList *imgs = dt_tag_get_images(locid);
@@ -395,12 +395,14 @@ void dt_map_location_update_images(const guint locid)
   // find images in that location
   GList *new_imgs = _map_location_find_images(locid);
 
+  gboolean res = FALSE;
   // detach images which are not in location anymore
   for(GList *img = imgs; img; img = g_list_next(img))
   {
     if(!g_list_find(new_imgs, img->data))
     {
       dt_tag_detach(locid, GPOINTER_TO_INT(img->data), FALSE, FALSE);
+      res = TRUE;
     }
   }
 
@@ -410,10 +412,12 @@ void dt_map_location_update_images(const guint locid)
     if(!g_list_find(imgs, img->data))
     {
       dt_tag_attach(locid, GPOINTER_TO_INT(img->data), FALSE, FALSE);
+      res = TRUE;
     }
   }
   g_list_free(new_imgs);
   g_list_free(imgs);
+  return res;
 }
 
 // return root tag for location geotagging

@@ -152,6 +152,8 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
 static gboolean _view_map_button_release_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self);
 /* callback when the mouse is moved */
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
+static gboolean _view_map_drag_motion_callback(GtkWidget *widget, GdkDragContext *dc,
+                                               gint x, gint y, guint time, dt_view_t *self);
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context,
                                               GtkDragResult result, dt_view_t *self);
 static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
@@ -672,6 +674,8 @@ void init(dt_view_t *self)
                           G_CALLBACK(_view_map_button_release_callback), self);
     g_signal_connect(G_OBJECT(lib->map), "motion-notify-event", G_CALLBACK(_view_map_motion_notify_callback),
                      self);
+    g_signal_connect(G_OBJECT(lib->map), "drag-motion", G_CALLBACK(_view_map_drag_motion_callback),
+                     self);
   }
 
   /* build the query string */
@@ -850,10 +854,10 @@ static float _view_map_angles_to_pixels(const dt_map_t *lib, const float lat0,
 }
 
 static double _view_map_get_angles_ratio(const dt_map_t *lib, const float lat0,
-                                         const float lon0, const float angle)
+                                         const float lon0)
 {
   OsmGpsMapPoint *pt0 = osm_gps_map_point_new_degrees(lat0, lon0);
-  OsmGpsMapPoint *pt1 = osm_gps_map_point_new_degrees(lat0 + angle, lon0 + angle);
+  OsmGpsMapPoint *pt1 = osm_gps_map_point_new_degrees(lat0 + 2.0, lon0 + 2.0);
   gint px0 = 0, py0 = 0;
   gint px1 = 0, py1 = 0;
   osm_gps_map_convert_geographic_to_screen(lib->map, pt0, &px0, &py0);
@@ -988,7 +992,8 @@ static void _view_map_update_location_geotag(dt_view_t *self)
   {
     // update coordinates
     dt_map_location_set_data(lib->loc.main.id, &lib->loc.main.data);
-    dt_map_location_update_images(lib->loc.main.id);
+    if(dt_map_location_update_images(lib->loc.main.id))
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
 }
 
@@ -1490,9 +1495,33 @@ static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *conte
   }
 }
 
+static gboolean _view_map_drag_motion_callback(GtkWidget *widget, GdkDragContext *dc,
+                                               gint x, gint y, guint time, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  OsmGpsMapPoint *p = osm_gps_map_point_new_degrees(0.0, 0.0);
+  osm_gps_map_convert_screen_to_geographic(lib->map, x, y, p);
+  float lat, lon;
+  osm_gps_map_point_get_degrees(p, &lat, &lon);
+  gchar *latitude = dt_util_latitude_str(lat);
+  gchar *longitude = dt_util_longitude_str(lon);
+  dt_toast_log("%s %s",latitude, longitude);
+  g_free(latitude);
+  g_free(longitude);
+  return FALSE;
+}
+
 static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMotion *e, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
+  OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, (GdkEventButton *)e);
+  float lat, lon;
+  osm_gps_map_point_get_degrees(p, &lat, &lon);
+  gchar *latitude = dt_util_latitude_str(lat);
+  gchar *longitude = dt_util_longitude_str(lon);
+  dt_toast_log("%s %s",latitude, longitude);
+  g_free(latitude);
+  g_free(longitude);
 
   if(lib->loc.drag && lib->loc.main.id > 0 &&
      (abs(lib->start_drag_x - (int)ceil(e->x_root)) +
@@ -2088,7 +2117,7 @@ static void _view_map_add_location(const dt_view_t *view, dt_map_location_data_t
       float dlat, dlon;
       _view_map_thumb_angles(lib, lib->loc.main.data.lat, lib->loc.main.data.lon, &dlat, &dlon);
       lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
-                                                            lib->loc.main.data.lon, dlon);
+                                                            lib->loc.main.data.lon);
       lib->loc.main.data.delta1 = dlon;
       lib->loc.main.data.delta2 = dlon / lib->loc.main.data.ratio;
       _view_map_draw_locations(view);
@@ -2247,8 +2276,10 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         float lat, lon;
         osm_gps_map_point_get_degrees(pt, &lat, &lon);
         lib->loc.main.data.lat = lat, lib->loc.main.data.lon = lon;
+        const float prev_ratio = lib->loc.main.data.ratio;
         lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
-                                   lib->loc.main.data.lon, lib->loc.main.data.delta1);
+                                   lib->loc.main.data.lon);
+        lib->loc.main.data.delta2 = lib->loc.main.data.delta2 * prev_ratio / lib->loc.main.data.ratio;
         osm_gps_map_point_free(pt);
         _view_map_update_location_geotag(self);
         _view_map_draw_locations(self);
