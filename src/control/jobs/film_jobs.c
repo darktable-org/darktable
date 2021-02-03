@@ -200,6 +200,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   g_snprintf(message, sizeof(message) - 1, ngettext("importing %d image", "importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
+  GList *imgs = NULL;
 
   /* loop thru the images and import to current film roll */
   dt_film_t *cfr = film;
@@ -258,9 +259,12 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
 
+    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if((imgid & 3) == 3)
     {
-      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_copy(imgs));
+      g_list_free(imgs);
+      imgs = NULL;
     }
   } while((image = g_list_next(image)) != NULL);
 
