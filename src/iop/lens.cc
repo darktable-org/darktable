@@ -416,7 +416,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
-        float *bufptr = dt_get_perthread(buf, padded_bufsize);
+        float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
         modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, bufptr);
 
         // reverse transform the global coords from lf to our buffer
@@ -521,7 +521,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
-        float *buf2ptr = dt_get_perthread(buf2, padded_buf2size);
+        float *buf2ptr = (float*)dt_get_perthread(buf2, padded_buf2size);
         modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width,
                                                   1, buf2ptr);
         // reverse transform the global coords from lf to our buffer
@@ -967,7 +967,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
-    float *bufptr = dt_get_perthread(buf, padded_bufsize);
+    float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
     modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, bufptr);
 
     // reverse transform the global coords from lf to our buffer
