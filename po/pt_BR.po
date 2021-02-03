@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-02 07:50-0300\n"
-"PO-Revision-Date: 2021-02-03 18:42-0300\n"
+"POT-Creation-Date: 2021-02-04 13:08-0300\n"
+"PO-Revision-Date: 2021-02-04 13:01-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -819,8 +819,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "pasta raiz do LUT 3D"
 
-#: ../build/bin/preferences_gen.h:5250 ../src/control/jobs/control_jobs.c:1620
-#: ../src/control/jobs/control_jobs.c:1693 ../src/gui/preferences.c:1757
+#: ../build/bin/preferences_gen.h:5250 ../src/control/jobs/control_jobs.c:1623
+#: ../src/control/jobs/control_jobs.c:1696 ../src/gui/preferences.c:1757
 #: ../src/gui/preferences.c:2115 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:180 ../src/imageio/storage/latex.c:107
@@ -1539,12 +1539,9 @@ msgstr ""
 
 #. char *italic = g_strdup_printf("<i>%s</i>", _("other"));
 #. italic
-#: ../build/bin/preferences_gen.h:7157 ../src/libs/modulegroups.c:2190
-#: ../src/libs/modulegroups.c:2377 ../src/libs/tools/viewswitcher.c:145
+#: ../build/bin/preferences_gen.h:7157 ../src/libs/tools/viewswitcher.c:145
 msgid "other"
-msgid_plural "others"
-msgstr[0] "outro"
-msgstr[1] "outros"
+msgstr "outro"
 
 #: ../build/bin/preferences_gen.h:7177
 msgid "do not show april 1st game"
@@ -2409,23 +2406,23 @@ msgstr "corte de tonalidade"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:302
 #: ../build/lib/darktable/plugins/introspection_lut3d.c:201
-#: ../src/common/colorspaces.c:1625
+#: ../src/common/colorspaces.c:1661
 msgid "sRGB"
 msgstr "sRGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:303
-#: ../src/common/colorspaces.c:1418 ../src/common/colorspaces.c:1627
+#: ../src/common/colorspaces.c:1429 ../src/common/colorspaces.c:1663
 #: ../src/libs/print_settings.c:1042
 msgid "Adobe RGB (compatible)"
 msgstr "Adobe RGB (compatível)"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:304
-#: ../src/common/colorspaces.c:1423 ../src/common/colorspaces.c:1629
+#: ../src/common/colorspaces.c:1434 ../src/common/colorspaces.c:1665
 msgid "linear Rec709 RGB"
 msgstr "linear Rec709 RGB"
 
 #: ../build/lib/darktable/plugins/introspection_colorin.c:305
-#: ../src/common/colorspaces.c:1432 ../src/common/colorspaces.c:1631
+#: ../src/common/colorspaces.c:1443 ../src/common/colorspaces.c:1667
 msgid "linear Rec2020 RGB"
 msgstr "linear Rec2020 RGB"
 
@@ -3351,7 +3348,7 @@ msgstr "apagar"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
 #: ../src/iop/watermark.c:1404 ../src/libs/image.c:597
-#: ../src/libs/modulegroups.c:2154
+#: ../src/libs/modulegroups.c:2145
 msgid "color"
 msgstr "cor"
 
@@ -3674,8 +3671,8 @@ msgstr "Mostrar imagens em um mapa"
 msgid "Print your images"
 msgstr "Imprimir suas imagens"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1620
-#: ../src/control/jobs/control_jobs.c:1693 ../src/gui/hist_dialog.c:187
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1623
+#: ../src/control/jobs/control_jobs.c:1696 ../src/gui/hist_dialog.c:187
 #: ../src/gui/preferences.c:1592 ../src/gui/preferences.c:1618
 #: ../src/gui/preferences.c:1709 ../src/gui/preferences.c:1757
 #: ../src/gui/preferences.c:1883 ../src/gui/preferences.c:2115
@@ -4030,127 +4027,134 @@ msgstr[0] "%d imagem de %d na coleção atual está selecionada"
 msgstr[1] "%d imagens de %d na coleção atual foram selecionadas"
 
 #. init the category profile with NULL profile, the actual profile must be retrieved dynamically by the caller
-#: ../src/common/colorspaces.c:1387 ../src/common/colorspaces.c:1659
+#: ../src/common/colorspaces.c:1398 ../src/common/colorspaces.c:1695
 msgid "work profile"
 msgstr "perfil de trabalho"
 
-#: ../src/common/colorspaces.c:1390 ../src/common/colorspaces.c:1655
+#: ../src/common/colorspaces.c:1401 ../src/common/colorspaces.c:1691
 #: ../src/iop/colorout.c:883
 msgid "export profile"
 msgstr "perfil  de exportação"
 
-#: ../src/common/colorspaces.c:1394 ../src/common/colorspaces.c:1657
+#: ../src/common/colorspaces.c:1405 ../src/common/colorspaces.c:1693
 #: ../src/views/darkroom.c:2468
 msgid "softproof profile"
 msgstr "perfil de impressão na tela"
 
-#: ../src/common/colorspaces.c:1400 ../src/common/colorspaces.c:1639
+#: ../src/common/colorspaces.c:1411 ../src/common/colorspaces.c:1675
 msgid "system display profile"
 msgstr "perfil do monitor"
 
-#: ../src/common/colorspaces.c:1403 ../src/common/colorspaces.c:1661
+#: ../src/common/colorspaces.c:1414 ../src/common/colorspaces.c:1697
 msgid "system display profile (second window)"
 msgstr "perfil do monitor (segunda janela)"
 
-#: ../src/common/colorspaces.c:1409
+#: ../src/common/colorspaces.c:1420
 msgid "sRGB (e.g. JPG)"
 msgstr "sRGB (ex. JPG)"
 
-#: ../src/common/colorspaces.c:1413 ../src/libs/print_settings.c:1035
+#: ../src/common/colorspaces.c:1424 ../src/libs/print_settings.c:1035
 msgid "sRGB (web-safe)"
 msgstr "sRGB (web-safe)"
 
-#: ../src/common/colorspaces.c:1427
+#: ../src/common/colorspaces.c:1438
 msgid "gamma Rec709 RGB"
 msgstr "gama Rec709 RGB"
 
-#: ../src/common/colorspaces.c:1437
+#: ../src/common/colorspaces.c:1448
 msgid "PQ Rec2020 RGB"
 msgstr "PQ Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1442
+#: ../src/common/colorspaces.c:1453
 msgid "HLG Rec2020 RGB"
 msgstr "HLG Rec2020 RGB"
 
-#: ../src/common/colorspaces.c:1447
+#: ../src/common/colorspaces.c:1458
 msgid "PQ P3 RGB"
 msgstr "PQ P3 RGB"
 
-#: ../src/common/colorspaces.c:1452
+#: ../src/common/colorspaces.c:1463
 msgid "HLG P3 RGB"
 msgstr "HLG P3 RGB"
 
-#: ../src/common/colorspaces.c:1457
+#: ../src/common/colorspaces.c:1468
 msgid "linear prophoto RGB"
 msgstr "RGB prophoto linear"
 
-#: ../src/common/colorspaces.c:1462 ../src/common/colorspaces.c:1633
+#: ../src/common/colorspaces.c:1473 ../src/common/colorspaces.c:1669
 msgid "linear XYZ"
 msgstr "linear XYZ"
 
-#: ../src/common/colorspaces.c:1466 ../src/common/colorspaces.c:1635
+#: ../src/common/colorspaces.c:1477 ../src/common/colorspaces.c:1671
 #: ../src/develop/blend_gui.c:94 ../src/develop/blend_gui.c:1546
 #: ../src/libs/colorpicker.c:296 ../src/libs/colorpicker.c:630
 msgid "Lab"
 msgstr "Lab"
 
-#: ../src/common/colorspaces.c:1471 ../src/common/colorspaces.c:1637
+#: ../src/common/colorspaces.c:1482 ../src/common/colorspaces.c:1673
 msgid "linear infrared BGR"
 msgstr "linear infravermelho BGR"
 
-#: ../src/common/colorspaces.c:1475
+#: ../src/common/colorspaces.c:1486
 msgid "BRG (for testing)"
 msgstr "BRG (para teste)"
 
-#: ../src/common/colorspaces.c:1641
+#: ../src/common/colorspaces.c:1586
+#, c-format
+msgid ""
+"profile `%s' not usable as histogram profile. it has been replaced by sRGB!"
+msgstr ""
+"perfil `%s` não usável como perfil de histograma. foi substituído por sRGB!"
+
+#: ../src/common/colorspaces.c:1677
 msgid "embedded ICC profile"
 msgstr "perfil ICC embutido"
 
-#: ../src/common/colorspaces.c:1643
+#: ../src/common/colorspaces.c:1679
 msgid "embedded matrix"
 msgstr "matriz embutida"
 
-#: ../src/common/colorspaces.c:1645
+#: ../src/common/colorspaces.c:1681
 msgid "standard color matrix"
 msgstr "matriz de cor padrão"
 
-#: ../src/common/colorspaces.c:1647
+#: ../src/common/colorspaces.c:1683
 msgid "enhanced color matrix"
 msgstr "matriz de cor aprimorada"
 
-#: ../src/common/colorspaces.c:1649
+#: ../src/common/colorspaces.c:1685
 msgid "vendor color matrix"
 msgstr "matriz de cor do fabricante"
 
-#: ../src/common/colorspaces.c:1651
+#: ../src/common/colorspaces.c:1687
 msgid "alternate color matrix"
 msgstr "matriz de cor alternativa"
 
-#: ../src/common/colorspaces.c:1653
+#: ../src/common/colorspaces.c:1689
 msgid "BRG (experimental)"
 msgstr "BRG (experimental)"
 
-#: ../src/common/colorspaces.c:1663
+#: ../src/common/colorspaces.c:1699
 msgid "gamma22 Rec709"
 msgstr "gama22 Rec709"
 
-#: ../src/common/colorspaces.c:1665
+#: ../src/common/colorspaces.c:1701
 msgid "ProPhoto RGB"
 msgstr "RGB ProPhoto"
 
-#: ../src/common/colorspaces.c:1667
+#: ../src/common/colorspaces.c:1703
 msgid "PQ Rec2020"
 msgstr "PQ Rec2020"
 
-#: ../src/common/colorspaces.c:1669
+#: ../src/common/colorspaces.c:1705
 msgid "HLG Rec2020"
 msgstr "HLG Rec2020"
 
-#: ../src/common/colorspaces.c:1671
+#: ../src/common/colorspaces.c:1707
 msgid "PQ P3"
 msgstr "PQ P3"
 
-#: ../src/common/colorspaces.c:1673
+#: ../src/common/colorspaces.c:1709
 msgid "HLG P3"
 msgstr "HLG P3"
 
@@ -4472,12 +4476,12 @@ msgstr "darktable - manutenção de esquema"
 msgid "later"
 msgstr "depois"
 
-#: ../src/common/exif.cc:4072
+#: ../src/common/exif.cc:4076
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
 msgstr "não foi possível abrir o arquivo xmp '%s': '%s'"
 
-#: ../src/common/exif.cc:4124
+#: ../src/common/exif.cc:4128
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
 msgstr "não foi possível escrever o arquivo xmp '%s': '%s'"
@@ -5089,105 +5093,105 @@ msgid_plural "refreshing info for %d images"
 msgstr[0] "atualizando informações para %d imagem"
 msgstr[1] "atualizando informações para %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1308
+#: ../src/control/jobs/control_jobs.c:1311
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "exportando %d imagem.."
 msgstr[1] "exportando %d imagens.."
 
-#: ../src/control/jobs/control_jobs.c:1340
+#: ../src/control/jobs/control_jobs.c:1343
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "exportando %d / %d para %s"
 
-#: ../src/control/jobs/control_jobs.c:1361 ../src/views/darkroom.c:802
+#: ../src/control/jobs/control_jobs.c:1364 ../src/views/darkroom.c:802
 #: ../src/views/print.c:315
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "imagem `%s' não está disponível"
 
-#: ../src/control/jobs/control_jobs.c:1450
+#: ../src/control/jobs/control_jobs.c:1453
 msgid "merge hdr image"
 msgstr "fundir imagem hdr"
 
-#: ../src/control/jobs/control_jobs.c:1464
+#: ../src/control/jobs/control_jobs.c:1467
 msgid "duplicate images"
 msgstr "duplicar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1470
+#: ../src/control/jobs/control_jobs.c:1473
 msgid "flip images"
 msgstr "inverter (espelhar) imagens"
 
-#: ../src/control/jobs/control_jobs.c:1477
+#: ../src/control/jobs/control_jobs.c:1480
 msgid "set monochrome images"
 msgstr "definir imagens monocromáticas"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1484
+#: ../src/control/jobs/control_jobs.c:1487
 msgid "remove images"
 msgstr "remover imagens"
 
-#: ../src/control/jobs/control_jobs.c:1501
+#: ../src/control/jobs/control_jobs.c:1504
 #, c-format
 msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
 msgstr[0] "você realmente deseja remover %d imagem da coleção?"
 msgstr[1] "você realmente deseja remover %d imagens da coleção?"
 
-#: ../src/control/jobs/control_jobs.c:1508
+#: ../src/control/jobs/control_jobs.c:1511
 msgid "remove images?"
 msgstr "remover imagens?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1524
-#: ../src/control/jobs/control_jobs.c:1568
+#: ../src/control/jobs/control_jobs.c:1527
+#: ../src/control/jobs/control_jobs.c:1571
 msgid "delete images"
 msgstr "excluir imagens"
 
-#: ../src/control/jobs/control_jobs.c:1544
+#: ../src/control/jobs/control_jobs.c:1547
 #, c-format
 msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
 msgstr[0] "você realmente deseja enviar %d imagem para a lixeira?"
 msgstr[1] "você realmente deseja enviar %d imagens para a lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1546
+#: ../src/control/jobs/control_jobs.c:1549
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "você realmente deseja excluir fisicamente %d imagem do disco?"
 msgstr[1] "você realmente deseja excluir fisicamente %d imagens do disco?"
 
-#: ../src/control/jobs/control_jobs.c:1553
-#: ../src/control/jobs/control_jobs.c:1591
+#: ../src/control/jobs/control_jobs.c:1556
+#: ../src/control/jobs/control_jobs.c:1594
 msgid "trash images?"
 msgstr "enviar imagens para lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1553
-#: ../src/control/jobs/control_jobs.c:1591
+#: ../src/control/jobs/control_jobs.c:1556
+#: ../src/control/jobs/control_jobs.c:1594
 msgid "delete images?"
 msgstr "excluir imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1585
+#: ../src/control/jobs/control_jobs.c:1588
 msgid "do you really want to send selected image to trash?"
 msgstr "você realmente deseja enviar a imagem selecionada para a lixeira?"
 
-#: ../src/control/jobs/control_jobs.c:1586
+#: ../src/control/jobs/control_jobs.c:1589
 msgid "do you really want to physically delete selected image from disk?"
 msgstr ""
 "você realmente deseja excluir fisicamente a imagem selecionada do disco?"
 
-#: ../src/control/jobs/control_jobs.c:1609
+#: ../src/control/jobs/control_jobs.c:1612
 msgid "move images"
 msgstr "mover imagens"
 
-#: ../src/control/jobs/control_jobs.c:1621
-#: ../src/control/jobs/control_jobs.c:1694
+#: ../src/control/jobs/control_jobs.c:1624
+#: ../src/control/jobs/control_jobs.c:1697
 msgid "_select as destination"
 msgstr "_selecionar como destino"
 
-#: ../src/control/jobs/control_jobs.c:1652
+#: ../src/control/jobs/control_jobs.c:1655
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -5202,94 +5206,94 @@ msgstr[1] ""
 "você realmente deseja mover fisicamente as %d imagens para %s?\n"
 "(todas duplicatas serão movidas também)"
 
-#: ../src/control/jobs/control_jobs.c:1661
+#: ../src/control/jobs/control_jobs.c:1664
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "mover imagem?"
 msgstr[1] "mover imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1682
+#: ../src/control/jobs/control_jobs.c:1685
 msgid "copy images"
 msgstr "copiar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1724
+#: ../src/control/jobs/control_jobs.c:1727
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "você realmente deseja copiar fisicamente %d imagem para %s?"
 msgstr[1] "você realmente deseja copiar fisicamente %d imagens para %s?"
 
-#: ../src/control/jobs/control_jobs.c:1730
+#: ../src/control/jobs/control_jobs.c:1733
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "copiar imagem?"
 msgstr[1] "copiar imagens?"
 
-#: ../src/control/jobs/control_jobs.c:1750
-#: ../src/control/jobs/control_jobs.c:1758
+#: ../src/control/jobs/control_jobs.c:1753
+#: ../src/control/jobs/control_jobs.c:1761
 msgid "local copy images"
 msgstr "copiar imagens localmente"
 
-#: ../src/control/jobs/control_jobs.c:1765 ../src/libs/image.c:589
+#: ../src/control/jobs/control_jobs.c:1768 ../src/libs/image.c:589
 msgid "refresh exif"
 msgstr "atualizar exif"
 
-#: ../src/control/jobs/control_jobs.c:1829
+#: ../src/control/jobs/control_jobs.c:1832
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "falha o obter parâmetros do módulo de armazenamento `%s', abortando "
 "exportação.."
 
-#: ../src/control/jobs/control_jobs.c:1845
+#: ../src/control/jobs/control_jobs.c:1848
 msgid "export images"
 msgstr "exportar imagens"
 
-#: ../src/control/jobs/control_jobs.c:1870
+#: ../src/control/jobs/control_jobs.c:1873
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "adicionando compensação de tempo a %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1870
+#: ../src/control/jobs/control_jobs.c:1873
 #, c-format
 msgid "setting date time to %d image"
 msgstr "definindo data/hora em %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1871
+#: ../src/control/jobs/control_jobs.c:1874
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "adicionando compensação de tempo a %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1871
+#: ../src/control/jobs/control_jobs.c:1874
 #, c-format
 msgid "setting date time to %d images"
 msgstr "defininda data/hora em %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1892
+#: ../src/control/jobs/control_jobs.c:1895
 #, c-format
 msgid "added time offset to %d image"
 msgstr "compensação de tempo adicionada a %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1892
+#: ../src/control/jobs/control_jobs.c:1895
 #, c-format
 msgid "set date time to %d image"
 msgstr "defininda data/hora em %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1893
+#: ../src/control/jobs/control_jobs.c:1896
 #, c-format
 msgid "added time offset to %d images"
 msgstr "compensação de tempo adicionada a %d imagem"
 
-#: ../src/control/jobs/control_jobs.c:1893
+#: ../src/control/jobs/control_jobs.c:1896
 #, c-format
 msgid "set date time to %d images"
 msgstr "definida data/hora em %d imagens"
 
-#: ../src/control/jobs/control_jobs.c:1934
+#: ../src/control/jobs/control_jobs.c:1937
 msgid "time offset"
 msgstr "intervalo de tempo"
 
-#: ../src/control/jobs/control_jobs.c:1962 ../src/libs/copy_history.c:416
+#: ../src/control/jobs/control_jobs.c:1965 ../src/libs/copy_history.c:416
 msgid "write sidecar files"
 msgstr "escrever arquivos associados"
 
@@ -6160,7 +6164,7 @@ msgstr ""
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2526 ../src/gui/preferences.c:792
-#: ../src/libs/lib.c:1264 ../src/libs/modulegroups.c:2489
+#: ../src/libs/lib.c:1264 ../src/libs/modulegroups.c:2471
 msgid "presets"
 msgstr "predefinições"
 
@@ -7929,14 +7933,14 @@ msgstr "conflito de atalhos"
 
 #: ../src/gui/preferences.c:1528 ../src/gui/preferences.c:2162
 #: ../src/gui/presets.c:189 ../src/libs/lib.c:385
-#: ../src/libs/modulegroups.c:3224
+#: ../src/libs/modulegroups.c:3206
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "você realmente deseja excluir a predefinição `%s'?"
 
 #: ../src/gui/preferences.c:1532 ../src/gui/preferences.c:2166
 #: ../src/gui/presets.c:193 ../src/libs/lib.c:389
-#: ../src/libs/modulegroups.c:3228
+#: ../src/libs/modulegroups.c:3210
 msgid "delete preset?"
 msgstr "excluir predefinição?"
 
@@ -8137,8 +8141,8 @@ msgstr "você realmente deseja atualizar a predefinição `%s'?"
 msgid "update preset?"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3400
-#: ../src/libs/modulegroups.c:3409
+#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3382
+#: ../src/libs/modulegroups.c:3391
 msgid "manage module layouts"
 msgstr "gerenciar layout dos módulos"
 
@@ -8163,7 +8167,7 @@ msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
 #: ../src/gui/presets.c:1293 ../src/libs/lib.c:677
-#: ../src/libs/modulegroups.c:3357
+#: ../src/libs/modulegroups.c:3339
 msgid "delete this preset"
 msgstr "exclui esta predefinição"
 
@@ -10104,23 +10108,23 @@ msgstr "misturador de canais básico"
 msgid "swap G and R"
 msgstr "trocar G e R"
 
-#: ../src/iop/channelmixerrgb.c:1620 ../src/iop/channelmixerrgb.c:1669
+#: ../src/iop/channelmixerrgb.c:1622 ../src/iop/channelmixerrgb.c:1671
 msgid "very good"
 msgstr "muito bom"
 
-#: ../src/iop/channelmixerrgb.c:1622 ../src/iop/channelmixerrgb.c:1671
+#: ../src/iop/channelmixerrgb.c:1624 ../src/iop/channelmixerrgb.c:1673
 msgid "good"
 msgstr "bom"
 
-#: ../src/iop/channelmixerrgb.c:1624 ../src/iop/channelmixerrgb.c:1673
+#: ../src/iop/channelmixerrgb.c:1626 ../src/iop/channelmixerrgb.c:1675
 msgid "passable"
 msgstr "passável"
 
-#: ../src/iop/channelmixerrgb.c:1626 ../src/iop/channelmixerrgb.c:1675
+#: ../src/iop/channelmixerrgb.c:1628 ../src/iop/channelmixerrgb.c:1677
 msgid "bad"
 msgstr "ruim"
 
-#: ../src/iop/channelmixerrgb.c:1633
+#: ../src/iop/channelmixerrgb.c:1635
 #, c-format
 msgid ""
 "\n"
@@ -10137,8 +10141,8 @@ msgid ""
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Normalization values</b>\n"
-"black offset : \t%+.4f\n"
-"exposure compensation : \t%+.2f EV"
+"exposure compensation : \t%+.2f EV\n"
+"black offset : \t%+.4f"
 msgstr ""
 "\n"
 "<b>Relatório de qualidade de perfil : %s</b>\n"
@@ -10154,10 +10158,10 @@ msgstr ""
 "%+.4f \t%+.4f \t%+.4f</tt>\n"
 "\n"
 "<b>Valores de normalização</b>\n"
-"desvio de preto : \t%+.4f\n"
-"compensação de exposição : \t%+.2f EV"
+"compensação de exposição : \t%+.2f EV\n"
+"desvio de preto : \t%+.4f"
 
-#: ../src/iop/channelmixerrgb.c:1679
+#: ../src/iop/channelmixerrgb.c:1681
 #, c-format
 msgid ""
 "\n"
@@ -10165,24 +10169,24 @@ msgid ""
 "output ΔE : \tavg. %.2f ; \tmax. %.2f\n"
 "\n"
 "<b>Normalization values</b>\n"
-"black offset : \t%+.4f\n"
-"exposure compensation : \t%+.2f EV"
+"exposure compensation : \t%+.2f EV\n"
+"black offset : \t%+.4f"
 msgstr ""
 "\n"
 "<b>Relatório de qualidade do perfil : %s</b>\n"
 "ΔE saída : \tméd. %.2f ; \tmax. %.2f\n"
 "\n"
 "<b>Valores de normalização</b>\n"
-"desvio de preto : \t%+.4f\n"
-"compensação de exposição : \t%+.2f EV"
+"compensação de exposição : \t%+.2f EV\n"
+"desvio de preto : \t%+.4f"
 
 #. our second biggest problem : another channelmixerrgb instance is doing CAT
 #. earlier in the pipe.
-#: ../src/iop/channelmixerrgb.c:1701
+#: ../src/iop/channelmixerrgb.c:1703
 msgid "double CAT applied"
 msgstr "CAT duplo aplicado"
 
-#: ../src/iop/channelmixerrgb.c:1702
+#: ../src/iop/channelmixerrgb.c:1704
 msgid ""
 "you have 2 instances or more of color calibration,\n"
 "all performing chromatic adaptation.\n"
@@ -10195,11 +10199,11 @@ msgstr ""
 "as use com máscaras ou saiba o que está fazendo."
 
 #. our first and biggest problem : white balance module is being clever with WB coeffs
-#: ../src/iop/channelmixerrgb.c:1712
+#: ../src/iop/channelmixerrgb.c:1714
 msgid "white balance module error"
 msgstr "erro no módulo balanço de branco"
 
-#: ../src/iop/channelmixerrgb.c:1713
+#: ../src/iop/channelmixerrgb.c:1715
 msgid ""
 "the white balance module is not using the camera\n"
 "reference illuminant, which will cause issues here\n"
@@ -10211,16 +10215,16 @@ msgstr ""
 "com a adaptação cromática. defina para referência ou\n"
 "desabilite a adaptação cromática aqui."
 
-#: ../src/iop/channelmixerrgb.c:1784
+#: ../src/iop/channelmixerrgb.c:1786
 msgid "auto-detection of white balance completed"
 msgstr "auto-detecção de balanço de branco completada"
 
-#: ../src/iop/channelmixerrgb.c:3044
+#: ../src/iop/channelmixerrgb.c:3046
 #, c-format
 msgid "CCT: %.0f K (daylight)"
 msgstr "CCT: %.0f K (luz do dia)"
 
-#: ../src/iop/channelmixerrgb.c:3046
+#: ../src/iop/channelmixerrgb.c:3048
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a daylight spectrum,\n"
@@ -10231,12 +10235,12 @@ msgstr ""
 "diurna,\n"
 "então sua temperatura é relevante e faz sentido com um iluminante D."
 
-#: ../src/iop/channelmixerrgb.c:3052
+#: ../src/iop/channelmixerrgb.c:3054
 #, c-format
 msgid "CCT: %.0f K (black body)"
 msgstr "CCT: %.0f K (corpo negro)"
 
-#: ../src/iop/channelmixerrgb.c:3054
+#: ../src/iop/channelmixerrgb.c:3056
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant can be accurately modeled by a black body spectrum,\n"
@@ -10247,12 +10251,12 @@ msgstr ""
 "negro,\n"
 "então sua temperatura é relevante e faz sentido com um iluminante Planckiano."
 
-#: ../src/iop/channelmixerrgb.c:3060
+#: ../src/iop/channelmixerrgb.c:3062
 #, c-format
 msgid "CCT: %.0f K (invalid)"
 msgstr "CCT: %.0f K (inválido)"
 
-#: ../src/iop/channelmixerrgb.c:3062
+#: ../src/iop/channelmixerrgb.c:3064
 msgid ""
 "approximated correlated color temperature.\n"
 "this illuminant cannot be accurately modeled by a daylight or black body "
@@ -10266,12 +10270,12 @@ msgstr ""
 "então sua temperatura não é relevante e você precisa usar um iluminante "
 "customizado."
 
-#: ../src/iop/channelmixerrgb.c:3069
+#: ../src/iop/channelmixerrgb.c:3071
 #, c-format
 msgid "CCT: undefined"
 msgstr "CCT: não definido"
 
-#: ../src/iop/channelmixerrgb.c:3071
+#: ../src/iop/channelmixerrgb.c:3073
 msgid ""
 "the approximated correlated color temperature\n"
 "cannot be computed at all so you need to use a custom illuminant."
@@ -10453,26 +10457,11 @@ msgstr ""
 "nenhum é um meio-termo entre os dois\n"
 "os outros são comportamentos especiais para proteger algumas matizes"
 
-#: ../src/iop/channelmixerrgb.c:3644
-msgid "normalize exposure"
-msgstr "normalizar exposição"
-
 #: ../src/iop/channelmixerrgb.c:3645
-msgid ""
-"discard the patch luminance from the calibration.\n"
-"useful when the chart is not lit by an even lighting,\n"
-"in which case luminance discrepancies would make color matching inaccurate."
-msgstr ""
-"descartar luminância do patch na calibração.\n"
-"útil quanto a tabela não está iluminada de maneira homogênea,\n"
-"de tal forma que as discrepâncias na luminância tornariam o casamento das "
-"cores impreciso."
-
-#: ../src/iop/channelmixerrgb.c:3651
 msgid "patch scale"
 msgstr "escala do patch"
 
-#: ../src/iop/channelmixerrgb.c:3652
+#: ../src/iop/channelmixerrgb.c:3646
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -10482,19 +10471,19 @@ msgstr ""
 "útil quando a correção de perspectiva não é boa ou\n"
 "a moldura fazem sombra sobre as bordas do patch."
 
-#: ../src/iop/channelmixerrgb.c:3660
+#: ../src/iop/channelmixerrgb.c:3654
 msgid "the delta E is using the CIE 2000 formula."
 msgstr "o delta E está usando a fórmula CIE 2000"
 
-#: ../src/iop/channelmixerrgb.c:3666
+#: ../src/iop/channelmixerrgb.c:3660
 msgid "accept the computed profile and set it in the module"
 msgstr "aceitar o perfil calculado e definí-lo no módulo"
 
-#: ../src/iop/channelmixerrgb.c:3671
+#: ../src/iop/channelmixerrgb.c:3665
 msgid "recompute the profile"
 msgstr "recalcular o perfil"
 
-#: ../src/iop/channelmixerrgb.c:3676
+#: ../src/iop/channelmixerrgb.c:3670
 msgid "check the output delta E"
 msgstr "verificar a saída delta E"
 
@@ -11324,7 +11313,7 @@ msgstr "obrigatório"
 msgid "defined by profile"
 msgstr "definido pelo perfil"
 
-#: ../src/iop/colorin.c:490
+#: ../src/iop/colorin.c:531
 #, c-format
 msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
@@ -11333,34 +11322,34 @@ msgstr ""
 "não consegui extrair matriz do espaço de cores `%s', será substituída pelo "
 "Rec2020 RGB!"
 
-#: ../src/iop/colorin.c:1573
+#: ../src/iop/colorin.c:1614
 #, c-format
 msgid "`%s' color matrix not found!"
 msgstr "`%s' matriz de cores não encontrada!"
 
-#: ../src/iop/colorin.c:1608
+#: ../src/iop/colorin.c:1649
 msgid "input profile could not be generated!"
 msgstr "perfil de entrada não pode ser gerado!"
 
-#: ../src/iop/colorin.c:1690
+#: ../src/iop/colorin.c:1731
 msgid "unsupported input profile has been replaced by linear Rec709 RGB!"
 msgstr "perfil de entrada não suportado foi substituído por linear Rec709 RGB!"
 
-#: ../src/iop/colorin.c:2086
+#: ../src/iop/colorin.c:2127
 msgid "input profile"
 msgstr "perfil  de entrada"
 
-#: ../src/iop/colorin.c:2090
+#: ../src/iop/colorin.c:2131
 msgid "working profile"
 msgstr "perfil de trabalho"
 
-#: ../src/iop/colorin.c:2097 ../src/iop/colorin.c:2108
+#: ../src/iop/colorin.c:2138 ../src/iop/colorin.c:2149
 #: ../src/iop/colorout.c:894
 #, c-format
 msgid "ICC profiles in %s or %s"
 msgstr "perfis ICC em %s ou %s"
 
-#: ../src/iop/colorin.c:2119
+#: ../src/iop/colorin.c:2160
 msgid "confine Lab values to gamut of RGB color space"
 msgstr "delimita valores Lab para tonalidades do espaço de cores RGB"
 
@@ -13397,7 +13386,7 @@ msgstr "escala"
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.cc:2384 ../src/libs/modulegroups.c:2155
+#: ../src/iop/lens.cc:2384 ../src/libs/modulegroups.c:2146
 msgid "correct"
 msgstr "corrigir"
 
@@ -17945,8 +17934,8 @@ msgid "modulegroups"
 msgstr "grupos de módulos"
 
 #: ../src/libs/modulegroups.c:365 ../src/libs/modulegroups.c:384
-#: ../src/libs/modulegroups.c:2272 ../src/libs/modulegroups.c:2287
-#: ../src/libs/modulegroups.c:2297
+#: ../src/libs/modulegroups.c:2263 ../src/libs/modulegroups.c:2279
+#: ../src/libs/modulegroups.c:2289
 msgid "on-off"
 msgstr "liga-desliga"
 
@@ -18007,7 +17996,7 @@ msgid "correct"
 msgstr "corrigir"
 
 #: ../src/libs/modulegroups.c:1522 ../src/libs/modulegroups.c:1555
-#: ../src/libs/modulegroups.c:1572 ../src/libs/modulegroups.c:2158
+#: ../src/libs/modulegroups.c:1572 ../src/libs/modulegroups.c:2149
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "efeito"
@@ -18022,7 +18011,7 @@ msgid "grading"
 msgstr "grading de cores"
 
 #: ../src/libs/modulegroups.c:1537 ../src/libs/modulegroups.c:1594
-#: ../src/libs/modulegroups.c:2162
+#: ../src/libs/modulegroups.c:2153
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "efeitos"
@@ -18049,7 +18038,7 @@ msgid "search only"
 msgstr "buscar apenas"
 
 #: ../src/libs/modulegroups.c:1613 ../src/libs/modulegroups.c:1912
-#: ../src/libs/modulegroups.c:2435
+#: ../src/libs/modulegroups.c:2417
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "descontinuados/obsoletos"
@@ -18074,94 +18063,62 @@ msgstr "remover esta ferramenta"
 msgid "remove this module"
 msgstr "remover este módulo"
 
-#: ../src/libs/modulegroups.c:2147
+#: ../src/libs/modulegroups.c:2138
 msgid "click to add this module"
 msgstr "clique para adicionar este módulo"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2153
+#: ../src/libs/modulegroups.c:2144
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:2156
+#: ../src/libs/modulegroups.c:2147
 msgid "tone"
 msgstr "tom"
 
-#: ../src/libs/modulegroups.c:2159
+#: ../src/libs/modulegroups.c:2150
 msgid "technical"
 msgstr "técnico"
 
-#: ../src/libs/modulegroups.c:2160
+#: ../src/libs/modulegroups.c:2151
 msgid "grading"
 msgstr "grading de cores"
 
-#: ../src/libs/modulegroups.c:2176
+#: ../src/libs/modulegroups.c:2168
 msgid "click to remove this module"
 msgstr "clique para remover este módulo"
 
-#: ../src/libs/modulegroups.c:2198
-msgid "recommended module"
-msgid_plural "recommended modules"
-msgstr[0] "módulo recomendado"
-msgstr[1] "módulos recomendados"
-
-#: ../src/libs/modulegroups.c:2207
-msgid "already present module"
-msgid_plural "already present modules"
-msgstr[0] "módulo já presente"
-msgstr[1] "módulos já presentes"
-
-#: ../src/libs/modulegroups.c:2275 ../src/libs/modulegroups.c:2329
+#: ../src/libs/modulegroups.c:2266 ../src/libs/modulegroups.c:2321
 msgid "click to remove the widget"
 msgstr "clique para remover esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2290 ../src/libs/modulegroups.c:2298
-#: ../src/libs/modulegroups.c:2344 ../src/libs/modulegroups.c:2352
+#: ../src/libs/modulegroups.c:2282 ../src/libs/modulegroups.c:2290
+#: ../src/libs/modulegroups.c:2337 ../src/libs/modulegroups.c:2346
 msgid "click to add the widget"
 msgstr "clique para adicionar esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2385
-msgid "recommended widget"
-msgid_plural "recommended widgets"
-msgstr[0] "ferramenta recomendada"
-msgstr[1] "ferramentas recomendadas"
-
-#: ../src/libs/modulegroups.c:2394
-msgid "already present widget"
-msgid_plural "already present widgets"
-msgstr[0] "ferramenta já presente"
-msgstr[1] "ferramentas já presentes"
-
-#: ../src/libs/modulegroups.c:2404
-msgid "hide the basics widgets group"
-msgstr "esconder grupo de ferramentas básicas"
-
-#: ../src/libs/modulegroups.c:2405
-msgid "to see it again, use the presets manager"
-msgstr "para vê-lo novamente, use o gerenciador de predefinições"
-
-#: ../src/libs/modulegroups.c:2475
+#: ../src/libs/modulegroups.c:2457
 msgid "show basic adjustement list"
 msgstr "mostrar lista de ajustes básicos"
 
-#: ../src/libs/modulegroups.c:2484
+#: ../src/libs/modulegroups.c:2466
 msgid "show only active modules"
 msgstr "mostrar apenas módulos ativos"
 
 #. search box
-#: ../src/libs/modulegroups.c:2493
+#: ../src/libs/modulegroups.c:2475
 msgid "search module"
 msgstr "buscar módulo"
 
-#: ../src/libs/modulegroups.c:2499
+#: ../src/libs/modulegroups.c:2481
 msgid "search modules by name or tag"
 msgstr "procurar módulos por nome ou etiqueta"
 
-#: ../src/libs/modulegroups.c:2507
+#: ../src/libs/modulegroups.c:2489
 msgid "clear text"
 msgstr "limpar texto"
 
-#: ../src/libs/modulegroups.c:2516
+#: ../src/libs/modulegroups.c:2498
 msgid ""
 "following modules are deprecated because they have internal design mistakes "
 "that can't be solved and alternatives that solve them.\n"
@@ -18172,116 +18129,116 @@ msgstr ""
 "que não podem ser resolvidos e há alternativa que os resolva.\n"
 "eles serão removidos para novas edições no próximo release."
 
-#: ../src/libs/modulegroups.c:2725
+#: ../src/libs/modulegroups.c:2707
 msgid "basic icon"
 msgstr "ícone de básico"
 
-#: ../src/libs/modulegroups.c:2735
+#: ../src/libs/modulegroups.c:2717
 msgid "active icon"
 msgstr "ícone ativo"
 
-#: ../src/libs/modulegroups.c:2745
+#: ../src/libs/modulegroups.c:2727
 msgid "color icon"
 msgstr "ícone de cor"
 
-#: ../src/libs/modulegroups.c:2755
+#: ../src/libs/modulegroups.c:2737
 msgid "correct icon"
 msgstr "ícone de correções"
 
-#: ../src/libs/modulegroups.c:2765
+#: ../src/libs/modulegroups.c:2747
 msgid "effect icon"
 msgstr "ícone de efeitos"
 
-#: ../src/libs/modulegroups.c:2775
+#: ../src/libs/modulegroups.c:2757
 msgid "favorites icon"
 msgstr "íconde de favoritos"
 
-#: ../src/libs/modulegroups.c:2785
+#: ../src/libs/modulegroups.c:2767
 msgid "tone icon"
 msgstr "ícone de tom"
 
-#: ../src/libs/modulegroups.c:2795
+#: ../src/libs/modulegroups.c:2777
 msgid "grading icon"
 msgstr "ícone de grading"
 
-#: ../src/libs/modulegroups.c:2805
+#: ../src/libs/modulegroups.c:2787
 msgid "technical icon"
 msgstr "ícone de técnico"
 
-#: ../src/libs/modulegroups.c:2837 ../src/libs/modulegroups.c:2839
+#: ../src/libs/modulegroups.c:2819 ../src/libs/modulegroups.c:2821
 msgid "basics widgets"
 msgstr "ferramentas básicas"
 
-#: ../src/libs/modulegroups.c:2860
+#: ../src/libs/modulegroups.c:2842
 msgid "add widgets to the list"
 msgstr "adicionar ferramenta à lista"
 
-#: ../src/libs/modulegroups.c:2890
+#: ../src/libs/modulegroups.c:2872
 msgid "move group to the left"
 msgstr "mover grupo para a esquerda"
 
-#: ../src/libs/modulegroups.c:2902
+#: ../src/libs/modulegroups.c:2884
 msgid "group icon"
 msgstr "ícone de grupo"
 
-#: ../src/libs/modulegroups.c:2909
+#: ../src/libs/modulegroups.c:2891
 msgid "group name"
 msgstr "nome do grupo"
 
-#: ../src/libs/modulegroups.c:2919
+#: ../src/libs/modulegroups.c:2901
 msgid "remove group"
 msgstr "remover grupo"
 
-#: ../src/libs/modulegroups.c:2932
+#: ../src/libs/modulegroups.c:2914
 msgid "move group to the right"
 msgstr "mover grupo para a direita"
 
-#: ../src/libs/modulegroups.c:2954
+#: ../src/libs/modulegroups.c:2936
 msgid "add module to the list"
 msgstr "adicionar módulo à lista"
 
-#: ../src/libs/modulegroups.c:2982 ../src/libs/tagging.c:3046
+#: ../src/libs/modulegroups.c:2964 ../src/libs/tagging.c:3046
 msgid "new"
 msgstr "novo"
 
-#: ../src/libs/modulegroups.c:3073
+#: ../src/libs/modulegroups.c:3055
 msgid "preset name : "
 msgstr "nome da predefinição : "
 
-#: ../src/libs/modulegroups.c:3075
+#: ../src/libs/modulegroups.c:3057
 msgid "preset name"
 msgstr "nome da predefinição"
 
 #. show search checkbox
-#: ../src/libs/modulegroups.c:3082
+#: ../src/libs/modulegroups.c:3064
 msgid "show search line"
 msgstr "mostrar linha de busca"
 
 #. show basics checkbox
-#: ../src/libs/modulegroups.c:3088
+#: ../src/libs/modulegroups.c:3070
 msgid "show basics widgets group"
 msgstr "mostrar grupo de ferramentas básicas"
 
-#: ../src/libs/modulegroups.c:3097
+#: ../src/libs/modulegroups.c:3079
 msgid "module groups"
 msgstr "grupos de módulos"
 
-#: ../src/libs/modulegroups.c:3136
+#: ../src/libs/modulegroups.c:3118
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
 "esta é uma predefinição nativa somente de leitura. duplique se quiser fazer "
 "mudanças"
 
-#: ../src/libs/modulegroups.c:3147
+#: ../src/libs/modulegroups.c:3129
 msgid "reset"
 msgstr "redefinir"
 
-#: ../src/libs/modulegroups.c:3347
+#: ../src/libs/modulegroups.c:3329
 msgid "duplicate this preset"
 msgstr "duplicar esta predefinição"
 
-#: ../src/libs/modulegroups.c:3373
+#: ../src/libs/modulegroups.c:3355
 msgid "add new empty preset"
 msgstr "adicionar nova predefinição vazia"
 
@@ -19886,13 +19843,13 @@ msgstr "visualização total"
 
 #. undo/redo
 #: ../src/views/darkroom.c:3989 ../src/views/lighttable.c:883
-#: ../src/views/map.c:1863
+#: ../src/views/map.c:1892
 msgctxt "accel"
 msgid "undo"
 msgstr "desfazer"
 
 #: ../src/views/darkroom.c:3990 ../src/views/lighttable.c:884
-#: ../src/views/map.c:1864
+#: ../src/views/map.c:1893
 msgctxt "accel"
 msgid "redo"
 msgstr "refazer"
@@ -20160,19 +20117,19 @@ msgstr "arrastar na vizualização principal"
 msgid "set display profile"
 msgstr "definir perfil do monitor"
 
-#: ../src/views/map.c:173
+#: ../src/views/map.c:175
 msgid "map"
 msgstr "mapa"
 
-#: ../src/views/map.c:2427
+#: ../src/views/map.c:2458
 msgid "[on image] open in darkroom"
 msgstr "abrir imagem na sala escura"
 
-#: ../src/views/map.c:2432
+#: ../src/views/map.c:2463
 msgid "[on map] zoom map"
 msgstr "zoom no mapa"
 
-#: ../src/views/map.c:2437
+#: ../src/views/map.c:2468
 msgid "move image location"
 msgstr "mover localização da imagem"
 
@@ -20292,6 +20249,46 @@ msgstr "atalhos"
 #: ../src/views/view.c:1691
 msgid "Action"
 msgstr "Ação"
+
+#~ msgid "recommended module"
+#~ msgid_plural "recommended modules"
+#~ msgstr[0] "módulo recomendado"
+#~ msgstr[1] "módulos recomendados"
+
+#~ msgid "already present module"
+#~ msgid_plural "already present modules"
+#~ msgstr[0] "módulo já presente"
+#~ msgstr[1] "módulos já presentes"
+
+#~ msgid "recommended widget"
+#~ msgid_plural "recommended widgets"
+#~ msgstr[0] "ferramenta recomendada"
+#~ msgstr[1] "ferramentas recomendadas"
+
+#~ msgid "already present widget"
+#~ msgid_plural "already present widgets"
+#~ msgstr[0] "ferramenta já presente"
+#~ msgstr[1] "ferramentas já presentes"
+
+#~ msgid "hide the basics widgets group"
+#~ msgstr "esconder grupo de ferramentas básicas"
+
+#~ msgid "to see it again, use the presets manager"
+#~ msgstr "para vê-lo novamente, use o gerenciador de predefinições"
+
+#~ msgid "normalize exposure"
+#~ msgstr "normalizar exposição"
+
+#~ msgid ""
+#~ "discard the patch luminance from the calibration.\n"
+#~ "useful when the chart is not lit by an even lighting,\n"
+#~ "in which case luminance discrepancies would make color matching "
+#~ "inaccurate."
+#~ msgstr ""
+#~ "descartar luminância do patch na calibração.\n"
+#~ "útil quanto a tabela não está iluminada de maneira homogênea,\n"
+#~ "de tal forma que as discrepâncias na luminância tornariam o casamento das "
+#~ "cores impreciso."
 
 #~ msgid ""
 #~ "changes the default collections-list order for folders, times and dates "
