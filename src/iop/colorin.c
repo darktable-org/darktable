@@ -62,7 +62,7 @@
 
 #define LUT_SAMPLES 0x10000
 
-DT_MODULE_INTROSPECTION(6, dt_iop_colorin_params_t)
+DT_MODULE_INTROSPECTION(7, dt_iop_colorin_params_t)
 
 static void update_profile_list(dt_iop_module_t *self);
 
@@ -168,6 +168,23 @@ int output_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                       dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+static void _resolve_work_profile(dt_colorspaces_color_profile_type_t *work_type, char *work_filename)
+{
+  for(GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
+  {
+    dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
+    if(prof->work_pos > -1 && *work_type == prof->type
+       && (prof->type != DT_COLORSPACE_FILE || dt_colorspaces_is_profile_equal(prof->filename, work_filename)))
+      return;
+  }
+
+  fprintf(stderr,
+          "[colorin] profile `%s' not suitable for work profile. it has been replaced by linear Rec2020 RGB!\n",
+          dt_colorspaces_get_name(*work_type, work_filename));
+  *work_type = DT_COLORSPACE_LIN_REC2020;
+  work_filename[0] = '\0';
 }
 
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
@@ -382,6 +399,30 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->blue_mapping = old->blue_mapping;
     new->type_work = old->type_work;
     g_strlcpy(new->filename_work, old->filename_work, sizeof(new->filename_work));
+    _resolve_work_profile(&new->type_work, new->filename_work);
+
+    return 0;
+  }
+  if(old_version == 6 && new_version == 7)
+  {
+    // The structure is equal to to v7 (current) but a new version is introduced to convert invalid
+    // working profile choice to the default, linear Rec2020.
+    typedef struct dt_iop_colorin_params_v6_t
+    {
+      dt_colorspaces_color_profile_type_t type;
+      char filename[DT_IOP_COLOR_ICC_LEN];
+      dt_iop_color_intent_t intent;
+      dt_iop_color_normalize_t normalize;
+      int blue_mapping;
+      // working color profile
+      dt_colorspaces_color_profile_type_t type_work;
+      char filename_work[DT_IOP_COLOR_ICC_LEN];
+    } dt_iop_colorin_params_v6_t;
+
+    const dt_iop_colorin_params_v6_t *old = (dt_iop_colorin_params_v6_t *)old_params;
+    dt_iop_colorin_params_t *new = (dt_iop_colorin_params_t *)new_params;
+    memcpy(new, old, sizeof(*new));
+    _resolve_work_profile(&new->type_work, new->filename_work);
 
     return 0;
   }
