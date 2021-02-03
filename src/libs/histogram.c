@@ -38,6 +38,11 @@
 #include "libs/colorpicker.h"
 
 #define HISTOGRAM_BINS 256
+// # of gradations between each primary/secondary to draw the hue ring
+// Note that this is gradations of CIE 1931 xy, when converted to
+// RGB (or perceptual space), the spacing will be different
+// FIXME: would fewer gradations still produce a nice hue ring? are this many gradations (32 * 6 = 192) slow to draw on the scope?
+#define VECTORSCOPE_HUES 32
 
 
 DT_MODULE(1)
@@ -95,7 +100,8 @@ typedef struct dt_lib_histogram_t
   int waveform_width, waveform_height, waveform_max_width;
   uint8_t *vectorscope_alpha;
   int vectorscope_diameter, vectorscope_alpha_stride;
-  float vectorscope_graticule[6][2] DT_ALIGNED_PIXEL;
+  float hue_ring_rgb[6][VECTORSCOPE_HUES][4];
+  float hue_ring_coord[6][VECTORSCOPE_HUES][2];
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -253,52 +259,6 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   }
 }
 
-#ifdef _OPENMP
-#pragma omp declare simd aligned(rgb, chromaticity:16)
-#endif
-static inline void rgb_to_chromaticity(const float rgb[4],
-                                       float chromaticity[4],
-                                       dt_iop_order_iccprofile_info_t *prof,
-                                       dt_lib_histogram_vectorscope_type_t cs)
-{
-  float XYZ_D50[4] DT_ALIGNED_PIXEL;
-  // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
-  // this goes to the PCS which has standard illuminant D50
-  dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, prof->matrix_in, prof->lut_in,
-                             prof->unbounded_coeffs_in, prof->lutsize,
-                             prof->nonlinearlut);
-  if(cs == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-  {
-    // FIXME: do have to worry about chromatic adaptation? this assumes that the white point is D50 -- if we have a D65 whitepoint profile, should we instead adapt to D65 then convert to L*u*v* with a D65 whitepoint?
-    float xyY_D50[4] DT_ALIGNED_PIXEL;
-    dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
-    // FIXME: this is u*v* (D50 corrected), more helpful than u'v', yes?
-    dt_xyY_to_Luv(xyY_D50, chromaticity);
-  }
-  else
-  {
-    // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
-    float XYZ_D65[4] DT_ALIGNED_PIXEL;
-    // If the profile whitepoint is D65, its RGB -> XYZ conversion
-    // matrix has been adapted to D50 (PCS standard) via
-    // Bradford. Hence using Bradford againt o adapt back to D65 gives
-    // a pretty clean reversal (to approx. 4 significant digits) of
-    // the transform.
-    // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
-    /*
-    // CAT16
-    const float M[3][4] DT_ALIGNED_ARRAY = {
-      {  9.80760485e-01,  -4.25541784e-17,  -7.61959005e-19},
-      {  4.82934624e-17,   1.01555271e+00,  -7.63213113e-18},
-      { -6.47162968e-19,  -5.69389701e-19,   1.30191586e+00}};
-    for(size_t x = 0; x < 3; x++)
-      XYZ_D65[x] = M[x][0] * XYZ_D50[0] + M[x][1] * XYZ_D50[1] + M[x][2] * XYZ_D50[2];
-    */
-    dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-    dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
-  }
-}
-
 static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const float *const input, int width, int height)
 {
   dt_times_t start_time = { 0 };
@@ -310,35 +270,82 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
   // FIXME: is this available from caller?
-  // FIXME: why convert in caller to histogram profile if we're going to convert again here? instead just use the matrix of whatever the input is to dt_lib_histogram_process(), as in theory the conversion XYZ -> histogram_matrix_out -> RGB -> histogram_matrix_in -> XYZ is a noop, can just do pipeline RGB -> XYZ
-  dt_iop_order_iccprofile_info_t *histogram_profile = dt_ioppr_get_histogram_profile_info(darktable.develop);
-  if(!histogram_profile) return;
+  // FIXME: if we do convert to histogram RGB, should it be an absolute colorimetric conversion (would mean knowing the histogram profile whitepoint and un-adapting its matrices) and then we have a meaningful whitepoint and could plot spectral locus -- or the reverse, adapt the spectral locus to the histogram profile PCS (always D50)?
+  dt_iop_order_iccprofile_info_t *vs_prof = dt_ioppr_get_histogram_profile_info(darktable.develop);
+  if(!vs_prof) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
 
-  // get profile primaries/secondaries in JzAzBz
+  // chromaticities of profile primaries/secondaries
   // there's no guarantee that there is a chromaticity tag in the
   // profile, so simply feed RGB colors through profile to PCS then
-  // JzAzBz
-  // FIXME: render the gamut triangle -- presumably in xyY so would need to render some points and interpolate -- at which point just build another image buffer for the overlay?
-  float in_rgb[6][4] DT_ALIGNED_PIXEL = { {1.f, 0.f, 0.f, 1.f}, {0.f, 1.f, 0.f, 1.f}, {0.f, 0.f, 1.f, 1.f},
-                                          {0.f, 1.f, 1.f, 1.f}, {1.f, 0.f, 1.f, 1.f}, {1.f, 1.f, 0.f, 1.f} };
-  float max_diam = 0.0f;
-  for(int k=0; k<6; k++)
-  {
-    // FIXME: hacky store of coordinates in 2nd/3rd elements of array
-    float chromaticity[4] DT_ALIGNED_PIXEL;
-    rgb_to_chromaticity(in_rgb[k], chromaticity, histogram_profile, vs_type);
-    max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
-    d->vectorscope_graticule[k][0] = chromaticity[1];
-    d->vectorscope_graticule[k][1] = chromaticity[2];
-  }
-  // scale graticule chromaticity to display
+  // to u*v* or JzAzBz
+
+  float vertex_xyY_D50[6][4] DT_ALIGNED_PIXEL;
+  // FIXME: is there a possible profile where these aren't max chromas? and where the lines connecting them aren't the maximum chroma for each hue?
+  float vertex_rgb[6][4] DT_ALIGNED_PIXEL = {{1.f, 0.f, 0.f}, {1.f, 1.f, 0.f},
+                                             {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
+                                             {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
+  float max_diam = 0.f;
+  // assumption is that the primaries will be the most saturated, and can determine diameter from them
   // FIXME: should really center top/bottom points rather than whitepoint?
   for(int k=0; k<6; k++)
   {
-    d->vectorscope_graticule[k][0] /= max_diam;
-    d->vectorscope_graticule[k][1] /= max_diam;
+    float XYZ_D50[4] DT_ALIGNED_PIXEL;
+    float chromaticity[4] DT_ALIGNED_PIXEL;
+    dt_ioppr_rgb_matrix_to_xyz(vertex_rgb[k], XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+                               vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+    dt_XYZ_to_xyY(XYZ_D50, vertex_xyY_D50[k]);
+    if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+    {
+      dt_xyY_to_Luv(vertex_xyY_D50[k], chromaticity);
+    }
+    else
+    {
+      float XYZ_D65[4] DT_ALIGNED_PIXEL;
+      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+      dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+    }
+    max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
   }
+
+  // Calculate "hue ring" by tracing chromaticities along the edges of
+  // the "RGB cube" which do not touch the white or black vertex --
+  // for "nice" matrix color profiles and perceptual colorspaces, this
+  // should be the maximum gamut (in terms of chromaticity,
+  // irrespective of lightness) but there may be specific
+  // circumstances when this is not quite true.  Note that hue ring
+  // calculation seems fast enough that it's not worth caching, but
+  // the below math does not vary once it is calculated for a profile.
+  for(int k=0; k<6; k++)
+  {
+    float delta[4] DT_ALIGNED_PIXEL;
+    for_each_channel(ch,aligned(vertex_xyY_D50,delta:16))
+      delta[ch]=(vertex_xyY_D50[(k+1)%6][ch] - vertex_xyY_D50[k][ch]) / VECTORSCOPE_HUES;
+    for(int i=0; i < VECTORSCOPE_HUES; i++)
+    {
+      float xyY_D50[4] DT_ALIGNED_PIXEL;
+      float XYZ_D50[4] DT_ALIGNED_PIXEL;
+      float chromaticity[4] DT_ALIGNED_PIXEL;
+      for_each_channel(ch,aligned(vertex_xyY_D50,delta,xyY_D50:16))
+        xyY_D50[ch] = vertex_xyY_D50[k][ch] + delta[ch] * i;
+      dt_xyY_to_XYZ(xyY_D50, XYZ_D50);
+      // these may be outside [0,1] but Cairo will clamp (compare to illuminant_xy_to_RGB) in cairo_set_source_rgba()
+      dt_XYZ_to_Rec709_D50(XYZ_D50, d->hue_ring_rgb[k][i]);
+      if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+      {
+        dt_xyY_to_Luv(xyY_D50, chromaticity);
+      }
+      else
+      {
+        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+      }
+      d->hue_ring_coord[k][i][0] = chromaticity[1] / max_diam;
+      d->hue_ring_coord[k][i][1] = chromaticity[2] / max_diam;
+    }
+  }
+  // FIXME: make an image buffer which all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
 
   // FIXME: pre-allocate?
   float *const restrict binned = dt_iop_image_alloc(vs_diameter, vs_diameter, 1);
@@ -352,12 +359,12 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // count into bins
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, binned, nfloats, histogram_profile, vs_diameter, max_diam, scale, vs_type) \
+  dt_omp_firstprivate(in, binned, nfloats, vs_prof, vs_diameter, max_diam, scale, vs_type) \
   schedule(static)
 #endif
   for(size_t k = 0; k < nfloats; k += 4)
   {
-    // Are there are unnecessary color math hops? Right now the data
+    // FIXME: Are there are unnecessary color math hops? Right now the data
     // comes into dt_lib_histogram_process() in a known profile
     // (usually from pixelpipe). Then (usually) it gets converted to
     // the histogram profile. Here it gets converted to XYZ D50 before
@@ -367,14 +374,49 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     // conversion to histogram profile is relative colorimetric, how
     // does this compare to:
     //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
+    float XYZ_D50[4] DT_ALIGNED_PIXEL;
     float chromaticity[4] DT_ALIGNED_PIXEL;
+    // FIXME: needed?
     const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
-    rgb_to_chromaticity(pix_in, chromaticity, histogram_profile, vs_type);
+    // this goes to the PCS which has standard illuminant D50
+    dt_ioppr_rgb_matrix_to_xyz(pix_in, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+                               vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+    // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
+    if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+    {
+      // FIXME: do have to worry about chromatic adaptation? this assumes that the histogram profile white point is the same as PCS whitepoint (D50) -- if we have a D65 whitepoint profile, how does the result change if we adapt to D65 then convert to L*u*v* with a D65 whitepoint?
+      float xyY_D50[4] DT_ALIGNED_PIXEL;
+      dt_XYZ_to_xyY(XYZ_D50, xyY_D50);
+      // using D50 correct u*v* (not u'v') to be relative to the whitepoint (important for vectorscope) and as u*v* is more evenly spaced
+      dt_xyY_to_Luv(xyY_D50, chromaticity);
+    }
+    else
+    {
+      // FIXME: can skip a hop by pre-multipying matrices: see colorbalancergb and dt_develop_blendif_init_masking_profile() for how to make hacked profile
+      float XYZ_D65[4] DT_ALIGNED_PIXEL;
+      // If the profile whitepoint is D65, its RGB -> XYZ conversion
+      // matrix has been adapted to D50 (PCS standard) via
+      // Bradford. Hence using Bradford againt o adapt back to D65 gives
+      // a pretty clean reversal (to approx. 4 significant digits) of
+      // the transform.
+      // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
+      /*
+      // CAT16
+      const float M[3][4] DT_ALIGNED_ARRAY = {
+        {  9.80760485e-01,  -4.25541784e-17,  -7.61959005e-19},
+        {  4.82934624e-17,   1.01555271e+00,  -7.63213113e-18},
+        { -6.47162968e-19,  -5.69389701e-19,   1.30191586e+00}};
+      for(size_t x = 0; x < 3; x++)
+        XYZ_D65[x] = M[x][0] * XYZ_D50[0] + M[x][1] * XYZ_D50[1] + M[x][2] * XYZ_D50[2];
+      */
+      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+      dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+    }
+
     const int out_x = vs_diameter * (chromaticity[1] / max_diam + 0.5f);
     const int out_y = vs_diameter * (chromaticity[2] / max_diam + 0.5f);
 
-    // clip (not clamp) any out-of-scale values, so there aren't light edges
-    // FIXME: should the output buffer be the dimensions of the current drawable widget -- rather than square -- so it doesn't lose data to the sides?
+    // clip any out-of-scale values, so there aren't light edges
     if(out_x >= 0 && out_x < vs_diameter-1 && out_y >= 0 && out_y <= vs_diameter-1)
     {
       float *const restrict bin_out = binned + out_y * vs_diameter + out_x;
@@ -421,7 +463,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     dt_pthread_mutex_lock(&d->lock);
     memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
     d->waveform_width = 0;
-    d->vectorscope_graticule[0][0] = NAN;
+    d->hue_ring_coord[0][0][0] = NAN;
     dt_pthread_mutex_unlock(&d->lock);
     return;
   }
@@ -457,8 +499,9 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     }
   }
 
-  // Convert pixelpipe output to histogram profile. If in tether view,
-  // then the image is already converted by the caller.
+  // Convert pixelpipe output in display RGB to histogram profile. If
+  // in tether view, then the image is already converted by the
+  // caller.
   // FIXME: do conversion in-place in the processing to save an extra buffer? -- at least for waveform, which already has to touch each pixel -- will need logic from _transform_matrix_rgb() -- or better yet a per-pixel callback within _transform_matrix_rgb()-ish code
   // FIXME: in case of vectorscope, it needs XYZ data, so skip this conversion and instead it's enough that it has input & in_profile_type -- though then we don't see the result of a relative colorimetric conversion to the histogram profile...
   if(in_profile_type != DT_COLORSPACE_NONE)
@@ -641,25 +684,39 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_scale(cr, 1., -1.);
 
   // graticule: histogram profile primaries/secondaries
-  // FIXME: also add dots for input/work/output profiles
+  cairo_save(cr);
+  cairo_scale(cr, min_size * 0.5, min_size * 0.5);
+  // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // FIXME: add gamut bounding lines to connect the dots (which need to be plotted in XYZ?)
   // from Sobotka:
   // 1. The input encoding primaries. How dd the image start out life? What is valid data within that? What is invalid introduced by error of camera virtual primaries solving or math such as resampling an image such that negative lobes result?
   // 2. The working reference primaries. How did 1. end up in 2.? Are there negative and therefore nonsensical values in the working space? Should a gamut mapping pass be applied before work, between 1. and 2.?
   // 3. The output primaries rendition. From a selection of gamut mappings, is one required between 2. and 3.?"
-  const GdkRGBA *const colors = darktable.bauhaus->graph_colors;
+  set_color(cr, darktable.bauhaus->graph_grid);
   for(int k=0; k<6; k++)
   {
-    // FIXME: if/when have a color vectorscope, make these dots gray to complement it
-    cairo_set_source_rgba(cr, colors[k].red, colors[k].green, colors[k].blue, colors[k].alpha * (k<3 ? 0.7 : 0.5));
-    cairo_arc(cr, d->vectorscope_graticule[k][0] * min_size * 0.5,
-              d->vectorscope_graticule[k][1] * min_size * 0.5, min_size/(k<3 ? 40.0 : 60.0), 0., M_PI * 2.);
+    cairo_arc(cr, d->hue_ring_coord[k][0][0], d->hue_ring_coord[k][0][1], 0.03, 0., M_PI * 2.);
     cairo_fill(cr);
   }
 
-  // the vectorscope graph itself
-  // FIXME: the vectorscope hard-clips on the left/right for huge #'s -- instead could catch configure event, size buffers to aspect ratio, and then never clip -- or simply in calc decrease diameter by ~ 25% then increase correspondingly here, so less likely to clip -- and/or draw some sort of gradient mask over the edges so that they fade out
+  // hue ring
+  // FIXME: use DT_PIXEL_APPLY_DPI?
+  cairo_set_line_width(cr, 1.5 / min_size);
+  cairo_move_to(cr, d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0], d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1]);
+  for(int k=0; k<6; k++)
+    for(int i=0; i < VECTORSCOPE_HUES; i++)
+    {
+      // FIXME: can we pre-make a pattern with the hues radiating out, and use it as the "ink" to draw the hue ring and -- if in false color mode -- the vectorscope? will this be faster then drawing lots of lines each with their own color? will it allow for drawing the hue ring with splines and calculating fewer points?
+      // FIXME: if/when have a color vectorscope, make hue ring gray to complement it?
+      // note that hue_ring_rgb and hue_ring_coord are calculated as float but converted here to double
+      cairo_set_source_rgba(cr, d->hue_ring_rgb[k][i][0], d->hue_ring_rgb[k][i][1], d->hue_ring_rgb[k][i][2], 0.5);
+      cairo_line_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
+      cairo_stroke(cr);
+      cairo_move_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
+    }
+  cairo_restore(cr);
 
+  // the vectorscope graph itself
   cairo_translate(cr, min_size * -0.5, min_size * -0.5);
   // FIXME: use ppd? if not, cast min_size to double
   cairo_scale(cr, darktable.gui->ppd*min_size/vs_diameter, darktable.gui->ppd*min_size/vs_diameter);
@@ -686,6 +743,7 @@ static void _draw_vectorscope_lines(cairo_t *cr, int width, int height)
   // FIXME: a polar coordinate style grid would be interesting/helpful for, as currently the scaling changes based on histogram profile, and this would give some sort of reference
 
   // central crosshair
+  // FIXME: draw with some sort of XOR-ish operator to make more generally visible
   set_color(cr, darktable.bauhaus->graph_overlay);
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
   dt_draw_line(cr, -w_ctr, 0.0f, w_ctr, 0.0f);
@@ -784,7 +842,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
           _lib_histogram_draw_rgb_parade(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-        if(!isnan(d->vectorscope_graticule[0][0]))
+        if(!isnan(d->hue_ring_coord[0][0][0]))
           _lib_histogram_draw_vectorscope(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
@@ -1041,7 +1099,7 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   if(cv)  // this may be called by _scope_type_update() on init, before in a view
   {
     // redraw empty scope for immediate visual feedback
-    d->vectorscope_graticule[0][0] = NAN;
+    d->hue_ring_coord[0][0][0] = NAN;
     dt_control_queue_redraw_widget(d->scope_draw);
 
     if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -1417,7 +1475,7 @@ void gui_init(dt_lib_module_t *self)
   d->vectorscope_alpha_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter);
   d->vectorscope_alpha = dt_alloc_align(64, sizeof(uint8_t) * d->vectorscope_diameter * d->vectorscope_alpha_stride);
   // initially no vectorscope to draw
-  d->vectorscope_graticule[0][0] = NAN;
+  d->hue_ring_coord[0][0][0] = NAN;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
