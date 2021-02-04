@@ -201,6 +201,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   dt_control_job_set_progress_message(job, message);
 
   GList *imgs = NULL;
+  GList *all_imgs = NULL;
 
   /* loop thru the images and import to current film roll */
   dt_film_t *cfr = film;
@@ -259,6 +260,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
 
+    all_imgs = g_list_append(all_imgs, GINT_TO_POINTER(imgid));
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if((imgid & 3) == 3)
     {
@@ -275,6 +277,8 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, film->id);
+
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, all_imgs, 0);
 
   // FIXME: maybe refactor into function and call it?
   if(cfr && cfr->dir)
