@@ -1555,6 +1555,11 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   /* start the event loop */
   gtk_main();
 
+  if (darktable.gui->surface)
+  {
+    cairo_surface_destroy(darktable.gui->surface);
+    darktable.gui->surface = NULL;
+  }
   dt_cleanup();
 }
 
