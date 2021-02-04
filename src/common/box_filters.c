@@ -63,14 +63,14 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
     const size_t index = (size_t)y * width;
     float *const restrict scanline = dt_get_perthread(scanlines,padded_size);
     // add up the left half of the window
-    for (int x = 0; x < radius && x < width ; x++)
+    for (int x = 0; x < MIN(radius,width) ; x++)
     {
       L += buf[index+x];
       hits++;
     }
     // process the blur up to the point where we start removing values
     int x;
-    for (x = 0; x <= radius && x < width; x++)
+    for (x = 0; x <= radius && x + radius < width; x++)
     {
       const int np = x + radius;
       if(np < width)
@@ -78,6 +78,12 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
         L += buf[index + np];
         hits++;
       }
+      scanline[x] = L / hits;
+    }
+    // if radius > width/2, we have pixels for which we can neither add new values (x+radius >= width) nor
+    //  remove old values (x-radius < 0)
+    for(; x <= radius && x < width; x++)
+    {
       scanline[x] = L / hits;
     }
     // process the blur for the bulk of the scan line
@@ -120,7 +126,7 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
     int hits = 0;
     const size_t index = (size_t)2 * y * width;
     // add up the left half of the window
-    for (int x = 0; x < radius && x < width ; x++)
+    for (int x = 0; x < MIN(radius, width) ; x++)
     {
       hits++;
       L1 += buf[index + 2*x];
@@ -128,7 +134,7 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
     }
     // process the blur up to the point where we start removing values
     int x;
-    for (x = 0; x <= radius && x < width; x++)
+    for (x = 0; x <= radius && x + radius < width; x++)
     {
       const int np = x + radius;
       if(np < width)
@@ -137,6 +143,13 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
         L1 += buf[index + 2*np];
         L2 += buf[index + 2*np + 1];
       }
+      scanline[2*x] = L1 / hits;
+      scanline[2*x+1] = L2 / hits;
+    }
+    // if radius > width/2, we have pixels for which we can neither add new values (x+radius >= width) nor
+    //  remove old values (x-radius < 0)
+    for(; x <= radius && x < width; x++)
+    {
       scanline[2*x] = L1 / hits;
       scanline[2*x+1] = L2 / hits;
     }
@@ -374,11 +387,17 @@ static void blur_horizontal_4ch(float *const restrict buf, const size_t height, 
     }
     // process the blur up to the point where we start removing values
     size_t x;
-    for (x = 0; x <= MIN(radius, width-radius-1); x++)
+    for (x = 0; x <= radius && x + radius < width; x++)
     {
       const int np = x + radius;
       hits++;
       load_add_4wide(scratch + 4*np, L, bufp + 4*np);
+      store_scaled_4wide(bufp + 4*x, L, hits);
+    }
+    // if radius > width/2, we have pixels for which we can neither add new values (x+radius >= width) nor
+    //  remove old values (x-radius < 0)
+    for(; x <= radius && x < width; x++)
+    {
       store_scaled_4wide(bufp + 4*x, L, hits);
     }
     // process the blur for the bulk of the scan line
@@ -419,11 +438,17 @@ static void blur_horizontal_4ch_Kahan(float *const restrict buf, const size_t wi
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t x;
-  for (x = 0; x <= MIN(radius, width-radius-1); x++)
+  for (x = 0; x <= radius && x + radius < width; x++)
   {
     const int np = x + radius;
     hits++;
     load_add_4wide_Kahan(scratch + 4*np, L, buf + 4*np, comp);
+    store_scaled_4wide(buf + 4*x, L, hits);
+  }
+  // if radius > width/2, we have pixels for which we can neither add new values (x+radius >= width) nor
+  //  remove old values (x-radius < 0)
+  for(; x <= radius && x < width; x++)
+  {
     store_scaled_4wide(buf + 4*x, L, hits);
   }
   // process the blur for the bulk of the scan line
@@ -464,11 +489,17 @@ static void blur_horizontal_Nch_Kahan(const size_t N, float *const restrict buf,
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t x;
-  for (x = 0; x <= MIN(radius, width-radius-1); x++)
+  for (x = 0; x <= radius && x + radius < width; x++)
   {
     const int np = x + radius;
     hits++;
     load_add_Nwide_Kahan(N, scratch + N*np, L, buf + N*np, comp);
+    store_scaled_Nwide(N, buf + N*x, L, hits);
+  }
+  // if radius > width/2, we have pixels for which we can neither add new values (x+radius >= width) nor
+  //  remove old values (x-radius < 0)
+  for(; x <= radius && x < width; x++)
+  {
     store_scaled_Nwide(N, buf + N*x, L, hits);
   }
   // process the blur for the bulk of the scan line
@@ -512,7 +543,7 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     const size_t np = y + radius;
     hits += one;
@@ -523,7 +554,13 @@ static void blur_vertical_1ch_sse(float *const restrict buf, const int height, c
     // store the final result back into user buffer
     _mm_storeu_ps(buf + y*width, L / hits);
   }
-  // process the blur for the bulk of the scan line
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
+    _mm_storeu_ps(buf + y*width, L / hits);
+  }
+  // process the blur for the bulk of the column
   for ( ; y + radius < height; y++)
   {
     const size_t np = y + radius;
@@ -573,7 +610,7 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     const size_t np = y + radius;
     hits += one;
@@ -585,6 +622,13 @@ static void blur_vertical_4ch_sse(float *const restrict buf, const size_t height
       scratch[4*(np&mask)+c] = v;
       _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
     }
+  }
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
+    for (size_t c = 0; c < 4; c++)
+      _mm_storeu_ps(buf + y*width + 4*c, L[c] / hits);
   }
   // process the blur for the bulk of the scan line
   for ( ; y + radius < height; y++)
@@ -643,7 +687,7 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
   }
   // process up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -652,6 +696,12 @@ static void blur_vertical_1wide(float *const restrict buf, const size_t height, 
     const float v = buf[np*width];
     L += v;
     scratch[np&mask] = v;
+    buf[y*width] = L / hits;
+  }
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
     buf[y*width] = L / hits;
   }
   // process the bulk of the column
@@ -705,7 +755,7 @@ static void blur_vertical_1wide_Kahan(float *const restrict buf, const size_t he
   }
   // process up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -716,8 +766,14 @@ static void blur_vertical_1wide_Kahan(float *const restrict buf, const size_t he
     scratch[np&mask] = v;
     buf[y*width] = L / hits;
   }
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
+    buf[y*width] = L / hits;
+  }
   // process the bulk of the column
-  for( ; y < height-radius; y++)
+  for( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
@@ -772,7 +828,7 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -781,7 +837,13 @@ static void blur_vertical_4wide(float *const restrict buf, const size_t height, 
     load_add_4wide(scratch + 4*(np&mask), L, buf + np*width);
     store_scaled_4wide(buf + y*width, L, hits);
   }
-  // process the blur for the bulk of the scan line
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
+    store_scaled_4wide(buf + y*width, L, hits);
+  }
+  // process the blur for the bulk of the column
   for ( ; y + radius < height; y++)
   {
     const int np = y + radius;
@@ -826,7 +888,7 @@ static void blur_vertical_4wide_Kahan(float *const restrict buf, const size_t he
   }
   // process the blur up to the point where we start removing values
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -835,8 +897,14 @@ static void blur_vertical_4wide_Kahan(float *const restrict buf, const size_t he
     load_add_4wide_Kahan(scratch + 4*(np&mask), L, buf + np*width, comp);
     store_scaled_4wide(buf + y*width, L, hits);
   }
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
+    store_scaled_4wide(buf + y*width, L, hits);
+  }
   // process the blur for the bulk of the scan line
-  for ( ; y < height-radius; y++)
+  for ( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
@@ -887,7 +955,7 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -896,7 +964,13 @@ static void blur_vertical_16wide(float *const restrict buf, const size_t height,
     load_add_16wide(scratch + 16 * (np&mask), L, buf + np*width);
     store_scaled_16wide(buf + y*width, L, hits);
   }
-  // process the blur for the bulk of the scan line
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
+    store_scaled_16wide(buf + y*width, L, hits);
+  }
+  // process the blur for the bulk of the column
   for ( ; y + radius < height; y++)
   {
     const int np = y + radius;
@@ -943,7 +1017,7 @@ static void blur_vertical_16wide_Kahan(float *const restrict buf, const size_t h
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t y;
-  for (y = 0; y <= MIN(radius, height-radius-1); y++)
+  for (y = 0; y <= radius && y + radius < height; y++)
   {
     // weirdly, changing any of the 'np' or 'op' variables in this function to 'size_t' yields a substantial slowdown!
     const int np = y + radius;
@@ -952,8 +1026,14 @@ static void blur_vertical_16wide_Kahan(float *const restrict buf, const size_t h
     load_add_16wide_Kahan(scratch + 16 * (np&mask), L, buf + np*width, comp);
     store_scaled_16wide(buf + y*width, L, hits);
   }
-  // process the blur for the bulk of the scan line
-  for ( ; y < height-radius; y++)
+  // if radius > height/2, we have pixels for which we can neither add new values (y+radius >= height) nor
+  //  remove old values (y-radius < 0)
+  for(; y <= radius && y < height; y++)
+  {
+    store_scaled_16wide(buf + y*width, L, hits);
+  }
+  // process the blur for the bulk of the column
+  for ( ; y + radius < height; y++)
   {
     const int np = y + radius;
     const int op = y - radius - 1;
