@@ -1120,7 +1120,7 @@ void gui_init(dt_lib_module_t *self)
   GtkStyleContext *context = gtk_widget_get_style_context(GTK_WIDGET(label));
   gtk_style_context_add_class(context, "section_label_top");
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->storage = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->storage, NULL, N_("target storage"));
@@ -1147,7 +1147,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("format options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->format = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->format, NULL, N_("file format"));
@@ -1169,7 +1169,7 @@ void gui_init(dt_lib_module_t *self)
 
   label = dt_ui_section_label_new(_("global options"));
   gtk_box_pack_start(GTK_BOX(self->widget), label, FALSE, TRUE, 0);
-  dt_gui_add_help_link(self->widget, "export_selected.html#export_selected_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("export"));
 
   d->dimensions_type = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(d->dimensions_type, NULL, N_("set size"));

@@ -2461,7 +2461,7 @@ void dt_iop_gui_set_expander(dt_iop_module_t *module)
   for(int i = IOP_MODULE_LAST - 1; i > IOP_MODULE_LABEL; i--)
     if(hw[i]) gtk_box_pack_end(GTK_BOX(header), hw[i], FALSE, FALSE, 0);
 
-  dt_gui_add_help_link(header, "interacting.html");
+  dt_gui_add_help_link(header, dt_get_help_url("module_interacting"));
 
   gtk_widget_set_halign(hw[IOP_MODULE_LABEL], GTK_ALIGN_START);
   gtk_widget_set_halign(hw[IOP_MODULE_INSTANCE], GTK_ALIGN_END);
