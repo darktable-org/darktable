@@ -403,7 +403,7 @@ void gui_init(dt_lib_module_t *self)
   dt_bauhaus_combobox_add(d->pastemode, _("append"));
   dt_bauhaus_combobox_add(d->pastemode, _("overwrite"));
   gtk_widget_set_tooltip_text(d->pastemode, _("how to handle existing history"));
-  dt_gui_add_help_link(d->pastemode, "history_stack.html#history_stack_usage");
+  dt_gui_add_help_link(d->pastemode, dt_get_help_url("history"));
   gtk_grid_attach(grid, d->pastemode, 0, line++, 6, 1);
   dt_bauhaus_combobox_set(d->pastemode, dt_conf_get_int("plugins/lighttable/copy_history/pastemode"));
 

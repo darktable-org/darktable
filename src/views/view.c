@@ -355,9 +355,9 @@ int dt_view_manager_switch_by_view(dt_view_manager_t *vm, const dt_view_t *nv)
       {
         dt_view_type_flags_t view_type = new_view->view(new_view);
         if(view_type == DT_VIEW_LIGHTTABLE)
-          dt_gui_add_help_link(w,"lighttable_chapter.html#lighttable_overview");
+          dt_gui_add_help_link(w, dt_get_help_url("lighttable_mode"));
         if(view_type == DT_VIEW_DARKROOM)
-          dt_gui_add_help_link(w,"darkroom_bottom_panel.html#darkroom_bottom_panel");
+          dt_gui_add_help_link(w, dt_get_help_url("darkroom_bottom_panel"));
       }
 
 
