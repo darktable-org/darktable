@@ -1596,15 +1596,16 @@ margin: 0 2px;
   margin-left: 0.5em;
 }
 
-#modulegroups-popup *
-{
- padding-top: 0.1em;
- padding-bottom: 0.1em;
-}
-
-#modulegroups-popup-title *
+#modulegroups-popup-item
 {
   padding-left: 2em;
+  padding-top: 0.1em;
+  padding-bottom: 0.1em;
+}
+
+#modulegroups-popup-title
+{
+  padding-left: 0em;
   padding-bottom: 0.2em;
   font-weight: bold;
   color: @plugin_label_color;
