@@ -192,11 +192,11 @@ void dt_colorspaces_cleanup_profile(cmsHPROFILE p);
 /** extracts tonecurves and color matrix prof to XYZ from a given input profile, returns 0 on success (curves
  * and matrix are inverted for input) */
 int dt_colorspaces_get_matrix_from_input_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                 float *lutb, const int lutsize, const int intent);
+                                                 float *lutb, const int lutsize);
 
 /** extracts tonecurves and color matrix prof to XYZ from a given output profile, returns 0 on success. */
 int dt_colorspaces_get_matrix_from_output_profile(cmsHPROFILE prof, float *matrix, float *lutr, float *lutg,
-                                                  float *lutb, const int lutsize, const int intent);
+                                                  float *lutb, const int lutsize);
 
 /** wrapper to get the name from a color profile. this tries to handle character encodings. */
 void dt_colorspaces_get_profile_name(cmsHPROFILE p, const char *language, const char *country, char *name,
