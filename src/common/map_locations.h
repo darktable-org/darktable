@@ -97,7 +97,7 @@ GList *dt_map_location_find_locations(const guint imgid);
 void dt_map_location_update_locations(const guint imgid, const GList *tags);
 
 // update location's images - remove old ones and add new ones
-void dt_map_location_update_images(const guint locid);
+gboolean dt_map_location_update_images(const guint locid);
 
 // return root tag for location geotagging
 const char *dt_map_location_data_tag_root();
