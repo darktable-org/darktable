@@ -839,7 +839,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     scale = fmin(width >  0 ? fmin((double)width / (double)pipe.processed_width, max_scale) : max_scale,
                  height > 0 ? fmin((double)height / (double)pipe.processed_height, max_scale) : max_scale);
 
-    if (strcmp(dt_conf_get_string("plugins/lighttable/export/resizing"), "scaling") == 0)
+    gchar* resizing = dt_conf_get_string("plugins/lighttable/export/resizing");
+    if (strcmp(resizing, "scaling") == 0)
     {
       // scaling
       double scale_factor = 1;
@@ -853,6 +854,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
         scale = fmin(scale_factor, max_scale);
       }
     }
+    g_free(resizing);
 
     processed_width = scale * pipe.processed_width + 0.8f;
     processed_height = scale * pipe.processed_height + 0.8f;

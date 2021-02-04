@@ -1835,13 +1835,15 @@ static void list_view(dt_lib_collect_rule_t *dr)
         // filmroll
         {
           gchar *order_by = NULL;
-          if(strcmp(dt_conf_get_string("plugins/collect/filmroll_sort"), "id") == 0)
+          gchar *filmroll_sort = dt_conf_get_string("plugins/collect/filmroll_sort");
+          if(strcmp(filmroll_sort, "id") == 0)
             order_by = g_strdup("film_rolls_id DESC");
           else
             if(dt_conf_get_bool("plugins/collect/descending"))
               order_by = g_strdup("folder DESC");
             else
               order_by = g_strdup("folder");
+          g_free(filmroll_sort);
 
           g_snprintf(query, sizeof(query),
                      "SELECT folder, film_rolls_id, COUNT(*) AS count"
