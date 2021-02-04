@@ -11,8 +11,9 @@ foreach(language ${LANGUAGES})
                        MAIN_DEPENDENCY ${pofile}
                        COMMENT "Building ${language} locale"
                        VERBATIM)
-    add_custom_target(locale_${language} ALL DEPENDS ${mofile})  # Make sure the mofiles are always built
-    add_dependencies(locales locale_${language})
+    string(REPLACE "@" "-" locale_target locale_${language})
+    add_custom_target(${locale_target} ALL DEPENDS ${mofile})  # Make sure the mofiles are always built
+    add_dependencies(locales ${locale_target})
     install(FILES ${mofile}
             DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${language}/LC_MESSAGES
             COMPONENT DTApplication)
