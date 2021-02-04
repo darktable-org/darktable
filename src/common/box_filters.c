@@ -70,7 +70,7 @@ static void blur_horizontal_1ch(float *const restrict buf, const int height, con
     }
     // process the blur up to the point where we start removing values
     int x;
-    for (x = 0; x <= radius && x + radius < width; x++)
+    for (x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
       if(np < width)
@@ -134,7 +134,7 @@ static void blur_horizontal_2ch(float *const restrict buf, const int height, con
     }
     // process the blur up to the point where we start removing values
     int x;
-    for (x = 0; x <= radius && x + radius < width; x++)
+    for (x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
       if(np < width)
@@ -387,7 +387,7 @@ static void blur_horizontal_4ch(float *const restrict buf, const size_t height, 
     }
     // process the blur up to the point where we start removing values
     size_t x;
-    for (x = 0; x <= radius && x + radius < width; x++)
+    for (x = 0; (x <= radius) && ((x + radius) < width); x++)
     {
       const int np = x + radius;
       hits++;
@@ -438,7 +438,7 @@ static void blur_horizontal_4ch_Kahan(float *const restrict buf, const size_t wi
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t x;
-  for (x = 0; x <= radius && x + radius < width; x++)
+  for (x = 0; (x <= radius) && ((x + radius) < width); x++)
   {
     const int np = x + radius;
     hits++;
@@ -489,7 +489,7 @@ static void blur_horizontal_Nch_Kahan(const size_t N, float *const restrict buf,
   }
   // process the blur up to the point where we start removing values from the moving average
   size_t x;
-  for (x = 0; x <= radius && x + radius < width; x++)
+  for (x = 0; (x <= radius) && ((x + radius) < width); x++)
   {
     const int np = x + radius;
     hits++;
