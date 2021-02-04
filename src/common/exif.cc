@@ -3585,20 +3585,23 @@ static void _exif_xmp_read_data(Exiv2::XmpData &xmpData, const int imgid)
   dt_history_hash_read(imgid, &hash);
   if(hash.basic)
   {
-    xmpData["Xmp.darktable.history_basic_hash"]
-            = dt_exif_xmp_encode(hash.basic, hash.basic_len, NULL);
+    char* value = dt_exif_xmp_encode(hash.basic, hash.basic_len, NULL);
+    xmpData["Xmp.darktable.history_basic_hash"] = value;
+    free(value);
     g_free(hash.basic);
   }
   if(hash.auto_apply)
   {
-    xmpData["Xmp.darktable.history_auto_hash"]
-            = dt_exif_xmp_encode(hash.auto_apply, hash.auto_apply_len, NULL);
+    char* value = dt_exif_xmp_encode(hash.auto_apply, hash.auto_apply_len, NULL);
+    xmpData["Xmp.darktable.history_auto_hash"] = value;
+    free(value);
     g_free(hash.auto_apply);
   }
   if(hash.current)
   {
-    xmpData["Xmp.darktable.history_current_hash"]
-            = dt_exif_xmp_encode(hash.current, hash.current_len, NULL);
+    char* value = dt_exif_xmp_encode(hash.current, hash.current_len, NULL);
+    xmpData["Xmp.darktable.history_current_hash"] = value;
+    free(value);
     g_free(hash.current);
   }
 }
