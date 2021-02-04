@@ -250,13 +250,13 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
         d->camera = camera;
         g_signal_connect(G_OBJECT(ib), "clicked", G_CALLBACK(_lib_import_from_camera_callback), self);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(ib)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(ib, "lighttable_panels.html#import_from_camera");
+        dt_gui_add_help_link(ib, dt_get_help_url("import_camera"));
       }
       if(tb)
       {
         g_signal_connect(G_OBJECT(tb), "clicked", G_CALLBACK(_lib_import_tethered_callback), camera);
         gtk_widget_set_halign(gtk_bin_get_child(GTK_BIN(tb)), GTK_ALIGN_CENTER);
-        dt_gui_add_help_link(tb, "lighttable_panels.html#import_from_camera");
+        dt_gui_add_help_link(tb, dt_get_help_url("import_camera"));
       }
       gtk_box_pack_start(GTK_BOX(d->devices), vbx, FALSE, FALSE, 0);
     }
@@ -1123,7 +1123,7 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)g_malloc0(sizeof(dt_lib_import_t));
   self->data = (void *)d;
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-  dt_gui_add_help_link(self->widget, "lighttable_panels.html#import");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("import"));
 
   // add import buttons
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);

@@ -457,7 +457,7 @@ void gui_init(dt_lib_module_t *self)
   self->data = (void *)d;
   self->timeout_handle = 0;
   self->widget = gtk_notebook_new();
-  dt_gui_add_help_link(self->widget, "selected_images.html#selected_images_usage");
+  dt_gui_add_help_link(self->widget, dt_get_help_url("image"));
 
   GtkWidget *page1 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("images"), NULL);
   GtkWidget *page2 = dt_ui_notebook_page(GTK_NOTEBOOK(self->widget), _("metadata"), NULL);

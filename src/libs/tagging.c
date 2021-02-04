@@ -2937,25 +2937,25 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("attached tags,\ndouble-click to detach"
                                                   "\nright-click for other actions on attached tag,"
                                                   "\nctrl-wheel scroll to resize the window"));
-  dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
+  dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_attached), (gpointer)self);
   g_signal_connect(gtk_tree_view_get_selection(view), "changed", G_CALLBACK(_tree_selection_changed), self);
 
   // attach/detach buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->attach_button = dt_ui_button_new(_("attach"), _("attach tag to all selected images"), "tagging.html#tagging_usage");
+  d->attach_button = dt_ui_button_new(_("attach"), _("attach tag to all selected images"), dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, d->attach_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->attach_button), "clicked", G_CALLBACK(_attach_button_clicked), (gpointer)self);
 
-  d->detach_button = dt_ui_button_new(_("detach"), _("detach tag from all selected images"), "tagging.html#tagging_usage");
+  d->detach_button = dt_ui_button_new(_("detach"), _("detach tag from all selected images"), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(d->detach_button), "clicked", G_CALLBACK(_detach_button_clicked), (gpointer)self);
   gtk_box_pack_start(hbox, d->detach_button, TRUE, TRUE, 0);
 
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_minus_simple, CPF_STYLE_FLAT, NULL);
   d->toggle_hide_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle list with / without hierarchy"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  dt_gui_add_help_link(button, dt_get_help_url("tagging"));
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   d->hide_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(_toggle_hide_button_callback), (gpointer)self);
@@ -2963,7 +2963,7 @@ void gui_init(dt_lib_module_t *self)
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_sorting, CPF_STYLE_FLAT, NULL);
   d->toggle_sort_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle sort by name or by count"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  dt_gui_add_help_link(button, dt_get_help_url("tagging"));
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   d->sort_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(_toggle_sort_button_callback), (gpointer)self);
@@ -2973,7 +2973,7 @@ void gui_init(dt_lib_module_t *self)
   d->dttags_flag = FALSE;
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->toggle_dttags_button), FALSE);
   gtk_widget_set_tooltip_text(button, _("toggle show or not darktable tags"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  dt_gui_add_help_link(button, dt_get_help_url("tagging"));
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   d->dttags_button_handler =
     g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(_toggle_dttags_button_callback), (gpointer)self);
@@ -2991,7 +2991,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_entry_set_text(GTK_ENTRY(w), "");
   gtk_entry_set_width_chars(GTK_ENTRY(w), 0);
   gtk_widget_set_tooltip_text(w, _("enter tag name"));
-  dt_gui_add_help_link(w, "tagging.html#tagging_usage");
+  dt_gui_add_help_link(w, dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, w, TRUE, TRUE, 0);
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_RELEASE_MASK);
   g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_tag_name_changed), (gpointer)self);
@@ -3051,7 +3051,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(view), _("tag dictionary,\ndouble-click to attach,"
                                                       "\nright-click for other actions on selected tag,"
                                                       "\nctrl-wheel scroll to resize the window"));
-  dt_gui_add_help_link(GTK_WIDGET(view), "tagging.html#tagging_usage");
+  dt_gui_add_help_link(GTK_WIDGET(view), dt_get_help_url("tagging"));
   g_signal_connect(G_OBJECT(view), "button-press-event", G_CALLBACK(_click_on_view_dictionary), (gpointer)self);
   gtk_tree_view_set_model(view, GTK_TREE_MODEL(d->dictionary_listfilter));
   g_object_unref(d->dictionary_listfilter);
@@ -3079,22 +3079,22 @@ void gui_init(dt_lib_module_t *self)
   // buttons
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->new_button = dt_ui_button_new(_("new"), _("create a new tag with the\nname you entered"), "tagging.html#tagging_usage");
+  d->new_button = dt_ui_button_new(_("new"), _("create a new tag with the\nname you entered"), dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, d->new_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->new_button), "clicked", G_CALLBACK(_new_button_clicked), (gpointer)self);
 
-  d->import_button = dt_ui_button_new(C_("verb", "import..."), _("import tags from a Lightroom keyword file"), "tagging.html#tagging_usage");
+  d->import_button = dt_ui_button_new(C_("verb", "import..."), _("import tags from a Lightroom keyword file"), dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, d->import_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->import_button), "clicked", G_CALLBACK(_import_button_clicked), (gpointer)self);
 
-  d->export_button = dt_ui_button_new(C_("verb", "export..."), _("export all tags to a Lightroom keyword file"), "tagging.html#tagging_usage");
+  d->export_button = dt_ui_button_new(C_("verb", "export..."), _("export all tags to a Lightroom keyword file"), dt_get_help_url("tagging"));
   gtk_box_pack_start(hbox, d->export_button, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)self);
 
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_treelist, CPF_STYLE_FLAT, NULL);
   d->toggle_tree_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle list / tree view"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  dt_gui_add_help_link(button, dt_get_help_url("tagging"));
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   d->tree_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(_toggle_tree_button_callback), (gpointer)self);
@@ -3102,7 +3102,7 @@ void gui_init(dt_lib_module_t *self)
   button = dtgtk_togglebutton_new(dtgtk_cairo_paint_plus_simple, CPF_STYLE_FLAT, NULL);
   d->toggle_suggestion_button = button;
   gtk_widget_set_tooltip_text(button, _("toggle list with / without suggestion"));
-  dt_gui_add_help_link(button, "tagging.html#tagging_usage");
+  dt_gui_add_help_link(button, dt_get_help_url("tagging"));
   gtk_box_pack_end(hbox, button, FALSE, TRUE, 0);
   d->suggestion_button_handler = g_signal_connect(G_OBJECT(button), "clicked",
                                             G_CALLBACK(_toggle_suggestion_button_callback), (gpointer)self);
