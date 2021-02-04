@@ -633,12 +633,12 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
   // get the matrix
   if(rgb_profile)
   {
-    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in,
-        profile_info->lut_in[0], profile_info->lut_in[1], profile_info->lut_in[2],
-        profile_info->lutsize, profile_info->intent) ||
-        dt_colorspaces_get_matrix_from_output_profile(rgb_profile, profile_info->matrix_out,
-            profile_info->lut_out[0], profile_info->lut_out[1], profile_info->lut_out[2],
-            profile_info->lutsize, profile_info->intent))
+    if(dt_colorspaces_get_matrix_from_input_profile(rgb_profile, profile_info->matrix_in, profile_info->lut_in[0],
+                                                    profile_info->lut_in[1], profile_info->lut_in[2],
+                                                    profile_info->lutsize)
+       || dt_colorspaces_get_matrix_from_output_profile(rgb_profile, profile_info->matrix_out,
+                                                        profile_info->lut_out[0], profile_info->lut_out[1],
+                                                        profile_info->lut_out[2], profile_info->lutsize))
     {
       profile_info->matrix_in[0] = NAN;
       profile_info->matrix_out[0] = NAN;
