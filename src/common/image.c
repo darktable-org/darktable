@@ -1340,10 +1340,12 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     dt_image_synch_all_xmp(normalized_filename);
     g_free(ext);
     g_free(normalized_filename);
-    GList *imgs = NULL;
-    imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
-                                  g_list_copy((GList *)imgs), 0);
+    if(raise_signals)
+    {
+      GList *imgs = NULL;
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy((GList *)imgs), 0);
+    }
     return id;
   }
   sqlite3_finalize(stmt);
