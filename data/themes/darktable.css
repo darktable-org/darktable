@@ -887,6 +887,12 @@ dialog scrolledwindow
   font-style: italic;
 }
 
+#right #lib-plugin-ui #gpx_list checkbutton check
+{
+  margin: 1px;
+  padding: 0px;
+}
+
 /* Set import from camera or card dialog window */
 dialog .dialog-vbox notebook stack /* set top margin ; between tabs and text below */
 {

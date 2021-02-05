@@ -572,8 +572,6 @@ void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, c
     }
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-    // imgs is freed by the destinee
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   }
 }
 

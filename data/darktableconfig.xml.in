@@ -2570,6 +2570,13 @@
     <longdescription>show the name of the module of each basic widget</longdescription>
   </dtconfig>
   <dtconfig>
+    <name>plugins/lighttable/geotagging/heighttracklist</name>
+    <type>int</type>
+    <default>50</default>
+    <shortdescription>height of the track list</shortdescription>
+    <longdescription>maximum height the track list will grow to before scrolling</longdescription>
+  </dtconfig>
+  <dtconfig>
     <name>plugins/map/geotagging_search_url</name>
     <type>string</type>
     <default>https://nominatim.openstreetmap.org/search/%s?format=xml&amp;limit=%d&amp;polygon_text=1</default>
