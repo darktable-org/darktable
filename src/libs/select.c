@@ -77,6 +77,12 @@ static void _update(dt_lib_module_t *self)
 static void _image_selection_changed_callback(gpointer instance, dt_lib_module_t *self)
 {
   _update(self);
+#ifdef USE_LUA
+  dt_lua_async_call_alien(dt_lua_event_trigger_wrapper,
+    0, NULL,NULL,
+    LUA_ASYNC_TYPENAME,"char*","selection-changed",
+    LUA_ASYNC_DONE);
+#endif
 }
 
 static void _collection_updated_callback(gpointer instance, dt_collection_change_t query_change, gpointer imgs,
@@ -220,12 +226,37 @@ static int lua_register_selection(lua_State *L)
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   dt_lua_module_entry_push(L,"lib",self->plugin_name);
   lua_getuservalue(L,-1);
-  const char* key = luaL_checkstring(L,1);
-  luaL_checktype(L,2,LUA_TFUNCTION);
+  const char* name;
+  const char* key;
+  char* tmp_name = NULL;
+  // location of function argument on the stack: 2 - old format, 3 - new format (w/name)
+  int func_pos = 2;
+
+  if (lua_type(L, 3) == LUA_TFUNCTION)
+  {
+    name = luaL_checkstring(L,1);
+    key = luaL_checkstring(L,2);
+    func_pos = 3;
+  }
+  else
+  {
+    key = luaL_checkstring(L,1);
+    tmp_name = malloc(sizeof(key));
+    // replace spaces in name with underscores
+    for(int i = 0; key[i] != '\0'; i++)
+      if(key[i] == ' ')
+        tmp_name[i] = '_';
+      else
+        tmp_name[i] = key[i];
+
+    name = tmp_name;
+  }
+
+  luaL_checktype(L,func_pos,LUA_TFUNCTION);
 
   lua_getfield(L,-1,"callbacks");
-  lua_pushstring(L,key);
-  lua_pushvalue(L,2);
+  lua_pushstring(L,name);
+  lua_pushvalue(L,func_pos);
   lua_settable(L,-3);
 
   GtkWidget* button = gtk_button_new_with_label(key);
@@ -233,17 +264,103 @@ static int lua_register_selection(lua_State *L)
   if(tooltip)  {
     gtk_widget_set_tooltip_text(button, tooltip);
   }
+  gtk_widget_set_name(button, name);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 2, 1);
 
 
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
-  data->key = strdup(key);
+  data->key = strdup(name);
   data->self = self;
-  g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
+  gulong s = g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
+
+  dt_lua_module_entry_push(L,"lib",self->plugin_name);
+  lua_getuservalue(L,-1);
+  lua_getfield(L,-1,"signal_handlers");
+  lua_pushstring(L,name);
+  lua_pushinteger(L,s);
+  lua_settable(L,-3);
+
   gtk_widget_show_all(self->widget);
+
+  if(tmp_name){
+    free(tmp_name);
+  }
+
   return 0;
 }
 
+static int lua_destroy_selection(lua_State *L)
+{
+  lua_settop(L,3);
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  const char* name = luaL_checkstring(L,1);
+
+  // find the button named name
+
+  GtkWidget* widget = NULL;
+  int row;
+
+  for(row = 2; (widget = gtk_grid_get_child_at(GTK_GRID(self->widget), 0, row)) != NULL; row++)
+  {
+    if(GTK_IS_BUTTON(widget) && strcmp(gtk_widget_get_name(widget), name) == 0)
+    {
+      //gtk_grid_remove_row(GTK_GRID(d->page1), row);
+      break;
+    }
+  }
+
+  if(widget)
+  {
+    // set the callback to nil
+
+    dt_lua_module_entry_push(L,"lib",self->plugin_name);
+    lua_getuservalue(L,-1);
+    lua_getfield(L,-1,"callbacks");
+    lua_pushstring(L,name);
+    lua_pushnil(L);
+    lua_settable(L,-3);
+
+    // disconnect the signal
+
+    dt_lua_module_entry_push(L,"lib",self->plugin_name);
+    lua_getuservalue(L,-1);
+    lua_getfield(L,-1,"signal_handlers");
+    lua_pushstring(L,name);
+    lua_gettable(L, -2);
+    gulong handler_id = 0;
+    handler_id = luaL_checkinteger(L, -1);
+    g_signal_handler_disconnect(G_OBJECT(widget), handler_id);
+
+    // remove the widget
+
+    gtk_grid_remove_row(GTK_GRID(self->widget), row);
+ }
+
+  return 0;
+}
+
+static int lua_set_selection_sensitive(lua_State *L)
+{
+  lua_settop(L,3);
+  dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
+  const char* name = luaL_checkstring(L,1);
+  gboolean sensitive = lua_toboolean(L, 2);
+
+  // find the button named name
+
+  GtkWidget* widget = NULL;
+  int row;
+
+  for(row = 2; (widget = gtk_grid_get_child_at(GTK_GRID(self->widget), 0, row)) != NULL; row++)
+  {
+    if(GTK_IS_BUTTON(widget) && strcmp(gtk_widget_get_name(widget), name) == 0)
+    {
+      gtk_widget_set_sensitive(widget, sensitive);
+      break;
+    }
+  }
+  return 0;
+}
 void init(struct dt_lib_module_t *self)
 {
 
@@ -255,10 +372,28 @@ void init(struct dt_lib_module_t *self)
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_selection");
 
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, lua_destroy_selection,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "destroy_selection");
+
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, lua_set_selection_sensitive,1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "set_sensitive");
+
   dt_lua_module_entry_push(L,"lib",self->plugin_name);
   lua_getuservalue(L,-1);
   lua_newtable(L);
   lua_setfield(L,-2,"callbacks");
+  lua_pop(L,2);
+
+  dt_lua_module_entry_push(L,"lib",self->plugin_name);
+  lua_getuservalue(L,-1);
+  lua_newtable(L);
+  lua_setfield(L,-2,"signal_handlers");
   lua_pop(L,2);
 }
 #endif
