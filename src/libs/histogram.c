@@ -100,8 +100,9 @@ typedef struct dt_lib_histogram_t
   int waveform_width, waveform_height, waveform_max_width;
   uint8_t *vectorscope_alpha;
   int vectorscope_diameter, vectorscope_alpha_stride;
-  float hue_ring_rgb[6][VECTORSCOPE_HUES][4];
-  float hue_ring_coord[6][VECTORSCOPE_HUES][2];
+  // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
+  float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
+  float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -279,14 +280,14 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // there's no guarantee that there is a chromaticity tag in the
   // profile, so simply feed RGB colors through profile to PCS then
   // to u*v* or JzAzBz
-
   float vertex_xyY_D50[6][4] DT_ALIGNED_PIXEL;
-  // FIXME: is there a possible profile where these aren't max chromas? and where the lines connecting them aren't the maximum chroma for each hue?
+  // The assumption is that primaries have max chromas and the points
+  // connecting them to secondaries make for the maximum chroma for
+  // each hue
   float vertex_rgb[6][4] DT_ALIGNED_PIXEL = {{1.f, 0.f, 0.f}, {1.f, 1.f, 0.f},
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
   float max_diam = 0.f;
-  // assumption is that the primaries will be the most saturated, and can determine diameter from them
   // FIXME: should really center top/bottom points rather than whitepoint?
   for(int k=0; k<6; k++)
   {
@@ -305,17 +306,18 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
-    max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
+    // assumption is that the primaries will be the most saturated, and can determine diameter from them
+    if(k%2 == 0)
+      max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
   }
 
   // Calculate "hue ring" by tracing chromaticities along the edges of
   // the "RGB cube" which do not touch the white or black vertex --
   // for "nice" matrix color profiles and perceptual colorspaces, this
   // should be the maximum gamut (in terms of chromaticity,
-  // irrespective of lightness) but there may be specific
-  // circumstances when this is not quite true.  Note that hue ring
-  // calculation seems fast enough that it's not worth caching, but
-  // the below math does not vary once it is calculated for a profile.
+  // irrespective of lightness). Note that hue ring calculation seems
+  // fast enough that it's not worth caching, but the below math does
+  // not vary once it is calculated for a profile.
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
@@ -345,14 +347,13 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       d->hue_ring_coord[k][i][1] = chromaticity[2] / max_diam;
     }
   }
-  // FIXME: make an image buffer which all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
+  // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
 
   // FIXME: pre-allocate?
   float *const restrict binned = dt_iop_image_alloc(vs_diameter, vs_diameter, 1);
   dt_iop_image_fill(binned, 0.0f, vs_diameter, vs_diameter, 1);
   // FIXME: faster to have bins just record count and multiply by scale after?
   const float scale = 4.0f * (vs_diameter * vs_diameter) / (width * height * 255.0f);
-
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   const size_t nfloats = 4 * width * height;
 
@@ -376,10 +377,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
     float XYZ_D50[4] DT_ALIGNED_PIXEL;
     float chromaticity[4] DT_ALIGNED_PIXEL;
-    // FIXME: needed?
-    const float *const restrict pix_in = __builtin_assume_aligned(in + k, 16);
     // this goes to the PCS which has standard illuminant D50
-    dt_ioppr_rgb_matrix_to_xyz(pix_in, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+    dt_ioppr_rgb_matrix_to_xyz(in+k, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
     // NOTE: see for comparison/reference rgb_to_JzCzhz() in color_picker.c
     if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
