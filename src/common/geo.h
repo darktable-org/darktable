@@ -23,7 +23,8 @@ typedef enum dt_geo_map_display_t
   MAP_DISPLAY_NONE,
   MAP_DISPLAY_POINT,
   MAP_DISPLAY_TRACK,
-  MAP_DISPLAY_POLYGON
+  MAP_DISPLAY_POLYGON,
+  MAP_DISPLAY_THUMB
 } dt_geo_map_display_t;
 
 typedef struct dt_geo_map_display_point_t

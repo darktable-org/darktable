@@ -1527,6 +1527,9 @@ void dt_lightroom_import(int imgid, dt_develop_t *dev, gboolean iauto)
     geoloc.latitude = data.lat;
     geoloc.elevation = NAN;
     dt_image_set_location(imgid, &geoloc, FALSE, FALSE);
+    GList *imgs = NULL;
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
 
     if(imported[0]) g_strlcat(imported, ", ", sizeof(imported));
     g_strlcat(imported, _("geotagging"), sizeof(imported));

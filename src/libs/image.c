@@ -347,6 +347,8 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
       else
         dt_image_get_location(imageid, geoloc);
       dt_image_set_locations(imgs, geoloc, TRUE);
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
+                                    g_list_copy((GList *)imgs), 0);
       g_free(geoloc);
     }
     if(dttag_flag)
