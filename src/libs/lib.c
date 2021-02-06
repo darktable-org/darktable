@@ -1146,9 +1146,11 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
     return TRUE;
   }
-  else if(e->button == 2)
+  else if(e->button == 3)
   {
-    /* show preset popup if any preset for module */
+    GtkWidget *preset_button = module->presets_button;
+    if(gtk_widget_get_sensitive(preset_button))
+      popup_callback(GTK_BUTTON(preset_button), module);
 
     return TRUE;
   }
