@@ -2309,18 +2309,6 @@ static GtkWidget *_ui_init_panel_container_bottom(GtkWidget *container)
   return w;
 }
 
-static void _panel_resize_callback(GtkWidget *w, GtkAllocation *allocation, void *user_data)
-{
-  GtkWidget *handle = (GtkWidget *)user_data;
-  if(strcmp(gtk_widget_get_name(handle), "panel-handle-bottom") == 0)
-  {
-    gtk_widget_set_size_request(handle, allocation->width, DT_PIXEL_APPLY_DPI(5));
-  }
-  else
-  {
-    gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), allocation->height);
-  }
-}
 static gboolean _panel_handle_button_callback(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   if(e->button == 1)
@@ -2441,7 +2429,8 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   // we add a transparent overlay over the modules margins to resize the panel
   GtkWidget *handle = gtk_drawing_area_new();
   gtk_widget_set_halign(handle, GTK_ALIGN_END);
-  gtk_widget_set_valign(handle, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(handle, GTK_ALIGN_FILL);
+  gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), -1);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                     | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
@@ -2451,7 +2440,6 @@ static void _ui_init_panel_left(dt_ui_t *ui, GtkWidget *container)
   g_signal_connect(G_OBJECT(handle), "motion-notify-event", G_CALLBACK(_panel_handle_motion_callback), widget);
   g_signal_connect(G_OBJECT(handle), "leave-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
   g_signal_connect(G_OBJECT(handle), "enter-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
-  g_signal_connect(G_OBJECT(widget), "size_allocate", G_CALLBACK(_panel_resize_callback), handle);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 1, 1, 1);
@@ -2481,7 +2469,8 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   // we add a transparent overlay over the modules margins to resize the panel
   GtkWidget *handle = gtk_drawing_area_new();
   gtk_widget_set_halign(handle, GTK_ALIGN_START);
-  gtk_widget_set_valign(handle, GTK_ALIGN_CENTER);
+  gtk_widget_set_valign(handle, GTK_ALIGN_FILL);
+  gtk_widget_set_size_request(handle, DT_PIXEL_APPLY_DPI(5), -1);
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                     | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
@@ -2491,7 +2480,6 @@ static void _ui_init_panel_right(dt_ui_t *ui, GtkWidget *container)
   g_signal_connect(G_OBJECT(handle), "motion-notify-event", G_CALLBACK(_panel_handle_motion_callback), widget);
   g_signal_connect(G_OBJECT(handle), "leave-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
   g_signal_connect(G_OBJECT(handle), "enter-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
-  g_signal_connect(G_OBJECT(widget), "size_allocate", G_CALLBACK(_panel_resize_callback), handle);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 3, 1, 1, 1);
@@ -2546,8 +2534,9 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
   gtk_container_add(GTK_CONTAINER(over), widget);
   // we add a transparent overlay over the modules margins to resize the panel
   GtkWidget *handle = gtk_drawing_area_new();
-  gtk_widget_set_halign(handle, GTK_ALIGN_CENTER);
+  gtk_widget_set_halign(handle, GTK_ALIGN_FILL);
   gtk_widget_set_valign(handle, GTK_ALIGN_START);
+  gtk_widget_set_size_request(handle, -1, DT_PIXEL_APPLY_DPI(5));
   gtk_overlay_add_overlay(GTK_OVERLAY(over), handle);
   gtk_widget_set_events(handle, GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK | GDK_ENTER_NOTIFY_MASK
                                     | GDK_LEAVE_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
@@ -2557,7 +2546,6 @@ static void _ui_init_panel_bottom(dt_ui_t *ui, GtkWidget *container)
   g_signal_connect(G_OBJECT(handle), "motion-notify-event", G_CALLBACK(_panel_handle_motion_callback), widget);
   g_signal_connect(G_OBJECT(handle), "leave-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
   g_signal_connect(G_OBJECT(handle), "enter-notify-event", G_CALLBACK(_panel_handle_cursor_callback), handle);
-  g_signal_connect(G_OBJECT(widget), "size_allocate", G_CALLBACK(_panel_resize_callback), handle);
   gtk_widget_show(handle);
 
   gtk_grid_attach(GTK_GRID(container), over, 1, 2, 3, 1);
