@@ -300,7 +300,9 @@ static gboolean toggle_tooltip_visibility(GtkAccelGroup *accel_group, GObject *a
     dt_control_log(_("tooltip visibility can only be toggled if compositing is enabled in your window manager"));
   }
 
-  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
+  gchar *theme = dt_conf_get_string("ui_last/theme");
+  dt_gui_load_theme(theme);
+  g_free(theme);
   dt_bauhaus_load_theme();
 
   return TRUE;
@@ -1555,6 +1557,11 @@ void dt_gui_gtk_run(dt_gui_gtk_t *gui)
   /* start the event loop */
   gtk_main();
 
+  if (darktable.gui->surface)
+  {
+    cairo_surface_destroy(darktable.gui->surface);
+    darktable.gui->surface = NULL;
+  }
   dt_cleanup();
 }
 

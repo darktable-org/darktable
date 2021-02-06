@@ -189,6 +189,14 @@ static void load_themes(void)
   load_themes_dir(configdir);
 }
 
+static void reload_ui_last_theme(void)
+{
+  gchar *theme = dt_conf_get_string("ui_last/theme");
+  dt_gui_load_theme(theme);
+  g_free(theme);
+  dt_bauhaus_load_theme();
+}
+
 static void theme_callback(GtkWidget *widget, gpointer user_data)
 {
   const int selected = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
@@ -202,15 +210,13 @@ static void theme_callback(GtkWidget *widget, gpointer user_data)
 static void usercss_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_conf_set_bool("themes/usercss", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
-  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
-  dt_bauhaus_load_theme();
+  reload_ui_last_theme();
 }
 
 static void font_size_changed_callback(GtkWidget *widget, gpointer user_data)
 {
   dt_conf_set_float("font_size", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
-  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
-  dt_bauhaus_load_theme();
+  reload_ui_last_theme();
 }
 
 static void use_performance_callback(GtkWidget *widget, gpointer user_data)
@@ -237,8 +243,7 @@ static void use_sys_font_callback(GtkWidget *widget, gpointer user_data)
   else
     gtk_widget_set_state_flags(GTK_WIDGET(user_data), GTK_STATE_FLAG_NORMAL, TRUE);
 
-  dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
-  dt_bauhaus_load_theme();
+  reload_ui_last_theme();
 }
 
 static void save_usercss(GtkTextBuffer *buffer)
@@ -274,8 +279,7 @@ static void save_usercss_callback(GtkWidget *widget, gpointer user_data)
   if(gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(tw->apply_toggle)))
   {
     //reload the theme
-    dt_gui_load_theme(dt_conf_get_string("ui_last/theme"));
-    dt_bauhaus_load_theme();
+    reload_ui_last_theme();
   }
   else
   {

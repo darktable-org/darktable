@@ -138,7 +138,7 @@ static void default_commit_params(struct dt_iop_module_t *self, dt_iop_params_t 
 static void default_init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
                               dt_dev_pixelpipe_iop_t *piece)
 {
-  piece->data = malloc(self->params_size);
+  piece->data = calloc(1,self->params_size);
 }
 
 static void default_cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe,
@@ -211,8 +211,8 @@ void dt_iop_default_init(dt_iop_module_t *module)
 {
   size_t param_size = module->so->get_introspection()->size;
   module->params_size = param_size;
-  module->params = (dt_iop_params_t *)malloc(param_size);
-  module->default_params = (dt_iop_params_t *)malloc(param_size);
+  module->params = (dt_iop_params_t *)calloc(1, param_size);
+  module->default_params = (dt_iop_params_t *)calloc(1, param_size);
 
   module->default_enabled = 0;
   module->has_trouble = FALSE;
@@ -2996,7 +2996,9 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
   int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
   int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
   int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
-  int prefer_first = strcmp(dt_conf_get_string("accel/select_order"), "first instance") == 0 ? 1 : 0;
+  gchar* select_order = dt_conf_get_string("accel/select_order");
+  int prefer_first = strcmp(select_order, "first instance") == 0 ? 1 : 0;
+  g_free(select_order);
 
   if(darktable.develop->gui_attached)
   {
