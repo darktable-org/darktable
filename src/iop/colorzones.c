@@ -2387,7 +2387,7 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->colorpicker_set_values), "toggled", G_CALLBACK(_color_picker_callback), self);
 
   // the nice graph
-  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(1.0));
+  c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   gtk_box_pack_start(GTK_BOX(vbox), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
   GtkWidget *dabox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
