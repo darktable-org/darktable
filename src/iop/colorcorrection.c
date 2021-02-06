@@ -128,8 +128,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_colorcorrection_data_t *const d = (dt_iop_colorcorrection_data_t *)piece->data;
-  const float *const restrict in = (float *)i;
-  float *const restrict out = (float *)o;
+  const float *const restrict in = (float *)DT_IS_ALIGNED(i);
+  float *const restrict out = (float *)DT_IS_ALIGNED(o);
   if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
                                          in, out, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
@@ -142,9 +142,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float b_scale = d->b_scale;
   const float b_base = d->b_base;
 #ifdef _OPENMP
-#pragma omp parallel for simd default(none) \
+#pragma omp parallel for default(none) \
   dt_omp_firstprivate(roi_out, saturation, a_scale, a_base, b_scale, b_base, in, out) \
-  schedule(simd:static) aligned(in, out : 64)
+  schedule(static)
 #endif
   for(size_t k = 0; k < (size_t)4 * roi_out->width * roi_out->height; k += 4)
   {
