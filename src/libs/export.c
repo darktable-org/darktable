@@ -153,18 +153,29 @@ static inline float pixels2print(dt_lib_export_t *self, const uint32_t pix)
 
 const char *name(dt_lib_module_t *self)
 {
-  return _("export selected");
+  return _("export");
 }
 
 const char **views(dt_lib_module_t *self)
 {
-  static const char *v[] = {"lighttable", NULL};
+  static const char *v1[] = {"lighttable", "darkroom", NULL};
+  static const char *v2[] = {"lighttable", NULL};
+
+  if(dt_conf_get_bool("plugins/darkroom/export/visible"))
+    return v1;
+  else
+    return v2;
+  static const char *v[] = {"lighttable", "darkroom", NULL};
   return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
 {
-  return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM)
+    return DT_UI_CONTAINER_PANEL_LEFT_CENTER;
+  else
+    return DT_UI_CONTAINER_PANEL_RIGHT_CENTER;
 }
 
 static void _update(dt_lib_module_t *self)
@@ -271,6 +282,12 @@ static void _scale_optim()
 
 static void _export_button_clicked(GtkWidget *widget, dt_lib_export_t *d)
 {
+  /* write current history changes so nothing gets lost,
+     do that only in the darkroom as there is nothing to be saved
+     when in the lighttable (and it would write over current history stack) */
+  const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
+  if(cv->view(cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
+
   char style[128] = { 0 };
 
   // get the format_name and storage_name settings which are plug-ins name and not necessary what is displayed on the combobox.

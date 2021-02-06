@@ -1452,7 +1452,14 @@
     <name>plugins/darkroom/tagging/visible</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription/>
+    <shortdescription>show the tagging module in the darkroom view (as well as in lighttable)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/darkroom/export/visible</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show the export module in the darkroom view (as well as in lighttable)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="security">
