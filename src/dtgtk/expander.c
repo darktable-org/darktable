@@ -69,8 +69,6 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
 
   if(expander->expanded != expanded)
   {
-    GtkWidget *widget = GTK_WIDGET(expander);
-
     expander->expanded = expanded;
 
     GtkWidget *frame = expander->body;
@@ -78,7 +76,6 @@ void dtgtk_expander_set_expanded(GtkDarktableExpander *expander, gboolean expand
     if(frame)
     {
       gtk_widget_set_visible(frame, expander->expanded);
-      gtk_widget_queue_resize(widget);
     }
   }
 }
