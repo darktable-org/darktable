@@ -98,11 +98,13 @@ typedef struct dt_lib_histogram_t
   float *waveform_linear, *waveform_display;
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
+  // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_alpha;
   int vectorscope_diameter, vectorscope_alpha_stride;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
+  double vectorscope_max_diam;
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -276,48 +278,37 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(!vs_prof) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
 
-  // chromaticities of profile primaries/secondaries
-  // there's no guarantee that there is a chromaticity tag in the
-  // profile, so simply feed RGB colors through profile to PCS then
-  // to u*v* or JzAzBz
+  // Find profile primaries/secondaries in xyY. There's no guarantee
+  // that there is a chromaticity tag in the profile, so simply feed
+  // RGB colors through profile to PCS.
   float vertex_xyY_D50[6][4] DT_ALIGNED_PIXEL;
-  // The assumption is that primaries have max chromas and the points
-  // connecting them to secondaries make for the maximum chroma for
-  // each hue
+  // The assumption is that sampling along the gradients between
+  // primaries and secondaries will let us find the maximum chroma for
+  // each hue. It's OK if some of the sampled points are
+  // closer/further from each other.
   float vertex_rgb[6][4] DT_ALIGNED_PIXEL = {{1.f, 0.f, 0.f}, {1.f, 1.f, 0.f},
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
-  float max_diam = 0.f;
-  // FIXME: should really center top/bottom points rather than whitepoint?
   for(int k=0; k<6; k++)
   {
     float XYZ_D50[4] DT_ALIGNED_PIXEL;
-    float chromaticity[4] DT_ALIGNED_PIXEL;
     dt_ioppr_rgb_matrix_to_xyz(vertex_rgb[k], XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
     dt_XYZ_to_xyY(XYZ_D50, vertex_xyY_D50[k]);
-    if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-    {
-      dt_xyY_to_Luv(vertex_xyY_D50[k], chromaticity);
-    }
-    else
-    {
-      float XYZ_D65[4] DT_ALIGNED_PIXEL;
-      dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-      dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
-    }
-    // assumption is that the primaries will be the most saturated, and can determine diameter from them
-    if(k%2 == 0)
-      max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
   }
 
   // Calculate "hue ring" by tracing chromaticities along the edges of
   // the "RGB cube" which do not touch the white or black vertex --
   // for "nice" matrix color profiles and perceptual colorspaces, this
   // should be the maximum gamut (in terms of chromaticity,
-  // irrespective of lightness). Note that hue ring calculation seems
-  // fast enough that it's not worth caching, but the below math does
-  // not vary once it is calculated for a profile.
+  // irrespective of lightness). It's not enough just to look at
+  // primaries, as, for example, ProPhoto in JzAzBz has more chroma
+  // near the blue primary (which has a very low Y) than right at
+  // blue. Note that hue ring calculation seems fast enough that it's
+  // not worth caching, but the below math does not vary once it is
+  // calculated for a profile.
+  float max_diam = 0.f;
+  // FIXME: should center top/bottom points rather than whitepoint?
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
@@ -343,11 +334,13 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
         dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
       }
-      d->hue_ring_coord[k][i][0] = chromaticity[1] / max_diam;
-      d->hue_ring_coord[k][i][1] = chromaticity[2] / max_diam;
+      d->hue_ring_coord[k][i][0] = chromaticity[1];
+      d->hue_ring_coord[k][i][1] = chromaticity[2];
+      max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
     }
   }
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
+  d->vectorscope_max_diam = max_diam;
 
   // FIXME: pre-allocate?
   float *const restrict binned = dt_iop_image_alloc(vs_diameter, vs_diameter, 1);
@@ -409,6 +402,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
         XYZ_D65[x] = M[x][0] * XYZ_D50[0] + M[x][1] * XYZ_D50[1] + M[x][2] * XYZ_D50[2];
       */
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
+      // NOTE: the bulk of processing time is spent in the XYZ ->
+      // JzAzBz conversion in the two powf() in X'Y'Z' -> L'M'S'. Is
+      // it possible to quantize the incoming data and cache
+      // conversion results to optimize this. Making a LUT for the two
+      // powf() may be better.
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
 
@@ -462,7 +460,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     dt_pthread_mutex_lock(&d->lock);
     memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
     d->waveform_width = 0;
-    d->hue_ring_coord[0][0][0] = NAN;
+    d->vectorscope_max_diam = 0.f;
     dt_pthread_mutex_unlock(&d->lock);
     return;
   }
@@ -666,12 +664,17 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
 static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
                                             int width, int height)
 {
-  const int vs_diameter = d->vectorscope_diameter;
+  const float vs_max_diam = d->vectorscope_max_diam;
+  const int vs_px_diam = d->vectorscope_diameter;
   const int min_size = MIN(width, height);
 
   // FIXME: draw a gray background behind the vectorscope square, the left/right dark with some data there (primaries, whitepoint, etc.)
 
   cairo_save(cr);
+
+  cairo_rectangle(cr, (width - min_size) / 2., (height - min_size) / 2., min_size, min_size);
+  cairo_clip(cr);
+
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_translate(cr, width / 2., height / 2.);
   cairo_rotate(cr, d->vectorscope_angle);
@@ -684,7 +687,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile primaries/secondaries
   cairo_save(cr);
-  cairo_scale(cr, min_size * 0.5, min_size * 0.5);
+  cairo_scale(cr, min_size * 0.5 / vs_max_diam, min_size * 0.5 / vs_max_diam);
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // FIXME: add gamut bounding lines to connect the dots (which need to be plotted in XYZ?)
   // from Sobotka:
@@ -694,13 +697,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   set_color(cr, darktable.bauhaus->graph_grid);
   for(int k=0; k<6; k++)
   {
-    cairo_arc(cr, d->hue_ring_coord[k][0][0], d->hue_ring_coord[k][0][1], 0.03, 0., M_PI * 2.);
+    cairo_arc(cr, d->hue_ring_coord[k][0][0], d->hue_ring_coord[k][0][1], vs_max_diam * 0.03, 0., M_PI * 2.);
     cairo_fill(cr);
   }
 
   // hue ring
   // FIXME: use DT_PIXEL_APPLY_DPI?
-  cairo_set_line_width(cr, 1.5 / min_size);
+  cairo_set_line_width(cr, vs_max_diam * 1.5 / min_size);
   cairo_move_to(cr, d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0], d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1]);
   for(int k=0; k<6; k++)
     for(int i=0; i < VECTORSCOPE_HUES; i++)
@@ -713,17 +716,30 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
       cairo_stroke(cr);
       cairo_move_to(cr, d->hue_ring_coord[k][i][0], d->hue_ring_coord[k][i][1]);
     }
+  cairo_new_path(cr);
+
+  // concentric circles as a scale
+  set_color(cr, darktable.bauhaus->graph_grid);
+  cairo_set_line_width(cr, vs_max_diam / min_size);
+  const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
+  for(int i = 1; i < 1.f + ceilf(vs_max_diam/grid_radius); i++)
+  {
+    cairo_arc(cr, 0., 0., grid_radius * i, 0., M_PI * 2.);
+    cairo_stroke(cr);
+  }
+  // FIXME: fade from graph_bg to graph_border from max_diam on?
+
   cairo_restore(cr);
 
   // the vectorscope graph itself
   cairo_translate(cr, min_size * -0.5, min_size * -0.5);
   // FIXME: use ppd? if not, cast min_size to double
-  cairo_scale(cr, darktable.gui->ppd*min_size/vs_diameter, darktable.gui->ppd*min_size/vs_diameter);
+  cairo_scale(cr, darktable.gui->ppd*min_size/vs_px_diam, darktable.gui->ppd*min_size/vs_px_diam);
 
   cairo_set_source_rgba(cr, 1., 1., 1., 0.7);
   cairo_surface_t *alpha
     = dt_cairo_image_surface_create_for_data(d->vectorscope_alpha, CAIRO_FORMAT_A8,
-                                             vs_diameter, vs_diameter, d->vectorscope_alpha_stride);
+                                             vs_px_diam, vs_px_diam, d->vectorscope_alpha_stride);
   // FIXME: what happens if mask has color (not just alpha) -- can use this to calculate false color vectorscope and draw it as a pattern or use it as a mask to draw it white? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
   cairo_mask_surface(cr, alpha, 0.0, 0.0);
   cairo_surface_destroy(alpha);
@@ -734,7 +750,17 @@ static void _draw_vectorscope_lines(cairo_t *cr, int width, int height)
 {
   const double min_size = MIN(width, height);
   // FIXME: need DT_PIXEL_APPLY_DPI()?
-  const double w_ctr = min_size / 25.0f;
+  const double w_ctr = min_size / 25.0;
+
+  // FIXME: this redraws the whole scope - instead make each draw routine draw scope and background
+  cairo_rectangle(cr, 0, 0, width, height);
+  set_color(cr, darktable.bauhaus->graph_border);
+  cairo_fill(cr);
+  cairo_rectangle(cr, (width - min_size) / 2., (height - min_size) / 2., min_size, min_size);
+  set_color(cr, darktable.bauhaus->graph_bg);
+  cairo_fill_preserve(cr);
+  set_color(cr, darktable.bauhaus->graph_grid);
+  cairo_stroke(cr);
 
   cairo_save(cr);
   cairo_translate(cr, width/2., height/2.);
@@ -841,7 +867,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
           _lib_histogram_draw_rgb_parade(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-        if(!isnan(d->hue_ring_coord[0][0][0]))
+        if(d->vectorscope_max_diam != 0.f)
           _lib_histogram_draw_vectorscope(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
@@ -1098,7 +1124,7 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   if(cv)  // this may be called by _scope_type_update() on init, before in a view
   {
     // redraw empty scope for immediate visual feedback
-    d->hue_ring_coord[0][0][0] = NAN;
+    d->vectorscope_max_diam = 0.f;
     dt_control_queue_redraw_widget(d->scope_draw);
 
     if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -1474,7 +1500,7 @@ void gui_init(dt_lib_module_t *self)
   d->vectorscope_alpha_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter);
   d->vectorscope_alpha = dt_alloc_align(64, sizeof(uint8_t) * d->vectorscope_diameter * d->vectorscope_alpha_stride);
   // initially no vectorscope to draw
-  d->hue_ring_coord[0][0][0] = NAN;
+  d->vectorscope_max_diam = 0.f;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
