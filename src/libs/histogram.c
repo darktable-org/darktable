@@ -308,7 +308,6 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // not worth caching, but the below math does not vary once it is
   // calculated for a profile.
   float max_diam = 0.f;
-  // FIXME: should center top/bottom points rather than whitepoint?
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
@@ -668,8 +667,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   const int vs_px_diam = d->vectorscope_diameter;
   const int min_size = MIN(width, height);
 
-  // FIXME: draw a gray background behind the vectorscope square, the left/right dark with some data there (primaries, whitepoint, etc.)
-
+  // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_save(cr);
 
   cairo_rectangle(cr, (width - min_size) / 2., (height - min_size) / 2., min_size, min_size);
@@ -688,6 +686,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // graticule: histogram profile primaries/secondaries
   cairo_save(cr);
   cairo_scale(cr, min_size * 0.5 / vs_max_diam, min_size * 0.5 / vs_max_diam);
+
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // FIXME: add gamut bounding lines to connect the dots (which need to be plotted in XYZ?)
   // from Sobotka:
@@ -727,7 +726,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
     cairo_arc(cr, 0., 0., grid_radius * i, 0., M_PI * 2.);
     cairo_stroke(cr);
   }
-  // FIXME: fade from graph_bg to graph_border from max_diam on?
 
   cairo_restore(cr);
 
@@ -746,26 +744,30 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   cairo_restore(cr);
 }
 
-static void _draw_vectorscope_lines(cairo_t *cr, int width, int height)
+static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
 {
   const double min_size = MIN(width, height);
   // FIXME: need DT_PIXEL_APPLY_DPI()?
   const double w_ctr = min_size / 25.0;
 
-  // FIXME: this redraws the whole scope - instead make each draw routine draw scope and background
+  cairo_save(cr);
+
   cairo_rectangle(cr, 0, 0, width, height);
   set_color(cr, darktable.bauhaus->graph_border);
   cairo_fill(cr);
+
+  cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
+                                                   0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
+  cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
+  cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_border.red, darktable.bauhaus->graph_border.green, darktable.bauhaus->graph_border.blue);
   cairo_rectangle(cr, (width - min_size) / 2., (height - min_size) / 2., min_size, min_size);
-  set_color(cr, darktable.bauhaus->graph_bg);
+  cairo_set_source(cr, p);
   cairo_fill_preserve(cr);
+  cairo_pattern_destroy(p);
   set_color(cr, darktable.bauhaus->graph_grid);
   cairo_stroke(cr);
 
-  cairo_save(cr);
   cairo_translate(cr, width/2., height/2.);
-
-  // FIXME: a polar coordinate style grid would be interesting/helpful for, as currently the scaling changes based on histogram profile, and this would give some sort of reference
 
   // central crosshair
   // FIXME: draw with some sort of XOR-ish operator to make more generally visible
@@ -800,13 +802,20 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
   cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(.5)); // borders width
 
   // Draw frame and background
-  cairo_save(cr);
-  cairo_rectangle(cr, 0, 0, width, height);
-  set_color(cr, darktable.bauhaus->graph_border);
-  cairo_stroke_preserve(cr);
-  set_color(cr, darktable.bauhaus->graph_bg);
-  cairo_fill(cr);
-  cairo_restore(cr);
+  if(d->scope_type == DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE)
+  {
+    _draw_vectorscope_frame(cr, width, height);
+  }
+  else
+  {
+    cairo_save(cr);
+    cairo_rectangle(cr, 0, 0, width, height);
+    set_color(cr, darktable.bauhaus->graph_border);
+    cairo_stroke_preserve(cr);
+    set_color(cr, darktable.bauhaus->graph_bg);
+    cairo_fill(cr);
+    cairo_restore(cr);
+  }
 
   // exposure change regions
   if(d->highlight == DT_LIB_HISTOGRAM_HIGHLIGHT_BLACK_POINT)
@@ -839,7 +848,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
       dt_draw_waveform_lines(cr, 0, 0, width, height);
       break;
     case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-      _draw_vectorscope_lines(cr, width, height);
+      // grid is drawn with scope, as it depends on chromaticity scale
       break;
     case DT_LIB_HISTOGRAM_SCOPE_N:
       // FIXME: use dt_unreachable_codepath_with_desc()
