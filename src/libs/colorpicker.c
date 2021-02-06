@@ -227,8 +227,8 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
       break;
   }
 
-  gtk_label_set_text(GTK_LABEL(sample->output_label), text);
-
+  if(g_strcmp0(gtk_label_get_text(GTK_LABEL(sample->output_label)), text))
+    gtk_label_set_text(GTK_LABEL(sample->output_label), text);
   gtk_widget_queue_draw(sample->color_patch);
 }
 
