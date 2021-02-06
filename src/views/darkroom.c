@@ -74,9 +74,6 @@ DT_MODULE(1)
 static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                GdkModifierType modifier, gpointer data);
 
-static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data);
-
 static gboolean skip_f_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                           GdkModifierType modifier, gpointer data);
 static gboolean skip_b_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
@@ -1218,42 +1215,6 @@ static gboolean zoom_key_accel(GtkAccelGroup *accel_group, GObject *acceleratabl
   dt_dev_invalidate(dev);
   dt_control_queue_redraw_center();
   dt_control_navigation_redraw();
-  return TRUE;
-}
-
-static gboolean export_key_accel_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                          GdkModifierType modifier, gpointer data)
-{
-  dt_develop_t *dev = (dt_develop_t *)data;
-
-  /* write history before exporting */
-  dt_dev_write_history(dev);
-
-  /* export current image */
-  const int max_width = dt_conf_get_int("plugins/lighttable/export/width");
-  const int max_height = dt_conf_get_int("plugins/lighttable/export/height");
-  char *format_name = dt_conf_get_string("plugins/lighttable/export/format_name");
-  char *storage_name = dt_conf_get_string("plugins/lighttable/export/storage_name");
-  const int format_index = dt_imageio_get_index_of_format(dt_imageio_get_format_by_name(format_name));
-  const int storage_index = dt_imageio_get_index_of_storage(dt_imageio_get_storage_by_name(storage_name));
-  const gboolean high_quality = dt_conf_get_bool("plugins/lighttable/export/high_quality_processing");
-  const gboolean export_masks = dt_conf_get_bool("plugins/lighttable/export/export_masks");
-  const gboolean upscale = dt_conf_get_bool("plugins/lighttable/export/upscale");
-  char *style = dt_conf_get_string("plugins/lighttable/export/style");
-  const gboolean style_append = dt_conf_get_bool("plugins/lighttable/export/style_append");
-  dt_colorspaces_color_profile_type_t icc_type = dt_conf_get_int("plugins/lighttable/export/icctype");
-  gchar *icc_filename = dt_conf_get_string("plugins/lighttable/export/iccprofile");
-  dt_iop_color_intent_t icc_intent = dt_conf_get_int("plugins/lighttable/export/iccintent");
-  gchar *metadata_export = dt_lib_export_metadata_get_conf();
-  // darkroom is for single images, so only export the one the user is working on
-  GList *l = g_list_append(NULL, GINT_TO_POINTER(dev->image_storage.id));
-  dt_control_export(l, max_width, max_height, format_index, storage_index, high_quality, upscale, export_masks, style,
-                    style_append, icc_type, icc_filename, icc_intent, metadata_export);
-  g_free(format_name);
-  g_free(storage_name);
-  g_free(style);
-  g_free(icc_filename);
-  g_free(metadata_export);
   return TRUE;
 }
 
@@ -3248,7 +3209,7 @@ void leave(dt_view_t *self)
 
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
 
-  // darkroom development could have changed a collection, so update that before being back in lightroom
+  // darkroom development could have changed a collection, so update that before being back in lighttable
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
                              g_list_append(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
 
@@ -3942,9 +3903,6 @@ void init_key_accels(dt_view_t *self)
   dt_accel_register_view(self, NC_("accel", "zoom in"), GDK_KEY_plus, GDK_CONTROL_MASK);
   dt_accel_register_view(self, NC_("accel", "zoom out"), GDK_KEY_minus, GDK_CONTROL_MASK);
 
-  // enable shortcut to export with current export settings:
-  dt_accel_register_view(self, NC_("accel", "export"), GDK_KEY_e, GDK_CONTROL_MASK);
-
   // Shortcut to skip images
   dt_accel_register_view(self, NC_("accel", "image forward"), GDK_KEY_space, 0);
   dt_accel_register_view(self, NC_("accel", "image back"), GDK_KEY_BackSpace, 0);
@@ -4034,10 +3992,6 @@ void connect_key_accels(dt_view_t *self)
 
   closure = g_cclosure_new(G_CALLBACK(zoom_out_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "zoom out", closure);
-
-  // enable shortcut to export with current export settings:
-  closure = g_cclosure_new(G_CALLBACK(export_key_accel_callback), (gpointer)self->data, NULL);
-  dt_accel_connect_view(self, "export", closure);
 
   // Shortcut to skip images
   closure = g_cclosure_new(G_CALLBACK(skip_f_key_accel_callback), (gpointer)self->data, NULL);
