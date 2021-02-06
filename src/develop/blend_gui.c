@@ -418,8 +418,9 @@ static gboolean _blendif_are_output_channels_used(const dt_develop_blend_params_
                                                   const dt_develop_blend_colorspace_t cst)
 {
   const gboolean mask_inclusive = blend->mask_combine & DEVELOP_COMBINE_INCL;
-  const uint32_t mask = cst == DEVELOP_BLEND_CS_LAB ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
-                                                    : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+  const uint32_t mask = cst == DEVELOP_BLEND_CS_LAB
+    ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
+    : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
   const uint32_t active_channels = blend->blendif & mask;
   const uint32_t inverted_channels = (blend->blendif >> 16) ^ (mask_inclusive ? mask : 0);
   const uint32_t cancel_channels = inverted_channels & ~blend->blendif & mask;
@@ -434,8 +435,10 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
   gboolean changed = FALSE;
   if(!bd->output_channels_shown)
   {
-    const uint32_t mask = bd->csp == DEVELOP_BLEND_CS_LAB ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
-                                                          : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+    const uint32_t mask = bd->csp == DEVELOP_BLEND_CS_LAB
+      ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
+      : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+
     dt_develop_blend_params_t *const d = module->blend_params;
     const uint32_t need_inversion = d->mask_combine & DEVELOP_COMBINE_INCL ? (mask << 16) : 0;
     if((d->blendif & need_inversion) != need_inversion || (d->blendif & mask) != 0)
@@ -445,9 +448,11 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
     }
     for (size_t ch = 0; ch < DEVELOP_BLENDIF_SIZE; ch++)
     {
-      if ((DEVELOP_BLENDIF_OUTPUT_MASK & (1 << ch)) && (d->blendif_parameters[ch * 4 + 0] != 0.0f
-          || d->blendif_parameters[ch * 4 + 1] != 0.0f || d->blendif_parameters[ch * 4 + 2] != 1.0f
-          || d->blendif_parameters[ch * 4 + 3] != 1.0f))
+      if ((DEVELOP_BLENDIF_OUTPUT_MASK & (1 << ch))
+          && (   d->blendif_parameters[ch * 4 + 0] != 0.0f
+              || d->blendif_parameters[ch * 4 + 1] != 0.0f
+              || d->blendif_parameters[ch * 4 + 2] != 1.0f
+              || d->blendif_parameters[ch * 4 + 3] != 1.0f))
       {
         changed = TRUE;
         d->blendif_parameters[ch * 4 + 0] = 0.0f;
