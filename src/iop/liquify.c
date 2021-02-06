@@ -2871,7 +2871,15 @@ int mouse_moved(struct dt_iop_module_t *module,
       start_drag(g, g->last_hit.layer, g->last_hit.elem);
       // nothing more to do, we will refresh on the next call anyway
       // this makes the initial move of a node a bit more fluid.
+      handled = TRUE;
       goto done;
+    }
+
+    if(g->last_hit.elem)
+    {
+      // an item is selected, so this mouvement is handled and must
+      // not trigger any panning.
+      handled = TRUE;
     }
   }
   else // we are dragging
