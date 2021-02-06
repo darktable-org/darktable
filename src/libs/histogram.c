@@ -307,6 +307,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // blue. Note that hue ring calculation seems fast enough that it's
   // not worth caching, but the below math does not vary once it is
   // calculated for a profile.
+  // FIXME: verify that primary->secondary liens represent max chromas by going through full RGB space at intervals and finding max chromas for hues
   float max_diam = 0.f;
   for(int k=0; k<6; k++)
   {
@@ -404,8 +405,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       // NOTE: the bulk of processing time is spent in the XYZ ->
       // JzAzBz conversion in the two powf() in X'Y'Z' -> L'M'S'. Is
       // it possible to quantize the incoming data and cache
-      // conversion results to optimize this. Making a LUT for the two
+      // conversion results to optimize this. Making a LUT for the 2*3
       // powf() may be better.
+      // FIXME: try to use code as in iop_profile.h _apply_trc() to do powf() work -- we should have a good sense of bounds of LUT, and it only needs to be accurate enough to be about on the right pixel for a vs_diameter x vs_diameter plot
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
 
@@ -670,9 +672,6 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
   cairo_save(cr);
 
-  cairo_rectangle(cr, (width - min_size) / 2., (height - min_size) / 2., min_size, min_size);
-  cairo_clip(cr);
-
   cairo_set_operator(cr, CAIRO_OPERATOR_ADD);
   cairo_translate(cr, width / 2., height / 2.);
   cairo_rotate(cr, d->vectorscope_angle);
@@ -752,19 +751,15 @@ static void _draw_vectorscope_frame(cairo_t *cr, int width, int height)
 
   cairo_save(cr);
 
-  cairo_rectangle(cr, 0, 0, width, height);
-  set_color(cr, darktable.bauhaus->graph_border);
-  cairo_fill(cr);
-
   cairo_pattern_t *p = cairo_pattern_create_radial(0.5 * width, 0.5 * height, 0.5 * min_size,
                                                    0.5 * width, 0.5 * height, 0.5 * hypot(min_size, min_size));
   cairo_pattern_add_color_stop_rgb(p, 0., darktable.bauhaus->graph_bg.red, darktable.bauhaus->graph_bg.green, darktable.bauhaus->graph_bg.blue);
   cairo_pattern_add_color_stop_rgb(p, 1., darktable.bauhaus->graph_border.red, darktable.bauhaus->graph_border.green, darktable.bauhaus->graph_border.blue);
-  cairo_rectangle(cr, (width - min_size) / 2., (height - min_size) / 2., min_size, min_size);
+  cairo_rectangle(cr, 0, 0, width, height);
   cairo_set_source(cr, p);
   cairo_fill_preserve(cr);
   cairo_pattern_destroy(p);
-  set_color(cr, darktable.bauhaus->graph_grid);
+  set_color(cr, darktable.bauhaus->graph_border);
   cairo_stroke(cr);
 
   cairo_translate(cr, width/2., height/2.);
