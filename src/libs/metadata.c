@@ -157,6 +157,7 @@ static void _update(dt_lib_module_t *self)
                             " WHERE id IN (%s)"
                             " GROUP BY key, value ORDER BY value",
                             images);
+    g_free(images);
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
