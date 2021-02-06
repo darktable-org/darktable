@@ -47,6 +47,8 @@ static void _free_confgen_value(void *value)
   g_free(s->min);
   g_free(s->max);
   g_free(s->enum_values);
+  g_free(s->shortdesc);
+  g_free(s->longdesc);
   g_free(s);
 }
 
