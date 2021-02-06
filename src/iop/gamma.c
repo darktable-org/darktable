@@ -66,13 +66,13 @@ static inline void _write_pixel(const float *const restrict in, uint8_t *const r
                                 const float *const restrict mask_color, const float alpha)
 {
   // takes a linear RGB pixel as input
-  float pixel[3] DT_ALIGNED_PIXEL;
+  float pixel[4] DT_ALIGNED_PIXEL;
 
   // linear sRGB (REC 709) -> gamma corrected sRGB
   for(size_t c = 0; c < 3; c++)
-    pixel[c] = in[c] <= 0.0031308 ? 12.92 * in[c] : (1.0 + 0.055) * powf(in[c], 1.0 / 2.4) - 0.055;
+    pixel[c] = in[c] <= 0.0031308f ? 12.92f * in[c] : (1.0f + 0.055f) * powf(in[c], 1.0f / 2.4f) - 0.055f;
 
-  // it seems that the output of this module is BGR(A) instead of RGBA
+  // the output of this module is BGR(A) instead of RGBA; the channel-swapping keeps us from using for_each_channel
   for(size_t c = 0; c < 3; c++)
   {
     const float value = roundf(255.0f * (pixel[c] * (1.0f - alpha) + mask_color[c] * alpha));
@@ -88,7 +88,8 @@ static void _normalize_color(float *const restrict pixel, const float norm)
 {
   // color may not be black!
   const float factor = norm / fmaxf(pixel[0], fmaxf(pixel[1], pixel[2]));
-  for(size_t x = 0; x < 3; x++) pixel[x] = pixel[x] * factor;
+  for_each_channel(x)
+    pixel[x] *= factor;
 }
 
 #ifdef _OPENMP
@@ -107,7 +108,7 @@ static inline void _XYZ_to_REC_709_normalized(const float *const restrict XYZ, f
 static void _channel_display_monochrome(const float *const restrict in, uint8_t *const restrict out,
                                         const size_t buffsize, const float alpha)
 {
-  const float mask_color[3] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow
+  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) schedule(static) aligned(in, out: 64) aligned(mask_color: 16) \
@@ -115,10 +116,7 @@ static void _channel_display_monochrome(const float *const restrict in, uint8_t 
 #endif
   for(size_t j = 0; j < buffsize; j += 4)
   {
-    float pixel[3] DT_ALIGNED_PIXEL;
-    pixel[0] = in[j + 1];
-    pixel[1] = in[j + 1];
-    pixel[2] = in[j + 1];
+    float pixel[4] DT_ALIGNED_PIXEL = { in[j + 1], in[j + 1], in[j + 1], in[j + 1] };
     _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
   }
 }
@@ -130,7 +128,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
                                          const size_t buffsize, const float alpha,
                                          dt_dev_pixelpipe_display_mask_t channel)
 {
-  const float mask_color[3] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow
+  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
 
   switch(channel & DT_DEV_PIXELPIPE_DISPLAY_ANY & ~DT_DEV_PIXELPIPE_DISPLAY_OUTPUT)
   {
@@ -141,14 +139,11 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float lab[3] DT_ALIGNED_PIXEL;
-        float xyz[3] DT_ALIGNED_PIXEL;
-        float pixel[3] DT_ALIGNED_PIXEL;
+        float xyz[4] DT_ALIGNED_PIXEL;
+        float pixel[4] DT_ALIGNED_PIXEL;
         // colors with "a" exceeding the range [-56,56] range will yield colors not representable in sRGB
         const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -56.0f), 56.0f);
-        lab[0] = 79.0f - value * (11.0f / 56.0f);
-        lab[1] = value;
-        lab[2] = 0.0f;
+        const float DT_ALIGNED_PIXEL lab[4] = { 79.0f - value * (11.0f / 56.0f), value, 0.0f };
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -161,14 +156,11 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float lab[3] DT_ALIGNED_PIXEL;
-        float xyz[3] DT_ALIGNED_PIXEL;
-        float pixel[3] DT_ALIGNED_PIXEL;
+        float xyz[4] DT_ALIGNED_PIXEL;
+        float pixel[4] DT_ALIGNED_PIXEL;
         // colors with "b" exceeding the range [-65,65] range will yield colors not representable in sRGB
         const float value = fminf(fmaxf(in[j + 1] * 256.0f - 128.0f, -65.0f), 65.0f);
-        lab[0] = 60.0f + value * (2.0f / 65.0f);
-        lab[1] = 0.0f;
-        lab[2] = value;
+        const float DT_ALIGNED_PIXEL lab[4] = { 60.0f + value * (2.0f / 65.0f), 0.0f, value };
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -181,10 +173,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float pixel[3] DT_ALIGNED_PIXEL;
-        pixel[0] = in[j + 1];
-        pixel[1] = 0.0f;
-        pixel[2] = 0.0f;
+        const float DT_ALIGNED_PIXEL pixel[4] = { in[j + 1], 0.0f, 0.0f, 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -195,10 +184,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float pixel[3] DT_ALIGNED_PIXEL;
-        pixel[0] = 0.0f;
-        pixel[1] = in[j + 1];
-        pixel[2] = 0.0f;
+        const float DT_ALIGNED_PIXEL pixel[4] = { 0.0f, in[j + 1], 0.0f, 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -209,10 +195,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float pixel[3] DT_ALIGNED_PIXEL;
-        pixel[0] = 0.0f;
-        pixel[1] = 0.0f;
-        pixel[2] = in[j + 1];
+        const float DT_ALIGNED_PIXEL pixel[4] = { 0.0f, 0.0f, in[j + 1], 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -225,10 +208,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float pixel[3] DT_ALIGNED_PIXEL;
-        pixel[0] = 0.50f;
-        pixel[1] = 0.50f * (1.0f - in[j + 1]);
-        pixel[2] = 0.50f;
+        const float DT_ALIGNED_PIXEL pixel[4] = { 0.5f, 0.5f * (1.0f - in[j + 1]), 0.5f, 0.0f };
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
       }
       break;
@@ -239,13 +219,10 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float lch[3] DT_ALIGNED_PIXEL;
-        float lab[3] DT_ALIGNED_PIXEL;
-        float xyz[3] DT_ALIGNED_PIXEL;
-        float pixel[3] DT_ALIGNED_PIXEL;
-        lch[0] = 65.0f;
-        lch[1] = 37.0f;
-        lch[2] = in[j + 1];
+        float DT_ALIGNED_PIXEL lch[4] = { 65.0f, 37.0f, in[j + 1], 0.0f };
+        float lab[4] DT_ALIGNED_PIXEL;
+        float xyz[4] DT_ALIGNED_PIXEL;
+        float pixel[4] DT_ALIGNED_PIXEL;
         dt_LCH_2_Lab(lch, lab);
         dt_Lab_to_XYZ(lab, xyz);
         _XYZ_to_REC_709_normalized(xyz, pixel, 0.75f);
@@ -259,11 +236,8 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float hsl[3] DT_ALIGNED_PIXEL;
-        float pixel[3] DT_ALIGNED_PIXEL;
-        hsl[0] = in[j + 1];
-        hsl[1] = 0.5f;
-        hsl[2] = 0.5f;
+        float DT_ALIGNED_PIXEL hsl[4] = { in[j + 1], 0.5f, 0.5f, 0.0f };
+        float DT_ALIGNED_PIXEL pixel[4];
         dt_HSL_2_RGB(hsl, pixel);
         _normalize_color(pixel, 0.75f);
         _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
@@ -276,13 +250,10 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 #endif
       for(size_t j = 0; j < buffsize; j += 4)
       {
-        float JzCzhz[3] DT_ALIGNED_PIXEL;
-        float JzAzBz[3] DT_ALIGNED_PIXEL;
-        float XYZ_D65[3] DT_ALIGNED_PIXEL;
-        float pixel[3] DT_ALIGNED_PIXEL;
-        JzCzhz[0] = 0.011f;
-        JzCzhz[1] = 0.01f;
-        JzCzhz[2] = in[j + 1];
+        const float DT_ALIGNED_PIXEL JzCzhz[4] = { 0.011f, 0.01f, in[j + 1] };
+        float JzAzBz[4] DT_ALIGNED_PIXEL;
+        float XYZ_D65[4] DT_ALIGNED_PIXEL;
+        float pixel[4] DT_ALIGNED_PIXEL;
         dt_JzCzhz_2_JzAzBz(JzCzhz, JzAzBz);
         dt_JzAzBz_2_XYZ(JzAzBz, XYZ_D65);
         dt_XYZ_to_Rec709_D65(XYZ_D65, pixel);
@@ -306,7 +277,7 @@ static void _channel_display_false_color(const float *const restrict in, uint8_t
 static void _mask_display(const float *const restrict in, uint8_t *const restrict out, const size_t buffsize,
                           const float alpha)
 {
-  const float mask_color[3] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow
+  const float mask_color[4] DT_ALIGNED_PIXEL = { 1.0f, 1.0f, 0.0f }; // yellow, "unused" element aids vectorization
 
   #ifdef _OPENMP
   #pragma omp parallel for simd default(none) schedule(static) aligned(in, out: 64) aligned(mask_color: 16) \
@@ -315,7 +286,7 @@ static void _mask_display(const float *const restrict in, uint8_t *const restric
     for(size_t j = 0; j < buffsize; j+= 4)
     {
       const float gray = 0.3f * in[j + 0] + 0.59f * in[j + 1] + 0.11f * in[j + 2];
-      float pixel[3] DT_ALIGNED_PIXEL = { gray, gray, gray };
+      const float DT_ALIGNED_PIXEL pixel[4] = { gray, gray, gray, gray };
       _write_pixel(pixel, out + j, mask_color, in[j + 3] * alpha);
     }
 }
@@ -331,7 +302,7 @@ static void _copy_output(const float *const restrict in, uint8_t *const restrict
 #endif
   for(size_t j = 0; j < buffsize; j += 4)
   {
-    // it seems that the output of this module is BGR(A) instead of RGBA
+    // the output of this module is BGR(A) instead of RGBA, so we can't use for_each_channel
     for(size_t c = 0; c < 3; c++)
     {
       out[j + 2 - c] = (uint8_t)(fminf(fmaxf(roundf(255.0f * in[j + c]), 0.0f), 255.0f));
@@ -343,7 +314,9 @@ static void _copy_output(const float *const restrict in, uint8_t *const restrict
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  if(piece->colors != 4) return; // this module seems to handle only RGBA pixels
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         i, o, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
   // this module also expects the same size of input image as the output image
   if(roi_in->width != roi_out->width || roi_in->height != roi_out->height)
