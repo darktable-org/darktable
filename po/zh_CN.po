@@ -4821,7 +4821,7 @@ msgstr "无法上传到 piwigo！"
 #: ../src/imageio/storage/piwigo.c:1026
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d 导出到 picasa 网络相册"
+msgstr[0] "%d/%d 导出到 piwigo 网络相册"
 
 #: ../src/iop/ashift.c:112
 msgid "perspective correction"

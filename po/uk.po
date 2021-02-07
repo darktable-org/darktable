@@ -5336,9 +5336,9 @@ msgstr "не вдалось завантажити файл до flickr"
 #, fuzzy, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d експортовано до веб-альбому picasa"
-msgstr[1] "%d/%d експортовано до веб-альбому picasa"
-msgstr[2] "%d/%d експортовано до веб-альбому picasa"
+msgstr[0] "%d/%d експортовано до веб-альбому piwigo"
+msgstr[1] "%d/%d експортовано до веб-альбому piwigo"
+msgstr[2] "%d/%d експортовано до веб-альбому piwigo"
 
 #: ../src/iop/ashift.c:112
 msgid "perspective correction"
