@@ -5320,8 +5320,8 @@ msgstr "não foi possível escrever no ficheiro %s!"
 #, fuzzy, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d exportado para o álbum web do piwigo"
-msgstr[1] "%d/%d exportado para o álbum web do piwigo"
+msgstr[0] "%d/%d exportado para o álbum web do picasa"
+msgstr[1] "%d/%d exportado para o álbum web do picasa"
 
 #: ../src/iop/ashift.c:112
 #, fuzzy

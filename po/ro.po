@@ -5347,8 +5347,8 @@ msgstr "nu s-a putut creea directorul `%s'!"
 #, fuzzy, c-format
 msgid "%d/%d exported to piwigo webalbum"
 msgid_plural "%d/%d exported to piwigo webalbum"
-msgstr[0] "%d/%d exportate în albumul piwigo"
-msgstr[1] "%d/%d exportate în albumul piwigo"
+msgstr[0] "%d/%d exportate în albumul picasa"
+msgstr[1] "%d/%d exportate în albumul picasa"
 
 #: ../src/iop/ashift.c:112
 #, fuzzy
