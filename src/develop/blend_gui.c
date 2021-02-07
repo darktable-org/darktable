@@ -642,7 +642,7 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
 
   const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
 
-  int in_out = (slider == data->filter[1].slider) ? 1 : 0;
+  const int in_out = (slider == data->filter[1].slider) ? 1 : 0;
   dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
   GtkLabel **label = data->filter[in_out].label;
 
@@ -685,7 +685,7 @@ static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt
 
   const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
 
-  int in_out = (GTK_WIDGET(togglebutton) == data->filter[1].polarity) ? 1 : 0;
+  const int in_out = (GTK_WIDGET(togglebutton) == data->filter[1].polarity) ? 1 : 0;
   dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
   GtkDarktableGradientSlider *slider = data->filter[in_out].slider;
 
@@ -1329,7 +1329,7 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     float picker_mean[8], picker_min[8], picker_max[8];
     float picker_values[4];
 
-    int in_out = ((dt_key_modifier_state() == GDK_CONTROL_MASK) && data->output_channels_shown) ? 1 : 0;
+    const int in_out = ((dt_key_modifier_state() == GDK_CONTROL_MASK) && data->output_channels_shown) ? 1 : 0;
 
     if(in_out)
     {
