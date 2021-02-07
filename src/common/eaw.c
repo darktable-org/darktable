@@ -18,35 +18,12 @@
 
 #include "common/eaw.h"
 #include "common/darktable.h"
+#include "common/math.h"
 #include "control/control.h"     // needed by dwt.h
 #include "common/dwt.h"          // for dwt_interleave_rows
 #include <math.h>
 #if defined(__SSE__)
 #include <xmmintrin.h>
-#endif
-
-#if defined(__SSE2__)
-
-#define ALIGNED(a) __attribute__((aligned(a)))
-#define VEC4(a)                                                                                              \
-  {                                                                                                          \
-    (a), (a), (a), (a)                                                                                       \
-  }
-
-static const __m128 fone ALIGNED(64) = VEC4(0x3f800000u);
-static const __m128 femo ALIGNED(64) = VEC4(0x00adf880u);
-static const __m128 o111 ALIGNED(64) = { ~0, ~0, ~0, 0 };
-
-/* SSE intrinsics version of dt_fast_expf defined in darktable.h */
-static inline __m128 dt_fast_expf_sse2(const __m128 x)
-{
-  __m128 f = _mm_add_ps(fone, _mm_mul_ps(x, femo)); // f(n) = i1 + x(n)*(i2-i1)
-  __m128i i = _mm_cvtps_epi32(f);                   // i(n) = int(f(n))
-  __m128i mask = _mm_srai_epi32(i, 31);             // mask(n) = 0xffffffff if i(n) < 0
-  i = _mm_andnot_si128(mask, i);                    // i(n) = 0 if i(n) < 0
-  return _mm_castsi128_ps(i);                       // return *(float*)&i
-}
-
 #endif
 
 static inline void weight(const float *c1, const float *c2, const float sharpen, float *weight)
@@ -74,6 +51,7 @@ static inline void weight(const float *c1, const float *c2, const float sharpen,
  * wc = exp(-sharpen*(SQR(c1[1] - c2[1]) + SQR(c1[2] - c2[2]))
  *    = exp(-s*(d2+d3)) (as noted in code comments below)
  */
+static const __m128 o111 DT_ALIGNED_ARRAY = { ~0, ~0, ~0, 0 };
 static inline __m128 weight_sse2(const __m128 *c1, const __m128 *c2, const float sharpen)
 {
   const __m128 diff = *c1 - *c2;
@@ -439,7 +417,7 @@ void eaw_decompose_sse2(float *const restrict out, const float *const restrict i
 #undef SUM_PIXEL_EPILOGUE_SSE
 #endif
 
-void eaw_synthesize(float *const restrict out, const float *const restrict in, const float *const restrict detail,
+void eaw_synthesize(float *const out, const float *const in, const float *const restrict detail,
                     const float *const restrict threshold, const float *const restrict boost,
                     const int32_t width, const int32_t height)
 {
@@ -467,7 +445,7 @@ void eaw_synthesize(float *const restrict out, const float *const restrict in, c
 }
 
 #if defined(__SSE2__)
-void eaw_synthesize_sse2(float *const restrict out, const float *const restrict in, const float *const restrict detail,
+void eaw_synthesize_sse2(float *const out, const float *const in, const float *const restrict detail,
                          const float *const restrict thrsf, const float *const restrict boostf,
                          const int32_t width, const int32_t height)
 {
@@ -481,7 +459,7 @@ void eaw_synthesize_sse2(float *const restrict out, const float *const restrict 
   dt_omp_firstprivate(boost, detail, height, in, out, threshold, width, maski, mask) \
   schedule(static)
 #endif
-  for(size_t j = 0; j < width * height; j++)
+  for(size_t j = 0; j < (size_t)width * height; j++)
   {
     const __m128 *pin = (__m128 *)in + j;
     const __m128 *pdetail = (__m128 *)detail + j;
@@ -602,14 +580,12 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
-  const int nthreads = dt_get_num_threads();
-  float *squared_sums = dt_alloc_align(64,3*sizeof(float)*nthreads);
-  for(int i = 0; i < 3*nthreads; i++)
-    squared_sums[i] = 0.0f;
+  size_t scratch_size;
+  float *squared_sums = dt_calloc_perthread_float(3, &scratch_size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width, squared_sums) \
+  dt_omp_firstprivate(detail, filter, height, in, inv_sigma2, mult, boundary, out, width, squared_sums, scratch_size) \
   schedule(static)
 #endif
   for(int rowid = 0; rowid < height; rowid++)
@@ -681,16 +657,20 @@ void eaw_dn_decompose(float *const restrict out, const float *const restrict in,
       }
       SUM_PIXEL_EPILOGUE;
     }
-    int tnum = dt_get_thread_num();
+    float *const sq = dt_get_perthread(squared_sums, scratch_size);
     for(i = 0; i < 3; i++)
-      squared_sums[3*tnum+i] += sum_sq[i];
+      sq[i] += sum_sq[i];
   }
   // reduce the per-thread sums to a single value
+  size_t nthreads = dt_get_num_threads();
   for(int c = 0; c < 3; c++)
   {
     sum_squared[c] = 0.0f;
-    for(int i = 0; i < nthreads; i++)
-      sum_squared[c] += squared_sums[3*i+c];
+    for(size_t i = 0; i < nthreads; i++)
+    {
+      float *const sq = dt_get_bythread(squared_sums,scratch_size,i);
+      sum_squared[c] += sq[c];
+    }
   }
   dt_free_align(squared_sums);
 }
@@ -708,8 +688,8 @@ void eaw_dn_decompose_sse(float *const restrict out, const float *const restrict
   const int mult = 1u << scale;
   static const float filter[5] = { 1.0f / 16.0f, 4.0f / 16.0f, 6.0f / 16.0f, 4.0f / 16.0f, 1.0f / 16.0f };
   const int boundary = 2 * mult;
-  const int nthreads = dt_get_num_threads();
-  __m128 *squared_sums = dt_alloc_align(64,sizeof(__m128)*nthreads);
+  const size_t nthreads = dt_get_num_threads();
+  __m128 *squared_sums = dt_alloc_align(64, sizeof(__m128) * nthreads);
   for(int i = 0; i < nthreads; i++)
     squared_sums[i] = _mm_setzero_ps();
 

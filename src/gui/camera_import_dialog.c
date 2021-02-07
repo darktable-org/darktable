@@ -84,10 +84,8 @@ typedef struct _camera_import_dialog_t
     /** Group of general import settings */
     struct
     {
-      GtkWidget *ignore_jpeg;
       GtkWidget *date_override;
       GtkWidget *date_entry;
-      dt_import_metadata_t *metadata;
     } general;
 
   } settings;
@@ -106,22 +104,12 @@ enum
   N_COLUMNS
 };
 
-static void _check_button_callback(GtkWidget *cb, gpointer user_data)
+static void _date_override_callback(GtkWidget *cb, gpointer user_data)
 {
-
   _camera_import_dialog_t *cid = (_camera_import_dialog_t *)user_data;
-
-  if(cb == cid->settings.general.ignore_jpeg)
-  {
-    dt_conf_set_bool("ui_last/import_ignore_jpegs",
-                     gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cid->settings.general.ignore_jpeg)));
-  }
-  else if(cb == cid->settings.general.date_override)
-  {
-    // Enable/disable the date entry widget
-    gtk_widget_set_sensitive(cid->settings.general.date_entry, gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(
-                                                                   cid->settings.general.date_override)));
-  }
+  // Enable/disable the date entry widget
+  gtk_widget_set_sensitive(cid->settings.general.date_entry,
+                           gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(cb)));
 }
 
 static void _gcw_store_callback(GtkDarktableButton *button, gpointer user_data)
@@ -270,27 +258,8 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
 
   gtk_box_pack_start(GTK_BOX(data->import.page), data->import.treeview, TRUE, TRUE, 0);
 
-
   // SETTINGS PAGE
   data->settings.page = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
-
-  // ignoring of jpegs. hack while we don't handle raw+jpeg in the same directories.
-  data->settings.general.ignore_jpeg = gtk_check_button_new_with_label(_("ignore JPEG files"));
-  gtk_widget_set_tooltip_text(data->settings.general.ignore_jpeg,
-               _("do not load files with an extension of .jpg or .jpeg. this can be useful when there are "
-                 "raw+JPEG in a directory."));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->settings.general.ignore_jpeg),
-                               dt_conf_get_bool("ui_last/import_ignore_jpegs"));
-  gtk_box_pack_start(GTK_BOX(data->settings.page), data->settings.general.ignore_jpeg, FALSE, FALSE, 0);
-  g_signal_connect(G_OBJECT(data->settings.general.ignore_jpeg), "clicked",
-                   G_CALLBACK(_check_button_callback), data);
-
-  // metadata
-
-  dt_import_metadata_t *metadata = data->settings.general.metadata;
-  metadata->box = data->settings.page;
-  dt_import_metadata_dialog_new(metadata);
-
   // today's date
 
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -306,7 +275,7 @@ static void _camera_import_dialog_new(_camera_import_dialog_t *data)
   gtk_box_pack_start(GTK_BOX(hbox), data->settings.general.date_entry, TRUE, TRUE, 0);
 
   g_signal_connect(G_OBJECT(data->settings.general.date_override), "clicked",
-                   G_CALLBACK(_check_button_callback), data);
+                   G_CALLBACK(_date_override_callback), data);
 
   gtk_box_pack_start(GTK_BOX(data->settings.page), hbox, FALSE, FALSE, 0);
 
@@ -494,9 +463,6 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
     gint result = gtk_dialog_run(GTK_DIALOG(data->dialog));
     if(result == GTK_RESPONSE_ACCEPT)
     {
-      dt_import_metadata_t *metadata = data->settings.general.metadata;
-      dt_import_metadata_evaluate(metadata);
-
       GtkTreeIter iter;
       all_good = TRUE;
       GtkTreeSelection *selection
@@ -565,8 +531,6 @@ void dt_camera_import_dialog_new(dt_camera_import_dialog_param_t *params)
   _camera_import_dialog_t data;
   memset(&data, 0, sizeof(_camera_import_dialog_t)); // needed to initialize pointers to null
   data.params = params;
-  dt_import_metadata_t metadata;
-  data.settings.general.metadata = &metadata;
   _camera_import_dialog_new(&data);
   _camera_import_dialog_run(&data);
   _camera_import_dialog_free(&data);

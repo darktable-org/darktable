@@ -187,6 +187,7 @@ void gui_reset (dt_lib_module_t *self)
 
     d->current_mode = DT_IOP_ORDER_V30;
     gtk_label_set_text(GTK_LABEL(d->widget), _("v3.0"));
+    g_list_free_full(iop_order_list, free);
   }
 }
 

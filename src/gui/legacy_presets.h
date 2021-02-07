@@ -21,7 +21,7 @@
 #include "common/database.h"
 
 static const char *sql_lines[] = {
-  "PRAGMA foreign_keys=OFF;", "BEGIN TRANSACTION;",
+  "BEGIN TRANSACTION;",
   "DROP TABLE IF EXISTS main.legacy_presets" // fails first time, but doesn't hurt.
   ,
   "CREATE TABLE main.legacy_presets (name varchar, description varchar, operation varchar, op_version integer, "
@@ -1116,14 +1116,15 @@ static const char *sql_lines[] = {
   "00000000000000000000803F0000803F00000000000000000000803F0000803F00000000000000000000803F0000803F0000000000"
   "0000000000803F0000803F',4,0,' "
   "','%','%','%',0.0,51200.0,0.0,10000000.0,0.0,100000000.0,0.0,1000.0,1,1,0,0,2);",
-  "COMMIT;"
+  "COMMIT"
 };
-static const int num_sql_lines = 100;
+static const int num_sql_lines = 99;
 
 void dt_legacy_presets_create(const struct dt_database_t *db)
 {
   // a bit stupid, deletes and re-inserts every time :(
-  for(int i = 0; i < num_sql_lines; i++) sqlite3_exec(dt_database_get(db), sql_lines[i], NULL, NULL, NULL);
+  for(int i = 0; i < num_sql_lines; i++)
+    sqlite3_exec(dt_database_get(db), sql_lines[i], NULL, NULL, NULL);
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

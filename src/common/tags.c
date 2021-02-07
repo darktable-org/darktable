@@ -618,13 +618,10 @@ static void dt_set_darktable_tags()
   }
 }
 
-uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ignore_dt_tags)
+static char *_images_to_act_on_string(const gint imgid, uint32_t *nb)
 {
-  sqlite3_stmt *stmt;
-  dt_set_darktable_tags();
-  char *images = NULL;
   uint32_t nb_selected = 0;
-  uint32_t count = 0;
+  char *images = NULL;
   if(imgid > 0)
   {
     images = dt_util_dstrcat(images, "%d",imgid);
@@ -641,6 +638,18 @@ uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ig
     }
     if(images) images[strlen(images) - 1] = '\0';
   }
+  if(nb)
+    *nb = nb_selected;
+  return images;
+}
+
+uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ignore_dt_tags)
+{
+  sqlite3_stmt *stmt;
+  dt_set_darktable_tags();
+  uint32_t nb_selected = 0;
+  char *images = _images_to_act_on_string(imgid, &nb_selected);
+  uint32_t count = 0;
   if(images)
   {
     char *query = NULL;
@@ -843,7 +852,7 @@ GList *dt_tag_get_hierarchical(gint imgid)
 static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
 {
   GList *tags = NULL;
-  if(imgid < 0) return tags;
+  char *images = _images_to_act_on_string(imgid, NULL);
 
   sqlite3_stmt *stmt;
   dt_set_darktable_tags();
@@ -851,10 +860,10 @@ static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
   snprintf(query, sizeof(query), "SELECT DISTINCT T.id"
                                  "  FROM main.tagged_images AS I"
                                  "  JOIN data.tags T on T.id = I.tagid"
-                                 "  WHERE I.imgid = %d %s",
-           imgid, type == DT_TAG_TYPE_ALL ? "" :
-                  type == DT_TAG_TYPE_DT ? "AND T.id IN memory.darktable_tags" :
-                                           "AND NOT T.id IN memory.darktable_tags");
+                                 "  WHERE I.imgid IN (%s) %s",
+           images, type == DT_TAG_TYPE_ALL ? "" :
+                   type == DT_TAG_TYPE_DT ? "AND T.id IN memory.darktable_tags" :
+                                            "AND NOT T.id IN memory.darktable_tags");
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
@@ -863,7 +872,7 @@ static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
   }
 
   sqlite3_finalize(stmt);
-
+  g_free(images);
   return tags;
 }
 
@@ -1320,15 +1329,7 @@ static gchar *dt_cleanup_synonyms(gchar *synonyms_entry)
     gchar **entry = tokens;
     while (*entry)
     {
-      // remove leading and trailing spaces
-      char *e = *entry + strlen(*entry) - 1;
-      while(*e == ' ' && e > *entry)
-      {
-        *e = '\0';
-        e--;
-      }
-      e = *entry;
-      while(*e == ' ') e++;
+      char *e = g_strstrip(*entry);
       if(*e)
       {
         synonyms = dt_util_dstrcat(synonyms, "%s, ", e);
@@ -1689,8 +1690,8 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
       // check we have not yet this subtag in the list
       if(tags && strlen(tags) >= strlen(subtag) + 1)
       {
-        char *found = g_strstr_len(tags, strlen(tags), subtag);
-        if(found[strlen(subtag)] == ',')
+        gchar *found = g_strstr_len(tags, strlen(tags), subtag);
+        if(found && found[strlen(subtag)] == ',')
           valid = FALSE;
       }
       if(valid)
@@ -1703,7 +1704,7 @@ char *dt_tag_get_subtags(const gint imgid, const char *category, const int level
   return tags;
 }
 
-const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
+gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
                                           gboolean *descending)
 {
   gboolean res = FALSE;
@@ -1729,15 +1730,20 @@ const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
   return res;
 }
 
-const uint32_t dt_tag_get_tag_id_by_name(const char * const name)
+uint32_t dt_tag_get_tag_id_by_name(const char * const name)
 {
+  if(!name) return 0;
   uint32_t tagid = 0;
-  if(!name) return tagid;
+  char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
+  const char *query = strcmp(sensitive, _("insensitive")) == 0
+                      ? "SELECT T.id, T.flags FROM data.tags AS T "
+                        "WHERE T.name LIKE ?1"
+                      : "SELECT T.id, T.flags FROM data.tags AS T "
+                        "WHERE T.name = ?1";
+  g_free(sensitive);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-          "SELECT T.id, T.flags FROM data.tags AS T "
-          "WHERE T.name = ?1",
-          -1, &stmt, NULL);
+                              query, -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, name, -1, SQLITE_TRANSIENT);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {

@@ -49,10 +49,11 @@
 #include "win/dtwin.h"
 #endif
 
-typedef struct dt_control_time_offset_t
+typedef struct dt_control_datetime_t
 {
   long int offset;
-} dt_control_time_offset_t;
+  char datetime[DT_DATETIME_LENGTH];
+} dt_control_datetime_t;
 
 typedef struct dt_control_gpx_apply_t
 {
@@ -333,8 +334,8 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     roi.y = image.crop_y;
     for(int j=0;j<6;j++)
       for(int i = 0; i < 6; i++) d->first_xtrans[j][i] = FCxtrans(j, i, &roi, image.buf_dsc.xtrans);
-    d->pixels = calloc(datai->width * datai->height, sizeof(float));
-    d->weight = calloc(datai->width * datai->height, sizeof(float));
+    d->pixels = calloc((size_t)datai->width * datai->height, sizeof(float));
+    d->weight = calloc((size_t)datai->width * datai->height, sizeof(float));
     d->wd = datai->width;
     d->ht = datai->height;
     d->orientation = image.orientation;
@@ -1238,7 +1239,10 @@ static int32_t dt_control_refresh_exif_run(dt_job_t *job)
       dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
       if(img)
       {
+        const uint32_t flags = img->flags;
         dt_exif_read(img, sourcefile);
+        if(dt_conf_get_bool("ui_last/ignore_exif_rating"))
+          img->flags = flags;
         dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
       }
       else
@@ -1622,10 +1626,20 @@ void dt_control_move_images()
   dt_osx_disallow_fullscreen(filechooser);
 #endif
 
+  gchar *copymove_path = dt_conf_get_string("ui_last/copymove_path");
+  if(copymove_path != NULL)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), copymove_path);
+    g_free(copymove_path);
+  }
+
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/copymove_path", folder);
+    g_free(folder);
   }
   gtk_widget_destroy(filechooser);
 
@@ -1684,11 +1698,20 @@ void dt_control_copy_images()
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
+  gchar *copymove_path = dt_conf_get_string("ui_last/copymove_path");
+  if(copymove_path != NULL)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), copymove_path);
+    g_free(copymove_path);
+  }
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
     dir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/copymove_path", folder);
+    g_free(folder);
   }
   gtk_widget_destroy(filechooser);
 
@@ -1829,50 +1852,60 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   mstorage->export_dispatched(mstorage);
 }
 
-static int32_t dt_control_time_offset_job_run(dt_job_t *job)
+static int32_t dt_control_datetime_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   uint32_t cntr = 0;
   double fraction = 0.0;
   GList *t = params->index;
-  const long int offset = ((dt_control_time_offset_t *)params->data)->offset;
+  const long int offset = ((dt_control_datetime_t *)params->data)->offset;
+  const char *datetime = ((dt_control_datetime_t *)params->data)->datetime;
   char message[512] = { 0 };
 
   /* do we have any selected images and is offset != 0 */
-  if(!t || offset == 0)
+  if(!t || (offset == 0 && !datetime[0]))
   {
     return 1;
   }
 
   const guint total = g_list_length(t);
 
-  snprintf(message, sizeof(message),
-           ngettext("adding time offset to %d image", "adding time offset to %d images", total), total);
+  const char *mes11 = offset ? N_("adding time offset to %d image") : N_("setting date time to %d image");
+  const char *mes12 = offset ? N_("adding time offset to %d images") : N_("setting date time to %d images");
+  snprintf(message, sizeof(message), ngettext(mes11, mes12, total), total);
   dt_control_job_set_progress_message(job, message);
 
+  dt_undo_start_group(darktable.undo, DT_UNDO_DATETIME);
   /* go thru each selected image and update datetime_taken */
   do
   {
     int imgid = GPOINTER_TO_INT(t->data);
 
-    dt_image_add_time_offset(imgid, offset);
+    if(offset)
+      dt_image_add_time_offset(imgid, offset);
+    else
+      dt_image_set_datetime(imgid, datetime);
     cntr++;
 
     fraction = MAX(fraction, (1.0 * cntr) / total);
     dt_control_job_set_progress(job, fraction);
   } while((t = g_list_next(t)) != NULL);
+  dt_undo_end_group(darktable.undo);
 
-  dt_control_log(ngettext("added time offset to %d image", "added time offset to %d images", cntr), cntr);
-
+  const char *mes21 = offset ? N_("added time offset to %d image") : N_("set date time to %d image");
+  const char *mes22 = offset ? N_("added time offset to %d images") : N_("set date time to %d images");
+  dt_control_log(ngettext(mes21, mes22, cntr), cntr);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(params->index));
   return 0;
 }
 
-static void *dt_control_time_offset_alloc()
+static void *dt_control_datetime_alloc()
 {
   dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
   if(!params) return NULL;
 
-  params->data = calloc(1, sizeof(dt_control_time_offset_t));
+  params->data = calloc(1, sizeof(dt_control_datetime_t));
   if(!params->data)
   {
     dt_control_image_enumerator_cleanup(params);
@@ -1882,7 +1915,7 @@ static void *dt_control_time_offset_alloc()
   return params;
 }
 
-static void dt_control_time_offset_job_cleanup(void *p)
+static void dt_control_datetime_job_cleanup(void *p)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)p;
 
@@ -1891,34 +1924,38 @@ static void dt_control_time_offset_job_cleanup(void *p)
   dt_control_image_enumerator_cleanup(params);
 }
 
-static dt_job_t *dt_control_time_offset_job_create(const long int offset, int imgid)
+static dt_job_t *dt_control_datetime_job_create(const long int offset, const char *datetime, int imgid)
 {
-  dt_job_t *job = dt_control_job_create(&dt_control_time_offset_job_run, "time offset");
+  dt_job_t *job = dt_control_job_create(&dt_control_datetime_job_run, "time offset");
   if(!job) return NULL;
-  dt_control_image_enumerator_t *params = dt_control_time_offset_alloc();
+  dt_control_image_enumerator_t *params = dt_control_datetime_alloc();
   if(!params)
   {
     dt_control_job_dispose(job);
     return NULL;
   }
   dt_control_job_add_progress(job, _("time offset"), FALSE);
-  dt_control_job_set_params(job, params, dt_control_time_offset_job_cleanup);
+  dt_control_job_set_params(job, params, dt_control_datetime_job_cleanup);
 
   if(imgid != -1)
     params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
   else
     params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
 
-  dt_control_time_offset_t *data = params->data;
+  dt_control_datetime_t *data = params->data;
   data->offset = offset;
+  if(datetime)
+    memcpy(data->datetime, datetime, sizeof(data->datetime));
+  else
+    data->datetime[0] = '\0';
   params->data = data;
   return job;
 }
 
-void dt_control_time_offset(const long int offset, int imgid)
+void dt_control_datetime(const long int offset, const char *datetime, int imgid)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_time_offset_job_create(offset, imgid));
+                     dt_control_datetime_job_create(offset, datetime, imgid));
 }
 
 void dt_control_write_sidecar_files()

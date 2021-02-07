@@ -662,22 +662,22 @@ read_curveset(
   float* curve,
   uint32_t* hist)
 {
-  int r = fread(curve, 1, 3*CURVE_RESOLUTION*sizeof(float), f);
-  if (r != 3*CURVE_RESOLUTION*sizeof(float))
+  size_t r = fread(curve, 1, sizeof(float) * 3 * CURVE_RESOLUTION, f);
+  if (r != sizeof(float) * 3 * CURVE_RESOLUTION)
   {
     /* could not read save state, either missing stats in that save file or
      * corrupt data. both cases need to clean state */
-    memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
+    memset(curve, 0, sizeof(float) * 3 * CURVE_RESOLUTION);
   }
   else
   {
-    r = fread(hist, 1, 3*CURVE_RESOLUTION*sizeof(uint32_t), f);
-    if (r != 3*CURVE_RESOLUTION*sizeof(uint32_t))
+    r = fread(hist, 1, sizeof(uint32_t) * 3 * CURVE_RESOLUTION, f);
+    if (r != sizeof(uint32_t) * 3 * CURVE_RESOLUTION)
     {
       /* could not read save state, either missing stats in that save file or
        * corrupt data. both cases need to clean state */
-      memset(curve, 0, 3*CURVE_RESOLUTION*sizeof(float));
-      memset(hist, 0, 3*CURVE_RESOLUTION*sizeof(uint32_t));
+      memset(curve, 0, sizeof(float) * 3 * CURVE_RESOLUTION);
+      memset(hist, 0, sizeof(uint32_t) * 3 * CURVE_RESOLUTION);
     }
   }
 }
@@ -765,7 +765,7 @@ main(int argc, char** argv)
     opt.num_nodes = 20;
   }
 
-  curve = calloc(1, CURVE_RESOLUTION*sizeof(float)*6);
+  curve = calloc(1, sizeof(float) * 6 * CURVE_RESOLUTION);
   if (!curve) {
     fprintf(stderr, "error: failed allocating curve\n");
     ret = -1;
@@ -774,7 +774,7 @@ main(int argc, char** argv)
   curve_base = curve;
   curve_tone = curve + 3*CURVE_RESOLUTION;
 
-  hist = calloc(1, CURVE_RESOLUTION*sizeof(uint32_t)*6);
+  hist = calloc(1, sizeof(uint32_t) * 6 * CURVE_RESOLUTION);
   if (!hist) {
     fprintf(stderr, "error: failed allocating histogram\n");
     ret = -1;
@@ -832,7 +832,7 @@ main(int argc, char** argv)
     }
   }
 
-  raw_buff_f = calloc(1, 3*raw_width*raw_height*sizeof(float));
+  raw_buff_f = calloc(1, sizeof(float)*3*raw_width*raw_height);
   if (!raw_buff_f) {
     fprintf(stderr, "error: failed allocating raw file float buffer\n");
     goto exit;
@@ -845,7 +845,7 @@ main(int argc, char** argv)
   free(raw_buff);
   raw_buff = NULL;
 
-  jpeg_buff_f = calloc(1, 3*jpeg_width*jpeg_height*sizeof(float));
+  jpeg_buff_f = calloc(1, sizeof(float)*3*jpeg_width*jpeg_height);
   if (!jpeg_buff_f) {
     fprintf(stderr, "error: failed allocating JPEG file float buffer\n");
     goto exit;

@@ -243,6 +243,29 @@ static inline void dt_Lab_to_XYZ(const float Lab[3], float XYZ[3])
 
 
 #ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, XYZ:16)
+#endif
+static inline void dt_XYZ_to_xyY(const float XYZ[3], float xyY[3])
+{
+  const float sum = XYZ[0] + XYZ[1] + XYZ[2];
+  xyY[0] = XYZ[0] / sum;
+  xyY[1] = XYZ[1] / sum;
+  xyY[2] = XYZ[1];
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(xyY, XYZ:16)
+#endif
+static inline void dt_xyY_to_XYZ(const float xyY[3], float XYZ[3])
+{
+  XYZ[0] = xyY[2] * xyY[0] / xyY[1];
+  XYZ[1] = xyY[2];
+  XYZ[2] = xyY[2] * (1.f - xyY[0] - xyY[1]) / xyY[1];
+}
+
+
+#ifdef _OPENMP
 #pragma omp declare simd aligned(xyY, uvY:16)
 #endif
 static inline void dt_xyY_to_uvY(const float xyY[3], float uvY[3])
@@ -434,11 +457,7 @@ static inline void dt_XYZ_to_sRGB_clipped(const float *const XYZ, float *const s
 {
   dt_XYZ_to_sRGB(XYZ, sRGB);
 
-#define CLIP(a) ((a) < 0 ? 0 : (a) > 1 ? 1 : (a))
-
   for(int i = 0; i < 3; i++) sRGB[i] = CLIP(sRGB[i]);
-
-#undef CLIP
 }
 
 
@@ -894,6 +913,184 @@ static inline void dt_JzAzBz_2_XYZ(const float *const DT_RESTRICT JzAzBz, float 
   XYZ_D65[1] = (XYZ[1] + (g - 1.0f) * XYZ_D65[0]) / g;
   XYZ_D65[2] = XYZ[2];
 }
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(v_2) aligned(v_1, v_2:16)
+#endif
+static inline float scalar_product(const float v_1[4], const float v_2[4])
+{
+  // specialized 3×1 dot products 2 4×1 RGB-alpha pixels.
+  // v_2 needs to be uniform along loop increments, e.g. independent from current pixel values
+  // we force an order of computation similar to SSE4 _mm_dp_ps() hoping the compiler will get the clue
+  float acc = 0.f;
+
+#ifdef _OPENMP
+#pragma omp simd aligned(v_1, v_2:16) reduction(+:acc)
+#endif
+  for(size_t c = 0; c < 3; c++) acc += v_1[c] * v_2[c];
+
+  return acc;
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd uniform(M) aligned(M:64) aligned(v_in, v_out:16)
+#endif
+static inline void dot_product(const float v_in[4], const float M[3][4], float v_out[4])
+{
+  // specialized 3×4 dot products of 4×1 RGB-alpha pixels
+  for(size_t i = 0; i < 3; ++i) v_out[i] = scalar_product(v_in, M[i]);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LMS, XYZ: 16)
+#endif
+static inline void XYZ_to_LMS(const float XYZ[4], float LMS[4])
+{
+  // Convert CIE 1931 2° XYZ D50 to CIE 2006 LMS D65
+  /* XYZ is white-balanced from D50 to D65 using CAT16 which results in the following matrix :
+  * CAT_to_XYZ * WB * XYZ_to_CAT =
+  * [[  9.80760485e-01,  -4.25541784e-17,  -7.61959005e-19],
+  *  [  4.82934624e-17,   1.01555271e+00,  -7.63213113e-18],
+  *  [ -6.47162968e-19,  -5.69389701e-19,   1.30191586e+00]]
+  *
+  * See chromatic_adaptation.h for the details of the algo and D65/D50 values.
+  *
+  * The XYZ 2° D65 is then converted to CIE 2006 LMS using the approximation by
+  * Richard A. Kirk, Chromaticity coordinates for graphic arts based on CIE 2006 LMS
+  * with even spacing of Munsell colours
+  * https://doi.org/10.2352/issn.2169-2629.2019.27.38
+  * resulting in the following matrix :
+  * XYZ_to_LMS =
+  * [[0.257085, 0.859943, -0.031061],
+  *  [-0.394427, 1.175800, 0.196423],
+  *  [0.064856, -0.076250, 0.559067]]
+  */
+  const float mat[3][4] = { { 0.25213881,  0.87331744, -0.04043881, 0.  },
+                            {-0.38683842,  1.19408687,  0.25572622, 0.  },
+                            { 0.0636082 , -0.07743589,  0.72785819, 0.f } };
+  dot_product(XYZ, mat, LMS);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, LMS: 16)
+#endif
+static inline void LMS_to_XYZ(const float LMS[4], float XYZ[4])
+{
+  // Convert CIE 2006 LMS D65 to CIE 1931 2° XYZ D50 in one step
+  // going through CIE 2006 LMS -> CIE 2° XYZ D65 -> CIE 2° XYZ D50
+
+  /* The following matrix is the inverse of the above*/
+  const float mat[3][4] = { { 1.82871912, -1.30123107,  0.55877659, 0. },
+                            { 0.61270075,  0.38283494, -0.10046468, 0. },
+                            {-0.09462902,  0.1544451 ,  1.31437368, 0. } };
+  dot_product(LMS, mat, XYZ);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LMS, RGB: 16)
+#endif
+static inline void gradingRGB_to_LMS(const float RGB[4], float LMS[4])
+{
+  const float mat[3][4] = { { 0.95f, 0.38f, 0.00f, 0.f },
+                            { 0.05f, 0.62f, 0.03f, 0.f },
+                            { 0.00f, 0.00f, 0.97f, 0.f } };
+  dot_product(RGB, mat, LMS);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(LMS, RGB: 16)
+#endif
+static inline void LMS_to_gradingRGB(const float LMS[4], float RGB[4])
+{
+  const float mat[3][4] = { {  1.0877193f, -0.66666667f,  0.02061856f, 0.f },
+                            { -0.0877193f,  1.66666667f, -0.05154639f, 0.f },
+                            {         0.f,          0.f,  1.03092784f, 0.f } };
+  dot_product(LMS, mat, RGB);
+}
+
+
+/*
+* Richard A. Kirk, Chromaticity coordinates for graphic arts based on CIE 2006 LMS
+* with even spacing of Munsell colours
+* https://doi.org/10.2352/issn.2169-2629.2019.27.38
+* The following takes the paper's direct transform but fixes the reverse transform
+* which is wrong. D65 coordinates are taken from CIE 1931 XYZ 2° and converted to
+* RGB
+*/
+
+// coordinates of D65 white point in normalized grading RGB :
+// D65_gradingRGB = [ 0.18600766,  0.5908061,   0.22318624 ]
+// they don't need to be true to measured CIE 1931 2° observer D65
+// but need to be tweaked such that sRGB = [1, 1, 1] yields c = 0 in Ych
+// otherwise highlights get shifted to green or magenta
+// Accurate CIE 1931 2° observer D65 projected directly is [ 0.18662246,  0.5847461 ,  0.22863145]
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, RGB: 16)
+#endif
+static inline void XYZ_to_gradingRGB(const float XYZ[4], float RGB[3])
+{
+  // fast path with collapsed matrices to go directly from CIE 1931 2° XYZ D50 to Filmlight grading RGB D65
+  // this should be numerically equivalent to XYZ_to_LMS() followed by LMS_to_gradingRGB()
+  // but saves one matrix product by collapsing the 2 matrices from the above functions
+  const float mat[3][4] = { { 0.53346004f,  0.15226970f , -0.19946283f, 0.f },
+                            {-0.67012691f,  1.91752954f,   0.39223917f, 0.f },
+                            { 0.06557547f, -0.07983082f,   0.75036927f, 0.f } };
+  dot_product(XYZ, mat, RGB);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(XYZ, RGB: 16)
+#endif
+static inline void gradingRGB_to_XYZ(const float RGB[4], float XYZ[3])
+{
+  // inverse of the above
+  const float mat[3][4] = { { 1.67222161f, -0.11185000f,  0.50297636f, 0.f },
+                            { 0.60120746f,  0.47018395f, -0.08596569f, 0.f },
+                            {-0.08217531f,  0.05979694f,  1.27957582f, 0.f } };
+  dot_product(RGB, mat, XYZ);
+}
+
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych, RGB, D65_pipe: 16) uniform(D65_pipe)
+#endif
+static inline void gradingRGB_to_Ych(float RGB[4], float Ych[3], const float *const DT_RESTRICT D65_pipe)
+{
+  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
+  const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
+
+  Ych[0] = fmaxf(0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2], 0.f);
+  const float a = RGB[0] + RGB[1] + RGB[2];
+  for(size_t c = 0; c < 4; c++) RGB[c] = (a == 0.f) ? 0.f : RGB[c] / a;
+
+  RGB[0] -= D65[0];
+  RGB[1] -= D65[1];
+
+  Ych[1] = hypotf(RGB[1], RGB[0]);
+  Ych[2] = (Ych[1] == 0.f) ? 0.f : atan2f(RGB[1], RGB[0]);
+}
+
+#ifdef _OPENMP
+#pragma omp declare simd aligned(Ych, RGB, D65_pipe: 16) uniform(D65_pipe)
+#endif
+static inline void Ych_to_gradingRGB(const float Ych[4], float RGB[3], const float *const DT_RESTRICT D65_pipe)
+{
+  const float DT_ALIGNED_PIXEL D65_gradingRGB[4] = { 0.18600766,  0.5908061,   0.22318624, 0.f };
+  const float *const DT_RESTRICT D65 = (D65_pipe == NULL) ? D65_gradingRGB : D65_pipe;
+
+  RGB[0] = Ych[1] * cosf(Ych[2]) + D65[0];
+  RGB[1] = Ych[1] * sinf(Ych[2]) + D65[1];
+  RGB[2] = 1.f - RGB[0] - RGB[1];
+
+  const float a = (0.67282368f * RGB[0] + 0.47812261f * RGB[1] + 0.01044966f * RGB[2]);
+  for(size_t c = 0; c < 3; ++c) RGB[c] = (a == 0.f) ? 0.f : RGB[c] * Ych[0] / a;
+}
+
+
 
 #undef DT_RESTRICT
 

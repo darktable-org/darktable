@@ -27,6 +27,9 @@
 #include "common/iop_order.h"
 #include "common/styles.h"
 #include "common/history.h"
+#ifdef HAVE_ICU
+#include "common/sqliteicu.h"
+#endif
 #include "control/conf.h"
 #include "control/control.h"
 #include "gui/legacy_presets.h"
@@ -44,7 +47,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 30
+#define CURRENT_DATABASE_VERSION_LIBRARY 33
 #define CURRENT_DATABASE_VERSION_DATA     8
 
 typedef struct dt_database_t
@@ -1330,7 +1333,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           }
 
           g_list_free(item_list);
-          g_list_free(iop_order_list);
+          g_list_free_full(iop_order_list, free);
 
           item_list = NULL;
         }
@@ -1672,6 +1675,295 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 30;
   }
+  else if(version == 30)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // add second columns to speed up sorting
+    TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
+        "[init] can't drop history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `history_imgid_index` ON `history` ( `imgid`, `operation` )",
+        "[init] can't recreate history_imgid_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_filename_index`",
+        "[init] can't drop images_filename_index\n");
+    TRY_EXEC("CREATE INDEX `images_filename_index` ON `images` ( `filename`, `version` )",
+        "[init] can't recreate images_filename_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_film_id_index`",
+        "[init] can't drop images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_film_id_index` ON `images` ( `film_id`, `filename` )",
+        "[init] can't recreate images_film_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_group_id_index`",
+        "[init] can't drop images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_group_id_index` ON `images` ( `group_id`, `id` )",
+        "[init] can't recreate images_group_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `masks_history_imgid_index`",
+        "[init] can't drop masks_history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( `imgid`, `num` )",
+        "[init] can't recreate masks_history_imgid_index\n");
+
+    // map refinement: avoid full table scan
+    TRY_EXEC("CREATE INDEX `images_latlong_index` ON `images` ( `latitude` DESC, `longitude` DESC )",
+        "[init] can't create images_latlong_index\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 31;
+  }
+  else if(version == 31)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    // remove duplicates
+    TRY_EXEC("DELETE FROM main.meta_data WHERE rowid NOT IN (SELECT MIN(rowid) "
+             "FROM main.meta_data GROUP BY id, key)",
+             "[init] can't remove duplicates from meta_data\n");
+
+    // recreate the index with UNIQUE option
+    TRY_EXEC("DROP INDEX IF EXISTS metadata_index",
+             "[init] can't drop metadata_index\n");
+    TRY_EXEC("CREATE UNIQUE INDEX main.metadata_index ON meta_data (id, key)",
+             "[init] can't create metadata_index\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 32;
+  }
+  else if(version == 32)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+    // add foreign keys for database consistency. ON UPDATE CASCADE since you never know
+    // if a future version will change image_id
+    // Unfortunately sqlite does not support adding foreign keys to existing tables
+    // so we have to rename the existing tables, recreate them and copy back the old values
+    // images first
+    // needs to delete orphaned entries
+    TRY_EXEC("ALTER TABLE `images` RENAME TO `images_old`",
+        "[init] can't rename images\n");
+
+    TRY_EXEC("CREATE TABLE `images` (id INTEGER PRIMARY KEY AUTOINCREMENT, group_id INTEGER, film_id INTEGER, "
+      "width INTEGER, height INTEGER, filename VARCHAR, maker VARCHAR, model VARCHAR, lens VARCHAR, "
+      "exposure REAL, aperture REAL, iso REAL, focal_length REAL, focus_distance REAL, datetime_taken CHAR(20), "
+      "flags INTEGER, output_width INTEGER, output_height INTEGER, crop REAL, "
+      "raw_parameters INTEGER, raw_denoise_threshold REAL, raw_auto_bright_threshold REAL, "
+      "raw_black INTEGER, raw_maximum INTEGER, license VARCHAR, sha1sum CHAR(40), "
+      "orientation INTEGER, histogram BLOB, lightmap BLOB, longitude REAL, latitude REAL, altitude REAL, "
+      "color_matrix BLOB, colorspace INTEGER, version INTEGER, max_version INTEGER, write_timestamp INTEGER, "
+      "history_end INTEGER, position INTEGER, aspect_ratio REAL, exposure_bias REAL, "
+      "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
+        "[init] can't create new images table\n");
+
+    // corner case: database inconsistency with images having invalid film id
+    TRY_EXEC("DELETE FROM `images_old` WHERE film_id NOT IN (SELECT id FROM `film_rolls`)",
+        "[init] can't delete images with invalid film id\n");
+
+    TRY_EXEC("UPDATE `images_old` SET group_id=id WHERE group_id NOT IN (SELECT id from `images_old`)",
+        "[init] can't fix invalid group ids\n");
+
+    TRY_EXEC("INSERT INTO `images` SELECT * FROM `images_old`",
+        "[init] can't copy back from images_old\n");
+
+    // pita: need to recreate index
+    TRY_EXEC("DROP INDEX IF EXISTS `image_position_index`",
+        "[init] can't drop image_position_index\n");
+    TRY_EXEC("CREATE INDEX `image_position_index` ON `images` (position)",
+        "[init] can't add image_position_index\n");
+
+    // second columns
+    TRY_EXEC("DROP INDEX IF EXISTS `images_filename_index`",
+        "[init] can't drop images_filename_index\n");
+    TRY_EXEC("CREATE INDEX `images_filename_index` ON `images` ( `filename`, `version` )",
+        "[init] can't recreate images_filename_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_film_id_index`",
+        "[init] can't drop images_film_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_film_id_index` ON `images` ( `film_id`, `filename` )",
+        "[init] can't recreate images_film_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_group_id_index`",
+        "[init] can't drop images_group_id_index\n");
+    TRY_EXEC("CREATE INDEX `images_group_id_index` ON `images` ( `group_id`, `id` )",
+        "[init] can't recreate images_group_id_index\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `images_latlong_index`",
+        "[init] can't drop images_latlong_index\n");
+    TRY_EXEC("CREATE INDEX `images_latlong_index` ON `images` ( latitude DESC, longitude DESC )",
+        "[init] can't add images_latlong_index\n");
+
+    TRY_EXEC("DROP TABLE `images_old`",
+        "[init] can't drop table images_old\n");
+
+    // history
+    TRY_EXEC("ALTER TABLE `history` RENAME TO `history_old`",
+        "[init] can't rename history\n");
+
+    TRY_EXEC("CREATE TABLE `history` (imgid INTEGER, num INTEGER, module INTEGER, "
+      "operation VARCHAR(256), op_params BLOB, enabled INTEGER, blendop_params BLOB, blendop_version INTEGER, "
+      "multi_priority INTEGER, multi_name VARCHAR(256), "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new history table\n");
+
+    TRY_EXEC("DELETE FROM `history_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned history elements\n");
+
+    TRY_EXEC("INSERT INTO history SELECT * FROM history_old",
+         "[init] can't copy back from history_old\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `history_imgid_index`",
+        "[init] can't drop history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `history_imgid_op_index` ON `history` ( `imgid`, `operation` )",
+        "[init] can't recreate history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `history_imgid_num_index` ON `history` ( `imgid`, `num` DESC )",
+        "[init] can't recreate history_imgid_index\n");
+
+    TRY_EXEC("DROP TABLE `history_old`",
+        "[init] can't drop table history_old\n");
+
+    // history hash
+    TRY_EXEC("ALTER TABLE `history_hash` RENAME TO `history_hash_old`",
+         "[init] can't rename history_hash\n");
+
+    TRY_EXEC("CREATE TABLE `history_hash` (imgid INTEGER PRIMARY KEY, basic_hash BLOB, auto_hash BLOB, current_hash BLOB, "
+      "mipmap_hash BLOB, FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new history_hash table\n");
+
+    TRY_EXEC("DELETE FROM `history_hash_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned history_hash elements\n");
+
+    TRY_EXEC("INSERT INTO `history_hash` SELECT * FROM `history_hash_old`",
+         "[init] can't copy back from history_hash_old\n");
+
+    TRY_EXEC("DROP TABLE `history_hash_old`",
+        "[init] can't drop table history_hash_old\n");
+
+    // tagged images
+    TRY_EXEC("ALTER TABLE `tagged_images` RENAME TO `tagged_images_old`",
+         "[init] can't rename tagged_images\n");
+
+    TRY_EXEC("CREATE TABLE `tagged_images` (imgid integer, tagid integer, position INTEGER, "
+        "primary key(imgid, tagid), FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new tagged_images table\n");
+
+    TRY_EXEC("DELETE FROM `tagged_images_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned tagged_images elements\n");
+
+    TRY_EXEC("INSERT INTO `tagged_images` SELECT * FROM `tagged_images_old`",
+         "[init] can't copy back from tagged_images_old\n");
+
+    // old indices
+    TRY_EXEC("DROP INDEX IF EXISTS tagged_images_imgid_index",
+        "[init] can't drop tagged_images_imgid_index\n");
+    TRY_EXEC("DROP INDEX IF EXISTS tagged_images_position_index",
+        "[init] can't drop tagged_images_position_index\n");
+    TRY_EXEC("CREATE INDEX tagged_images_position_index ON tagged_images (position)",
+        "[init] can't add index tagged_images_position_index\n");
+    TRY_EXEC("DROP INDEX IF EXISTS tagged_images_tagid_index",
+        "[init] can't drop tagged_images_tagid_index\n");
+    TRY_EXEC("CREATE INDEX tagged_images_tagid_index ON tagged_images (tagid)",
+        "[init] can't add index tagged_images_tagid_index\n");
+
+    TRY_EXEC("DROP TABLE `tagged_images_old`",
+        "[init] can't drop table tagged_images_old\n");
+
+    // masks history
+    TRY_EXEC("ALTER TABLE `masks_history` RENAME TO `masks_history_old`",
+         "[init] can't rename masks_history\n");
+
+    TRY_EXEC("CREATE TABLE masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, "
+        "name VARCHAR(256), version INTEGER, points BLOB, points_count INTEGER, source BLOB, "
+        "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new masks_history table\n");
+
+    TRY_EXEC("DELETE FROM `masks_history_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned masks_history elements\n");
+
+    TRY_EXEC("INSERT INTO `masks_history` SELECT * FROM `masks_history_old`",
+         "[init] can't copy back from masks_history\n");
+
+    TRY_EXEC("DROP INDEX IF EXISTS `masks_history_imgid_index`",
+        "[init] can't drop masks_history_imgid_index\n");
+    TRY_EXEC("CREATE INDEX `masks_history_imgid_index` ON `masks_history` ( imgid, num )",
+        "[init] can't recreate masks_history_imgid_index\n");
+
+    TRY_EXEC("DROP TABLE masks_history_old",
+        "[init] can't drop table masks_history_old\n");
+
+    // color labels
+    TRY_EXEC("ALTER TABLE `color_labels` RENAME TO `color_labels_old`",
+         "[init] can't rename color_labels\n");
+    TRY_EXEC("CREATE TABLE `color_labels` (imgid INTEGER, color INTEGER, "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new color_labels table\n");
+
+    TRY_EXEC("DELETE FROM `color_labels_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned color_labels elements\n");
+
+    TRY_EXEC("INSERT INTO `color_labels` SELECT * FROM `color_labels_old`",
+         "[init] can't copy back from color_labels\n");
+
+    TRY_EXEC("DROP TABLE color_labels_old",
+        "[init] can't drop table color_labels_old\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX `color_labels_idx` ON `color_labels` (imgid, color)",
+        "[init] can't recreate color_labels_idx\n");
+
+    // meta data
+    TRY_EXEC("ALTER TABLE `meta_data` RENAME TO `meta_data_old`",
+         "[init] can't rename meta_data\n");
+    TRY_EXEC("CREATE TABLE `meta_data` (id integer, key integer, value varchar, "
+      "FOREIGN KEY(id) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new meta_data table\n");
+
+    TRY_EXEC("DELETE FROM `meta_data_old` WHERE id NOT IN (SELECT id FROM `images`)",
+      "[init] can't delete orphaned meta_data elements\n");
+
+    TRY_EXEC("INSERT INTO `meta_data` SELECT * FROM `meta_data_old`",
+         "[init] can't copy back from meta_data\n");
+
+    TRY_EXEC("DROP TABLE meta_data_old",
+        "[init] can't drop table meta_data_old\n");
+
+    TRY_EXEC("CREATE UNIQUE INDEX `metadata_index` ON `meta_data` (id, key, value)",
+         "[init] can't recreate metadata_index\n");
+
+    // selected images
+    TRY_EXEC("ALTER TABLE `selected_images` RENAME TO `selected_images_old`",
+         "[init] can't rename selected_images\n");
+    TRY_EXEC("CREATE TABLE `selected_images` (imgid INTEGER PRIMARY KEY, "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new selected_images table\n");
+
+    TRY_EXEC("DELETE FROM `selected_images_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+      "[init] can't delete orphaned selected_images elements\n");
+
+    TRY_EXEC("INSERT INTO `selected_images` SELECT * FROM `selected_images_old`",
+         "[init] can't copy back selected_images meta_data\n");
+
+    TRY_EXEC("DROP TABLE selected_images_old",
+        "[init] can't drop table selected_images_old\n");
+
+    // module order
+    TRY_EXEC("ALTER TABLE `module_order` RENAME TO `module_order_old`",
+         "[init] can't rename module_order\n");
+    TRY_EXEC("CREATE TABLE `module_order` (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR, "
+        "FOREIGN KEY(imgid) REFERENCES images(id) ON DELETE CASCADE ON UPDATE CASCADE)",
+        "[init] can't create new module_order table\n");
+
+    TRY_EXEC("DELETE FROM `module_order_old` WHERE imgid NOT IN (SELECT id FROM `images`)",
+        "[init] can't delete orphaned module_order elements\n");
+
+    TRY_EXEC("INSERT INTO `module_order` SELECT * FROM `module_order_old`",
+         "[init] can't copy back module_order meta_data\n");
+
+    TRY_EXEC("DROP TABLE module_order_old",
+        "[init] can't drop table module_order_old\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 33;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -1957,11 +2249,13 @@ static void _create_library_schema(dt_database_t *db)
       "max_version INTEGER, write_timestamp INTEGER, history_end INTEGER, position INTEGER, "
       "aspect_ratio REAL, exposure_bias REAL, "
       "import_timestamp INTEGER DEFAULT -1, change_timestamp INTEGER DEFAULT -1, "
-      "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1)",
+      "export_timestamp INTEGER DEFAULT -1, print_timestamp INTEGER DEFAULT -1, "
+      "FOREIGN KEY(film_id) REFERENCES film_rolls(id) ON DELETE CASCADE ON UPDATE CASCADE, "
+      "FOREIGN KEY(group_id) REFERENCES images(id) ON DELETE RESTRICT ON UPDATE CASCADE)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_group_id_index ON images (group_id, id)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_film_id_index ON images (film_id, filename)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_filename_index ON images (filename, version)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.image_position_index ON images (position)", NULL, NULL, NULL);
 
   ////////////////////////////// selected_images
@@ -1971,37 +2265,44 @@ static void _create_library_schema(dt_database_t *db)
       db->handle,
       "CREATE TABLE main.history (imgid INTEGER, num INTEGER, module INTEGER, "
       "operation VARCHAR(256), op_params BLOB, enabled INTEGER, "
-      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256))",
+      "blendop_params BLOB, blendop_version INTEGER, multi_priority INTEGER, multi_name VARCHAR(256), "
+      "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
       NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_index ON history (imgid)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_op_index ON history (imgid, operation)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.history_imgid_num_index ON history (imgid, num DESC)", NULL, NULL, NULL);
   ////////////////////////////// masks history
   sqlite3_exec(db->handle,
                "CREATE TABLE main.masks_history (imgid INTEGER, num INTEGER, formid INTEGER, form INTEGER, name VARCHAR(256), "
-               "version INTEGER, points BLOB, points_count INTEGER, source BLOB)",
-               NULL, NULL, NULL);
+               "version INTEGER, points BLOB, points_count INTEGER, source BLOB, "
+                "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
+                 NULL, NULL, NULL);
 
   sqlite3_exec(db->handle,
-      "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid)",
+      "CREATE INDEX main.masks_history_imgid_index ON masks_history (imgid, num)",
+      NULL, NULL, NULL);
+
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_latlong_index ON images (latitude DESC, longitude DESC)",
       NULL, NULL, NULL);
 
   ////////////////////////////// tagged_images
   sqlite3_exec(db->handle, "CREATE TABLE main.tagged_images (imgid INTEGER, tagid INTEGER, position INTEGER, "
-                           "PRIMARY KEY (imgid, tagid))", NULL, NULL, NULL);
+                           "PRIMARY KEY (imgid, tagid),"
+                           "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_tagid_index ON tagged_images (tagid)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_imgid_index ON selected_images (imgid)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON selected_images (position)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.tagged_images_position_index ON tagged_images (position)", NULL, NULL, NULL);
   ////////////////////////////// color_labels
   sqlite3_exec(db->handle, "CREATE TABLE main.color_labels (imgid INTEGER, color INTEGER)", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.color_labels_idx ON color_labels (imgid, color)", NULL, NULL,
                NULL);
   ////////////////////////////// meta_data
   sqlite3_exec(db->handle, "CREATE TABLE main.meta_data (id INTEGER, key INTEGER, value VARCHAR)", NULL, NULL, NULL);
-  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index ON meta_data (id, key)", NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE UNIQUE INDEX main.metadata_index ON meta_data (id, key, value)", NULL, NULL, NULL);
 
   sqlite3_exec(db->handle, "CREATE TABLE main.module_order (imgid INTEGER PRIMARY KEY, version INTEGER, iop_list VARCHAR)",
                NULL, NULL, NULL);
   sqlite3_exec(db->handle, "CREATE TABLE main.history_hash (imgid INTEGER PRIMARY KEY, "
-               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB)",
+               "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
+               "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
                NULL, NULL, NULL);
 }
 
@@ -2392,7 +2693,7 @@ void ask_for_upgrade(const gchar *dbname, const gboolean has_gui)
 
   char *label_text = g_markup_printf_escaped(_("the database schema has to be upgraded for\n"
                                                "\n"
-                                               "<span style=\"italic\">%s</span>\n"
+                                               "<span style='italic'>%s</span>\n"
                                                "\n"
                                                "do you want to proceed or quit now to do a backup\n"),
                                                dbname);
@@ -2629,6 +2930,10 @@ start:
   sqlite3_exec(db->handle, "PRAGMA journal_mode = MEMORY", NULL, NULL, NULL);
   sqlite3_exec(db->handle, "PRAGMA page_size = 32768", NULL, NULL, NULL);
 
+  // WARNING: the foreign_keys pragma must not be used, the integrity of the
+  // database rely on it.
+  sqlite3_exec(db->handle, "PRAGMA foreign_keys = ON", NULL, NULL, NULL);
+
   /* now that we got functional databases that are locked for us we can make sure that the schema is set up */
 
   // first we update the data database to the latest version so that we can potentially move data from the library
@@ -2739,7 +3044,7 @@ start:
 
       char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                    "\n"
-                                                   "<span style=\"italic\">%s</span>\n"
+                                                   "<span style='italic'>%s</span>\n"
                                                    "\n"
                                                    "it seems that the database is corrupted.\n"
                                                    "%s"
@@ -2917,7 +3222,7 @@ start:
 
     char *label_text = g_markup_printf_escaped(_("an error has occurred while trying to open the database from\n"
                                                  "\n"
-                                                 "<span style=\"italic\">%s</span>\n"
+                                                 "<span style='italic'>%s</span>\n"
                                                  "\n"
                                                  "it seems that the database is corrupted.\n"
                                                  "%s"
@@ -3040,6 +3345,22 @@ start:
 
   // take care of potential bad data in the db.
   _sanitize_db(db);
+
+#ifdef HAVE_ICU
+  // check if sqlite is already icu enabled
+  // if not enabled expected error: no such function:icu_load_collation
+  rc = sqlite3_prepare_v2(db->handle,
+                          "SELECT icu_load_collation('en_US', 'english')",
+                          -1, &stmt, NULL);
+  sqlite3_finalize(stmt);
+
+  if(rc != SQLITE_OK)
+  {
+    rc = sqlite3IcuInit(db->handle);
+    if(rc != SQLITE_OK)
+      fprintf(stderr, "[sqlite] init icu extension error %d\n", rc);
+  }
+#endif
 
 error:
   g_free(dbname);
@@ -3202,10 +3523,6 @@ void dt_database_perform_maintenance(const struct dt_database_t *db)
   {
     dt_print(DT_DEBUG_SQL, "[db maintenance] maintenance problem. if no errors logged, it should work fine next time.\n");
   }
-  else
-  {
-
-  }
 }
 #undef ERRCHECK
 
@@ -3235,7 +3552,7 @@ gboolean _ask_for_maintenance(const gboolean has_gui, const gboolean closing_tim
 
   char *label_text = g_markup_printf_escaped(_("the database could use some maintenance\n"
                                                  "\n"
-                                                 "there's <span style=\"italic\">%s</span> to be freed"
+                                                 "there's <span style='italic'>%s</span> to be freed"
                                                  "\n\n"
                                                  "do you want to proceed now?\n\n"
                                                  "%s\n"

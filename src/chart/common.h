@@ -46,8 +46,10 @@ typedef struct image_t
   gboolean draw_colored;
 } image_t;
 
-int get_homography(const point_t *source, const point_t *target, double *h);
-point_t apply_homography(point_t p, const double *h);
+int get_homography(const point_t *source, const point_t *target, float *h);
+point_t apply_homography(point_t p, const float *h);
+// Gives a factor of scaling areas at point p
+float apply_homography_scaling(point_t p, const float *h);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

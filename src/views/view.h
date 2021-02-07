@@ -70,7 +70,9 @@ typedef enum dt_lighttable_layout_t
   DT_LIGHTTABLE_LAYOUT_ZOOMABLE = 0,
   DT_LIGHTTABLE_LAYOUT_FILEMANAGER = 1,
   DT_LIGHTTABLE_LAYOUT_CULLING = 2,
-  DT_LIGHTTABLE_LAYOUT_LAST = 3
+  DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC = 3,
+  DT_LIGHTTABLE_LAYOUT_PREVIEW = 4,
+  DT_LIGHTTABLE_LAYOUT_LAST = 5
 } dt_lighttable_layout_t;
 
 typedef enum dt_darkroom_layout_t
@@ -80,13 +82,6 @@ typedef enum dt_darkroom_layout_t
   DT_DARKROOM_LAYOUT_COLOR_ASSESMENT = 1,
   DT_DARKROOM_LAYOUT_LAST = 3
 } dt_darkroom_layout_t;
-
-// flags for culling zoom mode
-typedef enum dt_lighttable_culling_zoom_mode_t
-{
-  DT_LIGHTTABLE_ZOOM_FIXED = 0,
-  DT_LIGHTTABLE_ZOOM_DYNAMIC = 1
-} dt_lighttable_culling_zoom_mode_t;
 
 // mouse actions struct
 typedef enum dt_mouse_action_type_t
@@ -101,6 +96,14 @@ typedef enum dt_mouse_action_type_t
   DT_MOUSE_ACTION_LEFT_DRAG,
   DT_MOUSE_ACTION_RIGHT_DRAG
 } dt_mouse_action_type_t;
+
+// flags that a view can set in flags()
+typedef enum dt_view_surface_value_t
+{
+  DT_VIEW_SURFACE_OK = 0,
+  DT_VIEW_SURFACE_KO,
+  DT_VIEW_SURFACE_SMALLER
+} dt_view_surface_value_t;
 
 typedef struct dt_mouse_action_t
 {
@@ -196,8 +199,9 @@ int dt_view_get_image_to_act_on();
 
 /** returns an uppercase string of file extension **plus** some flag information **/
 char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow);
-/** expose an image and return a cairi_surface. return != 0 if thumbnail wasn't loaded yet. */
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality);
+/** expose an image and return a cair0_surface. */
+dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+                                                  const gboolean quality);
 
 
 /** Set the selection bit to a given value for the specified image */
@@ -324,8 +328,8 @@ typedef struct dt_view_manager_t
       void (*culling_init_mode)(struct dt_view_t *view);
       void (*culling_preview_refresh)(struct dt_view_t *view);
       void (*culling_preview_reload_overlays)(struct dt_view_t *view);
-      dt_lighttable_culling_zoom_mode_t (*get_zoom_mode)(struct dt_lib_module_t *module);
       gboolean (*get_preview_state)(struct dt_view_t *view);
+      void (*set_preview_state)(struct dt_view_t *view, gboolean state, gboolean focus);
       void (*change_offset)(struct dt_view_t *view, gboolean reset, gint imgid);
     } lighttable;
 
@@ -445,12 +449,12 @@ dt_lighttable_layout_t dt_view_lighttable_get_layout(dt_view_manager_t *vm);
 dt_darkroom_layout_t dt_view_darkroom_get_layout(dt_view_manager_t *vm);
 /** get the lighttable full preview state */
 gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm);
+/** set the lighttable full preview state */
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean focus);
 /** sets the lighttable image in row zoom */
 void dt_view_lighttable_set_zoom(dt_view_manager_t *vm, gint zoom);
 /** gets the lighttable image in row zoom */
 gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm);
-/** gets the culling zoom mode */
-dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm);
 /** reinit culling for new mode */
 void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm);
 /** force refresh of culling and/or preview */

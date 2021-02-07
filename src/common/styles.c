@@ -602,21 +602,43 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
      do that only in the darkroom as there is nothing to be saved
      when in the lighttable (and it would write over current history stack) */
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
-  if(cv->view((dt_view_t *)cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
+  if(cv->view(cv) == DT_VIEW_DARKROOM) dt_dev_write_history(darktable.develop);
 
   const int mode = dt_conf_get_int("plugins/lighttable/style/applymode");
 
   /* for each selected image apply style */
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
+
+  const gboolean is_overwrite = mode == (DT_STYLE_HISTORY_OVERWRITE);
+  dt_undo_lt_history_t *hist = NULL;
+
   GList *l = g_list_first((GList *)list);
   while(l)
   {
     const int imgid = GPOINTER_TO_INT(l->data);
-    if(mode == DT_STYLE_HISTORY_OVERWRITE) dt_history_delete_on_image_ext(imgid, FALSE);
+    if(is_overwrite)
+    {
+      hist = dt_history_snapshot_item_init();
+      hist->imgid = imgid;
+      dt_history_snapshot_undo_create(hist->imgid, &hist->before, &hist->before_history_end);
+
+      dt_undo_disable_next(darktable.undo);
+      dt_history_delete_on_image_ext(imgid, FALSE);
+    }
+
     dt_styles_apply_to_image(name, duplicate, imgid);
+
+    if(is_overwrite)
+    {
+      dt_history_snapshot_undo_create(hist->imgid, &hist->after, &hist->after_history_end);
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_LT_HISTORY, (dt_undo_data_t)hist,
+                     dt_history_snapshot_undo_pop, dt_history_snapshot_undo_lt_history_data_free);
+    }
+
     selected = TRUE;
     l = g_list_next(l);
   }
+
   dt_undo_end_group(darktable.undo);
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
@@ -956,7 +978,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
   }
 }
 
-void dt_styles_delete_by_name(const char *name)
+void dt_styles_delete_by_name_adv(const char *name, const gboolean raise)
 {
   int id = 0;
   if((id = dt_styles_get_id_by_name(name)) != 0)
@@ -979,8 +1001,15 @@ void dt_styles_delete_by_name(const char *name)
     char tmp_accel[1024];
     snprintf(tmp_accel, sizeof(tmp_accel), C_("accel", "styles/apply %s"), name);
     dt_accel_deregister_global(tmp_accel);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+
+    if(raise)
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
   }
+}
+
+void dt_styles_delete_by_name(const char *name)
+{
+  dt_styles_delete_by_name_adv(name, TRUE);
 }
 
 GList *dt_styles_get_item_list(const char *name, gboolean params, int imgid)

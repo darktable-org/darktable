@@ -73,7 +73,7 @@ const char *dt_iop_order_string(const dt_iop_order_t order)
 //
 // in the new code only the iop-order as int is used to order the module on the GUI.
 
-// @@_NEW_MOUDLE: For new module it is required to insert the new module name in both lists below.
+// @@_NEW_MODULE: For new module it is required to insert the new module name in both lists below.
 
 const dt_iop_order_entry_t legacy_order[] = {
   { { 1.0f }, "rawprepare", 0},
@@ -105,6 +105,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {26.0f }, "hazeremoval", 0},
   { {27.0f }, "colorin", 0},
   { {27.5f }, "channelmixerrgb", 0},
+  { {27.5f }, "censorize", 0},
   { {27.5f }, "negadoctor", 0},
   { {27.5f }, "basicadj", 0},
   { {28.0f }, "colorreconstruct", 0},
@@ -113,6 +114,7 @@ const dt_iop_order_entry_t legacy_order[] = {
   { {31.0f }, "equalizer", 0},
   { {32.0f }, "vibrance", 0},
   { {33.0f }, "colorbalance", 0},
+  { {33.5f }, "colorbalancergb", 0},
   { {34.0f }, "colorize", 0},
   { {35.0f }, "colortransfer", 0},
   { {36.0f }, "colormapping", 0},
@@ -188,6 +190,7 @@ const dt_iop_order_entry_t v30_order[] = {
   { {27.0f }, "equalizer", 0},
   { {28.0f }, "colorin", 0},
   { {28.5f }, "channelmixerrgb", 0},
+  { {28.5f }, "censorize", 0},
   { {28.5f }, "negadoctor", 0},      // Cineon film encoding comes after scanner input color profile
   { {29.0f }, "nlmeans", 0},         // signal processing (denoising)
                                   //    -> needs a signal as scene-referred as possible (even if it works in Lab)
@@ -214,6 +217,7 @@ const dt_iop_order_entry_t v30_order[] = {
                                   //    very good in scene-referred workflow
   { {40.0f }, "basicadj", 0},        // module mixing view/model/control at once, usage should be discouraged
   { {41.0f }, "colorbalance", 0},    // scene-referred color manipulation
+  { {41.5f }, "colorbalancergb", 0},    // scene-referred color manipulation
   { {42.0f }, "rgbcurve", 0},        // really versatile way to edit colour in scene-referred and display-referred workflow
   { {43.0f }, "rgblevels", 0},       // same
   { {44.0f }, "basecurve", 0},       // conversion from scene-referred to display referred, reverse-engineered
@@ -596,6 +600,27 @@ GList *dt_ioppr_get_iop_order_list_version(dt_iop_order_t version)
   return iop_order_list;
 }
 
+gboolean dt_ioppr_has_iop_order_list(int32_t imgid)
+{
+  gboolean result = FALSE;
+  sqlite3_stmt *stmt;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                              "SELECT version, iop_list"
+                              " FROM main.module_order"
+                              " WHERE imgid=?1", -1, &stmt, NULL);
+  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
+
+  if(sqlite3_step(stmt) == SQLITE_ROW)
+  {
+    result = (sqlite3_column_type(stmt, 1) != SQLITE_NULL);
+  }
+
+  sqlite3_finalize(stmt);
+
+  return result;
+}
+
 GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
 {
   GList *iop_order_list = NULL;
@@ -632,10 +657,12 @@ GList *dt_ioppr_get_iop_order_list(int32_t imgid, gboolean sorted)
         }
         else
         {
-          // @@_NEW_MOUDLE: For new module it is required to insert the new module name in the iop-order list here.
+          // @@_NEW_MODULE: For new module it is required to insert the new module name in the iop-order list here.
           //                The insertion can be done depending on the current iop-order list kind.
           _insert_before(iop_order_list, "nlmeans", "negadoctor");
           _insert_before(iop_order_list, "negadoctor", "channelmixerrgb");
+          _insert_before(iop_order_list, "negadoctor", "censorize");
+          _insert_before(iop_order_list, "rgbcurve", "colorbalancergb");
         }
       }
       else if(version == DT_IOP_ORDER_LEGACY)
@@ -1946,6 +1973,8 @@ int dt_ioppr_check_iop_order(dt_develop_t *dev, const int imgid, const char *msg
 
 void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size)
 {
+  g_return_val_if_fail(iop_order_list != NULL, NULL);
+  g_return_val_if_fail(size != NULL, NULL);
   // compute size of all modules
   *size = 0;
 
@@ -1956,6 +1985,9 @@ void *dt_ioppr_serialize_iop_order_list(GList *iop_order_list, size_t *size)
     *size += strlen(entry->operation) + sizeof(int32_t) * 2;
     l = g_list_next(l);
   }
+
+  if(*size == 0)
+    return NULL;
 
   // allocate the parameter buffer
   char *params = (char *)malloc(*size);

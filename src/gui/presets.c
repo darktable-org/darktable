@@ -1241,6 +1241,14 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
                   MIN(bl_params_size, sizeof(dt_develop_blend_params_t))))
       isdefault = TRUE;
 
+    gchar *label;
+    if(isdefault)
+      label = g_strdup_printf("%s %s", name, _("(default)"));
+    else
+      label = g_strdup_printf("%s", name);
+    mi = gtk_menu_item_new_with_label(label);
+    g_free(label);
+
     if(module
        && !memcmp(params, op_params, MIN(op_params_size, params_size))
        && !memcmp(bl_params, blendop_params, MIN(bl_params_size, sizeof(dt_develop_blend_params_t)))
@@ -1248,29 +1256,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
     {
       active_preset = cnt;
       writeprotect = sqlite3_column_int(stmt, 2);
-      char *markup;
-      mi = gtk_menu_item_new_with_label("");
-      if(isdefault)
-      {
-        markup = g_markup_printf_escaped("<span weight=\"bold\">%s %s</span>", name, _("(default)"));
-      }
-      else
-        markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", name);
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_free(markup);
-    }
-    else
-    {
-      if(isdefault)
-      {
-        char *markup;
-        mi = gtk_menu_item_new_with_label("");
-        markup = g_markup_printf_escaped("%s %s", name, _("(default)"));
-        gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-        g_free(markup);
-      }
-      else
-        mi = gtk_menu_item_new_with_label((const char *)name);
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     }
 
     if(isdisabled)
@@ -1316,7 +1302,7 @@ static void dt_gui_presets_popup_menu_show_internal(dt_dev_operation_t op, int32
 
       if(darktable.gui->last_preset && found)
       {
-        char *markup = g_markup_printf_escaped("%s <span weight=\"bold\">%s</span>", _("update preset"),
+        char *markup = g_markup_printf_escaped("%s <span weight='bold'>%s</span>", _("update preset"),
                                                darktable.gui->last_preset);
         mi = gtk_menu_item_new_with_label("");
         gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
@@ -1349,20 +1335,30 @@ void dt_gui_presets_popup_menu_show_for_module(dt_iop_module_t *module)
 void dt_gui_presets_update_mml(const char *name, dt_dev_operation_t op, const int32_t version,
                                const char *maker, const char *model, const char *lens)
 {
-  char tmp[1024];
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
       dt_database_get(darktable.db),
       "UPDATE data.presets"
-      " SET maker=?1, model=?2, lens=?3"
+      " SET maker='%' || ?1 || '%', model=?2, lens=?3"
       " WHERE operation=?4 AND op_version=?5 AND name=?6", -1,
       &stmt, NULL);
-  snprintf(tmp, sizeof(tmp), "%%%s%%", maker);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, tmp, -1, SQLITE_TRANSIENT);
-  snprintf(tmp, sizeof(tmp), "%%%s%%", model);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, tmp, -1, SQLITE_TRANSIENT);
-  snprintf(tmp, sizeof(tmp), "%%%s%%", lens);
-  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, tmp, -1, SQLITE_TRANSIENT);
+  DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, maker, -1, SQLITE_TRANSIENT);
+  if (*model)
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, model, -1, SQLITE_TRANSIENT);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 2, "%", -1, SQLITE_TRANSIENT);
+  }
+  if (*lens)
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, lens, -1, SQLITE_TRANSIENT);
+  }
+  else
+  {
+    DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 3, "%", -1, SQLITE_TRANSIENT);
+  }
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, op, -1, SQLITE_TRANSIENT);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 5, version);
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 6, name, -1, SQLITE_TRANSIENT);

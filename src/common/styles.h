@@ -89,6 +89,9 @@ void dt_styles_apply_style_item(dt_develop_t *dev, dt_style_item_t *style_item, 
 void dt_styles_apply_to_image(const char *name, const gboolean dulpicate, const int32_t imgid);
 
 /** delete a style by name */
+void dt_styles_delete_by_name_adv(const char *name, const gboolean raise);
+
+/** delete a style by name, raise signal */
 void dt_styles_delete_by_name(const char *name);
 
 /** get a style object by name, the object needs to be freed by the caller */

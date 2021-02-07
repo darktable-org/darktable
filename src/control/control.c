@@ -189,7 +189,7 @@ void dt_control_cleanup(dt_control_t *s)
   dt_pthread_mutex_destroy(&s->progress_system.mutex);
   if(s->accelerator_list)
   {
-    g_slist_free_full(s->accelerator_list, g_free);
+    g_list_free_full(s->accelerator_list, g_free);
   }
 }
 
@@ -225,6 +225,11 @@ void dt_control_draw_busy_msg(cairo_t *cr, int width, int height)
   pango_layout_set_font_description(layout, desc);
   pango_layout_set_text(layout, _("working..."), -1);
   pango_layout_get_pixel_extents(layout, &ink, NULL);
+  if(ink.width > width * 0.98)
+  {
+    pango_layout_set_text(layout, "...", -1);
+    pango_layout_get_pixel_extents(layout, &ink, NULL);
+  }
   const float xc = width / 2.0, yc = height * 0.85 - DT_PIXEL_APPLY_DPI(30), wd = ink.width * .5f;
   cairo_move_to(cr, xc - wd, yc + 1. / 3. * fontsize - fontsize);
   pango_cairo_layout_path(cr, layout);
@@ -469,7 +474,9 @@ void dt_control_log(const char *msg, ...)
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   va_list ap;
   va_start(ap, msg);
-  vsnprintf(darktable.control->log_message[darktable.control->log_pos], DT_CTL_LOG_MSG_SIZE, msg, ap);
+  char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
+  g_strlcpy(darktable.control->log_message[darktable.control->log_pos], escaped_msg, DT_CTL_LOG_MSG_SIZE);
+  g_free(escaped_msg);
   va_end(ap);
   if(darktable.control->log_message_timeout_id) g_source_remove(darktable.control->log_message_timeout_id);
   darktable.control->log_ack = darktable.control->log_pos;
@@ -481,13 +488,20 @@ void dt_control_log(const char *msg, ...)
   g_idle_add(_redraw_center, 0);
 }
 
-void dt_toast_log(const char *msg, ...)
+static void _toast_log(const gboolean markup, const char *msg, va_list ap)
 {
   dt_pthread_mutex_lock(&darktable.control->toast_mutex);
-  va_list ap;
-  va_start(ap, msg);
-  vsnprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, msg, ap);
-  va_end(ap);
+
+  // if we don't want markup, we escape <>&... so they are not interpreted later
+  if(markup)
+    vsnprintf(darktable.control->toast_message[darktable.control->toast_pos], DT_CTL_TOAST_MSG_SIZE, msg, ap);
+  else
+  {
+    char *escaped_msg = g_markup_vprintf_escaped(msg, ap);
+    g_strlcpy(darktable.control->toast_message[darktable.control->toast_pos], escaped_msg, DT_CTL_TOAST_MSG_SIZE);
+    g_free(escaped_msg);
+  }
+
   if(darktable.control->toast_message_timeout_id) g_source_remove(darktable.control->toast_message_timeout_id);
   darktable.control->toast_ack = darktable.control->toast_pos;
   darktable.control->toast_pos = (darktable.control->toast_pos + 1) % DT_CTL_TOAST_SIZE;
@@ -498,7 +512,23 @@ void dt_toast_log(const char *msg, ...)
   g_idle_add(_redraw_center, 0);
 }
 
-static void dt_control_log_ack_all()
+void dt_toast_log(const char *msg, ...)
+{
+  va_list ap;
+  va_start(ap, msg);
+  _toast_log(FALSE, msg, ap);
+  va_end(ap);
+}
+
+void dt_toast_markup_log(const char *msg, ...)
+{
+  va_list ap;
+  va_start(ap, msg);
+  _toast_log(TRUE, msg, ap);
+  va_end(ap);
+}
+
+static void _control_log_ack_all()
 {
   dt_pthread_mutex_lock(&darktable.control->log_mutex);
   darktable.control->log_pos = darktable.control->log_ack;
@@ -563,14 +593,19 @@ void dt_control_toast_redraw()
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_TOAST_REDRAW);
 }
 
+static int _widget_queue_draw(void *widget)
+{
+  gtk_widget_queue_draw((GtkWidget*)widget);
+  return FALSE;
+}
+
 void dt_control_queue_redraw_widget(GtkWidget *widget)
 {
   if(dt_control_running())
   {
-    g_idle_add((GSourceFunc)gtk_widget_queue_draw, (void*)widget);
+    g_idle_add(_widget_queue_draw, (void*)widget);
   }
 }
-
 
 int dt_control_key_pressed_override(guint key, guint state)
 {
@@ -623,7 +658,7 @@ int dt_control_key_pressed_override(guint key, guint state)
       }
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
-      dt_control_log_ack_all();
+      _control_log_ack_all();
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
@@ -631,7 +666,7 @@ int dt_control_key_pressed_override(guint key, guint state)
     {
       darktable.control->vimkey[0] = 0;
       darktable.control->vimkey_cnt = 0;
-      dt_control_log_ack_all();
+      _control_log_ack_all();
       g_list_free(autocomplete);
       autocomplete = NULL;
     }
@@ -642,7 +677,7 @@ int dt_control_key_pressed_override(guint key, guint state)
              - g_utf8_prev_char(darktable.control->vimkey + darktable.control->vimkey_cnt);
       darktable.control->vimkey[darktable.control->vimkey_cnt] = 0;
       if(darktable.control->vimkey_cnt == 0)
-        dt_control_log_ack_all();
+        _control_log_ack_all();
       else
         dt_control_log("%s", darktable.control->vimkey);
       g_list_free(autocomplete);

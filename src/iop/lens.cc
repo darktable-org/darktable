@@ -1,4 +1,4 @@
-/*
+﻿/*
     This file is part of darktable,
     Copyright (C) 2019-2020 darktable developers.
 
@@ -24,6 +24,7 @@ extern "C" {
 #include "bauhaus/bauhaus.h"
 #include "common/interpolation.h"
 #include "common/file_location.h"
+#include "common/imagebuf.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -91,7 +92,7 @@ typedef struct dt_iop_lensfun_params_t
   lfLensType target_geom; // $DEFAULT: LF_RECTILINEAR $DESCRIPTION: "geometry"
   char camera[128];
   char lens[128];
-  int tca_override; // $DEFAULT: 0
+  gboolean tca_override; // $DEFAULT: FALSE $DESCRIPTION: "TCA overwrite"
   float tca_r; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA red"
   float tca_b; // $MIN: 0.99 $MAX: 1.01 $DEFAULT: 1.0 $DESCRIPTION: "TCA blue"
   int modified; // $DEFAULT: 0 did user changed anything from automatically detected?
@@ -107,13 +108,12 @@ typedef struct dt_iop_lensfun_gui_data_t
   GtkMenu *camera_menu;
   GtkWidget *lens_model;
   GtkMenu *lens_menu;
-  GtkWidget *modflags, *target_geom, *reverse, *tca_r, *tca_b, *scale;
+  GtkWidget *modflags, *target_geom, *reverse, *tca_override, *tca_r, *tca_b, *scale;
   GtkWidget *find_lens_button;
   GtkWidget *find_camera_button;
   GList *modifiers;
   GtkLabel *message;
   int corrections_done;
-  dt_pthread_mutex_t lock;
 } dt_iop_lensfun_gui_data_t;
 
 typedef struct dt_iop_lensfun_global_data_t
@@ -381,7 +381,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
-    memcpy(ovoid, ivoid, (size_t)ch * sizeof(float) * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -403,18 +403,20 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-      void *buf = dt_alloc_align(64, bufsize * dt_get_num_threads() * sizeof(float));
+
+      size_t padded_bufsize;
+      float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(bufsize, ch, ch_width, d, interpolation, ivoid, \
-                          mask_display, ovoid, roi_in, roi_out) \
-      shared(buf, modifier) \
+      dt_omp_firstprivate(padded_bufsize, ch, ch_width, d, interpolation, ivoid, mask_display, ovoid, roi_in, roi_out)	\
+      dt_omp_sharedconst(buf)						\
+      shared(modifier)							\
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
-        float *bufptr = ((float *)buf) + (size_t)bufsize * dt_get_thread_num();
+        float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
         modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, bufptr);
 
         // reverse transform the global coords from lf to our buffer
@@ -457,7 +459,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     }
     else
     {
-      memcpy(ovoid, ivoid, (size_t)ch * sizeof(float) * roi_out->width * roi_out->height);
+      dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     }
 
     if(modflags & LF_MODIFY_VIGNETTING)
@@ -507,17 +509,19 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       // acquire temp memory for distorted pixel coords
       const size_t buf2size = (size_t)roi_out->width * 2 * 3;
-      void *buf2 = dt_alloc_align(64, buf2size * sizeof(float) * dt_get_num_threads());
+      size_t padded_buf2size;
+      float *const buf2 = dt_alloc_perthread_float(buf2size, &padded_buf2size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-      dt_omp_firstprivate(buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out) \
-      shared(buf2, buf, modifier) \
+      dt_omp_firstprivate(padded_buf2size, ch, ch_width, d, interpolation, mask_display, ovoid, roi_in, roi_out) \
+      dt_omp_sharedconst(buf2)						\
+      shared(buf, modifier)						\
       schedule(static)
 #endif
       for(int y = 0; y < roi_out->height; y++)
       {
-        float *buf2ptr = ((float *)buf2) + (size_t)buf2size * dt_get_thread_num();
+        float *buf2ptr = (float*)dt_get_perthread(buf2, padded_buf2size);
         modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width,
                                                   1, buf2ptr);
         // reverse transform the global coords from lf to our buffer
@@ -568,9 +572,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -645,7 +649,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   tmpbuf = (float *)dt_alloc_align(64, tmpbuflen);
   if(tmpbuf == NULL) goto error;
 
-  dev_tmp = (cl_mem)dt_opencl_alloc_device(devid, width, height, 4 * sizeof(float));
+  dev_tmp = (cl_mem)dt_opencl_alloc_device(devid, width, height, sizeof(float) * 4);
   if(dev_tmp == NULL) goto error;
 
   dev_tmpbuf = (cl_mem)dt_opencl_alloc_device_buffer(devid, tmpbuflen);
@@ -816,9 +820,9 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if(self->dev->gui_attached && g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     g->corrections_done = (modflags & LENSFUN_MODFLAG_MASK);
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 
   dt_opencl_release_mem_object(dev_tmpbuf);
@@ -867,7 +871,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    float *buf = (float *)malloc(2 * 3 * sizeof(float));
+    float *buf = (float *)malloc(sizeof(float) * 2 * 3);
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
       float p1 = points[i];
@@ -879,7 +883,7 @@ int distort_transform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, floa
         modifier->ApplySubpixelGeometryDistortion(p1, p2, 1, 1, buf);
         const float dist1 = points[i]     - buf[0];
         const float dist2 = points[i + 1] - buf[3];
-        if(fabs(dist1) < .5f && fabs(dist2) < .5f) break; // we have converged
+        if(fabsf(dist1) < .5f && fabsf(dist2) < .5f) break; // we have converged
         p1 += dist1;
         p2 += dist2;
       }
@@ -907,7 +911,7 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 
   if(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE))
   {
-    float *buf = (float *)malloc(2 * 3 * sizeof(float));
+    float *buf = (float *)malloc(sizeof(float) * 2 * 3);
     for(size_t i = 0; i < points_count * 2; i += 2)
     {
       modifier->ApplySubpixelGeometryDistortion(points[i], points[i + 1], 1, 1, buf);
@@ -929,7 +933,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
-    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
     return;
   }
 
@@ -942,7 +946,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   if(!(modflags & (LF_MODIFY_TCA | LF_MODIFY_DISTORTION | LF_MODIFY_GEOMETRY | LF_MODIFY_SCALE)))
   {
-    memcpy(out, in, sizeof(float) * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
     delete modifier;
     return;
   }
@@ -951,17 +955,19 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
 
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
-  float *buf = (float *)dt_alloc_align(64, bufsize * sizeof(float) * dt_get_num_threads());
+  size_t padded_bufsize;
+  float *const buf = dt_alloc_perthread_float(bufsize, &padded_bufsize);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(bufsize, d, in, interpolation, out, roi_in, roi_out) \
-  shared(buf, modifier) \
+  dt_omp_firstprivate(padded_bufsize, d, in, interpolation, out, roi_in, roi_out) \
+  dt_omp_sharedconst(buf) \
+  shared(modifier) \
   schedule(static)
 #endif
   for(int y = 0; y < roi_out->height; y++)
   {
-    float *bufptr = buf + bufsize * dt_get_thread_num();
+    float *bufptr = (float*)dt_get_perthread(buf, padded_bufsize);
     modifier->ApplySubpixelGeometryDistortion(roi_out->x, roi_out->y + y, roi_out->width, 1, bufptr);
 
     // reverse transform the global coords from lf to our buffer
@@ -1018,7 +1024,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     float xm = FLT_MAX, xM = -FLT_MAX, ym = FLT_MAX, yM = -FLT_MAX;
     const size_t nbpoints = 2 * awidth + 2 * aheight;
 
-    float *const buf = (float *)dt_alloc_align(64, nbpoints * 2 * 3 * sizeof(float));
+    float *const buf = (float *)dt_alloc_align(64, sizeof(float) * nbpoints * 2 * 3);
 
 #ifdef _OPENMP
 #pragma omp parallel default(none) \
@@ -1388,9 +1394,9 @@ void reload_defaults(dt_iop_module_t *module)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)module->gui_data;
   if(g)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(module);
     g->corrections_done = -1;
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(module);
     gtk_label_set_text(g->message, "");
   }
 }
@@ -1469,7 +1475,7 @@ static int ptr_array_insert_sorted(GPtrArray *array, const void *item, GCompareF
   if(r == m) m++;
 
 done:
-  memmove(root + m + 1, root + m, (length - m) * sizeof(void *));
+  memmove(root + m + 1, root + m, sizeof(void *) * (length - m));
   root[m] = item;
   return m;
 }
@@ -1509,7 +1515,7 @@ static void ptr_array_insert_index(GPtrArray *array, const void *item, int index
   int length = array->len;
   g_ptr_array_set_size(array, length + 1);
   root = (const void **)array->pdata;
-  memmove(root + index + 1, root + index, (length - index) * sizeof(void *));
+  memmove(root + index + 1, root + index, sizeof(void *) * (length - index));
   root[index] = item;
 }
 
@@ -2096,10 +2102,21 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
 void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
 {
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
+  dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
 
-  if(p->tca_r != 1.0 || p->tca_b != 1.0) p->tca_override = 1;
+  // update gui to show/hide tca sliders if tca_override was changed
+  if(!w || w == g->tca_override)
+  {
+    // show tca sliders only iff tca_overwrite is set
+    gtk_widget_set_visible(g->tca_r, p->tca_override);
+    gtk_widget_set_visible(g->tca_b, p->tca_override);
+  }
 
-  p->modified = 1;
+  if(w)
+  {
+    // user did modify something with some widget
+    p->modified = 1;
+  }
 }
 
 
@@ -2181,9 +2198,9 @@ static void corrections_done(gpointer instance, gpointer user_data)
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   if(darktable.gui->reset) return;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   const int corrections_done = g->corrections_done;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   const char empty_message[] = "";
   char *message = (char *)empty_message;
@@ -2210,16 +2227,14 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_lensfun_gui_data_t *g = IOP_GUI_ALLOC(lensfun);
 
-  dt_pthread_mutex_init(&g->lock, NULL);
-
   g->camera = NULL;
   g->camera_menu = NULL;
   g->lens_menu = NULL;
   g->modifiers = NULL;
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self); // not actually needed, we're the only one with a ref to this instance
   g->corrections_done = -1;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   // initialize modflags options
   int pos = -1;
@@ -2370,6 +2385,8 @@ void gui_init(struct dt_iop_module_t *self)
   dt_bauhaus_combobox_add(g->reverse, _("distort"));
   gtk_widget_set_tooltip_text(g->reverse, _("correct distortions or apply them"));
 
+  g->tca_override = dt_bauhaus_toggle_from_params(self, "tca_override");
+
   // override linear tca (if not 1.0):
   g->tca_r = dt_bauhaus_slider_from_params(self, "tca_r");
   dt_bauhaus_slider_set_digits(g->tca_r, 5);
@@ -2436,6 +2453,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);
   dt_bauhaus_combobox_set(g->reverse, p->inverse);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->tca_override), p->tca_override);
   dt_bauhaus_slider_set(g->tca_r, p->tca_r);
   dt_bauhaus_slider_set(g->tca_b, p->tca_b);
   dt_bauhaus_slider_set(g->scale, p->scale);
@@ -2471,6 +2489,8 @@ void gui_update(struct dt_iop_module_t *self)
     lens_set(self, NULL);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
   }
+
+  gui_changed(self, NULL, NULL);
 }
 
 void gui_cleanup(struct dt_iop_module_t *self)
@@ -2486,8 +2506,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
     g_free(g->modifiers->data);
     g->modifiers = g_list_delete_link(g->modifiers, g->modifiers);
   }
-
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }

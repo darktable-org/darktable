@@ -207,31 +207,33 @@ void dt_loc_init_plugindir(const char* application_directory, const char *plugin
   dt_check_opendir("darktable.plugindir", darktable.plugindir);
 }
 
-void dt_check_opendir(const char* text, const char* directory)
+void dt_check_opendir(const char* context, const char* directory)
 {
   if (!directory)
   {
-    fprintf(stderr, "directory for %s has not been set.\n", text);
+    fprintf(stderr, "directory for %s has not been set.\n", context);
     exit(EXIT_FAILURE);
   } 
 
 #if _WIN32
-  DWORD attribs = GetFileAttributesA(directory);
+  wchar_t *wdirectory = g_utf8_to_utf16 (directory, -1, NULL, NULL, NULL);
+  DWORD attribs = GetFileAttributesW(wdirectory);
+  g_free(wdirectory);
   if (attribs != INVALID_FILE_ATTRIBUTES &&
       (attribs & FILE_ATTRIBUTE_DIRECTORY))
   {
-    dt_print(DT_DEBUG_DEV, "%s: %s\n", text, directory);
+    dt_print(DT_DEBUG_DEV, "%s: %s\n", context, directory);
   }
   else
   {
-    fprintf(stderr, "%s: directory '%s' fails to open.'\n", text, directory);
+    fprintf(stderr, "%s: directory '%s' fails to open.'\n", context, directory);
     exit(EXIT_FAILURE);
   }
 #else
   DIR* dir = opendir(directory);
   if (dir)
   {
-    dt_print(DT_DEBUG_DEV, "%s: %s\n", text, directory);
+    dt_print(DT_DEBUG_DEV, "%s: %s\n", context, directory);
     closedir(dir);
   } 
   else 

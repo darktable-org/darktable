@@ -26,8 +26,10 @@
 #endif
 
 #include "common/colorspaces_inline_conversions.h"
+#include "common/imagebuf.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/openmp_maths.h"
 #include <math.h>
 
 #define DT_BLENDIF_RGB_CH 4
@@ -36,23 +38,6 @@
 
 typedef void(_blend_row_func)(const float *const restrict a, float *const restrict b, const float p,
                               const float *const restrict mask, const size_t stride);
-
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float x)
-{
-  return fminf(fmaxf(x, 0.0f), 1.0f);
-}
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float sqf(const float x)
-{
-  return x * x;
-}
 
 
 #ifdef _OPENMP
@@ -268,10 +253,7 @@ void dt_develop_blendif_rgb_jzczhz_make_mask(struct dt_dev_pixelpipe_iop_t *piec
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
-#endif
-      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * mask[x];
+      dt_iop_image_mul_const(mask,global_opacity,owidth,oheight,1); // mask[k] *= global_opacity;
     }
   }
   else if(canceling_channel || !any_channel_active)
@@ -279,20 +261,8 @@ void dt_develop_blendif_rgb_jzczhz_make_mask(struct dt_dev_pixelpipe_iop_t *piec
     // one of the conditional channel selects nothing
     // this means that the conditional opacity of all pixels is the same
     // and depends on whether the mask combination is inclusive and whether the mask is inverted
-    if((mask_inversed == 0) ^ (mask_inclusive == 0))
-    {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize, global_opacity) schedule(static)
-#endif
-      for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity;
-    }
-    else
-    {
-#ifdef _OPENMP
-#pragma omp parallel for simd default(none) dt_omp_firstprivate(mask, buffsize) schedule(static)
-#endif
-      for(size_t x = 0; x < buffsize; x++) mask[x] = 0.0f;
-    }
+    const float opac = ((mask_inversed == 0) ^ (mask_inclusive == 0)) ? global_opacity : 0.0f;
+    dt_iop_image_fill(mask,opac,owidth,oheight,1); // mask[k] = opac;
   }
   else
   {
@@ -310,7 +280,7 @@ void dt_develop_blendif_rgb_jzczhz_make_mask(struct dt_dev_pixelpipe_iop_t *piec
     const dt_iop_order_iccprofile_info_t *profile = &blend_profile;
 
     // allocate space for a temporary mask buffer to split the computation of every channel
-    float *const restrict temp_mask = dt_alloc_align(64, buffsize * sizeof(float));
+    float *const restrict temp_mask = dt_alloc_align_float(buffsize);
     if(!temp_mask)
     {
       return;

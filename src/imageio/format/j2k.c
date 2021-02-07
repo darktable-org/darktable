@@ -69,10 +69,10 @@ typedef enum
 } dt_imageio_j2k_format_t;
 
 // borrowed from blender
-#define DOWNSAMPLE_FLOAT_TO_8BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 255 : (int)(255.0f * (_val)))
-#define DOWNSAMPLE_FLOAT_TO_12BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 4095 : (int)(4095.0f * (_val)))
+#define DOWNSAMPLE_FLOAT_TO_8BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 255 : (int)roundf(255.0f * (_val)))
+#define DOWNSAMPLE_FLOAT_TO_12BIT(_val) (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 4095 : (int)roundf(4095.0f * (_val)))
 #define DOWNSAMPLE_FLOAT_TO_16BIT(_val)                                                                      \
-  (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 65535 : (int)(65535.0f * (_val)))
+  (_val) <= 0.0f ? 0 : ((_val) >= 1.0f ? 65535 : (int)roundf(65535.0f * (_val)))
 
 DT_MODULE(2)
 
@@ -367,7 +367,7 @@ int write_image(dt_imageio_module_data_t *j2k_tmp, const char *filename, const v
     const int w = j2k->global.width, h = j2k->global.height;
 
     opj_image_cmptparm_t cmptparm[4]; /* RGBA: max. 4 components */
-    memset(&cmptparm[0], 0, numcomps * sizeof(opj_image_cmptparm_t));
+    memset(&cmptparm[0], 0, sizeof(opj_image_cmptparm_t) * numcomps);
 
     for(int i = 0; i < numcomps; i++)
     {

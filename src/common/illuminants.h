@@ -227,13 +227,13 @@ static inline void illuminant_CCT_to_RGB(const float t, float RGB[4])
 static inline int find_temperature_from_raw_coeffs(const dt_image_t *img, const float custom_wb[4], float *chroma_x, float *chroma_y);
 
 
-static int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of illuminant
-                            const dt_image_t *img,            // image container
-                            const float custom_wb[4],         // optional user-set WB coeffs
-                            float *x_out, float *y_out,       // chromaticity output
-                            const float t,                    // temperature in K, if needed
-                            const dt_illuminant_fluo_t fluo,  // sub-type of fluorescent illuminant, if needed
-                            const dt_illuminant_led_t iled)   // sub-type of led illuminant, if needed
+static inline int illuminant_to_xy(const dt_illuminant_t illuminant, // primary type of illuminant
+                                   const dt_image_t *img,            // image container
+                                   const float custom_wb[4],         // optional user-set WB coeffs
+                                   float *x_out, float *y_out,       // chromaticity output
+                                   const float t,                    // temperature in K, if needed
+                                   const dt_illuminant_fluo_t fluo,  // sub-type of fluorescent illuminant, if needed
+                                   const dt_illuminant_led_t iled)   // sub-type of led illuminant, if needed
 {
   /**
    * Compute the x and y chromaticity coordinates in Yxy spaces for standard illuminants
@@ -511,7 +511,7 @@ static inline float get_tint_from_tinted_xy(const float x, const float y, const 
 #ifdef _OPENMP
 #pragma omp declare simd
 #endif
-static inline void xy_to_uv(const float xy[2], float uv[4])
+static inline void xy_to_uv(const float xy[2], float uv[2])
 {
   // Convert to CIE1960 Yuv color space, usefull to compute CCT
   // https://en.wikipedia.org/wiki/CIE_1960_color_space

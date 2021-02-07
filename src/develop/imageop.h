@@ -117,7 +117,13 @@ typedef enum dt_iop_module_state_t
 
 } dt_iop_module_state_t;
 
-typedef void dt_iop_gui_data_t;
+typedef struct dt_iop_gui_data_t
+{
+  // "base type" for all dt_iop_XXXX_gui_data_t types used by iops
+  // to avoid compiler error about different sizes of empty structs between C and C++, we need at least one member
+  int dummy;
+} dt_iop_gui_data_t;
+
 typedef void dt_iop_data_t;
 typedef void dt_iop_global_data_t;
 
@@ -350,6 +356,7 @@ typedef struct dt_iop_module_t
   int32_t params_size;
   /** parameters needed if a gui is attached. will be NULL if in export/batch mode. */
   dt_iop_gui_data_t *gui_data;
+  dt_pthread_mutex_t gui_lock;
   /** other stuff that may be needed by the module, not only in gui mode. */
   dt_iop_global_data_t *global_data;
   /** blending params */
@@ -586,6 +593,18 @@ gboolean dt_iop_so_is_hidden(dt_iop_module_so_t *module);
 gboolean dt_iop_is_hidden(dt_iop_module_t *module);
 /** checks whether iop is shown in specified group */
 gboolean dt_iop_shown_in_group(dt_iop_module_t *module, uint32_t group);
+/** enter a GUI critical section by acquiring gui_data->lock **/
+static inline void dt_iop_gui_enter_critical_section(dt_iop_module_t *const module)
+  ACQUIRE(&module->gui_lock)
+{
+  dt_pthread_mutex_lock(&module->gui_lock);
+}
+/** leave a GUI critical section by releasing gui_data->lock **/
+static inline void dt_iop_gui_leave_critical_section(dt_iop_module_t *const module)
+  RELEASE(&module->gui_lock)
+{
+  dt_pthread_mutex_unlock(&module->gui_lock);
+}
 /** cleans up gui of module and of blendops */
 void dt_iop_gui_cleanup_module(dt_iop_module_t *module);
 /** updates the enable button state. (take into account module->enabled and module->hide_enable_button  */
@@ -614,7 +633,7 @@ void dt_iop_commit_blend_params(dt_iop_module_t *module, const struct dt_develop
 /** make sure the raster mask is advertised if available */
 void dt_iop_set_mask_mode(dt_iop_module_t *module, int mask_mode);
 /** creates a label widget for the expander, with callback to enable/disable this module. */
-GtkWidget *dt_iop_gui_get_expander(dt_iop_module_t *module);
+void dt_iop_gui_set_expander(dt_iop_module_t *module);
 /** get the widget of plugin ui in expander */
 GtkWidget *dt_iop_gui_get_widget(dt_iop_module_t *module);
 /** get the eventbox of plugin ui in expander */
@@ -652,8 +671,13 @@ dt_iop_module_t *dt_iop_get_module(const char *op);
     if multi_priority == -1 do not checl for it */
 dt_iop_module_t *dt_iop_get_module_by_op_priority(GList *modules, const char *operation, const int multi_priority);
 /** returns module with op + multi_name or NULL if not found on the list,
-    if multi_name == NULL do not checl for it */
+    if multi_name == NULL do not check for it */
 dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *operation, const char *multi_name);
+/** count instances of a module **/
+int dt_iop_count_instances(dt_iop_module_so_t *module);
+
+/** returns true if module is the first instance of this operation in the pipe */
+gboolean dt_iop_is_first_instance(GList *modules, dt_iop_module_t *module);
 
 
 /** get module flags, works in dev and lt mode */
@@ -689,9 +713,6 @@ void dt_iop_connect_accels_all();
 /** get the module that accelerators are attached to for the current so */
 dt_iop_module_t *dt_iop_get_module_accel_curr(dt_iop_module_so_t *module);
 
-/** count instances of a module **/
-int dt_iop_count_instances(dt_iop_module_so_t *module);
-
 /** queue a refresh of the center (FULL), preview, or second-preview windows, rerunning the pixelpipe from */
 /** the given module */
 void dt_iop_refresh_center(dt_iop_module_t *module);
@@ -707,19 +728,40 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 /** (un)hide iop module header right side buttons */
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
 
-/** show in iop module header that the module is in trouble */
-void dt_iop_set_module_in_trouble(dt_iop_module_t *module, const gboolean);
+/** Set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
+ ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that
+ ** message when the module does not have a warning-label widget (use %s for the module's name).  **/
+void dt_iop_set_module_trouble_message(dt_iop_module_t *module,
+                                       const char *const trouble_msg,
+                                       const char *const trouble_tooltip,
+                                       const char *stderr_message);
 
 // format modules description going in tooltips
 char *dt_iop_set_description(dt_iop_module_t *module, const char *main_text,
                              const char *purpose, const char *input,
                              const char *process, const char *output);
 
-#define IOP_GUI_ALLOC(module) (dt_iop_##module##_gui_data_t *)(self->gui_data = calloc(1, sizeof(dt_iop_##module##_gui_data_t)))
-#define IOP_GUI_FREE free(self->gui_data); self->gui_data = NULL
+static inline dt_iop_gui_data_t *_iop_gui_alloc(dt_iop_module_t *module, size_t size)
+{
+  module->gui_data = (dt_iop_gui_data_t*)calloc(1, size);
+  dt_pthread_mutex_init(&module->gui_lock,NULL);
+  return module->gui_data;
+}
+#define IOP_GUI_ALLOC(module) \
+  (dt_iop_##module##_gui_data_t *)_iop_gui_alloc(self,sizeof(dt_iop_##module##_gui_data_t))
+
+#define IOP_GUI_FREE \
+  dt_pthread_mutex_destroy(&self->gui_lock);if(self->gui_data){free(self->gui_data);} self->gui_data = NULL
 
 /* return a warning message, prefixed by the special character ⚠ */
-char *dt_iop_warning_message(char *message);
+char *dt_iop_warning_message(const char *message);
+
+/** check whether we have the required number of channels in the input data; if not, copy the input buffer to the
+ ** output buffer, set the module's trouble message, and return FALSE */
+gboolean dt_iop_have_required_input_format(const int required_ch, struct dt_iop_module_t *const module,
+                                           const int actual_pipe_ch,
+                                           const void *const __restrict__ ivoid, void *const __restrict__ ovoid,
+                                           const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -111,7 +111,7 @@ static char *_pipe_type_to_str(int pipe_type)
 int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height, int levels,
                                  gboolean store_masks)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
   pipe->type = DT_DEV_PIXELPIPE_EXPORT;
   pipe->levels = levels;
   pipe->store_all_raster_masks = store_masks;
@@ -120,14 +120,14 @@ int dt_dev_pixelpipe_init_export(dt_dev_pixelpipe_t *pipe, int32_t width, int32_
 
 int dt_dev_pixelpipe_init_thumbnail(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 2);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 2);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
 
 int dt_dev_pixelpipe_init_dummy(dt_dev_pixelpipe_t *pipe, int32_t width, int32_t height)
 {
-  const int res = dt_dev_pixelpipe_init_cached(pipe, 4 * sizeof(float) * width * height, 0);
+  const int res = dt_dev_pixelpipe_init_cached(pipe, sizeof(float) * 4 * width * height, 0);
   pipe->type = DT_DEV_PIXELPIPE_THUMBNAIL;
   return res;
 }
@@ -413,15 +413,24 @@ void dt_dev_pixelpipe_synch_top(dt_dev_pixelpipe_t *pipe, dt_develop_t *dev)
 {
   dt_pthread_mutex_lock(&pipe->busy_mutex);
   GList *history = g_list_nth(dev->history, dev->history_end - 1);
-  if(history) dt_dev_pixelpipe_synch(pipe, dev, history);
+  if(history)
+  {
+    dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module `%s' for pipe %i\n", hist->module->op, pipe->type); 
+    dt_dev_pixelpipe_synch(pipe, dev, history);
+  }
+  else
+  {
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] synch top history module missing error for pipe %i\n", pipe->type); 
+  }
   dt_pthread_mutex_unlock(&pipe->busy_mutex);
 }
 
 void dt_dev_pixelpipe_change(dt_dev_pixelpipe_t *pipe, struct dt_develop_t *dev)
 {
-  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changed for pipe %i\n", pipe->type);
-
   dt_pthread_mutex_lock(&dev->history_mutex);
+
+  dt_print(DT_DEBUG_PARAMS, "[pixelpipe] pipeline state changing for pipe %i, flag %i\n", pipe->type, pipe->changed);
   // case DT_DEV_PIPE_UNCHANGED: case DT_DEV_PIPE_ZOOMED:
   if(pipe->changed & DT_DEV_PIPE_TOP_CHANGED)
   {
@@ -512,11 +521,11 @@ static void histogram_collect_cl(int devid, dt_dev_pixelpipe_iop_t *piece, cl_me
   if(buffer && bufsize >= (size_t)roi->width * roi->height * 4 * sizeof(float))
     pixel = buffer;
   else
-    pixel = tmpbuf = dt_alloc_align(64, (size_t)roi->width * roi->height * 4 * sizeof(float));
+    pixel = tmpbuf = dt_alloc_align_float((size_t)4 * roi->width * roi->height);
 
   if(!pixel) return;
 
-  cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, 4 * sizeof(float));
+  cl_int err = dt_opencl_copy_device_to_host(devid, pixel, img, roi->width, roi->height, sizeof(float) * 4);
   if(err != CL_SUCCESS)
   {
     if(tmpbuf) dt_free_align(tmpbuf);
@@ -890,7 +899,7 @@ static void _pixelpipe_pick_live_samples(const float *const input, const dt_iop_
 
   // display rgb --> histogram rgb
   if(display_profile && histogram_profile)
-    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_PERCEPTUAL, 0);
+    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_RELATIVE_COLORIMETRIC, 0);
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
@@ -960,7 +969,7 @@ static void _pixelpipe_pick_primary_colorpicker(dt_develop_t *dev, const float *
 
   // display rgb --> histogram rgb
   if(display_profile && histogram_profile)
-    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_PERCEPTUAL, 0);
+    xform_rgb2rgb = cmsCreateTransform(display_profile, TYPE_RGB_FLT, histogram_profile, TYPE_RGB_FLT, INTENT_RELATIVE_COLORIMETRIC, 0);
 
   if(darktable.color_profiles->display_type == DT_COLORSPACE_DISPLAY || histogram_type == DT_COLORSPACE_DISPLAY)
     pthread_rwlock_unlock(&darktable.color_profiles->xprofile_lock);
@@ -1228,6 +1237,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
   }
   if(cache_available)
   {
+    dt_print(DT_DEBUG_PARAMS, "[pixelpipe] dt_dev_pixelpipe_process_rec, cache available for pipe %i with hash %lu\n", pipe->type, (long unsigned int)hash);
     // if(module) printf("found valid buf pos %d in cache for module %s %s %lu\n", pos, module->op, pipe ==
     // dev->preview_pipe ? "[preview]" : "", hash);
 
@@ -1420,7 +1430,10 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
     /* get tiling requirement of module */
     dt_develop_tiling_t tiling = { 0 };
+    tiling.factor_cl = tiling.maxbuf_cl = -1;	// set sentinel value to detect whether callback set sizes
     module->tiling_callback(module, piece, &roi_in, roi_out, &tiling);
+    if (tiling.factor_cl < 0) tiling.factor_cl = tiling.factor; // default to CPU size if callback didn't set GPU
+    if (tiling.maxbuf_cl < 0) tiling.maxbuf_cl = tiling.maxbuf;
 
     /* does this module involve blending? */
     if(piece->blendop_data && ((dt_develop_blend_params_t *)piece->blendop_data)->mask_mode != DEVELOP_MASK_DISABLED)
@@ -1431,7 +1444,9 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
 
       /* aggregate in structure tiling */
       tiling.factor = fmax(tiling.factor, tiling_blendop.factor);
+      tiling.factor_cl = fmax(tiling.factor_cl, tiling_blendop.factor);
       tiling.maxbuf = fmax(tiling.maxbuf, tiling_blendop.maxbuf);
+      tiling.maxbuf_cl = fmax(tiling.maxbuf_cl, tiling_blendop.maxbuf);
       tiling.overhead = fmax(tiling.overhead, tiling_blendop.overhead);
     }
 
@@ -1441,6 +1456,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
        because memory requirements will still be low enough. */
 
     assert(tiling.factor > 0.0f);
+    assert(tiling.factor_cl > 0.0f);
 
     if(dt_atomic_get_int(&pipe->shutdown))
     {
@@ -1467,7 +1483,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
       /* pre-check if there is enough space on device for non-tiled processing */
       const int fits_on_device = dt_opencl_image_fits_device(pipe->devid, MAX(roi_in.width, roi_out->width),
                                                              MAX(roi_in.height, roi_out->height), MAX(in_bpp, bpp),
-                                                             tiling.factor, tiling.overhead);
+                                                             tiling.factor_cl, tiling.overhead);
 
       /* general remark: in case of opencl errors within modules or out-of-memory on GPU, we transparently
          fall back to the respective cpu module and continue in pixelpipe. If we encounter errors we set
@@ -1562,7 +1578,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
           {
             // we abuse the empty output buffer on host for intermediate storage of data in
             // histogram_collect_cl()
-            size_t outbufsize = roi_out->width * roi_out->height * bpp;
+            size_t outbufsize = bpp * roi_out->width * roi_out->height;
 
             histogram_collect_cl(pipe->devid, piece, cl_mem_input, &roi_in, &(piece->histogram),
                                  piece->histogram_max, *output, outbufsize);
@@ -1572,7 +1588,7 @@ static int dt_dev_pixelpipe_process_rec(dt_dev_pixelpipe_t *pipe, dt_develop_t *
             if(piece->histogram && (module->request_histogram & DT_REQUEST_ON)
                && (pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
             {
-              const size_t buf_size = 4 * piece->histogram_stats.bins_count * sizeof(uint32_t);
+              const size_t buf_size = sizeof(uint32_t) * 4 * piece->histogram_stats.bins_count;
               module->histogram = realloc(module->histogram, buf_size);
               memcpy(module->histogram, piece->histogram, buf_size);
               module->histogram_stats = piece->histogram_stats;
@@ -2160,19 +2176,19 @@ post_process_collect_info:
         // input may not be available, so we use the output from gamma
         // this may lead to some rounding errors
         // FIXME: under what circumstances would input not be available? when this iop's result is pulled in from cache?
-        float *const buf = dt_alloc_align(64, roi_out->width * roi_out->height * 4 * sizeof(float));
+        float *const buf = dt_alloc_align_float((size_t)4 * roi_out->width * roi_out->height);
         if(buf)
         {
           const uint8_t *in = (uint8_t *)(*output);
           // FIXME: it would be nice to use dt_imageio_flip_buffers_ui8_to_float() but then we'd need to make another pass to convert RGB to BGR
-          for(size_t k = 0; k < roi_out->width * roi_out->height * 4; k += 4)
+          for(size_t k = 0; k < (size_t)roi_out->width * roi_out->height * 4; k += 4)
           {
             for(size_t c = 0; c < 3; c++)
               buf[k + c] = in[k + 2 - c] / 255.0f;
           }
           darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, buf,
                                                  roi_out->width, roi_out->height,
-                                                 DT_COLORSPACE_DISPLAY, "");
+                                                 darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
           dt_free_align(buf);
         }
       }
@@ -2180,7 +2196,7 @@ post_process_collect_info:
       {
         darktable.lib->proxy.histogram.process(darktable.lib->proxy.histogram.module, input,
                                                roi_in.width, roi_in.height,
-                                               DT_COLORSPACE_DISPLAY, "");
+                                               darktable.color_profiles->display_type, darktable.color_profiles->display_filename);
       }
     }
   }
@@ -2408,11 +2424,11 @@ restart:
       g_free(pipe->output_backbuf);
       pipe->output_backbuf_width = pipe->backbuf_width;
       pipe->output_backbuf_height = pipe->backbuf_height;
-      pipe->output_backbuf = g_malloc0((size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+      pipe->output_backbuf = g_malloc0(sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
     }
 
     if(pipe->output_backbuf)
-      memcpy(pipe->output_backbuf, pipe->backbuf, (size_t)pipe->output_backbuf_width * pipe->output_backbuf_height * 4 * sizeof(uint8_t));
+      memcpy(pipe->output_backbuf, pipe->backbuf, sizeof(uint8_t) * 4 * pipe->output_backbuf_width * pipe->output_backbuf_height);
     pipe->output_imgid = pipe->image.id;
   }
   dt_pthread_mutex_unlock(&pipe->backbuf_mutex);
@@ -2504,9 +2520,8 @@ float *dt_dev_get_raster_mask(const dt_dev_pixelpipe_t *pipe, const dt_iop_modul
                     && module->processed_roi_in.width == 0
                     && module->processed_roi_in.height == 0))
             {
-              float *transformed_mask = dt_alloc_align(64, sizeof(float)
-                                                          * module->processed_roi_out.width
-                                                          * module->processed_roi_out.height);
+              float *transformed_mask = dt_alloc_align_float((size_t)module->processed_roi_out.width
+                                                              * module->processed_roi_out.height);
               module->module->distort_mask(module->module,
                                           module,
                                           raster_mask,

@@ -299,6 +299,29 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
   g_list_free_full (styles, (GDestroyNotify) gtk_tree_path_free);
 }
 
+gboolean _ask_before_delete_style(const gint style_cnt)
+{
+  gint res = GTK_RESPONSE_YES;
+
+  if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
+  {
+    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
+    GtkWidget *dialog = gtk_message_dialog_new
+      (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
+       ngettext("do you really want to remove %d style?", "do you really want to remove %d styles?", style_cnt),
+       style_cnt);
+#ifdef GDK_WINDOWING_QUARTZ
+    dt_osx_disallow_fullscreen(dialog);
+#endif
+
+    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("remove style?", "remove styles?", style_cnt));
+    res = gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  }
+
+  return res == GTK_RESPONSE_YES;
+}
+
 static void delete_clicked(GtkWidget *w, gpointer user_data)
 {
   dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
@@ -315,34 +338,25 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
   if(style_names == NULL) return;
 
   const gint select_cnt = g_list_length(style_names);
+  const gboolean single_raise = (select_cnt == 1);
 
-  gint res = GTK_RESPONSE_YES;
+  const gboolean can_delete = _ask_before_delete_style(select_cnt);
 
-  if(dt_conf_get_bool("plugins/lighttable/style/ask_before_delete_style"))
+  if(can_delete)
   {
-    const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-    GtkWidget *dialog = gtk_message_dialog_new
-      (GTK_WINDOW(win), GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_QUESTION, GTK_BUTTONS_YES_NO,
-       ngettext("do you really want to remove %d style?", "do you really want to remove %d styles?", select_cnt),
-       select_cnt);
-#ifdef GDK_WINDOWING_QUARTZ
-    dt_osx_disallow_fullscreen(dialog);
-#endif
-
-    gtk_window_set_title(GTK_WINDOW(dialog), ngettext("remove style?", "remove styles?", select_cnt));
-    res = gtk_dialog_run(GTK_DIALOG(dialog));
-    gtk_widget_destroy(dialog);
-  }
-
-  if(res == GTK_RESPONSE_YES)
-  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
     for (GList *style = style_names; style != NULL; style = style->next)
     {
-      dt_styles_delete_by_name((char*)style->data);
+      dt_styles_delete_by_name_adv((char*)style->data, single_raise);
     }
-    _gui_styles_update_view(d);
-  }
 
+    if(!single_raise) {
+      // raise signal at the end of processing all styles if we have more than 1 to delete
+      // this also calls _gui_styles_update_view
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+    }
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+  }
   g_list_free_full(style_names, g_free);
 }
 
@@ -372,7 +386,12 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
+  gchar *import_path = dt_conf_get_string("ui_last/export_path");
+  if(import_path != NULL)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
+    g_free(import_path);
+  }
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), FALSE);
 
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
@@ -489,6 +508,9 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
       }
       dt_control_log(_("style %s was successfully exported"), (char*)style->data);
     }
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/export_path", folder);
+    g_free(folder);
     g_free(filedir);
   }
   gtk_widget_destroy(filechooser);
@@ -504,9 +526,14 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
+  gchar *import_path = dt_conf_get_string("ui_last/import_path");
+  if(import_path != NULL)
+  {
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), import_path);
+    g_free(import_path);
+  }
 
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(filechooser), TRUE);
-  gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), g_get_home_dir());
 
   GtkFileFilter *filter;
   filter = GTK_FILE_FILTER(gtk_file_filter_new());
@@ -529,6 +556,9 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
 
     dt_lib_styles_t *d = (dt_lib_styles_t *)user_data;
     _gui_styles_update_view(d);
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/import_path", folder);
+    g_free(folder);
   }
   gtk_widget_destroy(filechooser);
 }
@@ -633,6 +663,7 @@ void gui_init(dt_lib_module_t *self)
   GtkTreeViewColumn *col = gtk_tree_view_column_new();
   gtk_tree_view_append_column(GTK_TREE_VIEW(d->tree), col);
   GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
   gtk_tree_view_column_pack_start(col, renderer, TRUE);
   gtk_tree_view_column_add_attribute(col, renderer, "text", DT_STYLES_COL_NAME);
 
@@ -750,6 +781,34 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(GTK_WIDGET(d->entry));
   free(self->data);
   self->data = NULL;
+}
+
+void gui_reset(dt_lib_module_t *self)
+{
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
+  GList *all_styles = dt_styles_get_list("");
+
+  if(all_styles == NULL)
+  {
+    DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "END TRANSACTION", NULL, NULL, NULL);
+    return;
+  }
+
+  const gint styles_cnt = g_list_length(all_styles);
+  const gboolean can_delete = _ask_before_delete_style(styles_cnt);
+
+  if(can_delete)
+  {
+    for (GList *result = all_styles; result != NULL; result = result->next)
+    {
+      dt_style_t *style = (dt_style_t *)result->data;
+      dt_styles_delete_by_name_adv((char*)style->name, FALSE);
+    }
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_STYLE_CHANGED);
+  }
+  g_list_free_full(all_styles, dt_style_free);
+  DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "COMMIT TRANSACTION", NULL, NULL, NULL);
+  _update(self);
 }
 
 

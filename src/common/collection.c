@@ -622,7 +622,10 @@ static void _collection_update_aspect_ratio(const dt_collection_t *collection)
     sqlite3_stmt *stmt = NULL;
 
     query = dt_util_dstrcat
-      (query, "SELECT id FROM main.images WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
+      (query,
+       "SELECT id"
+       " FROM main.images"
+       " WHERE %s AND (aspect_ratio=0.0 OR aspect_ratio IS NULL)", where_ext);
 
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
 
@@ -673,7 +676,7 @@ const char *dt_collection_name(dt_collection_properties_t prop)
   switch(prop)
   {
     case DT_COLLECTION_PROP_FILMROLL:         return _("film roll");
-    case DT_COLLECTION_PROP_FOLDERS:          return _("folders");
+    case DT_COLLECTION_PROP_FOLDERS:          return _("folder");
     case DT_COLLECTION_PROP_CAMERA:           return _("camera");
     case DT_COLLECTION_PROP_TAG:              return _("tag");
     case DT_COLLECTION_PROP_DAY:              return _("date taken");
@@ -1369,13 +1372,19 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
 {
   sqlite3_stmt *stmt;
   gchar *needle = NULL;
+  gboolean wildcard = FALSE;
 
   GHashTable *names = NULL;
   if (sanitized)
     names = g_hash_table_new(g_str_hash, g_str_equal);
 
   if (filter && filter[0] != '\0')
+  {
     needle = g_utf8_strdown(filter, -1);
+    wildcard = (needle && needle[strlen(needle) - 1] == '%') ? TRUE : FALSE;
+    if(wildcard)
+      needle[strlen(needle) - 1] = '\0';
+  }
 
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               "SELECT maker, model FROM main.images GROUP BY maker, model",
@@ -1388,7 +1397,8 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
     gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
     gchar *haystack = g_utf8_strdown(makermodel, -1);
-    if (!needle || g_strrstr(haystack, needle) != NULL)
+    if (!needle || (wildcard && g_strrstr(haystack, needle) != NULL)
+                || (!wildcard && !g_strcmp0(haystack, needle)))
     {
       if (exif)
       {
@@ -1582,34 +1592,67 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_TAG: // tag
-      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+    {
+      char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
+      if(!strcmp(escaped_text, _("not tagged")))
       {
-        // shift-click adds an asterix * to include items in and under this hierarchy
-        // without using a wildcard % which also would include similar named items
-        escaped_text[escaped_length-1] = '\0';
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+        query = g_strdup_printf("(id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images AS a "
                                        "JOIN data.tags AS b ON a.tagid = b.id "
-                                       "WHERE name LIKE '%s'"
-                                       "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
-                                escaped_text, escaped_text, escaped_text);
+                                       "AND SUBSTR(name, 1, 10) <> 'darktable|'))");
       }
-      else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+      else if(!strcmp(sensitive, _("insensitive")))
       {
-        // ends with % or |%
-        escaped_text[escaped_length-1] = '\0';
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
-                                       "JOIN data.tags AS b ON a.tagid = b.id "
-                                       "WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s'))",
-                                escaped_text, escaped_text);
+        if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        {
+          // shift-click adds an asterix * to include items in and under this hierarchy
+          // without using a wildcard % which also would include similar named items
+          escaped_text[escaped_length-1] = '\0';
+          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+                                         "JOIN data.tags AS b ON a.tagid = b.id "
+                                         "WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
+                                  escaped_text, escaped_text);
+        }
+        else
+        {
+          // default
+          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+                                       "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
+                                  escaped_text);
+        }
       }
       else
       {
-        // default
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
-                                     "data.tags AS b ON a.tagid = b.id WHERE name = '%s'))",
-                                escaped_text);
+        if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        {
+          // shift-click adds an asterix * to include items in and under this hierarchy
+          // without using a wildcard % which also would include similar named items
+          escaped_text[escaped_length-1] = '\0';
+          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+                                         "JOIN data.tags AS b ON a.tagid = b.id "
+                                         "WHERE name = '%s'"
+                                         "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
+                                  escaped_text, escaped_text, escaped_text);
+        }
+        else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+        {
+          // ends with % or |%
+          escaped_text[escaped_length-1] = '\0';
+          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+                                         "JOIN data.tags AS b ON a.tagid = b.id "
+                                         "WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s'))",
+                                  escaped_text, escaped_text);
+        }
+        else
+        {
+          // default
+          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+                                       "data.tags AS b ON a.tagid = b.id WHERE name = '%s'))",
+                                  escaped_text);
+        }
       }
-      break;
+      g_free(sensitive);
+    }
+    break;
 
     case DT_COLLECTION_PROP_LENS: // lens
       query = dt_util_dstrcat(query, "(lens LIKE '%%%s%%')", escaped_text);
@@ -1720,7 +1763,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       for (l = list; l != NULL; l = l->next)
         l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
 
-      query = dt_util_glist_to_str(" OR ", list);
+      query = dt_util_dstrcat(NULL, "(%s)", dt_util_glist_to_str(" OR ", list));
       g_list_free(list);
 
       break;
@@ -1942,7 +1985,8 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
     {
       // for changing offsets, thumbtable needs to know the first untouched imageid after the list
       // we do this here
-      const int id0 = GPOINTER_TO_INT(g_list_nth_data(list, 0));
+
+      // 1. create a string with all the imgids of the list to be used inside IN sql query
       gchar *txt = NULL;
       GList *l = g_list_first(list);
       int i = 0;
@@ -1956,15 +2000,18 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
         l = g_list_next(l);
         i++;
       }
+      // 2. search the first imgid not in the list but AFTER the list (or in a gap inside the list)
+      // we need to be carefull that some images in the list may not be present on screen (collapsed groups)
       gchar *query = dt_util_dstrcat(NULL,
                                      "SELECT imgid"
                                      " FROM memory.collected_images"
                                      " WHERE imgid NOT IN (%s)"
                                      "  AND rowid > (SELECT rowid"
                                      "              FROM memory.collected_images"
-                                     "              WHERE imgid=%d)"
+                                     "              WHERE imgid IN (%s)"
+                                     "              ORDER BY rowid LIMIT 1)"
                                      " ORDER BY rowid LIMIT 1",
-                                     txt, id0);
+                                     txt, txt);
       sqlite3_stmt *stmt2;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
       if(sqlite3_step(stmt2) == SQLITE_ROW)
@@ -1973,7 +2020,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
       }
       sqlite3_finalize(stmt2);
       g_free(query);
-      // if next is still unvalid, let's try to find the first untouched image before the list
+      // 3. if next is still unvalid, let's try to find the first untouched image BEFORE the list
       if(next < 0)
       {
         query = dt_util_dstrcat(NULL,
@@ -1982,9 +2029,10 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
                                 " WHERE imgid NOT IN (%s)"
                                 "   AND rowid < (SELECT rowid"
                                 "                FROM memory.collected_images"
-                                "                WHERE imgid=%d)"
+                                "                WHERE imgid IN (%s)"
+                                "                ORDER BY rowid LIMIT 1)"
                                 " ORDER BY rowid DESC LIMIT 1",
-                                txt, id0);
+                                txt, txt);
         DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt2, NULL);
         if(sqlite3_step(stmt2) == SQLITE_ROW)
         {

@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -331,8 +332,8 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
                                              gboolean clockwise)
 {
   // we want to find the start and end angles
-  float a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
-  float a2 = atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]);
+  float a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  float a2 = atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]);
 
   if(a1 == a2) return;
 
@@ -380,8 +381,8 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
                                                    dt_masks_dynbuf_t *dpoints, dt_masks_dynbuf_t *dborder)
 {
   // we want to find the start and end angles
-  float a1 = fmodf(atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
-  float a2 = fmodf(atan2(bmax[1] - cmax[1], bmax[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
+  float a1 = fmodf(atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
+  float a2 = fmodf(atan2f(bmax[1] - cmax[1], bmax[0] - cmax[0]) + 2.0f * M_PI, 2.0f * M_PI);
 
   if(a1 == a2) return;
 
@@ -419,7 +420,7 @@ static void _brush_points_stamp(float *cmax, float *bmin, dt_masks_dynbuf_t *dpo
                                 gboolean clockwise)
 {
   // we want to find the start angle
-  float a1 = atan2(bmin[1] - cmax[1], bmin[0] - cmax[0]);
+  float a1 = atan2f(bmin[1] - cmax[1], bmin[0] - cmax[0]);
 
   // we determine the radius too
   float rad = sqrtf((bmin[1] - cmax[1]) * (bmin[1] - cmax[1]) + (bmin[0] - cmax[0]) * (bmin[0] - cmax[0]));
@@ -541,9 +542,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
                                     float **border, int *border_count, float **payload, int *payload_count,
                                     int source)
 {
-  double start2 = dt_get_wtime();
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
 
-  float wd = pipe->iwidth, ht = pipe->iheight;
+  const float wd = pipe->iwidth;
+  const float ht = pipe->iheight;
 
   *points = NULL;
   *points_count = 0;
@@ -633,9 +636,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   int start_stamp = 0;
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points init took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we render all segments first upwards, then downwards
   for(int n = 0; n < 2 * nb; n++)
@@ -662,10 +667,10 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       float pd[7] = { point3->corner[0] * wd - dx, point3->corner[1] * ht - dy, point3->ctrl1[0] * wd - dx,
                       point3->ctrl1[1] * ht - dy, point3->border[0] * MIN(wd, ht), point3->hardness,
                       point3->density };
-      memcpy(p1, pa, 7 * sizeof(float));
-      memcpy(p2, pb, 7 * sizeof(float));
-      memcpy(p3, pc, 7 * sizeof(float));
-      memcpy(p4, pd, 7 * sizeof(float));
+      memcpy(p1, pa, sizeof(float) * 7);
+      memcpy(p2, pb, sizeof(float) * 7);
+      memcpy(p3, pc, sizeof(float) * 7);
+      memcpy(p4, pd, sizeof(float) * 7);
     }
     else
     {
@@ -681,14 +686,14 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       float pd[7] = { point3->corner[0] * wd - dx, point3->corner[1] * ht - dy, point3->ctrl2[0] * wd - dx,
                       point3->ctrl2[1] * ht - dy, point3->border[0] * MIN(wd, ht), point3->hardness,
                       point3->density };
-      memcpy(p1, pa, 7 * sizeof(float));
-      memcpy(p2, pb, 7 * sizeof(float));
-      memcpy(p3, pc, 7 * sizeof(float));
-      memcpy(p4, pd, 7 * sizeof(float));
+      memcpy(p1, pa, sizeof(float) * 7);
+      memcpy(p2, pb, sizeof(float) * 7);
+      memcpy(p3, pc, sizeof(float) * 7);
+      memcpy(p4, pd, sizeof(float) * 7);
     }
 
     // 1st. special case: render abrupt transitions between different opacity and/or hardness values
-    if((fabs(p1[5] - p2[5]) > 0.05f || fabs(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2 * nb - 1))
+    if((fabsf(p1[5] - p2[5]) > 0.05f || fabsf(p1[6] - p2[6]) > 0.05f) || (start_stamp && n == 2 * nb - 1))
     {
       if(n == 0)
       {
@@ -714,7 +719,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
     }
 
     // 2nd. special case: render transition point between different brush sizes
-    if(fabs(p1[4] - p2[4]) > 0.0001f && n > 0)
+    if(fabsf(p1[4] - p2[4]) > 0.0001f && n > 0)
     {
       if(dborder)
       {
@@ -835,9 +840,11 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   // *payload_count : -1);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points point recurs %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // and we transform them with all distorted modules
   if(dt_dev_distort_transform_plus(dev, pipe, iop_order, transf_direction, *points, *points_count))
@@ -847,7 +854,6 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
       if(darktable.unmuted & DT_DEBUG_PERF)
         dt_print(DT_DEBUG_MASKS, "[masks %s] brush_points transform took %0.04f sec\n", form->name,
                  dt_get_wtime() - start2);
-//       start2 = dt_get_wtime();
       return 1;
     }
   }
@@ -1020,9 +1026,8 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
   {
     if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
+      const float amount = up ? 0.97f : 1.03f;
       float masks_hardness;
-      float amount = 1.03f;
-      if(up) amount = 0.97f;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
@@ -1041,12 +1046,12 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -3, masks_hardness);
       }
+      dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
     }
     else if(state == 0)
     {
+      const float amount = up ? 0.97f : 1.03f;
       float masks_border;
-      float amount = 1.03f;
-      if(up) amount = 0.97f;
 
       if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
       {
@@ -1065,6 +1070,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       {
         dt_masks_dynbuf_set(gui->guipoints_payload, -4, masks_border);
       }
+      dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
     }
     dt_control_queue_redraw_center();
     return 1;
@@ -1089,8 +1095,7 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
-        float amount = 1.03f;
-        if(up) amount = 0.97f;
+        const float amount = up ? 0.97f : 1.03f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
         for(int k = 0; k < nb; k++)
         {
@@ -1108,23 +1113,25 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           float masks_border = dt_conf_get_float("plugins/darkroom/spots/brush_border");
           masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/spots/brush_border", masks_border);
+          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
         }
         else
         {
           float masks_border = dt_conf_get_float("plugins/darkroom/masks/brush/border");
           masks_border = MAX(BORDER_MIN, MIN(masks_border * amount, BORDER_MAX));
           dt_conf_set_float("plugins/darkroom/masks/brush/border", masks_border);
+          dt_toast_log(_("size: %3.2f%%"), masks_border*2.f*100.f);
         }
       }
       else
       {
-        float amount = 1.03f;
-        if(up) amount = 0.97f;
+        const float amount = up ? 0.97f : 1.03f;
         for(int k = 0; k < nb; k++)
         {
           dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
           const float masks_hardness = point->hardness;
           point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
+          dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);
         }
         if(form->type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
         {
@@ -2519,7 +2526,7 @@ static int dt_brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
@@ -2569,7 +2576,7 @@ static int dt_brush_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
@@ -2633,8 +2640,9 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
                              float **buffer, int *width, int *height, int *posx, int *posy)
 {
   if(!module) return 0;
-  double start = dt_get_wtime();
-  double start2;
+  double start = 0.0;
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start = dt_get_wtime();
 
   // we get buffers for all points
   float *points = NULL, *border = NULL, *payload = NULL;
@@ -2649,14 +2657,16 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush points took %0.04f sec\n", form->name, dt_get_wtime() - start);
-  start = start2 = dt_get_wtime();
+    start = start2 = dt_get_wtime();
+  }
 
   // now we want to find the area, so we search min/max points
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  guint nb_corner = g_list_length(form->points);
+  const guint nb_corner = g_list_length(form->points);
   for(int i = nb_corner * 3; i < border_count; i++)
   {
     // we look at the borders
@@ -2686,11 +2696,10 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
 
   // we allocate the buffer
-  const size_t bufsize = (size_t)(*width) * (*height)  * sizeof(float);
-  *buffer = dt_alloc_align(64, bufsize);
+  const size_t bufsize = (size_t)(*width) * (*height);
+  *buffer = dt_alloc_align_float(bufsize);
   if(*buffer == NULL)
   {
     dt_free_align(points);
@@ -2698,7 +2707,7 @@ static int dt_brush_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
     dt_free_align(payload);
     return 0;
   }
-  memset(*buffer, 0, bufsize);
+  memset(*buffer, 0, sizeof(float) * bufsize);
 
   // now we fill the falloff
   int p0[2], p1[2];
@@ -2771,8 +2780,9 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
                                  dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
   if(!module) return 0;
-  double start = dt_get_wtime();
-  double start2;
+  double start = 0.0;
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start = dt_get_wtime();
 
   const int px = roi->x;
   const int py = roi->y;
@@ -2795,11 +2805,13 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush points took %0.04f sec\n", form->name, dt_get_wtime() - start);
-  start = start2 = dt_get_wtime();
+    start = start2 = dt_get_wtime();
+  }
 
   // empty the output buffer
-  memset(buffer, 0, (size_t)width * height * sizeof(float));
+  dt_iop_image_fill(buffer, 0.0f, width, height, 1);
 
   const guint nb_corner = g_list_length(form->points);
 
@@ -2849,7 +2861,6 @@ static int dt_brush_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
 
   // check if the path completely lies outside of roi -> we're done/mask remains empty
   if(xmax < 0 || ymax < 0 || xmin >= width || ymin >= height)

@@ -65,7 +65,6 @@ typedef struct dt_lib_export_t
   GtkWidget *storage_extra_container, *format_extra_container;
   GtkWidget *high_quality;
   GtkWidget *export_masks;
-  GtkWidget *metadata_button;
   char *metadata_export;
 } dt_lib_export_t;
 
@@ -527,11 +526,13 @@ void _print_size_update_display(dt_lib_export_t *self)
   }
   else
   {
-    if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"), "scaling") != 0)
+    gchar *resizing = dt_conf_get_string(CONFIG_PREFIX "resizing");
+    if (strcmp(resizing, "scaling") != 0)
     {
       // max size
       gtk_widget_set_visible(GTK_WIDGET(self->print_size), TRUE);
     }
+    g_free(resizing);
     gtk_widget_set_sensitive(GTK_WIDGET(self->width), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(self->height), FALSE);
 
@@ -854,6 +855,16 @@ static void _dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
     gtk_widget_hide(GTK_WIDGET(d->print_size));
     dt_conf_set_string(CONFIG_PREFIX "resizing", "scaling");
   }
+  if(d_type == DT_DIMENSIONS_CM || d_type == DT_DIMENSIONS_INCH)
+  {
+    // set dpi to user-set dpi
+    dt_conf_set_int("metadata/resolution", dt_conf_get_int(CONFIG_PREFIX "print_dpi"));
+  }
+  else
+  {
+    // reset export dpi to default value for scale/pixel specific export
+    dt_conf_set_int("metadata/resolution", dt_confgen_get_int("metadata/resolution", DT_DEFAULT));
+  }
   _size_in_px_update(d);
 }
 
@@ -966,6 +977,7 @@ static void _print_dpi_changed(GtkWidget *widget, gpointer user_data)
   const int dpi = atoi(gtk_entry_get_text(GTK_ENTRY(d->print_dpi)));
 
   dt_conf_set_int(CONFIG_PREFIX "print_dpi", dpi);
+  dt_conf_set_int("metadata/resolution", dpi);
 
   _resync_pixel_dimensions(d);
   _size_in_px_update(d);
@@ -1078,11 +1090,19 @@ static void _lib_export_styles_changed_callback(gpointer instance, gpointer user
   g_list_free_full(styles, dt_style_free);
 }
 
-static void _metadata_export_clicked(GtkComboBox *widget, dt_lib_export_t *d)
+void _menuitem_preferences(GtkMenuItem *menuitem, dt_lib_module_t *self)
 {
+  dt_lib_export_t *d = (dt_lib_export_t *)self->data;
   const gchar *name = dt_bauhaus_combobox_get_text(d->storage);
   const gboolean ondisk = name && !g_strcmp0(name, _("file on disk")); // FIXME: NO!!!!!one!
   d->metadata_export = dt_lib_export_metadata_configuration_dialog(d->metadata_export, ondisk);
+}
+
+void set_preferences(void *menu, dt_lib_module_t *self)
+{
+  GtkWidget *mi = gtk_menu_item_new_with_label(_("preferences..."));
+  g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_menuitem_preferences), self);
+  gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
 void gui_init(dt_lib_module_t *self)
@@ -1366,12 +1386,6 @@ void gui_init(dt_lib_module_t *self)
   d->export_button = GTK_BUTTON(dt_ui_button_new(_("export"), _("export with current settings"), NULL));
   gtk_box_pack_start(hbox, GTK_WIDGET(d->export_button), TRUE, TRUE, 0);
 
-  //  Add metadata exportation control
-  d->metadata_button = dtgtk_button_new(dtgtk_cairo_paint_preferences, CPF_STYLE_BOX, NULL);
-  gtk_widget_set_name(d->metadata_button, "non-flat");
-  gtk_widget_set_tooltip_text(d->metadata_button, _("edit metadata exportation details"));
-  gtk_box_pack_end(hbox, d->metadata_button, FALSE, TRUE, 0);
-
   g_signal_connect(G_OBJECT(d->dimensions_type), "value_changed", G_CALLBACK(_dimensions_type_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->export_button), "clicked", G_CALLBACK(_export_button_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
@@ -1380,7 +1394,6 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->print_height), "changed", G_CALLBACK(_print_height_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->print_dpi), "changed", G_CALLBACK(_print_dpi_changed), (gpointer)d);
 
-  g_signal_connect(G_OBJECT(d->metadata_button), "clicked", G_CALLBACK(_metadata_export_clicked), (gpointer)d);
   g_signal_connect(G_OBJECT(d->width), "changed", G_CALLBACK(_width_changed), (gpointer)d);
   g_signal_connect(G_OBJECT(d->height), "changed", G_CALLBACK(_height_changed), (gpointer)d);
 
@@ -1397,7 +1410,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(self->widget, TRUE);
   _print_size_update_display(d);
 
-  if (strcmp(dt_conf_get_string(CONFIG_PREFIX "resizing"), "scaling") == 0)
+  gchar *resizing = dt_conf_get_string(CONFIG_PREFIX "resizing");
+  if (strcmp(resizing, "scaling") == 0)
   {
     // scaling
     gtk_widget_show(GTK_WIDGET(d->scale));
@@ -1411,6 +1425,7 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_show(GTK_WIDGET(d->hbox1));
     gtk_widget_show(GTK_WIDGET(d->print_size));
   }
+  g_free(resizing);
 
   d->metadata_export = NULL;
 
@@ -1664,7 +1679,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     memcpy(new_params + first_half, &fversion, sizeof(int32_t));
     memcpy(new_params + first_half + sizeof(int32_t), &sversion, sizeof(int32_t));
     // copy the rest of the old params over
-    memcpy(new_params + first_half + 2 * sizeof(int32_t), buf, old_params_size - first_half);
+    memcpy(new_params + first_half + sizeof(int32_t) * 2, buf, old_params_size - first_half);
 
     *new_size = new_params_size;
     *new_version = 2;
@@ -1676,8 +1691,8 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t new_params_size = old_params_size + sizeof(int32_t);
     void *new_params = calloc(1, new_params_size);
 
-    memcpy(new_params, old_params, 2 * sizeof(int32_t));
-    memcpy(new_params + 3 * sizeof(int32_t), old_params + 2 * sizeof(int32_t), old_params_size - 2 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 2);
+    memcpy(new_params + sizeof(int32_t) * 3, old_params + sizeof(int32_t) * 2, old_params_size - sizeof(int32_t) * 2);
 
     *new_size = new_params_size;
     *new_version = 3;
@@ -1723,7 +1738,7 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
 
     void *new_params = calloc(1, new_params_size);
     size_t pos = 0;
-    memcpy(new_params, old_params, 4 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 4);
     pos += 4 * sizeof(int32_t);
     memcpy(new_params + pos, &icctype, sizeof(int32_t));
     pos += sizeof(int32_t);
@@ -1753,9 +1768,9 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     void *new_params = calloc(1, new_params_size);
 
     size_t pos = 0;
-    memcpy(new_params, old_params, 3 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 3);
     pos += 4 * sizeof(int32_t);
-    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - 3 * sizeof(int32_t));
+    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 3);
 
     *new_size = new_params_size;
     *new_version = 5;
@@ -1781,11 +1796,11 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     size_t new_params_size = old_params_size + flags_size;
     void *new_params = calloc(1, new_params_size);
     size_t pos = 0;
-    memcpy(new_params, old_params, 6 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 6);
     pos += 6 * sizeof(int32_t);
     memcpy(new_params + pos, flags, flags_size);
     pos += flags_size;
-    memcpy(new_params + pos, old_params + pos - flags_size, old_params_size - 6 * sizeof(int32_t));
+    memcpy(new_params + pos, old_params + pos - flags_size, old_params_size - sizeof(int32_t) * 6);
 
     g_free(flags);
     *new_size = new_params_size;
@@ -1807,9 +1822,9 @@ void *legacy_params(dt_lib_module_t *self, const void *const old_params, const s
     void *new_params = calloc(1, new_params_size);
 
     size_t pos = 0;
-    memcpy(new_params, old_params, 4 * sizeof(int32_t));
+    memcpy(new_params, old_params, sizeof(int32_t) * 4);
     pos += 5 * sizeof(int32_t);
-    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - 4 * sizeof(int32_t));
+    memcpy(new_params + pos, old_params + pos - sizeof(int32_t), old_params_size - sizeof(int32_t) * 4);
 
     *new_size = new_params_size;
     *new_version = 7;

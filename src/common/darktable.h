@@ -104,6 +104,18 @@ typedef unsigned int u_int;
 #endif /* _OPENMP */
 #endif /* dt_omp_sharedconst */
 
+#ifndef dt_omp_nontemporal
+// Clang 10+ supports the nontemporal() OpenMP directive
+// GCC 9 recognizes it as valid, but does not do anything with it
+// GCC 10+ ???
+#if (__clang__+0 >= 10 || __GNUC__ >= 9)
+#  define dt_omp_nontemporal(...) nontemporal(__VA_ARGS__)
+#else
+// GCC7/8 only support OpenMP 4.5, which does not have the nontemporal() directive.
+#  define dt_omp_nontemporal(var, ...)
+#endif
+#endif /* dt_omp_nontemporal */
+
 #else /* _OPENMP */
 
 # define omp_get_max_threads() 1
@@ -114,7 +126,7 @@ typedef unsigned int u_int;
 /* Create cloned functions for various CPU SSE generations */
 /* See for instructions https://hannes.hauswedell.net/post/2017/12/09/fmv/ */
 /* TL;DR : use only on SIMD functions containing low-level paralellized/vectorized loops */
-#if __has_attribute(target_clones) && !defined(_WIN32) && defined(__SSE__)
+#if __has_attribute(target_clones) && !defined(_WIN32) && (defined(__amd64__) || defined(__amd64) || defined(__x86_64__) || defined(__x86_64))
 #define __DT_CLONE_TARGETS__ __attribute__((target_clones("default", "sse2", "sse3", "sse4.1", "sse4.2", "popcnt", "avx", "avx2", "avx512f", "fma4")))
 #else
 #define __DT_CLONE_TARGETS__
@@ -125,7 +137,7 @@ typedef unsigned int u_int;
 #define DT_ALIGNED_PIXEL __attribute__((aligned(16)))
 
 /* Helper to force stack vectors to be aligned on 64 bits blocks to enable AVX2 */
-#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64);
+#define DT_IS_ALIGNED(x) __builtin_assume_aligned(x, 64)
 
 #ifndef _RELEASE
 #include "common/poison.h"
@@ -177,10 +189,6 @@ static inline int dt_version()
   return DT_MODULE_VERSION;
 #endif
 }
-
-#ifndef M_PI
-#define M_PI 3.14159265358979323846F
-#endif
 
 // Golden number (1+sqrt(5))/2
 #ifndef PHI
@@ -249,6 +257,7 @@ typedef enum dt_debug_thread_t
   DT_DEBUG_UNDO           = 1 << 19,
   DT_DEBUG_SIGNAL         = 1 << 20,
   DT_DEBUG_PARAMS         = 1 << 21,
+  DT_DEBUG_DEMOSAIC       = 1 << 22,
 } dt_debug_thread_t;
 
 typedef struct dt_codepath_t
@@ -328,14 +337,17 @@ void dt_gettime_t(char *datetime, size_t datetime_len, time_t t);
 void dt_gettime(char *datetime, size_t datetime_len);
 
 void *dt_alloc_align(size_t alignment, size_t size);
-static inline void * dt_alloc_align_float(size_t pixels)
+static inline float *dt_alloc_align_float(size_t pixels)
 {
-  return __builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
+  return (float*)__builtin_assume_aligned(dt_alloc_align(64, pixels * sizeof(float)), 64);
 }
 size_t dt_round_size(const size_t size, const size_t alignment);
 size_t dt_round_size_sse(const size_t size);
 
 #ifdef _WIN32
+void dt_free_align(void *mem);
+#define dt_free_align_ptr dt_free_align
+#elif _DEBUG // debug build makes sure that we get a crash on using plain free() on an aligned allocation
 void dt_free_align(void *mem);
 #define dt_free_align_ptr dt_free_align
 #else
@@ -419,10 +431,11 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
 /** \brief check if file is a supported image */
 gboolean dt_supported_image(const gchar *filename);
 
-static inline int dt_get_num_threads()
+static inline size_t dt_get_num_threads()
 {
 #ifdef _OPENMP
-  return omp_get_num_procs();
+  // we can safely assume omp_get_num_procs is > 0
+  return (size_t)omp_get_num_procs();
 #else
   return 1;
 #endif
@@ -437,262 +450,109 @@ static inline int dt_get_thread_num()
 #endif
 }
 
-static inline float dt_log2f(const float f)
+// Allocate a buffer for 'n' objects each of size 'objsize' bytes for each of the program's threads.
+// Ensures that there is no false sharing among threads by aligning and rounding up the allocation to
+// a multiple of the cache line size.  Returns a pointer to the allocated pool and the adjusted number
+// of objects in each thread's buffer.  Use dt_get_perthread or dt_get_bythread (see below) to access
+// a specific thread's buffer.
+static inline void *dt_alloc_perthread(const size_t n, const size_t objsize, size_t* padded_size)
 {
-#ifdef __GLIBC__
-  return log2f(f);
+  const size_t alloc_size = n * objsize;
+  const size_t cache_lines = (alloc_size+63)/64;
+  *padded_size = 64 * cache_lines / objsize;
+  return __builtin_assume_aligned(dt_alloc_align(64, 64 * cache_lines * dt_get_num_threads()), 64);
+}
+// Same as dt_alloc_perthread, but the object is a float.
+static inline float *dt_alloc_perthread_float(const size_t n, size_t* padded_size)
+{
+  return (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
+}
+// Allocate floats, cleared to zero
+static inline float *dt_calloc_perthread_float(const size_t n, size_t* padded_size)
+{
+  float *const buf = (float*)dt_alloc_perthread(n, sizeof(float), padded_size);
+  if (buf)
+  {
+    for (size_t i = 0; i < *padded_size * dt_get_num_threads(); i++)
+      buf[i] = 0.0f;
+  }
+  return buf;
+}
+
+// Given the buffer and object count returned by dt_alloc_perthread, return the current thread's private buffer.
+#define dt_get_perthread(buf, padsize) DT_IS_ALIGNED((buf) + ((padsize) * dt_get_thread_num()))
+// Given the buffer and object count returned by dt_alloc_perthread and a thread count in 0..dt_get_num_threads(),
+// return a pointer to the indicated thread's private buffer.
+#define dt_get_bythread(buf, padsize, tnum) DT_IS_ALIGNED((buf) + ((padsize) * (tnum)))
+
+// Most code in dt assumes that the compiler is capable of auto-vectorization.  In some cases, this will yield
+// suboptimal code if the compiler in fact does NOT auto-vectorize.  Uncomment the following line for such a
+// compiler.
+//#define DT_NO_VECTORIZATION
+
+// For some combinations of compiler and architecture, the compiler may actually emit inferior code if given
+// a hint to vectorize a loop.  Uncomment the following line if such a combination is the compilation target.
+//#define DT_NO_SIMD_HINTS
+
+// To be able to vectorize per-pixel loops, we need to operate on all four channels, but if the compiler does
+// not auto-vectorize, doing so increases computation by 1/3 for a channel which typically is ignored anyway.
+// Select the appropriate number of channels over which to loop to produce the fastest code.
+#ifdef DT_NO_VECTORIZATION
+#define DT_PIXEL_SIMD_CHANNELS 3
 #else
-  return logf(f) / logf(2.0f);
+#define DT_PIXEL_SIMD_CHANNELS 4
+#endif
+
+// A macro which gives us a configurable shorthand to produce the optimal performance when processing all of the
+// channels in a pixel.  Its first argument is the name of the variable to be used inside the 'for' loop it creates,
+// while the optional second argument is a set of OpenMP directives, typically specifying variable alignment.
+// If indexing off of the begining of any buffer allocated with dt's image or aligned allocation functions, the
+// alignment to specify is 64; otherwise, use 16, as there may have been an odd number of pixels from the start.
+// Sample usage:
+//         for_each_channel(k,aligned(src,dest:16))
+//         {
+//           src[k] = dest[k] / 3.0f;
+//         }
+#if defined(_OPENMP) && defined(OPENMP_SIMD_) && !defined(DT_NO_SIMD_HINTS)
+//https://stackoverflow.com/questions/45762357/how-to-concatenate-strings-in-the-arguments-of-pragma
+#define _DT_Pragma_(x) _Pragma(#x)
+#define _DT_Pragma(x) _DT_Pragma_(x)
+#define for_each_channel(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  _DT_Pragma(omp simd __VA_ARGS__) \
+  for (size_t _var = 0; _var < 4; _var++)
+#else
+#define for_each_channel(_var, ...) \
+  for (size_t _var = 0; _var < DT_PIXEL_SIMD_CHANNELS; _var++)
+#define for_four_channels(_var, ...) \
+  for (size_t _var = 0; _var < 4; _var++)
+#endif
+
+// copy the RGB channels of a pixel using nontemporal stores if possible; includes the 'alpha' channel as well
+// if faster due to vectorization, but subsequent code should ignore the value of the alpha unless explicitly
+// set afterwards (since it might not have been copied).  NOTE: nontemporal stores will actually be *slower*
+// if we immediately access the pixel again.  This function should only be used when processing an entire
+// image before doing anything else with the destination buffer.
+static inline void copy_pixel_nontemporal(float *const __restrict__ out, const float *const __restrict__ in)
+{
+#if (__clang__+0 > 7) && (__clang__+0 < 10)
+  for_each_channel(k,aligned(in,out:16)) __builtin_nontemporal_store(in[k],out[k]);
+#else
+  for_each_channel(k,aligned(in,out:16) dt_omp_nontemporal(out)) out[k] = in[k];
 #endif
 }
 
-static inline float dt_fast_expf(const float x)
+// copy the RGB channels of a pixel; includes the 'alpha' channel as well if faster due to vectorization, but
+// subsequent code should ignore the value of the alpha unless explicitly set afterwards (since it might not have
+// been copied)
+static inline void copy_pixel(float *const __restrict__ out, const float *const __restrict__ in)
 {
-  // meant for the range [-100.0f, 0.0f]. largest error ~ -0.06 at 0.0f.
-  // will get _a_lot_ worse for x > 0.0f (9000 at 10.0f)..
-  const int i1 = 0x3f800000u;
-  // e^x, the comment would be 2^x
-  const int i2 = 0x402DF854u; // 0x40000000u;
-  // const int k = CLAMPS(i1 + x * (i2 - i1), 0x0u, 0x7fffffffu);
-  // without max clamping (doesn't work for large x, but is faster):
-  const int k0 = i1 + x * (i2 - i1);
-  union {
-      float f;
-      int k;
-  } u;
-  u.k = k0 > 0 ? k0 : 0;
-  return u.f;
+  for_each_channel(k,aligned(in,out:16)) out[k] = in[k];
 }
 
-// fast approximation of 2^-x for 0<x<126
-static inline float dt_fast_mexp2f(const float x)
-{
-  const int i1 = 0x3f800000; // bit representation of 2^0
-  const int i2 = 0x3f000000; // bit representation of 2^-1
-  const int k0 = i1 + (int)(x * (i2 - i1));
-  union {
-    float f;
-    int i;
-  } k;
-  k.i = k0 >= 0x800000 ? k0 : 0;
-  return k.f;
-}
-
-// The below version is incorrect, suffering from reduced precision.
-// It is used by the non-local means code in both nlmeans.c and
-// denoiseprofile.c, and fixing it would cause a change in output.
-static inline float fast_mexp2f(const float x)
-{
-  const float i1 = (float)0x3f800000u; // 2^0
-  const float i2 = (float)0x3f000000u; // 2^-1
-  const float k0 = i1 + x * (i2 - i1);
-  union {
-    float f;
-    int i;
-  } k;
-  k.i = k0 >= (float)0x800000u ? k0 : 0;
-  return k.f;
-}
-
-static inline void dt_print_mem_usage()
-{
-#if defined(__linux__)
-  char *line = NULL;
-  size_t len = 128;
-  char vmsize[64];
-  char vmpeak[64];
-  char vmrss[64];
-  char vmhwm[64];
-  FILE *f;
-
-  char pidstatus[128];
-  snprintf(pidstatus, sizeof(pidstatus), "/proc/%u/status", (uint32_t)getpid());
-
-  f = g_fopen(pidstatus, "r");
-  if(!f) return;
-
-  /* read memory size data from /proc/pid/status */
-  while(getline(&line, &len, f) != -1)
-  {
-    if(!strncmp(line, "VmPeak:", 7))
-      g_strlcpy(vmpeak, line + 8, sizeof(vmpeak));
-    else if(!strncmp(line, "VmSize:", 7))
-      g_strlcpy(vmsize, line + 8, sizeof(vmsize));
-    else if(!strncmp(line, "VmRSS:", 6))
-      g_strlcpy(vmrss, line + 8, sizeof(vmrss));
-    else if(!strncmp(line, "VmHWM:", 6))
-      g_strlcpy(vmhwm, line + 8, sizeof(vmhwm));
-  }
-  free(line);
-  fclose(f);
-
-  fprintf(stderr, "[memory] max address space (vmpeak): %15s"
-                  "[memory] cur address space (vmsize): %15s"
-                  "[memory] max used memory   (vmhwm ): %15s"
-                  "[memory] cur used memory   (vmrss ): %15s",
-          vmpeak, vmsize, vmhwm, vmrss);
-
-#elif defined(__APPLE__)
-  struct task_basic_info t_info;
-  mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
-
-  if(KERN_SUCCESS != task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count))
-  {
-    fprintf(stderr, "[memory] task memory info unknown.\n");
-    return;
-  }
-
-  // Report in kB, to match output of /proc on Linux.
-  fprintf(stderr, "[memory] max address space (vmpeak): %15s\n"
-                  "[memory] cur address space (vmsize): %12llu kB\n"
-                  "[memory] max used memory   (vmhwm ): %15s\n"
-                  "[memory] cur used memory   (vmrss ): %12llu kB\n",
-          "unknown", (uint64_t)t_info.virtual_size / 1024, "unknown", (uint64_t)t_info.resident_size / 1024);
-#elif defined (_WIN32)
-  //Based on: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
-  MEMORYSTATUSEX memInfo;
-  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-  GlobalMemoryStatusEx(&memInfo);
-  // DWORDLONG totalVirtualMem = memInfo.ullTotalPageFile;
-
-  // Virtual Memory currently used by current process:
-  PROCESS_MEMORY_COUNTERS_EX pmc;
-  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc));
-  size_t virtualMemUsedByMe = pmc.PagefileUsage;
-  size_t virtualMemUsedByMeMax = pmc.PeakPagefileUsage;
-
-  // Max Physical Memory currently used by current process
-  size_t physMemUsedByMeMax = pmc.PeakWorkingSetSize;
-
-  // Physical Memory currently used by current process
-  size_t physMemUsedByMe = pmc.WorkingSetSize;
-
-
-  fprintf(stderr, "[memory] max address space (vmpeak): %12llu kB\n"
-                  "[memory] cur address space (vmsize): %12llu kB\n"
-                  "[memory] max used memory   (vmhwm ): %12llu kB\n"
-                  "[memory] cur used memory   (vmrss ): %12llu Kb\n",
-          virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
-          physMemUsedByMe / 1024);
-
-#else
-  fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
-#endif
-}
-
-static inline int dt_get_num_atom_cores()
-{
-#if defined(__linux__)
-  int count = 0;
-  char line[256];
-  FILE *f = g_fopen("/proc/cpuinfo", "r");
-  if(f)
-  {
-    while(!feof(f))
-    {
-      if(fgets(line, sizeof(line), f))
-      {
-        if(!strncmp(line, "model name", 10))
-        {
-          if(strstr(line, "Atom"))
-          {
-            count++;
-          }
-        }
-      }
-    }
-    fclose(f);
-  }
-  return count;
-#elif defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
-  int ret, hw_ncpu;
-  int mib[2] = { CTL_HW, HW_MODEL };
-  char *hw_model, *index;
-  size_t length;
-
-  /* Query hw.model to get the required buffer length and allocate the
-   * buffer. */
-  ret = sysctl(mib, 2, NULL, &length, NULL, 0);
-  if(ret != 0)
-  {
-    return 0;
-  }
-
-  hw_model = (char *)malloc(length + 1);
-  if(hw_model == NULL)
-  {
-    return 0;
-  }
-
-  /* Query hw.model again, this time with the allocated buffer. */
-  ret = sysctl(mib, 2, hw_model, &length, NULL, 0);
-  if(ret != 0)
-  {
-    free(hw_model);
-    return 0;
-  }
-  hw_model[length] = '\0';
-
-  /* Check if the processor model name contains "Atom". */
-  index = strstr(hw_model, "Atom");
-  free(hw_model);
-  if(index == NULL)
-  {
-    return 0;
-  }
-
-  /* Get the number of cores, using hw.ncpu sysctl. */
-  mib[1] = HW_NCPU;
-  hw_ncpu = 0;
-  length = sizeof(hw_ncpu);
-  ret = sysctl(mib, 2, &hw_ncpu, &length, NULL, 0);
-  if(ret != 0)
-  {
-    return 0;
-  }
-
-  return hw_ncpu;
-#else
-  return 0;
-#endif
-}
-
-static inline size_t dt_get_total_memory()
-{
-#if defined(__linux__)
-  FILE *f = g_fopen("/proc/meminfo", "rb");
-  if(!f) return 0;
-  size_t mem = 0;
-  char *line = NULL;
-  size_t len = 0;
-  if(getline(&line, &len, f) != -1) mem = atol(line + 10);
-  fclose(f);
-  if(len > 0) free(line);
-  return mem;
-#elif defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)            \
-    || defined(__OpenBSD__)
-#if defined(__APPLE__)
-  int mib[2] = { CTL_HW, HW_MEMSIZE };
-#elif defined(HW_PHYSMEM64)
-  int mib[2] = { CTL_HW, HW_PHYSMEM64 };
-#else
-  int mib[2] = { CTL_HW, HW_PHYSMEM };
-#endif
-  uint64_t physical_memory;
-  size_t length = sizeof(uint64_t);
-  sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
-  return physical_memory / 1024;
-#elif defined _WIN32
-  MEMORYSTATUSEX memInfo;
-  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
-  GlobalMemoryStatusEx(&memInfo);
-  return memInfo.ullTotalPhys / (uint64_t)1024;
-#else
-  // assume 2GB until we have a better solution.
-  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
-  return 2097152;
-#endif
-}
+void dt_print_mem_usage();
 
 void dt_configure_performance();
 

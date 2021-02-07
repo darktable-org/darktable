@@ -19,6 +19,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/dtpthread.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "common/iop_profile.h"
 #include "control/control.h"
@@ -35,12 +36,10 @@
 
 #include <assert.h>
 #include <gmodule.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 #include <strings.h>
 
-#define CLAMP_RANGE(x, y, z) (CLAMP(x, y, z))
 #define NEUTRAL_GRAY 0.5
 
 const dt_develop_name_value_t dt_develop_blend_mode_names[]
@@ -297,9 +296,9 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data, dt_iop_colorspace_type
   switch(cst)
   {
     case iop_cs_Lab:
-      out[0] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 0, in_out)) / 100.0f, 0.0f, 1.0f);
-      out[1] = CLAMP_RANGE(((in[1] / _get_boost_factor(data, 1, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
-      out[2] = CLAMP_RANGE(((in[2] / _get_boost_factor(data, 2, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
+      out[0] = CLAMP((in[0] / _get_boost_factor(data, 0, in_out)) / 100.0f, 0.0f, 1.0f);
+      out[1] = CLAMP(((in[1] / _get_boost_factor(data, 1, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
+      out[2] = CLAMP(((in[2] / _get_boost_factor(data, 2, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
       break;
     case iop_cs_rgb:
       if(work_profile == NULL)
@@ -310,24 +309,24 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data, dt_iop_colorspace_type
                                                        work_profile->unbounded_coeffs_in,
                                                        work_profile->lutsize,
                                                        work_profile->nonlinearlut);
-      out[0] = CLAMP_RANGE((out[0] / _get_boost_factor(data, 0, in_out)), 0.0f, 1.0f);
-      out[1] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 1, in_out)), 0.0f, 1.0f);
-      out[2] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 2, in_out)), 0.0f, 1.0f);
-      out[3] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 3, in_out)), 0.0f, 1.0f);
+      out[0] = CLAMP((out[0] / _get_boost_factor(data, 0, in_out)), 0.0f, 1.0f);
+      out[1] = CLAMP((in[0] / _get_boost_factor(data, 1, in_out)), 0.0f, 1.0f);
+      out[2] = CLAMP((in[1] / _get_boost_factor(data, 2, in_out)), 0.0f, 1.0f);
+      out[3] = CLAMP((in[2] / _get_boost_factor(data, 3, in_out)), 0.0f, 1.0f);
       break;
     case iop_cs_LCh:
-      out[3] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 3, in_out)) / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
-      out[4] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
+      out[3] = CLAMP((in[1] / _get_boost_factor(data, 3, in_out)) / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
+      out[4] = CLAMP((in[2] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
       break;
     case iop_cs_HSL:
-      out[4] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
-      out[5] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
-      out[6] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
+      out[4] = CLAMP((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
+      out[5] = CLAMP((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
+      out[6] = CLAMP((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
       break;
     case iop_cs_JzCzhz:
-      out[4] = CLAMP_RANGE((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
-      out[5] = CLAMP_RANGE((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
-      out[6] = CLAMP_RANGE((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
+      out[4] = CLAMP((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
+      out[5] = CLAMP((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
+      out[6] = CLAMP((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
       break;
     default:
       out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
@@ -392,7 +391,7 @@ static inline int _blendif_print_digits_default(float value)
 static inline int _blendif_print_digits_ab(float value)
 {
   int digits;
-  if(fabs(value) < 10.0f) digits = 1;
+  if(fabsf(value) < 10.0f) digits = 1;
   else digits = 0;
 
   return digits;
@@ -419,8 +418,9 @@ static gboolean _blendif_are_output_channels_used(const dt_develop_blend_params_
                                                   const dt_develop_blend_colorspace_t cst)
 {
   const gboolean mask_inclusive = blend->mask_combine & DEVELOP_COMBINE_INCL;
-  const uint32_t mask = cst == DEVELOP_BLEND_CS_LAB ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
-                                                    : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+  const uint32_t mask = cst == DEVELOP_BLEND_CS_LAB
+    ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
+    : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
   const uint32_t active_channels = blend->blendif & mask;
   const uint32_t inverted_channels = (blend->blendif >> 16) ^ (mask_inclusive ? mask : 0);
   const uint32_t cancel_channels = inverted_channels & ~blend->blendif & mask;
@@ -435,8 +435,10 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
   gboolean changed = FALSE;
   if(!bd->output_channels_shown)
   {
-    const uint32_t mask = bd->csp == DEVELOP_BLEND_CS_LAB ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
-                                                          : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+    const uint32_t mask = bd->csp == DEVELOP_BLEND_CS_LAB
+      ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
+      : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+
     dt_develop_blend_params_t *const d = module->blend_params;
     const uint32_t need_inversion = d->mask_combine & DEVELOP_COMBINE_INCL ? (mask << 16) : 0;
     if((d->blendif & need_inversion) != need_inversion || (d->blendif & mask) != 0)
@@ -446,9 +448,11 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
     }
     for (size_t ch = 0; ch < DEVELOP_BLENDIF_SIZE; ch++)
     {
-      if ((DEVELOP_BLENDIF_OUTPUT_MASK & (1 << ch)) && (d->blendif_parameters[ch * 4 + 0] != 0.0f
-          || d->blendif_parameters[ch * 4 + 1] != 0.0f || d->blendif_parameters[ch * 4 + 2] != 1.0f
-          || d->blendif_parameters[ch * 4 + 3] != 1.0f))
+      if ((DEVELOP_BLENDIF_OUTPUT_MASK & (1 << ch))
+          && (   d->blendif_parameters[ch * 4 + 0] != 0.0f
+              || d->blendif_parameters[ch * 4 + 1] != 0.0f
+              || d->blendif_parameters[ch * 4 + 2] != 1.0f
+              || d->blendif_parameters[ch * 4 + 3] != 1.0f))
       {
         changed = TRUE;
         d->blendif_parameters[ch * 4 + 0] = 0.0f;
@@ -547,7 +551,7 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
     dt_masks_set_edit_mode(data->module, DT_MASKS_EDIT_OFF);
     gtk_widget_hide(GTK_WIDGET(data->masks_box));
   }
-  else
+  else if(data->masks_support)
   {
     for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->masks_shapes[n]), FALSE);
@@ -710,10 +714,10 @@ static float log10_scale_callback(GtkWidget *self, float inval, int dir)
   switch(dir)
   {
     case GRADIENT_SLIDER_SET:
-      outval = (log10(CLAMP_RANGE(inval, 0.0001f, 1.0f)) + 4.0f) / 4.0f;
+      outval = (log10(CLAMP(inval, 0.0001f, 1.0f)) + 4.0f) / 4.0f;
       break;
     case GRADIENT_SLIDER_GET:
-      outval = CLAMP_RANGE(exp(M_LN10 * (4.0f * inval - 4.0f)), 0.0f, 1.0f);
+      outval = CLAMP(exp(M_LN10 * (4.0f * inval - 4.0f)), 0.0f, 1.0f);
       if(outval <= tiny) outval = 0.0f;
       if(outval >= 1.0f - tiny) outval = 1.0f;
       break;
@@ -736,12 +740,12 @@ static float magnifier_scale_callback(GtkWidget *self, float inval, int dir)
   switch(dir)
   {
     case GRADIENT_SLIDER_SET:
-      outval = (invscale * tanh(range * (CLAMP_RANGE(inval, 0.0f, 1.0f) - 0.5f)) + 1.0f) * 0.5f;
+      outval = (invscale * tanh(range * (CLAMP(inval, 0.0f, 1.0f) - 0.5f)) + 1.0f) * 0.5f;
       if(outval <= tiny) outval = 0.0f;
       if(outval >= 1.0f - tiny) outval = 1.0f;
       break;
     case GRADIENT_SLIDER_GET:
-      outval = invrange * atanh((2.0f * CLAMP_RANGE(inval, eps, 1.0f - eps) - 1.0f) * scale) + 0.5f;
+      outval = invrange * atanh((2.0f * CLAMP(inval, eps, 1.0f - eps) - 1.0f) * scale) + 0.5f;
       if(outval <= tiny) outval = 0.0f;
       if(outval >= 1.0f - tiny) outval = 1.0f;
       break;
@@ -1534,7 +1538,6 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
   if(module_cst == DEVELOP_BLEND_CS_LAB || module_cst == DEVELOP_BLEND_CS_RGB_DISPLAY
       || module_cst == DEVELOP_BLEND_CS_RGB_SCENE)
   {
-    char *markup;
 
     mi = gtk_menu_item_new_with_label(_("reset to default blend colorspace"));
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_NONE), NULL);
@@ -1547,11 +1550,7 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
     {
       mi = gtk_menu_item_new_with_label(_("Lab"));
       if(module_blend_cst == DEVELOP_BLEND_CS_LAB)
-      {
-        markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", _("Lab"));
-        gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-        g_free(markup);
-      }
+        gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
       g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_LAB), NULL);
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
@@ -1559,22 +1558,14 @@ static void _blendif_options_callback(GtkButton *button, GdkEventButton *event, 
 
     mi = gtk_menu_item_new_with_label(_("RGB (display)"));
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_DISPLAY)
-    {
-      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", _("RGB (display)"));
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_free(markup);
-    }
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_DISPLAY), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 
     mi = gtk_menu_item_new_with_label(_("RGB (scene)"));
     if(module_blend_cst == DEVELOP_BLEND_CS_RGB_SCENE)
-    {
-      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", _("RGB (scene)"));
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_free(markup);
-    }
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     g_object_set_data_full(G_OBJECT(mi), "dt-blend-cst", GINT_TO_POINTER(DEVELOP_BLEND_CS_RGB_SCENE), NULL);
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(_blendif_select_colorspace), module);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
@@ -2111,9 +2102,13 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   }
   dt_bauhaus_combobox_set(bd->masks_combo, 0);
 
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_polarity),
-                               bp->mask_combine & DEVELOP_COMBINE_MASKS_POS);
+  if(bd->masks_support)
+  {
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), bd->masks_shown != DT_MASKS_EDIT_OFF);
+
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_polarity),
+                                 bp->mask_combine & DEVELOP_COMBINE_MASKS_POS);
+  }
 
   // update buttons status
   for(int n = 0; n < DEVELOP_MASKS_NB_SHAPES; n++)

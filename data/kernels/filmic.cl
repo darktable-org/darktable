@@ -653,10 +653,9 @@ kernel void wavelets_detail_level(read_only image2d_t detail, read_only image2d_
   const float4 d = read_imagef(detail, sampleri, (int2)(x, y));
   const float4 lf = read_imagef(LF, sampleri, (int2)(x, y));
   const float4 hf = d - lf;
-  const float t = fminabsf(fminabsf(hf.x, hf.y), hf.z);
 
   write_imagef(HF, (int2)(x, y), hf);
-  write_imagef(texture, (int2)(x, y), t);
+  write_imagef(texture, (int2)(x, y), hf);
 }
 
 kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF, read_only image2d_t texture, read_only image2d_t mask,
@@ -677,34 +676,39 @@ kernel void wavelets_reconstruct(read_only image2d_t HF, read_only image2d_t LF,
   const float alpha = read_imagef(mask, sampleri, (int2)(x, y)).x;
   const float4 HF_c = read_imagef(HF, sampleri, (int2)(x, y));
   const float4 LF_c = read_imagef(LF, sampleri, (int2)(x, y));
+  const float4 TT_c = read_imagef(texture, sampleri, (int2)(x, y));
 
-  const float grey_texture = gamma * read_imagef(texture, sampleri, (int2)(x, y)).x;
-  const float grey_details = fmaxabsf(fmaxabsf(HF_c.x, HF_c.y), HF_c.z);
-  const float grey_HF = beta_comp * (gamma_comp * grey_details + grey_texture);
-
-  const float4 color_residual = LF_c * beta;
-  float grey_residual;
-  float4 color_details;
+  float4 details;
+  float4 residual;
 
   switch(variant)
   {
     case(DT_FILMIC_RECONSTRUCT_RGB):
     {
-      grey_residual = beta_comp * fmin(fmin(LF_c.x, LF_c.y), LF_c.z);
-      color_details = (HF_c * gamma_comp + fmin(fabs(HF_c / grey_details), (float4)1.f) * grey_texture) * beta;
+      const float grey_texture = fmaxabsf(fmaxabsf(TT_c.x, TT_c.y), TT_c.z);
+      const float grey_details = (HF_c.x + HF_c.y + HF_c.z) / 3.f;
+      const float grey_HF = beta_comp * (gamma_comp * grey_details + gamma * grey_texture);
+      const float grey_residual = beta_comp * (LF_c.x + LF_c.y + LF_c.z) / 3.f;
+
+      details = (gamma_comp * HF_c + gamma * TT_c) * beta + grey_HF;
+      residual = (s == scales - 1) ? grey_residual + LF_c * beta : (float4)0.f;
       break;
     }
     case(DT_FILMIC_RECONSTRUCT_RATIOS):
     {
-      grey_residual = beta_comp * fmax(fmax(LF_c.x, LF_c.y), LF_c.z);
-      color_details = (HF_c * gamma_comp - 0.5f * fmin(fabs(HF_c / grey_details), (float4)1.f) * grey_texture) * beta;
+      const float grey_texture = fmaxabsf(fmaxabsf(TT_c.x, TT_c.y), TT_c.z);
+      const float grey_details = (HF_c.x + HF_c.y + HF_c.z) / 3.f;
+      const float grey_HF = (gamma_comp * grey_details + gamma * grey_texture);
+
+      details = 0.5f * ((gamma_comp * HF_c + gamma * TT_c) + grey_HF);
+      residual = (s == scales - 1) ? LF_c : (float4)0.f;
       break;
     }
   }
 
   const float4 i = read_imagef(reconstructed_read, sampleri, (int2)(x, y));
-  const float4 o = i + alpha * (delta * (grey_HF + color_details) + (grey_residual + color_residual) / (float)scales);
-  write_imagef(reconstructed_write, (int2)(x, y), fmax(o, 0.f));
+  const float4 o = i + alpha * (delta * details + residual);
+  write_imagef(reconstructed_write, (int2)(x, y), o);
 }
 
 

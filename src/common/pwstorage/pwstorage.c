@@ -98,7 +98,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
       break;
     case PW_STORAGE_BACKEND_LIBSECRET:
 #ifdef HAVE_LIBSECRET
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using libsecret backend for username/password storage");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using libsecret backend for username/password storage.\n");
       pwstorage->backend_context = (void *)dt_pwstorage_libsecret_new();
       if(pwstorage->backend_context == NULL)
       {
@@ -119,7 +119,7 @@ const dt_pwstorage_t *dt_pwstorage_new()
 #endif
     case PW_STORAGE_BACKEND_KWALLET:
 #ifdef HAVE_KWALLET
-      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using kwallet backend for username/password storage");
+      dt_print(DT_DEBUG_PWSTORAGE, "[pwstorage_new] using kwallet backend for username/password storage.\n");
       pwstorage->backend_context = (void *)dt_pwstorage_kwallet_new();
       if(pwstorage->backend_context == NULL)
       {

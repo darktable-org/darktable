@@ -21,6 +21,18 @@
 /** shows the preferences dialog and blocks until it's closed. */
 void dt_gui_preferences_show();
 
+// return the widget for a given preference key
+GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key);
+GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key);
+
+// update widget with current preference
+void dt_gui_preferences_bool_update(GtkWidget *widget);
+void dt_gui_preferences_int_update(GtkWidget *widget);
+
+// reset widget to default value
+void dt_gui_preferences_bool_reset(GtkWidget *widget);
+void dt_gui_preferences_int_reset(GtkWidget *widget);
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;

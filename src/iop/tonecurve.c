@@ -370,8 +370,11 @@ static inline float dt_prophoto_rgb_luminance(const float *const rgb)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const i, void *const o,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  const int ch = piece->colors;
-  dt_iop_tonecurve_data_t *d = (dt_iop_tonecurve_data_t *)(piece->data);
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         i, o, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
+  const dt_iop_tonecurve_data_t *const restrict d = (dt_iop_tonecurve_data_t *)(piece->data);
   const dt_iop_order_iccprofile_info_t *const work_profile
     = dt_ioppr_add_profile_info_to_list(self->dev, DT_COLORSPACE_PROPHOTO_RGB, "", INTENT_PERCEPTUAL);
   const float xm_L = 1.0f / d->unbounded_coeffs_L[0];
@@ -381,111 +384,106 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float xm_bl = 1.0f - 1.0f / d->unbounded_coeffs_ab[9];
   const float low_approximation = d->table[0][(int)(0.01f * 0x10000ul)];
 
-  const int width = roi_out->width;
-  const int height = roi_out->height;
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
   const int autoscale_ab = d->autoscale_ab;
   const int unbound_ab = d->unbound_ab;
 
+  const float *const restrict in = (float*)i;
+  float *const restrict out = (float*)o;
+
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(autoscale_ab, ch, height, i, low_approximation, o, \
-                      xm_al, xm_ar, xm_bl, xm_br, xm_L, unbound_ab, width, work_profile) \
-  shared(d) \
+  dt_omp_firstprivate(npixels, autoscale_ab, low_approximation, xm_al, xm_ar, xm_bl, xm_br, xm_L, unbound_ab, work_profile) \
+  dt_omp_sharedconst(d, in, out) \
   schedule(static)
 #endif
-  for(int k = 0; k < height; k++)
+  for(int k = 0; k < 4*npixels; k += 4)
   {
-    float *in = ((float *)i) + (size_t)k * ch * width;
-    float *out = ((float *)o) + (size_t)k * ch * width;
+    const float L_in = in[k] / 100.0f;
 
-    for(int j = 0; j < width; j++, in += ch, out += ch)
+    out[k+0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
+      : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
+
+    if(autoscale_ab == DT_S_SCALE_MANUAL)
     {
-      const float L_in = in[0] / 100.0f;
+      const float a_in = (in[k+1] + 128.0f) / 256.0f;
+      const float b_in = (in[k+2] + 128.0f) / 256.0f;
 
-      out[0] = (L_in < xm_L) ? d->table[ch_L][CLAMP((int)(L_in * 0x10000ul), 0, 0xffff)]
-                             : dt_iop_eval_exp(d->unbounded_coeffs_L, L_in);
-
-      if(autoscale_ab == DT_S_SCALE_MANUAL)
+      if(unbound_ab == 0)
       {
-        const float a_in = (in[1] + 128.0f) / 256.0f;
-        const float b_in = (in[2] + 128.0f) / 256.0f;
-
-        if(unbound_ab == 0)
-        {
-          // old style handling of a/b curves: only lut lookup with clamping
-          out[1] = d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)];
-          out[2] = d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)];
-        }
-        else
-        {
-          // new style handling of a/b curves: lut lookup with two-sided extrapolation;
-          // mind the x-axis reversal for the left-handed side
-          out[1] = (a_in > xm_ar)
-                       ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in)
-                       : ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 3, 1.0f - a_in)
-                                         : d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)]);
-          out[2] = (b_in > xm_br)
-                       ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 6, b_in)
-                       : ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 9, 1.0f - b_in)
-                                         : d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)]);
-        }
+        // old style handling of a/b curves: only lut lookup with clamping
+        out[k+1] = d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)];
+        out[k+2] = d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)];
       }
-      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC)
+      else
       {
-        // in Lab: correct compressed Luminance for saturation:
-        if(L_in > 0.01f)
-        {
-          out[1] = in[1] * out[0] / in[0];
-          out[2] = in[2] * out[0] / in[0];
-        }
-        else
-        {
-          out[1] = in[1] * low_approximation;
-          out[2] = in[2] * low_approximation;
-        }
+        // new style handling of a/b curves: lut lookup with two-sided extrapolation;
+        // mind the x-axis reversal for the left-handed side
+        out[k+1] = (a_in > xm_ar)
+          ? dt_iop_eval_exp(d->unbounded_coeffs_ab, a_in)
+          : ((a_in < xm_al) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 3, 1.0f - a_in)
+             : d->table[ch_a][CLAMP((int)(a_in * 0x10000ul), 0, 0xffff)]);
+        out[k+2] = (b_in > xm_br)
+          ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 6, b_in)
+          : ((b_in < xm_bl) ? dt_iop_eval_exp(d->unbounded_coeffs_ab + 9, 1.0f - b_in)
+             : d->table[ch_b][CLAMP((int)(b_in * 0x10000ul), 0, 0xffff)]);
       }
-      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
-      {
-        float XYZ[3];
-        dt_Lab_to_XYZ(in, XYZ);
-        for(int c=0;c<3;c++)
-          XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0x10000ul), 0, 0xffff)]
-                                   : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
-        dt_XYZ_to_Lab(XYZ, out);
-      }
-      else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB)
-      {
-        float rgb[3] = {0, 0, 0};
-        dt_Lab_to_prophotorgb(in, rgb);
-        if(d->preserve_colors == DT_RGB_NORM_NONE)
-        {
-          for(int c = 0; c < 3; c++)
-          {
-            rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
-                                     : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
-          }
-        }
-        else
-        {
-          float ratio = 1.f;
-          const float lum = dt_rgb_norm(rgb, d->preserve_colors, work_profile);
-          if(lum > 0.f)
-          {
-            const float curve_lum = (lum < xm_L)
-                                        ? d->table[ch_L][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
-                                        : dt_iop_eval_exp(d->unbounded_coeffs_L, lum);
-            ratio = curve_lum / lum;
-          }
-          for(size_t c = 0; c < 3; c++)
-          {
-            rgb[c] = (ratio * rgb[c]);
-          }
-        }
-        dt_prophotorgb_to_Lab(rgb, out);
-      }
-
-      out[3] = in[3];
     }
+    else if(autoscale_ab == DT_S_SCALE_AUTOMATIC)
+    {
+      // in Lab: correct compressed Luminance for saturation:
+      if(L_in > 0.01f)
+      {
+        out[k+1] = in[k+1] * out[k] / in[k+0];
+        out[k+2] = in[k+2] * out[k] / in[k+0];
+      }
+      else
+      {
+        out[k+1] = in[k+1] * low_approximation;
+        out[k+2] = in[k+2] * low_approximation;
+      }
+    }
+    else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_XYZ)
+    {
+      float XYZ[3];
+      dt_Lab_to_XYZ(in + k, XYZ);
+      for(int c=0;c<3;c++)
+        XYZ[c] = (XYZ[c] < xm_L) ? d->table[ch_L][CLAMP((int)(XYZ[c] * 0x10000ul), 0, 0xffff)]
+          : dt_iop_eval_exp(d->unbounded_coeffs_L, XYZ[c]);
+      dt_XYZ_to_Lab(XYZ, out + k);
+    }
+    else if(autoscale_ab == DT_S_SCALE_AUTOMATIC_RGB)
+    {
+      float rgb[3] = {0, 0, 0};
+      dt_Lab_to_prophotorgb(in + k, rgb);
+      if(d->preserve_colors == DT_RGB_NORM_NONE)
+      {
+        for(int c = 0; c < 3; c++)
+        {
+          rgb[c] = (rgb[c] < xm_L) ? d->table[ch_L][CLAMP((int)(rgb[c] * 0x10000ul), 0, 0xffff)]
+            : dt_iop_eval_exp(d->unbounded_coeffs_L, rgb[c]);
+        }
+      }
+      else
+      {
+        float ratio = 1.f;
+        const float lum = dt_rgb_norm(rgb, d->preserve_colors, work_profile);
+        if(lum > 0.f)
+        {
+          const float curve_lum = (lum < xm_L)
+            ? d->table[ch_L][CLAMP((int)(lum * 0x10000ul), 0, 0xffff)]
+            : dt_iop_eval_exp(d->unbounded_coeffs_L, lum);
+          ratio = curve_lum / lum;
+        }
+        for(size_t c = 0; c < 3; c++)
+        {
+          rgb[c] = (ratio * rgb[c]);
+        }
+      }
+      dt_prophotorgb_to_Lab(rgb, out + k);
+    }
+
+    out[k+3] = in[k+3];
   }
 }
 
@@ -1191,7 +1189,7 @@ void gui_init(struct dt_iop_module_t *self)
   // FIXME: that tooltip goes in the way of the numbers when you hover a node to get a reading
   //gtk_widget_set_tooltip_text(GTK_WIDGET(c->area), _("double click to reset curve"));
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
                                                  | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                                  | GDK_LEAVE_NOTIFY_MASK | GDK_SCROLL_MASK
                                                  | darktable.gui->scroll_mask);

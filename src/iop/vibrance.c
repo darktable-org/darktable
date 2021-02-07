@@ -35,8 +35,6 @@
 #include <gtk/gtk.h>
 #include <inttypes.h>
 
-// NaN-safe clip: NaN compares false and will result in 0.0
-#define CLIP(x) (((x) >= 0.0) ? ((x) <= 1.0 ? (x) : 1.0) : 0.0)
 DT_MODULE_INTROSPECTION(2, dt_iop_vibrance_params_t)
 
 typedef struct dt_iop_vibrance_params_t
@@ -98,7 +96,10 @@ const char *description(struct dt_iop_module_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  assert(piece->colors == 4);
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
   const dt_iop_vibrance_data_t *const d = (dt_iop_vibrance_data_t *)piece->data;
   const float *const restrict in = (float *)ivoid;
   float *const restrict out = (float *)ovoid;

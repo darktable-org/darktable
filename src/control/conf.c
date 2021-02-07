@@ -47,6 +47,8 @@ static void _free_confgen_value(void *value)
   g_free(s->min);
   g_free(s->max);
   g_free(s->enum_values);
+  g_free(s->shortdesc);
+  g_free(s->longdesc);
   g_free(s);
 }
 
@@ -563,6 +565,8 @@ gboolean dt_confgen_value_exists(const char *name, dt_confgen_value_kind_t kind)
        return item->min != NULL;
      case DT_MAX:
        return item->max != NULL;
+     case DT_VALUES:
+       return item->enum_values != NULL;
   }
   return FALSE;
 }
@@ -581,7 +585,33 @@ const char *dt_confgen_get(const char *name, dt_confgen_value_kind_t kind)
          return item->min;
        case DT_MAX:
          return item->max;
+       case DT_VALUES:
+         return item->enum_values;
     }
+  }
+
+  return "";
+}
+
+const char *dt_confgen_get_label(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->shortdesc;
+  }
+
+  return "";
+}
+
+const char *dt_confgen_get_tooltip(const char *name)
+{
+  const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
+
+  if(item)
+  {
+    return item->longdesc;
   }
 
   return "";

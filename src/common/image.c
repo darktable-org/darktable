@@ -469,6 +469,23 @@ static void _set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
+typedef struct dt_undo_datetime_t
+{
+  int32_t imgid;
+  char before[DT_DATETIME_LENGTH];
+  char after[DT_DATETIME_LENGTH];
+} dt_undo_datetime_t;
+
+static void _set_datetime(const int32_t imgid, const char *datetime)
+{
+  /* fetch image from cache */
+  dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
+
+  memcpy(&image->exif_datetime_taken, datetime, sizeof(image->exif_datetime_taken));
+
+  dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
+}
+
 void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
 {
   if(type == DT_UNDO_GEOTAG)
@@ -488,6 +505,23 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs), 0);
+  }
+  else if(type == DT_UNDO_DATETIME)
+  {
+    GList *list = (GList *)data;
+
+    while(list)
+    {
+      dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)list->data;
+
+      _set_datetime(undodatetime->imgid, (action == DT_ACTION_UNDO)
+                                         ? undodatetime->before : undodatetime->after);
+
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undodatetime->imgid));
+      list = g_list_next(list);
+    }
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy((GList *)data));
   }
 }
 
@@ -581,8 +615,11 @@ gboolean dt_image_get_final_size(const int32_t imgid, int *width, int *height)
   // the orientation for this camera is not read correctly from exiv2, so we need
   // to go the full path (as the thumbnail will be flipped the wrong way round)
   const int incompatible = !strncmp(img.exif_maker, "Phase One", 9);
-  if(!img.verified_size && !dt_image_altered(imgid) && !dt_conf_get_bool("never_use_embedded_thumb")
-     && !incompatible)
+  char *min = dt_conf_get_string("plugins/lighttable/thumbnail_raw_min_level");
+  const gboolean use_raw = g_strcmp0(min, "never");
+  g_free(min);
+
+  if(!img.verified_size && !dt_image_altered(imgid) && !use_raw && !incompatible)
   {
     // we want to be sure to have the real image size.
     // some raw files need a pass via rawspeed to get it.
@@ -768,7 +805,7 @@ void dt_image_flip(const int32_t imgid, const int32_t cw)
    The database does **not** hold the cropped width & height so we fill the data
    when starting to develop.
 */
-double dt_image_get_sensor_ratio(const struct dt_image_t *img)
+float dt_image_get_sensor_ratio(const struct dt_image_t *img)
 {
   if(img->p_height >0)
     return (double)img->p_width / (double)img->p_height;
@@ -791,7 +828,7 @@ void dt_image_set_raw_aspect_ratio(const int32_t imgid)
   dt_image_cache_write_release(darktable.image_cache, image, DT_IMAGE_CACHE_SAFE);
 }
 
-void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboolean raise)
+void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio, const gboolean raise)
 {
   if (aspect_ratio > .0f)
   {
@@ -810,7 +847,7 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, double aspect_ratio, gboo
   }
 }
 
-void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_ratio, gboolean raise)
+void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float aspect_ratio, const gboolean raise)
 {
   if (aspect_ratio > .0f)
   {
@@ -834,7 +871,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, double aspect_r
   }
 }
 
-void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise)
+void dt_image_reset_aspect_ratio(const int32_t imgid, const gboolean raise)
 {
   /* fetch image from cache */
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
@@ -850,10 +887,10 @@ void dt_image_reset_aspect_ratio(const int32_t imgid, gboolean raise)
                                g_list_append(NULL, GINT_TO_POINTER(imgid)));
 }
 
-double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise)
+float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise)
 {
   dt_mipmap_buffer_t buf;
-  double aspect_ratio = 0.0;
+  float aspect_ratio = 0.0;
 
   // mipmap cache must be initialized, otherwise we'll update next call
   if(darktable.mipmap_cache)
@@ -862,7 +899,7 @@ double dt_image_set_aspect_ratio(const int32_t imgid, gboolean raise)
 
     if(buf.buf && buf.height && buf.width)
     {
-      aspect_ratio = (double)buf.width / (double)buf.height;
+      aspect_ratio = (float)buf.width / (float)buf.height;
       dt_image_set_aspect_ratio_to(imgid, aspect_ratio, raise);
     }
 
@@ -1078,7 +1115,7 @@ void dt_image_remove(const int32_t imgid)
 
   sqlite3_stmt *stmt;
   const dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  int old_group_id = img->group_id;
+  const int old_group_id = img->group_id;
   dt_image_cache_read_release(darktable.image_cache, img);
 
   // make sure we remove from the cache first, or else the cache will look for imgid in sql
@@ -1088,51 +1125,14 @@ void dt_image_remove(const int32_t imgid)
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
     darktable.gui->expanded_group_id = new_group_id;
 
+  // due to foreign keys added in db version 33,
+  // all entries from tables having references to the images are deleted as well
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.images WHERE id = ?1", -1, &stmt,
                               NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.tagged_images WHERE imgid = ?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history WHERE imgid = ?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.masks_history WHERE imgid = ?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.color_labels WHERE imgid = ?1", -1,
-                              &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.meta_data WHERE id = ?1", -1, &stmt,
-                              NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.selected_images WHERE imgid = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.module_order WHERE imgid = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), "DELETE FROM main.history_hash WHERE imgid = ?1",
-                              -1, &stmt, NULL);
-  DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
-  sqlite3_step(stmt);
-  sqlite3_finalize(stmt);
+
   // also clear all thumbnails in mipmap_cache.
   dt_mipmap_cache_remove(darktable.mipmap_cache, imgid);
 }
@@ -1189,7 +1189,7 @@ GList* dt_image_find_duplicates(const char* filename)
 }
 
 // Search for duplicate's sidecar files and import them if found and not in DB yet
-static void _image_read_duplicates(const uint32_t id, const char *filename)
+static int _image_read_duplicates(const uint32_t id, const char *filename)
 {
   int count_xmps_processed = 0;
   gchar pattern[PATH_MAX] = { 0 };
@@ -1274,6 +1274,7 @@ static void _image_read_duplicates(const uint32_t id, const char *filename)
   }
 
   g_list_free_full(files, g_free);
+  return count_xmps_processed;
 }
 
 static uint32_t _image_import_internal(const int32_t film_id, const char *filename,
@@ -1319,8 +1320,7 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   int rc;
   uint32_t id = 0;
   // select from images; if found => return
-  gchar *imgfname;
-  imgfname = g_path_get_basename(normalized_filename);
+  gchar *imgfname = g_path_get_basename(normalized_filename);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2
     (dt_database_get(darktable.db),
@@ -1349,11 +1349,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 
   // also need to set the no-legacy bit, to make sure we get the right presets (new ones)
   uint32_t flags = dt_conf_get_int("ui_last/import_initial_rating");
-  if(flags > 5)
-  {
-    flags = 1;
-    dt_conf_set_int("ui_last/import_initial_rating", 1);
-  }
   flags |= DT_IMAGE_NO_LEGACY_PRESETS;
   // set the bits in flags that indicate if any of the extra files (.txt, .wav) are present
   char *extra_file = dt_image_get_audio_path_from_path(normalized_filename);
@@ -1494,6 +1489,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 
   // read dttags and exif for database queries!
   (void)dt_exif_read(img, normalized_filename);
+  if(dt_conf_get_bool("ui_last/ignore_exif_rating"))
+    img->flags = flags;
   char dtfilename[PATH_MAX] = { 0 };
   g_strlcpy(dtfilename, normalized_filename, sizeof(dtfilename));
   // dt_image_path_append_version(id, dtfilename, sizeof(dtfilename));
@@ -1504,7 +1501,10 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   // write through to db, but not to xmp.
   dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_RELAXED);
 
-  if(res != 0)
+  // read all sidecar files
+  const int nb_xmp = _image_read_duplicates(id, normalized_filename);
+
+  if((res != 0) && (nb_xmp == 0))
   {
     // Search for Lightroom sidecar file, import tags if found
     dt_lightroom_import(id, NULL, TRUE);
@@ -1522,9 +1522,6 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
 
   // make sure that there are no stale thumbnails left
   dt_mipmap_cache_remove(darktable.mipmap_cache, id);
-
-  // read all sidecar files
-  _image_read_duplicates(id, normalized_filename);
 
   //synch database entries to xmp
   dt_image_synch_all_xmp(normalized_filename);
@@ -2395,6 +2392,38 @@ void dt_image_local_copy_synch(void)
   }
 }
 
+void dt_image_get_datetime(const int32_t imgid, char *datetime)
+{
+  if(!datetime) return;
+  datetime[0] = '\0';
+  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
+  if(!cimg) return;
+  memcpy(datetime, cimg->exif_datetime_taken, sizeof(cimg->exif_datetime_taken));
+  dt_image_cache_read_release(darktable.image_cache, cimg);
+}
+
+static void _datetime_undo_data_free(gpointer data)
+{
+  GList *l = (GList *)data;
+  g_list_free_full(l, g_free);
+}
+
+static void _image_set_datetime(const int32_t imgid, const char *datetime)
+{
+  if(imgid == -1) return;
+
+  GList *undo = NULL;
+  dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
+    undodatetime->imgid = imgid;
+  dt_image_get_datetime(imgid, undodatetime->before);
+  memcpy(undodatetime->after, datetime, sizeof(undodatetime->after));
+  undo = g_list_append(undo, undodatetime);
+
+  _set_datetime(imgid, datetime);
+
+  dt_undo_record(darktable.undo, NULL, DT_UNDO_DATETIME, undo, _pop_undo, _datetime_undo_data_free);
+}
+
 void dt_image_add_time_offset(const int32_t imgid, const long int offset)
 {
   const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
@@ -2442,13 +2471,19 @@ void dt_image_add_time_offset(const int32_t imgid, const long int offset)
   if(datetime)
   {
     dt_image_cache_read_release(darktable.image_cache, cimg);
-    dt_image_t *img = dt_image_cache_get(darktable.image_cache, imgid, 'w');
-    g_strlcpy(img->exif_datetime_taken, datetime, sizeof(img->exif_datetime_taken));
-    dt_image_cache_write_release(darktable.image_cache, img, DT_IMAGE_CACHE_SAFE);
+    _image_set_datetime(imgid, datetime);
   }
   else dt_image_cache_read_release(darktable.image_cache, cimg);
 
   g_free(datetime);
+}
+
+void dt_image_set_datetime(const int32_t imgid, const char *datetime)
+{
+  if(datetime[0])
+  {
+    _image_set_datetime(imgid, datetime);
+  }
 }
 
 char *dt_image_get_audio_path_from_path(const char *image_path)

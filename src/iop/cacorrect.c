@@ -19,6 +19,7 @@
 #include "config.h"
 #endif
 #include "common/darktable.h"
+#include "common/imagebuf.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
 #include "gui/gtk.h"
@@ -312,7 +313,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int width = roi_in->width;
   const int height = roi_in->height;
   const uint32_t filters = piece->pipe->dsc.filters;
-  memcpy(out, in2, width * height * sizeof(float));
+  dt_iop_image_copy_by_size(out, in2, width, height, 1);
   const float *const in = out;
   const double cared = 0, cablue = 0;
   const double caautostrength = 4;
@@ -344,10 +345,10 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   // local variables
   //   const int width = W, height = H;
   // temporary array to store simple interpolation of G
-  float *Gtmp = (float(*))calloc((height) * (width), sizeof *Gtmp);
+  float *Gtmp = (float(*))calloc((size_t)(height) * (width), sizeof *Gtmp);
 
   // temporary array to avoid race conflicts, only every second pixel needs to be saved here
-  float *RawDataTmp = (float *)malloc(height * width * sizeof(float) / 2 + 4);
+  float *RawDataTmp = (float *)malloc(sizeof(float) * height * width / 2 + 4);
 
   float blockave[2][2] = { { 0, 0 }, { 0, 0 } }, blocksqave[2][2] = { { 0, 0 }, { 0, 0 } },
         blockdenom[2][2] = { { 0, 0 }, { 0, 0 } }, blockvar[2][2];
@@ -363,11 +364,11 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
   const int vblsz = ceil((float)(height + border2) / (ts - border2) + 2 + vz1);
   const int hblsz = ceil((float)(width + border2) / (ts - border2) + 2 + hz1);
 
-  char *buffer1 = (char *)calloc(vblsz * hblsz * (2 * 2 + 1), sizeof(float));
+  char *buffer1 = (char *)calloc((size_t)vblsz * hblsz * (2 * 2 + 1), sizeof(float));
 
   // block CA shift values and weight assigned to block
   float *blockwt = (float *)buffer1;
-  float(*blockshifts)[2][2] = (float(*)[2][2])(buffer1 + (vblsz * hblsz * sizeof(float)));
+  float(*blockshifts)[2][2] = (float(*)[2][2])(buffer1 + (sizeof(float) * vblsz * hblsz));
 
   double fitparams[2][2][16];
 
@@ -399,7 +400,7 @@ static void CA_correct(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pie
           blockdenomthr[2][2] = { { 0, 0 }, { 0, 0 } };
 
     // assign working space
-    const int buffersize = 3 * sizeof(float) * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
+    const size_t buffersize = sizeof(float) * 3 * ts * ts + 6 * sizeof(float) * ts * tsh + 8 * 64 + 63;
     char *buffer = (char *)malloc(buffersize);
     char *data = (char *)(((uintptr_t)buffer + (uintptr_t)63) / 64 * 64);
 

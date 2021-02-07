@@ -196,15 +196,15 @@ uint32_t dt_tag_images_count(gint tagid);
 char *dt_tag_get_subtags(const gint imgid, const char *category, const int level);
 
 /** return the images order associated to that tag */
-const gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
+gboolean dt_tag_get_tag_order_by_id(const uint32_t tagid, uint32_t *sort,
                                           gboolean *descending);
 
 /** save the images order on the tag */
 void dt_tag_set_tag_order_by_id(const uint32_t tagid, const uint32_t sort,
                                 const gboolean descending);
 
-/** return the tagid of that tag - return 0 if not found*/
-const uint32_t dt_tag_get_tag_id_by_name(const char * const name);
+/** return the tagid of that tag - follow tag sensitivity - return 0 if not found*/
+uint32_t dt_tag_get_tag_id_by_name(const char * const name);
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

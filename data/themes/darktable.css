@@ -133,9 +133,10 @@
 @define-color lighttable_bg_font_color @grey_75;
 
 /* Lighttable and film-strip */
-@define-color thumbnail_font_color @grey_25;
+@define-color thumbnail_font_color @grey_30;
 @define-color thumbnail_bg_color @grey_50;
 @define-color thumbnail_star_bg_color @grey_35;
+@define-color thumbnail_star_hover_color @grey_80;
 @define-color thumbnail_fg_color @grey_55;
 @define-color thumbnail_bg50_color @grey_100;
 @define-color thumbnail_selected_bg_color @grey_70;
@@ -163,6 +164,12 @@
 @define-color graph_red rgb(237,30,20);
 @define-color graph_green rgb(28,235,26);
 @define-color graph_blue rgb(14,14,233);
+
+@define-color colorlabel_red rgb(230,0,0);
+@define-color colorlabel_green rgb(0,230,0);
+@define-color colorlabel_blue rgb(0,0,230);
+@define-color colorlabel_yellow rgb(255,180,0);
+@define-color colorlabel_purple rgb(230,0,230);
 
 /* Reset GTK defaults - Otherwise dt inherits Adwaita default theme dark */
 *
@@ -306,6 +313,7 @@ textview
   min-height: 0;
   min-width: 0;
   padding: 0px;
+  font-family: sans;
 }
 
 entry
@@ -470,7 +478,9 @@ overshoot.right
 /* Frame around modules boxes */
 /*** NOTE: bauhaus controls inherit their font properties from there ***/
 #lib-plugin-ui,
-#iop-plugin-ui
+#iop-plugin-ui,
+#basics-box,
+#basics-box-labels
 {
   color: @plugin_fg_color;
   background-color: @plugin_bg_color;
@@ -480,7 +490,7 @@ overshoot.right
 #lib-plugin-ui-main,
 #blending-box
 {
-  padding: 0.75em;
+  padding: 0.66em;
 }
 
 /* icon buttons in modules main body */
@@ -492,7 +502,8 @@ overshoot.right
 #blending-box #dt-button,
 #blending-box #dt-toggle-button,
 #blending-box #show_mask_button,
-#blending-box #keep-active
+#blending-box #keep-active,
+#basics-widget #dt-button
 {
   min-height: 1.3em;
   min-width: 1.3em;
@@ -578,7 +589,6 @@ overshoot.right
 #module-reset-button,
 #module-enable-button,
 #module-instance-button,
-#module-enable-button,
 #module-collapse-button,
 #module-always-enabled-button,
 #module-always-disabled-button
@@ -677,13 +687,33 @@ overshoot.right
 #iop-plugin-ui #section_label,
 #lib-plugin-ui #section_label
 {
-  margin: 12px 0 6px 0;
+  margin: 8px 0 6px 0;
 }
 
 #iop-plugin-ui #section_label.section_label_top,
 #lib-plugin-ui #section_label.section_label_top
 {
   margin: 2px 0 6px 0;
+}
+
+/* Control sections that can be expanded/collapsed need to be handled differently */
+
+#iop-plugin-ui .section-expander #section_label,
+#lib-plugin-ui .section-expander #section_label
+{
+  margin: 0;
+}
+
+#lib-plugin-ui .section-expander,
+#iop-plugin-ui .section-expander
+{
+  padding: 8px 0 6px 0;
+}
+
+#lib-plugin-ui .section-expander #control-button,
+#iop-plugin-ui .section-expander #control-button {
+  padding: 0;
+  margin: 0;
 }
 
 /* Special modules: image infos, navigation and search ones */
@@ -706,6 +736,75 @@ overshoot.right
 #search-box label
 {
   margin-right: 0.5em;
+}
+
+/*------------------
+  - Scope/Histogram -
+  ------------------*/
+#main-histogram buttonbox
+{
+  margin-top: 0.5em;   /* spacing between histogram buttons and top of scope */
+}
+
+#main-histogram buttonbox > *
+{
+  margin-right: 0.5em;  /* spacing between histogram button box widgets, also provides right margin for buttons */
+}
+
+/* set background color and color of scope/histogram buttons */
+#main-histogram #dt-button
+{
+  color: alpha(@button_checked_fg, 0.56);
+  background-color: alpha(darker(@button_bg),0.8);
+}
+
+#main-histogram #dt-button:hover
+{
+  color: @button_fg;
+}
+
+/* set channel buttons at inactive state */
+#red-channel-button
+{
+  background-color: alpha(@graph_red, 0.2);
+}
+
+#green-channel-button
+{
+  background-color: alpha(@graph_green, 0.2);
+}
+
+#blue-channel-button
+{
+  background-color: alpha(@graph_blue, 0.2);
+}
+
+/* set now them to active state */
+#red-channel-button:checked
+{
+  background-color: alpha(@graph_red, 0.66);
+}
+
+#green-channel-button:checked
+{
+  background-color: alpha(@graph_green, 0.66);
+}
+#blue-channel-button:checked
+{
+  background-color: alpha(@graph_blue, 0.66);
+}
+
+/* set border of all active color channel buttons */
+#main-histogram .toggle:checked
+{
+  border-color: alpha(@button_checked_fg, 0.33);    /* just set a really tight border to better check quickly active state*/
+}
+
+
+#main-histogram #dt-button:disabled,
+#main-histogram .toggle:disabled
+{
+  opacity: 0.2;
 }
 
 /*------------------
@@ -744,7 +843,7 @@ dialog .dialog-vbox scrolledwindow
 dialog button
 {
   padding: 2px;
-  margin: 1px 2px;
+  margin: 1px;
 }
 
 dialog headerbar
@@ -766,33 +865,26 @@ dialog scrolledwindow
   margin: 0;
 }
 
-frame#import_metadata
+#left #lib-plugin-ui #import_metadata entry
 {
-  margin: 6px 6px 0px 6px;
-  padding: 0px 4px;
-}
-
-frame#import_metadata title *
-{
-  font-weight: bold;
-}
-
-frame#import_metadata label
-{
-  margin: 4px 3px 4px 2px;
+  margin: 1px 1px;
   padding: 0px;
 }
 
-frame#import_metadata entry
+#left #lib-plugin-ui #import_metadata checkbutton check
 {
-  margin: 2px 3px 2px 2px;
+  margin: 1px;
   padding: 0px;
 }
 
-frame#import_metadata checkbutton
+#import_metadata grid label
 {
-  margin: 0px;
-  padding: 0px;
+  margin: 0.2em 0;
+}
+
+#import_presets
+{
+  font-style: italic;
 }
 
 /* Set import from camera or card dialog window */
@@ -830,6 +922,12 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
 #about_dialog grid *
 {
     padding: 2px;
+}
+
+/* preferences module dialog window */
+.dialog-action-box
+{
+  margin-top: 5px;
 }
 
 /*--------------------------------------------------------
@@ -896,8 +994,7 @@ popover,
 combobox window,
 dialog combobox window,
 #bauhaus-combobox *,
-#bauhaus-slider *,
-#modulegroups-iop-popup
+#bauhaus-slider *
 {
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
@@ -909,9 +1006,10 @@ dialog combobox window,
   padding: 0.2em 0;
 }
 
-#modulegroups-iop-popup viewport
+menuitem arrow
 {
-  background-color: @tooltip_bg_color;
+  border: 0;
+  margin-right: 2px;
 }
 
 popover
@@ -964,7 +1062,8 @@ menuitem check
   margin: 0 0.5em;
 }
 
-menu separator
+menu separator,
+popover separator
 {
   margin: 0.6em 2em;
   padding-bottom: 1px;
@@ -996,7 +1095,6 @@ notebook tabs,
 #modules-tabs #dt-toggle-button
 {
   min-height: 2em;
-  min-width: 2em;
   padding: 0.1em;
 }
 
@@ -1009,8 +1107,15 @@ notebook tabs,
 {
   font-size: 0.8em;
   min-height: 1.55em;
-  min-width: 1.55em;
   padding: 0.45em;
+}
+
+#modules-tabs #dt-toggle-button,   /* This is needed separately to set a minimal width if panel is really narrow */
+#blending-tabs #dt-toggle-button
+{
+  min-width: 0em;
+  padding-left: 0.2em;
+  padding-right: 0.2em;
 }
 
 #blending-tabs #dt-button
@@ -1260,7 +1365,8 @@ dialog scrollbar
   margin-left: 5px;
 }
 
-#preferences_box #shortcut_controls button
+#preferences_box #shortcut_controls button,
+#preferences_box #preset_controls button
 {
 margin: 0 2px;
 }
@@ -1322,16 +1428,9 @@ margin: 0 2px;
 
 #modulegroups-header #dt-button,
 #modulegroups-preset #dt-button,
-#modulegroups-preset-activated #dt-button,
-#modulegroups-iop-popup-name
+#modulegroups-preset-activated #dt-button
 {
   border: 0;
-}
-
-#modulegroups_iop_title,
-#modulegroups-iop-popup-name
-{
-   padding: 0.2em 0.5em;
 }
 
 #modulegroups-groups-title
@@ -1413,10 +1512,103 @@ margin: 0 2px;
 }
 
 #modulegroups-deprecated-msg,
-#iop-plugin-deprecated
+#iop-plugin-deprecated,
+#iop-plugin-warning
 {
   background-color: #852A2A;
   padding: 0.45em;
+}
+
+#basics-box,
+#basics-box-labels
+{
+  padding-bottom: 0.75em;
+}
+
+#basics-box
+{
+  padding-top: 0.5em;
+}
+
+#basics-box #module-enable-button,
+#basics-box-labels #module-enable-button
+{
+  min-height: 1em;
+  min-width: 1em;
+  border: none;
+}
+
+#basics-link
+{
+  min-height: 1em;
+  min-width: 1em;
+  margin: 0 0 0.3em 0.75em;
+  border: none;
+}
+
+#basics-header-box #basics-link
+{
+  margin-bottom: 0;
+}
+
+#basics-box-labels #basics-widget,
+#basics-box-labels #section_label
+{
+  padding-top: 2px;
+  margin-bottom: 0.25em;
+}
+
+#basics-box #basics-widget
+{
+  margin-bottom: 0.5em;
+}
+
+#basics-box-labels #section_label
+{
+  margin-top: 0.5em;
+  border: none;
+}
+
+#basics-module-hbox
+{
+  margin: 0 0.75em;
+}
+
+#basics-header-box
+{
+  border-bottom: 0.5px solid @section_label;
+  margin: 0 0.75em 0.5em 0.75em;
+}
+
+#basics-header-box-first
+{
+  border: none;
+}
+
+#basics-iop_name
+{
+  padding-left: 0.25em;
+}
+
+#basics-widget #bauhaus-combobox + #dt-button,
+#basics-widget #bauhaus-slider + #dt-button
+{
+  margin-left: 0.5em;
+}
+
+#modulegroups-popup-item
+{
+  padding-left: 2em;
+  padding-top: 0.1em;
+  padding-bottom: 0.1em;
+}
+
+#modulegroups-popup-title
+{
+  padding-left: 0em;
+  padding-bottom: 0.2em;
+  font-weight: bold;
+  color: @plugin_label_color;
 }
 
 /*---------------------------------------------------------------
@@ -1467,7 +1659,7 @@ filechooser .sidebar row:selected:hover .sidebar-label,
 #preferences_box .sidebar row,
 #preferences_box .sidebar row:selected
 {
-  border-left: 2px solid @plugin_bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
+  border-left: 2px solid @bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
 }
 
 filechooser row:selected .sidebar-icon,  /* set icon instead of border for filechooser dialog window */
@@ -1512,7 +1704,9 @@ filechooser widget treeview
   color: @field_fg;
 }
 
-treeview header button,
+treeview header widget button,
+#iop-plugin-ui treeview header button,
+#lib-plugin-ui treeview header button,
 #preferences_notebook header button,
 .accels_window_list header button
 {
@@ -1525,6 +1719,8 @@ treeview header button,
 }
 
 treeview header label,
+#iop-plugin-ui treeview header label,
+#lib-plugin-ui treeview header label,
 #preferences_notebook header button label,
 .accels_window_list header button label
 {
@@ -1611,7 +1807,7 @@ progressbar progress
 /* Checkbutton check state */
 #lib-plugin-ui checkbutton check,
 #iop-plugin-ui checkbutton check,
-checkbutton:not(#import_metadata) check
+checkbutton check
 {
   margin: 5px 8px 5px 0;
 }
@@ -2270,7 +2466,8 @@ spinbutton>button
   margin: 25px; /* not real pixels, but per thousand of the thumb size */
 }
 
-.dt_thumbnails_2 #thumb_image /* update consistently margins if big thumbnails (less images per row) are shown */
+.dt_thumbnails_2 #thumb_image, /* update consistently margins if big thumbnails (less images per row) are shown */
+.dt_thumbnails_2#thumb_image
 {
   margin: 20px;
 }
@@ -2290,7 +2487,7 @@ spinbutton>button
 {
   color: transparent;
 }
-#thumb_main:active #thumb_cursor
+#thumbtable_filmstrip #thumb_main:active #thumb_cursor
 {
   color: @border_color;
 }
@@ -2371,6 +2568,15 @@ spinbutton>button
   background-color: transparent;
 }
 
+/* Make inactive stars more discrete when not hovered */
+.dt_overlays_always #thumb_star,
+.dt_overlays_always_extended #thumb_star,
+.dt_overlays_mixed #thumb_star,
+.dt_overlays_hover_block #thumb_star
+{
+  color: shade(@thumbnail_font_color, 1.4);
+}
+
 /* Set hover and selected color icons, extension name and text infos */
 .dt_overlays_always #thumb_main:hover #thumb_ext,
 .dt_overlays_always #thumb_main:selected #thumb_ext,
@@ -2424,7 +2630,7 @@ spinbutton>button
 .dt_overlays_mixed #thumb_star:active,
 .dt_overlays_hover_block #thumb_image:hover #thumb_star:active
 {
-  color: @thumbnail_selected_bg_color;
+  color: @thumbnail_font_color;
   background-color: @thumbnail_font_color;
 }
 
@@ -2436,7 +2642,7 @@ spinbutton>button
 .dt_overlays_mixed #thumb_main:hover #thumb_star:hover,
 .dt_overlays_hover_block #thumb_main:hover #thumb_star:hover
 {
-  color: @thumbnail_hover_fg_color;
+  color: @thumbnail_star_hover_color;
   background-color: @thumbnail_star_bg_color;
 }
 
@@ -2548,7 +2754,7 @@ spinbutton>button
 }
 
 /* Set image borders */
-.dt_preview #thumb_image
+.dt_preview #thumb_image, .dt_preview_thumb_image#thumb_image
 {
   margin : 10px;
 }
@@ -2604,4 +2810,26 @@ spinbutton>button
 {
   color: @bauhaus_fg_hover;
   background-color: rgba(20, 20, 20, 0.5);
+}
+
+/* lighttable toolbox */
+#lighttable_layouts_box,
+#footer-toolbar entry
+{
+  margin-right: 0.6em;
+}
+
+#footer-toolbar #dt-toggle-button
+{
+  margin: 0 0.2em;
+}
+
+#lighttable_layouts_box #dt-toggle-button
+{
+  margin: 0 0.4em;
+}
+
+.active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
+{
+    font-weight: bold;
 }

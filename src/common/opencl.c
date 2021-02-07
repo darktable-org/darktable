@@ -633,8 +633,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
   g_free(library);
 
   cl_int err;
-  all_platforms = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_platform_id));
-  all_num_devices = malloc(DT_OPENCL_MAX_PLATFORMS * sizeof(cl_uint));
+  all_platforms = malloc(sizeof(cl_platform_id) * DT_OPENCL_MAX_PLATFORMS);
+  all_num_devices = malloc(sizeof(cl_uint) * DT_OPENCL_MAX_PLATFORMS);
   cl_uint num_platforms = DT_OPENCL_MAX_PLATFORMS;
   err = (cl->dlocl->symbols->dt_clGetPlatformIDs)(DT_OPENCL_MAX_PLATFORMS, all_platforms, &num_platforms);
   if(err != CL_SUCCESS)
@@ -677,6 +677,7 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     if(!cl->dev || !devices)
     {
       free(cl->dev);
+      cl->dev = NULL;
       free(devices);
       dt_print(DT_DEBUG_OPENCL, "[opencl_init] could not allocate memory\n");
       goto finally;
@@ -699,9 +700,15 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
       devs += all_num_devices[n];
     }
   }
+  devs = NULL;
 
   dt_print(DT_DEBUG_OPENCL, "[opencl_init] found %d device%s\n", num_devices, num_devices > 1 ? "s" : "");
-  if(num_devices == 0) goto finally;
+  if(num_devices == 0)
+  {
+    if(devices)
+      free(devices);
+    goto finally;
+  } 
 
   int dev = 0;
   for(int k = 0; k < num_devices; k++)
@@ -716,6 +723,8 @@ void dt_opencl_init(dt_opencl_t *cl, const gboolean exclude_opencl, const gboole
     ++dev;
   }
   free(devices);
+  devices = NULL;
+
   if(dev > 0)
   {
     cl->num_devs = dev;
@@ -851,6 +860,7 @@ finally:
     setlocale(LC_ALL, locale);
     free(locale);
   }
+
   return;
 }
 
@@ -1220,7 +1230,7 @@ static void dt_opencl_priority_parse(dt_opencl_t *cl, char *configstr, int *prio
 {
   int devs = cl->num_devs;
   int count = 0;
-  int *full = malloc((size_t)(devs + 1) * sizeof(int));
+  int *full = malloc(sizeof(int) * (devs + 1));
   int mnd = 0;
 
   // NULL or empty configstring?
@@ -1763,7 +1773,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      cl_device_id *devices = malloc(numdev * sizeof(cl_device_id));
+      cl_device_id *devices = malloc(sizeof(cl_device_id) * numdev);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_DEVICES,
                                                       sizeof(cl_device_id) * numdev, devices, NULL);
       if(err != CL_SUCCESS)
@@ -1773,7 +1783,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      size_t *binary_sizes = malloc(numdev * sizeof(size_t));
+      size_t *binary_sizes = malloc(sizeof(size_t) * numdev);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARY_SIZES,
                                                       sizeof(size_t) * numdev, binary_sizes, NULL);
       if(err != CL_SUCCESS)
@@ -1784,7 +1794,7 @@ int dt_opencl_build_program(const int dev, const int prog, const char *binname, 
         return CL_SUCCESS;
       }
 
-      unsigned char **binaries = malloc(numdev * sizeof(unsigned char *));
+      unsigned char **binaries = malloc(sizeof(unsigned char *) * numdev);
       for(int i = 0; i < numdev; i++) binaries[i] = (unsigned char *)malloc(binary_sizes[i]);
       err = (cl->dlocl->symbols->dt_clGetProgramInfo)(program, CL_PROGRAM_BINARIES,
                                                       sizeof(unsigned char *) * numdev, binaries, NULL);
@@ -2680,8 +2690,8 @@ cl_event *dt_opencl_events_get_slot(const int devid, const char *tag)
       free(neweventtags);
       return NULL;
     }
-    memcpy(neweventlist, *eventlist, *maxevents * sizeof(cl_event));
-    memcpy(neweventtags, *eventtags, *maxevents * sizeof(dt_opencl_eventtag_t));
+    memcpy(neweventlist, *eventlist, sizeof(cl_event) * *maxevents);
+    memcpy(neweventtags, *eventtags, sizeof(dt_opencl_eventtag_t) * *maxevents);
     free(*eventlist);
     free(*eventtags);
     *eventlist = neweventlist;
@@ -2729,7 +2739,7 @@ void dt_opencl_events_reset(const int devid)
     (cl->dlocl->symbols->dt_clReleaseEvent)((*eventlist)[k]);
   }
 
-  memset(*eventtags, 0, *maxevents * sizeof(dt_opencl_eventtag_t));
+  memset(*eventtags, 0, sizeof(dt_opencl_eventtag_t) * *maxevents);
   *numevents = 0;
   *eventsconsolidated = 0;
   *lostevents = 0;
@@ -2887,8 +2897,8 @@ void dt_opencl_events_profiling(const int devid, const int aggregated)
   if(*eventlist == NULL || *numevents == 0 || *eventtags == NULL || *eventsconsolidated == 0)
     return; // nothing to do
 
-  char **tags = malloc((*eventsconsolidated + 1) * sizeof(char *));
-  float *timings = malloc((*eventsconsolidated + 1) * sizeof(float));
+  char **tags = malloc(sizeof(char *) * (*eventsconsolidated + 1));
+  float *timings = malloc(sizeof(float) * (*eventsconsolidated + 1));
   int items = 1;
   tags[0] = "";
   timings[0] = 0.0f;
@@ -2996,7 +3006,7 @@ int dt_opencl_local_buffer_opt(const int devid, const int kernel, dt_opencl_loca
     while(maxsizes[0] < *blocksizex || maxsizes[1] < *blocksizey
        || localmemsize < ((factors->xfactor * (*blocksizex) + factors->xoffset) *
                           (factors->yfactor * (*blocksizey) + factors->yoffset)) * factors->cellsize + factors->overhead
-       || workgroupsize < (*blocksizex) * (*blocksizey) || kernelworkgroupsize < (*blocksizex) * (*blocksizey))
+       || workgroupsize < (size_t)(*blocksizex) * (*blocksizey) || kernelworkgroupsize < (size_t)(*blocksizex) * (*blocksizey))
     {
       if(*blocksizex == 1 && *blocksizey == 1) return FALSE;
 

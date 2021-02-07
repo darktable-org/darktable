@@ -91,6 +91,7 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
       else
         compression = fminf(fmaxf(compression, 0.001f) * 1.0f / 0.8f, 1.0f);
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", compression);
+      dt_toast_log(_("compression: %3.2f%%"), compression*100.0f);
     }
     return 1;
   }
@@ -119,6 +120,7 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
       dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index);
       dt_conf_set_float("plugins/darkroom/masks/gradient/compression", gradient->compression);
+      dt_toast_log(_("compression: %3.2f%%"), gradient->compression*100.0f);
       dt_masks_update_image(darktable.develop);
     }
     else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -128,6 +130,7 @@ static int dt_gradient_events_mouse_scrolled(struct dt_iop_module_t *module, flo
         gradient->curvature = fminf(gradient->curvature + 0.05f, 2.0f);
       else
         gradient->curvature = fmaxf(gradient->curvature - 0.05f, -2.0f);
+      dt_toast_log(_("curvature: %3.2f%%"), gradient->curvature*50.0f);
       dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
       dt_masks_gui_form_remove(form, gui, index);
       dt_masks_gui_form_create(form, gui, index);
@@ -282,8 +285,7 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     float pts[8] = { xref, yref, x , y, 0, 0, gui->dx, gui->dy };
     dt_dev_distort_backtransform(darktable.develop, pts, 4);
 
-    const float dv = atan2(pts[3] - pts[1], pts[2] - pts[0])
-      - atan2(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
+    const float dv = atan2f(pts[3] - pts[1], pts[2] - pts[0]) - atan2f(-(pts[7] - pts[5]), -(pts[6] - pts[4]));
 
     gradient->rotation -= dv / M_PI * 180.0f;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -371,16 +373,16 @@ static int dt_gradient_events_button_released(struct dt_iop_module_t *module, fl
     gradient->anchor[0] = pts[0] / darktable.develop->preview_pipe->iwidth;
     gradient->anchor[1] = pts[1] / darktable.develop->preview_pipe->iheight;
 
-    float rotation = atan2(pts[3] - pts[1], pts[2] - pts[0]);
+    float rotation = atan2f(pts[3] - pts[1], pts[2] - pts[0]);
     // If the transform has flipped the image about one axis, then the
     // 'handedness' of the coordinate system is changed. In this case the
     // rotation angle must be offset by 180 degrees so that the gradient points
     // in the correct direction as dragged. We test for this by checking the
     // angle between two vectors that should be 90 degrees apart. If the angle
     // is -90 degrees, then the image is flipped.
-    float check_angle = atan2(pts[7] - pts[1], pts[6] - pts[0]) - atan2(pts[5] - pts[1], pts[4] - pts[0]);
+    float check_angle = atan2f(pts[7] - pts[1], pts[6] - pts[0]) - atan2(pts[5] - pts[1], pts[4] - pts[0]);
     // Normalize to the range -180 to 180 degrees
-    check_angle = atan2(sin(check_angle), cos(check_angle));
+    check_angle = atan2f(sinf(check_angle), cosf(check_angle));
     if (check_angle < 0)
       rotation -= M_PI;
 
@@ -609,17 +611,17 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     // draw arrow on the end of the gradient to clearly display the direction
 
     // size & width of the arrow
-    const float arrow_angle = 0.25;
-    const float arrow_length = 15.0 / zoom_scale;
+    const float arrow_angle = 0.25f;
+    const float arrow_length = 15.0f / zoom_scale;
 
     const float a_dx = anchor_x - pivot_end_x;
     const float a_dy = pivot_end_y - anchor_y;
-    const float angle = atan2(a_dx, a_dy) - M_PI / 2.0;
+    const float angle = atan2f(a_dx, a_dy) - M_PI / 2.0f;
 
-    const float arrow_x1 = pivot_end_x + (arrow_length * cos(angle + arrow_angle));
-    const float arrow_x2 = pivot_end_x + (arrow_length * cos(angle - arrow_angle));
-    const float arrow_y1 = pivot_end_y + (arrow_length * sin(angle + arrow_angle));
-    const float arrow_y2 = pivot_end_y + (arrow_length * sin(angle - arrow_angle));
+    const float arrow_x1 = pivot_end_x + (arrow_length * cosf(angle + arrow_angle));
+    const float arrow_x2 = pivot_end_x + (arrow_length * cosf(angle - arrow_angle));
+    const float arrow_y1 = pivot_end_y + (arrow_length * sinf(angle + arrow_angle));
+    const float arrow_y2 = pivot_end_y + (arrow_length * sinf(angle - arrow_angle));
 
     dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_move_to(cr, pivot_end_x, pivot_end_y);
@@ -670,9 +672,9 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
   }
   else if((gui->group_selected == index) && gui->form_rotating)
   {
-    const float v = atan2(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
-    sinv = sin(v);
-    cosv = cos(v);
+    const float v = atan2f(gui->posy - yref, gui->posx - xref) - atan2(-gui->dy, -gui->dx);
+    sinv = sinf(v);
+    cosv = cosf(v);
   }
 
   // draw line
@@ -845,17 +847,17 @@ static void dt_gradient_events_post_expose(cairo_t *cr, float zoom_scale, dt_mas
     // draw arrow on the end of the gradient to clearly display the direction
 
     // size & width of the arrow
-    const float arrow_angle = 0.25;
-    const float arrow_length = 15.0 / zoom_scale;
+    const float arrow_angle = 0.25f;
+    const float arrow_length = 15.0f / zoom_scale;
 
     const float a_dx = anchor_x - pivot_end_x;
     const float a_dy = pivot_end_y - anchor_y;
-    const float angle = atan2(a_dx, a_dy) - M_PI/2.0;
+    const float angle = atan2f(a_dx, a_dy) - M_PI/2.0f;
 
-    const float arrow_x1 = pivot_end_x + (arrow_length * cos(angle + arrow_angle));
-    const float arrow_x2 = pivot_end_x + (arrow_length * cos(angle - arrow_angle));
-    const float arrow_y1 = pivot_end_y + (arrow_length * sin(angle + arrow_angle));
-    const float arrow_y2 = pivot_end_y + (arrow_length * sin(angle - arrow_angle));
+    const float arrow_x1 = pivot_end_x + (arrow_length * cosf(angle + arrow_angle));
+    const float arrow_x2 = pivot_end_x + (arrow_length * cosf(angle - arrow_angle));
+    const float arrow_y1 = pivot_end_y + (arrow_length * sinf(angle + arrow_angle));
+    const float arrow_y2 = pivot_end_y + (arrow_length * sinf(angle - arrow_angle));
 
     dt_draw_set_color_overlay(cr, 0.8, 0.8);
     cairo_move_to(cr, pivot_end_x, pivot_end_y);
@@ -881,13 +883,13 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
   const float distance = 0.1f * fminf(wd, ht);
 
   const float v = (-rotation / 180.0f) * M_PI;
-  const float cosv = cos(v);
-  const float sinv = sin(v);
+  const float cosv = cosf(v);
+  const float sinv = sinf(v);
 
   const int count = sqrtf(wd * wd + ht * ht) + 3;
-  *points = dt_alloc_align(64, 2 * count * sizeof(float));
+  *points = dt_alloc_align_float((size_t)2 * count);
   if(*points == NULL) return 0;
-  memset(*points, 0, 2 * count * sizeof(float));
+  memset(*points, 0, sizeof(float) * 2 * count);
 
 
   // we set the anchor point
@@ -896,20 +898,20 @@ static int dt_gradient_get_points(dt_develop_t *dev, float x, float y, float rot
 
   // we set the pivot points
   const float v1 = (-(rotation - 90.0f) / 180.0f) * M_PI;
-  const float x1 = x * wd + distance * cos(v1);
-  const float y1 = y * ht + distance * sin(v1);
+  const float x1 = x * wd + distance * cosf(v1);
+  const float y1 = y * ht + distance * sinf(v1);
   (*points)[2] = x1;
   (*points)[3] = y1;
   const float v2 = (-(rotation + 90.0f) / 180.0f) * M_PI;
-  const float x2 = x * wd + distance * cos(v2);
-  const float y2 = y * ht + distance * sin(v2);
+  const float x2 = x * wd + distance * cosf(v2);
+  const float y2 = y * ht + distance * sinf(v2);
   (*points)[4] = x2;
   (*points)[5] = y2;
 
   *points_count = 3;
 
   // we set the line point
-  const float xstart = fabs(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
+  const float xstart = fabsf(curvature) > 1.0f ? -sqrtf(1.0f / fabsf(curvature)) : -1.0f;
   const float xdelta = -2.0f * xstart / (count - 3);
 
   int in_frame = FALSE;
@@ -964,15 +966,15 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
 
   const float v1 = (-(rotation - 90.0f) / 180.0f) * M_PI;
 
-  const float x1 = (x * wd + distance * scale * cos(v1)) / wd;
-  const float y1 = (y * ht + distance * scale * sin(v1)) / ht;
+  const float x1 = (x * wd + distance * scale * cosf(v1)) / wd;
+  const float y1 = (y * ht + distance * scale * sinf(v1)) / ht;
 
   const int r1 = dt_gradient_get_points(dev, x1, y1, rotation, curvature, &points1, &points_count1);
 
   const float v2 = (-(rotation + 90.0f) / 180.0f) * M_PI;
 
-  const float x2 = (x * wd + distance * scale * cos(v2)) / wd;
-  const float y2 = (y * ht + distance * scale * sin(v2)) / ht;
+  const float x2 = (x * wd + distance * scale * cosf(v2)) / wd;
+  const float y2 = (y * ht + distance * scale * sinf(v2)) / ht;
 
   const int r2 = dt_gradient_get_points(dev, x2, y2, rotation, curvature, &points2, &points_count2);
 
@@ -981,7 +983,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   if(r1 && r2 && points_count1 > 4 && points_count2 > 4)
   {
     int k = 0;
-    *points = dt_alloc_align(64, 2 * ((points_count1 - 3) + (points_count2 - 3) + 1) * sizeof(float));
+    *points = dt_alloc_align_float((size_t)2 * ((points_count1 - 3) + (points_count2 - 3) + 1));
     if(*points == NULL) goto end;
     *points_count = (points_count1 - 3) + (points_count2 - 3) + 1;
     for(int i = 3; i < points_count1; i++)
@@ -1004,7 +1006,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r1 && points_count1 > 4)
   {
     int k = 0;
-    *points = dt_alloc_align(64, 2 * ((points_count1 - 3)) * sizeof(float));
+    *points = dt_alloc_align_float((size_t)2 * ((points_count1 - 3)));
     if(*points == NULL) goto end;
     *points_count = points_count1 - 3;
     for(int i = 3; i < points_count1; i++)
@@ -1019,7 +1021,7 @@ static int dt_gradient_get_points_border(dt_develop_t *dev, float x, float y, fl
   else if(r2 && points_count2 > 4)
   {
     int k = 0;
-    *points = dt_alloc_align(64, 2 * ((points_count2 - 3)) * sizeof(float));
+    *points = dt_alloc_align_float((size_t)2 * ((points_count2 - 3)));
     if(*points == NULL) goto end;
     *points_count = points_count2 - 3;
 
@@ -1082,15 +1084,17 @@ static inline float dt_gradient_lookup(const float *lut, const float i)
 static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                                 float **buffer, int *width, int *height, int *posx, int *posy)
 {
-  double start2 = dt_get_wtime();
-
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
   // we get the area
   if(!dt_gradient_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient area took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we get the gradient values
   dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
@@ -1104,7 +1108,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const int gw = (w + grid - 1) / grid + 1;
   const int gh = (h + grid - 1) / grid + 1;
 
-  float *points = dt_alloc_align(64, gw * gh * 2 * sizeof(float));
+  float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1124,9 +1128,11 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
     }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient draw took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we backtransform all these points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, (size_t)gw * gh))
@@ -1136,9 +1142,11 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient transform took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we calculate the mask at grid points and recycle point buffer to store results
   const float wd = piece->pipe->iwidth;
@@ -1146,8 +1154,8 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
   const float ihwscale = 1.0f / hwscale;
   const float v = (-gradient->rotation / 180.0f) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
   const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
   const float yoffset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
   const float compression = fmaxf(gradient->compression, 0.001f);
@@ -1157,7 +1165,7 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
   const int lutmax = ceilf(4 * compression * ihwscale);
   const int lutsize = 2 * lutmax + 2;
-  float *lut = dt_alloc_align(64, lutsize * sizeof(float));
+  float *lut = dt_alloc_align_float((size_t)lutsize);
   if(lut == NULL)
   {
     dt_free_align(points);
@@ -1213,13 +1221,13 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   dt_free_align(lut);
 
   // we allocate the buffer
-  *buffer = dt_alloc_align(64, w * h * sizeof(float));
+  *buffer = dt_alloc_align_float((size_t)w * h);
   if(*buffer == NULL)
   {
     dt_free_align(points);
     return 0;
   }
-  memset(*buffer, 0, w * h * sizeof(float));
+  memset(*buffer, 0, sizeof(float) * w * h);
 
 // we fill the mask buffer by interpolation
 #ifdef _OPENMP
@@ -1251,7 +1259,6 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
 
   return 1;
 }
@@ -1260,8 +1267,8 @@ static int dt_gradient_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                     dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
 {
-  double start2 = dt_get_wtime();
-
+  double start2 = 0.0;
+  if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
   // we get the gradient values
   const dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
 
@@ -1275,7 +1282,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const int gw = (w + grid - 1) / grid + 1;
   const int gh = (h + grid - 1) / grid + 1;
 
-  float *points = dt_alloc_align(64, (size_t)gw * gh * 2 * sizeof(float));
+  float *points = dt_alloc_align_float((size_t)2 * gw * gh);
   if(points == NULL) return 0;
 
 #ifdef _OPENMP
@@ -1297,9 +1304,11 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
     }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient draw took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we backtransform all these points
   if(!dt_dev_distort_backtransform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points,
@@ -1310,9 +1319,11 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   }
 
   if(darktable.unmuted & DT_DEBUG_PERF)
+  {
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient transform took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-  start2 = dt_get_wtime();
+    start2 = dt_get_wtime();
+  }
 
   // we calculate the mask at grid points and recycle point buffer to store results
   const float wd = piece->pipe->iwidth;
@@ -1320,8 +1331,8 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const float hwscale = 1.0f / sqrtf(wd * wd + ht * ht);
   const float ihwscale = 1.0f / hwscale;
   const float v = (-gradient->rotation / 180.0f) * M_PI;
-  const float sinv = sin(v);
-  const float cosv = cos(v);
+  const float sinv = sinf(v);
+  const float cosv = cosf(v);
   const float xoffset = cosv * gradient->anchor[0] * wd + sinv * gradient->anchor[1] * ht;
   const float yoffset = sinv * gradient->anchor[0] * wd - cosv * gradient->anchor[1] * ht;
   const float compression = fmaxf(gradient->compression, 0.001f);
@@ -1331,7 +1342,7 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
 
   const int lutmax = ceilf(4 * compression * ihwscale);
   const int lutsize = 2 * lutmax + 2;
-  float *lut = dt_alloc_align(64, lutsize * sizeof(float));
+  float *lut = dt_alloc_align_float((size_t)lutsize);
   if(lut == NULL)
   {
     dt_free_align(points);
@@ -1416,7 +1427,6 @@ static int dt_gradient_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_io
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] gradient fill took %0.04f sec\n", form->name,
              dt_get_wtime() - start2);
-//   start2 = dt_get_wtime();
 
   return 1;
 }

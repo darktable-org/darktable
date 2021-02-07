@@ -87,7 +87,6 @@ typedef struct dt_iop_levels_gui_data_t
   GtkWidget *percentile_white;
   float auto_levels[3];
   uint64_t hash;
-  dt_pthread_mutex_t lock;
   GtkWidget *blackpick, *greypick, *whitepick;
 } dt_iop_levels_gui_data_t;
 
@@ -237,7 +236,7 @@ static void compute_lut(dt_dev_pixelpipe_iop_t *piece)
   for(unsigned int i = 0; i < 0x10000; i++)
   {
     float percentage = (float)i / (float)0x10000ul;
-    d->lut[i] = 100.0f * pow(percentage, d->in_inv_gamma);
+    d->lut[i] = 100.0f * powf(percentage, d->in_inv_gamma);
   }
 }
 
@@ -320,22 +319,22 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   {
     if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_FULL) == DT_DEV_PIXELPIPE_FULL)
     {
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       const uint64_t hash = g->hash;
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       // note that the case 'hash == 0' on first invocation in a session implies that d->levels[]
       // contains NANs which initiates special handling below to avoid inconsistent results. in all
       // other cases we make sure that the preview pipe has left us with proper readings for
       // g->auto_levels[]. if data are not yet there we need to wait (with timeout).
-      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &g->lock, &g->hash))
+      if(hash != 0 && !dt_dev_sync_pixelpipe_hash(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, &self->gui_lock, &g->hash))
         dt_control_log(_("inconsistent output"));
 
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       d->levels[0] = g->auto_levels[0];
       d->levels[1] = g->auto_levels[1];
       d->levels[2] = g->auto_levels[2];
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       compute_lut(piece);
     }
@@ -350,12 +349,12 @@ static void commit_params_late(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW && d->mode == LEVELS_MODE_AUTOMATIC)
     {
       uint64_t hash = dt_dev_hash_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL);
-      dt_pthread_mutex_lock(&g->lock);
+      dt_iop_gui_enter_critical_section(self);
       g->auto_levels[0] = d->levels[0];
       g->auto_levels[1] = d->levels[1];
       g->auto_levels[2] = d->levels[2];
       g->hash = hash;
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 }
@@ -374,7 +373,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   const float *const restrict in = (float*)ivoid;
   float *const restrict out = (float*)ovoid;
-  const size_t npixels = roi_out->width * roi_out->height;
+  const size_t npixels = (size_t)roi_out->width * roi_out->height;
   
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
@@ -395,7 +394,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     {
       const float percentage = (L_in - d->levels[0]) / (d->levels[2] - d->levels[0]);
       // Within the expected input range we can use the lookup table, else we need to compute from scratch
-      L_out = percentage < 1.0f ? d->lut[(int)(percentage * 0x10000ul)] : 100.0f * pow(percentage, d->in_inv_gamma);
+      L_out = percentage < 1.0f ? d->lut[(int)(percentage * 0x10000ul)] : 100.0f * powf(percentage, d->in_inv_gamma);
     }
 
     // Preserving contrast
@@ -560,12 +559,12 @@ void gui_update(dt_iop_module_t *self)
 
   gui_changed(self, g->mode, 0);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   g->auto_levels[0] = NAN;
   g->auto_levels[1] = NAN;
   g->auto_levels[2] = NAN;
   g->hash = 0;
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   gtk_widget_queue_draw(self->widget);
 }
@@ -604,14 +603,12 @@ void gui_init(dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *c = IOP_GUI_ALLOC(levels);
 
-  dt_pthread_mutex_init(&c->lock, NULL);
-
-  dt_pthread_mutex_lock(&c->lock);
+  dt_iop_gui_enter_critical_section(self);
   c->auto_levels[0] = NAN;
   c->auto_levels[1] = NAN;
   c->auto_levels[2] = NAN;
   c->hash = 0;
-  dt_pthread_mutex_unlock(&c->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   c->modes = NULL;
 
@@ -630,7 +627,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(c->area),_("drag handles to set black, gray, and white points. "
                                                     "operates on L channel."));
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK | GDK_POINTER_MOTION_HINT_MASK
+  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
                                              | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
                                              | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(dt_iop_levels_area_draw), self);
@@ -697,8 +694,6 @@ void gui_cleanup(dt_iop_module_t *self)
 {
   dt_iop_levels_gui_data_t *g = (dt_iop_levels_gui_data_t *)self->gui_data;
   g_list_free(g->modes);
-
-  dt_pthread_mutex_destroy(&g->lock);
 
   IOP_GUI_FREE;
 }
@@ -914,17 +909,6 @@ static gboolean dt_iop_levels_motion_notify(GtkWidget *widget, GdkEventMotion *e
   }
   gtk_widget_queue_draw(widget);
 
-  gint x, y;
-#if GTK_CHECK_VERSION(3, 20, 0)
-  gdk_window_get_device_position(event->window,
-      gdk_seat_get_pointer(gdk_display_get_default_seat(gtk_widget_get_display(widget))),
-      &x, &y, 0);
-#else
-  gdk_window_get_device_position(event->window,
-                                 gdk_device_manager_get_client_pointer(
-                                     gdk_display_get_device_manager(gdk_window_get_display(event->window))),
-                                 &x, &y, NULL);
-#endif
   return TRUE;
 }
 

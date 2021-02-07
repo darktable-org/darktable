@@ -171,7 +171,7 @@ static void _lighttable_check_layout(dt_view_t *self)
     gtk_widget_hide(dt_ui_thumbtable(darktable.gui->ui)->widget);
 
     // if we arrive from culling, we just need to ensure the offset is right
-    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING)
+    if(layout_old == DT_LIGHTTABLE_LAYOUT_CULLING || layout_old == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
     {
       dt_thumbtable_set_offset(dt_ui_thumbtable(darktable.gui->ui), lib->thumbtable_offset, FALSE);
     }
@@ -189,7 +189,7 @@ static void _lighttable_check_layout(dt_view_t *self)
     dt_thumbtable_full_redraw(dt_ui_thumbtable(darktable.gui->ui), TRUE);
     gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
   }
-  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING)
+  else if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC)
   {
     // record thumbtable offset
     lib->thumbtable_offset = dt_thumbtable_get_offset(dt_ui_thumbtable(darktable.gui->ui));
@@ -224,7 +224,7 @@ static void _lighttable_check_layout(dt_view_t *self)
 
   lib->already_started = TRUE;
 
-  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || lib->preview_state)
+  if(layout == DT_LIGHTTABLE_LAYOUT_CULLING || layout == DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC || lib->preview_state)
   {
     dt_thumbtable_set_parent(dt_ui_thumbtable(darktable.gui->ui), dt_ui_center_base(darktable.gui->ui),
                              DT_THUMBTABLE_MODE_NONE);
@@ -367,39 +367,6 @@ static gboolean is_image_visible_cb(lua_State *L)
 
 #endif
 
-void init(dt_view_t *self)
-{
-  self->data = calloc(1, sizeof(dt_library_t));
-
-  darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
-  darktable.view_manager->proxy.lighttable.view = self;
-  darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
-  darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
-  darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
-  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = _culling_preview_reload_overlays;
-
-  // ensure the memory table is up to date
-  dt_collection_memory_update();
-
-#ifdef USE_LUA
-  lua_State *L = darktable.lua_state.state;
-  const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
-
-  lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, set_image_visible_cb, 1);
-  dt_lua_gtk_wrap(L);
-  lua_pushcclosure(L, dt_lua_type_member_common, 1);
-  dt_lua_type_register_const_type(L, my_type, "set_image_visible");
-
-  lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, is_image_visible_cb, 1);
-  dt_lua_gtk_wrap(L);
-  lua_pushcclosure(L, dt_lua_type_member_common, 1);
-  dt_lua_type_register_const_type(L, my_type, "is_image_visible");
-#endif
-}
-
-
 void cleanup(dt_view_t *self)
 {
   dt_library_t *lib = (dt_library_t *)self->data;
@@ -500,8 +467,11 @@ void expose(dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t
           gtk_widget_show(dt_ui_thumbtable(darktable.gui->ui)->widget);
         break;
       case DT_LIGHTTABLE_LAYOUT_CULLING:
+      case DT_LIGHTTABLE_LAYOUT_CULLING_DYNAMIC:
         if(!gtk_widget_get_visible(lib->culling->widget)) gtk_widget_show(lib->culling->widget);
         gtk_widget_hide(lib->preview->widget);
+        break;
+      case DT_LIGHTTABLE_LAYOUT_PREVIEW:
         break;
       case DT_LIGHTTABLE_LAYOUT_FIRST:
       case DT_LIGHTTABLE_LAYOUT_LAST:
@@ -607,6 +577,47 @@ static void _preview_enter(dt_view_t *self, gboolean sticky, gboolean focus, int
 
   // we don't need the scrollbars
   dt_ui_scrollbars_show(darktable.gui->ui, FALSE);
+}
+
+static void _preview_set_state(dt_view_t *self, gboolean state, gboolean focus)
+{
+  if(state)
+    _preview_enter(self, TRUE, focus, dt_control_get_mouse_over_id());
+  else
+    _preview_quit(self);
+}
+
+void init(dt_view_t *self)
+{
+  self->data = calloc(1, sizeof(dt_library_t));
+
+  darktable.view_manager->proxy.lighttable.get_preview_state = _preview_get_state;
+  darktable.view_manager->proxy.lighttable.set_preview_state = _preview_set_state;
+  darktable.view_manager->proxy.lighttable.view = self;
+  darktable.view_manager->proxy.lighttable.change_offset = _lighttable_change_offset;
+  darktable.view_manager->proxy.lighttable.culling_init_mode = _culling_reinit;
+  darktable.view_manager->proxy.lighttable.culling_preview_refresh = _culling_preview_refresh;
+  darktable.view_manager->proxy.lighttable.culling_preview_reload_overlays = _culling_preview_reload_overlays;
+
+  // ensure the memory table is up to date
+  dt_collection_memory_update();
+
+#ifdef USE_LUA
+  lua_State *L = darktable.lua_state.state;
+  const int my_type = dt_lua_module_entry_get_type(L, "view", self->module_name);
+
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, set_image_visible_cb, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "set_image_visible");
+
+  lua_pushlightuserdata(L, self);
+  lua_pushcclosure(L, is_image_visible_cb, 1);
+  dt_lua_gtk_wrap(L);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, my_type, "is_image_visible");
+#endif
 }
 
 void leave(dt_view_t *self)
@@ -867,9 +878,6 @@ void init_key_accels(dt_view_t *self)
   // Preview key
   dt_accel_register_view(self, NC_("accel", "preview"), GDK_KEY_w, 0);
   dt_accel_register_view(self, NC_("accel", "preview with focus detection"), GDK_KEY_w, GDK_CONTROL_MASK);
-  dt_accel_register_view(self, NC_("accel", "sticky preview"), GDK_KEY_w, GDK_MOD1_MASK);
-  dt_accel_register_view(self, NC_("accel", "sticky preview with focus detection"), GDK_KEY_w,
-                         GDK_MOD1_MASK | GDK_CONTROL_MASK);
 
   // undo/redo
   dt_accel_register_view(self, NC_("accel", "undo"), GDK_KEY_z, GDK_CONTROL_MASK);
@@ -923,27 +931,6 @@ static gboolean _accel_reset_first_offset(GtkAccelGroup *accel_group, GObject *a
   return FALSE;
 }
 
-static gboolean _accel_sticky_preview(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
-                                      GdkModifierType modifier, gpointer data)
-{
-  dt_view_t *self = darktable.view_manager->proxy.lighttable.view;
-  dt_library_t *lib = (dt_library_t *)self->data;
-
-  // if we are alredy in preview mode, we exit
-  if(lib->preview_state)
-  {
-    _preview_quit(self);
-    return TRUE;
-  }
-
-  const int focus = GPOINTER_TO_INT(data);
-  const int mouse_over_id = dt_control_get_mouse_over_id();
-  if(mouse_over_id < 1) return TRUE;
-  _preview_enter(self, TRUE, focus, mouse_over_id);
-
-  return TRUE;
-}
-
 static gboolean _accel_culling_zoom_100(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                         GdkModifierType modifier, gpointer data)
 {
@@ -951,9 +938,9 @@ static gboolean _accel_culling_zoom_100(GtkAccelGroup *accel_group, GObject *acc
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(lib->preview_state)
-    dt_culling_zoom_max(lib->preview, FALSE);
+    dt_culling_zoom_max(lib->preview);
   else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-    dt_culling_zoom_max(lib->culling, FALSE);
+    dt_culling_zoom_max(lib->culling);
   else
     return FALSE;
 
@@ -967,9 +954,9 @@ static gboolean _accel_culling_zoom_fit(GtkAccelGroup *accel_group, GObject *acc
   dt_library_t *lib = (dt_library_t *)self->data;
 
   if(lib->preview_state)
-    dt_culling_zoom_fit(lib->preview, FALSE);
+    dt_culling_zoom_fit(lib->preview);
   else if(dt_view_lighttable_get_layout(darktable.view_manager) == DT_LIGHTTABLE_LAYOUT_CULLING)
-    dt_culling_zoom_fit(lib->culling, FALSE);
+    dt_culling_zoom_fit(lib->culling);
   else
     return FALSE;
 
@@ -1011,12 +998,6 @@ void connect_key_accels(dt_view_t *self)
   dt_accel_connect_view(self, "undo", closure);
   closure = g_cclosure_new(G_CALLBACK(_lighttable_redo_callback), (gpointer)self, NULL);
   dt_accel_connect_view(self, "redo", closure);
-
-  // sticky preview (non sticky is managed inside key_pressed)
-  closure = g_cclosure_new(G_CALLBACK(_accel_sticky_preview), GINT_TO_POINTER(FALSE), NULL);
-  dt_accel_connect_view(self, "sticky preview", closure);
-  closure = g_cclosure_new(G_CALLBACK(_accel_sticky_preview), GINT_TO_POINTER(TRUE), NULL);
-  dt_accel_connect_view(self, "sticky preview with focus detection", closure);
 
   // culling & preview zoom
   closure = g_cclosure_new(G_CALLBACK(_accel_culling_zoom_100), (gpointer)self, NULL);
@@ -1380,7 +1361,7 @@ void gui_init(dt_view_t *self)
   // and the popup window
   lib->profile_floating_window = gtk_popover_new(profile_button);
 
-  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), 350, -1);
+  gtk_widget_set_size_request(GTK_WIDGET(lib->profile_floating_window), 550, -1);
 #if GTK_CHECK_VERSION(3, 16, 0)
   g_object_set(G_OBJECT(lib->profile_floating_window), "transitions-enabled", FALSE, NULL);
 #endif
@@ -1397,16 +1378,14 @@ void gui_init(dt_view_t *self)
   dt_loc_get_datadir(datadir, sizeof(datadir));
 
   GtkWidget *display_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display_intent, NULL, N_("display intent"));
-  gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(display_intent, NULL, N_("intent"));
   dt_bauhaus_combobox_add(display_intent, _("perceptual"));
   dt_bauhaus_combobox_add(display_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(display_intent, C_("rendering intent", "saturation"));
   dt_bauhaus_combobox_add(display_intent, _("absolute colorimetric"));
 
   GtkWidget *display2_intent = dt_bauhaus_combobox_new(NULL);
-  dt_bauhaus_widget_set_label(display2_intent, NULL, N_("preview display intent"));
-  gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
+  dt_bauhaus_widget_set_label(display2_intent, NULL, N_("intent"));
   dt_bauhaus_combobox_add(display2_intent, _("perceptual"));
   dt_bauhaus_combobox_add(display2_intent, _("relative colorimetric"));
   dt_bauhaus_combobox_add(display2_intent, C_("rendering intent", "saturation"));
@@ -1414,11 +1393,16 @@ void gui_init(dt_view_t *self)
 
   GtkWidget *display_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display_profile, NULL, N_("display profile"));
-  gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
 
   GtkWidget *display2_profile = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(display2_profile, NULL, N_("preview display profile"));
+
+  // pack entries
+  gtk_box_pack_start(GTK_BOX(vbox), display_profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), display_intent, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), gtk_separator_new(GTK_ORIENTATION_HORIZONTAL), TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vbox), display2_profile, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), display2_intent, TRUE, TRUE, 0);
 
   for(GList *profiles = darktable.color_profiles->profiles; profiles; profiles = g_list_next(profiles))
   {

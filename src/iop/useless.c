@@ -114,6 +114,7 @@ const char *name()
 int flags()
 {
   return IOP_FLAGS_INCLUDE_IN_STYLES | IOP_FLAGS_SUPPORTS_BLENDING;
+  // optionally add IOP_FLAGS_ALLOW_TILING and implement tiling_callback
 }
 
 // where does it appear in the gui?
@@ -199,6 +200,23 @@ void commit_params(dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pixelpipe_
   g_hash_table_insert(self->raster_mask.source.masks, GINT_TO_POINTER(mask_id), g_strdup(mask_name));
 }
 
+#if 0
+/** optional, only needed if tiling is permitted by setting IOP_FLAGS_ALLOW_TILING */
+void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece,
+                     const dt_iop_roi_t *roi_in, const dt_iop_roi_t *roi_out,
+                     struct dt_develop_tiling_t *tiling)
+{
+  tiling->factor = 2.0f;    // input buffer + output buffer; increase if additional memory allocated
+  tiling->factor_cl = 2.0f; // same, but for OpenCL code path running on GPU
+  tiling->maxbuf = 1.0f;    // largest buffer needed regardless of how tiling splits up the processing
+  tiling->maxbuf_cl = 1.0f; // same, but for running on GPU
+  tiling->overhead = 0;     // number of bytes of fixed overhead
+  tiling->overlap = 0;      // how many pixels do we need to access from the neighboring tile?
+  tiling->xalign = 1;
+  tiling->yalign = 1;
+}
+#endif
+
 /** modify regions of interest (optional, per pixel ops don't need this) */
 // void modify_roi_out(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, dt_iop_roi_t
 // *roi_out, const dt_iop_roi_t *roi_in);
@@ -255,7 +273,13 @@ int distort_backtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, 
 // void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *piece, const float *const in,
 // float *const out, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out);
 
-/** process, all real work is done here. */
+/** process, all real work is done here.
+    NOTE: process() must never use the Gtk+ API. All GUI modifications must be
+          done in the Gtk+ thread. This is to be conducted in gui_update or
+          gui_changed. If process detect a state and something it to be change on the UI
+          a signal should be used (raise a signal here) and a corresponding callback
+          must be connected to this signal.
+*/
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid, void *const ovoid,
              const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
@@ -268,12 +292,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // how many colors in our buffer?
   const int ch = piece->colors;
 
+  // most modules only support a single type of input data, so we can check whether that format has been supplied
+  // and simply pass along the data if not (setting a trouble flag to inform the user)
+  dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)self->gui_data;
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return;
+
   // we create a raster mask as an example
   float *mask = NULL;
   if(piece->pipe->store_all_raster_masks || dt_iop_is_raster_mask_used(piece->module, mask_id))
   {
-    mask = (float *)dt_alloc_align(64, (size_t)roi_out->width * roi_out->height * sizeof(float));
-    memset(mask, 0, sizeof(float) * roi_out->width * roi_out->height);
+    // Attempt to allocate all of the buffers we need.  For this example, we need one buffer that is equal in
+    // dimensions to the output buffer, has one color channel, and has been zero'd.  (See common/imagebuf.h for
+    // more details on all of the options.)
+    if (!dt_iop_alloc_image_buffers(module, roi_in, roi_out,
+                                    1/*ch per pixel*/ | DT_IMGSZ_OUTPUT | DT_IMGSZ_FULL | DT_IMGSZ_CLEARBUF, &mask,
+                                    0 /* end of list of buffers to allocate */))
+    {
+      // Uh oh, we didn't have enough memory!  If multiple buffers were requested, any that had already
+      // been allocated have been freed, and the module's trouble flag has been set.  We can simply pass
+      // through the input image and return now, since there isn't anything else we need to clean up at
+      // this point.
+      dt_iop_copy_image_roi(ovoid, ivoid, ch, roi_in, roi_out, TRUE);
+      return;
+    }
   }
   else
     g_hash_table_remove(piece->raster_masks, GINT_TO_POINTER(mask_id));

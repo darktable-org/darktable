@@ -17,6 +17,7 @@
 */
 #include "control/jobs/film_jobs.h"
 #include "common/darktable.h"
+#include "common/collection.h"
 #include "common/film.h"
 #include <stdlib.h>
 
@@ -195,7 +196,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   /* let's start import of images */
   gchar message[512] = { 0 };
   double fraction = 0;
-  guint total = g_list_length(images);
+  const guint total = g_list_length(images);
   g_snprintf(message, sizeof(message) - 1, ngettext("importing %d image", "importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
@@ -220,7 +221,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
         while((dfn = g_dir_read_name(cfr->dir)) != NULL)
         {
           /* check if we have a gpx to be auto applied to filmroll */
-          size_t len = strlen(dfn);
+          const size_t len = strlen(dfn);
           if(strcmp(dfn + len - 4, ".gpx") == 0 || strcmp(dfn + len - 4, ".GPX") == 0)
           {
             gchar *gpx_file = g_build_path(G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
@@ -253,12 +254,15 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     g_free(cdn);
 
     /* import image */
-    dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
+    const int32_t imgid = dt_image_import(cfr->id, (const gchar *)image->data, FALSE);
 
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
 
-
+    if((imgid & 3) == 3)
+    {
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+    }
   } while((image = g_list_next(image)) != NULL);
 
   g_list_free_full(images, g_free);
@@ -279,7 +283,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     while((dfn = g_dir_read_name(cfr->dir)) != NULL)
     {
       /* check if we have a gpx to be auto applied to filmroll */
-      size_t len = strlen(dfn);
+      const size_t len = strlen(dfn);
       if(strcmp(dfn + len - 4, ".gpx") == 0 || strcmp(dfn + len - 4, ".GPX") == 0)
       {
         gchar *gpx_file = g_build_path(G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);

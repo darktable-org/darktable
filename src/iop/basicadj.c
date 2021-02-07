@@ -26,6 +26,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces_inline_conversions.h"
+#include "common/math.h"
 #include "common/rgb_norms.h"
 #include "develop/imageop.h"
 #include "develop/imageop_gui.h"
@@ -56,7 +57,6 @@ typedef struct dt_iop_basicadj_params_t
 
 typedef struct dt_iop_basicadj_gui_data_t
 {
-  dt_pthread_mutex_t lock;
   dt_iop_basicadj_params_t params;
 
   int call_auto_exposure;                       // should we calculate exposure automatically?
@@ -200,13 +200,13 @@ static void _auto_levels_callback(GtkButton *button, dt_iop_module_t *self)
 
   _turn_selregion_picker_off(self);
 
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->call_auto_exposure == 0)
   {
     g->box_cood[0] = g->box_cood[1] = g->box_cood[2] = g->box_cood[3] = 0.f;
     g->call_auto_exposure = 1;
   }
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 
   dt_dev_reprocess_all(self->dev);
 }
@@ -226,8 +226,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
 
   dt_iop_color_picker_reset(self, TRUE);
 
-  dt_pthread_mutex_lock(&g->lock);
-
+  dt_iop_gui_enter_critical_section(self);
   if(gtk_toggle_button_get_active(togglebutton))
   {
     g->draw_selected_region = 1;
@@ -236,8 +235,7 @@ static void _select_region_toggled_callback(GtkToggleButton *togglebutton, dt_io
     g->draw_selected_region = 0;
 
   g->posx_from = g->posx_to = g->posy_from = g->posy_to = 0;
-
-  dt_pthread_mutex_unlock(&g->lock);
+  dt_iop_gui_leave_critical_section(self);
 }
 
 static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_data)
@@ -250,22 +248,19 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
 
   // FIXME: this doesn't seems the right place to update params and GUI ...
   // update auto levels
-  dt_pthread_mutex_lock(&g->lock);
+  dt_iop_gui_enter_critical_section(self);
   if(g->call_auto_exposure == 2)
   {
     g->call_auto_exposure = -1;
-
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     memcpy(p, &g->params, sizeof(dt_iop_basicadj_params_t));
 
     dt_dev_add_history_item(darktable.develop, self, TRUE);
 
-    dt_pthread_mutex_lock(&g->lock);
-
+    dt_iop_gui_enter_critical_section(self);
     g->call_auto_exposure = 0;
-
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
 
     ++darktable.gui->reset;
 
@@ -275,7 +270,7 @@ static void _develop_ui_pipe_finished_callback(gpointer instance, gpointer user_
   }
   else
   {
-    dt_pthread_mutex_unlock(&g->lock);
+    dt_iop_gui_leave_critical_section(self);
   }
 }
 
@@ -581,7 +576,6 @@ void gui_init(struct dt_iop_module_t *self)
 {
   dt_iop_basicadj_gui_data_t *g = IOP_GUI_ALLOC(basicadj);
 
-  dt_pthread_mutex_init(&g->lock, NULL);
   change_image(self);
 
   self->widget = GTK_WIDGET(gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE));
@@ -662,12 +656,6 @@ void gui_cleanup(struct dt_iop_module_t *self)
 {
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_develop_ui_pipe_finished_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_signal_profile_user_changed), self);
-
-  dt_iop_basicadj_gui_data_t *g = (dt_iop_basicadj_gui_data_t *)self->gui_data;
-  if(g)
-  {
-    dt_pthread_mutex_destroy(&g->lock);
-  }
 
   IOP_GUI_FREE;
 }
@@ -762,10 +750,10 @@ static void _get_auto_exp_histogram(const float *const img, const int width, con
   uint32_t *histogram = NULL;
   const float mul = hist_size;
 
-  histogram = dt_alloc_align(64, hist_size * sizeof(uint32_t));
+  histogram = dt_alloc_align(64, sizeof(uint32_t) * hist_size);
   if(histogram == NULL) goto cleanup;
 
-  memset(histogram, 0, hist_size * sizeof(uint32_t));
+  memset(histogram, 0, sizeof(uint32_t) * hist_size);
 
   if(box_area[2] > box_area[0] && box_area[3] > box_area[1])
   {
@@ -866,7 +854,7 @@ static inline float hlcurve(const float level, const float hlcomp, const float h
     }
 
     float R = hlrange / (val * hlcomp);
-    return log1p(Y) * R;
+    return log1pf(Y) * R;
   }
   else
   {
@@ -969,14 +957,14 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   }
 
   // if very overxposed image
-  if(octile[6] > log1p((float)imax) / log2(2.f))
+  if(octile[6] > log1pf((float)imax) / log2(2.f))  //*** Is this correct?  log2(2) == 1
   {
     octile[6] = 1.5f * octile[5] - 0.5f * octile[4];
     overex = 2;
   }
 
   // if overexposed
-  if(octile[7] > log1p((float)imax) / log2(2.f))
+  if(octile[7] > log1pf((float)imax) / log2(2.f))  //*** Is this correct?  log2(2) == 1
   {
     octile[7] = 1.5f * octile[6] - 0.5f * octile[5];
     overex = 1;
@@ -1060,30 +1048,30 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
   // compute exposure compensation as geometric mean of the amount that
   // sets the mean or median at middle gray, and the amount that sets the estimated top
   // of the histogram at or near clipping.
-  const float expcomp1 = (log(midgray * scale / (ave - shc + midgray * shc))) / log(2.f);
+  const float expcomp1 = (logf(midgray * scale / (ave - shc + midgray * shc))) / DT_M_LN2f;
   float expcomp2;
 
   if(overex == 0) // image is not overexposed
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + log(scale / rawmax) / log(2.f));
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * oct7 - oct6)) + logf(scale / rawmax) / DT_M_LN2f);
   }
   else
   {
-    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + log(scale / rawmax) / log(2.f));
+    expcomp2 = 0.5f * ((15.5f - histcompr - (2.f * octile[7] - octile[6])) + logf(scale / rawmax) / DT_M_LN2f);
   }
 
-  if(fabs(expcomp1) - fabs(expcomp2) > 1.f) // for great expcomp
+  if(fabsf(expcomp1) - fabsf(expcomp2) > 1.f) // for great expcomp
   {
-    expcomp = (expcomp1 * fabs(expcomp2) + expcomp2 * fabs(expcomp1)) / (fabs(expcomp1) + fabs(expcomp2));
+    expcomp = (expcomp1 * fabsf(expcomp2) + expcomp2 * fabsf(expcomp1)) / (fabsf(expcomp1) + fabsf(expcomp2));
   }
   else
   {
     expcomp = 0.5 * (double)expcomp1 + 0.5 * (double)expcomp2; // for small expcomp
   }
 
-  const float gain = exp((float)expcomp * log(2.f));
+  const float gain = expf(expcomp * DT_M_LN2f);
 
-  const float corr = sqrt(gain * scale / rawmax);
+  const float corr = sqrtf(gain * scale / rawmax);
   black = shc * corr;
 
   // now tune hlcompr to bring back rawmax to 65535
@@ -1096,7 +1084,7 @@ static void _get_auto_exp(const uint32_t *const histogram, const unsigned int hi
 
   // now find brightness if gain didn't bring ave to midgray using
   // the envelope of the actual 'control cage' brightness curve for simplicity
-  const float midtmp = gain * sqrt(median * ave) / scale;
+  const float midtmp = gain * sqrtf(median * ave) / scale;
 
   if(midtmp < 0.1f)
   {
@@ -1298,15 +1286,14 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
     {
       g->call_auto_exposure = -1;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       // get the image, this works only in C
-      src_buffer = dt_alloc_align(64, width * height * ch * sizeof(float));
+      src_buffer = dt_alloc_align_float((size_t)ch * width * height);
       if(src_buffer == NULL)
       {
         fprintf(stderr, "[basicadj process_cl] error allocating memory for color transformation 1\n");
@@ -1332,15 +1319,13 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
       dt_free_align(src_buffer);
       src_buffer = NULL;
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->call_auto_exposure = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 
@@ -1456,12 +1441,11 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // process auto levels
   if(g && (piece->pipe->type & DT_DEV_PIXELPIPE_PREVIEW) == DT_DEV_PIXELPIPE_PREVIEW)
   {
-    dt_pthread_mutex_lock(&g->lock);
+    dt_iop_gui_enter_critical_section(self);
     if(g->call_auto_exposure == 1 && !darktable.gui->reset)
     {
       g->call_auto_exposure = -1;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
 
       memcpy(&g->params, p, sizeof(dt_iop_basicadj_params_t));
 
@@ -1471,15 +1455,13 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
                      g->params.middle_grey / 100.f, &g->params.exposure, &g->params.brightness,
                      &g->params.contrast, &g->params.black_point, &g->params.hlcompr, &g->params.hlcomprthresh);
 
-      dt_pthread_mutex_lock(&g->lock);
-
+      dt_iop_gui_enter_critical_section(self);
       g->call_auto_exposure = 2;
-
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
     else
     {
-      dt_pthread_mutex_unlock(&g->lock);
+      dt_iop_gui_leave_critical_section(self);
     }
   }
 
@@ -1580,7 +1562,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     if(process_saturation_vibrance)
     {
       const float average = (out[k] + out[k+1] + out[k+2]) / 3;
-      const float delta = sqrt( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
+      const float delta = sqrtf( (average-out[k])*(average-out[k])+(average-out[k+1])*(average-out[k+1])+(average-out[k+2])*(average-out[k+2]));
       const float P = vibrance * (1 - powf(delta, fabsf(vibrance)));
 
       for(size_t c = 0; c < 3; c++)

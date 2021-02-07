@@ -1,4 +1,5 @@
-build/share/darktable/darktable.desktop.in
+build/bin/preferences_gen.h
+build/bin/conf_gen.h
 build/lib/darktable/plugins/introspection_ashift.c
 build/lib/darktable/plugins/introspection_atrous.c
 build/lib/darktable/plugins/introspection_basecurve.c
@@ -8,12 +9,14 @@ build/lib/darktable/plugins/introspection_bilateral.cc
 build/lib/darktable/plugins/introspection_bloom.c
 build/lib/darktable/plugins/introspection_borders.c
 build/lib/darktable/plugins/introspection_cacorrect.c
+build/lib/darktable/plugins/introspection_censorize.c
 build/lib/darktable/plugins/introspection_channelmixer.c
 build/lib/darktable/plugins/introspection_channelmixerrgb.c
 build/lib/darktable/plugins/introspection_clahe.c
 build/lib/darktable/plugins/introspection_clipping.c
 build/lib/darktable/plugins/introspection_colisa.c
 build/lib/darktable/plugins/introspection_colorbalance.c
+build/lib/darktable/plugins/introspection_colorbalancergb.c
 build/lib/darktable/plugins/introspection_colorchecker.c
 build/lib/darktable/plugins/introspection_colorcontrast.c
 build/lib/darktable/plugins/introspection_colorcorrection.c
@@ -79,7 +82,7 @@ build/lib/darktable/plugins/introspection_vignette.c
 build/lib/darktable/plugins/introspection_watermark.c
 build/lib/darktable/plugins/introspection_zonesystem.c
 build/lib/darktable/plugins/lighttable/tools/darktable_authors.h
-build/bin/preferences_gen.h
+build/share/darktable/darktable.desktop.in
 data/darktable.appdata.xml.in
 data/darktable.desktop.in
 src/bauhaus/bauhaus.c
@@ -128,13 +131,20 @@ src/develop/develop.c
 src/develop/imageop.c
 src/develop/imageop_gui.c
 src/develop/lightroom.c
+src/develop/masks/brush.c
+src/develop/masks/circle.c
+src/develop/masks/ellipse.c
+src/develop/masks/gradient.c
+src/develop/masks/group.c
 src/develop/masks/masks.c
+src/develop/masks/masks.c
+src/develop/masks/path.c
 src/develop/pixelpipe_hb.c
 src/develop/tiling.c
 src/dtgtk/culling.c
 src/dtgtk/resetlabel.c
-src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbnail.c
+src/dtgtk/thumbnail_btn.c
 src/dtgtk/thumbtable.c
 src/external/wb_presets.c
 src/generate-cache/main.c
@@ -148,6 +158,7 @@ src/gui/import_metadata.c
 src/gui/preferences.c
 src/gui/presets.c
 src/gui/styles_dialog.c
+src/imageio/format/avif.c
 src/imageio/format/copy.c
 src/imageio/format/exr.cc
 src/imageio/format/j2k.c
@@ -173,6 +184,7 @@ src/iop/bilateral.cc
 src/iop/bloom.c
 src/iop/borders.c
 src/iop/cacorrect.c
+src/iop/censorize.c
 src/iop/channelmixer.c
 src/iop/channelmixerrgb.c
 src/iop/choleski.h
@@ -180,6 +192,7 @@ src/iop/clahe.c
 src/iop/clipping.c
 src/iop/colisa.c
 src/iop/colorbalance.c
+src/iop/colorbalancergb.c
 src/iop/colorchecker.c
 src/iop/colorcontrast.c
 src/iop/colorcorrection.c
@@ -288,8 +301,8 @@ src/libs/tools/lighttable.c
 src/libs/tools/module_toolbox.c
 src/libs/tools/ratings.c
 src/libs/tools/timeline.c
-src/libs/tools/viewswitcher.c
 src/libs/tools/view_toolbox.c
+src/libs/tools/viewswitcher.c
 src/lua/lualib.c
 src/lua/preferences.c
 src/views/darkroom.c

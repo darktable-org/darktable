@@ -207,6 +207,8 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
     sqlite3_finalize(stmt);
 
     dt_gui_store_last_preset(name);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(g->plugin_name));
   }
   gtk_widget_destroy(GTK_WIDGET(dialog));
   g_free(g->original_name);
@@ -313,6 +315,8 @@ static void menuitem_update_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
     DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 4, name, -1, SQLITE_TRANSIENT);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(minfo->plugin_name));
   }
 }
 
@@ -402,6 +406,8 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 3, minfo->version);
     sqlite3_step(stmt);
     sqlite3_finalize(stmt);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(minfo->plugin_name));
   }
   g_free(name);
 }
@@ -579,7 +585,8 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   g_signal_connect(G_OBJECT(menu), "destroy", G_CALLBACK(free_module_info), minfo);
 
   GtkWidget *mi;
-  int active_preset = -1, cnt = 0, writeprotect = 0;
+  int active_preset = -1, cnt = 0;
+  gboolean selected_writeprotect = FALSE;
   sqlite3_stmt *stmt;
   // order like the pref value
   gchar *query = g_strdup_printf("SELECT name, op_params, writeprotect, description"
@@ -598,19 +605,19 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     // default vs built-in stuff
-    const int chk_writeprotect = sqlite3_column_int(stmt, 2);
-    if(hide_default && chk_writeprotect)
+    const gboolean writeprotect = sqlite3_column_int(stmt, 2);
+    if(hide_default && writeprotect)
     {
       // skip default module if set to hide them.
       continue;
     }
     if(last_wp == -1)
     {
-      last_wp = chk_writeprotect;
+      last_wp = writeprotect;
     }
-    else if(last_wp != chk_writeprotect)
+    else if(last_wp != writeprotect)
     {
-      last_wp = chk_writeprotect;
+      last_wp = writeprotect;
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
     }
 
@@ -630,12 +637,9 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
     if(op_params_size == minfo->params_size && !memcmp(minfo->params, op_params, op_params_size))
     {
       active_preset = cnt;
-      writeprotect = sqlite3_column_int(stmt, 2);
-      char *markup;
-      mi = gtk_menu_item_new_with_label("");
-      markup = g_markup_printf_escaped("<span weight=\"bold\">%s</span>", name);
-      gtk_label_set_markup(GTK_LABEL(gtk_bin_get_child(GTK_BIN(mi))), markup);
-      g_free(markup);
+      selected_writeprotect = writeprotect;
+      mi = gtk_menu_item_new_with_label(name);
+      gtk_style_context_add_class(gtk_widget_get_style_context(mi), "active-menu-item");
     }
     else
     {
@@ -649,17 +653,22 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
   }
   sqlite3_finalize(stmt);
 
-  if(cnt > 0) gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+  if(cnt > 0)
+  {
+    gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    cnt = 0;
+  }
 
   if(minfo->module->manage_presets)
   {
     mi = gtk_menu_item_new_with_label(_("manage presets..."));
     g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_manage_presets), minfo);
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+    cnt++;
   }
   else if(active_preset >= 0) // FIXME: this doesn't seem to work.
   {
-    if(!writeprotect)
+    if(!selected_writeprotect)
     {
       mi = gtk_menu_item_new_with_label(_("edit this preset.."));
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_edit_preset), minfo);
@@ -668,6 +677,7 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       mi = gtk_menu_item_new_with_label(_("delete this preset"));
       g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(menuitem_delete_preset), minfo);
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
+      cnt++;
     }
   }
   else
@@ -694,6 +704,16 @@ static void dt_lib_presets_popup_menu_show(dt_lib_module_info_t *minfo)
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
       g_free(markup);
     }
+    cnt++;
+  }
+
+  if(minfo->module->set_preferences)
+  {
+    if(minfo->params && cnt>0)
+    {
+      gtk_menu_shell_append(GTK_MENU_SHELL(menu), gtk_separator_menu_item_new());
+    }
+    minfo->module->set_preferences(GTK_MENU_SHELL(menu), minfo->module);
   }
 }
 
@@ -760,6 +780,8 @@ static int dt_lib_load_module(void *m, const char *libname, const char *plugin_n
     module->button_pressed = NULL;
   if(!g_module_symbol(module->module, "configure", (gpointer) & (module->configure)))
     module->configure = NULL;
+  if(!g_module_symbol(module->module, "set_preferences", (gpointer) & (module->set_preferences)))
+    module->set_preferences = NULL;
   if(!g_module_symbol(module->module, "scrolled", (gpointer) & (module->scrolled))) module->scrolled = NULL;
   if(!g_module_symbol(module->module, "position", (gpointer) & (module->position))) module->position = NULL;
   if(!g_module_symbol(module->module, "legacy_params", (gpointer) & (module->legacy_params)))
@@ -920,7 +942,12 @@ void dt_lib_init_presets(dt_lib_module_t *module)
     sqlite3_finalize(stmt);
   }
 
-  if(module->init_presets) module->init_presets(module);
+  if(module->init_presets)
+  {
+    module->init_presets(module);
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_PRESETS_CHANGED,
+                                  g_strdup(module->plugin_name));
+  }
 }
 
 static void dt_lib_init_module(void *m)
@@ -978,8 +1005,7 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   mi->plugin_name = g_strdup(module->plugin_name);
   mi->version = module->version();
   mi->module = module;
-  mi->params = module->get_params(module, &mi->params_size);
-
+  mi->params = module->get_params ? module->get_params(module, &mi->params_size) : NULL;
   if(!mi->params)
   {
     // this is a valid case, for example in location.c when nothing got selected
@@ -1120,9 +1146,11 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
     return TRUE;
   }
-  else if(e->button == 2)
+  else if(e->button == 3)
   {
-    /* show preset popup if any preset for module */
+    GtkWidget *preset_button = module->presets_button;
+    if(gtk_widget_get_sensitive(preset_button))
+      popup_callback(GTK_BUTTON(preset_button), module);
 
     return TRUE;
   }
@@ -1238,7 +1266,7 @@ GtkWidget *dt_lib_gui_get_expander(dt_lib_module_t *module)
   gtk_widget_set_tooltip_text(hw[DT_MODULE_PRESETS], _("presets"));
   g_signal_connect(G_OBJECT(hw[DT_MODULE_PRESETS]), "clicked", G_CALLBACK(popup_callback), module);
 
-  if(!module->get_params) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
+  if(!module->get_params && !module->set_preferences) gtk_widget_set_sensitive(GTK_WIDGET(hw[DT_MODULE_PRESETS]), FALSE);
   gtk_widget_set_name(GTK_WIDGET(hw[DT_MODULE_PRESETS]), "module-preset-button");
 
   /* lets order header elements depending on left/right side panel placement */
@@ -1356,21 +1384,21 @@ gboolean dt_lib_is_visible(dt_lib_module_t *module)
 void dt_lib_set_visible(dt_lib_module_t *module, gboolean visible)
 {
   gchar *key = _get_lib_view_path(module, "_visible");
+  GtkWidget *widget;
   dt_conf_set_bool(key, visible);
   g_free(key);
   if(module->widget)
   {
     if(module->expander)
-    {
-      dtgtk_expander_set_expanded(DTGTK_EXPANDER(module->expander), visible);
-    }
+      widget = module->expander;
     else
-    {
-      if(visible)
-        gtk_widget_show_all(GTK_WIDGET(module->widget));
-      else
-        gtk_widget_hide(GTK_WIDGET(module->widget));
-    }
+      widget = module->widget;
+
+
+    if(visible)
+      gtk_widget_show_all(GTK_WIDGET(widget));
+    else
+      gtk_widget_hide(GTK_WIDGET(widget));
   }
 }
 

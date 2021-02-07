@@ -29,10 +29,11 @@ option(BUILD_SSE2_CODEPATHS "(EXPERIMENTAL OPTION, DO NOT DISABLE) Building SSE2
 option(VALIDATE_APPDATA_FILE "Use appstream-util (if found) to validate the .appdata file" OFF)
 option(BUILD_BATTERY_INDICATOR "Add an icon to the top toolbar showing the state of a laptop battery" OFF)
 option(BUILD_MSYS2_INSTALL "Build an MSYS2 version of the install, aka for Windows platform, but without dependency installs" OFF)
-option(BUILD_NOISE_TOOLS "Build tools for generating noise proifles" OFF)
+option(BUILD_NOISE_TOOLS "Build tools for generating noise profiles" OFF)
 option(BUILD_CURVE_TOOLS "Build tools for generating base and tone curves" OFF)
 option(USE_LENSFUN "Enable LensFun support" ON)
 option(USE_GMIC "Use G'MIC image processing framework." ON)
+option(USE_ICU "Use ICU - International Components for Unicode." ON)
 option(USE_GAME "Build 1st April easter egg game" ON)
 option(FORCE_COLORED_OUTPUT "Always produce ANSI-colored output (GNU/Clang only)." OFF)
 

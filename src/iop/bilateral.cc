@@ -23,6 +23,7 @@ extern "C" {
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/imageop.h"
@@ -115,7 +116,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   sigma[4] = data->sigma[4];
   if(fmaxf(sigma[0], sigma[1]) < .1)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -124,7 +125,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   if(rad <= 6 && ((piece->pipe->type & DT_DEV_PIXELPIPE_THUMBNAIL) == DT_DEV_PIXELPIPE_THUMBNAIL))
   {
     // no use denoising the thumbnail. takes ages without permutohedral
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size((float*)ovoid, (float*)ivoid, roi_out->width, roi_out->height, ch);
   }
   else if(rad <= 6)
   {
@@ -142,11 +143,12 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int l = -rad; l <= rad; l++)
       for(int k = -rad; k <= rad; k++) m[l * wd + k] /= weight;
 
-    float *const weights_buf = (float *)malloc(weights_size * dt_get_num_threads() * sizeof(float));
+    size_t padded_weights_size;
+    float *const weights_buf = dt_alloc_perthread_float(weights_size, &padded_weights_size);
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_in, roi_out, wd, weights_buf) \
+    dt_omp_firstprivate(ch, ivoid, ovoid, rad, roi_in, roi_out, wd, weights_buf, padded_weights_size) \
     shared(m, mat, isig2col) \
     schedule(static)
 #endif
@@ -154,7 +156,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     {
       const float *in = ((float *)ivoid) + ch * ((size_t)j * roi_in->width + rad);
       float *out = ((float *)ovoid) + ch * ((size_t)j * roi_out->width + rad);
-      float *weights = weights_buf + weights_size * dt_get_thread_num();
+      float *weights = (float*)dt_get_perthread(weights_buf, padded_weights_size);
       float *w = weights + rad * wd + rad;
       float sumw;
       for(int i = rad; i < roi_out->width - rad; i++)
@@ -171,20 +173,20 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
           }
         for(int l = -rad; l <= rad; l++)
           for(int k = -rad; k <= rad; k++) w[l * wd + k] /= sumw;
-        for(int c = 0; c < 3; c++) out[c] = 0.0f;
+        for_each_channel(c) out[c] = 0.0f;
         for(int l = -rad; l <= rad; l++)
           for(int k = -rad; k <= rad; k++)
           {
             const float *inp = in + ch * ((size_t)l * roi_in->width + k);
             float pix_weight = w[(size_t)l * wd + k];
-            for(int c = 0; c < 3; c++) out[c] += inp[c] * pix_weight;
+            for_each_channel(c) out[c] += inp[c] * pix_weight;
           }
         out += ch;
         in += ch;
       }
     }
 
-    free((void *)weights_buf);
+    dt_free_align(weights_buf);
 
     // fill unprocessed border
     for(int j = 0; j < rad; j++)
@@ -198,9 +200,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       const float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
       float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
       for(int i = 0; i < rad; i++)
-        for(int c = 0; c < 3; c++) out[ch * i + c] = in[ch * i + c];
+        for_each_channel(c) out[ch * i + c] = in[ch * i + c];
       for(int i = roi_out->width - rad; i < roi_out->width; i++)
-        for(int c = 0; c < 3; c++) out[ch * i + c] = in[ch * i + c];
+        for_each_channel(c) out[ch * i + c] = in[ch * i + c];
     }
   }
   else
@@ -210,7 +212,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // splat into the lattice
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
 #endif
     for(int j = 0; j < roi_in->height; j++)
     {
@@ -220,7 +222,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       for(int i = 0; i < roi_in->width; i++, index++)
       {
         float pos[5] = { i * sigma[0], j * sigma[1], in[0] * sigma[2], in[1] * sigma[3], in[2] * sigma[4] };
-        float val[4] = { in[0], in[1], in[2], 1.0 };
+        float DT_ALIGNED_PIXEL val[4] = { in[0], in[1], in[2], 1.0 };
         lattice.splat(pos, val, index, thread);
         in += ch;
       }
@@ -233,18 +235,18 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 
 // slice from the lattice
 #ifdef _OPENMP
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
 #endif
     for(int j = 0; j < roi_in->height; j++)
     {
-      float *out = (float *)ovoid + (size_t)j * roi_in->width * ch;
+      float *const out = (float *)ovoid + (size_t)j * roi_in->width * ch;
       size_t index = (size_t)j * roi_in->width;
       for(int i = 0; i < roi_in->width; i++, index++)
       {
-        float val[4];
+        float DT_ALIGNED_PIXEL val[4];
         lattice.slice(val, index);
-        for(int k = 0; k < 3; k++) out[k] = val[k] / val[3];
-        out += ch;
+        for_each_channel(k)
+	   out[ch*i + k] = val[k] / val[3];
       }
     }
   }

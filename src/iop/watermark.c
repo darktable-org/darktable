@@ -17,6 +17,7 @@
 */
 
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "common/tags.h"
 #include "common/variables.h"
 #include "control/control.h"
@@ -47,7 +48,6 @@
 #include "common/metadata.h"
 #include "common/utility.h"
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(5, dt_iop_watermark_params_t)
 
 // gchar *checksum = g_compute_checksum_for_data(G_CHECKSUM_MD5,data,length);
@@ -845,22 +845,21 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     g_free(elevation);
     g_free(location);
 
-  }
-
-  // standard calculation on the remaining variables
-  const int32_t flags = dt_lib_export_metadata_get_conf_flags();
-  dt_variables_params_t *params;
-  dt_variables_params_init(&params);
-  params->filename = image->filename;
-  params->jobcode = "infos";
-  params->sequence = 0;
-  params->imgid = image->id;
-  dt_variables_set_tags_flags(params, flags);
-  svgdoc = dt_variables_expand(params, svgdata, FALSE);
-  if(svgdoc != svgdata)
-  {
-    g_free(svgdata);
-    svgdata = svgdoc;
+    // standard calculation on the remaining variables
+    const int32_t flags = dt_lib_export_metadata_get_conf_flags();
+    dt_variables_params_t *params;
+    dt_variables_params_init(&params);
+    params->filename = image->filename;
+    params->jobcode = "infos";
+    params->sequence = 0;
+    params->imgid = image->id;
+    dt_variables_set_tags_flags(params, flags);
+    svgdoc = dt_variables_expand(params, svgdata, FALSE);
+    if(svgdoc != svgdata)
+    {
+      g_free(svgdata);
+      svgdata = svgdoc;
+    }
   }
   return svgdoc;
 }
@@ -878,7 +877,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   gchar *svgdoc = _watermark_get_svgdoc(self, data, &piece->pipe->image);
   if(!svgdoc)
   {
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -893,7 +892,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     fprintf(stderr,"[watermark] Cairo surface error: %s\n",cairo_status_to_string(cairo_surface_status(surface)));
     g_free(image);
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     return;
   }
 
@@ -908,7 +907,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     cairo_surface_destroy(surface);
     g_free(image);
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     fprintf(stderr, "[watermark] error processing svg file: %s\n", error->message);
     g_error_free(error);
@@ -1023,7 +1022,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     g_object_unref(svg);
     g_free(image);
     g_free(image_two);
-    memcpy(ovoid, ivoid, (size_t)sizeof(float) * ch * roi_out->width * roi_out->height);
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
     dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
     return;
   }

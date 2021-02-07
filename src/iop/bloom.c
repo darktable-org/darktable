@@ -20,6 +20,8 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/box_filters.h"
+#include "common/imagebuf.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -34,14 +36,11 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #define NUM_BUCKETS 4 /* OpenCL bucket chain size for tmp buffers; minimum 2 */
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
-#define LCLIP(x) ((x < 0) ? 0.0 : (x > 100.0) ? 100.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_bloom_params_t)
 
 typedef struct dt_iop_bloom_params_t
@@ -101,40 +100,46 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
   return iop_cs_Lab;
 }
 
-#define GAUSS(a, b, c, x) (a * pow(2.718281828, (-pow((x - b), 2) / (pow(c, 2)))))
-
-
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
   const dt_iop_bloom_data_t *const data = (dt_iop_bloom_data_t *)piece->data;
-  assert(piece->colors == 4);	//final blend code requires at least three channels
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
 
-  const float *const restrict in = (float *)ivoid;
-  float *const restrict out = (float *)ovoid;
+  float *restrict blurlightness;
+  if (!dt_iop_alloc_image_buffers(self, roi_in, roi_out, 1, &blurlightness, 0))
+  {
+    // out of memory, so just copy image through to output
+    dt_iop_copy_image_roi(ovoid, ivoid, piece->colors, roi_in, roi_out, TRUE);
+    return;
+  }
+
+  const float *const restrict in = DT_IS_ALIGNED((float *)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float *)ovoid);
   const size_t npixels = (size_t)roi_out->width * roi_out->height;
 
   /* gather light by threshold */
-  float *const restrict blurlightness = dt_alloc_align(64, npixels * sizeof(float));
-//  memcpy(out, in, npixels * 4 * sizeof(float));  //TODO: do we need this?
-
   const int rad = 256.0f * (fmin(100.0f, data->size + 1.0f) / 100.0f);
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
   const float scale = 1.0f / exp2f(-1.0f * (fmin(100.0f, data->strength + 1.0f) / 100.0f));
 
+  const float threshold = data->threshold;
 /* get the thresholded lights into buffer */
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, npixels, scale) \
-  dt_omp_sharedconst(data, blurlightness) \
+  dt_omp_firstprivate(npixels, scale, threshold) \
+  shared(blurlightness) \
+  dt_omp_sharedconst(in) \
   schedule(static)
 #endif
   for(size_t k = 0; k < npixels; k++)
   {
     const float L = in[4*k] * scale;
-    blurlightness[k] = (L > data->threshold) ? L : 0.0f;
+    blurlightness[k] = (L > threshold) ? L : 0.0f;
   }
 
   /* horizontal blur into memchannel lightness */
@@ -147,7 +152,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(npixels) \
-  dt_omp_sharedconst(in, out, blurlightness) \
+  shared(blurlightness) \
+  dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
   for(size_t k = 0; k < npixels; k++)
@@ -323,7 +329,8 @@ void tiling_callback(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t
   const float _r = ceilf(rad * roi_in->scale / piece->iscale);
   const int radius = MIN(256.0f, _r);
 
-  tiling->factor = 2.0f + NUM_BUCKETS * 0.25f; // in + out + NUM_BUCKETS * 0.25 tmp
+  tiling->factor = 2.0f + 0.25f + 0.05f; // in + out + blurlightness + slice for dt_box_mean
+  tiling->factor_cl = 2.0f + NUM_BUCKETS * 0.25f; // in + out + NUM_BUCKETS * 0.25 tmp
   tiling->maxbuf = 1.0f;
   tiling->overhead = 0;
   tiling->overlap = 5 * radius; // This is a guess. TODO: check if that's sufficiently large

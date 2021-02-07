@@ -793,10 +793,12 @@ void init(struct dt_lib_module_t *self)
   dt_lua_type_register_type(L, my_type, "show_overlays");
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "global_toolbox-grouping_toggle");
 
   lua_pushcfunction(L, dt_lua_event_multiinstance_register);
+  lua_pushcfunction(L, dt_lua_event_multiinstance_destroy);
   lua_pushcfunction(L, dt_lua_event_multiinstance_trigger);
   dt_lua_event_add(L, "global_toolbox-overlay_toggle");
 }

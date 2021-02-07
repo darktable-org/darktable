@@ -227,8 +227,8 @@ static void _update_sample_label(dt_colorpicker_sample_t *sample)
       break;
   }
 
-  gtk_label_set_text(GTK_LABEL(sample->output_label), text);
-
+  if(g_strcmp0(gtk_label_get_text(GTK_LABEL(sample->output_label)), text))
+    gtk_label_set_text(GTK_LABEL(sample->output_label), text);
   gtk_widget_queue_draw(sample->color_patch);
 }
 
@@ -303,11 +303,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
     float rgb[3];
     for(size_t c = 0; c < 3; c++) rgb[c] = picked_rgb[c];
 
-    GdkRGBA color_in;
-    color_in.red = rgb[0];
-    color_in.green = rgb[1];
-    color_in.blue = rgb[2];
-    color_in.alpha = 1.f;
+    GdkRGBA color_in = { rgb[0], rgb[1], rgb[2], 1.f };
 
     GdkRGBA *color_out = gdk_rgba_copy(&color_in);
 
@@ -315,6 +311,7 @@ static gboolean _sample_tooltip_callback(GtkWidget *widget, gint x, gint y, gboo
     {
       // function failed, profiles are not set, color will be wrong, exit.
       gdk_rgba_free(color_out);
+      g_strfreev(sample_parts);
       return FALSE;
     }
 

@@ -120,7 +120,7 @@ static int usage(const char *argv0)
   printf("  --conf <key>=<value>\n");
   printf("  --configdir <user config directory>\n");
   printf("  -d {all,cache,camctl,camsupport,control,dev,fswatch,imageio,input,\n");
-  printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,\n");
+  printf("      ioporder,lighttable,lua,masks,memory,nan,opencl,params,perf,demosaic\n");
   printf("      pwstorage,print,signal,sql,undo}\n");
   printf("  --d-signal <signal> \n");
   printf("  --d-signal-act <all,raise,connect,disconnect");
@@ -233,7 +233,7 @@ static void strip_semicolons_from_keymap(const char *path)
 
 int dt_load_from_string(const gchar *input, gboolean open_image_in_dr, gboolean *single_image)
 {
-  int id = 0;
+  int32_t id = 0;
   if(input == NULL || input[0] == '\0') return 0;
 
   char *filename = dt_util_normalize_path(input);
@@ -616,6 +616,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
           darktable.unmuted |= DT_DEBUG_SIGNAL; // signal information on console
         else if(!strcmp(argv[k + 1], "params"))
           darktable.unmuted |= DT_DEBUG_PARAMS; // iop module params checks on console
+        else if(!strcmp(argv[k + 1], "demosaic"))
+          darktable.unmuted |= DT_DEBUG_DEMOSAIC;
         else
           return usage(argv[0]);
         k++;
@@ -1327,6 +1329,12 @@ void dt_cleanup()
     dt_bauhaus_cleanup();
   }
 
+  if (darktable.noiseprofile_parser)
+  {
+    g_object_unref(darktable.noiseprofile_parser);
+    darktable.noiseprofile_parser = NULL;
+  }
+
   dt_capabilities_cleanup();
 
   for (int k=0; k<DT_IMAGE_DBLOCKS; k++)
@@ -1374,6 +1382,14 @@ void *dt_alloc_align(size_t alignment, size_t size)
   return malloc(aligned_size);
 #elif defined(_WIN32)
   return _aligned_malloc(aligned_size, alignment);
+#elif defined(_DEBUG)
+  // for a debug build, ensure that we get a crash if we use plain free() to release the allocated memory, by
+  // returning a pointer which isn't a valid memory block address
+  void *ptr = NULL;
+  if(posix_memalign(&ptr, alignment, aligned_size + alignment)) return NULL;
+  short *offset = (short*)(((char*)ptr) + alignment - sizeof(short));
+  *offset = alignment;
+  return ((char*)ptr) + alignment ;
 #else
   void *ptr = NULL;
   if(posix_memalign(&ptr, alignment, aligned_size)) return NULL;
@@ -1398,6 +1414,16 @@ size_t dt_round_size_sse(const size_t size)
 void dt_free_align(void *mem)
 {
   _aligned_free(mem);
+}
+#elif defined(_DEBUG)
+void dt_free_align(void *mem)
+{
+  // on a debug build, we deliberately offset the returned pointer from dt_alloc_align, so eliminate the offset
+  if (mem)
+  {
+    short offset = ((short*)mem)[-1];
+    free(((char*)mem)-offset);
+  }
 }
 #endif
 
@@ -1436,15 +1462,129 @@ void dt_show_times_f(const dt_times_t *start, const char *prefix, const char *su
   }
 }
 
+static inline int _get_num_atom_cores()
+{
+#if defined(__linux__)
+  int count = 0;
+  char line[256];
+  FILE *f = g_fopen("/proc/cpuinfo", "r");
+  if(f)
+  {
+    while(!feof(f))
+    {
+      if(fgets(line, sizeof(line), f))
+      {
+        if(!strncmp(line, "model name", 10))
+        {
+          if(strstr(line, "Atom"))
+          {
+            count++;
+          }
+        }
+      }
+    }
+    fclose(f);
+  }
+  return count;
+#elif defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+  int ret, hw_ncpu;
+  int mib[2] = { CTL_HW, HW_MODEL };
+  char *hw_model, *index;
+  size_t length;
+
+  /* Query hw.model to get the required buffer length and allocate the
+   * buffer. */
+  ret = sysctl(mib, 2, NULL, &length, NULL, 0);
+  if(ret != 0)
+  {
+    return 0;
+  }
+
+  hw_model = (char *)malloc(length + 1);
+  if(hw_model == NULL)
+  {
+    return 0;
+  }
+
+  /* Query hw.model again, this time with the allocated buffer. */
+  ret = sysctl(mib, 2, hw_model, &length, NULL, 0);
+  if(ret != 0)
+  {
+    free(hw_model);
+    return 0;
+  }
+  hw_model[length] = '\0';
+
+  /* Check if the processor model name contains "Atom". */
+  index = strstr(hw_model, "Atom");
+  free(hw_model);
+  if(index == NULL)
+  {
+    return 0;
+  }
+
+  /* Get the number of cores, using hw.ncpu sysctl. */
+  mib[1] = HW_NCPU;
+  hw_ncpu = 0;
+  length = sizeof(hw_ncpu);
+  ret = sysctl(mib, 2, &hw_ncpu, &length, NULL, 0);
+  if(ret != 0)
+  {
+    return 0;
+  }
+
+  return hw_ncpu;
+#else
+  return 0;
+#endif
+}
+
+static inline size_t _get_total_memory()
+{
+#if defined(__linux__)
+  FILE *f = g_fopen("/proc/meminfo", "rb");
+  if(!f) return 0;
+  size_t mem = 0;
+  char *line = NULL;
+  size_t len = 0;
+  if(getline(&line, &len, f) != -1) mem = atol(line + 10);
+  fclose(f);
+  if(len > 0) free(line);
+  return mem;
+#elif defined(__APPLE__) || defined(__DragonFly__) || defined(__FreeBSD__) || defined(__NetBSD__)            \
+    || defined(__OpenBSD__)
+#if defined(__APPLE__)
+  int mib[2] = { CTL_HW, HW_MEMSIZE };
+#elif defined(HW_PHYSMEM64)
+  int mib[2] = { CTL_HW, HW_PHYSMEM64 };
+#else
+  int mib[2] = { CTL_HW, HW_PHYSMEM };
+#endif
+  uint64_t physical_memory;
+  size_t length = sizeof(uint64_t);
+  sysctl(mib, 2, (void *)&physical_memory, &length, (void *)NULL, 0);
+  return physical_memory / 1024;
+#elif defined _WIN32
+  MEMORYSTATUSEX memInfo;
+  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+  GlobalMemoryStatusEx(&memInfo);
+  return memInfo.ullTotalPhys / (uint64_t)1024;
+#else
+  // assume 2GB until we have a better solution.
+  fprintf(stderr, "Unknown memory size. Assuming 2GB\n");
+  return 2097152;
+#endif
+}
+
 void dt_configure_performance()
 {
-  const int atom_cores = dt_get_num_atom_cores();
-  const int threads = dt_get_num_threads();
-  const size_t mem = dt_get_total_memory();
+  const int atom_cores = _get_num_atom_cores();
+  const size_t threads = dt_get_num_threads();
+  const size_t mem = _get_total_memory();
   const size_t bits = CHAR_BIT * sizeof(void *);
   gchar *demosaic_quality = dt_conf_get_string("plugins/darkroom/demosaic/quality");
 
-  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %d cores (%d atom based)\n",
+  fprintf(stderr, "[defaults] found a %zu-bit system with %zu kb ram and %zu cores (%d atom based)\n",
           bits, mem, threads, atom_cores);
   if(mem >= (8lu << 20) && threads > 4 && atom_cores == 0)
   {
@@ -1458,7 +1598,6 @@ void dt_configure_performance()
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL || !strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
     dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem > (2lu << 20) && threads >= 4 && atom_cores == 0)
@@ -1472,7 +1611,6 @@ void dt_configure_performance()
     dt_conf_set_int("singlebuffer_limit", MAX(16, dt_conf_get_int("singlebuffer_limit")));
     if(demosaic_quality == NULL ||!strcmp(demosaic_quality, "always bilinear (fast)"))
       dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
     dt_conf_set_bool("ui/performance", FALSE);
   }
   else if(mem < (1lu << 20) || threads <= 2 || atom_cores > 0)
@@ -1484,7 +1622,6 @@ void dt_configure_performance()
     dt_conf_set_int("host_memory_limit", 500);
     dt_conf_set_int("singlebuffer_limit", 8);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "always bilinear (fast)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", TRUE);
     dt_conf_set_bool("ui/performance", TRUE);
   }
   else
@@ -1496,7 +1633,6 @@ void dt_configure_performance()
     dt_conf_set_int("host_memory_limit", 1500);
     dt_conf_set_int("singlebuffer_limit", 16);
     dt_conf_set_string("plugins/darkroom/demosaic/quality", "at most PPG (reasonable)");
-    dt_conf_set_bool("plugins/lighttable/low_quality_thumbnails", FALSE);
     dt_conf_set_bool("ui/performance", FALSE);
   }
 
@@ -1552,6 +1688,92 @@ void dt_capabilities_cleanup()
     darktable.capabilities = g_list_delete_link(darktable.capabilities, darktable.capabilities);
 }
 
+
+void dt_print_mem_usage()
+{
+#if defined(__linux__)
+  char *line = NULL;
+  size_t len = 128;
+  char vmsize[64];
+  char vmpeak[64];
+  char vmrss[64];
+  char vmhwm[64];
+  FILE *f;
+
+  char pidstatus[128];
+  snprintf(pidstatus, sizeof(pidstatus), "/proc/%u/status", (uint32_t)getpid());
+
+  f = g_fopen(pidstatus, "r");
+  if(!f) return;
+
+  /* read memory size data from /proc/pid/status */
+  while(getline(&line, &len, f) != -1)
+  {
+    if(!strncmp(line, "VmPeak:", 7))
+      g_strlcpy(vmpeak, line + 8, sizeof(vmpeak));
+    else if(!strncmp(line, "VmSize:", 7))
+      g_strlcpy(vmsize, line + 8, sizeof(vmsize));
+    else if(!strncmp(line, "VmRSS:", 6))
+      g_strlcpy(vmrss, line + 8, sizeof(vmrss));
+    else if(!strncmp(line, "VmHWM:", 6))
+      g_strlcpy(vmhwm, line + 8, sizeof(vmhwm));
+  }
+  free(line);
+  fclose(f);
+
+  fprintf(stderr, "[memory] max address space (vmpeak): %15s"
+                  "[memory] cur address space (vmsize): %15s"
+                  "[memory] max used memory   (vmhwm ): %15s"
+                  "[memory] cur used memory   (vmrss ): %15s",
+          vmpeak, vmsize, vmhwm, vmrss);
+
+#elif defined(__APPLE__)
+  struct task_basic_info t_info;
+  mach_msg_type_number_t t_info_count = TASK_BASIC_INFO_COUNT;
+
+  if(KERN_SUCCESS != task_info(mach_task_self(), TASK_BASIC_INFO, (task_info_t)&t_info, &t_info_count))
+  {
+    fprintf(stderr, "[memory] task memory info unknown.\n");
+    return;
+  }
+
+  // Report in kB, to match output of /proc on Linux.
+  fprintf(stderr, "[memory] max address space (vmpeak): %15s\n"
+                  "[memory] cur address space (vmsize): %12llu kB\n"
+                  "[memory] max used memory   (vmhwm ): %15s\n"
+                  "[memory] cur used memory   (vmrss ): %12llu kB\n",
+          "unknown", (uint64_t)t_info.virtual_size / 1024, "unknown", (uint64_t)t_info.resident_size / 1024);
+#elif defined (_WIN32)
+  //Based on: http://stackoverflow.com/questions/63166/how-to-determine-cpu-and-memory-consumption-from-inside-a-process
+  MEMORYSTATUSEX memInfo;
+  memInfo.dwLength = sizeof(MEMORYSTATUSEX);
+  GlobalMemoryStatusEx(&memInfo);
+  // DWORDLONG totalVirtualMem = memInfo.ullTotalPageFile;
+
+  // Virtual Memory currently used by current process:
+  PROCESS_MEMORY_COUNTERS_EX pmc;
+  GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&pmc, sizeof(pmc));
+  size_t virtualMemUsedByMe = pmc.PagefileUsage;
+  size_t virtualMemUsedByMeMax = pmc.PeakPagefileUsage;
+
+  // Max Physical Memory currently used by current process
+  size_t physMemUsedByMeMax = pmc.PeakWorkingSetSize;
+
+  // Physical Memory currently used by current process
+  size_t physMemUsedByMe = pmc.WorkingSetSize;
+
+
+  fprintf(stderr, "[memory] max address space (vmpeak): %12llu kB\n"
+                  "[memory] cur address space (vmsize): %12llu kB\n"
+                  "[memory] max used memory   (vmhwm ): %12llu kB\n"
+                  "[memory] cur used memory   (vmrss ): %12llu Kb\n",
+          virtualMemUsedByMeMax / 1024, virtualMemUsedByMe / 1024, physMemUsedByMeMax / 1024,
+          physMemUsedByMe / 1024);
+
+#else
+  fprintf(stderr, "dt_print_mem_usage() currently unsupported on this platform\n");
+#endif
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

@@ -25,23 +25,17 @@
                      "fast-math", "no-math-errno")
 #endif
 
+#include "common/imagebuf.h"
 #include "common/math.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
+#include "develop/openmp_maths.h"
 #include <math.h>
 
 
 typedef void(_blend_row_func)(const float *const restrict a, float *const restrict b,
                               const float *const restrict mask, const size_t stride);
 
-
-#ifdef _OPENMP
-#pragma omp declare simd
-#endif
-static inline float clamp_simd(const float x)
-{
-  return fminf(fmaxf(x, 0.0f), 1.0f);
-}
 
 void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, const float *const restrict a,
                                       const float *const restrict b, const struct dt_iop_roi_t *const roi_in,
@@ -69,11 +63,7 @@ void dt_develop_blendif_raw_make_mask(struct dt_dev_pixelpipe_iop_t *piece, cons
   }
   else
   {
-#ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none) aligned(mask: 64) \
-    dt_omp_firstprivate(mask, buffsize, global_opacity)
-#endif
-    for(size_t x = 0; x < buffsize; x++) mask[x] = global_opacity * mask[x];
+    dt_iop_image_mul_const(mask,global_opacity,owidth,oheight,1); // mask[k] *= global_opacity;
   }
 }
 
@@ -438,12 +428,7 @@ void dt_develop_blendif_raw_blend(struct dt_dev_pixelpipe_iop_t *piece,
 
   if(request_mask_display & DT_DEV_PIXELPIPE_DISPLAY_ANY)
   {
-    const size_t buffsize = (size_t)owidth * oheight;
-#ifdef _OPENMP
-#pragma omp parallel for simd schedule(static) default(none) aligned(b: 64) \
-  dt_omp_firstprivate(b, buffsize)
-#endif
-    for(size_t x = 0; x < buffsize; x++) b[x] = 0.0f;
+    dt_iop_image_fill(b,0.0f,owidth,oheight,1); //b[k] = 0.0f;
   }
   else
   {

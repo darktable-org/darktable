@@ -512,7 +512,7 @@ error:
 
 void reload_defaults(dt_iop_module_t *self)
 {
-  dt_iop_invert_gui_data_t *g = self->gui_data;
+  dt_iop_invert_gui_data_t *const g = (dt_iop_invert_gui_data_t*)self->gui_data;
 
   if (g)
   {
@@ -599,7 +599,7 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_invert_params_t *p = (dt_iop_invert_params_t *)self->params;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-  g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, 4 * sizeof(float)));
+  g->label = DTGTK_RESET_LABEL(dtgtk_reset_label_new("", self, &p->color, sizeof(float) * 4));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(g->label), TRUE, TRUE, 0);
 
   g->pickerbuttons = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));

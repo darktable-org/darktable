@@ -20,6 +20,7 @@
 #include "config.h"
 #endif
 #include "bauhaus/bauhaus.h"
+#include "common/imagebuf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
 #include "develop/imageop_math.h"
@@ -280,7 +281,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const dt_iop_hotpixels_data_t *data = (dt_iop_hotpixels_data_t *)piece->data;
 
   // The processing loop should output only a few pixels, so just copy everything first
-  memcpy(ovoid, ivoid, (size_t)roi_out->width * roi_out->height * sizeof(float));
+  dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, 1);
 
   int fixed;
   if(piece->pipe->dsc.filters == 9u)

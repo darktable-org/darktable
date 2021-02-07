@@ -8,6 +8,7 @@ PATTERNS['src/external/rawspeed']="use --no-verify to change rawspeed";
 PATTERNS['src/external/OpenCL']="use --no-verify to change OpenCL";
 PATTERNS['src/external/libxcf']="use --no-verify to change libxcf";
 PATTERNS['src/external/whereami']="use --no-verify to change whereami";
+PATTERNS['src/tests/integration']="use --no-verify to change integration";
 
 # Loop over staged files and check for any specific pattern listed in
 # PATTERNS keys.

@@ -103,6 +103,8 @@ void dt_view_manager_gui_init(dt_view_manager_t *vm)
 void dt_view_manager_cleanup(dt_view_manager_t *vm)
 {
   for(GList *iter = vm->views; iter; iter = g_list_next(iter)) dt_view_unload_module((dt_view_t *)iter->data);
+  g_list_free_full(vm->views, free);
+  vm->views = NULL;
 }
 
 const dt_view_t *dt_view_manager_get_current_view(dt_view_manager_t *vm)
@@ -842,6 +844,8 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     {
       // collumn 3
       _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+      // be absolutely sure we have the id in the list (in darkroom, the active image can be out of collection)
+      if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
     }
   }
   else
@@ -855,6 +859,8 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       {
         const int id = GPOINTER_TO_INT(ll->data);
         _images_to_act_on_insert_in_list(&l, id, only_visible);
+        // be absolutely sure we have the id in the list (in darkroom, the active image can be out of collection)
+        if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
         ll = g_slist_next(ll);
       }
     }
@@ -931,8 +937,14 @@ int dt_view_get_image_to_act_on()
   return ret;
 }
 
-int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface, const gboolean quality)
+dt_view_surface_value_t dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t **surface,
+                                                  const gboolean quality)
 {
+  double tt = 0;
+  if((darktable.unmuted & (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF)) == (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF))
+    tt = dt_get_wtime();
+
+  dt_view_surface_value_t ret = DT_VIEW_SURFACE_KO;
   // if surface not null, clean it up
   if(*surface && cairo_surface_get_reference_count(*surface) > 0) cairo_surface_destroy(*surface);
   *surface = NULL;
@@ -943,24 +955,15 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
 
   // if needed, we load the mimap buffer
   dt_mipmap_buffer_t buf;
-  gboolean buf_ok = TRUE;
-  int buf_wd = 0;
-  int buf_ht = 0;
-
   dt_mipmap_cache_get(cache, &buf, imgid, mip, DT_MIPMAP_BEST_EFFORT, 'r');
-  buf_wd = buf.width;
-  buf_ht = buf.height;
-  if(!buf.buf)
-    buf_ok = FALSE;
-  else if(mip != buf.size)
-    buf_ok = FALSE;
+  const int buf_wd = buf.width;
+  const int buf_ht = buf.height;
 
-  // if we got a different mip than requested, and it's not a skull (8x8 px), we count
-  // this thumbnail as missing (to trigger re-exposure)
-  if(!buf_ok && buf_wd != 8 && buf_ht != 8)
+  // if we don't get buffer, no image is awailable at the moment
+  if(!buf.buf)
   {
     dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
-    return 1;
+    return DT_VIEW_SURFACE_KO;
   }
 
   // so we create a new image surface to return
@@ -969,11 +972,9 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
   const int img_height = buf_ht * scale;
   *surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, img_width, img_height);
 
-  dt_print(DT_DEBUG_LIGHTTABLE, "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i\n", imgid, width, height, buf_wd, buf_ht, img_width, img_height);
-
   // we transfer cached image on a cairo_surface (with colorspace transform if needed)
   cairo_surface_t *tmp_surface = NULL;
-  uint8_t *rgbbuf = (uint8_t *)calloc(buf_wd * buf_ht * 4, sizeof(uint8_t));
+  uint8_t *rgbbuf = (uint8_t *)calloc((size_t)buf_wd * buf_ht * 4, sizeof(uint8_t));
   if(rgbbuf)
   {
     gboolean have_lock = FALSE;
@@ -1052,9 +1053,13 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
     // in between, filtering just makes stuff go unsharp.
     if((buf_wd <= 8 && buf_ht <= 8) || fabsf(scale - 1.0f) < 0.01f)
       cairo_pattern_set_filter(cairo_get_source(cr), CAIRO_FILTER_NEAREST);
+    else if(mip != buf.size)
+      cairo_pattern_set_filter(cairo_get_source(cr),
+                               CAIRO_FILTER_FAST); // not the right size, so we scale as fast a possible
     else
-    cairo_pattern_set_filter(cairo_get_source(cr), ((darktable.gui->filter_image == CAIRO_FILTER_FAST) && quality)
-      ? CAIRO_FILTER_GOOD : darktable.gui->filter_image) ;
+      cairo_pattern_set_filter(cairo_get_source(cr), ((darktable.gui->filter_image == CAIRO_FILTER_FAST) && quality)
+                                                         ? CAIRO_FILTER_GOOD
+                                                         : darktable.gui->filter_image);
 
     cairo_paint(cr);
     /* from focus_peaking.h
@@ -1064,16 +1069,39 @@ int dt_view_image_get_surface(int imgid, int width, int height, cairo_surface_t 
        The current implementation assumes the data at image is organized as a rectangle without a stride,
        So we pass the raw data to be processed, this is more data but correct.
     */
-    if(darktable.gui->show_focus_peaking)
+    if(darktable.gui->show_focus_peaking && mip == buf.size)
       dt_focuspeaking(cr, img_width, img_height, rgbbuf, buf_wd, buf_ht);
 
     cairo_surface_destroy(tmp_surface);
     cairo_destroy(cr);
   }
 
+  // we consider skull as ok as the image hasn't to be reload
+  if(buf_wd <= 8 && buf_ht <= 8)
+    ret = DT_VIEW_SURFACE_OK;
+  else if(mip != buf.size)
+    ret = DT_VIEW_SURFACE_SMALLER;
+  else
+    ret = DT_VIEW_SURFACE_OK;
+
   dt_mipmap_cache_release(darktable.mipmap_cache, &buf);
   if(rgbbuf) free(rgbbuf);
-  return 0;
+
+  // logs
+  if((darktable.unmuted & (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF)) == (DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF))
+  {
+    dt_print(DT_DEBUG_LIGHTTABLE | DT_DEBUG_PERF,
+             "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i created in %0.04f sec\n",
+             imgid, width, height, buf_wd, buf_ht, img_width, img_height, dt_get_wtime() - tt);
+  }
+  else if(darktable.unmuted & DT_DEBUG_LIGHTTABLE)
+  {
+    dt_print(DT_DEBUG_LIGHTTABLE, "[dt_view_image_get_surface]  id %i, dots %ix%i, mip %ix%i, surf %ix%i\n", imgid,
+             width, height, buf_wd, buf_ht, img_width, img_height);
+  }
+
+  // we consider skull as ok as the image hasn't to be reload
+  return ret;
 }
 
 char* dt_view_extend_modes_str(const char * name, const gboolean is_hdr, const gboolean is_bw, const gboolean is_bw_flow)
@@ -1258,14 +1286,6 @@ gint dt_view_lighttable_get_zoom(dt_view_manager_t *vm)
     return 10;
 }
 
-dt_lighttable_culling_zoom_mode_t dt_view_lighttable_get_culling_zoom_mode(dt_view_manager_t *vm)
-{
-  if(vm->proxy.lighttable.module)
-    return vm->proxy.lighttable.get_zoom_mode(vm->proxy.lighttable.module);
-  else
-    return DT_LIGHTTABLE_ZOOM_FIXED;
-}
-
 void dt_view_lighttable_culling_init_mode(dt_view_manager_t *vm)
 {
   if(vm->proxy.lighttable.module) vm->proxy.lighttable.culling_init_mode(vm->proxy.lighttable.view);
@@ -1295,6 +1315,11 @@ gboolean dt_view_lighttable_preview_state(dt_view_manager_t *vm)
     return vm->proxy.lighttable.get_preview_state(vm->proxy.lighttable.view);
   else
     return FALSE;
+}
+
+void dt_view_lighttable_set_preview_state(dt_view_manager_t *vm, gboolean state, gboolean focus)
+{
+  if(vm->proxy.lighttable.module) vm->proxy.lighttable.set_preview_state(vm->proxy.lighttable.view, state, focus);
 }
 
 void dt_view_lighttable_change_offset(dt_view_manager_t *vm, gboolean reset, gint imgid)
@@ -1558,7 +1583,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   // go through all accels to populate categories with valid ones
   GList *blocs = NULL;
   GList *bl = NULL;
-  GSList *l = darktable.control->accelerator_list;
+  GList *l = darktable.control->accelerator_list;
   while(l)
   {
     dt_accel_t *da = (dt_accel_t *)l->data;
@@ -1615,7 +1640,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
         }
       }
     }
-    l = g_slist_next(l);
+    l = g_list_next(l);
   }
 
   // we add the mouse actions too

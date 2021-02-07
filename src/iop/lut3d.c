@@ -21,6 +21,7 @@
 
 #include "bauhaus/bauhaus.h"
 #include "common/imageio_png.h"
+#include "common/imagebuf.h"
 #include "common/colorspaces.h"
 #include "common/colorspaces_inline_conversions.h"
 #include "common/file_location.h"
@@ -458,7 +459,7 @@ uint8_t calculate_clut_compressed(dt_iop_lut3d_params_t *const p, const char *co
 
   get_cache_filename(p->lutname, cache_filename);
   buf_size_lut = (size_t)(level * level * level * 3);
-  lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
+  lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
   if(!lclut)
   {
     fprintf(stderr, "[lut3d] error allocating buffer for gmz lut\n");
@@ -558,7 +559,7 @@ uint16_t calculate_clut_haldclut(dt_iop_lut3d_params_t *const p, const char *con
   }
   const size_t buf_size_lut = (size_t)png.height * png.height * 3;
   dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu floats for png lut - level %d\n", buf_size_lut, level);
-  float *lclut = dt_alloc_align(16, buf_size_lut * sizeof(float));
+  float *lclut = dt_alloc_align(16, sizeof(float) * buf_size_lut);
   if(!lclut)
   {
     fprintf(stderr, "[lut3d] error - allocating buffer for png lut\n");
@@ -788,7 +789,7 @@ uint16_t calculate_clut_cube(const char *const filepath, float **clut)
         }
         buf_size = level * level * level * 3;
         dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
-        lclut = dt_alloc_align(16, buf_size * sizeof(float));
+        lclut = dt_alloc_align(16, sizeof(float) * buf_size);
         if(!lclut)
         {
           fprintf(stderr, "[lut3d] error - allocating buffer for cube lut\n");
@@ -881,15 +882,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
           const int max_shaper = atoll(token[2]);
           if (max_shaper > min_shaper)
           {
-            level = nb_token;
-            if(level > 256)
-            {
-              fprintf(stderr, "[lut3d] error - LUT 3D size %d > 256\n", level);
-              dt_control_log(_("error - lut 3D size %d exceeds the maximum supported"), level);
-              free(line);
-              fclose(cube_file);
-              return 0;
-            }
+            level = nb_token; // max nb_token = 50 < 256
             if(max_shaper < 128)
             {
               fprintf(stderr, "[lut3d] error - the maximum shaper lut value %d is too low\n", max_shaper);
@@ -900,7 +893,7 @@ uint16_t calculate_clut_3dl(const char *const filepath, float **clut)
             }
             buf_size = level * level * level * 3;
             dt_print(DT_DEBUG_DEV, "[lut3d] allocating %zu bytes for cube lut - level %d\n", buf_size, level);
-            lclut = dt_alloc_align(16, buf_size * sizeof(float));
+            lclut = dt_alloc_align(16, sizeof(float) * buf_size);
             if(!lclut)
             {
               fprintf(stderr, "[lut3d] error - allocating buffer for cube lut\n");
@@ -1004,7 +997,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   if (clut && level)
   {
-    clut_cl = dt_opencl_copy_host_to_device_constant(devid, level * level * level * 3 * sizeof(float), (void *)clut);
+    clut_cl = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 3 * level * level * level, (void *)clut);
     if(clut_cl == NULL)
     {
       fprintf(stderr, "[lut3d process_cl] error allocating memory\n");
@@ -1082,27 +1075,27 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       dt_ioppr_transform_image_colorspace_rgb(ibuf, obuf, width, height,
         work_profile, lut_profile, "work profile to LUT profile");
       if (interpolation == DT_IOP_TETRAHEDRAL)
-        correct_pixel_tetrahedral(obuf, obuf, width * height, clut, level);
+        correct_pixel_tetrahedral(obuf, obuf, (size_t)width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(obuf, obuf, width * height, clut, level);
+        correct_pixel_trilinear(obuf, obuf, (size_t)width * height, clut, level);
       else
-        correct_pixel_pyramid(obuf, obuf, width * height, clut, level);
+        correct_pixel_pyramid(obuf, obuf, (size_t)width * height, clut, level);
       dt_ioppr_transform_image_colorspace_rgb(obuf, obuf, width, height,
         lut_profile, work_profile, "LUT profile to work profile");
     }
     else
     {
       if (interpolation == DT_IOP_TETRAHEDRAL)
-        correct_pixel_tetrahedral(ibuf, obuf, width * height, clut, level);
+        correct_pixel_tetrahedral(ibuf, obuf, (size_t)width * height, clut, level);
       else if (interpolation == DT_IOP_TRILINEAR)
-        correct_pixel_trilinear(ibuf, obuf, width * height, clut, level);
+        correct_pixel_trilinear(ibuf, obuf, (size_t)width * height, clut, level);
       else
-        correct_pixel_pyramid(ibuf, obuf, width * height, clut, level);
+        correct_pixel_pyramid(ibuf, obuf, (size_t)width * height, clut, level);
     }
   }
   else  // no clut
   {
-    memcpy(obuf, ibuf, width * height * ch * sizeof(float));
+    dt_iop_image_copy_by_size(obuf, ibuf, width, height, ch);
   }
 }
 

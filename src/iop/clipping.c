@@ -21,7 +21,9 @@
 #endif
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/imagebuf.h"
 #include "common/interpolation.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/conf.h"
 #include "control/control.h"
@@ -34,18 +36,16 @@
 #include "gui/guides.h"
 #include "gui/presets.h"
 #include "iop/iop_api.h"
+#include "libs/modulegroups.h"
 
 #include <assert.h>
 #include <gdk/gdkkeysyms.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 DT_MODULE_INTROSPECTION(5, dt_iop_clipping_params_t)
-
-#define CLAMPF(a, mn, mx) ((a) < (mn) ? (mn) : ((a) > (mx) ? (mx) : (a)))
 
 /** flip H/V, rotate an image, then clip the buffer. */
 typedef enum dt_iop_clipping_flags_t
@@ -290,12 +290,6 @@ typedef struct dt_iop_clipping_global_data_t
 static void commit_box(dt_iop_module_t *self, dt_iop_clipping_gui_data_t *g, dt_iop_clipping_params_t *p);
 
 
-static inline void mul_mat_vec_2(const float *m, const float *p, float *o)
-{
-  o[0] = p[0] * m[0] + p[1] * m[1];
-  o[1] = p[0] * m[2] + p[1] * m[3];
-}
-
 // helper to count corners in for loops:
 static inline void get_corner(const float *aabb, const int i, float *p)
 {
@@ -359,7 +353,7 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 
 static int gui_has_focus(struct dt_iop_module_t *self)
 {
-  return self->dev->gui_module == self;
+  return (self->dev->gui_module == self && dt_dev_modulegroups_get(darktable.develop) != DT_MODULEGROUP_BASICS);
 }
 
 static void keystone_get_matrix(float *k_space, float kxa, float kxb, float kxc, float kxd, float kya,
@@ -580,18 +574,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width && roi_in->height == roi_out->height)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(in, out, roi_out) \
-    shared(d) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *_in = in + (size_t)roi_out->width * j;
-      float *_out = out + (size_t)roi_out->width * j;
-      memcpy(_out, _in, sizeof(float) * roi_out->width);
-    }
+    dt_iop_image_copy_by_size(out, in, roi_out->width, roi_out->height, 1);
   }
   else
   {
@@ -616,7 +599,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
     for(int j = 0; j < roi_out->height; j++)
     {
       float *_out = out + (size_t)j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, _out++)
+      for(int i = 0; i < roi_out->width; i++)
       {
         float pi[2] = { 0.0f }, po[2] = { 0.0f };
 
@@ -645,8 +628,8 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
         po[0] -= roi_in->x + 0.5f;
         po[1] -= roi_in->y + 0.5f;
 
-        *_out = dt_interpolation_compute_sample(interpolation, in, po[0], po[1], roi_in->width, roi_in->height, 1,
-                                                roi_in->width);
+        _out[i] = dt_interpolation_compute_sample(interpolation, in, po[0], po[1], roi_in->width, roi_in->height, 1,
+                                                  roi_in->width);
       }
     }
   }
@@ -950,34 +933,20 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  if (!dt_iop_have_required_input_format(4/*need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // unsupported format, image has been copied to output and module's trouble flag set
+
   dt_iop_clipping_data_t *d = (dt_iop_clipping_data_t *)piece->data;
 
-  const int ch = piece->colors;
+  const int ch = 4;
   const int ch_width = ch * roi_in->width;
-
-  assert(ch == 4);
 
   // only crop, no rot fast and sharp path:
   if(!d->flags && d->angle == 0.0 && d->all_off && roi_in->width == roi_out->width
      && roi_in->height == roi_out->height)
   {
-#ifdef _OPENMP
-#pragma omp parallel for default(none) \
-    dt_omp_firstprivate(ch, ivoid, ovoid, roi_out) \
-    shared(d) \
-    schedule(static)
-#endif
-    for(int j = 0; j < roi_out->height; j++)
-    {
-      const float *in = ((float *)ivoid) + (size_t)ch * roi_out->width * j;
-      float *out = ((float *)ovoid) + (size_t)ch * roi_out->width * j;
-      for(int i = 0; i < roi_out->width; i++)
-      {
-        for(int c = 0; c < 4; c++) out[c] = in[c];
-        out += ch;
-        in += ch;
-      }
-    }
+    dt_iop_image_copy_by_size(ovoid, ivoid, roi_out->width, roi_out->height, ch);
   }
   else
   {
@@ -1002,7 +971,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     for(int j = 0; j < roi_out->height; j++)
     {
       float *out = ((float *)ovoid) + (size_t)ch * j * roi_out->width;
-      for(int i = 0; i < roi_out->width; i++, out += ch)
+      for(int i = 0; i < roi_out->width; i++)
       {
         float pi[2], po[2];
 
@@ -1031,7 +1000,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
         po[0] -= roi_in->x + 0.5f;
         po[1] -= roi_in->y + 0.5f;
 
-        dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out, po[0], po[1], roi_in->width,
+        dt_interpolation_compute_pixel4c(interpolation, (float *)ivoid, out + ch*i, po[0], po[1], roi_in->width,
                                          roi_in->height, ch_width);
       }
     }
@@ -2590,9 +2559,9 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
     layout = pango_cairo_create_layout(cr);
     pango_layout_set_font_description(layout, desc);
     const float bzx = g->button_down_zoom_x + .5f, bzy = g->button_down_zoom_y + .5f;
-    cairo_arc(cr, bzx * wd, bzy * ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0 * M_PI);
+    cairo_arc(cr, bzx * wd, bzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d, 0, 2.0 * M_PI);
     cairo_stroke(cr);
-    cairo_arc(cr, pzx * wd, pzy * ht, DT_PIXEL_APPLY_DPI(3), 0, 2.0 * M_PI);
+    cairo_arc(cr, pzx * wd, pzy * ht, DT_PIXEL_APPLY_DPI(3) * pr_d, 0, 2.0 * M_PI);
     cairo_stroke(cr);
     cairo_move_to(cr, bzx * wd, bzy * ht);
     cairo_line_to(cr, pzx * wd, pzy * ht);

@@ -21,6 +21,7 @@
 #include "bauhaus/bauhaus.h"
 #include "common/colorspaces.h"
 #include "common/debug.h"
+#include "common/math.h"
 #include "common/opencl.h"
 #include "control/control.h"
 #include "develop/develop.h"
@@ -37,11 +38,9 @@
 #include <assert.h>
 #include <gtk/gtk.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define CLIP(x) ((x < 0) ? 0.0 : (x > 1.0) ? 1.0 : x)
 DT_MODULE_INTROSPECTION(1, dt_iop_splittoning_params_t)
 
 typedef struct dt_iop_splittoning_params_t
@@ -153,12 +152,15 @@ void init_presets(dt_iop_module_so_t *self)
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
              void *const ovoid, const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
-  assert(piece->colors == 4);
+  if (!dt_iop_have_required_input_format(4 /*we need full-color pixels*/, self, piece->colors,
+                                         ivoid, ovoid, roi_in, roi_out))
+    return; // image has been copied through to output and module's trouble flag has been updated
+
   const dt_iop_splittoning_data_t *const data = (dt_iop_splittoning_data_t *)piece->data;
   const float compress = (data->compress / 110.0) / 2.0; // Don't allow 100% compression..
 
-  const float *const restrict in = (float*)ivoid;
-  float *const restrict out = (float*)ovoid;
+  const float *const restrict in = DT_IS_ALIGNED((float*)ivoid);
+  float *const restrict out = DT_IS_ALIGNED((float*)ovoid);
   const int npixels = roi_out->width * roi_out->height;
 
 #ifdef _OPENMP
@@ -171,31 +173,31 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   {
     float h, s, l;
     rgb2hsl(in+k, &h, &s, &l);
-    if(l < data->balance - compress || l > data->balance + compress)
+    if(l < data->balance - compress)
     {
-      h = l < data->balance ? data->shadow_hue : data->highlight_hue;
-      s = l < data->balance ? data->shadow_saturation : data->highlight_saturation;
-      const double ra = l < data->balance ? CLIP((fabs(-data->balance + compress + l) * 2.0))
-                               : CLIP((fabs(-data->balance - compress + l) * 2.0));
-      const double la = (1.0 - ra);
+      float DT_ALIGNED_PIXEL mixrgb[4];
+      hsl2rgb(mixrgb, data->shadow_hue, data->shadow_saturation, l);
 
-      float DT_ALIGNED_PIXEL mixrgb[3];
-      hsl2rgb(mixrgb, h, s, l);
+      const float ra = CLIP((data->balance - compress - l) * 2.0f);
+      const float la = (1.0f - ra);
 
-      out[k+0] = CLIP(in[k+0] * la + mixrgb[0] * ra);
-      out[k+1] = CLIP(in[k+1] * la + mixrgb[1] * ra);
-      out[k+2] = CLIP(in[k+2] * la + mixrgb[2] * ra);
-      out[k+3] = in[k+3];
+      for_each_channel(c,aligned(in,out))
+        out[k+c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
+    }
+    else if(l > data->balance + compress)
+    {
+      float DT_ALIGNED_PIXEL mixrgb[4];
+      hsl2rgb(mixrgb, data->highlight_hue, data->highlight_saturation, l);
+
+      const float ra = CLIP((l - (data->balance + compress)) * 2.0f);
+      const float la = (1.0f - ra);
+
+      for_each_channel(c,aligned(in,out))
+        out[k+c] = CLIP(in[k+c] * la + mixrgb[c] * ra);
     }
     else
     {
-#ifdef _OPENMP
-#pragma omp simd aligned(in, out)
-#endif
-      for(int c = 0; c < 4; c++)
-      {
-        out[k+c] = in[k+c];
-      }
+      copy_pixel(out + k, in +k);
     }
 
   }

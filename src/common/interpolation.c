@@ -18,12 +18,12 @@
 
 #include "common/interpolation.h"
 #include "common/darktable.h"
+#include "common/math.h"
 #include "control/conf.h"
 
 #include <assert.h>
 #include <glib.h>
 #include <inttypes.h>
-#include <math.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -100,35 +100,6 @@ static inline int64_t getts()
 /* --------------------------------------------------------------------------
  * Generic helpers
  * ------------------------------------------------------------------------*/
-
-/** Compute ceil value of a float
- * @remark Avoid libc ceil for now. Maybe we'll revert to libc later.
- * @param x Value to ceil
- * @return ceil value
- */
-static inline float ceil_fast(float x)
-{
-  if(x <= 0.f)
-  {
-    return (float)(int)x;
-  }
-  else
-  {
-    return -((float)(int)-x) + 1.f;
-  }
-}
-
-#if defined(__SSE2__)
-/** Compute absolute value
- * @param t Vector of 4 floats
- * @return Vector of their absolute values
- */ static inline __m128 _mm_abs_ps(__m128 t)
-{
-  static const uint32_t signmask[4] __attribute__((aligned(SSE_ALIGNMENT)))
-  = { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff };
-  return _mm_and_ps(*(__m128 *)signmask, t);
-}
-#endif
 
 /** Clip into specified range
  * @param idx index to filter
@@ -214,64 +185,6 @@ static inline size_t increase_for_alignment(size_t l, size_t align)
   align -= 1;
   return (l + align) & (~align);
 }
-
-/** Compute an approximate sine.
- * This function behaves correctly for the range [-pi pi] only.
- * It has the following properties:
- * <ul>
- *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
- *   <li>It has matching derivatives to sine for these same points</li>
- *   <li>Its relative error margin is <= 1% iirc</li>
- *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
- * </ul>
- * @param t Radian parameter
- * @return guess what
- */
-static inline float sinf_fast(float t)
-{
-  static const float a = 4 / (M_PI * M_PI);
-  static const float p = 0.225f;
-
-  t = a * t * (M_PI - fabsf(t));
-
-  return t * (p * (fabsf(t) - 1) + 1);
-}
-
-#if defined(__SSE2__)
-/** Compute an approximate sine (SSE version, four sines a call).
- * This function behaves correctly for the range [-pi pi] only.
- * It has the following properties:
- * <ul>
- *   <li>It has exact values for 0, pi/2, pi, -pi/2, -pi</li>
- *   <li>It has matching derivatives to sine for these same points</li>
- *   <li>Its relative error margin is <= 1% iirc</li>
- *   <li>It computational cost is 5 mults + 3 adds + 2 abs</li>
- * </ul>
- * @param t Radian parameter
- * @return guess what
- */
-static inline __m128 sinf_fast_sse(__m128 t)
-{
-  static const __m128 a
-      = { 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI), 4.f / (M_PI * M_PI) };
-  static const __m128 p = { 0.225f, 0.225f, 0.225f, 0.225f };
-  static const __m128 pi = { M_PI, M_PI, M_PI, M_PI };
-
-  // m4 = a*t*(M_PI - fabsf(t));
-  const __m128 m1 = _mm_abs_ps(t);
-  const __m128 m2 = _mm_sub_ps(pi, m1);
-  const __m128 m3 = _mm_mul_ps(t, m2);
-  const __m128 m4 = _mm_mul_ps(a, m3);
-
-  // p*(m4*fabsf(m4) - m4) + m4;
-  const __m128 n1 = _mm_abs_ps(m4);
-  const __m128 n2 = _mm_mul_ps(m4, n1);
-  const __m128 n3 = _mm_sub_ps(n2, m4);
-  const __m128 n4 = _mm_mul_ps(p, n3);
-
-  return _mm_add_ps(n4, m4);
-}
-#endif
 
 /* --------------------------------------------------------------------------
  * Interpolation kernels
@@ -436,8 +349,8 @@ static inline float lanczos(float width, float t)
   } sign;
   sign.i = ((a & 1) << 31) | 0x3f800000;
 
-  return (DT_LANCZOS_EPSILON + width * sign.f * sinf_fast(M_PI * r) * sinf_fast(M_PI * t / width))
-         / (DT_LANCZOS_EPSILON + M_PI * M_PI * t * t);
+  return (DT_LANCZOS_EPSILON + width * sign.f * sinf_fast(M_PI_F * r) * sinf_fast(M_PI_F * t / width))
+         / (DT_LANCZOS_EPSILON + M_PI_F * M_PI_F * t * t);
 }
 
 #if defined(__SSE2__)

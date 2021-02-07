@@ -46,7 +46,7 @@ void dt_history_item_free(gpointer data)
   g_free(item);
 }
 
-static void remove_preset_flag(const int imgid)
+static void _remove_preset_flag(const int imgid)
 {
   dt_image_t *image = dt_image_cache_get(darktable.image_cache, imgid, 'w');
 
@@ -108,7 +108,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
 
-  remove_preset_flag(imgid);
+  _remove_preset_flag(imgid);
 
   /* if current image in develop reload history */
   if(dt_dev_is_current_image(darktable.develop, imgid)) dt_dev_reload_history_items(darktable.develop);
@@ -118,7 +118,7 @@ void dt_history_delete_on_image_ext(int32_t imgid, gboolean undo)
   dt_image_reset_final_size(imgid);
 
   /* remove darktable|style|* tags */
-  dt_tag_detach_by_string("darktable|style%", imgid, FALSE, FALSE);
+  dt_tag_detach_by_string("darktable|style|%", imgid, FALSE, FALSE);
   dt_tag_detach_by_string("darktable|changed", imgid, FALSE, FALSE);
 
   /* unset change timestamp */
@@ -489,11 +489,6 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   return module_added;
 }
 
-static inline gboolean _is_module_to_skip(const int flags)
-{
-  return flags & (IOP_FLAGS_DEPRECATED | IOP_FLAGS_UNSAFE_COPY | IOP_FLAGS_HIDDEN);
-}
-
 static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_imgid, GList *ops, const gboolean copy_full)
 {
   GList *modules_used = NULL;
@@ -566,7 +561,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
          && !(mod_src->default_enabled && mod_src->enabled
               && !memcmp(mod_src->params, mod_src->default_params, mod_src->params_size) // it's not a enabled by default module with unmodified settings
               && !dt_iop_is_hidden(mod_src))
-         && (copy_full || !_is_module_to_skip(mod_src->flags()))
+         && (copy_full || !dt_history_module_skip_copy(mod_src->flags()))
         )
       {
         mod_list = g_list_append(mod_list, mod_src);
@@ -645,7 +640,7 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
       {
         dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
 
-        if(_is_module_to_skip(module->flags()))
+        if(dt_history_module_skip_copy(module->flags()))
         {
           if(skip_modules)
             skip_modules = dt_util_dstrcat(skip_modules, ",");
@@ -773,7 +768,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
     return 1;
   }
 
-  dt_lock_image_pair(imgid,dest_imgid);
+  dt_lock_image_pair(imgid, dest_imgid);
 
   // be sure the current history is written before pasting some other history data
   const dt_view_t *cv = dt_view_manager_get_current_view(darktable.view_manager);
@@ -831,7 +826,7 @@ int dt_history_copy_and_paste_on_image(const int32_t imgid, const int32_t dest_i
   // signal that the mipmap need to be updated
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_DEVELOP_MIPMAP_UPDATED, dest_imgid);
 
-  dt_unlock_image_pair(imgid,dest_imgid);
+  dt_unlock_image_pair(imgid, dest_imgid);
 
   return ret_val;
 }
@@ -1251,7 +1246,6 @@ int dt_history_compress_on_list(const GList *imgs)
 
 gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
 {
-  dt_lock_image(imgid);
   gboolean result = FALSE;
   sqlite3_stmt *stmt;
 
@@ -1263,7 +1257,6 @@ gboolean dt_history_check_module_exists(int32_t imgid, const char *operation)
   if (sqlite3_step(stmt) == SQLITE_ROW) result = TRUE;
   sqlite3_finalize(stmt);
 
-  dt_unlock_image(imgid);
   return result;
 }
 
@@ -1299,10 +1292,13 @@ GList *dt_history_duplicate(GList *hist)
       }
     }
 
-    new->params = malloc(params_size);
-    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
+    if(params_size > 0)
+    {
+      new->params = malloc(params_size);
+      memcpy(new->params, old->params, params_size);
+    }
 
-    memcpy(new->params, old->params, params_size);
+    new->blend_params = malloc(sizeof(dt_develop_blend_params_t));
     memcpy(new->blend_params, old->blend_params, sizeof(dt_develop_blend_params_t));
 
     if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
@@ -1353,12 +1349,15 @@ static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
   }
   sqlite3_finalize(stmt);
 
-  // get history
+  // get history. the active history for an image are all the latest operations (MAX(num))
+  // which are enabled. this is important here as we want the hash to represent the actual
+  // developement of the image.
   gboolean history_on = FALSE;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                              "SELECT operation, op_params, blendop_params"
+                              "SELECT operation, op_params, blendop_params, enabled, MAX(num)"
                               " FROM main.history"
-                              " WHERE imgid = ?1 AND enabled = 1 AND num <= ?2"
+                              " WHERE imgid = ?1 AND num <= ?2"
+                              " GROUP BY operation, multi_priority"
                               " ORDER BY num",
                               -1, &stmt, NULL);
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, imgid);
@@ -1366,18 +1365,22 @@ static gsize _history_hash_compute_from_db(const int32_t imgid, guint8 **hash)
 
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    // operation
-    char *buf = (char *)sqlite3_column_text(stmt, 0);
-    if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
-    // op_params
-    buf = (char *)sqlite3_column_blob(stmt, 1);
-    int params_len = sqlite3_column_bytes(stmt, 1);
-    if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
-    // blendop_params
-    buf = (char *)sqlite3_column_blob(stmt, 2);
-    params_len = sqlite3_column_bytes(stmt, 2);
-    if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
-    history_on = TRUE;
+    const int enabled = sqlite3_column_int(stmt, 3);
+    if(enabled)
+    {
+      // operation
+      char *buf = (char *)sqlite3_column_text(stmt, 0);
+      if(buf) g_checksum_update(checksum, (const guchar *)buf, -1);
+      // op_params
+      buf = (char *)sqlite3_column_blob(stmt, 1);
+      int params_len = sqlite3_column_bytes(stmt, 1);
+      if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+      // blendop_params
+      buf = (char *)sqlite3_column_blob(stmt, 2);
+      params_len = sqlite3_column_bytes(stmt, 2);
+      if(buf) g_checksum_update(checksum, (const guchar *)buf, params_len);
+      history_on = TRUE;
+    }
   }
   sqlite3_finalize(stmt);
 
@@ -1553,7 +1556,7 @@ void dt_history_hash_read(const int32_t imgid, dt_history_hash_values_t *hash)
   sqlite3_finalize(stmt);
 }
 
-const gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
+gboolean dt_history_hash_is_mipmap_synced(const int32_t imgid)
 {
   gboolean status = FALSE;
   if(imgid == -1) return status;
@@ -1588,7 +1591,7 @@ void dt_history_hash_set_mipmap(const int32_t imgid)
   sqlite3_finalize(stmt);
 }
 
-const dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
+dt_history_hash_t dt_history_hash_get_status(const int32_t imgid)
 {
   dt_history_hash_t status = 0;
   if(imgid == -1) return status;

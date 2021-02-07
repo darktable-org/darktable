@@ -355,8 +355,9 @@ void dt_control_crawler_show_image_list(GList *images)
     GtkTreeIter iter;
     dt_control_crawler_result_t *item = list_iter->data;
     char timestamp_db[64], timestamp_xmp[64];
-    strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime(&item->timestamp_db));
-    strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime(&item->timestamp_xmp));
+    struct tm tm_stamp;
+    strftime(timestamp_db, sizeof(timestamp_db), "%c", localtime_r(&item->timestamp_db, &tm_stamp));
+    strftime(timestamp_xmp, sizeof(timestamp_xmp), "%c", localtime_r(&item->timestamp_xmp, &tm_stamp));
     gtk_list_store_append(store, &iter);
     gtk_list_store_set(store, &iter,
                        DT_CONTROL_CRAWLER_COL_SELECTED, 0,

@@ -152,6 +152,8 @@ static gboolean _view_map_button_press_callback(GtkWidget *w, GdkEventButton *e,
 static gboolean _view_map_button_release_callback(GtkWidget *w, GdkEventButton *e, dt_view_t *self);
 /* callback when the mouse is moved */
 static gboolean _view_map_motion_notify_callback(GtkWidget *w, GdkEventMotion *e, dt_view_t *self);
+static gboolean _view_map_drag_motion_callback(GtkWidget *widget, GdkDragContext *dc,
+                                               gint x, gint y, guint time, dt_view_t *self);
 static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext *drag_context,
                                               GtkDragResult result, dt_view_t *self);
 static void _view_map_dnd_remove_callback(GtkWidget *widget, GdkDragContext *context, gint x, gint y,
@@ -278,7 +280,7 @@ static int zoom_member(lua_State *L)
     // lua can have temporarily false values but it will fix itself when entering map
     // unfortunately we can't get the min max when lib->map doesn't exist
     luaL_checktype(L, 3, LUA_TNUMBER);
-    int zoom = luaL_checkinteger(L, 3);
+    const int zoom = luaL_checkinteger(L, 3);
     if(dt_view_manager_get_current_view(darktable.view_manager) != module)
     {
       dt_conf_set_int("plugins/map/zoom", zoom);
@@ -313,10 +315,10 @@ static float deg2rad(float deg)
 
 static int latlon2zoom(int pix_height, int pix_width, float lat1, float lat2, float lon1, float lon2)
 {
-  float lat1_m = atanh(sin(lat1));
-  float lat2_m = atanh(sin(lat2));
-  int zoom_lon = LOG2((double)(2 * pix_width * M_PI) / (TILESIZE * (lon2 - lon1)));
-  int zoom_lat = LOG2((double)(2 * pix_height * M_PI) / (TILESIZE * (lat2_m - lat1_m)));
+  const float lat1_m = atanh(sinf(lat1));
+  const float lat2_m = atanh(sinf(lat2));
+  const int zoom_lon = LOG2((double)(2 * pix_width * M_PI) / (TILESIZE * (lon2 - lon1)));
+  const int zoom_lat = LOG2((double)(2 * pix_height * M_PI) / (TILESIZE * (lat2_m - lat1_m)));
   return MIN(zoom_lon, zoom_lat);
 }
 
@@ -333,9 +335,10 @@ static int latlon2zoom(int pix_height, int pix_width, float lat1, float lat2, fl
 static void osm_gps_map_zoom_fit_bbox(OsmGpsMap *map, float latitude1, float latitude2, float longitude1, float longitude2)
 {
   GtkAllocation allocation;
-  int zoom;
   gtk_widget_get_allocation(GTK_WIDGET (map), &allocation);
-  zoom = latlon2zoom(allocation.height, allocation.width, deg2rad(latitude1), deg2rad(latitude2), deg2rad(longitude1), deg2rad(longitude2));
+  const int zoom = latlon2zoom(allocation.height, allocation.width,
+                               deg2rad(latitude1), deg2rad(latitude2),
+                               deg2rad(longitude1), deg2rad(longitude2));
   osm_gps_map_set_center(map, (latitude1 + latitude2) / 2, (longitude1 + longitude2) / 2);
   osm_gps_map_set_zoom(map, zoom);
 }
@@ -347,7 +350,8 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
   char text[8] = {0};
   snprintf(text, sizeof(text), "%d", nb_images > 99999 ? 99999 : nb_images);
 
-  int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border), h = DT_PIXEL_APPLY_DPI(image_pin_size);
+  const int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border);
+  const int h = DT_PIXEL_APPLY_DPI(image_pin_size);
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
   cairo_t *cr = cairo_create(cst);
@@ -368,7 +372,7 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  const size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -379,7 +383,10 @@ static GdkPixbuf *_view_map_images_count(const int nb_images, const gboolean sam
 
 static GdkPixbuf *_init_image_pin()
 {
-  int w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border), h = DT_PIXEL_APPLY_DPI(image_pin_size);
+  const size_t w = DT_PIXEL_APPLY_DPI(thumb_size + 2 * thumb_border);
+  const size_t h = DT_PIXEL_APPLY_DPI(image_pin_size);
+  g_return_val_if_fail(w > 0 && h > 0, NULL);
+
   float r, g, b, a;
   r = ((thumb_frame_color & 0xff000000) >> 24) / 255.0;
   g = ((thumb_frame_color & 0x00ff0000) >> 16) / 255.0;
@@ -393,7 +400,7 @@ static GdkPixbuf *_init_image_pin()
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  const size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -404,7 +411,10 @@ static GdkPixbuf *_init_image_pin()
 
 static GdkPixbuf *_init_place_pin()
 {
-  int w = DT_PIXEL_APPLY_DPI(place_pin_size), h = DT_PIXEL_APPLY_DPI(place_pin_size);
+  const size_t w = DT_PIXEL_APPLY_DPI(place_pin_size);
+  const size_t h = DT_PIXEL_APPLY_DPI(place_pin_size);
+  g_return_val_if_fail(w > 0 && h > 0, NULL);
+
   float r, g, b, a;
 
   cairo_surface_t *cst = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, w, h);
@@ -441,7 +451,7 @@ static GdkPixbuf *_init_place_pin()
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -509,7 +519,7 @@ static GdkPixbuf *_draw_ellipse(const float dlongitude, const float dlatitude,
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -564,7 +574,7 @@ static GdkPixbuf *_draw_rectangle(const float dlongitude, const float dlatitude,
   cairo_destroy(cr);
   uint8_t *data = cairo_image_surface_get_data(cst);
   dt_draw_cairo_to_gdk_pixbuf(data, w, h);
-  size_t size = w * h * 4;
+  size_t size = (size_t)w * h * 4;
   uint8_t *buf = (uint8_t *)malloc(size);
   memcpy(buf, data, size);
   GdkPixbuf *pixbuf = gdk_pixbuf_new_from_data(buf, GDK_COLORSPACE_RGB, TRUE, 8, w, h, w * 4,
@@ -663,6 +673,8 @@ void init(dt_view_t *self)
     g_signal_connect_after(G_OBJECT(lib->map), "button-release-event",
                           G_CALLBACK(_view_map_button_release_callback), self);
     g_signal_connect(G_OBJECT(lib->map), "motion-notify-event", G_CALLBACK(_view_map_motion_notify_callback),
+                     self);
+    g_signal_connect(G_OBJECT(lib->map), "drag-motion", G_CALLBACK(_view_map_drag_motion_callback),
                      self);
   }
 
@@ -842,10 +854,10 @@ static float _view_map_angles_to_pixels(const dt_map_t *lib, const float lat0,
 }
 
 static double _view_map_get_angles_ratio(const dt_map_t *lib, const float lat0,
-                                         const float lon0, const float angle)
+                                         const float lon0)
 {
   OsmGpsMapPoint *pt0 = osm_gps_map_point_new_degrees(lat0, lon0);
-  OsmGpsMapPoint *pt1 = osm_gps_map_point_new_degrees(lat0 + angle, lon0 + angle);
+  OsmGpsMapPoint *pt1 = osm_gps_map_point_new_degrees(lat0 + 2.0, lon0 + 2.0);
   gint px0 = 0, py0 = 0;
   gint px1 = 0, py1 = 0;
   osm_gps_map_convert_geographic_to_screen(lib->map, pt0, &px0, &py0);
@@ -869,11 +881,14 @@ static GdkPixbuf *_draw_location(dt_map_t *lib, int *width, int *height,
   if(shape == MAP_LOCATION_SHAPE_ELLIPSE)
   {
     draw = _draw_ellipse(pixel_lon, pixel_lat, main);
-    if(pixel_lon > pixel_lat) pixel_lat = pixel_lon;
-    else pixel_lon = pixel_lat;
+    if(pixel_lon > pixel_lat)
+      pixel_lat = pixel_lon;
+    else
+      pixel_lon = pixel_lat;
   }
   else if(shape == MAP_LOCATION_SHAPE_RECTANGLE)
     draw = _draw_rectangle(pixel_lon, pixel_lat, main);
+
   if(width) *width = (int)pixel_lon;
   if(height) *height = (int)pixel_lat;
   return draw;
@@ -888,8 +903,7 @@ static OsmGpsMapImage *_view_map_draw_location(dt_map_t *lib, const int shape,
   OsmGpsMapImage *location = NULL;
   if(draw)
   {
-    location = osm_gps_map_image_add_with_alignment(lib->map, lat, lon,
-                                                    draw, 0.5, 0.5);
+    location = osm_gps_map_image_add_with_alignment(lib->map, lat, lon, draw, 0.5, 0.5);
     g_object_unref(draw);
   }
   return location;
@@ -978,7 +992,8 @@ static void _view_map_update_location_geotag(dt_view_t *self)
   {
     // update coordinates
     dt_map_location_set_data(lib->loc.main.id, &lib->loc.main.data);
-    dt_map_location_update_images(lib->loc.main.id);
+    if(dt_map_location_update_images(lib->loc.main.id))
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   }
 }
 
@@ -1156,8 +1171,10 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
 
     if(lib->points)
       g_free(lib->points);
-    lib->points = (dt_geo_position_t *)calloc(img_count, sizeof(dt_geo_position_t));
+    lib->points = NULL;
     lib->nb_points = img_count;
+    if(img_count > 0)
+      lib->points = (dt_geo_position_t *)calloc(img_count, sizeof(dt_geo_position_t));
     dt_geo_position_t *p = lib->points;
     if(p)
     {
@@ -1478,9 +1495,33 @@ static void _view_map_drag_set_icon(const dt_view_t *self, GdkDragContext *conte
   }
 }
 
+static gboolean _view_map_drag_motion_callback(GtkWidget *widget, GdkDragContext *dc,
+                                               gint x, gint y, guint time, dt_view_t *self)
+{
+  dt_map_t *lib = (dt_map_t *)self->data;
+  OsmGpsMapPoint *p = osm_gps_map_point_new_degrees(0.0, 0.0);
+  osm_gps_map_convert_screen_to_geographic(lib->map, x, y, p);
+  float lat, lon;
+  osm_gps_map_point_get_degrees(p, &lat, &lon);
+  gchar *latitude = dt_util_latitude_str(lat);
+  gchar *longitude = dt_util_longitude_str(lon);
+  dt_toast_log("%s %s",latitude, longitude);
+  g_free(latitude);
+  g_free(longitude);
+  return FALSE;
+}
+
 static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMotion *e, dt_view_t *self)
 {
   dt_map_t *lib = (dt_map_t *)self->data;
+  OsmGpsMapPoint *p = osm_gps_map_get_event_location(lib->map, (GdkEventButton *)e);
+  float lat, lon;
+  osm_gps_map_point_get_degrees(p, &lat, &lon);
+  gchar *latitude = dt_util_latitude_str(lat);
+  gchar *longitude = dt_util_longitude_str(lon);
+  dt_toast_log("%s %s",latitude, longitude);
+  g_free(latitude);
+  g_free(longitude);
 
   if(lib->loc.drag && lib->loc.main.id > 0 &&
      (abs(lib->start_drag_x - (int)ceil(e->x_root)) +
@@ -2076,7 +2117,7 @@ static void _view_map_add_location(const dt_view_t *view, dt_map_location_data_t
       float dlat, dlon;
       _view_map_thumb_angles(lib, lib->loc.main.data.lat, lib->loc.main.data.lon, &dlat, &dlon);
       lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
-                                                            lib->loc.main.data.lon, dlon);
+                                                            lib->loc.main.data.lon);
       lib->loc.main.data.delta1 = dlon;
       lib->loc.main.data.delta2 = dlon / lib->loc.main.data.ratio;
       _view_map_draw_locations(view);
@@ -2235,8 +2276,10 @@ static void _drag_and_drop_received(GtkWidget *widget, GdkDragContext *context, 
         float lat, lon;
         osm_gps_map_point_get_degrees(pt, &lat, &lon);
         lib->loc.main.data.lat = lat, lib->loc.main.data.lon = lon;
+        const float prev_ratio = lib->loc.main.data.ratio;
         lib->loc.main.data.ratio = _view_map_get_angles_ratio(lib, lib->loc.main.data.lat,
-                                   lib->loc.main.data.lon, lib->loc.main.data.delta1);
+                                   lib->loc.main.data.lon);
+        lib->loc.main.data.delta2 = lib->loc.main.data.delta2 * prev_ratio / lib->loc.main.data.ratio;
         osm_gps_map_point_free(pt);
         _view_map_update_location_geotag(self);
         _view_map_draw_locations(self);
@@ -2283,10 +2326,10 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
         if(lib->selected_images)
         {
           // drag & drop of images
-          const int imgs_nb = g_list_length(lib->selected_images);
+          const guint imgs_nb = g_list_length(lib->selected_images);
           if(imgs_nb)
           {
-            uint32_t *imgs = malloc(imgs_nb * sizeof(uint32_t));
+            uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
             GList *l = lib->selected_images;
             for(int i = 0; i < imgs_nb; i++)
             {
@@ -2314,7 +2357,7 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
     {
       if(lib->selected_images)
       {
-        int imgid = GPOINTER_TO_INT(lib->selected_images->data);
+        const int imgid = GPOINTER_TO_INT(lib->selected_images->data);
         gchar pathname[PATH_MAX] = { 0 };
         gboolean from_cache = TRUE;
         dt_image_full_path(imgid, pathname, sizeof(pathname), &from_cache);
@@ -2371,7 +2414,7 @@ static gboolean _view_map_dnd_failed_callback(GtkWidget *widget, GdkDragContext 
 static gboolean _view_map_prefs_changed(dt_map_t *lib)
 {
   gboolean prefs_changed = FALSE;
-  int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
+  const int max_images_drawn = dt_conf_get_int("plugins/map/max_images_drawn");
   gboolean filter_images_drawn = dt_conf_get_bool("plugins/map/filter_images_drawn");
 
   if(lib->max_images_drawn != max_images_drawn) prefs_changed = TRUE;
