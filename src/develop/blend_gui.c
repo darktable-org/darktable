@@ -430,7 +430,7 @@ static gboolean _blendif_are_output_channels_used(const dt_develop_blend_params_
 static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
 {
   const dt_iop_gui_blend_data_t *const bd = (dt_iop_gui_blend_data_t *)module->blend_data;
-  if(!bd || !bd->blendif_support || !bd->blendif_inited) return 0;
+  if(!bd || !bd->blendif_support || !bd->blendif_inited) return FALSE;
 
   gboolean changed = FALSE;
   if(!bd->output_channels_shown)
