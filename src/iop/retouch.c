@@ -2038,24 +2038,24 @@ void gui_init(dt_iop_module_t *self)
                _("to add a shape select an algorithm and a shape type and click on the image.\n"
                  "shapes are added to the current scale"));
 
-  g->bt_edit_masks = dt_iop_togglebutton_new(self, N_("show and edit shapes on the current scale"),
-                                                   N_("show and edit shapes in restricted mode"),
+  g->bt_edit_masks = dt_iop_togglebutton_new(self, N_("editing"), N_("show and edit shapes on the current scale"),
+                                                                  N_("show and edit shapes in restricted mode"),
                                              G_CALLBACK(rt_edit_masks_callback), TRUE, 0, 0,
                                              dtgtk_cairo_paint_masks_eye, hbox_shapes);
 
-  g->bt_brush = dt_iop_togglebutton_new(self, N_("add brush"), N_("add multiple brush strokes"),
+  g->bt_brush = dt_iop_togglebutton_new(self, N_("shapes"), N_("add brush"), N_("add multiple brush strokes"),
                                         G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
                                         dtgtk_cairo_paint_masks_brush, hbox_shapes);
 
-  g->bt_path = dt_iop_togglebutton_new(self, N_("add path"), N_("add multiple paths"),
+  g->bt_path = dt_iop_togglebutton_new(self, N_("shapes"), N_("add path"), N_("add multiple paths"),
                                        G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
                                        dtgtk_cairo_paint_masks_path, hbox_shapes);
 
-  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("add ellipse"), N_("add multiple ellipses"),
+  g->bt_ellipse = dt_iop_togglebutton_new(self, N_("shapes"), N_("add ellipse"), N_("add multiple ellipses"),
                                           G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
                                           dtgtk_cairo_paint_masks_ellipse, hbox_shapes);
 
-  g->bt_circle = dt_iop_togglebutton_new(self, N_("add circle"), N_("add multiple circles"),
+  g->bt_circle = dt_iop_togglebutton_new(self, N_("shapes"), N_("add circle"), N_("add multiple circles"),
                                          G_CALLBACK(rt_add_shape_callback), TRUE, 0, 0,
                                          dtgtk_cairo_paint_masks_circle, hbox_shapes);
 
@@ -2064,19 +2064,19 @@ void gui_init(dt_iop_module_t *self)
 
   gtk_box_pack_start(GTK_BOX(hbox_algo), dt_ui_label_new(_("algorithms:")), FALSE, TRUE, 0);
 
-  g->bt_blur = dt_iop_togglebutton_new(self, N_("activate blur tool"), NULL,
+  g->bt_blur = dt_iop_togglebutton_new(self, N_("tools"), N_("activate blur tool"), NULL,
                                        G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
                                        dtgtk_cairo_paint_tool_blur, hbox_algo);
 
-  g->bt_fill = dt_iop_togglebutton_new(self, N_("activate fill tool"), NULL,
+  g->bt_fill = dt_iop_togglebutton_new(self, N_("tools"), N_("activate fill tool"), NULL,
                                        G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
                                        dtgtk_cairo_paint_tool_fill, hbox_algo);
 
-  g->bt_clone = dt_iop_togglebutton_new(self, N_("activate cloning tool"), NULL,
+  g->bt_clone = dt_iop_togglebutton_new(self, N_("tools"), N_("activate cloning tool"), NULL,
                                         G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
                                         dtgtk_cairo_paint_tool_clone, hbox_algo);
 
-  g->bt_heal = dt_iop_togglebutton_new(self, N_("activate healing tool"), NULL,
+  g->bt_heal = dt_iop_togglebutton_new(self, N_("tools"), N_("activate healing tool"), NULL,
                                        G_CALLBACK(rt_select_algorithm_callback), TRUE, 0, 0,
                                        dtgtk_cairo_paint_tool_heal, hbox_algo);
 
@@ -2123,29 +2123,29 @@ void gui_init(dt_iop_module_t *self)
   GtkWidget *hbox_scale = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
 
   // display & suppress masks
-  g->bt_showmask = dt_iop_togglebutton_new(self, N_("display masks"), NULL,
+  g->bt_showmask = dt_iop_togglebutton_new(self, N_("editing"), N_("display masks"), NULL,
                                            G_CALLBACK(rt_showmask_callback), TRUE, 0, 0,
                                            dtgtk_cairo_paint_showmask, hbox_scale);
 
-  g->bt_suppress = dt_iop_togglebutton_new(self, N_("temporarily switch off shapes"), NULL,
+  g->bt_suppress = dt_iop_togglebutton_new(self, N_("editing"), N_("temporarily switch off shapes"), NULL,
                                            G_CALLBACK(rt_suppress_callback), TRUE, 0, 0,
                                            dtgtk_cairo_paint_eye_toggle, hbox_scale);
 
   gtk_box_pack_end(GTK_BOX(hbox_scale), gtk_grid_new(), TRUE, TRUE, 0);
 
   // copy/paste shapes
-  g->bt_paste_scale = dt_iop_togglebutton_new(self, N_("paste cut shapes to current scale"), NULL,
+  g->bt_paste_scale = dt_iop_togglebutton_new(self, N_("editing"), N_("paste cut shapes to current scale"), NULL,
                                               G_CALLBACK(rt_copypaste_scale_callback), TRUE, 0, 0,
                                               dtgtk_cairo_paint_paste_forms, hbox_scale);
 
-  g->bt_copy_scale = dt_iop_togglebutton_new(self, N_("cut shapes from current scale"), NULL,
+  g->bt_copy_scale = dt_iop_togglebutton_new(self, N_("editing"), N_("cut shapes from current scale"), NULL,
                                              G_CALLBACK(rt_copypaste_scale_callback), TRUE, 0, 0,
                                              dtgtk_cairo_paint_cut_forms, hbox_scale);
 
   gtk_box_pack_end(GTK_BOX(hbox_scale), gtk_grid_new(), TRUE, TRUE, 0);
 
   // display final image/current scale
-  g->bt_display_wavelet_scale = dt_iop_togglebutton_new(self, N_("display wavelet scale"), NULL,
+  g->bt_display_wavelet_scale = dt_iop_togglebutton_new(self, N_("editing"), N_("display wavelet scale"), NULL,
                                                         G_CALLBACK(rt_display_wavelet_scale_callback), TRUE, 0, 0,
                                                         dtgtk_cairo_paint_display_wavelet_scale, hbox_scale);
 
@@ -2178,7 +2178,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_box_pack_start(GTK_BOX(prev_lvl), GTK_WIDGET(g->preview_levels_gslider), TRUE, TRUE, 0);
 
   // auto-levels button
-  g->bt_auto_levels = dt_iop_togglebutton_new(self, N_("auto levels"), NULL,
+  g->bt_auto_levels = dt_iop_togglebutton_new(self, N_("editing"), N_("auto levels"), NULL,
                                               G_CALLBACK(rt_auto_levels_callback), TRUE, 0, 0,
                                               dtgtk_cairo_paint_auto_levels, prev_lvl);
 
