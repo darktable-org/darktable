@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.4.1\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-29 15:17-0600\n"
-"PO-Revision-Date: 2021-01-30 22:13-0600\n"
+"PO-Revision-Date: 2021-02-06 15:46-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -2547,15 +2547,15 @@ msgstr "umbral"
 #: ../build/lib/darktable/plugins/introspection_defringe.c:59
 #: ../build/lib/darktable/plugins/introspection_defringe.c:110
 msgid "operation mode"
-msgstr "modo de operación"
+msgstr "método"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:124
 msgid "global average (fast)"
-msgstr "media global (rápido)"
+msgstr "promedio global (rápido)"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:125
 msgid "local average (slow)"
-msgstr "media local (lento)"
+msgstr "promedio local (lento)"
 
 #: ../build/lib/darktable/plugins/introspection_defringe.c:126
 msgid "static threshold (fast)"
@@ -3612,16 +3612,15 @@ msgid "translators"
 msgstr ""
 "Traductores:\n"
 "\n"
-"Edgar De la Luz (EdgarLux) (2019 - 2020)\n"
+"Edgar De la Luz (EdgarLux) (2019 - 2021)\n"
 "Tatica Leandro (2012 - 2017)\n"
 "José Carlos García Sogo (2011 - 2014)\n"
 "Roberto Quintero (2010 - 2011)\n"
 "\n"
-"Con aportaciones de (2019):\n"
+"Con aportaciones de (v2.6.1):\n"
 "Salvador Calero\n"
 "J. Karlos D @Xabaz\n"
 "Pablo Carrascón\n"
-"\n"
 "Telegram:  @darktable_es"
 
 #: ../build/lib/darktable/plugins/lighttable/tools/darktable_authors.h:16
@@ -6655,9 +6654,8 @@ msgid ""
 msgstr ""
 
 #: ../src/dtgtk/thumbtable.c:1162
-#, fuzzy
 msgid "do you want to that now ?"
-msgstr "¿Eliminar este directorio vacío?"
+msgstr "¿Desea realizar la acción ahora?"
 
 #: ../src/dtgtk/thumbtable.c:1170
 msgid "cached thumbnails invalidation"
@@ -10400,9 +10398,8 @@ msgid "optimize for"
 msgstr "optimizado"
 
 #: ../src/iop/channelmixerrgb.c:3629
-#, fuzzy
 msgid "neutral colors"
-msgstr "neutralizar los colores"
+msgstr "colores neutrales"
 
 #: ../src/iop/channelmixerrgb.c:3631
 msgid "skin and soil colors"
@@ -10952,11 +10949,10 @@ msgid "color balance rgb"
 msgstr "balance de color rgb"
 
 #: ../src/iop/colorbalancergb.c:130
-#, fuzzy
 msgid "offset power slope|cdl|color grading|contrast|chroma_highlights|hue"
 msgstr ""
-"realce gamma incremento | cdl | calibración de color | contraste | "
-"saturación | tono"
+"realce gamma incremento | cdl | calibración de color | contraste | luces en "
+"crominancia | tono"
 
 #: ../src/iop/colorbalancergb.c:135
 msgid ""
@@ -11525,14 +11521,12 @@ msgid "module `color reconstruction' failed"
 msgstr "Ocurrió un fallo con el módulo «reconstrucción de color»"
 
 #: ../src/iop/colorreconstruction.c:1284
-#, fuzzy
 msgid "spatial"
 msgstr "extensión espacial"
 
 #: ../src/iop/colorreconstruction.c:1285
-#, fuzzy
 msgid "range"
-msgstr "cambiado"
+msgstr "rango"
 
 #: ../src/iop/colorreconstruction.c:1287
 msgid "precedence"
@@ -11741,13 +11735,14 @@ msgid ""
 " - static: fast, only uses the threshold as a static limit"
 msgstr ""
 "Método de protección de color:\n"
-" - Promedio global: es rápido. Puede mostrar vistas previas ligeramente "
-"erróneas con mucha ampliación; a veces puede proteger mucho la saturación o "
-"muy poco en comparación con el promedio local\n"
-" - Promedio local: es lento. Puede proteger la saturación mejor que el "
+" • Promedio global (rápido): Se pueden mostrar vistas previas levemente "
+"defectuosas al hacer una gran ampliación. A veces puede oscilar entre "
+"proteger mucho o casi nada la saturación, en comparación con el promedio "
+"local.\n"
+" • Promedio local (lento): Puede proteger la saturación mejor que el "
 "promedio global utilizando los pixeles cercanos como referencia de color, "
-"por lo que puede permitir mayor desaturación cuando se requiera \n"
-" - Estático: es rápido. Solo usa el umbral como límite estático"
+"por lo que permite una mayor desaturación cuando sea requerido. \n"
+" • Estático (rápido): Usa sólo el umbral como límite estático."
 
 #: ../src/iop/defringe.c:416
 msgid "radius for detecting fringe"
@@ -12158,7 +12153,7 @@ msgstr "parámetros de la linterna mágica"
 #: ../src/iop/rawoverexposed.c:289
 #, c-format
 msgid "failed to get raw buffer from image `%s'"
-msgstr "No se pudo obtener el búfer en bruto de la imagen '%s'"
+msgstr "No se pudo obtener el búfer en bruto de la imagen «%s»"
 
 #: ../src/iop/exposure.c:555
 #, no-c-format
@@ -14534,10 +14529,11 @@ msgid ""
 "top line indicates that the scale is visible at current zoom level\n"
 "bottom line indicates that the scale has shapes on it"
 msgstr ""
-"El control deslizante superior ajusta donde comienzan las escalas de fusión\n"
-"El control deslizante inferior ajusta el número de escalas\n"
-"El recuadro rojo indica la escala actual.\n"
-"La línea verde indica que la escala tiene figuras"
+"El control deslizante superior determina la escala donde comienza la "
+"fusión.\n"
+"El control deslizante inferior ajusta el número de escalas.\n"
+"El círculo interno indica la escala en uso.\n"
+"La línea de color inferior indica la existencia de figuras en la escala."
 
 #. display & suppress masks
 #: ../src/iop/retouch.c:2126
@@ -16702,7 +16698,6 @@ msgid "GPS data exchange format"
 msgstr "Formato de intercambio de datos GPS"
 
 #: ../src/libs/geotagging.c:759
-#, fuzzy
 msgid "date time"
 msgstr "fecha/hora"
 
@@ -21170,7 +21165,7 @@ msgstr "Acción"
 
 #~ msgctxt "accel"
 #~ msgid "precedence"
-#~ msgstr "precedente"
+#~ msgstr "prioridad"
 
 #~ msgctxt "accel"
 #~ msgid "select by"
