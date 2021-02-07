@@ -363,6 +363,7 @@ static void _expose_info_bar(dt_lib_module_t *self, cairo_t *cr, int32_t width, 
 
   // Let's cook up the middle part of infobar
   gchar center[1024] = { 0 };
+  //FIXME: O(n) iterate down list, instead of O(n^2) from computing its length every time and scanning to successive positions
   for(guint i = 0; i < g_list_length(lib->gui.properties); i++)
   {
     dt_lib_camera_property_t *prop = (dt_lib_camera_property_t *)g_list_nth_data(lib->gui.properties, i);
