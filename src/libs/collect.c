@@ -2196,8 +2196,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
     {
       if(item == DT_COLLECTION_PROP_FILMROLL)
       {
-      // go to corresponding folder collection
-      _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FOLDERS);
+        // go to corresponding folder collection
+        _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FOLDERS);
       }
       else if(item == DT_COLLECTION_PROP_FOLDERS)
       {
