@@ -192,7 +192,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 {
 #define DT_IOP_COLOR_ICC_LEN_V5 100
 
-  if(old_version == 1 && new_version == 6)
+  if(old_version == 1 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v1_t
     {
@@ -243,7 +243,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 2 && new_version == 6)
+  if(old_version == 2 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v2_t
     {
@@ -295,7 +295,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
     new->filename_work[0] = '\0';
     return 0;
   }
-  if(old_version == 3 && new_version == 6)
+  if(old_version == 3 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v3_t
     {
@@ -349,7 +349,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     return 0;
   }
-  if(old_version == 4 && new_version == 6)
+  if(old_version == 4 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v4_t
     {
@@ -374,7 +374,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
     return 0;
   }
-  if(old_version == 5 && new_version == 6)
+  if(old_version == 5 && new_version == 7)
   {
     typedef struct dt_iop_colorin_params_v5_t
     {
