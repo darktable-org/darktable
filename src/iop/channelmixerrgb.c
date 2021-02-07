@@ -2526,10 +2526,6 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *p1, dt_dev_pix
   get_white_balance_coeff(self, custom_wb);
   illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &x, &y, p->temperature, p->illum_fluo, p->illum_led);
 
-  // if illuminant is set as camera, x and y are set on-the-fly at commit time, so we need to set adaptation too
-  if(p->illuminant == DT_ILLUMINANT_CAMERA)
-    check_if_close_to_daylight(x, y, NULL, NULL, &(d->adaptation));
-
   d->illuminant_type = p->illuminant;
 
   // Convert illuminant from xyY to XYZ
@@ -3304,7 +3300,8 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       float custom_wb[4];
       get_white_balance_coeff(self, custom_wb);
       const int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(p->x), &(p->y));
-      check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
+      check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
+      dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
 
       if(found)
         dt_control_log(_("white balance successfuly extracted from raw image"));
