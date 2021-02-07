@@ -3570,6 +3570,8 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
     {
       _start_new_shape(module);
     }
+
+    if(btn) dt_iop_request_focus(module);
   }
   else
   {
@@ -3577,7 +3579,6 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
   }
 
   sync_pipe(module, FALSE);
-//  dt_iop_request_focus(module);
 
   return TRUE;
 }
