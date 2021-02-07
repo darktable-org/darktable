@@ -402,21 +402,31 @@ static void _send_button_press_event(GtkWidget *w, guint state)
   gdk_event_free(event);
 }
 
+static gboolean _widget_visible(GtkWidget *w)
+{
+  GtkWidget *parent = gtk_widget_get_parent(w);
+  return gtk_widget_get_visible(w) &&
+         gtk_widget_get_visible(parent) &&
+         gtk_widget_get_visible(gtk_widget_get_parent(parent));
+}
+
 static gboolean _press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                        GdkModifierType modifier, gpointer widget)
 {
-  _send_button_press_event(widget, 0);
+  if(_widget_visible(widget))
+    _send_button_press_event(widget, 0);
   return TRUE;
 }
 
 static gboolean _ctrl_press_button_callback(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
                                              GdkModifierType modifier, gpointer widget)
 {
-  _send_button_press_event(widget, GDK_CONTROL_MASK);
+  if(_widget_visible(widget))
+    _send_button_press_event(widget, GDK_CONTROL_MASK);
   return TRUE;
 }
 
-GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const gchar *label, const gchar *ctrl_label,
+GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const char *section, const gchar *label, const gchar *ctrl_label,
                                    GCallback callback, gboolean local, guint accel_key, GdkModifierType mods,
                                    DTGTKCairoPaintIconFunc paint, GtkWidget *box)
 {
@@ -435,23 +445,31 @@ GtkWidget *dt_iop_togglebutton_new(dt_iop_module_t *self, const gchar *label, co
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), FALSE);
   if(GTK_IS_BOX(box)) gtk_box_pack_end(GTK_BOX(box), w, FALSE, FALSE, 0);
 
-  gchar *label_first_line = g_strdelimit(g_strdup(label), "\n", '\0');
+  gchar *combined_label = section
+                        ? g_strdup_printf("%s`%s", section, label)
+                        : g_strdup(label);
+  gchar *combined_ctrl_label = ctrl_label && section
+                        ? g_strdup_printf("%s`%s", section, ctrl_label)
+                        : g_strdup(ctrl_label);
+
   if(darktable.control->accel_initialising)
   {
-    dt_accel_register_iop(self->so, local, label_first_line, accel_key, mods);
-    if(ctrl_label) dt_accel_register_iop(self->so, local, ctrl_label, 0, 0);
+    dt_accel_register_iop(self->so, local, combined_label, accel_key, mods);
+    if(ctrl_label) dt_accel_register_iop(self->so, local, combined_ctrl_label, 0, 0);
   }
   else
   {
     GClosure *closure = g_cclosure_new(G_CALLBACK(_press_button_callback), (gpointer)w, NULL);
-    dt_accel_connect_iop(self, label_first_line, closure);
+    dt_accel_connect_iop(self, combined_label, closure);
     if(ctrl_label)
     {
       closure = g_cclosure_new(G_CALLBACK(_ctrl_press_button_callback), (gpointer)w, NULL);
-      dt_accel_connect_iop(self, ctrl_label, closure);
+      dt_accel_connect_iop(self, combined_ctrl_label, closure);
     }
   }
-  g_free(label_first_line);
+
+  g_free(combined_ctrl_label);
+  g_free(combined_label);
 
   return w;
 }
