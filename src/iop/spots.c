@@ -333,7 +333,7 @@ static gboolean _edit_masks(GtkWidget *widget, GdkEventButton *e, dt_iop_module_
   dt_develop_blend_params_t *bp = self->blend_params;
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, bp->mask_id);
   //only toggle shape show button if shapes exist
-  if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
+  if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
                                  (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == self));
@@ -705,7 +705,7 @@ void gui_focus(struct dt_iop_module_t *self, gboolean in)
       dt_develop_blend_params_t *bp = self->blend_params;
       dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, bp->mask_id);
       //only toggle shape show button if shapes exist
-      if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
+      if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
       {
         if(bd->masks_shown == DT_MASKS_EDIT_OFF) dt_masks_set_edit_mode(self, DT_MASKS_EDIT_FULL);
 
@@ -774,7 +774,7 @@ void gui_update(dt_iop_module_t *self)
   if(darktable.develop->history_updating) bd->masks_shown = DT_MASKS_EDIT_OFF;
 
   //only toggle shape show button if shapes exist
-  if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
+  if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
   {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->bt_edit_masks),
                                  (bd->masks_shown != DT_MASKS_EDIT_OFF) && (darktable.develop->gui_module == self));
