@@ -228,7 +228,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     if(dt_conf_get_bool("plugins/lighttable/metadata_view/pretty_location")
        && g_strcmp0(params->jobcode, "infos") == 0)
     {
-      result = dt_util_latitude_str(params->data->longitude);
+      result = dt_util_longitude_str(params->data->longitude);
     }
     else
     {
