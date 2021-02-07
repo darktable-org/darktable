@@ -119,7 +119,7 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
   }
 
   // check the offset
-  if(g_list_length(table->list) > 0)
+  if(table->list)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
     if(th->imgid != table->offset_imgid) ret = TRUE;
@@ -464,7 +464,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
       }
     }
   }
-  else if(g_list_length(table->list) > 0)
+  else if(table->list)
   {
     // FULL PREVIEW or CULLING with 1 image
     dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
@@ -1074,7 +1074,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
 
 static void _thumbs_prefetch(dt_culling_t *table)
 {
-  if(!table || g_list_length(table->list) < 1) return;
+  if(!table || !table->list) return;
 
   // get the mip level by using the max image size actually shown
   int maxw = 0;
@@ -1219,14 +1219,14 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         nw = table->view_width;
         nh = table->view_height;
       }
-      else if(g_list_length(table->list) > 0)
+      else if(table->list)
       {
         dt_thumbnail_t *th_model
             = (dt_thumbnail_t *)g_list_nth_data(table->list, MIN(pos, g_list_length(table->list) - 1));
         nw = th_model->width;
         nh = th_model->height;
       }
-      else if(g_list_length(newlist) > 0)
+      else if(newlist)
       {
         dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_last(newlist)->data;
         nw = th_model->width;
@@ -1296,13 +1296,13 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           // trigger draw events
           int nw = 40;
           int nh = 40;
-          if(g_list_length(table->list) > 0)
+          if(table->list)
           {
             dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(table->list)->data;
             nw = th_model->width;
             nh = th_model->height;
           }
-          else if(g_list_length(newlist) > 0)
+          else if(newlist)
           {
             dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(newlist)->data;
             nw = th_model->width;
@@ -1343,7 +1343,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   table->list = newlist;
 
   // and we ensure that we have the right offset
-  if(g_list_length(table->list) > 0)
+  if(table->list)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
     table->offset_imgid = thumb->imgid;
@@ -1355,7 +1355,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 static gboolean _thumbs_compute_positions(dt_culling_t *table)
 {
   if(!gtk_widget_get_visible(table->widget)) return FALSE;
-  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+  if(!table->list || !table->list) return FALSE;
 
   // if we have only 1 image, it should take the entire screen
   if(g_list_length(table->list) == 1)
@@ -1378,6 +1378,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
   // reinit size and positions and get max values
   GList *l = table->list;
+  int count = 0;
   while(l)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
@@ -1391,13 +1392,14 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     max_h = MAX(max_h, thumb->height);
     avg_ratio += thumb->width / (float)thumb->height;
     l = g_list_next(l);
+    count++;
   }
 
-  avg_ratio /= g_list_length(table->list);
+  avg_ratio /= count;
 
   int per_row, tmp_per_row, per_col, tmp_per_col;
-  per_row = tmp_per_row = ceil(sqrt(g_list_length(table->list)));
-  per_col = tmp_per_col = (g_list_length(table->list) + per_row - 1) / per_row;
+  per_row = tmp_per_row = ceil(sqrt(count));
+  per_col = tmp_per_col = (count + per_row - 1) / per_row;
 
   float tmp_slot_ratio, slot_ratio;
   tmp_slot_ratio = slot_ratio = (table->view_width / (float)per_row) / (table->view_height / (float)per_col);
@@ -1419,12 +1421,11 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
     if(tmp_per_row == 0) break;
 
-    tmp_per_col = (g_list_length(table->list) + tmp_per_row - 1) / tmp_per_row;
+    tmp_per_col = (count + tmp_per_row - 1) / tmp_per_row;
 
     tmp_slot_ratio = (table->view_width / (float)tmp_per_row) / (table->view_height / (float)tmp_per_col);
 
-  } while(per_row > 0 && per_row <= g_list_length(table->list)
-          && _absmul(tmp_slot_ratio, avg_ratio) < _absmul(slot_ratio, avg_ratio));
+  } while(per_row > 0 && per_row <= count && _absmul(tmp_slot_ratio, avg_ratio) < _absmul(slot_ratio, avg_ratio));
 
 
   // Vertical layout
@@ -1589,7 +1590,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   float old_zy = 0.0;
   int old_margin_x = 0;
   int old_margin_y = 0;
-  if(g_list_length(table->list) > 0)
+  if(table->list)
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
     old_zx = thumb->zoomx;
@@ -1684,7 +1685,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       }
       l = g_list_next(l);
     }
-    if(!in_list && table->list && g_list_length(table->list) > 0)
+    if(!in_list && table->list && table->list)
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
       dt_control_set_mouse_over_id(thumb->imgid);
@@ -1743,7 +1744,7 @@ void dt_culling_zoom_max(dt_culling_t *table)
 {
   float x = 0;
   float y = 0;
-  if(table->mode == DT_CULLING_MODE_PREVIEW && g_list_length(table->list) > 0)
+  if(table->mode == DT_CULLING_MODE_PREVIEW && table->list)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
     x = gtk_widget_get_allocated_width(th->w_image_box) / 2.0;

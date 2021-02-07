@@ -497,7 +497,7 @@ static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
 // needed == that should appear in the current view (possibly not entirely)
 static int _thumbs_load_needed(dt_thumbtable_t *table)
 {
-  if(g_list_length(table->list) == 0) return 0;
+  if(!table->list) return 0;
   sqlite3_stmt *stmt;
   int changed = 0;
 
@@ -600,7 +600,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
 // if clamp, we verify that the move is allowed (collection bounds, etc...)
 static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean clamp)
 {
-  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+  if(!table->list) return FALSE;
   int posx = x;
   int posy = y;
   if(clamp)
@@ -876,7 +876,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, const int oldzoom, const int newzoom)
 {
   if(oldzoom == newzoom) return;
-  if(!table->list || g_list_length(table->list) == 0) return;
+  if(!table || !table->list) return;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -1822,7 +1822,7 @@ dt_thumbtable_t *dt_thumbtable_new()
 
 void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const int x, const int y)
 {
-  if(g_list_length(table->list) == 0 || table->code_scrolling || !table->scrollbars) return;
+  if(!table->list || table->code_scrolling || !table->scrollbars) return;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -1921,7 +1921,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     // we store image margin from frist thumb to apply to new ones and limit flickering
     int old_margin_start = 0;
     int old_margin_top = 0;
-    if(g_list_length(table->list) > 0)
+    if(table->list)
     {
       dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
       old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
@@ -2465,7 +2465,7 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
 {
   if(rowid < 1) rowid = 1;
-  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+  if(!table || !table->list) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
@@ -2492,7 +2492,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
 static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
-  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+  if(!table || !table->list) return FALSE;
 
   int minrowid = 0;
   int maxrowid = 0;
@@ -2569,7 +2569,7 @@ gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const int
 static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
-  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+  if(!table || !table->list) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
@@ -2578,10 +2578,11 @@ static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table, cons
   if(first->rowid <= rowid && last->rowid >= rowid) return TRUE;
   return FALSE;
 }
+
 static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
-  if(!table->list || g_list_length(table->list) == 0) return FALSE;
+  if(!table || !table->list) return FALSE;
 
   // is the needed rowid inside the list
   // in this case, is it fully visible ?

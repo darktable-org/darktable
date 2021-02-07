@@ -119,9 +119,9 @@ static void _path_catmull_to_bezier(float x1, float y1, float x2, float y2, floa
 static void _path_init_ctrl_points(dt_masks_form_t *form)
 {
   // if we have less that 3 points, what to do ??
-  if(g_list_length(form->points) < 2) return;
-
   const guint nb = g_list_length(form->points);
+  if(nb < 2) return;
+
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k);
@@ -160,10 +160,10 @@ static void _path_init_ctrl_points(dt_masks_form_t *form)
 
 static gboolean _path_is_clockwise(dt_masks_form_t *form)
 {
-  if(g_list_length(form->points) > 2)
+  const guint nb = g_list_length(form->points);
+  if(nb > 2)
   {
     float sum = 0.0f;
-    const guint nb = g_list_length(form->points);
     for(int k = 0; k < nb; k++)
     {
       const int k2 = (k + 1) % nb;
@@ -1035,7 +1035,7 @@ static int dt_path_events_button_pressed(struct dt_iop_module_t *module, float p
   else
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/path/border"), 0.5f);
 
-  if(gui->creation && which == 1 && g_list_length(form->points) == 0
+  if(gui->creation && which == 1 && form->points == NULL
      && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
          || ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)))
   {

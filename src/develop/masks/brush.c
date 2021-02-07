@@ -252,13 +252,13 @@ static void _brush_catmull_to_bezier(float x1, float y1, float x2, float y2, flo
 /** initialise all control points to eventually match a catmull-rom like spline */
 static void _brush_init_ctrl_points(dt_masks_form_t *form)
 {
-  // if we have less that 2 points, what to do ??
-  if(g_list_length(form->points) < 2) return;
+  // if we have less than 2 points, what to do ??
+  const guint nb = g_list_length(form->points);
+  if(nb < 2) return;
 
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
 
-  const guint nb = g_list_length(form->points);
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);

@@ -2135,7 +2135,7 @@ static gboolean _toggle_mask_visibility_callback(GtkAccelGroup *accel_group, GOb
     dt_iop_color_picker_reset(mod, TRUE);
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, mod->blend_params->mask_id);
-    if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
+    if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
       if(bd->masks_shown == DT_MASKS_EDIT_OFF)
         bd->masks_shown = DT_MASKS_EDIT_FULL;

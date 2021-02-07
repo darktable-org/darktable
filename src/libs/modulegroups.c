@@ -974,14 +974,15 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
                                   : NULL;
 
   /* block all button callbacks */
-  for(int k = 0; k <= g_list_length(d->groups); k++)
+  const int ngroups = g_list_length(d->groups);
+  for(int k = 0; k <= ngroups; k++)
     g_signal_handlers_block_matched(_buttons_get_from_pos(self, k), G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
                                     _lib_modulegroups_toggle, NULL);
   g_signal_handlers_block_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
 
   /* deactivate all buttons */
   int gid = 0;
-  for(int k = 0; k <= g_list_length(d->groups); k++)
+  for(int k = 0; k <= ngroups; k++)
   {
     const GtkWidget *bt = _buttons_get_from_pos(self, k);
     /* store toggled modulegroup */
@@ -1001,7 +1002,7 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   }
 
   /* unblock all button callbacks */
-  for(int k = 0; k <= g_list_length(d->groups); k++)
+  for(int k = 0; k <= ngroups; k++)
     g_signal_handlers_unblock_matched(_buttons_get_from_pos(self, k), G_SIGNAL_MATCH_FUNC, 0, 0, NULL,
                                       _lib_modulegroups_toggle, NULL);
   g_signal_handlers_unblock_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
@@ -1096,7 +1097,8 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
 {
   /* lets find the group which is not active pipe */
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  for(int k = 1; k <= g_list_length(d->groups); k++)
+  const int ngroups = g_list_length(d->groups);
+  for(int k = 1; k <= ngroups; k++)
   {
     if(_lib_modulegroups_test(self, k, module))
     {
@@ -2808,7 +2810,7 @@ static void _buttons_update(dt_lib_module_t *self)
 
   // if there's no groups, we ensure that the preset button is on the search line and we hide the active button
   gtk_widget_set_visible(d->hbox_search_box, d->show_search);
-  if(g_list_length(d->groups) == 0 && d->show_search)
+  if(!d->groups && d->show_search)
   {
     if(gtk_widget_get_parent(self->presets_button) != d->hbox_search_box)
     {
