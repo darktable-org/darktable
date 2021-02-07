@@ -100,11 +100,11 @@ typedef struct dt_lib_histogram_t
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
   uint8_t *vectorscope_alpha;
-  int vectorscope_diameter, vectorscope_alpha_stride;
+  int vectorscope_diameter_px, vectorscope_alpha_stride;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
-  double vectorscope_max_diam;
+  double vectorscope_radius;
   dt_pthread_mutex_t lock;
   GtkWidget *scope_draw;               // GtkDrawingArea -- scope, scale, and draggable overlays
   GtkWidget *button_box;               // GtkButtonBox -- contains scope control buttons
@@ -267,8 +267,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  const int vs_diameter = d->vectorscope_diameter;
-  const int vs_alpha_stride = d->vectorscope_alpha_stride;
+  const int diam_px = d->vectorscope_diameter_px;
+  const int alpha_stride = d->vectorscope_alpha_stride;
   uint8_t *const vs_alpha = d->vectorscope_alpha;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
@@ -278,82 +278,102 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(!vs_prof) return;
   // FIXME: as in colorbalancergb, repack matrix for SEE?
 
-  // Find profile primaries/secondaries in xyY. There's no guarantee
-  // that there is a chromaticity tag in the profile, so simply feed
-  // RGB colors through profile to PCS.
-  float vertex_xyY_D50[6][4] DT_ALIGNED_PIXEL;
-  // The assumption is that sampling along the gradients between
-  // primaries and secondaries will let us find the maximum chroma for
-  // each hue. It's OK if some of the sampled points are
-  // closer/further from each other.
+  // Calculate "hue ring" by tracing along the edges of the "RGB cube"
+  // which do not touch the white or black vertex. This should be the
+  // maximum chromas. It's OK if some of the sampled points are
+  // closer/further from each other. A gamut triangle in xy between
+  // primaries leaves out RGB secondaries. A gamut triangle in xy
+  // between primaries and secondaries is larger than the RGB space
+  // clipped to [0,1]. Note that hue ring calculation seems fast
+  // enough that it's not worth caching, but the below math does not
+  // vary once it is calculated for a profile.
+  // FIXME: why does a gamut triangle in xy leave out RGB secondaries?
   float vertex_rgb[6][4] DT_ALIGNED_PIXEL = {{1.f, 0.f, 0.f}, {1.f, 1.f, 0.f},
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
-  for(int k=0; k<6; k++)
-  {
-    float XYZ_D50[4] DT_ALIGNED_PIXEL;
-    dt_ioppr_rgb_matrix_to_xyz(vertex_rgb[k], XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
-                               vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-    dt_XYZ_to_xyY(XYZ_D50, vertex_xyY_D50[k]);
-  }
-
-  // Calculate "hue ring" by tracing chromaticities along the edges of
-  // the "RGB cube" which do not touch the white or black vertex --
-  // for "nice" matrix color profiles and perceptual colorspaces, this
-  // should be the maximum gamut (in terms of chromaticity,
-  // irrespective of lightness). It's not enough just to look at
-  // primaries, as, for example, ProPhoto in JzAzBz has more chroma
-  // near the blue primary (which has a very low Y) than right at
-  // blue. Note that hue ring calculation seems fast enough that it's
-  // not worth caching, but the below math does not vary once it is
-  // calculated for a profile.
-  // FIXME: verify that primary->secondary liens represent max chromas by going through full RGB space at intervals and finding max chromas for hues
-  float max_diam = 0.f;
+  float max_radius = 0.f;
   for(int k=0; k<6; k++)
   {
     float delta[4] DT_ALIGNED_PIXEL;
-    for_each_channel(ch,aligned(vertex_xyY_D50,delta:16))
-      delta[ch]=(vertex_xyY_D50[(k+1)%6][ch] - vertex_xyY_D50[k][ch]) / VECTORSCOPE_HUES;
+    for_each_channel(ch,aligned(vertex_rgb,delta:16))
+      delta[ch]=(vertex_rgb[(k+1)%6][ch] - vertex_rgb[k][ch]) / VECTORSCOPE_HUES;
     for(int i=0; i < VECTORSCOPE_HUES; i++)
     {
-      float xyY_D50[4] DT_ALIGNED_PIXEL;
-      float XYZ_D50[4] DT_ALIGNED_PIXEL;
-      float chromaticity[4] DT_ALIGNED_PIXEL;
-      for_each_channel(ch,aligned(vertex_xyY_D50,delta,xyY_D50:16))
-        xyY_D50[ch] = vertex_xyY_D50[k][ch] + delta[ch] * i;
-      dt_xyY_to_XYZ(xyY_D50, XYZ_D50);
-      // these may be outside [0,1] but Cairo will clamp (compare to illuminant_xy_to_RGB) in cairo_set_source_rgba()
+      float rgb[4] DT_ALIGNED_PIXEL, XYZ_D50[4] DT_ALIGNED_PIXEL, intermed[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+      for_each_channel(ch,aligned(vertex_rgb,delta,rgb:16))
+        rgb[ch] = vertex_rgb[k][ch] + delta[ch] * i;
+      dt_ioppr_rgb_matrix_to_xyz(rgb, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+                                 vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+      // Try to represent hue in profile colorspace. Values may be
+      // outside [0,1] but cairo_set_source_rgba will clamp. Compare
+      // to illuminant_xy_to_RGB.
       dt_XYZ_to_Rec709_D50(XYZ_D50, d->hue_ring_rgb[k][i]);
       if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
       {
-        dt_xyY_to_Luv(xyY_D50, chromaticity);
+        dt_XYZ_to_xyY(XYZ_D50, intermed);
+        dt_xyY_to_Luv(intermed, chromaticity);
       }
       else
       {
-        float XYZ_D65[4] DT_ALIGNED_PIXEL;
-        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-        dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
+        dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
+        dt_XYZ_2_JzAzBz(intermed, chromaticity);
       }
       d->hue_ring_coord[k][i][0] = chromaticity[1];
       d->hue_ring_coord[k][i][1] = chromaticity[2];
-      max_diam = MAX(max_diam, hypotf(chromaticity[1], chromaticity[2]));
+      max_radius = MAX(max_radius, hypotf(chromaticity[1], chromaticity[2]));
     }
   }
   // FIXME: make an image buffer with all the hues relative to whitepoint to use as the pattern for drawing hue ring and false color scope variant?
-  d->vectorscope_max_diam = max_diam;
+  // FIXME: particularly for u*v*, center on hue ring bounds rather than plot center, to be able to show a larger plot?
+  d->vectorscope_radius = max_radius;
+  const float max_diam = max_radius * 2.f;;
 
   // FIXME: pre-allocate?
-  float *const restrict binned = dt_iop_image_alloc(vs_diameter, vs_diameter, 1);
-  dt_iop_image_fill(binned, 0.0f, vs_diameter, vs_diameter, 1);
+  float *const restrict binned = dt_iop_image_alloc(diam_px, diam_px, 1);
+  dt_iop_image_fill(binned, 0.0f, diam_px, diam_px, 1);
   // FIXME: faster to have bins just record count and multiply by scale after?
-  const float scale = 4.0f * (vs_diameter * vs_diameter) / (width * height * 255.0f);
+  const float scale = 4.0f * (diam_px * diam_px) / (width * height * 255.0f);
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   const size_t nfloats = 4 * width * height;
 
+#if 0
+  // Test if the hue ring as calculated above represents gamut of this
+  // profile. If so, there should be a dot pattern overlay fairly
+  // precisely within the hue ring. If not, something about the
+  // histogram profile and hue ring combination is very interesting,
+  // and the assumptions that lines from primaries to secondaries in
+  // RGB represent the gamut is untrue.
+  const int res = 64;
+  for(int r=0; r<=res; r++)
+    for(int g=0; g<=res; g++)
+      for(int b=0; b<=res; b++)
+      {
+        const float RGB[4] DT_ALIGNED_PIXEL = { r/(float)res, g/(float)res, b/(float)res };
+        float XYZ_D50[4] DT_ALIGNED_PIXEL, intermed[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
+        dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
+                                   vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
+        if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
+        {
+          dt_XYZ_to_xyY(XYZ_D50, intermed);
+          dt_xyY_to_Luv(intermed, chromaticity);
+        }
+        else
+        {
+          dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
+          dt_XYZ_2_JzAzBz(intermed, chromaticity);
+        }
+        const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
+        const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
+        if(out_x >= 0 && out_x < diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
+          binned[out_y * diam_px + out_x] += scale * 25.f;
+      }
+#endif
+
   // count into bins
+  // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
 #if defined(_OPENMP)
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(in, binned, nfloats, vs_prof, vs_diameter, max_diam, scale, vs_type) \
+  dt_omp_firstprivate(in, binned, nfloats, vs_prof, diam_px, max_diam, scale, vs_type) \
   schedule(static)
 #endif
   for(size_t k = 0; k < nfloats; k += 4)
@@ -407,17 +427,18 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       // it possible to quantize the incoming data and cache
       // conversion results to optimize this. Making a LUT for the 2*3
       // powf() may be better.
-      // FIXME: try to use code as in iop_profile.h _apply_trc() to do powf() work -- we should have a good sense of bounds of LUT, and it only needs to be accurate enough to be about on the right pixel for a vs_diameter x vs_diameter plot
+      // FIXME: try to use code as in iop_profile.h _apply_trc() to do powf() work -- we should have a good sense of bounds of LUT, and it only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
 
-    const int out_x = vs_diameter * (chromaticity[1] / max_diam + 0.5f);
-    const int out_y = vs_diameter * (chromaticity[2] / max_diam + 0.5f);
+    const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
+    const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
 
     // clip any out-of-scale values, so there aren't light edges
-    if(out_x >= 0 && out_x < vs_diameter-1 && out_y >= 0 && out_y <= vs_diameter-1)
+    if(out_x >= 0 && out_x < diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
     {
-      float *const restrict bin_out = binned + out_y * vs_diameter + out_x;
+      // FIXME: is this helpful?
+      float *const restrict bin_out = binned + out_y * diam_px + out_x;
       // FIXME: make a "false color" variant view
       *bin_out += scale;
     }
@@ -428,11 +449,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const float gamma = 1.0f / 1.5f;
 
   // loop appears to be too small to benefit w/OpenMP
-  for(size_t out_y = 0; out_y < vs_diameter; out_y++)
-    for(int out_x = 0; out_x < vs_diameter; out_x++)
+  for(size_t out_y = 0; out_y < diam_px; out_y++)
+    for(int out_x = 0; out_x < diam_px; out_x++)
     {
-      const float *const restrict bin_in = binned + out_y * vs_diameter + out_x;
-      uint8_t *const restrict alpha_out = vs_alpha + out_y * vs_alpha_stride + out_x;
+      const float *const restrict bin_in = binned + out_y * diam_px + out_x;
+      uint8_t *const restrict alpha_out = vs_alpha + out_y * alpha_stride + out_x;
       // FIXME: use cache or linear interpolate from pre-calculated
       *alpha_out = CLAMP(powf(*bin_in, gamma) * 255.0f, 0, 255);
     }
@@ -461,7 +482,7 @@ static void dt_lib_histogram_process(struct dt_lib_module_t *self, const float *
     dt_pthread_mutex_lock(&d->lock);
     memset(d->histogram, 0, sizeof(uint32_t) * 4 * HISTOGRAM_BINS);
     d->waveform_width = 0;
-    d->vectorscope_max_diam = 0.f;
+    d->vectorscope_radius = 0.f;
     dt_pthread_mutex_unlock(&d->lock);
     return;
   }
@@ -665,8 +686,8 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
 static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
                                             int width, int height)
 {
-  const float vs_max_diam = d->vectorscope_max_diam;
-  const int vs_px_diam = d->vectorscope_diameter;
+  const float vs_radius = d->vectorscope_radius;
+  const int diam_px = d->vectorscope_diameter_px;
   const int min_size = MIN(width, height);
 
   // FIXME: the areas to left/right of the scope could have some data (primaries, whitepoint, scale, etc.)
@@ -684,7 +705,7 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // graticule: histogram profile primaries/secondaries
   cairo_save(cr);
-  cairo_scale(cr, min_size * 0.5 / vs_max_diam, min_size * 0.5 / vs_max_diam);
+  cairo_scale(cr, min_size / (vs_radius * 2.), min_size / (vs_radius * 2.));
 
   // FIXME: also add hue rings (monochrome/dotted) for input/work/output profiles
   // FIXME: add gamut bounding lines to connect the dots (which need to be plotted in XYZ?)
@@ -695,13 +716,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   set_color(cr, darktable.bauhaus->graph_grid);
   for(int k=0; k<6; k++)
   {
-    cairo_arc(cr, d->hue_ring_coord[k][0][0], d->hue_ring_coord[k][0][1], vs_max_diam * 0.03, 0., M_PI * 2.);
+    cairo_arc(cr, d->hue_ring_coord[k][0][0], d->hue_ring_coord[k][0][1], vs_radius * 0.03, 0., M_PI * 2.);
     cairo_fill(cr);
   }
 
   // hue ring
   // FIXME: use DT_PIXEL_APPLY_DPI?
-  cairo_set_line_width(cr, vs_max_diam * 1.5 / min_size);
+  cairo_set_line_width(cr, vs_radius * 1.5 / min_size);
   cairo_move_to(cr, d->hue_ring_coord[5][VECTORSCOPE_HUES-1][0], d->hue_ring_coord[5][VECTORSCOPE_HUES-1][1]);
   for(int k=0; k<6; k++)
     for(int i=0; i < VECTORSCOPE_HUES; i++)
@@ -718,9 +739,9 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
 
   // concentric circles as a scale
   set_color(cr, darktable.bauhaus->graph_grid);
-  cairo_set_line_width(cr, vs_max_diam / min_size);
+  cairo_set_line_width(cr, vs_radius / min_size);
   const float grid_radius = d->vectorscope_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV ? 100. : 0.01;
-  for(int i = 1; i < 1.f + ceilf(vs_max_diam/grid_radius); i++)
+  for(int i = 1; i < 1.f + ceilf(vs_radius/grid_radius); i++)
   {
     cairo_arc(cr, 0., 0., grid_radius * i, 0., M_PI * 2.);
     cairo_stroke(cr);
@@ -731,12 +752,12 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // the vectorscope graph itself
   cairo_translate(cr, min_size * -0.5, min_size * -0.5);
   // FIXME: use ppd? if not, cast min_size to double
-  cairo_scale(cr, darktable.gui->ppd*min_size/vs_px_diam, darktable.gui->ppd*min_size/vs_px_diam);
+  cairo_scale(cr, darktable.gui->ppd*min_size/diam_px, darktable.gui->ppd*min_size/diam_px);
 
   cairo_set_source_rgba(cr, 1., 1., 1., 0.7);
   cairo_surface_t *alpha
     = dt_cairo_image_surface_create_for_data(d->vectorscope_alpha, CAIRO_FORMAT_A8,
-                                             vs_px_diam, vs_px_diam, d->vectorscope_alpha_stride);
+                                             diam_px, diam_px, d->vectorscope_alpha_stride);
   // FIXME: what happens if mask has color (not just alpha) -- can use this to calculate false color vectorscope and draw it as a pattern or use it as a mask to draw it white? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
   cairo_mask_surface(cr, alpha, 0.0, 0.0);
   cairo_surface_destroy(alpha);
@@ -871,7 +892,7 @@ static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointe
           _lib_histogram_draw_rgb_parade(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_VECTORSCOPE:
-        if(d->vectorscope_max_diam != 0.f)
+        if(d->vectorscope_radius != 0.f)
           _lib_histogram_draw_vectorscope(d, cr, width, height);
         break;
       case DT_LIB_HISTOGRAM_SCOPE_N:
@@ -1128,7 +1149,7 @@ static void _vectorscope_view_update(dt_lib_histogram_t *d)
   if(cv)  // this may be called by _scope_type_update() on init, before in a view
   {
     // redraw empty scope for immediate visual feedback
-    d->vectorscope_max_diam = 0.f;
+    d->vectorscope_radius = 0.f;
     dt_control_queue_redraw_widget(d->scope_draw);
 
     if(cv->view(cv) == DT_VIEW_DARKROOM)
@@ -1500,11 +1521,11 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 4 * d->waveform_height * d->waveform_max_width);
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
-  d->vectorscope_diameter = 256;
-  d->vectorscope_alpha_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter);
-  d->vectorscope_alpha = dt_alloc_align(64, sizeof(uint8_t) * d->vectorscope_diameter * d->vectorscope_alpha_stride);
+  d->vectorscope_diameter_px = 256;
+  d->vectorscope_alpha_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter_px);
+  d->vectorscope_alpha = dt_alloc_align(64, sizeof(uint8_t) * d->vectorscope_diameter_px * d->vectorscope_alpha_stride);
   // initially no vectorscope to draw
-  d->vectorscope_max_diam = 0.f;
+  d->vectorscope_radius = 0.f;
 
   // proxy functions and data so that pixelpipe or tether can
   // provide data for a histogram
