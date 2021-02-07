@@ -1910,11 +1910,12 @@ char *dt_ioppr_serialize_text_iop_order_list(GList *iop_order_list)
 {
   gchar *text = g_strdup("");
 
+  const GList *const last = g_list_last(iop_order_list);
   for(const GList *l = iop_order_list; l; l = g_list_next(l))
   {
     const dt_iop_order_entry_t *const restrict entry = (dt_iop_order_entry_t *)l->data;
     gchar buf[64];
-    snprintf(buf, sizeof(buf), "%s,%d%s", entry->operation, entry->instance, l == g_list_last(iop_order_list) ? "" : ",");
+    snprintf(buf, sizeof(buf), "%s,%d%s", entry->operation, entry->instance, (l == last) ? "" : ",");
     text = g_strconcat(text, buf, NULL);
   }
 
