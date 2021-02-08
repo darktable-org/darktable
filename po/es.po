@@ -1,9 +1,9 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 3.4.1\n"
+"Project-Id-Version: darktable 3.4.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-01-29 15:17-0600\n"
-"PO-Revision-Date: 2021-02-06 15:46-0600\n"
+"PO-Revision-Date: 2021-02-07 22:26-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -119,7 +119,7 @@ msgstr "Ocultar los preajustes integrados para los módulos de funcionalidad"
 #: ../src/lua/preferences.c:776
 #, c-format
 msgid "double click to reset to `%s'"
-msgstr "Doble clic para restablecer a '%s'"
+msgstr "Doble clic para restablecer a «%s»"
 
 #: ../build/bin/preferences_gen.h:3452 ../build/bin/preferences_gen.h:3488
 #: ../build/bin/preferences_gen.h:3524 ../build/bin/preferences_gen.h:3560
@@ -446,7 +446,7 @@ msgstr "Ancho del borde alrededor de la imagen en el modo de cuarto oscuro"
 #: ../build/bin/preferences_gen.h:7641 ../src/lua/preferences.c:735
 #, c-format
 msgid "double click to reset to `%d'"
-msgstr "Doble clic para restablecer a '%d'"
+msgstr "Doble clic para restablecer a «%d»"
 
 #: ../build/bin/preferences_gen.h:4295
 msgid ""
@@ -1065,7 +1065,7 @@ msgstr ""
 "eliminar las miniaturas almacenadas en caché. Sin embargo, es seguro "
 "eliminarlas manualmente si lo desea. El desempeño de la mesa de luz mejorará "
 "en gran medida cuando se navega mucho. Para generar todas las miniaturas de "
-"su colección fuera de línea, ejecute 'darktable-generate-cache'."
+"su colección fuera de línea, ejecute \"darktable-generate-cache\"."
 
 #: ../build/bin/preferences_gen.h:6000
 msgid "enable disk backend for full preview cache"
@@ -1450,8 +1450,8 @@ msgstr ""
 "Cuando se crea el fichero XMP, las etiquetas jerárquicas se agregan también "
 "como una lista sencilla sin jerarquía para que sea visible por otros "
 "programas. Si está marcada esta opción, darktable solo incluirá la última "
-"parte de la lista e ignorará el resto, por lo que 'foo|bar|baz' solo añadirá "
-"'baz'."
+"parte de la lista e ignorará el resto, por lo que \"foo|bar|baz\" solo "
+"añadirá \"baz\"."
 
 #: ../build/bin/preferences_gen.h:6956
 msgid "disable the entry completion"
@@ -3754,22 +3754,22 @@ msgstr "Extensión demasiado larga para --out-ext"
 #, c-format
 msgid "notice: input file or dir '%s' doesn't exist, skipping\n"
 msgstr ""
-"Aviso: el directorio '%s' o el archivo de entrada no existe; omitiendo...\n"
+"Aviso: el directorio «%s» o el archivo de entrada no existe; omitiendo...\n"
 
 #: ../src/cli/main.c:353
 #, c-format
 msgid "incorrect ICC type for --icc-type: '%s'\n"
-msgstr "Tipo de ICC incorrecto para --icc-type: '%s'\n"
+msgstr "Tipo de ICC incorrecto para --icc-type: «%s»\n"
 
 #: ../src/cli/main.c:369
 #, c-format
 msgid "notice: ICC file '%s' doesn't exist, skipping\n"
-msgstr "Aviso: el archivo ICC '%s' no existe; omitiendo...\n"
+msgstr "Aviso: el archivo ICC «%s» no existe; omitiendo...\n"
 
 #: ../src/cli/main.c:378
 #, c-format
 msgid "incorrect ICC intent for --icc-intent: '%s'\n"
-msgstr "Objetivo de ICC incorrecto para --icc-intent: '%s'\n"
+msgstr "Objetivo de ICC incorrecto para --icc-intent: «%s»\n"
 
 #: ../src/cli/main.c:450
 #, c-format
@@ -3783,7 +3783,7 @@ msgid ""
 "notice: output location is a directory. assuming '%s/$(FILE_NAME).%s' output "
 "pattern"
 msgstr ""
-"Aviso: con el patrón de salida '%s/$(FILE_NAME).%s', se da por hecho que el "
+"Aviso: con el patrón de salida «%s/$(FILE_NAME).%s», se da por hecho que el "
 "destino es un directorio."
 
 #. output file exists or there's output ext specified and it's same as file...
@@ -3845,7 +3845,7 @@ msgstr ""
 #: ../src/cli/main.c:685
 #, c-format
 msgid "unknown extension '.%s'"
-msgstr "Extensión desconocida '.%s'"
+msgstr "Extensión desconocida «.%s»"
 
 #: ../src/cli/main.c:696
 msgid "failed to get parameters from format module, aborting export ..."
@@ -4180,7 +4180,7 @@ msgstr "P3 HLG"
 #, c-format
 msgid "file `%s' to print not found for image %d on `%s'"
 msgstr ""
-"El archivo '%s' para ser impreso no se encuentra para la imagen %d en '%s'"
+"El archivo «%s» para ser impreso no se encuentra para la imagen %d en «%s»"
 
 #: ../src/common/cups_print.c:442
 msgid "failed to create temporary file for printing options"
@@ -4189,37 +4189,37 @@ msgstr "Error al crear el fichero temporal de opciones de impresión"
 #: ../src/common/cups_print.c:510
 #, c-format
 msgid "printing on `%s' cancelled"
-msgstr "Impresión en '%s' cancelada"
+msgstr "Impresión en «%s» cancelada"
 
 #: ../src/common/cups_print.c:573
 #, c-format
 msgid "error while printing `%s' on `%s'"
-msgstr "Error al imprimir '%s' en '% s'"
+msgstr "Error al imprimir «%s» en «%s»"
 
 #: ../src/common/cups_print.c:575
 #, c-format
 msgid "printing `%s' on `%s'"
-msgstr "Imprimiendo imágen '%s' en '%s'"
+msgstr "Imprimiendo imágen «%s» en «%s»"
 
 #: ../src/common/darktable.c:243
 #, c-format
 msgid "found strange path `%s'"
-msgstr "Ruta desconocida encontrada '%s'"
+msgstr "Ruta desconocida encontrada «%s»"
 
 #: ../src/common/darktable.c:258
 #, c-format
 msgid "error loading directory `%s'"
-msgstr "Error al cargar el directorio '%s'"
+msgstr "Error al cargar el directorio «%s»"
 
 #: ../src/common/darktable.c:281
 #, c-format
 msgid "file `%s' has unknown format!"
-msgstr "El archivo '%s' tiene un formato desconocido"
+msgstr "El archivo «%s» tiene un formato desconocido"
 
 #: ../src/common/darktable.c:294 ../src/libs/import.c:549
 #, c-format
 msgid "error loading file `%s'"
-msgstr "Error al cargar el archivo '%s'"
+msgstr "Error al cargar el archivo «%s»"
 
 #: ../src/common/darktable.c:910
 msgid "darktable - run performance configuration?"
@@ -4503,12 +4503,12 @@ msgstr "Después"
 #: ../src/common/exif.cc:4072
 #, c-format
 msgid "cannot read xmp file '%s': '%s'"
-msgstr "No se puede leer el archivo XMP '%s': '%s'"
+msgstr "No se puede leer el archivo XMP «%s»: «%s»"
 
 #: ../src/common/exif.cc:4124
 #, c-format
 msgid "cannot write xmp file '%s': '%s'"
-msgstr "No se puede escribir en el archivo XMP '%s': '%s'"
+msgstr "No se puede escribir en el archivo XMP «%s»: «%s»"
 
 #: ../src/common/fast_guided_filter.h:414
 msgid "fast guided filter failed to allocate memory, check your RAM settings"
@@ -4577,32 +4577,32 @@ msgstr "imágenes huérfanas"
 #: ../src/common/image.c:1781
 #, c-format
 msgid "cannot access local copy `%s'"
-msgstr "No se puede acceder a la copia local '%s'"
+msgstr "No se puede acceder a la copia local «%s»"
 
 #: ../src/common/image.c:1788
 #, c-format
 msgid "cannot write local copy `%s'"
-msgstr "No se puede escribir la copia local '%s'"
+msgstr "No se puede escribir la copia local «%s»"
 
 #: ../src/common/image.c:1795
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
-msgstr "Error al mover la copia local '%s' -> '%s'"
+msgstr "Error al mover la copia local «%s» -> «%s»"
 
 #: ../src/common/image.c:1811
 #, c-format
 msgid "error moving `%s': file not found"
-msgstr "Error al mover '%s': no se encuentra el archivo"
+msgstr "Error al mover «%s»: no se encuentra el archivo"
 
 #: ../src/common/image.c:1821
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
-msgstr "Error al mover '%s' -> '%s': el archivo ya existe"
+msgstr "Error al mover «%s» -> «%s»: el archivo ya existe"
 
 #: ../src/common/image.c:1825
 #, c-format
 msgid "error moving `%s' -> `%s'"
-msgstr "Error al mover '%s' -> '%s'"
+msgstr "Error al mover «%s» -> «%s»"
 
 #: ../src/common/image.c:2122
 msgid "cannot create local copy when the original file is not accessible."
@@ -4629,7 +4629,7 @@ msgstr[1] "%d copias locales han sido sincronizadas"
 #: ../src/common/imageio.c:676 ../src/common/mipmap_cache.c:1077
 #, c-format
 msgid "image `%s' is not available!"
-msgstr "La imagen '%s' no está disponible"
+msgstr "La imagen «%s» no está disponible"
 
 #: ../src/common/imageio.c:694
 #, c-format
@@ -4654,7 +4654,7 @@ msgstr "exportar"
 #, c-format
 msgid "cannot find the style '%s' to apply during export."
 msgstr ""
-"No se pudo encontrar el estilo '%s' para aplicarlo durante la exportación."
+"No se pudo encontrar el estilo «%s» para aplicarlo durante la exportación."
 
 #: ../src/common/import_session.c:287
 msgid ""
@@ -4719,7 +4719,7 @@ msgstr "distribución de poisson"
 #: ../src/common/noiseprofiles.c:61
 #, c-format
 msgid "noiseprofile file `%s' is not valid"
-msgstr "Archivo de perfil de ruido '%s' no es válido"
+msgstr "Archivo de perfil de ruido «%s» no es válido"
 
 #: ../src/common/opencl.c:801
 msgid ""
@@ -4805,7 +4805,7 @@ msgstr "No se ha seleccionado ninguna imagen para puntuar"
 #: ../src/common/styles.c:226
 #, c-format
 msgid "style with name '%s' already exists"
-msgstr "El estilo con nombre '%s' ya existe"
+msgstr "El estilo con nombre «%s» ya existe"
 
 #. freed by _destroy_style_shortcut_callback
 #: ../src/common/styles.c:410 ../src/common/styles.c:414
@@ -4820,7 +4820,7 @@ msgstr "estilos/utilizar %s"
 #: ../src/common/styles.c:507 ../src/gui/styles_dialog.c:231
 #, c-format
 msgid "style named '%s' successfully created"
-msgstr "El estilo nombrado '%s' ha sido creado correctamente"
+msgstr "El estilo nombrado «%s» ha sido creado correctamente"
 
 #: ../src/common/styles.c:646 ../src/common/styles.c:673
 #: ../src/common/styles.c:716
@@ -4849,7 +4849,7 @@ msgstr[1] "Estilos aplicados exitosamente"
 #: ../src/common/styles.c:773
 #, c-format
 msgid "module `%s' version mismatch: %d != %d"
-msgstr "La versión del módulo '%s' no coincide: %d != %d"
+msgstr "La versión del módulo «%s» no coincide: %d != %d"
 
 #: ../src/common/styles.c:1210
 #, c-format
@@ -4979,7 +4979,7 @@ msgstr[1] "Fusionando %d imágenes"
 #: ../src/control/jobs/control_jobs.c:509
 #, c-format
 msgid "wrote merged HDR `%s'"
-msgstr "Guardando la imagen fusionada HDR '%s'"
+msgstr "Guardando la imagen fusionada HDR «%s»"
 
 #: ../src/control/jobs/control_jobs.c:537
 #, c-format
@@ -5136,7 +5136,7 @@ msgstr "Exportando %d / %d a %s"
 #: ../src/views/print.c:315
 #, c-format
 msgid "image `%s' is currently unavailable"
-msgstr "La imagen '%s' no esta disponible actualmente"
+msgstr "La imagen «%s» no esta disponible actualmente"
 
 #: ../src/control/jobs/control_jobs.c:1450
 msgid "merge hdr image"
@@ -5268,7 +5268,7 @@ msgstr "actualizar Exif"
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
-"Hubo un fallo al obtener parámetros del modulo de almacenamiento '%s'. "
+"Hubo un fallo al obtener parámetros del modulo de almacenamiento «%s». "
 "Abortando la operación..."
 
 #: ../src/control/jobs/control_jobs.c:1845
@@ -5351,7 +5351,7 @@ msgstr "importar imagen"
 #: ../src/develop/blend.c:257 ../src/develop/blend.c:551
 #, c-format
 msgid "skipped blending in module '%s': roi's do not match"
-msgstr "Se omitió la fusión en el módulo '%s': parámetros incompatibles"
+msgstr "Se omitió la fusión en el módulo «%s»: parámetros incompatibles"
 
 #: ../src/develop/blend.c:287 ../src/develop/blend.c:584
 msgid "could not allocate buffer for blending"
@@ -6119,7 +6119,7 @@ msgstr "basado en la escena (predefinido)"
 #: ../src/develop/develop.c:1943
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
-msgstr "%s: módulo '%s' versión incoincidente: %d != %d"
+msgstr "%s: módulo «%s» versión incoincidente: %d != %d"
 
 #: ../src/develop/imageop.c:1126
 msgid "new instance"
@@ -6248,7 +6248,7 @@ msgstr "No se encuentra el XMP de Lightroom"
 #: ../src/develop/lightroom.c:1151
 #, c-format
 msgid "`%s' not a lightroom XMP!"
-msgstr "'%s' no es un XMP de Lightroom"
+msgstr "«%s» no es un XMP de Lightroom"
 
 #: ../src/develop/lightroom.c:1519 ../src/libs/tools/filter.c:89
 msgid "rating"
@@ -6572,7 +6572,7 @@ msgstr ""
 #, c-format
 msgid "tiling failed for module '%s'. output might be garbled."
 msgstr ""
-"El proceso por bandas ha fallado para el módulo '%s'. La salida podría ser "
+"El proceso por bandas ha fallado para el módulo «%s». La salida podría ser "
 "ilegible."
 
 #: ../src/dtgtk/culling.c:231
@@ -6951,17 +6951,17 @@ msgstr "balance de blancos automático"
 #: ../src/generate-cache/main.c:50
 #, c-format
 msgid "creating cache directories\n"
-msgstr "creando directorios cache\n"
+msgstr "Creando directorios para la caché\n"
 
 #: ../src/generate-cache/main.c:56
 #, c-format
 msgid "creating cache directory '%s'\n"
-msgstr "creando directorio cache '%s'\n"
+msgstr "Creando directorio para la caché «%s»\n"
 
 #: ../src/generate-cache/main.c:59
 #, c-format
 msgid "could not create directory '%s'!\n"
-msgstr "no se puede crear directorio cache '%s'!\n"
+msgstr "No se puede crear el directorio «%s»\n"
 
 #: ../src/generate-cache/main.c:83
 #, c-format
@@ -7921,7 +7921,7 @@ msgid ""
 "%s.\n"
 "do you want to replace it ?"
 msgstr ""
-"El atajo '%s' ya está asignado a\n"
+"El atajo %s ya está asignado a\n"
 "%s.\n"
 "¿Quiere reemplazarlo?"
 
@@ -7934,7 +7934,7 @@ msgstr "Atajo en conflicto"
 #: ../src/libs/modulegroups.c:3224
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
-msgstr "¿Desea borrar el ajuste predefinido '%s'?"
+msgstr "¿Desea borrar el ajuste predefinido «%s»?"
 
 #: ../src/gui/preferences.c:1532 ../src/gui/preferences.c:2166
 #: ../src/gui/presets.c:193 ../src/libs/lib.c:389
@@ -7990,7 +7990,7 @@ msgstr "todos los archivos"
 #: ../src/gui/preferences.c:1880 ../src/gui/presets.c:413
 #, c-format
 msgid "edit `%s' for module `%s'"
-msgstr "Editar '%s' para el módulo '%s'"
+msgstr "Editar «%s» para el módulo «%s»"
 
 #: ../src/gui/preferences.c:1904 ../src/gui/presets.c:439 ../src/libs/lib.c:259
 msgid "description or further information"
@@ -8085,7 +8085,7 @@ msgstr "El ajuste preestablecido %s fue  guardado correctamente"
 #, c-format
 msgid "preset `%s' is write-protected, can't delete!"
 msgstr ""
-"El ajuste predefinido '%s' está protegido contra escritura. No se puede "
+"El ajuste predefinido «%s» está protegido contra escritura. No se puede "
 "eliminar."
 
 #. then show edit dialog
@@ -8110,8 +8110,8 @@ msgid ""
 "preset `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"el  preajuste '%s' ya existe.\n"
-"¿quiere sobreescribirlo?"
+"El preajuste «%s» ya existe.\n"
+"¿Desea sobreescribirlo?"
 
 #: ../src/gui/presets.c:272 ../src/libs/lib.c:158
 msgid "overwrite preset?"
@@ -8121,7 +8121,7 @@ msgstr "¿sobreescribir el preajuste?"
 #, c-format
 msgid "preset `%s' is write-protected! can't edit it!"
 msgstr ""
-"El ajuste predefinido '%s' está protegido contra escritura. No se puede "
+"El ajuste predefinido «%s» está protegido contra escritura. No se puede "
 "editar."
 
 #: ../src/gui/presets.c:434 ../src/libs/lib.c:255
@@ -8131,7 +8131,7 @@ msgstr "nombre del preajuste"
 #: ../src/gui/presets.c:652 ../src/libs/lib.c:293
 #, c-format
 msgid "do you really want to update the preset `%s'?"
-msgstr "¿Realmente desea borrar el ajuste predefinido '%s'?"
+msgstr "¿Realmente desea borrar el ajuste predefinido «%s»?"
 
 #: ../src/gui/presets.c:656 ../src/libs/lib.c:297
 msgid "update preset?"
@@ -8181,7 +8181,7 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite?"
 msgstr ""
-"El estilo '%s' ya existe.\n"
+"El estilo «%s» ya existe.\n"
 "¿Desea sobreescribirlo?"
 
 #: ../src/gui/styles_dialog.c:211 ../src/libs/styles.c:437
@@ -8708,27 +8708,27 @@ msgstr "omitir"
 #: ../src/imageio/storage/latex.c:275
 #, c-format
 msgid "could not create directory `%s'!"
-msgstr "No se puede crear el directorio '%s'"
+msgstr "No se puede crear el directorio «%s»"
 
 #: ../src/imageio/storage/disk.c:292
 #, c-format
 msgid "could not write to directory `%s'!"
-msgstr "No se puede escribir en el directorio '%s'"
+msgstr "No se puede escribir en el directorio «%s»"
 
 #: ../src/imageio/storage/disk.c:322
 #, c-format
 msgid "%d/%d skipping `%s'"
 msgid_plural "%d/%d skipping `%s'"
-msgstr[0] "%d/%d omitiendo '%s'"
-msgstr[1] "%d/%d omitiendo '%s'"
+msgstr[0] "%d/%d omitiendo «%s»"
+msgstr[1] "%d/%d omitiendo «%s»"
 
 #: ../src/imageio/storage/disk.c:341 ../src/imageio/storage/email.c:144
 #: ../src/imageio/storage/gallery.c:400 ../src/imageio/storage/latex.c:364
 #, c-format
 msgid "%d/%d exported to `%s'"
 msgid_plural "%d/%d exported to `%s'"
-msgstr[0] "%d/%d exportado a '%s'"
-msgstr[1] "%d/%d exportados a '%s'"
+msgstr[0] "%d/%d exportado a «%s»"
+msgstr[1] "%d/%d exportados a «%s»"
 
 #: ../src/imageio/storage/disk.c:401
 msgid ""
@@ -10646,7 +10646,7 @@ msgstr "3:1, panorámica"
 #, c-format
 msgid "invalid ratio format for `%s'. it should be \"number:number\""
 msgstr ""
-"Formato de proporción de aspecto no válido para '%s'. Debería ser \"número:"
+"Formato de proporción de aspecto no válido para «%s». Debería ser \"número:"
 "número\""
 
 #: ../src/iop/clipping.c:2262
@@ -11092,7 +11092,6 @@ msgstr "Cambia el contraste local de las luces"
 
 #. Page masks
 #: ../src/iop/colorbalancergb.c:943
-#, fuzzy
 msgid "masks"
 msgstr "máscaras"
 
@@ -11323,13 +11322,13 @@ msgid ""
 "can't extract matrix from colorspace `%s', it will be replaced by Rec2020 "
 "RGB!"
 msgstr ""
-"No se puede extraer la matriz del espacio de color '%s', por lo que será "
+"No se puede extraer la matriz del espacio de color «%s», por lo que será "
 "reemplazada por Rec2020 RGB"
 
 #: ../src/iop/colorin.c:1573
 #, c-format
 msgid "`%s' color matrix not found!"
-msgstr "'%s' matriz de color no encontrada"
+msgstr "«%s» matriz de color no encontrada"
 
 #: ../src/iop/colorin.c:1608
 msgid "input profile could not be generated!"
@@ -11765,7 +11764,7 @@ msgstr ""
 #: ../src/iop/demosaic.c:5042
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
-msgstr "'%s' matriz de color no encontrada para la imagen 4bayer"
+msgstr "«%s» matriz de color no encontrada para la imagen 4bayer"
 
 # Demosaicing -> Algoritmo de interpolación cromática.
 #: ../src/iop/demosaic.c:5189 ../src/iop/demosaic.c:5193
@@ -13225,7 +13224,7 @@ msgstr ""
 #: ../src/iop/invert.c:94 ../src/iop/invert.c:537
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image"
-msgstr "'%s' matriz de color no encontrada para imagen 4bayer"
+msgstr "«%s» matriz de color no encontrada para imagen 4bayer"
 
 #: ../src/iop/invert.c:110
 msgid "invert"
@@ -14984,13 +14983,13 @@ msgstr ""
 #: ../src/iop/temperature.c:1412
 #, c-format
 msgid "`%s' color matrix not found for image"
-msgstr "'%s' matriz de color no encontrada para la imagen"
+msgstr "«%s» matriz de color no encontrada para la imagen"
 
 #: ../src/iop/temperature.c:1436
 #, c-format
 msgid "failed to read camera white balance information from `%s'!"
 msgstr ""
-"Error al leer la información de balance de blancos de la cámara desde '%s'"
+"Error al leer la información de balance de blancos de la cámara desde «%s»"
 
 #: ../src/iop/temperature.c:1582
 msgctxt "white balance"
@@ -16117,7 +16116,7 @@ msgstr "Archivos asociados XMP"
 #: ../src/libs/copy_history.c:165
 #, c-format
 msgid "error loading file '%s'"
-msgstr "Error al cargar el archivo '%s'"
+msgstr "Error al cargar el archivo «%s»"
 
 #: ../src/libs/copy_history.c:208
 #, c-format
@@ -17330,7 +17329,7 @@ msgstr "v3.0 (por defecto)"
 #: ../src/libs/lib.c:233
 #, c-format
 msgid "edit `%s'"
-msgstr "editar '%s'"
+msgstr "Editar «%s»"
 
 #: ../src/libs/lib.c:664
 msgid "manage presets..."
@@ -17549,7 +17548,7 @@ msgstr "nueva ubicación"
 #: ../src/libs/map_locations.c:591
 #, c-format
 msgid "location name '%s' already exists"
-msgstr "El nombre de la ubicación '%s' ya existe"
+msgstr "El nombre de la ubicación «%s» ya existe"
 
 #: ../src/libs/map_locations.c:785
 msgid "edit location"
@@ -18422,12 +18421,12 @@ msgstr "ajustes de impresión"
 #: ../src/libs/print_settings.c:238 ../src/libs/print_settings.c:443
 #, c-format
 msgid "processing `%s' for `%s'"
-msgstr "Procesando '%s' para el módulo '%s'"
+msgstr "Procesando «%s» para el módulo «%s»"
 
 #: ../src/libs/print_settings.c:281
 #, c-format
 msgid "cannot open printer profile `%s'"
-msgstr "No se puede abrir el perfil de la impresora '%s'"
+msgstr "No se puede abrir el perfil de la impresora «%s»"
 
 #: ../src/libs/print_settings.c:290
 #, c-format
@@ -18437,7 +18436,7 @@ msgstr "Error al obtener el perfil de salida para la imagen %d"
 #: ../src/libs/print_settings.c:298
 #, c-format
 msgid "cannot apply printer profile `%s'"
-msgstr "No se puede establecer el perfil de la impresora '%s'"
+msgstr "No se puede establecer el perfil de la impresora «%s»"
 
 #: ../src/libs/print_settings.c:318
 msgid "failed to create temporary pdf for printing"
@@ -18736,7 +18735,7 @@ msgid ""
 "style `%s' already exists.\n"
 "do you want to overwrite existing style?\n"
 msgstr ""
-"El estilo '%s' ya existe.\n"
+"El estilo «%s» ya existe.\n"
 "¿Desea sobreescribirlo?\n"
 
 #: ../src/libs/styles.c:446
@@ -18872,10 +18871,10 @@ msgid_plural ""
 "do you really want to delete the tag `%s'?\n"
 "%d images are assigned this tag!"
 msgstr[0] ""
-"¿Desea borrar la etiqueta '%s'?\n"
+"¿Desea borrar la etiqueta «%s»?\n"
 "%d imágenes tienen asignada esta etiqueta"
 msgstr[1] ""
-"¿Desea borrar las etiqueta '%s'?\n"
+"¿Desea borrar las etiqueta «%s»?\n"
 "%d imágenes tienen asignada esta etiqueta!"
 
 #: ../src/libs/tagging.c:1404
@@ -19596,7 +19595,7 @@ msgid ""
 "be intact, please consider opening an issue at https://github.com/darktable-"
 "org/darktable."
 msgstr ""
-"darktable no pudo cargar '%s'. Regresando a la mesa de luz...\n"
+"darktable no pudo cargar «%s». Regresando a la mesa de luz...\n"
 "\n"
 "Verifique con exiv2 o exiftool si la imagen contiene datos corruptos. Si no "
 "encuentra ningún error,\n"
@@ -19607,7 +19606,7 @@ msgstr ""
 #, c-format
 msgctxt "darkroom"
 msgid "loading `%s' ..."
-msgstr "Cargando '%s' ..."
+msgstr "Cargando «%s» ..."
 
 #: ../src/views/darkroom.c:751
 msgid "gamut check"
@@ -19629,7 +19628,7 @@ msgstr "Los módulos favoritos no tienen ajustes predefinidos por el usuario"
 #: ../src/views/darkroom.c:1309
 #, c-format
 msgid "applied style `%s' on current image"
-msgstr "El estilo '%s' se ha aplicado en la imagen actual"
+msgstr "El estilo «%s» se ha aplicado en la imagen actual"
 
 #: ../src/views/darkroom.c:1439
 msgid "no styles have been created yet"
@@ -20345,7 +20344,7 @@ msgstr "captura"
 #: ../src/views/tethering.c:157
 #, c-format
 msgid "new session initiated '%s'"
-msgstr "Nueva sesión iniciada '%s'"
+msgstr "Nueva sesión iniciada «%s»"
 
 #: ../src/views/tethering.c:442
 msgid "no camera with tethering support available for use..."
