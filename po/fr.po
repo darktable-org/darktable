@@ -7866,7 +7866,7 @@ msgstr "sauvegarder CSS et appliquer"
 #: ../src/gui/preferences.c:501
 msgid "click to save and apply the CSS tweaks entered in this editor"
 msgstr ""
-"cliquer pour sauvegarder et appliquer les modifications CSS entrés dans cet "
+"cliquer pour sauvegarder et appliquer les modifications CSS entrées dans cet "
 "éditeur"
 
 #. load default text with some pointers
