@@ -492,12 +492,13 @@ static void init_tab_general(GtkWidget *dialog, GtkWidget *stack, dt_gui_themetw
   gtk_container_add(GTK_CONTAINER(scroll), tw->css_text_view);
   gtk_box_pack_start(GTK_BOX(usercssbox), scroll, TRUE, TRUE, 0);
 
-  tw->save_button = gtk_button_new_with_label(C_("usercss", "save and apply"));
+  tw->save_button = gtk_button_new_with_label(C_("usercss", "save CSS and apply"));
   g_signal_connect(G_OBJECT(tw->save_button), "clicked", G_CALLBACK(save_usercss_callback), tw);
   g_signal_connect(G_OBJECT(dialog), "response", G_CALLBACK(usercss_dialog_callback), tw);
   GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_box_pack_end(GTK_BOX(hbox), tw->save_button, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(usercssbox), hbox, FALSE, FALSE, 0);
+  gtk_widget_set_tooltip_text(tw->save_button, _("click to save and apply the CSS tweaks entered in this editor"));
 
   //set textarea text from file or default
   char usercsspath[PATH_MAX] = { 0 }, configdir[PATH_MAX] = { 0 };
