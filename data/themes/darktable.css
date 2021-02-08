@@ -989,6 +989,7 @@ context-menu,
 menu,
 menuitem > menu, /* sub-menu */
 menuitem arrow,
+menuitem:hover menuitem arrow,
 tooltip,
 popover,
 combobox window,
@@ -1006,7 +1007,8 @@ dialog combobox window,
   padding: 0.2em 0;
 }
 
-menuitem arrow
+menuitem arrow,
+menuitem:hover menuitem arrow
 {
   border: 0;
   margin-right: 2px;
@@ -1603,9 +1605,9 @@ margin: 0 2px;
   padding: 0.1em 0 0.1em 2em;
 }
 
-#modulegroups-popup-item-all
+#modulegroups-popup-item-all > label
 {
-  padding-top: 0.4em;
+  font-style: italic;
 }
 
 #modulegroups-popup-item2
@@ -2022,6 +2024,7 @@ button:hover,
 #add-color-button:hover,
 menuitem:hover,
 menuitem:hover arrow,
+menuitem:hover menuitem:hover arrow,
 combobox window *:hover,
 radiobutton:hover label,
 #control-button:hover,
@@ -2052,6 +2055,7 @@ button:checked label,
 dialog row:hover label,
 menuitem:hover *,
 menuitem:hover menuitem:hover *,
+menuitem:hover menuitem:hover menuitem:hover *,
 notebook tab:hover label,
 #control-button:hover,
 #history-button:hover *,
@@ -2076,7 +2080,8 @@ button:checked cellview
 }
 
 /* Set submenus */
-menuitem:hover menuitem *
+menuitem:hover menuitem *,
+menuitem:hover menuitem:hover menuitem *
 {
     color: @fg_color;
 }
