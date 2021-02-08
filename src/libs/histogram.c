@@ -281,13 +281,18 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   // Calculate "hue ring" by tracing along the edges of the "RGB cube"
   // which do not touch the white or black vertex. This should be the
   // maximum chromas. It's OK if some of the sampled points are
-  // closer/further from each other. A gamut triangle in xy between
-  // primaries leaves out RGB secondaries. A gamut triangle in xy
-  // between primaries and secondaries is larger than the RGB space
-  // clipped to [0,1]. Note that hue ring calculation seems fast
-  // enough that it's not worth caching, but the below math does not
-  // vary once it is calculated for a profile.
-  // FIXME: why does a gamut triangle in xy leave out RGB secondaries?
+  // closer/further from each other. A hue ring in xy between
+  // primaries and secondaries is larger than the RGB space clipped to
+  // [0,1]. Note that hue ring calculation seems fast enough that it's
+  // not worth caching, but the below math does not vary once it is
+  // calculated for a profile.
+
+  // To test if the hue ring represents RGB gamut of a histogram
+  // profile with a given colorspace, use a test image: Set histogram
+  // profile = input profile. The ideal test image is a hue/saturation
+  // two dimensional gradient. This could simply be 7x3 px, bottom row
+  // white, middle row R,Y,G,C,B,M,R, top row black,
+  // scaled up via linear interpolation.
   float vertex_rgb[6][4] DT_ALIGNED_PIXEL = {{1.f, 0.f, 0.f}, {1.f, 1.f, 0.f},
                                              {0.f, 1.f, 0.f}, {0.f, 1.f, 1.f},
                                              {0.f, 0.f, 1.f}, {1.f, 0.f, 1.f} };
@@ -332,42 +337,10 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   float *const restrict binned = dt_iop_image_alloc(diam_px, diam_px, 1);
   dt_iop_image_fill(binned, 0.0f, diam_px, diam_px, 1);
   // FIXME: faster to have bins just record count and multiply by scale after?
-  const float scale = 4.0f * (diam_px * diam_px) / (width * height * 255.0f);
+  const float gain = 1.f / 100.f;
+  const float scale = gain * (diam_px * diam_px) / (width * height);
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   const size_t nfloats = 4 * width * height;
-
-#if 0
-  // Test if the hue ring as calculated above represents gamut of this
-  // profile. If so, there should be a dot pattern overlay fairly
-  // precisely within the hue ring. If not, something about the
-  // histogram profile and hue ring combination is very interesting,
-  // and the assumptions that lines from primaries to secondaries in
-  // RGB represent the gamut is untrue.
-  const int res = 64;
-  for(int r=0; r<=res; r++)
-    for(int g=0; g<=res; g++)
-      for(int b=0; b<=res; b++)
-      {
-        const float RGB[4] DT_ALIGNED_PIXEL = { r/(float)res, g/(float)res, b/(float)res };
-        float XYZ_D50[4] DT_ALIGNED_PIXEL, intermed[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
-        dt_ioppr_rgb_matrix_to_xyz(RGB, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
-                                   vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
-        if(vs_type == DT_LIB_HISTOGRAM_VECTORSCOPE_CIELUV)
-        {
-          dt_XYZ_to_xyY(XYZ_D50, intermed);
-          dt_xyY_to_Luv(intermed, chromaticity);
-        }
-        else
-        {
-          dt_XYZ_D50_2_XYZ_D65(XYZ_D50, intermed);
-          dt_XYZ_2_JzAzBz(intermed, chromaticity);
-        }
-        const int out_x = diam_px * (chromaticity[1] / max_diam + 0.5f);
-        const int out_y = diam_px * (chromaticity[2] / max_diam + 0.5f);
-        if(out_x >= 0 && out_x < diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
-          binned[out_y * diam_px + out_x] += scale * 25.f;
-      }
-#endif
 
   // count into bins
   // FIXME: move verbosed interleaved comments into a method note at the start, as the code itself is succinct and clear
@@ -408,26 +381,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       float XYZ_D65[4] DT_ALIGNED_PIXEL;
       // If the profile whitepoint is D65, its RGB -> XYZ conversion
       // matrix has been adapted to D50 (PCS standard) via
-      // Bradford. Hence using Bradford againt o adapt back to D65 gives
-      // a pretty clean reversal (to approx. 4 significant digits) of
-      // the transform.
+      // Bradford. Using Bradford again to adapt back to D65 gives a
+      // pretty clean reversal of the transform.
       // FIXME: if the profile whitepoint is D50 (ProPhoto...), then should we use a nicer adaptation (CAT16?) to D65?
-      /*
-      // CAT16
-      const float M[3][4] DT_ALIGNED_ARRAY = {
-        {  9.80760485e-01,  -4.25541784e-17,  -7.61959005e-19},
-        {  4.82934624e-17,   1.01555271e+00,  -7.63213113e-18},
-        { -6.47162968e-19,  -5.69389701e-19,   1.30191586e+00}};
-      for(size_t x = 0; x < 3; x++)
-        XYZ_D65[x] = M[x][0] * XYZ_D50[0] + M[x][1] * XYZ_D50[1] + M[x][2] * XYZ_D50[2];
-      */
       dt_XYZ_D50_2_XYZ_D65(XYZ_D50, XYZ_D65);
-      // NOTE: the bulk of processing time is spent in the XYZ ->
-      // JzAzBz conversion in the two powf() in X'Y'Z' -> L'M'S'. Is
-      // it possible to quantize the incoming data and cache
-      // conversion results to optimize this. Making a LUT for the 2*3
-      // powf() may be better.
-      // FIXME: try to use code as in iop_profile.h _apply_trc() to do powf() work -- we should have a good sense of bounds of LUT, and it only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
+      // FIXME: The bulk of processing time is spent in the XYZ -> JzAzBz conversion in the 2*3 powf() in X'Y'Z' -> L'M'S'. Making a LUT for these, using _apply_trc() to do powf() work. It only needs to be accurate enough to be about on the right pixel for a diam_px x diam_px plot
       dt_XYZ_2_JzAzBz(XYZ_D65, chromaticity);
     }
 
@@ -444,9 +402,9 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     }
   }
 
-  // FIXME: do same gamma trick here as in waveform
-  // FIXME: make the gamma code local to simplify, just need interpolation function
-  const float gamma = 1.0f / 1.5f;
+  // FIXME: do same gamma trick here as in waveform, making the gamma code local to simplify, just need interpolation function
+  const float gamma = 1.0f / 1.333f;
+  const float slope = 1.35f;
 
   // loop appears to be too small to benefit w/OpenMP
   for(size_t out_y = 0; out_y < diam_px; out_y++)
@@ -455,7 +413,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
       const float *const restrict bin_in = binned + out_y * diam_px + out_x;
       uint8_t *const restrict alpha_out = vs_alpha + out_y * alpha_stride + out_x;
       // FIXME: use cache or linear interpolate from pre-calculated
-      *alpha_out = CLAMP(powf(*bin_in, gamma) * 255.0f, 0, 255);
+      *alpha_out = CLAMP(powf(*bin_in, gamma) * slope * 255.0f, 0, 255);
     }
 
   dt_free_align(binned);
