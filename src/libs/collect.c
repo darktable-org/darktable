@@ -2187,12 +2187,28 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   const int active = d->active_rule;
   d->rule[active].typing = FALSE;
 
+  gboolean force_update_view = FALSE;
+
   const int item = _combo_get_active_collection(d->rule[active].combo);
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
   if(text && strlen(text) > 0)
   {
-    if(gtk_tree_selection_count_selected_rows(selection) > 1
+    if(event->state & GDK_SHIFT_MASK && event->state & GDK_CONTROL_MASK)
+    {
+      if(item == DT_COLLECTION_PROP_FILMROLL)
+      {
+        // go to corresponding folder collection
+        _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FOLDERS);
+      }
+      else if(item == DT_COLLECTION_PROP_FOLDERS)
+      {
+        // go to corresponding filmroll collection
+        _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FILMROLL);
+        force_update_view = TRUE;
+      }
+    }
+    else if(gtk_tree_selection_count_selected_rows(selection) > 1
        && (item == DT_COLLECTION_PROP_DAY
            || is_time_property(item)
            || item == DT_COLLECTION_PROP_APERTURE
@@ -2222,7 +2238,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       text = n_text;
     }
     else if(item == DT_COLLECTION_PROP_TAG ||
-            item == DT_COLLECTION_PROP_GEOTAGGING)
+            item == DT_COLLECTION_PROP_GEOTAGGING ||
+            item == DT_COLLECTION_PROP_FOLDERS)
     {
       if(gtk_tree_model_iter_has_child(model, &iter))
       {
@@ -2267,16 +2284,6 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
         else dt_collection_set_tag_id((dt_collection_t *)darktable.collection, 0);
       }
     }
-    else if(item == DT_COLLECTION_PROP_FILMROLL && event->state & GDK_SHIFT_MASK)
-    {
-      // go to corresponding folder collection
-      _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FOLDERS);
-    }
-    else if(item == DT_COLLECTION_PROP_FOLDERS && event->state & GDK_SHIFT_MASK)
-    {
-      // go to corresponding filmroll collection
-      _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FILMROLL);
-    }
   }
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
@@ -2286,7 +2293,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   g_free(text);
 
   if(item == DT_COLLECTION_PROP_TAG
-     || item == DT_COLLECTION_PROP_FOLDERS
+     || (item == DT_COLLECTION_PROP_FOLDERS && !force_update_view)
      || item == DT_COLLECTION_PROP_DAY
      || is_time_property(item)
      || item == DT_COLLECTION_PROP_COLORLABEL

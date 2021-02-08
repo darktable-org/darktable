@@ -1466,11 +1466,31 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-      query = dt_util_dstrcat(
-          query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
-                 G_DIR_SEPARATOR_S "%%'))",
-          escaped_text, escaped_text);
-      break;
+    {
+      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+      {
+        escaped_text[escaped_length-1] = '\0';
+        query = dt_util_dstrcat(
+            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
+                  G_DIR_SEPARATOR_S "%%'))",
+            escaped_text, escaped_text);
+      }
+      else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+      {
+        escaped_text[escaped_length-2] = '\0';
+        query = dt_util_dstrcat(
+            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
+                  G_DIR_SEPARATOR_S "%%'))",
+            escaped_text);
+      }
+      else
+      {
+        query = dt_util_dstrcat(
+            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
+            escaped_text);
+      }
+    }
+    break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
