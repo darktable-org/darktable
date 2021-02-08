@@ -1596,17 +1596,26 @@ margin: 0 2px;
   margin-left: 0.5em;
 }
 
-#modulegroups-popup-item
+#modulegroups-popup-item,
+#modulegroups-popup-item2,
+#modulegroups-popup-item-all
 {
-  padding-left: 2em;
-  padding-top: 0.1em;
-  padding-bottom: 0.1em;
+  padding: 0.1em 0 0.1em 2em;
+}
+
+#modulegroups-popup-item-all
+{
+  padding-top: 0.4em;
+}
+
+#modulegroups-popup-item2
+{
+  padding-left: 0em;
 }
 
 #modulegroups-popup-title
 {
-  padding-left: 0em;
-  padding-bottom: 0.2em;
+  padding: 0.4em 0 0.2em 0;
   font-weight: bold;
   color: @plugin_label_color;
 }
