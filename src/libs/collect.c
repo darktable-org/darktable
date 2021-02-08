@@ -2187,6 +2187,8 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   const int active = d->active_rule;
   d->rule[active].typing = FALSE;
 
+  gboolean force_update_view = FALSE;
+
   const int item = _combo_get_active_collection(d->rule[active].combo);
   gtk_tree_model_get(model, &iter, DT_LIB_COLLECT_COL_PATH, &text, -1);
 
@@ -2203,6 +2205,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       {
         // go to corresponding filmroll collection
         _combo_set_active_collection(d->rule[active].combo, DT_COLLECTION_PROP_FILMROLL);
+        force_update_view = TRUE;
       }
     }
     else if(gtk_tree_selection_count_selected_rows(selection) > 1
@@ -2290,7 +2293,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   g_free(text);
 
   if(item == DT_COLLECTION_PROP_TAG
-     || item == DT_COLLECTION_PROP_FOLDERS
+     || (item == DT_COLLECTION_PROP_FOLDERS && !force_update_view)
      || item == DT_COLLECTION_PROP_DAY
      || is_time_property(item)
      || item == DT_COLLECTION_PROP_COLORLABEL
