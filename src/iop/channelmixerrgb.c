@@ -3144,13 +3144,6 @@ void gui_update(struct dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->gamut, p->gamut);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->clip), p->clip);
 
-  float xyY[3] = { p->x, p->y, 1.f };
-  float Lch[3] = { 0 };
-  dt_xyY_to_Lch(xyY, Lch);
-
-  dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-  dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
-
   dt_bauhaus_combobox_set(g->adaptation, p->adaptation);
 
   dt_bauhaus_slider_set_soft(g->scale_red_R, p->red[0]);
@@ -3315,49 +3308,44 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       // We need to recompute only the full preview
       dt_control_log(_("auto-detection of white balance started…"));
     }
-
-    // Put current illuminant x y directly in user params x and y in case user wants to
-    // take over manually in custom mode
-    float custom_wb[4] = { 1.f };
-    get_white_balance_coeff(self, custom_wb);
-    gboolean changed = illuminant_to_xy(p->illuminant, &(self->dev->image_storage), custom_wb, &(p->x), &(p->y),
-                                        p->temperature, p->illum_fluo, p->illum_led);
-    if(changed)
-    {
-      if(p->illuminant != DT_ILLUMINANT_D && p->illuminant != DT_ILLUMINANT_BB)
-      {
-        // Put current illuminant closest CCT directly in user params temperature in case user wants to
-        // switch to a temperature-based mode
-        check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
-      }
-
-      float xyY[3] = { p->x, p->y, 1.f };
-      float Lch[3];
-      dt_xyY_to_Lch(xyY, Lch);
-
-      ++darktable.gui->reset;
-      dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
-      dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
-      dt_bauhaus_slider_set(g->temperature, p->temperature);
-      --darktable.gui->reset;
-    }
-
   }
 
-  if(w == g->temperature)
+  if(w == g->illuminant || w == g->illum_fluo || w == g->illum_led || w == g->temperature)
   {
-    // Commit temperature to illuminant x, y
-    illuminant_to_xy(p->illuminant, NULL, NULL, &(p->x), &(p->y), p->temperature, p->illum_fluo, p->illum_led);
+    // Convert and synchronize all the possible ways to define an illuminant to allow swapping modes
+
+    if(p->illuminant != DT_ILLUMINANT_CUSTOM && p->illuminant != DT_ILLUMINANT_CAMERA)
+    {
+      // We are in any mode defining (x, y) indirectly from an interface, so commit (x, y) explicitely
+      illuminant_to_xy(p->illuminant, NULL, NULL, &(p->x), &(p->y), p->temperature, p->illum_fluo, p->illum_led);
+    }
+
+    if(p->illuminant != DT_ILLUMINANT_D && p->illuminant != DT_ILLUMINANT_BB && p->illuminant != DT_ILLUMINANT_CAMERA)
+    {
+      // We are in any mode not defining explicitely a temperature, so find the the closest CCT and commit it
+      check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
+    }
   }
 
   ++darktable.gui->reset;
 
-  if(!w || w == g->illuminant || w == g->illum_fluo || w == g->illum_led || g->temperature)
+  if(!w || w == g->illuminant || w == g->illum_fluo || w == g->illum_led || w == g->temperature)
   {
     update_illuminants(self);
     update_approx_cct(self);
     update_illuminant_color(self);
+
+    // force-update all the illuminant sliders in case something above changed them
+    // notice the hue/chroma of the illuminant has to be computed on-the-fly anyway
+    float xyY[3] = { p->x, p->y, 1.f };
+    float Lch[3];
+    dt_xyY_to_Lch(xyY, Lch);
+
+    dt_bauhaus_slider_set(g->illum_x, Lch[2] / M_PI * 180.f);
+    dt_bauhaus_slider_set_soft(g->illum_y, Lch[1]);
+    dt_bauhaus_slider_set(g->temperature, p->temperature);
   }
+
   if(!w || w == g->scale_red_R   || w == g->scale_red_G   || w == g->scale_red_B   || w == g->normalize_R)
     update_R_colors(self);
   if(!w || w == g->scale_green_R || w == g->scale_green_G || w == g->scale_green_B || w == g->normalize_G)
