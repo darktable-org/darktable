@@ -948,7 +948,7 @@ void gui_init(dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->highlights_C, _("chroma of the color gain in highlights"));
 
   // Page masks
-  self->widget = dt_ui_notebook_page(g->notebook, _("masks"), _("isolate luninances"));
+  self->widget = dt_ui_notebook_page(g->notebook, _("masks"), _("isolate luminances"));
 
   g->shadows_weight = dt_bauhaus_slider_from_params(self, "shadows_weight");
   dt_bauhaus_slider_set_digits(g->shadows_weight, 4);
