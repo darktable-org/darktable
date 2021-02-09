@@ -99,8 +99,8 @@ typedef struct dt_lib_histogram_t
   uint8_t *waveform_8bit;
   int waveform_width, waveform_height, waveform_max_width;
   // FIXME: make dt_lib_histogram_vectorscope_t for all this data?
-  uint8_t *vectorscope_alpha;
-  int vectorscope_diameter_px, vectorscope_alpha_stride;
+  uint8_t *vectorscope_display;
+  int vectorscope_diameter_px;
   // FIXME: These arrays could instead be alloc'd/free'd. Would the only concern about making dt_lib_histogram_t large so long be if it were stored in the DB?
   float hue_ring_rgb[6][VECTORSCOPE_HUES][4] DT_ALIGNED_ARRAY;
   float hue_ring_coord[6][VECTORSCOPE_HUES][2] DT_ALIGNED_ARRAY;
@@ -268,8 +268,8 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
   const int diam_px = d->vectorscope_diameter_px;
-  const int alpha_stride = d->vectorscope_alpha_stride;
-  uint8_t *const vs_alpha = d->vectorscope_alpha;
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, diam_px);
+  uint8_t *const out = d->vectorscope_display;
   const dt_lib_histogram_vectorscope_type_t vs_type = d->vectorscope_type;
 
   // FIXME: is this available from caller?
@@ -334,10 +334,11 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
   const float max_diam = max_radius * 2.f;;
 
   // FIXME: pre-allocate?
-  float *const restrict binned = dt_iop_image_alloc(diam_px, diam_px, 1);
-  dt_iop_image_fill(binned, 0.0f, diam_px, diam_px, 1);
+  float *const restrict binned = dt_iop_image_alloc(diam_px, diam_px, 4);
+  dt_iop_image_fill(binned, 0.0f, diam_px, diam_px, 4);
   // FIXME: faster to have bins just record count and multiply by scale after?
-  const float gain = 1.f / 100.f;
+  // FIXME: do something fancy where 16 bits of out are pixel count, the other two are chromaticity?
+  const float gain = 1.f / 50.f;
   const float scale = gain * (diam_px * diam_px) / (width * height);
   const float *const restrict in = DT_IS_ALIGNED((const float *const restrict)input);
   const size_t nfloats = 4 * width * height;
@@ -361,8 +362,7 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     // conversion to histogram profile is relative colorimetric, how
     // does this compare to:
     //   RGB (pixelpipe) -> XYZ(PCS, D50) -> chromaticity
-    float XYZ_D50[4] DT_ALIGNED_PIXEL;
-    float chromaticity[4] DT_ALIGNED_PIXEL;
+    float XYZ_D50[4] DT_ALIGNED_PIXEL, chromaticity[4] DT_ALIGNED_PIXEL;
     // this goes to the PCS which has standard illuminant D50
     dt_ioppr_rgb_matrix_to_xyz(in+k, XYZ_D50, vs_prof->matrix_in, vs_prof->lut_in,
                                vs_prof->unbounded_coeffs_in, vs_prof->lutsize, vs_prof->nonlinearlut);
@@ -396,24 +396,50 @@ static void _lib_histogram_process_vectorscope(dt_lib_histogram_t *d, const floa
     if(out_x >= 0 && out_x < diam_px-1 && out_y >= 0 && out_y <= diam_px-1)
     {
       // FIXME: is this helpful?
-      float *const restrict bin_out = binned + out_y * diam_px + out_x;
-      // FIXME: make a "false color" variant view
-      *bin_out += scale;
+      // FIXME: do need (size_t)4U?
+      float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
+      // FIXME: if necessary average XYZ values if they're in a big range -- test this -- and cast b[3] to an int and store a count
+      // FIXME: this is a repeat assign on multiple iterations, though may be slightly different each time -- instead calculate the out_x/out_y to chromaticity below? -- or average these -- probably no perceptible difference -- or test if unassigned and then assign?
+      b[0] = XYZ_D50[0];
+      // FIXME: we don't care about this, we'll set it from intensity?
+      b[1] = XYZ_D50[1];
+      b[2] = XYZ_D50[2];
+      b[3] += scale;
     }
   }
 
   // FIXME: do same gamma trick here as in waveform, making the gamma code local to simplify, just need interpolation function
-  const float gamma = 1.0f / 1.333f;
-  const float slope = 1.35f;
-
+  const float gamma = 1.0f / 2.0f;
   // loop appears to be too small to benefit w/OpenMP
+  // FIXME: is this still true?
   for(size_t out_y = 0; out_y < diam_px; out_y++)
     for(int out_x = 0; out_x < diam_px; out_x++)
     {
-      const float *const restrict bin_in = binned + out_y * diam_px + out_x;
-      uint8_t *const restrict alpha_out = vs_alpha + out_y * alpha_stride + out_x;
+      // FIXME: do need (size_t)4U?
+      const float *const restrict b = binned + 4U * (out_y * diam_px + out_x);
+      uint8_t *const restrict px = out + out_y * stride + out_x * 4U;
       // FIXME: use cache or linear interpolate from pre-calculated
-      *alpha_out = CLAMP(powf(*bin_in, gamma) * slope * 255.0f, 0, 255);
+      // FIXME: will this ever be below 0?
+      const float intensity = CLAMP(powf(b[3], gamma), 0.f, 1.f);
+      // FIXME: can use fewer temps
+      float XYZ[4] DT_ALIGNED_PIXEL, xyY[4] DT_ALIGNED_PIXEL, Lch[4] DT_ALIGNED_PIXEL, RGB[4] DT_ALIGNED_PIXEL;
+      // FIXME: can do all this work in XYZ? or uvY? (dt_uvY_to_xyY...)
+      // FIXME: just calculate from out_x/out_y rather than storing? then binned can be back to 1d and have int counters
+      dt_XYZ_to_xyY(b, xyY);
+      dt_xyY_to_Lch(xyY, Lch);
+      Lch[0] = 20.f + intensity * 70.f;
+      // what are the min/max chroma values?
+      // FIXME: do we want to do this work in Lch space, where different hues have different max chromas, or in RGB?
+      Lch[1] = 50.f + (1.f - intensity) * 50.f;
+      dt_Lch_to_xyY(Lch, xyY);
+      dt_xyY_to_XYZ(xyY, XYZ);
+      dt_XYZ_to_Rec709_D50(XYZ, RGB);
+      // FIXME: instead of doing this pre-colorspace, do a quick hack of XYZ -> xyY, scale the Y, then -> XYZ -> Rec709_D50 -- or if that is fishy because they're tied to stimulus and not response, do the quickest possible conversion (to Luv/Lch?) and scale in that space
+      // FIXME: hack to keep compiler happy -- instead just unroll loop if don't use alpha?
+      RGB[3] = intensity;
+      for_each_channel(ch,aligned(px,RGB:16))
+        // FIXME: this BGR/RGB flip is for pixelpipe vs. Cairo color?
+        px[2U-ch] = CLAMP((int)(RGB[ch] * 255.0f), 0, 255);
     }
 
   dt_free_align(binned);
@@ -604,6 +630,7 @@ static void _lib_histogram_draw_waveform_channel(dt_lib_histogram_t *d, cairo_t 
   }
   // FIXME: everything up to here should be invariant (unless CSS changes) so put it in process rather than draw
 
+  // FIXME: does this alpha channel do anything? if not, lose...
   cairo_surface_t *source
     = dt_cairo_image_surface_create_for_data(wf_8bit, CAIRO_FORMAT_ARGB32,
                                              wf_width, wf_height, wf_8bit_stride);
@@ -712,13 +739,13 @@ static void _lib_histogram_draw_vectorscope(dt_lib_histogram_t *d, cairo_t *cr,
   // FIXME: use ppd? if not, cast min_size to double
   cairo_scale(cr, darktable.gui->ppd*min_size/diam_px, darktable.gui->ppd*min_size/diam_px);
 
-  cairo_set_source_rgba(cr, 1., 1., 1., 0.7);
-  cairo_surface_t *alpha
-    = dt_cairo_image_surface_create_for_data(d->vectorscope_alpha, CAIRO_FORMAT_A8,
-                                             diam_px, diam_px, d->vectorscope_alpha_stride);
+  const int stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
+  cairo_surface_t *source = dt_cairo_image_surface_create_for_data(d->vectorscope_display, CAIRO_FORMAT_RGB24,
+                                                                   diam_px, diam_px, stride);
   // FIXME: what happens if mask has color (not just alpha) -- can use this to calculate false color vectorscope and draw it as a pattern or use it as a mask to draw it white? and if so could also simplify waveform drawing code above, to use color mask to alter channel visibility
-  cairo_mask_surface(cr, alpha, 0.0, 0.0);
-  cairo_surface_destroy(alpha);
+  cairo_set_source_surface(cr, source, 0.0, 0.0);
+  cairo_paint(cr);
+  cairo_surface_destroy(source);
   cairo_restore(cr);
 }
 
@@ -1479,9 +1506,9 @@ void gui_init(dt_lib_module_t *self)
   d->waveform_8bit    = dt_alloc_align(64, sizeof(uint8_t) * 4 * d->waveform_height * d->waveform_max_width);
 
   // FIXME: what is the appropriate resolution for this: balance memory use, processing speed, helpful resolution
-  d->vectorscope_diameter_px = 256;
-  d->vectorscope_alpha_stride = cairo_format_stride_for_width(CAIRO_FORMAT_A8, d->vectorscope_diameter_px);
-  d->vectorscope_alpha = dt_alloc_align(64, sizeof(uint8_t) * d->vectorscope_diameter_px * d->vectorscope_alpha_stride);
+  d->vectorscope_diameter_px = 384;
+  const int vectorscope_stride = cairo_format_stride_for_width(CAIRO_FORMAT_RGB24, d->vectorscope_diameter_px);
+  d->vectorscope_display = dt_alloc_align(64, sizeof(uint8_t) * 4U * vectorscope_stride * d->vectorscope_diameter_px);
   // initially no vectorscope to draw
   d->vectorscope_radius = 0.f;
 
@@ -1625,7 +1652,7 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_free_align(d->waveform_linear);
   dt_free_align(d->waveform_display);
   dt_free_align(d->waveform_8bit);
-  dt_free_align(d->vectorscope_alpha);
+  dt_free_align(d->vectorscope_display);
   dt_pthread_mutex_destroy(&d->lock);
 
   g_free(self->data);
