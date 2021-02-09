@@ -3304,7 +3304,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
       float custom_wb[4];
       get_white_balance_coeff(self, custom_wb);
       const int found = find_temperature_from_raw_coeffs(&(self->dev->image_storage), custom_wb, &(p->x), &(p->y));
-      check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, NULL);
+      check_if_close_to_daylight(p->x, p->y, &(p->temperature), NULL, &(p->adaptation));
 
       if(found)
         dt_control_log(_("white balance successfuly extracted from raw image"));
@@ -3378,6 +3378,10 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
     update_G_colors(self);
     update_B_colors(self);
   }
+
+  // If "as shot in camera" illuminant is used, CAT space is forced automatically
+  // therefore, make the control insensitive
+  gtk_widget_set_sensitive(g->adaptation, p->illuminant != DT_ILLUMINANT_CAMERA);
 
   declare_cat_on_pipe(self, FALSE);
 
@@ -3486,10 +3490,8 @@ void gui_init(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(GTK_WIDGET(g->adaptation),
                               _("choose the method to adapt the illuminant\n"
                                 "and the colorspace in which the module works: \n"
-                                "• Linear Bradford (1985) is more accurate for illuminants close to daylight\n"
-                                "but produces out-of-gamut colors for difficult illuminants.\n"
-                                "• CAT16 (2016) is more robust to avoid imaginary colours\n"
-                                "while working with large gamut or saturated cyan and purple.\n"
+                                "• Linear Bradford (1985) is consistent with ICC v4 toolchain.\n"
+                                "• CAT16 (2016) is more robust and accurate.\n"
                                 "• Non-linear Bradford (1985) is the original Bradford,\n"
                                 "it can produce better results than the linear version, but is unreliable.\n"
                                 "• XYZ is a simple scaling in XYZ space. It is not recommended in general.\n"
