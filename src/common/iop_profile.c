@@ -684,7 +684,7 @@ static int dt_ioppr_generate_profile_info(dt_iop_order_iccprofile_info_t *profil
 dt_iop_order_iccprofile_info_t *
 dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
                                     const dt_colorspaces_color_profile_type_t profile_type,
-                                    const char *profile_filename)
+                                    const char *profile_filename, const int intent)
 {
   dt_iop_order_iccprofile_info_t *profile_info = NULL;
 
@@ -692,7 +692,7 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
   while(profiles)
   {
     dt_iop_order_iccprofile_info_t *prof = (dt_iop_order_iccprofile_info_t *)(profiles->data);
-    if(prof->type == profile_type && strcmp(prof->filename, profile_filename) == 0)
+    if(prof->type == profile_type && strcmp(prof->filename, profile_filename) == 0 && prof->intent == intent)
     {
       profile_info = prof;
       break;
@@ -709,7 +709,8 @@ dt_ioppr_add_profile_info_to_list(struct dt_develop_t *dev,
                                   const char *profile_filename,
                                   const int intent)
 {
-  dt_iop_order_iccprofile_info_t *profile_info = dt_ioppr_get_profile_info_from_list(dev, profile_type, profile_filename);
+  dt_iop_order_iccprofile_info_t *profile_info
+      = dt_ioppr_get_profile_info_from_list(dev, profile_type, profile_filename, intent);
   if(profile_info == NULL)
   {
     profile_info = malloc(sizeof(dt_iop_order_iccprofile_info_t));
