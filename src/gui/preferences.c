@@ -2274,7 +2274,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key)
   const int line = _get_grid_nb_lines(grid);
   gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
   gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
-  g_signal_connect(G_OBJECT(w), "clicked", G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
+  g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_bool_reset), (gpointer)w);
   return w;
 }
@@ -2332,6 +2332,125 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key)
   gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
   g_signal_connect(G_OBJECT(w), "value-changed", G_CALLBACK(_gui_preferences_int_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_int_reset), (gpointer)w);
+  return w;
+}
+
+static void
+_gui_preferences_enum_callback(GtkWidget *widget, gpointer data)
+{
+  GtkTreeIter iter;
+  if(gtk_combo_box_get_active_iter(GTK_COMBO_BOX(widget), &iter))
+  {
+    gchar *s = NULL;
+    gtk_tree_model_get(gtk_combo_box_get_model(GTK_COMBO_BOX(widget)), &iter, 0, &s, -1);
+    dt_conf_set_string((char *)data, s);
+    g_free(s);
+  }
+}
+
+void _gui_preferences_enum_set(GtkWidget *widget, const char *str)
+{
+  GtkTreeModel *model = gtk_combo_box_get_model(GTK_COMBO_BOX(widget));
+  GtkTreeIter iter;
+  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+  gint i = 0;
+  gboolean found = FALSE;
+  while(valid)
+  {
+    char *value;
+    gtk_tree_model_get(model, &iter, 0, &value, -1);
+    if(!g_strcmp0(value, str))
+    {
+      g_free(value);
+      found = TRUE;
+      break;
+    }
+    i++;
+    g_free(value);
+    valid = gtk_tree_model_iter_next(model, &iter);
+  }
+  if(found)
+    gtk_combo_box_set_active(GTK_COMBO_BOX(widget), i);
+}
+
+void dt_gui_preferences_enum_reset(GtkWidget *widget)
+{
+  const char *key = gtk_widget_get_name(widget);
+  const char *str = dt_confgen_get(key, DT_DEFAULT);
+  _gui_preferences_enum_set(widget, str);
+}
+
+static gboolean
+_gui_preferences_enum_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    dt_gui_preferences_enum_reset(widget);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void dt_gui_preferences_enum_update(GtkWidget *widget)
+{
+  const char *key = gtk_widget_get_name(widget);
+  char *str = dt_conf_get_string(key);
+  _gui_preferences_enum_set(widget, str);
+  g_free(str);
+}
+
+GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key)
+{
+  GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
+  gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_halign(w_label, GTK_ALIGN_START);
+  GtkWidget *labelev = gtk_event_box_new();
+  gtk_widget_set_hexpand(labelev, TRUE);
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), w_label);
+
+  GtkTreeIter iter;
+  GtkListStore *store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
+  gchar *str = dt_conf_get_string(key);
+  const char *values = dt_confgen_get(key, DT_VALUES);
+  gint i = 0;
+  gint pos = -1;
+  GList *vals = dt_util_str_to_glist("][", values);
+  for(GList *val = vals; val; val = g_list_next(val))
+  {
+    char *item = (char *)val->data;
+    // remove remaining [ or ]
+    if(item[0] == '[') item++;
+    else if(item[strlen(item) - 1] == ']') item[strlen(item) - 1] = '\0';
+    gtk_list_store_append(store, &iter);
+    // FIXME C_() works with "" string but doesn't with a variable string.
+    //    gtk_list_store_set(store, &iter, 0, item, 1, C_("preferences", item), -1);
+    gtk_list_store_set(store, &iter, 0, item, 1, _(item), -1);
+    if(pos == -1 && !g_strcmp0(str, item))
+    {
+      pos = i;
+    }
+    i++;
+  }
+  g_list_free_full(vals, g_free);
+  g_free(str);
+
+  GtkWidget *w = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
+  gtk_widget_set_name(w, key);
+  gtk_widget_set_hexpand(w, FALSE);
+  g_object_unref(store);
+  GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+  gtk_cell_renderer_set_padding(renderer, 0, 0);
+  gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(w), renderer, TRUE);
+  gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(w), renderer, "text", 1, NULL);
+  gtk_combo_box_set_active(GTK_COMBO_BOX(w), pos);
+
+  const int line = _get_grid_nb_lines(grid);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
+  g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_gui_preferences_enum_callback), (gpointer)key);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_enum_reset), (gpointer)w);
   return w;
 }
 
