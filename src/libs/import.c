@@ -545,7 +545,7 @@ static void _lib_import_single_image_callback(GtkWidget *widget, dt_lib_import_t
       filename = (char *)it->data;
       gchar *directory = g_path_get_dirname((const gchar *)filename);
       filmid = dt_film_new(&film, directory);
-      id = dt_image_import(filmid, filename, TRUE);
+      id = dt_image_import(filmid, filename, TRUE, TRUE);
       if(!id) dt_control_log(_("error loading file `%s'"), filename);
       g_free(filename);
       g_free(directory);
@@ -598,6 +598,9 @@ static void _lib_import_folder_callback(GtkWidget *widget, dt_lib_module_t* self
   // run the dialog
   if(gtk_dialog_run(GTK_DIALOG(filechooser)) == GTK_RESPONSE_ACCEPT)
   {
+    // hide the dialog as soon as possible
+    gtk_widget_hide(filechooser);
+
     gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
     dt_conf_set_string("ui_last/import_last_directory", folder);
     g_free(folder);
