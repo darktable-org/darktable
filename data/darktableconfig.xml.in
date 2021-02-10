@@ -2563,13 +2563,6 @@
     <longdescription>preset use for defining iop layout</longdescription>
   </dtconfig>
   <dtconfig>
-    <name>plugins/darkroom/modulegroups_basics_sections_labels</name>
-    <type>bool</type>
-    <default>true</default>
-    <shortdescription>show the name of the module of each basic widget</shortdescription>
-    <longdescription>show the name of the module of each basic widget</longdescription>
-  </dtconfig>
-  <dtconfig>
     <name>plugins/lighttable/geotagging/heighttracklist</name>
     <type>int</type>
     <default>50</default>
@@ -2647,6 +2640,13 @@
     <default>always</default>
     <shortdescription>show right-side buttons in processing module headers</shortdescription>
     <longdescription>when the mouse is not over a module, the multi-instance, reset and preset buttons can be hidden:\nalways - always show all buttons,\nactive - only show the buttons when the mouse is over the module,\ndim - buttons are dimmed when mouse is away,\nauto - hide the buttons when the panel is narrow,\nfade - fade out all buttons when panel narrows,\nfit - hide all the buttons if the module name doesn't fit,\nsmooth - fade out all buttons in one header simultaneously,\nglide - gradually hide individual buttons as needed</longdescription>
+  </dtconfig>
+  <dtconfig prefs="darkroom" section="modules">
+    <name>plugins/darkroom/modulegroups_basics_sections_labels</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show module name headers in the quick access panel</shortdescription>
+    <longdescription>show the module name at the top of each module's section in the quick access panel - disable to save space</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
