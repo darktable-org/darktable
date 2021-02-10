@@ -38,7 +38,7 @@
 
 #define AVIF_MIN_TILE_SIZE 512
 #define AVIF_MAX_TILE_SIZE 3072
-#define AVIF_DEFAULT_TILE_SIZE AVIF_MIN_TILE_SIZE * 4
+#define AVIF_DEFAULT_TILE_SIZE AVIF_MIN_TILE_SIZE * 2
 
 DT_MODULE(1)
 
@@ -115,24 +115,25 @@ static const char *avif_get_compression_string(enum avif_compression_type_e comp
 }
 
 /* Lookup table for tiling choices */
-static int flp2(int i)
+static int floor_log2(int i)
 {
-                                  /* 0   1,  2,  3,  4,  5,  6,  7,  8,  9 */
-  static const int flp2_table[] = {  0,  0,  2,  2,  4,  4,  4,  4,  8,  8,
-                                     8,  8,  8,  8,  8,  8, 16, 16, 16, 16,
-                                    16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
-                                    16, 16, 32, 32, 32, 32, 32, 32, 32, 32,
-                                    32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
-                                    32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
-                                    32, 32, 32, 32 };
-                                  /* 0   1,  2,  3,  4,  5,  6,  7,  8,  9 */
+  static const int floor_log2_table[] =
+    /* 0   1,  2,  3,  4,  5,  6,  7,  8,  9 */
+    {  0,  0,  2,  2,  4,  4,  4,  4,  8,  8,
+       8,  8,  8,  8,  8,  8, 16, 16, 16, 16,
+      16, 16, 16, 16, 16, 16, 16, 16, 16, 16,
+      16, 16, 32, 32, 32, 32, 32, 32, 32, 32,
+      32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
+      32, 32, 32, 32, 32, 32, 32, 32, 32, 32,
+      32, 32, 32, 32 };
+    /* 0   1,  2,  3,  4,  5,  6,  7,  8,  9 */
 
   if(i >= 64)
   {
     return 64;
   }
 
-  return flp2_table[i];
+  return floor_log2_table[i];
 }
 
 void init(dt_imageio_module_format_t *self)
@@ -486,13 +487,12 @@ int write_image(struct dt_imageio_module_data_t *data,
       break;
   }
 
-  encoder->maxThreads = dt_get_num_threads();
-
   /*
    * Tiling reduces the image quality but it has a negligible impact on
    * still images.
    *
-   * The minmum suggested size for a tile is 512x512.
+   * The minmum size for a tile is 512x512. We use a default tile size of
+   * 1024x1024.
    */
   switch(d->tiling)
   {
@@ -500,18 +500,33 @@ int write_image(struct dt_imageio_module_data_t *data,
     {
       size_t width_tile_size  = AVIF_DEFAULT_TILE_SIZE;
       size_t height_tile_size = AVIF_DEFAULT_TILE_SIZE;
+      size_t max_threads;
 
-      if(width >= 4096)
+      if(width >= 6144)
       {
+        width_tile_size = AVIF_MIN_TILE_SIZE * 4;
+      }
+      else if (width >= 8192) {
         width_tile_size = AVIF_MAX_TILE_SIZE;
       }
-      if(height >= 4096)
+      if(height >= 6144)
       {
+        height_tile_size = AVIF_MIN_TILE_SIZE * 4;
+      }
+      else if (height >= 8192) {
         height_tile_size = AVIF_MAX_TILE_SIZE;
       }
 
-      encoder->tileColsLog2 = flp2(width / width_tile_size);
-      encoder->tileRowsLog2 = flp2(height / height_tile_size);
+      encoder->tileColsLog2 = floor_log2(width / width_tile_size) / 2;
+      encoder->tileRowsLog2 = floor_log2(height / height_tile_size) / 2;
+
+      /*
+       * This should be set to the final number of tiles, based on
+       * encoder->tileColsLog2 and encoder->tileRowsLog2.
+       */
+      max_threads = (1 << encoder->tileRowsLog2) * (1 << encoder->tileColsLog2);
+
+      encoder->maxThreads = MIN(max_threads, dt_get_num_threads());
     }
     case AVIF_TILING_OFF:
       break;
