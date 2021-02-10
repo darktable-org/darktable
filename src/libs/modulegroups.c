@@ -1576,7 +1576,7 @@ void init_presets(dt_lib_module_t *self)
   AM("profile");
   AM("gamma");
   AM("velvia");
-  AM("vibrance");
+  AM("vibrancergb");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("ashift");
@@ -1683,7 +1683,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorzones");
   AM("monochrome");
   AM("velvia");
-  AM("vibrance");
+  AM("vibrancergb");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("ashift");
@@ -1821,7 +1821,7 @@ void init_presets(dt_lib_module_t *self)
   AM("tonecurve");
   AM("toneequal");
   AM("velvia");
-  AM("vibrance");
+  AM("vibrancergb");
 
   SMG(C_("modulegroup", "effects"), "effect");
   AM("atrous");
