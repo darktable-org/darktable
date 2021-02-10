@@ -167,7 +167,8 @@ void gui_cleanup(dt_lib_module_t *self)
 }
 
 #ifdef USE_LUA
-typedef struct {
+typedef struct 
+{
   const char* key;
   dt_lib_module_t * self;
 } lua_callback_data;
@@ -175,12 +176,12 @@ typedef struct {
 
 static int lua_button_clicked_cb(lua_State* L)
 {
-  lua_callback_data * data = lua_touserdata(L,1);
-  dt_lua_module_entry_push(L,"lib",data->self->plugin_name);
-  lua_getuservalue(L,-1);
-  lua_getfield(L,-1,"callbacks");
-  lua_getfield(L,-1,data->key);
-  lua_pushstring(L,data->key);
+  lua_callback_data * data = lua_touserdata(L, 1);
+  dt_lua_module_entry_push(L, "lib", data->self->plugin_name);
+  lua_getuservalue(L, -1);
+  lua_getfield(L, -1, "callbacks");
+  lua_getfield(L, -1, data->key);
+  lua_pushstring(L, data->key);
 
   GList *image = dt_collection_get_all(darktable.collection, -1);
   lua_newtable(L);
@@ -191,7 +192,7 @@ static int lua_button_clicked_cb(lua_State* L)
     image = g_list_delete_link(image, image);
   }
 
-  lua_call(L,2,1);
+  lua_call(L ,2, 1);
 
   GList *new_selection = NULL;
   luaL_checktype(L, -1, LUA_TTABLE);
@@ -215,55 +216,33 @@ static int lua_button_clicked_cb(lua_State* L)
 static void lua_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   dt_lua_async_call_alien(lua_button_clicked_cb,
-      0,NULL,NULL,
-      LUA_ASYNC_TYPENAME,"void*", user_data,
+      0, NULL, NULL,
+      LUA_ASYNC_TYPENAME, "void*", user_data,
       LUA_ASYNC_DONE);
 }
 
 static int lua_register_selection(lua_State *L)
 {
-  lua_settop(L,3);
+  lua_settop(L, 3);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, -1);
   const char* name;
   const char* key;
-  char* tmp_name = NULL;
-  // location of function argument on the stack: 2 - old format, 3 - new format (w/name)
-  int func_pos = 2;
+  name = luaL_checkstring(L, 1);
+  key = luaL_checkstring(L, 2);
+  luaL_checktype(L, 3, LUA_TFUNCTION);
 
-  if (lua_type(L, 3) == LUA_TFUNCTION)
-  {
-    name = luaL_checkstring(L,1);
-    key = luaL_checkstring(L,2);
-    func_pos = 3;
-  }
-  else
-  {
-    key = luaL_checkstring(L,1);
-    tmp_name = malloc(sizeof(key));
-    // replace spaces in name with underscores
-    for(int i = 0; key[i] != '\0'; i++)
-      if(key[i] == ' ')
-        tmp_name[i] = '_';
-      else
-        tmp_name[i] = key[i];
-
-    name = tmp_name;
-  }
-
-  luaL_checktype(L,func_pos,LUA_TFUNCTION);
-
-  lua_getfield(L,-1,"callbacks");
-  lua_pushstring(L,name);
-  lua_pushvalue(L,func_pos);
-  lua_settable(L,-3);
+  lua_getfield(L, -1, "callbacks");
+  lua_pushstring(L, name);
+  lua_pushvalue(L, 3);
+  lua_settable(L, -3);
 
   GtkWidget* button = gtk_button_new_with_label(key);
-  const char * tooltip = lua_tostring(L,3);
-  if(tooltip)  {
+  const char * tooltip = lua_tostring(L, 3);
+  if(tooltip)
     gtk_widget_set_tooltip_text(button, tooltip);
-  }
+  
   gtk_widget_set_name(button, name);
   gtk_grid_attach_next_to(GTK_GRID(self->widget), button, NULL, GTK_POS_BOTTOM, 2, 1);
 
@@ -273,27 +252,23 @@ static int lua_register_selection(lua_State *L)
   data->self = self;
   gulong s = g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
 
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
-  lua_getfield(L,-1,"signal_handlers");
-  lua_pushstring(L,name);
-  lua_pushinteger(L,s);
-  lua_settable(L,-3);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, -1);
+  lua_getfield(L, -1, "signal_handlers");
+  lua_pushstring(L, name);
+  lua_pushinteger(L, s);
+  lua_settable(L, -3);
 
   gtk_widget_show_all(self->widget);
-
-  if(tmp_name){
-    free(tmp_name);
-  }
 
   return 0;
 }
 
 static int lua_destroy_selection(lua_State *L)
 {
-  lua_settop(L,3);
+  lua_settop(L, 3);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  const char* name = luaL_checkstring(L,1);
+  const char* name = luaL_checkstring(L, 1);
 
   // find the button named name
 
@@ -304,46 +279,41 @@ static int lua_destroy_selection(lua_State *L)
   {
     if(GTK_IS_BUTTON(widget) && strcmp(gtk_widget_get_name(widget), name) == 0)
     {
-      //gtk_grid_remove_row(GTK_GRID(d->page1), row);
-      break;
+      // set the callback to nil
+
+      dt_lua_module_entry_push(L, "lib", self->plugin_name);
+      lua_getuservalue(L, -1);
+      lua_getfield(L, -1, "callbacks");
+      lua_pushstring(L, name);
+      lua_pushnil(L);
+      lua_settable(L, -3);
+
+      // disconnect the signal
+
+      dt_lua_module_entry_push(L, "lib", self->plugin_name);
+      lua_getuservalue(L, -1);
+      lua_getfield(L, -1, "signal_handlers");
+      lua_pushstring(L, name);
+      lua_gettable(L, -2);
+      gulong handler_id = 0;
+      handler_id = luaL_checkinteger(L, -1);
+      g_signal_handler_disconnect(G_OBJECT(widget), handler_id);
+
+      // remove the widget
+
+      gtk_grid_remove_row(GTK_GRID(self->widget), row);
+      break; 
     }
   }
-
-  if(widget)
-  {
-    // set the callback to nil
-
-    dt_lua_module_entry_push(L,"lib",self->plugin_name);
-    lua_getuservalue(L,-1);
-    lua_getfield(L,-1,"callbacks");
-    lua_pushstring(L,name);
-    lua_pushnil(L);
-    lua_settable(L,-3);
-
-    // disconnect the signal
-
-    dt_lua_module_entry_push(L,"lib",self->plugin_name);
-    lua_getuservalue(L,-1);
-    lua_getfield(L,-1,"signal_handlers");
-    lua_pushstring(L,name);
-    lua_gettable(L, -2);
-    gulong handler_id = 0;
-    handler_id = luaL_checkinteger(L, -1);
-    g_signal_handler_disconnect(G_OBJECT(widget), handler_id);
-
-    // remove the widget
-
-    gtk_grid_remove_row(GTK_GRID(self->widget), row);
- }
 
   return 0;
 }
 
 static int lua_set_selection_sensitive(lua_State *L)
 {
-  lua_settop(L,3);
+  lua_settop(L, 3);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
-  const char* name = luaL_checkstring(L,1);
+  const char* name = luaL_checkstring(L, 1);
   gboolean sensitive = lua_toboolean(L, 2);
 
   // find the button named name
@@ -361,40 +331,41 @@ static int lua_set_selection_sensitive(lua_State *L)
   }
   return 0;
 }
+
 void init(struct dt_lib_module_t *self)
 {
 
   lua_State *L = darktable.lua_state.state;
   int my_type = dt_lua_module_entry_get_type(L, "lib", self->plugin_name);
   lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, lua_register_selection ,1);
+  lua_pushcclosure(L, lua_register_selection , 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "register_selection");
 
   lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, lua_destroy_selection,1);
+  lua_pushcclosure(L, lua_destroy_selection, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "destroy_selection");
 
   lua_pushlightuserdata(L, self);
-  lua_pushcclosure(L, lua_set_selection_sensitive,1);
+  lua_pushcclosure(L, lua_set_selection_sensitive, 1);
   dt_lua_gtk_wrap(L);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, my_type, "set_sensitive");
 
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, -1);
   lua_newtable(L);
-  lua_setfield(L,-2,"callbacks");
-  lua_pop(L,2);
+  lua_setfield(L, -2, "callbacks");
+  lua_pop(L, 2);
 
-  dt_lua_module_entry_push(L,"lib",self->plugin_name);
-  lua_getuservalue(L,-1);
+  dt_lua_module_entry_push(L, "lib", self->plugin_name);
+  lua_getuservalue(L, -1);
   lua_newtable(L);
-  lua_setfield(L,-2,"signal_handlers");
-  lua_pop(L,2);
+  lua_setfield(L, -2, "signal_handlers");
+  lua_pop(L, 2);
 }
 #endif
 
