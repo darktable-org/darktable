@@ -2295,6 +2295,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
             }
             GtkMenuItem *mii;
             mii = (GtkMenuItem *)gtk_menu_item_new_with_label(_("on-off"));
+            gtk_widget_set_name(GTK_WIDGET(mii), "modulegroups-popup-item2");
             gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("add this widget"));
             g_object_set_data(G_OBJECT(mii), "widget_id", module->op);
             g_signal_connect(G_OBJECT(mii), "activate", callback, self);
