@@ -1522,7 +1522,7 @@ void init_presets(dt_lib_module_t *self)
                        "|scalepixels|sharpen|spots");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
                        "bloom|borders|colorize|colormapping|graduatednd|grain|highpass|lowlight"
-                       "|lowpass|soften|splittoning|vignette|watermark");
+                       "|lowpass|soften|splittoning|vignette|watermark|censorize");
   dt_lib_presets_add(_("modules: all"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
@@ -1554,7 +1554,7 @@ void init_presets(dt_lib_module_t *self)
                        "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
                        "|lens|retouch|liquify|sharpen|nlmeans");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
-                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark");
+                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark|censorize");
   dt_lib_presets_add(_("workflow: display-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
@@ -1571,7 +1571,7 @@ void init_presets(dt_lib_module_t *self)
                        "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
                        "|lens|retouch|liquify|sharpen|nlmeans");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
-                       "atrous|borders|graduatednd|grain|vignette|watermark");
+                       "atrous|borders|graduatednd|grain|vignette|watermark|censorize");
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
@@ -1595,7 +1595,7 @@ void init_presets(dt_lib_module_t *self)
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
                        "atrous|bilat|bloom|borders|colormapping"
                        "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
-                       "|soften|spots|vignette|watermark");
+                       "|soften|spots|vignette|watermark|censorize");
   dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
   g_free(tx);
 
