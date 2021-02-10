@@ -1362,9 +1362,9 @@ void dt_view_map_center_on_bbox(const dt_view_manager_t *vm, gdouble lon1, gdoub
   if(vm->proxy.map.view) vm->proxy.map.center_on_bbox(vm->proxy.map.view, lon1, lat1, lon2, lat2);
 }
 
-void dt_view_map_show_osd(const dt_view_manager_t *vm, gboolean enabled)
+void dt_view_map_show_osd(const dt_view_manager_t *vm)
 {
-  if(vm->proxy.map.view) vm->proxy.map.show_osd(vm->proxy.map.view, enabled);
+  if(vm->proxy.map.view) vm->proxy.map.show_osd(vm->proxy.map.view);
 }
 
 void dt_view_map_set_map_source(const dt_view_manager_t *vm, OsmGpsMapSource_t map_source)
