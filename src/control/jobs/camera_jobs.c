@@ -283,7 +283,7 @@ void _camera_import_image_downloaded(const dt_camera_t *camera, const char *file
 {
   // Import downloaded image to import filmroll
   dt_camera_import_t *t = (dt_camera_import_t *)data;
-  const int32_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE);
+  const int32_t imgid = dt_image_import(dt_import_session_film_id(t->shared.session), filename, FALSE, TRUE);
   dt_control_queue_redraw_center();
   gchar *basename = g_path_get_basename(filename);
   dt_control_log(ngettext("%d/%d imported to %s", "%d/%d imported to %s", t->import_count + 1),
