@@ -969,10 +969,8 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
   }
 }
 
-static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
+void dt_thumbnail_update_selection(dt_thumbnail_t *thumb)
 {
-  if(!user_data) return;
-  dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(!thumb) return;
   if(!gtk_widget_is_visible(thumb->w_main)) return;
 
@@ -992,6 +990,12 @@ static void _dt_selection_changed_callback(gpointer instance, gpointer user_data
     _thumb_update_icons(thumb);
     gtk_widget_queue_draw(thumb->w_main);
   }
+}
+
+static void _dt_selection_changed_callback(gpointer instance, gpointer user_data)
+{
+  if(!user_data) return;
+  dt_thumbnail_update_selection((dt_thumbnail_t *)user_data);
 }
 
 static void _dt_active_images_callback(gpointer instance, gpointer user_data)

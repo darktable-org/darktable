@@ -2026,7 +2026,16 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     }
 
     // if we force the redraw, we ensure selection is updated
-    if(force) DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
+    if(force)
+    {
+      GList *l = table->list;
+      while(l)
+      {
+        dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
+        dt_thumbnail_update_selection(th);
+        l = g_list_next(l);
+      }
+    }
 
     // be sure the focus is in the right widget (needed for accels)
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));

@@ -539,7 +539,7 @@ int main(int argc, char *arg[])
 
       gchar *directory = g_path_get_dirname(input);
       filmid = dt_film_new(&film, directory);
-      const int32_t id = dt_image_import(filmid, input, TRUE);
+      const int32_t id = dt_image_import(filmid, input, TRUE, TRUE);
       g_free(directory);
       if(!id)
       {

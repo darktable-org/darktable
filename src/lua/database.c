@@ -199,7 +199,7 @@ static int database_numindex(lua_State *L)
   }
   else
     lua_pushnil(L);
-  
+
   sqlite3_finalize(stmt);
   return 1;
 }
