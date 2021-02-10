@@ -1574,12 +1574,53 @@
     <shortdescription>ask before deleting a preset</shortdescription>
     <longdescription>will ask for confirmation before deleting or overwritting a preset</longdescription>
   </dtconfig>
-  <dtconfig>
+  <dtconfig ui="yes">
     <name>plugins/map/show_map_osd</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription/>
-    <longdescription/>
+    <shortdescription>show OSD</shortdescription>
+    <longdescription>toggle the visibility of the map overlays</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/filter_images_drawn</name>
+    <type>bool</type>
+    <default>false</default>
+    <shortdescription>filtered images</shortdescription>
+    <longdescription>when set limit the images drawn to the current filmstrip</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/max_images_drawn</name>
+    <type min="10" max="100000">int</type>
+    <default>100</default>
+    <shortdescription>max images</shortdescription>
+    <longdescription>the maximum number of image thumbnails drawn on the map</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/epsilon_factor</name>
+    <type min="10" max="100">int</type>
+    <default>25</default>
+    <shortdescription>group size factor</shortdescription>
+    <longdescription>increase or decrease the spatial size of images groups on the map. can influence the calculation time</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/min_images_per_group</name>
+    <type min="1" max="10">int</type>
+    <default>1</default>
+    <shortdescription>min images per group</shortdescription>
+    <longdescription>the minimum number of images to set up an images group. can influence the calculation time.</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/map/images_thumbnail</name>
+    <type>
+      <enum>
+        <option>thumbnail</option>
+        <option>count</option>
+        <option>none</option>
+      </enum>
+    </type>
+    <default>thumbnail</default>
+    <shortdescription>thumbnail display</shortdescription>
+    <longdescription>three options are available: images thumbnails, only the count of images of the group or nothing</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/map/show_outline</name>
@@ -1596,32 +1637,11 @@
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="otherviews" section="geoloc">
-    <name>plugins/map/max_images_drawn</name>
-    <type>int</type>
-    <default>100</default>
-    <shortdescription>maximum number of images drawn on map</shortdescription>
-    <longdescription>the maximum number of geotagged images drawn on the map. increasing this number can slow drawing of the map down.</longdescription>
-  </dtconfig>
-  <dtconfig prefs="otherviews" section="geoloc">
     <name>plugins/lighttable/metadata_view/pretty_location</name>
     <type>bool</type>
     <default>true</default>
     <shortdescription>pretty print the image location</shortdescription>
     <longdescription>show a more readable representation of the location in the image information module</longdescription>
-  </dtconfig>
-  <dtconfig prefs="otherviews">
-    <name>plugins/map/epsilon_factor</name>
-    <type min="10" max="100">int</type>
-    <default>25</default>
-    <shortdescription>modify the spatial size of an images group on the map</shortdescription>
-    <longdescription>increase or decrease the spatial size of images groups on the map. can influence the calculation time</longdescription>
-  </dtconfig>
-  <dtconfig prefs="otherviews">
-    <name>plugins/map/min_images_per_group</name>
-    <type min="1" max="10">int</type>
-    <default>1</default>
-    <shortdescription>minimum number of images to set up an images group</shortdescription>
-    <longdescription>the minimum number of images to set up an images group. can influence the calculation time.</longdescription>
   </dtconfig>
   <dtconfig prefs="lighttable" section="general">
     <name>lighttable/ui/single_module</name>

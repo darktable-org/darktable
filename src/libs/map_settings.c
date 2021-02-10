@@ -27,6 +27,7 @@
 #include "gui/gtk.h"
 #include "libs/lib.h"
 #include "libs/lib_api.h"
+#include "gui/preferences.h"
 #include <gdk/gdkkeysyms.h>
 
 #include <osm-gps-map-source.h>
@@ -52,7 +53,7 @@ uint32_t container(dt_lib_module_t *self)
 typedef struct dt_lib_map_settings_t
 {
   GtkWidget *show_osd_checkbutton, *filtered_images_checkbutton, *map_source_dropdown;
-  GtkWidget *epsilon_factor, *min_images;
+  GtkWidget *images_thumb, *max_images_entry, *epsilon_factor, *min_images;
 } dt_lib_map_settings_t;
 
 int position()
@@ -62,18 +63,14 @@ int position()
 
 static void _show_osd_toggled(GtkToggleButton *button, gpointer data)
 {
-  dt_view_map_show_osd(darktable.view_manager, gtk_toggle_button_get_active(button));
+  dt_view_map_show_osd(darktable.view_manager);
 }
 
-static void _filtered_images_toggled(GtkToggleButton *button, gpointer data)
+static void _parameter_changed(GtkToggleButton *button, gpointer data)
 {
-  dt_conf_set_bool("plugins/map/filter_images_drawn", gtk_toggle_button_get_active(button));
   if(darktable.view_manager->proxy.map.view)
   {
-    if(dt_conf_get_bool("plugins/map/filter_images_drawn"))
-      darktable.view_manager->proxy.map.display_selected(darktable.view_manager->proxy.map.view);
-    else
-      darktable.view_manager->proxy.map.redraw(darktable.view_manager->proxy.map.view);
+    darktable.view_manager->proxy.map.redraw(darktable.view_manager->proxy.map.view);
   }
 }
 
@@ -96,26 +93,6 @@ static void _map_source_changed(GtkWidget *widget, gpointer data)
   }
 }
 
-static void _epsilon_factor_callback(GtkWidget *slider, gpointer data)
-{
-  const float epsilon = dt_bauhaus_slider_get(slider);
-  dt_conf_set_int("plugins/map/epsilon_factor", epsilon);
-  if(darktable.view_manager->proxy.map.view)
-  {
-    darktable.view_manager->proxy.map.redraw(darktable.view_manager->proxy.map.view);
-  }
-}
-
-static void _min_images_callback(GtkWidget *slider, gpointer data)
-{
-  const int min_images = dt_bauhaus_slider_get(slider);
-  dt_conf_set_int("plugins/map/min_images_per_group", min_images);
-  if(darktable.view_manager->proxy.map.view)
-  {
-    darktable.view_manager->proxy.map.redraw(darktable.view_manager->proxy.map.view);
-  }
-}
-
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)malloc(sizeof(dt_lib_map_settings_t));
@@ -127,26 +104,7 @@ void gui_init(dt_lib_module_t *self)
 
   hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
 
-  d->show_osd_checkbutton = gtk_check_button_new_with_label(_("show OSD"));
-  gtk_widget_set_tooltip_text(d->show_osd_checkbutton, _("toggle the visibility of the map overlays"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->show_osd_checkbutton),
-                               dt_conf_get_bool("plugins/map/show_map_osd"));
-  gtk_box_pack_start(hbox, d->show_osd_checkbutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
-
-  d->filtered_images_checkbutton = gtk_check_button_new_with_label(_("filtered images"));
-  gtk_widget_set_tooltip_text(d->filtered_images_checkbutton, _("when set limit the images drawn to the current filmstrip"));
-  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->filtered_images_checkbutton),
-                               dt_conf_get_bool("plugins/map/filter_images_drawn"));
-  gtk_box_pack_start(hbox, d->filtered_images_checkbutton, TRUE, TRUE, 0);
-  g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_filtered_images_toggled), NULL);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  hbox = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
-
-  label = gtk_label_new(_("map source"));
-  gtk_widget_set_halign(label, GTK_ALIGN_START);
+  label = dt_ui_label_new(_("map source"));
   gtk_box_pack_start(hbox, label, TRUE, TRUE, 0);
 
   GtkListStore *model = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_INT);
@@ -173,30 +131,74 @@ void gui_init(dt_lib_module_t *self)
   gtk_combo_box_set_active(GTK_COMBO_BOX(d->map_source_dropdown), selection);
   gtk_box_pack_start(hbox, d->map_source_dropdown, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(d->map_source_dropdown), "changed", G_CALLBACK(_map_source_changed), NULL);
-
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
-
-  d->epsilon_factor = dt_bauhaus_slider_new_with_range(NULL, 10.0, 100.0, 1.0,
-                            dt_conf_get_int("plugins/map/epsilon_factor"), 0);
-  gtk_widget_set_tooltip_text(d->epsilon_factor, _("modify the spatial size of an images group on the map"));
-  dt_bauhaus_widget_set_label(d->epsilon_factor, NULL, N_("group size factor"));
-  g_signal_connect(G_OBJECT(d->epsilon_factor), "value-changed", G_CALLBACK(_epsilon_factor_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->epsilon_factor), TRUE, TRUE, 0);
-  d->min_images = dt_bauhaus_slider_new_with_range(NULL, 1.0, 10.0, 1.0,
-                            dt_conf_get_int("plugins/map/min_images_per_group"), 0);
-  gtk_widget_set_tooltip_text(d->min_images, _("minimum of images to make a group"));
-  dt_bauhaus_widget_set_label(d->min_images, NULL, N_("min images per group"));
-  g_signal_connect(G_OBJECT(d->min_images), "value-changed", G_CALLBACK(_min_images_callback), self);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->min_images), TRUE, TRUE, 0);
-
   g_object_unref(model);
   g_free(map_source);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(hbox), TRUE, TRUE, 0);
+
+  GtkGrid *grid = GTK_GRID(gtk_grid_new());
+  gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+
+  d->show_osd_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/show_map_osd");
+  g_signal_connect(G_OBJECT(d->show_osd_checkbutton), "toggled", G_CALLBACK(_show_osd_toggled), NULL);
+  d->filtered_images_checkbutton = dt_gui_preferences_bool(grid, "plugins/map/filter_images_drawn");
+  g_signal_connect(G_OBJECT(d->filtered_images_checkbutton), "toggled", G_CALLBACK(_parameter_changed), NULL);
+  d->max_images_entry = dt_gui_preferences_int(grid, "plugins/map/max_images_drawn");
+  g_signal_connect(G_OBJECT(d->max_images_entry), "value-changed", G_CALLBACK(_parameter_changed), self);
+  d->epsilon_factor = dt_gui_preferences_int(grid, "plugins/map/epsilon_factor");
+  g_signal_connect(G_OBJECT(d->epsilon_factor), "value-changed", G_CALLBACK(_parameter_changed), self);
+  d->min_images = dt_gui_preferences_int(grid, "plugins/map/min_images_per_group");
+  g_signal_connect(G_OBJECT(d->min_images), "value-changed", G_CALLBACK(_parameter_changed), self);
+  d->images_thumb = dt_gui_preferences_enum(grid, "plugins/map/images_thumbnail");
+  g_signal_connect(G_OBJECT(d->images_thumb), "changed", G_CALLBACK(_parameter_changed), self);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(grid), FALSE, FALSE, 0);
 }
 
 void gui_cleanup(dt_lib_module_t *self)
 {
   free(self->data);
   self->data = NULL;
+}
+
+void gui_reset(dt_lib_module_t *self)
+{
+  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
+  dt_gui_preferences_bool_reset(d->show_osd_checkbutton);
+  dt_gui_preferences_bool_reset(d->filtered_images_checkbutton);
+  dt_gui_preferences_int_reset(d->max_images_entry);
+  dt_gui_preferences_int_reset(d->epsilon_factor);
+  dt_gui_preferences_int_reset(d->min_images);
+  dt_gui_preferences_enum_reset(d->images_thumb);
+}
+
+static gboolean _thumbnail_change(GtkAccelGroup *accel_group, GObject *acceleratable, guint keyval,
+                                  GdkModifierType modifier, dt_lib_module_t *self)
+{
+  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
+
+  char *str = dt_conf_get_string("plugins/map/images_thumbnail");
+  if(!g_strcmp0(str, "thumbnail"))
+    dt_conf_set_string("plugins/map/images_thumbnail", "count");
+  else if(!g_strcmp0(str, "count"))
+    dt_conf_set_string("plugins/map/images_thumbnail", "none");
+  else
+    dt_conf_set_string("plugins/map/images_thumbnail", "thumbnail");
+  dt_gui_preferences_enum_update(d->images_thumb);
+  g_free(str);
+
+  return TRUE;
+}
+
+void init_key_accels(dt_lib_module_t *self)
+{
+  dt_accel_register_lib(self, NC_("accel", "filtered images"), GDK_KEY_s, GDK_CONTROL_MASK);
+  dt_accel_register_lib(self, NC_("accel", "thumbnail display"), GDK_KEY_s, GDK_SHIFT_MASK);
+}
+
+void connect_key_accels(dt_lib_module_t *self)
+{
+  dt_lib_map_settings_t *d = (dt_lib_map_settings_t *)self->data;
+  dt_accel_connect_button_lib(self, "filtered images", d->filtered_images_checkbutton);
+  dt_accel_connect_lib(self, "thumbnail display", g_cclosure_new(G_CALLBACK(_thumbnail_change), self, NULL));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
