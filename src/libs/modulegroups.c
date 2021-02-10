@@ -550,10 +550,10 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     {
       gtk_widget_set_sensitive(evb, FALSE);
       gtk_widget_set_sensitive(btn, FALSE);
-      gtk_widget_set_tooltip_text(lb, _("this basic widget is disabled as there's multiple instances "
-                                        "for this module. you need to use the full module..."));
-      gtk_widget_set_tooltip_text(btn, _("this basic widget is disabled as there's multiple instances "
-                                         "for this module. you need to use the full module..."));
+      gtk_widget_set_tooltip_text(lb, _("this quick access widget is disabled as there are multiple instances "
+                                        "of this module present. Please use the full module to access this widget..."));
+      gtk_widget_set_tooltip_text(btn, _("this quick access widget is disabled as there are multiple instances "
+                                         "of this module present. Please use the full module to access this widget..."));
     }
     else
     {
@@ -616,7 +616,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     item->label = g_strdup(bw->label);
     item->visible = gtk_widget_get_visible(item->widget);
 
-    // create new basic widget
+    // create new quick access widget
     item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
     gtk_widget_set_name(item->box, "basics-widget");
     gtk_widget_show(item->box);
@@ -655,20 +655,20 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     if(dt_iop_count_instances(item->module->so) > 1)
     {
       gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("this basic widget is disabled as there's multiple instances "
-                                                  "for this module. You need to use the full module..."));
+      gtk_widget_set_tooltip_text(item->widget, _("this quick access widget is disabled as there are multiple instances "
+                                                  "of this module present. Please use the full module to access this widget..."));
     }
     else if(!item->visible)
     {
       gtk_widget_show_all(item->widget);
       gtk_widget_set_sensitive(item->widget, FALSE);
-      gtk_widget_set_tooltip_text(item->widget, _("this basic widget is disabled as it's hidden in the actual "
-                                                  "module configuration. You need to use the full module..."));
+      gtk_widget_set_tooltip_text(item->widget, _("this quick access widget is disabled as it's hidden in the actual "
+                                                  "module configuration. Please use the full module to access this widget..."));
     }
     else
     {
       gchar *txt = dt_util_dstrcat(NULL, "%s (%s)\n\n%s\n\n%s", item->widget_name, item->module->name(),
-                                   item->tooltip, _("(some features may only be available in the full module)"));
+                                   item->tooltip, _("(some features may only be available in the full module interface)"));
       gtk_widget_set_tooltip_text(item->widget, txt);
       g_free(txt);
     }
@@ -694,7 +694,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       // we create the link to the full iop
       GtkWidget *wbt = dtgtk_button_new(dtgtk_cairo_paint_link, CPF_STYLE_FLAT, NULL);
       gtk_widget_show(wbt);
-      gchar *tt = dt_util_dstrcat(NULL, _("go to full version of module %s"), item->module->name());
+      gchar *tt = dt_util_dstrcat(NULL, _("go to the full version of the %s module"), item->module->name());
       gtk_widget_set_tooltip_text(wbt, tt);
       gtk_widget_set_name(wbt, "basics-link");
       g_free(tt);
@@ -2150,7 +2150,7 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
         {
           GtkMenuItem *smir = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
           gtk_widget_set_name(GTK_WIDGET(smir), "modulegroups-popup-item");
-          gtk_widget_set_tooltip_text(GTK_WIDGET(smir), _("click to add this module"));
+          gtk_widget_set_tooltip_text(GTK_WIDGET(smir), _("add this module"));
           g_object_set_data(G_OBJECT(smir), "module_op", module->op);
           g_object_set_data(G_OBJECT(smir), "group", gr);
           g_signal_connect(G_OBJECT(smir), "activate", callback, data);
@@ -2159,7 +2159,7 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
         }
         GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
         gtk_widget_set_name(GTK_WIDGET(smi), "modulegroups-popup-item2");
-        gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("click to add this module"));
+        gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("add this module"));
         g_object_set_data(G_OBJECT(smi), "module_op", module->op);
         g_object_set_data(G_OBJECT(smi), "group", gr);
         g_signal_connect(G_OBJECT(smi), "activate", callback, data);
@@ -2170,7 +2170,7 @@ static void _manage_module_add_popup(GtkWidget *widget, dt_lib_modulegroups_grou
       {
         GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
         gtk_widget_set_name(GTK_WIDGET(smi), "modulegroups-popup-item");
-        gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("click to remove this module"));
+        gtk_widget_set_tooltip_text(GTK_WIDGET(smi), _("remove this module"));
         g_object_set_data(G_OBJECT(smi), "module_op", module->op);
         g_object_set_data(G_OBJECT(smi), "group", gr);
         g_signal_connect(G_OBJECT(smi), "activate", callback, data);
@@ -2271,7 +2271,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
               gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
               mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
               g_free(tx);
-              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to remove the widget"));
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("remove this widget"));
               g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
               g_signal_connect(G_OBJECT(mi), "activate", callback, self);
               gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
@@ -2287,7 +2287,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
               gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
               mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
               g_free(tx);
-              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("add this widget"));
               g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
               g_signal_connect(G_OBJECT(mi), "activate", callback, self);
               gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba + nbr);
@@ -2295,7 +2295,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
             }
             GtkMenuItem *mii;
             mii = (GtkMenuItem *)gtk_menu_item_new_with_label(_("on-off"));
-            gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("click to add the widget"));
+            gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("add this widget"));
             g_object_set_data(G_OBJECT(mii), "widget_id", module->op);
             g_signal_connect(G_OBJECT(mii), "activate", callback, self);
             gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
@@ -2326,7 +2326,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
                 gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
                 mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
                 g_free(tx);
-                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to remove the widget"));
+                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("remove this widget"));
                 gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
                 g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
                 g_signal_connect(G_OBJECT(mi), "activate", callback, self);
@@ -2342,7 +2342,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
                 gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
                 mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
                 g_free(tx);
-                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("click to add the widget"));
+                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("add this widget"));
                 g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
                 g_signal_connect(G_OBJECT(mi), "activate", callback, self);
                 gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
@@ -2351,7 +2351,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
               }
               GtkMenuItem *mii = (GtkMenuItem *)gtk_menu_item_new_with_label(wn);
               gtk_widget_set_name(GTK_WIDGET(mii), "modulegroups-popup-item2");
-              gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("click to add the widget"));
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("add this widget"));
               g_object_set_data_full(G_OBJECT(mii), "widget_id", g_strdup(wid), g_free);
               g_signal_connect(G_OBJECT(mii), "activate", callback, self);
               gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
@@ -2462,7 +2462,7 @@ void gui_init(dt_lib_module_t *self)
   d->basic_btn = dtgtk_togglebutton_new(dtgtk_cairo_paint_modulegroup_basics, pf, NULL);
   g_signal_connect(d->basic_btn, "button-press-event", G_CALLBACK(_manage_direct_basic_popup), self);
   g_signal_connect(d->basic_btn, "toggled", G_CALLBACK(_lib_modulegroups_toggle), self);
-  gtk_widget_set_tooltip_text(d->basic_btn, _("show basic adjustement list"));
+  gtk_widget_set_tooltip_text(d->basic_btn, _("quick access panel"));
   gtk_box_pack_start(GTK_BOX(d->hbox_groups), d->basic_btn, TRUE, TRUE, 0);
 
   d->vbox_basic = NULL;
@@ -2824,9 +2824,9 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(hb3), btn, FALSE, TRUE, 0);
 
   GtkWidget *tb = gtk_entry_new();
-  gtk_widget_set_tooltip_text(tb, _("basics widgets"));
+  gtk_widget_set_tooltip_text(tb, _("quick access panel widgets"));
   gtk_widget_set_sensitive(tb, FALSE);
-  gtk_entry_set_text(GTK_ENTRY(tb), _("basics widgets"));
+  gtk_entry_set_text(GTK_ENTRY(tb), _("quick access panel widgets"));
   gtk_box_pack_start(GTK_BOX(hb3), tb, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(hb2), hb3, FALSE, TRUE, 0);
@@ -3075,7 +3075,7 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   gtk_box_pack_start(GTK_BOX(vb), d->edit_search_cb, FALSE, TRUE, 0);
 
   // show basics checkbox
-  d->basics_chkbox = gtk_check_button_new_with_label(_("show basics widgets group"));
+  d->basics_chkbox = gtk_check_button_new_with_label(_("show quick access panel"));
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basics_chkbox), d->edit_basics_show);
   g_signal_connect(G_OBJECT(d->basics_chkbox), "toggled", G_CALLBACK(_manage_editor_basics_toggle), self);
   gtk_widget_set_sensitive(d->basics_chkbox, !d->edit_ro);
