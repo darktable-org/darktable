@@ -2363,7 +2363,7 @@ void gui_init(dt_view_t *self)
     /* lower */
     GtkWidget *lower = dt_bauhaus_slider_new_with_range(NULL, -32., -4., 1., -12.69, 2);
     dt_bauhaus_slider_set(lower, dev->overexposed.lower);
-    dt_bauhaus_slider_set_format(lower, "%+.2f EV");
+    dt_bauhaus_slider_set_format(lower, _("%+.2f EV"));
     dt_bauhaus_widget_set_label(lower, NULL, N_("lower threshold"));
     gtk_widget_set_tooltip_text(lower, _("clipping threshold for the black point,\n"
                                          "in EV, relatively to white (0 EV).\n"
