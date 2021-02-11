@@ -1409,10 +1409,8 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
   const gboolean is_workflow_none = strcmp(workflow, "none") == 0;
 
-  workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
-  const gboolean is_modern_chroma = strcmp(workflow, "modern") == 0;
-
-  g_free(workflow);
+  const gboolean is_modern_chroma =
+    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
 
   //  Add scene-referred workflow
   //  Note that we cannot use a preset for FilmicRGB as the default values are
