@@ -1518,7 +1518,7 @@ void init_presets(dt_lib_module_t *self)
           <( git grep IOP_FLAGS_DEPRECATED -- src/iop/ | cut -d':' -f1 ) | \
           grep -E -v "useless|mask_manager|gamma" | sort | uniq --unique | \
           while read file; do BN=$(basename $(basename $file .cc) .c); \
-            echo ${BN:0:16} ; done | xargs echo | sed 's/ /|/g'
+            echo "AM(\"${BN:0:16}\");" ; done
   */
 
   const gboolean is_modern =
