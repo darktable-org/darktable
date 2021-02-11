@@ -1476,9 +1476,8 @@ void reload_defaults(dt_iop_module_t *module)
   if(!module->dev || module->dev->image_storage.id == -1) return;
 
   const gboolean is_raw = dt_image_is_matrix_correction_supported(&module->dev->image_storage);
-  gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
-  const gboolean is_modern = strcmp(workflow, "modern") == 0;
-  g_free(workflow);
+  const gboolean is_modern =
+    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
 
   module->default_enabled = 0;
   module->hide_enable_button = 0;
