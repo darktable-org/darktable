@@ -1734,13 +1734,13 @@ uint32_t dt_tag_get_tag_id_by_name(const char * const name)
 {
   if(!name) return 0;
   uint32_t tagid = 0;
-  char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
-  const char *query = strcmp(sensitive, _("insensitive")) == 0
+  const gboolean is_insensitive =
+    dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "insensitive");
+  const char *query = is_insensitive
                       ? "SELECT T.id, T.flags FROM data.tags AS T "
                         "WHERE T.name LIKE ?1"
                       : "SELECT T.id, T.flags FROM data.tags AS T "
                         "WHERE T.name = ?1";
-  g_free(sensitive);
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
                               query, -1, &stmt, NULL);

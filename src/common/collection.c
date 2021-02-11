@@ -1613,14 +1613,16 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_TAG: // tag
     {
-      char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
+      const gboolean is_insensitive =
+        dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "insensitive");
+
       if(!strcmp(escaped_text, _("not tagged")))
       {
         query = g_strdup_printf("(id NOT IN (SELECT DISTINCT imgid FROM main.tagged_images AS a "
                                        "JOIN data.tags AS b ON a.tagid = b.id "
                                        "AND SUBSTR(name, 1, 10) <> 'darktable|'))");
       }
-      else if(!strcmp(sensitive, _("insensitive")))
+      else if(is_insensitive)
       {
         if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
         {
@@ -1670,7 +1672,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
                                   escaped_text);
         }
       }
-      g_free(sensitive);
     }
     break;
 
