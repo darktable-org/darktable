@@ -1,10 +1,10 @@
 msgid ""
 msgstr ""
-"Project-Id-Version: darktable 2.6\n"
+"Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-10 22:29+0100\n"
-"PO-Revision-Date: 2021-02-10 22:39+0100\n"
-"Last-Translator: Pascal Obry <pascal@obry.net>\n"
+"POT-Creation-Date: 2021-02-11 21:19+0100\n"
+"PO-Revision-Date: 2021-02-11 21:20+0100\n"
+"Last-Translator: Nicolas Auffray <nicolas.auffray@zaclys.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
 "MIME-Version: 1.0\n"
@@ -1822,7 +1822,7 @@ msgstr "spécifique"
 #: ../src/common/history.c:897 ../src/common/styles.c:1117
 #: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:100
 #: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2780
-#: ../src/develop/develop.c:2188 ../src/imageio/format/avif.c:810
+#: ../src/develop/develop.c:2186 ../src/imageio/format/avif.c:810
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:661
 #: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:429
 msgid "off"
@@ -1871,7 +1871,7 @@ msgstr "préserver couleur"
 #: ../build/lib/darktable/plugins/introspection_rgbcurve.c:251
 #: ../build/lib/darktable/plugins/introspection_rgblevels.c:153
 #: ../build/lib/darktable/plugins/introspection_tonecurve.c:270
-#: ../src/iop/basecurve.c:2099 ../src/iop/channelmixerrgb.c:3620
+#: ../src/iop/basecurve.c:2099 ../src/iop/channelmixerrgb.c:3619
 #: ../src/iop/clipping.c:1865 ../src/iop/clipping.c:2125
 #: ../src/iop/clipping.c:2141 ../src/iop/clipping.c:2276
 #: ../src/iop/clipping.c:2303 ../src/iop/lens.cc:2243 ../src/iop/retouch.c:358
@@ -2111,7 +2111,7 @@ msgid "(AI) detect from image edges..."
 msgstr "(IA) détecter depuis les bords de l'image..."
 
 #: ../build/lib/darktable/plugins/introspection_channelmixerrgb.c:516
-#: ../src/iop/channelmixerrgb.c:3278
+#: ../src/iop/channelmixerrgb.c:3277
 msgid "as shot in camera"
 msgstr "tel que pris par le boitier"
 
@@ -2283,7 +2283,7 @@ msgstr "lift, gamma, gain (sRVB)"
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:428
 #: ../build/lib/darktable/plugins/introspection_colorbalancergb.c:440
 #: ../src/develop/blend_gui.c:1851 ../src/develop/blend_gui.c:1878
-#: ../src/iop/atrous.c:1504 ../src/iop/channelmixerrgb.c:3537
+#: ../src/iop/atrous.c:1504 ../src/iop/channelmixerrgb.c:3536
 #: ../src/iop/equalizer.c:391 ../src/iop/nlmeans.c:536
 msgid "chroma"
 msgstr "chroma"
@@ -2306,7 +2306,7 @@ msgstr "chroma"
 #: ../build/lib/darktable/plugins/introspection_splittoning.c:142
 #: ../src/develop/blend_gui.c:1828 ../src/develop/blend_gui.c:1847
 #: ../src/develop/blend_gui.c:1882 ../src/iop/channelmixer.c:622
-#: ../src/iop/channelmixerrgb.c:3531 ../src/iop/colorbalance.c:2024
+#: ../src/iop/channelmixerrgb.c:3530 ../src/iop/colorbalance.c:2024
 #: ../src/iop/colorize.c:347 ../src/iop/colorreconstruction.c:1288
 #: ../src/iop/colorzones.c:2364 ../src/iop/splittoning.c:476
 msgid "hue"
@@ -2453,7 +2453,7 @@ msgid "range extent"
 msgstr "étendue de clarté"
 
 #: ../build/lib/darktable/plugins/introspection_colorreconstruction.c:154
-#: ../src/iop/channelmixerrgb.c:3622
+#: ../src/iop/channelmixerrgb.c:3621
 msgid "saturated colors"
 msgstr "couleurs saturées"
 
@@ -3304,7 +3304,7 @@ msgstr "mode de remplissage"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:268
 #: ../build/lib/darktable/plugins/introspection_retouch.c:399
-#: ../src/iop/basicadj.c:616 ../src/iop/channelmixerrgb.c:3584
+#: ../src/iop/basicadj.c:616 ../src/iop/channelmixerrgb.c:3583
 #: ../src/iop/colisa.c:316 ../src/iop/lowpass.c:588 ../src/iop/soften.c:414
 #: ../src/iop/vignette.c:990 ../src/libs/history.c:908
 msgid "brightness"
@@ -3342,7 +3342,7 @@ msgstr "effacer"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
 #: ../src/iop/watermark.c:1404 ../src/libs/image.c:599
-#: ../src/libs/modulegroups.c:2141
+#: ../src/libs/modulegroups.c:2399
 msgid "color"
 msgstr "couleur"
 
@@ -3380,7 +3380,7 @@ msgstr "saturation des hautes lumières"
 
 #: ../build/lib/darktable/plugins/introspection_temperature.c:66
 #: ../build/lib/darktable/plugins/introspection_temperature.c:121
-#: ../src/iop/temperature.c:1884
+#: ../src/iop/temperature.c:1883
 msgid "emerald"
 msgstr "émeraude"
 
@@ -3931,14 +3931,14 @@ msgstr "ordre des modules"
 #: ../src/common/collection.c:1502 ../src/develop/blend_gui.c:1837
 #: ../src/develop/blend_gui.c:1864 ../src/develop/lightroom.c:828
 #: ../src/iop/bilateral.cc:317 ../src/iop/channelmixer.c:625
-#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3579
-#: ../src/iop/temperature.c:1878 ../src/iop/temperature.c:2029
+#: ../src/iop/channelmixer.c:635 ../src/iop/channelmixerrgb.c:3578
+#: ../src/iop/temperature.c:1877 ../src/iop/temperature.c:2028
 #: ../src/libs/collect.c:1699 ../src/views/darkroom.c:2602
 msgid "red"
 msgstr "rouge"
 
 #: ../src/common/collection.c:1504 ../src/develop/lightroom.c:830
-#: ../src/iop/temperature.c:1868 ../src/libs/collect.c:1699
+#: ../src/iop/temperature.c:1867 ../src/libs/collect.c:1699
 #: ../src/views/darkroom.c:2604
 msgid "yellow"
 msgstr "jaune"
@@ -3946,9 +3946,9 @@ msgstr "jaune"
 #: ../src/common/collection.c:1506 ../src/develop/blend_gui.c:1840
 #: ../src/develop/blend_gui.c:1867 ../src/develop/lightroom.c:832
 #: ../src/iop/bilateral.cc:322 ../src/iop/channelmixer.c:626
-#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3580
-#: ../src/iop/temperature.c:1862 ../src/iop/temperature.c:1880
-#: ../src/iop/temperature.c:2030 ../src/libs/collect.c:1699
+#: ../src/iop/channelmixer.c:641 ../src/iop/channelmixerrgb.c:3579
+#: ../src/iop/temperature.c:1861 ../src/iop/temperature.c:1879
+#: ../src/iop/temperature.c:2029 ../src/libs/collect.c:1699
 #: ../src/views/darkroom.c:2603
 msgid "green"
 msgstr "vert"
@@ -3956,8 +3956,8 @@ msgstr "vert"
 #: ../src/common/collection.c:1508 ../src/develop/blend_gui.c:1843
 #: ../src/develop/blend_gui.c:1870 ../src/develop/lightroom.c:834
 #: ../src/iop/bilateral.cc:327 ../src/iop/channelmixer.c:627
-#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3581
-#: ../src/iop/temperature.c:1882 ../src/iop/temperature.c:2031
+#: ../src/iop/channelmixer.c:647 ../src/iop/channelmixerrgb.c:3580
+#: ../src/iop/temperature.c:1881 ../src/iop/temperature.c:2030
 #: ../src/libs/collect.c:1699
 msgid "blue"
 msgstr "bleu"
@@ -4524,7 +4524,7 @@ msgstr ""
 #: ../src/common/history.c:878 ../src/common/history.c:881
 #: ../src/common/history.c:897 ../src/common/styles.c:1117
 #: ../src/common/styles.c:1121 ../src/develop/blend_gui.c:122
-#: ../src/develop/develop.c:2188 ../src/imageio/format/avif.c:808
+#: ../src/develop/develop.c:2186 ../src/imageio/format/avif.c:808
 #: ../src/iop/ashift.c:4706 ../src/libs/live_view.c:430
 msgid "on"
 msgstr "activé(e)"
@@ -5696,7 +5696,7 @@ msgid "gray"
 msgstr "gris"
 
 #: ../src/develop/blend_gui.c:1835 ../src/develop/blend_gui.c:1862
-#: ../src/iop/channelmixerrgb.c:3579 ../src/iop/denoiseprofile.c:3529
+#: ../src/iop/channelmixerrgb.c:3578 ../src/iop/denoiseprofile.c:3529
 #: ../src/iop/rawdenoise.c:897 ../src/iop/rgbcurve.c:1386
 #: ../src/iop/rgblevels.c:943
 msgid "R"
@@ -5707,7 +5707,7 @@ msgid "sliders for red channel"
 msgstr "conditions de fusion sur le canal rouge"
 
 #: ../src/develop/blend_gui.c:1838 ../src/develop/blend_gui.c:1865
-#: ../src/iop/channelmixerrgb.c:3580 ../src/iop/denoiseprofile.c:3530
+#: ../src/iop/channelmixerrgb.c:3579 ../src/iop/denoiseprofile.c:3530
 #: ../src/iop/rawdenoise.c:898 ../src/iop/rgbcurve.c:1387
 #: ../src/iop/rgblevels.c:944
 msgid "G"
@@ -5718,7 +5718,7 @@ msgid "sliders for green channel"
 msgstr "conditions de fusion sur le canal vert"
 
 #: ../src/develop/blend_gui.c:1841 ../src/develop/blend_gui.c:1868
-#: ../src/iop/channelmixerrgb.c:3581 ../src/iop/denoiseprofile.c:3531
+#: ../src/iop/channelmixerrgb.c:3580 ../src/iop/denoiseprofile.c:3531
 #: ../src/iop/rawdenoise.c:899 ../src/iop/rgbcurve.c:1388
 #: ../src/iop/rgblevels.c:945
 msgid "B"
@@ -6104,19 +6104,19 @@ msgstr ""
 msgid "mask refinement"
 msgstr "amélioration du masque"
 
-#: ../src/develop/develop.c:1472 ../src/gui/presets.c:801
+#: ../src/develop/develop.c:1470 ../src/gui/presets.c:801
 msgid "display-referred default"
 msgstr "relatif à l'affichage"
 
 #. For scene-referred workflow, since filmic doesn't brighten as base curve does,
 #. we need an initial exposure boost. This might be too much in some cases but…
 #. (the preset name is used in develop.c)
-#: ../src/develop/develop.c:1474 ../src/gui/presets.c:803
+#: ../src/develop/develop.c:1472 ../src/gui/presets.c:803
 #: ../src/iop/exposure.c:272 ../src/iop/exposure.c:281
 msgid "scene-referred default"
 msgstr "défaut pour relatif à la scène"
 
-#: ../src/develop/develop.c:1943
+#: ../src/develop/develop.c:1941
 #, c-format
 msgid "%s: module `%s' version mismatch: %d != %d"
 msgstr "%s : module « %s » version non cohérente : %d != %d"
@@ -6192,7 +6192,7 @@ msgstr ""
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2538 ../src/gui/preferences.c:797
-#: ../src/libs/lib.c:1266 ../src/libs/modulegroups.c:2479
+#: ../src/libs/lib.c:1266 ../src/libs/modulegroups.c:2738
 msgid "presets"
 msgstr "préréglages"
 
@@ -7228,8 +7228,8 @@ msgid "images"
 msgstr "images"
 
 #: ../src/gui/camera_import_dialog.c:286 ../src/iop/temperature.c:239
-#: ../src/iop/temperature.c:2047 ../src/iop/temperature.c:2060
-#: ../src/iop/temperature.c:2066 ../src/iop/temperature.c:2079
+#: ../src/iop/temperature.c:2046 ../src/iop/temperature.c:2059
+#: ../src/iop/temperature.c:2065 ../src/iop/temperature.c:2078
 msgid "settings"
 msgstr "paramètres"
 
@@ -7973,14 +7973,14 @@ msgstr "conflit de raccourci"
 
 #: ../src/gui/preferences.c:1533 ../src/gui/preferences.c:2167
 #: ../src/gui/presets.c:189 ../src/libs/lib.c:385
-#: ../src/libs/modulegroups.c:3214
+#: ../src/libs/modulegroups.c:3473
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "voulez-vous réellement supprimer le préréglage « %s » ?"
 
 #: ../src/gui/preferences.c:1537 ../src/gui/preferences.c:2171
 #: ../src/gui/presets.c:193 ../src/libs/lib.c:389
-#: ../src/libs/modulegroups.c:3218
+#: ../src/libs/modulegroups.c:3477
 msgid "delete preset?"
 msgstr "supprimer ce préréglage ?"
 
@@ -8175,8 +8175,8 @@ msgstr "voulez-vous réellement mettre à jour le préréglage « %s » ?"
 msgid "update preset?"
 msgstr "mettre à jour le préréglage ?"
 
-#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3390
-#: ../src/libs/modulegroups.c:3399
+#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3649
+#: ../src/libs/modulegroups.c:3658
 msgid "manage module layouts"
 msgstr "gérer les dispositions de modules"
 
@@ -8201,7 +8201,7 @@ msgid "edit this preset.."
 msgstr "modifier ce préréglage..."
 
 #: ../src/gui/presets.c:1293 ../src/libs/lib.c:677
-#: ../src/libs/modulegroups.c:3347
+#: ../src/libs/modulegroups.c:3606
 msgid "delete this preset"
 msgstr "supprimer ce préréglage"
 
@@ -10342,16 +10342,16 @@ msgstr ""
 "température de couleur proximale\n"
 "ne peut être définie donc vous devez utiliser un illuminant personnalisé."
 
-#: ../src/iop/channelmixerrgb.c:3303
+#: ../src/iop/channelmixerrgb.c:3302
 msgid "white balance successfuly extracted from raw image"
 msgstr "la balance des blancs a été extraite de l'image raw avec succès"
 
 #. We need to recompute only the full preview
-#: ../src/iop/channelmixerrgb.c:3309
+#: ../src/iop/channelmixerrgb.c:3308
 msgid "auto-detection of white balance started…"
 msgstr "l'auto-détection de la balance des blancs a démarrée..."
 
-#: ../src/iop/channelmixerrgb.c:3360
+#: ../src/iop/channelmixerrgb.c:3359
 msgid ""
 "color calibration: the sum of the grey channel parameters is zero, "
 "normalization will be disabled."
@@ -10360,19 +10360,19 @@ msgstr ""
 "la normalisation va être désactivée."
 
 #. Page CAT
-#: ../src/iop/channelmixerrgb.c:3475
+#: ../src/iop/channelmixerrgb.c:3474
 msgid "CAT"
 msgstr "CAT"
 
-#: ../src/iop/channelmixerrgb.c:3475
+#: ../src/iop/channelmixerrgb.c:3474
 msgid "chromatic adaptation transform"
 msgstr "transformation d'adaptation chromatique"
 
-#: ../src/iop/channelmixerrgb.c:3477
+#: ../src/iop/channelmixerrgb.c:3476
 msgid "adaptation"
 msgstr "adaptation"
 
-#: ../src/iop/channelmixerrgb.c:3479
+#: ../src/iop/channelmixerrgb.c:3478
 msgid ""
 "choose the method to adapt the illuminant\n"
 "and the colorspace in which the module works: \n"
@@ -10395,7 +10395,7 @@ msgstr ""
 "• aucun désactive toute adaptation et utilise l'espace RVB de travail du "
 "pipeline."
 
-#: ../src/iop/channelmixerrgb.c:3496
+#: ../src/iop/channelmixerrgb.c:3495
 msgid ""
 "this is the color of the scene illuminant before chromatic adaptation\n"
 "this color will be turned into pure white by the adaptation."
@@ -10403,107 +10403,107 @@ msgstr ""
 "ceci est la couleur de l'illuminant de scène avant l'adaptation chromatique\n"
 "cette couleur sera transformée en blanc pur par l'adaptation."
 
-#: ../src/iop/channelmixerrgb.c:3503 ../src/iop/temperature.c:2058
+#: ../src/iop/channelmixerrgb.c:3502 ../src/iop/temperature.c:2057
 msgid "set white balance to detected from area"
 msgstr "choisir la balance des blancs depuis une zone"
 
-#: ../src/iop/channelmixerrgb.c:3507
+#: ../src/iop/channelmixerrgb.c:3506
 msgid "illuminant"
 msgstr "illuminant"
 
-#: ../src/iop/channelmixerrgb.c:3513 ../src/iop/temperature.c:1994
+#: ../src/iop/channelmixerrgb.c:3512 ../src/iop/temperature.c:1993
 msgid "temperature"
 msgstr "température"
 
-#: ../src/iop/channelmixerrgb.c:3557
+#: ../src/iop/channelmixerrgb.c:3556
 msgid "input red"
 msgstr "rouge (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:3564
+#: ../src/iop/channelmixerrgb.c:3563
 msgid "input green"
 msgstr "vert (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:3571
+#: ../src/iop/channelmixerrgb.c:3570
 msgid "input blue"
 msgstr "bleu (entrée)"
 
-#: ../src/iop/channelmixerrgb.c:3582
+#: ../src/iop/channelmixerrgb.c:3581
 msgid "colorfulness"
 msgstr "saturation"
 
-#: ../src/iop/channelmixerrgb.c:3585
+#: ../src/iop/channelmixerrgb.c:3584
 msgid "grey"
 msgstr "gris"
 
-#: ../src/iop/channelmixerrgb.c:3597
+#: ../src/iop/channelmixerrgb.c:3596
 msgid "calibrate with a color checker"
 msgstr "calibrer avec une charte couleur"
 
-#: ../src/iop/channelmixerrgb.c:3600
+#: ../src/iop/channelmixerrgb.c:3599
 msgid "use a color checker target to autoset CAT and channels"
 msgstr "utiliser une charte couleur pour auto-définir CAT et canaux"
 
-#: ../src/iop/channelmixerrgb.c:3607
+#: ../src/iop/channelmixerrgb.c:3606
 msgid "chart"
 msgstr "charte"
 
-#: ../src/iop/channelmixerrgb.c:3608
+#: ../src/iop/channelmixerrgb.c:3607
 msgid "Xrite ColorChecker 24 pre-2014"
 msgstr "Xrite ColorChecker 24 pré-2014"
 
-#: ../src/iop/channelmixerrgb.c:3609
+#: ../src/iop/channelmixerrgb.c:3608
 msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 post-2014"
 
-#: ../src/iop/channelmixerrgb.c:3610
+#: ../src/iop/channelmixerrgb.c:3609
 msgid "Datacolor SpyderCheckr 24 pre-2018"
 msgstr "Datacolor SpyderCheckr 24 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3611
+#: ../src/iop/channelmixerrgb.c:3610
 msgid "Datacolor SpyderCheckr 24 post-2018"
 msgstr "Datacolor SpyderCheckr 24 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3612
+#: ../src/iop/channelmixerrgb.c:3611
 msgid "Datacolor SpyderCheckr 48 pre-2018"
 msgstr "Datacolor SpyderCheckr 48 (avant 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3613
+#: ../src/iop/channelmixerrgb.c:3612
 msgid "Datacolor SpyderCheckr 48 post-2018"
 msgstr "Datacolor SpyderCheckr 48 (après 2018)"
 
-#: ../src/iop/channelmixerrgb.c:3615
+#: ../src/iop/channelmixerrgb.c:3614
 msgid "choose the vendor and the type of your chart"
 msgstr "choisissez le vendeur et le modèle de votre charte"
 
-#: ../src/iop/channelmixerrgb.c:3619
+#: ../src/iop/channelmixerrgb.c:3618
 msgid "optimize for"
 msgstr "optimisé pour"
 
-#: ../src/iop/channelmixerrgb.c:3621
+#: ../src/iop/channelmixerrgb.c:3620
 msgid "neutral colors"
 msgstr "couleurs neutres"
 
-#: ../src/iop/channelmixerrgb.c:3623
+#: ../src/iop/channelmixerrgb.c:3622
 msgid "skin and soil colors"
 msgstr "couleurs de la peau et du sol"
 
-#: ../src/iop/channelmixerrgb.c:3624
+#: ../src/iop/channelmixerrgb.c:3623
 msgid "foliage colors"
 msgstr "couleurs du feuillage"
 
-#: ../src/iop/channelmixerrgb.c:3625
+#: ../src/iop/channelmixerrgb.c:3624
 msgid "sky and water colors"
 msgstr "couleurs du ciel et de l'eau"
 
-#: ../src/iop/channelmixerrgb.c:3626
+#: ../src/iop/channelmixerrgb.c:3625
 msgid "average delta E"
 msgstr "delta E moyen"
 
-#: ../src/iop/channelmixerrgb.c:3627
+#: ../src/iop/channelmixerrgb.c:3626
 msgid "maximum delta E"
 msgstr "delta E maximum"
 
-#: ../src/iop/channelmixerrgb.c:3629
+#: ../src/iop/channelmixerrgb.c:3628
 msgid ""
 "choose the colors that will be optimized with higher priority.\n"
 "neutral colors gives the lowest average delta E but a high maximum delta E\n"
@@ -10521,11 +10521,11 @@ msgstr ""
 "les autres sont des comportements spéciaux visant à protéger certaines "
 "teintes"
 
-#: ../src/iop/channelmixerrgb.c:3637
+#: ../src/iop/channelmixerrgb.c:3636
 msgid "patch scale"
 msgstr "échelle du patch"
 
-#: ../src/iop/channelmixerrgb.c:3638
+#: ../src/iop/channelmixerrgb.c:3637
 msgid ""
 "reduce the radius of the patches to select the more or less central part.\n"
 "useful when the perspective correction is sloppy or\n"
@@ -10535,19 +10535,19 @@ msgstr ""
 "utile lorsque la correction de la perspective est bâclée ou\n"
 "le cadre des patchs projette une ombre sur les bords du patch."
 
-#: ../src/iop/channelmixerrgb.c:3646
+#: ../src/iop/channelmixerrgb.c:3645
 msgid "the delta E is using the CIE 2000 formula."
 msgstr "le delta E utilise la formule CIE 2000."
 
-#: ../src/iop/channelmixerrgb.c:3652
+#: ../src/iop/channelmixerrgb.c:3651
 msgid "accept the computed profile and set it in the module"
 msgstr "accepter le profile calculé et le définir dans le module"
 
-#: ../src/iop/channelmixerrgb.c:3657
+#: ../src/iop/channelmixerrgb.c:3656
 msgid "recompute the profile"
 msgstr "recalculer le profil"
 
-#: ../src/iop/channelmixerrgb.c:3662
+#: ../src/iop/channelmixerrgb.c:3661
 msgid "check the output delta E"
 msgstr "vérifier le delta E de sortie"
 
@@ -11827,16 +11827,16 @@ msgstr ""
 "reconstruit des pixels RVB complets à partir de la lecture d'un capteur à "
 "grille de filtres colorés"
 
-#: ../src/iop/demosaic.c:5043
+#: ../src/iop/demosaic.c:5057
 #, c-format
 msgid "`%s' color matrix not found for 4bayer image!"
 msgstr "matrice couleur « %s » non trouvée pour une image de bayer!"
 
-#: ../src/iop/demosaic.c:5187 ../src/iop/demosaic.c:5191
+#: ../src/iop/demosaic.c:5201 ../src/iop/demosaic.c:5205
 msgid "demosaicing raw data method"
 msgstr "méthode de dématriçage"
 
-#: ../src/iop/demosaic.c:5196
+#: ../src/iop/demosaic.c:5210
 msgid ""
 "threshold for edge-aware median.\n"
 "set to 0.0 to switch off.\n"
@@ -11846,7 +11846,7 @@ msgstr ""
 "mettre 0.0 pour désactiver\n"
 "mettre 1.0 pour ignorer les bords"
 
-#: ../src/iop/demosaic.c:5201
+#: ../src/iop/demosaic.c:5215
 msgid ""
 "contrast threshold for dual demosaic.\n"
 "set to 0.0 for high frequency content.\n"
@@ -11856,19 +11856,19 @@ msgstr ""
 "utiliser 0.0 pour favoriser les hautes-fréquences (détails).\n"
 "utiliser 1.0 pour favoriser les basses-fréquences (aplats)."
 
-#: ../src/iop/demosaic.c:5204
+#: ../src/iop/demosaic.c:5218
 msgid "display blending mask"
 msgstr "affiche masque de fusion"
 
-#: ../src/iop/demosaic.c:5211
+#: ../src/iop/demosaic.c:5225
 msgid "how many color smoothing median steps after demosaicing"
 msgstr "nombre de passes pour le lissage de couleur après le dématriçage"
 
-#: ../src/iop/demosaic.c:5214
+#: ../src/iop/demosaic.c:5228
 msgid "green channels matching method"
 msgstr "méthode de calcul des verts"
 
-#: ../src/iop/demosaic.c:5220
+#: ../src/iop/demosaic.c:5234
 msgid ""
 "demosaicing\n"
 "only needed for raw images."
@@ -12665,6 +12665,7 @@ msgstr ""
 #: ../src/iop/toneequal.c:3102 ../src/iop/toneequal.c:3106
 #: ../src/iop/toneequal.c:3110 ../src/iop/toneequal.c:3114
 #: ../src/iop/toneequal.c:3118 ../src/libs/metadata_view.c:609
+#: ../src/views/darkroom.c:2366
 #, c-format
 msgid "%+.2f EV"
 msgstr "%+.2f IL"
@@ -13486,7 +13487,7 @@ msgstr "échelle"
 msgid "auto scale"
 msgstr "échelle auto"
 
-#: ../src/iop/lens.cc:2384 ../src/libs/modulegroups.c:2142
+#: ../src/iop/lens.cc:2384 ../src/libs/modulegroups.c:2400
 msgid "correct"
 msgstr "retouche"
 
@@ -15023,115 +15024,115 @@ msgstr "matrice couleur « %s » non trouvée pour l'image !"
 msgid "failed to read camera white balance information from `%s'!"
 msgstr "impossible de récupérer la balance des blancs du boîtier pour « %s » !"
 
-#: ../src/iop/temperature.c:1582
+#: ../src/iop/temperature.c:1581
 msgctxt "white balance"
 msgid "as shot"
 msgstr "boîtier"
 
 #. old "camera". reason for change: all other RAW development tools use "As Shot" or "shot"
-#: ../src/iop/temperature.c:1583
+#: ../src/iop/temperature.c:1582
 msgctxt "white balance"
 msgid "from image area"
 msgstr "depuis une zone image"
 
 #. old "spot", reason: describes exactly what'll happen
-#: ../src/iop/temperature.c:1584
+#: ../src/iop/temperature.c:1583
 msgctxt "white balance"
 msgid "user modified"
 msgstr "manuel"
 
-#: ../src/iop/temperature.c:1585
+#: ../src/iop/temperature.c:1584
 msgctxt "white balance"
 msgid "camera reference"
 msgstr "neutre boîtier"
 
-#: ../src/iop/temperature.c:1863 ../src/iop/temperature.c:1881
+#: ../src/iop/temperature.c:1862 ../src/iop/temperature.c:1880
 msgid "green channel coefficient"
 msgstr "coefficient canal vert"
 
-#: ../src/iop/temperature.c:1864 ../src/views/darkroom.c:2606
+#: ../src/iop/temperature.c:1863 ../src/views/darkroom.c:2606
 msgid "magenta"
 msgstr "magenta"
 
-#: ../src/iop/temperature.c:1865
+#: ../src/iop/temperature.c:1864
 msgid "magenta channel coefficient"
 msgstr "coefficient canal magenta"
 
-#: ../src/iop/temperature.c:1866 ../src/views/darkroom.c:2605
+#: ../src/iop/temperature.c:1865 ../src/views/darkroom.c:2605
 msgid "cyan"
 msgstr "cyan"
 
-#: ../src/iop/temperature.c:1867
+#: ../src/iop/temperature.c:1866
 msgid "cyan channel coefficient"
 msgstr "coefficient canal cyan"
 
-#: ../src/iop/temperature.c:1869
+#: ../src/iop/temperature.c:1868
 msgid "yellow channel coefficient"
 msgstr "coefficient canal jaune"
 
-#: ../src/iop/temperature.c:1879
+#: ../src/iop/temperature.c:1878
 msgid "red channel coefficient"
 msgstr "coefficient canal rouge"
 
-#: ../src/iop/temperature.c:1883
+#: ../src/iop/temperature.c:1882
 msgid "blue channel coefficient"
 msgstr "coefficient canal bleu"
 
-#: ../src/iop/temperature.c:1885
+#: ../src/iop/temperature.c:1884
 msgid "emerald channel coefficient"
 msgstr "coefficient canal émeraude"
 
-#: ../src/iop/temperature.c:1980
+#: ../src/iop/temperature.c:1979
 msgid "scene illuminant temp"
 msgstr "température de l'illuminant de scène"
 
-#: ../src/iop/temperature.c:1981
+#: ../src/iop/temperature.c:1980
 msgid "click to cycle color mode on sliders"
 msgstr "cliquer pour changer le mode des contrôles"
 
-#: ../src/iop/temperature.c:1995
+#: ../src/iop/temperature.c:1994
 msgid "color temperature (in Kelvin)"
 msgstr "température couleur (kelvin)"
 
-#: ../src/iop/temperature.c:2000
+#: ../src/iop/temperature.c:1999
 msgid "tint"
 msgstr "teinte"
 
-#: ../src/iop/temperature.c:2001
+#: ../src/iop/temperature.c:2000
 msgid "color tint of the image, from magenta (value < 1) to green (value > 1)"
 msgstr ""
 "teinte de la couleur de l'image, depuis le magenta (valeur < 1) au vert "
 "(valeur > 1)"
 
-#: ../src/iop/temperature.c:2007
+#: ../src/iop/temperature.c:2006
 msgid "channel coefficients"
 msgstr "coefficients des canaux"
 
-#: ../src/iop/temperature.c:2044
+#: ../src/iop/temperature.c:2043
 msgid "white balance settings"
 msgstr "paramètres balance des blancs"
 
-#: ../src/iop/temperature.c:2047
+#: ../src/iop/temperature.c:2046
 msgid "as shot"
 msgstr "boîtier"
 
-#: ../src/iop/temperature.c:2050
+#: ../src/iop/temperature.c:2049
 msgid "set white balance to as shot"
 msgstr "choisir la balance des blancs du boîtier"
 
-#: ../src/iop/temperature.c:2060
+#: ../src/iop/temperature.c:2059
 msgid "user modified"
 msgstr "manuel"
 
-#: ../src/iop/temperature.c:2063
+#: ../src/iop/temperature.c:2062
 msgid "set white balance to user modified"
 msgstr "choisir la balance des blancs utilisateur"
 
-#: ../src/iop/temperature.c:2066
+#: ../src/iop/temperature.c:2065
 msgid "camera reference"
 msgstr "neutre boîtier"
 
-#: ../src/iop/temperature.c:2069
+#: ../src/iop/temperature.c:2068
 msgid ""
 "set white balance to camera reference point\n"
 "in most cases it should be D65"
@@ -15140,24 +15141,24 @@ msgstr ""
 "dans la plupart des cas c'est D65"
 
 #. relabel to settings to remove confusion between module presets and white balance settings
-#: ../src/iop/temperature.c:2080
+#: ../src/iop/temperature.c:2079
 msgid "choose white balance setting"
 msgstr "choisir un paramètre de balance des blancs"
 
-#: ../src/iop/temperature.c:2084
+#: ../src/iop/temperature.c:2083
 msgid "finetune"
 msgstr "ajustement"
 
-#: ../src/iop/temperature.c:2085
+#: ../src/iop/temperature.c:2084
 #, c-format
 msgid "%.0f mired"
 msgstr "%.0f mired"
 
-#: ../src/iop/temperature.c:2086
+#: ../src/iop/temperature.c:2085
 msgid "fine tune camera's white balance setting"
 msgstr "ajustement fin balance des blancs"
 
-#: ../src/iop/temperature.c:2103
+#: ../src/iop/temperature.c:2102
 msgid "white balance disabled for camera"
 msgstr "balance des blancs désactivée pour le boîtier"
 
@@ -18184,8 +18185,8 @@ msgid "modulegroups"
 msgstr "groupes de modules"
 
 #: ../src/libs/modulegroups.c:365 ../src/libs/modulegroups.c:384
-#: ../src/libs/modulegroups.c:2271 ../src/libs/modulegroups.c:2287
-#: ../src/libs/modulegroups.c:2297
+#: ../src/libs/modulegroups.c:2529 ../src/libs/modulegroups.c:2545
+#: ../src/libs/modulegroups.c:2555
 msgid "on-off"
 msgstr "on/off"
 
@@ -18216,154 +18217,170 @@ msgstr ""
 msgid "go to the full version of the %s module"
 msgstr "aller au module complet %s"
 
-#: ../src/libs/modulegroups.c:1508 ../src/libs/modulegroups.c:1532
-#: ../src/libs/modulegroups.c:1548 ../src/libs/modulegroups.c:1566
+#: ../src/libs/modulegroups.c:1539 ../src/libs/modulegroups.c:1628
+#: ../src/libs/modulegroups.c:1667 ../src/libs/modulegroups.c:1725
 msgctxt "modulegroup"
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:1512
+#: ../src/libs/modulegroups.c:1558
 msgctxt "modulegroup"
 msgid "tone"
 msgstr "tonalité"
 
-#: ../src/libs/modulegroups.c:1515 ../src/libs/modulegroups.c:1551
-#: ../src/libs/modulegroups.c:1568
+#: ../src/libs/modulegroups.c:1566 ../src/libs/modulegroups.c:1680
+#: ../src/libs/modulegroups.c:1734
 msgctxt "modulegroup"
 msgid "color"
 msgstr "couleur"
 
-#: ../src/libs/modulegroups.c:1519 ../src/libs/modulegroups.c:1553
-#: ../src/libs/modulegroups.c:1570
+#: ../src/libs/modulegroups.c:1582 ../src/libs/modulegroups.c:1689
+#: ../src/libs/modulegroups.c:1739
 msgctxt "modulegroup"
 msgid "correct"
 msgstr "retouche"
 
-#: ../src/libs/modulegroups.c:1523 ../src/libs/modulegroups.c:1556
-#: ../src/libs/modulegroups.c:1573 ../src/libs/modulegroups.c:2145
+#: ../src/libs/modulegroups.c:1602 ../src/libs/modulegroups.c:1702
+#: ../src/libs/modulegroups.c:1752 ../src/libs/modulegroups.c:2403
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "effet"
 
-#: ../src/libs/modulegroups.c:1526
+#: ../src/libs/modulegroups.c:1618
 msgid "modules: all"
 msgstr "modules : tous"
 
-#: ../src/libs/modulegroups.c:1535 ../src/libs/modulegroups.c:1589
+#: ../src/libs/modulegroups.c:1639 ../src/libs/modulegroups.c:1807
 msgctxt "modulegroup"
 msgid "grading"
 msgstr "étalonnage couleur"
 
-#: ../src/libs/modulegroups.c:1538 ../src/libs/modulegroups.c:1595
-#: ../src/libs/modulegroups.c:2149
+#: ../src/libs/modulegroups.c:1647 ../src/libs/modulegroups.c:1827
+#: ../src/libs/modulegroups.c:2407
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "effets"
 
-#: ../src/libs/modulegroups.c:1540
+#: ../src/libs/modulegroups.c:1655
 msgid "workflow: beginner"
 msgstr "flux de travail : débutant"
 
-#: ../src/libs/modulegroups.c:1558
+#: ../src/libs/modulegroups.c:1712
 msgid "workflow: display-referred"
 msgstr "flux de travail : relatif à l'affichage"
 
-#: ../src/libs/modulegroups.c:1575
+#: ../src/libs/modulegroups.c:1761
 msgid "workflow: scene-referred"
 msgstr "flux de travail : relatif à la scène"
 
-#: ../src/libs/modulegroups.c:1583
+#: ../src/libs/modulegroups.c:1774
 msgctxt "modulegroup"
 msgid "technical"
 msgstr "technique"
 
-#: ../src/libs/modulegroups.c:1607
+#: ../src/libs/modulegroups.c:1851
 msgid "search only"
 msgstr "chercher seulement"
 
-#: ../src/libs/modulegroups.c:1614 ../src/libs/modulegroups.c:1913
-#: ../src/libs/modulegroups.c:2425
+#: ../src/libs/modulegroups.c:1857 ../src/libs/modulegroups.c:2171
+#: ../src/libs/modulegroups.c:2684
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "déprécié"
 
-#: ../src/libs/modulegroups.c:1623
+#: ../src/libs/modulegroups.c:1873
 msgid "previous config"
 msgstr "configuration précédente"
 
-#: ../src/libs/modulegroups.c:1624
+#: ../src/libs/modulegroups.c:1874
 msgid "previous layout"
 msgstr "disposition précédente"
 
-#: ../src/libs/modulegroups.c:1628
+#: ../src/libs/modulegroups.c:1878
 msgid "previous config with new layout"
 msgstr "configuration précédente avec une nouvelle disposition"
 
-#: ../src/libs/modulegroups.c:1766 ../src/libs/modulegroups.c:2274
-#: ../src/libs/modulegroups.c:2329
+#: ../src/libs/modulegroups.c:2021 ../src/libs/modulegroups.c:2532
+#: ../src/libs/modulegroups.c:2588
 msgid "remove this widget"
 msgstr "supprimer ce contrôle"
 
-#: ../src/libs/modulegroups.c:1929 ../src/libs/modulegroups.c:2173
+#: ../src/libs/modulegroups.c:2187 ../src/libs/modulegroups.c:2431
 msgid "remove this module"
 msgstr "supprimer ce module"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2140
+#: ../src/libs/modulegroups.c:2398
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:2143
+#: ../src/libs/modulegroups.c:2401
 msgid "tone"
 msgstr "tonalité"
 
-#: ../src/libs/modulegroups.c:2146
+#: ../src/libs/modulegroups.c:2404
 msgid "technical"
 msgstr "technique"
 
-#: ../src/libs/modulegroups.c:2147
+#: ../src/libs/modulegroups.c:2405
 msgid "grading"
 msgstr "étalonnage couleur"
 
-#: ../src/libs/modulegroups.c:2153 ../src/libs/modulegroups.c:2162
+#: ../src/libs/modulegroups.c:2411 ../src/libs/modulegroups.c:2420
 msgid "add this module"
-msgstr "ajouter le module"
+msgstr "ajouter ce module"
 
-#: ../src/libs/modulegroups.c:2187
+#: ../src/libs/modulegroups.c:2445
 msgid "all available modules"
 msgstr "tous les modules disponibles"
 
-#: ../src/libs/modulegroups.c:2290 ../src/libs/modulegroups.c:2298
-#: ../src/libs/modulegroups.c:2345 ../src/libs/modulegroups.c:2354
+#: ../src/libs/modulegroups.c:2452
+msgid "add module"
+msgstr "ajouter un module"
+
+#: ../src/libs/modulegroups.c:2460
+msgid "remove module"
+msgstr "supprimer un module"
+
+#: ../src/libs/modulegroups.c:2548 ../src/libs/modulegroups.c:2557
+#: ../src/libs/modulegroups.c:2604 ../src/libs/modulegroups.c:2613
 msgid "add this widget"
 msgstr "ajouter ce contrôle"
 
-#: ../src/libs/modulegroups.c:2379
+#: ../src/libs/modulegroups.c:2638
 msgid "all available widgets"
 msgstr "tous les contrôles disponibles"
 
-#: ../src/libs/modulegroups.c:2465
+#: ../src/libs/modulegroups.c:2645
+msgid "add widget"
+msgstr "ajouter un contrôle"
+
+#: ../src/libs/modulegroups.c:2653
+msgid "remove widget"
+msgstr "supprimer un contrôle"
+
+#: ../src/libs/modulegroups.c:2724
 msgid "quick access panel"
 msgstr "panneau d'accès rapide"
 
-#: ../src/libs/modulegroups.c:2474
+#: ../src/libs/modulegroups.c:2733
 msgid "show only active modules"
 msgstr "afficher seulement les modules actifs"
 
 #. search box
-#: ../src/libs/modulegroups.c:2483
+#: ../src/libs/modulegroups.c:2742
 msgid "search module"
 msgstr "chercher module"
 
-#: ../src/libs/modulegroups.c:2489
+#: ../src/libs/modulegroups.c:2748
 msgid "search modules by name or tag"
 msgstr "rechercher les modules par nom ou mots-clés"
 
-#: ../src/libs/modulegroups.c:2497
+#: ../src/libs/modulegroups.c:2756
 msgid "clear text"
 msgstr "effacer texte"
 
-#: ../src/libs/modulegroups.c:2506
+#: ../src/libs/modulegroups.c:2765
 msgid ""
 "following modules are deprecated because they have internal design mistakes "
 "that can't be solved and alternatives that solve them.\n"
@@ -18375,116 +18392,116 @@ msgstr ""
 "ils ne seront plus disponibles pour de nouvelles éditions d'images dans la "
 "prochaine version."
 
-#: ../src/libs/modulegroups.c:2715
+#: ../src/libs/modulegroups.c:2974
 msgid "basic icon"
 msgstr "icône base"
 
-#: ../src/libs/modulegroups.c:2725
+#: ../src/libs/modulegroups.c:2984
 msgid "active icon"
 msgstr "icône actif"
 
-#: ../src/libs/modulegroups.c:2735
+#: ../src/libs/modulegroups.c:2994
 msgid "color icon"
 msgstr "icône couleur"
 
-#: ../src/libs/modulegroups.c:2745
+#: ../src/libs/modulegroups.c:3004
 msgid "correct icon"
 msgstr "icône correction"
 
-#: ../src/libs/modulegroups.c:2755
+#: ../src/libs/modulegroups.c:3014
 msgid "effect icon"
 msgstr "icône effet"
 
-#: ../src/libs/modulegroups.c:2765
+#: ../src/libs/modulegroups.c:3024
 msgid "favorites icon"
 msgstr "icône favoris"
 
-#: ../src/libs/modulegroups.c:2775
+#: ../src/libs/modulegroups.c:3034
 msgid "tone icon"
 msgstr "icône tonalités"
 
-#: ../src/libs/modulegroups.c:2785
+#: ../src/libs/modulegroups.c:3044
 msgid "grading icon"
 msgstr "icône étalonage"
 
-#: ../src/libs/modulegroups.c:2795
+#: ../src/libs/modulegroups.c:3054
 msgid "technical icon"
 msgstr "icône technique"
 
-#: ../src/libs/modulegroups.c:2827 ../src/libs/modulegroups.c:2829
+#: ../src/libs/modulegroups.c:3086 ../src/libs/modulegroups.c:3088
 msgid "quick access panel widgets"
 msgstr "panneau d'accès rapide aux contrôles"
 
-#: ../src/libs/modulegroups.c:2850
+#: ../src/libs/modulegroups.c:3109
 msgid "add widgets to the list"
 msgstr "ajoute un contrôle à la liste"
 
-#: ../src/libs/modulegroups.c:2880
+#: ../src/libs/modulegroups.c:3139
 msgid "move group to the left"
 msgstr "déplace groupe vers la gauche"
 
-#: ../src/libs/modulegroups.c:2892
+#: ../src/libs/modulegroups.c:3151
 msgid "group icon"
 msgstr "icône groupe"
 
-#: ../src/libs/modulegroups.c:2899
+#: ../src/libs/modulegroups.c:3158
 msgid "group name"
 msgstr "nom du groupe"
 
-#: ../src/libs/modulegroups.c:2909
+#: ../src/libs/modulegroups.c:3168
 msgid "remove group"
 msgstr "supprimer le groupe"
 
-#: ../src/libs/modulegroups.c:2922
+#: ../src/libs/modulegroups.c:3181
 msgid "move group to the right"
 msgstr "déplace le groupe vers la droite"
 
-#: ../src/libs/modulegroups.c:2944
+#: ../src/libs/modulegroups.c:3203
 msgid "add module to the list"
 msgstr "ajoute un module à la liste"
 
-#: ../src/libs/modulegroups.c:2972 ../src/libs/tagging.c:3046
+#: ../src/libs/modulegroups.c:3231 ../src/libs/tagging.c:3046
 msgid "new"
 msgstr "nouveau"
 
-#: ../src/libs/modulegroups.c:3063
+#: ../src/libs/modulegroups.c:3322
 msgid "preset name : "
 msgstr "nom préréglage : "
 
-#: ../src/libs/modulegroups.c:3065
+#: ../src/libs/modulegroups.c:3324
 msgid "preset name"
 msgstr "nom préréglage"
 
 #. show search checkbox
-#: ../src/libs/modulegroups.c:3072
+#: ../src/libs/modulegroups.c:3331
 msgid "show search line"
 msgstr "montrer la zone de recherche"
 
 #. show basics checkbox
-#: ../src/libs/modulegroups.c:3078
+#: ../src/libs/modulegroups.c:3337
 msgid "show quick access panel"
 msgstr "afficher le panneau d'accès rapide"
 
-#: ../src/libs/modulegroups.c:3087
+#: ../src/libs/modulegroups.c:3346
 msgid "module groups"
 msgstr "groupes de modules"
 
-#: ../src/libs/modulegroups.c:3126
+#: ../src/libs/modulegroups.c:3385
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
 "c'est un préréglage interne en lecture seul. dupliquer pour faire des "
 "changements"
 
-#: ../src/libs/modulegroups.c:3137
+#: ../src/libs/modulegroups.c:3396
 msgid "reset"
 msgstr "réinitialiser"
 
-#: ../src/libs/modulegroups.c:3337
+#: ../src/libs/modulegroups.c:3596
 msgid "duplicate this preset"
 msgstr "dupliquer ce préréglage"
 
-#: ../src/libs/modulegroups.c:3363
+#: ../src/libs/modulegroups.c:3622
 msgid "add new empty preset"
 msgstr "ajouter un préréglage vide"
 
