@@ -555,6 +555,20 @@ static inline void copy_pixel(float *const __restrict__ out, const float *const 
   for_each_channel(k,aligned(in,out:16)) out[k] = in[k];
 }
 
+// a few macros and helper functions to speed up certain frequently-used GLib operations
+#define g_list_is_singleton(list) ((list) && (!(list)->next))
+static inline int g_list_shorter_than(const GList *list, unsigned len)
+{
+  // instead of scanning the full list to compute its length and then comparing against the limit,
+  // bail out as soon as the limit is reached.  Usage: g_list_shorter_than(l,4) instead of g_list_length(l)<4
+  while (len-- > 0)
+  {
+    if (!list) return 1;
+    list = g_list_next(list);
+  }
+  return 0;
+}
+
 void dt_print_mem_usage();
 
 void dt_configure_performance();

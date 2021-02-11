@@ -783,8 +783,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   {
     // we test active images if mouse outside table
     gboolean ok = TRUE;
-    if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
-       && g_slist_length(darktable.view_manager->act_on.active_imgs) > 0)
+    if(!dt_ui_thumbtable(darktable.gui->ui)->mouse_inside && darktable.view_manager->act_on.active_imgs)
     {
       GSList *l1 = darktable.view_manager->act_on.active_imgs;
       GSList *l2 = darktable.view_manager->active_images;
@@ -851,7 +850,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   else
   {
     // collumn 4,5
-    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    if(darktable.view_manager->active_images)
     {
       // collumn 5
       GSList *ll = darktable.view_manager->active_images;
@@ -915,7 +914,7 @@ int dt_view_get_image_to_act_on()
   }
   else
   {
-    if(g_slist_length(darktable.view_manager->active_images) > 0)
+    if(darktable.view_manager->active_images)
     {
       ret = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
     }
@@ -1238,7 +1237,7 @@ void dt_view_filter_reset(const dt_view_manager_t *vm, gboolean smart_filter)
 
 void dt_view_active_images_reset(gboolean raise)
 {
-  if(g_slist_length(darktable.view_manager->active_images) < 1) return;
+  if(!darktable.view_manager->active_images) return;
   g_slist_free(darktable.view_manager->active_images);
   darktable.view_manager->active_images = NULL;
 

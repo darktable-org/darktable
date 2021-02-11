@@ -255,8 +255,7 @@ static void _brush_catmull_to_bezier(float x1, float y1, float x2, float y2, flo
 static void _brush_init_ctrl_points(dt_masks_form_t *form)
 {
   // if we have less than 2 points, what to do ??
-  const guint nb = g_list_length(form->points);
-  if(nb < 2) return;
+  if(g_list_shorter_than(form->points, 2)) return;
 
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
@@ -1379,7 +1378,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
   else if(gui->point_selected >= 0 && which == 3)
   {
     // we remove the point (and the entire form if there is too few points)
-    if(g_list_length(form->points) <= 2)
+    if(g_list_shorter_than(form->points, 3))
     {
       // if the form doesn't below to a group, we don't delete it
       if(parentid <= 0) return 1;
@@ -1387,7 +1386,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
         dt_masks_change_form_gui(NULL);
-      else if(g_list_length(darktable.develop->form_visible->points) < 2)
+      else if(g_list_shorter_than(darktable.develop->form_visible->points, 2))
         dt_masks_change_form_gui(NULL);
       else
       {
@@ -1456,7 +1455,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
       dt_masks_change_form_gui(NULL);
-    else if(g_list_length(darktable.develop->form_visible->points) < 2)
+    else if(g_list_shorter_than(darktable.develop->form_visible->points, 2))
       dt_masks_change_form_gui(NULL);
     else
     {

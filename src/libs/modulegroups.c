@@ -2262,7 +2262,7 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
     if(hb)
     {
       GList *lw2 = gtk_container_get_children(GTK_CONTAINER(hb));
-      if(g_list_length(lw2) > 2)
+      if(!g_list_shorter_than(lw2,3)) //do we have at least three?
       {
         GtkWidget *left = (GtkWidget *)lw2->data;
         GtkWidget *right = (GtkWidget *)g_list_nth_data(lw2, 2);

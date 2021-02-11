@@ -635,7 +635,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       table->realign_top_try = 0;
 
       dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_last(table->list)->data;
-      if(table->thumbs_per_row == 1 && posy < 0 && g_list_length(table->list) == 1)
+      if(table->thumbs_per_row == 1 && posy < 0 && g_list_is_singleton(table->list))
       {
         // special case for zoom == 1 as we don't want any space under last image (the image would have disappear)
         int nbid = 1;
@@ -1239,8 +1239,8 @@ static void _dt_active_images_callback(gpointer instance, gpointer user_data)
   if(!user_data) return;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
 
-  if(g_slist_length(darktable.view_manager->active_images) == 0) return;
-  int activeid = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+  if(!darktable.view_manager->active_images) return;
+  int activeid = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
   dt_thumbtable_set_offset_image(table, activeid, TRUE);
 }
 
@@ -1373,9 +1373,9 @@ static void _dt_collection_changed_callback(gpointer instance, dt_collection_cha
 
     // in filmstrip mode, let's first ensure the offset is the right one. Otherwise we move to it
     int old_offset = -1;
-    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && g_slist_length(darktable.view_manager->active_images) > 0)
+    if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP && darktable.view_manager->active_images)
     {
-      const int tmpoff = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+      const int tmpoff = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
       if(tmpoff != table->offset_imgid)
       {
         old_offset = table->offset_imgid;
@@ -1590,7 +1590,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
     case DND_TARGET_URI:
     {
       GList *l = table->drag_list;
-      if(g_list_length(l) == 1)
+      if(g_list_is_singleton(l))
       {
         gchar pathname[PATH_MAX] = { 0 };
         gboolean from_cache = TRUE;
@@ -1650,7 +1650,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
     // if we are dragging a single image -> use the thumbnail of that image
     // otherwise use the generic d&d icon
     // TODO: have something pretty in the 2nd case, too.
-    if(g_list_length(table->drag_list) == 1)
+    if(g_list_is_singleton(table->drag_list))
     {
       const int id = GPOINTER_TO_INT(table->drag_list->data);
       dt_mipmap_buffer_t buf;
@@ -2006,7 +2006,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     // we need to ensure there's no need to load other image on top/bottom
     if(table->mode == DT_THUMBTABLE_MODE_ZOOM) nbnew += _thumbs_load_needed(table);
 
-    if(g_slist_length(darktable.view_manager->active_images) > 0
+    if(darktable.view_manager->active_images
        && (table->mode == DT_THUMBTABLE_MODE_ZOOM || table->mode == DT_THUMBTABLE_MODE_FILEMANAGER))
     {
       // this mean we arrive from filmstrip with some active images
@@ -2183,7 +2183,7 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
 
   // if we are in darkroom we show a message as there might be no other indication
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  if(v->view(v) == DT_VIEW_DARKROOM && g_list_length(imgs) == 1 && darktable.develop->preview_pipe)
+  if(v->view(v) == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
   {
     // we verify that the image is the active one
     const int id = GPOINTER_TO_INT(imgs->data);
@@ -2225,7 +2225,7 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
 
   // if we are in darkroom we show a message as there might be no other indication
   const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
-  if(v->view(v) == DT_VIEW_DARKROOM && g_list_length(imgs) == 1 && darktable.develop->preview_pipe)
+  if(v->view(v) == DT_VIEW_DARKROOM && g_list_is_singleton(imgs) && darktable.develop->preview_pipe)
   {
     // we verify that the image is the active one
     const int id = GPOINTER_TO_INT(imgs->data);

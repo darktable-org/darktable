@@ -172,9 +172,9 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
     if(group_on) dt_grouping_add_grouped_images(&imgs);
 
-    const guint count = g_list_length(imgs);
-    if(count > 1)
+    if(!g_list_shorter_than(imgs,2)) // pop up a toast if rating multiple images at once
     {
+      const guint count = g_list_length(imgs);
       if(new_rating == DT_VIEW_REJECT)
         dt_control_log(ngettext("rejecting %d image", "rejecting %d images", count), count);
       else
