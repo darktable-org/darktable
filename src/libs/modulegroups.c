@@ -1518,7 +1518,7 @@ void init_presets(dt_lib_module_t *self)
                        "|profile_gamma|velvia|vibrance");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
                        "ashift|atrous|bilateral|cacorrect|defringe|denoiseprofile|dither"
-                       "|hazeremoval|hotpixels|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
+                       "|hazeremoval|hotpixels|mlens|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
                        "|scalepixels|sharpen|spots");
   tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
                        "bloom|borders|colorize|colormapping|graduatednd|grain|highpass|lowlight"
