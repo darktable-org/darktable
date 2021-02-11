@@ -109,7 +109,7 @@ static GList *_film_recursive_get_files(const gchar *path, gboolean recursive, G
     }
     /* or test if we found a supported image format to import */
     else if(!g_file_test(fullname, G_FILE_TEST_IS_DIR) && dt_supported_image(filename))
-      *result = g_list_append(*result, fullname);
+      *result = g_list_prepend(*result, fullname);
     else
       g_free(fullname);
 
@@ -260,7 +260,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
 
-    all_imgs = g_list_append(all_imgs, GINT_TO_POINTER(imgid));
+    all_imgs = g_list_prepend(all_imgs, GINT_TO_POINTER(imgid));
     imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
     if((imgid & 3) == 3)
     {
@@ -271,6 +271,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   } while((image = g_list_next(image)) != NULL);
 
   g_list_free_full(images, g_free);
+  all_imgs = g_list_reverse(all_imgs);
 
   // only redraw at the end, to not spam the cpu with exposure events
   dt_control_queue_redraw_center();

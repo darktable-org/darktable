@@ -2002,7 +2002,7 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
   int next = -1;
   if(!collection->clone)
   {
-    if(g_list_length(list) > 0)
+    if(list)
     {
       // for changing offsets, thumbtable needs to know the first untouched imageid after the list
       // we do this here
@@ -2165,8 +2165,9 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   gchar *message;
 
   int c = dt_collection_get_count_no_group(collection);
-  int cs = dt_collection_get_selected_count(collection);
-
+  int cs = g_list_length(selected_imgids);
+  g_list_free(selected_imgids);
+ 
   if(cs == 1)
   {
     message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
