@@ -1249,8 +1249,10 @@ static void tree_view(dt_lib_collect_rule_t *dr)
         break;
       case DT_COLLECTION_PROP_TAG:
       {
-        char *sensitive = dt_conf_get_string("plugins/lighttable/tagging/case_sensitivity");
-        if(!strcmp(sensitive, _("insensitive")))
+        const gboolean is_insensitive =
+          dt_conf_is_equal("plugins/lighttable/tagging/case_sensitivity", "insensitive");
+
+        if(is_insensitive)
           query = g_strdup_printf("SELECT name, 1 AS tagid , COUNT(*) AS count"
                                   " FROM (SELECT DISTINCT name, id"
                                   "   FROM main.images AS mi"
@@ -1269,7 +1271,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                   "   ON tagid = tag_id"
                                   " WHERE %s"
                                   " GROUP BY name,tag_id", where_ext);
-        g_free(sensitive);
+
         query = dt_util_dstrcat(query, " UNION ALL "
                                        "SELECT '%s' AS name, 0 as id, COUNT(*) AS count "
                                        "FROM main.images AS mi "
