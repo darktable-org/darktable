@@ -3224,9 +3224,8 @@ void reload_defaults(dt_iop_module_t *module)
   d->illuminant = module->get_f("illuminant")->Enum.Default;
   d->adaptation = module->get_f("adaptation")->Enum.Default;
 
-  gchar *workflow = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
-  const gboolean is_modern = strcmp(workflow, "modern") == 0;
-  g_free(workflow);
+  const gboolean is_modern =
+    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
 
   // note that if there is already an instance of this module with an
   // adaptation set we default to RGB (none) in this instance.
