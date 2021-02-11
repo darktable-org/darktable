@@ -315,9 +315,10 @@ static GList *_insert_before(GList *iop_order_list, const char *module, const ch
 
 dt_iop_order_t dt_ioppr_get_iop_order_version(const int32_t imgid)
 {
-  char *workflow = dt_conf_get_string("plugins/darkroom/workflow");
-  dt_iop_order_t iop_order_version = strcmp(workflow, "display-referred") == 0 ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
-  g_free(workflow);
+  const gboolean is_display_referred =
+    dt_conf_is_equal("plugins/darkroom/workflow", "display-referred");
+  dt_iop_order_t iop_order_version =
+    is_display_referred ? DT_IOP_ORDER_LEGACY : DT_IOP_ORDER_V30;
 
   // check current iop order version
   sqlite3_stmt *stmt;
