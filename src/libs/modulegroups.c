@@ -2080,7 +2080,10 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
   _preset_from_string(self, (char *)params, FALSE);
 
   gchar *tx = dt_util_dstrcat(NULL, "plugins/darkroom/%s/last_preset", self->plugin_name);
-  dt_conf_set_string("plugins/darkroom/modulegroups_preset", dt_conf_get_string(tx));
+
+  gchar *value = dt_conf_get_string(tx);
+  dt_conf_set_string("plugins/darkroom/modulegroups_preset", value);
+  g_free(value);
   g_free(tx);
 
   _buttons_update(self);
