@@ -1478,6 +1478,37 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   }
 }
 
+// start no quick access
+#define SNQA() \
+  {                                      \
+    g_free(tx);                          \
+    tx=NULL;                             \
+    tx = dt_util_dstrcat(tx, "1ꬹ1");     \
+  }
+
+// start quick access
+#define SQA()                            \
+  {                                      \
+    g_free(tx);                          \
+    tx=NULL;                             \
+    tx = dt_util_dstrcat(tx, "ꬹ1||");     \
+    if(is_modern)                        \
+    {                                    \
+      AM("channelmixerrgb/temperature"); \
+    }                                    \
+    else                                 \
+    {                                    \
+      AM("temperature/temperature");     \
+      AM("temperature/tint");            \
+    }                                    \
+  }
+
+// start module group
+#define SMG(g,n) tx = dt_util_dstrcat(tx, "ꬹ%s|%s|", g, n)
+
+// add module
+#define AM(n)    tx = dt_util_dstrcat(tx, "|%s", n)
+
 void init_presets(dt_lib_module_t *self)
 {
   /*
@@ -1490,130 +1521,349 @@ void init_presets(dt_lib_module_t *self)
             echo ${BN:0:16} ; done | xargs echo | sed 's/ /|/g'
   */
 
-  // we define here specific sequences which depends of user prefs
-  gchar *basic_temp = NULL;
-  gchar *chroma_adaptation = dt_conf_get_string("plugins/darkroom/chromatic-adaptation");
-  if(g_strcmp0(chroma_adaptation, "modern") == 0)
-    basic_temp = dt_util_dstrcat(NULL, "channelmixerrgb/temperature");
-  else
-    basic_temp = dt_util_dstrcat(NULL, "temperature/temperature|temperature/tint");
-
-  g_free(chroma_adaptation);
+  const gboolean is_modern =
+    dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
 
   // all modules
   gchar *tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
-                       "exposure/exposure|colorbalance/contrast"
-                       "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
-                       "basecurve|basicadj|clipping|colisa|colorreconstruct|demosaic|exposure|finalscale"
-                       "|flip|highlights|negadoctor|overexposed|rawoverexposed|rawprepare"
-                       "|shadhi|temperature|toneequal");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "tone"), "tone",
-                       "bilat|filmicrgb|levels"
-                       "|rgbcurve|rgblevels|tonecurve");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixerrgb|colorbalance|colorchecker|colorcontrast"
-                       "|colorcorrection|colorin|colorout|colorzones|lut3d|monochrome"
-                       "|profile_gamma|velvia|vibrance");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
-                       "ashift|atrous|bilateral|cacorrect|defringe|denoiseprofile|dither"
-                       "|hazeremoval|hotpixels|lens|liquify|nlmeans|rawdenoise|retouch|rotatepixels"
-                       "|scalepixels|sharpen|spots");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
-                       "bloom|borders|colorize|colormapping|graduatednd|grain|highpass|lowlight"
-                       "|lowpass|soften|splittoning|vignette|watermark|censorize");
+
+  SQA();
+  AM("exposure/exposure");
+  AM("colorbalance/contrast");
+  AM("colorbalance/output saturation");
+  AM("clipping/angle");
+  AM("denoiseprofile");
+  AM("lens");
+  AM("bilat");
+
+  SMG(C_("modulegroup", "base"), "basic");
+  AM("basecurve");
+  AM("basicadj");
+  AM("clipping");
+  AM("colisa");
+  AM("colorreconstruct");
+  AM("demosaic");
+  AM("exposure");
+  AM("finalscale");
+  AM("flip");
+  AM("highlights");
+  AM("negadoctor");
+  AM("overexposed");
+  AM("rawoverexposed");
+  AM("rawprepare");
+  AM("shadhi");
+  AM("temperature");
+  AM("toneequal");
+
+  SMG(C_("modulegroup", "tone"), "tone");
+  AM("bilat");
+  AM("filmicrgb");
+  AM("levels");
+  AM("rgbcurve");
+  AM("rgblevels");
+  AM("tonecurve");
+
+  SMG(C_("modulegroup", "color"), "color");
+  AM("channelmixerrgb");
+  AM("colorbalance");
+  AM("colorchecker");
+  AM("colorcontrast");
+  AM("colorcorrection");
+  AM("colorin");
+  AM("colorout");
+  AM("colorzones");
+  AM("lut3d");
+  AM("monochrome");
+  AM("profile");
+  AM("gamma");
+  AM("velvia");
+  AM("vibrance");
+
+  SMG(C_("modulegroup", "correct"), "correct");
+  AM("ashift");
+  AM("atrous");
+  AM("bilateral");
+  AM("cacorrect");
+  AM("defringe");
+  AM("denoiseprofile");
+  AM("dither");
+  AM("hazeremoval");
+  AM("hotpixels");
+  AM("lens");
+  AM("liquify");
+  AM("nlmeans");
+  AM("rawdenoise");
+  AM("retouch");
+  AM("rotatepixels");
+  AM("scalepixels");
+  AM("sharpen");
+  AM("spots");
+
+  SMG(C_("modulegroup", "effect"), "effect");
+  AM("bloom");
+  AM("borders");
+  AM("colorize");
+  AM("colormapping");
+  AM("graduatednd");
+  AM("grain");
+  AM("highpass");
+  AM("lowlight");
+  AM("lowpass");
+  AM("soften");
+  AM("splittoning");
+  AM("vignette");
+  AM("watermark");
+  AM("censorize");
+
   dt_lib_presets_add(_("modules: all"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
 
   // minimal / 3 tabs
-  tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp, "exposure/exposure|clipping/angle|denoiseprofile|lens");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
-                       "basicadj|ashift|basecurve|clipping"
-                       "|denoiseprofile|exposure|flip|lens|temperature");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
-                       "channelmixerrgb|colorzones|graduatednd|rgbcurve"
-                       "|rgblevels|splittoning");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
-                       "borders|monochrome|retouch|sharpen|vignette|watermark");
+
+  SQA();
+  AM("exposure/exposure");
+  AM("clipping/angle");
+  AM("denoiseprofile");
+  AM("lens");
+
+  SMG(C_("modulegroup", "base"), "basic");
+  AM("basicadj");
+  AM("ashift");
+  AM("basecurve");
+  AM("clipping");
+  AM("denoiseprofile");
+  AM("exposure");
+  AM("flip");
+  AM("lens");
+  AM("temperature");
+
+  SMG(C_("modulegroup", "grading"), "grading");
+  AM("channelmixerrgb");
+  AM("colorzones");
+  AM("graduatednd");
+  AM("rgbcurve");
+  AM("rgblevels");
+  AM("splittoning");
+
+  SMG(C_("modulegroup", "effects"), "effect");
+  AM("borders");
+  AM("monochrome");
+  AM("retouch");
+  AM("sharpen");
+  AM("vignette");
+  AM("watermark");
+
   dt_lib_presets_add(_("workflow: beginner"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
 
   // display referred
-  tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
-                       "exposure/exposure|colorbalance/contrast"
-                       "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
-                       "basecurve|toneequal|clipping|flip|exposure|temperature"
-                       "|rgbcurve|rgblevels|bilat|shadhi|highlights");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixerrgb|colorbalance|colorcorrection|colorzones|monochrome|velvia|vibrance");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
-                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
-                       "|lens|retouch|liquify|sharpen|nlmeans");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
-                       "borders|colorize|graduatednd|grain|splittoning|vignette|watermark|censorize");
+  SQA();
+  AM("exposure/exposure");
+  AM("colorbalance/contrast");
+  AM("colorbalance/output saturation");
+  AM("clipping/angle");
+  AM("denoiseprofile");
+  AM("lens");
+  AM("bilat");
+
+  SMG(C_("modulegroup", "base"), "basic");
+  AM("basecurve");
+  AM("toneequal");
+  AM("clipping");
+  AM("flip");
+  AM("exposure");
+  AM("temperature");
+  AM("rgbcurve");
+  AM("rgblevels");
+  AM("bilat");
+  AM("shadhi");
+  AM("highlights");
+
+  SMG(C_("modulegroup", "color"), "color");
+  AM("channelmixerrgb");
+  AM("colorbalance");
+  AM("colorcorrection");
+  AM("colorzones");
+  AM("monochrome");
+  AM("velvia");
+  AM("vibrance");
+
+  SMG(C_("modulegroup", "correct"), "correct");
+  AM("ashift");
+  AM("cacorrect");
+  AM("defringe");
+  AM("denoiseprofile");
+  AM("hazeremoval");
+  AM("hotpixels");
+  AM("lens");
+  AM("retouch");
+  AM("liquify");
+  AM("sharpen");
+  AM("nlmeans");
+
+  SMG(C_("modulegroup", "effect"), "effect");
+  AM("borders");
+  AM("colorize");
+  AM("graduatednd");
+  AM("grain");
+  AM("splittoning");
+  AM("vignette");
+  AM("watermark");
+  AM("censorize");
+
   dt_lib_presets_add(_("workflow: display-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
 
   // scene referred
-  tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
-                       "exposure/exposure|colorbalance/contrast"
-                       "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "base"), "basic",
-                       "filmicrgb|toneequal|clipping|flip|exposure|temperature|bilat");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "color"), "color",
-                       "channelmixerrgb|colorbalance|colorzones");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "correct"), "correct",
-                       "ashift|cacorrect|defringe|denoiseprofile|hazeremoval|hotpixels"
-                       "|lens|retouch|liquify|sharpen|nlmeans");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effect"), "effect",
-                       "atrous|borders|graduatednd|grain|vignette|watermark|censorize");
+
+  SQA();
+  AM("exposure/exposure");
+  AM("colorbalance/contrast");
+  AM("colorbalance/output saturation");
+  AM("clipping/angle");
+  AM("denoiseprofile");
+  AM("lens");
+  AM("bilat");
+
+  SMG(C_("modulegroup", "base"), "basic");
+  AM("filmicrgb");
+  AM("toneequal");
+  AM("clipping");
+  AM("flip");
+  AM("exposure");
+  AM("temperature");
+  AM("bilat");
+
+  SMG(C_("modulegroup", "color"), "color");
+  AM("channelmixerrgb");
+  AM("colorbalance");
+  AM("colorzones");
+
+  SMG(C_("modulegroup", "correct"), "correct");
+  AM("ashift");
+  AM("cacorrect");
+  AM("defringe");
+  AM("denoiseprofile");
+  AM("hazeremoval");
+  AM("hotpixels");
+  AM("lens");
+  AM("retouch");
+  AM("liquify");
+  AM("sharpen");
+  AM("nlmeans");
+
+  SMG(C_("modulegroup", "effect"), "effect");
+  AM("atrous");
+  AM("borders");
+  AM("graduatednd");
+  AM("grain");
+  AM("vignette");
+  AM("watermark");
+  AM("censorize");
+
   dt_lib_presets_add(_("workflow: scene-referred"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
 
   // default / 3 tabs based on Aurélien's proposal
-  tx = NULL;
-  tx = dt_util_dstrcat(tx, "ꬹ1|||%s|%s", basic_temp,
-                       "exposure/exposure|colorbalance/contrast"
-                       "|colorbalance/output saturation|clipping/angle|denoiseprofile|lens|bilat");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "technical"), "technical",
-                       "ashift|basecurve|bilateral|cacorrect|clipping|colorchecker|colorin|colorout"
-                       "|colorreconstruct|defringe|demosaic|denoiseprofile|dither|exposure"
-                       "|filmicrgb|finalscale|flip|hazeremoval|highlights|hotpixels|lens"
-                       "|lut3d|negadoctor|nlmeans|overexposed|rawdenoise"
-                       "|rawoverexposed|rotatepixels||temperature|scalepixels");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "grading"), "grading",
-                       "basicadj|channelmixerrgb|colisa|colorbalance"
-                       "|colorcontrast|colorcorrection|colorize|colorzones"
-                       "|graduatednd|levels|rgbcurve|rgblevels|shadhi|splittoning"
-                       "|tonecurve|toneequal"
-                       "|velvia|vibrance");
-  tx = dt_util_dstrcat(tx, "ꬹ%s|%s||%s", C_("modulegroup", "effects"), "effect",
-                       "atrous|bilat|bloom|borders|colormapping"
-                       "|grain|highpass|liquify|lowlight|lowpass|monochrome|retouch|sharpen"
-                       "|soften|spots|vignette|watermark|censorize");
-  dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
 
-  g_free(basic_temp);
+  SQA();
+  AM("exposure/exposure");
+  AM("colorbalance/contrast");
+  AM("colorbalance/output saturation");
+  AM("clipping/angle");
+  AM("denoiseprofile");
+  AM("lens");
+  AM("bilat");
+
+  SMG(C_("modulegroup", "technical"), "technical");
+  AM("ashift");
+  AM("basecurve");
+  AM("bilateral");
+  AM("cacorrect");
+  AM("clipping");
+  AM("colorchecker");
+  AM("colorin");
+  AM("colorout");
+
+  AM("colorreconstruct");
+  AM("defringe");
+  AM("demosaic");
+  AM("denoiseprofile");
+  AM("dither");
+  AM("exposure");
+  AM("filmicrgb");
+  AM("finalscale");
+  AM("flip");
+  AM("hazeremoval");
+  AM("highlights");
+  AM("hotpixels");
+  AM("lens");
+  AM("lut3d");
+  AM("negadoctor");
+  AM("nlmeans");
+  AM("overexposed");
+  AM("rawdenoise");
+  AM("rawoverexposed");
+  AM("rotatepixels");
+  AM("temperature");
+  AM("scalepixels");
+
+  SMG(C_("modulegroup", "grading"), "grading");
+  AM("basicadj");
+  AM("channelmixerrgb");
+  AM("colisa");
+  AM("colorbalance");
+  AM("colorcontrast");
+  AM("colorcorrection");
+  AM("colorize");
+  AM("colorzones");
+  AM("graduatednd");
+  AM("levels");
+  AM("rgbcurve");
+  AM("rgblevels");
+  AM("shadhi");
+  AM("splittoning");
+  AM("tonecurve");
+  AM("toneequal");
+  AM("velvia");
+  AM("vibrance");
+
+  SMG(C_("modulegroup", "effects"), "effect");
+  AM("atrous");
+  AM("bilat");
+  AM("bloom");
+  AM("borders");
+  AM("colormapping");
+  AM("grain");
+  AM("highpass");
+  AM("liquify");
+  AM("lowlight");
+  AM("lowpass");
+  AM("monochrome");
+  AM("retouch");
+  AM("sharpen");
+  AM("soften");
+  AM("spots");
+  AM("vignette");
+  AM("watermark");
+  AM("censorize");
+
+  dt_lib_presets_add(_(FALLBACK_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
   // search only (only active modules visibles)
-  tx = NULL;
-  tx = dt_util_dstrcat(tx, "1ꬹ1");
+  SNQA();
   dt_lib_presets_add(_("search only"), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
-  g_free(tx);
 
   // this is a special preset for all newly deprecated modules
   // so users still have a chance to access them until next release (with warning messages)
   // this modules are deprecated in 3.4 and should be removed from this group in 3.6
-  tx = NULL;
-  tx = dt_util_dstrcat(tx, "1ꬹ1ꬹ%s|%s||%s", C_("modulegroup", "deprecated"), "basic",
-                       "zonesystem|invert|channelmixer|globaltonemap|relight|tonemap");
+  SNQA();
+  SMG(C_("modulegroup", "deprecated"), "basic");
+  AM("zonesystem");
+  AM("invert");
+  AM("channelmixer");
+  AM("globaltonemap");
+  AM("relight");
+  AM("tonemap");
+
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
+
   g_free(tx);
 
   // if needed, we add a new preset, based on last user config
