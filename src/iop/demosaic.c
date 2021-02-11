@@ -480,7 +480,7 @@ static void green_equilibration_lavg(float *out, const float *const in, const in
       // prevent divide by zero and ...
       // guard against m1/m2 becoming too large (due to m2 being too small) which results in hot pixels
       // also m1 must be checked to be positive
-      if(m2 > 0.0f && m1 > 0.0f && m1 / m2 < maximum * 2.0f)
+      if((m2 > 0.0f) && (m1 > 0.0f) && (m1 / m2 < maximum * 2.0f))
       {
         const float c1 = (fabsf(o1_1 - o1_2) + fabsf(o1_1 - o1_3) + fabsf(o1_1 - o1_4) + fabsf(o1_2 - o1_3)
                           + fabsf(o1_3 - o1_4) + fabsf(o1_2 - o1_4)) / 6.0f;
@@ -601,7 +601,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
     for(int col = 0; col < 3; col++)
       for(int ng = 0, d = 0; d < 10; d += 2)
       {
-        int g = FCxtrans(row, col, NULL, xtrans) == 1;
+        const int g = FCxtrans(row, col, NULL, xtrans) == 1;
         if(FCxtrans(row + orth[d], col + orth[d + 2], NULL, xtrans) == 1)
           ng = 0;
         else
@@ -616,8 +616,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         if(ng == g + 1)
           for(int c = 0; c < 8; c++)
           {
-            int v = orth[d] * patt[g][c * 2] + orth[d + 1] * patt[g][c * 2 + 1];
-            int h = orth[d + 2] * patt[g][c * 2] + orth[d + 3] * patt[g][c * 2 + 1];
+            const int v = orth[d] * patt[g][c * 2] + orth[d + 1] * patt[g][c * 2 + 1];
+            const int h = orth[d + 2] * patt[g][c * 2] + orth[d + 3] * patt[g][c * 2 + 1];
             // offset within TSxTS buffer
             allhex[row][col][c ^ (g * 2 & d)] = h + v * TS;
           }
@@ -676,6 +676,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
             // mirror a border pixel if beyond image edge
             const int c = FCxtrans(row, col, roi_in, xtrans);
             for(int cc = 0; cc < 3; cc++)
+            {
               if(cc != c)
                 pix[cc] = 0.0f;
               else
@@ -703,6 +704,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                   pix[c] = sum / count;
                 }
               }
+            }
           }
         }
 
@@ -776,7 +778,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int col = left + pad_g_interp; col < mcol - pad_g_interp; col++)
         {
           float color[8];
-          int f = FCxtrans(row, col, roi_in, xtrans);
+          const int f = FCxtrans(row, col, roi_in, xtrans);
           if(f == 1) continue;
           float (*const pix)[3] = &rgb[0][row - top][col - left];
           const short *const hex = hexmap(row,col,allhex);
@@ -811,13 +813,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           for(int row = top + pad_g_recalc; row < mrow - pad_g_recalc; row++)
             for(int col = left + pad_g_recalc; col < mcol - pad_g_recalc; col++)
             {
-              int f = FCxtrans(row, col, roi_in, xtrans);
+              const int f = FCxtrans(row, col, roi_in, xtrans);
               if(f == 1) continue;
               const short *const hex = hexmap(row,col,allhex);
               for(int d = 3; d < 6; d++)
               {
                 float(*rfx)[3] = &rgb[(d - 2) ^ !((row - sgrow) % 3)][row - top][col - left];
-                float val = rfx[-2 * hex[d]][1] + 2 * rfx[hex[d]][1] - rfx[-2 * hex[d]][f]
+                const float val = rfx[-2 * hex[d]][1]
+                            + 2 * rfx[hex[d]][1] - rfx[-2 * hex[d]][f]
                             - 2 * rfx[hex[d]][f] + 3 * rfx[0][f];
                 rfx[0][1] = CLAMPS(val / 3.0f, gmin[row - top][col - left], gmax[row - top][col - left]);
               }
@@ -852,7 +855,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 // derivative which will be divided by two later to be
                 // rate of luminance change for red/blue between known
                 // red/blue neighbors and the current unknown pixel
-                float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
+                const float g = 2 * rfx[0][1] - rfx[i << c][1] - rfx[-(i << c)][1];
                 // color is halved before being stored in rgb, hence
                 // this becomes green rate of change plus the average
                 // of the near red or blue pixels on current axis
@@ -881,14 +884,14 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int row = top + pad_rb_br; row < mrow - pad_rb_br; row++)
           for(int col = left + pad_rb_br; col < mcol - pad_rb_br; col++)
           {
-            int f = 2 - FCxtrans(row, col, roi_in, xtrans);
+            const int f = 2 - FCxtrans(row, col, roi_in, xtrans);
             if(f == 1) continue;
             float(*rfx)[3] = &rgb[0][row - top][col - left];
-            int c = (row - sgrow) % 3 ? TS : 1;
-            int h = 3 * (c ^ TS ^ 1);
+            const int c = (row - sgrow) % 3 ? TS : 1;
+            const int h = 3 * (c ^ TS ^ 1);
             for(int d = 0; d < 4; d++, rfx += TS * TS)
             {
-              int i = d > 1 || ((d ^ c) & 1) ||
+              const int i = d > 1 || ((d ^ c) & 1) ||
                 ((fabsf(rfx[0][1]-rfx[c][1]) + fabsf(rfx[0][1]-rfx[-c][1])) <
                  2.f*(fabsf(rfx[0][1]-rfx[h][1]) + fabsf(rfx[0][1]-rfx[-h][1]))) ? c:h;
               rfx[0][f] = (rfx[i][f] + rfx[-i][f] + 2.f * rfx[0][1] - rfx[i][1] - rfx[-i][1]) / 2.f;
@@ -898,6 +901,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         /* Fill in red and blue for 2x2 blocks of green:                */
         const int pad_g22 = (passes == 1) ? 8 : 4;
         for(int row = top + pad_g22; row < mrow - pad_g22; row++)
+        {
           if((row - sgrow) % 3)
             for(int col = left + pad_g22; col < mcol - pad_g22; col++)
               if((col - sgcol) % 3)
@@ -907,17 +911,18 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
                 for(int d = 0; d < ndir; d += 2, rfx += TS * TS)
                   if(hex[d] + hex[d + 1])
                   {
-                    float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                    const float g = 3.f * rfx[0][1] - 2.f * rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                     for(int c = 0; c < 4; c += 2)
                       rfx[0][c] = (g + 2.f * rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 3.f;
                   }
                   else
                   {
-                    float g = 2.f * rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d + 1]][1];
+                    const float g = 2.f * rfx[0][1] - rfx[hex[d]][1] - rfx[hex[d + 1]][1];
                     for(int c = 0; c < 4; c += 2)
                       rfx[0][c] = (g + rfx[hex[d]][c] + rfx[hex[d + 1]][c]) / 2.f;
                   }
               }
+        }
       } // end of multipass loop
 
       // jump back to the first set of rgb buffers (this is a nop
@@ -941,12 +946,12 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int row = pad_yuv; row < mrow - pad_yuv; row++)
           for(int col = pad_yuv; col < mcol - pad_yuv; col++)
           {
-            float *rx = rgb[d][row][col];
+            const float *rx = rgb[d][row][col];
             // use ITU-R BT.2020 YPbPr, which is great, but could use
             // a better/simpler choice? note that imageop.h provides
             // dt_iop_RGB_to_YCbCr which uses Rec. 601 conversion,
             // which appears less good with specular highlights
-            float y = 0.2627f * rx[0] + 0.6780f * rx[1] + 0.0593f * rx[2];
+            const float y = 0.2627f * rx[0] + 0.6780f * rx[1] + 0.0593f * rx[2];
             yuv[0][row][col] = y;
             yuv[1][row][col] = (rx[2] - y) * 0.56433f;
             yuv[2][row][col] = (rx[0] - y) * 0.67815f;
@@ -961,7 +966,7 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
         for(int row = pad_drv; row < mrow - pad_drv; row++)
           for(int col = pad_drv; col < mcol - pad_drv; col++)
           {
-            float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
+            const float(*yfx)[TS][TS] = (float(*)[TS][TS]) & yuv[0][row][col];
             drv[d][row][col] = SQR(2 * yfx[0][0][0] - yfx[0][0][f] - yfx[0][0][-f])
                                + SQR(2 * yfx[1][0][0] - yfx[1][0][f] - yfx[1][0][-f])
                                + SQR(2 * yfx[2][0][0] - yfx[2][0][f] - yfx[2][0][-f]);
@@ -980,7 +985,8 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           tr *= 8;
           for(int d = 0; d < ndir; d++)
             for(int v = -1; v <= 1; v++)
-              for(int h = -1; h <= 1; h++) homo[d][row][col] += ((drv[d][row + v][col + h] <= tr) ? 1 : 0);
+              for(int h = -1; h <= 1; h++)
+                homo[d][row][col] += ((drv[d][row + v][col + h] <= tr) ? 1 : 0);
         }
 
       /* Build 5x5 sum of homogeneity maps for each pixel & direction */
@@ -1015,20 +1021,23 @@ static void xtrans_markesteijn_interpolate(float *out, const float *const in,
           }
           maxval -= maxval >> 3;
           for(int d = 0; d < ndir - 4; d++)
+          {
             if(hm[d] < hm[d + 4])
               hm[d] = 0;
             else if(hm[d] > hm[d + 4])
               hm[d + 4] = 0;
+          }
           float avg[4] = { 0.0f };
           for(int d = 0; d < ndir; d++)
+          {
             if(hm[d] >= maxval)
             {
               for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
               avg[3]++;
             }
+          }
           for(int c = 0; c < 3; c++)
-            out[4 * (width * (row + top) + col + left) + c] =
-              avg[c]/avg[3];
+            out[4 * (width * (row + top) + col + left) + c] = avg[c]/avg[3];
         }
     }
   }
@@ -2084,23 +2093,28 @@ static void xtrans_fdc_interpolate(struct dt_iop_module_t *self, float *out, con
           }
           maxval -= maxval >> 3;
           for(int d = 0; d < ndir - 4; d++)
+          {
             if(hm[d] < hm[d + 4])
               hm[d] = 0;
             else if(hm[d] > hm[d + 4])
               hm[d + 4] = 0;
+          }
+
           float avg[4] = { 0.f };
           for(int d = 0; d < ndir; d++)
+          {
             if(hm[d] >= maxval)
             {
               for(int c = 0; c < 3; c++) avg[c] += rgb[d][row][col][c];
               avg[3]++;
             }
+          }
           float rgbpix[3];
           for(int c = 0; c < 3; c++) rgbpix[c] = avg[c] / avg[3];
           // preserve all components of Markesteijn for this pixel
-          float y = 0.2627f * rgbpix[0] + 0.6780f * rgbpix[1] + 0.0593f * rgbpix[2];
-          float um = (rgbpix[2] - y) * 0.56433f;
-          float vm = (rgbpix[0] - y) * 0.67815f;
+          const float y = 0.2627f * rgbpix[0] + 0.6780f * rgbpix[1] + 0.0593f * rgbpix[2];
+          const float um = (rgbpix[2] - y) * 0.56433f;
+          const float vm = (rgbpix[0] - y) * 0.67815f;
           float uvf[2];
           // macros for fast meadian filtering
 #define PIX_SWAP(a, b)                                                                                            \
@@ -2222,7 +2236,7 @@ static void lin_interpolate(float *out, const float *const in, const dt_iop_roi_
       for(int y = -1; y <= 1; y++)
         for(int x = -1; x <= 1; x++)
         {
-          int weight = 1 << ((y == 0) + (x == 0));
+          const int weight = 1 << ((y == 0) + (x == 0));
           const int color = fcol(row + y + roi_in->y, col + x + roi_in->x, filters, xtrans);
           if(color == f) continue;
           *ip++ = (roi_in->width * y + x);
@@ -2342,13 +2356,13 @@ static void vng_interpolate(float *out, const float *const in,
       const signed char *cp = terms;
       for(int t = 0; t < 64; t++)
       {
-        int y1 = *cp++, x1 = *cp++;
-        int y2 = *cp++, x2 = *cp++;
-        int weight = *cp++;
-        int grads = *cp++;
-        int color = fcol(row + y1, col + x1, filters4, xtrans);
+        const int y1 = *cp++, x1 = *cp++;
+        const int y2 = *cp++, x2 = *cp++;
+        const int weight = *cp++;
+        const int grads = *cp++;
+        const int color = fcol(row + y1, col + x1, filters4, xtrans);
         if(fcol(row + y2, col + x2, filters4, xtrans) != color) continue;
-        int diag
+        const int diag
             = (fcol(row, col + 1, filters4, xtrans) == color && fcol(row + 1, col, filters4, xtrans) == color)
                   ? 2
                   : 1;
@@ -2364,9 +2378,9 @@ static void vng_interpolate(float *out, const float *const in,
       cp = chood;
       for(int g = 0; g < 8; g++)
       {
-        int y = *cp++, x = *cp++;
+        const int y = *cp++, x = *cp++;
         *ip++ = (y * width + x) * 4;
-        int color = fcol(row, col, filters4, xtrans);
+        const int color = fcol(row, col, filters4, xtrans);
         if(fcol(row + y, col + x, filters4, xtrans) != color
            && fcol(row + y * 2, col + x * 2, filters4, xtrans) == color)
           *ip++ = (y * width + x) * 8 + color;
@@ -2411,9 +2425,9 @@ static void vng_interpolate(float *out, const float *const in,
         memcpy(brow[2][col], pix, sizeof(*out) * 4);
         continue;
       }
-      float thold = gmin + (gmax * 0.5f);
+      const float thold = gmin + (gmax * 0.5f);
       float sum[4] = { 0.0f };
-      int color = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
+      const int color = fcol(row + roi_in->y, col + roi_in->x, filters4, xtrans);
       int num = 0;
       for(g = 0; g < 8; g++, ip += 2) /* Average the neighbors */
       {
@@ -2563,14 +2577,14 @@ static void demosaic_ppg(float *const out, const float *const in, const dt_iop_r
         for(int x = i - 1; x != i + 2; x++)
         {
           const int yy = y + roi_out->y, xx = x + roi_out->x;
-          if(yy >= 0 && xx >= 0 && yy < roi_in->height && xx < roi_in->width)
+          if((yy >= 0) && (xx >= 0) && (yy < roi_in->height) && (xx < roi_in->width))
           {
-            int f = FC(y, x, filters);
+            const int f = FC(y, x, filters);
             sum[f] += in[(size_t)yy * roi_in->width + xx];
             sum[f + 4]++;
           }
         }
-      int f = FC(j, i, filters);
+      const int f = FC(j, i, filters);
       for(int c = 0; c < 3; c++)
       {
         if(c != f && sum[c + 4] > 0.0f)
@@ -3628,7 +3642,7 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
         for(int y = -1; y <= 1; y++)
           for(int x = -1; x <= 1; x++)
           {
-            int weight = 1 << ((y == 0) + (x == 0));
+            const int weight = 1 << ((y == 0) + (x == 0));
             const int color = fcol(row + y + roi_in->y, col + x + roi_in->x, filters4, xtrans);
             if(color == f) continue;
             *ip++ = (y << 16) | (x & 0xffffu);
@@ -3680,13 +3694,13 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
         const signed char *cp = terms;
         for(int t = 0; t < 64; t++)
         {
-          int y1 = *cp++, x1 = *cp++;
-          int y2 = *cp++, x2 = *cp++;
-          int weight = *cp++;
-          int grads = *cp++;
-          int color = fcol(row + y1, col + x1, filters4, xtrans);
+          const int y1 = *cp++, x1 = *cp++;
+          const int y2 = *cp++, x2 = *cp++;
+          const int weight = *cp++;
+          const int grads = *cp++;
+          const int color = fcol(row + y1, col + x1, filters4, xtrans);
           if(fcol(row + y2, col + x2, filters4, xtrans) != color) continue;
-          int diag
+          const int diag
               = (fcol(row, col + 1, filters4, xtrans) == color && fcol(row + 1, col, filters4, xtrans) == color)
                     ? 2
                     : 1;
@@ -3702,9 +3716,9 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
         cp = chood;
         for(int g = 0; g < 8; g++)
         {
-          int y = *cp++, x = *cp++;
+          const int y = *cp++, x = *cp++;
           *ip++ = (y << 16) | (x & 0xffffu);
-          int color = fcol(row, col, filters4, xtrans);
+          const int color = fcol(row, col, filters4, xtrans);
           if(fcol(row + y, col + x, filters4, xtrans) != color
              && fcol(row + y * 2, col + x * 2, filters4, xtrans) == color)
           {
@@ -3925,7 +3939,6 @@ static int process_vng_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     }
   }
 
-
   if(dev_aux != dev_out) dt_opencl_release_mem_object(dev_aux);
   dev_aux = NULL;
 
@@ -4039,7 +4052,7 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
       for(int col = 0; col < 3; col++)
         for(int ng = 0, d = 0; d < 10; d += 2)
         {
-          int g = FCxtrans(row, col, NULL, xtrans) == 1;
+          const int g = FCxtrans(row, col, NULL, xtrans) == 1;
           if(FCxtrans(row + orth[d] + 6, col + orth[d + 2] + 6, NULL, xtrans) == 1)
             ng = 0;
           else
@@ -4054,8 +4067,8 @@ static int process_markesteijn_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe
           if(ng == g + 1)
             for(int c = 0; c < 8; c++)
             {
-              int v = orth[d] * patt[g][c * 2] + orth[d + 1] * patt[g][c * 2 + 1];
-              int h = orth[d + 2] * patt[g][c * 2] + orth[d + 3] * patt[g][c * 2 + 1];
+              const int v = orth[d] * patt[g][c * 2] + orth[d + 1] * patt[g][c * 2 + 1];
+              const int h = orth[d + 2] * patt[g][c * 2] + orth[d + 3] * patt[g][c * 2 + 1];
 
               allhex[row][col][c ^ (g * 2 & d)][0] = h;
               allhex[row][col][c ^ (g * 2 & d)][1] = v;
