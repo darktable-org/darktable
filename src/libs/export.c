@@ -526,13 +526,12 @@ void _print_size_update_display(dt_lib_export_t *self)
   }
   else
   {
-    gchar *resizing = dt_conf_get_string(CONFIG_PREFIX "resizing");
-    if (strcmp(resizing, "scaling") != 0)
+    const gboolean is_scaling = dt_conf_is_equal(CONFIG_PREFIX "resizing", "scaling");
+    if (!is_scaling)
     {
       // max size
       gtk_widget_set_visible(GTK_WIDGET(self->print_size), TRUE);
     }
-    g_free(resizing);
     gtk_widget_set_sensitive(GTK_WIDGET(self->width), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(self->height), FALSE);
 
@@ -1410,8 +1409,8 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_no_show_all(self->widget, TRUE);
   _print_size_update_display(d);
 
-  gchar *resizing = dt_conf_get_string(CONFIG_PREFIX "resizing");
-  if (strcmp(resizing, "scaling") == 0)
+  const gboolean is_scaling = dt_conf_is_equal(CONFIG_PREFIX "resizing", "scaling");
+  if (is_scaling)
   {
     // scaling
     gtk_widget_show(GTK_WIDGET(d->scale));
@@ -1425,7 +1424,6 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_show(GTK_WIDGET(d->hbox1));
     gtk_widget_show(GTK_WIDGET(d->print_size));
   }
-  g_free(resizing);
 
   d->metadata_export = NULL;
 

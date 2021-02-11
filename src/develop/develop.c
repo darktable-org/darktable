@@ -1408,6 +1408,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
   const gboolean is_scene_referred = strcmp(workflow, "scene-referred") == 0;
   const gboolean is_display_referred = strcmp(workflow, "display-referred") == 0;
   const gboolean is_workflow_none = strcmp(workflow, "none") == 0;
+  g_free(workflow);
 
   const gboolean is_modern_chroma =
     dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
