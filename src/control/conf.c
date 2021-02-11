@@ -300,6 +300,12 @@ gchar *dt_conf_get_string(const char *name)
   return g_strdup(str);
 }
 
+gboolean dt_conf_is_equal(const char *name, const char *value)
+{
+  const char *str = dt_conf_get_var(name);
+  return g_strcmp0(str, value) == 0;
+}
+
 static char *_sanitize_confgen(const char *name, const char *value)
 {
   const dt_confgen_value_t *item = g_hash_table_lookup(darktable.conf->x_confgen, name);
