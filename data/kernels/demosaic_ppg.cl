@@ -97,7 +97,7 @@ green_equilibration_lavg(read_only image2d_t in, write_only image2d_t out, const
     const float m1 = (o1_1+o1_2+o1_3+o1_4)/4.0f;
     const float m2 = (o2_1+o2_2+o2_3+o2_4)/4.0f;
     
-    if (m2 > 0.0f && m1 / m2 < maximum * 2.0f)
+    if (m2 > 0.0f && m1 > 0.0f && m1 / m2 < maximum * 2.0f)
     {
       const float c1 = (fabs(o1_1 - o1_2) + fabs(o1_1 - o1_3) + fabs(o1_1 - o1_4) + fabs(o1_2 - o1_3) + fabs(o1_3 - o1_4) + fabs(o1_2 - o1_4)) / 6.0f;
       const float c2 = (fabs(o2_1 - o2_2) + fabs(o2_1 - o2_3) + fabs(o2_1 - o2_4) + fabs(o2_2 - o2_3) + fabs(o2_3 - o2_4) + fabs(o2_2 - o2_4)) / 6.0f;
