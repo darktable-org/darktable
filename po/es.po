@@ -3,7 +3,7 @@ msgstr ""
 "Project-Id-Version: darktable 3.4.2\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2021-02-10 00:24-0600\n"
-"PO-Revision-Date: 2021-02-10 21:12-0600\n"
+"PO-Revision-Date: 2021-02-10 22:37-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -6447,7 +6447,7 @@ msgid ""
 "<b>switch smooth/sharp mode</b>: ctrl+click"
 msgstr ""
 "<b>Mover nodo</b>: Arrastrar, <b>Eliminar nodo</b>: Clic secundario\n"
-"<b>Alternar modo (redondeado/recto) </b>: Ctrl+Clic"
+"<b>Alternar modo (romo/angulado) </b>: Ctrl+Clic"
 
 #: ../src/develop/masks/masks.c:352
 msgid ""
@@ -10440,24 +10440,20 @@ msgid "Xrite ColorChecker 24 post-2014"
 msgstr "Xrite ColorChecker 24 posterior a 2014"
 
 #: ../src/iop/channelmixerrgb.c:3620
-#, fuzzy
 msgid "Datacolor SpyderCheckr 24 pre-2018"
-msgstr "Datacolor SpyderCheckr 24"
+msgstr "Datacolor SpyderCheckr 24 previo a 2018"
 
 #: ../src/iop/channelmixerrgb.c:3621
-#, fuzzy
 msgid "Datacolor SpyderCheckr 24 post-2018"
-msgstr "Datacolor SpyderCheckr 24"
+msgstr "Datacolor SpyderCheckr 24 posterior a 2018"
 
 #: ../src/iop/channelmixerrgb.c:3622
-#, fuzzy
 msgid "Datacolor SpyderCheckr 48 pre-2018"
-msgstr "Datacolor SpyderCheckr 48"
+msgstr "Datacolor SpyderCheckr 48 previo a 2018"
 
 #: ../src/iop/channelmixerrgb.c:3623
-#, fuzzy
 msgid "Datacolor SpyderCheckr 48 post-2018"
-msgstr "Datacolor SpyderCheckr 48"
+msgstr "Datacolor SpyderCheckr 48 posterior a 2018"
 
 #: ../src/iop/channelmixerrgb.c:3625
 msgid "choose the vendor and the type of your chart"
@@ -11152,7 +11148,6 @@ msgid "masks"
 msgstr "máscaras"
 
 #: ../src/iop/colorbalancergb.c:951
-#, fuzzy
 msgid "isolate luminances"
 msgstr "aislar luminancias"
 
@@ -17670,7 +17665,6 @@ msgid "show all"
 msgstr "mostrar todas"
 
 #: ../src/libs/map_locations.c:987
-#, fuzzy
 msgid "show all locations which are on the visible map"
 msgstr "Muestra todas los lugares que están en el área visible"
 
@@ -20565,7 +20559,8 @@ msgstr "Acción"
 #~ "scroll to set curvature, shift+scroll to change compression\n"
 #~ "ctrl+scroll to set shape opacity (%d%%)"
 #~ msgstr ""
-#~ "Desplazamiento fija el tamaño, Mayús+Desplazamiento fija la Grado de transición\n"
+#~ "Desplazamiento fija el tamaño, Mayús+Desplazamiento fija la Grado de "
+#~ "transición\n"
 #~ "Ctrl+Desplazamiento fija la opacidad (%d%%)"
 
 #~ msgid "move to rotate shape"
