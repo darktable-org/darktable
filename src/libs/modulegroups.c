@@ -1860,6 +1860,8 @@ void init_presets(dt_lib_module_t *self)
   AM("globaltonemap");
   AM("relight");
   AM("tonemap");
+  AM("vibrance");
+  AM("basicadj");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
