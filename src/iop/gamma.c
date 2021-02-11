@@ -323,9 +323,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
     return;
 
   const dt_dev_pixelpipe_display_mask_t mask_display = piece->pipe->mask_display;
-  char *str = dt_conf_get_string("channel_display");
-  const int fcolor = !strcmp(str, "false color");
-  g_free(str);
+  const gboolean fcolor = dt_conf_is_equal("channel_display", "false color");
 
   const size_t buffsize = (size_t)roi_out->width * roi_out->height * 4;
   const float alpha = (mask_display & DT_DEV_PIXELPIPE_DISPLAY_MASK) ? 1.0f : 0.0f;

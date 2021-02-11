@@ -908,9 +908,8 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       }
 
       /* lets show/hide modules dependent on current group*/
-      gchar *preset = dt_conf_get_string("plugins/darkroom/modulegroups_preset");
-      const gboolean show_deprecated = !strcmp(preset, _(DEPRECATED_PRESET_NAME));
-      g_free(preset);
+      const gboolean show_deprecated =
+        dt_conf_is_equal("plugins/darkroom/modulegroups_preset", _(DEPRECATED_PRESET_NAME));
       gboolean show_module = TRUE;
       switch(d->current)
       {
