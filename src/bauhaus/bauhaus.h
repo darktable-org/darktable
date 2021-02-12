@@ -117,6 +117,7 @@ typedef struct dt_bauhaus_combobox_data_t
   char text[180];       // roughly as much as a slider
   PangoEllipsizeMode entries_ellipsis;
   GList *entries;
+  gboolean mute_scrolling;   // if set, prevents to issue "data-changed"
 } dt_bauhaus_combobox_data_t;
 
 typedef union dt_bauhaus_data_t
@@ -342,6 +343,7 @@ void dt_bauhaus_combobox_add_populate_fct(GtkWidget *widget, void (*fct)(GtkWidg
 void dt_bauhaus_combobox_entry_set_sensitive(GtkWidget *widget, int pos, gboolean sensitive);
 void dt_bauhaus_combobox_set_entries_ellipsis(GtkWidget *widget, PangoEllipsizeMode ellipis);
 PangoEllipsizeMode dt_bauhaus_combobox_get_entries_ellipsis(GtkWidget *widget);
+void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget);
 
 // key accel parsing:
 // execute a line of input
