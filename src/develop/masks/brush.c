@@ -1582,16 +1582,13 @@ static int dt_brush_events_button_released(struct dt_iop_module_t *module, float
 
       float factor = 0.01f;
       char *smoothing = dt_conf_get_string("brush_smoothing");
-      if(smoothing)
-      {
-        if(!strcmp(smoothing, "low"))
-          factor = 0.0025f;
-        else if(!strcmp(smoothing, "medium"))
-          factor = 0.01f;
-        else if(!strcmp(smoothing, "high"))
-          factor = 0.04f;
-        g_free(smoothing);
-      }
+      if(!strcmp(smoothing, "low"))
+        factor = 0.0025f;
+      else if(!strcmp(smoothing, "medium"))
+        factor = 0.01f;
+      else if(!strcmp(smoothing, "high"))
+        factor = 0.04f;
+      g_free(smoothing);
 
       // accuracy level for node elimination, dependent on brush size
       const float epsilon2 = factor * MAX(BORDER_MIN, masks_border) * MAX(BORDER_MIN, masks_border);
