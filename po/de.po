@@ -18247,7 +18247,7 @@ msgstr "Workflow: auf Aufnahme bezogen"
 #: ../src/libs/modulegroups.c:1774
 msgctxt "modulegroup"
 msgid "technical"
-msgstr "technisch"
+msgstr "Technisch"
 
 #: ../src/libs/modulegroups.c:1851
 msgid "search only"
@@ -18291,7 +18291,7 @@ msgstr "Tonwerte"
 
 #: ../src/libs/modulegroups.c:2404
 msgid "technical"
-msgstr "technisch"
+msgstr "Technisch"
 
 #: ../src/libs/modulegroups.c:2405
 msgid "grading"
@@ -18395,7 +18395,7 @@ msgstr "Symbol „Farbkorrektur”"
 
 #: ../src/libs/modulegroups.c:3054
 msgid "technical icon"
-msgstr "Symbol „technisch”"
+msgstr "Symbol „Technisch”"
 
 #: ../src/libs/modulegroups.c:3086 ../src/libs/modulegroups.c:3088
 msgid "quick access panel widgets"
