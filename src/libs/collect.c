@@ -595,7 +595,10 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
        || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
       && event->type == GDK_BUTTON_PRESS && event->button == 3)
      || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
-     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1))
+     || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
+     || ((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
+          && (event->type == GDK_BUTTON_PRESS && event->button == 1 && 
+              event->state & GDK_SHIFT_MASK && event->state & GDK_CONTROL_MASK)))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
     GtkTreePath *path = NULL;
