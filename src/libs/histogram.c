@@ -848,7 +848,7 @@ static gboolean _eventbox_motion_notify_callback(GtkWidget *widget, GdkEventCros
   dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
   gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("click to hide green channel") : _("click to show green channel"));
   gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
-  gtk_widget_set_tooltip_text(d->red_channel_button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
+  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("click to hide red channel") : _("click to show red channel"));
   _scope_type_update(d);
   return TRUE;
 }
