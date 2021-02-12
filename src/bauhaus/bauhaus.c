@@ -44,6 +44,7 @@ static gboolean dt_bauhaus_popup_draw(GtkWidget *widget, cairo_t *cr, gpointer u
 static gboolean dt_bauhaus_popup_key_press(GtkWidget *widget, GdkEventKey *event, gpointer user_data);
 static void dt_bauhaus_widget_accept(dt_bauhaus_widget_t *w);
 static void dt_bauhaus_widget_reject(dt_bauhaus_widget_t *w);
+static void _bauhaus_combobox_set(GtkWidget *widget, const int pos, const gboolean mute);
 
 static gboolean _combobox_next_entry(GList *entries, int *new_pos, int delta_y)
 {
@@ -329,7 +330,7 @@ static void combobox_popup_scroll(int amt)
   gtk_widget_queue_draw(darktable.bauhaus->popup_area);
 
   // and we change the value
-  dt_bauhaus_combobox_set(w, new_value);
+  _bauhaus_combobox_set(w, new_value, d->mute_scrolling);
 }
 
 
@@ -431,7 +432,9 @@ static gboolean dt_bauhaus_popup_button_release(GtkWidget *widget, GdkEventButto
 #endif
     darktable.bauhaus->end_mouse_x = x - wx;
     darktable.bauhaus->end_mouse_y = y - wy;
-    dt_bauhaus_widget_accept(darktable.bauhaus->current);
+    const dt_bauhaus_combobox_data_t *d = &darktable.bauhaus->current->data.combobox;
+    if(!d->mute_scrolling)
+      dt_bauhaus_widget_accept(darktable.bauhaus->current);
     dt_bauhaus_hide_popup();
   }
   else if(darktable.bauhaus->hiding)
@@ -701,7 +704,6 @@ static void dt_bauhaus_widget_init(dt_bauhaus_widget_t *w, dt_iop_module_t *self
   w->quad_paint_data = NULL;
   w->quad_toggle = 0;
   w->combo_populate = NULL;
-
 
   switch(w->type)
   {
@@ -1096,6 +1098,7 @@ void dt_bauhaus_combobox_from_widget(dt_bauhaus_widget_t* w,dt_iop_module_t *sel
   d->scale = 1;
   d->text_align = DT_BAUHAUS_COMBOBOX_ALIGN_RIGHT;
   d->entries_ellipsis = PANGO_ELLIPSIZE_END;
+  d->mute_scrolling = FALSE;
   memset(d->text, 0, sizeof(d->text));
 
   gtk_widget_add_events(GTK_WIDGET(w), GDK_KEY_PRESS_MASK);
@@ -1296,14 +1299,19 @@ void dt_bauhaus_combobox_set_text(GtkWidget *widget, const char *text)
   g_strlcpy(d->text, text, sizeof(d->text));
 }
 
-void dt_bauhaus_combobox_set(GtkWidget *widget, int pos)
+static void _bauhaus_combobox_set(GtkWidget *widget, const int pos, const gboolean mute)
 {
   dt_bauhaus_widget_t *w = DT_BAUHAUS_WIDGET(widget);
   if(w->type != DT_BAUHAUS_COMBOBOX) return;
   dt_bauhaus_combobox_data_t *d = &w->data.combobox;
   d->active = CLAMP(pos, -1, d->num_labels - 1);
   gtk_widget_queue_draw(GTK_WIDGET(w));
-  if(!darktable.gui->reset) g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+  if(!darktable.gui->reset && !mute) g_signal_emit_by_name(G_OBJECT(w), "value-changed");
+}
+
+void dt_bauhaus_combobox_set(GtkWidget *widget, const int pos)
+{
+  _bauhaus_combobox_set(widget, pos, FALSE);
 }
 
 gboolean dt_bauhaus_combobox_set_from_text(GtkWidget *widget, const char *text)
@@ -2834,6 +2842,13 @@ GList *dt_bauhaus_vimkey_complete(const char *input)
     cmp = g_list_next(cmp);
   }
   return res;
+}
+
+void dt_bauhaus_combobox_mute_scrolling(GtkWidget *widget)
+{
+  dt_bauhaus_widget_t *w = (dt_bauhaus_widget_t *)widget;
+  dt_bauhaus_combobox_data_t *d = &w->data.combobox;
+  d->mute_scrolling = TRUE;
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
