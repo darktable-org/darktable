@@ -2999,9 +2999,9 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
     - prefer unmasked instances (when selected, after applying the above rules, if instances of the module are unmasked, masked instances will be ignored)
     - selection order (after applying the above rules, apply the shortcut to the first or last instance remaining)
   */
-  int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
-  int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
-  int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
+  const int prefer_expanded = dt_conf_get_bool("accel/prefer_expanded") ? 8 : 0;
+  const int prefer_enabled = dt_conf_get_bool("accel/prefer_enabled") ? 4 : 0;
+  const int prefer_unmasked = dt_conf_get_bool("accel/prefer_unmasked") ? 2 : 0;
   gchar* select_order = dt_conf_get_string("accel/select_order");
   int prefer_first = strcmp(select_order, "first instance") == 0 ? 1 : 0;
   g_free(select_order);
