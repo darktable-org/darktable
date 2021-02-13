@@ -1147,6 +1147,7 @@ gboolean dt_image_basic(const int32_t imgid)
   return status & DT_HISTORY_HASH_BASIC;
 }
 
+#ifndef _WIN32
 static int _valid_glob_match(const char *const name, size_t offset)
 {
   // verify that the name matched by glob() is a valid sidecar name by checking whether we have an underscore
@@ -1161,6 +1162,7 @@ static int _valid_glob_match(const char *const name, size_t offset)
   }
   return name[i] == '.';
 }
+#endif /* !_WIN32 */
 
 GList* dt_image_find_duplicates(const char* filename)
 {
