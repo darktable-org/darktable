@@ -43,6 +43,7 @@
 #include "lua/image.h"
 #endif
 #include <assert.h>
+#include <ctype.h>
 #include <math.h>
 #include <sqlite3.h>
 #include <stdlib.h>
@@ -1146,40 +1147,77 @@ gboolean dt_image_basic(const int32_t imgid)
   return status & DT_HISTORY_HASH_BASIC;
 }
 
+static int _valid_glob_match(const char *const name, size_t offset)
+{
+  // verify that the name matched by glob() is a valid sidecar name by checking whether we have an underscore
+  // followed by a sequence of digits followed by a period at the given offset in the name
+  if (strlen(name) < offset || name[offset] != '_')
+    return FALSE;
+  size_t i;
+  for(i = offset+1; name[i] && name[i] != '.'; i++)
+  {
+    if(!isdigit(name[i]))
+      return FALSE;
+  }
+  return name[i] == '.';
+}
+
 GList* dt_image_find_duplicates(const char* filename)
 {
-  // find all duplicates of an image
+  // find all duplicates of an image by looking for all possible sidecars for the file: file.ext.xmp, file_NN.ext.xmp,
+  //   file_NNN.ext.xmp, and file_NNNN.ext.xmp
+  // because a glob() needs to scan the entire directory, we minimize work for large directories by doing a single
+  //   glob which might generate false matches (if the image name contains an underscore followed by a digit) and
+  //   filter out the false positives afterward
 #ifndef _WIN32
+  // start by locating the extension, which we'll be referencing multiple times
+  const size_t fn_len = strlen(filename);
+  const char* ext = strrchr(filename,'.');  // find last dot
+  if (!ext) ext = filename;
+  const size_t ext_offset = ext - filename;
+
   gchar pattern[PATH_MAX] = { 0 };
   GList* files = NULL;
-  gchar *imgpath = g_path_get_dirname(filename);
-  // NULL terminated list of glob patterns; should include "" and can be extended if needed
-  static const gchar *glob_patterns[]
-    = { "", "_[0-9][0-9]", "_[0-9][0-9][0-9]", "_[0-9][0-9][0-9][0-9]", NULL };
-  const gchar **glob_pattern = glob_patterns;
-  files = NULL;
-  while(*glob_pattern)
+
+  // check for file.ext.xmp
+  static const char xmp[] = ".xmp";
+  const size_t xmp_len = strlen(xmp);
+  // concatenate filename and sidecar extension
+  g_strlcpy(pattern,  filename, sizeof(pattern));
+  g_strlcpy(pattern + fn_len, xmp, sizeof(pattern) - fn_len);
+  if (access(pattern, R_OK) == 0)
   {
-    g_strlcpy(pattern, filename, sizeof(pattern));
-    gchar *c1 = pattern + strlen(pattern);
-    while(*c1 != '.' && c1 > pattern) c1--;
-    g_strlcpy(c1, *glob_pattern, pattern + sizeof(pattern) - c1);
-    const gchar *c2 = filename + strlen(filename);
-    while(*c2 != '.' && c2 > filename) c2--;
-    snprintf(c1 + strlen(*glob_pattern), pattern + sizeof(pattern) - c1 - strlen(*glob_pattern), "%s.xmp", c2);
+    // the default sidecar exists and is readable, so add it to the list
+    files = g_list_prepend(files, g_strdup(pattern));
+  } 
+
+  // now collect all file_N*N.ext.xmp matches
+  static const char glob_pattern[] = "_[0-9]*[0-9]";
+  const size_t gp_len = strlen(glob_pattern);
+  if (fn_len + gp_len + xmp_len < sizeof(pattern)) // enough space to build pattern?
+  {
+    // add GLOB.ext.xmp to the root of the basename
+    g_strlcpy(pattern + ext_offset, glob_pattern, sizeof(pattern) - fn_len);
+    g_strlcpy(pattern + ext_offset + gp_len, ext, sizeof(pattern) - ext_offset - gp_len);
+    g_strlcpy(pattern + fn_len + gp_len, xmp, sizeof(pattern) - fn_len - gp_len);
     glob_t globbuf;
     if(!glob(pattern, 0, NULL, &globbuf))
     {
+      // for each match of the pattern
       for(size_t i = 0; i < globbuf.gl_pathc; i++)
-        files = g_list_append(files, g_strdup(globbuf.gl_pathv[i]));
+      {
+        if(_valid_glob_match(globbuf.gl_pathv[i], ext_offset))
+        {
+          // it's not a false positive, so add it to the list of sidecars
+          files = g_list_prepend(files, g_strdup(globbuf.gl_pathv[i]));
+        }
+      }
       globfree(&globbuf);
     }
-
-    glob_pattern++;
   }
+  // we built the list in reverse order for speed, so un-reverse it
+  return g_list_reverse(files);
 
-  g_free(imgpath);
-  return files;
 #else
   return win_image_find_duplicates(filename);
 #endif
