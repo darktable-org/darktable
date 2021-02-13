@@ -482,7 +482,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
   for(int j = 0; j < 5; j++)
-    for(int i = 0; i < 5; i++) mm[j][i] = m[i] * m[j];
+    for(int i = 0; i < 5; i++)
+      mm[j][i] = m[i] * m[j];
 
   dev_filter = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 25, mm);
   if(dev_filter == NULL) goto error;
@@ -626,7 +627,8 @@ void init(dt_iop_module_t *module)
   for(int k = 0; k < BANDS; k++)
   {
     d->y[atrous_Lt][k] = d->y[atrous_ct][k] = 0.0f;
-    for(int c = atrous_L; c <= atrous_ct; c++) d->x[c][k] = k / (BANDS - 1.0f);
+    for(int c = atrous_L; c <= atrous_ct; c++)
+      d->x[c][k] = k / (BANDS - 1.0f);
   }
 }
 
@@ -699,7 +701,8 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
-  for(int ch = 0; ch < atrous_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
+  for(int ch = 0; ch < atrous_none; ch++)
+    dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
 }
@@ -1033,6 +1036,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   for(int k = 0; k < BANDS; k++)
     dt_draw_curve_set_point(c->minmax_curve, k, p.x[(int)c->channel2][k], p.y[(int)c->channel2][k]);
+
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1078,16 +1082,18 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
-    int ch2 = (int)c->channel2;
+    const int ch2 = (int)c->channel2;
 
     // draw min/max curves:
     get_params(&p, ch2, c->mouse_x, 1., c->mouse_radius);
-    for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+    for(int k = 0; k < BANDS; k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_min_xs, c->draw_min_ys);
 
     p = *(dt_iop_atrous_params_t *)self->params;
     get_params(&p, ch2, c->mouse_x, .0, c->mouse_radius);
-    for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+    for(int k = 0; k < BANDS; k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_max_xs, c->draw_max_ys);
   }
 
@@ -1184,8 +1190,10 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
       cairo_move_to(cr, 0, 0);
     for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
-    for(int k = 0; k < RES; k++) cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_ys[k]);
-    if(ch2 < 0) cairo_line_to(cr, width, 0);
+    for(int k = 0; k < RES; k++)
+      cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_ys[k]);
+    if(ch2 < 0)
+      cairo_line_to(cr, width, 0);
     cairo_close_path(cr);
     cairo_stroke_preserve(cr);
     cairo_fill(cr);
@@ -1193,8 +1201,8 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
-    int ch = (int)c->channel;
-    int ch2 = (int)c->channel2;
+    const int ch = (int)c->channel;
+    const int ch2 = (int)c->channel2;
 
     // draw dots on knots
     cairo_save(cr);
@@ -1219,7 +1227,8 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     // draw min/max, if selected
     // cairo_set_source_rgba(cr, .6, .6, .6, .5);
     cairo_move_to(cr, 0, -height * c->draw_min_ys[0]);
-    for(int k = 1; k < RES; k++) cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_min_ys[k]);
+    for(int k = 1; k < RES; k++)
+      cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_min_ys[k]);
     for(int k = RES - 1; k >= 0; k--)
       cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_max_ys[k]);
     cairo_close_path(cr);
@@ -1230,7 +1239,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     int k = (int)pos;
     const float f = k - pos;
     if(k >= RES - 1) k = RES - 2;
-    float ht = -height * (f * c->draw_ys[k] + (1 - f) * c->draw_ys[k + 1]);
+    const float ht = -height * (f * c->draw_ys[k] + (1 - f) * c->draw_ys[k + 1]);
     cairo_arc(cr, c->mouse_x * width, ht, c->mouse_radius * width, 0, 2. * M_PI);
     cairo_stroke(cr);
   }
@@ -1321,12 +1330,15 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+  const int height = allocation.height - 2 * inset;
+  const int width = allocation.width - 2 * inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+
   int ch2 = c->channel;
   if(c->channel == atrous_L) ch2 = atrous_Lt;
   if(c->channel == atrous_c) ch2 = atrous_ct;
+
   if(c->dragging)
   {
     // drag y-positions
@@ -1355,7 +1367,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     float dist = fabs(p->x[c->channel][0] - c->mouse_x);
     for(int k = 1; k < BANDS; k++)
     {
-      float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
+      const float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
         c->x_move = k;
@@ -1367,7 +1379,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   else
   {
     // choose between bottom and top curve:
-    int ch = c->channel;
+    const int ch = c->channel;
     float dist = 1000000.0f;
     for(int k = 0; k < BANDS; k++)
     {
@@ -1414,7 +1426,8 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
     const int inset = INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
-    int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+    const int height = allocation.height - 2 * inset;
+    const int width = allocation.width - 2 * inset;
     c->mouse_pick
         = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width) / (float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
@@ -1490,7 +1503,8 @@ void gui_init(struct dt_iop_module_t *self)
   c->channel = c->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  for(int k = 0; k < BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
+  for(int k = 0; k < BANDS; k++)
+    (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   self->timeout_handle = 0;
