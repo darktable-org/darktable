@@ -435,12 +435,17 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
   gboolean changed = FALSE;
   if(!bd->output_channels_shown)
   {
+    const uint32_t mask = bd->csp == DEVELOP_BLEND_CS_LAB
+      ? DEVELOP_BLENDIF_Lab_MASK & DEVELOP_BLENDIF_OUTPUT_MASK
+      : DEVELOP_BLENDIF_RGB_MASK & DEVELOP_BLENDIF_OUTPUT_MASK;
+
     dt_develop_blend_params_t *const d = module->blend_params;
 
-    // clear (set to off) output channels on/off indicator
-    const uint32_t old_blendif = d->blendif;
+    // clear the output channels and invert them when needed
+     const uint32_t old_blendif = d->blendif;
+     const uint32_t need_inversion = d->mask_combine & DEVELOP_COMBINE_INCL ? (mask << 16) : 0;
 
-    d->blendif &= ~(DEVELOP_BLENDIF_OUTPUT_MASK);
+    d->blendif = (d->blendif & ~(mask | (mask << 16))) | need_inversion;
 
     changed = (d->blendif != old_blendif);
 
