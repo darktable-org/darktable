@@ -2215,7 +2215,7 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
       GList *lw2 = gtk_container_get_children(GTK_CONTAINER(hb));
       if(g_list_length(lw2) > 2)
       {
-        GtkWidget *left = (GtkWidget *)g_list_nth_data(lw2, 0);
+        GtkWidget *left = (GtkWidget *)lw2->data;
         GtkWidget *right = (GtkWidget *)g_list_nth_data(lw2, 2);
         if(pos == 1)
           gtk_widget_hide(left);

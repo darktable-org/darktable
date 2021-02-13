@@ -259,21 +259,22 @@ static void _brush_init_ctrl_points(dt_masks_form_t *form)
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
 
+  GList *form_points = form->points;
   for(int k = 0; k < nb; k++)
   {
-    dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
+    dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)form_points->data;
     // if the point as not be set manually, we redfine it
     if(point3->state & DT_MASKS_POINT_STATE_NORMAL)
     {
       // we want to get point-2, point-1, point+1, point+2
       dt_masks_point_brush_t *point1
-          = k - 2 >= 0 ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, k - 2) : NULL;
+          = k - 2 >= 0 ? (dt_masks_point_brush_t *)g_list_nth_prev(form_points, 2)->data : NULL;
       dt_masks_point_brush_t *point2
-          = k - 1 >= 0 ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, k - 1) : NULL;
+          = k - 1 >= 0 ? (dt_masks_point_brush_t *)g_list_nth_prev(form_points, 1)->data : NULL;
       dt_masks_point_brush_t *point4
-          = k + 1 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, k + 1) : NULL;
+          = k + 1 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form_points, 1) : NULL;
       dt_masks_point_brush_t *point5
-          = k + 2 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, k + 2) : NULL;
+          = k + 2 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form_points, 2) : NULL;
 
       // deal with end points: make both extending points mirror their neighborhood
       if(point1 == NULL && point2 == NULL)
@@ -321,6 +322,8 @@ static void _brush_init_ctrl_points(dt_masks_form_t *form)
       point3->ctrl2[0] = bx1;
       point3->ctrl2[1] = by1;
     }
+    // advance to next point in list
+    form_points = g_list_next(form_points);
   }
 }
 
@@ -588,20 +591,23 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
 
   if(source && nb > 0)
   {
-    dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)g_list_nth_data(form->points, 0);
+    dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form->points->data;
     dx = (pt->corner[0] - form->source[0]) * wd;
     dy = (pt->corner[1] - form->source[1]) * ht;
   }
 
+  GList *form_points = form->points;
   for(int k = 0; k < nb; k++)
   {
-    dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
+    dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form->points->data;
     dt_masks_dynbuf_add(dpoints, pt->ctrl1[0] * wd - dx);
     dt_masks_dynbuf_add(dpoints, pt->ctrl1[1] * ht - dy);
     dt_masks_dynbuf_add(dpoints, pt->corner[0] * wd - dx);
     dt_masks_dynbuf_add(dpoints, pt->corner[1] * ht - dy);
     dt_masks_dynbuf_add(dpoints, pt->ctrl2[0] * wd - dx);
     dt_masks_dynbuf_add(dpoints, pt->ctrl2[1] * ht - dy);
+    // advance to next point on list, so that form_points is always the kth item in form->points
+    form_points = g_list_next(form_points);
   }
 
   // for the border, we store value too
@@ -989,13 +995,11 @@ static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *f
   const int pos2 = segment + 2;
   const int pos3 = segment + 3;
 
-  dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos0);
-  dt_masks_point_brush_t *point1 = pos1 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos1)
-                                             : point0;
-  dt_masks_point_brush_t *point2 = pos2 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos2)
-                                             : point1;
-  dt_masks_point_brush_t *point3 = pos3 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos3)
-                                             : point2;
+  GList *firstpt = g_list_nth_data(form->points, pos0);
+  dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)firstpt->data;
+  dt_masks_point_brush_t *point1 = pos1 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(firstpt, 1) : point0;
+  dt_masks_point_brush_t *point2 = pos2 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(firstpt, 2) : point1;
+  dt_masks_point_brush_t *point3 = pos3 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(firstpt, 3) : point2;
 
   float tmin = 0;
   float dmin = FLT_MAX;
@@ -1091,20 +1095,19 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     }
     else
     {
-      const guint nb = g_list_length(form->points);
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
         const float amount = up ? 0.97f : 1.03f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
-        for(int k = 0; k < nb; k++)
+        for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
+          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
           if(amount > 1.0f && (point->border[0] > 1.0f || point->border[1] > 1.0f)) return 1;
         }
-        for(int k = 0; k < nb; k++)
+        for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
+          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
           point->border[0] *= amount;
           point->border[1] *= amount;
         }
@@ -1126,9 +1129,9 @@ static int dt_brush_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       else
       {
         const float amount = up ? 0.97f : 1.03f;
-        for(int k = 0; k < nb; k++)
+        for(GList *l = form->points; l; l = g_list_next(l))
         {
-          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_nth_data(form->points, k);
+          dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)l->data;
           const float masks_hardness = point->hardness;
           point->hardness = MAX(HARDNESS_MIN, MIN(masks_hardness * amount, HARDNESS_MAX));
           dt_toast_log(_("hardness: %3.2f%%"), masks_hardness*100.0f);

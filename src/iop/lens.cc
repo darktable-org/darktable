@@ -2083,10 +2083,8 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
   dt_iop_lensfun_params_t *p = (dt_iop_lensfun_params_t *)self->params;
   dt_iop_lensfun_gui_data_t *g = (dt_iop_lensfun_gui_data_t *)self->gui_data;
   int pos = dt_bauhaus_combobox_get(widget);
-  GList *modifiers = g->modifiers;
-  while(modifiers)
+  for(GList *modifiers = g->modifiers;  modifiers; modifiers = g_list_next(modifiers))
   {
-    // could use g_list_nth. this seems safer?
     dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
     if(mm->pos == pos)
     {
@@ -2095,7 +2093,6 @@ static void modflags_changed(GtkWidget *widget, gpointer user_data)
       dt_dev_add_history_item(darktable.develop, self, TRUE);
       break;
     }
-    modifiers = g_list_next(modifiers);
   }
 }
 
@@ -2204,17 +2201,14 @@ static void corrections_done(gpointer instance, gpointer user_data)
 
   const char empty_message[] = "";
   char *message = (char *)empty_message;
-  GList *modifiers = g->modifiers;
-  while(modifiers && self->enabled)
+  for(GList *modifiers = g->modifiers; modifiers && self->enabled; modifiers = g_list_next(modifiers))
   {
-    // could use g_list_nth. this seems safer?
     dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
     if(mm->modflag == corrections_done)
     {
       message = mm->name;
       break;
     }
-    modifiers = g_list_next(modifiers);
   }
 
   ++darktable.gui->reset;
@@ -2438,17 +2432,14 @@ void gui_update(struct dt_iop_module_t *self)
   gtk_widget_set_tooltip_text(g->lens_model, "");
 
   int modflag = p->modify_flags & LENSFUN_MODFLAG_MASK;
-  GList *modifiers = g->modifiers;
-  while(modifiers)
+  for(GList *modifiers = g->modifiers; modifiers; modifiers = g_list_next(modifiers))
   {
-    // could use g_list_nth. this seems safer?
     dt_iop_lensfun_modifier_t *mm = (dt_iop_lensfun_modifier_t *)modifiers->data;
     if(mm->modflag == modflag)
     {
       dt_bauhaus_combobox_set(g->modflags, mm->pos);
       break;
     }
-    modifiers = g_list_next(modifiers);
   }
 
   dt_bauhaus_combobox_set(g->target_geom, p->target_geom - LF_UNKNOWN - 1);

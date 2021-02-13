@@ -539,7 +539,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
 
       if(d->clone_algo[pos] == 1 && (form->type & DT_MASKS_CIRCLE))
       {
-        dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)g_list_nth_data(form->points, 0);
+        dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)form->points->data;
 
         float points[4];
         masks_point_denormalize(piece, roi_in, circle->center, 1, points);
