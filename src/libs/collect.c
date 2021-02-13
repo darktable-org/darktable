@@ -598,7 +598,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
      || ((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
           && (event->type == GDK_BUTTON_PRESS && event->button == 1 && 
-              event->state & GDK_SHIFT_MASK && event->state & GDK_CONTROL_MASK)))
+              (event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK))))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
     GtkTreePath *path = NULL;
@@ -638,7 +638,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS)
         || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
        && (event->type == GDK_BUTTON_PRESS && event->button == 3)
-       && !(event->state & GDK_SHIFT_MASK && event->state & GDK_CONTROL_MASK))
+       && !(event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK))
     {
       row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
       view_popup_menu(treeview, event, d);
