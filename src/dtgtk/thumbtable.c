@@ -876,7 +876,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
 void dt_thumbtable_zoom_changed(dt_thumbtable_t *table, const int oldzoom, const int newzoom)
 {
   if(oldzoom == newzoom) return;
-  if(!table || !table->list) return;
+  if(!table->list) return;
 
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
@@ -2465,7 +2465,7 @@ void dt_thumbtable_update_accels_connection(dt_thumbtable_t *table, const int vi
 static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int rowid)
 {
   if(rowid < 1) rowid = 1;
-  if(!table || !table->list) return FALSE;
+  if(!table->list) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
@@ -2492,7 +2492,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
 static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
-  if(!table || !table->list) return FALSE;
+  if(!table->list) return FALSE;
 
   int minrowid = 0;
   int maxrowid = 0;
@@ -2555,6 +2555,7 @@ static gboolean _zoomable_ensure_rowid_visibility(dt_thumbtable_t *table, const 
   }
   return FALSE;
 }
+
 gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const int imgid)
 {
   if(imgid < 1) return FALSE;
@@ -2569,7 +2570,7 @@ gboolean dt_thumbtable_ensure_imgid_visibility(dt_thumbtable_t *table, const int
 static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
-  if(!table || !table->list) return FALSE;
+  if(!table->list) return FALSE;
   // get first and last fully visible thumbnails
   dt_thumbnail_t *first = (dt_thumbnail_t *)g_list_first(table->list)->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
@@ -2582,7 +2583,7 @@ static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table, cons
 static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table, const int rowid)
 {
   if(rowid < 1) return FALSE;
-  if(!table || !table->list) return FALSE;
+  if(!table->list) return FALSE;
 
   // is the needed rowid inside the list
   // in this case, is it fully visible ?
@@ -2614,6 +2615,7 @@ static gboolean _zoomable_check_rowid_visibility(dt_thumbtable_t *table, const i
   }
   return FALSE;
 }
+
 gboolean dt_thumbtable_check_imgid_visibility(dt_thumbtable_t *table, const int imgid)
 {
   if(imgid < 1) return FALSE;
@@ -2692,6 +2694,7 @@ static gboolean _filemanager_key_move(dt_thumbtable_t *table, dt_thumbtable_move
   if(select && imgid > 0) dt_selection_select_range(darktable.selection, imgid);
   return TRUE;
 }
+
 static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t move, const gboolean select)
 {
   // let's be sure that the current image is selected

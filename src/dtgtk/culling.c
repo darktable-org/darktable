@@ -1074,7 +1074,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
 
 static void _thumbs_prefetch(dt_culling_t *table)
 {
-  if(!table || !table->list) return;
+  if(!table->list) return;
 
   // get the mip level by using the max image size actually shown
   int maxw = 0;
@@ -1355,7 +1355,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 static gboolean _thumbs_compute_positions(dt_culling_t *table)
 {
   if(!gtk_widget_get_visible(table->widget)) return FALSE;
-  if(!table->list || !table->list) return FALSE;
+  if(!table->list) return FALSE;
 
   // if we have only 1 image, it should take the entire screen
   if(g_list_length(table->list) == 1)
