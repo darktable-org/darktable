@@ -470,9 +470,8 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 // uneeded == completly hidden
 static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
 {
-  int pos = 0;
   int changed = 0;
-  GList *l = g_list_nth(table->list, pos);
+  GList *l = table->list->data;
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -487,8 +486,9 @@ static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
       changed++;
     }
     else
-      pos++;
-    l = g_list_nth(table->list, pos);
+    {
+      l = g_list_next(l);
+    }
   }
   return changed;
 }
@@ -856,7 +856,7 @@ static void _filemanager_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
       if(!thumb)
       {
         // and last, take the first at screen
-        thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+        thumb = (dt_thumbnail_t *)table->list->data;
         x = thumb->x + thumb->width / 2;
         y = thumb->y + thumb->height / 2;
       }
@@ -1588,7 +1588,7 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
       {
         gchar pathname[PATH_MAX] = { 0 };
         gboolean from_cache = TRUE;
-        const int id = GPOINTER_TO_INT(g_list_nth_data(l, 0));
+        const int id = GPOINTER_TO_INT(l->data);
         dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
         gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
         gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
@@ -1645,7 +1645,7 @@ static void _event_dnd_begin(GtkWidget *widget, GdkDragContext *context, gpointe
     // TODO: have something pretty in the 2nd case, too.
     if(g_list_length(table->drag_list) == 1)
     {
-      const int id = GPOINTER_TO_INT(g_list_nth_data(table->drag_list, 0));
+      const int id = GPOINTER_TO_INT(table->drag_list->data);
       dt_mipmap_buffer_t buf;
       dt_mipmap_size_t mip = dt_mipmap_cache_get_matching_size(darktable.mipmap_cache, ts, ts);
       dt_mipmap_cache_get(darktable.mipmap_cache, &buf, id, mip, DT_MIPMAP_BLOCKING, 'r');
@@ -2179,7 +2179,7 @@ static gboolean _accel_rate(GtkAccelGroup *accel_group, GObject *acceleratable, 
   if(v->view(v) == DT_VIEW_DARKROOM && g_list_length(imgs) == 1 && darktable.develop->preview_pipe)
   {
     // we verify that the image is the active one
-    const int id = GPOINTER_TO_INT(g_list_nth_data(imgs, 0));
+    const int id = GPOINTER_TO_INT(imgs->data);
     if(id == darktable.develop->preview_pipe->output_imgid)
     {
       const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
@@ -2221,7 +2221,7 @@ static gboolean _accel_color(GtkAccelGroup *accel_group, GObject *acceleratable,
   if(v->view(v) == DT_VIEW_DARKROOM && g_list_length(imgs) == 1 && darktable.develop->preview_pipe)
   {
     // we verify that the image is the active one
-    const int id = GPOINTER_TO_INT(g_list_nth_data(imgs, 0));
+    const int id = GPOINTER_TO_INT(imgs->data);
     if(id == darktable.develop->preview_pipe->output_imgid)
     {
       GList *res = dt_metadata_get(id, "Xmp.darktable.colorlabels", NULL);
