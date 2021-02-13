@@ -3554,7 +3554,7 @@ void gui_post_expose(struct dt_iop_module_t *self, cairo_t *cr, int32_t width, i
   // show guide lines on request
   if(g->show_guides)
   {
-    dt_guides_t *guide = (dt_guides_t *)g_list_nth_data(darktable.guides, 0);
+    dt_guides_t *guide = (dt_guides_t *)darktable.guides->data;
     double dashes = DT_PIXEL_APPLY_DPI(5.0);
     cairo_save(cr);
     cairo_rectangle(cr, 0, 0, width, height);

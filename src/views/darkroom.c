@@ -224,7 +224,7 @@ void _display_module_trouble_message_callback(gpointer instance,
   if(module && module->has_trouble && module->widget)
   {
     GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
-    label_widget = g_list_nth_data(children, 0);
+    label_widget = children->data;
     g_list_free(children);
     if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
       label_widget = NULL;
@@ -949,11 +949,10 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
     dt_iop_module_t *module = (dt_iop_module_t *)(g_list_nth_data(dev->iop, i));
 
     // the base module is the one with the lowest multi_priority
-    const guint clen = g_list_length(dev->iop);
     int base_multi_priority = 0;
-    for(int k = 0; k < clen; k++)
+    for(const GList *l = dev->iop; l; l = g_list_next(l))
     {
-      dt_iop_module_t *mod = (dt_iop_module_t *)(g_list_nth_data(dev->iop, k));
+      dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
       if(strcmp(module->op, mod->op) == 0) base_multi_priority = MIN(base_multi_priority, mod->multi_priority);
     }
 

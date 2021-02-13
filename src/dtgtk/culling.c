@@ -121,7 +121,7 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
   // check the offset
   if(table->list)
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    dt_thumbnail_t *th = (dt_thumbnail_t *)table->list->data;
     if(th->imgid != table->offset_imgid) ret = TRUE;
   }
 
@@ -467,7 +467,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
   else if(table->list)
   {
     // FULL PREVIEW or CULLING with 1 image
-    dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    dt_thumbnail_t *th = (dt_thumbnail_t *)table->list->data;
     if(_zoom_to_x_root(th, x_root, y_root, zoom_delta))
       _set_table_zoom_ratio(table, th);
   }
@@ -1345,7 +1345,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   // and we ensure that we have the right offset
   if(table->list)
   {
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
     table->offset_imgid = thumb->imgid;
     table->offset = _thumb_get_rowid(thumb->imgid);
   }
@@ -1360,7 +1360,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   // if we have only 1 image, it should take the entire screen
   if(g_list_length(table->list) == 1)
   {
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
     thumb->width = table->view_width;
     thumb->height = table->view_height;
     thumb->x = 0;
@@ -1592,7 +1592,7 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
   int old_margin_y = 0;
   if(table->list)
   {
-    dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
     old_zx = thumb->zoomx;
     old_zy = thumb->zoomy;
     old_margin_x = gtk_widget_get_margin_start(thumb->w_image_box);
@@ -1685,9 +1685,9 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
       }
       l = g_list_next(l);
     }
-    if(!in_list && table->list && table->list)
+    if(!in_list && table->list)
     {
-      dt_thumbnail_t *thumb = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+      dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
       dt_control_set_mouse_over_id(thumb->imgid);
     }
   }
@@ -1746,7 +1746,7 @@ void dt_culling_zoom_max(dt_culling_t *table)
   float y = 0;
   if(table->mode == DT_CULLING_MODE_PREVIEW && table->list)
   {
-    dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
+    dt_thumbnail_t *th = (dt_thumbnail_t *)table->list->data;
     x = gtk_widget_get_allocated_width(th->w_image_box) / 2.0;
     y = gtk_widget_get_allocated_height(th->w_image_box) / 2.0;
   }
