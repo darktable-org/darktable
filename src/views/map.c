@@ -1968,8 +1968,9 @@ void leave(dt_view_t *self)
                                (gpointer)self);
   g_signal_handlers_disconnect_by_func(dt_ui_thumbtable(darktable.gui->ui)->widget,
                                        G_CALLBACK(_view_map_dnd_remove_callback), self);
-
   dt_map_t *lib = (dt_map_t *)self->data;
+  lib->drop_filmstrip_activated = FALSE;
+
   if(lib->selected_images)
   {
     g_list_free(lib->selected_images);
