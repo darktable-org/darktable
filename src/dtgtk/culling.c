@@ -122,7 +122,7 @@ static gboolean _compute_sizes(dt_culling_t *table, gboolean force)
   if(g_list_length(table->list) > 0)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)g_list_nth_data(table->list, 0);
-    if(th->imgid != table->offset_imgid) ret = TRUE;
+    if(th->imgid != table->offset_imgid || th->display_focus != table->focus) ret = TRUE;
   }
 
   if(table->mode == DT_CULLING_MODE_CULLING)
@@ -1203,6 +1203,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
       thumb->rowid = nrow; // this may have changed
+      thumb->display_focus = table->focus;
       newlist = g_list_append(newlist, thumb);
       // and we remove the thumb from the old list
       table->list = g_list_remove(table->list, thumb);
@@ -1617,7 +1618,6 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     // we add or move the thumb at the right position
     if(!gtk_widget_get_parent(thumb->w_main))
     {
-
       gtk_widget_set_margin_start(thumb->w_image_box, old_margin_x);
       gtk_widget_set_margin_top(thumb->w_image_box, old_margin_y);
       // and we resize the thumb
