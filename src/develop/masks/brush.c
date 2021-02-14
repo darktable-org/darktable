@@ -259,22 +259,21 @@ static void _brush_init_ctrl_points(dt_masks_form_t *form)
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
 
-  GList *form_points = form->points;
-  for(int k = 0; k < nb; k++)
+  for (GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
   {
     dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)form_points->data;
-    // if the point as not be set manually, we redfine it
+    // if the point has not been set manually, we redefine it
     if(point3->state & DT_MASKS_POINT_STATE_NORMAL)
     {
       // we want to get point-2, point-1, point+1, point+2
-      dt_masks_point_brush_t *point1
-          = k - 2 >= 0 ? (dt_masks_point_brush_t *)g_list_nth_prev(form_points, 2)->data : NULL;
-      dt_masks_point_brush_t *point2
-          = k - 1 >= 0 ? (dt_masks_point_brush_t *)g_list_nth_prev(form_points, 1)->data : NULL;
-      dt_masks_point_brush_t *point4
-          = k + 1 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form_points, 1) : NULL;
-      dt_masks_point_brush_t *point5
-          = k + 2 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(form_points, 2) : NULL;
+      GList *const prev = g_list_previous(form_points);             // point-1
+      GList *const prevprev = prev ? g_list_previous(prev) : NULL;  // point-2
+      GList *const next = g_list_next(form_points);                 // point+1
+      GList *const nextnext = next ? g_list_next(next) : NULL;      // point+2
+      dt_masks_point_brush_t *point1 = prevprev ? prevprev->data : NULL;
+      dt_masks_point_brush_t *point2 = prev ? prev->data : NULL;
+      dt_masks_point_brush_t *point4 = next ? next->data : NULL;
+      dt_masks_point_brush_t *point5 = nextnext ? nextnext->data : NULL;
 
       // deal with end points: make both extending points mirror their neighborhood
       if(point1 == NULL && point2 == NULL)
@@ -322,8 +321,6 @@ static void _brush_init_ctrl_points(dt_masks_form_t *form)
       point3->ctrl2[0] = bx1;
       point3->ctrl2[1] = by1;
     }
-    // advance to next point in list
-    form_points = g_list_next(form_points);
   }
 }
 
@@ -587,28 +584,25 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, co
   // we store all points
   float dx = 0.0f, dy = 0.0f;
 
-  const guint nb = g_list_length(form->points);
-
-  if(source && nb > 0)
+  if(source && form->points)
   {
     dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form->points->data;
     dx = (pt->corner[0] - form->source[0]) * wd;
     dy = (pt->corner[1] - form->source[1]) * ht;
   }
 
-  GList *form_points = form->points;
-  for(int k = 0; k < nb; k++)
+  for(GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
   {
-    dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form->points->data;
+    dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form_points->data;
     dt_masks_dynbuf_add(dpoints, pt->ctrl1[0] * wd - dx);
     dt_masks_dynbuf_add(dpoints, pt->ctrl1[1] * ht - dy);
     dt_masks_dynbuf_add(dpoints, pt->corner[0] * wd - dx);
     dt_masks_dynbuf_add(dpoints, pt->corner[1] * ht - dy);
     dt_masks_dynbuf_add(dpoints, pt->ctrl2[0] * wd - dx);
     dt_masks_dynbuf_add(dpoints, pt->ctrl2[1] * ht - dy);
-    // advance to next point on list, so that form_points is always the kth item in form->points
-    form_points = g_list_next(form_points);
   }
+
+  const guint nb = g_list_length(form->points);
 
   // for the border, we store value too
   if(dborder)
@@ -991,13 +985,13 @@ static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *f
 {
   const guint nb = g_list_length(form->points);
   const int pos0 = segment;
-  const int pos1 = segment + 1;
   const int pos2 = segment + 2;
   const int pos3 = segment + 3;
 
   GList *firstpt = g_list_nth_data(form->points, pos0);
+  GList *nextpt = g_list_next(firstpt);
   dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)firstpt->data;
-  dt_masks_point_brush_t *point1 = pos1 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(firstpt, 1) : point0;
+  dt_masks_point_brush_t *point1 = nextpt ? (dt_masks_point_brush_t *)nextpt->data : point0;
   dt_masks_point_brush_t *point2 = pos2 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(firstpt, 2) : point1;
   dt_masks_point_brush_t *point3 = pos3 < nb ? (dt_masks_point_brush_t *)g_list_nth_data(firstpt, 3) : point2;
 
