@@ -97,6 +97,8 @@ typedef struct dt_lib_geotagging_t
   GtkWidget *timezone;
   GList *timezones;
   GtkWidget *gpx_button;
+  GTimeZone *tz_camera;
+  GTimeZone *tz_utc;
 #ifdef HAVE_MAP
   struct
   {
@@ -220,7 +222,8 @@ static gchar *_utc_timeval_to_localtime_text(GTimeVal *utc_dt, GTimeZone *tz_cam
 }
 
 static void _localtime_text_to_utc_timeval(const char *date_time, GTimeVal *dt,
-                                           GTimeZone *tz_camera, time_t offset)
+                                           GTimeZone *tz_camera, GTimeZone *tz_utc,
+                                           time_t offset)
 {
   gint year;
   gint month;
@@ -233,23 +236,18 @@ static void _localtime_text_to_utc_timeval(const char *date_time, GTimeVal *dt,
             (int *)&hour, (int *)&minute, (int *)&second);
   GDateTime *exif_time = g_date_time_new(tz_camera, year, month, day, hour, minute, second);
   GDateTime *dt_offset = g_date_time_add_seconds(exif_time, offset);
-  GTimeZone *tz_utc = g_time_zone_new_utc();
   GDateTime *utc_time = g_date_time_to_timezone(dt_offset, tz_utc);
   g_date_time_to_timeval(utc_time, dt);
 
   g_date_time_unref(exif_time);
   g_date_time_unref(dt_offset);
   g_date_time_unref(utc_time);
-  g_time_zone_unref(tz_utc);
 }
 
 static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segment_t *n,
                                    dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-
-  gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
 
   int nb_imgs = 0;
   for(GList *i = d->imgs; i; i = g_list_next(i))
@@ -258,7 +256,7 @@ static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segme
     if(im->segid == -1)
     {
       GTimeVal dt;
-      _localtime_text_to_utc_timeval(im->dt, &dt, tz_camera, d->offset);
+      _localtime_text_to_utc_timeval(im->dt, &dt, d->tz_camera, d->tz_utc, d->offset);
       if((dt.tv_sec >= t->start_dt.tv_sec &&
           dt.tv_sec <= t->end_dt.tv_sec) ||
          (n && dt.tv_sec >= t->end_dt.tv_sec &&
@@ -269,7 +267,6 @@ static int _count_images_per_track(dt_gpx_track_segment_t *t, dt_gpx_track_segme
       }
     }
   }
-  g_time_zone_unref(tz_camera);
   return nb_imgs;
 }
 
@@ -313,15 +310,13 @@ static void _images_images_from_map(dt_lib_module_t *self)
 static void _refresh_images_displayed_on_track(const int segid, const gboolean active, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-  gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
   for(GList *i = d->imgs; i; i = g_list_next(i))
   {
     dt_sel_img_t *im = (dt_sel_img_t *)i->data;
     if(im->segid == segid && active)
     {
       GTimeVal dt;
-      _localtime_text_to_utc_timeval(im->dt, &dt, tz_camera, d->offset);
+      _localtime_text_to_utc_timeval(im->dt, &dt, d->tz_camera, d->tz_utc, d->offset);
       if(!dt_gpx_get_location(d->map.gpx, &dt, &im->gl))
         im->gl.latitude = NAN;
     }
@@ -355,7 +350,6 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
       }
     }
   }
-  g_time_zone_unref(tz_camera);
 }
 
 static void _refresh_displayed_images(dt_lib_module_t *self)
@@ -582,8 +576,6 @@ static void _refresh_track_list(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   if(!d->map.gpx) return;
-  gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
 
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
   d->map.nb_imgs = 0;
@@ -598,19 +590,21 @@ static void _refresh_track_list(dt_lib_module_t *self)
   for(GList *ts = trkseg; ts && valid; ts = g_list_next(ts))
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
-    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, tz_camera, TRUE);
+    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
     total_pts += t->nb_trkpt;
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     d->map.nb_imgs += nb_imgs;
+    gchar *tooltip = _datetime_tooltip(&t->start_dt, &t->end_dt, d->tz_camera);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        DT_GEO_TRACKS_DATETIME, dts,
                        DT_GEO_TRACKS_POINTS, t->nb_trkpt,
                        DT_GEO_TRACKS_IMAGES, nb_imgs,
+                       DT_GEO_TRACKS_TOOLTIP, tooltip,
                        -1);
     g_free(dts);
+    g_free(tooltip);
     valid = gtk_tree_model_iter_next(model, &iter);
   }
-  g_time_zone_unref(tz_camera);
   const int nb_sel = g_list_length(d->imgs);
   gchar *nb = dt_util_dstrcat(NULL, "%d/%d", d->map.nb_imgs, nb_sel);
   gtk_label_set_text(GTK_LABEL(d->map.nb_imgs_label), nb);
@@ -632,9 +626,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->map.gpx_view), NULL);
   gtk_list_store_clear(GTK_LIST_STORE(model));
 
-  gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
-
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
   d->map.nb_tracks = g_list_length(trkseg);
   d->map.tracks = g_malloc0(sizeof(dt_lib_tracks_data_t) * d->map.nb_tracks);
@@ -652,8 +643,8 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   for(GList *ts = trkseg; ts; ts = g_list_next(ts))
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
-    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, tz_camera, TRUE);
-    gchar *tooltip = _datetime_tooltip(&t->start_dt, &t->end_dt, tz_camera);
+    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
+    gchar *tooltip = _datetime_tooltip(&t->start_dt, &t->end_dt, d->tz_camera);
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
     d->map.nb_imgs += nb_imgs;
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
@@ -678,8 +669,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   gtk_label_set_text(GTK_LABEL(d->map.nb_imgs_label), nb);
   g_free(nb);
 
-  g_time_zone_unref(tz_camera);
-  g_free(tz);
   gtk_widget_set_sensitive(d->map.preview_button, d->map.nb_tracks);
   gtk_tree_view_column_set_clickable(d->map.sel_tracks, TRUE);
   gtk_widget_set_sensitive(d->map.apply_gpx_button, d->offset == 0 && d->map.nb_imgs);
@@ -781,8 +770,6 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   gtk_grid_set_column_spacing(GTK_GRID(grid), DT_PIXEL_APPLY_DPI(10));
   int line = 0;
 
-  gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  GTimeZone *tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
   GList *trkseg = dt_gpx_get_trkseg(gpx);
 
   _set_up_label(_("name"), GTK_ALIGN_START, grid, 0, line, PANGO_ELLIPSIZE_NONE);
@@ -799,8 +786,8 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   for(GList *ts = trkseg; ts; ts = g_list_next(ts))
   {
     dt_gpx_track_segment_t *t = (dt_gpx_track_segment_t *)ts->data;
-    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, tz_camera, TRUE);
-    gchar *dte = _utc_timeval_to_localtime_text(&t->end_dt, tz_camera, TRUE);
+    gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
+    gchar *dte = _utc_timeval_to_localtime_text(&t->end_dt, d->tz_camera, TRUE);
 
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL,self);
     total_imgs += nb_imgs;
@@ -827,8 +814,6 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
 
-  g_time_zone_unref(tz_camera);
-  g_free(tz);
   dt_gpx_destroy(gpx);
 
   gtk_container_add(GTK_CONTAINER(w), grid);
@@ -1490,6 +1475,8 @@ static void _timezone_save(dt_lib_module_t *self)
     if(!strcmp(tz_tuple->display, tz))
       name = tz_tuple->name;
   }
+  if(d->tz_camera) g_time_zone_unref(d->tz_camera);
+  d->tz_camera = !name ? g_time_zone_new_utc() : g_time_zone_new(name);
   dt_conf_set_string("plugins/lighttable/geotagging/tz", name ? name : "UTC");
   gtk_entry_set_text(GTK_ENTRY(d->timezone), name ? name : "UTC");
 }
@@ -1638,13 +1625,11 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->apply_datetime), "clicked", G_CALLBACK(_apply_datetime_callback), self);
 
   // time zone entry
-  label = dt_ui_label_new(_("camera time zone"));
-  gtk_widget_set_tooltip_text(label, _("most cameras don't store the time zone in EXIF. "
-                                       "give the correct time zone so the GPX data can be correctly matched"));
+  label = dt_ui_label_new(_(dt_confgen_get_label("plugins/lighttable/geotagging/tz")));
+  gtk_widget_set_tooltip_text(label, _(dt_confgen_get_tooltip("plugins/lighttable/geotagging/tz")));
   gtk_grid_attach(grid, label , 0, line, 2, 1);
 
   d->timezone = gtk_entry_new();
-  gtk_entry_set_text(GTK_ENTRY(d->timezone), dt_conf_get_string("plugins/lighttable/geotagging/tz"));
   gtk_grid_attach(grid, d->timezone, 2, line++, 2, 1);
 
   GtkCellRenderer *renderer;
@@ -1655,16 +1640,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(tz_selection), renderer, FALSE);
   gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(tz_selection), renderer, "text", 0, NULL);
 
-  gchar *old_tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
+  gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
+  d->tz_camera = (tz == NULL) ? g_time_zone_new_utc() : g_time_zone_new(tz);
+  d->tz_utc = g_time_zone_new_utc();
   for(GList *iter = d->timezones; iter; iter = g_list_next(iter))
   {
     tz_tuple_t *tz_tuple = (tz_tuple_t *)iter->data;
     gtk_list_store_append(model, &tree_iter);
     gtk_list_store_set(model, &tree_iter, 0, tz_tuple->display, 1, tz_tuple->name, -1);
-    if(!strcmp(tz_tuple->name, old_tz))
+    if(!strcmp(tz_tuple->name, tz))
       gtk_entry_set_text(GTK_ENTRY(d->timezone), tz_tuple->display);
   }
-  g_free(old_tz);
+  g_free(tz);
 
   // add entry completion
   GtkEntryCompletion *completion = gtk_entry_completion_new();
@@ -1829,6 +1816,8 @@ void gui_cleanup(dt_lib_module_t *self)
   dt_gui_key_accel_block_on_focus_disconnect(d->timezone);
   g_list_free_full(d->timezones, free_tz_tuple);
   d->timezones = NULL;
+  g_time_zone_unref(d->tz_camera);
+  g_time_zone_unref(d->tz_utc);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_datetime_changed_callback), self);

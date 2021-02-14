@@ -2603,6 +2603,13 @@
     <shortdescription>height of the track list</shortdescription>
     <longdescription>maximum height the track list will grow to before scrolling</longdescription>
   </dtconfig>
+  <dtconfig ui="yes">
+    <name>plugins/lighttable/geotagging/tz</name>
+    <type>string</type>
+    <default>UTC</default>
+    <shortdescription>camera time zone</shortdescription>
+    <longdescription>most cameras don't store the time zone in EXIF. give the correct time zone so the GPX data can be correctly matched</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/map/geotagging_search_url</name>
     <type>string</type>
