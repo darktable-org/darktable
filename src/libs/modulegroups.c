@@ -3084,7 +3084,7 @@ static GtkWidget *_manage_editor_group_init_basics_box(dt_lib_module_t *self)
   GtkWidget *tb = gtk_entry_new();
   gtk_widget_set_tooltip_text(tb, _("quick access panel widgets"));
   gtk_widget_set_sensitive(tb, FALSE);
-  gtk_entry_set_text(GTK_ENTRY(tb), _("quick access panel widgets"));
+  gtk_entry_set_text(GTK_ENTRY(tb), _("quick access"));
   gtk_box_pack_start(GTK_BOX(hb3), tb, TRUE, TRUE, 0);
 
   gtk_box_pack_start(GTK_BOX(hb2), hb3, FALSE, TRUE, 0);
