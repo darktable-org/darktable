@@ -172,7 +172,7 @@ static point_t map_point_to_view(image_t *image, point_t p)
 static gboolean motion_notify_callback_source(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
-  gboolean res = handle_motion(widget, event, self, &self->source);
+  const gboolean res = handle_motion(widget, event, self, &self->source);
   if(res)
   {
     collect_source_patches(self);
@@ -184,7 +184,7 @@ static gboolean motion_notify_callback_source(GtkWidget *widget, GdkEventMotion 
 static gboolean motion_notify_callback_reference(GtkWidget *widget, GdkEventMotion *event, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
-  gboolean res = handle_motion(widget, event, self, &self->reference);
+  const gboolean res = handle_motion(widget, event, self, &self->reference);
   if(res)
   {
     collect_reference_patches(self);
@@ -405,7 +405,7 @@ static void cht_changed_callback(GtkFileChooserButton *widget, gpointer user_dat
 static gboolean open_cht(dt_lut_t *self, const char *filename)
 {
   if(self->chart) free_chart(self->chart);
-  gboolean res = ((self->chart = parse_cht(filename)) != NULL);
+  const gboolean res = ((self->chart = parse_cht(filename)) != NULL);
 
   reset_bb(&self->source);
   reset_bb(&self->reference);
@@ -442,7 +442,7 @@ static gboolean open_cht(dt_lut_t *self, const char *filename)
 static void reference_mode_changed_callback(GtkComboBox *widget, gpointer user_data)
 {
   dt_lut_t *self = (dt_lut_t *)user_data;
-  int selected = gtk_combo_box_get_active(widget);
+  const int selected = gtk_combo_box_get_active(widget);
   if(selected == 0)
   {
     // it8
@@ -475,7 +475,7 @@ static void it8_changed_callback(GtkFileChooserButton *widget, gpointer user_dat
 static gboolean open_it8(dt_lut_t *self, const char *filename)
 {
   if(!self->chart || !filename) return FALSE;
-  gboolean res = parse_it8(filename, self->chart);
+  const gboolean res = parse_it8(filename, self->chart);
   collect_source_patches(self);
   update_table(self);
 
@@ -919,11 +919,11 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
     params.target_b[k] = target[2][permutation[k]];
   }
 
-#define SWAP(a, b)                                                                                                \
-  {                                                                                                               \
-    const float tmp = (a);                                                                                        \
-    (a) = (b);                                                                                                    \
-    (b) = tmp;                                                                                                    \
+#define SWAP(a, b)          \
+  {                         \
+    const float tmp = (a);  \
+    (a) = (b);              \
+    (b) = tmp;              \
   }
   // bubble sort by octant and brightness:
   for(int k = 0; k < num - 1; k++)
@@ -967,10 +967,10 @@ static void process_data(dt_lut_t *self, double *target_L, double *target_a, dou
 
     for(int i=0;i<N;i++)
     {
-      double sat_in =
+      const double sat_in =
         colorchecker_Lab[3*i+1] * colorchecker_Lab[3*i+1] +
         colorchecker_Lab[3*i+2] * colorchecker_Lab[3*i+2];
-      double sat_out =
+      const double sat_out =
         target_a[i] * target_a[i] +
         target_b[i] * target_b[i];
       // we'll allow some artistic tint or one due to illuminants (note square scale)
@@ -1517,14 +1517,14 @@ static void get_xyz_sample_from_image(const image_t *const image, float shrink, 
   get_corners(homography, &inner_box, corners);
   get_pixel_region(image, corners, &x_start, &y_start, &x_end, &y_end);
 
-  float delta_x_top = corners[TOP_RIGHT].x - corners[TOP_LEFT].x;
-  float delta_y_top = corners[TOP_RIGHT].y - corners[TOP_LEFT].y;
-  float delta_x_bottom = corners[BOTTOM_RIGHT].x - corners[BOTTOM_LEFT].x;
-  float delta_y_bottom = corners[BOTTOM_RIGHT].y - corners[BOTTOM_LEFT].y;
-  float delta_x_left = corners[BOTTOM_LEFT].x - corners[TOP_LEFT].x;
-  float delta_y_left = corners[BOTTOM_LEFT].y - corners[TOP_LEFT].y;
-  float delta_x_right = corners[BOTTOM_RIGHT].x - corners[TOP_RIGHT].x;
-  float delta_y_right = corners[BOTTOM_RIGHT].y - corners[TOP_RIGHT].y;
+  const float delta_x_top = corners[TOP_RIGHT].x - corners[TOP_LEFT].x;
+  const float delta_y_top = corners[TOP_RIGHT].y - corners[TOP_LEFT].y;
+  const float delta_x_bottom = corners[BOTTOM_RIGHT].x - corners[BOTTOM_LEFT].x;
+  const float delta_y_bottom = corners[BOTTOM_RIGHT].y - corners[BOTTOM_LEFT].y;
+  const float delta_x_left = corners[BOTTOM_LEFT].x - corners[TOP_LEFT].x;
+  const float delta_y_left = corners[BOTTOM_LEFT].y - corners[TOP_LEFT].y;
+  const float delta_x_right = corners[BOTTOM_RIGHT].x - corners[TOP_RIGHT].x;
+  const float delta_y_right = corners[BOTTOM_RIGHT].y - corners[TOP_RIGHT].y;
 
   double sample_x = 0.0, sample_y = 0.0, sample_z = 0.0;
   size_t n_samples = 0;
@@ -1825,7 +1825,7 @@ static int parse_csv(dt_lut_t *self, const char *filename, double **target_L_ptr
     target_b[i] = g_ascii_strtod(iter, &endptr);
     if(iter == endptr || *endptr != '\n') break;
 
-    double d[3] = { target_L[i], target_a[i], target_b[i] };
+    const double d[3] = { target_L[i], target_a[i], target_b[i] };
     if(sqrt(d[0] * d[0] + d[1] * d[1] + d[2] * d[2]) > thrs)
     {
       fprintf(stderr, "warning: ignoring patch %s with large difference deltaE %g!\n", patchname,
@@ -1847,7 +1847,7 @@ static int main_csv(dt_lut_t *self, int argc, char *argv[])
   const int num_patches = atoi(argv[3]);
   const char *filename_style = argv[4];
 
-  int sparsity = num_patches + 4;
+  const int sparsity = num_patches + 4;
 
   // parse the csv
   double *target_L, *target_a, *target_b, *colorchecker_Lab;
