@@ -1126,7 +1126,7 @@ void dt_dev_reload_history_items(dt_develop_t *dev)
       // we have to ensure that the name of the widget is correct
       GtkWidget *wlabel;
       GList *childs = gtk_container_get_children(GTK_CONTAINER(module->expander));
-      GtkWidget *header = gtk_bin_get_child(GTK_BIN(g_list_nth_data(childs, 0)));
+      GtkWidget *header = gtk_bin_get_child(GTK_BIN(childs->data));
       g_list_free(childs);
 
       childs = gtk_container_get_children(GTK_CONTAINER(header));

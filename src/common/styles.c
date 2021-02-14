@@ -316,7 +316,7 @@ static void  _dt_style_update_iop_order(const gchar *name, const int id, const i
   // if we update or if the style does not contains an order then the
   // copy must be done using the imgid iop-order.
 
-  if(update_iop_order || g_list_length(iop_list) == 0)
+  if(update_iop_order || iop_list == NULL)
     iop_list = dt_ioppr_get_iop_order_list(imgid, FALSE);
 
   gchar *iop_list_txt = dt_ioppr_serialize_text_iop_order_list(iop_list);

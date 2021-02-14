@@ -1281,7 +1281,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
     dt_iop_color_picker_reset(self, FALSE);
 
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
-    if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
+    if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
       const int control_button_pressed = event->state & GDK_CONTROL_MASK;
 
@@ -2114,7 +2114,7 @@ void dt_iop_gui_update_masks(dt_iop_module_t *module)
   /* update masks state */
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, module->blend_params->mask_id);
   dt_bauhaus_combobox_clear(bd->masks_combo);
-  if(grp && (grp->type & DT_MASKS_GROUP) && g_list_length(grp->points) > 0)
+  if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
   {
     char txt[512];
     const guint n = g_list_length(grp->points);
@@ -2945,8 +2945,10 @@ void dt_iop_gui_init_blending(GtkWidget *iopw, dt_iop_module_t *module)
     //box enclosing the mask mode selection buttons
     bd->masks_modes_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
     //mask selection buttons packing in mask_box
-    for (int i = 0; i < g_list_length(bd->masks_modes_toggles); i++)
-      gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(g_list_nth_data(bd->masks_modes_toggles, i)), TRUE, TRUE, 0);
+    for(GList *l = bd->masks_modes_toggles; l; l = g_list_next(l))
+    {
+      gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(l->data), TRUE, TRUE, 0);
+    }
     gtk_box_pack_start(GTK_BOX(bd->masks_modes_box), GTK_WIDGET(presets_button), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(box), GTK_WIDGET(bd->masks_modes_box), FALSE, FALSE, 0);
     dt_gui_add_help_link(GTK_WIDGET(bd->masks_modes_box), "blending.html");
