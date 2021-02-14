@@ -260,6 +260,7 @@ typedef struct dt_control_merge_hdr_t
 
   float whitelevel;
   float epsw;
+  float wb_coeffs[3];
 
   // 0 - ok; 1 - errors, abort
   gboolean abort;
@@ -339,6 +340,7 @@ static int dt_control_merge_hdr_process(dt_imageio_module_data_t *datai, const c
     d->wd = datai->width;
     d->ht = datai->height;
     d->orientation = image.orientation;
+    for(int i = 0; i < 3; i++) d->wb_coeffs[i] = image.wb_coeffs[i];
   }
 
   if(image.buf_dsc.filters == 0u || image.buf_dsc.channels != 1 || image.buf_dsc.datatype != TYPE_UINT16)
@@ -500,7 +502,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   char *c = pathname + strlen(pathname);
   while(*c != '.' && c > pathname) c--;
   g_strlcpy(c, "-hdr.dng", sizeof(pathname) - (c - pathname));
-  dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, (const uint8_t (*)[6])d.first_xtrans, 1.0f);
+  dt_imageio_write_dng(pathname, d.pixels, d.wd, d.ht, exif, exif_len, d.first_filter, (const uint8_t (*)[6])d.first_xtrans, 1.0f,(const float (*))d.wb_coeffs);
   free(exif);
 
   dt_control_job_set_progress(job, 1.0);

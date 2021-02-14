@@ -75,13 +75,16 @@ static inline void dt_imageio_dng_write_tiff_header(
     FILE *fp, uint32_t xs, uint32_t ys, float Tv, float Av,
     float f, float iso, uint32_t filter,
     const uint8_t xtrans[6][6],
-    const float whitelevel)
+    const float whitelevel,
+    const float wb_coeffs[3])
 {
   const uint32_t channels = 1;
   uint8_t *b /*, *offs1, *offs2*/;
   // uint32_t exif_offs;
   uint8_t buf[1024];
   uint8_t cnt = 0;
+  float coeff[3];
+  float d65_white[3] = {0.950456, 1, 1.088754};
 
   memset(buf, 0, sizeof(buf));
   /* TIFF file header.  */
@@ -151,11 +154,10 @@ static inline void dt_imageio_dng_write_tiff_header(
   } white;
   white.f = whitelevel;
   b = dt_imageio_dng_make_tag(50717, LONG, 1, white.u, b, &cnt); // WhiteLevel in float, actually.
-  b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 480, b, &cnt); // ColorMatrix1 (XYZ->native cam)
-
-  // b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 512, b, &cnt); // AsShotNeutral
+  //b = dt_imageio_dng_make_tag(50721, SRATIONAL, 9, 480, b, &cnt); // ColorMatrix1 (XYZ->native cam)
+  b = dt_imageio_dng_make_tag(50728, RATIONAL, 3, 480, b, &cnt); // AsShotNeutral
   // b = dt_imageio_dng_make_tag(50729, RATIONAL, 2, 512, b, &cnt); // AsShotWhiteXY
-  b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
+  //b = dt_imageio_dng_make_tag(50778, SHORT, 1, 21 << 16, b, &cnt); // CalibrationIlluminant1
   b = dt_imageio_dng_make_tag(0, 0, 0, 0, b, &cnt); /* Next IFD.  */
   buf[11] = cnt - 1; // write number of directory entries of this ifd
 
@@ -164,12 +166,15 @@ static inline void dt_imageio_dng_write_tiff_header(
   // apparently this doesn't need byteswap:
   memcpy(buf+400, xtrans, sizeof(uint8_t)*36);
   // this matrix is generic for XYZ->sRGB / D65
-  int m[9] = { 3240454, -1537138, -498531, -969266, 1876010, 41556, 55643, -204025, 1057225 };
-  for(int k = 0; k < 9; k++)
-  {
-    dt_imageio_dng_write_buf(buf, 480+k*8, m[k]);
-    dt_imageio_dng_write_buf(buf, 484+k*8, 1000000);
-  }
+  //int m[9] = { 3240454, -1537138, -498531, -969266, 1876010, 41556, 55643, -204025, 1057225 };
+  for(int k = 0; k < 3; k++)
+   {
+ 	// TAG AsShotNeutral: try reverse process of rawspeed Dngdecoder for white balance
+ 	coeff[k] =1/( (wb_coeffs[k]/ wb_coeffs[1]) * d65_white[k]);
+ 	coeff[k]*= 1000000;
+ 	dt_imageio_dng_write_buf(buf, 480+k*8,(int)coeff[k]);
+     dt_imageio_dng_write_buf(buf, 484+k*8, 1000000);
+   }
 
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
   int written = fwrite(buf, 1, 584, fp);
@@ -180,12 +185,13 @@ static inline void dt_imageio_write_dng(
     const char *filename, const float *const pixel, const int wd,
     const int ht, void *exif, const int exif_len, const uint32_t filter,
     const uint8_t xtrans[6][6],
-    const float whitelevel)
+    const float whitelevel,
+	const float wb_coeffs[3])
 {
   FILE *f = g_fopen(filename, "wb");
   if(f)
   {
-    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel);
+    dt_imageio_dng_write_tiff_header(f, wd, ht, 1.0f / 100.0f, 1.0f / 4.0f, 50.0f, 100.0f, filter, xtrans, whitelevel, wb_coeffs);
     const int k = fwrite(pixel, sizeof(float), (size_t)wd * ht, f);
     if(k != wd * ht) fprintf(stderr, "[dng_write] Error writing image data to %s\n", filename);
     fclose(f);
