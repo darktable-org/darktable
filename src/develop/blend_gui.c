@@ -257,6 +257,8 @@ enum _channel_indexes
   CHANNEL_INDEX_hz = 6,
 };
 
+static void _blendop_blendif_update_tab(dt_iop_module_t *module, const int tab);
+
 static inline dt_iop_colorspace_type_t _blendif_colorpicker_cst(dt_iop_gui_blend_data_t *data)
 {
   dt_iop_colorspace_type_t cst = dt_iop_color_picker_get_active_cst(data->module);
@@ -636,9 +638,25 @@ static void _blendop_blend_mode_callback(GtkWidget *combo, dt_iop_gui_blend_data
 
 static void _blendop_masks_combine_callback(GtkWidget *combo, dt_iop_gui_blend_data_t *data)
 {
+  dt_develop_blend_params_t *const d = data->module->blend_params;
+
   const unsigned combine = GPOINTER_TO_UINT(dt_bauhaus_combobox_get_data(data->masks_combine_combo));
-  data->module->blend_params->mask_combine &= ~(DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL);
-  data->module->blend_params->mask_combine |= combine;
+  d->mask_combine &= ~(DEVELOP_COMBINE_INV | DEVELOP_COMBINE_INCL);
+  d->mask_combine |= combine;
+
+  // inverts the parametric mask channels that are not used
+  if(data->blendif_support && data->blendif_inited)
+  {
+    const uint32_t mask = data->csp == DEVELOP_BLEND_CS_LAB ? DEVELOP_BLENDIF_Lab_MASK : DEVELOP_BLENDIF_RGB_MASK;
+    const uint32_t unused_channels = mask & ~d->blendif;
+    d->blendif &= ~(unused_channels << 16);
+    if(d->mask_combine & DEVELOP_COMBINE_INCL)
+    {
+      d->blendif |= unused_channels << 16;
+    }
+    _blendop_blendif_update_tab(data->module, data->tab);
+  }
+
   _blendif_clean_output_channels(data->module);
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
