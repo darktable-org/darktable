@@ -442,8 +442,8 @@ static gboolean _blendif_clean_output_channels(dt_iop_module_t *module)
     dt_develop_blend_params_t *const d = module->blend_params;
 
     // clear the output channels and invert them when needed
-     const uint32_t old_blendif = d->blendif;
-     const uint32_t need_inversion = d->mask_combine & DEVELOP_COMBINE_INCL ? (mask << 16) : 0;
+    const uint32_t old_blendif = d->blendif;
+    const uint32_t need_inversion = d->mask_combine & DEVELOP_COMBINE_INCL ? (mask << 16) : 0;
 
     d->blendif = (d->blendif & ~(mask | (mask << 16))) | need_inversion;
 
