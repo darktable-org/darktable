@@ -1662,7 +1662,8 @@ gboolean dt_history_copy_parts(int imgid)
 gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
 {
   if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
-  if(g_list_length((GList *)list) < 1) return FALSE;
+  if(!list) // do we have any images to receive the pasted history?
+    return FALSE;
 
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   gboolean merge = FALSE;
@@ -1687,7 +1688,8 @@ gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
 gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
 {
   if(darktable.view_manager->copy_paste.copied_imageid <= 0) return FALSE;
-  if(g_list_length((GList *)list) < 1) return FALSE;
+  if(!list) // do we have any images to receive the pasted history?
+    return FALSE;
 
   const int mode = dt_conf_get_int("plugins/lighttable/copy_history/pastemode");
   gboolean merge = FALSE;
@@ -1728,7 +1730,8 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
 
 gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
 {
-  if(g_list_length((GList *)list) < 1) return FALSE;
+  if(!list)  // do we have any images on which to operate?
+    return FALSE;
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
