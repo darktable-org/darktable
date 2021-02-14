@@ -921,7 +921,7 @@ static char *encode_colorchecker(int num, const double *point, const double **ta
 
 #define SWAP(a, b)                                                                                                \
   {                                                                                                               \
-    const float tmp = (a);                                                                                        \
+    const double tmp = (a);                                                                                        \
     (a) = (b);                                                                                                    \
     (b) = tmp;                                                                                                    \
   }
