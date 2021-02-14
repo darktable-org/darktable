@@ -166,7 +166,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   /* first of all gather all images to import */
   GList *images = NULL;
   images = _film_recursive_get_files(film->dirname, recursive, &images);
-  if(g_list_length(images) == 0)
+  if(images == NULL)
   {
     dt_control_log(_("no supported images were found to be imported"));
     return;
@@ -209,7 +209,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   dt_lua_unlock();
 #endif
 
-  if(g_list_length(images) == 0)
+  if(images == NULL)
   {
     // no error message, lua probably emptied the list on purpose
     return;

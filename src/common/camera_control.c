@@ -250,9 +250,9 @@ static gpointer _camera_get_job(const dt_camctl_t *c, const dt_camera_t *camera)
   dt_camera_t *cam = (dt_camera_t *)camera;
   dt_pthread_mutex_lock(&cam->jobqueue_lock);
   gpointer job = NULL;
-  if(g_list_length(cam->jobqueue) > 0)
+  if(cam->jobqueue) // are there any queued jobs?
   {
-    job = g_list_nth_data(cam->jobqueue, 0);
+    job = cam->jobqueue->data;
     cam->jobqueue = g_list_remove(cam->jobqueue, job);
   }
   dt_pthread_mutex_unlock(&cam->jobqueue_lock);
@@ -666,12 +666,12 @@ void dt_camctl_destroy(dt_camctl_t *camctl)
 
 gboolean dt_camctl_have_cameras(const dt_camctl_t *c)
 {
-  return (g_list_length(c->cameras) > 0) ? TRUE : FALSE;
+  return (c->cameras) ? TRUE : FALSE;
 }
 
 gboolean dt_camctl_have_locked_cameras(const dt_camctl_t *c)
 {
-  return (g_list_length(c->locked_cameras) > 0) ? TRUE : FALSE;
+  return (c->locked_cameras) ? TRUE : FALSE;
 }
 
 void dt_camctl_register_listener(const dt_camctl_t *c, dt_camctl_listener_t *listener)
@@ -1240,7 +1240,7 @@ int dt_camctl_can_enter_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam
   if(cam == NULL) cam = c->active_camera;
 
   /* check if active cam is available else use first detected one */
-  if(cam == NULL && c->cameras) cam = g_list_nth_data(c->cameras, 0);
+  if(cam == NULL && c->cameras) cam = c->cameras->data;
 
   if(cam && cam->can_tether)
   {
@@ -1261,7 +1261,7 @@ void dt_camctl_tether_mode(const dt_camctl_t *c, const dt_camera_t *cam, gboolea
   if(cam == NULL) cam = c->active_camera;
 
   /* check if active cam is available else use first detected one */
-  if(cam == NULL && c->cameras) cam = g_list_nth_data(c->cameras, 0);
+  if(cam == NULL && c->cameras) cam = c->cameras->data;
 
   if(cam && cam->can_tether)
   {

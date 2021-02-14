@@ -194,7 +194,7 @@ static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
-  if(g_list_length((GList *)imgs) < 1) return;
+  if(!imgs) return;  // do nothing if no images to be acted on
 
   const int missing = dt_history_compress_on_list(imgs);
 

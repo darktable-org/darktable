@@ -410,13 +410,14 @@ void dt_masks_init_form_gui(dt_masks_form_gui_t *gui)
 
 void dt_masks_gui_form_create(dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index)
 {
-  if(g_list_length(gui->points) == index)
+  const int npoints = g_list_length(gui->points);
+  if(npoints == index)
   {
     dt_masks_form_gui_points_t *gpt2
         = (dt_masks_form_gui_points_t *)calloc(1, sizeof(dt_masks_form_gui_points_t));
     gui->points = g_list_append(gui->points, gpt2);
   }
-  else if(g_list_length(gui->points) < index)
+  else if(npoints < index)
     return;
 
   dt_masks_gui_form_remove(form, gui, index);
@@ -611,7 +612,7 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
     grpt->formid = form->formid;
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
-    if(g_list_length(grp->points) > 0) grpt->state |= DT_MASKS_STATE_UNION;
+    if(grp->points) grpt->state |= DT_MASKS_STATE_UNION;
     grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
     grp->points = g_list_append(grp->points, grpt);
     // we save the group
@@ -2402,7 +2403,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
       dt_masks_iop_update(module);
       dt_masks_update_image(darktable.develop);
     }
-    if(ok && g_list_length(grp->points) == 0) dt_masks_form_remove(module, NULL, grp);
+    if(ok && grp->points == NULL) dt_masks_form_remove(module, NULL, grp);
     return;
   }
 
@@ -2460,7 +2461,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
             form_removed = 1;
             dt_masks_iop_update(m);
             dt_masks_update_image(darktable.develop);
-            if(g_list_length(iopgrp->points) == 0) dt_masks_form_remove(m, NULL, iopgrp);
+            if(iopgrp->points == NULL) dt_masks_form_remove(m, NULL, iopgrp);
           }
         }
       }
@@ -2582,7 +2583,7 @@ dt_masks_point_group_t *dt_masks_group_add_form(dt_masks_form_t *grp, dt_masks_f
     grpt->formid = form->formid;
     grpt->parentid = grp->formid;
     grpt->state = DT_MASKS_STATE_SHOW | DT_MASKS_STATE_USE;
-    if(g_list_length(grp->points) > 0) grpt->state |= DT_MASKS_STATE_UNION;
+    if(grp->points) grpt->state |= DT_MASKS_STATE_UNION;
     grpt->opacity = dt_conf_get_float("plugins/darkroom/masks/opacity");
     grp->points = g_list_append(grp->points, grpt);
     return grpt;

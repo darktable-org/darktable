@@ -629,8 +629,7 @@ static int dt_group_get_mask_roi(dt_iop_module_t *const restrict module,
                                  float *const restrict buffer)
 {
   double start = dt_get_wtime();
-  const guint nb = g_list_length(form->points);
-  if(nb == 0) return 0;
+  if(!form->points) return 0;
   int nb_ok = 0;
 
   const int width = roi->width;

@@ -63,7 +63,7 @@ static GType geotag_arg[] = { G_TYPE_POINTER, G_TYPE_UINT };
 static void _collection_changed_destroy_callback(gpointer instance, int query_change, gpointer imgs,
                                                  const int next, gpointer user_data)
 {
-  if(imgs && g_list_length(imgs) > 0)
+  if(imgs)
   {
     g_list_free(imgs);
     imgs = NULL;
@@ -73,7 +73,7 @@ static void _collection_changed_destroy_callback(gpointer instance, int query_ch
 // callback for the destructor of DT_SIGNAL_IMAGE_INFO_CHANGED
 static void _image_info_changed_destroy_callback(gpointer instance, gpointer imgs, gpointer user_data)
 {
-  if(imgs && g_list_length(imgs) > 0)
+  if(imgs)
   {
     g_list_free(imgs);
     imgs = NULL;
@@ -89,7 +89,7 @@ static void _presets_changed_destroy_callback(gpointer instance, gpointer module
 // callback for the destructor of DT_SIGNAL_GEOTAG_CHANGED
 static void _image_geotag_destroy_callback(gpointer instance, gpointer imgs, const int locid, gpointer user_data)
 {
-  if(imgs && g_list_length(imgs) > 0)
+  if(imgs)
   {
     g_list_free(imgs);
     imgs = NULL;

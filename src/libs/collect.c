@@ -620,7 +620,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
       {
         // range selection
         GList *sels = gtk_tree_selection_get_selected_rows(selection, NULL);
-        GtkTreePath *path2 = (GtkTreePath *)g_list_nth_data(sels, 0);
+        GtkTreePath *path2 = (GtkTreePath *)sels->data;
         gtk_tree_selection_unselect_all(selection);
         if(gtk_tree_path_compare(path, path2) > 0)
           gtk_tree_selection_select_range(selection, path, path2);
@@ -2196,7 +2196,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(view));
   if(gtk_tree_selection_count_selected_rows(selection) < 1) return;
   GList *sels = gtk_tree_selection_get_selected_rows(selection, &model);
-  GtkTreePath *path1 = (GtkTreePath *)g_list_nth_data(sels, 0);
+  GtkTreePath *path1 = (GtkTreePath *)sels->data;
   if(!gtk_tree_model_get_iter(model, &iter, path1)) return;
 
   gchar *text;
