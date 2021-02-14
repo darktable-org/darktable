@@ -44,6 +44,36 @@ you are strongly advised to take a backup first.
 
 ## Lua
 
+* API changed to 6.2.0
+
+* password storage and retrieval - added _darktable.password.save()_ and _darktable.password.get()_ to save and retrieve passwords using the darktable password storage back end.
+
+* widget naming - widgets now have a name field, making it possible to style them using CSS
+
+* _darktable.gui.libs.visibility_ is fixed so setting a lib to hidden (false) removes it from the user interface.
+
+* preferences - added _darktable.preferences.destroy()_ to remove a preference.  Added _darktable.preferences.get_keys()_ to return a sorted table of all of the preferences for both darktable and lua.
+
+* get image from database by image id - added _darktable.database.get_image()_ to retrieve an image by the image ID
+
+* _darktable.gui.libs.metadata_view.destroy_info()_ - function added to remove field added by _darktable.gui.libs.metadata_view.register_info()_ from the image information display.  Thanks @phweyland
+
+* API change to 6.2.1 - **SCRIPT BREAKING CHANGE**
+
+* event naming - add a name field to _darktable.register_event()_ so that multiple events of the same type can differentiated and the desired one selected and accessed.
+
+* event destruction - _added darktable.destroy_event()_ to remove an event.
+
+* API change to 6.2.2 - **SCRIPT BREAKING CHANGE**
+
+* add _selection-changed_ to the lua events so that scripts can respond when the selection changes
+
+* selection naming - add a name field to _darktable.gui.libs.select.register_selection()_ so that the selection can be selected and manipulated after creation
+
+* selection destruction - add _darktable.gui.libs.select.destroy_selection()_ to remove an selection button from the user interface.
+
+* selection sensitivity - add _darktable.gui.libs.select.set_selection_sensitive()_ to set selection button sensitivity
+
 ## Changed Dependencies
 
 ## RawSpeed changes
