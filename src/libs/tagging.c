@@ -1706,6 +1706,16 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(synonyms));
     if (synonyms_list) gtk_text_buffer_set_text(buffer, synonyms_list, -1);
   }
+  else
+  // non-existing tag (part of hierarchy) is shown as category
+  {
+    GtkWidget *vbox2 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
+    gtk_box_pack_start(GTK_BOX(vbox), vbox2, FALSE, TRUE, 0);
+    category = gtk_check_button_new_with_label(_("category"));
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(category), true);
+    gtk_box_pack_end(GTK_BOX(vbox2), category, FALSE, TRUE, 0);
+  }
+  
 
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(dialog);
@@ -1834,6 +1844,22 @@ static void _pop_menu_dictionary_edit_tag(GtkWidget *menuitem, dt_lib_module_t *
           gtk_tree_store_set(GTK_TREE_STORE(store), &store_iter, DT_LIB_TAGGING_COL_SYNONYM, new_synonyms_list, -1);
       }
       g_free(new_synonyms_list);
+    }
+    else
+    // non-existing tag (part of hierarchy)
+    {
+      gint new_flags = ((gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(category)) ? DT_TF_CATEGORY : 0));
+
+      if (new_flags != (DT_TF_CATEGORY))
+      // category checkbox deselected -> create hierarchy-tag
+      {
+        guint new_tagid = 0;
+        dt_tag_new(tagname, &new_tagid);
+
+        dt_tag_set_flags(new_tagid, DT_TF_HIERARCHY);
+
+       _init_treeview(self, 1);
+      }
     }
   }
   _init_treeview(self, 0);

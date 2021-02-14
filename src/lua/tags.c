@@ -280,6 +280,19 @@ int dt_lua_tag_get_tagged_images(lua_State *L)
   return 1;
 }
 
+static int dt_lua_tag_is_hierarchy(lua_State *L)
+{
+  dt_lua_tag_t tagid = dt_tag_get_tag_id_by_name(luaL_checkstring(L, 1));
+
+  gint flags = dt_tag_get_flags(tagid);
+
+  gint is_hierarchy = 0;
+  if(flags & DT_TF_HIERARCHY)
+    is_hierarchy = 1;
+
+  luaA_push(L, int, &is_hierarchy);
+  return 1;
+}
 
 int dt_lua_init_tags(lua_State *L)
 {
@@ -331,7 +344,9 @@ int dt_lua_init_tags(lua_State *L)
   lua_pushcfunction(L, dt_lua_tag_get_tagged_images);
   lua_pushcclosure(L, dt_lua_type_member_common, 1);
   dt_lua_type_register_const_type(L, type_id, "get_tagged_images");
-
+  lua_pushcfunction(L, dt_lua_tag_is_hierarchy);
+  lua_pushcclosure(L, dt_lua_type_member_common, 1);
+  dt_lua_type_register_const_type(L, type_id, "is_hierarchy");
 
   return 0;
 }
