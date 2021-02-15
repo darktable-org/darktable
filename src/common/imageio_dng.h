@@ -84,7 +84,7 @@ static inline void dt_imageio_dng_write_tiff_header(
   uint8_t buf[1024];
   uint8_t cnt = 0;
   float coeff[3];
-  float d65_white[3] = {0.950456, 1, 1.088754};
+
 
   memset(buf, 0, sizeof(buf));
   /* TIFF file header.  */
@@ -169,11 +169,11 @@ static inline void dt_imageio_dng_write_tiff_header(
   //int m[9] = { 3240454, -1537138, -498531, -969266, 1876010, 41556, 55643, -204025, 1057225 };
   for(int k = 0; k < 3; k++)
    {
- 	// TAG AsShotNeutral: try reverse process of rawspeed Dngdecoder for white balance
- 	coeff[k] =1/( (wb_coeffs[k]/ wb_coeffs[1]) * d65_white[k]);
+ 	// TAG AsShotNeutral: for rawspeed Dngdecoder white balance
+ 	coeff[k] =1/( (wb_coeffs[k]/ wb_coeffs[1])) ;
  	coeff[k]*= 1000000;
  	dt_imageio_dng_write_buf(buf, 480+k*8,(int)coeff[k]);
-     dt_imageio_dng_write_buf(buf, 484+k*8, 1000000);
+    dt_imageio_dng_write_buf(buf, 484+k*8, 1000000);
    }
 
   // dt_imageio_dng_write_buf(buf, offs2-buf, 584);
