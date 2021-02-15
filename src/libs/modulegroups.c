@@ -227,7 +227,7 @@ int position()
 
 static GtkWidget *_buttons_get_from_pos(dt_lib_module_t *self, const int pos)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  const dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
   if(pos == DT_MODULEGROUP_ACTIVE_PIPE) return d->active_btn;
   if(pos == DT_MODULEGROUP_BASICS) return d->basic_btn;
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_list_nth_data(d->groups, pos - 1);
@@ -243,7 +243,7 @@ static void _text_entry_changed_callback(GtkEntry *entry, dt_lib_module_t *self)
 static gboolean _text_entry_icon_press_callback(GtkEntry *entry, GtkEntryIconPosition icon_pos, GdkEvent *event,
                                                 dt_lib_module_t *self)
 {
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+  const dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
   gtk_entry_set_text(GTK_ENTRY(d->text_entry), "");
 
@@ -263,7 +263,7 @@ static gboolean _text_entry_key_press_callback(GtkWidget *widget, GdkEventKey *e
   return FALSE;
 }
 
-static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(gchar *icon)
+static DTGTKCairoPaintIconFunc _buttons_get_icon_fct(const gchar *icon)
 {
   if(g_strcmp0(icon, "active") == 0)
     return dtgtk_cairo_paint_modulegroup_active;
@@ -517,7 +517,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
   }
 
   // what type of ui we have ?
-  gboolean compact_ui = !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels");
+  const gboolean compact_ui = !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels");
 
   // we retrieve parents, positions, etc... so we can put the widget back in its module
   if(item->widget_type == WIDGET_TYPE_ACTIVATE_BTN)
@@ -1070,7 +1070,7 @@ static gboolean _lib_modulegroups_search_text_focus_gui_thread(gpointer user_dat
 {
   _set_gui_thread_t *params = (_set_gui_thread_t *)user_data;
 
-  dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
+  const dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)params->self->data;
 
   if(GTK_IS_ENTRY(d->text_entry))
   {
@@ -1343,7 +1343,7 @@ static void _preset_retrieve_old_presets(dt_lib_module_t *self)
     while(pos < size)
     {
       const char *op = p + pos;
-      int op_len = strlen(op);
+      const int op_len = strlen(op);
       dt_iop_module_state_t state = p[pos + op_len + 1];
 
       if(state == dt_iop_state_ACTIVE)
@@ -1970,7 +1970,7 @@ static void _manage_editor_basics_remove(GtkWidget *widget, GdkEventButton *even
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
-  char *id = (char *)g_object_get_data(G_OBJECT(widget), "widget_id");
+  const char *id = (char *)g_object_get_data(G_OBJECT(widget), "widget_id");
   GList *l = d->edit_basics;
   while(l)
   {
@@ -2149,7 +2149,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
 
 static void _manage_editor_module_remove(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  char *module = (char *)g_object_get_data(G_OBJECT(widget), "module_name");
+  const char *module = (char *)g_object_get_data(G_OBJECT(widget), "module_name");
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
 
   GList *l = gr->modules;
@@ -2267,7 +2267,7 @@ static void _manage_direct_save(dt_lib_module_t *self)
 
 static void _manage_direct_module_toggle(GtkWidget *widget, dt_lib_module_t *self)
 {
-  gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
+  const gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
   if(g_strcmp0(module, "") == 0) return;
 
@@ -2300,7 +2300,7 @@ static gint _basics_item_find_same_module(gconstpointer a, gconstpointer b)
 static void _manage_direct_basics_module_toggle(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
-  gchar *wid = (gchar *)g_object_get_data(G_OBJECT(widget), "widget_id");
+  const gchar *wid = (gchar *)g_object_get_data(G_OBJECT(widget), "widget_id");
   if(g_strcmp0(wid, "") == 0) return;
 
   GList *found_item = g_list_find_custom(d->basics, wid, _basics_item_find);
@@ -2339,7 +2339,7 @@ static void _manage_editor_basics_add(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
-  gchar *id = (gchar *)g_object_get_data(G_OBJECT(widget), "widget_id");
+  const gchar *id = (gchar *)g_object_get_data(G_OBJECT(widget), "widget_id");
 
   if(!g_list_find_custom(d->edit_basics, id, _basics_item_find))
   {
@@ -2355,7 +2355,7 @@ static void _manage_editor_basics_add(GtkWidget *widget, dt_lib_module_t *self)
 
 static void _manage_editor_module_add(GtkWidget *widget, dt_lib_module_t *self)
 {
-  gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
+  const gchar *module = (gchar *)g_object_get_data(G_OBJECT(widget), "module_op");
   dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)g_object_get_data(G_OBJECT(widget), "group");
   if(g_strcmp0(module, "") == 0) return;
 
@@ -2498,7 +2498,7 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
   gtk_widget_set_name(pop, "modulegroups-popup");
 
   // what type of ui we have ?
-  gboolean compact_ui = !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels");
+  const gboolean compact_ui = !dt_conf_get_bool("plugins/darkroom/modulegroups_basics_sections_labels");
 
   int nba = 0; // nb of already present items
 
@@ -2968,7 +2968,7 @@ static void _manage_editor_group_name_changed(GtkWidget *tb, GdkEventButton *eve
 static void _manage_editor_group_icon_changed(GtkWidget *widget, GdkEventButton *event,
                                               dt_lib_modulegroups_group_t *gr)
 {
-  char *ic = (char *)g_object_get_data(G_OBJECT(widget), "ic_name");
+  const char *ic = (char *)g_object_get_data(G_OBJECT(widget), "ic_name");
   g_free(gr->icon);
   gr->icon = g_strdup(ic);
   GtkWidget *pop = gtk_widget_get_parent(gtk_widget_get_parent(widget));
@@ -3481,7 +3481,7 @@ static void _manage_preset_duplicate(GtkWidget *widget, GdkEventButton *event, d
 
 static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
 {
-  char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
+  const char *preset = (char *)g_object_get_data(G_OBJECT(widget), "preset_name");
 
   gint res = GTK_RESPONSE_YES;
   GtkWidget *w = gtk_widget_get_toplevel(widget);
