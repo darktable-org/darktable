@@ -471,7 +471,7 @@ static gboolean _thumbtable_update_scrollbars(dt_thumbtable_t *table)
 static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
 {
   int changed = 0;
-  GList *l = table->list->data;
+  GList *l = table->list;
   while(l)
   {
     dt_thumbnail_t *th = (dt_thumbnail_t *)l->data;
@@ -483,6 +483,7 @@ static int _thumbs_remove_unneeded(dt_thumbtable_t *table)
       gtk_container_remove(GTK_CONTAINER(gtk_widget_get_parent(th->w_main)), th->w_main);
       dt_thumbnail_destroy(th);
       g_list_free(l);
+      l = table->list;
       changed++;
     }
     else
