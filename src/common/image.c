@@ -556,15 +556,14 @@ void _image_set_location(GList *imgs, const dt_image_geoloc_t *geoloc, GList **u
   }
 }
 
-void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc, const gboolean undo_on)
+void dt_image_set_locations(const GList *imgs, const dt_image_geoloc_t *geoloc, const gboolean undo_on)
 {
-  GList *imgs = g_list_copy((GList *)img);
   if(imgs)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
 
-    _image_set_location(imgs, geoloc, &undo, undo_on);
+    _image_set_location((GList *)imgs, geoloc, &undo, undo_on);
 
     if(undo_on)
     {
@@ -1191,7 +1190,7 @@ GList* dt_image_find_duplicates(const char* filename)
   {
     // the default sidecar exists and is readable, so add it to the list
     files = g_list_prepend(files, g_strdup(pattern));
-  } 
+  }
 
   // now collect all file_N*N.ext.xmp matches
   static const char glob_pattern[] = "_[0-9]*[0-9]";
