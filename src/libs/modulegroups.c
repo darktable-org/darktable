@@ -3292,7 +3292,7 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   while(lw)
   {
     GtkWidget *w = (GtkWidget *)lw->data;
-    char *pr_name = g_strdup((char *)g_object_get_data(G_OBJECT(w), "preset_name"));
+    const char *pr_name = (char *)g_object_get_data(G_OBJECT(w), "preset_name");
     if(g_strcmp0(pr_name, preset) == 0)
       gtk_widget_set_name(w, "modulegroups-preset-activated");
     else if(pr_name)
