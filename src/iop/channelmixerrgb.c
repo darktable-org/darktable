@@ -585,11 +585,7 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
       coeff_ratio += sqf(1.0f - output[c]) * saturation[c];
   }
   else
-  {
-    for(size_t c = 0; c < 3; c++)
-      coeff_ratio += output[c] * saturation[c];
-  }
-  coeff_ratio /= 3.f;
+    coeff_ratio = scalar_product(output, saturation) / 3.f;
 
   // Adjust the RGB ratios with the pixel correction
   for(size_t c = 0; c < 3; c++)
