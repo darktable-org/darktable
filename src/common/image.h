@@ -301,6 +301,9 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
 /** set images location lon/lat/ele */
 void dt_image_set_locations(const GList *img, const dt_image_geoloc_t *geoloc,
                            const gboolean undo_on);
+/** set images locations lon/lat/ele */
+void dt_image_set_images_locations(const GList *imgs, const GArray *gloc,
+                                   const gboolean undo_on);
 /** get image location lon/lat/ele */
 void dt_image_get_location(const int32_t imgid, dt_image_geoloc_t *geoloc);
 /** returns TRUE if current hash is not basic nor auto_apply, FALSE otherwise. */

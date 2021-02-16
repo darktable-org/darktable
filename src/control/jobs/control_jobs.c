@@ -31,6 +31,7 @@
 #include "common/mipmap_cache.h"
 #include "common/tags.h"
 #include "common/undo.h"
+#include "common/grouping.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -1083,8 +1084,8 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   if(!tz_camera) goto bail_out;
   GTimeZone *tz_utc = g_time_zone_new_utc();
 
-  dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
-
+  GList *imgs = NULL;
+  GArray *gloc = g_array_new(FALSE, FALSE, sizeof(dt_image_geoloc_t));
   /* go thru each selected image and lookup location in gpx */
   do
   {
@@ -1131,14 +1132,21 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     /* only update image location if time is within gpx tack range */
     if(dt_gpx_get_location(gpx, &timestamp, &geoloc))
     {
-      // set location to image and its group
-      dt_image_set_location(imgid, &geoloc, TRUE, TRUE);
+      // reproduce here the previous behavior (includes images of the group)
+      // but are the group members always at the same location ?
+      GList *grps = dt_grouping_get_group_images(imgid);
+      for(GList *grp = grps; grp; grp = g_list_next(grp))
+      {
+        imgs = g_list_prepend(imgs, grp->data);
+        g_array_append_val(gloc, geoloc);
+      }
+      g_list_free(grps);
       cntr++;
     }
-
   } while((t = g_list_next(t)) != NULL);
+  imgs = g_list_reverse(imgs);
 
-  dt_undo_end_group(darktable.undo);
+  dt_image_set_images_locations(imgs, gloc, TRUE);
 
   dt_control_log(ngettext("applied matched GPX location onto %d image",
                           "applied matched GPX location onto %d images", cntr), cntr);
@@ -1146,7 +1154,8 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
   g_time_zone_unref(tz_camera);
   g_time_zone_unref(tz_utc);
   dt_gpx_destroy(gpx);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(t), 0);
+  g_array_unref(gloc);
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   return 0;
 
 bail_out:
