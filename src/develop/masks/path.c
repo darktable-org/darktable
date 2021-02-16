@@ -960,7 +960,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
 
         for(const GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
         {
-          const GList *next = g_list_next(form_points) ? g_list_next(form_points) : form->points; // next w/ wrap
+          const GList *next = g_list_next_wraparound(form_points, form->points); // next w/ wrap
           dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)form_points->data; // kth element of form->points
           dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)next->data;
           surf += point1->corner[0] * point2->corner[1] - point2->corner[0] * point1->corner[1];
