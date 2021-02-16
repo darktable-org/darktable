@@ -1930,6 +1930,26 @@ void init_presets(dt_lib_module_t *self)
   _preset_retrieve_old_presets(self);
 }
 
+static gchar *_presets_get_minimal(dt_lib_module_t *self)
+{
+  const gboolean is_modern = dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+
+  // all modules
+  gchar *tx = NULL;
+
+  SQA();
+  AM("exposure/exposure");
+  AM("colorbalance/contrast");
+
+  SMG(C_("modulegroup", "base"), "basic");
+  AM("basecurve");
+  AM("filmicrgb");
+  AM("exposure");
+  AM("colorbalance");
+
+  return tx;
+}
+
 #undef SNQA
 #undef SQA
 #undef SMG
@@ -3470,8 +3490,10 @@ static void _manage_preset_add(GtkWidget *widget, GdkEventButton *event, dt_lib_
   }
   gchar *nname = dt_util_dstrcat(NULL, "new_%d", i);
 
-  // and create a new empty preset
-  dt_lib_presets_add(nname, self->plugin_name, self->version(), " ", 1, FALSE);
+  // and create a new minimal preset
+  char *tx = _presets_get_minimal(self);
+  dt_lib_presets_add(nname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
+  g_free(tx);
 
   _manage_preset_update_list(self);
 
