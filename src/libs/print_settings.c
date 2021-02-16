@@ -391,7 +391,7 @@ _print_button_clicked (GtkWidget *widget, gpointer user_data)
 
   int imgid = -1;
   if(dt_view_active_images_get())
-    imgid = GPOINTER_TO_INT(g_slist_nth_data(dt_view_active_images_get(), 0));
+    imgid = GPOINTER_TO_INT(dt_view_active_images_get()->data);
 
   if (imgid == -1)
   {

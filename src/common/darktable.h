@@ -569,6 +569,24 @@ static inline int g_list_shorter_than(const GList *list, unsigned len)
   return 0;
 }
 
+// advance the list by one position, unless already at the final node
+static inline GList *g_list_next_bounded(GList *list)
+{
+  return g_list_next(list) ? g_list_next(list) : list;
+}
+
+static inline const GList *g_list_next_wraparound(const GList *list, const GList *head)
+{
+  return g_list_next(list) ? g_list_next(list) : head;
+}
+
+static inline const GList *g_list_prev_wraparound(const GList *list)
+{
+  // return the prior element of the list, unless already on the first element; in that case, return the last
+  // element of the list.
+  return g_list_previous(list) ? g_list_previous(list) : g_list_last((GList*)list);
+}
+
 void dt_print_mem_usage();
 
 void dt_configure_performance();

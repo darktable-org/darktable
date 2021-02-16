@@ -916,7 +916,7 @@ int dt_view_get_image_to_act_on()
   {
     if(darktable.view_manager->active_images)
     {
-      ret = GPOINTER_TO_INT(g_slist_nth_data(darktable.view_manager->active_images, 0));
+      ret = GPOINTER_TO_INT(darktable.view_manager->active_images->data);
     }
     else
     {

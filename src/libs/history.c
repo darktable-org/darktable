@@ -1192,7 +1192,7 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
     GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth(hbox, HIST_WIDGET_MODULE)->data);
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth_data(hbox, HIST_WIDGET_MODULE));
     if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);
