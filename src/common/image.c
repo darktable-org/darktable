@@ -503,7 +503,6 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undogeotag->imgid));
       list = g_list_next(list);
     }
-
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs), 0);
   }
@@ -585,6 +584,50 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
   if(group_on) dt_grouping_add_grouped_images(&imgs);
   dt_image_set_locations(imgs, geoloc, undo_on);
   g_list_free(imgs);
+}
+
+static void _image_set_images_locations(const GList *img, const GArray *gloc,
+                                        GList **undo, const gboolean undo_on)
+{
+  GList *imgs = (GList *)img;
+  int i = 0;
+  while(imgs)
+  {
+    const int32_t imgid = GPOINTER_TO_INT(imgs->data);
+    const dt_image_geoloc_t *geoloc = &g_array_index(gloc, dt_image_geoloc_t, i);
+    if(undo_on)
+    {
+      dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)malloc(sizeof(dt_undo_geotag_t));
+      undogeotag->imgid = imgid;
+      dt_image_get_location(imgid, &undogeotag->before);
+
+      memcpy(&undogeotag->after, geoloc, sizeof(dt_image_geoloc_t));
+
+      *undo = g_list_prepend(*undo, undogeotag);
+    }
+
+    _set_location(imgid, geoloc);
+
+    imgs = g_list_next(imgs);
+    i++;
+  }
+}
+
+void dt_image_set_images_locations(const GList *imgs, const GArray *gloc, const gboolean undo_on)
+{
+  if(!imgs || !gloc || (g_list_length((GList *)imgs) != gloc->len))
+    return;
+  GList *undo = NULL;
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
+
+  _image_set_images_locations(imgs, gloc, &undo, undo_on);
+
+  if(undo_on)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_GEOTAG, undo, _pop_undo, _geotag_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
 
 void dt_image_reset_final_size(const int32_t imgid)
