@@ -2515,36 +2515,20 @@ void dt_database_show_error(const dt_database_t *db)
 
     char *label_text = g_markup_printf_escaped(
         _("\n"
-          " At startup, the database failed to open because at least one of the two files in the database is locked.\n"
-          "\n"
-          " The persistence of the lock is mainly caused by one of the two following causes:\n"
-          "\n"
-          " - Another occurrence of darktable has already opened this database file and locked it for its benefit.\n"
-          "\n"
-          " - A previous occurrence of darktable ended abnormally and therefore \n"
-          "   could not close one or both files in the database properly.\n"
+          " Sorry, darktable could not be started (database is locked)\n"
           "\n"
           " How to solve this problem?\n"
           "\n"
-          " 1 - Search in your environment if another darktable occurrence is active. If so, use it or close it. \n"
-          "     The lock indicates that the process number of this occurrence is : <i><b>%d</b></i>\n"
+          " 1 - check if darktable is already running (might be process id %d)\n"
           "\n"
-          " 2 - If you can't find this other occurrence, try closing your session and reopening it or shutting down your computer. \n"
-          "     This will delete all running programs and thus close the database correctly.\n"
+          " 2 - if you can't find it -> restart your computer\n"
           "\n"
-          " 3 - If these two actions are not enough, it is because at least one of the two files that materialize the locks remains \n"
-          "     and that these are no longer attached to any occurrence of darktable. It is then necessary to delete it (or them). \n"
-          "     The two files are named <i>data.db.lock</i> and <i>library.db.lock</i> respectively. The opening mechanism signals \n"
-          "     the presence of the <i><b>%s</b></i> file in the <i><b>%s</b></i> folder. \n"
-          "     (full pathname: <i><b>%s</b></i>).\n"
-          "\n"
-          "     <u>Caution!</u> Do not delete these files without first checking that there are no more occurrences of darktable, \n"
-          "     otherwise you risk generating serious inconsistencies in your database.\n"
-          "\n"
-          " As soon as you have identified and removed the cause of the lock, darktable will start without any problem.\n"),
-      db->error_other_pid, lck_filename, lck_dirname, lck_pathname);
+          " 3 - if you still get this error after the restart:\n"
+          "     + open your config folder (click here: <a href=\"file:///%s\">%s</a>) \n"
+          "     + manually delete the .lock file (%s)\n"),
+      db->error_other_pid, lck_dirname, lck_dirname, lck_filename);
 
-    dt_gui_show_standalone_yes_no_dialog(_("darktable cannot be started because the database is locked"),
+    dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
                                          label_text, _("close darktable"), NULL);
 
     g_free(lck_dirname);
