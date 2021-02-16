@@ -238,6 +238,24 @@ const dt_iop_gui_blendif_colorstop_t _gradient_JzCzhz_hue[] = {
     { 1.000f, { 0.7500000f, 0.1946971f, 0.3697612f, 1.0f } },
 };
 
+enum _channel_indexes
+{
+  CHANNEL_INDEX_L = 0,
+  CHANNEL_INDEX_a = 1,
+  CHANNEL_INDEX_b = 2,
+  CHANNEL_INDEX_C = 3,
+  CHANNEL_INDEX_h = 4,
+  CHANNEL_INDEX_g = 0,
+  CHANNEL_INDEX_R = 1,
+  CHANNEL_INDEX_G = 2,
+  CHANNEL_INDEX_B = 3,
+  CHANNEL_INDEX_H = 4,
+  CHANNEL_INDEX_S = 5,
+  CHANNEL_INDEX_l = 6,
+  CHANNEL_INDEX_Jz = 4,
+  CHANNEL_INDEX_Cz = 5,
+  CHANNEL_INDEX_hz = 6,
+};
 
 static inline dt_iop_colorspace_type_t _blendif_colorpicker_cst(dt_iop_gui_blend_data_t *data)
 {
@@ -296,40 +314,40 @@ static void _blendif_scale(dt_iop_gui_blend_data_t *data, dt_iop_colorspace_type
   switch(cst)
   {
     case iop_cs_Lab:
-      out[0] = CLAMP((in[0] / _get_boost_factor(data, 0, in_out)) / 100.0f, 0.0f, 1.0f);
-      out[1] = CLAMP(((in[1] / _get_boost_factor(data, 1, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
-      out[2] = CLAMP(((in[2] / _get_boost_factor(data, 2, in_out)) + 128.0f) / 256.0f, 0.0f, 1.0f);
+      out[CHANNEL_INDEX_L] = (in[0] / _get_boost_factor(data, 0, in_out)) / 100.0f;
+      out[CHANNEL_INDEX_a] = ((in[1] / _get_boost_factor(data, 1, in_out)) + 128.0f) / 256.0f;
+      out[CHANNEL_INDEX_b] = ((in[2] / _get_boost_factor(data, 2, in_out)) + 128.0f) / 256.0f;
       break;
     case iop_cs_rgb:
       if(work_profile == NULL)
-        out[0] = 0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2];
+        out[CHANNEL_INDEX_g] = 0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2];
       else
-        out[0] = dt_ioppr_get_rgb_matrix_luminance(in, work_profile->matrix_in,
-                                                       work_profile->lut_in,
-                                                       work_profile->unbounded_coeffs_in,
-                                                       work_profile->lutsize,
-                                                       work_profile->nonlinearlut);
-      out[0] = CLAMP((out[0] / _get_boost_factor(data, 0, in_out)), 0.0f, 1.0f);
-      out[1] = CLAMP((in[0] / _get_boost_factor(data, 1, in_out)), 0.0f, 1.0f);
-      out[2] = CLAMP((in[1] / _get_boost_factor(data, 2, in_out)), 0.0f, 1.0f);
-      out[3] = CLAMP((in[2] / _get_boost_factor(data, 3, in_out)), 0.0f, 1.0f);
+        out[CHANNEL_INDEX_g] = dt_ioppr_get_rgb_matrix_luminance(in, work_profile->matrix_in,
+                                                                 work_profile->lut_in,
+                                                                 work_profile->unbounded_coeffs_in,
+                                                                 work_profile->lutsize,
+                                                                 work_profile->nonlinearlut);
+      out[CHANNEL_INDEX_g] = out[CHANNEL_INDEX_g] / _get_boost_factor(data, 0, in_out);
+      out[CHANNEL_INDEX_R] = in[0] / _get_boost_factor(data, 1, in_out);
+      out[CHANNEL_INDEX_G] = in[1] / _get_boost_factor(data, 2, in_out);
+      out[CHANNEL_INDEX_B] = in[2] / _get_boost_factor(data, 3, in_out);
       break;
     case iop_cs_LCh:
-      out[3] = CLAMP((in[1] / _get_boost_factor(data, 3, in_out)) / (128.0f * sqrtf(2.0f)), 0.0f, 1.0f);
-      out[4] = CLAMP((in[2] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
+      out[CHANNEL_INDEX_C] = (in[1] / _get_boost_factor(data, 3, in_out)) / (128.0f * sqrtf(2.0f));
+      out[CHANNEL_INDEX_h] = in[2] / _get_boost_factor(data, 4, in_out);
       break;
     case iop_cs_HSL:
-      out[4] = CLAMP((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
-      out[5] = CLAMP((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
-      out[6] = CLAMP((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
+      out[CHANNEL_INDEX_H] = in[0] / _get_boost_factor(data, 4, in_out);
+      out[CHANNEL_INDEX_S] = in[1] / _get_boost_factor(data, 5, in_out);
+      out[CHANNEL_INDEX_l] = in[2] / _get_boost_factor(data, 6, in_out);
       break;
     case iop_cs_JzCzhz:
-      out[4] = CLAMP((in[0] / _get_boost_factor(data, 4, in_out)), 0.0f, 1.0f);
-      out[5] = CLAMP((in[1] / _get_boost_factor(data, 5, in_out)), 0.0f, 1.0f);
-      out[6] = CLAMP((in[2] / _get_boost_factor(data, 6, in_out)), 0.0f, 1.0f);
+      out[CHANNEL_INDEX_Jz] = in[0] / _get_boost_factor(data, 4, in_out);
+      out[CHANNEL_INDEX_Cz] = in[1] / _get_boost_factor(data, 5, in_out);
+      out[CHANNEL_INDEX_hz] = in[2] / _get_boost_factor(data, 6, in_out);
       break;
     default:
-      out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
+      break;
   }
 }
 
@@ -341,39 +359,39 @@ static void _blendif_cook(dt_iop_colorspace_type_t cst, const float *in, float *
   switch(cst)
   {
     case iop_cs_Lab:
-      out[0] = in[0];
-      out[1] = in[1];
-      out[2] = in[2];
+      out[CHANNEL_INDEX_L] = in[0];
+      out[CHANNEL_INDEX_a] = in[1];
+      out[CHANNEL_INDEX_b] = in[2];
       break;
     case iop_cs_rgb:
       if(work_profile == NULL)
-        out[0] = (0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2]) * 100.0f;
+        out[CHANNEL_INDEX_g] = (0.3f * in[0] + 0.59f * in[1] + 0.11f * in[2]) * 100.0f;
       else
-        out[0] = dt_ioppr_get_rgb_matrix_luminance(in, work_profile->matrix_in,
-                                                       work_profile->lut_in,
-                                                       work_profile->unbounded_coeffs_in,
-                                                       work_profile->lutsize,
-                                                       work_profile->nonlinearlut) * 100.0f;
-      out[1] = in[0] * 100.0f;
-      out[2] = in[1] * 100.0f;
-      out[3] = in[2] * 100.0f;
+        out[CHANNEL_INDEX_g] = dt_ioppr_get_rgb_matrix_luminance(in, work_profile->matrix_in,
+                                                                 work_profile->lut_in,
+                                                                 work_profile->unbounded_coeffs_in,
+                                                                 work_profile->lutsize,
+                                                                 work_profile->nonlinearlut) * 100.0f;
+      out[CHANNEL_INDEX_R] = in[0] * 100.0f;
+      out[CHANNEL_INDEX_G] = in[1] * 100.0f;
+      out[CHANNEL_INDEX_B] = in[2] * 100.0f;
       break;
     case iop_cs_LCh:
-      out[3] = in[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
-      out[4] = in[2] * 360.0f;
+      out[CHANNEL_INDEX_C] = in[1] / (128.0f * sqrtf(2.0f)) * 100.0f;
+      out[CHANNEL_INDEX_h] = in[2] * 360.0f;
       break;
     case iop_cs_HSL:
-      out[4] = in[0] * 360.0f;
-      out[5] = in[1] * 100.0f;
-      out[6] = in[2] * 100.0f;
+      out[CHANNEL_INDEX_H] = in[0] * 360.0f;
+      out[CHANNEL_INDEX_S] = in[1] * 100.0f;
+      out[CHANNEL_INDEX_l] = in[2] * 100.0f;
       break;
     case iop_cs_JzCzhz:
-      out[4] = in[0] * 100.0f;
-      out[5] = in[1] * 100.0f;
-      out[6] = in[2] * 360.0f;
+      out[CHANNEL_INDEX_Jz] = in[0] * 100.0f;
+      out[CHANNEL_INDEX_Cz] = in[1] * 100.0f;
+      out[CHANNEL_INDEX_hz] = in[2] * 360.0f;
       break;
     default:
-      out[0] = out[1] = out[2] = out[3] = out[4] = out[5] = out[6] = out[7] = -1.0f;
+      break;
   }
 }
 
@@ -877,7 +895,10 @@ static void _update_gradient_slider_pickers(GtkWidget *callback_dummy, dt_iop_mo
       gchar *text = g_strdup_printf("(%.*f)", _blendif_print_digits_picker(cooked[data->tab]), cooked[data->tab]);
 
       dtgtk_gradient_slider_multivalue_set_picker_meanminmax(
-          data->filter[in_out].slider, picker_mean[data->tab], picker_min[data->tab], picker_max[data->tab]);
+          data->filter[in_out].slider,
+          CLAMP(picker_mean[data->tab], 0.0f, 1.0f),
+          CLAMP(picker_min[data->tab], 0.0f, 1.0f),
+          CLAMP(picker_max[data->tab], 0.0f, 1.0f));
       gtk_label_set_text(data->filter[in_out].picker_label, text);
 
       g_free(text);
@@ -1355,23 +1376,27 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     dt_develop_blend_params_t *bp = module->blend_params;
 
     const int tab = data->tab;
-    float *raw_mean, *raw_min, *raw_max;
-    float picker_mean[8], picker_min[8], picker_max[8];
+    float raw_min[4], raw_max[4];
+    float picker_min[8], picker_max[8];
     float picker_values[4];
 
     const int in_out = ((dt_key_modifier_state() == GDK_CONTROL_MASK) && data->output_channels_shown) ? 1 : 0;
 
     if(in_out)
     {
-      raw_mean = module->picked_output_color;
-      raw_min = module->picked_output_color_min;
-      raw_max = module->picked_output_color_max;
+      for(size_t i = 0; i < 4; i++)
+      {
+        raw_min[i] = module->picked_output_color_min[i];
+        raw_max[i] = module->picked_output_color_max[i];
+      }
     }
     else
     {
-      raw_mean = module->picked_color;
-      raw_min = module->picked_color_min;
-      raw_max = module->picked_color_max;
+      for(size_t i = 0; i < 4; i++)
+      {
+        raw_min[i] = module->picked_color_min[i];
+        raw_max[i] = module->picked_color_max[i];
+      }
     }
 
     const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
@@ -1386,7 +1411,26 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
         ? dt_ioppr_get_pipe_current_profile_info(piece->module, piece->pipe)
         : dt_ioppr_get_iop_work_profile_info(module, module->dev->iop);
 
-    _blendif_scale(data, cst, raw_mean, picker_mean, work_profile, in_out);
+    gboolean reverse_hues = FALSE;
+    if(cst == iop_cs_HSL && tab == CHANNEL_INDEX_H)
+    {
+      if((raw_max[3] - raw_min[3]) < (raw_max[0] - raw_min[0]) && raw_min[3] < 0.5f && raw_max[3] > 0.5f)
+      {
+        raw_max[0] = raw_max[3] < 0.5f ? raw_max[3] + 0.5f : raw_max[3] - 0.5f;
+        raw_min[0] = raw_min[3] < 0.5f ? raw_min[3] + 0.5f : raw_min[3] - 0.5f;
+        reverse_hues = TRUE;
+      }
+    }
+    else if((cst == iop_cs_LCh && tab == CHANNEL_INDEX_h) || (cst == iop_cs_JzCzhz && tab == CHANNEL_INDEX_hz))
+    {
+      if((raw_max[3] - raw_min[3]) < (raw_max[2] - raw_min[2]) && raw_min[3] < 0.5f && raw_max[3] > 0.5f)
+      {
+        raw_max[2] = raw_max[3] < 0.5f ? raw_max[3] + 0.5f : raw_max[3] - 0.5f;
+        raw_min[2] = raw_min[3] < 0.5f ? raw_min[3] + 0.5f : raw_min[3] - 0.5f;
+        reverse_hues = TRUE;
+      }
+    }
+
     _blendif_scale(data, cst, raw_min, picker_min, work_profile, in_out);
     _blendif_scale(data, cst, raw_max, picker_max, work_profile, in_out);
 
@@ -1444,7 +1488,11 @@ gboolean blend_color_picker_apply(dt_iop_module_t *module, GtkWidget *picker, dt
     else
       bp->blendif |= (1 << ch);
 
+    // reverse (hue) channel if needed
+    bp->blendif = (bp->blendif & ~(1 << (16 + ch))) | (reverse_hues ? 1 << (16 + ch) : 0);
+
     dt_dev_add_history_item(darktable.develop, module, TRUE);
+    _blendop_blendif_update_tab(module, tab);
 
     return TRUE;
   }
