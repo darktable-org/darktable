@@ -313,15 +313,11 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   // back dt_view_get_images_to_act_on() which free list and create a new one. So the
   // above imgs will be invalidated.
 
-  GList *l_copy = g_list_copy((GList *)imgs);
-
   if(dt_history_paste_parts_on_list(imgs, TRUE))
   {
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_copy((GList *)l_copy));
+                               g_list_copy((GList *)imgs));
   }
-  else
-    g_list_free(l_copy);
 }
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)

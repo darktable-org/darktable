@@ -175,15 +175,13 @@ static void _colorlabels_execute(const GList *imgs, const int labels, GList **un
 void dt_colorlabels_set_labels(const GList *img, const int labels, const gboolean clear_on,
                                const gboolean undo_on)
 {
-  GList *imgs = g_list_copy((GList *)img);
-  if(imgs)
+  if(img)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_COLORLABELS);
 
-    _colorlabels_execute(imgs, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
+    _colorlabels_execute(img, labels, &undo, undo_on, clear_on ? DT_CA_SET : DT_CA_ADD);
 
-    g_list_free(imgs);
     if(undo_on)
     {
       dt_undo_record(darktable.undo, NULL, DT_UNDO_COLORLABELS, undo, _pop_undo, _colorlabels_undo_data_free);

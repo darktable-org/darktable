@@ -108,10 +108,9 @@ static void _ratings_undo_data_free(gpointer data)
   g_list_free(l);
 }
 
-static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gboolean undo_on)
+static void _ratings_apply(const GList *imgs, const int rating, GList **undo, const gboolean undo_on)
 {
-  GList *images = imgs;
-  while(images)
+  for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const int image_id = GPOINTER_TO_INT(images->data);
     if(undo_on)
@@ -124,22 +123,18 @@ static void _ratings_apply(GList *imgs, const int rating, GList **undo, const gb
     }
 
     _ratings_apply_to_image(image_id, rating);
-
-    images = g_list_next(images);
   }
 }
 
 void dt_ratings_apply_on_list(const GList *img, const int rating, const gboolean undo_on)
 {
-  GList *imgs = g_list_copy((GList *)img);
-  if(imgs)
+  if(img)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_RATINGS);
 
-    _ratings_apply(imgs, rating, &undo, undo_on);
+    _ratings_apply(img, rating, &undo, undo_on);
 
-    g_list_free(imgs);
     if(undo_on)
     {
       dt_undo_record(darktable.undo, NULL, DT_UNDO_RATINGS, undo, _pop_undo, _ratings_undo_data_free);
