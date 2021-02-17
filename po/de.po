@@ -15309,15 +15309,15 @@ msgstr "komprimiert Schatten/Spitzlichter: mittel"
 
 #: ../src/iop/toneequal.c:498
 msgid "compress shadows/highlights (eigf) : soft"
-msgstr "komprimiert Schatten/Spitzlichter: weich"
+msgstr "komprimiert Schatten/Spitzlichter: gering"
 
 #: ../src/iop/toneequal.c:502
 msgid "compress shadows/highlights (gf) : soft"
-msgstr "komprimiert Schatten/Spitzlichter: weich"
+msgstr "komprimiert Schatten/Spitzlichter: gering"
 
 #: ../src/iop/toneequal.c:508
 msgid "contrast tone curve: soft"
-msgstr "Kontrastkurve: niedrig"
+msgstr "Kontrastkurve: gering"
 
 #: ../src/iop/toneequal.c:512
 msgid "contrast tone curve: medium"
@@ -15325,7 +15325,7 @@ msgstr "Kontrastkurve: mittel"
 
 #: ../src/iop/toneequal.c:516
 msgid "contrast tone curve: strong"
-msgstr "Kontrastkurve: hoch"
+msgstr "Kontrastkurve: stark"
 
 #: ../src/iop/toneequal.c:538
 msgid "relight : fill-in"
