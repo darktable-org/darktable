@@ -1537,18 +1537,15 @@ margin: 0 2px;
 #basics-box-labels #module-enable-button,
 #basics-link
 {
-  min-height: 0.85em;
-  min-width: 0.85em;
+  min-height: 0.95em;
+  min-width: 0.95em;
+  margin: 0 0.75em;
   border: none;
-}
-
-#basics-link
-{
-  margin: 0 0 0.3em 0.75em;
 }
 
 #basics-header-box #basics-link
 {
+  color: shade(@button_fg, 1.1);
   margin-bottom: 0;
 }
 
@@ -1567,7 +1564,7 @@ margin: 0 2px;
 #basics-box-labels #section_label
 {
   margin-top: 0.25em;
-  padding: 0.25em 0 0.3em 0;
+  padding: 0.25em 0;
   border: none;
 }
 
@@ -1578,8 +1575,8 @@ margin: 0 2px;
 
 #basics-header-box
 {
-  border-top: 0.5px solid @section_label;
-  margin: 0.1em 0.75em;
+  border-top: 0.7px solid @darkroom_bg_color;
+  margin: 0.15em 0;
 }
 
 #basics-box-labels #basics-header-box:first-child
