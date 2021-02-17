@@ -102,7 +102,7 @@ const char *name()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. better use filmic rgb module instead.");
+  return _("this module is deprecated. please use the filmic rgb module instead.");
 }
 
 int flags()
