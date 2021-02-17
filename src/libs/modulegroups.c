@@ -1520,6 +1520,14 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
       AM("temperature/temperature");     \
       AM("temperature/tint");            \
     }                                    \
+    AM("exposure/exposure");             \
+    AM("colorbalance/contrast");         \
+    AM("colorbalance/output saturation");\
+    AM("vibrancergb/amount");            \
+    AM("clipping/angle");                \
+    AM("denoiseprofile");                \
+    AM("lens");                          \
+    AM("bilat");                         \
   }
 
 // start module group
@@ -1547,13 +1555,6 @@ void init_presets(dt_lib_module_t *self)
   gchar *tx = NULL;
 
   SQA();
-  AM("exposure/exposure");
-  AM("colorbalance/contrast");
-  AM("colorbalance/output saturation");
-  AM("clipping/angle");
-  AM("denoiseprofile");
-  AM("lens");
-  AM("bilat");
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
@@ -1596,7 +1597,7 @@ void init_presets(dt_lib_module_t *self)
   AM("profile");
   AM("gamma");
   AM("velvia");
-  AM("vibrance");
+  AM("vibrancergb");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("ashift");
@@ -1639,10 +1640,6 @@ void init_presets(dt_lib_module_t *self)
   // minimal / 3 tabs
 
   SQA();
-  AM("exposure/exposure");
-  AM("clipping/angle");
-  AM("denoiseprofile");
-  AM("lens");
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basicadj");
@@ -1675,13 +1672,6 @@ void init_presets(dt_lib_module_t *self)
 
   // display referred
   SQA();
-  AM("exposure/exposure");
-  AM("colorbalance/contrast");
-  AM("colorbalance/output saturation");
-  AM("clipping/angle");
-  AM("denoiseprofile");
-  AM("lens");
-  AM("bilat");
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("basecurve");
@@ -1703,7 +1693,7 @@ void init_presets(dt_lib_module_t *self)
   AM("colorzones");
   AM("monochrome");
   AM("velvia");
-  AM("vibrance");
+  AM("vibrancergb");
 
   SMG(C_("modulegroup", "correct"), "correct");
   AM("ashift");
@@ -1733,13 +1723,6 @@ void init_presets(dt_lib_module_t *self)
   // scene referred
 
   SQA();
-  AM("exposure/exposure");
-  AM("colorbalance/contrast");
-  AM("colorbalance/output saturation");
-  AM("clipping/angle");
-  AM("denoiseprofile");
-  AM("lens");
-  AM("bilat");
 
   SMG(C_("modulegroup", "base"), "basic");
   AM("filmicrgb");
@@ -1782,13 +1765,6 @@ void init_presets(dt_lib_module_t *self)
   // default / 3 tabs based on Aurélien's proposal
 
   SQA();
-  AM("exposure/exposure");
-  AM("colorbalance/contrast");
-  AM("colorbalance/output saturation");
-  AM("clipping/angle");
-  AM("denoiseprofile");
-  AM("lens");
-  AM("bilat");
 
   SMG(C_("modulegroup", "technical"), "technical");
   AM("ashift");
@@ -1841,7 +1817,7 @@ void init_presets(dt_lib_module_t *self)
   AM("tonecurve");
   AM("toneequal");
   AM("velvia");
-  AM("vibrance");
+  AM("vibrancergb");
 
   SMG(C_("modulegroup", "effects"), "effect");
   AM("atrous");
@@ -1880,6 +1856,8 @@ void init_presets(dt_lib_module_t *self)
   AM("globaltonemap");
   AM("relight");
   AM("tonemap");
+  AM("vibrance");
+  AM("basicadj");
 
   dt_lib_presets_add(_(DEPRECATED_PRESET_NAME), self->plugin_name, self->version(), tx, strlen(tx), TRUE);
 
