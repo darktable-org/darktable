@@ -1132,8 +1132,7 @@ static int32_t dt_control_gpx_apply_job_run(dt_job_t *job)
     /* only update image location if time is within gpx tack range */
     if(dt_gpx_get_location(gpx, &timestamp, &geoloc))
     {
-      // reproduce here the previous behavior (includes images of the group)
-      // but are the group members always at the same location ?
+      // takes the option to include the grouped images
       GList *grps = dt_grouping_get_group_images(imgid);
       for(GList *grp = grps; grp; grp = g_list_next(grp))
       {
@@ -1863,11 +1862,49 @@ void dt_control_export(GList *imgid_list, int max_width, int max_height, int for
   mstorage->export_dispatched(mstorage);
 }
 
+static void _add_datetime_offset(const uint32_t imgid, const char *odt,
+                                 const long int offset, char *ndt)
+{
+  // get the datetime_taken and calculate the new time
+  gint year;
+  gint month;
+  gint day;
+  gint hour;
+  gint minute;
+  gint seconds;
+
+  if(sscanf(odt, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
+            (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
+  {
+    fprintf(stderr, "broken exif time in db, '%s', imgid %d\n", odt, imgid);
+    return;
+  }
+
+  GTimeZone *tz = g_time_zone_new_utc();
+  GDateTime *datetime_original = g_date_time_new(tz, year, month, day, hour, minute, seconds);
+  g_time_zone_unref(tz);
+  if(!datetime_original)
+    return;
+
+  // let's add our offset
+  GDateTime *datetime_new = g_date_time_add_seconds(datetime_original, offset);
+  g_date_time_unref(datetime_original);
+
+  if(!datetime_new)
+    return;
+
+  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S");
+  g_date_time_unref(datetime_new);
+
+  if(datetime)
+    memcpy(ndt, datetime, DT_DATETIME_LENGTH);
+  g_free(datetime);
+}
+
 static int32_t dt_control_datetime_job_run(dt_job_t *job)
 {
   dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
   uint32_t cntr = 0;
-  double fraction = 0.0;
   GList *t = params->index;
   const long int offset = ((dt_control_datetime_t *)params->data)->offset;
   const char *datetime = ((dt_control_datetime_t *)params->data)->datetime;
@@ -1886,28 +1923,47 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext(mes11, mes12, total), total);
   dt_control_job_set_progress_message(job, message);
 
-  dt_undo_start_group(darktable.undo, DT_UNDO_DATETIME);
-  /* go thru each selected image and update datetime_taken */
-  do
+  GList *imgs = NULL;
+  if(offset)
   {
-    int imgid = GPOINTER_TO_INT(t->data);
+    GArray *dtime = g_array_new(FALSE, TRUE, DT_DATETIME_LENGTH);
 
-    if(offset)
-      dt_image_add_time_offset(imgid, offset);
-    else
-      dt_image_set_datetime(imgid, datetime);
-    cntr++;
+    for(GList *img = t; img; img = g_list_next(img))
+    {
+      char odt[DT_DATETIME_LENGTH] = {0};
+      dt_image_get_datetime(GPOINTER_TO_INT(img->data), odt);
+      if(!odt[0]) continue;
 
-    fraction = MAX(fraction, (1.0 * cntr) / total);
-    dt_control_job_set_progress(job, fraction);
-  } while((t = g_list_next(t)) != NULL);
-  dt_undo_end_group(darktable.undo);
+      char ndt[DT_DATETIME_LENGTH] = {0};
+      _add_datetime_offset(GPOINTER_TO_INT(img->data), odt, offset, ndt);
+      if(!ndt[0]) continue;
+
+      // takes the option to include the grouped images
+      GList *grps = dt_grouping_get_group_images(GPOINTER_TO_INT(img->data));
+      for(GList *grp = grps; grp; grp = g_list_next(grp))
+      {
+        imgs = g_list_prepend(imgs, grp->data);
+        g_array_append_val(dtime, ndt);
+      }
+      g_list_free(grps);
+      cntr++;
+    }
+    imgs = g_list_reverse(imgs);
+    dt_image_set_datetimes(imgs, dtime, TRUE);
+  }
+  else
+  {
+    imgs = g_list_copy(t);
+    // takes the option to include the grouped images
+    dt_grouping_add_grouped_images(&imgs);
+    dt_image_set_datetime(imgs, datetime, TRUE);
+  }
 
   const char *mes21 = offset ? N_("added time offset to %d image") : N_("set date time to %d image");
   const char *mes22 = offset ? N_("added time offset to %d images") : N_("set date time to %d images");
   dt_control_log(ngettext(mes21, mes22, cntr), cntr);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(params->index));
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
   return 0;
 }
 
