@@ -69,11 +69,13 @@ DT_MODULE_INTROSPECTION(3, dt_iop_channelmixer_rgb_params_t)
 
 #define CHANNEL_SIZE 4
 #define NORM_MIN 1e-6f
+#define INVERSE_SQRT_3 0.5773502691896258f
 
 typedef enum dt_iop_channelmixer_rgb_version_t
 {
   CHANNELMIXERRGB_V_1 = 0, // $DESCRIPTION: "version 1 (2020)"
-  CHANNELMIXERRGB_V_2 = 1  // $DESCRIPTION: "version 2 (2021)"
+  CHANNELMIXERRGB_V_2 = 1, // $DESCRIPTION: "version 2 (2021)"
+  CHANNELMIXERRGB_V_3 = 2, // $DESCRIPTION: "version 3 (Apr 2021)"
 } dt_iop_channelmixer_rgb_version_t;
 
 typedef struct dt_iop_channelmixer_rgb_params_t
@@ -96,7 +98,7 @@ typedef struct dt_iop_channelmixer_rgb_params_t
   gboolean clip;                   // $DEFAULT: TRUE $DESCRIPTION: "clip negative RGB from gamut"
 
   /* params of v3 */
-  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_2 $DESCRIPTION: "saturation algorithm"
+  dt_iop_channelmixer_rgb_version_t version; // $DEFAULT: CHANNELMIXERRGB_V_3 $DESCRIPTION: "saturation algorithm"
 
   /* always add new params after this so we can import legacy params with memcpy on the common part of the struct */
 
@@ -269,7 +271,7 @@ void init_presets(dt_iop_module_so_t *self)
   dt_iop_channelmixer_rgb_params_t p;
   memset(&p, 0, sizeof(p));
 
-  p.version = CHANNELMIXERRGB_V_2;
+  p.version = CHANNELMIXERRGB_V_3;
 
   // bypass adaptation
   p.illuminant = DT_ILLUMINANT_PIPE;
@@ -573,6 +575,9 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
   const float mix = scalar_product(input, lightness);
   float norm = euclidean_norm(input);
 
+  // Compensate the norm to get color ratios (R, G, B) = (1, 1, 1) for grey (colorless) pixels.
+  if(version == CHANNELMIXERRGB_V_3) norm *= INVERSE_SQRT_3;
+
   // Ratios
   for(size_t c = 0; c < 3; c++) output[c] = input[c] / norm;
 
@@ -594,8 +599,13 @@ static inline void luma_chroma(const float input[4], const float saturation[4], 
     // otherwise bright saturated blues end up solid black
     const float min_ratio = (output[c] < 0.0f) ? output[c] : 0.0f;
     const float output_inverse = 1.0f - output[c];
-    output[c] = fmaxf(DT_FMA(output_inverse, coeff_ratio, output[c]), min_ratio); // output_inverse  * coeff_ratio + output
+    output[c] = fmaxf(DT_FMA(output_inverse, coeff_ratio, output[c]),
+                      min_ratio); // output_inverse  * coeff_ratio + output
   }
+
+  // The above interpolation between original pixel ratios and (1, 1, 1) might change the norm of the
+  // ratios. Compensate for that.
+  if(version == CHANNELMIXERRGB_V_3) norm /= euclidean_norm(output) * INVERSE_SQRT_3;
 
   // Apply colorfulness adjustment channel-wise and repack with lightness to get LMS back
   norm *= fmaxf(1.f + mix / avg, 0.f);
