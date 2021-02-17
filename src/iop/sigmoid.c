@@ -36,7 +36,7 @@
 //  { {XX.0f }, "sigmoid", 0},
 
 // Module version number
-DT_MODULE_INTROSPECTION(1, dt_iop_sigmoid_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_sigmoid_params_t)
 
 
 // Enums used in params_t can have $DESCRIPTIONs that will be used to
@@ -50,7 +50,7 @@ typedef enum dt_iop_sigmoid_type_t
   DT_SIGMOID_WEIBULL = 1,      // $DESCRIPTION: "Weibull"
 } dt_iop_sigmoid_type_t;
 
-#define MIDDLE_GREY 0.18f
+#define MIDDLE_GREY 0.1845f
 
 typedef struct dt_iop_sigmoid_params_t
 {
@@ -69,7 +69,11 @@ typedef struct dt_iop_sigmoid_params_t
   // If no explicit init() is specified, the default implementation uses $DEFAULT tags
   // to initialise self->default_params, which is then used in gui_init to set widget defaults.
 
-  float middle_grey_contrast;  // $MIN: 0.1 $MAX: 10.0 $DEFAULT: 1.4 $DESCRIPTION: "Contrast"
+  float middle_grey_contrast;  // $MIN: 0.1  $MAX: 4.0 $DEFAULT: 1.6 $DESCRIPTION: "Contrast"
+  float contrast_skewness;     // $MIN: -1.0 $MAX: 1.0 $DEFAULT: 0.0 $DESCRIPTION: "Skew"
+  float display_white_target;  // $MIN: 0.2  $MAX: 16.0 $DEFAULT: 1.0 $DESCRIPTION: "target white"
+  float display_grey_target;   // $MIN: 0.1  $MAX: 0.2 $DEFAULT: 0.1845 $DESCRIPTION: "target grey"
+  float display_black_target;  // $MIN: 0.0  $MAX: 0.1 $DEFAULT: 0.0 $DESCRIPTION: "target black"
   dt_iop_sigmoid_type_t cumulative_distribution;  // $DEFAULT: DT_SIGMOID_LOGLOGISTIC $DESCRIPTION: "Curve type"
 } dt_iop_sigmoid_params_t;
 
@@ -81,7 +85,7 @@ typedef struct dt_iop_sigmoid_gui_data_t
   // Whatever you need to make your gui happy and provide access to widgets between gui_init, gui_update etc.
   // Stored in self->gui_data while in darkroom.
   // To permanently store per-user gui configuration settings, you could use dt_conf_set/_get.
-  GtkWidget *contrast_slider, *distribution_list;
+  GtkWidget *contrast_slider, *skewness_slider, *distribution_list;
 } dt_iop_sigmoid_gui_data_t;
 
 
@@ -131,6 +135,23 @@ int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_p
 int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
                   void *new_params, const int new_version)
 {
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_sigmoid_params_v1_t
+    {
+      float middle_grey_contrast;
+      dt_iop_sigmoid_type_t cumulative_distribution;
+    } dt_iop_sigmoid_params_v1_t;
+
+    dt_iop_sigmoid_params_v1_t *o = (dt_iop_sigmoid_params_v1_t *)old_params;
+    dt_iop_sigmoid_params_t *n = (dt_iop_sigmoid_params_t *)new_params;
+    dt_iop_sigmoid_params_t *d = (dt_iop_sigmoid_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    n->middle_grey_contrast = o->middle_grey_contrast;
+    n->cumulative_distribution = o->cumulative_distribution;
+  }
   return 1;
 }
 
@@ -157,13 +178,27 @@ void process_loglogistic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
   float *const out = (float *)ovoid;
   const size_t npixels = (size_t)roi_in->width * roi_in->height;
 
-  const float power = d->middle_grey_contrast;
-  const float pivot = (1.0f - MIDDLE_GREY) / MIDDLE_GREY;
-  const float grey = MIDDLE_GREY;
+  /* Calculate actual skew log logistic parameters to fulfill the following:
+   * f(scene_zero) = display_black_target 
+   * f(scene_grey) = display_grey_target
+   * f(scene_inf)  = display_white_target
+   * Keep contrast and skewness fairly orthogonal
+   */
+  const float scene_grey = MIDDLE_GREY;
+  const float skew_power = powf(5.0f, -d->contrast_skewness);
+  const float contrast_power = powf(d->middle_grey_contrast, 1.0f / skew_power);
+  const float magnitude = d->display_white_target;
+  const float white_grey_relation = powf(d->display_white_target / d->display_grey_target, 1.0f / skew_power) - 1.0f;
+  float film_fog = 0.0f;
+  if (d->display_black_target > 0.0f) {
+    const float white_black_relation = powf(d->display_white_target / d->display_black_target, 1.0f / skew_power) - 1.0f;
+    film_fog = scene_grey * powf(white_grey_relation, 1.0f / contrast_power) / (powf(white_black_relation, 1.0f / contrast_power) - powf(white_grey_relation, 1.0f / contrast_power));
+  }
+  const float paper_exp = powf(film_fog + scene_grey, contrast_power) * white_grey_relation;
 
 #ifdef _OPENMP
 #pragma omp parallel for default(none) \
-  dt_omp_firstprivate(npixels, work_profile, pivot, grey, power) \
+  dt_omp_firstprivate(npixels, work_profile, magnitude, paper_exp, film_fog, contrast_power, skew_power) \
   dt_omp_sharedconst(in, out) \
   schedule(static)
 #endif
@@ -174,8 +209,12 @@ void process_loglogistic(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *p
     const float luma = rgb_luma(in + k, work_profile);
     for(size_t c = 0; c < 3; c++)
     {
-      const float desat = fmaxf(luma + 0.96f * (in[k + c] - luma), 0.0f);
-      out[k + c] = 1.0f - pivot / (pivot + powf(desat / grey, power));
+      const float desat = luma + 0.96f * (in[k + c] - luma);
+      if (desat > 0.0f) {
+        out[k + c] = magnitude * powf(1.0 + paper_exp * powf(film_fog + desat, -contrast_power), -skew_power);
+      } else {
+        out[k + c] = 0.0f;
+      }
     }
     // Copy over the alpha channel
     out[k + 3] = in[k + 3];
@@ -266,6 +305,7 @@ void gui_update(dt_iop_module_t *self)
   dt_iop_sigmoid_params_t *p = (dt_iop_sigmoid_params_t *)self->params;
 
   dt_bauhaus_slider_set(g->contrast_slider, p->middle_grey_contrast);
+  dt_bauhaus_slider_set(g->skewness_slider, p->contrast_skewness);
   dt_bauhaus_combobox_set_from_value(g->distribution_list, p->cumulative_distribution);
   gui_changed(self, NULL, NULL);
 }
@@ -301,8 +341,9 @@ void gui_init(dt_iop_module_t *self)
   dt_iop_sigmoid_gui_data_t *g = IOP_GUI_ALLOC(sigmoid);
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
-  g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
   g->distribution_list = dt_bauhaus_combobox_from_params(self, "cumulative_distribution");
+  g->contrast_slider = dt_bauhaus_slider_from_params(self, "middle_grey_contrast");
+  g->skewness_slider = dt_bauhaus_slider_from_params(self, "contrast_skewness");
 }
 
 void gui_cleanup(dt_iop_module_t *self)
