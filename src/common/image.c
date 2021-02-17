@@ -489,10 +489,11 @@ static void _set_datetime(const int32_t imgid, const char *datetime)
 
 void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
 {
+  GList *list = (GList *)data;
+  int i = 0;
+
   if(type == DT_UNDO_GEOTAG)
   {
-    GList *list = (GList *)data;
-
     while(list)
     {
       dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)list->data;
@@ -502,14 +503,16 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
 
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undogeotag->imgid));
       list = g_list_next(list);
+      i++;
     }
+    if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
+                              ? _("undone geo location onto %d images")
+                              : _("redone geo location onto %d images"), i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs), 0);
   }
   else if(type == DT_UNDO_DATETIME)
   {
-    GList *list = (GList *)data;
-
     while(list)
     {
       dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)list->data;
@@ -519,9 +522,13 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
 
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undodatetime->imgid));
       list = g_list_next(list);
+      i++;
     }
+    if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
+                              ? _("undone date time onto %d images")
+                              : _("redone date time onto %d images"), i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy((GList *)data));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(*imgs));
   }
 }
 
