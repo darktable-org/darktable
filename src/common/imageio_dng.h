@@ -78,7 +78,7 @@ static inline void dt_imageio_dng_write_tiff_header(
     const uint8_t xtrans[6][6],
     const float whitelevel,
     const float wb_coeffs[3],
-	const char camera_makermodel[128])
+    const char camera_makermodel[128])
 {
   const uint32_t channels = 1;
   uint8_t *b /*, *offs1, *offs2*/;
@@ -177,8 +177,8 @@ static inline void dt_imageio_dng_write_tiff_header(
   dt_dcraw_adobe_coeff((const char (*))camera_makermodel, (float(*)[12])XYZ_CAM);
   if(!isnan(XYZ_CAM[0]))
   {
-	for(int k= 0; k < 9; k++)  m[k] = round(XYZ_CAM[k] * 10000.0f);
-	den = 10000;
+  for(int k= 0; k < 9; k++)  m[k] = round(XYZ_CAM[k] * 10000.0f);
+  den = 10000;
   }
 
   for(int k = 0; k < 9; k++)
@@ -189,10 +189,10 @@ static inline void dt_imageio_dng_write_tiff_header(
 
   for(int k = 0; k < 3; k++)
    {
- 	// TAG AsShotNeutral: for rawspeed Dngdecoder camera white balance
- 	coeff[k] =1/( (wb_coeffs[k]/ wb_coeffs[1])) ;
- 	coeff[k]*= 1000000;
- 	dt_imageio_dng_write_buf(buf, 556+k*8,(int)coeff[k]);
+    // TAG AsShotNeutral: for rawspeed Dngdecoder camera white balance
+    coeff[k] = 1 / ( (wb_coeffs[k]/ wb_coeffs[1])) ;
+    coeff[k] *= 1000000;
+    dt_imageio_dng_write_buf(buf, 556+k*8,(int)coeff[k]);
     dt_imageio_dng_write_buf(buf, 560+k*8, 1000000);
    }
 
@@ -206,8 +206,8 @@ static inline void dt_imageio_write_dng(
     const int ht, void *exif, const int exif_len, const uint32_t filter,
     const uint8_t xtrans[6][6],
     const float whitelevel,
-	const float wb_coeffs[3],
-	const char camera_model[24])
+    const float wb_coeffs[3],
+    const char camera_model[24])
 {
   FILE *f = g_fopen(filename, "wb");
   if(f)
