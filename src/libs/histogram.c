@@ -600,7 +600,8 @@ static gboolean _drawable_motion_notify_callback(GtkWidget *widget, GdkEventMoti
     }
   }
 
-  return TRUE;
+  //bubble event to eventbox to update the button tooltip
+  return FALSE;
 }
 
 static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
@@ -840,6 +841,18 @@ static gboolean _eventbox_enter_notify_callback(GtkWidget *widget, GdkEventCross
   return TRUE;
 }
 
+static gboolean _eventbox_motion_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
+                                                 gpointer user_data)
+{
+  //This is required in order to correctly display the button tooltips
+  dt_lib_histogram_t *d = (dt_lib_histogram_t *)user_data;
+  gtk_widget_set_tooltip_text(d->green_channel_button, d->green ? _("click to hide green channel") : _("click to show green channel"));
+  gtk_widget_set_tooltip_text(d->blue_channel_button, d->blue ? _("click to hide blue channel") : _("click to show blue channel"));
+  gtk_widget_set_tooltip_text(d->red_channel_button, d->red ? _("click to hide red channel") : _("click to show red channel"));
+  _scope_type_update(d);
+  return TRUE;
+}
+
 static gboolean _eventbox_leave_notify_callback(GtkWidget *widget, GdkEventCrossing *event,
                                                  gpointer user_data)
 {
@@ -1071,7 +1084,6 @@ void gui_init(dt_lib_module_t *self)
   // applicable). On click dt_lib_histogram_t data is updated,
   // icons/tooltips are updated, and button sensitivity is set as
   // needed.
-  // FIXME: tooltips for buttons go away after first mouseover of drawable! -- the only tooltip which would show up before was the "view" button which was in a GtkStack -- now when click on a button its tooltip shows up, then defaults back to drawable getting the tooltips
 
   // FIXME: this could be a combobox to allow for more types and not to have to swap the icon on click
   // icons will be filled in by _scope_type_update()
@@ -1160,11 +1172,13 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->scope_draw), "scroll-event",
                    G_CALLBACK(_drawable_scroll_callback), d);
 
-  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK);
+  gtk_widget_add_events(eventbox, GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK | GDK_POINTER_MOTION_MASK);
   g_signal_connect(G_OBJECT(eventbox), "enter-notify-event",
                    G_CALLBACK(_eventbox_enter_notify_callback), d);
   g_signal_connect(G_OBJECT(eventbox), "leave-notify-event",
                    G_CALLBACK(_eventbox_leave_notify_callback), d);
+  g_signal_connect(G_OBJECT(eventbox), "motion-notify-event",
+                   G_CALLBACK(_eventbox_motion_notify_callback), d);
 
   // handles scroll-to-resize behavior
   gtk_widget_add_events(self->widget, darktable.gui->scroll_mask);
