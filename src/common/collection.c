@@ -2165,9 +2165,9 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   gchar *message;
 
   int c = dt_collection_get_count_no_group(collection);
-  int cs = g_list_length(selected_imgids);
+  int cs = dt_collection_get_selected_count(collection);
   g_list_free(selected_imgids);
- 
+
   if(cs == 1)
   {
     message = g_strdup_printf(_("%d image of %d (#%d) in current collection is selected"), cs, c, selected);
