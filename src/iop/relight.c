@@ -94,7 +94,7 @@ int flags()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. better use tone equalizer module instead.");
+  return _("this module is deprecated. please use the tone equalizer module instead.");
 }
 
 int default_group()
