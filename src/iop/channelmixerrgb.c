@@ -1692,6 +1692,9 @@ void validate_color_checker(const float *const restrict in,
 static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *self)
 {
   dt_iop_channelmixer_rgb_params_t *p = (dt_iop_channelmixer_rgb_params_t *)self->params;
+
+  ++darktable.gui->reset;
+
   if(self->enabled
      && !(p->illuminant == DT_ILLUMINANT_PIPE || p->adaptation == DT_ADAPTATION_RGB))
   {
@@ -1722,6 +1725,8 @@ static void _check_for_wb_issue_and_set_trouble_message(struct dt_iop_module_t *
   }
 
   dt_iop_set_module_trouble_message(self, NULL, NULL, NULL);
+
+  --darktable.gui->reset;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,

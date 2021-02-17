@@ -3278,10 +3278,15 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
                                            const void *const restrict ivoid, void *const restrict ovoid,
                                            const dt_iop_roi_t *const roi_in, const dt_iop_roi_t *const roi_out)
 {
+  ++darktable.gui->reset;
+
   if (ch == req_ch)
   {
     if (module)
       dt_iop_set_module_trouble_message(module, NULL, NULL, NULL);
+
+    --darktable.gui->reset;
+
     return TRUE;
   }
   else
@@ -3300,6 +3305,9 @@ gboolean dt_iop_have_required_input_format(const int req_ch, struct dt_iop_modul
     {
       //TODO: pop up a toast message?
     }
+
+    --darktable.gui->reset;
+
     return FALSE;
   }
 }
