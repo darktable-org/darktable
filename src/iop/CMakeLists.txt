@@ -145,6 +145,7 @@ add_iop(negadoctor "negadoctor.c")
 add_iop(channelmixerrgb "channelmixerrgb.c" "../chart/common.c")
 add_iop(censorize "censorize.c")
 add_iop(colorbalancergb "colorbalancergb.c")
+add_iop(vibrancergb "vibrancergb.c")
 
 if(Rsvg2_FOUND)
   add_iop(watermark "watermark.c")
