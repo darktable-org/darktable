@@ -15,6 +15,7 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+
 #include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/eaw.h"
@@ -23,6 +24,7 @@
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/imageop.h"
+#include "develop/imageop_gui.h"
 #include "develop/imageop_math.h"
 #include "develop/tiling.h"
 #include "dtgtk/drawingarea.h"
@@ -45,7 +47,7 @@
 #define INFL .3f
 
 
-DT_MODULE_INTROSPECTION(1, dt_iop_atrous_params_t)
+DT_MODULE_INTROSPECTION(2, dt_iop_atrous_params_t)
 
 #define BANDS 6
 #define MAX_NUM_SCALES 8 // 2*2^(i+1) + 1 = 1025px support for i = 8
@@ -77,9 +79,10 @@ typedef enum atrous_channel_t
 
 typedef struct dt_iop_atrous_params_t
 {
-  int32_t octaves; // $DEFAULT: 3
+  int32_t octaves;             // $DEFAULT: 3
   float x[atrous_none][BANDS];
   float y[atrous_none][BANDS]; // $DEFAULT: 0.5
+  float mix;                   // $DEFAULT: 1.0 $MIN: -2.0 $MAX: 2.0
 } dt_iop_atrous_params_t;
 
 typedef struct dt_iop_atrous_gui_data_t
@@ -101,6 +104,7 @@ typedef struct dt_iop_atrous_gui_data_t
   float band_max;
   float sample[MAX_NUM_SCALES];
   int num_samples;
+  gboolean in_curve;
 } dt_iop_atrous_gui_data_t;
 
 typedef struct dt_iop_atrous_global_data_t
@@ -151,6 +155,32 @@ int flags()
 int default_colorspace(dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   return iop_cs_Lab;
+}
+
+int legacy_params(dt_iop_module_t *self, const void *const old_params, const int old_version,
+                  void *new_params, const int new_version)
+{
+  if(old_version == 1 && new_version == 2)
+  {
+    typedef struct dt_iop_atrous_params_v1_t
+    {
+      int32_t octaves;             // $DEFAULT: 3
+      float x[atrous_none][BANDS];
+      float y[atrous_none][BANDS]; // $DEFAULT: 0.5
+    } dt_iop_atrous_params_v1_t;
+
+    dt_iop_atrous_params_v1_t *o = (dt_iop_atrous_params_v1_t *)old_params;
+    dt_iop_atrous_params_t *n = (dt_iop_atrous_params_t *)new_params;
+    dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
+
+    *n = *d; // start with a fresh copy of default parameters
+
+    memcpy(n, o, sizeof(dt_iop_atrous_params_v1_t));
+    n->mix = 1.0f;
+    return 0;
+  }
+
+  return 1;
 }
 
 static int get_samples(float *t, const dt_iop_atrous_data_t *const d, const dt_iop_roi_t *roi_in,
@@ -482,7 +512,8 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   float m[] = { 0.0625f, 0.25f, 0.375f, 0.25f, 0.0625f }; // 1/16, 4/16, 6/16, 4/16, 1/16
   float mm[5][5];
   for(int j = 0; j < 5; j++)
-    for(int i = 0; i < 5; i++) mm[j][i] = m[i] * m[j];
+    for(int i = 0; i < 5; i++)
+      mm[j][i] = m[i] * m[j];
 
   dev_filter = dt_opencl_copy_host_to_device_constant(devid, sizeof(float) * 25, mm);
   if(dev_filter == NULL) goto error;
@@ -626,7 +657,8 @@ void init(dt_iop_module_t *module)
   for(int k = 0; k < BANDS; k++)
   {
     d->y[atrous_Lt][k] = d->y[atrous_ct][k] = 0.0f;
-    for(int c = atrous_L; c <= atrous_ct; c++) d->x[c][k] = k / (BANDS - 1.0f);
+    for(int c = atrous_L; c <= atrous_ct; c++)
+      d->x[c][k] = k / (BANDS - 1.0f);
   }
 }
 
@@ -657,14 +689,25 @@ void cleanup_global(dt_iop_module_so_t *module)
   module->data = NULL;
 }
 
+static inline void _apply_mix(dt_iop_module_t *self,
+                              const int ch, const int k,
+                              const float mix,
+                              const float px, const float py, float *x, float *y)
+{
+  dt_iop_atrous_params_t *dp = (dt_iop_atrous_params_t *)self->default_params;
+  *x = fminf(1.0f, fmaxf(0.0f, px + (mix - 1.0f) * (px - dp->x[ch][k])));
+  *y = fminf(1.0f, fmaxf(0.0f, py + (mix - 1.0f) * (py - dp->y[ch][k])));
+}
+
 void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev_pixelpipe_t *pipe,
                    dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)params;
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)piece->data;
+
 #if 0
   printf("---------- atrous preset begin\n");
-  printf("p.octaves = %d;\n", p->octaves);
+  printf("p.octaves = %d;  p.mix = %.2f\n", p->octaves, p->mix);
   for(int ch=0; ch<atrous_none; ch++) for(int k=0; k<BANDS; k++)
     {
       printf("p.x[%d][%d] = %f;\n", ch, k, p->x[ch][k]);
@@ -674,7 +717,12 @@ void commit_params(struct dt_iop_module_t *self, dt_iop_params_t *params, dt_dev
 #endif
   d->octaves = p->octaves;
   for(int ch = 0; ch < atrous_none; ch++)
-    for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(d->curve[ch], k, p->x[ch][k], p->y[ch][k]);
+    for(int k = 0; k < BANDS; k++)
+    {
+      float x, y;
+      _apply_mix(self, ch, k, p->mix, p->x[ch][k], p->y[ch][k], &x, &y);
+      dt_draw_curve_set_point(d->curve[ch], k, x, y);
+    }
   int l = 0;
   for(int k = (int)MIN(pipe->iwidth * pipe->iscale, pipe->iheight * pipe->iscale); k; k >>= 1) l++;
   d->octaves = MIN(BANDS, l);
@@ -699,7 +747,8 @@ void init_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pi
 void cleanup_pipe(struct dt_iop_module_t *self, dt_dev_pixelpipe_t *pipe, dt_dev_pixelpipe_iop_t *piece)
 {
   dt_iop_atrous_data_t *d = (dt_iop_atrous_data_t *)(piece->data);
-  for(int ch = 0; ch < atrous_none; ch++) dt_draw_curve_destroy(d->curve[ch]);
+  for(int ch = 0; ch < atrous_none; ch++)
+    dt_draw_curve_destroy(d->curve[ch]);
   free(piece->data);
   piece->data = NULL;
 }
@@ -711,6 +760,7 @@ void init_presets(dt_iop_module_so_t *self)
   DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN", NULL, NULL, NULL);
   dt_iop_atrous_params_t p;
   p.octaves = 7;
+  p.mix = 1.0f;
 
   for(int k = 0; k < BANDS; k++)
   {
@@ -980,9 +1030,10 @@ void init_presets(dt_iop_module_so_t *self)
 static void reset_mix(dt_iop_module_t *self)
 {
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  c->drag_params = *(dt_iop_atrous_params_t *)self->params;
+  dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
+  c->drag_params = *p;
   ++darktable.gui->reset;
-  dt_bauhaus_slider_set(c->mix, 1.0f);
+  dt_bauhaus_slider_set_soft(c->mix, p->mix);
   --darktable.gui->reset;
 }
 
@@ -1001,6 +1052,7 @@ static gboolean area_enter_notify(GtkWidget *widget, GdkEventCrossing *event, gp
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   if(!c->dragging) c->mouse_y = fabs(c->mouse_y);
+  c->in_curve = TRUE;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1010,6 +1062,7 @@ static gboolean area_leave_notify(GtkWidget *widget, GdkEventCrossing *event, gp
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   if(!c->dragging) c->mouse_y = -fabs(c->mouse_y);
+  c->in_curve = FALSE;
   gtk_widget_queue_draw(widget);
   return TRUE;
 }
@@ -1031,8 +1084,16 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
   dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
   dt_iop_atrous_params_t p = *(dt_iop_atrous_params_t *)self->params;
 
+  const float mix = c->in_curve ? 1.0f : p.mix;
+
   for(int k = 0; k < BANDS; k++)
-    dt_draw_curve_set_point(c->minmax_curve, k, p.x[(int)c->channel2][k], p.y[(int)c->channel2][k]);
+  {
+    const int ch2 = (int)c->channel2;
+    float x, y;
+    _apply_mix(self, ch2, k, mix, p.x[ch2][k], p.y[ch2][k], &x, &y);
+    dt_draw_curve_set_point(c->minmax_curve, k, x, y);
+  }
+
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
@@ -1078,16 +1139,18 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
-    int ch2 = (int)c->channel2;
+    const int ch2 = (int)c->channel2;
 
     // draw min/max curves:
     get_params(&p, ch2, c->mouse_x, 1., c->mouse_radius);
-    for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+    for(int k = 0; k < BANDS; k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_min_xs, c->draw_min_ys);
 
     p = *(dt_iop_atrous_params_t *)self->params;
     get_params(&p, ch2, c->mouse_x, .0, c->mouse_radius);
-    for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+    for(int k = 0; k < BANDS; k++)
+      dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_max_xs, c->draw_max_ys);
   }
 
@@ -1174,7 +1237,12 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
     if(ch2 >= 0)
     {
-      for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch2][k], p.y[ch2][k]);
+      for(int k = 0; k < BANDS; k++)
+      {
+        float x, y;
+        _apply_mix(self, ch2, k, mix, p.x[ch2][k], p.y[ch2][k], &x, &y);
+        dt_draw_curve_set_point(c->minmax_curve, k, x, y);
+      }
       dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
       cairo_move_to(cr, width, -height * p.y[ch2][BANDS - 1]);
       for(int k = RES - 2; k >= 0; k--)
@@ -1182,10 +1250,17 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     }
     else
       cairo_move_to(cr, 0, 0);
-    for(int k = 0; k < BANDS; k++) dt_draw_curve_set_point(c->minmax_curve, k, p.x[ch][k], p.y[ch][k]);
+    for(int k = 0; k < BANDS; k++)
+    {
+      float x, y;
+      _apply_mix(self, ch, k, mix, p.x[ch][k], p.y[ch][k], &x, &y);
+      dt_draw_curve_set_point(c->minmax_curve, k, x, y);
+    }
     dt_draw_curve_calc_values(c->minmax_curve, 0.0, 1.0, RES, c->draw_xs, c->draw_ys);
-    for(int k = 0; k < RES; k++) cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_ys[k]);
-    if(ch2 < 0) cairo_line_to(cr, width, 0);
+    for(int k = 0; k < RES; k++)
+      cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_ys[k]);
+    if(ch2 < 0)
+      cairo_line_to(cr, width, 0);
     cairo_close_path(cr);
     cairo_stroke_preserve(cr);
     cairo_fill(cr);
@@ -1193,8 +1268,8 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 
   if(c->mouse_y > 0 || c->dragging)
   {
-    int ch = (int)c->channel;
-    int ch2 = (int)c->channel2;
+    const int ch = (int)c->channel;
+    const int ch2 = (int)c->channel2;
 
     // draw dots on knots
     cairo_save(cr);
@@ -1205,7 +1280,9 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     cairo_set_line_width(cr, DT_PIXEL_APPLY_DPI(1.));
     for(int k = 0; k < BANDS; k++)
     {
-      cairo_arc(cr, width * p.x[ch2][k], -height * p.y[ch2][k], DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0 * M_PI);
+      float x, y;
+      _apply_mix(self, ch, k, mix, p.x[ch2][k], p.y[ch2][k], &x, &y);
+      cairo_arc(cr, width * x, -height * y, DT_PIXEL_APPLY_DPI(3.0), 0.0, 2.0 * M_PI);
       if(c->x_move == k)
         cairo_fill(cr);
       else
@@ -1219,7 +1296,8 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     // draw min/max, if selected
     // cairo_set_source_rgba(cr, .6, .6, .6, .5);
     cairo_move_to(cr, 0, -height * c->draw_min_ys[0]);
-    for(int k = 1; k < RES; k++) cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_min_ys[k]);
+    for(int k = 1; k < RES; k++)
+      cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_min_ys[k]);
     for(int k = RES - 1; k >= 0; k--)
       cairo_line_to(cr, k * width / (float)(RES - 1), -height * c->draw_max_ys[k]);
     cairo_close_path(cr);
@@ -1230,7 +1308,7 @@ static gboolean area_draw(GtkWidget *widget, cairo_t *crf, gpointer user_data)
     int k = (int)pos;
     const float f = k - pos;
     if(k >= RES - 1) k = RES - 2;
-    float ht = -height * (f * c->draw_ys[k] + (1 - f) * c->draw_ys[k + 1]);
+    const float ht = -height * (f * c->draw_ys[k] + (1 - f) * c->draw_ys[k + 1]);
     cairo_arc(cr, c->mouse_x * width, ht, c->mouse_radius * width, 0, 2. * M_PI);
     cairo_stroke(cr);
   }
@@ -1321,12 +1399,15 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   const int inset = INSET;
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+  const int height = allocation.height - 2 * inset;
+  const int width = allocation.width - 2 * inset;
   if(!c->dragging) c->mouse_x = CLAMP(event->x - inset, 0, width) / (float)width;
   c->mouse_y = 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
+
   int ch2 = c->channel;
   if(c->channel == atrous_L) ch2 = atrous_Lt;
   if(c->channel == atrous_c) ch2 = atrous_ct;
+
   if(c->dragging)
   {
     // drag y-positions
@@ -1355,7 +1436,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
     float dist = fabs(p->x[c->channel][0] - c->mouse_x);
     for(int k = 1; k < BANDS; k++)
     {
-      float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
+      const float d2 = fabs(p->x[c->channel][k] - c->mouse_x);
       if(d2 < dist)
       {
         c->x_move = k;
@@ -1367,7 +1448,7 @@ static gboolean area_motion_notify(GtkWidget *widget, GdkEventMotion *event, gpo
   else
   {
     // choose between bottom and top curve:
-    int ch = c->channel;
+    const int ch = c->channel;
     float dist = 1000000.0f;
     for(int k = 0; k < BANDS; k++)
     {
@@ -1414,7 +1495,8 @@ static gboolean area_button_press(GtkWidget *widget, GdkEventButton *event, gpoi
     const int inset = INSET;
     GtkAllocation allocation;
     gtk_widget_get_allocation(widget, &allocation);
-    int height = allocation.height - 2 * inset, width = allocation.width - 2 * inset;
+    const int height = allocation.height - 2 * inset;
+    const int width = allocation.width - 2 * inset;
     c->mouse_pick
         = dt_draw_curve_calc_value(c->minmax_curve, CLAMP(event->x - inset, 0, width) / (float)width);
     c->mouse_pick -= 1.0 - CLAMP(event->y - inset, 0, height) / (float)height;
@@ -1467,15 +1549,7 @@ static void mix_callback(GtkWidget *slider, gpointer user_data)
   dt_iop_module_t *self = (dt_iop_module_t *)user_data;
   if(darktable.gui->reset) return;
   dt_iop_atrous_params_t *p = (dt_iop_atrous_params_t *)self->params;
-  dt_iop_atrous_params_t *d = (dt_iop_atrous_params_t *)self->default_params;
-  dt_iop_atrous_gui_data_t *c = (dt_iop_atrous_gui_data_t *)self->gui_data;
-  const float mix = dt_bauhaus_slider_get(slider);
-  for(int ch = 0; ch < atrous_none; ch++)
-    for(int k = 0; k < BANDS; k++)
-    {
-      p->x[ch][k] = fminf(1.0f, fmaxf(0.0f, d->x[ch][k] + mix * (c->drag_params.x[ch][k] - d->x[ch][k])));
-      p->y[ch][k] = fminf(1.0f, fmaxf(0.0f, d->y[ch][k] + mix * (c->drag_params.y[ch][k] - d->y[ch][k])));
-    }
+  p->mix = dt_bauhaus_slider_get(slider);
   gtk_widget_queue_draw(self->widget);
   dt_dev_add_history_item(darktable.develop, self, TRUE);
 }
@@ -1490,12 +1564,14 @@ void gui_init(struct dt_iop_module_t *self)
   c->channel = c->channel2 = dt_conf_get_int("plugins/darkroom/atrous/gui_channel");
   int ch = (int)c->channel;
   c->minmax_curve = dt_draw_curve_new(0.0, 1.0, CATMULL_ROM);
-  for(int k = 0; k < BANDS; k++) (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
+  for(int k = 0; k < BANDS; k++)
+    (void)dt_draw_curve_add_point(c->minmax_curve, p->x[ch][k], p->y[ch][k]);
   c->mouse_x = c->mouse_y = c->mouse_pick = -1.0;
   c->dragging = 0;
   self->timeout_handle = 0;
   c->x_move = -1;
   c->mouse_radius = 1.0 / BANDS;
+  c->in_curve = FALSE;
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
@@ -1512,9 +1588,12 @@ void gui_init(struct dt_iop_module_t *self)
   c->area = GTK_DRAWING_AREA(dtgtk_drawing_area_new_with_aspect_ratio(9.0 / 16.0));
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(c->area), TRUE, TRUE, 0);
 
-  gtk_widget_add_events(GTK_WIDGET(c->area), GDK_POINTER_MOTION_MASK
-                                             | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-                                             | GDK_LEAVE_NOTIFY_MASK | darktable.gui->scroll_mask);
+  gtk_widget_add_events(GTK_WIDGET(c->area),
+                        GDK_POINTER_MOTION_MASK
+                        | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
+                        | GDK_LEAVE_NOTIFY_MASK | GDK_ENTER_NOTIFY_MASK
+                        | darktable.gui->scroll_mask);
+
   g_signal_connect(G_OBJECT(c->area), "draw", G_CALLBACK(area_draw), self);
   g_signal_connect(G_OBJECT(c->area), "button-press-event", G_CALLBACK(area_button_press), self);
   g_signal_connect(G_OBJECT(c->area), "button-release-event", G_CALLBACK(area_button_release), self);
@@ -1524,10 +1603,8 @@ void gui_init(struct dt_iop_module_t *self)
   g_signal_connect(G_OBJECT(c->area), "scroll-event", G_CALLBACK(area_scrolled), self);
 
   // mix slider
-  c->mix = dt_bauhaus_slider_new_with_range(self, -2.0f, 2.0f, 0.1f, 1.0f, 3);
-  dt_bauhaus_widget_set_label(c->mix, NULL, N_("mix"));
+  c->mix = dt_bauhaus_slider_from_params(self, N_("mix"));
   gtk_widget_set_tooltip_text(c->mix, _("make effect stronger or weaker"));
-  gtk_box_pack_start(GTK_BOX(self->widget), c->mix, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(c->mix), "value-changed", G_CALLBACK(mix_callback), self);
 }
 
