@@ -2520,12 +2520,16 @@ void dt_database_show_error(const dt_database_t *db)
           " How to solve this problem?\n"
           "\n"
           " 1 - check if darktable is already running (might be process id %d)\n"
+          "     if yes, use it or close it before reopening darktable\n"
           "\n"
-          " 2 - if you can't find it -> restart your computer\n"
+          " 2 - if you can't find it -> close/reopen your session or restart your computer\n"
           "\n"
           " 3 - if you still get this error after the restart:\n"
           "     + open your config folder (click here: <a href=\"file:///%s\">%s</a>) \n"
-          "     + manually delete the .lock file (%s)\n"),
+          "     + manually delete the .lock file (%s)\n"
+          "\n\n"
+          "     <i>Caution! Do not delete .lock files without first checking that there are no more occurrences of darktable, \n"
+          "     otherwise you risk generating serious inconsistencies in your database.</i>\n"),
       db->error_other_pid, lck_dirname, lck_dirname, lck_filename);
 
     dt_gui_show_standalone_yes_no_dialog(_("error starting darktable"),
