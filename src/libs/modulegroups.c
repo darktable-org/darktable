@@ -2153,6 +2153,7 @@ static void _manage_editor_save(dt_lib_module_t *self)
   // update the preset in the database
   dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), newname, "", params, strlen(params));
   g_free(params);
+  if(d->edit_preset) g_free(d->edit_preset);
   d->edit_preset = g_strdup(newname);
 
   // if name has changed, we need to reflect the change on the presets list too
