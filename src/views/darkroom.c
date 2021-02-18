@@ -224,6 +224,7 @@ void _display_module_trouble_message_callback(gpointer instance,
   if(module && module->has_trouble && module->widget)
   {
     GList *children = gtk_container_get_children(GTK_CONTAINER(gtk_widget_get_parent(module->widget)));
+    if(!children) return;
     label_widget = children->data;
     g_list_free(children);
     if(strcmp(gtk_widget_get_name(label_widget), "iop-plugin-warning"))
@@ -273,7 +274,11 @@ void _display_module_trouble_message_callback(gpointer instance,
 
     dt_iop_gui_update_header(module);
 
-    if(label_widget) gtk_widget_destroy(label_widget);
+    if(label_widget)
+    {
+      GtkWidget *iopw = gtk_widget_get_parent(module->widget);
+      gtk_container_remove(GTK_CONTAINER(iopw), label_widget);
+    }
   }
 }
 
