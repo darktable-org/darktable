@@ -2791,9 +2791,9 @@ void gui_init(dt_lib_module_t *self)
 
   // deprecated message
   d->deprecated
-      = gtk_label_new(_("following modules are deprecated because they have internal design mistakes"
-                        " that can't be solved and alternatives that solve them.\nthey will be removed for"
-                        " new edits in next release."));
+      = gtk_label_new(_("the following modules are deprecated because they have internal design mistakes"
+                        " which can't be solved and alternative modules which solve them.\nthey will be removed for"
+                        " new edits in the next release."));
   gtk_widget_set_name(d->deprecated, "modulegroups-deprecated-msg");
   gtk_label_set_line_wrap(GTK_LABEL(d->deprecated), TRUE);
   gtk_box_pack_start(GTK_BOX(self->widget), d->deprecated, TRUE, TRUE, 0);
