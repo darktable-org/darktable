@@ -2153,6 +2153,8 @@ static void _manage_editor_save(dt_lib_module_t *self)
   // update the preset in the database
   dt_lib_presets_update(d->edit_preset, self->plugin_name, self->version(), newname, "", params, strlen(params));
   g_free(params);
+  if(d->edit_preset) g_free(d->edit_preset);
+  d->edit_preset = g_strdup(newname);
 
   // if name has changed, we need to reflect the change on the presets list too
   _manage_preset_update_list(self);
@@ -3280,6 +3282,11 @@ static void _manage_editor_basics_toggle(GtkWidget *button, dt_lib_module_t *sel
   gtk_widget_set_visible(d->edit_basics_groupbox, d->edit_basics_show);
 }
 
+static void _preset_renamed_callback(GtkEntry *entry, dt_lib_module_t *self)
+{
+  _manage_editor_save(self);
+}
+
 static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
@@ -3356,6 +3363,7 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   gtk_widget_set_tooltip_text(d->preset_name, _("preset name"));
   gtk_entry_set_text(GTK_ENTRY(d->preset_name), preset);
   gtk_widget_set_sensitive(d->preset_name, !d->edit_ro);
+  g_signal_connect(G_OBJECT(d->preset_name), "changed", G_CALLBACK(_preset_renamed_callback), self);
   gtk_box_pack_start(GTK_BOX(hb1), d->preset_name, FALSE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(vb), hb1, FALSE, TRUE, 0);
 
