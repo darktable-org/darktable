@@ -1918,8 +1918,8 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
 
   const guint total = g_list_length(t);
 
-  const char *mes11 = offset ? N_("adding time offset to %d image") : N_("setting date time to %d image");
-  const char *mes12 = offset ? N_("adding time offset to %d images") : N_("setting date time to %d images");
+  const char *mes11 = offset ? N_("adding time offset to %d image") : N_("setting date/time of %d image");
+  const char *mes12 = offset ? N_("adding time offset to %d images") : N_("setting date/time of %d images");
   snprintf(message, sizeof(message), ngettext(mes11, mes12, total), total);
   dt_control_job_set_progress_message(job, message);
 
@@ -1944,9 +1944,9 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
       {
         imgs = g_list_prepend(imgs, grp->data);
         g_array_append_val(dtime, ndt);
+        cntr++;
       }
       g_list_free(grps);
-      cntr++;
     }
     imgs = g_list_reverse(imgs);
     dt_image_set_datetimes(imgs, dtime, TRUE);
@@ -1956,11 +1956,12 @@ static int32_t dt_control_datetime_job_run(dt_job_t *job)
     imgs = g_list_copy(t);
     // takes the option to include the grouped images
     dt_grouping_add_grouped_images(&imgs);
+    cntr = g_list_length(imgs);
     dt_image_set_datetime(imgs, datetime, TRUE);
   }
 
-  const char *mes21 = offset ? N_("added time offset to %d image") : N_("set date time to %d image");
-  const char *mes22 = offset ? N_("added time offset to %d images") : N_("set date time to %d images");
+  const char *mes21 = offset ? N_("added time offset to %d image") : N_("set date/time of %d image");
+  const char *mes22 = offset ? N_("added time offset to %d images") : N_("set date/time of %d images");
   dt_control_log(ngettext(mes21, mes22, cntr), cntr);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, imgs);
