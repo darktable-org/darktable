@@ -128,6 +128,7 @@ typedef enum dt_iop_filmicrgb_colorscience_type_t
 {
   DT_FILMIC_COLORSCIENCE_V1 = 0, // $DESCRIPTION: "v3 (2019)"
   DT_FILMIC_COLORSCIENCE_V2 = 1, // $DESCRIPTION: "v4 (2020)"
+  DT_FILMIC_COLORSCIENCE_V3 = 2, // $DESCRIPTION: "v5 (2021)"
 } dt_iop_filmicrgb_colorscience_type_t;
 
 
@@ -178,7 +179,7 @@ typedef struct dt_iop_filmicrgb_params_t
   float balance;            // $MIN: -50 $MAX: 50 $DEFAULT: 0.0 $DESCRIPTION: "shadows/highlights balance"
   float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.2f $DESCRIPTION: "add noise in highlights"
   dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION: "preserve chrominance"
-  dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V2 $DESCRIPTION: "color science"
+  dt_iop_filmicrgb_colorscience_type_t version; // $DEFAULT: DT_FILMIC_COLORSCIENCE_V3 $DESCRIPTION: "color science"
   gboolean auto_hardness;                       // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
   gboolean custom_grey;                         // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-grey values"
   int high_quality_reconstruction;       // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "iterations of high-quality reconstruction"
@@ -504,7 +505,7 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
       float noise_level;        // $MIN: 0.0 $MAX: 6.0 $DEFAULT: 0.1f $DESCRIPTION: "add noise in highlights"
       dt_iop_filmicrgb_methods_type_t preserve_color; // $DEFAULT: DT_FILMIC_METHOD_POWER_NORM $DESCRIPTION:
                                                       // "preserve chrominance"
-      dt_iop_filmicrgb_colorscience_type_t version;   // $DEFAULT: DT_FILMIC_COLORSCIENCE_V2 $DESCRIPTION: "color
+      dt_iop_filmicrgb_colorscience_type_t version;   // $DEFAULT: DT_FILMIC_COLORSCIENCE_V3 $DESCRIPTION: "color
                                                       // science"
       gboolean auto_hardness;                         // $DEFAULT: TRUE $DESCRIPTION: "auto adjust hardness"
       gboolean custom_grey;            // $DEFAULT: FALSE $DESCRIPTION: "use custom middle-grey values"
@@ -1208,11 +1209,11 @@ static inline void filmic_split_v1(const float *const restrict in, float *const 
 }
 
 
-static inline void filmic_split_v2(const float *const restrict in, float *const restrict out,
-                                   const dt_iop_order_iccprofile_info_t *const work_profile,
-                                   const dt_iop_filmicrgb_data_t *const data,
-                                   const dt_iop_filmic_rgb_spline_t spline, const size_t width,
-                                   const size_t height, const size_t ch)
+static inline void filmic_split_v2_v3(const float *const restrict in, float *const restrict out,
+                                      const dt_iop_order_iccprofile_info_t *const work_profile,
+                                      const dt_iop_filmicrgb_data_t *const data,
+                                      const dt_iop_filmic_rgb_spline_t spline, const size_t width,
+                                      const size_t height, const size_t ch)
 {
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) dt_omp_firstprivate(width, height, ch, data, in, out, work_profile,   \
@@ -1306,18 +1307,19 @@ static inline void filmic_chroma_v1(const float *const restrict in, float *const
 }
 
 
-static inline void filmic_chroma_v2(const float *const restrict in, float *const restrict out,
-                                    const dt_iop_order_iccprofile_info_t *const work_profile,
-                                    const dt_iop_filmicrgb_data_t *const data,
-                                    const dt_iop_filmic_rgb_spline_t spline, const int variant, const size_t width,
-                                    const size_t height, const size_t ch)
+static inline void filmic_chroma_v2_v3(const float *const restrict in, float *const restrict out,
+                                       const dt_iop_order_iccprofile_info_t *const work_profile,
+                                       const dt_iop_filmicrgb_data_t *const data,
+                                       const dt_iop_filmic_rgb_spline_t spline, const int variant,
+                                       const size_t width, const size_t height, const size_t ch,
+                                       const dt_iop_filmicrgb_colorscience_type_t colorscience_version)
 {
 
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none)                                                                       \
-    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, variant, spline) schedule(simd            \
-                                                                                                  : static)       \
-        aligned(in, out : 64)
+    dt_omp_firstprivate(width, height, ch, data, in, out, work_profile, variant, spline, colorscience_version)    \
+        schedule(simd                                                                                             \
+                 : static) aligned(in, out : 64)
 #endif
   for(size_t k = 0; k < height * width * ch; k += ch)
   {
@@ -1352,11 +1354,14 @@ static inline void filmic_chroma_v2(const float *const restrict in, float *const
                 data->output_power);
 
     // Re-apply ratios with saturation change
-    for(int c = 0; c < 3; c++)
-    {
-      ratios[c] = fmaxf(ratios[c] + (1.0f - ratios[c]) * (1.0f - desaturation), 0.0f);
-      pix_out[c] = ratios[c] * norm;
-    }
+    for(int c = 0; c < 3; c++) ratios[c] = fmaxf(ratios[c] + (1.0f - ratios[c]) * (1.0f - desaturation), 0.0f);
+
+    // color science v3: normalize again after desaturation - the norm might have changed by the desaturation
+    // operation.
+    if(colorscience_version == DT_FILMIC_COLORSCIENCE_V3)
+      norm /= fmaxf(get_pixel_norm(ratios, variant, work_profile), NORM_MIN);
+
+    for(int c = 0; c < 3; c++) pix_out[c] = ratios[c] * norm;
 
     // Gamut mapping
     const float max_pix = fmaxf(fmaxf(pix_out[0], pix_out[1]), pix_out[2]);
@@ -1517,8 +1522,8 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     // no chroma preservation
     if(data->version == DT_FILMIC_COLORSCIENCE_V1)
       filmic_split_v1(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height, ch);
-    else if(data->version == DT_FILMIC_COLORSCIENCE_V2)
-      filmic_split_v2(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height, ch);
+    else if(data->version == DT_FILMIC_COLORSCIENCE_V2 || data->version == DT_FILMIC_COLORSCIENCE_V3)
+      filmic_split_v2_v3(in, out, work_profile, data, data->spline, roi_out->width, roi_in->height, ch);
   }
   else
   {
@@ -1526,9 +1531,9 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
     if(data->version == DT_FILMIC_COLORSCIENCE_V1)
       filmic_chroma_v1(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
                        roi_out->height, ch);
-    else if(data->version == DT_FILMIC_COLORSCIENCE_V2)
-      filmic_chroma_v2(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
-                       roi_out->height, ch);
+    else if(data->version == DT_FILMIC_COLORSCIENCE_V2 || data->version == DT_FILMIC_COLORSCIENCE_V3)
+      filmic_chroma_v2_v3(in, out, work_profile, data, data->spline, data->preserve_color, roi_out->width,
+                          roi_out->height, ch, data->version);
   }
 
   if(reconstructed) dt_free_align(reconstructed);
@@ -2778,7 +2783,7 @@ static gboolean dt_iop_tonecurve_draw(GtkWidget *widget, cairo_t *crf, gpointer 
         cairo_line_to(cr, x * g->graph_width, g->graph_height * (1.0 - y));
       }
     }
-    else if(p->version == DT_FILMIC_COLORSCIENCE_V2)
+    else if(p->version == DT_FILMIC_COLORSCIENCE_V2 || p->version == DT_FILMIC_COLORSCIENCE_V3)
     {
       cairo_move_to(cr, 0,
                     g->graph_height * (1.0 - filmic_desaturate_v2(0.0f, sigma_toe, sigma_shoulder, saturation)));
@@ -3908,7 +3913,7 @@ void gui_changed(dt_iop_module_t *self, GtkWidget *w, void *previous)
   {
     if(p->version == DT_FILMIC_COLORSCIENCE_V1)
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("extreme luminance saturation"));
-    else if(p->version == DT_FILMIC_COLORSCIENCE_V2)
+    else if(p->version == DT_FILMIC_COLORSCIENCE_V2 || p->version == DT_FILMIC_COLORSCIENCE_V3)
       dt_bauhaus_widget_set_label(g->saturation, NULL, N_("middle tones saturation"));
   }
 
