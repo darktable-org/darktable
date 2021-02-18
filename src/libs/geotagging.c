@@ -293,7 +293,7 @@ static gchar *_datetime_tooltip(GTimeVal *start, GTimeVal *end, GTimeZone *tz)
   return res;
 }
 
-static void _images_images_from_map(dt_lib_module_t *self)
+static void _remove_images_from_map(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   for(GList *i = d->imgs; i; i = g_list_next(i))
@@ -564,7 +564,6 @@ static void _select_images(GtkWidget *widget, dt_lib_module_t *self)
   dt_selection_clear(darktable.selection);
   dt_selection_select_list(darktable.selection, imgs);
   g_list_free(imgs);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 }
 
 static void _images_preview_toggled(GtkToggleButton *button, dt_lib_module_t *self)
@@ -580,7 +579,7 @@ static void _refresh_track_list(dt_lib_module_t *self)
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
   d->map.nb_imgs = 0;
   int total_pts = 0;
-  _images_images_from_map(self);
+  _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
 
@@ -630,7 +629,7 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   d->map.nb_tracks = g_list_length(trkseg);
   d->map.tracks = g_malloc0(sizeof(dt_lib_tracks_data_t) * d->map.nb_tracks);
 
-  _images_images_from_map(self);
+  _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
 
@@ -701,6 +700,11 @@ static void _view_changed(gpointer instance, dt_view_t *old_view,
   if(old_view != new_view)
   {
     d->map.view = !g_strcmp0(new_view->module_name, "map");
+    if(d->map.view)
+    {
+      _set_selected_images(self);
+      _refresh_track_list(self);
+    }
     _update_layout(self);
   }
 }
@@ -833,7 +837,7 @@ static void _set_selected_images(dt_lib_module_t *self)
   if(d->imgs)
   {
 #ifdef HAVE_MAP
-    _images_images_from_map(self);
+    _remove_images_from_map(self);
 #endif
     g_list_free_full(d->imgs, g_free);
   }
@@ -1824,7 +1828,7 @@ void gui_cleanup(dt_lib_module_t *self)
   if(d->imgs)
   {
 #ifdef HAVE_MAP
-    _images_images_from_map(self);
+    _remove_images_from_map(self);
 #endif
     g_list_free_full(d->imgs, g_free);
   }
