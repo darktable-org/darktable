@@ -150,6 +150,8 @@ typedef struct dt_lib_modulegroups_t
   GList *basics;
   GtkWidget *vbox_basic;
   GtkWidget *mod_vbox_basic;
+
+  dt_iop_module_t *force_show_module;
 } dt_lib_modulegroups_t;
 
 typedef enum dt_lib_modulegroup_iop_visibility_type_t
@@ -840,6 +842,9 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
   if(d->current == DT_MODULEGROUP_BASICS && !d->basics_show) d->current = DT_MODULEGROUP_ACTIVE_PIPE;
   _basics_hide(self);
 
+  // if we have a module to force, set d-current to active pipe
+  if(d->current == DT_MODULEGROUP_INVALID) d->current = DT_MODULEGROUP_ACTIVE_PIPE;
+
   const gchar *text_entered = (gtk_widget_is_visible(GTK_WIDGET(d->hbox_search_box)))
                                   ? gtk_entry_get_text(GTK_ENTRY(d->text_entry))
                                   : NULL;
@@ -848,7 +853,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
     fprintf(stderr,"\n^^^^^ modulegroups");
 
   /* only show module group as selected if not currently searching */
-  if(d->show_search && d->current != DT_MODULEGROUP_NONE)
+  if((d->show_search || d->force_show_module) && d->current != DT_MODULEGROUP_NONE)
   {
     GtkWidget *bt = _buttons_get_from_pos(self, d->current);
     if(bt)
@@ -856,7 +861,7 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       /* toggle button visibility without executing callback */
       g_signal_handlers_block_matched(bt, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
 
-      if(text_entered && text_entered[0] != '\0')
+      if((text_entered && text_entered[0] != '\0') || d->force_show_module)
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), FALSE);
       else
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bt), TRUE);
@@ -864,6 +869,11 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       g_signal_handlers_unblock_matched(bt, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
     }
   }
+
+  // update basic button selection too
+  g_signal_handlers_block_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
+  gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->basic_btn), d->current == DT_MODULEGROUP_BASICS);
+  g_signal_handlers_unblock_matched(d->basic_btn, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, _lib_modulegroups_toggle, NULL);
 
   // hide deprectade message. it will be shown after if needed
   gtk_widget_set_visible(d->deprecated, FALSE);
@@ -895,6 +905,17 @@ static void _lib_modulegroups_update_iop_visibility(dt_lib_module_t *self)
       {
         if(darktable.develop->gui_module == module) dt_iop_request_focus(NULL);
         if(w) gtk_widget_hide(w);
+        continue;
+      }
+
+      // if we have a module that should be forced shown
+      if(d->force_show_module)
+      {
+        if(d->force_show_module == module && w)
+          gtk_widget_show(w);
+        else
+          gtk_widget_hide(w);
+
         continue;
       }
 
@@ -1034,6 +1055,7 @@ static void _lib_modulegroups_toggle(GtkWidget *button, gpointer user_data)
   }
 
   /* update visibility */
+  d->force_show_module = NULL;
   _lib_modulegroups_update_iop_visibility(self);
 }
 
@@ -1120,10 +1142,16 @@ static void _lib_modulegroups_switch_group(dt_lib_module_t *self, dt_iop_module_
   {
     if(_lib_modulegroups_test(self, k, module))
     {
+      d->force_show_module = NULL;
       _lib_modulegroups_set(self, k);
       return;
     }
   }
+  // if we arrive here, that means the module is not part of any group
+  // so we force it to be shown outside any group
+  d->force_show_module = module;
+  d->current = DT_MODULEGROUP_INVALID;
+  _lib_modulegroups_set(self, DT_MODULEGROUP_INVALID);
 }
 
 static uint32_t _lib_modulegroups_get(dt_lib_module_t *self)
@@ -1880,6 +1908,26 @@ void init_presets(dt_lib_module_t *self)
   _preset_retrieve_old_presets(self);
 }
 
+static gchar *_presets_get_minimal(dt_lib_module_t *self)
+{
+  const gboolean is_modern = dt_conf_is_equal("plugins/darkroom/chromatic-adaptation", "modern");
+
+  // all modules
+  gchar *tx = NULL;
+
+  SQA();
+  AM("exposure/exposure");
+  AM("colorbalance/contrast");
+
+  SMG(C_("modulegroup", "base"), "basic");
+  AM("basecurve");
+  AM("filmicrgb");
+  AM("exposure");
+  AM("colorbalance");
+
+  return tx;
+}
+
 #undef SNQA
 #undef SQA
 #undef SMG
@@ -2492,143 +2540,126 @@ static void _manage_basics_add_popup(GtkWidget *widget, GCallback callback, dt_l
        && (module->multi_priority <= 0
            || g_list_find_custom(darktable.develop->iop, module, _manage_editor_module_find_multi) == NULL))
     {
-      // be sure the module is already in one of the "classic" groups
-      // we don't want a widget without its "real" module aside
-      gboolean exists = FALSE;
-      GList *l = toggle ? d->groups : d->edit_groups;
-      while(l)
-      {
-        dt_lib_modulegroups_group_t *gr = (dt_lib_modulegroups_group_t *)l->data;
-        if(g_list_find_custom(gr->modules, module->op, _iop_compare))
-        {
-          exists = TRUE;
-          break;
-        }
-        l = g_list_next(l);
-      }
-      if(exists)
-      {
-        // create submenu for module
-        GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
-        gtk_widget_set_name(GTK_WIDGET(smi), "modulegroups-popup-item2");
-        GtkMenu *sm = (GtkMenu *)gtk_menu_new();
-        gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
-        int nb = 0;
+      // create submenu for module
+      GtkMenuItem *smi = (GtkMenuItem *)gtk_menu_item_new_with_label(module->name());
+      gtk_widget_set_name(GTK_WIDGET(smi), "modulegroups-popup-item2");
+      GtkMenu *sm = (GtkMenu *)gtk_menu_new();
+      gtk_menu_item_set_submenu(smi, GTK_WIDGET(sm));
+      int nb = 0;
 
-        // let's add the on-off button
-        if(!module->hide_enable_button)
+      // let's add the on-off button
+      if(!module->hide_enable_button)
+      {
+        // apart from compact ui, we hide on-off button if a widget from the same module is already present
+        // as the on-off button is already present in the header in this case
+        if(compact_ui
+           || !g_list_find_custom(toggle ? d->basics : d->edit_basics, module->op, _basics_item_find_same_module))
         {
-          // apart from compact ui, we hide on-off button if a widget from the same module is already present
-          // as the on-off button is already present in the header in this case
-          if(compact_ui
-             || !g_list_find_custom(toggle ? d->basics : d->edit_basics, module->op, _basics_item_find_same_module))
+          gchar *ws = dt_util_dstrcat(NULL, "|%s|", module->op);
+          if(g_list_find_custom(toggle ? d->basics : d->edit_basics, module->op, _basics_item_find))
           {
-            gchar *ws = dt_util_dstrcat(NULL, "|%s|", module->op);
-            if(g_list_find_custom(toggle ? d->basics : d->edit_basics, module->op, _basics_item_find))
+            if(toggle)
             {
-              if(toggle)
-              {
-                GtkMenuItem *mi;
-                gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
-                mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
-                g_free(tx);
-                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("remove this widget"));
-                gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
-                g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
-                g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-                gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
-                gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba);
-                nba++;
-              }
+              GtkMenuItem *mi;
+              gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
+              mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
+              g_free(tx);
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("remove this widget"));
+              gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
+              g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
+              g_signal_connect(G_OBJECT(mi), "activate", callback, self);
+              gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
+              gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba);
+              nba++;
             }
-            else
-            {
-              if(strstr(RECOMMENDED_BASICS, ws))
-              {
-                GtkMenuItem *mi;
-                gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
-                mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
-                g_free(tx);
-                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("add this widget"));
-                gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
-                g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
-                g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-                gtk_menu_shell_append(GTK_MENU_SHELL(pop), GTK_WIDGET(mi));
-              }
-              GtkMenuItem *mii;
-              mii = (GtkMenuItem *)gtk_menu_item_new_with_label(_("on-off"));
-              gtk_widget_set_name(GTK_WIDGET(mii), "modulegroups-popup-item2");
-              gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("add this widget"));
-              g_object_set_data(G_OBJECT(mii), "widget_id", module->op);
-              g_signal_connect(G_OBJECT(mii), "activate", callback, self);
-              gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
-              nb++;
-            }
-            g_free(ws);
           }
-        }
-
-        // let's go throught all widgets from this module
-        GList *la = g_list_last(darktable.control->accelerator_list);
-        while(la)
-        {
-          dt_accel_t *accel = (dt_accel_t *)la->data;
-          gchar *pre = dt_util_dstrcat(NULL, "<Darktable>/image operations/%s/", module->op);
-          if(accel && accel->closure && accel->closure->data && g_str_has_prefix(accel->path, pre)
-             && g_str_has_suffix(accel->path, "/dynamic"))
+          else
           {
-            gchar *wid = NULL;
-            gchar *wn = NULL;
-            _basics_get_names_from_accel_path(accel->path, &wid, NULL, &wn);
-            gchar *ws = dt_util_dstrcat(NULL, "|%s|", wid);
-            if(g_list_find_custom(toggle ? d->basics : d->edit_basics, wid, _basics_item_find))
+            if(strstr(RECOMMENDED_BASICS, ws))
             {
-              if(toggle)
-              {
-                GtkMenuItem *mi;
-                gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
-                mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
-                g_free(tx);
-                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("remove this widget"));
-                gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
-                g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
-                g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-                gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba);
-                nba++;
-              }
+              GtkMenuItem *mi;
+              gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), _("on-off"));
+              mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
+              g_free(tx);
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("add this widget"));
+              gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
+              g_object_set_data(G_OBJECT(mi), "widget_id", module->op);
+              g_signal_connect(G_OBJECT(mi), "activate", callback, self);
+              gtk_menu_shell_append(GTK_MENU_SHELL(pop), GTK_WIDGET(mi));
             }
-            else
-            {
-              if(strstr(RECOMMENDED_BASICS, ws))
-              {
-                GtkMenuItem *mi;
-                gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
-                mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
-                g_free(tx);
-                gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("add this widget"));
-                g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
-                g_signal_connect(G_OBJECT(mi), "activate", callback, self);
-                gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
-                gtk_menu_shell_append(GTK_MENU_SHELL(pop), GTK_WIDGET(mi));
-              }
-              GtkMenuItem *mii = (GtkMenuItem *)gtk_menu_item_new_with_label(wn);
-              gtk_widget_set_name(GTK_WIDGET(mii), "modulegroups-popup-item2");
-              gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("add this widget"));
-              g_object_set_data_full(G_OBJECT(mii), "widget_id", g_strdup(wid), g_free);
-              g_signal_connect(G_OBJECT(mii), "activate", callback, self);
-              gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
-              nb++;
-            }
-            g_free(wid);
-            g_free(wn);
-            g_free(ws);
+            GtkMenuItem *mii;
+            mii = (GtkMenuItem *)gtk_menu_item_new_with_label(_("on-off"));
+            gtk_widget_set_name(GTK_WIDGET(mii), "modulegroups-popup-item2");
+            gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("add this widget"));
+            g_object_set_data(G_OBJECT(mii), "widget_id", module->op);
+            g_signal_connect(G_OBJECT(mii), "activate", callback, self);
+            gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
+            nb++;
           }
-          g_free(pre);
-          la = g_list_previous(la);
+          g_free(ws);
         }
-        // add submenu to main menu if we got any widgets
-        if(nb > 0) gtk_menu_shell_append(GTK_MENU_SHELL(sm_all), GTK_WIDGET(smi));
       }
+
+      // let's go throught all widgets from this module
+      GList *la = g_list_last(darktable.control->accelerator_list);
+      while(la)
+      {
+        dt_accel_t *accel = (dt_accel_t *)la->data;
+        gchar *pre = dt_util_dstrcat(NULL, "<Darktable>/image operations/%s/", module->op);
+        if(accel && accel->closure && accel->closure->data && g_str_has_prefix(accel->path, pre)
+           && g_str_has_suffix(accel->path, "/dynamic"))
+        {
+          gchar *wid = NULL;
+          gchar *wn = NULL;
+          _basics_get_names_from_accel_path(accel->path, &wid, NULL, &wn);
+          gchar *ws = dt_util_dstrcat(NULL, "|%s|", wid);
+          if(g_list_find_custom(toggle ? d->basics : d->edit_basics, wid, _basics_item_find))
+          {
+            if(toggle)
+            {
+              GtkMenuItem *mi;
+              gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
+              mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
+              g_free(tx);
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("remove this widget"));
+              gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
+              g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
+              g_signal_connect(G_OBJECT(mi), "activate", callback, self);
+              gtk_menu_shell_insert(GTK_MENU_SHELL(pop), GTK_WIDGET(mi), nba);
+              nba++;
+            }
+          }
+          else
+          {
+            if(strstr(RECOMMENDED_BASICS, ws))
+            {
+              GtkMenuItem *mi;
+              gchar *tx = dt_util_dstrcat(NULL, "%s - %s", module->name(), wn);
+              mi = (GtkMenuItem *)gtk_menu_item_new_with_label(tx);
+              g_free(tx);
+              gtk_widget_set_tooltip_text(GTK_WIDGET(mi), _("add this widget"));
+              g_object_set_data_full(G_OBJECT(mi), "widget_id", g_strdup(wid), g_free);
+              g_signal_connect(G_OBJECT(mi), "activate", callback, self);
+              gtk_widget_set_name(GTK_WIDGET(mi), "modulegroups-popup-item");
+              gtk_menu_shell_append(GTK_MENU_SHELL(pop), GTK_WIDGET(mi));
+            }
+            GtkMenuItem *mii = (GtkMenuItem *)gtk_menu_item_new_with_label(wn);
+            gtk_widget_set_name(GTK_WIDGET(mii), "modulegroups-popup-item2");
+            gtk_widget_set_tooltip_text(GTK_WIDGET(mii), _("add this widget"));
+            g_object_set_data_full(G_OBJECT(mii), "widget_id", g_strdup(wid), g_free);
+            g_signal_connect(G_OBJECT(mii), "activate", callback, self);
+            gtk_menu_shell_append(GTK_MENU_SHELL(sm), GTK_WIDGET(mii));
+            nb++;
+          }
+          g_free(wid);
+          g_free(wn);
+          g_free(ws);
+        }
+        g_free(pre);
+        la = g_list_previous(la);
+      }
+      // add submenu to main menu if we got any widgets
+      if(nb > 0) gtk_menu_shell_append(GTK_MENU_SHELL(sm_all), GTK_WIDGET(smi));
     }
     modules = g_list_next(modules);
   }
@@ -2792,6 +2823,9 @@ void gui_init(dt_lib_module_t *self)
 static void _buttons_update(dt_lib_module_t *self)
 {
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
+
+  // ensure we have no remaining force shown modules
+  d->force_show_module = NULL;
 
   // first, we destroy all existing buttons except active one an preset one
   GList *l = gtk_container_get_children(GTK_CONTAINER(d->hbox_groups));
@@ -3434,8 +3468,10 @@ static void _manage_preset_add(GtkWidget *widget, GdkEventButton *event, dt_lib_
   }
   gchar *nname = dt_util_dstrcat(NULL, "new_%d", i);
 
-  // and create a new empty preset
-  dt_lib_presets_add(nname, self->plugin_name, self->version(), " ", 1, FALSE);
+  // and create a new minimal preset
+  char *tx = _presets_get_minimal(self);
+  dt_lib_presets_add(nname, self->plugin_name, self->version(), tx, strlen(tx), FALSE);
+  g_free(tx);
 
   _manage_preset_update_list(self);
 
