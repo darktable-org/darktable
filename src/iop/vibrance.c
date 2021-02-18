@@ -57,6 +57,10 @@ typedef struct dt_iop_vibrance_global_data_t
   int kernel_vibrance;
 } dt_iop_vibrance_global_data_t;
 
+const char *deprecated_msg()
+{
+  return _("this module is deprecated. please use the vibrance rgb module instead.");
+}
 
 const char *name()
 {
