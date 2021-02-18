@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 2.x\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-18 07:33-0300\n"
-"PO-Revision-Date: 2021-02-18 07:37-0300\n"
+"POT-Creation-Date: 2021-02-18 15:24-0300\n"
+"PO-Revision-Date: 2021-02-18 15:33-0300\n"
 "Last-Translator: Jeronimo Cordoni Pellegrini <j_p@aleph0.info>\n"
 "Language-Team: \n"
 "Language: pt_BR\n"
@@ -3409,7 +3409,7 @@ msgstr "apagar"
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
 #: ../src/iop/watermark.c:1404 ../src/libs/image.c:599
-#: ../src/libs/modulegroups.c:2449
+#: ../src/libs/modulegroups.c:2451
 msgid "color"
 msgstr "cor"
 
@@ -6244,7 +6244,7 @@ msgstr ""
 
 #. Adding the outer container
 #: ../src/develop/imageop.c:2538 ../src/gui/preferences.c:797
-#: ../src/libs/lib.c:1266 ../src/libs/modulegroups.c:2767
+#: ../src/libs/lib.c:1266 ../src/libs/modulegroups.c:2769
 msgid "presets"
 msgstr "predefinições"
 
@@ -8022,14 +8022,14 @@ msgstr "conflito de atalhos"
 
 #: ../src/gui/preferences.c:1533 ../src/gui/preferences.c:2167
 #: ../src/gui/presets.c:189 ../src/libs/lib.c:385
-#: ../src/libs/modulegroups.c:3507
+#: ../src/libs/modulegroups.c:3515
 #, c-format
 msgid "do you really want to delete the preset `%s'?"
 msgstr "você realmente deseja excluir a predefinição `%s'?"
 
 #: ../src/gui/preferences.c:1537 ../src/gui/preferences.c:2171
 #: ../src/gui/presets.c:193 ../src/libs/lib.c:389
-#: ../src/libs/modulegroups.c:3511
+#: ../src/libs/modulegroups.c:3519
 msgid "delete preset?"
 msgstr "excluir predefinição?"
 
@@ -8230,8 +8230,8 @@ msgstr "você realmente deseja atualizar a predefinição `%s'?"
 msgid "update preset?"
 msgstr "atualizar predefinição"
 
-#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3683
-#: ../src/libs/modulegroups.c:3692
+#: ../src/gui/presets.c:934 ../src/libs/modulegroups.c:3691
+#: ../src/libs/modulegroups.c:3700
 msgid "manage module layouts"
 msgstr "gerenciar layout dos módulos"
 
@@ -8256,7 +8256,7 @@ msgid "edit this preset.."
 msgstr "editar esta predefinição..."
 
 #: ../src/gui/presets.c:1293 ../src/libs/lib.c:677
-#: ../src/libs/modulegroups.c:3640
+#: ../src/libs/modulegroups.c:3648
 msgid "delete this preset"
 msgstr "exclui esta predefinição"
 
@@ -9540,7 +9540,9 @@ msgstr "escala para o gráfico"
 
 #: ../src/iop/basicadj.c:135
 msgid "this module is deprecated. please use the quick access panel instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés disso use o painel de acesso rápido."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés disso use o painel de "
+"acesso rápido."
 
 #: ../src/iop/basicadj.c:140
 msgid "basic adjustments"
@@ -10049,7 +10051,9 @@ msgstr "misturador de canais"
 #: ../src/iop/channelmixer.c:131
 msgid ""
 "this module is deprecated. please use the color calibration module instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés dele use o módulo de calibração de cores."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés dele use o módulo de "
+"calibração de cores."
 
 #: ../src/iop/channelmixer.c:136 ../src/iop/channelmixerrgb.c:193
 msgid ""
@@ -13012,7 +13016,9 @@ msgstr "mapemento tonal global"
 
 #: ../src/iop/globaltonemap.c:105
 msgid "this module is deprecated. please use the filmic rgb module instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés dele use o módulo fílmico rgb."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés dele use o módulo fílmico "
+"rgb."
 
 #: ../src/iop/globaltonemap.c:643
 msgid "operator"
@@ -13292,7 +13298,9 @@ msgstr "inverte"
 
 #: ../src/iop/invert.c:115
 msgid "this module is deprecated. please use the negadoctor module instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés dele use o módulo negadoctor."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés dele use o módulo "
+"negadoctor."
 
 #: ../src/iop/invert.c:120
 msgid "invert film negatives"
@@ -13487,7 +13495,7 @@ msgstr "escala"
 msgid "auto scale"
 msgstr "auto escala"
 
-#: ../src/iop/lens.cc:2378 ../src/libs/modulegroups.c:2450
+#: ../src/iop/lens.cc:2378 ../src/libs/modulegroups.c:2452
 msgid "correct"
 msgstr "corrigir"
 
@@ -14429,7 +14437,9 @@ msgstr "luz de preenchimento"
 #: ../src/iop/relight.c:97 ../src/iop/zonesystem.c:126
 msgid ""
 "this module is deprecated. please use the tone equalizer module instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés dele use o módulo equalizador de tons."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés dele use o módulo "
+"equalizador de tons."
 
 #: ../src/iop/relight.c:270
 msgid "the fill-light in EV"
@@ -15519,7 +15529,9 @@ msgstr "mapeamento de tom"
 msgid ""
 "this module is deprecated. please use the local contrast or tone equalizer "
 "module instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés dele use o módulo de contraste local ou o de equalização de tons."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés dele use o módulo de "
+"contraste local ou o de equalização de tons."
 
 #: ../src/iop/velvia.c:82
 msgid "velvia"
@@ -15541,7 +15553,9 @@ msgstr "quanto para resguardar realces e sombras"
 
 #: ../src/iop/vibrance.c:62
 msgid "this module is deprecated. please use the vibrance rgb module instead."
-msgstr "este módulo foi descontinuado. por favor, ao invés dele use o módulo fílmico rgb."
+msgstr ""
+"este módulo foi descontinuado. por favor, ao invés dele use o módulo fílmico "
+"rgb."
 
 #: ../src/iop/vibrance.c:93
 msgid ""
@@ -18061,8 +18075,8 @@ msgid "modulegroups"
 msgstr "grupos de módulos"
 
 #: ../src/libs/modulegroups.c:367 ../src/libs/modulegroups.c:386
-#: ../src/libs/modulegroups.c:2564 ../src/libs/modulegroups.c:2581
-#: ../src/libs/modulegroups.c:2591
+#: ../src/libs/modulegroups.c:2566 ../src/libs/modulegroups.c:2583
+#: ../src/libs/modulegroups.c:2593
 msgid "on-off"
 msgstr "liga-desliga"
 
@@ -18119,7 +18133,7 @@ msgid "correct"
 msgstr "corrigir"
 
 #: ../src/libs/modulegroups.c:1650 ../src/libs/modulegroups.c:1739
-#: ../src/libs/modulegroups.c:1782 ../src/libs/modulegroups.c:2453
+#: ../src/libs/modulegroups.c:1782 ../src/libs/modulegroups.c:2455
 msgctxt "modulegroup"
 msgid "effect"
 msgstr "efeito"
@@ -18134,7 +18148,7 @@ msgid "grading"
 msgstr "grading de cores"
 
 #: ../src/libs/modulegroups.c:1691 ../src/libs/modulegroups.c:1850
-#: ../src/libs/modulegroups.c:2457
+#: ../src/libs/modulegroups.c:2459
 msgctxt "modulegroup"
 msgid "effects"
 msgstr "efeitos"
@@ -18160,8 +18174,8 @@ msgstr "técnico"
 msgid "search only"
 msgstr "buscar apenas"
 
-#: ../src/libs/modulegroups.c:1880 ../src/libs/modulegroups.c:2216
-#: ../src/libs/modulegroups.c:2713
+#: ../src/libs/modulegroups.c:1880 ../src/libs/modulegroups.c:2218
+#: ../src/libs/modulegroups.c:2715
 msgctxt "modulegroup"
 msgid "deprecated"
 msgstr "descontinuados/obsoletos"
@@ -18178,200 +18192,198 @@ msgstr "layout anterior"
 msgid "previous config with new layout"
 msgstr "configuração anterior com novo layout"
 
-#: ../src/libs/modulegroups.c:2066 ../src/libs/modulegroups.c:2567
-#: ../src/libs/modulegroups.c:2624
+#: ../src/libs/modulegroups.c:2066 ../src/libs/modulegroups.c:2569
+#: ../src/libs/modulegroups.c:2626
 msgid "remove this widget"
 msgstr "remover esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2232 ../src/libs/modulegroups.c:2479
+#: ../src/libs/modulegroups.c:2234 ../src/libs/modulegroups.c:2481
 msgid "remove this module"
 msgstr "remover este módulo"
 
 #. does it belong to recommended modules ?
-#: ../src/libs/modulegroups.c:2448
+#: ../src/libs/modulegroups.c:2450
 msgid "base"
 msgstr "base"
 
-#: ../src/libs/modulegroups.c:2451
+#: ../src/libs/modulegroups.c:2453
 msgid "tone"
 msgstr "tom"
 
-#: ../src/libs/modulegroups.c:2454
+#: ../src/libs/modulegroups.c:2456
 msgid "technical"
 msgstr "técnico"
 
-#: ../src/libs/modulegroups.c:2455
+#: ../src/libs/modulegroups.c:2457
 msgid "grading"
 msgstr "grading de cores"
 
-#: ../src/libs/modulegroups.c:2461 ../src/libs/modulegroups.c:2469
+#: ../src/libs/modulegroups.c:2463 ../src/libs/modulegroups.c:2471
 msgid "add this module"
 msgstr "adicionar este módulo"
 
 #. show the submenu with all the modules
-#: ../src/libs/modulegroups.c:2492 ../src/libs/modulegroups.c:2669
+#: ../src/libs/modulegroups.c:2494 ../src/libs/modulegroups.c:2671
 msgid "all available modules"
 msgstr "todos os módulos disponíveis"
 
-#: ../src/libs/modulegroups.c:2500 ../src/libs/modulegroups.c:2677
+#: ../src/libs/modulegroups.c:2502 ../src/libs/modulegroups.c:2679
 msgid "add module"
 msgstr "adicionar módulo"
 
-#: ../src/libs/modulegroups.c:2505 ../src/libs/modulegroups.c:2682
+#: ../src/libs/modulegroups.c:2507 ../src/libs/modulegroups.c:2684
 msgid "remove module"
 msgstr "remover módulo"
 
-#: ../src/libs/modulegroups.c:2584 ../src/libs/modulegroups.c:2593
-#: ../src/libs/modulegroups.c:2640 ../src/libs/modulegroups.c:2648
+#: ../src/libs/modulegroups.c:2586 ../src/libs/modulegroups.c:2595
+#: ../src/libs/modulegroups.c:2642 ../src/libs/modulegroups.c:2650
 msgid "add this widget"
 msgstr "adicionar esta ferramenta"
 
-#: ../src/libs/modulegroups.c:2753
+#: ../src/libs/modulegroups.c:2755
 msgid "quick access panel"
 msgstr "painel de acesso rápido"
 
-#: ../src/libs/modulegroups.c:2762
+#: ../src/libs/modulegroups.c:2764
 msgid "show only active modules"
 msgstr "mostrar apenas módulos ativos"
 
 #. search box
-#: ../src/libs/modulegroups.c:2771
+#: ../src/libs/modulegroups.c:2773
 msgid "search module"
 msgstr "buscar módulo"
 
-#: ../src/libs/modulegroups.c:2777
+#: ../src/libs/modulegroups.c:2779
 msgid "search modules by name or tag"
 msgstr "procurar módulos por nome ou etiqueta"
 
-#: ../src/libs/modulegroups.c:2785
+#: ../src/libs/modulegroups.c:2787
 msgid "clear text"
 msgstr "limpar texto"
 
-#: ../src/libs/modulegroups.c:2794
+#: ../src/libs/modulegroups.c:2796
 msgid ""
-"following modules are deprecated because they have internal design mistakes "
-"that can't be solved and alternatives that solve them.\n"
-"they will be removed for new edits in next release."
+"the following modules are deprecated because they have internal design "
+"mistakes which can't be solved and alternative modules which solve them.\n"
+"they will be removed for new edits in the next release."
 msgstr ""
-"os módulos a seguir foram descontinuados porque tem equívocos internos de "
-"projeto\n"
-"que não podem ser resolvidos e há alternativa que os resolva.\n"
+"os módulos a seguir foram descontinuados porque tem equívocos internos de projeto que não podem ser resolvidos e há módulos alternativos resolvem esses problemas.\n"
 "eles serão removidos para novas edições no próximo release."
 
-#: ../src/libs/modulegroups.c:3006
+#: ../src/libs/modulegroups.c:3008
 msgid "basic icon"
 msgstr "ícone de básico"
 
-#: ../src/libs/modulegroups.c:3016
+#: ../src/libs/modulegroups.c:3018
 msgid "active icon"
 msgstr "ícone ativo"
 
-#: ../src/libs/modulegroups.c:3026
+#: ../src/libs/modulegroups.c:3028
 msgid "color icon"
 msgstr "ícone de cor"
 
-#: ../src/libs/modulegroups.c:3036
+#: ../src/libs/modulegroups.c:3038
 msgid "correct icon"
 msgstr "ícone de correções"
 
-#: ../src/libs/modulegroups.c:3046
+#: ../src/libs/modulegroups.c:3048
 msgid "effect icon"
 msgstr "ícone de efeitos"
 
-#: ../src/libs/modulegroups.c:3056
+#: ../src/libs/modulegroups.c:3058
 msgid "favorites icon"
 msgstr "íconde de favoritos"
 
-#: ../src/libs/modulegroups.c:3066
+#: ../src/libs/modulegroups.c:3068
 msgid "tone icon"
 msgstr "ícone de tom"
 
-#: ../src/libs/modulegroups.c:3076
+#: ../src/libs/modulegroups.c:3078
 msgid "grading icon"
 msgstr "ícone de grading"
 
-#: ../src/libs/modulegroups.c:3086
+#: ../src/libs/modulegroups.c:3088
 msgid "technical icon"
 msgstr "ícone de técnico"
 
-#: ../src/libs/modulegroups.c:3118
+#: ../src/libs/modulegroups.c:3120
 msgid "quick access panel widgets"
 msgstr "ferramentas do painel de acesso rápido"
 
-#: ../src/libs/modulegroups.c:3120
+#: ../src/libs/modulegroups.c:3122
 msgid "quick access"
 msgstr "acesso rápido"
 
-#: ../src/libs/modulegroups.c:3141
+#: ../src/libs/modulegroups.c:3143
 msgid "add widgets to the list"
 msgstr "adicionar ferramenta à lista"
 
-#: ../src/libs/modulegroups.c:3171
+#: ../src/libs/modulegroups.c:3173
 msgid "move group to the left"
 msgstr "mover grupo para a esquerda"
 
-#: ../src/libs/modulegroups.c:3183
+#: ../src/libs/modulegroups.c:3185
 msgid "group icon"
 msgstr "ícone de grupo"
 
-#: ../src/libs/modulegroups.c:3190
+#: ../src/libs/modulegroups.c:3192
 msgid "group name"
 msgstr "nome do grupo"
 
-#: ../src/libs/modulegroups.c:3200
+#: ../src/libs/modulegroups.c:3202
 msgid "remove group"
 msgstr "remover grupo"
 
-#: ../src/libs/modulegroups.c:3213
+#: ../src/libs/modulegroups.c:3215
 msgid "move group to the right"
 msgstr "mover grupo para a direita"
 
-#: ../src/libs/modulegroups.c:3235
+#: ../src/libs/modulegroups.c:3237
 msgid "add module to the list"
 msgstr "adicionar módulo à lista"
 
-#: ../src/libs/modulegroups.c:3263 ../src/libs/tagging.c:3046
+#: ../src/libs/modulegroups.c:3265 ../src/libs/tagging.c:3046
 msgid "new"
 msgstr "novo"
 
-#: ../src/libs/modulegroups.c:3354
+#: ../src/libs/modulegroups.c:3361
 msgid "preset name : "
 msgstr "nome da predefinição : "
 
-#: ../src/libs/modulegroups.c:3356
+#: ../src/libs/modulegroups.c:3363
 msgid "preset name"
 msgstr "nome da predefinição"
 
 #. show search checkbox
-#: ../src/libs/modulegroups.c:3363
+#: ../src/libs/modulegroups.c:3371
 msgid "show search line"
 msgstr "mostrar linha de busca"
 
 #. show basics checkbox
-#: ../src/libs/modulegroups.c:3369
+#: ../src/libs/modulegroups.c:3377
 msgid "show quick access panel"
 msgstr "mostrar painel de acesso rápido"
 
-#: ../src/libs/modulegroups.c:3378
+#: ../src/libs/modulegroups.c:3386
 msgid "module groups"
 msgstr "grupos de módulos"
 
-#: ../src/libs/modulegroups.c:3417
+#: ../src/libs/modulegroups.c:3425
 msgid ""
 "this is a built-in read-only preset. duplicate it if you want to make changes"
 msgstr ""
 "esta é uma predefinição nativa somente de leitura. duplique se quiser fazer "
 "mudanças"
 
-#: ../src/libs/modulegroups.c:3428
+#: ../src/libs/modulegroups.c:3436
 msgid "reset"
 msgstr "redefinir"
 
-#: ../src/libs/modulegroups.c:3630
+#: ../src/libs/modulegroups.c:3638
 msgid "duplicate this preset"
 msgstr "duplicar esta predefinição"
 
-#: ../src/libs/modulegroups.c:3656
+#: ../src/libs/modulegroups.c:3664
 msgid "add new empty preset"
 msgstr "adicionar nova predefinição vazia"
 
