@@ -128,7 +128,7 @@ const char *name()
 
 const char *deprecated_msg()
 {
-  return _("this module is deprecated. better use color calibration module instead.");
+  return _("this module is deprecated. please use the color calibration module instead.");
 }
 
 const char *description(struct dt_iop_module_t *self)
