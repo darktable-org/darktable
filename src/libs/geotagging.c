@@ -1582,28 +1582,28 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   int line = 0;
 
-  GtkWidget *label = dt_ui_label_new(_("date time"));
+  GtkWidget *label = dt_ui_label_new(_("date/time"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(grid, label, 0, line, 2, 1);
-  gtk_widget_set_tooltip_text(label, _("enter the new date time (yyyy:mm:dd hh:mm:ss)"
+  gtk_widget_set_tooltip_text(label, _("enter the new date/time (yyyy:mm:dd hh:mm:ss)"
                                        "\nkey in the new numbers or scroll over the cell"));
 
   GtkWidget *box = _gui_init_datetime(&d->dt, 0, self);
   gtk_grid_attach(grid, box, 2, line++, 2, 1);
 
-  label = dt_ui_label_new(_("original date time"));
+  label = dt_ui_label_new(_("original date/time"));
   gtk_grid_attach(grid, label, 0, line, 2, 1);
 
   box = _gui_init_datetime(&d->dt0, 1, self);
   gtk_grid_attach(grid, box, 2, line++, 2, 1);
 
-  label = dt_ui_label_new(_("date time offset"));
+  label = dt_ui_label_new(_("date/time offset"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(grid, label, 0, line, 2, 1);
   gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss)"));
 
   d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(d->lock_offset, _("lock date time offset value to apply it onto another selection"));
+  gtk_widget_set_tooltip_text(d->lock_offset, _("lock date/time offset value to apply it onto another selection"));
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
   gtk_grid_attach(grid, d->lock_offset, 2, line, 1, 1);
   g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
@@ -1619,7 +1619,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->apply_offset , 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->apply_offset), "clicked", G_CALLBACK(_apply_offset_callback), self);
 
-  d->apply_datetime = dt_ui_button_new(_("apply date time"), _("apply the same date time to selected images"), NULL);
+  d->apply_datetime = dt_ui_button_new(_("apply date/time"), _("apply the same date/time to selected images"), NULL);
   gtk_widget_set_hexpand(d->apply_datetime, FALSE);
   gtk_grid_attach(grid, d->apply_datetime , 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->apply_datetime), "clicked", G_CALLBACK(_apply_datetime_callback), self);
@@ -1703,10 +1703,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(d->map.gpx_view, "gpx_list");
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->map.gpx_view),
                               _("list of track segments in the gpx file, for each segment:"
-                                "\n- the start date time in local time (LT)"
+                                "\n- the start date/time in local time (LT)"
                                 "\n- the number of track points"
                                 "\n- the number of images to be geotagged "
-                                "based on images date time, offset and time zone"
+                                "based on images date/time, offset and time zone"
                                 "\n- more detailled time information hovering the row"));
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_track_seg_toggled), self);
@@ -1768,7 +1768,7 @@ void gui_init(dt_lib_module_t *self)
   d->map.apply_gpx_button = dt_ui_button_new(_("apply GPX file"),
                                              _("apply location from GPX file to selected images"
                                                "\neven non checked gpx tracks are used"
-                                               "\ndate time offset must be null"), NULL);
+                                               "\ndate/time offset must be null"), NULL);
   gtk_widget_set_hexpand(d->map.apply_gpx_button, TRUE);
   gtk_widget_set_sensitive(d->map.apply_gpx_button, FALSE);
   g_signal_connect(G_OBJECT(d->map.apply_gpx_button), "clicked", G_CALLBACK(_apply_gpx), self);
