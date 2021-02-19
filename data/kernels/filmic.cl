@@ -19,6 +19,8 @@
 #include "basic.cl"
 #include "noise_generator.h"
 
+#define INVERSE_SQRT_3 0.5773502691896258f
+
 // In case the OpenCL driver doesn't have a dot method
 inline float vdot(const float4 vec1, const float4 vec2)
 {
@@ -31,7 +33,8 @@ typedef enum dt_iop_filmicrgb_methods_type_t
   DT_FILMIC_METHOD_MAX_RGB = 1,
   DT_FILMIC_METHOD_LUMINANCE = 2,
   DT_FILMIC_METHOD_POWER_NORM = 3,
-  DT_FILMIC_METHOD_EUCLIDEAN_NORM = 4
+  DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2 = 5,
+  DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1 = 4,
 } dt_iop_filmicrgb_methods_type_t;
 
 typedef enum dt_iop_filmicrgb_colorscience_type_t
@@ -167,8 +170,11 @@ inline float get_pixel_norm(const float4 pixel, const dt_iop_filmicrgb_methods_t
     case DT_FILMIC_METHOD_POWER_NORM:
       return pixel_rgb_norm_power(pixel);
 
-    case DT_FILMIC_METHOD_EUCLIDEAN_NORM:
+    case DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1:
       return pixel_rgb_norm_euclidean(pixel);
+
+    case DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2:
+      return pixel_rgb_norm_euclidean(pixel) * INVERSE_SQRT_3;
 
     case DT_FILMIC_METHOD_NONE:
     default:

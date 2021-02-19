@@ -54,6 +54,7 @@
 
 
 #define NORM_MIN 1.52587890625e-05f // norm can't be < to 2^(-16)
+#define INVERSE_SQRT_3 0.5773502691896258f
 
 #define DT_GUI_CURVE_EDITOR_INSET DT_PIXEL_APPLY_DPI(1)
 
@@ -107,11 +108,12 @@ DT_MODULE_INTROSPECTION(4, dt_iop_filmicrgb_params_t)
 
 typedef enum dt_iop_filmicrgb_methods_type_t
 {
-  DT_FILMIC_METHOD_NONE = 0,          // $DESCRIPTION: "no"
-  DT_FILMIC_METHOD_MAX_RGB = 1,       // $DESCRIPTION: "max RGB"
-  DT_FILMIC_METHOD_LUMINANCE = 2,     // $DESCRIPTION: "luminance Y"
-  DT_FILMIC_METHOD_POWER_NORM = 3,    // $DESCRIPTION: "RGB power norm"
-  DT_FILMIC_METHOD_EUCLIDEAN_NORM = 4 // $DESCRIPTION: "RGB euclidean norm"
+  DT_FILMIC_METHOD_NONE = 0,              // $DESCRIPTION: "no"
+  DT_FILMIC_METHOD_MAX_RGB = 1,           // $DESCRIPTION: "max RGB"
+  DT_FILMIC_METHOD_LUMINANCE = 2,         // $DESCRIPTION: "luminance Y"
+  DT_FILMIC_METHOD_POWER_NORM = 3,        // $DESCRIPTION: "RGB power norm"
+  DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2 = 5, // $DESCRIPTION: "RGB euclidean norm"
+  DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1 = 4, // $DESCRIPTION: "RGB euclidean norm (legacy)"
 } dt_iop_filmicrgb_methods_type_t;
 
 
@@ -600,8 +602,11 @@ static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_
     case(DT_FILMIC_METHOD_POWER_NORM):
       return pixel_rgb_norm_power(pixel);
 
-    case(DT_FILMIC_METHOD_EUCLIDEAN_NORM):
+    case(DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1):
       return sqrtf(sqf(pixel[0]) + sqf(pixel[1]) + sqf(pixel[2]));
+
+    case(DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2):
+      return sqrtf(sqf(pixel[0]) + sqf(pixel[1]) + sqf(pixel[2])) * INVERSE_SQRT_3;
 
     default:
       return (work_profile)
@@ -1489,7 +1494,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
       {
         for(int i = 0; i < data->high_quality_reconstruction; i++)
         {
-          compute_ratios(reconstructed, norms, ratios, work_profile, DT_FILMIC_METHOD_EUCLIDEAN_NORM,
+          compute_ratios(reconstructed, norms, ratios, work_profile, DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1,
                          roi_out->width, roi_out->height, ch);
           success_2 = success_2
                       && reconstruct_highlights(ratios, mask, reconstructed, DT_FILMIC_RECONSTRUCT_RATIOS, ch,
@@ -2410,10 +2415,10 @@ void gui_update(dt_iop_module_t *self)
   dt_bauhaus_slider_set_soft(g->saturation, p->saturation);
   dt_bauhaus_slider_set_soft(g->balance, p->balance);
 
-  dt_bauhaus_combobox_set(g->version, p->version);
-  dt_bauhaus_combobox_set(g->preserve_color, p->preserve_color);
-  dt_bauhaus_combobox_set(g->shadows, p->shadows);
-  dt_bauhaus_combobox_set(g->highlights, p->highlights);
+  dt_bauhaus_combobox_set_from_value(g->version, p->version);
+  dt_bauhaus_combobox_set_from_value(g->preserve_color, p->preserve_color);
+  dt_bauhaus_combobox_set_from_value(g->shadows, p->shadows);
+  dt_bauhaus_combobox_set_from_value(g->highlights, p->highlights);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->auto_hardness), p->auto_hardness);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(g->custom_grey), p->custom_grey);
 
