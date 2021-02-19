@@ -764,7 +764,6 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
     y = table->view_height / 2;
   }
 
-
   const int new_size = table->view_width / newzoom;
   const double ratio = (double)new_size / (double)table->thumb_size;
 
@@ -987,12 +986,13 @@ static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, 
 static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  dt_view_manager_t *vm = darktable.view_manager;
+  const dt_view_manager_t *vm = darktable.view_manager;
   dt_view_t *view = vm->current_view;
   const int id = dt_control_get_mouse_over_id();
 
   if(id > 0 && event->button == 1
-     && (table->mode == DT_THUMBTABLE_MODE_FILEMANAGER || table->mode == DT_THUMBTABLE_MODE_ZOOM)
+     && (table->mode == DT_THUMBTABLE_MODE_FILEMANAGER
+         || table->mode == DT_THUMBTABLE_MODE_ZOOM)
      && event->type == GDK_2BUTTON_PRESS)
   {
     dt_view_manager_switch(darktable.view_manager, "darkroom");
@@ -1010,7 +1010,10 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
     gtk_widget_grab_focus(dt_ui_center(darktable.gui->ui));
   }
 
-  if(table->mode != DT_THUMBTABLE_MODE_ZOOM && id < 1 && event->button == 1 && event->type == GDK_BUTTON_PRESS)
+  if(table->mode != DT_THUMBTABLE_MODE_ZOOM
+     && id < 1
+     && event->button == 1
+     && event->type == GDK_BUTTON_PRESS)
   {
     // we click in an empty area, let's deselect all images
     dt_selection_clear(darktable.selection);
