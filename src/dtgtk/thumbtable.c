@@ -983,6 +983,31 @@ static gboolean _event_enter_notify(GtkWidget *widget, GdkEventCrossing *event, 
   return TRUE;
 }
 
+static gboolean _enter_darkroom_when_full_ready(gpointer user_data)
+{
+  dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
+  GList *l = table->list;
+  gboolean busy = FALSE;
+
+  while(l)
+  {
+    dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
+    busy = thumb->busy;
+    if(busy) break;
+    l = g_list_next(l);
+  }
+
+  if(busy)
+  {
+    return TRUE;
+  }
+  else
+  {
+    dt_view_manager_switch(darktable.view_manager, "darkroom");
+    return FALSE;
+  }
+}
+
 static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gpointer user_data)
 {
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
@@ -995,7 +1020,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
          || table->mode == DT_THUMBTABLE_MODE_ZOOM)
      && event->type == GDK_2BUTTON_PRESS)
   {
-    dt_view_manager_switch(darktable.view_manager, "darkroom");
+    g_timeout_add(150, _enter_darkroom_when_full_ready, table);
   }
   else if(id > 0 && event->button == 1 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
           && event->type == GDK_BUTTON_PRESS && strcmp(view->module_name, "map")
