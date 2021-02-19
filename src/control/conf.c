@@ -24,7 +24,6 @@
 #include "common/darktable.h"
 #include "common/file_location.h"
 #include "control/conf.h"
-#include "conf_gen.h"
 
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -378,8 +377,6 @@ static char *_sanitize_confgen(const char *name, const char *value)
 void dt_conf_init(dt_conf_t *cf, const char *filename, GSList *override_entries)
 {
   cf->x_confgen = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, _free_confgen_value);
-
-  dt_confgen_init();
 
   cf->table = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
   cf->override_entries = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, g_free);
