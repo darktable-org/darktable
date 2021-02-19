@@ -67,6 +67,8 @@
 #include "libs/lib.h"
 #include "lua/init.h"
 #include "views/view.h"
+#include "conf_gen.h"
+
 #include <errno.h>
 #include <glib.h>
 #include <glib/gstdio.h>
@@ -888,6 +890,8 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
 
   // set the interface language and prepare selection for prefs
   darktable.l10n = dt_l10n_init(init_gui);
+
+  dt_confgen_init();
 
   // we need this REALLY early so that error messages can be shown, however after gtk_disable_setlocale
   if(init_gui)
