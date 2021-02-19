@@ -165,8 +165,6 @@ const char **views(dt_lib_module_t *self)
     return v1;
   else
     return v2;
-  static const char *v[] = {"lighttable", "darkroom", NULL};
-  return v;
 }
 
 uint32_t container(dt_lib_module_t *self)
