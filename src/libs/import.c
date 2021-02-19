@@ -821,11 +821,11 @@ const struct
   char *name;
   int type;
 } _pref[] = {
-  {"ui_last/import_ignore_jpegs", "ignore_jpegs", DT_BOOL},
-  {"ui_last/import_apply_metadata", "apply_metadata", DT_BOOL},
-  {"ui_last/import_recursive", "recursive", DT_BOOL},
-  {"ui_last/ignore_exif_rating", "ignore_exif_rating", DT_BOOL},
-  {"ui_last/import_initial_rating", "rating", DT_INT}
+  {"ui_last/import_ignore_jpegs",   "ignore_jpegs",       DT_BOOL},
+  {"ui_last/import_apply_metadata", "apply_metadata",     DT_BOOL},
+  {"ui_last/import_recursive",      "recursive",          DT_BOOL},
+  {"ui_last/ignore_exif_rating",    "ignore_exif_rating", DT_BOOL},
+  {"ui_last/import_initial_rating", "rating",             DT_INT}
 };
 static const guint pref_n = G_N_ELEMENTS(_pref);
 
