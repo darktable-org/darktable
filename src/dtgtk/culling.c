@@ -1204,7 +1204,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)tl->data;
       thumb->rowid = nrow; // this may have changed
       thumb->display_focus = table->focus;
-      newlist = g_list_append(newlist, thumb);
+      newlist = g_list_prepend(newlist, thumb);
       // and we remove the thumb from the old list
       table->list = g_list_remove(table->list, thumb);
     }
@@ -1229,7 +1229,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
       }
       else if(newlist)
       {
-        dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_last(newlist)->data;
+        dt_thumbnail_t *th_model = (dt_thumbnail_t *)newlist->data;  // get most recently added
         nw = th_model->width;
         nh = th_model->height;
       }
@@ -1251,13 +1251,14 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
         if(aspect_ratio < 0.0001f) aspect_ratio = 1.0f;
       }
       thumb->aspect_ratio = aspect_ratio;
-      newlist = g_list_append(newlist, thumb);
+      newlist = g_list_prepend(newlist, thumb);
       nbnew++;
     }
     // if it's the offset, we record the imgid
     if(nrow == table->offset) table->offset_imgid = nid;
     pos++;
   }
+  newlist = g_list_reverse(newlist); // list was built in reverse order, so un-reverse it
 
   // in rare cases, we can have less images than wanted
   // although there's images before (this shouldn't happen in preview)
@@ -1371,8 +1372,6 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
   int sum_w = 0, max_h = 0, max_w = 0;
 
-  GList *slots = NULL;
-
   unsigned int total_width = 0, total_height = 0;
   int distance = 1;
   float avg_ratio = 0;
@@ -1428,6 +1427,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
   } while(per_row > 0 && per_row <= count && _absmul(tmp_slot_ratio, avg_ratio) < _absmul(slot_ratio, avg_ratio));
 
+  GList *slots = NULL;
 
   // Vertical layout
   l = table->list;
@@ -1456,9 +1456,10 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       }
     }
     // Otherwise, create a new slot with only this window
-    if(!slot_iter) slots = g_list_append(slots, g_list_append(NULL, thumb));
+    if(!slot_iter) slots = g_list_prepend(slots, g_list_append(NULL, thumb));
     l = g_list_next(l);
   }
+  slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
 
   GList *rows = g_list_append(NULL, NULL);
   {
@@ -1653,13 +1654,12 @@ void dt_culling_full_redraw(dt_culling_t *table, gboolean force)
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "DELETE FROM main.selected_images", NULL, NULL, NULL);
     // select all active images
     GList *ls = NULL;
-    l = table->list;
-    while(l)
+    for (l = table->list; l; l = g_list_next(l))
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-      ls = g_list_append(ls, GINT_TO_POINTER(thumb->imgid));
-      l = g_list_next(l);
+      ls = g_list_prepend(ls, GINT_TO_POINTER(thumb->imgid));
     }
+    ls = g_list_reverse(ls);  // list was built in reverse order, so un-reverse it
     dt_selection_select_list(darktable.selection, ls);
     g_list_free(ls);
     // reactivate selection_change event

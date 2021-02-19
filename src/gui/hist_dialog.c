@@ -65,11 +65,12 @@ static GList *_gui_hist_get_active_items(dt_history_copy_item_t *d)
       gboolean active = FALSE;
       gint num = 0;
       gtk_tree_model_get(model, &iter, DT_HIST_ITEMS_COL_ENABLED, &active, DT_HIST_ITEMS_COL_NUM, &num, -1);
-      if(active && num >= 0) result = g_list_append(result, GINT_TO_POINTER(num));
+      if(active && num >= 0)
+        result = g_list_prepend(result, GINT_TO_POINTER(num));
 
     } while(gtk_tree_model_iter_next(model, &iter));
   }
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 static void _gui_hist_set_items(dt_history_copy_item_t *d, gboolean active)
