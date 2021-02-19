@@ -1537,10 +1537,11 @@ margin: 0 2px;
 #basics-box-labels #module-enable-button,
 #basics-link
 {
-  min-height: 0.95em;
-  min-width: 0.95em;
-  margin: 0 0.75em;
+  min-height: 1.15em;
+  min-width: 1.15em;
+  margin: 0 0.5em;
   border: none;
+  padding: 0.2em 0.3em 0.3em 0.2em;
 }
 
 #basics-header-box #basics-link
