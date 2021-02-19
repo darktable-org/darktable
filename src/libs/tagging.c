@@ -286,6 +286,20 @@ static gboolean _find_tag_iter_tagname(GtkTreeModel *model, GtkTreeIter *iter,
   return found;
 }
 
+// check if tag is a leaf-tag
+static gboolean _is_tag_a_leaf(char *tagname)
+{
+  const char *complete_query = g_strconcat("SELECT COUNT(*) FROM tags WHERE name LIKE '",tagname, "|\%'", NULL);
+  sqlite3_stmt *stmt = NULL;
+  uint32_t count = 0;
+
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), complete_query, -1, &stmt, NULL);
+  if(sqlite3_step(stmt) == SQLITE_ROW) count = sqlite3_column_int(stmt, 0);
+  sqlite3_finalize(stmt);
+
+  return count>0;
+}
+
 // make the tag visible on view
 static void _show_tag_on_view(GtkTreeView *view, const char *tagname)
 {
@@ -2084,9 +2098,6 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
                        DT_LIB_TAGGING_COL_PATH, &tagname,
                        DT_LIB_TAGGING_COL_COUNT, &count, -1);
 
-    gint tag_count = 0, img_count;
-    dt_tag_count_tags_images(tagname, &tag_count, &img_count);
-    
     GtkWidget *menu, *menuitem;
     menu = gtk_menu_new();
 
@@ -2116,15 +2127,12 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
         g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_delete_tag, self);
       }
 
-      if(tag_count>1)
+      if(_is_tag_a_leaf(tagname))
       {
         menuitem = gtk_menu_item_new_with_label(_("delete node"));
         gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
         g_signal_connect(menuitem, "activate", (GCallback)_pop_menu_dictionary_delete_node, self);
       }
-
-      menuitem = gtk_separator_menu_item_new();
-      gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
 
       menuitem = gtk_menu_item_new_with_label(_("edit..."));
       gtk_menu_shell_append(GTK_MENU_SHELL(menu), menuitem);
