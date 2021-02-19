@@ -155,7 +155,7 @@ void dt_ratings_apply_on_image(const int imgid, const int rating, const gboolean
   GList *imgs = NULL;
   int new_rating = rating;
 
-  if(imgid > 0) imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+  if(imgid > 0) imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
 
   if(imgs)
   {

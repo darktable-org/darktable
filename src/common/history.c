@@ -540,7 +540,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
           if (DT_IOP_ORDER_INFO)
             fprintf(stderr,"\n  module %20s, multiprio %i",  hist->module->op, hist->module->multi_priority);
 
-          mod_list = g_list_append(mod_list, hist->module);
+          mod_list = g_list_prepend(mod_list, hist->module);
         }
       }
 
@@ -564,13 +564,15 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
          && (copy_full || !dt_history_module_skip_copy(mod_src->flags()))
         )
       {
-        mod_list = g_list_append(mod_list, mod_src);
+        mod_list = g_list_prepend(mod_list, mod_src);
       }
 
       modules_src = g_list_next(modules_src);
     }
   }
   if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
+
+  mod_list = g_list_reverse(mod_list);   // list was built in reverse order, so un-reverse it
 
   // update iop-order list to have entries for the new modules
   dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
@@ -882,13 +884,13 @@ GList *dt_history_get_items(const int32_t imgid, gboolean enabled)
       }
       item->name = g_strdup(name);
       item->op = g_strdup((gchar *)sqlite3_column_text(stmt, 1));
-      result = g_list_append(result, item);
+      result = g_list_prepend(result, item);
 
       g_free(mname);
     }
   }
   sqlite3_finalize(stmt);
-  return result;
+  return g_list_reverse(result);   // list was built in reverse order, so un-reverse it
 }
 
 char *dt_history_get_items_as_string(const int32_t imgid)
@@ -911,10 +913,11 @@ char *dt_history_get_items_as_string(const int32_t imgid)
     name = g_strconcat(dt_iop_get_localized_name((char *)sqlite3_column_text(stmt, 0)),
                        multi_name ? multi_name : "", " (",
                        (sqlite3_column_int(stmt, 1) == 0) ? onoff[0] : onoff[1], ")", NULL);
-    items = g_list_append(items, name);
+    items = g_list_prepend(items, name);
     g_free(multi_name);
   }
   sqlite3_finalize(stmt);
+  items = g_list_reverse(items); // list was built in reverse order, so un-reverse it
   char *result = dt_util_glist_to_str("\n", items);
   g_list_free_full(items, g_free);
   return result;
@@ -1303,11 +1306,11 @@ GList *dt_history_duplicate(GList *hist)
 
     if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
 
-    result = g_list_append(result, new);
+    result = g_list_prepend(result, new);
 
     h = g_list_next(h);
   }
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 #if 0

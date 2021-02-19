@@ -1080,14 +1080,14 @@ GList *dt_collection_get(const dt_collection_t *collection, int limit, gboolean 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const int imgid = sqlite3_column_int(stmt, 0);
-      list = g_list_append(list, GINT_TO_POINTER(imgid));
+      list = g_list_prepend(list, GINT_TO_POINTER(imgid));
     }
 
     sqlite3_finalize(stmt);
     g_free(q);
   }
 
-  return list;
+  return g_list_reverse(list);  // list built in reverse order, so un-reverse it
 }
 
 GList *dt_collection_get_all(const dt_collection_t *collection, int limit)
