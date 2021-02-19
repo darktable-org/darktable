@@ -1609,9 +1609,10 @@ static void _event_dnd_get(GtkWidget *widget, GdkDragContext *context, GtkSelect
           gboolean from_cache = TRUE;
           dt_image_full_path(id, pathname, sizeof(pathname), &from_cache);
           gchar *uri = g_strdup_printf("file://%s", pathname); // TODO: should we add the host?
-          images = g_list_append(images, uri);
+          images = g_list_prepend(images, uri);
           l = g_list_next(l);
         }
+        images = g_list_reverse(images); // list was built in reverse order, so un-reverse it
         gchar *uri_list = dt_util_glist_to_str("\r\n", images);
         g_list_free_full(images, g_free);
         gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data), _BYTE,
@@ -1966,7 +1967,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
           gtk_layout_move(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
         }
         dt_thumbnail_resize(thumb, table->thumb_size, table->thumb_size, FALSE, IMG_TO_FIT);
-        newlist = g_list_append(newlist, thumb);
+        newlist = g_list_prepend(newlist, thumb);
         // and we remove the thumb from the old list
         table->list = g_list_remove(table->list, thumb);
       }
@@ -1983,7 +1984,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
         }
         thumb->x = posx;
         thumb->y = posy;
-        newlist = g_list_append(newlist, thumb);
+        newlist = g_list_prepend(newlist, thumb);
         gtk_widget_set_margin_start(thumb->w_image_box, old_margin_start);
         gtk_widget_set_margin_top(thumb->w_image_box, old_margin_top);
         gtk_layout_put(GTK_LAYOUT(table->widget), thumb->w_main, posx, posy);
@@ -1996,7 +1997,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
 
     // now we cleanup all remaining thumbs from old table->list and set it again
     g_list_free_full(table->list, _list_remove_thumb);
-    table->list = newlist;
+    table->list = g_list_reverse(newlist);  // list was built in reverse order, so un-reverse it
 
     _pos_compute_area(table);
 
