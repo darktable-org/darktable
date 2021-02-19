@@ -45,7 +45,7 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
 
   // then duplicate the GList *points
 
-  new_form->points = NULL;
+  GList* newpoints = NULL;
 
   if (form->points)
   {
@@ -71,11 +71,12 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
       {
         void *item = malloc(size_item);
         memcpy(item, pt->data, size_item);
-        new_form->points = g_list_append(new_form->points, item);
+        newpoints = g_list_prepend(newpoints, item);
         pt = g_list_next(pt);
       }
     }
   }
+  new_form->points = g_list_reverse(newpoints);  // list was built in reverse order, so un-reverse it
 
   return new_form;
 }

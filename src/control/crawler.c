@@ -121,7 +121,7 @@ GList *dt_control_crawler_run()
         item->image_path = g_strdup(image_path);
         item->xmp_path = g_strdup(xmp_path);
 
-        result = g_list_append(result, item);
+        result = g_list_prepend(result, item);
         dt_print(DT_DEBUG_CONTROL, "[crawler] `%s' (id: %d) is a newer xmp file.\n", xmp_path, id);
       }
       // older timestamps are the case for all images after the db upgrade. better not report these
@@ -192,7 +192,7 @@ GList *dt_control_crawler_run()
   sqlite3_finalize(stmt);
   sqlite3_finalize(inner_stmt);
 
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 

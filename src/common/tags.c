@@ -575,7 +575,7 @@ gboolean dt_tag_detach(const guint tagid, const gint imgid, const gboolean undo_
   if(imgid == -1)
     imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
   else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
 
   const gboolean res = dt_tag_detach_images(tagid, imgs, undo_on);
@@ -984,14 +984,14 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
     dt_tag_t *t = (dt_tag_t *)taglist->data;
     if (export_private_tags || !(t->flags & DT_TF_PRIVATE))
     {
-      tags = g_list_append(tags, t->tag);
+      tags = g_list_prepend(tags, t->tag);
     }
     taglist = g_list_next(taglist);
   }
 
   dt_tag_free_result(&taglist);
 
-  return tags;
+  return g_list_reverse(tags);  // list was built in reverse order, so un-reverse it
 }
 
 gboolean dt_is_tag_attached(const guint tagid, const gint imgid)
@@ -1024,11 +1024,11 @@ GList *dt_tag_get_images(const gint tagid)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     int id = sqlite3_column_int(stmt, 0);
-    result = g_list_append(result, GINT_TO_POINTER(id));
+    result = g_list_prepend(result, GINT_TO_POINTER(id));
   }
   sqlite3_finalize(stmt);
 
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
@@ -1057,14 +1057,14 @@ GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       int id = sqlite3_column_int(stmt, 0);
-      result = g_list_append(result, GINT_TO_POINTER(id));
+      result = g_list_prepend(result, GINT_TO_POINTER(id));
     }
 
     sqlite3_finalize(stmt);
     g_free(query);
     g_free(images);
   }
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 uint32_t dt_tag_get_suggestions(GList **result)
