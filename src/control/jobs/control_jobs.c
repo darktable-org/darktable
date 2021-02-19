@@ -1433,7 +1433,8 @@ static void dt_control_gpx_apply_job_cleanup(void *p)
   dt_control_image_enumerator_cleanup(params);
 }
 
-static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t filmid, const gchar *tz)
+static dt_job_t *_control_gpx_apply_job_create(const gchar *filename, int32_t filmid,
+                                               const gchar *tz, GList *imgs)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_gpx_apply_job_run, "gpx apply");
   if(!job) return NULL;
@@ -1447,9 +1448,10 @@ static dt_job_t *dt_control_gpx_apply_job_create(const gchar *filename, int32_t 
 
   if(filmid != -1)
     dt_control_image_enumerator_job_film_init(params, filmid);
-  else
+  else if(!imgs)
     params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
-
+  else
+    params->index = imgs;
   dt_control_gpx_apply_t *data = params->data;
   data->filename = g_strdup(filename);
   data->tz = g_strdup(tz);
@@ -1464,10 +1466,10 @@ void dt_control_merge_hdr()
                                                           NULL, PROGRESS_CANCELLABLE, TRUE));
 }
 
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz)
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz, GList *imgs)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_gpx_apply_job_create(filename, filmid, tz));
+                     _control_gpx_apply_job_create(filename, filmid, tz, imgs));
 }
 
 void dt_control_duplicate_images()
@@ -1992,7 +1994,7 @@ static void dt_control_datetime_job_cleanup(void *p)
   dt_control_image_enumerator_cleanup(params);
 }
 
-static dt_job_t *dt_control_datetime_job_create(const long int offset, const char *datetime, int imgid)
+static dt_job_t *dt_control_datetime_job_create(const long int offset, const char *datetime, GList *imgs)
 {
   dt_job_t *job = dt_control_job_create(&dt_control_datetime_job_run, "time offset");
   if(!job) return NULL;
@@ -2005,8 +2007,8 @@ static dt_job_t *dt_control_datetime_job_create(const long int offset, const cha
   dt_control_job_add_progress(job, _("time offset"), FALSE);
   dt_control_job_set_params(job, params, dt_control_datetime_job_cleanup);
 
-  if(imgid != -1)
-    params->index = g_list_append(params->index, GINT_TO_POINTER(imgid));
+  if(imgs)
+    params->index = imgs;
   else
     params->index = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
 
@@ -2020,10 +2022,10 @@ static dt_job_t *dt_control_datetime_job_create(const long int offset, const cha
   return job;
 }
 
-void dt_control_datetime(const long int offset, const char *datetime, int imgid)
+void dt_control_datetime(const long int offset, const char *datetime, GList *imgs)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     dt_control_datetime_job_create(offset, datetime, imgid));
+                     dt_control_datetime_job_create(offset, datetime, imgs));
 }
 
 void dt_control_write_sidecar_files()
