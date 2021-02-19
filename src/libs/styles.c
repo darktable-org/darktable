@@ -232,10 +232,10 @@ GList* _get_selected_style_names(GList* selected_styles, GtkTreeModel *model)
     gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
     gtk_tree_model_get_value(model, &iter, DT_STYLES_COL_FULLNAME, &value);
     if(G_VALUE_HOLDS_STRING(&value))
-      style_names = g_list_append(style_names, g_strdup(g_value_get_string(&value)));
+      style_names = g_list_prepend(style_names, g_strdup(g_value_get_string(&value)));
     g_value_unset(&value);
   }
-  return style_names;
+  return g_list_reverse(style_names); // list was built in reverse order, so un-reverse it
 }
 
 static void apply_clicked(GtkWidget *w, gpointer user_data)

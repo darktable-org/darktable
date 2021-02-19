@@ -97,8 +97,9 @@ static void _group_helper_function(void)
     int id = sqlite3_column_int(stmt, 0);
     if(new_group_id == -1) new_group_id = id;
     dt_grouping_add_to_group(new_group_id, id);
-    imgs = g_list_append(imgs, GINT_TO_POINTER(id));
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
   }
+  imgs = g_list_reverse(imgs); // list was built in reverse order, so un-reverse it
   sqlite3_finalize(stmt);
   if(darktable.gui->grouping)
     darktable.gui->expanded_group_id = new_group_id;
@@ -122,14 +123,14 @@ static void _ungroup_helper_function(void)
     if(new_group_id != -1)
     {
       // new_group_id == -1 if image to be ungrouped was a single image and no change to any group was made
-      imgs = g_list_append(imgs, GINT_TO_POINTER(id));
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
     }
   }
   sqlite3_finalize(stmt);
   if(imgs != NULL)
   {
     darktable.gui->expanded_group_id = -1;
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_reverse(imgs));
     dt_control_queue_redraw_center();
   }
 }
