@@ -420,7 +420,7 @@ static bool _exif_decode_xmp_data(dt_image_t *img, Exiv2::XmpData &xmpData, int 
 {
   // as this can be called several times during the image lifetime, clean up first
   GList *imgs = NULL;
-  imgs = g_list_append(imgs, GINT_TO_POINTER(img->id));
+  imgs = g_list_prepend(imgs, GINT_TO_POINTER(img->id));
   try
   {
     Exiv2::XmpData::iterator pos;
@@ -1345,7 +1345,7 @@ void dt_exif_apply_default_metadata(dt_image_t *img)
     if(img->id > 0 && str != NULL && str[0] != '\0')
     {
       GList *imgs = NULL;
-      imgs = g_list_append(imgs, GINT_TO_POINTER(img->id));
+      imgs = g_list_prepend(imgs, GINT_TO_POINTER(img->id));
       dt_tag_attach_string_list(str, imgs, FALSE);
       g_list_free(imgs);
     }

@@ -382,7 +382,7 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
           dt_medium_info_t *media = (dt_medium_info_t*)malloc(sizeof(dt_medium_info_t));
           g_strlcpy(media->name, choice->choice, MAX_NAME);
           g_strlcpy(media->common_name, choice->text, MAX_NAME);
-          result = g_list_append (result, media);
+          result = g_list_prepend (result, media);
 
           dt_print(DT_DEBUG_PRINT, "[print] new media %2d (%s) (%s)\n", k, media->name, media->common_name);
           choice++;
@@ -393,7 +393,7 @@ GList *dt_get_media_type(const dt_printer_info_t *printer)
   ppdClose(ppd);
   g_unlink(PPDFile);
 
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 dt_medium_info_t *dt_get_medium(GList *media, const char *name)
