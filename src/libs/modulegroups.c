@@ -708,6 +708,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
     gchar *tt = dt_util_dstrcat(NULL, _("go to the full version of the %s module"), item->module->name());
     gtk_widget_set_tooltip_text(wbt, tt);
     gtk_widget_set_name(wbt, "basics-link");
+    gtk_widget_set_valign(wbt, GTK_ALIGN_CENTER);
     g_free(tt);
     g_signal_connect(G_OBJECT(wbt), "button-press-event", G_CALLBACK(_basics_goto_module), item->module);
 
@@ -717,6 +718,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       GtkWidget *btn
           = dtgtk_togglebutton_new(dtgtk_cairo_paint_switch, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, item->module);
       gtk_widget_set_name(btn, "module-enable-button");
+      gtk_widget_set_valign(btn, GTK_ALIGN_CENTER);
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(btn),
                                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(item->module->off)));
       g_signal_connect(G_OBJECT(btn), "toggled", G_CALLBACK(_basics_on_off_callback), item);
