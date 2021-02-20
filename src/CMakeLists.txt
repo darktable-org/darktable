@@ -111,6 +111,7 @@ FILE(GLOB SOURCE_FILES
   "develop/tiling.c"
   "common/dwt.c"
   "common/heal.c"
+  "develop/masks/circle.c"
   "develop/masks/masks.c"
   "develop/format.c"
   "dtgtk/button.c"
