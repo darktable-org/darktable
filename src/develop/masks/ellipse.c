@@ -351,15 +351,15 @@ static int _ellipse_get_points_border(dt_develop_t *dev, struct dt_masks_form_t 
   else
     x = ellipse->center[0], y = ellipse->center[1];
   a = ellipse->radius[0], b = ellipse->radius[1];
-  if(form->functions->get_points(dev, x, y, a, b, ellipse->rotation, points, points_count))
+  if(_ellipse_get_points(dev, x, y, a, b, ellipse->rotation, points, points_count))
   {
     if(border)
     {
       const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
-      return form->functions->get_points(dev, x, y,
-                                         (prop ? a * (1.0f + ellipse->border) : a + ellipse->border),
-                                         (prop ? b * (1.0f + ellipse->border) : b + ellipse->border),
-                                         ellipse->rotation, border, border_count);
+      return _ellipse_get_points(dev, x, y,
+                                 (prop ? a * (1.0f + ellipse->border) : a + ellipse->border),
+                                 (prop ? b * (1.0f + ellipse->border) : b + ellipse->border),
+                                 ellipse->rotation, border, border_count);
     }
     else
       return 1;
@@ -1447,29 +1447,42 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   }
 }
 
-static int _ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                    dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static void _bounding_box(const float *const points, int num_points, int *width, int *height, int *posx, int *posy)
 {
-  // we get the ellipse values
-  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
-  const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
+  // search for min/max X and Y coordinates
+  float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
+  for(int i = 1; i < num_points; i++) // skip point[0], which is circle's center
+  {
+    xmin = fminf(points[i * 2], xmin);
+    xmax = fmaxf(points[i * 2], xmax);
+    ymin = fminf(points[i * 2 + 1], ymin);
+    ymax = fmaxf(points[i * 2 + 1], ymax);
+  }
+  // set the min/max values we found
+  *posx = xmin;
+  *posy = ymin;
+  *width = (xmax - xmin);
+  *height = (ymax - ymin);
+}
 
-  const float total[2] = { (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wd, ht),
-                           (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wd, ht) };
-  const float v1 = ((ellipse->rotation) / 180.0f) * M_PI;
-  const float v2 = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
+static float *const _ellipse_points_to_transform(const float center_x, const float center_y, const float dim1, const float dim2,
+                                                 const float rotation, const float wd, const float ht, size_t *point_count)
+{
+
+  const float v1 = ((rotation) / 180.0f) * M_PI;
+  const float v2 = ((rotation - 90.0f) / 180.0f) * M_PI;
   float a = 0.0f, b = 0.0f, v = 0.0f;
 
-  if(total[0] >= total[1])
+  if(dim1 >= dim2)
   {
-    a = total[0];
-    b = total[1];
+    a = dim1;
+    b = dim2;
     v = v1;
   }
   else
   {
-    a = total[1];
-    b = total[0];
+    a = dim2;
+    b = dim1;
     v = v2;
   }
 
@@ -1481,54 +1494,61 @@ static int _ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   const int l = (int)(M_PI * (a + b)
                       * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
 
-  // buffer allocations
+  // buffer allocation
   float *points = dt_alloc_align_float((size_t) 2 * (l + 5));
   if(points == NULL)
-    return 0;
+    return NULL;
+  *point_count = l + 5;
 
-  // now we set the points
-  const float x = points[0] = ellipse->center[0] * wd;
-  const float y = points[1] = ellipse->center[1] * ht;
-
+  // now we set the points - first the center
+  const float x = points[0] = center_x * wd;
+  const float y = points[1] = center_y * ht;
+  // then the control node points (ends of semimajor/semiminor axes)
   points[2] = x + a * cosf(v);
   points[3] = y + a * sinf(v);
   points[4] = x - a * cosf(v);
   points[5] = y - a * sinf(v);
-
   points[6] = x + b * cosf(v - M_PI / 2.0f);
   points[7] = y + b * sinf(v - M_PI / 2.0f);
   points[8] = x - b * cosf(v - M_PI / 2.0f);
   points[9] = y - b * sinf(v - M_PI / 2.0f);
-
-  for(int i = 1; i < l + 5; i++)
+  // and finally the regularly-spaced points on the circumference
+  for(int i = 5; i < l + 5; i++)
   {
     float alpha = (i - 5) * 2.0 * M_PI / (float)l;
-    points[i * 2] = points[0] + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
-    points[i * 2 + 1] = points[1] + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
+    points[i * 2] = x + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
+    points[i * 2 + 1] = x + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
   }
+  return points;
+}
+
+static int _ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+                                    dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+{
+  // we get the ellipse values
+  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
+  const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
+  const float total[2] = { (prop ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wd, ht),
+                           (prop ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wd, ht) };
+
+  // next we compute the points to be transformed
+  size_t point_count = 0;
+  float *const restrict points
+    = _ellipse_points_to_transform(form->source[0], form->source[1], total[0], total[1], ellipse->rotation, wd, ht, &point_count);
+  if (!points)
+    return 0;
 
   // and we transform them with all distorted modules
-  if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, l + 5))
+  if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, point_count))
   {
     dt_free_align(points);
     return 0;
   }
 
-  // now we search min and max
-  float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
-  for(int i = 1; i < l + 5; i++)
-  {
-    xmin = fminf(points[i * 2], xmin);
-    xmax = fmaxf(points[i * 2], xmax);
-    ymin = fminf(points[i * 2 + 1], ymin);
-    ymax = fmaxf(points[i * 2 + 1], ymax);
-  }
+  // finally, find the extreme left/right and top/bottom points
+  _bounding_box(points, point_count, width, height, posx, posy);
   dt_free_align(points);
-  // and we set values
-  *posx = xmin;
-  *posy = ymin;
-  *width = (xmax - xmin);
-  *height = (ymax - ymin);
   return 1;
 }
 
@@ -1538,87 +1558,28 @@ static int _ellipse_get_area(const dt_iop_module_t *const module, const dt_dev_p
 {
   // we get the ellipse values
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
-
   const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
+  const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
+  const float total[2] = { (prop ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wd, ht),
+                           (prop ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wd, ht) };
 
-  const float total[2] = { (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wd, ht),
-                           (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? ellipse->radius[1] * (1.0f + ellipse->border) : ellipse->radius[1] + ellipse->border) * MIN(wd, ht) };
-  const float v1 = ((ellipse->rotation) / 180.0f) * M_PI;
-  const float v2 = ((ellipse->rotation - 90.0f) / 180.0f) * M_PI;
-  float a = 0.0f, b = 0.0f, v = 0.0f;
-
-  if(total[0] >= total[1])
-  {
-    a = total[0];
-    b = total[1];
-    v = v1;
-  }
-  else
-  {
-    a = total[1];
-    b = total[0];
-    v = v2;
-  }
-
-  const float sinv = sinf(v);
-  const float cosv = cosf(v);
-
-  // how many points do we need ?
-  const float lambda = (a - b) / (a + b);
-  const int l = (int)(M_PI * (a + b)
-                      * (1.0f + (3.0f * lambda * lambda) / (10.0f + sqrtf(4.0f - 3.0f * lambda * lambda))));
-
-  // buffer allocations
-  float *points = dt_alloc_align_float((size_t)2 * (l + 5));
-  if(points == NULL)
+  // next we compute the points to be transformed
+  size_t point_count = 0;
+  float *const restrict points
+    = _ellipse_points_to_transform(ellipse->center[0], ellipse->center[1], total[0], total[1], ellipse->rotation, wd, ht, &point_count);
+  if (!points)
     return 0;
 
-  // now we set the points
-  const float x = points[0] = ellipse->center[0] * wd;
-  const float y = points[1] = ellipse->center[1] * ht;
-
-  points[2] = x + a * cosf(v);
-  points[3] = y + a * sinf(v);
-  points[4] = x - a * cosf(v);
-  points[5] = y - a * sinf(v);
-
-  points[6] = x + b * cosf(v - M_PI / 2.0f);
-  points[7] = y + b * sinf(v - M_PI / 2.0f);
-  points[8] = x - b * cosf(v - M_PI / 2.0f);
-  points[9] = y - b * sinf(v - M_PI / 2.0f);
-
-  for(int i = 5; i < l + 5; i++)
-  {
-    float alpha = (i - 5) * 2.0 * M_PI / (float)l;
-    points[i * 2] = x + a * cosf(alpha) * cosv - b * sinf(alpha) * sinv;
-    points[i * 2 + 1] = y + a * cosf(alpha) * sinv + b * sinf(alpha) * cosv;
-  }
-
   // and we transform them with all distorted modules
-  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, l + 5))
+  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, point_count))
   {
     dt_free_align(points);
     return 0;
   }
 
-  // now we search min and max
-  float xmin, xmax, ymin, ymax;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
-  for(int i = 5; i < l + 5; i++)
-  {
-    xmin = fminf(points[i * 2], xmin);
-    xmax = fmaxf(points[i * 2], xmax);
-    ymin = fminf(points[i * 2 + 1], ymin);
-    ymax = fmaxf(points[i * 2 + 1], ymax);
-  }
+  // finally, find the extreme left/right and top/bottom points
+  _bounding_box(points, point_count, width, height, posx, posy);
   dt_free_align(points);
-
-  // and we set values
-  *posx = xmin;
-  *posy = ymin;
-  *width = (xmax - xmin);
-  *height = (ymax - ymin);
   return 1;
 }
 
