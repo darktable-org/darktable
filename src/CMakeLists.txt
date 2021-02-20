@@ -116,6 +116,7 @@ FILE(GLOB SOURCE_FILES
   "develop/masks/ellipse.c"
   "develop/masks/gradient.c"
   "develop/masks/masks.c"
+  "develop/masks/path.c"
   "develop/format.c"
   "dtgtk/button.c"
   "dtgtk/culling.c"
