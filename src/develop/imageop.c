@@ -1350,8 +1350,9 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
                                        const char* const trouble_tooltip,
                                        const char *const stderr_message)
 {
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
-                                module, trouble_msg, trouble_tooltip, stderr_message);
+  if(!dt_iop_is_hidden(module) && module->gui_data)
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
+                                  module, trouble_msg, trouble_tooltip, stderr_message);
 }
 
 static void _iop_gui_update_label(dt_iop_module_t *module)
