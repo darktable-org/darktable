@@ -162,11 +162,14 @@ typedef struct dt_masks_point_group_t
 typedef struct dt_masks_functions_t
 {
   int point_struct_size;   // sizeof(struct dt_masks_point_*_t)
-  GSList *(*setup_mouse_actions)(struct dt_masks_form_t *form);
-  void (*set_form_name)(struct dt_masks_form_t *form);
-  void (*set_hint_message)(struct dt_masks_form_gui_t *gui, struct dt_masks_form_t *form,
-                           char *msgbuf, size_t msgbuf_len);
+  void (*sanitize_config)(dt_masks_type_t type_flags);
+  GSList *(*setup_mouse_actions)(const struct dt_masks_form_t *const form);
+  void (*set_form_name)(struct dt_masks_form_t *const form, const size_t nb);
+  void (*set_hint_message)(const struct dt_masks_form_gui_t *const gui, const struct dt_masks_form_t *const form,
+                           const int opacity, char *const __restrict__ msgbuf, const size_t msgbuf_len);
   void (*duplicate_points)(struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
+  int (*get_points)(dt_develop_t *dev, float x, float y, float radius_a, float radisu_b, float rotation,
+                    float **points, int *points_count);
   int (*get_points_border)(dt_develop_t *dev, struct dt_masks_form_t *form, float **points, int *points_count,
                            float **border, int *border_count, int source);
   int (*get_mask)(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, struct dt_masks_form_t *form,
@@ -186,9 +189,8 @@ typedef struct dt_masks_functions_t
                         struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
   int (*button_released)(struct dt_iop_module_t *module, float pzx, float pzy, int which, uint32_t state,
                          struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
-  void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index);
+  void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index, int num_points);
   //TODO:
-  //sanitize_config
   //read_history_item
   //write_history_item
 } dt_masks_functions_t;
@@ -283,6 +285,9 @@ typedef struct dt_masks_form_gui_t
   int formid;
   uint64_t pipe_hash;
 } dt_masks_form_gui_t;
+
+/** the shape-specific function tables */
+extern dt_masks_functions_t dt_masks_functions_ellipse;
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
