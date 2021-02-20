@@ -167,11 +167,12 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
 
   int opacity = 100;
 
+  const dt_masks_form_t *sel = form;
   if((ftype & DT_MASKS_GROUP) && (gui->group_edited >= 0))
   {
     // we get the selected form
     const dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
-    const dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(!sel) return;
 
     opacity = _get_opacity(gui, form);
@@ -181,9 +182,9 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
     opacity = (int)(dt_conf_get_float("plugins/darkroom/masks/opacity") * 100);
   }
 
-  if(form->functions)
+  if(sel->functions)
   {
-    form->functions->set_hint_message(gui, form, opacity, msg, sizeof(msg));
+    sel->functions->set_hint_message(gui, form, opacity, msg, sizeof(msg));
   }
 
   dt_control_hinter_message(darktable.control, msg);
@@ -1334,10 +1335,10 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
     dt_masks_select_form(module, sel);
   }
 
-  if(form->functions)
-    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_GROUP)
+  if(form->type & DT_MASKS_GROUP)
     return dt_group_events_button_pressed(module, pzx, pzy, pressure, which, type, state, form, gui);
+  else if(form->functions)
+    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
 
   return 0;
 }
