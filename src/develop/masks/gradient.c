@@ -15,12 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
+#include "develop/openmp_maths.h"
 
 
 static inline void _gradient_point_transform(const float xref, const float yref, const float x, const float y,
@@ -31,8 +34,8 @@ static inline void _gradient_point_transform(const float xref, const float yref,
 }
 
 
-static void dt_gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                                     int *inside, int *inside_border, int *near, int *inside_source)
+void dt_gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                              int *inside, int *inside_border, int *near, int *inside_source)
 {
   if(!gui) return;
 
