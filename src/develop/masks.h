@@ -194,6 +194,7 @@ typedef struct dt_masks_functions_t
                          struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
   void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index, int num_points);
   //TODO:
+  //get_distance
   //read_history_item
   //write_history_item
 } dt_masks_functions_t;
@@ -290,7 +291,9 @@ typedef struct dt_masks_form_gui_t
 } dt_masks_form_gui_t;
 
 /** the shape-specific function tables */
+extern dt_masks_functions_t dt_masks_functions_circle;
 extern dt_masks_functions_t dt_masks_functions_ellipse;
+extern dt_masks_functions_t dt_masks_functions_brush;
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
