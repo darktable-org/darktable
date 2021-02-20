@@ -111,6 +111,7 @@ FILE(GLOB SOURCE_FILES
   "develop/tiling.c"
   "common/dwt.c"
   "common/heal.c"
+  "develop/masks/brush.c"
   "develop/masks/circle.c"
   "develop/masks/ellipse.c"
   "develop/masks/gradient.c"
