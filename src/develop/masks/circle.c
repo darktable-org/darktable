@@ -774,9 +774,11 @@ static void _bounding_box(const float *const points, int num_points, int *width,
   *height = (ymax - ymin);
 }
 
-static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius, float **points,
-                              int *points_count)
+static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius, float radius2, float rotation,
+                              float **points, int *points_count)
 {
+  (void)radius2; // keep compiler from complaining about unused arg
+  (void)rotation;
   float wd = dev->preview_pipe->iwidth;
   float ht = dev->preview_pipe->iheight;
 
