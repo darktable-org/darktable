@@ -15,8 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/imagebuf.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -878,9 +880,8 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
 }
 
 /** get the distance between point (x,y) and the brush */
-static void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                                  int corner_count, int *inside, int *inside_border, int *near,
-                                  int *inside_source)
+void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
+                           int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
 {
   // initialise returned values
   *inside_source = 0;
@@ -1241,12 +1242,12 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     }
     else if(gui->source_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
-      dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
-      if(!gpt) return 0;
+      dt_masks_form_gui_points_t *guipt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+      if(!guipt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
-      gui->dx = gpt->source[2] - gui->posx;
-      gui->dy = gpt->source[3] - gui->posy;
+      gui->dx = guipt->source[2] - gui->posx;
+      gui->dy = guipt->source[3] - gui->posy;
       return 1;
     }
     else if(gui->form_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -1395,12 +1396,12 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
         GList *forms = g_list_first(darktable.develop->form_visible->points);
         while(forms)
         {
-          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
-          if(gpt->formid == form->formid)
+          dt_masks_point_group_t *guipt = (dt_masks_point_group_t *)forms->data;
+          if(guipt->formid == form->formid)
           {
             darktable.develop->form_visible->points
-                = g_list_remove(darktable.develop->form_visible->points, gpt);
-            free(gpt);
+                = g_list_remove(darktable.develop->form_visible->points, guipt);
+            free(guipt);
             break;
           }
           forms = g_list_next(forms);
@@ -1463,12 +1464,12 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       GList *forms = g_list_first(darktable.develop->form_visible->points);
       while(forms)
       {
-        dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
-        if(gpt->formid == form->formid)
+        dt_masks_point_group_t *guipt = (dt_masks_point_group_t *)forms->data;
+        if(guipt->formid == form->formid)
         {
           darktable.develop->form_visible->points
-              = g_list_remove(darktable.develop->form_visible->points, gpt);
-          free(gpt);
+              = g_list_remove(darktable.develop->form_visible->points, guipt);
+          free(guipt);
           break;
         }
         forms = g_list_next(forms);
