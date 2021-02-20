@@ -976,7 +976,7 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, fl
                                     int *points_count, float **border, int *border_count, int source)
 {
   return _brush_get_pts_border(dev, form, 0.0f, DT_DEV_TRANSFORM_DIR_ALL, dev->preview_pipe, points, points_count, border,
-                                  border_count, NULL, NULL, source);
+                               border_count, NULL, NULL, source);
 }
 
 /** find relative position within a brush segment that is closest to the point given by coordinates x and y;
@@ -2498,27 +2498,12 @@ static void _brush_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_fo
   }
 }
 
-static int _brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                  dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static void _brush_bounding_box_raw(const float *const points, const float *const border, const int nb_corner, const int num_points, const int num_borders,
+                                float *x_min, float *x_max, float *y_min, float *y_max)
 {
-  if(!module) return 0;
-  // we get buffers for all points
-  float *points = NULL, *border = NULL;
-  int points_count, border_count;
-  if(!_brush_get_pts_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
-                            &border, &border_count, NULL, NULL, 1))
-  {
-    dt_free_align(points);
-    dt_free_align(border);
-    return 0;
-  }
-
   // now we want to find the area, so we search min/max points
-  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
-  const guint nb_corner = g_list_length(form->points);
-  for(int i = nb_corner * 3; i < border_count; i++)
+  float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
+  for(int i = nb_corner * 3; i < num_borders; i++)
   {
     // we look at the borders
     const float xx = border[i * 2];
@@ -2528,7 +2513,7 @@ static int _brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
     ymin = fminf(yy, ymin);
     ymax = fmaxf(yy, ymax);
   }
-  for(int i = nb_corner * 3; i < points_count; i++)
+  for(int i = nb_corner * 3; i < num_points; i++)
   {
     // we look at the brush too
     const float xx = points[i * 2];
@@ -2538,65 +2523,56 @@ static int _brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_
     ymin = fminf(yy, ymin);
     ymax = fmaxf(yy, ymax);
   }
+  *x_min = xmin;
+  *x_max = xmax;
+  *y_min = ymin;
+  *y_max = ymax;
+}
 
-  dt_free_align(points);
-  dt_free_align(border);
+static void _brush_bounding_box(const float *const points, const float *const border, const int nb_corner, const int num_points, const int num_borders,
+                                int *width, int *height, int *posx, int *posy)
+{
+  float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
+  _brush_bounding_box_raw(points, border, nb_corner, num_points, num_borders, &xmin, &xmax, &ymin, &ymax);
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
   *posx = xmin - 2;
   *posy = ymin - 2;
+}
+
+static int _get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                     dt_masks_form_t *const form, int *width, int *height, int *posx, int *posy, int get_source)
+{
+  if(!module) return 0;
+  // we get buffers for all points
+  float *points = NULL, *border = NULL;
+  int points_count, border_count;
+  if(!_brush_get_pts_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
+                            &border, &border_count, NULL, NULL, get_source))
+  {
+    dt_free_align(points);
+    dt_free_align(border);
+    return 0;
+  }
+
+  const guint nb_corner = g_list_length(form->points);
+  _brush_bounding_box(points, border, nb_corner, points_count, border_count, width, height, posx, posy);
+
+  dt_free_align(points);
+  dt_free_align(border);
   return 1;
+}
+
+static int _brush_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+                                  dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+{
+  return _get_area(module, piece, form, width, height, posx, posy, 1);
 }
 
 static int _brush_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
                            dt_masks_form_t *const form, int *width, int *height, int *posx, int *posy)
 {
-  if(!module) return 0;
-  // we get buffers for all points
-  float *points = NULL, *border = NULL;
-  int points_count, border_count;
-  if(!_brush_get_pts_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
-                            &border, &border_count, NULL, NULL, 0))
-  {
-    dt_free_align(points);
-    dt_free_align(border);
-    return 0;
-  }
-
-  // now we want to find the area, so we search min/max points
-  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
-  const guint nb_corner = g_list_length(form->points);
-  for(int i = nb_corner * 3; i < border_count; i++)
-  {
-    // we look at the borders
-    const float xx = border[i * 2];
-    const float yy = border[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
-  for(int i = nb_corner * 3; i < points_count; i++)
-  {
-    // we look at the brush too
-    const float xx = points[i * 2];
-    const float yy = points[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
-
-  dt_free_align(points);
-  dt_free_align(border);
-
-  *height = ymax - ymin + 4;
-  *width = xmax - xmin + 4;
-  *posx = xmin - 2;
-  *posy = ymin - 2;
-  return 1;
+  return _get_area(module, piece, form, width, height, posx, posy, 0);
 }
 
 /** we write a falloff segment */
@@ -2654,36 +2630,8 @@ static int _brush_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
     start = start2 = dt_get_wtime();
   }
 
-  // now we want to find the area, so we search min/max points
-  float xmin, xmax, ymin, ymax;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
   const guint nb_corner = g_list_length(form->points);
-  for(int i = nb_corner * 3; i < border_count; i++)
-  {
-    // we look at the borders
-    const float xx = border[i * 2];
-    const float yy = border[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
-  for(int i = nb_corner * 3; i < points_count; i++)
-  {
-    // we look at the brush too
-    const float xx = points[i * 2];
-    const float yy = points[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
-
-  *height = ymax - ymin + 4;
-  *width = xmax - xmin + 4;
-  *posx = xmin - 2;
-  *posy = ymin - 2;
+  _brush_bounding_box(points, border, nb_corner, points_count, border_count, width, height, posx, posy);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
@@ -2824,31 +2772,9 @@ static int _brush_get_mask_roi(const dt_iop_module_t *const module, const dt_dev
     points[2 * i + 1] = yy * scale - py;
   }
 
-  // now we want to find the area, so we search min/max points
-  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
 
-  for(int i = nb_corner * 3; i < border_count; i++)
-  {
-    // we look at the borders
-    const float xx = border[i * 2];
-    const float yy = border[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
-  for(int i = nb_corner * 3; i < points_count; i++)
-  {
-    // we look at the brush too
-    const float xx = points[i * 2];
-    const float yy = points[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
+  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
+  _brush_bounding_box_raw(points, border, nb_corner, points_count, border_count, &xmin, &xmax, &ymin, &ymax);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
     dt_print(DT_DEBUG_MASKS, "[masks %s] brush_fill min max took %0.04f sec\n", form->name,
