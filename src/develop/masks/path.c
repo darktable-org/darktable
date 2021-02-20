@@ -776,8 +776,8 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
 }
 
 /** get the distance between point (x,y) and the path */
-void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                          int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
+static void _path_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                               int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
 {
   // initialise returned values
   *inside_source = 0;
@@ -1832,7 +1832,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
 
   // are we inside the form or the borders or near a segment ???
   int in = 0, inb = 0, near = 0, ins = 0;
-  dt_path_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins);
+  _path_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins);
   gui->seg_selected = near;
   if(near < 0)
   {
@@ -3090,6 +3090,7 @@ dt_masks_functions_t dt_masks_functions_path = {
   .set_form_name = _path_set_form_name,
   .set_hint_message = _path_set_hint_message,
   .duplicate_points = _path_duplicate_points,
+  .get_distance = _path_get_distance,
   .get_points_border = _path_get_points_border,
   .get_mask = _path_get_mask,
   .get_mask_roi = _path_get_mask_roi,

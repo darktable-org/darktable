@@ -880,8 +880,8 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
 }
 
 /** get the distance between point (x,y) and the brush */
-void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                           int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
+static void _brush_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                                int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
 {
   // initialise returned values
   *inside_source = 0;
@@ -2065,7 +2065,7 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
 
   // are we inside the form or the borders or near a segment ???
   int in, inb, near, ins;
-  dt_brush_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins);
+  _brush_get_distance(pzx, (int)pzy, as, gui, index, nb, &in, &inb, &near, &ins);
   gui->seg_selected = near;
   if(near < 0)
   {
@@ -2971,6 +2971,7 @@ dt_masks_functions_t dt_masks_functions_brush = {
   .set_form_name = _brush_set_form_name,
   .set_hint_message = _brush_set_hint_message,
   .duplicate_points = _brush_duplicate_points,
+  .get_distance = _brush_get_distance,
   .get_points_border = _brush_get_points_border,
   .get_mask = _brush_get_mask,
   .get_mask_roi = _brush_get_mask_roi,

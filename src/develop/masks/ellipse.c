@@ -40,7 +40,7 @@ static inline void _ellipse_point_transform(const float xref, const float yref, 
 }
 
 // Jordan's point in polygon test
-static int dt_ellipse_cross_test(float x, float y, float *point_1, float *point_2)
+static int _ellipse_cross_test(float x, float y, float *point_1, float *point_2)
 {
   float x_a = x;
   float y_a = y;
@@ -78,20 +78,20 @@ static int dt_ellipse_cross_test(float x, float y, float *point_1, float *point_
     return 0;
 }
 
-static int dt_ellipse_point_in_polygon(float x, float y, float *points, int points_count)
+static int _ellipse_point_in_polygon(float x, float y, float *points, int points_count)
 {
   int t = -1;
 
-  t *= dt_ellipse_cross_test(x, y, points + 2 * (points_count - 1), points);
+  t *= _ellipse_cross_test(x, y, points + 2 * (points_count - 1), points);
 
   for(int i = 0; i < points_count - 2; i++)
-    t *= dt_ellipse_cross_test(x, y, points + 2 * i, points + 2 * (i + 1));
+    t *= _ellipse_cross_test(x, y, points + 2 * i, points + 2 * (i + 1));
 
   return t;
 }
 
 // check if point is close to path - segment by segment
-static int dt_ellipse_point_close_to_path(float x, float y, float as, float *points, int points_count)
+static int _ellipse_point_close_to_path(float x, float y, float as, float *points, int points_count)
 {
   float as2 = as * as;
 
@@ -138,9 +138,10 @@ static int dt_ellipse_point_close_to_path(float x, float y, float as, float *poi
   return 0;
 }
 
-void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                             int *inside, int *inside_border, int *near, int *inside_source)
+static void _ellipse_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                                  int num_points, int *inside, int *inside_border, int *near, int *inside_source)
 {
+  (void)num_points; // unused arg, keep compiler from complaining
   if(!gui) return;
 
   dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
@@ -150,7 +151,7 @@ void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui,
   // we first check if we are inside the source form
   if(gpt->source_count > 10)
   {
-    if(dt_ellipse_point_in_polygon(x, y, gpt->source + 10, gpt->source_count - 5) >= 0)
+    if(_ellipse_point_in_polygon(x, y, gpt->source + 10, gpt->source_count - 5) >= 0)
     {
       *inside_source = 1;
       *inside = 1;
@@ -163,7 +164,7 @@ void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui,
   *inside_source = 0;
 
   // we check if it's inside borders
-  if(dt_ellipse_point_in_polygon(x, y, gpt->border + 10, gpt->border_count - 5) < 0)
+  if(_ellipse_point_in_polygon(x, y, gpt->border + 10, gpt->border_count - 5) < 0)
   {
     *inside = 0;
     *inside_border = 0;
@@ -175,14 +176,14 @@ void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui,
   *near = 0;
   *inside_border = 1;
 
-  if(dt_ellipse_point_in_polygon(x, y, gpt->points + 10, gpt->points_count - 5) >= 0) *inside_border = 0;
-  if(dt_ellipse_point_close_to_path(x, y, as, gpt->points + 10, gpt->points_count - 5)) *near = 1;
+  if(_ellipse_point_in_polygon(x, y, gpt->points + 10, gpt->points_count - 5) >= 0) *inside_border = 0;
+  if(_ellipse_point_close_to_path(x, y, as, gpt->points + 10, gpt->points_count - 5)) *near = 1;
 }
 
-static void dt_ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected, const float zoom_scale,
-                                  const float dx, const float dy, const float xref, const float yref,
-                                  const float sinv, const float cosv, const float scalea, const float scaleb,
-                                  float *points, const int points_count)
+static void _ellipse_draw_shape(cairo_t *cr, double *dashed, const int selected, const float zoom_scale,
+                                const float dx, const float dy, const float xref, const float yref,
+                                const float sinv, const float cosv, const float scalea, const float scaleb,
+                                float *points, const int points_count)
 {
   if(points_count <= 10) return;
 
@@ -221,10 +222,10 @@ static void dt_ellipse_draw_shape(cairo_t *cr, double *dashed, const int selecte
   cairo_stroke(cr);
 }
 
-static void dt_ellipse_draw_border(cairo_t *cr, double *dashed, const float len, const int selected,
-                                   const float zoom_scale, const float dx, const float dy, const float xref,
-                                   const float yref, const float sinv, const float cosv, const float scaleab,
-                                   const float scalebb, float *border, const int border_count)
+static void _ellipse_draw_border(cairo_t *cr, double *dashed, const float len, const int selected,
+                                 const float zoom_scale, const float dx, const float dy, const float xref,
+                                 const float yref, const float sinv, const float cosv, const float scaleab,
+                                 const float scalebb, float *border, const int border_count)
 {
   if(border_count <= 10) return;
 
@@ -1010,9 +1011,9 @@ static int _ellipse_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
 
     int in = 0, inb = 0, near = 0, ins = 0; // FIXME gcc7 false-positive
-    dt_ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
-                            pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, &in, &inb,
-                            &near, &ins);
+    _ellipse_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
+                          pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
+                          &in, &inb, &near, &ins);
     if(ins)
     {
       gui->form_selected = TRUE;
@@ -1155,16 +1156,16 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         xref = points[0];
         yref = points[1];
 
-        dt_ellipse_draw_shape(cr, dashed, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scalea, scaleb, points,
-                              points_count);
+        _ellipse_draw_shape(cr, dashed, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scalea, scaleb, points,
+                            points_count);
       }
       if(draw && border_count >= 2)
       {
         xref = border[0];
         yref = border[1];
 
-        dt_ellipse_draw_border(cr, dashed, len, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scaleab, scalebb,
-                               border, border_count);
+        _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scaleab, scalebb,
+                             border, border_count);
       }
 
       // draw a cross where the source will be created
@@ -1243,8 +1244,8 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   float x, y;
 
   // draw shape
-  dt_ellipse_draw_shape(cr, dashed, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scalea, scaleb, gpt->points,
-                        gpt->points_count);
+  _ellipse_draw_shape(cr, dashed, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scalea, scaleb, gpt->points,
+                      gpt->points_count);
 
   // draw anchor points
   if(TRUE)
@@ -1280,8 +1281,8 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   // draw border
   if(gui->group_selected == index)
   {
-    dt_ellipse_draw_border(cr, dashed, len, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scaleab, scalebb,
-                           gpt->border, gpt->border_count);
+    _ellipse_draw_border(cr, dashed, len, 0, zoom_scale, dx, dy, xref, yref, sinv, cosv, scaleab, scalebb,
+                         gpt->border, gpt->border_count);
   }
 
   // draw the source if any
@@ -2117,6 +2118,7 @@ dt_masks_functions_t dt_masks_functions_ellipse = {
   .set_form_name = _ellipse_set_form_name,
   .set_hint_message = _ellipse_set_hint_message,
   .duplicate_points = _ellipse_duplicate_points,
+  .get_distance = _ellipse_get_distance,
   .get_points = _ellipse_get_points,
   .get_mask = _ellipse_get_mask,
   .get_mask_roi = _ellipse_get_mask_roi,
