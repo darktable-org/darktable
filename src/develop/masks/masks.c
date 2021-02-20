@@ -1612,67 +1612,41 @@ static void _menu_no_masks(struct dt_iop_module_t *module)
   dt_dev_add_history_item(darktable.develop, module, TRUE);
 }
 
-static void _menu_add_circle(struct dt_iop_module_t *module)
+static void _menu_add_shape(struct dt_iop_module_t *module, dt_masks_type_t type)
 {
   // we want to be sure that the iop has focus
   dt_iop_request_focus(module);
   // we create the new form
-  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_CIRCLE);
-  dt_masks_change_form_gui(spot);
-
+  dt_masks_form_t *form = dt_masks_create(type);
+  dt_masks_change_form_gui(form);
   darktable.develop->form_gui->creation = TRUE;
   darktable.develop->form_gui->creation_module = module;
   dt_control_queue_redraw_center();
+}
+
+static void _menu_add_circle(struct dt_iop_module_t *module)
+{
+  _menu_add_shape(module, DT_MASKS_CIRCLE);
 }
 
 static void _menu_add_path(struct dt_iop_module_t *module)
 {
-  // we want to be sure that the iop has focus
-  dt_iop_request_focus(module);
-  // we create the new form
-  dt_masks_form_t *form = dt_masks_create(DT_MASKS_PATH);
-  dt_masks_change_form_gui(form);
-  darktable.develop->form_gui->creation = TRUE;
-  darktable.develop->form_gui->creation_module = module;
-  dt_control_queue_redraw_center();
+  _menu_add_shape(module, DT_MASKS_PATH);
 }
 
 static void _menu_add_gradient(struct dt_iop_module_t *module)
 {
-  // we want to be sure that the iop has focus
-  dt_iop_request_focus(module);
-  // we create the new form
-  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_GRADIENT);
-  dt_masks_change_form_gui(spot);
-
-  darktable.develop->form_gui->creation = TRUE;
-  darktable.develop->form_gui->creation_module = module;
-  dt_control_queue_redraw_center();
+  _menu_add_shape(module, DT_MASKS_GRADIENT);
 }
 
 static void _menu_add_ellipse(struct dt_iop_module_t *module)
 {
-  // we want to be sure that the iop has focus
-  dt_iop_request_focus(module);
-  // we create the new form
-  dt_masks_form_t *spot = dt_masks_create(DT_MASKS_ELLIPSE);
-  dt_masks_change_form_gui(spot);
-
-  darktable.develop->form_gui->creation = TRUE;
-  darktable.develop->form_gui->creation_module = module;
-  dt_control_queue_redraw_center();
+  _menu_add_shape(module, DT_MASKS_ELLIPSE);
 }
 
 static void _menu_add_brush(struct dt_iop_module_t *module)
 {
-  // we want to be sure that the iop has focus
-  dt_iop_request_focus(module);
-  // we create the new form
-  dt_masks_form_t *form = dt_masks_create(DT_MASKS_BRUSH);
-  dt_masks_change_form_gui(form);
-  darktable.develop->form_gui->creation = TRUE;
-  darktable.develop->form_gui->creation_module = module;
-  dt_control_queue_redraw_center();
+  _menu_add_shape(module, DT_MASKS_BRUSH);
 }
 
 static void _menu_add_exist(dt_iop_module_t *module, int formid)
