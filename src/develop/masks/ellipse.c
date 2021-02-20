@@ -15,12 +15,15 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
 #include "develop/imageop.h"
 #include "develop/masks.h"
+#include "develop/openmp_maths.h"
 
 static inline void _ellipse_point_transform(const float xref, const float yref, const float x, const float y,
                                             const float sinr, const float cosr, const float scalea,
@@ -135,8 +138,8 @@ static int dt_ellipse_point_close_to_path(float x, float y, float as, float *poi
   return 0;
 }
 
-static void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                                    int *inside, int *inside_border, int *near, int *inside_source)
+void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
+                             int *inside, int *inside_border, int *near, int *inside_source)
 {
   if(!gui) return;
 
@@ -385,8 +388,6 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     {
       float masks_border = 0.0f;
       int flags = 0;
-      float radius_a = 0.0f;
-      float radius_b = 0.0f;
 
       if(form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE))
       {
@@ -1169,7 +1170,8 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       // draw a cross where the source will be created
       if(form->type & DT_MASKS_CLONE)
       {
-        float x = 0.0f, y = 0.0f;
+        x = 0.0f;
+        y = 0.0f;
         dt_masks_calculate_source_pos_value(gui, DT_MASKS_ELLIPSE, pzx, pzy, pzx, pzy, &x, &y, FALSE);
         dt_masks_draw_clone_source_pos(cr, zoom_scale, x, y);
       }
@@ -1221,19 +1223,19 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
     const float deltax = gui->posx + gui->dx - xref;
     const float deltay = gui->posy + gui->dy - yref;
 
-    const float r = sqrtf(rx * rx + ry * ry);
+    const float radius = sqrtf(rx * rx + ry * ry);
     const float b = sqrtf(bx * bx + by * by);
-    float d = (rx * deltax + ry * deltay) / r;
-    if(r + d < 0) d = -r;
+    float d = (rx * deltax + ry * deltay) / radius;
+    if(radius + d < 0) d = -radius;
 
     if(k == 1 || k == 2)
     {
-      scalea = r > 0 ? (r + d) / r : 0;
+      scalea = radius > 0 ? (radius + d) / radius : 0;
       scaleab = b > 0 ? (b + d) / b : 0;
     }
     else
     {
-      scaleb = r > 0 ? (r + d) / r : 0;
+      scaleb = radius > 0 ? (radius + d) / radius : 0;
       scalebb = b > 0 ? (b + d) / b : 0;
     }
   }
@@ -1320,7 +1322,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
       const float b = sqrtf(bdx * bdx + bdy * bdy);
 
       // takes the biggest radius, should always been a as the points are arranged
-      const float r = MAX(a, b);
+      const float radius = MAX(a, b);
 
       // the top/left/bottom/right controls of the ellipse are not always at the
       // same place in g->points[], it depends on the rotation of the ellipse which
@@ -1329,7 +1331,7 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
 
       const float cosc = cosf(cangle);
       const float sinc = sinf(cangle);
-      const float step = r / 259.f;
+      const float step = radius / 259.f;
 
       float dist = FLT_MAX;
       float arrowx = 0.0f;
@@ -1341,13 +1343,11 @@ static void _ellipse_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
         const float py = gpt->points[k*2 + 1];
 
         float rr = 0.01f;
-        while(rr < r)
+        while(rr < radius)
         {
           const float epx = cnt_x + rr * cosc;
           const float epy = cnt_y + rr * sinc;
-          const float dx = epx - px;
-          const float dy = epy - py;
-          const float edist = dx*dx + dy*dy;
+          const float edist = sqf(epx - px) + sqf(epy - py);
 
           if(edist < dist)
           {
