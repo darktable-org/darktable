@@ -28,7 +28,6 @@
 #pragma GCC diagnostic ignored "-Wshadow"
 
 // clang-format off
-#include "develop/masks/circle.c"
 #include "develop/masks/path.c"
 #include "develop/masks/brush.c"
 #include "develop/masks/gradient.c"
