@@ -302,6 +302,8 @@ void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, 
                             int *inside_border, int *near, int *inside_source);
 void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
                              int *inside, int *inside_border, int *near, int *inside_source);
+void dt_gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                              int *inside, int *inside_border, int *near, int *inside_source);
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
