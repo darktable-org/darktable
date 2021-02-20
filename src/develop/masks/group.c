@@ -139,18 +139,9 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx
     near = -1;
     const float xx = pzx * darktable.develop->preview_pipe->backbuf_width,
                 yy = pzy * darktable.develop->preview_pipe->backbuf_height;
-    if(sel->type & DT_MASKS_CIRCLE)
-      dt_circle_get_distance(xx, yy, as, gui, pos, &inside, &inside_border, &near, &inside_source);
-    else if(sel->type & DT_MASKS_PATH)
-      dt_path_get_distance(xx, yy, as, gui, pos, g_list_length(sel->points), &inside, &inside_border, &near,
-                           &inside_source);
-    else if(sel->type & DT_MASKS_GRADIENT)
-      dt_gradient_get_distance(xx, yy, as, gui, pos, &inside, &inside_border, &near, &inside_source);
-    else if(sel->type & DT_MASKS_ELLIPSE)
-      dt_ellipse_get_distance(xx, yy, as, gui, pos, &inside, &inside_border, &near, &inside_source);
-    else if(sel->type & DT_MASKS_BRUSH)
-      dt_brush_get_distance(xx, yy, as, gui, pos, g_list_length(sel->points), &inside, &inside_border, &near,
-                            &inside_source);
+    if(sel->functions && sel->functions->get_distance)
+      sel->functions->get_distance(xx, yy, as, gui, pos, g_list_length(sel->points),
+                                   &inside, &inside_border, &near, &inside_source);
     if(inside || inside_border || near >= 0 || inside_source)
     {
       gui->group_edited = gui->group_selected = pos;
