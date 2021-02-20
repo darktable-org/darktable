@@ -34,9 +34,10 @@ static inline void _gradient_point_transform(const float xref, const float yref,
 }
 
 
-void dt_gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                              int *inside, int *inside_border, int *near, int *inside_source)
+static void _gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                                   int num_points, int *inside, int *inside_border, int *near, int *inside_source)
 {
+  (void)num_points; // unused arg, keep compiler from complaining
   if(!gui) return;
 
   *inside = *inside_border = *inside_source = 0;
@@ -455,7 +456,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     int in, inb, near, ins;
-    dt_gradient_get_distance(x, y, as, gui, index, &in, &inb, &near, &ins);
+    _gradient_get_distance(x, y, as, gui, index, 0, &in, &inb, &near, &ins);
 
     const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
@@ -1534,6 +1535,7 @@ dt_masks_functions_t dt_masks_functions_gradient = {
   .set_form_name = _gradient_set_form_name,
   .set_hint_message = _gradient_set_hint_message,
   .duplicate_points = _gradient_duplicate_points,
+  .get_distance = _gradient_get_distance,
   .get_points_border = _gradient_get_points_border,
   .get_mask = _gradient_get_mask,
   .get_mask_roi = _gradient_get_mask_roi,

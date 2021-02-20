@@ -25,9 +25,10 @@
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 
-void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int *inside,
-                            int *inside_border, int *near, int *inside_source)
+static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                                 int num_points, int *inside, int *inside_border, int *near, int *inside_source)
 {
+  (void)num_points; // unused arg, keep compiler from complaining
   // initialise returned values
   *inside_source = 0;
   *inside = 0;
@@ -458,9 +459,9 @@ static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx,
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
     int in, inb, near, ins;
-    dt_circle_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
-                           pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, &in, &inb,
-                           &near, &ins);
+    _circle_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
+                         pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
+                         &in, &inb, &near, &ins);
     if(ins)
     {
       gui->form_selected = TRUE;
@@ -1297,6 +1298,7 @@ dt_masks_functions_t dt_masks_functions_circle = {
   .set_form_name = _circle_set_form_name,
   .set_hint_message = _circle_set_hint_message,
   .duplicate_points = _circle_duplicate_points,
+  .get_distance = _circle_get_distance,
   .get_points = _circle_get_points,
   .get_mask = _circle_get_mask,
   .get_mask_roi = _circle_get_mask_roi,

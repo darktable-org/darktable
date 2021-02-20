@@ -168,6 +168,8 @@ typedef struct dt_masks_functions_t
   void (*set_hint_message)(const struct dt_masks_form_gui_t *const gui, const struct dt_masks_form_t *const form,
                            const int opacity, char *const __restrict__ msgbuf, const size_t msgbuf_len);
   void (*duplicate_points)(struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
+  void (*get_distance)(float x, float y, float as, struct dt_masks_form_gui_t *gui, int index, int num_points,
+                       int *inside, int *inside_border, int *near, int *inside_source);
   int (*get_points)(dt_develop_t *dev, float x, float y, float radius_a, float radius_b, float rotation,
                     float **points, int *points_count);
   int (*get_points_border)(dt_develop_t *dev, struct dt_masks_form_t *form, float **points, int *points_count,
@@ -194,7 +196,6 @@ typedef struct dt_masks_functions_t
                          struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
   void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index, int num_points);
   //TODO:
-  //get_distance
   //read_history_item
   //write_history_item
 } dt_masks_functions_t;
@@ -296,18 +297,6 @@ extern dt_masks_functions_t dt_masks_functions_ellipse;
 extern dt_masks_functions_t dt_masks_functions_brush;
 extern dt_masks_functions_t dt_masks_functions_path;
 extern dt_masks_functions_t dt_masks_functions_gradient;
-
-/** some shape-specific functions which have not yet been migrated to the function table: */
-void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int *inside,
-                            int *inside_border, int *near, int *inside_source);
-void dt_ellipse_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                             int *inside, int *inside_border, int *near, int *inside_source);
-void dt_gradient_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
-                              int *inside, int *inside_border, int *near, int *inside_source);
-void dt_brush_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                           int corner_count, int *inside, int *inside_border, int *near, int *inside_source);
-void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                          int corner_count, int *inside, int *inside_border, int *near, int *inside_source);
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
