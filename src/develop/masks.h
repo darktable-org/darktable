@@ -157,11 +157,48 @@ typedef struct dt_masks_point_group_t
   float opacity;
 } dt_masks_point_group_t;
 
+/** structure used to store pointers to the functions implementing operations on a mask shape */
+/** plus a few per-class descriptive data items */
+typedef struct dt_masks_functions_t
+{
+  int point_struct_size;   // sizeof(struct dt_masks_point_*_t)
+  GSList *(*setup_mouse_actions)(struct dt_masks_form_t *form);
+  void (*set_form_name)(struct dt_masks_form_t *form);
+  void (*set_hint_message)(struct dt_masks_form_gui_t *gui, struct dt_masks_form_t *form,
+                           char *msgbuf, size_t msgbuf_len);
+  void (*duplicate_points)(struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
+  int (*get_points_border)(dt_develop_t *dev, struct dt_masks_form_t *form, float **points, int *points_count,
+                           float **border, int *border_count, int source);
+  int (*get_mask)(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, struct dt_masks_form_t *form,
+                  float **buffer, int *width, int *height, int *posx, int *posy);
+  int (*get_mask_roi)(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, struct dt_masks_form_t *form,
+                      const dt_iop_roi_t *roi, float *buffer);
+  int (*get_area)(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, struct dt_masks_form_t *form,
+                  int *width, int *height, int *posx, int *posy);
+  int (*get_source_area)(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, struct dt_masks_form_t *form,
+                         int *width, int *height, int *posx, int *posy);
+  int (*mouse_moved)(struct dt_iop_module_t *module, float pzx, float pzy, double pressure, int which,
+                     struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  int (*mouse_scrolled)(struct dt_iop_module_t *module, float pzx, float pzy, int up, uint32_t state,
+                        struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  int (*button_pressed)(struct dt_iop_module_t *module, float pzx, float pzy,
+                        double pressure, int which, int type, uint32_t state,
+                        struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  int (*button_released)(struct dt_iop_module_t *module, float pzx, float pzy, int which, uint32_t state,
+                         struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
+  void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index);
+  //TODO:
+  //sanitize_config
+  //read_history_item
+  //write_history_item
+} dt_masks_functions_t;
+  
 /** structure used to define a form */
 typedef struct dt_masks_form_t
 {
   GList *points; // list of point structures
   dt_masks_type_t type;
+  const dt_masks_functions_t *functions;
 
   // position of the source (used only for clone)
   float source[2];
