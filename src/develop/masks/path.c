@@ -15,8 +15,10 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
 #include "common/imagebuf.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -774,9 +776,8 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
 }
 
 /** get the distance between point (x,y) and the path */
-static void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
-                                 int corner_count, int *inside, int *inside_border, int *near,
-                                 int *inside_source)
+void dt_path_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index,
+                          int corner_count, int *inside, int *inside_border, int *near, int *inside_source)
 {
   // initialise returned values
   *inside_source = 0;
@@ -1221,7 +1222,6 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     }
     else if(gui->source_selected && gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
-      dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
       if(!gpt) return 0;
       // we start the form dragging
       gui->source_dragging = TRUE;
@@ -1360,12 +1360,12 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         GList *forms = g_list_first(darktable.develop->form_visible->points);
         while(forms)
         {
-          dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
-          if(gpt->formid == form->formid)
+          dt_masks_point_group_t *guipt = (dt_masks_point_group_t *)forms->data;
+          if(guipt->formid == form->formid)
           {
             darktable.develop->form_visible->points
-                = g_list_remove(darktable.develop->form_visible->points, gpt);
-            free(gpt);
+                = g_list_remove(darktable.develop->form_visible->points, guipt);
+            free(guipt);
             break;
           }
           forms = g_list_next(forms);
@@ -1435,12 +1435,12 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       GList *forms = g_list_first(darktable.develop->form_visible->points);
       while(forms)
       {
-        dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
-        if(gpt->formid == form->formid)
+        dt_masks_point_group_t *guipt = (dt_masks_point_group_t *)forms->data;
+        if(guipt->formid == form->formid)
         {
           darktable.develop->form_visible->points
-              = g_list_remove(darktable.develop->form_visible->points, gpt);
-          free(gpt);
+              = g_list_remove(darktable.develop->form_visible->points, guipt);
+          free(guipt);
           break;
         }
         forms = g_list_next(forms);
@@ -2349,30 +2349,30 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
         {
           if(xx - (*posx) > 0)
           {
-            const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - 1 - (*posx);
-            assert(idx < bufsize);
-            (*buffer)[idx] = 1.0f;
+            const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx - 1 - (*posx);
+            assert(idx_ < bufsize);
+            (*buffer)[idx_] = 1.0f;
           }
           else if(xx - (*posx) < (*width) - 1)
           {
-            const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx + 1 - (*posx);
-            assert(idx < bufsize);
-            (*buffer)[idx] = 1.0f;
+            const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx + 1 - (*posx);
+            assert(idx_ < bufsize);
+            (*buffer)[idx_] = 1.0f;
           }
         }
         else
         {
-          const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
-          assert(idx < bufsize);
-          (*buffer)[idx] = 1.0f;
+          const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
+          assert(idx_ < bufsize);
+          (*buffer)[idx_] = 1.0f;
           just_change_dir = 0;
         }
       }
       else
       {
-        const size_t idx = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
-        assert(idx < bufsize);
-        (*buffer)[idx] = 1.0f;
+        const size_t idx_ = (size_t)(yy - (*posy)) * (*width) + xx - (*posx);
+        assert(idx_ < bufsize);
+        (*buffer)[idx_] = 1.0f;
       }
       // we change last values
       lasty2 = lasty;
