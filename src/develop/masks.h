@@ -294,6 +294,7 @@ typedef struct dt_masks_form_gui_t
 extern dt_masks_functions_t dt_masks_functions_circle;
 extern dt_masks_functions_t dt_masks_functions_ellipse;
 extern dt_masks_functions_t dt_masks_functions_brush;
+extern dt_masks_functions_t dt_masks_functions_path;
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);

@@ -57,8 +57,6 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
       size_item = sizeof(struct dt_masks_point_gradient_t);
     else if (form->type & DT_MASKS_GROUP)
       size_item = sizeof(struct dt_masks_point_group_t);
-    else if (form->type & DT_MASKS_PATH)
-      size_item = sizeof(struct dt_masks_point_path_t);
 
     if (size_item != 0)
     {
@@ -158,63 +156,6 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
     g_strlcpy(a->name, _("[SHAPE] remove shape"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
-  if((formtype & DT_MASKS_PATH) == DT_MASKS_PATH)
-  {
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_LEFT;
-    g_strlcpy(a->name, _("[PATH creation] add a smooth node"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->key.accel_mods = GDK_CONTROL_MASK;
-    a->action = DT_MOUSE_ACTION_LEFT;
-    g_strlcpy(a->name, _("[PATH creation] add a sharp node"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_RIGHT;
-    g_strlcpy(a->name, _("[PATH creation] terminate path creation"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->key.accel_mods = GDK_CONTROL_MASK;
-    a->action = DT_MOUSE_ACTION_SCROLL;
-    g_strlcpy(a->name, _("[PATH on node] switch between smooth/sharp node"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_RIGHT;
-    g_strlcpy(a->name, _("[PATH on node] remove the node"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_RIGHT;
-    g_strlcpy(a->name, _("[PATH on feather] reset curvature"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->key.accel_mods = GDK_CONTROL_MASK;
-    a->action = DT_MOUSE_ACTION_LEFT;
-    g_strlcpy(a->name, _("[PATH on segment] add node"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_SCROLL;
-    g_strlcpy(a->name, _("[PATH] change size"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->key.accel_mods = GDK_CONTROL_MASK;
-    a->action = DT_MOUSE_ACTION_SCROLL;
-    g_strlcpy(a->name, _("[PATH] change opacity"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->key.accel_mods = GDK_SHIFT_MASK;
-    a->action = DT_MOUSE_ACTION_SCROLL;
-    g_strlcpy(a->name, _("[PATH] change feather size"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-  }
   if((formtype & DT_MASKS_GRADIENT) == DT_MASKS_GRADIENT)
   {
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
@@ -276,21 +217,6 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
   if(form->functions)
   {
     form->functions->set_hint_message(gui, form, opacity, msg, sizeof(msg));
-  }
-  else if(formtype & DT_MASKS_PATH)
-  {
-    if(gui->creation && g_list_length(form->points) < 4)
-      g_strlcat(msg, _("<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n<b>cancel</b>: right-click"), sizeof(msg));
-    else if(gui->creation)
-      g_strlcat(msg, _("<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n<b>finnish path</b>: right-click"), sizeof(msg));
-    else if(gui->point_selected >= 0)
-      g_strlcat(msg, _("<b>move node</b>: drag, <b>remove node</b>: right-click\n<b>switch smooth/sharp mode</b>: ctrl+click"), sizeof(msg));
-    else if(gui->feather_selected >= 0)
-      g_strlcat(msg, _("<b>node curvature</b>: drag\n<b>reset curvature</b>: right-click"), sizeof(msg));
-    else if(gui->seg_selected >= 0)
-      g_strlcat(msg, _("<b>move segment</b>: drag\n<b>add node</b>: ctrl+click"), sizeof(msg));
-    else if(gui->form_selected)
-      g_snprintf(msg, sizeof(msg), _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   }
   else if(formtype & DT_MASKS_GRADIENT)
   {
@@ -477,10 +403,8 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
 
     if(form->functions && form->functions->set_form_name)
       form->functions->set_form_name(form, nb);
-    else if(form->type & DT_MASKS_PATH)
-      snprintf(form->name, sizeof(form->name), _("path #%d"), nb);
     else if(form->type & DT_MASKS_GRADIENT)
-      snprintf(form->name, sizeof(form->name), _("gradient #%d"), nb);
+      snprintf(form->name, sizeof(form->name), _("gradient #%d"), (int)nb);
 
     l = dev->forms;
     while(l)
@@ -564,18 +488,6 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
       pts = g_list_next(pts);
     }
   }
-  else if(fbase->type & DT_MASKS_PATH)
-  {
-    GList *pts = g_list_first(fbase->points);
-    while(pts)
-    {
-      dt_masks_point_path_t *pt = (dt_masks_point_path_t *)pts->data;
-      dt_masks_point_path_t *npt = (dt_masks_point_path_t *)malloc(sizeof(dt_masks_point_path_t));
-      memcpy(npt, pt, sizeof(dt_masks_point_path_t));
-      fdest->points = g_list_append(fdest->points, npt);
-      pts = g_list_next(pts);
-    }
-  }
   else if(fbase->type & DT_MASKS_GRADIENT)
   {
     GList *pts = g_list_first(fbase->points);
@@ -617,10 +529,6 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
       else
         return 1;
     }
-  }
-  else if(form->type & DT_MASKS_PATH)
-  {
-    return dt_path_get_points_border(dev, form, points, points_count, border, border_count, source);
   }
   else if(form->type & DT_MASKS_GRADIENT)
   {
@@ -672,10 +580,6 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 {
   if(form->functions)
     return form->functions->get_area(module, piece, form, width, height, posx, posy);
-  else if(form->type & DT_MASKS_PATH)
-  {
-    return dt_path_get_area(module, piece, form, width, height, posx, posy);
-  }
   else if(form->type & DT_MASKS_GRADIENT)
   {
     return dt_gradient_get_area(module, piece, form, width, height, posx, posy);
@@ -694,10 +598,6 @@ int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   {
     if(form->functions)
       return form->functions->get_source_area(module, piece, form, width, height, posx, posy);
-    else if(form->type & DT_MASKS_PATH)
-    {
-      return dt_path_get_source_area(module, piece, form, width, height, posx, posy);
-    }
   }
   return 0;
 }
@@ -707,10 +607,6 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 {
   if(form->functions)
     return form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy);
-  else if(form->type & DT_MASKS_PATH)
-  {
-    return dt_path_get_mask(module, piece, form, buffer, width, height, posx, posy);
-  }
   else if(form->type & DT_MASKS_GROUP)
   {
     return dt_group_get_mask(module, piece, form, buffer, width, height, posx, posy);
@@ -728,10 +624,6 @@ int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   if(form->functions)
   {
     return form->functions->get_mask_roi(module, piece, form, roi, buffer);
-  }
-  else if(form->type & DT_MASKS_PATH)
-  {
-    return dt_path_get_mask_roi(module, piece, form, roi, buffer);
   }
   else if(form->type & DT_MASKS_GROUP)
   {
@@ -1119,6 +1011,8 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
     form->functions = &dt_masks_functions_ellipse;
   else if (type & DT_MASKS_BRUSH)
     form->functions = &dt_masks_functions_brush;
+  else if (type & DT_MASKS_PATH)
+    form->functions = &dt_masks_functions_path;
   //TODO: else if(...)
 
   if (form->functions && form->functions->sanitize_config)
@@ -1460,8 +1354,6 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
   int rep = 0;
   if(form->functions)
     rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_PATH)
-    rep = dt_path_events_mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
     rep = dt_group_events_mouse_moved(module, pzx, pzy, pressure, which, form, gui);
   else if(form->type & DT_MASKS_GRADIENT)
@@ -1487,8 +1379,6 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
 
   if(form->functions)
     return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_PATH)
-    return dt_path_events_button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
     return dt_group_events_button_released(module, pzx, pzy, which, state, form, gui);
   else if(form->type & DT_MASKS_GRADIENT)
@@ -1532,8 +1422,6 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
 
   if(form->functions)
     return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_PATH)
-    return dt_path_events_button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
     return dt_group_events_button_pressed(module, pzx, pzy, pressure, which, type, state, form, gui);
   else if(form->type & DT_MASKS_GRADIENT)
@@ -1558,8 +1446,6 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
 
   if(form->functions)
     ret = form->functions->mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_PATH)
-    ret = dt_path_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
     ret = dt_group_events_mouse_scrolled(module, pzx, pzy, up, state, form, gui);
   else if(form->type & DT_MASKS_GRADIENT)
@@ -1626,8 +1512,6 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   // draw form
   if(form->functions)
     form->functions->post_expose(cr, zoom_scale, gui, 0, g_list_length(form->points));
-  else if(form->type & DT_MASKS_PATH)
-    dt_path_events_post_expose(cr, zoom_scale, gui, 0, g_list_length(form->points));
   else if(form->type & DT_MASKS_GROUP)
     dt_group_events_post_expose(cr, zoom_scale, form, gui);
   else if(form->type & DT_MASKS_GRADIENT)
@@ -2411,10 +2295,6 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form)
     {      
       pos += form->functions->point_struct_size;
     }
-    else if(form->type & DT_MASKS_PATH)
-    {
-      pos += sizeof(dt_masks_point_path_t);
-    }
     else if(form->type & DT_MASKS_GRADIENT)
     {
       pos += sizeof(dt_masks_point_gradient_t);
@@ -2461,11 +2341,6 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
     {
       memcpy(str + pos,forms->data, form->functions->point_struct_size);
       pos += form->functions->point_struct_size;
-    }
-    else if(form->type & DT_MASKS_PATH)
-    {
-      memcpy(str + pos, forms->data, sizeof(dt_masks_point_path_t));
-      pos += sizeof(dt_masks_point_path_t);
     }
     else if(form->type & DT_MASKS_GRADIENT)
     {
