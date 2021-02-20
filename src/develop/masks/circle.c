@@ -727,37 +727,66 @@ static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks
   }
 }
 
+static float *_points_to_transform(float x, float y, float radius, float wd, float ht, int *points_count)
+{
+  // how many points do we need?
+  const float r = radius * MIN(wd,ht);
+  const size_t l = (size_t)(2.0 * M_PI * r);
+  // allocate buffer
+  float *const restrict points = dt_alloc_align_float((l + 1) *2);
+  if (!points)
+  {
+    *points_count = 0;
+    return NULL;
+  }
+  *points_count = l + 1;
+
+  // now we set the points, first the center, then the circumference
+  const float center_x = x * wd;
+  const float center_y = y * ht;
+  points[0] = center_x;
+  points[1] = center_y;
+  for(int i = 1; i < l + 1; i++)
+  {
+    float alpha = (i - 1) * 2.0 * M_PI / (float)l;
+    points[i * 2] = center_x + r * cosf(alpha);
+    points[i * 2 + 1] = center_y + r * sinf(alpha);
+  }
+  return points;
+}
+
+static void _bounding_box(const float *const points, int num_points, int *width, int *height, int *posx, int *posy)
+{
+  // search for min/max X and Y coordinates
+  float xmin = FLT_MAX, xmax = FLT_MIN, ymin = FLT_MAX, ymax = FLT_MIN;
+  for(int i = 1; i < num_points; i++) // skip point[0], which is circle's center
+  {
+    xmin = fminf(points[i * 2], xmin);
+    xmax = fmaxf(points[i * 2], xmax);
+    ymin = fminf(points[i * 2 + 1], ymin);
+    ymax = fmaxf(points[i * 2 + 1], ymax);
+  }
+  // set the min/max values we found
+  *posx = xmin;
+  *posy = ymin;
+  *width = (xmax - xmin);
+  *height = (ymax - ymin);
+}
+
 static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radius, float **points,
                                 int *points_count)
 {
   float wd = dev->preview_pipe->iwidth;
   float ht = dev->preview_pipe->iheight;
 
-  // how many points do we need ?
-  float r = radius * MIN(wd, ht);
-  const size_t l = MAX(100, (size_t)(2.0 * M_PI * r));
-
-  // buffer allocations
-  *points = dt_alloc_align_float((l + 1) * 2);
-  if(*points == NULL)
-  {
-    *points_count = 0;
+  // compute the points we need to transform (center and circumference of circle)
+  *points = _points_to_transform(x, y, radius, wd, ht, points_count);
+  if (!*points)
     return 0;
-  }
-  *points_count = l + 1;
 
-  // now we set the points
-  (*points)[0] = x * wd;
-  (*points)[1] = y * ht;
-  for(int i = 1; i < l + 1; i++)
-  {
-    float alpha = (i - 1) * 2.0 * M_PI / (float)l;
-    (*points)[i * 2] = (*points)[0] + r * cosf(alpha);
-    (*points)[i * 2 + 1] = (*points)[1] + r * sinf(alpha);
-  }
-
-  // and we transform them with all distorted modules
-  if(dt_dev_distort_transform(dev, *points, l + 1)) return 1;
+  // and transform them with all distorted modules
+  if(dt_dev_distort_transform(dev, *points, *points_count))
+    return 1;
 
   // if we failed, then free all and return
   dt_free_align(*points);
@@ -773,47 +802,23 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
-  const float r = (circle->radius + circle->border) * MIN(wd, ht);
-  const size_t l = (size_t)(2.0 * M_PI * r);
-  // buffer allocations
-  float *const restrict points = dt_alloc_align_float((l + 1) * 2);
+  // compute the points we need to transform (center and circumference of circle)
+  const float outer_radius = circle->radius + circle->border;
+  int num_points;
+  float *const restrict points =
+    _points_to_transform(form->source[0], form->source[1], outer_radius, wd, ht, &num_points);
   if(points == NULL)
     return 0;
 
-  // now we set the points
-  points[0] = form->source[0] * wd;
-  points[1] = form->source[1] * ht;
-  for(int i = 1; i < l + 1; i++)
-  {
-    float alpha = (i - 1) * 2.0 * M_PI / (float)l;
-    points[i * 2] = points[0] + r * cosf(alpha);
-    points[i * 2 + 1] = points[1] + r * sinf(alpha);
-  }
-
-  // and we transform them with all distorted modules
-  if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, l + 1))
+  // and transform them with all distorted modules
+  if(!dt_dev_distort_transform_plus(darktable.develop, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, num_points))
   {
     dt_free_align(points);
     return 0;
   }
 
-  // now we search min and max
-  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
-  for(int i = 1; i < l + 1; i++)
-  {
-    xmin = fminf(points[i * 2], xmin);
-    xmax = fmaxf(points[i * 2], xmax);
-    ymin = fminf(points[i * 2 + 1], ymin);
-    ymax = fmaxf(points[i * 2 + 1], ymax);
-  }
+  _bounding_box(points, num_points, width, height, posx, posy);
   dt_free_align(points);
-  // and we set values
-  *posx = xmin;
-  *posy = ymin;
-  *width = (xmax - xmin);
-  *height = (ymax - ymin);
   return 1;
 }
 
@@ -826,48 +831,23 @@ static int dt_circle_get_area(const dt_iop_module_t *const restrict module,
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
-  const float r = (circle->radius + circle->border) * MIN(wd, ht);
-  const size_t l = (size_t)(2.0 * M_PI * r);
-  // buffer allocations
-  float *const restrict points = dt_alloc_align_float((l + 1) * 2);
+  // compute the points we need to transform (center and circumference of circle)
+  const float outer_radius = circle->radius + circle->border;
+  int num_points;
+  float *const restrict points =
+    _points_to_transform(circle->center[0], circle->center[1], outer_radius, wd, ht, &num_points);
   if(points == NULL)
     return 0;
 
-  // now we set the points
-  points[0] = circle->center[0] * wd;
-  points[1] = circle->center[1] * ht;
-  for(int i = 1; i < l + 1; i++)
-  {
-    float alpha = (i - 1) * 2.0 * M_PI / (float)l;
-    points[i * 2] = points[0] + r * cosf(alpha);
-    points[i * 2 + 1] = points[1] + r * sinf(alpha);
-  }
-
-  // and we transform them with all distorted modules
-  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, l + 1))
+  // and transform them with all distorted modules
+  if(!dt_dev_distort_transform_plus(module->dev, piece->pipe, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, num_points))
   {
     dt_free_align(points);
     return 0;
   }
 
-  // now we search min and max
-  float xmin = 0.0f, xmax = 0.0f, ymin = 0.0f, ymax = 0.0f;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
-  for(int i = 1; i < l + 1; i++)
-  {
-    xmin = fminf(points[i * 2], xmin);
-    xmax = fmaxf(points[i * 2], xmax);
-    ymin = fminf(points[i * 2 + 1], ymin);
-    ymax = fmaxf(points[i * 2 + 1], ymax);
-  }
+  _bounding_box(points, num_points, width, height, posx, posy);
   dt_free_align(points);
-
-  // and we set values
-  *posx = xmin;
-  *posy = ymin;
-  *width = (xmax - xmin);
-  *height = (ymax - ymin);
   return 1;
 }
 
@@ -969,8 +949,8 @@ static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
     // quadratic falloff between the circle's radius and the radius of the outside of the feathering
     const float ratio = (total2 - l2) / border2;
     // enforce 1.0 inside the circle and 0.0 outside the feathering
-    const float f = CLAMP(ratio, 0.0f, 1.0f);
-    ptbuffer[i] = f * f;
+    const float f = CLIP(ratio);
+    ptbuffer[i] = sqf(f);
   }
 
   dt_free_align(points);
