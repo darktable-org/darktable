@@ -1499,7 +1499,8 @@ static int _ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
   return 1;
 }
 
-static int _ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+static int _ellipse_get_area(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                             dt_masks_form_t *const form,
                              int *width, int *height, int *posx, int *posy)
 {
   // we get the ellipse values
@@ -1588,7 +1589,8 @@ static int _ellipse_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   return 1;
 }
 
-static int _ellipse_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                             dt_masks_form_t *const form,
                              float **buffer, int *width, int *height, int *posx, int *posy)
 {
   double start2 = 0.0;
@@ -1730,8 +1732,8 @@ static inline float fast_atan2(float y, float x)
 }
 
 
-static int _ellipse_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                 dt_masks_form_t *form, const dt_iop_roi_t *roi, float *buffer)
+static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                                 dt_masks_form_t *const form, const dt_iop_roi_t *roi, float *buffer)
 {
   double start1 = 0.0;
   double start2 = start1;
