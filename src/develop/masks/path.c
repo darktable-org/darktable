@@ -2118,27 +2118,14 @@ static void dt_path_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_f
   }
 }
 
-static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                   dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
-{
-  if(!module) return 0;
-  // we get buffers for all points
-  float *points = NULL, *border = NULL;
-  int points_count, border_count;
-  if(!_path_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
-                              &border, &border_count, 1))
-  {
-    dt_free_align(points);
-    dt_free_align(border);
-    return 0;
-  }
 
-  // now we want to find the area, so we search min/max points
+static void _path_bounding_box_raw(const float *const points, const float *border, const int nb_corner, const int num_points, int num_borders,
+                                   float *x_min, float *x_max, float *y_min, float *y_max)
+{
   float xmin, xmax, ymin, ymax;
   xmin = ymin = FLT_MAX;
   xmax = ymax = FLT_MIN;
-  const guint nb_corner = g_list_length(form->points);
-  for(int i = nb_corner * 3; i < border_count; i++)
+  for(int i = nb_corner * 3; i < num_borders; i++)
   {
     // we look at the borders
     const float xx = border[i * 2];
@@ -2154,7 +2141,7 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     ymin = fminf(yy, ymin);
     ymax = fmaxf(yy, ymax);
   }
-  for(int i = nb_corner * 3; i < points_count; i++)
+  for(int i = nb_corner * 3; i < num_points; i++)
   {
     // we look at the path too
     const float xx = points[i * 2];
@@ -2165,70 +2152,57 @@ static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
     ymax = fmaxf(yy, ymax);
   }
 
-  dt_free_align(points);
-  dt_free_align(border);
+  *x_min = xmin;
+  *x_max = xmax;
+  *y_min = ymin;
+  *y_max = ymax;
+}
+
+static void _path_bounding_box(const float *const points, const float *border, const int nb_corner, const int num_points, int num_borders,
+                               int *width, int *height, int *posx, int *posy)
+{
+  // now we want to find the area, so we search min/max points
+  float xmin, xmax, ymin, ymax;
+  _path_bounding_box_raw(points, border, nb_corner, num_points, num_borders, &xmin, &xmax, &ymin, &ymax);
   *height = ymax - ymin + 4;
   *width = xmax - xmin + 4;
   *posx = xmin - 2;
   *posy = ymin - 2;
-  return 1;
 }
 
-static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                            int *width, int *height, int *posx, int *posy)
+static int _path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+                          int *width, int *height, int *posx, int *posy, int get_source)
 {
   if(!module) return 0;
   // we get buffers for all points
   float *points = NULL, *border = NULL;
   int points_count = 0, border_count = 0;
   if(!_path_get_points_border(module->dev, form, module->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, piece->pipe, &points, &points_count,
-                              &border, &border_count, 0))
+                              &border, &border_count, get_source))
   {
     dt_free_align(points);
     dt_free_align(border);
     return 0;
   }
 
-  // now we want to find the area, so we search min/max points
-  float xmin, xmax, ymin, ymax;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
   const guint nb_corner = g_list_length(form->points);
-  for(int i = nb_corner * 3; i < border_count; i++)
-  {
-    // we look at the borders
-    const float xx = border[i * 2];
-    const float yy = border[i * 2 + 1];
-    if(isnan(xx))
-    {
-      if(isnan(yy)) break; // that means we have to skip the end of the border path
-      i = yy - 1;
-      continue;
-    }
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
-  for(int i = nb_corner * 3; i < points_count; i++)
-  {
-    // we look at the path too
-    const float xx = points[i * 2];
-    const float yy = points[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
+  _path_bounding_box(points, border, nb_corner, points_count, border_count, width, height, posx, posy);
 
   dt_free_align(points);
   dt_free_align(border);
-
-  *height = ymax - ymin + 4;
-  *width = xmax - xmin + 4;
-  *posx = xmin - 2;
-  *posy = ymin - 2;
   return 1;
+}
+
+static int dt_path_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+                                   dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+{
+  return _path_get_area(module, piece, form,width, height, posx, posy, 1);
+}
+
+static int dt_path_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+                            int *width, int *height, int *posx, int *posy)
+{
+  return _path_get_area(module, piece, form,width, height, posx, posy, 0);
 }
 
 /** we write a falloff segment */
@@ -2283,42 +2257,11 @@ static int dt_path_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pie
   }
 
   // now we want to find the area, so we search min/max points
-  float xmin, xmax, ymin, ymax;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
   const guint nb_corner = g_list_length(form->points);
-  for(int i = nb_corner * 3; i < border_count; i++)
-  {
-    // we look at the borders
-    const float xx = border[i * 2];
-    const float yy = border[i * 2 + 1];
-    if(isnan(xx))
-    {
-      if(isnan(yy)) break; // that means we have to skip the end of the border path
-      i = yy - 1;
-      continue;
-    }
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
+  _path_bounding_box(points, border, nb_corner, points_count, border_count, width, height, posx, posy);
 
-  for(int i = nb_corner * 3; i < points_count; i++)
-  {
-    // we look at the path too
-    const float xx = points[i * 2];
-    const float yy = points[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
-  }
-
-  const int hb = *height = ymax - ymin + 4;
-  const int wb = *width = xmax - xmin + 4;
-  *posx = xmin - 2;
-  *posy = ymin - 2;
+  const int hb = *height;
+  const int wb = *width;
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -2814,32 +2757,7 @@ static int dt_path_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t 
 
   // now get min/max values
   float xmin, xmax, ymin, ymax;
-  xmin = ymin = FLT_MAX;
-  xmax = ymax = FLT_MIN;
-  for(int i = nb_corner * 3; i < points_count; i++)
-  {
-    float xx = points[i * 2];
-    float yy = points[i * 2 + 1];
-    xmin = MIN(xx, xmin);
-    xmax = MAX(xx, xmax);
-    ymin = MIN(yy, ymin);
-    ymax = MAX(yy, ymax);
-  }
-  for(int i = nb_corner * 3; i < border_count; i++)
-  {
-    float xx = border[i * 2];
-    float yy = border[i * 2 + 1];
-    if(isnan(xx))
-    {
-      if(isnan(yy)) break; // that means we have to skip the end of the border path
-      i = yy - 1;
-      continue;
-    }
-    xmin = MIN(xx, xmin);
-    xmax = MAX(xx, xmax);
-    ymin = MIN(yy, ymin);
-    ymax = MAX(yy, ymax);
-  }
+  _path_bounding_box_raw(points, border, nb_corner, points_count, border_count, &xmin, &xmax, &ymin, &ymax);
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
