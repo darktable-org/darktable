@@ -30,7 +30,6 @@
 // clang-format off
 #include "develop/masks/path.c"
 #include "develop/masks/brush.c"
-#include "develop/masks/gradient.c"
 #include "develop/masks/group.c"
 // clang-format on
 

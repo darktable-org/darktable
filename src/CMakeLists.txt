@@ -113,6 +113,7 @@ FILE(GLOB SOURCE_FILES
   "common/heal.c"
   "develop/masks/circle.c"
   "develop/masks/ellipse.c"
+  "develop/masks/gradient.c"
   "develop/masks/masks.c"
   "develop/format.c"
   "dtgtk/button.c"
