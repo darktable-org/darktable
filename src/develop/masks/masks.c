@@ -53,8 +53,6 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
 
     if (form->functions)
       size_item = form->functions->point_struct_size;
-    else if (form->type & DT_MASKS_CIRCLE)
-      size_item = sizeof(struct dt_masks_point_circle_t);
     else if (form->type & DT_MASKS_GRADIENT)
       size_item = sizeof(struct dt_masks_point_gradient_t);
     else if (form->type & DT_MASKS_BRUSH)
@@ -272,25 +270,6 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
     g_strlcpy(a->name, _("[BRUSH] change hardness"), sizeof(a->name));
     lm = g_slist_append(lm, a);
   }
-  if((formtype & DT_MASKS_CIRCLE) == DT_MASKS_CIRCLE)
-  {
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_SCROLL;
-    g_strlcpy(a->name, _("[CIRCLE] change size"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->key.accel_mods = GDK_CONTROL_MASK;
-    a->action = DT_MOUSE_ACTION_SCROLL;
-    g_strlcpy(a->name, _("[CIRCLE] change opacity"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->key.accel_mods = GDK_SHIFT_MASK;
-    a->action = DT_MOUSE_ACTION_SCROLL;
-    g_strlcpy(a->name, _("[CIRCLE] change feather size"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
-  }
 
   return lm;
 }
@@ -360,12 +339,6 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
                  _("<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
     else if(gui->border_selected)
       g_strlcat(msg, _("<b>size</b>: scroll"), sizeof(msg));
-  }
-  else if(formtype & DT_MASKS_CIRCLE)
-  {
-    // circle has same controls on creation and on edit
-    g_snprintf(msg, sizeof(msg),
-               _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
   }
 
   dt_control_hinter_message(darktable.control, msg);
@@ -542,8 +515,6 @@ void dt_masks_gui_form_save_creation(dt_develop_t *dev, dt_iop_module_t *module,
 
     if(form->functions && form->functions->set_form_name)
       form->functions->set_form_name(form, nb);
-    else if(form->type & DT_MASKS_CIRCLE)
-      snprintf(form->name, sizeof(form->name), _("circle #%d"), nb);
     else if(form->type & DT_MASKS_PATH)
       snprintf(form->name, sizeof(form->name), _("path #%d"), nb);
     else if(form->type & DT_MASKS_GRADIENT)
@@ -633,18 +604,6 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
       pts = g_list_next(pts);
     }
   }
-  else if(fbase->type & DT_MASKS_CIRCLE)
-  {
-    GList *pts = g_list_first(fbase->points);
-    while(pts)
-    {
-      dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)pts->data;
-      dt_masks_point_circle_t *npt = (dt_masks_point_circle_t *)malloc(sizeof(dt_masks_point_circle_t));
-      memcpy(npt, pt, sizeof(dt_masks_point_circle_t));
-      fdest->points = g_list_append(fdest->points, npt);
-      pts = g_list_next(pts);
-    }
-  }
   else if(fbase->type & DT_MASKS_PATH)
   {
     GList *pts = g_list_first(fbase->points);
@@ -700,10 +659,13 @@ int dt_masks_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, float *
       x = form->source[0], y = form->source[1];
     else
       x = circle->center[0], y = circle->center[1];
-    if(dt_circle_get_points(dev, x, y, circle->radius, points, points_count))
+    if(form->functions->get_points(dev, x, y, circle->radius, circle->radius, 0, points, points_count))
     {
       if(border)
-        return dt_circle_get_points(dev, x, y, circle->radius + circle->border, border, border_count);
+      {
+        float outer_radius = circle->radius + circle->border;
+        return form->functions->get_points(dev, x, y, outer_radius, outer_radius, 0, border, border_count);
+      }
       else
         return 1;
     }
@@ -762,10 +724,6 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 {
   if(form->functions)
     return form->functions->get_area(module, piece, form, width, height, posx, posy);
-  else if(form->type & DT_MASKS_CIRCLE)
-  {
-    return dt_circle_get_area(module, piece, form, width, height, posx, posy);
-  }
   else if(form->type & DT_MASKS_PATH)
   {
     return dt_path_get_area(module, piece, form, width, height, posx, posy);
@@ -792,10 +750,6 @@ int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   {
     if(form->functions)
       return form->functions->get_source_area(module, piece, form, width, height, posx, posy);
-    else if(form->type & DT_MASKS_CIRCLE)
-    {
-      return dt_circle_get_source_area(module, piece, form, width, height, posx, posy);
-    }
     else if(form->type & DT_MASKS_PATH)
     {
       return dt_path_get_source_area(module, piece, form, width, height, posx, posy);
@@ -813,10 +767,6 @@ int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 {
   if(form->functions)
     return form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy);
-  else if(form->type & DT_MASKS_CIRCLE)
-  {
-    return dt_circle_get_mask(module, piece, form, buffer, width, height, posx, posy);
-  }
   else if(form->type & DT_MASKS_PATH)
   {
     return dt_path_get_mask(module, piece, form, buffer, width, height, posx, posy);
@@ -842,10 +792,6 @@ int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   if(form->functions)
   {
     return form->functions->get_mask_roi(module, piece, form, roi, buffer);
-  }
-  else if(form->type & DT_MASKS_CIRCLE)
-  {
-    return dt_circle_get_mask_roi(module, piece, form, roi, buffer);
   }
   else if(form->type & DT_MASKS_PATH)
   {
@@ -1226,23 +1172,6 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
   return res;
 }
 
-static void _dt_masks_sanitize_config(dt_masks_type_t type)
-{
-  if(type & DT_MASKS_CIRCLE)
-  {
-    if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
-    {
-      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
-      dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
-    }
-    else
-    {
-      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/size", 0.001f, 0.5f);
-      dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
-    }
-  }
-}
-
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
   dt_masks_form_t *form = (dt_masks_form_t *)calloc(1, sizeof(dt_masks_form_t));
@@ -1252,14 +1181,14 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
   form->version = dt_masks_version();
   form->formid = time(NULL);
 
-  if (type & DT_MASKS_ELLIPSE)
+  if (type & DT_MASKS_CIRCLE)
+    form->functions = &dt_masks_functions_circle;
+  else if (type & DT_MASKS_ELLIPSE)
     form->functions = &dt_masks_functions_ellipse;
   //TODO: else if(...)
 
   if (form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);
-  else
-    _dt_masks_sanitize_config(type);
 
   return form;
 }
@@ -1597,8 +1526,6 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
   int rep = 0;
   if(form->functions)
     rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_CIRCLE)
-    rep = dt_circle_events_mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
   else if(form->type & DT_MASKS_PATH)
     rep = dt_path_events_mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
@@ -1628,8 +1555,6 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
 
   if(form->functions)
     return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_CIRCLE)
-    return dt_circle_events_button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_PATH)
     return dt_path_events_button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
@@ -1677,8 +1602,6 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
 
   if(form->functions)
     return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_CIRCLE)
-    return dt_circle_events_button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_PATH)
     return dt_path_events_button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
@@ -1707,8 +1630,6 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
 
   if(form->functions)
     ret = form->functions->mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_CIRCLE)
-    ret = dt_circle_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_PATH)
     ret = dt_path_events_mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
   else if(form->type & DT_MASKS_GROUP)
@@ -1779,8 +1700,6 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
   // draw form
   if(form->functions)
     form->functions->post_expose(cr, zoom_scale, gui, 0, 0);
-  else if(form->type & DT_MASKS_CIRCLE)
-    dt_circle_events_post_expose(cr, zoom_scale, gui, 0);
   else if(form->type & DT_MASKS_PATH)
     dt_path_events_post_expose(cr, zoom_scale, gui, 0, g_list_length(form->points));
   else if(form->type & DT_MASKS_GROUP)
@@ -2568,10 +2487,6 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form)
     {      
       pos += form->functions->point_struct_size;
     }
-    else if(form->type & DT_MASKS_CIRCLE)
-    {
-      pos += sizeof(dt_masks_point_circle_t);
-    }
     else if(form->type & DT_MASKS_PATH)
     {
       pos += sizeof(dt_masks_point_path_t);
@@ -2626,11 +2541,6 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
     {
       memcpy(str + pos,forms->data, form->functions->point_struct_size);
       pos += form->functions->point_struct_size;
-    }
-    else if(form->type & DT_MASKS_CIRCLE)
-    {
-      memcpy(str + pos, forms->data, sizeof(dt_masks_point_circle_t));
-      pos += sizeof(dt_masks_point_circle_t);
     }
     else if(form->type & DT_MASKS_PATH)
     {
