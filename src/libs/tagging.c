@@ -2078,10 +2078,8 @@ static void _pop_menu_dictionary(GtkWidget *treeview, GdkEventButton *event, dt_
   if(gtk_tree_selection_get_selected(selection, &model, &iter))
   {
     guint tagid, count;
-    char *tagname;
     gtk_tree_model_get(model, &iter,
                        DT_LIB_TAGGING_COL_ID, &tagid,
-                       DT_LIB_TAGGING_COL_PATH, &tagname,
                        DT_LIB_TAGGING_COL_COUNT, &count, -1);
 
     GtkWidget *menu, *menuitem;
