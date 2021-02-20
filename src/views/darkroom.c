@@ -2941,10 +2941,6 @@ void enter(dt_view_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_DEVELOP_PREVIEW2_PIPE_FINISHED,
                             G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback), (gpointer)self);
 
-  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
-                                  G_CALLBACK(_display_module_trouble_message_callback),
-                                  (gpointer)self);
-
   dt_print(DT_DEBUG_CONTROL, "[run_job+] 11 %f in darkroom mode\n", dt_get_wtime());
   dt_develop_t *dev = (dt_develop_t *)self->data;
   if(!dev->form_gui)
@@ -3069,10 +3065,18 @@ void enter(dt_view_t *self)
                                   G_CALLBACK(_preference_changed_button_hide), dev);
 
   dt_iop_color_picker_init();
+
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_TROUBLE_MESSAGE,
+                                  G_CALLBACK(_display_module_trouble_message_callback),
+                                  (gpointer)self);
 }
 
 void leave(dt_view_t *self)
 {
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
+                                     G_CALLBACK(_display_module_trouble_message_callback),
+                                     (gpointer)self);
+
   dt_iop_color_picker_cleanup();
 
   _unregister_modules_drag_n_drop(self);
@@ -3087,10 +3091,6 @@ void leave(dt_view_t *self)
 
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_darkroom_ui_preview2_pipe_finish_signal_callback),
                                (gpointer)self);
-
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals,
-                                     G_CALLBACK(_display_module_trouble_message_callback),
-                                     (gpointer)self);
 
   // store groups for next time:
   dt_conf_set_int("plugins/darkroom/groups", dt_dev_modulegroups_get(darktable.develop));
