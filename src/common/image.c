@@ -489,10 +489,11 @@ static void _set_datetime(const int32_t imgid, const char *datetime)
 
 void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
 {
+  GList *list = (GList *)data;
+  int i = 0;
+
   if(type == DT_UNDO_GEOTAG)
   {
-    GList *list = (GList *)data;
-
     while(list)
     {
       dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)list->data;
@@ -502,15 +503,16 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
 
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undogeotag->imgid));
       list = g_list_next(list);
+      i++;
     }
-
+    if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
+                              ? _("geo-location undone for %d images")
+                              : _("geo-location re-applied to %d images"), i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy(*imgs), 0);
   }
   else if(type == DT_UNDO_DATETIME)
   {
-    GList *list = (GList *)data;
-
     while(list)
     {
       dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)list->data;
@@ -520,9 +522,13 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
 
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undodatetime->imgid));
       list = g_list_next(list);
+      i++;
     }
+    if(i > 1) dt_control_log((action == DT_ACTION_UNDO)
+                              ? _("date/time undone for %d images")
+                              : _("date/time re-applied to %d images"), i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy((GList *)data));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(*imgs));
   }
 }
 
@@ -585,6 +591,50 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
   if(group_on) dt_grouping_add_grouped_images(&imgs);
   dt_image_set_locations(imgs, geoloc, undo_on);
   g_list_free(imgs);
+}
+
+static void _image_set_images_locations(const GList *img, const GArray *gloc,
+                                        GList **undo, const gboolean undo_on)
+{
+  GList *imgs = (GList *)img;
+  int i = 0;
+  while(imgs)
+  {
+    const int32_t imgid = GPOINTER_TO_INT(imgs->data);
+    const dt_image_geoloc_t *geoloc = &g_array_index(gloc, dt_image_geoloc_t, i);
+    if(undo_on)
+    {
+      dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)malloc(sizeof(dt_undo_geotag_t));
+      undogeotag->imgid = imgid;
+      dt_image_get_location(imgid, &undogeotag->before);
+
+      memcpy(&undogeotag->after, geoloc, sizeof(dt_image_geoloc_t));
+
+      *undo = g_list_prepend(*undo, undogeotag);
+    }
+
+    _set_location(imgid, geoloc);
+
+    imgs = g_list_next(imgs);
+    i++;
+  }
+}
+
+void dt_image_set_images_locations(const GList *imgs, const GArray *gloc, const gboolean undo_on)
+{
+  if(!imgs || !gloc || (g_list_length((GList *)imgs) != gloc->len))
+    return;
+  GList *undo = NULL;
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_GEOTAG);
+
+  _image_set_images_locations(imgs, gloc, &undo, undo_on);
+
+  if(undo_on)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_GEOTAG, undo, _pop_undo, _geotag_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
 }
 
 void dt_image_reset_final_size(const int32_t imgid)
@@ -2452,81 +2502,92 @@ static void _datetime_undo_data_free(gpointer data)
   g_list_free_full(l, g_free);
 }
 
-static void _image_set_datetime(const int32_t imgid, const char *datetime)
+typedef struct dt_datetime_t
 {
-  if(imgid == -1) return;
+  char dt[DT_DATETIME_LENGTH];
+} _datetime_t;
 
+static void _image_set_datetimes(const GList *img, const GArray *dtime,
+                                 GList **undo, const gboolean undo_on)
+{
+  GList *imgs = (GList *)img;
+  int i = 0;
+  while(imgs)
+  {
+    const int32_t imgid = GPOINTER_TO_INT(imgs->data);
+    // if char *datetime, the returned pointer is not correct => use of _datetime_t
+    const _datetime_t *datetime = &g_array_index(dtime, _datetime_t, i);
+    if(undo_on)
+    {
+      dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
+      undodatetime->imgid = imgid;
+      dt_image_get_datetime(imgid, undodatetime->before);
+
+      memcpy(&undodatetime->after, datetime->dt, DT_DATETIME_LENGTH);
+
+      *undo = g_list_prepend(*undo, undodatetime);
+    }
+
+    _set_datetime(imgid, datetime->dt);
+
+    imgs = g_list_next(imgs);
+    i++;
+  }
+}
+
+void dt_image_set_datetimes(const GList *imgs, const GArray *dtime, const gboolean undo_on)
+{
+  if(!imgs || !dtime || (g_list_length((GList *)imgs) != dtime->len))
+    return;
   GList *undo = NULL;
-  dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
-    undodatetime->imgid = imgid;
-  dt_image_get_datetime(imgid, undodatetime->before);
-  memcpy(undodatetime->after, datetime, sizeof(undodatetime->after));
-  undo = g_list_append(undo, undodatetime);
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_DATETIME);
 
-  _set_datetime(imgid, datetime);
+  _image_set_datetimes(imgs, dtime, &undo, undo_on);
 
-  dt_undo_record(darktable.undo, NULL, DT_UNDO_DATETIME, undo, _pop_undo, _datetime_undo_data_free);
+  if(undo_on)
+  {
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_DATETIME, undo, _pop_undo, _datetime_undo_data_free);
+    dt_undo_end_group(darktable.undo);
+  }
 }
 
-void dt_image_add_time_offset(const int32_t imgid, const long int offset)
+static void _image_set_datetime(const GList *img, const char *datetime,
+                                GList **undo, const gboolean undo_on)
 {
-  const dt_image_t *cimg = dt_image_cache_get(darktable.image_cache, imgid, 'r');
-  if(!cimg) return;
-
-  // get the datetime_taken and calculate the new time
-  gint year;
-  gint month;
-  gint day;
-  gint hour;
-  gint minute;
-  gint seconds;
-
-  if(sscanf(cimg->exif_datetime_taken, "%d:%d:%d %d:%d:%d", (int *)&year, (int *)&month, (int *)&day,
-            (int *)&hour, (int *)&minute, (int *)&seconds) != 6)
+  GList *imgs = (GList *)img;
+  while(imgs)
   {
-    fprintf(stderr, "broken exif time in db, '%s', imgid %d\n", cimg->exif_datetime_taken, imgid);
-    dt_image_cache_read_release(darktable.image_cache, cimg);
-    return;
+    const int32_t imgid = GPOINTER_TO_INT(imgs->data);
+    if(undo_on)
+    {
+      dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)malloc(sizeof(dt_undo_datetime_t));
+      undodatetime->imgid = imgid;
+      dt_image_get_datetime(imgid, undodatetime->before);
+
+      memcpy(&undodatetime->after, datetime, DT_DATETIME_LENGTH);
+
+      *undo = g_list_prepend(*undo, undodatetime);
+    }
+
+    _set_datetime(imgid, datetime);
+
+    imgs = g_list_next(imgs);
   }
-
-  GTimeZone *tz = g_time_zone_new_utc();
-  GDateTime *datetime_original = g_date_time_new(tz, year, month, day, hour, minute, seconds);
-  g_time_zone_unref(tz);
-  if(!datetime_original)
-  {
-    dt_image_cache_read_release(darktable.image_cache, cimg);
-    return;
-  }
-
-  // let's add our offset
-  GDateTime *datetime_new = g_date_time_add_seconds(datetime_original, offset);
-  g_date_time_unref(datetime_original);
-
-  if(!datetime_new)
-  {
-    dt_image_cache_read_release(darktable.image_cache, cimg);
-    return;
-  }
-
-  gchar *datetime = g_date_time_format(datetime_new, "%Y:%m:%d %H:%M:%S");
-  g_date_time_unref(datetime_new);
-
-  // update exif_datetime_taken in img
-  if(datetime)
-  {
-    dt_image_cache_read_release(darktable.image_cache, cimg);
-    _image_set_datetime(imgid, datetime);
-  }
-  else dt_image_cache_read_release(darktable.image_cache, cimg);
-
-  g_free(datetime);
 }
 
-void dt_image_set_datetime(const int32_t imgid, const char *datetime)
+void dt_image_set_datetime(const GList *imgs, const char *datetime, const gboolean undo_on)
 {
-  if(datetime[0])
+  if(!imgs)
+    return;
+  GList *undo = NULL;
+  if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_DATETIME);
+
+  _image_set_datetime(imgs, datetime, &undo, undo_on);
+
+  if(undo_on)
   {
-    _image_set_datetime(imgid, datetime);
+    dt_undo_record(darktable.undo, NULL, DT_UNDO_DATETIME, undo, _pop_undo, _datetime_undo_data_free);
+    dt_undo_end_group(darktable.undo);
   }
 }
 

@@ -26,9 +26,9 @@
 #include "common/cups_print.h"
 #endif
 
-void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz);
+void dt_control_gpx_apply(const gchar *filename, int32_t filmid, const gchar *tz, GList *imgs);
 
-void dt_control_datetime(const long int offset, const char *datetime, int imgid);
+void dt_control_datetime(const long int offset, const char *datetime, GList *imgs);
 
 void dt_control_write_sidecar_files();
 void dt_control_delete_images();
