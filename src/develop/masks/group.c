@@ -22,24 +22,24 @@
 #include "develop/imageop.h"
 #include "develop/masks.h"
 
-static int dt_group_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
-                                          uint32_t state, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+static int _group_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
+                                        uint32_t state, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
+                                        int group_edited)
 {
-  if(gui->group_edited >= 0)
+  if(group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if(!sel) return 0;
-    if(sel->functions)
-      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel, fpt->parentid, gui, gui->group_edited);
+    if(sel && sel->functions)
+      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel, fpt->parentid, gui, group_edited);
   }
   return 0;
 }
 
-static int dt_group_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy,
-                                          double pressure, int which, int type, uint32_t state,
-                                          dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+static int _group_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy,
+                                        double pressure, int which, int type, uint32_t state,
+                                        dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui, int unused2)
 {
   if(gui->group_edited != gui->group_selected)
   {
@@ -68,24 +68,25 @@ static int dt_group_events_button_pressed(struct dt_iop_module_t *module, float 
   return 0;
 }
 
-static int dt_group_events_button_released(struct dt_iop_module_t *module, float pzx, float pzy, int which,
-                                           uint32_t state, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+static int _group_events_button_released(struct dt_iop_module_t *module, float pzx, float pzy, int which,
+                                         uint32_t state, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
+                                         int group_edited)
 {
-  if(gui->group_edited >= 0)
+  if(group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
-    if(!sel) return 0;
-    if(sel->functions)
+    if(sel && sel->functions)
       return sel->functions->button_released(module, pzx, pzy, which, state, sel, fpt->parentid, gui,
-                                            gui->group_edited);
+                                             group_edited);
   }
   return 0;
 }
 
-static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure,
-                                       int which, dt_masks_form_t *form, dt_masks_form_gui_t *gui)
+static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure,
+                                     int which, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
+                                     int unused2)
 {
   const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
   const int closeup = dt_control_get_dev_closeup();
@@ -155,8 +156,8 @@ static int dt_group_events_mouse_moved(struct dt_iop_module_t *module, float pzx
   return 0;
 }
 
-static void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t *form,
-                                        dt_masks_form_gui_t *gui)
+void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t *form,
+                                 dt_masks_form_gui_t *gui)
 {
   GList *fpts = g_list_first(form->points);
   int pos = 0;
@@ -172,7 +173,8 @@ static void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_
   }
 }
 
-static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
+static void _inverse_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                          dt_masks_form_t *const form,
                           float **buffer, int *width, int *height, int *posx, int *posy)
 {
   // we create a new buffer
@@ -209,8 +211,9 @@ static void _inverse_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece
   *height = ht;
 }
 
-static int dt_group_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                             float **buffer, int *width, int *height, int *posx, int *posy)
+static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                           dt_masks_form_t *const form,
+                           float **buffer, int *width, int *height, int *posx, int *posy)
 {
   // we allocate buffers and values
   const guint nb = g_list_length(form->points);
@@ -549,10 +552,10 @@ static void _combine_masks_exclusion(float *const restrict dest, float *const re
   }
 }
 
-static int dt_group_get_mask_roi(dt_iop_module_t *const restrict module,
-                                 dt_dev_pixelpipe_iop_t *const restrict piece,
-                                 dt_masks_form_t *const form, const dt_iop_roi_t *const roi,
-                                 float *const restrict buffer)
+static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
+                               const dt_dev_pixelpipe_iop_t *const restrict piece,
+                               dt_masks_form_t *const form, const dt_iop_roi_t *const roi,
+                               float *const restrict buffer)
 {
   double start = dt_get_wtime();
   if(!form->points) return 0;
@@ -648,6 +651,46 @@ int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
     dt_print(DT_DEBUG_MASKS, "[masks] render all masks took %0.04f sec\n", dt_get_wtime() - start);
   return ok;
 }
+
+static void _group_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base,
+                                    dt_masks_form_t *const dest)
+{
+  for(GList *pts = base->points; pts; pts = g_list_next(pts))
+  {
+    dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
+    dt_masks_point_group_t *npt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
+
+    npt->formid = dt_masks_form_duplicate(dev, pt->formid);
+    npt->parentid = dest->formid;
+    npt->state = pt->state;
+    npt->opacity = pt->opacity;
+    dest->points = g_list_append(dest->points, npt);
+  }
+}
+
+// The function table for groups.  This must be public, i.e. no "static" keyword.
+const dt_masks_functions_t dt_masks_functions_group = {
+  .point_struct_size = sizeof(struct dt_masks_point_group_t),
+  .sanitize_config = NULL,
+  .setup_mouse_actions = NULL,
+  .set_form_name = NULL,
+  .set_hint_message = NULL,
+  .duplicate_points = _group_duplicate_points,
+  .initial_source_pos = NULL,
+  .get_distance = NULL,
+  .get_points = NULL,
+  .get_points_border = NULL,
+  .get_mask = _group_get_mask,
+  .get_mask_roi = _group_get_mask_roi,
+  .get_area = NULL,
+  .get_source_area = NULL,
+  .mouse_moved = _group_events_mouse_moved,
+  .mouse_scrolled = _group_events_mouse_scrolled,
+  .button_pressed = _group_events_button_pressed,
+  .button_released = _group_events_button_released,
+//TODO:  .post_expose = _group_events_post_expose
+};
+
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

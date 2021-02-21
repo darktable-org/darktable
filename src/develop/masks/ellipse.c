@@ -2063,8 +2063,9 @@ static void _ellipse_set_form_name(struct dt_masks_form_t *const form, const siz
   snprintf(form->name, sizeof(form->name), _("ellipse #%d"), (int)nb);
 }
 
-static void _ellipse_duplicate_points(dt_masks_form_t *const base, dt_masks_form_t *const dest)
+static void _ellipse_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
+  (void)dev; // unused arg, keep compiler from complaining
   for (GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
   {
     dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)pts->data;

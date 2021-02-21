@@ -3071,8 +3071,9 @@ static void _path_set_hint_message(const dt_masks_form_gui_t *const gui, const d
                                      "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
 }
 
-static void _path_duplicate_points(dt_masks_form_t *const base, dt_masks_form_t *const dest)
+static void _path_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
+  (void)dev; // unused arg, keep compiler from complaining
   for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
   {
     dt_masks_point_path_t *pt = (dt_masks_point_path_t *)pts->data;
