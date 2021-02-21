@@ -148,7 +148,7 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
     a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
     a->action = DT_MOUSE_ACTION_RIGHT;
     g_strlcpy(a->name, _("[SHAPE] remove shape"), sizeof(a->name));
-    lm = g_slist_append(lm, a);
+    lm = g_slist_prepend(lm, a);
   }
 
   return lm;
