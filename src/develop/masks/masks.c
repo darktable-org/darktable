@@ -27,10 +27,6 @@
 
 #pragma GCC diagnostic ignored "-Wshadow"
 
-// clang-format off
-#include "develop/masks/group.c"
-// clang-format on
-
 dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
 {
   if (!form) return NULL;
@@ -44,12 +40,7 @@ dt_masks_form_t *dt_masks_dup_masks_form(const dt_masks_form_t *form)
 
   if (form->points)
   {
-    int size_item = 0;
-
-    if (form->functions)
-      size_item = form->functions->point_struct_size;
-    else if (form->type & DT_MASKS_GROUP)
-      size_item = sizeof(struct dt_masks_point_group_t);
+    int size_item = (form->functions) ? form->functions->point_struct_size : 0;
 
     if (size_item != 0)
     {
@@ -175,7 +166,7 @@ static void _set_hinter_message(dt_masks_form_gui_t *gui, const dt_masks_form_t 
     opacity = (int)(dt_conf_get_float("plugins/darkroom/masks/opacity") * 100);
   }
 
-  if(sel->functions)
+  if(sel->functions && sel->functions->set_hint_message)
   {
     sel->functions->set_hint_message(gui, form, opacity, msg, sizeof(msg));
   }
@@ -420,23 +411,7 @@ int dt_masks_form_duplicate(dt_develop_t *dev, int formid)
 
   // we copy all the points
   if(fbase->functions)
-    fbase->functions->duplicate_points(fbase, fdest);
-  else if(fbase->type & DT_MASKS_GROUP)
-  {
-    GList *pts = g_list_first(fbase->points);
-    while(pts)
-    {
-      dt_masks_point_group_t *pt = (dt_masks_point_group_t *)pts->data;
-      dt_masks_point_group_t *npt = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
-
-      npt->formid = dt_masks_form_duplicate(dev, pt->formid);
-      npt->parentid = fdest->formid;
-      npt->state = pt->state;
-      npt->opacity = pt->opacity;
-      fdest->points = g_list_append(fdest->points, npt);
-      pts = g_list_next(pts);
-    }
-  }
+    fbase->functions->duplicate_points(dev, fbase, fdest);
 
   // we save the form
   dt_dev_add_masks_history_item(dev, NULL, TRUE);
@@ -474,32 +449,6 @@ int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *pi
   {
     if(form->functions)
       return form->functions->get_source_area(module, piece, form, width, height, posx, posy);
-  }
-  return 0;
-}
-
-int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                      float **buffer, int *width, int *height, int *posx, int *posy)
-{
-  if(form->functions)
-    return form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy);
-  else if(form->type & DT_MASKS_GROUP)
-  {
-    return dt_group_get_mask(module, piece, form, buffer, width, height, posx, posy);
-  }
-  return 0;
-}
-
-int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                          const dt_iop_roi_t *roi, float *buffer)
-{
-  if(form->functions)
-  {
-    return form->functions->get_mask_roi(module, piece, form, roi, buffer);
-  }
-  else if(form->type & DT_MASKS_GROUP)
-  {
-    return dt_group_get_mask_roi(module, piece, form, roi, buffer);
   }
   return 0;
 }
@@ -883,6 +832,8 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
     form->functions = &dt_masks_functions_path;
   else if (type & DT_MASKS_GRADIENT)
     form->functions = &dt_masks_functions_gradient;
+  else if (type & DT_MASKS_GROUP)
+    form->functions = &dt_masks_functions_group;
 
   if (form->functions && form->functions->sanitize_config)
     form->functions->sanitize_config(type);
@@ -975,16 +926,6 @@ void dt_masks_read_masks_history(dt_develop_t *dev, const int imgid)
         form->points = g_list_append(form->points, point);
       }
     }
-    else if(form->type & DT_MASKS_GROUP)
-    {
-      dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)sqlite3_column_blob(stmt, 5);
-      for(int i = 0; i < nb_points; i++)
-      {
-        dt_masks_point_group_t *point = (dt_masks_point_group_t *)malloc(sizeof(dt_masks_point_group_t));
-        memcpy(point, ptbuf + i, sizeof(dt_masks_point_group_t));
-        form->points = g_list_append(form->points, point);
-      }
-    }
 
     if(form->version != dt_masks_version())
     {
@@ -1071,24 +1012,6 @@ void dt_masks_write_masks_history_item(const int imgid, const int num, dt_masks_
     sqlite3_finalize(stmt);
     free(ptbuf);
   }
-  else if(form->type & DT_MASKS_GROUP)
-  {
-    guint nb = g_list_length(form->points);
-    dt_masks_point_group_t *ptbuf = (dt_masks_point_group_t *)calloc(nb, sizeof(dt_masks_point_group_t));
-    GList *points = g_list_first(form->points);
-    int pos = 0;
-    while(points)
-    {
-      dt_masks_point_group_t *pt = (dt_masks_point_group_t *)points->data;
-      ptbuf[pos++] = *pt;
-      points = g_list_next(points);
-    }
-    DT_DEBUG_SQLITE3_BIND_BLOB(stmt, 6, ptbuf, nb * sizeof(dt_masks_point_group_t), SQLITE_TRANSIENT);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 7, nb);
-    sqlite3_step(stmt);
-    sqlite3_finalize(stmt);
-    free(ptbuf);
-  }
 }
 
 void dt_masks_free_form(dt_masks_form_t *form)
@@ -1138,7 +1061,7 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
     gui->posy = pzy * darktable.develop->preview_pipe->backbuf_height;
   }
 
-  // do not preocess if no forms visible
+  // do not process if no forms visible
   if(!form) return 0;
 
   // add an option to allow skip mouse events while editing masks
@@ -1146,9 +1069,7 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 
   int rep = 0;
   if(form->functions)
-    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_GROUP)
-    rep = dt_group_events_mouse_moved(module, pzx, pzy, pressure, which, form, gui);
+    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, gui->group_edited);
 
   if(gui) _set_hinter_message(gui, form);
 
@@ -1169,9 +1090,7 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
   pzy += 0.5f;
 
   if(form->functions)
-    return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_GROUP)
-    return dt_group_events_button_released(module, pzx, pzy, which, state, form, gui);
+    return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, gui->group_edited);
 
   return 0;
 }
@@ -1209,10 +1128,9 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
     dt_masks_select_form(module, sel);
   }
 
-  if(form->type & DT_MASKS_GROUP)
-    return dt_group_events_button_pressed(module, pzx, pzy, pressure, which, type, state, form, gui);
-  else if(form->functions)
-    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
+  if(form->functions)
+    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0,
+                                           gui, gui->group_edited);
 
   return 0;
 }
@@ -1232,9 +1150,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   int ret = 0;
 
   if(form->functions)
-    ret = form->functions->mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
-  else if(form->type & DT_MASKS_GROUP)
-    ret = dt_group_events_mouse_scrolled(module, pzx, pzy, up, state, form, gui);
+    ret = form->functions->mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, gui->group_edited);
 
   if(gui)
   {
@@ -1295,10 +1211,10 @@ void dt_masks_events_post_expose(struct dt_iop_module_t *module, cairo_t *cr, in
     dt_masks_gui_form_test_create(form, gui);
 
   // draw form
-  if(form->functions)
-    form->functions->post_expose(cr, zoom_scale, gui, 0, g_list_length(form->points));
-  else if(form->type & DT_MASKS_GROUP)
+  if(form->type & DT_MASKS_GROUP)
     dt_group_events_post_expose(cr, zoom_scale, form, gui);
+  else if(form->functions)
+    form->functions->post_expose(cr, zoom_scale, gui, 0, g_list_length(form->points));
 
   cairo_restore(cr);
 }

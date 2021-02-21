@@ -167,7 +167,7 @@ typedef struct dt_masks_functions_t
   void (*set_form_name)(struct dt_masks_form_t *const form, const size_t nb);
   void (*set_hint_message)(const struct dt_masks_form_gui_t *const gui, const struct dt_masks_form_t *const form,
                            const int opacity, char *const __restrict__ msgbuf, const size_t msgbuf_len);
-  void (*duplicate_points)(struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
+  void (*duplicate_points)(struct dt_develop_t *const dev, struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
   void (*initial_source_pos)(const float iwd, const float iht, float *x, float *y);
   void (*get_distance)(float x, float y, float as, struct dt_masks_form_gui_t *gui, int index, int num_points,
                        int *inside, int *inside_border, int *near, int *inside_source);
@@ -295,6 +295,7 @@ extern const dt_masks_functions_t dt_masks_functions_ellipse;
 extern const dt_masks_functions_t dt_masks_functions_brush;
 extern const dt_masks_functions_t dt_masks_functions_path;
 extern const dt_masks_functions_t dt_masks_functions_gradient;
+extern const dt_masks_functions_t dt_masks_functions_group;
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);
@@ -310,10 +311,18 @@ int dt_masks_get_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt
 int dt_masks_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                              int *width, int *height, int *posx, int *posy);
 /** get the transparency mask of the form and his border */
-int dt_masks_get_mask(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                      float **buffer, int *width, int *height, int *posx, int *posy);
-int dt_masks_get_mask_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
-                          const dt_iop_roi_t *roi, float *buffer);
+static inline int dt_masks_get_mask(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                      dt_masks_form_t *const form,
+                      float **buffer, int *width, int *height, int *posx, int *posy)
+{
+  return form->functions ? form->functions->get_mask(module, piece, form, buffer, width, height, posx, posy) : 0;
+}
+static inline int dt_masks_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_pixelpipe_iop_t *const piece,
+                          dt_masks_form_t *const form, const dt_iop_roi_t *roi, float *buffer)
+{
+  return form->functions ? form->functions->get_mask_roi(module, piece, form, roi, buffer) : 0;
+}
+
 int dt_masks_group_render(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
                           float **buffer, int *roi, float scale);
 int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece, dt_masks_form_t *form,
@@ -421,6 +430,9 @@ void dt_masks_calculate_source_pos_value(dt_masks_form_gui_t *gui, const int mas
 
 /** return the list of possible mouse actions */
 GSList *dt_masks_mouse_actions(dt_masks_form_t *form);
+
+void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t *form,
+                                 dt_masks_form_gui_t *gui);
 
 /** code for dynamic handling of intermediate buffers */
 static inline
