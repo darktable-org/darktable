@@ -413,8 +413,9 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
       GList *labels = NULL;
       do
       {
-        labels = g_list_append(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)))));
+        labels = g_list_prepend(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)))));
       } while((res = g_list_next(res)) != NULL);
+      labels = g_list_reverse(labels);  // list was built in reverse order, so un-reverse it
       result = dt_util_glist_to_str(",", labels);
       g_list_free(labels);
     }

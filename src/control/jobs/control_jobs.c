@@ -530,7 +530,7 @@ static int32_t dt_control_merge_hdr_job_run(dt_job_t *job)
   g_free(directory);
 
   // refresh the thumbtable view
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_append(NULL, GINT_TO_POINTER(imageid)));
+  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, g_list_prepend(NULL, GINT_TO_POINTER(imageid)));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
 
@@ -680,10 +680,10 @@ static GList *_get_full_pathname(char *imgs)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, imgs, -1, SQLITE_STATIC);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    list = g_list_append(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
+    list = g_list_prepend(list, g_strdup((const gchar *)sqlite3_column_text(stmt, 0)));
   }
   sqlite3_finalize(stmt);
-  return list;
+  return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
 }
 
 static int32_t dt_control_remove_images_job_run(dt_job_t *job)
