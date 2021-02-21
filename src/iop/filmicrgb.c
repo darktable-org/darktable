@@ -588,6 +588,12 @@ static inline float pixel_rgb_norm_power(const float pixel[4])
 static inline float get_pixel_norm(const float pixel[4], const dt_iop_filmicrgb_methods_type_t variant,
                                    const dt_iop_order_iccprofile_info_t *const work_profile)
 {
+  // a newly added norm should satisfy the condition that it is linear with respect to grey pixels:
+  // norm(R, G, B) = norm(x, x, x) = x
+  // the desaturation code in chroma preservation mode relies on this assumption.
+  // DT_FILMIC_METHOD_EUCLIDEAN_NORM_V1 is an exception to this and is marked as legacy.
+  // DT_FILMIC_METHOD_EUCLIDEAN_NORM_V2 takes the Euclidean norm and scales it such that
+  // norm(1, 1, 1) = 1.
   switch(variant)
   {
     case(DT_FILMIC_METHOD_MAX_RGB):
