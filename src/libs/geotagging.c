@@ -1782,7 +1782,7 @@ void gui_init(dt_lib_module_t *self)
                                 "\n- the start date/time in local time (LT)"
                                 "\n- the number of track points"
                                 "\n- the number of matching images"
-                                "based on images date/time, offset and time zone"
+                                " based on images date/time, offset and time zone"
                                 "\n- more detailled time information hovering the row"));
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_track_seg_toggled), self);
