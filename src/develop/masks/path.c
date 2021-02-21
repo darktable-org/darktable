@@ -3082,14 +3082,21 @@ static void _path_duplicate_points(dt_masks_form_t *const base, dt_masks_form_t 
   }
 }
 
+static void _path_initial_source_pos(const float iwd, const float iht, float *x, float *y)
+{
+  *x = (0.02f * iwd);
+  *y = (0.02f * iht);
+}
+
 // The function table for paths.  This must be public, i.e. no "static" keyword.
-dt_masks_functions_t dt_masks_functions_path = {
+const dt_masks_functions_t dt_masks_functions_path = {
   .point_struct_size = sizeof(struct dt_masks_point_path_t),
   .sanitize_config = _path_sanitize_config,
   .setup_mouse_actions = _path_setup_mouse_actions,
   .set_form_name = _path_set_form_name,
   .set_hint_message = _path_set_hint_message,
   .duplicate_points = _path_duplicate_points,
+  .initial_source_pos = _path_initial_source_pos,
   .get_distance = _path_get_distance,
   .get_points_border = _path_get_points_border,
   .get_mask = _path_get_mask,

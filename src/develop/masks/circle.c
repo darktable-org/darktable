@@ -801,6 +801,28 @@ static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius,
   return 0;
 }
 
+static int _circle_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *form, float **points,
+                                     int *points_count, float **border, int *border_count, int source)
+{
+  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  float x = 0.0f, y = 0.0f;
+  if(source)
+    x = form->source[0], y = form->source[1];
+  else
+    x = circle->center[0], y = circle->center[1];
+  if(form->functions->get_points(dev, x, y, circle->radius, circle->radius, 0, points, points_count))
+  {
+    if(border)
+    {
+      float outer_radius = circle->radius + circle->border;
+      return form->functions->get_points(dev, x, y, outer_radius, outer_radius, 0, border, border_count);
+    }
+    else
+      return 1;
+  }
+  return 0;
+}
+
 static int _circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
                                    dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
@@ -1290,16 +1312,26 @@ static void _circle_duplicate_points(dt_masks_form_t *const base, dt_masks_form_
   }
 }
 
+static void _circle_initial_source_pos(const float iwd, const float iht, float *x, float *y)
+{
+  const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
+
+  *x = (radius * iwd);
+  *y = -(radius * iht);
+}
+
 // The function table for ellipses.  This must be public, i.e. no "static" keyword.
-dt_masks_functions_t dt_masks_functions_circle = {
+const dt_masks_functions_t dt_masks_functions_circle = {
   .point_struct_size = sizeof(struct dt_masks_point_circle_t),
   .sanitize_config = _circle_sanitize_config,
   .setup_mouse_actions = _circle_setup_mouse_actions,
   .set_form_name = _circle_set_form_name,
   .set_hint_message = _circle_set_hint_message,
   .duplicate_points = _circle_duplicate_points,
+  .initial_source_pos = _circle_initial_source_pos,
   .get_distance = _circle_get_distance,
   .get_points = _circle_get_points,
+  .get_points_border = _circle_get_points_border,
   .get_mask = _circle_get_mask,
   .get_mask_roi = _circle_get_mask_roi,
   .get_area = _circle_get_area,
