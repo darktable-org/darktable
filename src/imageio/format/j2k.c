@@ -649,9 +649,14 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), gui->format, TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->format), "value-changed", G_CALLBACK(format_changed), NULL);
 
-  gui->quality = dt_bauhaus_slider_new_with_range(NULL, 5, 100, 1, 95, 0);
+  gui->quality = dt_bauhaus_slider_new_with_range(NULL,
+                                                  dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_MIN),
+                                                  dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_MAX),
+                                                  1,
+                                                  dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_DEFAULT),
+                                                  0);
   dt_bauhaus_widget_set_label(gui->quality, NULL, N_("quality"));
-  dt_bauhaus_slider_set_default(gui->quality, 95);
+  dt_bauhaus_slider_set_default(gui->quality, dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_DEFAULT));
   if(quality_last > 0 && quality_last <= 100) dt_bauhaus_slider_set(gui->quality, quality_last);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->quality), TRUE, TRUE, 0);
   g_signal_connect(G_OBJECT(gui->quality), "value-changed", G_CALLBACK(quality_changed), NULL);
@@ -676,6 +681,13 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  const int format_def = dt_confgen_get_int("plugins/imageio/format/j2k/format", DT_DEFAULT);
+  const int preset_def = dt_confgen_get_int("plugins/imageio/format/j2k/preset", DT_DEFAULT);
+  const int quality_def = dt_confgen_get_int("plugins/imageio/format/j2k/quality", DT_DEFAULT);
+  dt_imageio_j2k_gui_t *gui = (dt_imageio_j2k_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(gui->format, format_def);
+  dt_bauhaus_combobox_set(gui->preset, preset_def);
+  dt_bauhaus_combobox_set(gui->quality, quality_def);
 }
 
 int flags(dt_imageio_module_data_t *data)

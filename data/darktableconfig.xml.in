@@ -2070,16 +2070,29 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/jpeg/quality</name>
-    <type>int</type>
+    <type min="5" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/j2k/quality</name>
+    <type min="5" max="100">int</type>
     <default>95</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/bpp</name>
-    <type>int</type>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
     <default>8</default>
-    <shortdescription/>
+    <shortdescription>TIFF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
@@ -2091,23 +2104,103 @@
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/tiff/compresslevel</name>
-    <type>int</type>
+    <type min="0" max="9">int</type>
     <default>6</default>
     <shortdescription/>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/png/bpp</name>
-    <type>int</type>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+      </enum>
+    </type>
     <default>8</default>
-    <shortdescription/>
+    <shortdescription>PNG bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig>
     <name>plugins/imageio/format/png/compression</name>
-    <type>int</type>
+    <type min="0" max="9">int</type>
     <default>5</default>
     <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/comp_type</name>
+    <type min="0" max="1">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/quality</name>
+    <type min="5" max="100">int</type>
+    <default>95</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/webp/hint</name>
+    <type>int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>10</option>
+        <option>12</option>
+      </enum>
+    </type>
+    <default>8</default>
+    <shortdescription>AVIF bit depth (bpp)</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/color_mode</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/tiling</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>AVIF Tiling</shortdescription>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/compression_type</name>
+    <type min="0">int</type>
+    <default>0</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/avif/quality</name>
+    <type min="5" max="100">int</type>
+    <default>92</default>
+    <shortdescription/>
+    <longdescription/>
+  </dtconfig>
+  <dtconfig>
+    <name>plugins/imageio/format/xcf/bpp</name>
+    <type>
+      <enum>
+        <option>8</option>
+        <option>16</option>
+        <option>32</option>
+      </enum>
+    </type>
+    <default>32</default>
+    <shortdescription>XCF bit depth (bpp)</shortdescription>
     <longdescription/>
   </dtconfig>
   <dtconfig prefs="misc" section="other">
