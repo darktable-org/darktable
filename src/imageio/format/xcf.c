@@ -230,7 +230,9 @@ void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_xcf_t *d = (dt_imageio_xcf_t *)calloc(1, sizeof(dt_imageio_xcf_t));
 
-  d->bpp = dt_conf_get_int("plugins/imageio/format/xcf/bpp");
+  gchar *conf_bpp = dt_conf_get_string("plugins/imageio/format/xcf/bpp");
+  d->bpp = atoi(conf_bpp);
+  g_free(conf_bpp);
   if(d->bpp != 16 && d->bpp != 32)
     d->bpp = 8;
 
@@ -327,7 +329,11 @@ void gui_init(dt_imageio_module_format_t *self)
 
   int bpp = 32;
   if(dt_conf_key_exists("plugins/imageio/format/xcf/bpp"))
-    bpp = dt_conf_get_int("plugins/imageio/format/xcf/bpp");
+  {
+    gchar *conf_bpp = dt_conf_get_string("plugins/imageio/format/xcf/bpp");
+    bpp = atoi(conf_bpp);
+    g_free(conf_bpp);
+  }
 
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
 
@@ -354,6 +360,8 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
+  dt_imageio_xcf_gui_t *gui = (dt_imageio_xcf_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(gui->bpp, 2); // bpp = 32
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

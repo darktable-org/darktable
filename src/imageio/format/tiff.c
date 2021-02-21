@@ -637,7 +637,9 @@ void *legacy_params(dt_imageio_module_format_t *self, const void *const old_para
 void *get_params(dt_imageio_module_format_t *self)
 {
   dt_imageio_tiff_t *d = (dt_imageio_tiff_t *)calloc(1, sizeof(dt_imageio_tiff_t));
-  d->bpp = dt_conf_get_int("plugins/imageio/format/tiff/bpp");
+  gchar *bpp = dt_conf_get_string("plugins/imageio/format/tiff/bpp");
+  d->bpp = atoi(bpp);
+  g_free(bpp);
   if(d->bpp == 16)
     d->bpp = 16;
   else if(d->bpp == 32)
@@ -832,7 +834,12 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_box_pack_start(GTK_BOX(self->widget), gui->compress, TRUE, TRUE, 0);
 
   // Compression level slider
-  gui->compresslevel = dt_bauhaus_slider_new_with_range(NULL, 0, 9, 1, 6, 0);
+  gui->compresslevel = dt_bauhaus_slider_new_with_range(NULL,
+                                                      dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_MIN),
+                                                      dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_MAX),
+                                                      1,
+                                                      dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT),
+                                                      0);
   dt_bauhaus_widget_set_label(gui->compresslevel, NULL, N_("compression level"));
   dt_bauhaus_slider_set(gui->compresslevel, compresslevel);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(gui->compresslevel), TRUE, TRUE, 0);
@@ -860,7 +867,10 @@ void gui_cleanup(dt_imageio_module_format_t *self)
 
 void gui_reset(dt_imageio_module_format_t *self)
 {
-  // TODO: reset to conf? reset to factory defaults?
+  dt_imageio_tiff_gui_t *gui = (dt_imageio_tiff_gui_t *)self->gui_data;
+  dt_bauhaus_combobox_set(gui->bpp, 0); //8bpp
+  dt_bauhaus_slider_set(gui->compresslevel, dt_confgen_get_int("plugins/imageio/format/tiff/compresslevel", DT_DEFAULT));
+  dt_bauhaus_combobox_set(gui->shortfiles, dt_confgen_get_int("plugins/imageio/format/tiff/shortfile", DT_DEFAULT));
 }
 
 int flags(dt_imageio_module_data_t *data)
