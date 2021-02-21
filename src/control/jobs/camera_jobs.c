@@ -107,9 +107,9 @@ static int32_t dt_camera_capture_job_run(dt_job_t *job)
     do
     {
       // Add value to list
-      values = g_list_append(values, g_strdup(value));
+      values = g_list_prepend(values, g_strdup(value));
       // Check if current values is the same as original value, then lets store item ptr
-      if(strcmp(value, cvalue) == 0) original_value = g_list_last(values)->data;
+      if(strcmp(value, cvalue) == 0) original_value = values->data;
     } while((value = dt_camctl_camera_property_get_next_choice(darktable.camctl, NULL, "shutterspeed"))
             != NULL);
   }

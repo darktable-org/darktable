@@ -3203,7 +3203,7 @@ void leave(dt_view_t *self)
 
   // darkroom development could have changed a collection, so update that before being back in lighttable
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                             g_list_append(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
+                             g_list_prepend(NULL, GINT_TO_POINTER(darktable.develop->image_storage.id)));
 
   darktable.develop->image_storage.id = -1;
 

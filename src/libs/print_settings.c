@@ -1035,14 +1035,14 @@ static GList* _get_profiles ()
   dt_utf8_strlcpy(prof->name, _("sRGB (web-safe)"), sizeof(prof->name));
   prof->pos = -2;
   prof->ppos = -2;
-  list = g_list_append(list, prof);
+  list = g_list_prepend(list, prof);
 
   prof = (dt_lib_export_profile_t *)g_malloc0(sizeof(dt_lib_export_profile_t));
   prof->type = DT_COLORSPACE_ADOBERGB;
   dt_utf8_strlcpy(prof->name, _("Adobe RGB (compatible)"), sizeof(prof->name));
   prof->pos = -2;
   prof->ppos = -2;
-  list = g_list_append(list, prof);
+  list = g_list_prepend(list, prof);
 
   // add the profiles from datadir/color/out/*.icc
   for(GList *iter = darktable.color_profiles->profiles; iter; iter = g_list_next(iter))
@@ -1056,11 +1056,11 @@ static GList* _get_profiles ()
       prof->type = DT_COLORSPACE_FILE;
       prof->pos = -2;
       prof->ppos = -2;
-      list = g_list_append(list, prof);
+      list = g_list_prepend(list, prof);
     }
   }
 
-  return list;
+  return g_list_reverse(list);  // list was built in reverse order, so un-reverse it
 }
 
 static void _new_printer_callback(dt_printer_info_t *printer, void *user_data)

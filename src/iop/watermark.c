@@ -1169,7 +1169,7 @@ static void load_watermarks(const char *basedir, dt_iop_watermark_gui_data_t *g)
   {
     const gchar *d_name;
     while((d_name = g_dir_read_name(dir)))
-      files = g_list_append(files, g_strdup(d_name));
+      files = g_list_prepend(files, g_strdup(d_name));
     g_dir_close(dir);
   }
 

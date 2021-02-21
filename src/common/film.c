@@ -366,7 +366,7 @@ void dt_film_remove_empty()
 
     if(dt_util_is_dir_empty(folder))
     {
-      if(ask_before_rmdir) empty_dirs = g_list_append(empty_dirs, g_strdup(folder));
+      if(ask_before_rmdir) empty_dirs = g_list_prepend(empty_dirs, g_strdup(folder));
       else rmdir(folder);
     }
   }
@@ -375,7 +375,7 @@ void dt_film_remove_empty()
 
   // dispatch asking for deletion (and subsequent deletion) to the gui thread
   if(empty_dirs)
-    g_idle_add(ask_and_delete, empty_dirs);
+    g_idle_add(ask_and_delete, g_list_reverse(empty_dirs));
 }
 
 gboolean dt_film_is_empty(const int id)
@@ -461,10 +461,10 @@ GList *dt_film_get_image_ids(const int filmid)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const int id = sqlite3_column_int(stmt, 0);
-    result = g_list_append(result, GINT_TO_POINTER(id));
+    result = g_list_prepend(result, GINT_TO_POINTER(id));
   }
   sqlite3_finalize(stmt);
-  return result;
+  return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

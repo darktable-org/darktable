@@ -1362,7 +1362,7 @@ static GList *load_profile_from_dir(const char *subdir)
           prof->display2_pos = -1;
           prof->category_pos = -1;
           prof->work_pos = -1;
-          temp_profiles = g_list_append(temp_profiles, prof);
+          temp_profiles = g_list_prepend(temp_profiles, prof);
         }
 
 icc_loading_done:

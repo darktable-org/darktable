@@ -581,7 +581,7 @@ void dt_image_set_location(const int32_t imgid, const dt_image_geoloc_t *geoloc,
   if(imgid == -1)
     imgs = g_list_copy((GList *)dt_view_get_images_to_act_on(TRUE, TRUE));
   else
-    imgs = g_list_append(imgs, GINT_TO_POINTER(imgid));
+    imgs = g_list_prepend(imgs, GINT_TO_POINTER(imgid));
   if(group_on) dt_grouping_add_grouped_images(&imgs);
   dt_image_set_locations(imgs, geoloc, undo_on);
   g_list_free(imgs);
@@ -840,7 +840,7 @@ void dt_image_set_aspect_ratio_to(const int32_t imgid, const float aspect_ratio,
 
     if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                                 g_list_append(NULL, GINT_TO_POINTER(imgid)));
+                                 g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
   }
 }
 
@@ -864,7 +864,7 @@ void dt_image_set_aspect_ratio_if_different(const int32_t imgid, const float asp
 
     if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                                 g_list_append(NULL, GINT_TO_POINTER(imgid)));
+                                 g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
   }
 }
 
@@ -881,7 +881,7 @@ void dt_image_reset_aspect_ratio(const int32_t imgid, const gboolean raise)
 
   if(raise && darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_append(NULL, GINT_TO_POINTER(imgid)));
+                               g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
 }
 
 float dt_image_set_aspect_ratio(const int32_t imgid, const gboolean raise)
@@ -1767,7 +1767,7 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
       while(sqlite3_step(duplicates_stmt) == SQLITE_ROW)
       {
         const int32_t id = sqlite3_column_int(duplicates_stmt, 0);
-        dup_list = g_list_append(dup_list, GINT_TO_POINTER(id));
+        dup_list = g_list_prepend(dup_list, GINT_TO_POINTER(id));
         gchar oldxmp[PATH_MAX] = { 0 }, newxmp[PATH_MAX] = { 0 };
         g_strlcpy(oldxmp, oldimg, sizeof(oldxmp));
         g_strlcpy(newxmp, newimg, sizeof(newxmp));
@@ -1785,6 +1785,8 @@ int32_t dt_image_rename(const int32_t imgid, const int32_t filmid, const gchar *
         g_object_unref(gnewxmp);
       }
       sqlite3_finalize(duplicates_stmt);
+
+      dup_list = g_list_reverse(dup_list);  // list was built in reverse order, so un-reverse it
 
       // then update database and cache
       // if update was performed in above loop, dt_image_path_append_version()

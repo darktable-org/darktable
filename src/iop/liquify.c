@@ -2366,17 +2366,18 @@ static void draw_paths(struct dt_iop_module_t *module, cairo_t *cr, const float 
   {
     if(gtk_toggle_button_get_active(g->btn_point_tool)
         && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_POINT_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+      layers = g_list_prepend(layers, GINT_TO_POINTER(layer));
     if(gtk_toggle_button_get_active(g->btn_line_tool)
         && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_LINE_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+      layers = g_list_prepend(layers, GINT_TO_POINTER(layer));
     if(gtk_toggle_button_get_active(g->btn_curve_tool)
         && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_CURVE_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+      layers = g_list_prepend(layers, GINT_TO_POINTER(layer));
     if(gtk_toggle_button_get_active(g->btn_node_tool)
         && (dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_NODE_TOOL))
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+      layers = g_list_prepend(layers, GINT_TO_POINTER(layer));
   }
+  layers = g_list_reverse(layers); // list was built in reverse order, so un-reverse it
 
   _draw_paths(module, cr, scale, params, layers);
 
@@ -2393,8 +2394,9 @@ static dt_liquify_hit_t _hit_test_paths(struct dt_iop_module_t *module,
   for(dt_liquify_layer_enum_t layer = 0; layer < DT_LIQUIFY_LAYER_LAST; ++layer)
   {
     if(dt_liquify_layers[layer].flags & DT_LIQUIFY_LAYER_FLAG_HIT_TEST)
-      layers = g_list_append(layers, GINT_TO_POINTER(layer));
+      layers = g_list_prepend(layers, GINT_TO_POINTER(layer));
   }
+  layers = g_list_reverse(layers); // list was built in reverse order, so un-reverse it
 
   hit = _hit_paths(module, params, layers, &pt);
   g_list_free(layers);
