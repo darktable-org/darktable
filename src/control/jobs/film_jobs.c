@@ -138,14 +138,14 @@ static void _apply_filmroll_gpx(dt_film_t *cfr)
       {
         gchar *gpx_file = g_build_path(G_DIR_SEPARATOR_S, cfr->dirname, dfn, NULL);
         gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-        dt_control_gpx_apply(gpx_file, cfr->id, tz);
+        dt_control_gpx_apply(gpx_file, cfr->id, tz, NULL);
         g_free(gpx_file);
         g_free(tz);
       }
     }
   }
 }
-  
+
 /* compare used for sorting the list of files to import
    only sort on basename of full path eg. the actually filename.
 */
