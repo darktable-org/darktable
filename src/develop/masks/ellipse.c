@@ -341,6 +341,32 @@ static int _ellipse_get_points(dt_develop_t *dev, float xx, float yy, float radi
   return 0;
 }
 
+static int _ellipse_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *form, float **points,
+                                      int *points_count, float **border, int *border_count, int source)
+{
+  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  float x = 0.0f, y = 0.0f, a = 0.0f, b = 0.0f;
+  if(source)
+    x = form->source[0], y = form->source[1];
+  else
+    x = ellipse->center[0], y = ellipse->center[1];
+  a = ellipse->radius[0], b = ellipse->radius[1];
+  if(form->functions->get_points(dev, x, y, a, b, ellipse->rotation, points, points_count))
+  {
+    if(border)
+    {
+      const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
+      return form->functions->get_points(dev, x, y,
+                                         (prop ? a * (1.0f + ellipse->border) : a + ellipse->border),
+                                         (prop ? b * (1.0f + ellipse->border) : b + ellipse->border),
+                                         ellipse->rotation, border, border_count);
+    }
+    else
+      return 1;
+  }
+  return 0;
+}
+
 static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                           uint32_t state, dt_masks_form_t *form, int parentid,
                                           dt_masks_form_gui_t *gui, int index)
@@ -2048,6 +2074,15 @@ static void _ellipse_duplicate_points(dt_masks_form_t *const base, dt_masks_form
   }
 }
 
+static void _ellipse_initial_source_pos(const float iwd, const float iht, float *x, float *y)
+{
+  const float radius_a = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_a");
+  const float radius_b = dt_conf_get_float("plugins/darkroom/spots/ellipse_radius_b");
+
+  *x = (radius_a * iwd);
+  *y = -(radius_b * iht);
+}
+
 static void _ellipse_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
                                         const int opacity, char *const restrict msgbuf, const size_t msgbuf_len)
 {
@@ -2117,15 +2152,17 @@ static void _ellipse_sanitize_config(dt_masks_type_t type)
 }
 
 // The function table for ellipses.  This must be public, i.e. no "static" keyword.
-dt_masks_functions_t dt_masks_functions_ellipse = {
+const dt_masks_functions_t dt_masks_functions_ellipse = {
   .point_struct_size = sizeof(struct dt_masks_point_ellipse_t),
   .sanitize_config = _ellipse_sanitize_config,
   .setup_mouse_actions = _ellipse_setup_mouse_actions,
   .set_form_name = _ellipse_set_form_name,
   .set_hint_message = _ellipse_set_hint_message,
   .duplicate_points = _ellipse_duplicate_points,
+  .initial_source_pos = _ellipse_initial_source_pos,
   .get_distance = _ellipse_get_distance,
   .get_points = _ellipse_get_points,
+  .get_points_border = _ellipse_get_points_border,
   .get_mask = _ellipse_get_mask,
   .get_mask_roi = _ellipse_get_mask_roi,
   .get_area = _ellipse_get_area,
