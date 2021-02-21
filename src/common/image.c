@@ -70,7 +70,7 @@ static int64_t max_image_position()
   // get last position
   int64_t max_position = 0;
 
-  gchar *max_position_query = "SELECT MAX(position) FROM main.images";
+  const gchar *max_position_query = "SELECT MAX(position) FROM main.images";
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), max_position_query, -1, &stmt, NULL);
 
   if (sqlite3_step(stmt) == SQLITE_ROW)
@@ -230,8 +230,7 @@ int dt_image_monochrome_flags(const dt_image_t *img)
 const char *dt_image_film_roll_name(const char *path)
 {
   const char *folder = path + strlen(path);
-  int numparts = dt_conf_get_int("show_folder_levels");
-  numparts = CLAMPS(numparts, 1, 5);
+  const int numparts = CLAMPS(dt_conf_get_int("show_folder_levels"), 1, 5);
   int count = 0;
   while(folder > path)
   {
@@ -254,7 +253,7 @@ void dt_image_film_roll_directory(const dt_image_t *img, char *pathname, size_t 
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *f = (char *)sqlite3_column_text(stmt, 0);
+    const char *f = (char *)sqlite3_column_text(stmt, 0);
     g_strlcpy(pathname, f, pathname_len);
   }
   sqlite3_finalize(stmt);
@@ -270,7 +269,7 @@ void dt_image_film_roll(const dt_image_t *img, char *pathname, size_t pathname_l
   DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, img->film_id);
   if(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *f = (char *)sqlite3_column_text(stmt, 0);
+    const char *f = (char *)sqlite3_column_text(stmt, 0);
     const char *c = dt_image_film_roll_name(f);
     g_strlcpy(pathname, c, pathname_len);
   }
@@ -1168,7 +1167,7 @@ void dt_image_remove(const int32_t imgid)
   // make sure we remove from the cache first, or else the cache will look for imgid in sql
   dt_image_cache_remove(darktable.image_cache, imgid);
 
-  int new_group_id = dt_grouping_remove_from_group(imgid);
+  const int new_group_id = dt_grouping_remove_from_group(imgid);
   if(darktable.gui && darktable.gui->expanded_group_id == old_group_id)
     darktable.gui->expanded_group_id = new_group_id;
 
