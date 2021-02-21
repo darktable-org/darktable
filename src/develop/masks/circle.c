@@ -1301,8 +1301,9 @@ static void _circle_set_hint_message(const dt_masks_form_gui_t *const gui, const
                "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
 }
 
-static void _circle_duplicate_points(dt_masks_form_t *const base, dt_masks_form_t *const dest)
+static void _circle_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
+  (void)dev; // unused arg, keep compiler from complaining
   for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
   {
     dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)pts->data;
@@ -1320,7 +1321,7 @@ static void _circle_initial_source_pos(const float iwd, const float iht, float *
   *y = -(radius * iht);
 }
 
-// The function table for ellipses.  This must be public, i.e. no "static" keyword.
+// The function table for circles.  This must be public, i.e. no "static" keyword.
 const dt_masks_functions_t dt_masks_functions_circle = {
   .point_struct_size = sizeof(struct dt_masks_point_circle_t),
   .sanitize_config = _circle_sanitize_config,

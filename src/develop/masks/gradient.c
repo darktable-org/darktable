@@ -1516,8 +1516,9 @@ static void _gradient_set_hint_message(const dt_masks_form_gui_t *const gui, con
     g_strlcat(msgbuf, _("<b>rotate</b>: drag"), msgbuf_len);
 }
 
-static void _gradient_duplicate_points(dt_masks_form_t *const base, dt_masks_form_t *const dest)
+static void _gradient_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
+  (void)dev; // unused arg, keep compiler from complaining
   for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
   {
     dt_masks_point_gradient_t *pt = (dt_masks_point_gradient_t *)pts->data;
