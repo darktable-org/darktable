@@ -1447,7 +1447,6 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
   if(!txt) return;
   dt_lib_modulegroups_t *d = (dt_lib_modulegroups_t *)self->data;
 
-  GList *res = NULL;
   gboolean show_search = TRUE;
 
   gchar **gr = g_strsplit(txt, "ꬹ", -1);
@@ -1488,6 +1487,7 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
     }
   }
 
+  GList *res = NULL;
   // read the groups
   for(int i = 2; i < g_strv_length(gr); i++)
   {
@@ -1507,12 +1507,13 @@ static void _preset_from_string(dt_lib_module_t *self, gchar *txt, gboolean edit
         {
           group->modules = g_list_append(group->modules, g_strdup(gr2[j]));
         }
-        res = g_list_append(res, group);
+        res = g_list_prepend(res, group);
       }
       g_strfreev(gr2);
     }
   }
   g_strfreev(gr);
+  res = g_list_reverse(res);  // list was built in reverse order, so un-reverse it
 
   // and we set the values
   if(edition)

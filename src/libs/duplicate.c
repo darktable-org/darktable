@@ -139,7 +139,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
   // and we remove the image
   dt_control_delete_image(imgid);
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                             g_list_append(NULL, GINT_TO_POINTER(imgid)));
+                             g_list_prepend(NULL, GINT_TO_POINTER(imgid)));
 }
 
 static void _lib_duplicate_thumb_press_callback(GtkWidget *widget, GdkEventButton *event, dt_lib_module_t *self)
