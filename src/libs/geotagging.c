@@ -91,6 +91,7 @@ typedef struct dt_lib_geotagging_t
   time_t offset;
   uint32_t imgid;
   GList* imgs;
+  int nb_imgs;
   GtkWidget *apply_offset;
   GtkWidget *lock_offset;
   GtkWidget *apply_datetime;
@@ -108,7 +109,8 @@ typedef struct dt_lib_geotagging_t
     dt_lib_tracks_t *tracks;
     dt_map_box_t map_box;
     int nb_tracks, nb_imgs;
-    GtkWidget *gpx_section, *preview_button, *apply_gpx_button, *select_button, *nb_imgs_label;
+    GtkWidget *gpx_section, *preview_button, *apply_gpx_button,
+              *select_button, *nb_imgs_label;
     GtkTreeViewColumn *sel_tracks;
   } map;
 #endif
@@ -125,7 +127,7 @@ typedef struct dt_sel_img_t
 } dt_sel_img_t;
 
 static void _datetime_entry_changed(GtkWidget *entry, dt_lib_module_t *self);
-static void _set_selected_images(dt_lib_module_t *self);
+static void _setup_selected_images_list(dt_lib_module_t *self);
 
 static void free_tz_tuple(gpointer data)
 {
@@ -162,15 +164,15 @@ int position()
   return 450;
 }
 
-// modify the datetime_taken field in the db/cache
+// modify the datetime_taken field in the db/cache of selected images
 static void _apply_offset_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   if(d->offset)
-    dt_control_datetime(d->offset, NULL, -1);
+    dt_control_datetime(d->offset, NULL, NULL);
 }
 
-// modify the datetime_taken field in the db/cache
+// modify the datetime_taken field in the db/cache of selected images
 static void _apply_datetime_callback(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
@@ -179,7 +181,7 @@ static void _apply_datetime_callback(GtkWidget *widget, dt_lib_module_t *self)
     char text[DT_DATETIME_LENGTH];
     struct tm dt;
     strftime(text, sizeof(text), "%Y:%m:%d %H:%M:%S", localtime_r(&d->datetime, &dt));
-    dt_control_datetime(0, text, -1);
+    dt_control_datetime(0, text, NULL);
   }
 }
 
@@ -293,7 +295,7 @@ static gchar *_datetime_tooltip(GTimeVal *start, GTimeVal *end, GTimeZone *tz)
   return res;
 }
 
-static void _images_images_from_map(dt_lib_module_t *self)
+static void _remove_images_from_map(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   for(GList *i = d->imgs; i; i = g_list_next(i))
@@ -350,6 +352,72 @@ static void _refresh_images_displayed_on_track(const int segid, const gboolean a
       }
     }
   }
+}
+static void _update_nb_images(dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->map.gpx_view));
+  GtkTreeIter iter;
+  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+  int nb_imgs = 0;
+  for(int segid = 0; valid && segid < d->map.nb_tracks; segid++)
+  {
+    gboolean active;
+    int nb;
+    gtk_tree_model_get(model, &iter, DT_GEO_TRACKS_ACTIVE, &active,
+                                     DT_GEO_TRACKS_IMAGES, &nb, -1);
+    if(active)
+      nb_imgs += nb;
+    valid = gtk_tree_model_iter_next(model, &iter);
+  }
+  d->map.nb_imgs = nb_imgs;
+  gchar *nb = dt_util_dstrcat(NULL, "%d/%d", nb_imgs, d->nb_imgs);
+  gtk_label_set_text(GTK_LABEL(d->map.nb_imgs_label), nb);
+  g_free(nb);
+}
+
+static void _update_buttons(dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+  gtk_widget_set_sensitive(d->map.preview_button, d->map.nb_tracks);
+  GtkWidget *label = gtk_bin_get_child(GTK_BIN(d->map.apply_gpx_button));
+  gtk_label_set_text(GTK_LABEL(label), d->offset ? _("apply offset and geo-location")
+                                                 : _("apply geo-location"));
+  gtk_widget_set_tooltip_text(d->map.apply_gpx_button,
+                              d->offset ? _("apply offset and geo-location to matching images"
+                                            "\ndouble operation: two ctrl-Z to undo")
+                                        : _("apply geo-location to matching images"));
+  gtk_widget_set_sensitive(d->map.apply_gpx_button, d->map.nb_imgs);
+  gtk_widget_set_sensitive(d->map.select_button,
+                           d->map.nb_imgs && d->map.nb_imgs != d->nb_imgs);
+}
+
+static GList *_get_images_on_active_tracks(dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+
+  GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(d->map.gpx_view));
+  GtkTreeIter iter;
+  int segid = 0;
+  GList *imgs = NULL;
+  gboolean valid = gtk_tree_model_get_iter_first(model, &iter);
+  while(valid)
+  {
+    gboolean active;
+    gtk_tree_model_get(model, &iter, DT_GEO_TRACKS_ACTIVE, &active, -1);
+    if(active)
+    {
+      for(GList *i = d->imgs; i; i = g_list_next(i))
+      {
+        dt_sel_img_t *im = (dt_sel_img_t *)i->data;
+        if(im->segid == segid)
+          imgs = g_list_prepend(imgs, GINT_TO_POINTER(im->imgid));
+      }
+    }
+    valid = gtk_tree_model_iter_next(model, &iter);
+    segid++;
+  }
+  return imgs;
 }
 
 static void _refresh_displayed_images(dt_lib_module_t *self)
@@ -523,6 +591,8 @@ static void _track_seg_toggled(GtkCellRendererToggle *cell_renderer, gchar *path
 
   const gboolean preview = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(d->map.preview_button));
   _refresh_images_displayed_on_track(segid, active && preview, self);
+  _update_nb_images(self);
+  _update_buttons(self);
 }
 
 static void _all_tracks_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
@@ -549,22 +619,16 @@ static void _all_tracks_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self
                                                        d->map.map_box.lon2, d->map.map_box.lat2);
   }
   _refresh_displayed_images(self);
+  _update_nb_images(self);
+  _update_buttons(self);
 }
 
 static void _select_images(GtkWidget *widget, dt_lib_module_t *self)
 {
-  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
-  GList *imgs = NULL;
-  for(GList *i = d->imgs; i; i = g_list_next(i))
-  {
-    dt_sel_img_t *img = i->data;
-    if(img->segid != -1)
-      imgs = g_list_prepend(imgs, GINT_TO_POINTER(img->imgid));
-  }
+  GList *imgs = _get_images_on_active_tracks(self);
   dt_selection_clear(darktable.selection);
   dt_selection_select_list(darktable.selection, imgs);
   g_list_free(imgs);
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_SELECTION_CHANGED);
 }
 
 static void _images_preview_toggled(GtkToggleButton *button, dt_lib_module_t *self)
@@ -578,9 +642,8 @@ static void _refresh_track_list(dt_lib_module_t *self)
   if(!d->map.gpx) return;
 
   GList *trkseg = dt_gpx_get_trkseg(d->map.gpx);
-  d->map.nb_imgs = 0;
   int total_pts = 0;
-  _images_images_from_map(self);
+  _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
 
@@ -593,7 +656,8 @@ static void _refresh_track_list(dt_lib_module_t *self)
     gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
     total_pts += t->nb_trkpt;
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
-    d->map.nb_imgs += nb_imgs;
+    gboolean active;
+    gtk_tree_model_get(model, &iter, DT_GEO_TRACKS_ACTIVE, &active, -1);
     gchar *tooltip = _datetime_tooltip(&t->start_dt, &t->end_dt, d->tz_camera);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        DT_GEO_TRACKS_DATETIME, dts,
@@ -605,15 +669,9 @@ static void _refresh_track_list(dt_lib_module_t *self)
     g_free(tooltip);
     valid = gtk_tree_model_iter_next(model, &iter);
   }
-  const int nb_sel = g_list_length(d->imgs);
-  gchar *nb = dt_util_dstrcat(NULL, "%d/%d", d->map.nb_imgs, nb_sel);
-  gtk_label_set_text(GTK_LABEL(d->map.nb_imgs_label), nb);
-  g_free(nb);
+  _update_nb_images(self);
   _refresh_displayed_images(self);
-  gtk_widget_set_sensitive(d->map.preview_button, d->map.nb_tracks);
-  gtk_widget_set_sensitive(d->map.apply_gpx_button, d->offset == 0 && d->map.nb_imgs);
-  gtk_widget_set_sensitive(d->map.select_button,
-                           d->map.nb_imgs && d->map.nb_imgs != nb_sel);
+  _update_buttons(self);
 }
 
 static void _show_gpx_tracks(dt_lib_module_t *self)
@@ -630,11 +688,10 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   d->map.nb_tracks = g_list_length(trkseg);
   d->map.tracks = g_malloc0(sizeof(dt_lib_tracks_data_t) * d->map.nb_tracks);
 
-  _images_images_from_map(self);
+  _remove_images_from_map(self);
   for(GList *i = d->imgs; i; i = g_list_next(i))
     ((dt_sel_img_t *)i->data)->segid = -1;
 
-  d->map.nb_imgs = 0;
   int total_pts = 0;
   int segid = 0;
   const gboolean active = gtk_toggle_button_get_active(
@@ -646,7 +703,6 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
     gchar *dts = _utc_timeval_to_localtime_text(&t->start_dt, d->tz_camera, TRUE);
     gchar *tooltip = _datetime_tooltip(&t->start_dt, &t->end_dt, d->tz_camera);
     const int nb_imgs = _count_images_per_track(t, ts->next ? ts->next->data : NULL, self);
-    d->map.nb_imgs += nb_imgs;
     gtk_list_store_append(GTK_LIST_STORE(model), &iter);
     gtk_list_store_set(GTK_LIST_STORE(model), &iter,
                        DT_GEO_TRACKS_ACTIVE, active,
@@ -664,17 +720,9 @@ static void _show_gpx_tracks(dt_lib_module_t *self)
   gtk_tree_view_set_model(GTK_TREE_VIEW(d->map.gpx_view), model);
   g_object_unref(model);
 
-  const int nb_sel = g_list_length(d->imgs);
-  gchar *nb = dt_util_dstrcat(NULL, "%d/%d", d->map.nb_imgs, nb_sel);
-  gtk_label_set_text(GTK_LABEL(d->map.nb_imgs_label), nb);
-  g_free(nb);
-
-  gtk_widget_set_sensitive(d->map.preview_button, d->map.nb_tracks);
   gtk_tree_view_column_set_clickable(d->map.sel_tracks, TRUE);
-  gtk_widget_set_sensitive(d->map.apply_gpx_button, d->offset == 0 && d->map.nb_imgs);
-  gtk_widget_set_sensitive(d->map.select_button,
-                            d->map.nb_imgs && d->map.nb_imgs != nb_sel);
-  gtk_widget_set_sensitive(d->map.select_button, d->map.nb_imgs);
+  _update_nb_images(self);
+  _update_buttons(self);
   _refresh_display_all_tracks(self);
 }
 
@@ -682,7 +730,16 @@ static void _apply_gpx(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-  dt_control_gpx_apply(gtk_label_get_text(GTK_LABEL(d->map.gpx_file)), -1, tz);
+  GList *imgs = _get_images_on_active_tracks(self);
+  if(imgs)
+  {
+    if(d->offset)
+    {
+      GList *imgs2 = g_list_copy(imgs);
+      dt_control_datetime(d->offset, NULL, imgs2);
+    }
+    dt_control_gpx_apply(gtk_label_get_text(GTK_LABEL(d->map.gpx_file)), -1, tz, imgs);
+  }
   g_free(tz);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(d->map.preview_button), FALSE);
 }
@@ -701,7 +758,23 @@ static void _view_changed(gpointer instance, dt_view_t *old_view,
   if(old_view != new_view)
   {
     d->map.view = !g_strcmp0(new_view->module_name, "map");
+    if(d->map.view)
+    {
+      _setup_selected_images_list(self);
+      _refresh_track_list(self);
+    }
     _update_layout(self);
+  }
+}
+
+static void _geotag_changed(gpointer instance, GList *imgs, const int locid, dt_lib_module_t *self)
+{
+  dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
+  if(d->map.view && !locid)
+  {
+    _refresh_displayed_images(self);
+    _update_nb_images(self);
+    _update_buttons(self);
   }
 }
 
@@ -793,8 +866,8 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
     total_imgs += nb_imgs;
 
     _set_up_label(t->name, GTK_ALIGN_START, grid, 0, line, PANGO_ELLIPSIZE_NONE);
-    _set_up_label(dte, GTK_ALIGN_START, grid, 1, line, PANGO_ELLIPSIZE_NONE);
-    _set_up_label(dts, GTK_ALIGN_START, grid, 2, line, PANGO_ELLIPSIZE_NONE);
+    _set_up_label(dts, GTK_ALIGN_START, grid, 1, line, PANGO_ELLIPSIZE_NONE);
+    _set_up_label(dte, GTK_ALIGN_START, grid, 2, line, PANGO_ELLIPSIZE_NONE);
     char *nb = dt_util_dstrcat(NULL, "%d", t->nb_trkpt);
     _set_up_label(nb, GTK_ALIGN_CENTER, grid, 3, line, PANGO_ELLIPSIZE_NONE);
     g_free(nb);
@@ -810,7 +883,7 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   char *nb = dt_util_dstrcat(NULL, "%d", total_pts);
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 3, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
-  nb = dt_util_dstrcat(NULL, "%d / %d", total_imgs, g_list_length(d->imgs));
+  nb = dt_util_dstrcat(NULL, "%d / %d", total_imgs, d->nb_imgs);
   _set_up_label(nb, GTK_ALIGN_CENTER, grid, 4, line, PANGO_ELLIPSIZE_NONE);
   g_free(nb);
 
@@ -827,17 +900,18 @@ static void _preview_gpx_file(GtkWidget *widget, dt_lib_module_t *self)
   gtk_widget_destroy(dialog);
 }
 
-static void _set_selected_images(dt_lib_module_t *self)
+static void _setup_selected_images_list(dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   if(d->imgs)
   {
 #ifdef HAVE_MAP
-    _images_images_from_map(self);
+    _remove_images_from_map(self);
 #endif
     g_list_free_full(d->imgs, g_free);
   }
   d->imgs = NULL;
+  d->nb_imgs = 0;
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
@@ -857,6 +931,7 @@ static void _set_selected_images(dt_lib_module_t *self)
     memcpy(img->dt, dt, DT_DATETIME_LENGTH);
     img->imgid = imgid;
     d->imgs = g_list_prepend(d->imgs, img);
+    d->nb_imgs++;
   }
   sqlite3_finalize(stmt);
 }
@@ -894,7 +969,7 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
   gtk_file_filter_set_name(filter, _("all files"));
   gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(filechooser), filter);
 
-  _set_selected_images(self);
+  _setup_selected_images_list(self);
 
   int res = gtk_dialog_run(GTK_DIALOG(filechooser));
   while(res == GTK_RESPONSE_ACCEPT)
@@ -921,10 +996,11 @@ static void _choose_gpx_callback(GtkWidget *widget, dt_lib_module_t *self)
 #endif
     {
       gchar *tz = dt_conf_get_string("plugins/lighttable/geotagging/tz");
-      dt_control_gpx_apply(filename, -1, tz);
+      dt_control_gpx_apply(filename, -1, tz, NULL);
       g_free(tz);
       g_list_free_full(d->imgs, g_free);
       d->imgs = NULL;
+      d->nb_imgs = 0;
     }
     g_free(filename);
   }
@@ -1179,7 +1255,7 @@ static void _display_offset(const time_t offset_int, const gboolean valid, dt_li
   gtk_widget_set_sensitive(d->lock_offset, locked || (d->imgid && valid && !off2 && offset_int));
   gtk_widget_set_sensitive(d->apply_datetime, d->imgid && !locked);
 #ifdef HAVE_MAP
-    gtk_widget_set_sensitive(d->map.apply_gpx_button, d->offset == 0 && d->map.nb_imgs);
+  _update_buttons(self);
 #endif
 }
 
@@ -1309,7 +1385,7 @@ static void _refresh_image_datetime(dt_lib_module_t *self)
   _display_datetime(&d->dt, datetime, TRUE, self);
 }
 
-static void _datetime_changed_callback(gpointer instance, gpointer imgs, dt_lib_module_t *self)
+static void _image_info_changed(gpointer instance, gpointer imgs, dt_lib_module_t *self)
 {
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   for(GList *i = imgs; i; i = g_list_next(i))
@@ -1317,16 +1393,16 @@ static void _datetime_changed_callback(gpointer instance, gpointer imgs, dt_lib_
     if(GPOINTER_TO_INT(i->data) == d->imgid)
     {
       _refresh_image_datetime(self);
-#ifdef HAVE_MAP
-      if(d->map.view)
-      {
-        _refresh_selected_images_datetime(self);
-        _refresh_track_list(self);
-      }
-#endif
       break;
     }
   }
+#ifdef HAVE_MAP
+  if(d->map.view)
+  {
+    _refresh_selected_images_datetime(self);
+    _refresh_track_list(self);
+  }
+#endif
 }
 
 static void _mouse_over_image_callback(gpointer instance, dt_lib_module_t *self)
@@ -1343,7 +1419,7 @@ static void _selection_changed_callback(gpointer instance, dt_lib_module_t *self
   dt_lib_geotagging_t *d = (dt_lib_geotagging_t *)self->data;
   if(d->map.view)
   {
-    _set_selected_images(self);
+    _setup_selected_images_list(self);
     _refresh_track_list(self);
   }
 #endif
@@ -1582,28 +1658,28 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   int line = 0;
 
-  GtkWidget *label = dt_ui_label_new(_("date time"));
+  GtkWidget *label = dt_ui_label_new(_("date/time"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(grid, label, 0, line, 2, 1);
-  gtk_widget_set_tooltip_text(label, _("enter the new date time (yyyy:mm:dd hh:mm:ss)"
+  gtk_widget_set_tooltip_text(label, _("enter the new date/time (yyyy:mm:dd hh:mm:ss)"
                                        "\nkey in the new numbers or scroll over the cell"));
 
   GtkWidget *box = _gui_init_datetime(&d->dt, 0, self);
   gtk_grid_attach(grid, box, 2, line++, 2, 1);
 
-  label = dt_ui_label_new(_("original date time"));
+  label = dt_ui_label_new(_("original date/time"));
   gtk_grid_attach(grid, label, 0, line, 2, 1);
 
   box = _gui_init_datetime(&d->dt0, 1, self);
   gtk_grid_attach(grid, box, 2, line++, 2, 1);
 
-  label = dt_ui_label_new(_("date time offset"));
+  label = dt_ui_label_new(_("date/time offset"));
   gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(grid, label, 0, line, 2, 1);
   gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss)"));
 
   d->lock_offset = dtgtk_togglebutton_new(dtgtk_cairo_paint_lock, CPF_STYLE_FLAT, NULL);
-  gtk_widget_set_tooltip_text(d->lock_offset, _("lock date time offset value to apply it onto another selection"));
+  gtk_widget_set_tooltip_text(d->lock_offset, _("lock date/time offset value to apply it onto another selection"));
   gtk_widget_set_halign(d->lock_offset, GTK_ALIGN_START);
   gtk_grid_attach(grid, d->lock_offset, 2, line, 1, 1);
   g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
@@ -1619,7 +1695,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, d->apply_offset , 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->apply_offset), "clicked", G_CALLBACK(_apply_offset_callback), self);
 
-  d->apply_datetime = dt_ui_button_new(_("apply date time"), _("apply the same date time to selected images"), NULL);
+  d->apply_datetime = dt_ui_button_new(_("apply date/time"), _("apply the same date/time to selected images"), NULL);
   gtk_widget_set_hexpand(d->apply_datetime, FALSE);
   gtk_grid_attach(grid, d->apply_datetime , 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->apply_datetime), "clicked", G_CALLBACK(_apply_datetime_callback), self);
@@ -1703,10 +1779,10 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_name(d->map.gpx_view, "gpx_list");
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->map.gpx_view),
                               _("list of track segments in the gpx file, for each segment:"
-                                "\n- the start date time in local time (LT)"
+                                "\n- the start date/time in local time (LT)"
                                 "\n- the number of track points"
-                                "\n- the number of images to be geotagged "
-                                "based on images date time, offset and time zone"
+                                "\n- the number of matching images"
+                                "based on images date/time, offset and time zone"
                                 "\n- more detailled time information hovering the row"));
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_track_seg_toggled), self);
@@ -1746,29 +1822,26 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(d->map.preview_button, FALSE);
   gtk_label_set_ellipsize(GTK_LABEL(gtk_bin_get_child(GTK_BIN(d->map.preview_button))), PANGO_ELLIPSIZE_END);
   gtk_grid_attach(grid, d->map.preview_button, 0, line, 1, 1);
-  gtk_widget_set_tooltip_text(GTK_WIDGET(d->map.preview_button),
-                              _("show on map images to be geotagged"));
+  gtk_widget_set_tooltip_text(d->map.preview_button, _("show on map matching images"));
   g_signal_connect(GTK_TOGGLE_BUTTON(d->map.preview_button), "toggled", G_CALLBACK(_images_preview_toggled), self);
 
-  d->map.select_button = dt_ui_button_new(_("select images"), _("select images to be geotagged"), NULL);
+  d->map.select_button = dt_ui_button_new(_("select images"), _("select matching images"), NULL);
   gtk_widget_set_hexpand(d->map.select_button, TRUE);
   gtk_widget_set_sensitive(d->map.select_button, FALSE);
   g_signal_connect(G_OBJECT(d->map.select_button), "clicked", G_CALLBACK(_select_images), self);
   gtk_grid_attach(grid, d->map.select_button, 1, line, 1, 1);
 
-  _set_selected_images(self);
-  const int nb_sel = g_list_length(d->imgs);
-  char *nb = dt_util_dstrcat(NULL, "0/%d", nb_sel);
+  _setup_selected_images_list(self);
+  char *nb = dt_util_dstrcat(NULL, "0/%d", d->nb_imgs);
   d->map.nb_imgs_label = dt_ui_label_new(nb);
+  gtk_widget_set_halign(d->map.nb_imgs_label, GTK_ALIGN_END);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->map.nb_imgs_label),
-                              _("number of images to be geotagged versus selected images"));
+                              _("number of matching images versus selected images"));
   g_free(nb);
   gtk_grid_attach(grid, d->map.nb_imgs_label, 2, line++, 1, 1);
 
-  d->map.apply_gpx_button = dt_ui_button_new(_("apply GPX file"),
-                                             _("apply location from GPX file to selected images"
-                                               "\neven non checked gpx tracks are used"
-                                               "\ndate time offset must be null"), NULL);
+  d->map.apply_gpx_button = dt_ui_button_new(_("apply geo-location"),
+                                             _("apply geo-location to matching images"), NULL);
   gtk_widget_set_hexpand(d->map.apply_gpx_button, TRUE);
   gtk_widget_set_sensitive(d->map.apply_gpx_button, FALSE);
   g_signal_connect(G_OBJECT(d->map.apply_gpx_button), "clicked", G_CALLBACK(_apply_gpx), self);
@@ -1799,10 +1872,12 @@ void gui_init(dt_lib_module_t *self)
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE,
                             G_CALLBACK(_mouse_over_image_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED,
-                            G_CALLBACK(_datetime_changed_callback), self);
+                            G_CALLBACK(_image_info_changed), self);
 #ifdef HAVE_MAP
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_VIEWMANAGER_VIEW_CHANGED,
                             G_CALLBACK(_view_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED,
+                            G_CALLBACK(_geotag_changed), self);
 #endif
 }
 
@@ -1820,18 +1895,20 @@ void gui_cleanup(dt_lib_module_t *self)
   g_time_zone_unref(d->tz_utc);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_selection_changed_callback), self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_mouse_over_image_callback), self);
-  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_datetime_changed_callback), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_image_info_changed), self);
   if(d->imgs)
   {
 #ifdef HAVE_MAP
-    _images_images_from_map(self);
+    _remove_images_from_map(self);
 #endif
     g_list_free_full(d->imgs, g_free);
   }
   d->imgs = NULL;
+  d->imgs = 0;
 #ifdef HAVE_MAP
   _remove_tracks_from_map(self);
   DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_view_changed), self);
+  DT_DEBUG_CONTROL_SIGNAL_DISCONNECT(darktable.signals, G_CALLBACK(_geotag_changed), self);
 #endif
   free(self->data);
   self->data = NULL;
