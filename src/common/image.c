@@ -75,7 +75,15 @@ typedef struct dt_undo_geotag_t
   dt_image_geoloc_t after;
 } dt_undo_geotag_t;
 
+typedef struct dt_undo_duplicate_t
+{
+  int32_t orig_imgid;
+  int32_t version;
+  int32_t new_imgid;
+} dt_undo_duplicate_t;
+
 static void _pop_undo_execute(const int imgid, const gboolean before, const gboolean after);
+static int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newversion, const gboolean undo);
 
 static int64_t max_image_position()
 {
@@ -489,11 +497,11 @@ static void _set_datetime(const int32_t imgid, const char *datetime)
 
 void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t data, const dt_undo_action_t action, GList **imgs)
 {
-  GList *list = (GList *)data;
-  int i = 0;
-
   if(type == DT_UNDO_GEOTAG)
   {
+    GList *list = (GList *)data;
+    int i = 0;
+
     while(list)
     {
       dt_undo_geotag_t *undogeotag = (dt_undo_geotag_t *)list->data;
@@ -513,6 +521,9 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
   }
   else if(type == DT_UNDO_DATETIME)
   {
+    GList *list = (GList *)data;
+    int i = 0;
+
     while(list)
     {
       dt_undo_datetime_t *undodatetime = (dt_undo_datetime_t *)list->data;
@@ -529,6 +540,23 @@ void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_data_t dat
                               : _("date/time re-applied to %d images"), i);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_INFO_CHANGED, g_list_copy(*imgs));
+  }
+  else if(type == DT_UNDO_DUPLICATE)
+  {
+    dt_undo_duplicate_t *undo = (dt_undo_duplicate_t *)data;
+
+    if(action == DT_ACTION_UNDO)
+    {
+      // remove image
+      dt_image_remove(undo->new_imgid);
+    }
+    else
+    {
+      // restore image, note that we record the new imgid created while
+      // restoring the duplicate.
+      undo->new_imgid = _image_duplicate_with_version(undo->orig_imgid, undo->version, FALSE);
+      *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undo->new_imgid));
+    }
   }
 }
 
@@ -961,8 +989,7 @@ int32_t dt_image_duplicate(const int32_t imgid)
   return dt_image_duplicate_with_version(imgid, -1);
 }
 
-
-int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+static int32_t _image_duplicate_with_version_ext(const int32_t imgid, const int32_t newversion)
 {
   sqlite3_stmt *stmt;
   int32_t newid = -1;
@@ -1127,11 +1154,22 @@ int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newvers
   return newid;
 }
 
-int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+static int32_t _image_duplicate_with_version(const int32_t imgid, const int32_t newversion, const gboolean undo)
 {
-  const int32_t newid = _image_duplicate_with_version(imgid, newversion);
+  const int32_t newid = _image_duplicate_with_version_ext(imgid, newversion);
+
   if(newid != -1)
   {
+    if(undo)
+    {
+      dt_undo_duplicate_t *dupundo = (dt_undo_duplicate_t *)malloc(sizeof(dt_undo_duplicate_t));
+      dupundo->orig_imgid = imgid;
+      dupundo->version = newversion;
+      dupundo->new_imgid = newid;
+      dt_undo_record(darktable.undo, NULL, DT_UNDO_DUPLICATE, dupundo, _pop_undo, NULL);
+    }
+
+
     // make sure that the duplicate doesn't have some magic darktable| tags
     if(dt_tag_detach_by_string("darktable|changed", newid, FALSE, FALSE)
        || dt_tag_detach_by_string("darktable|exported", newid, FALSE, FALSE))
@@ -1152,6 +1190,11 @@ int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newve
     dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   }
   return newid;
+}
+
+int32_t dt_image_duplicate_with_version(const int32_t imgid, const int32_t newversion)
+{
+  return _image_duplicate_with_version(imgid, newversion, TRUE);
 }
 
 void dt_image_remove(const int32_t imgid)
@@ -1336,7 +1379,7 @@ static int _image_read_duplicates(const uint32_t id, const char *filename, const
       // dt_image_duplicate_with_version() as this version also set the group which
       // is using DT_IMAGE_CACHE_SAFE and so will write the .XMP. But we must avoid
       // this has the xmp for the duplicate is read just below.
-      newid = _image_duplicate_with_version(id, version);
+      newid = _image_duplicate_with_version(id, version, FALSE);
       const dt_image_t *img = dt_image_cache_get(darktable.image_cache, id, 'r');
       grpid = img->group_id;
       dt_image_cache_read_release(darktable.image_cache, img);

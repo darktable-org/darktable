@@ -549,6 +549,9 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
   const guint total = g_list_length(t);
   double fraction = 0.0f;
   char message[512] = { 0 };
+
+  dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
+
   snprintf(message, sizeof(message), ngettext("duplicating %d image", "duplicating %d images", total), total);
   dt_control_job_set_progress_message(job, message);
   while(t)
@@ -564,6 +567,9 @@ static int32_t dt_control_duplicate_images_job_run(dt_job_t *job)
     fraction += 1.0 / total;
     dt_control_job_set_progress(job, fraction);
   }
+
+  dt_undo_end_group(darktable.undo);
+
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_CHANGED);
   dt_control_queue_redraw_center();
   return 0;
