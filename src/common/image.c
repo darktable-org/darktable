@@ -161,7 +161,7 @@ int dt_image_is_monochrome(const dt_image_t *img)
   return (img->flags & DT_IMAGE_MONOCHROME);
 }
 
-void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome, gboolean undo_on)
+static void _image_set_monochrome_flag(const int32_t imgid, gboolean monochrome, gboolean undo_on)
 {
   dt_image_t *img = NULL;
   gboolean changed = FALSE;
@@ -563,7 +563,7 @@ static void _geotag_undo_data_free(gpointer data)
   g_list_free_full(l, g_free);
 }
 
-void _image_set_location(GList *imgs, const dt_image_geoloc_t *geoloc, GList **undo, const gboolean undo_on)
+static void _image_set_location(GList *imgs, const dt_image_geoloc_t *geoloc, GList **undo, const gboolean undo_on)
 {
   GList *images = imgs;
   while(images)
