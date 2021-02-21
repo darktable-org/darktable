@@ -148,8 +148,6 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   const float sigma_1 = data->radius_1 * roi_in->scale / piece->iscale;
   const float sigma_2 = data->radius_2 * roi_in->scale / piece->iscale;
   const size_t pixel_radius = data->pixelate * roi_in->scale / piece->iscale;
-  const size_t pixels_x = width / (2 * pixel_radius);
-  const size_t pixels_y = height / (2 * pixel_radius);
 
   const float scale = piece->iscale / roi_in->scale;
   const float noise = data->noise / scale;
@@ -180,6 +178,9 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   // pixelate
   if(pixel_radius != 0)
   {
+    const size_t pixels_x = width / (2 * pixel_radius);
+    const size_t pixels_y = height / (2 * pixel_radius);
+
 #ifdef _OPENMP
 #pragma omp parallel for simd default(none) \
   dt_omp_firstprivate(width, height, ch, input, output, pixel_radius, pixels_y, pixels_x) \
