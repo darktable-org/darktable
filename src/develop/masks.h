@@ -168,6 +168,7 @@ typedef struct dt_masks_functions_t
   void (*set_hint_message)(const struct dt_masks_form_gui_t *const gui, const struct dt_masks_form_t *const form,
                            const int opacity, char *const __restrict__ msgbuf, const size_t msgbuf_len);
   void (*duplicate_points)(struct dt_masks_form_t *base, struct dt_masks_form_t *dest);
+  void (*initial_source_pos)(const float iwd, const float iht, float *x, float *y);
   void (*get_distance)(float x, float y, float as, struct dt_masks_form_gui_t *gui, int index, int num_points,
                        int *inside, int *inside_border, int *near, int *inside_source);
   int (*get_points)(dt_develop_t *dev, float x, float y, float radius_a, float radius_b, float rotation,
@@ -195,9 +196,6 @@ typedef struct dt_masks_functions_t
   int (*button_released)(struct dt_iop_module_t *module, float pzx, float pzy, int which, uint32_t state,
                          struct dt_masks_form_t *form, int parentid, struct dt_masks_form_gui_t *gui, int index);
   void (*post_expose)(cairo_t *cr, float zoom_scale, struct dt_masks_form_gui_t *gui, int index, int num_points);
-  //TODO:
-  //read_history_item
-  //write_history_item
 } dt_masks_functions_t;
   
 /** structure used to define a form */
@@ -292,11 +290,11 @@ typedef struct dt_masks_form_gui_t
 } dt_masks_form_gui_t;
 
 /** the shape-specific function tables */
-extern dt_masks_functions_t dt_masks_functions_circle;
-extern dt_masks_functions_t dt_masks_functions_ellipse;
-extern dt_masks_functions_t dt_masks_functions_brush;
-extern dt_masks_functions_t dt_masks_functions_path;
-extern dt_masks_functions_t dt_masks_functions_gradient;
+extern const dt_masks_functions_t dt_masks_functions_circle;
+extern const dt_masks_functions_t dt_masks_functions_ellipse;
+extern const dt_masks_functions_t dt_masks_functions_brush;
+extern const dt_masks_functions_t dt_masks_functions_path;
+extern const dt_masks_functions_t dt_masks_functions_gradient;
 
 /** init dt_masks_form_gui_t struct with default values */
 void dt_masks_init_form_gui(dt_masks_form_gui_t *gui);

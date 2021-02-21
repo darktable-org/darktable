@@ -1528,7 +1528,7 @@ static void _gradient_duplicate_points(dt_masks_form_t *const base, dt_masks_for
 }
 
 // The function table for gradients.  This must be public, i.e. no "static" keyword.
-dt_masks_functions_t dt_masks_functions_gradient = {
+const dt_masks_functions_t dt_masks_functions_gradient = {
   .point_struct_size = sizeof(struct dt_masks_point_gradient_t),
   .sanitize_config = _gradient_sanitize_config,
   .setup_mouse_actions = _gradient_setup_mouse_actions,

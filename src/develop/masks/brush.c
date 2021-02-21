@@ -2963,14 +2963,21 @@ static void _brush_duplicate_points(dt_masks_form_t *const base, dt_masks_form_t
   }
 }
 
+static void _brush_initial_source_pos(const float iwd, const float iht, float *x, float *y)
+{
+  *x = 0.01f * iwd;
+  *y = 0.01f * iht;
+}
+
 // The function table for brushes.  This must be public, i.e. no "static" keyword.
-dt_masks_functions_t dt_masks_functions_brush = {
+const dt_masks_functions_t dt_masks_functions_brush = {
   .point_struct_size = sizeof(struct dt_masks_point_brush_t),
   .sanitize_config = _brush_sanitize_config,
   .setup_mouse_actions = _brush_setup_mouse_actions,
   .set_form_name = _brush_set_form_name,
   .set_hint_message = _brush_set_hint_message,
   .duplicate_points = _brush_duplicate_points,
+  .initial_source_pos = _brush_initial_source_pos,
   .get_distance = _brush_get_distance,
   .get_points_border = _brush_get_points_border,
   .get_mask = _brush_get_mask,
