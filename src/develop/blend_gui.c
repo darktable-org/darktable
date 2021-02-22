@@ -2785,6 +2785,13 @@ void dt_iop_gui_blending_lose_focus(dt_iop_module_t *module)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->suppress), FALSE);
     module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
     module->suppress_mask = 0;
+
+    // unselect all tools
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_edit), FALSE);
+    dt_masks_set_edit_mode(module, DT_MASKS_EDIT_OFF);
+    for(int k=0; k < DEVELOP_MASKS_NB_SHAPES; k++)
+      gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->masks_shapes[k]), FALSE);
+
     dt_pthread_mutex_lock(&bd->lock);
     bd->save_for_leave = DT_DEV_PIXELPIPE_DISPLAY_NONE;
     if(bd->timeout_handle)
