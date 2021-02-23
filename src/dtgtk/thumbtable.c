@@ -16,6 +16,7 @@
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
 /** a class to manage a table of thumbnail for lighttable and filmstrip.  */
+
 #include "dtgtk/thumbtable.h"
 #include "common/collection.h"
 #include "common/colorlabels.h"
@@ -24,6 +25,7 @@
 #include "common/image_cache.h"
 #include "common/ratings.h"
 #include "common/selection.h"
+#include "common/undo.h"
 #include "control/control.h"
 #include "gui/accelerators.h"
 #include "gui/drag_and_drop.h"
@@ -2304,6 +2306,8 @@ static gboolean _accel_hist_discard(GtkAccelGroup *accel_group, GObject *acceler
 static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *acceleratable, const guint keyval,
                                  GdkModifierType modifier, gpointer data)
 {
+  dt_undo_start_group(darktable.undo, DT_UNDO_DUPLICATE);
+
   const int sourceid = dt_view_get_image_to_act_on();
   const int newimgid = dt_image_duplicate(sourceid);
   if(newimgid <= 0) return FALSE;
@@ -2312,6 +2316,8 @@ static gboolean _accel_duplicate(GtkAccelGroup *accel_group, GObject *accelerata
     dt_history_delete_on_image(newimgid);
   else
     dt_history_copy_and_paste_on_image(sourceid, newimgid, FALSE, NULL, TRUE, TRUE);
+
+  dt_undo_end_group(darktable.undo);
 
   dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
