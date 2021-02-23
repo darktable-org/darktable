@@ -996,6 +996,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
   dt_dev_read_history(dev);
 
   // we have to init all module instances other than "base" instance
+  char option[1024];
   GList *modules = g_list_last(dev->iop);
   while(modules)
   {
@@ -1008,7 +1009,6 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
         /* add module to right panel */
         dt_iop_gui_set_expander(module);
-        dt_iop_gui_set_expanded(module, FALSE, dt_conf_get_bool("darkroom/ui/single_module"));
         dt_iop_gui_update_blending(module);
       }
     }
@@ -1017,6 +1017,8 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
       //  update the module header to ensure proper multi-name display
       if(!dt_iop_is_hidden(module))
       {
+        snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
+        module->expanded = dt_conf_get_bool(option);
         if(module->change_image) module->change_image(module);
         dt_iop_gui_update_header(module);
       }
@@ -2983,11 +2985,11 @@ void enter(dt_view_t *self)
       /* add module to right panel */
       dt_iop_gui_set_expander(module);
 
-      snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
-      if(dt_conf_get_bool(option))
-        dt_iop_gui_set_expanded(module, TRUE, dt_conf_get_bool("darkroom/ui/single_module"));
-      else
-        dt_iop_gui_set_expanded(module, FALSE, FALSE);
+      if(module->multi_priority == 0)
+      {
+        snprintf(option, sizeof(option), "plugins/darkroom/%s/expanded", module->op);
+        module->expanded = dt_conf_get_bool(option);
+      }
 
       dt_iop_reload_defaults(module);
     }
