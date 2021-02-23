@@ -258,7 +258,7 @@ static void guided_filter_tiling(color_image imgg, gray_image img, gray_image im
 static int compute_tile_height(const int height, const int w)
 {
   int tile_h = max_i(3 * w, GF_TILE_SIZE);
-#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handfull of pixels
+#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
       // to round off differently (as does changing GF_TILE_SIZE)
   if ((height % tile_h) > 0 && (height % tile_h) < GF_TILE_SIZE/3)
   {
@@ -283,7 +283,7 @@ static int compute_tile_height(const int height, const int w)
 static int compute_tile_width(const int width, const int w)
 {
   int tile_w = max_i(3 * w, GF_TILE_SIZE);
-#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handfull of pixels
+#if 0 // enabling the below doesn't make any measureable speed difference, but does cause a handful of pixels
       // to round off differently (as does changing GF_TILE_SIZE)
   if ((width % tile_w) > 0 && (width % tile_w) < GF_TILE_SIZE/2)
   {

@@ -50,7 +50,7 @@ static inline float laplacian(const float *const image, const size_t index[8])
   //const float div = fabsf(image[index[3]] + image[index[4]] + image[index[1]] + image[index[6]] - 4.0f * image[index[3] + 1]) + 1.0f;
 
   // we assume the gradients follow an hyper-laplacian distributions in natural images,
-  // which is baked by some examples the litterature, but is still very hacky
+  // which is baked by some examples the literature, but is still very hacky
   // https://www.sciencedirect.com/science/article/pii/S0165168415004168
   // http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.154.539&rep=rep1&type=pdf
   return (l1 + l2) / 2.0f;

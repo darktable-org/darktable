@@ -129,7 +129,7 @@ if [[ $MAKE == FUJIFILM && $CFA_PATTERN_WIDTH == 6 && $CFA_PATTERN_HEIGHT == 6 ]
   echo -e "\t\t<CFA2 width=\"$CFA_PATTERN_WIDTH\" height=\"$CFA_PATTERN_HEIGHT\">"
   # The DNG's CFA pattern is mysteriously shifted horizontally for
   # 14-bit x-trans chips (despite it being stored unshifted in the raw
-  # file). Identify 14-bit cips by their max white value.
+  # file). Identify 14-bit chips by their max white value.
 
   # FIXME: this is definitively wrong. from rawspeed, DngDecoder::parseCFA():
   # the cfa is specified relative to the ActiveArea. we want it relative (0,0)

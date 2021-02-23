@@ -1103,7 +1103,7 @@ static inline gint reconstruct_highlights(const float *const restrict in, const 
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
   // but simplified because we don't need the edge-aware term, so we can seperate the convolution kernel
-  // with a vertical and horizontal blur, wich is 10 multiply-add instead of 25 by pixel.
+  // with a vertical and horizontal blur, which is 10 multiply-add instead of 25 by pixel.
   for(int s = 0; s < scales; ++s)
   {
     const float *restrict detail;       // buffer containing this scale's input
@@ -1587,7 +1587,7 @@ static inline cl_int reconstruct_highlights_cl(cl_mem in, cl_mem mask, cl_mem re
   // there is a paper from a guy we know that explains it : https://jo.dreggn.org/home/2010_atrous.pdf
   // the wavelets decomposition here is the same as the equalizer/atrous module,
   // but simplified because we don't need the edge-aware term, so we can seperate the convolution kernel
-  // with a vertical and horizontal blur, wich is 10 multiply-add instead of 25 by pixel.
+  // with a vertical and horizontal blur, which is 10 multiply-add instead of 25 by pixel.
   for(int s = 0; s < scales; ++s)
   {
     cl_mem detail;

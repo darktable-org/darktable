@@ -148,7 +148,7 @@ testimg_free(ti);
 ### Linear vs log scaling
 
 Test images are generated in linear-RGB (linear in respect to human perception).
-Linearity technically means additivity: `f(x+y) = f(x) + f(y)` - and homogenity:
+Linearity technically means additivity: `f(x+y) = f(x) + f(y)` - and homogeneity:
 `f(a*x) = a * f(x)`. In practice this means that e.g. doubling a pixel value in
 the dark areas results in the same perceived difference as doubling a pixel
 value in the bright areas (1EV).

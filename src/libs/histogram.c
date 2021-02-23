@@ -95,7 +95,7 @@ typedef struct dt_lib_histogram_t
   gboolean dragging;
   int32_t button_down_x, button_down_y;
   float button_down_value;
-  // depends on mouse positon
+  // depends on mouse position
   dt_lib_histogram_highlight_t highlight;
   // state set by buttons
   dt_lib_histogram_scope_type_t scope_type;
@@ -438,7 +438,7 @@ static void _lib_histogram_draw_rgb_parade(dt_lib_histogram_t *d, cairo_t *cr, i
   cairo_restore(cr);
 }
 
-// FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then esentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
+// FIXME: have different drawable for each scope in a stack -- simplifies this function from being a swath of conditionals -- then essentially draw callbacks _lib_histogram_draw_waveform and _lib_histogram_draw_rgb_parade
 // FIXME: if exposure change regions are separate widgets, then we could have a menu to swap in different overlay widgets (sort of like basic adjustments) to adjust other things about the image, e.g. tone equalizer, color balance, etc.
 static gboolean _drawable_draw_callback(GtkWidget *widget, cairo_t *crf, gpointer user_data)
 {
