@@ -1508,6 +1508,7 @@ void dt_styles_import_from_file(const char *style_path)
   else
   {
     // Failed to open file, clean up.
+    dt_control_log(_("could not read file `%s'"), style_path);
     g_markup_parse_context_free(parser);
     dt_styles_style_data_free(style, TRUE);
     return;
