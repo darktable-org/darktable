@@ -452,7 +452,8 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     const dt_dev_zoom_t zoom = dt_control_get_dev_zoom();
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
-    const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;  // transformed to backbuf dimensions
+    const float pr_d = darktable.develop->preview_downsampling;
+    const float as = DT_PIXEL_APPLY_DPI(5) / (pr_d * zoom_scale);  // transformed to backbuf dimensions
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     int in, inb, near, ins;
@@ -461,7 +462,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     const dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
 
     if(gpt
-       && (x - gpt->points[2]) * (x - gpt->points[2]) + (y - gpt->points[3]) * (y - gpt->points[3]) < as * as)
+       && (x - gpt->points[2]) * (x - gpt->points[2]) + (y - gpt->points[3]) * (y - gpt->points[3]) < as)
     {
       gui->pivot_selected = TRUE;
       gui->form_selected = TRUE;
@@ -469,7 +470,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     }
     else if(gpt
             && (x - gpt->points[4]) * (x - gpt->points[4]) + (y - gpt->points[5]) * (y - gpt->points[5])
-               < as * as)
+               < as)
     {
       gui->pivot_selected = TRUE;
       gui->form_selected = TRUE;
