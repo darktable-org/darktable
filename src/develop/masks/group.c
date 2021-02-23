@@ -24,15 +24,15 @@
 
 static int _group_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
                                         uint32_t state, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
-                                        int group_edited)
+                                        int unused)
 {
-  if(group_edited >= 0)
+  if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, group_edited);
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(sel && sel->functions)
-      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel, fpt->parentid, gui, group_edited);
+      return sel->functions->mouse_scrolled(module, pzx, pzy, up, state, sel, fpt->parentid, gui, gui->group_edited);
   }
   return 0;
 }
@@ -70,16 +70,16 @@ static int _group_events_button_pressed(struct dt_iop_module_t *module, float pz
 
 static int _group_events_button_released(struct dt_iop_module_t *module, float pzx, float pzy, int which,
                                          uint32_t state, dt_masks_form_t *form, int unused1, dt_masks_form_gui_t *gui,
-                                         int group_edited)
+                                         int unused2)
 {
-  if(group_edited >= 0)
+  if(gui->group_edited >= 0)
   {
     // we get the form
-    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, group_edited);
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)g_list_nth_data(form->points, gui->group_edited);
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if(sel && sel->functions)
       return sel->functions->button_released(module, pzx, pzy, which, state, sel, fpt->parentid, gui,
-                                             group_edited);
+                                             gui->group_edited);
   }
   return 0;
 }
