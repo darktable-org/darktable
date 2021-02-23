@@ -1069,7 +1069,7 @@ int dt_masks_events_mouse_moved(struct dt_iop_module_t *module, double x, double
 
   int rep = 0;
   if(form->functions)
-    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, gui->group_edited);
+    rep = form->functions->mouse_moved(module, pzx, pzy, pressure, which, form, 0, gui, 0);
 
   if(gui) _set_hinter_message(gui, form);
 
@@ -1090,7 +1090,7 @@ int dt_masks_events_button_released(struct dt_iop_module_t *module, double x, do
   pzy += 0.5f;
 
   if(form->functions)
-    return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, gui->group_edited);
+    return form->functions->button_released(module, pzx, pzy, which, state, form, 0, gui, 0);
 
   return 0;
 }
@@ -1129,8 +1129,7 @@ int dt_masks_events_button_pressed(struct dt_iop_module_t *module, double x, dou
   }
 
   if(form->functions)
-    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0,
-                                           gui, gui->group_edited);
+    return form->functions->button_pressed(module, pzx, pzy, pressure, which, type, state, form, 0, gui, 0);
 
   return 0;
 }
@@ -1150,7 +1149,7 @@ int dt_masks_events_mouse_scrolled(struct dt_iop_module_t *module, double x, dou
   int ret = 0;
 
   if(form->functions)
-    ret = form->functions->mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, gui->group_edited);
+    ret = form->functions->mouse_scrolled(module, pzx, pzy, up, state, form, 0, gui, 0);
 
   if(gui)
   {
