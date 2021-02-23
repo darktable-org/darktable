@@ -126,7 +126,7 @@ static inline void make_noise(float *const output, const float noise, const size
       const float epsilon = gaussian_noise(norm, noise * norm, i % 2 || j % 2, state) / norm;
 
       // add noise to output
-      for(size_t c = 0; c < 3; c++) pix_out[c] *= epsilon;
+      for(size_t c = 0; c < 3; c++) pix_out[c] = fmaxf(pix_out[c] * epsilon, 0.f);
     }
 }
 
