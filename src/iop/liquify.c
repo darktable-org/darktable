@@ -1288,7 +1288,7 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
   cairo_rectangle_int_t extent = { .x = (int)(xmin - .5), .y = (int)(ymin - .5),
                                    .width = (int)(xmax - xmin + 2.5), .height = (int)(ymax - ymin + 2.5) };
 
-  if(extent.width != 0 && extent.height != 0)
+  if(extent.width > 0 && extent.height > 0)
   {
     // copy params
     dt_iop_liquify_params_t copy_params;
