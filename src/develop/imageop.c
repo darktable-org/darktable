@@ -2275,7 +2275,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     else if(e->state & GDK_CONTROL_MASK)
     {
       _iop_gui_rename_module(module);
-      return FALSE;
+      return TRUE;
     }
     else
     {
