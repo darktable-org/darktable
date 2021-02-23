@@ -15,7 +15,9 @@
     You should have received a copy of the GNU General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#include "bauhaus/bauhaus.h"
 #include "common/debug.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include "develop/blend.h"
@@ -23,9 +25,10 @@
 #include "develop/masks.h"
 #include "develop/openmp_maths.h"
 
-static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t *gui, int index, int *inside,
-                                   int *inside_border, int *near, int *inside_source)
+static void _circle_get_distance(float x, float y, float as, dt_masks_form_gui_t *gui, int index,
+                                 int num_points, int *inside, int *inside_border, int *near, int *inside_source)
 {
+  (void)num_points; // unused arg, keep compiler from complaining
   // initialise returned values
   *inside_source = 0;
   *inside = 0;
@@ -56,9 +59,9 @@ static void dt_circle_get_distance(float x, int y, float as, dt_masks_form_gui_t
   *inside_border = !(dt_masks_point_in_form_near(x,yf,gpt->points,1,gpt->points_count,as,near));
 }
 
-static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
-                                           uint32_t state, dt_masks_form_t *form, int parentid,
-                                           dt_masks_form_gui_t *gui, int index)
+static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx, float pzy, int up,
+                                         uint32_t state, dt_masks_form_t *form, int parentid,
+                                         dt_masks_form_gui_t *gui, int index)
 {
   const float max_mask_border = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
   const float max_mask_size = form->type & (DT_MASKS_CLONE | DT_MASKS_NON_CLONE) ? 0.5f : 1.0f;
@@ -171,10 +174,9 @@ static int dt_circle_events_mouse_scrolled(struct dt_iop_module_t *module, float
   return 0;
 }
 
-static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy,
-                                           double pressure, int which, int type, uint32_t state,
-                                           dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui,
-                                           int index)
+static int _circle_events_button_pressed(struct dt_iop_module_t *module, float pzx, float pzy,
+                                         double pressure, int which, int type, uint32_t state,
+                                         dt_masks_form_t *form, int parentid, dt_masks_form_gui_t *gui, int index)
 {
   if(!gui) return 0;
   if(gui->source_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL)
@@ -331,9 +333,9 @@ static int dt_circle_events_button_pressed(struct dt_iop_module_t *module, float
   return 0;
 }
 
-static int dt_circle_events_button_released(struct dt_iop_module_t *module, float pzx, float pzy, int which,
-                                            uint32_t state, dt_masks_form_t *form, int parentid,
-                                            dt_masks_form_gui_t *gui, int index)
+static int _circle_events_button_released(struct dt_iop_module_t *module, float pzx, float pzy, int which,
+                                          uint32_t state, dt_masks_form_t *form, int parentid,
+                                          dt_masks_form_gui_t *gui, int index)
 {
   if(which == 3 && parentid > 0 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
@@ -405,7 +407,7 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
     gui->source_dragging = FALSE;
     if(gui->scrollx != 0.0 || gui->scrolly != 0.0)
     {
-      // if there's no dragging the source is calculated in dt_circle_events_button_pressed()
+      // if there's no dragging the source is calculated in _circle_events_button_pressed()
     }
     else
     {
@@ -441,9 +443,9 @@ static int dt_circle_events_button_released(struct dt_iop_module_t *module, floa
   return 0;
 }
 
-static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure,
-                                        int which, dt_masks_form_t *form, int parentid,
-                                        dt_masks_form_gui_t *gui, int index)
+static int _circle_events_mouse_moved(struct dt_iop_module_t *module, float pzx, float pzy, double pressure,
+                                      int which, dt_masks_form_t *form, int parentid,
+                                      dt_masks_form_gui_t *gui, int index)
 {
   if(gui->form_dragging || gui->source_dragging)
   {
@@ -457,9 +459,9 @@ static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pz
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float as = DT_PIXEL_APPLY_DPI(5) / zoom_scale;
     int in, inb, near, ins;
-    dt_circle_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
-                           pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, &in, &inb,
-                           &near, &ins);
+    _circle_get_distance(pzx * darktable.develop->preview_pipe->backbuf_width,
+                         pzy * darktable.develop->preview_pipe->backbuf_height, as, gui, index, 0,
+                         &in, &inb, &near, &ins);
     if(ins)
     {
       gui->form_selected = TRUE;
@@ -499,8 +501,10 @@ static int dt_circle_events_mouse_moved(struct dt_iop_module_t *module, float pz
   return 0;
 }
 
-static void dt_circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index)
+static void _circle_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_gui_t *gui, int index,
+                                       int num_points)
 {
+  (void)num_points; // unused arg, keep compiler from complaining
   double dashed[] = { 4.0, 4.0 };
   dashed[0] /= zoom_scale;
   dashed[1] /= zoom_scale;
@@ -773,9 +777,11 @@ static void _bounding_box(const float *const points, int num_points, int *width,
   *height = (ymax - ymin);
 }
 
-static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radius, float **points,
-                                int *points_count)
+static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius, float radius2, float rotation,
+                              float **points, int *points_count)
 {
+  (void)radius2; // keep compiler from complaining about unused arg
+  (void)rotation;
   float wd = dev->preview_pipe->iwidth;
   float ht = dev->preview_pipe->iheight;
 
@@ -795,8 +801,30 @@ static int dt_circle_get_points(dt_develop_t *dev, float x, float y, float radiu
   return 0;
 }
 
-static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
-                                     dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
+static int _circle_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *form, float **points,
+                                     int *points_count, float **border, int *border_count, int source)
+{
+  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  float x = 0.0f, y = 0.0f;
+  if(source)
+    x = form->source[0], y = form->source[1];
+  else
+    x = circle->center[0], y = circle->center[1];
+  if(form->functions->get_points(dev, x, y, circle->radius, circle->radius, 0, points, points_count))
+  {
+    if(border)
+    {
+      float outer_radius = circle->radius + circle->border;
+      return form->functions->get_points(dev, x, y, outer_radius, outer_radius, 0, border, border_count);
+    }
+    else
+      return 1;
+  }
+  return 0;
+}
+
+static int _circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *piece,
+                                   dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
   // we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
@@ -822,10 +850,10 @@ static int dt_circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_i
   return 1;
 }
 
-static int dt_circle_get_area(const dt_iop_module_t *const restrict module,
-                              const dt_dev_pixelpipe_iop_t *const restrict piece,
-                              dt_masks_form_t *const restrict form,
-                              int *width, int *height, int *posx, int *posy)
+static int _circle_get_area(const dt_iop_module_t *const restrict module,
+                            const dt_dev_pixelpipe_iop_t *const restrict piece,
+                            dt_masks_form_t *const restrict form,
+                            int *width, int *height, int *posx, int *posy)
 {
   // we get the circle values
   dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
@@ -851,16 +879,16 @@ static int dt_circle_get_area(const dt_iop_module_t *const restrict module,
   return 1;
 }
 
-static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
-                              const dt_dev_pixelpipe_iop_t *const restrict piece,
-                              dt_masks_form_t *const restrict form,
-                              float **buffer, int *width, int *height, int *posx, int *posy)
+static int _circle_get_mask(const dt_iop_module_t *const restrict module,
+                            const dt_dev_pixelpipe_iop_t *const restrict piece,
+                            dt_masks_form_t *const restrict form,
+                            float **buffer, int *width, int *height, int *posx, int *posy)
 {
   double start2 = 0.0;
   if(darktable.unmuted & DT_DEBUG_PERF) start2 = dt_get_wtime();
 
   // we get the area
-  if(!dt_circle_get_area(module, piece, form, width, height, posx, posy)) return 0;
+  if(!_circle_get_area(module, piece, form, width, height, posx, posy)) return 0;
 
   if(darktable.unmuted & DT_DEBUG_PERF)
   {
@@ -962,10 +990,10 @@ static int dt_circle_get_mask(const dt_iop_module_t *const restrict module,
 }
 
 
-static int dt_circle_get_mask_roi(const dt_iop_module_t *const restrict module,
-                                  const dt_dev_pixelpipe_iop_t *const restrict piece,
-                                  dt_masks_form_t *const form, const dt_iop_roi_t *const roi,
-                                  float *const restrict buffer)
+static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
+                                const dt_dev_pixelpipe_iop_t *const restrict piece,
+                                dt_masks_form_t *const form, const dt_iop_roi_t *const roi,
+                                float *const restrict buffer)
 {
   double start1 = 0.0;
   double start2 = start1;
@@ -1220,6 +1248,101 @@ static int dt_circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 
   return 1;
 }
+
+static GSList *_circle_setup_mouse_actions(const struct dt_masks_form_t *const form)
+{
+  GSList *lm = NULL;
+  dt_mouse_action_t *a;
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("[CIRCLE] change size"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_CONTROL_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("[CIRCLE] change opacity"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+
+  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->key.accel_mods = GDK_SHIFT_MASK;
+  a->action = DT_MOUSE_ACTION_SCROLL;
+  g_strlcpy(a->name, _("[CIRCLE] change feather size"), sizeof(a->name));
+  lm = g_slist_append(lm, a);
+  return lm;
+}
+
+static void _circle_sanitize_config(dt_masks_type_t type)
+{
+  if(type & (DT_MASKS_CLONE|DT_MASKS_NON_CLONE))
+  {
+    dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_size", 0.001f, 0.5f);
+    dt_conf_get_and_sanitize_float("plugins/darkroom/spots/circle_border", 0.0005f, 0.5f);
+  }
+  else
+  {
+    dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/size", 0.001f, 0.5f);
+    dt_conf_get_and_sanitize_float("plugins/darkroom/masks/circle/border", 0.0005f, 0.5f);
+  }
+}
+
+static void _circle_set_form_name(struct dt_masks_form_t *const form, const size_t nb)
+{
+  snprintf(form->name, sizeof(form->name), _("circle #%d"), (int)nb);
+}
+
+static void _circle_set_hint_message(const dt_masks_form_gui_t *const gui, const dt_masks_form_t *const form,
+                                     const int opacity, char *const restrict msgbuf, const size_t msgbuf_len)
+{
+  // circle has same controls on creation and on edit
+  g_snprintf(msgbuf, msgbuf_len,
+             _("<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
+               "<b>opacity</b>: ctrl+scroll (%d%%)"), opacity);
+}
+
+static void _circle_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
+{
+  (void)dev; // unused arg, keep compiler from complaining
+  for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
+  {
+    dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)pts->data;
+    dt_masks_point_circle_t *npt = (dt_masks_point_circle_t *)malloc(sizeof(dt_masks_point_circle_t));
+    memcpy(npt, pt, sizeof(dt_masks_point_circle_t));
+    dest->points = g_list_append(dest->points, npt);
+  }
+}
+
+static void _circle_initial_source_pos(const float iwd, const float iht, float *x, float *y)
+{
+  const float radius = MIN(0.5f, dt_conf_get_float("plugins/darkroom/spots/circle_size"));
+
+  *x = (radius * iwd);
+  *y = -(radius * iht);
+}
+
+// The function table for circles.  This must be public, i.e. no "static" keyword.
+const dt_masks_functions_t dt_masks_functions_circle = {
+  .point_struct_size = sizeof(struct dt_masks_point_circle_t),
+  .sanitize_config = _circle_sanitize_config,
+  .setup_mouse_actions = _circle_setup_mouse_actions,
+  .set_form_name = _circle_set_form_name,
+  .set_hint_message = _circle_set_hint_message,
+  .duplicate_points = _circle_duplicate_points,
+  .initial_source_pos = _circle_initial_source_pos,
+  .get_distance = _circle_get_distance,
+  .get_points = _circle_get_points,
+  .get_points_border = _circle_get_points_border,
+  .get_mask = _circle_get_mask,
+  .get_mask_roi = _circle_get_mask_roi,
+  .get_area = _circle_get_area,
+  .get_source_area = _circle_get_source_area,
+  .mouse_moved = _circle_events_mouse_moved,
+  .mouse_scrolled = _circle_events_mouse_scrolled,
+  .button_pressed = _circle_events_button_pressed,
+  .button_released = _circle_events_button_released,
+  .post_expose = _circle_events_post_expose
+};
 
 
 
