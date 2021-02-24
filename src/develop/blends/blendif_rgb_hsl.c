@@ -914,7 +914,7 @@ static void _blend_inverse(const float *const restrict a, float *const restrict 
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, b:16) uniform(stride)
 #endif
-static void _blend_HSV_lightness(const float *const restrict a, float *const restrict b,
+static void _blend_HSV_value(const float *const restrict a, float *const restrict b,
                                  const float *const restrict mask, const size_t stride)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
@@ -1100,8 +1100,8 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
     case DEVELOP_BLEND_COLORADJUST:
       blend = _blend_coloradjust;
       break;
-    case DEVELOP_BLEND_HSV_LIGHTNESS:
-      blend = _blend_HSV_lightness;
+    case DEVELOP_BLEND_HSV_VALUE:
+      blend = _blend_HSV_value;
       break;
     case DEVELOP_BLEND_HSV_COLOR:
       blend = _blend_HSV_color;
