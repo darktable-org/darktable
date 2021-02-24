@@ -60,7 +60,7 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "linearlight"), DEVELOP_BLEND_LINEARLIGHT },
         { NC_("blendmode", "pinlight"), DEVELOP_BLEND_PINLIGHT },
         { NC_("blendmode", "lightness"), DEVELOP_BLEND_LIGHTNESS },
-        { NC_("blendmode", "chroma"), DEVELOP_BLEND_CHROMA },
+        { NC_("blendmode", "chromaticity"), DEVELOP_BLEND_CHROMATICITY },
         { NC_("blendmode", "hue"), DEVELOP_BLEND_HUE },
         { NC_("blendmode", "color"), DEVELOP_BLEND_COLOR },
         { NC_("blendmode", "coloradjustment"), DEVELOP_BLEND_COLORADJUST },
@@ -2570,7 +2570,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_B);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LAB_COLOR);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
-        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMA);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMATICITY);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLOR);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLORADJUST);
@@ -2583,7 +2583,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_B);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_VALUE);
-        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMA);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMATICITY);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_COLOR);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_COLOR);
@@ -2611,7 +2611,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_B);
       dt_bauhaus_combobox_add_section(bd->blend_modes_combo, _("chrominance & luminance modes"));
       _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
-      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMA);
+      _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMATICITY);
     }
     bd->blend_modes_csp = bd->csp;
   }
