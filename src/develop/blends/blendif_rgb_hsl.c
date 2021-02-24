@@ -910,11 +910,11 @@ static void _blend_inverse(const float *const restrict a, float *const restrict 
   }
 }
 
-/* blend only lightness in HSV color space without any clamping */
+/* blend only lightness in HSL color space without any clamping */
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, b:16) uniform(stride)
 #endif
-static void _blend_HSV_lightness(const float *const restrict a, float *const restrict b,
+static void _blend_HSL_lightness(const float *const restrict a, float *const restrict b,
                                  const float *const restrict mask, const size_t stride)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
@@ -923,8 +923,8 @@ static void _blend_HSV_lightness(const float *const restrict a, float *const res
     float ta[3] DT_ALIGNED_PIXEL;
     float tb[3] DT_ALIGNED_PIXEL;
 
-    dt_RGB_2_HSV(a + j, ta);
-    dt_RGB_2_HSV(b + j, tb);
+    dt_RGB_2_HSL(a + j, ta);
+    dt_RGB_2_HSL(b + j, tb);
 
     // hue and saturation from input image
     tb[0] = ta[0];
@@ -933,16 +933,16 @@ static void _blend_HSV_lightness(const float *const restrict a, float *const res
     // blend lightness between input and output
     tb[2] = ta[2] * (1.0f - local_opacity) + tb[2] * local_opacity;
 
-    dt_HSV_2_RGB(tb, b + j);
+    dt_HSL_2_RGB(tb, b + j);
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
 
-/* blend only color in HSV color space without any clamping */
+/* blend only color in HSL color space without any clamping */
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, b:16) uniform(stride)
 #endif
-static void _blend_HSV_color(const float *const restrict a, float *const restrict b,
+static void _blend_HSL_color(const float *const restrict a, float *const restrict b,
                              const float *const restrict mask, const size_t stride)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
@@ -951,8 +951,8 @@ static void _blend_HSV_color(const float *const restrict a, float *const restric
     float ta[3] DT_ALIGNED_PIXEL;
     float tb[3] DT_ALIGNED_PIXEL;
 
-    dt_RGB_2_HSV(a + j, ta);
-    dt_RGB_2_HSV(b + j, tb);
+    dt_RGB_2_HSL(a + j, ta);
+    dt_RGB_2_HSL(b + j, tb);
 
     // convert from polar to cartesian coordinates
     const float xa = ta[1] * cosf(2.0f * DT_M_PI_F * ta[0]);
@@ -971,7 +971,7 @@ static void _blend_HSV_color(const float *const restrict a, float *const restric
     // lightness from input image
     tb[2] = ta[2];
 
-    dt_HSV_2_RGB(tb, b + j);
+    dt_HSL_2_RGB(tb, b + j);
     b[j + DT_BLENDIF_RGB_BCH] = local_opacity;
   }
 }
@@ -1100,11 +1100,11 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
     case DEVELOP_BLEND_COLORADJUST:
       blend = _blend_coloradjust;
       break;
-    case DEVELOP_BLEND_HSV_LIGHTNESS:
-      blend = _blend_HSV_lightness;
+    case DEVELOP_BLEND_HSL_LIGHTNESS:
+      blend = _blend_HSL_lightness;
       break;
-    case DEVELOP_BLEND_HSV_COLOR:
-      blend = _blend_HSV_color;
+    case DEVELOP_BLEND_HSL_COLOR:
+      blend = _blend_HSL_color;
       break;
     case DEVELOP_BLEND_RGB_R:
       blend = _blend_RGB_R;
