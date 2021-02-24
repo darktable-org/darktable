@@ -168,8 +168,8 @@ static void _lib_histogram_process_waveform(dt_lib_histogram_t *const d, const f
   dt_times_t start_time = { 0 };
   if(darktable.unmuted & DT_DEBUG_PERF) dt_get_times(&start_time);
 
-  const int sample_width = roi->width - roi->crop_width - roi->crop_x;
-  const int sample_height = roi->height - roi->crop_height - roi->crop_y;
+  const int sample_width = MAX(1, roi->width - roi->crop_width - roi->crop_x);
+  const int sample_height = MAX(1, roi->height - roi->crop_height - roi->crop_y);
 
   // Note that, with current constants, the input buffer is from the
   // preview pixelpipe and should be <= 1440x900x4. The output buffer
