@@ -754,7 +754,7 @@ static int lua_register_action(lua_State *L)
   lua_callback_data * data = malloc(sizeof(lua_callback_data));
   data->key = strdup(name);
   data->self = self;
-  gulong s = g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
+  const gulong s = g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(lua_button_clicked), data);
 
   // save the signal connection in case we need to destroy it later
   dt_lua_module_entry_push(L, "lib", self->plugin_name);
@@ -779,9 +779,8 @@ static int lua_destroy_action(lua_State *L)
   // find the button named name
 
   GtkWidget* widget = NULL;
-  int row;
 
-  for(row = 5; (widget = gtk_grid_get_child_at(GTK_GRID(d->page1), 0, row)) != NULL; row++)
+  for(int row = 5; (widget = gtk_grid_get_child_at(GTK_GRID(d->page1), 0, row)) != NULL; row++)
   {
     if(GTK_IS_BUTTON(widget) && strcmp(gtk_widget_get_name(widget), name) == 0)
     {
@@ -801,8 +800,7 @@ static int lua_destroy_action(lua_State *L)
       lua_getfield(L, -1, "signal_handlers");
       lua_pushstring(L, name);
       lua_gettable(L, -2);
-      gulong handler_id = 0;
-      handler_id = luaL_checkinteger(L, -1);
+      const gulong handler_id = luaL_checkinteger(L, -1);
       g_signal_handler_disconnect(G_OBJECT(widget), handler_id);
 
       // remove the widget
@@ -821,15 +819,14 @@ static int lua_set_action_sensitive(lua_State *L)
   lua_settop(L, 3);
   dt_lib_module_t *self = lua_touserdata(L, lua_upvalueindex(1));
   const char* name = luaL_checkstring(L, 1);
-  gboolean sensitive = lua_toboolean(L, 2);
+  const gboolean sensitive = lua_toboolean(L, 2);
   dt_lib_image_t *d = self->data;
 
   // find the button named name
 
   GtkWidget* widget = NULL;
-  int row;
 
-  for(row = 5; (widget = gtk_grid_get_child_at(GTK_GRID(d->page1), 0, row)) != NULL; row++)
+  for(int row = 5; (widget = gtk_grid_get_child_at(GTK_GRID(d->page1), 0, row)) != NULL; row++)
   {
     if(GTK_IS_BUTTON(widget) && strcmp(gtk_widget_get_name(widget), name) == 0)
     {
