@@ -960,7 +960,7 @@ static void _blend_lightness(const float *const restrict a, float *const restric
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, b, min, max: 16) uniform(stride, min, max)
 #endif
-static void _blend_chroma(const float *const restrict a, float *const restrict b,
+static void _blend_chromaticity(const float *const restrict a, float *const restrict b,
                           const float *const restrict mask, const size_t stride,
                           const float *const restrict min, const float *const restrict max)
 {
@@ -1302,8 +1302,8 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
     case DEVELOP_BLEND_LIGHTNESS:
       blend = _blend_lightness;
       break;
-    case DEVELOP_BLEND_CHROMA:
-      blend = _blend_chroma;
+    case DEVELOP_BLEND_CHROMATICITY:
+      blend = _blend_chromaticity;
       break;
     case DEVELOP_BLEND_HUE:
       blend = _blend_hue;
