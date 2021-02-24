@@ -324,7 +324,7 @@ static float saturation_gui_to_internal(float saturation_percent)
   // leave it for the moment (Feb 2020). This code here needs to be adapted when
   // the bug gets fixed.
 
-  TR_BUG("saturation converstion from gui to internal is wrong");
+  TR_BUG("saturation conversion from gui to internal is wrong");
   return (2.0f * saturation_percent / 100.0f + 1.0f);  // copied from filmicrgb.c
   //fix: return 100.0f / fmaxf(100.0f - saturation_percent, 1e-6);
 }

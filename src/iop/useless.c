@@ -79,7 +79,7 @@ typedef struct dt_iop_useless_params_t
   // to initialise self->default_params, which is then used in gui_init to set widget defaults.
   //
   // These field names are just examples; chose meaningful ones! For performance reasons, align
-  // to 4 byte bounderies (use gboolean, not bool).
+  // to 4 byte boundaries (use gboolean, not bool).
   int checker_scale; // $MIN: 0 $MAX: 10 $DEFAULT: 1 $DESCRIPTION: "size"
   float factor;      // $MIN: -5.0 $MAX: 5.0 $DEFAULT: 0
   gboolean check;    // $DESCRIPTION: "checkbox option"
@@ -515,7 +515,7 @@ void reload_defaults(dt_iop_module_t *module)
 
   // If we are in darkroom, gui_init will already have been called and has initialised
   // module->gui_data and widgets.
-  // So if deafault values have been changed, it may then be necessary to also change the
+  // So if default values have been changed, it may then be necessary to also change the
   // default values in widgets. Resetting the individual widgets will then have the same
   // effect as resetting the whole module at once.
   dt_iop_useless_gui_data_t *g = (dt_iop_useless_gui_data_t *)module->gui_data;
@@ -555,8 +555,8 @@ void gui_init(dt_iop_module_t *self)
   // type of image, then the widgets have to be updated in reload_params.
   dt_iop_useless_gui_data_t *g = IOP_GUI_ALLOC(useless);
 
-  // If the first widget is created useing a _from_params call, self->widget does not have to
-  // be explicitly initialised, as a new virtical box will be created automatically.
+  // If the first widget is created using a _from_params call, self->widget does not have to
+  // be explicitly initialised, as a new vertical box will be created automatically.
   self->widget = gtk_box_new(GTK_ORIENTATION_VERTICAL, DT_BAUHAUS_SPACE);
 
   // Linking a slider to an integer will make it take only whole numbers (step=1).

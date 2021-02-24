@@ -84,7 +84,7 @@ Noticeably, some Flatpak, Snap and Appimage packages lack OpenCL and Lua support
 
 ### Development snapshot
 
-The development snapshot is the state of the master branch at current time. It is intended for testing and is generaly not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
+The development snapshot is the state of the master branch at current time. It is intended for testing and is generally not safe. See the notes [below](#get-the-source) for warnings and precautions about using the master branch.
 
 * [Install native packages and repositories for Linux](https://software.opensuse.org/download.html?project=graphics:darktable:master&package=darktable) (one snapshot per day).
 * No precompiled packages are provided for the master branch on MacOS and Windows. See how to build it manually below.
@@ -101,7 +101,7 @@ be prompted with a request to either upgrade the database or to close the softwa
 
 **The migration to a newer database structure/newer release means new and old edits 
 will not be compatible anymore with older versions of darktable.** Upgrades are definitive.
-Newer versions are always compatible with older edits, but newer edits are generaly 
+Newer versions are always compatible with older edits, but newer edits are generally 
 not compatible with older versions.
 
 darktable automatically backs up the library database when a new version upgrades it 
@@ -253,7 +253,7 @@ git submodule update --init
 WARNING: in case you have already built darktable in the past, don't forget to remove entirely (`rm -R`) the `build` 
 and `/opt/darktable` directories to avoid conflicting files from different versions.
 
-darktable provides a shell script that automaticaly takes care of the building on Linux and MacOS for classic cases in a single command. 
+darktable provides a shell script that automatically takes care of the building on Linux and MacOS for classic cases in a single command. 
 
 
 ```bash

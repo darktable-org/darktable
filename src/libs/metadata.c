@@ -793,7 +793,7 @@ void gui_cleanup(dt_lib_module_t *self)
 
 static void add_rights_preset(dt_lib_module_t *self, char *name, char *string)
 {
-  // to be ajusted the nb of metadata items changes
+  // to be adjusted the nb of metadata items changes
   const unsigned int metadata_nb = DT_METADATA_NUMBER;
   const unsigned int params_size = strlen(string) + metadata_nb;
 
