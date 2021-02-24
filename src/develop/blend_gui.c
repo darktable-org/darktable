@@ -69,7 +69,7 @@ const dt_develop_name_value_t dt_develop_blend_mode_names[]
         { NC_("blendmode", "Lab L-channel"), DEVELOP_BLEND_LAB_L },
         { NC_("blendmode", "Lab a-channel"), DEVELOP_BLEND_LAB_A },
         { NC_("blendmode", "Lab b-channel"), DEVELOP_BLEND_LAB_B },
-        { NC_("blendmode", "HSV lightness"), DEVELOP_BLEND_HSV_LIGHTNESS },
+        { NC_("blendmode", "HSV value"), DEVELOP_BLEND_HSV_VALUE },
         { NC_("blendmode", "HSV color"), DEVELOP_BLEND_HSV_COLOR },
         { NC_("blendmode", "RGB red channel"), DEVELOP_BLEND_RGB_R },
         { NC_("blendmode", "RGB green channel"), DEVELOP_BLEND_RGB_G },
@@ -2582,7 +2582,7 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_G);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_RGB_B);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_LIGHTNESS);
-        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_LIGHTNESS);
+        _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_VALUE);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_CHROMA);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HSV_COLOR);
         _add_blendmode_combo(bd->blend_modes_combo, DEVELOP_BLEND_HUE);
