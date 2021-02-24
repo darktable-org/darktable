@@ -611,7 +611,7 @@ int dt_init(int argc, char *argv[], const gboolean init_gui, const gboolean load
         else if(!strcmp(argv[k + 1], "ioporder"))
           darktable.unmuted |= DT_DEBUG_IOPORDER; // iop order information are reported on console
         else if(!strcmp(argv[k + 1], "imageio"))
-          darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting mesages on console
+          darktable.unmuted |= DT_DEBUG_IMAGEIO; // image importing or exporting messages on console
         else if(!strcmp(argv[k + 1], "undo"))
           darktable.unmuted |= DT_DEBUG_UNDO; // undo/redo
         else if(!strcmp(argv[k + 1], "signal"))

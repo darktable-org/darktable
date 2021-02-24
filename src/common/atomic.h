@@ -19,7 +19,7 @@
 #pragma once
 
 // implement an atomic variable for inter-thread signalling purposes
-// the manner in which we implement depends on the capapbilities of the compiler:
+// the manner in which we implement depends on the capabilities of the compiler:
 //   1. standard-compliant C++ compiler: use C++11 atomics in <atomic>
 //   2. standard-compliant C compiler: use C11 atomics in <stdatomic.h>
 //   3. GCC 4.8+: use intrinsics

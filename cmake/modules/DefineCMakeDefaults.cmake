@@ -6,7 +6,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # Put the include dirs which are in the source or build tree
 # before all other include dirs, so the headers in the sources
-# are prefered over the already installed ones
+# are preferred over the already installed ones
 # since cmake 2.4.1
 set(CMAKE_INCLUDE_DIRECTORIES_PROJECT_BEFORE ON)
 

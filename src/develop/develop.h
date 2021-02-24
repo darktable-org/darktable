@@ -528,7 +528,7 @@ void dt_second_window_check_zoom_bounds(dt_develop_t *dev, float *zoom_x, float 
                                         const int closeup, float *boxww, float *boxhh);
 
 /*
- *   history undo suport helpers for darkroom
+ *   history undo support helpers for darkroom
  */
 
 /* all history change must be enclosed into a start / end call */

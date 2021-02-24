@@ -188,7 +188,7 @@ static void _camera_property_value_changed(const dt_camera_t *camera, const char
   }
 }
 
-/** Invoked when accesibility of a property is changed. */
+/** Invoked when accessibility of a property is changed. */
 static void _camera_property_accessibility_changed(const dt_camera_t *camera, const char *name,
                                                    gboolean read_only, void *data)
 {

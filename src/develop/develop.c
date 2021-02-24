@@ -1542,7 +1542,7 @@ static gboolean _dev_auto_apply_presets(dt_develop_t *dev)
     }
     else
     {
-      // we have no auto-apply order, so apply iop order, depending of the worflow
+      // we have no auto-apply order, so apply iop order, depending of the workflow
       GList *iop_list;
       if(is_scene_referred || is_workflow_none)
         iop_list = dt_ioppr_get_iop_order_list_version(DT_IOP_ORDER_V30);

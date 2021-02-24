@@ -70,7 +70,7 @@ typedef struct dt_lib_tracks_t
 
 typedef enum dt_tracks_cols_t
 {
-  DT_GEO_TRACKS_ACTIVE = 0,       // active / deactive track
+  DT_GEO_TRACKS_ACTIVE = 0,       // active / deactivated track
   DT_GEO_TRACKS_DATETIME,         // displayed start datetime
   DT_GEO_TRACKS_POINTS,           // nb points
   DT_GEO_TRACKS_IMAGES,           // nb images
@@ -1783,7 +1783,7 @@ void gui_init(dt_lib_module_t *self)
                                 "\n- the number of track points"
                                 "\n- the number of matching images"
                                 " based on images date/time, offset and time zone"
-                                "\n- more detailled time information hovering the row"));
+                                "\n- more detailed time information hovering the row"));
   renderer = gtk_cell_renderer_toggle_new();
   g_signal_connect(renderer, "toggled", G_CALLBACK(_track_seg_toggled), self);
   GtkTreeViewColumn *column = gtk_tree_view_column_new_with_attributes("", renderer, "active", DT_GEO_TRACKS_ACTIVE, NULL);

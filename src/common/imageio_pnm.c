@@ -31,7 +31,7 @@
 #include <time.h>
 #include <unistd.h>
 
-// pbm -- portable bit map. values are either 0 or 1, singel channel
+// pbm -- portable bit map. values are either 0 or 1, single channel
 static dt_imageio_retval_t _read_pbm(dt_image_t *img, FILE*f, float *buf)
 {
   dt_imageio_retval_t result = DT_IMAGEIO_OK;

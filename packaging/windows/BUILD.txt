@@ -89,7 +89,7 @@ If you are in a hurry you can now run darktable by executing the darktable.exe f
 
 B) Cross compile on Linux
 
-Note:  These intructions have not been updated for some time and are likely to need revision.
+Note:  These instructions have not been updated for some time and are likely to need revision.
     In order to build darktable for Windows there is a chance to cross compile it
     on Linux. The result is currently not particularly usable, but still, if you
     are curious you could give it a try.

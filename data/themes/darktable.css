@@ -2311,7 +2311,7 @@ scale contents trough slider:hover
 
 /*** --- Thumbtable css part ---
 
-Hierachy :
+Hierarchy :
 
   #thumbtable_filemanager / #thumbtable_filmstrip / #thumbtable_zoom (GtkLayout -- main widget which contains all thumbs)
     #thumb_main                                                      (GtkOverlay -- thumbnail widget)
@@ -2342,7 +2342,7 @@ Details :
     state = :selected  if the thumb is in current selection
     state = :active    if the thumb correspond to one of the images worked on (filmstrip)
     state = :hover     if the mouse hover the widget
-    class = .dt_group_left / .dt_group_right / .dt_group_top / .dt_group_bottom  if we need to draw group borders arround thumb
+    class = .dt_group_left / .dt_group_right / .dt_group_top / .dt_group_bottom  if we need to draw group borders around thumb
   #thumb_image
     only the borders are drawn - background is ignored
   all icons inside the widget

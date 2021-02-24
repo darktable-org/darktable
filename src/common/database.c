@@ -1279,7 +1279,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
             e = g_list_next(e);
           }
 
-          // and finally reoder the full list based on the iop-order
+          // and finally reorder the full list based on the iop-order
 
           iop_order_list = g_list_sort(iop_order_list, dt_sort_iop_list_by_order_f);
 

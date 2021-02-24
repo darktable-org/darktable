@@ -858,7 +858,7 @@ void dt_styles_apply_to_image(const char *name, const gboolean duplicate, const 
       GList *mi = dt_ioppr_extract_multi_instances_list(img_iop_order_list);
       // if some where found merge them with the style list
       if(mi) iop_list = dt_ioppr_merge_multi_instance_iop_order_list(iop_list, mi);
-      // finaly we have the final list for the image
+      // finally we have the final list for the image
       dt_ioppr_write_iop_order_list(iop_list, newimgid);
       g_list_free_full(iop_list, g_free);
       g_list_free_full(img_iop_order_list, g_free);

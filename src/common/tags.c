@@ -896,7 +896,7 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
 
   gboolean omit_tag_hierarchy = flags & DT_META_OMIT_HIERARCHY;
   gboolean export_private_tags = flags & DT_META_PRIVATE_TAG;
-  gboolean export_tag_synomyms = flags & DT_META_SYNONYMS_TAG;
+  gboolean export_tag_synonyms = flags & DT_META_SYNONYMS_TAG;
 
   uint32_t count = _tag_get_attached_export(imgid, &taglist);
 
@@ -942,7 +942,7 @@ GList *dt_tag_get_list_export(gint imgid, int32_t flags)
       }
 
       // add synonyms as necessary
-      if (export_tag_synomyms)
+      if (export_tag_synonyms)
       {
         gchar *synonyms = t->synonym;
         if (synonyms && synonyms[0])

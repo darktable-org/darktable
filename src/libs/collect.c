@@ -2986,7 +2986,7 @@ static int filter_cb(lua_State *L)
       lua_pushinteger(L,new_p->rules + 1);
       lua_gettable(L,1);
       if(!lua_isnil(L,-1)) {
-        luaL_error(L,"Number of rules given excedes max allowed (%d)",MAX_RULES);
+        luaL_error(L,"Number of rules given exceeds max allowed (%d)",MAX_RULES);
       }
     }
     set_params(self,new_p,size);

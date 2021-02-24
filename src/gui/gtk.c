@@ -1767,7 +1767,7 @@ static void init_main_table(GtkWidget *container)
   gtk_widget_set_vexpand(GTK_WIDGET(widget), TRUE);
   gtk_grid_attach(GTK_GRID(container), widget, 2, 1, 1, 1);
 
-  /* initiialize the center top panel */
+  /* initialize the center top panel */
   _ui_init_panel_center_top(darktable.gui->ui, widget);
 
   GtkWidget *centergrid = gtk_grid_new();
@@ -1791,7 +1791,7 @@ static void init_main_table(GtkWidget *container)
   darktable.gui->ui->center = cda;
   darktable.gui->ui->center_base = ocda;
 
-  /* initiialize the thumb panel */
+  /* initialize the thumb panel */
   darktable.gui->ui->thumbtable = dt_thumbtable_new();
 
   /* the log message */

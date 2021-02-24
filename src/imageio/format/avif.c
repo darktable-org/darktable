@@ -491,7 +491,7 @@ int write_image(struct dt_imageio_module_data_t *data,
    * Tiling reduces the image quality but it has a negligible impact on
    * still images.
    *
-   * The minmum size for a tile is 512x512. We use a default tile size of
+   * The minimum size for a tile is 512x512. We use a default tile size of
    * 1024x1024.
    */
   switch(d->tiling)
