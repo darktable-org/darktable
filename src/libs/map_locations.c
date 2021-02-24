@@ -23,7 +23,7 @@
 #include "libs/lib.h"
 
 // map position module uses the tag dictionary with dt_geo_tag_root as a prefix.
-// Synomym field is used to store positions coordinates in ascii format.
+// Synonym field is used to store positions coordinates in ascii format.
 
 static void _signal_location_change(dt_lib_module_t *self);
 static void _show_location(dt_lib_module_t *self);

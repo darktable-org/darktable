@@ -217,7 +217,7 @@ static void _overlays_show_popup(dt_lib_module_t *self)
 
   if(thumbs_state)
   {
-    // we write the label with the size categorie
+    // we write the label with the size category
     gchar *txt = dt_util_dstrcat(NULL, "%s %d (%d %s)", _("thumbnails overlays for size"),
                                  dt_ui_thumbtable(darktable.gui->ui)->prefs_size,
                                  dt_ui_thumbtable(darktable.gui->ui)->thumb_size, _("px"));

@@ -360,7 +360,7 @@ jobs:
       CMAKE_BUILD_TYPE: ${{ matrix.btype }}
       TARGET: ${{ matrix.target }}
       GENERATOR: ${{ matrix.generator }}
-      # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
+      # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
     steps:
       - uses: msys2/setup-msys2@v2
         with:
@@ -495,7 +495,7 @@ jobs:
           cd src/.ci 
           brew bundle --verbose
       - name: Build and Install
-          # todo: use linker which supprots --wrap, ld.bfd and ld.gold support it
+          # todo: use linker which supports --wrap, ld.bfd and ld.gold support it
         run: |
           cmake -E make_directory "${BUILD_DIR}";
           cmake -E make_directory "${INSTALL_PREFIX}";
