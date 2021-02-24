@@ -274,13 +274,10 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
+    dt_history_delete_on_list(imgs, TRUE);
     GList *imgs_copy = g_list_copy((GList *)imgs);
-    dt_history_delete_on_list(imgs_copy, TRUE);
-
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_copy((GList *)imgs_copy));
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs_copy); // frees imgs_copy
     dt_control_queue_redraw_center();
-    g_list_free(imgs_copy);
   }
 }
 

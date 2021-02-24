@@ -495,7 +495,7 @@ void enter(dt_view_t *self)
   // no active image when entering the tethering view
   lib->image_over = DT_VIEW_DESERT;
   GSList *l = dt_view_active_images_get();
-  lib->image_id = l ? GPOINTER_TO_INT(l->data): -1;
+  lib->image_id = l ? GPOINTER_TO_INT(l->data) : -1;
 
   dt_view_active_images_reset(FALSE);
   dt_view_active_images_add(lib->image_id, TRUE);
