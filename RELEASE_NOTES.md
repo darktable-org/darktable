@@ -74,6 +74,14 @@ you are strongly advised to take a backup first.
 
 * selection sensitivity - add _darktable.gui.libs.select.set_selection_sensitive()_ to set selection button sensitivity
 
+* API change to 6.2.3 - SCRIPT BREAKING CHANGE
+
+* action naming - add a name field to darktable.gui.libs.image.register_action() so that the action can be selected and manipulated after creation
+
+* action destruction - add darktable.gui.libs.image.destroy_action() to remove a lua created action button from the user interface.
+
+* action sensitivity - add darktable.gui.libs.image.set_action_sensitive() to set action button sensitivity
+
 ## Changed Dependencies
 
 ## RawSpeed changes
