@@ -606,11 +606,11 @@ static void _blend_harmonic_mean(const float *const restrict a, float *const res
   }
 }
 
-/* chrominance */
+/* chromaticity */
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, b:16) uniform(p, stride)
 #endif
-static void _blend_chrominance(const float *const restrict a, float *const restrict b, const float p,
+static void _blend_chromaticity(const float *const restrict a, float *const restrict b, const float p,
                                const float *const restrict mask, const size_t stride)
 {
   for(size_t i = 0, j = 0; i < stride; i++, j += DT_BLENDIF_RGB_CH)
@@ -626,7 +626,7 @@ static void _blend_chrominance(const float *const restrict a, float *const restr
   }
 }
 
-/* chrominance */
+/* luminance */
 #ifdef _OPENMP
 #pragma omp declare simd aligned(a, b:16) uniform(p, stride)
 #endif
@@ -736,8 +736,8 @@ static _blend_row_func *_choose_blend_func(const unsigned int blend_mode)
     case DEVELOP_BLEND_LIGHTNESS:
       blend = _blend_luminance;
       break;
-    case DEVELOP_BLEND_CHROMA:
-      blend = _blend_chrominance;
+    case DEVELOP_BLEND_CHROMATICITY:
+      blend = _blend_chromaticity;
       break;
     case DEVELOP_BLEND_INVERSE:
       blend = _blend_inverse;
