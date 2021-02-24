@@ -803,6 +803,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   }
 
   GList *l = NULL;
+  gboolean inside_sel = FALSE;
   if(mouseover > 0)
   {
     // collumn 1,2,3
@@ -810,7 +811,6 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     {
       // collumn 1,2
       sqlite3_stmt *stmt;
-      gboolean inside_sel = FALSE;
       gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
@@ -823,6 +823,14 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       if(inside_sel)
       {
         // collumn 1
+
+        // first, we try to return cached list if we wher already inside sel and the selection has not changed
+        if(!force && darktable.view_manager->act_on.ok && darktable.view_manager->act_on.image_over_inside_sel
+           && darktable.view_manager->act_on.inside_table)
+        {
+          return darktable.view_manager->act_on.images;
+        }
+
         if(only_visible)
         {
           // we don't want to get image hidden because of grouping
@@ -901,6 +909,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   }
 
   // let's register the new list as cached
+  darktable.view_manager->act_on.image_over_inside_sel = inside_sel;
   darktable.view_manager->act_on.image_over = mouseover;
   g_list_free(darktable.view_manager->act_on.images);
   darktable.view_manager->act_on.images = l;
