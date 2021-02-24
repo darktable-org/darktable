@@ -2014,8 +2014,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       const int lastid = GPOINTER_TO_INT(g_slist_last(darktable.view_manager->active_images)->data);
       dt_thumbtable_ensure_imgid_visibility(table, lastid);
 
-      GSList *l = darktable.view_manager->active_images;
-      while(l)
+      for(GSList *l = darktable.view_manager->active_images; l; l = g_slist_next(l))
       {
         dt_thumbnail_t *th = _thumbtable_get_thumb(table, GPOINTER_TO_INT(l->data));
         if(th)
@@ -2025,7 +2024,6 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
           th->active = FALSE;
           dt_thumbnail_update_infos(th);
         }
-        l = g_slist_next(l);
       }
       g_slist_free(darktable.view_manager->active_images);
       darktable.view_manager->active_images = NULL;
