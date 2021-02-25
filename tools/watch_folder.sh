@@ -24,13 +24,50 @@
 
 . "$(dirname "$0")/common.sh"
 
-if [ $# -ne 1 ]; then
+msg() {
+  echo >&2 -e "${1-}"
+}
+
+die() {
+  local msg=$1
+  local code=${2-1} # default exit status 1
+  msg "$msg"
+  exit "$code"
+}
+
+parse_params() {
+  # default values of variables set from params
+  recursive=0
+
+  while :; do
+    case "${1-}" in
+    -h | --help) usage ;;
+    -v | --verbose) set -x ;;
+    --no-color) NO_COLOR=1 ;;
+    -r | --recursice) recursive=1 ;; # example flag
+    -?*) die "Unknown option: $1" ;;
+    *) break ;;
+    esac
+    shift
+  done
+
+  args=("$@")
+
+  # check required params and arguments
+  [[ ${#args[@]} -eq 0 ]] && die "Missing script arguments"
+
+  return 0
+}
+
+parse_params "$@"
+
+if [ ${#args[@]} -ne 1 ]; then
   echo "This script watches a folder for new images and imports them into a running instance of darktable"
   echo "Usage: $0 <folder>"
   exit 1
 fi
 
-BASE_FOLDER=$($ReadLink "$1")
+BASE_FOLDER=$($ReadLink "${args[0]}")
 
 if [ ! -d "${BASE_FOLDER}" ]; then
   echo "error accessing directory '$BASE_FOLDER'"
@@ -47,6 +84,9 @@ INOTIFYWAIT=$(which inotifywait)
 if [ $? -ne 0 ]; then
   echo "can't find 'inotifywait' in PATH"
   exit 1
+fi
+if [ recursive == 1 ]; then
+  INOTIFYWAIT=$INOTIFYWAIT -r
 fi
 
 HAVE_LUA=$("${DBUS_SEND}" --print-reply --type=method_call --dest=org.darktable.service /darktable org.freedesktop.DBus.Properties.Get string:org.darktable.service.Remote string:LuaEnabled 2>/dev/null)
