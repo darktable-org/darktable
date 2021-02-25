@@ -493,6 +493,20 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
 }
 
 static inline
+void dt_masks_dynbuf_add_2(dt_masks_dynbuf_t *a, float value1, float value2)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(__builtin_expect(a->pos + 2 >= a->size, 0))
+  {
+    if (a->size == 0 || !_dt_masks_dynbuf_growto(a, 2 * (a->size+1)))
+      return;
+  }
+  a->buffer[a->pos++] = value1;
+  a->buffer[a->pos++] = value2;
+}
+
+static inline
 void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
 {
   assert(a != NULL);
