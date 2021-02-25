@@ -186,8 +186,7 @@ static gboolean _path_is_clockwise(dt_masks_form_t *form)
 static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t *points)
 {
   dt_masks_dynbuf_reset(points);
-  dt_masks_dynbuf_add(points, x);
-  dt_masks_dynbuf_add(points, y);
+  dt_masks_dynbuf_add_2(points, x, y);
 
   // now we want to be sure everything is continuous
   if(x - lastx > 1)
@@ -200,20 +199,17 @@ static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t
       {
         for(int jj = lasty2 + 1; jj < yyy; jj++)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
       else if(lasty2 - yyy < -1)
       {
         for(int jj = lasty2 - 1; jj > yyy; jj--)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
-      dt_masks_dynbuf_add(points, j);
-      dt_masks_dynbuf_add(points, yyy);
+      dt_masks_dynbuf_add_2(points, j, yyy);
     }
   }
   else if(x - lastx < -1)
@@ -226,20 +222,17 @@ static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t
       {
         for(int jj = lasty2 + 1; jj < yyy; jj++)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
       else if(lasty2 - yyy < -1)
       {
         for(int jj = lasty2 - 1; jj > yyy; jj--)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
-      dt_masks_dynbuf_add(points, j);
-      dt_masks_dynbuf_add(points, yyy);
+      dt_masks_dynbuf_add_2(points, j, yyy);
     }
   }
   return 1;
@@ -333,13 +326,13 @@ static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, 
                  && (int)border_min[1] - (int)border_max[1] < 1
                  && (int)border_min[1] - (int)border_max[1] > -1))))
   {
-    dt_masks_dynbuf_add_n(dpoints, path_max, 2);
+    dt_masks_dynbuf_add_2(dpoints, path_max[0], path_max[1]);
     rpath[0] = path_max[0];
     rpath[1] = path_max[1];
 
     if(withborder)
     {
-      dt_masks_dynbuf_add_n(dborder, border_max, 2);
+      dt_masks_dynbuf_add_2(dborder, border_max[0], border_max[1]);
       rborder[0] = border_max[0];
       rborder[1] = border_max[1];
     }
@@ -484,16 +477,14 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
               else
               {
                 // we find a new self-intersection portion
-                dt_masks_dynbuf_add(inter, v[k]);
-                dt_masks_dynbuf_add(inter, i);
+                dt_masks_dynbuf_add_2(inter, v[k], i);
                 inter_count++;
               }
             }
             else
             {
               // we find a new self-intersection portion
-              dt_masks_dynbuf_add(inter, v[k]);
-              dt_masks_dynbuf_add(inter, i);
+              dt_masks_dynbuf_add_2(inter, v[k], i);
               inter_count++;
             }
           }
@@ -638,7 +629,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
       bmin[1] = dt_masks_dynbuf_get(dborder, -1);
     }
 
-    dt_masks_dynbuf_add_n(dpoints, rc, 2);
+    dt_masks_dynbuf_add_2(dpoints, rc[0], rc[1]);
 
     border_init[k * 6 + 4] = dborder ? -dt_masks_dynbuf_position(dborder) : 0;
 
@@ -654,7 +645,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
         rb[0] = dt_masks_dynbuf_get(dborder, -2);
         rb[1] = dt_masks_dynbuf_get(dborder, -1);
       }
-      dt_masks_dynbuf_add_n(dborder, rb, 2);
+      dt_masks_dynbuf_add_2(dborder, rb[0], rb[1]);
 
       (dt_masks_dynbuf_buffer(dborder))[k * 6] = border_init[k * 6] = (dt_masks_dynbuf_buffer(dborder))[pb];
       (dt_masks_dynbuf_buffer(dborder))[k * 6 + 1] = border_init[k * 6 + 1] = (dt_masks_dynbuf_buffer(dborder))[pb + 1];
