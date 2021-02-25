@@ -802,6 +802,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   }
 
   GList *l = NULL;
+  gboolean inside_sel = FALSE;
   if(mouseover > 0)
   {
     // collumn 1,2,3
@@ -809,7 +810,6 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     {
       // collumn 1,2
       sqlite3_stmt *stmt;
-      gboolean inside_sel = FALSE;
       gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
       if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
@@ -822,15 +822,38 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       if(inside_sel)
       {
         // collumn 1
-        DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                    "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
-                                    "WHERE m.imgid=s.imgid "
-                                    "ORDER BY m.rowid",
-                                    -1, &stmt, NULL);
+
+        // first, we try to return cached list if we wher already inside sel and the selection has not changed
+        if(!force && darktable.view_manager->act_on.ok && darktable.view_manager->act_on.image_over_inside_sel
+           && darktable.view_manager->act_on.inside_table)
+        {
+          return darktable.view_manager->act_on.images;
+        }
+
+        if(only_visible)
+        {
+          // we don't want to get image hidden because of grouping
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "SELECT DISTINCT m.imgid FROM memory.collected_images as m "
+                                      "WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s) "
+                                      "ORDER BY m.rowid",
+                                      -1, &stmt, NULL);
+        }
+        else
+        {
+          // we need to get hidden grouped images too, and the selection already contains them :)
+          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
+                                      "SELECT DISTINCT imgid FROM main.selected_images", -1, &stmt, NULL);
+        }
+
         while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
         {
-          _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
+          // we don't use _images_to_act_on_insert_in_list for performance reason and because the query already
+          // take care of eventual duplicates
+          l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
         }
+        // put the list in right order as we have prepend for performance reasons
+        l = g_list_reverse(l);
         if(stmt) sqlite3_finalize(stmt);
       }
       else
@@ -868,19 +891,22 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       // collumn 4
       sqlite3_stmt *stmt;
       DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT m.imgid FROM memory.collected_images as m, main.selected_images as s "
-                                  "WHERE m.imgid=s.imgid "
-                                  "ORDER BY m.rowid",
+                                  "SELECT DISTINCT m.imgid FROM memory.collected_images as m "
+                                  "WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s) "
+                                  "ORDER BY m.rowid DESC",
                                   -1, &stmt, NULL);
       while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
-        _images_to_act_on_insert_in_list(&l, sqlite3_column_int(stmt, 0), only_visible);
+        // we don't use _images_to_act_on_insert_in_list for performance reason and because the query already
+        // take care of eventual duplicates
+        l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
       }
       if(stmt) sqlite3_finalize(stmt);
     }
   }
 
   // let's register the new list as cached
+  darktable.view_manager->act_on.image_over_inside_sel = inside_sel;
   darktable.view_manager->act_on.image_over = mouseover;
   g_list_free(darktable.view_manager->act_on.images);
   darktable.view_manager->act_on.images = l;
