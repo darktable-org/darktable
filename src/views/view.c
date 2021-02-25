@@ -841,7 +841,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
              "SELECT DISTINCT m.imgid"
              " FROM memory.collected_images as m"
              " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)"
-             " ORDER BY m.rowid",
+             " ORDER BY m.rowid DESC",
              -1, &stmt, NULL);
         }
         else
@@ -850,7 +850,9 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
           // selection already contains them :)
           DT_DEBUG_SQLITE3_PREPARE_V2
             (dt_database_get(darktable.db),
-             "SELECT DISTINCT imgid FROM main.selected_images", -1, &stmt, NULL);
+             "SELECT DISTINCT imgid"
+             " FROM main.selected_images"
+             " ORDER BY imgid DESC", -1, &stmt, NULL);
         }
 
         while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
@@ -861,7 +863,6 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
           l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
         }
         // put the list in right order as we have prepend for performance reasons
-        l = g_list_reverse(l);
         if(stmt) sqlite3_finalize(stmt);
       }
       else
