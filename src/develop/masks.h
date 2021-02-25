@@ -506,25 +506,6 @@ void dt_masks_dynbuf_add_2(dt_masks_dynbuf_t *a, float value1, float value2)
   a->buffer[a->pos++] = value2;
 }
 
-static inline
-void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
-{
-  assert(a != NULL);
-  assert(a->pos <= a->size);
-  if(__builtin_expect(a->pos + n >= a->size, 0))
-  {
-    if(a->size == 0) return;
-    size_t newsize = a->size;
-    while(a->pos + n >= newsize) newsize *= 2;
-    if (!_dt_masks_dynbuf_growto(a, newsize))
-    {
-      return;
-    }
-  }
-  memcpy(a->buffer + a->pos, values, n * sizeof(float));
-  a->pos += n;
-}
-
 // Return a pointer to N floats past the current end of the dynbuf's contents, marking them as already in use.
 // The caller should then fill in the reserved elements using the returned pointer.
 static inline
