@@ -411,7 +411,7 @@ static gboolean _thumbs_zoom_add(dt_culling_t *table, const float zoom_delta, co
     l = g_list_next(l);
   }
 
-  if(g_list_length(table->list) > 1)
+  if(!g_list_shorter_than(table->list, 2))  // at least two images?
   {
     // CULLING with multiple images
     // if shift+ctrl, we only change the current image
@@ -1193,7 +1193,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
   int nbnew = 0;
   int pos = 0;
   DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
-  while(sqlite3_step(stmt) == SQLITE_ROW && g_list_length(newlist) <= table->thumbs_count)
+  while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
   {
     const int nrow = sqlite3_column_int(stmt, 0);
     const int nid = sqlite3_column_int(stmt, 1);
@@ -1262,8 +1262,8 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
 
   // in rare cases, we can have less images than wanted
   // although there's images before (this shouldn't happen in preview)
-  if(table->navigate_inside_selection && g_list_length(newlist) < table->thumbs_count
-     && g_list_length(newlist) < _get_selection_count())
+  if(table->navigate_inside_selection && g_list_shorter_than(newlist, table->thumbs_count)
+     && g_list_shorter_than(newlist, _get_selection_count()))
   {
     const int nb = table->thumbs_count - g_list_length(newlist);
     query = dt_util_dstrcat(NULL,
@@ -1277,7 +1277,7 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
     if(stmt != NULL)
     {
       pos = 0;
-      while(sqlite3_step(stmt) == SQLITE_ROW && g_list_length(newlist) <= table->thumbs_count)
+      while(sqlite3_step(stmt) == SQLITE_ROW && g_list_shorter_than(newlist, table->thumbs_count+1))
       {
         const int nrow = sqlite3_column_int(stmt, 0);
         const int nid = sqlite3_column_int(stmt, 1);
@@ -1360,7 +1360,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   if(!table->list) return FALSE;
 
   // if we have only 1 image, it should take the entire screen
-  if(g_list_length(table->list) == 1)
+  if(g_list_is_singleton(table->list))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)table->list->data;
     thumb->width = table->view_width;

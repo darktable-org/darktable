@@ -342,7 +342,7 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
       dt_masks_change_form_gui(NULL);
-    else if(g_list_length(darktable.develop->form_visible->points) < 2)
+    else if(g_list_shorter_than(darktable.develop->form_visible->points, 2))
       dt_masks_change_form_gui(NULL);
     else
     {

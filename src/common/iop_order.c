@@ -830,7 +830,6 @@ GList *dt_ioppr_merge_module_multi_instance_iop_order_list(GList *iop_order_list
                                                            const char *operation, GList *multi_instance_list)
 {
   const int count_to = _count_entries_operation(iop_order_list, operation);
-  const int count_from = g_list_length(multi_instance_list);
 
   int item_nb = 0;
 
@@ -865,7 +864,7 @@ GList *dt_ioppr_merge_module_multi_instance_iop_order_list(GList *iop_order_list
   }
 
   // if needed removes all other instance of this operation which are superfluous
-  if(count_from < count_to)
+  if(g_list_shorter_than(multi_instance_list, count_to))
   {
     while(link)
     {

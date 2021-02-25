@@ -739,15 +739,13 @@ void dt_metadata_clear(const GList *imgs, const gboolean undo_on)
 void dt_metadata_set_list_id(const GList *img, const GList *metadata, const gboolean clear_on,
                              const gboolean undo_on)
 {
-  GList *imgs = g_list_copy((GList *)img);
-  if(imgs)
+  if(img)
   {
     GList *undo = NULL;
     if(undo_on) dt_undo_start_group(darktable.undo, DT_UNDO_METADATA);
 
-    _metadata_execute(imgs, metadata, &undo, undo_on, clear_on ? DT_MA_SET : DT_MA_ADD);
+    _metadata_execute(img, metadata, &undo, undo_on, clear_on ? DT_MA_SET : DT_MA_ADD);
 
-    g_list_free(imgs);
     if(undo_on)
     {
       dt_undo_record(darktable.undo, NULL, DT_UNDO_METADATA, undo, _pop_undo, _metadata_undo_data_free);

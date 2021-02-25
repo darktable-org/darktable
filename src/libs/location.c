@@ -331,7 +331,7 @@ static void _lib_location_search_finish(gpointer user_data)
 
   /* if we only got one search result back lets
      set center location and zoom based on place type  */
-  if(g_list_length(lib->places) == 1)
+  if(g_list_is_singleton(lib->places))
   {
     _lib_location_result_t *place = (_lib_location_result_t *)lib->places->data;
     _show_location(lib, place);

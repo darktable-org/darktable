@@ -2340,18 +2340,13 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
     return;
   }
 
-  const guint selected_images_length = g_list_length(selected_images);
-
-  if (selected_images_length == 0)
-  {
-    return;
-  }
-
   const uint32_t tagid = darktable.collection->tagid;
   // getting the position of the target image
   const int64_t target_image_pos = dt_collection_get_image_position(image_id, tagid);
   if (target_image_pos >= 0)
   {
+    const guint selected_images_length = g_list_length(selected_images);
+
     dt_collection_shift_image_positions(selected_images_length, target_image_pos, tagid);
 
     sqlite3_stmt *stmt = NULL;

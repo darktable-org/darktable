@@ -987,7 +987,7 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     int depth = 0;
     if(nb > 0)
     {
-      it0 = (GtkTreePath *)g_list_nth_data(gtk_tree_selection_get_selected_rows(selection, NULL), 0);
+      it0 = (GtkTreePath *)gtk_tree_selection_get_selected_rows(selection, NULL)->data;
       depth = gtk_tree_path_get_depth(it0);
     }
     if(depth > 1) from_group = 1;

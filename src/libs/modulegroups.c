@@ -2258,11 +2258,11 @@ static void _manage_editor_group_update_arrows(GtkWidget *box)
   while(lw)
   {
     GtkWidget *w = (GtkWidget *)lw->data;
-    GtkWidget *hb = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(w)), 0);
+    GtkWidget *hb = (GtkWidget *)gtk_container_get_children(GTK_CONTAINER(w))->data;
     if(hb)
     {
       GList *lw2 = gtk_container_get_children(GTK_CONTAINER(hb));
-      if(g_list_length(lw2) > 2)
+      if(!g_list_shorter_than(lw2, 3)) //do we have at least three?
       {
         GtkWidget *left = (GtkWidget *)lw2->data;
         GtkWidget *right = (GtkWidget *)g_list_nth_data(lw2, 2);
@@ -3550,7 +3550,7 @@ static void _manage_preset_delete(GtkWidget *widget, GdkEventButton *event, dt_l
     // otherwise we load the first preset
     if(!sel_ok)
     {
-      GtkWidget *ww = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(d->presets_list)), 0);
+      GtkWidget *ww = (GtkWidget *)gtk_container_get_children(GTK_CONTAINER(d->presets_list))->data;
       if(ww)
       {
         const char *firstn = (char *)g_object_get_data(G_OBJECT(ww), "preset_name");
@@ -3749,7 +3749,7 @@ static void _manage_show_window(dt_lib_module_t *self)
   // or the first one if no selection found
   if(!sel_ok)
   {
-    GtkWidget *w = (GtkWidget *)g_list_nth_data(gtk_container_get_children(GTK_CONTAINER(d->presets_list)), 0);
+    GtkWidget *w = (GtkWidget *)gtk_container_get_children(GTK_CONTAINER(d->presets_list))->data;
     if(w)
     {
       const char *firstn = (char *)g_object_get_data(G_OBJECT(w), "preset_name");

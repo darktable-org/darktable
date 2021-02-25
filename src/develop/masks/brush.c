@@ -255,8 +255,7 @@ static void _brush_catmull_to_bezier(float x1, float y1, float x2, float y2, flo
 static void _brush_init_ctrl_points(dt_masks_form_t *form)
 {
   // if we have less than 2 points, what to do ??
-  const guint nb = g_list_length(form->points);
-  if(nb < 2) return;
+  if(g_list_shorter_than(form->points, 2)) return;
 
   // we need extra points to deal with curve ends
   dt_masks_point_brush_t start_point[2], end_point[2];
@@ -984,14 +983,15 @@ static int _brush_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, fl
    frills */
 static float _brush_get_position_in_segment(float x, float y, dt_masks_form_t *form, int segment)
 {
-  GList *pt = g_list_nth(form->points, segment);
-  dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)pt->data;
-  if(pt) pt = g_list_next(pt);
-  dt_masks_point_brush_t *point1 = pt ? (dt_masks_point_brush_t *)pt->data : point0;
-  if(pt) pt = g_list_next(pt);
-  dt_masks_point_brush_t *point2 = pt ? (dt_masks_point_brush_t *)pt->data : point1;
-  if(pt) pt = g_list_next(pt);
-  dt_masks_point_brush_t *point3 = pt ? (dt_masks_point_brush_t *)pt->data : point2;
+  GList *firstpt = g_list_nth(form->points, segment);
+  dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)firstpt->data;
+  // advance to next node in list, if not already on the last
+  GList *nextpt = g_list_next_bounded(firstpt);
+  dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)nextpt->data;
+  nextpt = g_list_next_bounded(nextpt);
+  dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)nextpt->data;
+  nextpt = g_list_next_bounded(nextpt);
+  dt_masks_point_brush_t *point3 = (dt_masks_point_brush_t *)nextpt->data;
 
   float tmin = 0;
   float dmin = FLT_MAX;
@@ -1332,10 +1332,9 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
         // segment
         const float t = _brush_get_position_in_segment(bzpt->corner[0], bzpt->corner[1], form, gui->seg_selected);
         // start and end point of the segment
-        dt_masks_point_brush_t *point0
-            = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->seg_selected);
-        dt_masks_point_brush_t *point1
-            = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->seg_selected + 1);
+        GList *pt = g_list_nth(form->points, gui->seg_selected);
+        dt_masks_point_brush_t *point0 = (dt_masks_point_brush_t *)pt->data;
+        dt_masks_point_brush_t *point1 = (dt_masks_point_brush_t *)g_list_next(pt)->data;
         bzpt->border[0] = point0->border[0] * (1.0f - t) + point1->border[0] * t;
         bzpt->border[1] = point0->border[1] * (1.0f - t) + point1->border[1] * t;
         bzpt->hardness = point0->hardness * (1.0f - t) + point1->hardness * t;
@@ -1379,7 +1378,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
   else if(gui->point_selected >= 0 && which == 3)
   {
     // we remove the point (and the entire form if there is too few points)
-    if(g_list_length(form->points) <= 2)
+    if(g_list_shorter_than(form->points, 3))
     {
       // if the form doesn't below to a group, we don't delete it
       if(parentid <= 0) return 1;
@@ -1387,7 +1386,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
         dt_masks_change_form_gui(NULL);
-      else if(g_list_length(darktable.develop->form_visible->points) < 2)
+      else if(g_list_shorter_than(darktable.develop->form_visible->points, 2))
         dt_masks_change_form_gui(NULL);
       else
       {
@@ -1456,7 +1455,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
       dt_masks_change_form_gui(NULL);
-    else if(g_list_length(darktable.develop->form_visible->points) < 2)
+    else if(g_list_shorter_than(darktable.develop->form_visible->points, 2))
       dt_masks_change_form_gui(NULL);
     else
     {
@@ -1903,10 +1902,10 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   else if(gui->seg_dragging >= 0)
   {
     // we get point0 new values
-    const int pos2 = (gui->seg_dragging + 1) % g_list_length(form->points);
-    dt_masks_point_brush_t *point
-        = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->seg_dragging);
-    dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)g_list_nth_data(form->points, pos2);
+    const GList *pt1 = g_list_nth(form->points, gui->seg_dragging);
+    const GList *pt2 = g_list_next_wraparound(pt1, form->points);
+    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)pt1->data;
+    dt_masks_point_brush_t *point2 = (dt_masks_point_brush_t *)pt2->data;
     const float wd = darktable.develop->preview_pipe->backbuf_width;
     const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };

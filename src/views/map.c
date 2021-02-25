@@ -2456,11 +2456,10 @@ static void _view_map_dnd_get_callback(GtkWidget *widget, GdkDragContext *contex
           if(imgs_nb)
           {
             uint32_t *imgs = malloc(sizeof(uint32_t) * imgs_nb);
-            GList *l = lib->selected_images;
-            for(int i = 0; i < imgs_nb; i++)
+            int i = 0;
+            for(GList *l = lib->selected_images; l; l = g_list_next(l))
             {
-              imgs[i] = GPOINTER_TO_INT(l->data);
-              l = g_list_next(l);
+              imgs[i++] = GPOINTER_TO_INT(l->data);
             }
             gtk_selection_data_set(selection_data, gtk_selection_data_get_target(selection_data),
                                    _DWORD, (guchar *)imgs, imgs_nb * sizeof(uint32_t));

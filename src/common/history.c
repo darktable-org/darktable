@@ -1714,8 +1714,7 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
   }
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  GList *l = l_copy;
-  while(l)
+  for (const GList *l = l_copy; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
     dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
@@ -1723,7 +1722,6 @@ gboolean dt_history_paste_parts_on_list(const GList *list, gboolean undo)
                                        darktable.view_manager->copy_paste.selops,
                                        darktable.view_manager->copy_paste.copy_iop_order,
                                        darktable.view_manager->copy_paste.full_copy);
-    l = g_list_next(l);
   }
   if(undo) dt_undo_end_group(darktable.undo);
 

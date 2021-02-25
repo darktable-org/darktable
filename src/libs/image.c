@@ -191,48 +191,52 @@ static void _update(dt_lib_module_t *self)
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
   const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE);
 
-  const guint act_on_cnt = g_list_length((GList *)imgs);
+  const int act_on_any = imgs != NULL;              // list length > 0 ?
+  const int act_on_one = g_list_is_singleton(imgs); // list length == 1 ?
+  const int act_on_mult = act_on_any && !act_on_one;// list length > 1 ?
   const uint32_t selected_cnt = dt_collection_get_selected_count(darktable.collection);
   const gboolean can_paste
-      = d->imageid > 0 && (act_on_cnt > 1 || (act_on_cnt == 1 && (d->imageid != dt_view_get_image_to_act_on())));
+      = d->imageid > 0 && (act_on_mult || (act_on_one && (d->imageid != dt_view_get_image_to_act_on())));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->remove_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->delete_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->move_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->move_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->create_hdr_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->duplicate_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_ccw_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_cw_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->reset_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_ccw_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->rotate_cw_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->reset_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->cache_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->uncache_button), act_on_any);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->group_button), selected_cnt > 1);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_metadata_button), act_on_cnt == 1);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_metadata_button), act_on_one);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_metadata_button), can_paste);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->clear_metadata_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_cnt > 0);
-  if(act_on_cnt > 1)
+  gtk_widget_set_sensitive(GTK_WIDGET(d->refresh_button), act_on_any);
+  if(act_on_mult)
   {
     gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), TRUE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), TRUE);
   }
-  else if(act_on_cnt == 0)
+  else if(!act_on_any)
   {
+    // no images to act on!
     gtk_widget_set_sensitive(GTK_WIDGET(d->ungroup_button), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_monochrome_button), FALSE);
     gtk_widget_set_sensitive(GTK_WIDGET(d->set_color_button), FALSE);
   }
   else
   {
+    // exact one image to act on
     const int imgid = dt_view_get_image_to_act_on();
     if(imgid >= 0)
     {
