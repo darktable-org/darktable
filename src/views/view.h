@@ -240,6 +240,7 @@ typedef struct dt_view_manager_t
     int image_over;
     gboolean inside_table;
     GSList *active_imgs;
+    gboolean image_over_inside_sel;
   } act_on;
 
   /* reusable db statements
