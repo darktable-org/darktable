@@ -2496,6 +2496,66 @@ GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key)
   return w;
 }
 
+static void
+_gui_preferences_string_callback(GtkWidget *widget, gpointer data)
+{
+  const char *str = gtk_entry_get_text(GTK_ENTRY(widget));
+  dt_conf_set_string((char *)data, str);
+}
+
+void dt_gui_preferences_string_reset(GtkWidget *widget)
+{
+  const char *key = gtk_widget_get_name(widget);
+  const char *str = dt_confgen_get(key, DT_DEFAULT);
+  gtk_entry_set_text(GTK_ENTRY(widget), str);
+}
+
+static gboolean
+_gui_preferences_string_reset(GtkWidget *label, GdkEventButton *event, GtkWidget *widget)
+{
+  if(event->type == GDK_2BUTTON_PRESS)
+  {
+    dt_gui_preferences_string_reset(widget);
+    return TRUE;
+  }
+  return FALSE;
+}
+
+void dt_gui_preferences_string_update(GtkWidget *widget)
+{
+  const char *key = gtk_widget_get_name(widget);
+  char *str = dt_conf_get_string(key);
+  gtk_entry_set_text(GTK_ENTRY(widget), str);
+  g_free(str);
+}
+
+GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key)
+{
+  GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
+  gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
+  gtk_widget_set_halign(w_label, GTK_ALIGN_START);
+  GtkWidget *labelev = gtk_event_box_new();
+  gtk_widget_set_hexpand(labelev, TRUE);
+  gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
+  gtk_container_add(GTK_CONTAINER(labelev), w_label);
+
+  GtkWidget *w = gtk_entry_new();
+  gchar *str = dt_conf_get_string(key);
+  gtk_entry_set_text(GTK_ENTRY(w), str);
+  g_free(str);
+  gtk_widget_set_hexpand(w, TRUE);
+  gtk_widget_set_name(w, key);
+//  gtk_widget_set_hexpand(w, FALSE);
+
+  const int line = _get_grid_nb_lines(grid);
+  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
+  g_signal_connect(G_OBJECT(w), "changed", G_CALLBACK(_gui_preferences_string_callback), (gpointer)key);
+  g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_string_reset), (gpointer)w);
+  return w;
+}
+
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
 // kate: tab-indents: off; indent-width 2; replace-tabs on; indent-mode cstyle; remove-trailing-spaces modified;
