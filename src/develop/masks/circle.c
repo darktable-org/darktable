@@ -1252,24 +1252,9 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
 static GSList *_circle_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("[CIRCLE] change size"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_CONTROL_MASK;
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("[CIRCLE] change opacity"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_SHIFT_MASK;
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("[CIRCLE] change feather size"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[CIRCLE] change size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[CIRCLE] change opacity"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, _("[CIRCLE] change feather size"));
   return lm;
 }
 
