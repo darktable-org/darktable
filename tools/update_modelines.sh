@@ -1,13 +1,13 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # this appends modelines to all source and header files to make sure kate and
 # vim know how to format their stuff.
-# 
+#
 # There is currently no check whether any existing modelines are up to date.
 # Whenever run, this file will remove any modelines and append the ones below
 # to the file.
 # additionally, this script will also remove any comments starting with "^// modelines:"
-# 
+#
 # For useful options in the vim modeline see also the one used in this file
 #
 NOTIFICATION_LINE='// modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh'
@@ -35,7 +35,7 @@ do
     # echo "  appending $m"
     echo "$m" >> "$TEMPFILE"
   done
-  mv "$TEMPFILE" "$f" 
+  mv "$TEMPFILE" "$f"
   echo "[x] $f has been updated."
 done
 

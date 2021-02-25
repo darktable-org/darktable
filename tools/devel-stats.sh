@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 #   This file is part of darktable,
 #   copyright (c) 2019 pascal obry

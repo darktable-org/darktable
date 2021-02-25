@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # MIT License
 #
@@ -27,9 +27,9 @@ shopt -s expand_aliases
 
 . "$(dirname "$0")/common.sh"
 
-if pgrep -x "darktable" > /dev/null ; then
-    echo "error: darktable is running, please exit first"
-    exit 1
+if pgrep -x "darktable" >/dev/null; then
+  echo "error: darktable is running, please exit first"
+  exit 1
 fi
 
 # default values
@@ -43,10 +43,10 @@ LIBDB=""
 commandline="$0 $*"
 
 # handle command line arguments
-while [ "$#" -ge 1 ] ; do
+while [ "$#" -ge 1 ]; do
   option="$1"
   case ${option} in
-  -h|--help)
+  -h | --help)
     echo "Delete thumbnails of images that are no longer in darktable's library"
     echo "Usage:   $0 [options]"
     echo ""
@@ -60,32 +60,32 @@ while [ "$#" -ge 1 ] ; do
     echo "  -p|--purge               actually delete the files instead of just finding them"
     exit 0
     ;;
-  -l|--library)
+  -l | --library)
     LIBDB="$2"
     shift
     ;;
-  -c|--cachedir|--cache_base)
+  -c | --cachedir | --cache_base)
     cache_base="$2"
     shift
     ;;
-  -d|--configdir)
+  -d | --configdir)
     configdir="$2"
     shift
     ;;
-  -p|--purge)
+  -p | --purge)
     dryrun=0
     ;;
   *)
     echo "warning: ignoring unknown option $option"
     ;;
   esac
-    shift
+  shift
 done
 
 library="$configdir/library.db"
 
 if [ "$LIBDB" != "" ]; then
-    library="$LIBDB"
+  library="$LIBDB"
 fi
 
 # set the command to run for each stale file
@@ -95,7 +95,7 @@ if [ ${dryrun} -eq 0 ]; then
 fi
 
 # get absolute canonical path to library. needed for cache dir
-library=$(ReadLink "${library}")
+library=$($ReadLink "${library}")
 
 if [ ! -f "${library}" ]; then
   echo "error: library db '${library}' doesn't exist"
@@ -112,20 +112,20 @@ fi
 
 # get a list of all image ids from the library
 id_list=$(mktemp -t darktable-tmp.XXXXXX)
-sqlite3 "${library}" "select id from images order by id" > "${id_list}"
+sqlite3 "${library}" "select id from images order by id" >"${id_list}"
 
 # iterate over cached mipmaps and check for each if the image is in the db
 find "${cache_dir}" -type f | while read -r mipmap; do
   # get the image id from the filename
   id=$(echo "${mipmap}" | sed 's,.*/\([0-9]*\).*,\1,')
   # ... and delete it if it's not in the library
-  grep "^${id}\$" "${id_list}" > /dev/null || ${action} "${mipmap}"
+  grep "^${id}\$" "${id_list}" >/dev/null || ${action} "${mipmap}"
 done
 
 rm --force "${id_list}"
 
 if [ $dryrun -eq 1 ]; then
-    echo
-    echo to really remove stale thumbnails from the cache call:
-    echo "${commandline} --purge"
+  echo
+  echo to really remove stale thumbnails from the cache call:
+  echo "${commandline} --purge"
 fi

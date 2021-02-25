@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # MIT License
 #
@@ -27,7 +27,7 @@ set -e
 # https://github.com/travis-ci/travis-ci/issues/8812#issuecomment-347457115
 # Since TracisCI uses LC_ALL=en_US.UTF-8 by default we change these envs. This should keep BSD sed working.
 export LANG=C
-export LC_ALL=C 
+export LC_ALL=C
 
 AUTHORS="$1"
 H_FILE="$2"

@@ -1,9 +1,9 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 REF="reference.pfm"
 
 # benchmark the performance of denoising algorithms, in terms of PSNR.
-# 
+#
 # instructions:
 # shoot a static scene with all interesting iso settings.
 # shoot several at lowest iso (like 3x iso 100).

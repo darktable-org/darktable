@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 if pgrep -x "darktable" > /dev/null ; then
     echo "error: darktable is running, please exit first"

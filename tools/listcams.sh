@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # TODO: extract basecurves, color matrices etc and create a complete html table for the web:
 echo "cameras with profiled presets for denoising:"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 isolist="200 400 800 1600"
 
@@ -10,7 +10,7 @@ do
   set term pdf fontscale 0.5 size 10, 10
   set output 'noise_iso_$iso.pdf'
 #  for web:
-#  set term png fontscale 0.8 size 700,700 
+#  set term png fontscale 0.8 size 700,700
 #  set output 'noise_iso_$iso.png'
   set format x "%g"
   set format y "%g"

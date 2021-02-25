@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 #
 #   This file is part of darktable,
 #   copyright (c) 2009--2010 johannes hanika.
@@ -148,5 +148,5 @@ do
   offset=$((offset + 1))
 done
 
-# output file footer 
+# output file footer
 echo "$footer" >> $output
