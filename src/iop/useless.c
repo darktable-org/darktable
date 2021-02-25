@@ -339,11 +339,14 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
       int wi = (roi_in->x + i) * scale, wj = (roi_in->y + j) * scale;
       if((wi / d->checker_scale + wj / d->checker_scale) & 1)
       {
-        for(int c = 0; c < 3; c++) out[c] = in[c] * (1.0 - d->factor);
+        for_each_channel(c, aligned(in,out))  // vectorize if possible
+          out[c] = in[c] * (1.0 - d->factor); // does this for c=0..2 or c=0..3, whichever is faster
         if(out_mask) out_mask[i] = 1.0;
       }
       else
-        for(int c = 0; c < 3; c++) out[c] = in[c];
+      {
+        copy_pixel(out, in);
+      }
       in += ch;
       out += ch;
     }
@@ -617,6 +620,22 @@ void gui_cleanup(dt_iop_module_t *self)
 // uint32_t state);
 // int button_released(struct dt_iop_module_t *self, double x, double y, int which, uint32_t state);
 // int scrolled(dt_iop_module_t *self, double x, double y, int up, uint32_t state);
+
+// optional: if mouse events are handled by the iop, we can add text to the help screen by declaring
+// the mouse actions and their descriptions
+#if 0
+GSList *mouse_actions(dt_iop_module_t *self)
+{
+  GSList *lm = NULL;
+  // add the first action
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_SCROLL, GDK_SHIFT_MASK, 
+                                     _("[%s] some action"), self->name());
+  // append a second action to the list we will return
+  lm = dt_mouse_action_create_format(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK | GDK_SHIFT_MASK, 
+                                     _("[%s] other action"), self->name());
+  return lm;
+}
+#endif
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent

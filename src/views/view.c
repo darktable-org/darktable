@@ -1408,6 +1408,25 @@ void dt_view_print_settings(const dt_view_manager_t *vm, dt_print_info_t *pinfo)
 }
 #endif
 
+GSList *dt_mouse_action_create_simple(GSList *actions, dt_mouse_action_type_t type, GdkModifierType accel,
+                                      const char *const description)
+{
+  dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = type;
+  a->key.accel_mods = accel;
+  g_strlcpy(a->name, description, sizeof(a->name));
+  return g_slist_append(actions, a);
+}
+
+GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t type, GdkModifierType accel,
+                                      const char *const format_string, const char *const replacement)
+{
+  dt_mouse_action_t *a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
+  a->action = type;
+  a->key.accel_mods = accel;
+  g_snprintf(a->name, sizeof(a->name), format_string, replacement);
+  return g_slist_append(actions, a);
+}
 
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
