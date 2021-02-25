@@ -512,7 +512,7 @@ void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
 }
 
 static inline
-void dt_masks_dynbuf_add_zeros(dt_masks_dynbuf_t *a, float* values, const int n)
+void dt_masks_dynbuf_add_zeros(dt_masks_dynbuf_t *a, const int n)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);

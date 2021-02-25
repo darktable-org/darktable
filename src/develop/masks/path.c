@@ -568,15 +568,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   // for the border, we store value too
   if(dborder)
   {
-    for(int k = 0; k < nb; k++)
-    {
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-    }
+    dt_masks_dynbuf_add_zeros(dborder, 6 * nb);  // need six zeros for each border point
   }
 
   float *border_init = dt_alloc_align_float((size_t)6 * nb);

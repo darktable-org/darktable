@@ -608,29 +608,13 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
   // for the border, we store value too
   if(dborder)
   {
-    for(int k = 0; k < nb; k++)
-    {
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-    }
+    dt_masks_dynbuf_add_zeros(dborder, 6 * nb);  // we need six zeros for each border point
   }
 
   // for the payload, we reserve an equivalent number of cells to keep it in sync
   if(dpayload)
   {
-    for(int k = 0; k < nb; k++)
-    {
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-    }
+    dt_masks_dynbuf_add_zeros(dpayload, 6 * nb); // we need six zeros for each border point
   }
 
   int cw = 1;
