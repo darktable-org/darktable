@@ -151,81 +151,29 @@ static uint32_t default_flags()
 /** load a view module */
 static int dt_view_load_module(void *v, const char *libname, const char *module_name)
 {
-  dt_view_t *view = (dt_view_t *)v;
+  dt_view_t *module = (dt_view_t *)v;
+  g_strlcpy(module->module_name, module_name, sizeof(module->module_name));
 
-  view->data = NULL;
-  view->vscroll_size = view->vscroll_viewport_size = 1.0;
-  view->hscroll_size = view->hscroll_viewport_size = 1.0;
-  view->vscroll_pos = view->hscroll_pos = 0.0;
-  view->height = view->width = 100; // set to non-insane defaults before first expose/configure.
-  g_strlcpy(view->module_name, module_name, sizeof(view->module_name));
-  dt_print(DT_DEBUG_CONTROL, "[view_load_module] loading view `%s' from %s\n", module_name, libname);
-  view->module = g_module_open(libname, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
-  if(!view->module)
-  {
-    fprintf(stderr, "[view_load_module] could not open %s (%s)!\n", libname, g_module_error());
-    goto error;
-  }
-  int (*version)();
-  if(!g_module_symbol(view->module, "dt_module_dt_version", (gpointer) & (version))) goto error;
-  if(version() != dt_version())
-  {
-    fprintf(stderr, "[view_load_module] `%s' is compiled for another version of dt (module %d != dt %d) !\n",
-            libname, version(), dt_version());
-    goto error;
-  }
-  if(!g_module_symbol(view->module, "name", (gpointer) & (view->name))) view->name = NULL;
-  if(!g_module_symbol(view->module, "view", (gpointer) & (view->view))) view->view = NULL;
-  if(!g_module_symbol(view->module, "flags", (gpointer) & (view->flags))) view->flags = default_flags;
-  if(!g_module_symbol(view->module, "init", (gpointer) & (view->init))) view->init = NULL;
-  if(!g_module_symbol(view->module, "gui_init", (gpointer) & (view->gui_init))) view->gui_init = NULL;
-  if(!g_module_symbol(view->module, "cleanup", (gpointer) & (view->cleanup))) view->cleanup = NULL;
-  if(!g_module_symbol(view->module, "expose", (gpointer) & (view->expose))) view->expose = NULL;
-  if(!g_module_symbol(view->module, "try_enter", (gpointer) & (view->try_enter))) view->try_enter = NULL;
-  if(!g_module_symbol(view->module, "enter", (gpointer) & (view->enter))) view->enter = NULL;
-  if(!g_module_symbol(view->module, "leave", (gpointer) & (view->leave))) view->leave = NULL;
-  if(!g_module_symbol(view->module, "reset", (gpointer) & (view->reset))) view->reset = NULL;
-  if(!g_module_symbol(view->module, "mouse_enter", (gpointer) & (view->mouse_enter)))
-    view->mouse_enter = NULL;
-  if(!g_module_symbol(view->module, "mouse_leave", (gpointer) & (view->mouse_leave)))
-    view->mouse_leave = NULL;
-  if(!g_module_symbol(view->module, "mouse_moved", (gpointer) & (view->mouse_moved)))
-    view->mouse_moved = NULL;
-  if(!g_module_symbol(view->module, "button_released", (gpointer) & (view->button_released)))
-    view->button_released = NULL;
-  if(!g_module_symbol(view->module, "button_pressed", (gpointer) & (view->button_pressed)))
-    view->button_pressed = NULL;
-  if(!g_module_symbol(view->module, "key_pressed", (gpointer) & (view->key_pressed)))
-    view->key_pressed = NULL;
-  if(!g_module_symbol(view->module, "key_released", (gpointer) & (view->key_released)))
-    view->key_released = NULL;
-  if(!g_module_symbol(view->module, "configure", (gpointer) & (view->configure))) view->configure = NULL;
-  if(!g_module_symbol(view->module, "scrolled", (gpointer) & (view->scrolled))) view->scrolled = NULL;
-  if(!g_module_symbol(view->module, "scrollbar_changed", (gpointer) & (view->scrollbar_changed)))
-    view->scrollbar_changed = NULL;
-  if(!g_module_symbol(view->module, "init_key_accels", (gpointer) & (view->init_key_accels)))
-    view->init_key_accels = NULL;
-  if(!g_module_symbol(view->module, "connect_key_accels", (gpointer) & (view->connect_key_accels)))
-    view->connect_key_accels = NULL;
-  if(!g_module_symbol(view->module, "mouse_actions", (gpointer) & (view->mouse_actions)))
-    view->mouse_actions = NULL;
+#define INCLUDE_API_FROM_MODULE_LOAD "view_load_module"
+#include "views/view_api.h"
 
-  view->accel_closures = NULL;
+  module->data = NULL;
+  module->vscroll_size = module->vscroll_viewport_size = 1.0;
+  module->hscroll_size = module->hscroll_viewport_size = 1.0;
+  module->vscroll_pos = module->hscroll_pos = 0.0;
+  module->height = module->width = 100; // set to non-insane defaults before first expose/configure.
+  module->accel_closures = NULL;
 
-  if(!strcmp(view->module_name, "darkroom")) darktable.develop = (dt_develop_t *)view->data;
+  if(!strcmp(module->module_name, "darkroom")) darktable.develop = (dt_develop_t *)module->data;
 
 #ifdef USE_LUA
-  dt_lua_register_view(darktable.lua_state.state, view);
+  dt_lua_register_view(darktable.lua_state.state, module);
 #endif
 
-  if(view->init) view->init(view);
-  if(darktable.gui && view->init_key_accels) view->init_key_accels(view);
+  if(module->init) module->init(module);
+  if(darktable.gui && module->init_key_accels) module->init_key_accels(module);
 
   return 0;
-
-error:
-  if(view->module) g_module_close(view->module);
-  return 1;
 }
 
 /** unload, cleanup */
