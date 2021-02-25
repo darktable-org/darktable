@@ -852,7 +852,7 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
             (dt_database_get(darktable.db),
              "SELECT DISTINCT imgid"
              " FROM main.selected_images"
-             " ORDER BY imgid DESC", -1, &stmt, NULL);
+             " ORDER BY rowid DESC", -1, &stmt, NULL);
         }
 
         while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
