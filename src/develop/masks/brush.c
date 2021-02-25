@@ -728,7 +728,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
         {
           while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
           {
-            dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
+            dt_masks_dynbuf_add_2(dpayload, p1[5], p1[6]);
           }
         }
       }
@@ -749,7 +749,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
+          dt_masks_dynbuf_add_2(dpayload, p1[5], p1[6]);
         }
       }
     }
@@ -769,7 +769,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
+          dt_masks_dynbuf_add_2(dpayload, p1[5], p1[6]);
         }
       }
 
