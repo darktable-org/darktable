@@ -823,8 +823,11 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       {
         // collumn 1
 
-        // first, we try to return cached list if we wher already inside sel and the selection has not changed
-        if(!force && darktable.view_manager->act_on.ok && darktable.view_manager->act_on.image_over_inside_sel
+        // first, we try to return cached list if we wher already
+        // inside sel and the selection has not changed
+        if(!force
+           && darktable.view_manager->act_on.ok
+           && darktable.view_manager->act_on.image_over_inside_sel
            && darktable.view_manager->act_on.inside_table)
         {
           return darktable.view_manager->act_on.images;
@@ -833,23 +836,28 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
         if(only_visible)
         {
           // we don't want to get image hidden because of grouping
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                      "SELECT DISTINCT m.imgid FROM memory.collected_images as m "
-                                      "WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s) "
-                                      "ORDER BY m.rowid",
-                                      -1, &stmt, NULL);
+          DT_DEBUG_SQLITE3_PREPARE_V2
+            (dt_database_get(darktable.db),
+             "SELECT DISTINCT m.imgid"
+             " FROM memory.collected_images as m"
+             " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)"
+             " ORDER BY m.rowid",
+             -1, &stmt, NULL);
         }
         else
         {
-          // we need to get hidden grouped images too, and the selection already contains them :)
-          DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                      "SELECT DISTINCT imgid FROM main.selected_images", -1, &stmt, NULL);
+          // we need to get hidden grouped images too, and the
+          // selection already contains them :)
+          DT_DEBUG_SQLITE3_PREPARE_V2
+            (dt_database_get(darktable.db),
+             "SELECT DISTINCT imgid FROM main.selected_images", -1, &stmt, NULL);
         }
 
         while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
         {
-          // we don't use _images_to_act_on_insert_in_list for performance reason and because the query already
-          // take care of eventual duplicates
+          // we don't use _images_to_act_on_insert_in_list for
+          // performance reason and because the query already take
+          // care of eventual duplicates
           l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
         }
         // put the list in right order as we have prepend for performance reasons
@@ -866,7 +874,8 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     {
       // collumn 3
       _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
-      // be absolutely sure we have the id in the list (in darkroom, the active image can be out of collection)
+      // be absolutely sure we have the id in the list (in darkroom,
+      // the active image can be out of collection)
       if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
     }
   }
@@ -881,7 +890,8 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
       {
         const int id = GPOINTER_TO_INT(ll->data);
         _images_to_act_on_insert_in_list(&l, id, only_visible);
-        // be absolutely sure we have the id in the list (in darkroom, the active image can be out of collection)
+        // be absolutely sure we have the id in the list (in darkroom,
+        // the active image can be out of collection)
         if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
         ll = g_slist_next(ll);
       }
@@ -890,15 +900,17 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     {
       // collumn 4
       sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db),
-                                  "SELECT DISTINCT m.imgid FROM memory.collected_images as m "
-                                  "WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s) "
-                                  "ORDER BY m.rowid DESC",
-                                  -1, &stmt, NULL);
+      DT_DEBUG_SQLITE3_PREPARE_V2
+        (dt_database_get(darktable.db),
+         "SELECT DISTINCT m.imgid"
+         " FROM memory.collected_images as m"
+         " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)"
+         " ORDER BY m.rowid DESC", -1, &stmt, NULL);
       while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
       {
-        // we don't use _images_to_act_on_insert_in_list for performance reason and because the query already
-        // take care of eventual duplicates
+        // we don't use _images_to_act_on_insert_in_list for
+        // performance reason and because the query already take care
+        // of eventual duplicates
         l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
       }
       if(stmt) sqlite3_finalize(stmt);
