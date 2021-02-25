@@ -70,20 +70,22 @@ static void _update(dt_lib_module_t *self)
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
-  const guint act_on_cnt = g_list_length((GList *)imgs);
+  const int act_on_any = imgs != NULL;
+  const int act_on_one = g_list_is_singleton(imgs);
+  const int act_on_mult = act_on_any && !act_on_one;
   const gboolean can_paste
       = darktable.view_manager->copy_paste.copied_imageid > 0
-        && (act_on_cnt > 1
-            || (act_on_cnt == 1
+        && (act_on_mult
+            || (act_on_one
                 && (darktable.view_manager->copy_paste.copied_imageid != dt_view_get_image_to_act_on())));
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->discard_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->load_button), act_on_cnt > 0);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->write_button), act_on_cnt > 0);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->discard_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->compress_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->load_button), act_on_any);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->write_button), act_on_any);
 
-  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_cnt == 1);
-  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_parts_button), act_on_cnt == 1);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_button), act_on_one);
+  gtk_widget_set_sensitive(GTK_WIDGET(d->copy_parts_button), act_on_one);
 
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste), can_paste);
   gtk_widget_set_sensitive(GTK_WIDGET(d->paste_parts), can_paste);
@@ -99,7 +101,8 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
   if(!imgs)
     return;
-  const guint act_on_cnt = g_list_length((GList *)imgs);
+  const int act_on_any = imgs != NULL;  // list length > 0?
+  const int act_on_one = g_list_is_singleton(imgs); // list length == 1?
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
       _("open sidecar file"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_OPEN, _("_cancel"),
@@ -107,7 +110,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
 #endif
-  if(act_on_cnt == 1)
+  if(act_on_one)
   {
     //single image to load xmp to, assume we want to load from same dir
     const int imgid = GPOINTER_TO_INT(imgs->data);
@@ -177,7 +180,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
                                     g_list_copy((GList *)imgs), 0);
       dt_control_queue_redraw_center();
     }
-    if(act_on_cnt > 0)
+    if(act_on_any)
     {
       //remember last import path if applying history to multiple images
       gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
@@ -247,13 +250,12 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
   gint res = GTK_RESPONSE_YES;
 
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
-  GList *imgs_copy = g_list_copy((GList *)imgs);
 
   if(dt_conf_get_bool("ask_before_discard"))
   {
     const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
 
-    const int number = g_list_length((GList *)imgs_copy);
+    const int number = g_list_length((GList *)imgs);
 
     if (number == 0) return;
 
@@ -272,14 +274,11 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 
   if(res == GTK_RESPONSE_YES)
   {
-    dt_history_delete_on_list(imgs_copy, TRUE);
-
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_copy((GList *)imgs_copy));
+    dt_history_delete_on_list(imgs, TRUE);
+    GList *imgs_copy = g_list_copy((GList *)imgs);
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs_copy); // frees imgs_copy
     dt_control_queue_redraw_center();
   }
-
-  g_list_free(imgs_copy);
 }
 
 static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
@@ -308,18 +307,18 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   // at the time the dialog is started, some signals are sent and this in turn call
-  // back dt_view_get_images_to_act_on() which free list and create a new one. So the
-  // above imgs will be invalidated.
+  // back dt_view_get_images_to_act_on() which free list and create a new one. So we
+  // make a copy because the above imgs will be invalidated.
 
-  GList *l_copy = g_list_copy((GList *)imgs);
-
-  if(dt_history_paste_parts_on_list(imgs, TRUE))
+  GList* imgs_copy = g_list_copy((GList*)imgs);
+  if(dt_history_paste_parts_on_list(imgs_copy, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_copy((GList *)l_copy));
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs_copy); // frees imgs_copy
   }
   else
-    g_list_free(l_copy);
+  {
+    g_list_free(imgs_copy);
+  }
 }
 
 static void pastemode_combobox_changed(GtkWidget *widget, gpointer user_data)

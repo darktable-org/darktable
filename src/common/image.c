@@ -1467,9 +1467,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
     g_free(normalized_filename);
     if(raise_signals)
     {
-      GList *imgs = NULL;
-      imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
-      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy((GList *)imgs), 0);
+      GList *imgs = g_list_prepend(NULL, GINT_TO_POINTER(id));
+      DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
     }
     return id;
   }
@@ -1676,9 +1675,8 @@ static uint32_t _image_import_internal(const int32_t film_id, const char *filena
   if(raise_signals)
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_IMAGE_IMPORT, id);
-    GList *imgs = NULL;
-    imgs = g_list_prepend(imgs, GINT_TO_POINTER(id));
-    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, g_list_copy((GList *)imgs), 0);
+    GList *imgs = g_list_prepend(NULL, GINT_TO_POINTER(id));
+    DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_GEOTAG_CHANGED, imgs, 0);
   }
 
   // the following line would look logical with new_tags_set being the return value
