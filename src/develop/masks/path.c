@@ -128,19 +128,19 @@ static void _path_init_ctrl_points(dt_masks_form_t *form)
   for(int k = 0; k < nb; k++)
   {
     dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)form_points->data;
-    // if the point as not be set manually, we redfine it
+    // if the point has not been set manually, we redefine it
     if(point3->state & DT_MASKS_POINT_STATE_NORMAL)
     {
-      // we want to get point-2, point-1, point+1, point+2
-      int k1 = 0, k2 = 0, k4 = 0, k5 = 0;
-      k1 = (k - 2) < 0 ? nb + (k - 2) : k - 2;
-      k2 = (k - 1) < 0 ? nb - 1 : k - 1;
-      k4 = (k + 1) % nb;
-      k5 = (k + 2) % nb;
-      dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k1);
-      dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k2);
-      dt_masks_point_path_t *point4 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k4);
-      dt_masks_point_path_t *point5 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k5);
+      // we want to get point-2 (into pt1), point-1 (into pt2), point+1 (into pt4), point+2 (into pt5), wrapping
+      // around to the other end of the list
+      const GList *pt2 = g_list_prev_wraparound(form_points); // prev, wrapping around if already on first element
+      const GList *pt1 = g_list_prev_wraparound(pt2);
+      const GList *pt4 = g_list_next_wraparound(form_points, form->points); // next, wrapping around if on last element
+      const GList *pt5 = g_list_next_wraparound(pt4, form->points);
+      dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)pt1->data;
+      dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)pt2->data;
+      dt_masks_point_path_t *point4 = (dt_masks_point_path_t *)pt4->data;
+      dt_masks_point_path_t *point5 = (dt_masks_point_path_t *)pt5->data;
 
       float bx1 = 0.0f, by1 = 0.0f, bx2 = 0.0f, by2 = 0.0f;
       _path_catmull_to_bezier(point1->corner[0], point1->corner[1], point2->corner[0], point2->corner[1],
@@ -165,20 +165,16 @@ static void _path_init_ctrl_points(dt_masks_form_t *form)
 
 static gboolean _path_is_clockwise(dt_masks_form_t *form)
 {
-  const guint nb = g_list_length(form->points);
-  if(nb > 2)
+  if(!g_list_shorter_than(form->points,3)) // if we have at least three points...
   {
     float sum = 0.0f;
-    const GList *form_points = form->points;
-    for(int k = 0; k < nb; k++)
+    for(const GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
     {
-      const int k2 = (k + 1) % nb;
+      const GList *next = g_list_next_wraparound(form_points, form->points); // next, wrapping around if on last elt
       dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)form_points->data; // kth element of form->points
-      dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k2);
-      // edge k
+      dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)next->data;
       sum += (point2->corner[0] - point1->corner[0]) * (point2->corner[1] + point1->corner[1]);
-      // keep form_points tracking the kth element of form->points
-      form_points = g_list_next(form_points);
+      ;
     }
     return (sum < 0);
   }
@@ -600,11 +596,11 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   {
     int pb = dborder ? dt_masks_dynbuf_position(dborder) : 0;
     border_init[k * 6 + 2] = -pb;
-    int k2 = (k + 1) % nb;
-    int k3 = (k + 2) % nb;
+    const GList *pt2 = g_list_next_wraparound(form_points, form->points); // next, wrapping around if on last element
+    const GList *pt3 = g_list_next_wraparound(pt2, form->points);
     dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)form_points->data; // kth element of form->points
-    dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k2);
-    dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k3);
+    dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)pt2->data;
+    dt_masks_point_path_t *point3 = (dt_masks_point_path_t *)pt3->data;
     float p1[5] = { point1->corner[0] * wd - dx, point1->corner[1] * ht - dy, point1->ctrl2[0] * wd - dx,
                     point1->ctrl2[1] * ht - dy, cw * point1->border[1] * MIN(wd, ht) };
     float p2[5] = { point2->corner[0] * wd - dx, point2->corner[1] * ht - dy, point2->ctrl1[0] * wd - dx,
@@ -925,7 +921,7 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
-        float masks_size, feather_size = 0.0f;
+        float masks_size = 1.0f, feather_size = 0.0f;
         _path_get_sizes(module, form, gui, index, &masks_size, &feather_size);
 
         // do not exceed upper limit of 1.0
@@ -962,20 +958,17 @@ static int _path_events_mouse_scrolled(struct dt_iop_module_t *module, float pzx
         float by = 0.0f;
         float surf = 0.0f;
 
-        guint nb = g_list_length(form->points);
-        const GList *form_points = form->points;
-        for(int k = 0; k < nb; k++)
+        for(const GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
         {
-          int k2 = (k + 1) % nb;
+          const GList *next = g_list_next_wraparound(form_points, form->points); // next w/ wrap
           dt_masks_point_path_t *point1 = (dt_masks_point_path_t *)form_points->data; // kth element of form->points
-          dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points, k2);
+          dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)next->data;
           surf += point1->corner[0] * point2->corner[1] - point2->corner[0] * point1->corner[1];
 
           bx += (point1->corner[0] + point2->corner[0])
                 * (point1->corner[0] * point2->corner[1] - point2->corner[0] * point1->corner[1]);
           by += (point1->corner[1] + point2->corner[1])
                 * (point1->corner[0] * point2->corner[1] - point2->corner[0] * point1->corner[1]);
-          form_points = g_list_next(form_points);
         }
         bx /= 3.0f * surf;
         by /= 3.0f * surf;
@@ -1059,7 +1052,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
   else if(gui->creation && (which == 3 || gui->creation_closing_form))
   {
     // we don't want a form with less than 3 points
-    if(g_list_length(form->points) < 4)
+    if(g_list_shorter_than(form->points, 4))
     {
       // we don't really have a way to know if the user wants to cancel the continuous add here
       // or just cancelling this mask, let's assume that this is not a mistake and cancel
@@ -1313,11 +1306,10 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
         bzpt->state = DT_MASKS_POINT_STATE_NORMAL;
 
         // interpolate the border width of the two neighbour points'
-        const int max_index = g_list_length(form->points) - 1;
-        const int left_index = gui->seg_selected;
-        const int right_index = gui->seg_selected == max_index ? 0 : gui->seg_selected + 1;
-        dt_masks_point_path_t *left = (dt_masks_point_path_t *)g_list_nth_data(form->points, left_index);
-        dt_masks_point_path_t *right = (dt_masks_point_path_t *)g_list_nth_data(form->points, right_index);
+        const GList* first = g_list_nth(form->points, gui->seg_selected);
+        const GList* second = g_list_next_wraparound(first, form->points); // next, wrapping around if on last element
+        dt_masks_point_path_t *left = (dt_masks_point_path_t *)first->data;
+        dt_masks_point_path_t *right = (dt_masks_point_path_t *)second->data;
         bzpt->border[0] = MAX(0.0005f, (left->border[0] + right->border[0]) * 0.5);
         bzpt->border[1] = MAX(0.0005f, (left->border[1] + right->border[1]) * 0.5);
 
@@ -1343,7 +1335,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
   else if(which == 3 && gui->point_selected >= 0)
   {
     // we remove the point (and the entire form if there is too few points)
-    if(g_list_length(form->points) < 4)
+    if(g_list_shorter_than(form->points, 4))
     {
       // if the form doesn't belong to a group, we don't delete it
       if(parentid <= 0) return 1;
@@ -1351,7 +1343,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
       // we hide the form
       if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
         dt_masks_change_form_gui(NULL);
-      else if(g_list_length(darktable.develop->form_visible->points) < 2)
+      else if(g_list_shorter_than(darktable.develop->form_visible->points, 2))
         dt_masks_change_form_gui(NULL);
       else
       {
@@ -1427,7 +1419,7 @@ static int _path_events_button_pressed(struct dt_iop_module_t *module, float pzx
     // we hide the form
     if(!(darktable.develop->form_visible->type & DT_MASKS_GROUP))
       dt_masks_change_form_gui(NULL);
-    else if(g_list_length(darktable.develop->form_visible->points) < 2)
+    else if(g_list_shorter_than(darktable.develop->form_visible->points, 2))
       dt_masks_change_form_gui(NULL);
     else
     {
@@ -1639,7 +1631,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
     const float wd = darktable.develop->preview_pipe->backbuf_width;
     const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd, pzy * ht };
-    if(gui->creation && g_list_length(form->points) > 3)
+    if(gui->creation && !g_list_shorter_than(form->points, 4))
     {
       // if we are near the first point, we have to say that the form should be closed
       if(pts[0] - gpt->points[2] < as && pts[0] - gpt->points[2] > -as && pts[1] - gpt->points[3] < as
@@ -1673,9 +1665,10 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
   else if(gui->seg_dragging >= 0)
   {
     // we get point0 new values
-    const int pos2 = (gui->seg_dragging + 1) % g_list_length(form->points);
-    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_nth_data(form->points, gui->seg_dragging);
-    dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)g_list_nth_data(form->points, pos2);
+    const GList *const pt = g_list_nth_data(form->points, gui->seg_dragging);
+    const GList *const pt2 = g_list_next_wraparound(pt, form->points);
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)pt->data;
+    dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)pt2->data;
     const float wd = darktable.develop->preview_pipe->backbuf_width;
     const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
