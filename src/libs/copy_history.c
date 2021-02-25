@@ -307,13 +307,17 @@ static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
 
   // at the time the dialog is started, some signals are sent and this in turn call
-  // back dt_view_get_images_to_act_on() which free list and create a new one. So the
-  // above imgs will be invalidated.
+  // back dt_view_get_images_to_act_on() which free list and create a new one. So we
+  // make a copy because the above imgs will be invalidated.
 
-  if(dt_history_paste_parts_on_list(imgs, TRUE))
+  GList* imgs_copy = g_list_copy((GList*)imgs);
+  if(dt_history_paste_parts_on_list(imgs_copy, TRUE))
   {
-    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD,
-                               g_list_copy((GList *)imgs));
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, imgs_copy); // frees imgs_copy
+  }
+  else
+  {
+    g_list_free(imgs_copy);
   }
 }
 
