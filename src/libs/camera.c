@@ -602,8 +602,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
   GSList *options = dt_conf_all_string_entries("plugins/capture/tethering/properties");
   if(options)
   {
-    GSList *item = options;
-    do
+    for(GSList *item = options; item; item = g_slist_next(item))
     {
       dt_conf_string_entry_t *entry = (dt_conf_string_entry_t *)item->data;
 
@@ -615,7 +614,7 @@ void view_enter(struct dt_lib_module_t *self,struct dt_view_t *old_view,struct d
 
       if((prop = _lib_property_add_new(lib, entry->key, entry->value)) != NULL)
         _lib_property_add_to_gui(prop, lib);
-    } while((item = g_slist_next(item)) != NULL);
+    }
     g_slist_free_full(options, dt_conf_string_entry_free);
   }
   /* build the propertymenu  we do it now because it needs an actual camera */

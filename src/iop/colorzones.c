@@ -826,13 +826,13 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
           = dt_ioppr_get_histogram_profile_info(self->dev);
       const dt_iop_order_iccprofile_info_t *const work_profile
           = dt_ioppr_get_iop_work_profile_info(self, self->dev->iop);
-      float pick_mean[4], pick_min[4], pick_max[4];
+      float DT_ALIGNED_PIXEL pick_mean[4], pick_min[4], pick_max[4];
       int converted_cst;
 
       if(work_profile && histogram_profile)
       {
         dt_colorpicker_sample_t *sample = NULL;
-        while(samples)
+        for(; samples; samples = g_slist_next(samples))
         {
           sample = samples->data;
 
@@ -899,8 +899,6 @@ static void _draw_color_picker(dt_iop_module_t *self, cairo_t *cr, dt_iop_colorz
           cairo_move_to(cr, width * picked_i, 0);
           cairo_line_to(cr, width * picked_i, height);
           cairo_stroke(cr);
-
-          samples = g_slist_next(samples);
         }
       }
     }
