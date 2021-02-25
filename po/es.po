@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.4.2\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-21 20:49-0600\n"
-"PO-Revision-Date: 2021-02-22 23:02-0600\n"
+"POT-Creation-Date: 2021-02-23 11:31-0600\n"
+"PO-Revision-Date: 2021-02-24 22:53-0600\n"
 "Last-Translator: Edgar Lux <edgarlux@disroot.org>\n"
 "Language-Team: Edgar Lux\n"
 "Language: es_ES\n"
@@ -807,8 +807,8 @@ msgstr ""
 msgid "3D lut root folder"
 msgstr "Carpeta raíz de LUT 3D"
 
-#: ../build/bin/preferences_gen.h:5094 ../src/control/jobs/control_jobs.c:1649
-#: ../src/control/jobs/control_jobs.c:1722 ../src/gui/preferences.c:1762
+#: ../build/bin/preferences_gen.h:5094 ../src/control/jobs/control_jobs.c:1655
+#: ../src/control/jobs/control_jobs.c:1728 ../src/gui/preferences.c:1762
 #: ../src/gui/preferences.c:2120 ../src/imageio/storage/disk.c:121
 #: ../src/imageio/storage/disk.c:197 ../src/imageio/storage/gallery.c:108
 #: ../src/imageio/storage/gallery.c:180 ../src/imageio/storage/latex.c:107
@@ -1421,7 +1421,7 @@ msgstr ""
 #. tags
 #: ../build/bin/preferences_gen.h:6744 ../src/develop/lightroom.c:1510
 #: ../src/gui/import_metadata.c:469 ../src/libs/export_metadata.c:310
-#: ../src/libs/image.c:546 ../src/libs/metadata_view.c:167
+#: ../src/libs/image.c:548 ../src/libs/metadata_view.c:167
 msgid "tags"
 msgstr "etiquetas"
 
@@ -1802,6 +1802,8 @@ msgid ""
 "three options are available: images thumbnails, only the count of images of "
 "the group or nothing"
 msgstr ""
+"Existen tres opciones disponibles: miniaturas, sólo el recuento de imágenes "
+"del grupo o ninguno"
 
 #: ../build/bin/conf_gen.h:2340
 msgid "camera time zone"
@@ -1882,7 +1884,7 @@ msgstr "específico"
 #: ../src/common/history.c:880 ../src/common/history.c:883
 #: ../src/common/history.c:899 ../src/common/styles.c:1119
 #: ../src/common/styles.c:1123 ../src/develop/blend_gui.c:100
-#: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2845
+#: ../src/develop/blend_gui.c:121 ../src/develop/blend_gui.c:2856
 #: ../src/develop/develop.c:2188 ../src/imageio/format/avif.c:812
 #: ../src/imageio/format/exr.cc:376 ../src/imageio/format/j2k.c:666
 #: ../src/iop/ashift.c:4705 ../src/libs/live_view.c:429
@@ -3122,7 +3124,7 @@ msgstr "detección por 3 pixeles cercanos"
 #: ../src/iop/denoiseprofile.c:3610 ../src/iop/exposure.c:877
 #: ../src/iop/levels.c:688 ../src/iop/profile_gamma.c:691
 #: ../src/libs/copy_history.c:403 ../src/libs/export.c:1372
-#: ../src/libs/image.c:584 ../src/libs/print_settings.c:1516
+#: ../src/libs/image.c:586 ../src/libs/print_settings.c:1516
 #: ../src/libs/styles.c:704 ../src/views/darkroom.c:2228
 msgid "mode"
 msgstr "modo"
@@ -3404,7 +3406,7 @@ msgstr "borrar"
 
 #: ../build/lib/darktable/plugins/introspection_retouch.c:427
 #: ../src/gui/preferences.c:97 ../src/gui/presets.c:60
-#: ../src/iop/watermark.c:1404 ../src/libs/image.c:600
+#: ../src/iop/watermark.c:1404 ../src/libs/image.c:602
 #: ../src/libs/modulegroups.c:2454
 msgid "color"
 msgstr "color"
@@ -3727,8 +3729,8 @@ msgstr "Mostrar imágenes en un mapa"
 msgid "Print your images"
 msgstr "Imprimir tus imagenes"
 
-#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1649
-#: ../src/control/jobs/control_jobs.c:1722 ../src/gui/hist_dialog.c:188
+#: ../src/chart/main.c:504 ../src/control/jobs/control_jobs.c:1655
+#: ../src/control/jobs/control_jobs.c:1728 ../src/gui/hist_dialog.c:188
 #: ../src/gui/preferences.c:1597 ../src/gui/preferences.c:1623
 #: ../src/gui/preferences.c:1714 ../src/gui/preferences.c:1762
 #: ../src/gui/preferences.c:1888 ../src/gui/preferences.c:2120
@@ -4608,76 +4610,76 @@ msgstr ""
 "<h1>Gracias,</h1><p>todo debe funcionar, puede <b>cerrar</b> su navegador y "
 "<b>volver</b> a darktable.</p>"
 
-#: ../src/common/image.c:278
+#: ../src/common/image.c:288
 msgid "orphaned image"
 msgstr "imágenes huérfanas"
 
-#: ../src/common/image.c:508
-#, fuzzy, c-format
+#: ../src/common/image.c:504
+#, c-format
 msgid "geo-location undone for %d images"
-msgstr "Actualizando información para %d imagen"
+msgstr "Revertida la geolocalización para %d imágenes"
 
-#: ../src/common/image.c:509
-#, fuzzy, c-format
+#: ../src/common/image.c:505
+#, c-format
 msgid "geo-location re-applied to %d images"
-msgstr "El zoom está limitado a %d imágenes."
+msgstr "Se ha vuelto a fijar la geolocalización para %d imágenes"
+
+#: ../src/common/image.c:526
+#, c-format
+msgid "date/time undone for %d images"
+msgstr "Revertida la fecha/hora para %d imágenes"
 
 #: ../src/common/image.c:527
-#, fuzzy, c-format
-msgid "date/time undone for %d images"
-msgstr "Intervalo de tiempo añadido a %d imagen"
-
-#: ../src/common/image.c:528
-#, fuzzy, c-format
+#, c-format
 msgid "date/time re-applied to %d images"
-msgstr "Intervalo de tiempo añadido a %d imagen"
+msgstr "Se ha vuelto a fijar la fecha/hora para %d imágenes"
 
-#: ../src/common/image.c:1875
+#: ../src/common/image.c:1915
 #, c-format
 msgid "cannot access local copy `%s'"
 msgstr "No se puede acceder a la copia local «%s»"
 
-#: ../src/common/image.c:1882
+#: ../src/common/image.c:1922
 #, c-format
 msgid "cannot write local copy `%s'"
 msgstr "No se puede escribir la copia local «%s»"
 
-#: ../src/common/image.c:1889
+#: ../src/common/image.c:1929
 #, c-format
 msgid "error moving local copy `%s' -> `%s'"
 msgstr "Error al mover la copia local «%s» -> «%s»"
 
-#: ../src/common/image.c:1905
+#: ../src/common/image.c:1945
 #, c-format
 msgid "error moving `%s': file not found"
 msgstr "Error al mover «%s»: no se encuentra el archivo"
 
-#: ../src/common/image.c:1915
+#: ../src/common/image.c:1955
 #, c-format
 msgid "error moving `%s' -> `%s': file exists"
 msgstr "Error al mover «%s» -> «%s»: el archivo ya existe"
 
-#: ../src/common/image.c:1919
+#: ../src/common/image.c:1959
 #, c-format
 msgid "error moving `%s' -> `%s'"
 msgstr "Error al mover «%s» -> «%s»"
 
-#: ../src/common/image.c:2216
+#: ../src/common/image.c:2256
 msgid "cannot create local copy when the original file is not accessible."
 msgstr ""
 "La copia local no se puede crear cuando el archivo original no es accesible."
 
-#: ../src/common/image.c:2230
+#: ../src/common/image.c:2270
 msgid "cannot create local copy."
 msgstr "no se puede crear una copia local."
 
-#: ../src/common/image.c:2302 ../src/control/jobs/control_jobs.c:721
+#: ../src/common/image.c:2342 ../src/control/jobs/control_jobs.c:727
 msgid "cannot remove local copy when the original file is not accessible."
 msgstr ""
 "La copia local no se puede eliminar cuando el archivo original no es "
 "accesible."
 
-#: ../src/common/image.c:2482
+#: ../src/common/image.c:2522
 #, c-format
 msgid "%d local copy has been synchronized"
 msgid_plural "%d local copies have been synchronized"
@@ -5039,243 +5041,243 @@ msgstr[1] "Fusionando %d imágenes"
 msgid "wrote merged HDR `%s'"
 msgstr "Guardando la imagen fusionada HDR «%s»"
 
-#: ../src/control/jobs/control_jobs.c:552
+#: ../src/control/jobs/control_jobs.c:555
 #, c-format
 msgid "duplicating %d image"
 msgid_plural "duplicating %d images"
 msgstr[0] "Duplicando %d imagen"
 msgstr[1] "Duplicando %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:583
+#: ../src/control/jobs/control_jobs.c:589
 #, c-format
 msgid "flipping %d image"
 msgid_plural "flipping %d images"
 msgstr[0] "Girando %d imagen"
 msgstr[1] "Girando %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:613
+#: ../src/control/jobs/control_jobs.c:619
 #, c-format
 msgid "set %d color image"
 msgid_plural "setting %d color images"
 msgstr[0] "Marcar %d como imagen a color"
 msgstr[1] "Marcar %d como imágenes a color"
 
-#: ../src/control/jobs/control_jobs.c:615
+#: ../src/control/jobs/control_jobs.c:621
 #, c-format
 msgid "set %d monochrome image"
 msgid_plural "setting %d monochrome images"
 msgstr[0] "Marcar %d como imagen monocromática"
 msgstr[1] "Marcar %d como imágenes monocromáticas"
 
-#: ../src/control/jobs/control_jobs.c:697
+#: ../src/control/jobs/control_jobs.c:703
 #, c-format
 msgid "removing %d image"
 msgid_plural "removing %d images"
 msgstr[0] "Eliminando %d imagen"
 msgstr[1] "Eliminando %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:800
+#: ../src/control/jobs/control_jobs.c:806
 #, c-format
 msgid "could not send %s to trash%s%s"
 msgstr "no se pudo enviar %s a la papelera%s%s"
 
-#: ../src/control/jobs/control_jobs.c:801
+#: ../src/control/jobs/control_jobs.c:807
 #, c-format
 msgid "could not physically delete %s%s%s"
 msgstr "no se puede borrar físicamente del disco %s%s%s"
 
-#: ../src/control/jobs/control_jobs.c:811
+#: ../src/control/jobs/control_jobs.c:817
 msgid "physically delete"
 msgstr "borrar físicamente del disco"
 
-#: ../src/control/jobs/control_jobs.c:812
+#: ../src/control/jobs/control_jobs.c:818
 msgid "physically delete all files"
 msgstr "borrar físicamente todos los archivos del disco"
 
-#: ../src/control/jobs/control_jobs.c:814
+#: ../src/control/jobs/control_jobs.c:820
 msgid "only remove from the collection"
 msgstr "quitar solo de la colección"
 
-#: ../src/control/jobs/control_jobs.c:815
+#: ../src/control/jobs/control_jobs.c:821
 msgid "skip to next file"
 msgstr "saltar al archivo siguiente"
 
-#: ../src/control/jobs/control_jobs.c:816
+#: ../src/control/jobs/control_jobs.c:822
 msgid "stop process"
 msgstr "detener el proceso"
 
-#: ../src/control/jobs/control_jobs.c:821
+#: ../src/control/jobs/control_jobs.c:827
 msgid "trashing error"
 msgstr "Error al eliminar"
 
-#: ../src/control/jobs/control_jobs.c:822
+#: ../src/control/jobs/control_jobs.c:828
 msgid "deletion error"
 msgstr "Error al borrar"
 
-#: ../src/control/jobs/control_jobs.c:964
+#: ../src/control/jobs/control_jobs.c:970
 #, c-format
 msgid "trashing %d image"
 msgid_plural "trashing %d images"
 msgstr[0] "Descartando %d imagen"
 msgstr[1] "Descartando %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:966
+#: ../src/control/jobs/control_jobs.c:972
 #, c-format
 msgid "deleting %d image"
 msgid_plural "deleting %d images"
 msgstr[0] "Borrando %d imagen"
 msgstr[1] "Borrando %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1093
+#: ../src/control/jobs/control_jobs.c:1099
 msgid "failed to parse GPX file"
 msgstr "Hubo un fallo al analizar el archivo GPX"
 
-#: ../src/control/jobs/control_jobs.c:1164
+#: ../src/control/jobs/control_jobs.c:1170
 #, c-format
 msgid "applied matched GPX location onto %d image"
 msgid_plural "applied matched GPX location onto %d images"
 msgstr[0] "Se aplicó la localización GPX coincidente en %d imagen"
 msgstr[1] "Se aplicó la localización GPX coincidente en %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1182
+#: ../src/control/jobs/control_jobs.c:1188
 #, c-format
 msgid "moving %d image"
 msgstr "Moviendo %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1183
+#: ../src/control/jobs/control_jobs.c:1189
 #, c-format
 msgid "moving %d images"
 msgstr "Moviendo %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1188
+#: ../src/control/jobs/control_jobs.c:1194
 #, c-format
 msgid "copying %d image"
 msgstr "Copiando %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1189
+#: ../src/control/jobs/control_jobs.c:1195
 #, c-format
 msgid "copying %d images"
 msgstr "Copiando %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1204
+#: ../src/control/jobs/control_jobs.c:1210
 #, c-format
 msgid "creating local copy of %d image"
 msgid_plural "creating local copies of %d images"
 msgstr[0] "Creando copia local de %d imagen"
 msgstr[1] "Creando copia local de %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1207
+#: ../src/control/jobs/control_jobs.c:1213
 #, c-format
 msgid "removing local copy of %d image"
 msgid_plural "removing local copies of %d images"
 msgstr[0] "Eliminando copia local de %d imagen"
 msgstr[1] "Eliminando copia local de %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1252
+#: ../src/control/jobs/control_jobs.c:1258
 #, c-format
 msgid "refreshing info for %d image"
 msgid_plural "refreshing info for %d images"
 msgstr[0] "Actualizando información para %d imagen"
 msgstr[1] "Actualizando información para %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1335
+#: ../src/control/jobs/control_jobs.c:1341
 #, c-format
 msgid "exporting %d image.."
 msgid_plural "exporting %d images.."
 msgstr[0] "Exportando %d imagen..."
 msgstr[1] "Exportando %d imágenes..."
 
-#: ../src/control/jobs/control_jobs.c:1367
+#: ../src/control/jobs/control_jobs.c:1373
 #, c-format
 msgid "exporting %d / %d to %s"
 msgstr "Exportando %d / %d a %s"
 
-#: ../src/control/jobs/control_jobs.c:1388 ../src/views/darkroom.c:792
+#: ../src/control/jobs/control_jobs.c:1394 ../src/views/darkroom.c:792
 #: ../src/views/print.c:315
 #, c-format
 msgid "image `%s' is currently unavailable"
 msgstr "La imagen «%s» no esta disponible actualmente"
 
-#: ../src/control/jobs/control_jobs.c:1479
+#: ../src/control/jobs/control_jobs.c:1485
 msgid "merge hdr image"
 msgstr "Fusionar imagen HDR"
 
-#: ../src/control/jobs/control_jobs.c:1493
+#: ../src/control/jobs/control_jobs.c:1499
 msgid "duplicate images"
 msgstr "Duplicar imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1499
+#: ../src/control/jobs/control_jobs.c:1505
 msgid "flip images"
 msgstr "Invertir imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1506
+#: ../src/control/jobs/control_jobs.c:1512
 msgid "set monochrome images"
 msgstr "Marcar como imágenes monocromáticas"
 
 #. get all selected images now, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1513
+#: ../src/control/jobs/control_jobs.c:1519
 msgid "remove images"
 msgstr "Eliminar imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1530
+#: ../src/control/jobs/control_jobs.c:1536
 #, c-format
 msgid "do you really want to remove %d image from the collection?"
 msgid_plural "do you really want to remove %d images from the collection?"
 msgstr[0] "¿Realmente desea quitar %d imagen de la colección?"
 msgstr[1] "¿Realmente desea quitar %d imágenes de la colección?"
 
-#: ../src/control/jobs/control_jobs.c:1537
+#: ../src/control/jobs/control_jobs.c:1543
 msgid "remove images?"
 msgstr "¿Eliminar las imágenes?"
 
 #. first get all selected images, to avoid the set changing during ui interaction
-#: ../src/control/jobs/control_jobs.c:1553
-#: ../src/control/jobs/control_jobs.c:1597
+#: ../src/control/jobs/control_jobs.c:1559
+#: ../src/control/jobs/control_jobs.c:1603
 msgid "delete images"
 msgstr "Borrar imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1573
+#: ../src/control/jobs/control_jobs.c:1579
 #, c-format
 msgid "do you really want to send %d image to trash?"
 msgid_plural "do you really want to send %d images to trash?"
 msgstr[0] "¿Realmente desea enviar a la papelera %d imagen?"
 msgstr[1] "¿Realmente desea enviar a la papelera %d imágenes?"
 
-#: ../src/control/jobs/control_jobs.c:1575
+#: ../src/control/jobs/control_jobs.c:1581
 #, c-format
 msgid "do you really want to physically delete %d image from disk?"
 msgid_plural "do you really want to physically delete %d images from disk?"
 msgstr[0] "¿En verdad desea borrar FÍSICAMENTE del disco %d imagen?"
 msgstr[1] "¿En verdad desea borrar FÍSICAMENTE del disco %d imágenes?"
 
-#: ../src/control/jobs/control_jobs.c:1582
-#: ../src/control/jobs/control_jobs.c:1620
+#: ../src/control/jobs/control_jobs.c:1588
+#: ../src/control/jobs/control_jobs.c:1626
 msgid "trash images?"
 msgstr "¿Eliminar imágenes?"
 
-#: ../src/control/jobs/control_jobs.c:1582
-#: ../src/control/jobs/control_jobs.c:1620
+#: ../src/control/jobs/control_jobs.c:1588
+#: ../src/control/jobs/control_jobs.c:1626
 msgid "delete images?"
 msgstr "¿Borrar las imágenes?"
 
-#: ../src/control/jobs/control_jobs.c:1614
+#: ../src/control/jobs/control_jobs.c:1620
 msgid "do you really want to send selected image to trash?"
 msgstr "¿Desea realmente enviar a la papelera la imagen seleccionada?"
 
-#: ../src/control/jobs/control_jobs.c:1615
+#: ../src/control/jobs/control_jobs.c:1621
 msgid "do you really want to physically delete selected image from disk?"
 msgstr "¿Desea borrar FÍSICAMENTE del disco la imagen seleccionada?"
 
-#: ../src/control/jobs/control_jobs.c:1638
+#: ../src/control/jobs/control_jobs.c:1644
 msgid "move images"
 msgstr "Mover imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1650
-#: ../src/control/jobs/control_jobs.c:1723
+#: ../src/control/jobs/control_jobs.c:1656
+#: ../src/control/jobs/control_jobs.c:1729
 msgid "_select as destination"
 msgstr "_seleccionar destino"
 
-#: ../src/control/jobs/control_jobs.c:1681
+#: ../src/control/jobs/control_jobs.c:1687
 #, c-format
 msgid ""
 "do you really want to physically move %d image to %s?\n"
@@ -5290,94 +5292,94 @@ msgstr[1] ""
 "¿Desea mover físicamente %d imágenes a %s?\n"
 " (todos los duplicados se moverán en conjunto)"
 
-#: ../src/control/jobs/control_jobs.c:1690
+#: ../src/control/jobs/control_jobs.c:1696
 msgid "move image?"
 msgid_plural "move images?"
 msgstr[0] "¿Mover las imágenes?"
 msgstr[1] "¿Mover las imágenes?"
 
-#: ../src/control/jobs/control_jobs.c:1711
+#: ../src/control/jobs/control_jobs.c:1717
 msgid "copy images"
 msgstr "Copiar imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1753
+#: ../src/control/jobs/control_jobs.c:1759
 #, c-format
 msgid "do you really want to physically copy %d image to %s?"
 msgid_plural "do you really want to physically copy %d images to %s?"
 msgstr[0] "¿Desea copiar de manera física %d imagen a %s ?"
 msgstr[1] "¿Desea copiar de manera física %d imágenes a %s ?"
 
-#: ../src/control/jobs/control_jobs.c:1759
+#: ../src/control/jobs/control_jobs.c:1765
 msgid "copy image?"
 msgid_plural "copy images?"
 msgstr[0] "¿Copiar imagen?"
 msgstr[1] "¿copiar imagenes?"
 
-#: ../src/control/jobs/control_jobs.c:1779
-#: ../src/control/jobs/control_jobs.c:1787
+#: ../src/control/jobs/control_jobs.c:1785
+#: ../src/control/jobs/control_jobs.c:1793
 msgid "local copy images"
 msgstr "Copia local de las imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1794 ../src/libs/image.c:592
+#: ../src/control/jobs/control_jobs.c:1800 ../src/libs/image.c:594
 msgid "refresh exif"
 msgstr "actualizar Exif"
 
-#: ../src/control/jobs/control_jobs.c:1858
+#: ../src/control/jobs/control_jobs.c:1864
 #, c-format
 msgid "failed to get parameters from storage module `%s', aborting export.."
 msgstr ""
 "Hubo un fallo al obtener parámetros del modulo de almacenamiento «%s». "
 "Abortando la operación..."
 
-#: ../src/control/jobs/control_jobs.c:1874
+#: ../src/control/jobs/control_jobs.c:1880
 msgid "export images"
 msgstr "exportar imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1937
+#: ../src/control/jobs/control_jobs.c:1943
 #, c-format
 msgid "adding time offset to %d image"
 msgstr "Añadiendo intervalo de tiempo a %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1937
+#: ../src/control/jobs/control_jobs.c:1943
 #, c-format
 msgid "setting date/time of %d image"
 msgstr "Fijando fecha/hora a %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1938
+#: ../src/control/jobs/control_jobs.c:1944
 #, c-format
 msgid "adding time offset to %d images"
 msgstr "Añadiendo diferencia horaria a %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1938
+#: ../src/control/jobs/control_jobs.c:1944
 #, c-format
 msgid "setting date/time of %d images"
 msgstr "Fijando fecha/hora a %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:1979
+#: ../src/control/jobs/control_jobs.c:1985
 #, c-format
 msgid "added time offset to %d image"
 msgstr "Intervalo de tiempo añadido a %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1979
+#: ../src/control/jobs/control_jobs.c:1985
 #, c-format
 msgid "set date/time of %d image"
 msgstr "Fijar fecha/hora a %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1980
+#: ../src/control/jobs/control_jobs.c:1986
 #, c-format
 msgid "added time offset to %d images"
 msgstr "Diferencia horaria añadida a %d imagen"
 
-#: ../src/control/jobs/control_jobs.c:1980
+#: ../src/control/jobs/control_jobs.c:1986
 #, c-format
 msgid "set date/time of %d images"
 msgstr "Fijar fecha/hora a %d imágenes"
 
-#: ../src/control/jobs/control_jobs.c:2021
+#: ../src/control/jobs/control_jobs.c:2027
 msgid "time offset"
 msgstr "compensación horaria"
 
-#: ../src/control/jobs/control_jobs.c:2049 ../src/libs/copy_history.c:416
+#: ../src/control/jobs/control_jobs.c:2055 ../src/libs/copy_history.c:416
 msgid "write sidecar files"
 msgstr ""
 "escribir archivos se han encontrado archivos de sidecar del xmp actualizados"
@@ -5639,26 +5641,26 @@ msgid "RGB (scene)"
 msgstr "RGB (Escena)"
 
 #. DEVELOP_MASK_ENABLED
-#: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:2851
+#: ../src/develop/blend_gui.c:101 ../src/develop/blend_gui.c:2862
 msgid "uniformly"
 msgstr "uniformemente"
 
 #: ../src/develop/blend_gui.c:102 ../src/develop/blend_gui.c:2227
-#: ../src/develop/blend_gui.c:2270 ../src/develop/blend_gui.c:2858
+#: ../src/develop/blend_gui.c:2270 ../src/develop/blend_gui.c:2869
 msgid "drawn mask"
 msgstr "trazar máscara"
 
 #: ../src/develop/blend_gui.c:103 ../src/develop/blend_gui.c:2042
-#: ../src/develop/blend_gui.c:2865
+#: ../src/develop/blend_gui.c:2876
 msgid "parametric mask"
 msgstr "máscara paramétrica"
 
 #: ../src/develop/blend_gui.c:104 ../src/develop/blend_gui.c:2406
-#: ../src/develop/blend_gui.c:2883
+#: ../src/develop/blend_gui.c:2894
 msgid "raster mask"
 msgstr "máscara de matriz de pixeles"
 
-#: ../src/develop/blend_gui.c:105 ../src/develop/blend_gui.c:2874
+#: ../src/develop/blend_gui.c:105 ../src/develop/blend_gui.c:2885
 msgid "drawn & parametric mask"
 msgstr "trazar máscara paramétrica"
 
@@ -5921,7 +5923,7 @@ msgstr ""
 "Pulsar 'C' para cambiar la vista de los datos del canal. Pulsar 'M' para "
 "cambiar la vista de la máscara."
 
-#: ../src/develop/blend_gui.c:2134 ../src/develop/blend_gui.c:2915
+#: ../src/develop/blend_gui.c:2134 ../src/develop/blend_gui.c:2926
 #: ../src/iop/basicadj.c:600 ../src/iop/exposure.c:785
 #: ../src/iop/exposure.c:836 ../src/iop/exposure.c:858
 #: ../src/iop/graduatednd.c:1104 ../src/iop/relight.c:269
@@ -5932,10 +5934,10 @@ msgstr "%.2f EV"
 
 #: ../src/develop/blend_gui.c:2135 ../src/develop/blend_gui.c:2227
 #: ../src/develop/blend_gui.c:2406 ../src/develop/blend_gui.c:2468
-#: ../src/develop/blend_gui.c:2907 ../src/develop/blend_gui.c:2916
-#: ../src/develop/blend_gui.c:2925 ../src/develop/blend_gui.c:2947
-#: ../src/develop/blend_gui.c:2954 ../src/develop/blend_gui.c:2961
-#: ../src/develop/blend_gui.c:2970
+#: ../src/develop/blend_gui.c:2918 ../src/develop/blend_gui.c:2927
+#: ../src/develop/blend_gui.c:2936 ../src/develop/blend_gui.c:2958
+#: ../src/develop/blend_gui.c:2965 ../src/develop/blend_gui.c:2972
+#: ../src/develop/blend_gui.c:2981
 msgid "blend"
 msgstr "fusión"
 
@@ -5968,7 +5970,6 @@ msgid "show and edit mask elements"
 msgstr "Mostrar y editar los elementos de la máscara"
 
 #: ../src/develop/blend_gui.c:2241
-#, fuzzy
 msgid "show and edit in restricted mode"
 msgstr "Muestra y edita las figuras en modo restringido"
 
@@ -6061,40 +6062,40 @@ msgstr "modos de crominancia y luminancia"
 msgid "deprecated modes"
 msgstr "modos obsoletos"
 
-#: ../src/develop/blend_gui.c:2891
+#: ../src/develop/blend_gui.c:2902
 msgid "blending options"
 msgstr "Opciones de fusión"
 
-#: ../src/develop/blend_gui.c:2907 ../src/libs/history.c:900
+#: ../src/develop/blend_gui.c:2918 ../src/libs/history.c:900
 msgid "blend mode"
 msgstr "modo de fusión"
 
-#: ../src/develop/blend_gui.c:2908
+#: ../src/develop/blend_gui.c:2919
 msgid "choose blending mode"
 msgstr "Elegir el modo de fusión"
 
-#: ../src/develop/blend_gui.c:2916 ../src/libs/history.c:901
+#: ../src/develop/blend_gui.c:2927 ../src/libs/history.c:901
 msgid "blend fulcrum"
 msgstr "punto de referencia de la fusión"
 
-#: ../src/develop/blend_gui.c:2918
+#: ../src/develop/blend_gui.c:2929
 msgid "adjust the fulcrum used by some blending operations"
 msgstr "Adecúa el punto de referencia para algunas operaciones de fusión"
 
 #. Add opacity/scale sliders to table
-#: ../src/develop/blend_gui.c:2925 ../src/iop/watermark.c:1449
+#: ../src/develop/blend_gui.c:2936 ../src/iop/watermark.c:1449
 msgid "opacity"
 msgstr "opacidad"
 
-#: ../src/develop/blend_gui.c:2928
+#: ../src/develop/blend_gui.c:2939
 msgid "set the opacity of the blending"
 msgstr "Opacidad de la fusión"
 
-#: ../src/develop/blend_gui.c:2931 ../src/libs/history.c:903
+#: ../src/develop/blend_gui.c:2942 ../src/libs/history.c:903
 msgid "combine masks"
 msgstr "combinar máscaras"
 
-#: ../src/develop/blend_gui.c:2932
+#: ../src/develop/blend_gui.c:2943
 msgid ""
 "how to combine individual drawn mask and different channels of parametric "
 "mask"
@@ -6102,44 +6103,44 @@ msgstr ""
 "Modo de combinar las máscaras individuales y los diferentes canales de la "
 "máscara paramétrica"
 
-#: ../src/develop/blend_gui.c:2936 ../src/libs/history.c:911
+#: ../src/develop/blend_gui.c:2947 ../src/libs/history.c:911
 msgid "invert mask"
 msgstr "invertir máscara"
 
-#: ../src/develop/blend_gui.c:2937
+#: ../src/develop/blend_gui.c:2948
 msgid "apply mask in normal or inverted mode"
 msgstr "Añadir la máscara en modo normal o invertido"
 
-#: ../src/develop/blend_gui.c:2941 ../src/libs/history.c:905
+#: ../src/develop/blend_gui.c:2952 ../src/libs/history.c:905
 msgid "feathering guide"
 msgstr "guía de difuminado"
 
-#: ../src/develop/blend_gui.c:2942
+#: ../src/develop/blend_gui.c:2953
 msgid "choose to guide mask by input or output image"
 msgstr "Elegir la máscara guía para la imágen de entrada o salida"
 
-#: ../src/develop/blend_gui.c:2947 ../src/libs/history.c:904
+#: ../src/develop/blend_gui.c:2958 ../src/libs/history.c:904
 msgid "feathering radius"
 msgstr "radio de difuminado"
 
-#: ../src/develop/blend_gui.c:2949
+#: ../src/develop/blend_gui.c:2960
 msgid "spatial radius of feathering"
 msgstr "Extensión espacial del difuminado"
 
-#: ../src/develop/blend_gui.c:2954 ../src/libs/history.c:906
+#: ../src/develop/blend_gui.c:2965 ../src/libs/history.c:906
 msgid "mask blur"
 msgstr "máscara de desenfoque"
 
-#: ../src/develop/blend_gui.c:2956
+#: ../src/develop/blend_gui.c:2967
 msgid "radius for gaussian blur of blend mask"
 msgstr "Radio del desenfoque gaussiano de la máscara de fusión"
 
-#: ../src/develop/blend_gui.c:2961 ../src/iop/retouch.c:2240
+#: ../src/develop/blend_gui.c:2972 ../src/iop/retouch.c:2240
 #: ../src/libs/history.c:902
 msgid "mask opacity"
 msgstr "opacidad de la máscara"
 
-#: ../src/develop/blend_gui.c:2963
+#: ../src/develop/blend_gui.c:2974
 msgid ""
 "shifts and tilts the tone curve of the blend mask to adjust its brightness "
 "without affecting fully transparent/fully opaque regions"
@@ -6147,23 +6148,23 @@ msgstr ""
 "Oscila la curva de tono de la máscara de fusión para ajustar el brillo, sin "
 "afectar las regiones totalmente transparentes u opacas"
 
-#: ../src/develop/blend_gui.c:2970 ../src/libs/history.c:907
+#: ../src/develop/blend_gui.c:2981 ../src/libs/history.c:907
 msgid "mask contrast"
 msgstr "contraste de la máscara"
 
-#: ../src/develop/blend_gui.c:2972
+#: ../src/develop/blend_gui.c:2983
 msgid ""
 "gives the tone curve of the blend mask an s-like shape to adjust its contrast"
 msgstr ""
 "Moldea la curva de tono de la máscara de fusión a un estilo S para ajustar "
 "el contraste"
 
-#: ../src/develop/blend_gui.c:2979
+#: ../src/develop/blend_gui.c:2990
 msgid "display mask and/or color channel"
 msgstr "mostrar la máscara o el canal de color"
 
 # y/o: Se desaconseja esta forma. En español "o" puede tener valor exclusivo (es decir, si se dan dos opciones solo puede ser una y no las dos a la vez) o inclusivo (puede ser solo una o podrían ser ambas).
-#: ../src/develop/blend_gui.c:2981
+#: ../src/develop/blend_gui.c:2992
 msgid ""
 "display mask and/or color channel. ctrl+click to display mask, shift+click "
 "to display channel. hover over parametric mask slider to select channel for "
@@ -6173,16 +6174,16 @@ msgstr ""
 "Mayús+Clic para mostrar el canal. Pase el cursor sobre el control deslizante "
 "de la máscara paramétrica para seleccionar el canal de visualización"
 
-#: ../src/develop/blend_gui.c:2986
+#: ../src/develop/blend_gui.c:2997
 msgid "temporarily switch off blend mask"
 msgstr "desactivar temporalmente la máscara de fusión"
 
-#: ../src/develop/blend_gui.c:2988
+#: ../src/develop/blend_gui.c:2999
 msgid "temporarily switch off blend mask. only for module in focus"
 msgstr ""
 "Desactivar temporalmente la máscara de fusión. Solo para el módulo enfocado"
 
-#: ../src/develop/blend_gui.c:3018
+#: ../src/develop/blend_gui.c:3029
 msgid "mask refinement"
 msgstr "afinar máscara"
 
@@ -6343,190 +6344,87 @@ msgid_plural "%s have been imported"
 msgstr[0] "%s ha sido  importado"
 msgstr[1] "%s han sido importados"
 
-#: ../src/develop/masks/brush.c:1044 ../src/develop/masks/brush.c:1128
+#: ../src/develop/masks/brush.c:1045 ../src/develop/masks/brush.c:1129
 #, c-format
 msgid "hardness: %3.2f%%"
 msgstr "Dureza: %3.2f%%"
 
-#: ../src/develop/masks/brush.c:1068 ../src/develop/masks/brush.c:1110
-#: ../src/develop/masks/brush.c:1117 ../src/develop/masks/circle.c:107
-#: ../src/develop/masks/circle.c:161 ../src/develop/masks/ellipse.c:448
-#: ../src/develop/masks/ellipse.c:535 ../src/develop/masks/path.c:1013
+#: ../src/develop/masks/brush.c:1069 ../src/develop/masks/brush.c:1111
+#: ../src/develop/masks/brush.c:1118 ../src/develop/masks/circle.c:110
+#: ../src/develop/masks/circle.c:164 ../src/develop/masks/ellipse.c:476
+#: ../src/develop/masks/ellipse.c:563 ../src/develop/masks/path.c:1014
 #, c-format
 msgid "size: %3.2f%%"
 msgstr "Tamaño: %3.2f%%"
 
-#: ../src/develop/masks/circle.c:94 ../src/develop/masks/circle.c:144
-#: ../src/develop/masks/ellipse.c:420 ../src/develop/masks/ellipse.c:505
-#: ../src/develop/masks/path.c:947 ../src/develop/masks/path.c:954
+#: ../src/develop/masks/brush.c:2906
+msgid "[BRUSH creation] change size"
+msgstr "[creación de PINCEL] ajustar tamaño"
+
+#: ../src/develop/masks/brush.c:2912
+msgid "[BRUSH creation] change hardness"
+msgstr "[creación de PINCEL] ajustar dureza"
+
+#: ../src/develop/masks/brush.c:2918
+msgid "[BRUSH] change opacity"
+msgstr "[PINCEL] ajustar opacidad"
+
+#: ../src/develop/masks/brush.c:2923
+msgid "[BRUSH] change hardness"
+msgstr "[PINCEL] ajustar dureza"
+
+#: ../src/develop/masks/brush.c:2936
+#, c-format
+msgid "brush #%d"
+msgstr "pincel #%d"
+
+#: ../src/develop/masks/brush.c:2945
+#, c-format
+msgid ""
+"<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
+"<b>opacity</b>: ctrl+scroll (%d%%)"
+msgstr ""
+"<b>Tamaño</b>: Rueda del Ratón, <b>Dureza</b>: Mayús+Rueda del Ratón\n"
+"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+
+#: ../src/develop/masks/brush.c:2949
+#, c-format
+msgid ""
+"<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
+"<b>opacity</b>: ctrl+scroll (%d%%)"
+msgstr ""
+"<b>Dureza</b>: Rueda del Ratón <b>Tamaño</b>: Mayús+Rueda del Ratón\n"
+"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+
+#: ../src/develop/masks/brush.c:2952
+msgid "<b>size</b>: scroll"
+msgstr "<b>Tamaño</b>: Rueda del Ratón"
+
+#: ../src/develop/masks/circle.c:97 ../src/develop/masks/circle.c:147
+#: ../src/develop/masks/ellipse.c:448 ../src/develop/masks/ellipse.c:533
+#: ../src/develop/masks/path.c:948 ../src/develop/masks/path.c:955
 #, c-format
 msgid "feather size: %3.2f%%"
 msgstr "Difuminado: %3.2f%%"
 
-#: ../src/develop/masks/ellipse.c:382 ../src/develop/masks/ellipse.c:486
-#, c-format
-msgid "rotation: %3.f°"
-msgstr "Rotación: %3.f°"
-
-#: ../src/develop/masks/gradient.c:94 ../src/develop/masks/gradient.c:123
-#, c-format
-msgid "compression: %3.2f%%"
-msgstr "Grado de transición: %3.2f%%"
-
-#: ../src/develop/masks/gradient.c:133
-#, c-format
-msgid "curvature: %3.2f%%"
-msgstr "Curvatura: %3.2f%%"
-
-#: ../src/develop/masks/masks.c:158
-msgid "[SHAPE] remove shape"
-msgstr "[FIGURA] quitar figura"
-
-#: ../src/develop/masks/masks.c:165
-msgid "[PATH creation] add a smooth node"
-msgstr "[creación de RUTA] añadir un nodo romo"
-
-#: ../src/develop/masks/masks.c:171
-msgid "[PATH creation] add a sharp node"
-msgstr "[creación de RUTA] agregar nodo angulado"
-
-#: ../src/develop/masks/masks.c:176
-msgid "[PATH creation] terminate path creation"
-msgstr "[creación de RUTA] finalizar la creación de la ruta"
-
-#: ../src/develop/masks/masks.c:182
-msgid "[PATH on node] switch between smooth/sharp node"
-msgstr "[RUTA en el nodo] alternar entre nodo romo o angulado"
-
-#: ../src/develop/masks/masks.c:187
-msgid "[PATH on node] remove the node"
-msgstr "[RUTA en el nodo] quitar el nodo"
-
-#: ../src/develop/masks/masks.c:192
-msgid "[PATH on feather] reset curvature"
-msgstr "[RUTA en el suavizado] restablecer curvatura"
-
-#: ../src/develop/masks/masks.c:198
-msgid "[PATH on segment] add node"
-msgstr "[RUTA en el segmento] añadir nodo"
-
-#: ../src/develop/masks/masks.c:203
-msgid "[PATH] change size"
-msgstr "[RUTA] ajustar tamaño"
-
-#: ../src/develop/masks/masks.c:209
-msgid "[PATH] change opacity"
-msgstr "[RUTA] ajustar opacidad"
-
-#: ../src/develop/masks/masks.c:215
-msgid "[PATH] change feather size"
-msgstr "[RUTA] ajustar dureza"
-
-#: ../src/develop/masks/masks.c:222
-msgid "[GRADIENT on pivot] rotate shape"
-msgstr "[GRADIENTE en el pivote] rotar figura"
-
-#: ../src/develop/masks/masks.c:227
-msgid "[GRADIENT creation] set rotation"
-msgstr "[creación de GRADIENTE] fijar rotación"
-
-#: ../src/develop/masks/masks.c:232
-msgid "[GRADIENT] change curvature"
-msgstr "[GRADIENTE] cambiar curvatura"
-
-#: ../src/develop/masks/masks.c:238
-msgid "[GRADIENT] change compression"
-msgstr "[GRADIENTE] cambiar transición"
-
-#: ../src/develop/masks/masks.c:244
-msgid "[GRADIENT] change opacity"
-msgstr "[GRADIENTE] cambiar opacidad"
-
-#: ../src/develop/masks/masks.c:251
-msgid "[ELLIPSE] change size"
-msgstr "[ELIPSE] cambiar tamaño"
-
-#: ../src/develop/masks/masks.c:257
-msgid "[ELLIPSE] change opacity"
-msgstr "[ELIPSE] cambiar opacidad"
-
-#: ../src/develop/masks/masks.c:263
-msgid "[ELLIPSE] switch feathering mode"
-msgstr "[ELIPSE] cambiar el modo de difuminado"
-
-#: ../src/develop/masks/masks.c:269
-msgid "[ELLIPSE] rotate shape"
-msgstr "[ELIPSE] rotar figura"
-
-#: ../src/develop/masks/masks.c:276
-msgid "[BRUSH creation] change size"
-msgstr "[creación de PINCEL] ajustar tamaño"
-
-#: ../src/develop/masks/masks.c:282
-msgid "[BRUSH creation] change hardness"
-msgstr "[creación de PINCEL] ajustar dureza"
-
-#: ../src/develop/masks/masks.c:288
-msgid "[BRUSH] change opacity"
-msgstr "[PINCEL] ajustar opacidad"
-
-#: ../src/develop/masks/masks.c:293
-msgid "[BRUSH] change hardness"
-msgstr "[PINCEL] ajustar dureza"
-
-#: ../src/develop/masks/masks.c:300
+#: ../src/develop/masks/circle.c:1259
 msgid "[CIRCLE] change size"
 msgstr "[CÍRCULO] cambiar tamaño"
 
-#: ../src/develop/masks/masks.c:306
+#: ../src/develop/masks/circle.c:1265
 msgid "[CIRCLE] change opacity"
 msgstr "[CÍRCULO] cambiar opacidad"
 
-#: ../src/develop/masks/masks.c:312
+#: ../src/develop/masks/circle.c:1271
 msgid "[CIRCLE] change feather size"
 msgstr "[CÍRCULO] cambiar área de difuminado"
 
-#: ../src/develop/masks/masks.c:347
-msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
-"<b>cancel</b>: right-click"
-msgstr ""
-"<b>Añadir nodo</b>: Pulsar, <b>Añadir nodo angulado</b>: Ctrl+Clic\n"
-"<b>Cancelar</b>: Clic secundario"
+#: ../src/develop/masks/circle.c:1292
+#, c-format
+msgid "circle #%d"
+msgstr "círculo #%d"
 
-#: ../src/develop/masks/masks.c:349
-msgid ""
-"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
-"<b>finnish path</b>: right-click"
-msgstr ""
-"<b>Añadir nodo</b>: Pulsar, <b>Añadir nodo angulado</b>: Ctrl+Clic\n"
-"<b>Finalizar ruta</b>: Clic secundario"
-
-#: ../src/develop/masks/masks.c:351
-msgid ""
-"<b>move node</b>: drag, <b>remove node</b>: right-click\n"
-"<b>switch smooth/sharp mode</b>: ctrl+click"
-msgstr ""
-"<b>Mover nodo</b>: Arrastrar, <b>Eliminar nodo</b>: Clic secundario\n"
-"<b>Alternar modo (romo/angulado) </b>: Ctrl+Clic"
-
-#: ../src/develop/masks/masks.c:353
-msgid ""
-"<b>node curvature</b>: drag\n"
-"<b>reset curvature</b>: right-click"
-msgstr ""
-"<b>Curvatura del nodo</b>: Arrastrar\n"
-"<b>Reiniciar curvatura</b>: Clic secundario"
-
-#: ../src/develop/masks/masks.c:355
-msgid ""
-"<b>move segment</b>: drag\n"
-"<b>add node</b>: ctrl+click"
-msgstr ""
-"<b>Mover segmento</b>: Arrastrar\n"
-"<b>Añadir nodo</b>: Ctrl+Clic"
-
-#: ../src/develop/masks/masks.c:357 ../src/develop/masks/masks.c:396
+#: ../src/develop/masks/circle.c:1300 ../src/develop/masks/path.c:3070
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -6535,30 +6433,33 @@ msgstr ""
 "<b>Tamaño</b>: Rueda del Ratón, <b>Difuminado</b>: Mayús+Rueda del Ratón\n"
 "<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
 
-#: ../src/develop/masks/masks.c:363
+#: ../src/develop/masks/ellipse.c:412 ../src/develop/masks/ellipse.c:514
 #, c-format
-msgid ""
-"<b>compression</b>: shift+scroll\n"
-"<b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr ""
-"<b>Grado de transición</b>: Mayús+Rueda del Ratón\n"
-"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+msgid "rotation: %3.f°"
+msgstr "Rotación: %3.f°"
 
-#: ../src/develop/masks/masks.c:365
+#: ../src/develop/masks/ellipse.c:2038
+msgid "[ELLIPSE] change size"
+msgstr "[ELIPSE] cambiar tamaño"
+
+#: ../src/develop/masks/ellipse.c:2044
+msgid "[ELLIPSE] change opacity"
+msgstr "[ELIPSE] cambiar opacidad"
+
+#: ../src/develop/masks/ellipse.c:2050
+msgid "[ELLIPSE] switch feathering mode"
+msgstr "[ELIPSE] cambiar el modo de difuminado"
+
+#: ../src/develop/masks/ellipse.c:2056
+msgid "[ELLIPSE] rotate shape"
+msgstr "[ELIPSE] rotar figura"
+
+#: ../src/develop/masks/ellipse.c:2063
 #, c-format
-msgid ""
-"<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
-"<b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr ""
-"<b>Curvatura</b>: Rueda del Ratón, <b>Grado de transición</b>: Mayús+Rueda "
-"del Ratón\n"
-"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+msgid "ellipse #%d"
+msgstr "elipse #%d"
 
-#: ../src/develop/masks/masks.c:367
-msgid "<b>rotate</b>: drag"
-msgstr "<b>Rotar</b>: Arrastre"
-
-#: ../src/develop/masks/masks.c:373
+#: ../src/develop/masks/ellipse.c:2092
 #, c-format
 msgid ""
 "<b>size</b>: scroll, <b>feather size</b>: shift+scroll\n"
@@ -6568,11 +6469,11 @@ msgstr ""
 "<b>Rotación</b>: Ctrl+Mayús+Rueda del Ratón, <b>Opacidad</b>: Ctrl+Rueda del "
 "Ratón (%d%%)"
 
-#: ../src/develop/masks/masks.c:375
+#: ../src/develop/masks/ellipse.c:2095
 msgid "<b>rotate</b>: ctrl+drag"
 msgstr "<b>Rotar</b>: Ctrl+Arrastre"
 
-#: ../src/develop/masks/masks.c:378
+#: ../src/develop/masks/ellipse.c:2098
 #, c-format
 msgid ""
 "<b>feather mode</b>: shift+click, <b>rotate</b>: ctrl+drag\n"
@@ -6583,79 +6484,179 @@ msgstr ""
 "<b>Tamaño</b>: Desplazamiento, <b>Difuminado</b>: Mayús+Desplazamiento, "
 "<b>Opacidad</b>: Ctrl+Desplazamiento (%d%%)"
 
-#: ../src/develop/masks/masks.c:385
+#: ../src/develop/masks/gradient.c:98 ../src/develop/masks/gradient.c:127
 #, c-format
-msgid ""
-"<b>size</b>: scroll, <b>hardness</b>: shift+scroll\n"
-"<b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr ""
-"<b>Tamaño</b>: Rueda del Ratón, <b>Dureza</b>: Mayús+Rueda del Ratón\n"
-"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+msgid "compression: %3.2f%%"
+msgstr "Grado de transición: %3.2f%%"
 
-#: ../src/develop/masks/masks.c:388
+#: ../src/develop/masks/gradient.c:137
 #, c-format
-msgid ""
-"<b>hardness</b>: scroll, <b>size</b>: shift+scroll\n"
-"<b>opacity</b>: ctrl+scroll (%d%%)"
-msgstr ""
-"<b>Dureza</b>: Rueda del Ratón <b>Tamaño</b>: Mayús+Rueda del Ratón\n"
-"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
+msgid "curvature: %3.2f%%"
+msgstr "Curvatura: %3.2f%%"
 
-#: ../src/develop/masks/masks.c:390
-msgid "<b>size</b>: scroll"
-msgstr "<b>Tamaño</b>: Rueda del Ratón"
+#: ../src/develop/masks/gradient.c:1468
+msgid "[GRADIENT on pivot] rotate shape"
+msgstr "[GRADIENTE en el pivote] rotar figura"
 
-#: ../src/develop/masks/masks.c:572
-#, c-format
-msgid "circle #%d"
-msgstr "círculo #%d"
+#: ../src/develop/masks/gradient.c:1473
+msgid "[GRADIENT creation] set rotation"
+msgstr "[creación de GRADIENTE] fijar rotación"
 
-#: ../src/develop/masks/masks.c:574
-#, c-format
-msgid "path #%d"
-msgstr "ruta #%d"
+#: ../src/develop/masks/gradient.c:1478
+msgid "[GRADIENT] change curvature"
+msgstr "[GRADIENTE] cambiar curvatura"
 
-#: ../src/develop/masks/masks.c:576
+#: ../src/develop/masks/gradient.c:1484
+msgid "[GRADIENT] change compression"
+msgstr "[GRADIENTE] cambiar transición"
+
+#: ../src/develop/masks/gradient.c:1490
+msgid "[GRADIENT] change opacity"
+msgstr "[GRADIENTE] cambiar opacidad"
+
+#: ../src/develop/masks/gradient.c:1503
 #, c-format
 msgid "gradient #%d"
 msgstr "gradiente #%d"
 
-#: ../src/develop/masks/masks.c:578
+#: ../src/develop/masks/gradient.c:1511
 #, c-format
-msgid "ellipse #%d"
-msgstr "elipse #%d"
+msgid ""
+"<b>compression</b>: shift+scroll\n"
+"<b>opacity</b>: ctrl+scroll (%d%%)"
+msgstr ""
+"<b>Grado de transición</b>: Mayús+Rueda del Ratón\n"
+"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
 
-#: ../src/develop/masks/masks.c:580
+#: ../src/develop/masks/gradient.c:1514
 #, c-format
-msgid "brush #%d"
-msgstr "pincel #%d"
+msgid ""
+"<b>curvature</b>: scroll, <b>compression</b>: shift+scroll\n"
+"<b>opacity</b>: ctrl+scroll (%d%%)"
+msgstr ""
+"<b>Curvatura</b>: Rueda del Ratón, <b>Grado de transición</b>: Mayús+Rueda "
+"del Ratón\n"
+"<b>Opacidad</b>: Ctrl+Rueda del Ratón (%d%%)"
 
-#: ../src/develop/masks/masks.c:641
+#: ../src/develop/masks/gradient.c:1517
+msgid "<b>rotate</b>: drag"
+msgstr "<b>Rotar</b>: Arrastre"
+
+#: ../src/develop/masks/masks.c:139
+msgid "[SHAPE] remove shape"
+msgstr "[FIGURA] quitar figura"
+
+#: ../src/develop/masks/masks.c:408
 #, c-format
 msgid "copy of %s"
 msgstr "copia de %s"
 
-#: ../src/develop/masks/masks.c:1489
+#: ../src/develop/masks/masks.c:941
 #, c-format
 msgid "%s: mask version mismatch: %d != %d"
 msgstr "%s: no coincide la versión de máscara: %d != %d"
 
-#: ../src/develop/masks/masks.c:1819 ../src/develop/masks/masks.c:2510
+#: ../src/develop/masks/masks.c:1166 ../src/develop/masks/masks.c:1798
 #, c-format
 msgid "opacity: %d%%"
 msgstr "opacidad: %d%%"
 
-#: ../src/develop/masks/masks.c:2256 ../src/libs/masks.c:1053
+#: ../src/develop/masks/masks.c:1544 ../src/libs/masks.c:1053
 msgid "add existing shape"
 msgstr "añadir figura existente"
 
-#: ../src/develop/masks/masks.c:2281
+#: ../src/develop/masks/masks.c:1569
 msgid "use same shapes as"
 msgstr "usar la misma figura como"
 
-#: ../src/develop/masks/masks.c:2593
+#: ../src/develop/masks/masks.c:1881
 msgid "masks can not contain themselves"
 msgstr "Las máscaras no pueden contenerse a sí mismas"
+
+#: ../src/develop/masks/path.c:2987
+msgid "[PATH creation] add a smooth node"
+msgstr "[creación de RUTA] añadir un nodo romo"
+
+#: ../src/develop/masks/path.c:2993
+msgid "[PATH creation] add a sharp node"
+msgstr "[creación de RUTA] agregar nodo angulado"
+
+#: ../src/develop/masks/path.c:2998
+msgid "[PATH creation] terminate path creation"
+msgstr "[creación de RUTA] finalizar la creación de la ruta"
+
+#: ../src/develop/masks/path.c:3004
+msgid "[PATH on node] switch between smooth/sharp node"
+msgstr "[RUTA en el nodo] alternar entre nodo romo o angulado"
+
+#: ../src/develop/masks/path.c:3009
+msgid "[PATH on node] remove the node"
+msgstr "[RUTA en el nodo] quitar el nodo"
+
+#: ../src/develop/masks/path.c:3014
+msgid "[PATH on feather] reset curvature"
+msgstr "[RUTA en el suavizado] restablecer curvatura"
+
+#: ../src/develop/masks/path.c:3020
+msgid "[PATH on segment] add node"
+msgstr "[RUTA en el segmento] añadir nodo"
+
+#: ../src/develop/masks/path.c:3025
+msgid "[PATH] change size"
+msgstr "[RUTA] ajustar tamaño"
+
+#: ../src/develop/masks/path.c:3031
+msgid "[PATH] change opacity"
+msgstr "[RUTA] ajustar opacidad"
+
+#: ../src/develop/masks/path.c:3037
+msgid "[PATH] change feather size"
+msgstr "[RUTA] ajustar dureza"
+
+#: ../src/develop/masks/path.c:3050
+#, c-format
+msgid "path #%d"
+msgstr "ruta #%d"
+
+#: ../src/develop/masks/path.c:3057
+msgid ""
+"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>cancel</b>: right-click"
+msgstr ""
+"<b>Añadir nodo</b>: Pulsar, <b>Añadir nodo angulado</b>: Ctrl+Clic\n"
+"<b>Cancelar</b>: Clic secundario"
+
+#: ../src/develop/masks/path.c:3060
+msgid ""
+"<b>add node</b>: click, <b>add sharp node</b>:ctrl+click\n"
+"<b>finnish path</b>: right-click"
+msgstr ""
+"<b>Añadir nodo</b>: Pulsar, <b>Añadir nodo angulado</b>: Ctrl+Clic\n"
+"<b>Finalizar ruta</b>: Clic secundario"
+
+#: ../src/develop/masks/path.c:3063
+msgid ""
+"<b>move node</b>: drag, <b>remove node</b>: right-click\n"
+"<b>switch smooth/sharp mode</b>: ctrl+click"
+msgstr ""
+"<b>Mover nodo</b>: Arrastrar, <b>Eliminar nodo</b>: Clic secundario\n"
+"<b>Alternar modo (romo/angulado) </b>: Ctrl+Clic"
+
+#: ../src/develop/masks/path.c:3066
+msgid ""
+"<b>node curvature</b>: drag\n"
+"<b>reset curvature</b>: right-click"
+msgstr ""
+"<b>Curvatura del nodo</b>: Arrastrar\n"
+"<b>Reiniciar curvatura</b>: Clic secundario"
+
+#: ../src/develop/masks/path.c:3068
+msgid ""
+"<b>move segment</b>: drag\n"
+"<b>add node</b>: ctrl+click"
+msgstr ""
+"<b>Mover segmento</b>: Arrastrar\n"
+"<b>Añadir nodo</b>: Ctrl+Clic"
 
 #: ../src/develop/pixelpipe_hb.c:379
 msgid ""
@@ -6728,195 +6729,204 @@ msgstr "Imágenes agrupadas"
 msgid "fit"
 msgstr "normal"
 
-#: ../src/dtgtk/thumbtable.c:1154
+#: ../src/dtgtk/thumbtable.c:1156
 msgid ""
 "you have changed the settings related to how thumbnails are generated.\n"
 msgstr ""
+"Ha cambiado la configuración relacionada con la generación de miniaturas.\n"
 
-#: ../src/dtgtk/thumbtable.c:1156
+#: ../src/dtgtk/thumbtable.c:1158
 msgid ""
 "all cached thumbnails need to be invalidated.\n"
 "\n"
 msgstr ""
+"Todas las miniaturas en caché deben ser invalidadas.\n"
+"\n"
 
-#: ../src/dtgtk/thumbtable.c:1158
+#: ../src/dtgtk/thumbtable.c:1160
 #, c-format
 msgid ""
 "cached thumbnails starting from level %d need to be invalidated.\n"
 "\n"
 msgstr ""
+"Las miniaturas de la caché a partir del nivel %d deben ser invalidadas.\n"
+"\n"
 
-#: ../src/dtgtk/thumbtable.c:1161
+#: ../src/dtgtk/thumbtable.c:1163
 #, c-format
 msgid ""
 "cached thumbnails below level %d need to be invalidated.\n"
 "\n"
 msgstr ""
+"Las miniaturas de la caché por debajo del nivel %d deben ser invalidadas.\n"
+"\n"
 
-#: ../src/dtgtk/thumbtable.c:1163
+#: ../src/dtgtk/thumbtable.c:1165
 #, c-format
 msgid ""
 "cached thumbnails between level %d and %d need to be invalidated.\n"
 "\n"
 msgstr ""
+"Las miniaturas en caché entre el nivel %d y %d necesitan ser invalidadas.\n"
+"\n"
 
-#: ../src/dtgtk/thumbtable.c:1166
+#: ../src/dtgtk/thumbtable.c:1168
 msgid "do you want to do that now?"
 msgstr "¿Desea ejecutar la acción en este momento?"
 
-#: ../src/dtgtk/thumbtable.c:1174
+#: ../src/dtgtk/thumbtable.c:1176
 msgid "cached thumbnails invalidation"
-msgstr ""
+msgstr "Invalidación de miniaturas en caché"
 
-#: ../src/dtgtk/thumbtable.c:2198 ../src/libs/metadata_view.c:465
+#: ../src/dtgtk/thumbtable.c:2200 ../src/libs/metadata_view.c:465
 msgid "image rejected"
 msgstr "imagen rechazada"
 
-#: ../src/dtgtk/thumbtable.c:2200 ../src/dtgtk/thumbtable.c:2202
-#: ../src/dtgtk/thumbtable.c:2204 ../src/dtgtk/thumbtable.c:2206
-#: ../src/dtgtk/thumbtable.c:2208
+#: ../src/dtgtk/thumbtable.c:2202 ../src/dtgtk/thumbtable.c:2204
+#: ../src/dtgtk/thumbtable.c:2206 ../src/dtgtk/thumbtable.c:2208
+#: ../src/dtgtk/thumbtable.c:2210
 #, c-format
 msgid "image rated to %s"
 msgstr "Imagen puntuada con %s"
 
-#: ../src/dtgtk/thumbtable.c:2210
+#: ../src/dtgtk/thumbtable.c:2212
 msgid "image rated to 0 star"
 msgstr "Imagen puntuada con 0 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2247
+#: ../src/dtgtk/thumbtable.c:2249
 #, c-format
 msgid "colorlabels set to %s"
 msgstr "Marcas de color fijadas en %s"
 
-#: ../src/dtgtk/thumbtable.c:2249
+#: ../src/dtgtk/thumbtable.c:2251
 msgid "all colorlabels removed"
 msgstr "Se quitaron todas las marcas de color"
 
 #. setup rating key accelerators
-#: ../src/dtgtk/thumbtable.c:2358
+#: ../src/dtgtk/thumbtable.c:2364
 msgctxt "accel"
 msgid "views/thumbtable/rate 0"
 msgstr "vistas/miniaturas/sin estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2359
+#: ../src/dtgtk/thumbtable.c:2365
 msgctxt "accel"
 msgid "views/thumbtable/rate 1"
 msgstr "vistas/miniaturas/1 estrella"
 
-#: ../src/dtgtk/thumbtable.c:2360
+#: ../src/dtgtk/thumbtable.c:2366
 msgctxt "accel"
 msgid "views/thumbtable/rate 2"
 msgstr "vistas/miniaturas/2 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2361
+#: ../src/dtgtk/thumbtable.c:2367
 msgctxt "accel"
 msgid "views/thumbtable/rate 3"
 msgstr "vistas/miniaturas/3 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2362
+#: ../src/dtgtk/thumbtable.c:2368
 msgctxt "accel"
 msgid "views/thumbtable/rate 4"
 msgstr "vistas/miniaturas/4 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2363
+#: ../src/dtgtk/thumbtable.c:2369
 msgctxt "accel"
 msgid "views/thumbtable/rate 5"
 msgstr "vistas/miniaturas/5 estrellas"
 
-#: ../src/dtgtk/thumbtable.c:2364
+#: ../src/dtgtk/thumbtable.c:2370
 msgctxt "accel"
 msgid "views/thumbtable/rate reject"
 msgstr "vistas/miniaturas/rechazar"
 
 #. setup history key accelerators
-#: ../src/dtgtk/thumbtable.c:2367
+#: ../src/dtgtk/thumbtable.c:2373
 msgctxt "accel"
 msgid "views/thumbtable/copy history"
 msgstr "vistas/miniaturas/copiar historial"
 
-#: ../src/dtgtk/thumbtable.c:2368
+#: ../src/dtgtk/thumbtable.c:2374
 msgctxt "accel"
 msgid "views/thumbtable/copy history parts"
 msgstr "vistas/miniaturas/copiar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:2370
+#: ../src/dtgtk/thumbtable.c:2376
 msgctxt "accel"
 msgid "views/thumbtable/paste history"
 msgstr "vistas/miniaturas/pegar historial"
 
-#: ../src/dtgtk/thumbtable.c:2371
+#: ../src/dtgtk/thumbtable.c:2377
 msgctxt "accel"
 msgid "views/thumbtable/paste history parts"
 msgstr "vistas/miniaturas/pegar elementos del historial"
 
-#: ../src/dtgtk/thumbtable.c:2373
+#: ../src/dtgtk/thumbtable.c:2379
 msgctxt "accel"
 msgid "views/thumbtable/discard history"
 msgstr "vistas/miniaturas/descartar historial de acciones"
 
-#: ../src/dtgtk/thumbtable.c:2375
+#: ../src/dtgtk/thumbtable.c:2381
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image"
 msgstr "vistas/miniaturas/duplicar imagen"
 
-#: ../src/dtgtk/thumbtable.c:2376
+#: ../src/dtgtk/thumbtable.c:2382
 msgctxt "accel"
 msgid "views/thumbtable/duplicate image virgin"
 msgstr "vistas/miniaturas/duplicar imagen virgen"
 
 #. setup color label accelerators
-#: ../src/dtgtk/thumbtable.c:2380
+#: ../src/dtgtk/thumbtable.c:2386
 msgctxt "accel"
 msgid "views/thumbtable/color red"
 msgstr "vistas/miniaturas/color rojo"
 
-#: ../src/dtgtk/thumbtable.c:2381
+#: ../src/dtgtk/thumbtable.c:2387
 msgctxt "accel"
 msgid "views/thumbtable/color yellow"
 msgstr "vistas/miniaturas/color amarillo"
 
-#: ../src/dtgtk/thumbtable.c:2382
+#: ../src/dtgtk/thumbtable.c:2388
 msgctxt "accel"
 msgid "views/thumbtable/color green"
 msgstr "vistas/miniaturas/color verde"
 
-#: ../src/dtgtk/thumbtable.c:2383
+#: ../src/dtgtk/thumbtable.c:2389
 msgctxt "accel"
 msgid "views/thumbtable/color blue"
 msgstr "vistas/miniaturas/color azul"
 
-#: ../src/dtgtk/thumbtable.c:2384
+#: ../src/dtgtk/thumbtable.c:2390
 msgctxt "accel"
 msgid "views/thumbtable/color purple"
 msgstr "vistas/miniaturas/color púrpura"
 
-#: ../src/dtgtk/thumbtable.c:2385
+#: ../src/dtgtk/thumbtable.c:2391
 msgctxt "accel"
 msgid "views/thumbtable/clear color labels"
 msgstr "vistas/miniaturas/quitar marcas de color"
 
 #. setup selection accelerators
-#: ../src/dtgtk/thumbtable.c:2388
+#: ../src/dtgtk/thumbtable.c:2394
 msgctxt "accel"
 msgid "views/thumbtable/select all"
 msgstr "vistas/miniaturas/seleccionar todas"
 
-#: ../src/dtgtk/thumbtable.c:2389
+#: ../src/dtgtk/thumbtable.c:2395
 msgctxt "accel"
 msgid "views/thumbtable/select none"
 msgstr "vistas/miniaturas/deseleccionar"
 
-#: ../src/dtgtk/thumbtable.c:2391
+#: ../src/dtgtk/thumbtable.c:2397
 msgctxt "accel"
 msgid "views/thumbtable/invert selection"
 msgstr "vistas/miniaturas/invertir selección"
 
-#: ../src/dtgtk/thumbtable.c:2392
+#: ../src/dtgtk/thumbtable.c:2398
 msgctxt "accel"
 msgid "views/thumbtable/select film roll"
 msgstr "vistas/miniaturas/seleccionar carrete"
 
-#: ../src/dtgtk/thumbtable.c:2393
+#: ../src/dtgtk/thumbtable.c:2399
 msgctxt "accel"
 msgid "views/thumbtable/select untouched"
 msgstr "vistas/miniaturas/seleccionar no editadas"
@@ -7297,7 +7307,7 @@ msgstr ""
 "$(HORA), $(MINUTO), $(SEGUNDOS)"
 
 #: ../src/gui/camera_import_dialog.c:285 ../src/libs/geotagging.c:852
-#: ../src/libs/geotagging.c:1803 ../src/libs/image.c:456
+#: ../src/libs/geotagging.c:1803 ../src/libs/image.c:458
 msgid "images"
 msgstr "imagen"
 
@@ -7850,7 +7860,7 @@ msgid "HDR"
 msgstr "HDR"
 
 #: ../src/gui/preferences.c:96 ../src/gui/presets.c:59
-#: ../src/iop/monochrome.c:77 ../src/libs/image.c:596
+#: ../src/iop/monochrome.c:77 ../src/libs/image.c:598
 #: ../src/libs/metadata_view.c:453
 msgid "monochrome"
 msgstr "monocromo"
@@ -8438,7 +8448,7 @@ msgid ""
 msgstr ""
 
 #: ../src/imageio/format/copy.c:108 ../src/libs/copy_history.c:376
-#: ../src/libs/image.c:570
+#: ../src/libs/image.c:572
 msgid "copy"
 msgstr "copiar"
 
@@ -8810,7 +8820,7 @@ msgid "create unique filename"
 msgstr "crear nombre único"
 
 #: ../src/imageio/storage/disk.c:204 ../src/libs/copy_history.c:405
-#: ../src/libs/image.c:586 ../src/libs/styles.c:440 ../src/libs/styles.c:706
+#: ../src/libs/image.c:588 ../src/libs/styles.c:440 ../src/libs/styles.c:706
 msgid "overwrite"
 msgstr "sobreescribir"
 
@@ -10013,7 +10023,6 @@ msgstr ""
 "sólo funciona en imágenes raw."
 
 #: ../src/iop/censorize.c:77
-#, fuzzy
 msgid "censorize"
 msgstr ""
 
@@ -10557,9 +10566,8 @@ msgid ""
 msgstr ""
 
 #: ../src/iop/channelmixerrgb.c:3636
-#, fuzzy
 msgid "patch scale"
-msgstr "tamaño del cuadro"
+msgstr "escala de parches"
 
 #: ../src/iop/channelmixerrgb.c:3637
 msgid ""
@@ -11079,7 +11087,7 @@ msgstr "Gradación general de color"
 
 #: ../src/iop/colorbalancergb.c:765
 msgid "rotate all hues by an angle, at the same luminance"
-msgstr ""
+msgstr "Rotar las tonalidades mediante un ángulo, con la misma luminancia"
 
 #: ../src/iop/colorbalancergb.c:767
 msgid "linear chroma grading"
@@ -11107,7 +11115,7 @@ msgstr "gradación de saturación perceptiva"
 
 #: ../src/iop/colorbalancergb.c:801
 msgid "add or remove saturation by an absolute amount"
-msgstr ""
+msgstr "Añadir o quitar la saturación en función de una cantidad absoluta"
 
 #: ../src/iop/colorbalancergb.c:807 ../src/iop/colorbalancergb.c:813
 #: ../src/iop/colorbalancergb.c:819
@@ -11115,6 +11123,8 @@ msgid ""
 "increase or decrease saturation proportionnaly to the original pixel "
 "saturation"
 msgstr ""
+"Aumentar o disminuir la saturación proporcionalmente a la saturación "
+"original del pixel"
 
 #: ../src/iop/colorbalancergb.c:822
 msgid "perceptual purity grading"
@@ -11122,12 +11132,12 @@ msgstr "gradación de la pureza perceptiva"
 
 #: ../src/iop/colorbalancergb.c:829
 msgid "add or remove purity by an absolute amount"
-msgstr ""
+msgstr "Añadir o quitar pureza en función de una cantidad absoluta"
 
 #: ../src/iop/colorbalancergb.c:835 ../src/iop/colorbalancergb.c:841
 #: ../src/iop/colorbalancergb.c:847
 msgid "increase or decrease purity proportionnaly to the original pixel purity"
-msgstr ""
+msgstr "Incrementar o disminuir la pureza proporcional a la del pixel original"
 
 #. Page 4-ways
 #: ../src/iop/colorbalancergb.c:851
@@ -11894,6 +11904,9 @@ msgid ""
 "set to 0.0 for high frequency content.\n"
 "set to 1.0 for flat content."
 msgstr ""
+"Umbral de contraste para la doble interpolación cromática.\n"
+"El ajuste a 0.0 favorece las frecuencias altas (detalles).\n"
+"El ajuste a 1.0 favorece las frecuencias bajas (planas)."
 
 #: ../src/iop/demosaic.c:5218
 msgid "display blending mask"
@@ -16101,7 +16114,7 @@ msgid "files"
 msgstr "archivos"
 
 #: ../src/libs/collect.c:2716 ../src/libs/export_metadata.c:289
-#: ../src/libs/image.c:457 ../src/libs/image.c:562 ../src/libs/metadata.c:468
+#: ../src/libs/image.c:459 ../src/libs/image.c:564 ../src/libs/metadata.c:468
 #: ../src/libs/metadata.c:639 ../src/libs/metadata_view.c:1071
 msgid "metadata"
 msgstr "metadatos"
@@ -16279,7 +16292,7 @@ msgstr ""
 "Pegar elementos del historial de acciones en\n"
 "todas las imágenes seleccionadas"
 
-#: ../src/libs/copy_history.c:387 ../src/libs/image.c:575
+#: ../src/libs/copy_history.c:387 ../src/libs/image.c:577
 msgid "paste"
 msgstr "pegar"
 
@@ -16399,7 +16412,7 @@ msgstr "original"
 msgid "create a 'virgin' duplicate of the image without any development"
 msgstr "Crear un duplicado 'virgen' de la imagen (sin ningún revelado)"
 
-#: ../src/libs/duplicate.c:547 ../src/libs/image.c:488
+#: ../src/libs/duplicate.c:547 ../src/libs/image.c:490
 msgid "duplicate"
 msgstr "duplicar"
 
@@ -16675,7 +16688,7 @@ msgstr ""
 "Si el almacenamiento remoto no comprende los metadatos XMP de dt, puede usar "
 "en su lugar metadatos calculados."
 
-#: ../src/libs/export_metadata.c:307 ../src/libs/image.c:554
+#: ../src/libs/export_metadata.c:307 ../src/libs/image.c:556
 msgid "geo tags"
 msgstr "geoetiquetas"
 
@@ -16780,9 +16793,8 @@ msgid "delete metadata tag"
 msgstr "Eliminar etiqueta de los metadatos"
 
 #: ../src/libs/geotagging.c:384
-#, fuzzy
 msgid "apply offset and geo-location"
-msgstr "Establecer la diferencia horaria en las imágenes seleccionadas"
+msgstr "establecer diferencia y geolocalización"
 
 #: ../src/libs/geotagging.c:385 ../src/libs/geotagging.c:1843
 msgid "apply geo-location"
@@ -16793,9 +16805,11 @@ msgid ""
 "apply offset and geo-location to matching images\n"
 "double operation: two ctrl-Z to undo"
 msgstr ""
+"Establece la diferencia horaria y la geolocalizacón a las imágenes "
+"correspondientes.\n"
+"Doble operación para deshacer: Ctrl+Z (dos veces)."
 
 #: ../src/libs/geotagging.c:389 ../src/libs/geotagging.c:1844
-#, fuzzy
 msgid "apply geo-location to matching images"
 msgstr "Establecer geolocalización en imágenes coincidentes"
 
@@ -16854,25 +16868,24 @@ msgstr "Diferencia horaria ([-]dd hh:mm:ss)"
 #: ../src/libs/geotagging.c:1682
 msgid "lock date/time offset value to apply it onto another selection"
 msgstr ""
+"Bloquea el valor de la diferencia de fecha/hora para usarlo en otra selección"
 
 #. apply
 #: ../src/libs/geotagging.c:1693
 msgid "apply offset"
-msgstr "establecer compensación"
+msgstr "establecer diferencia"
 
 #: ../src/libs/geotagging.c:1693
 msgid "apply offset to selected images"
 msgstr "Establecer la diferencia horaria en las imágenes seleccionadas"
 
 #: ../src/libs/geotagging.c:1698
-#, fuzzy
 msgid "apply date/time"
-msgstr "fecha/hora"
+msgstr "establecer fecha/hora"
 
 #: ../src/libs/geotagging.c:1698
-#, fuzzy
 msgid "apply the same date/time to selected images"
-msgstr "Establecer la compensación horaria en las imágenes seleccionadas"
+msgstr "establecer la misma fecha/hora en la selección"
 
 #. gpx
 #: ../src/libs/geotagging.c:1744
@@ -16901,25 +16914,28 @@ msgid ""
 "zone\n"
 "- more detailled time information hovering the row"
 msgstr ""
+"Lista de segmentos de recorrido del archivo GPX. Y para cada segmento:\n"
+"• fecha/hora de inicio en hora local (HL)\n"
+"• número de lugares o puntos del recorrido\n"
+"• número de imágenes coincidentes en función de la fecha/hora de las "
+"imágenes, la diferencia y zona horaria\n"
+"• información horaria más detallada al pasar el ratón por la fila"
 
 #: ../src/libs/geotagging.c:1820
-#, fuzzy
 msgid "preview images"
-msgstr "Eliminar imágenes"
+msgstr "previsualizar imágenes"
 
 #: ../src/libs/geotagging.c:1825
-#, fuzzy
 msgid "show on map matching images"
-msgstr "Mostrar este preajuste sólo para imágenes coincidentes"
+msgstr "Muestra en el mapa las imágenes coincidentes"
 
 #: ../src/libs/geotagging.c:1828
 msgid "select images"
 msgstr "seleccionar imágenes"
 
 #: ../src/libs/geotagging.c:1828
-#, fuzzy
 msgid "select matching images"
-msgstr "selección de imagen única"
+msgstr "seleccionar imágenes coincidentes"
 
 #: ../src/libs/geotagging.c:1839
 #, fuzzy
@@ -17166,253 +17182,253 @@ msgid "physically delete from disk"
 msgstr "eliminar físicamente del disco"
 
 #. delete
-#: ../src/libs/image.c:468 ../src/libs/styles.c:728
+#: ../src/libs/image.c:470 ../src/libs/styles.c:728
 msgid "remove"
 msgstr "quitar"
 
-#: ../src/libs/image.c:468
+#: ../src/libs/image.c:470
 msgid "remove from the collection"
 msgstr "Borrar de la colección"
 
-#: ../src/libs/image.c:476
+#: ../src/libs/image.c:478
 msgid "move..."
 msgstr "mover..."
 
-#: ../src/libs/image.c:476
+#: ../src/libs/image.c:478
 msgid "move to other folder"
 msgstr "Mover a otra carpeta"
 
-#: ../src/libs/image.c:480
+#: ../src/libs/image.c:482
 msgid "copy..."
 msgstr "copiar..."
 
-#: ../src/libs/image.c:480
+#: ../src/libs/image.c:482
 msgid "copy to other folder"
 msgstr "Copiar a otra carpeta"
 
-#: ../src/libs/image.c:484
+#: ../src/libs/image.c:486
 msgid "create HDR"
 msgstr "crear HDR"
 
-#: ../src/libs/image.c:484
+#: ../src/libs/image.c:486
 msgid "create a high dynamic range image from selected shots"
 msgstr ""
 "Crear una imagen de rango dinámico amplio a partir de las imágenes "
 "seleccionadas"
 
-#: ../src/libs/image.c:488
+#: ../src/libs/image.c:490
 msgid "add a duplicate to the collection, including its history stack"
 msgstr ""
 "Añadir un duplicado a la colección, incluyendo el historial de acciones"
 
-#: ../src/libs/image.c:494
+#: ../src/libs/image.c:496
 msgid "rotate selected images 90 degrees CCW"
 msgstr "Rotar imágenes seleccionadas 90 grados en sentido antihorario"
 
-#: ../src/libs/image.c:500
+#: ../src/libs/image.c:502
 msgid "rotate selected images 90 degrees CW"
 msgstr "Rotar imágenes seleccionadas 90 grados en sentido horario"
 
-#: ../src/libs/image.c:504
+#: ../src/libs/image.c:506
 msgid "reset rotation"
 msgstr "restaurar rotación"
 
-#: ../src/libs/image.c:504
+#: ../src/libs/image.c:506
 msgid "reset rotation to EXIF data"
 msgstr "Restaurar rotación según los datos Exif"
 
-#: ../src/libs/image.c:508
+#: ../src/libs/image.c:510
 msgid "copy locally"
 msgstr "copiar localmente"
 
-#: ../src/libs/image.c:508
+#: ../src/libs/image.c:510
 msgid "copy the image locally"
 msgstr "Copiar la imagen localmente"
 
-#: ../src/libs/image.c:512
+#: ../src/libs/image.c:514
 msgid "resync local copy"
 msgstr "sincronizar copia local"
 
-#: ../src/libs/image.c:512
+#: ../src/libs/image.c:514
 msgid "synchronize the image's XMP and remove the local copy"
 msgstr "Sincronizar el XMP de la imagen y eliminar la copia local"
 
-#: ../src/libs/image.c:516 ../src/libs/tools/filter.c:92
+#: ../src/libs/image.c:518 ../src/libs/tools/filter.c:92
 msgid "group"
 msgstr "agrupar"
 
-#: ../src/libs/image.c:516
+#: ../src/libs/image.c:518
 msgid "add selected images to expanded group or create a new one"
 msgstr "Agregar las imágenes seleccionadas al grupo actual o crear uno nuevo"
 
-#: ../src/libs/image.c:520
+#: ../src/libs/image.c:522
 msgid "ungroup"
 msgstr "desagrupar"
 
-#: ../src/libs/image.c:520
+#: ../src/libs/image.c:522
 msgid "remove selected images from the group"
 msgstr "Eliminar las imágenes seleccionadas del grupo"
 
-#: ../src/libs/image.c:530 ../src/libs/tools/ratings.c:55
+#: ../src/libs/image.c:532 ../src/libs/tools/ratings.c:55
 msgid "ratings"
 msgstr "valoraciones"
 
-#: ../src/libs/image.c:532
+#: ../src/libs/image.c:534
 msgid "select ratings metadata"
 msgstr "Seleccionar los metadatos de las valoraciones"
 
-#: ../src/libs/image.c:538
+#: ../src/libs/image.c:540
 msgid "colors"
 msgstr "colores"
 
-#: ../src/libs/image.c:540
+#: ../src/libs/image.c:542
 msgid "select colors metadata"
 msgstr "Seleccionar los metadatos de los colores"
 
-#: ../src/libs/image.c:548
+#: ../src/libs/image.c:550
 msgid "select tags metadata"
 msgstr "Seleccionar los metadatos de las etiquetas"
 
-#: ../src/libs/image.c:556
+#: ../src/libs/image.c:558
 msgid "select geo tags metadata"
 msgstr "Seleccionar los metadatos de las geoetiquetas"
 
-#: ../src/libs/image.c:564
+#: ../src/libs/image.c:566
 msgid "select dt metadata (from metadata editor module)"
 msgstr "Seleccionar metadatos de dt (desde el módulo editor de metadatos)"
 
-#: ../src/libs/image.c:570
+#: ../src/libs/image.c:572
 msgid "set the (first) selected image as source of metadata"
 msgstr "Fijar la primer imagen seleccionada como fuente de metadatos"
 
-#: ../src/libs/image.c:575
+#: ../src/libs/image.c:577
 msgid "paste selected metadata on selected images"
 msgstr "Pegar los metadatos elegidos en las imágenes seleccionadas"
 
-#: ../src/libs/image.c:579
+#: ../src/libs/image.c:581
 msgid "clear"
 msgstr "eliminar"
 
-#: ../src/libs/image.c:579
+#: ../src/libs/image.c:581
 msgid "clear selected metadata on selected images"
 msgstr "Eliminar los metadatos elegidos de las imágenes seleccionadas"
 
-#: ../src/libs/image.c:585
+#: ../src/libs/image.c:587
 msgid "merge"
 msgstr "integrar"
 
-#: ../src/libs/image.c:587
+#: ../src/libs/image.c:589
 msgid "how to handle existing metadata"
 msgstr "Manera de gestionar los metadatos existentes"
 
-#: ../src/libs/image.c:592
+#: ../src/libs/image.c:594
 msgid "update image information to match changes to file"
 msgstr ""
 "Actualizar la información de la imagen para que coincida con los cambios del "
 "archivo"
 
-#: ../src/libs/image.c:596
+#: ../src/libs/image.c:598
 msgid "set selection as monochrome images and activate monochrome workflow"
 msgstr ""
 "Marcar la selección como imágenes monocromáticas y activar el flujo de "
 "trabajo monocromático"
 
-#: ../src/libs/image.c:600
+#: ../src/libs/image.c:602
 msgid "set selection as color images"
 msgstr "Marcar selección como imágenes a color"
 
-#: ../src/libs/image.c:643
+#: ../src/libs/image.c:645
 msgctxt "accel"
 msgid "remove from collection"
 msgstr "eliminar de la colección"
 
-#: ../src/libs/image.c:644
+#: ../src/libs/image.c:646
 msgctxt "accel"
 msgid "delete from disk or send to trash"
 msgstr "borrar físicamente del disco o enviar a la papelera"
 
-#: ../src/libs/image.c:645
+#: ../src/libs/image.c:647
 msgctxt "accel"
 msgid "move to other folder"
 msgstr "mover a otra carpeta"
 
-#: ../src/libs/image.c:646
+#: ../src/libs/image.c:648
 msgctxt "accel"
 msgid "copy to other folder"
 msgstr "copiar a otra carpeta"
 
-#: ../src/libs/image.c:647
+#: ../src/libs/image.c:649
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CW"
 msgstr "rotar imágenes seleccionadas 90 grados en sentido horario"
 
-#: ../src/libs/image.c:648
+#: ../src/libs/image.c:650
 msgctxt "accel"
 msgid "rotate selected images 90 degrees CCW"
 msgstr "rotar imágenes seleccionadas 90 grados en sentido antihorario"
 
-#: ../src/libs/image.c:649
+#: ../src/libs/image.c:651
 msgctxt "accel"
 msgid "create HDR"
 msgstr "crear HDR"
 
-#: ../src/libs/image.c:650
+#: ../src/libs/image.c:652
 msgctxt "accel"
 msgid "duplicate"
 msgstr "duplicar"
 
-#: ../src/libs/image.c:651
+#: ../src/libs/image.c:653
 msgctxt "accel"
 msgid "reset rotation"
 msgstr "restablecer rotación"
 
-#: ../src/libs/image.c:652
+#: ../src/libs/image.c:654
 msgctxt "accel"
 msgid "copy the image locally"
 msgstr "copiar imagen localmente"
 
-#: ../src/libs/image.c:653
+#: ../src/libs/image.c:655
 msgctxt "accel"
 msgid "resync the local copy"
 msgstr "resincronizar copia local"
 
-#: ../src/libs/image.c:654
+#: ../src/libs/image.c:656
 msgctxt "accel"
 msgid "refresh exif"
 msgstr "actualizar Exif"
 
-#: ../src/libs/image.c:655
+#: ../src/libs/image.c:657
 msgctxt "accel"
 msgid "set monochrome image"
 msgstr "marcar como imagen monocromática"
 
-#: ../src/libs/image.c:656
+#: ../src/libs/image.c:658
 msgctxt "accel"
 msgid "set color image"
 msgstr "marcar como imagen a color"
 
-#: ../src/libs/image.c:657
+#: ../src/libs/image.c:659
 msgctxt "accel"
 msgid "replace metadata"
 msgstr "reemplazar metadatos"
 
-#: ../src/libs/image.c:658
+#: ../src/libs/image.c:660
 msgctxt "accel"
 msgid "paste metadata"
 msgstr "pegar metadatos"
 
-#: ../src/libs/image.c:659
+#: ../src/libs/image.c:661
 msgctxt "accel"
 msgid "clear metadata"
 msgstr "borrar metadatos"
 
 #. Grouping keys
-#: ../src/libs/image.c:661
+#: ../src/libs/image.c:663
 msgctxt "accel"
 msgid "group"
 msgstr "agrupar"
 
-#: ../src/libs/image.c:662
+#: ../src/libs/image.c:664
 msgctxt "accel"
 msgid "ungroup"
 msgstr "desagrupar"
@@ -18155,6 +18171,9 @@ msgid ""
 "untick to hide metadata which are not of interest for you\n"
 "if different settings are needed, use presets"
 msgstr ""
+"Arrastre y suelte una fila a la vez para obtener el orden deseado.\n"
+"Desmarque la casilla para ocultar los metadatos no deseados.\n"
+"Utilice los preajustes en caso de requerir una configuración diferente."
 
 #: ../src/libs/modulegroups.c:41
 msgid "modules: default"
@@ -19643,10 +19662,9 @@ msgid "toggle sticky preview mode with focus detection"
 msgstr "vista previa fija con detección de enfoque"
 
 #: ../src/libs/tools/lighttable.c:568
-#, fuzzy
 msgctxt "accel"
 msgid "exit current layout"
-msgstr "Pulse para salir del modo de selección"
+msgstr "salir del modo de vista activo"
 
 #: ../src/libs/tools/module_toolbox.c:46
 msgid "module toolbox"
