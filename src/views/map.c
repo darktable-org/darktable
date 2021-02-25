@@ -2581,23 +2581,9 @@ static void _view_map_build_main_query(dt_map_t *lib)
 GSList *mouse_actions(const dt_view_t *self)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a = NULL;
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
-  g_strlcpy(a->name, _("[on image] open in darkroom"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_DOUBLE_LEFT;
-  g_strlcpy(a->name, _("[on map] zoom map"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_DRAG_DROP;
-  g_strlcpy(a->name, _("move image location"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[on image] open in darkroom"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DOUBLE_LEFT, 0, _("[on map] zoom map"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_DRAG_DROP, 0, _("move image location"));
   return lm;
 }
 

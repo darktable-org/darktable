@@ -653,6 +653,28 @@ int dt_masks_group_render_roi(dt_iop_module_t *module, dt_dev_pixelpipe_iop_t *p
   return ok;
 }
 
+static GSList *_group_setup_mouse_actions(const struct dt_masks_form_t *const form)
+{
+  GSList *lm = NULL;
+  // initialize the mask of seen shapes to the set of flags which aren't actually shapes
+  dt_masks_type_t seen_types = (DT_MASKS_GROUP | DT_MASKS_CLONE | DT_MASKS_NON_CLONE);
+  // iterate over the shapes in the group, adding the mouse_action for each distinct type of shape
+  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
+  {
+    dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
+    dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
+    if (!sel || (sel->type & ~seen_types) == 0)
+      continue;
+    if (sel && sel->functions && sel->functions->setup_mouse_actions)
+    {
+      GSList *new_actions = sel->functions->setup_mouse_actions(sel);
+      lm = g_slist_concat(lm, new_actions);
+      seen_types |= sel->type;
+    }
+  }
+  return lm;
+}
+
 static void _group_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base,
                                     dt_masks_form_t *const dest)
 {
@@ -673,7 +695,7 @@ static void _group_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *co
 const dt_masks_functions_t dt_masks_functions_group = {
   .point_struct_size = sizeof(struct dt_masks_point_group_t),
   .sanitize_config = NULL,
-  .setup_mouse_actions = NULL,
+  .setup_mouse_actions = _group_setup_mouse_actions,
   .set_form_name = NULL,
   .set_hint_message = NULL,
   .duplicate_points = _group_duplicate_points,

@@ -1993,29 +1993,10 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
 static GSList *_ellipse_setup_mouse_actions(const struct dt_masks_form_t *const form)
 {
   GSList *lm = NULL;
-  dt_mouse_action_t *a;
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("[ELLIPSE] change size"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_CONTROL_MASK;
-  a->action = DT_MOUSE_ACTION_SCROLL;
-  g_strlcpy(a->name, _("[ELLIPSE] change opacity"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_SHIFT_MASK;
-  a->action = DT_MOUSE_ACTION_LEFT;
-  g_strlcpy(a->name, _("[ELLIPSE] switch feathering mode"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
-
-  a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-  a->key.accel_mods = GDK_CONTROL_MASK;
-  a->action = DT_MOUSE_ACTION_LEFT_DRAG;
-  g_strlcpy(a->name, _("[ELLIPSE] rotate shape"), sizeof(a->name));
-  lm = g_slist_append(lm, a);
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, 0, _("[ELLIPSE] change size"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_SCROLL, GDK_CONTROL_MASK, _("[ELLIPSE] change opacity"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT, GDK_SHIFT_MASK, _("[ELLIPSE] switch feathering mode"));
+  lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_LEFT_DRAG, GDK_CONTROL_MASK, _("[ELLIPSE] rotate shape"));
   return lm;
 }
 

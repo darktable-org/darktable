@@ -125,7 +125,6 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
 {
   dt_masks_type_t formtype = _get_all_types_in_group(form);
   GSList *lm = NULL;
-  dt_mouse_action_t *a = NULL;
 
   if(form->functions && form->functions->setup_mouse_actions)
   {
@@ -134,10 +133,7 @@ GSList *dt_masks_mouse_actions(dt_masks_form_t *form)
   // add the common action(s) shared by all shapes
   if(formtype != 0)
   {
-    a = (dt_mouse_action_t *)calloc(1, sizeof(dt_mouse_action_t));
-    a->action = DT_MOUSE_ACTION_RIGHT;
-    g_strlcpy(a->name, _("[SHAPE] remove shape"), sizeof(a->name));
-    lm = g_slist_prepend(lm, a);
+    lm = dt_mouse_action_create_simple(lm, DT_MOUSE_ACTION_RIGHT, 0,  _("[SHAPE] remove shape"));
   }
 
   return lm;
