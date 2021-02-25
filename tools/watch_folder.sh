@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # MIT License
 #
@@ -30,9 +30,9 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-BASE_FOLDER=$(ReadLink "$1")
+BASE_FOLDER=$($ReadLink "$1")
 
-if [ ! -d "${BASE_FOLDER}"  ]; then
+if [ ! -d "${BASE_FOLDER}" ]; then
   echo "error accessing directory '$BASE_FOLDER'"
   exit 1
 fi
@@ -49,17 +49,16 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-HAVE_LUA=$("${DBUS_SEND}" --print-reply --type=method_call --dest=org.darktable.service /darktable org.freedesktop.DBus.Properties.Get string:org.darktable.service.Remote string:LuaEnabled 2> /dev/null)
+HAVE_LUA=$("${DBUS_SEND}" --print-reply --type=method_call --dest=org.darktable.service /darktable org.freedesktop.DBus.Properties.Get string:org.darktable.service.Remote string:LuaEnabled 2>/dev/null)
 if [ $? -ne 0 ]; then
   echo "darktable isn't running or DBUS isn't working properly"
   exit 1
 fi
 
-echo "${HAVE_LUA}" | grep "true$" > /dev/null
+echo "${HAVE_LUA}" | grep "true$" >/dev/null
 HAVE_LUA=$?
 
-cleanup()
-{
+cleanup() {
   "${DBUS_SEND}" --type=method_call --dest=org.darktable.service /darktable org.darktable.service.Remote.Lua string:"require('darktable').print('stopping to watch \`${BASE_FOLDER}\'')"
 }
 
@@ -71,8 +70,6 @@ if [ ${HAVE_LUA} -eq 0 ]; then
 else
   echo "darktable doesn't seem to support Lua, loading images directly. This results in better error handling but might interrupt the workflow"
 fi
-
-
 
 "${INOTIFYWAIT}" --monitor "${BASE_FOLDER}" --event close_write --excludei ".*\.xmp$" |
   while read -r path event file; do
