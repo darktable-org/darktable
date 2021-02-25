@@ -282,13 +282,25 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
   const float incrr = (r2 - r1) / l;
   float rr = r1 + incrr;
   float aa = a1 + incra;
-  for(int i = 1; i < l; i++)
+  // allocate entries in the dynbufs
+  float *dpoints_ptr = dt_masks_dynbuf_reserve_n(dpoints, 2*(l-1));
+  float *dborder_ptr = dborder ? dt_masks_dynbuf_reserve_n(dborder, 2*(l-1)) : NULL;
+  // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
+  //  successive angular positions for dborder
+  if (dpoints_ptr)
   {
-    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
-    if(dborder) dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
-    if(dborder) dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
-    rr += incrr;
-    aa += incra;
+    for(int i = 1; i < l; i++)
+    {
+      *dpoints_ptr++ = cmax[0];
+      *dpoints_ptr++ = cmax[1];
+      if (dborder_ptr)
+      {
+        *dborder_ptr++ = cmax[0] + rr * cosf(aa);
+        *dborder_ptr++ = cmax[1] + rr * sinf(aa);
+      }
+      rr += incrr;
+      aa += incra;
+    }
   }
 }
 
@@ -557,13 +569,17 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   }
   for(const GList *l = form->points; l; l = g_list_next(l))
   {
-    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)l->data;
-    dt_masks_dynbuf_add(dpoints, pt->ctrl1[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl1[1] * ht - dy);
-    dt_masks_dynbuf_add(dpoints, pt->corner[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->corner[1] * ht - dy);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl2[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl2[1] * ht - dy);
+    const dt_masks_point_path_t *const pt = (dt_masks_point_path_t *)l->data;
+    float *const buf = dt_masks_dynbuf_reserve_n(dpoints, 6);
+    if (buf)
+    {
+      buf[0] = pt->ctrl1[0] * wd - dx;
+      buf[1] = pt->ctrl1[1] * ht - dy;
+      buf[2] = pt->corner[0] * wd - dx;
+      buf[3] = pt->corner[1] * ht - dy;
+      buf[4] = pt->ctrl2[0] * wd - dx;
+      buf[5] = pt->ctrl2[1] * ht - dy;
+    }
   }
   // for the border, we store value too
   if(dborder)
