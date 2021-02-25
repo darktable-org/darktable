@@ -734,6 +734,13 @@
     <shortdescription>ignore exif rating</shortdescription>
     <longdescription>ignore exif rating. if not set and exif rating is found, it overrides 'initial rating'</longdescription>
   </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_jobcode</name>
+    <type>string</type>
+    <default/>
+    <shortdescription>import job</shortdescription>
+    <longdescription>name of the import job</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/capture/mode</name>
     <type>int</type>
