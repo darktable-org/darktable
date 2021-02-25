@@ -1098,6 +1098,7 @@ void dt_accel_deregister_iop(dt_iop_module_t *module, const gchar *path)
         }
 
         l = g_slist_next(l);
+        // if we've run out of global accelerators, switch to processing the local accelerators
         if(!l && current_list == &mod->accel_closures) l = *(current_list = &module->accel_closures_local);
       }
     }
