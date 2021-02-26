@@ -87,7 +87,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
 {
   if(gui->creation)
   {
-    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       float compression = MIN(1.0f, dt_conf_get_float("plugins/darkroom/masks/gradient/compression"));
       if(up)
@@ -108,12 +108,12 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(form, parentid, up);
     }
-    else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
       if(up)
@@ -166,7 +166,7 @@ static int _gradient_events_button_pressed(struct dt_iop_module_t *module, float
 
     return 1;
   }
-  else if(!gui->creation && ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK))
+  else if(!gui->creation && dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
