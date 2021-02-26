@@ -589,7 +589,7 @@ void expose(
     cairo_scale(cri, zoom_scale, zoom_scale);
     cairo_translate(cri, -.5f * wd - zoom_x * wd, -.5f * ht - zoom_y * ht);
 
-    while(samples)
+    for( ; samples; samples = g_slist_next(samples))
     {
       sample = samples->data;
 
@@ -597,7 +597,6 @@ void expose(
       if(only_selected_sample
          && sample != darktable.lib->proxy.colorpicker.selected_sample)
       {
-        samples = g_slist_next(samples);
         continue;
       }
 
@@ -639,8 +638,6 @@ void expose(
         cairo_line_to(cri, point[0] * wd + .01 * wd - lw, point[1] * ht);
         cairo_stroke(cri);
       }
-
-      samples = g_slist_next(samples);
     }
 
     cairo_restore(cri);
@@ -812,9 +809,7 @@ static void dt_dev_change_image(dt_develop_t *dev, const int32_t imgid)
 
   // change active image
   g_slist_free(darktable.view_manager->active_images);
-  darktable.view_manager->active_images = NULL;
-  darktable.view_manager->active_images
-      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  darktable.view_manager->active_images = g_slist_prepend(NULL, GINT_TO_POINTER(imgid));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // if the previous shown image is selected and the selection is unique
@@ -4080,18 +4075,7 @@ GSList *mouse_actions(const dt_view_t *self)
     lm2 = dev->gui_module->mouse_actions(dev->gui_module);
   }
 
-  dt_mouse_action_t *a;
-  // we concatenate the 2 lists
-  GSList *l = lm2;
-  while(l)
-  {
-    a = (dt_mouse_action_t *)l->data;
-    if(a) lm = g_slist_append(lm, a);
-    l = g_slist_next(l);
-  }
-  g_slist_free(lm2);
-
-  return lm;
+  return g_slist_concat(lm, lm2);
 }
 
 //-----------------------------------------------------------
