@@ -98,9 +98,7 @@ static void _film_strip_activated(const int imgid, void *data)
 
   // update the active images list
   g_slist_free(darktable.view_manager->active_images);
-  darktable.view_manager->active_images = NULL;
-  darktable.view_manager->active_images
-      = g_slist_append(darktable.view_manager->active_images, GINT_TO_POINTER(imgid));
+  darktable.view_manager->active_images = g_slist_prepend(NULL, GINT_TO_POINTER(imgid));
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_ACTIVE_IMAGES_CHANGE);
 
   // force redraw

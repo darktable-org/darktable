@@ -884,7 +884,7 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
         if(work_profile && histogram_profile)
         {
           dt_colorpicker_sample_t *sample = NULL;
-          while(samples)
+          for(; samples; samples = g_slist_next(samples))
           {
             sample = samples->data;
 
@@ -921,8 +921,6 @@ static gboolean _area_draw_callback(GtkWidget *widget, cairo_t *crf, dt_iop_modu
             cairo_move_to(cr, width * picker_mean[ch], 0);
             cairo_line_to(cr, width * picker_mean[ch], -height);
             cairo_stroke(cr);
-
-            samples = g_slist_next(samples);
           }
       }
       }
