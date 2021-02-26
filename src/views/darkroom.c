@@ -1971,10 +1971,7 @@ static void _preference_changed_button_hide(gpointer instance, dt_develop_t *dev
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     if(module->header)
-    {
-      dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
-    }
-
+      add_remove_mask_indicator(module->header, module->blend_params->mask_mode != DEVELOP_MASK_DISABLED);
     modules = g_list_next(modules);
   }
 }
