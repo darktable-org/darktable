@@ -11,7 +11,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 21:15+0100\n"
+"POT-Creation-Date: 2021-02-26 07:50+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -5154,7 +5154,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:63
 msgctxt "blendmode"
-msgid "chroma"
+msgid "chromaticity"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:64
@@ -5199,7 +5199,7 @@ msgstr ""
 
 #: ../src/develop/blend_gui.c:72
 msgctxt "blendmode"
-msgid "HSV lightness"
+msgid "HSV value"
 msgstr ""
 
 #: ../src/develop/blend_gui.c:73
@@ -18934,62 +18934,62 @@ msgstr ""
 msgid "no camera with tethering support available for use..."
 msgstr ""
 
-#: ../src/views/view.c:1437
+#: ../src/views/view.c:1476
 msgid "Left click"
 msgstr ""
 
-#: ../src/views/view.c:1440
+#: ../src/views/view.c:1479
 msgid "Right click"
 msgstr ""
 
-#: ../src/views/view.c:1443
+#: ../src/views/view.c:1482
 msgid "Middle click"
 msgstr ""
 
-#: ../src/views/view.c:1446
+#: ../src/views/view.c:1485
 msgid "Scroll"
 msgstr ""
 
-#: ../src/views/view.c:1449
+#: ../src/views/view.c:1488
 msgid "Left double-click"
 msgstr ""
 
-#: ../src/views/view.c:1452
+#: ../src/views/view.c:1491
 msgid "Right double-click"
 msgstr ""
 
-#: ../src/views/view.c:1455
+#: ../src/views/view.c:1494
 msgid "Drag and drop"
 msgstr ""
 
-#: ../src/views/view.c:1458
+#: ../src/views/view.c:1497
 msgid "Left click+Drag"
 msgstr ""
 
-#: ../src/views/view.c:1461
+#: ../src/views/view.c:1500
 msgid "Right click+Drag"
 msgstr ""
 
-#: ../src/views/view.c:1482
+#: ../src/views/view.c:1521
 msgid "darktable - accels window"
 msgstr ""
 
-#: ../src/views/view.c:1538
+#: ../src/views/view.c:1577
 msgid "switch to a classic window which will stay open after key release."
 msgstr ""
 
-#: ../src/views/view.c:1654
+#: ../src/views/view.c:1693
 msgid "+Scroll"
 msgstr ""
 
-#: ../src/views/view.c:1669
+#: ../src/views/view.c:1708
 msgid "mouse actions"
 msgstr ""
 
-#: ../src/views/view.c:1707
+#: ../src/views/view.c:1746
 msgid "Accel"
 msgstr ""
 
-#: ../src/views/view.c:1709
+#: ../src/views/view.c:1748
 msgid "Action"
 msgstr ""
