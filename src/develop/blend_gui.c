@@ -1152,6 +1152,9 @@ static void _blendop_masks_modes_none_clicked(GtkWidget *button, GdkEventButton 
     _blendop_masks_mode_callback(DEVELOP_MASK_DISABLED, data);
     data->selected_mask_mode = button;
 
+    // remove the mask indicator
+    add_remove_mask_indicator(module->header, FALSE);
+
     /* and finally remove hinter messages */
     dt_control_hinter_message(darktable.control, "");
   }
@@ -1185,6 +1188,8 @@ static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button, dt_iop_modu
       g_list_nth_data(data->masks_modes_toggles,
                       g_list_index(data->masks_modes, (gconstpointer)DEVELOP_MASK_DISABLED)));
   }
+  // (un)set the mask indicator
+  add_remove_mask_indicator(module->header, was_toggled);
 
   return TRUE;
 }
@@ -2577,6 +2582,9 @@ void dt_iop_gui_update_blending(dt_iop_module_t *module)
     bd->selected_mask_mode = g_list_nth_data(
         bd->masks_modes_toggles, g_list_index(bd->masks_modes, GUINT_TO_POINTER(DEVELOP_MASK_DISABLED)));
   }
+
+  // (un)set the mask indicator
+  add_remove_mask_indicator(module->header, module->blend_params->mask_mode != DEVELOP_MASK_DISABLED);
 
   // initialization of blending modes
   if(bd->csp != bd->blend_modes_csp)
