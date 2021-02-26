@@ -388,6 +388,23 @@ static inline void dt_unlock_image_pair(int32_t imgid1, int32_t imgid2) RELEASE(
   dt_pthread_mutex_unlock(&(darktable.db_image[imgid2 & (DT_IMAGE_DBLOCKS-1)]));
 }
 
+// A mask to strip out the Ctrl, Shift, and Alt mod keys for shortcuts
+#define KEY_STATE_MASK (GDK_CONTROL_MASK | GDK_SHIFT_MASK | GDK_MOD1_MASK)
+
+// check whether the specified mask of modifier keys exactly matches, among the set Shift+Control+(Alt/Meta).
+// ignores the state of any other shifting keys
+static inline gboolean dt_modifier_is(const GdkModifierType state, const GdkModifierType desired_modifier_mask)
+{
+  return (state & KEY_STATE_MASK) == desired_modifier_mask;
+}
+
+// check whether the specified mask of modifier keys exactly matches, among the full set of Gdk modifier keys
+static inline gboolean dt_gdk_modifier_is(const GdkModifierType state, const GdkModifierType desired_modifier_mask)
+{
+  const GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
+  return (state & modifiers) == desired_modifier_mask;
+}
+
 static inline gboolean dt_is_aligned(const void *pointer, size_t byte_count)
 {
     return (uintptr_t)pointer % byte_count == 0;
