@@ -72,9 +72,12 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
 #define INCLUDE_API_FROM_MODULE_LOAD "imageio_load_module_format"
 #include "imageio/format/imageio_format_api.h"
 
-  if(!module->gui_init)
+  if(darktable.gui)
   {
-    if(darktable.gui) goto error;
+    if(!module->gui_init) goto api_h_error;
+  }
+  else
+  {
     module->gui_init = _default_format_gui_init;
   }
   if(!module->dimension) module->dimension = _default_format_dimension;
@@ -100,7 +103,7 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
     module->init(module);
     if (!module->ready)
     {
-      goto error;
+      goto api_h_error;
     }
 
 #ifdef USE_LUA
@@ -110,10 +113,6 @@ static int dt_imageio_load_module_format(dt_imageio_module_format_t *module, con
 #endif
 
   return 0;
-error:
-  fprintf(stderr, "[imageio_load_module] failed to open format `%s': %s\n", module_name, g_module_error());
-  if(module->module) g_module_close(module->module);
-  return 1;
 }
 
 
@@ -182,9 +181,12 @@ static int dt_imageio_load_module_storage(dt_imageio_module_storage_t *module, c
 #define INCLUDE_API_FROM_MODULE_LOAD "imageio_load_module_storage"
 #include "imageio/storage/imageio_storage_api.h"
 
-  if(!module->gui_init)
+  if(darktable.gui)
   {
-    if(darktable.gui) goto api_h_error;
+    if(!module->gui_init) goto api_h_error;
+  }
+  else
+  {
     module->gui_init = _default_storage_nop;
   }
   if(!module->dimension) module->dimension = _default_storage_dimension;
