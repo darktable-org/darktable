@@ -157,7 +157,7 @@ static gboolean _iop_color_picker_callback_button_press(GtkWidget *button, GdkEv
 
   const GdkModifierType state
       = e != NULL ? e->state & gtk_accelerator_get_default_mod_mask() : dt_key_modifier_state();
-  const gboolean ctrl_key_pressed = (state == GDK_CONTROL_MASK);
+  const gboolean ctrl_key_pressed = dt_modifier_is(state, GDK_CONTROL_MASK);
   dt_iop_color_picker_kind_t kind = self->kind;
 
   _iop_color_picker_reset(module->picker);

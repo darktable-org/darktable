@@ -1001,7 +1001,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   }
   else if(id > 0 && event->button == 1 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
           && event->type == GDK_BUTTON_PRESS && strcmp(view->module_name, "map")
-          && (event->state & KEY_STATE_MASK) == 0)
+          && dt_modifier_is(event->state, 0))
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
   }
@@ -1072,8 +1072,8 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
     dt_view_t *view = vm->current_view;
     const int id = dt_control_get_mouse_over_id();
     if(id > 0 && event->button == 1 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
-            && event->type == GDK_BUTTON_RELEASE && !strcmp(view->module_name, "map")
-            && (event->state & KEY_STATE_MASK) == 0)
+       && event->type == GDK_BUTTON_RELEASE && !strcmp(view->module_name, "map")
+       && dt_modifier_is(event->state, 0))
     {
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
       return TRUE;

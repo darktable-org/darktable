@@ -4713,7 +4713,7 @@ static gboolean _second_window_key_pressed_callback(GtkWidget *widget, GdkEventK
   gtk_accel_map_lookup_entry(path_on, &key_on);
   gtk_accel_map_lookup_entry(path_off, &key_off);
 
-  if(event->keyval == key_on.accel_key && (event->state & KEY_STATE_MASK) == key_on.accel_mods)
+  if(event->keyval == key_on.accel_key && dt_modifier_is(event->state, key_on.accel_mods))
   {
     fullscreen = gdk_window_get_state(gtk_widget_get_window(widget)) & GDK_WINDOW_STATE_FULLSCREEN;
     if(fullscreen)
@@ -4721,7 +4721,7 @@ static gboolean _second_window_key_pressed_callback(GtkWidget *widget, GdkEventK
     else
       gtk_window_fullscreen(GTK_WINDOW(widget));
   }
-  else if(event->keyval == key_off.accel_key && (event->state & KEY_STATE_MASK) == key_off.accel_mods)
+  else if(event->keyval == key_off.accel_key && dt_modifier_is(event->state, key_off.accel_mods))
   {
     gtk_window_unfullscreen(GTK_WINDOW(widget));
   }
