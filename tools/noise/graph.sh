@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 
 isolist="200 400 800 1600"
 

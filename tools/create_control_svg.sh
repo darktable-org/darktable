@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash
 #
 #   This file is part of darktable,
 #   copyright (c) 2009--2010 johannes hanika.
