@@ -812,8 +812,7 @@ static gboolean _event_main_press(GtkWidget *widget, GdkEventButton *event, gpoi
   dt_thumbnail_t *thumb = (dt_thumbnail_t *)user_data;
   if(event->button == 1
      && ((event->type == GDK_2BUTTON_PRESS && !thumb->single_click)
-         || (event->type == GDK_BUTTON_PRESS
-             && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0 && thumb->single_click)))
+         || (event->type == GDK_BUTTON_PRESS && (event->state & KEY_STATE_MASK) == 0 && thumb->single_click)))
   {
     dt_control_set_mouse_over_id(thumb->imgid); // to ensure we haven't lost imgid during double-click
   }
@@ -825,14 +824,13 @@ static gboolean _event_main_release(GtkWidget *widget, GdkEventButton *event, gp
 
   if(event->button == 1 && !thumb->moved && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_DISABLED)
   {
-    if((event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0
-       && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
+    if((event->state & KEY_STATE_MASK) == 0 && thumb->sel_mode != DT_THUMBNAIL_SEL_MODE_MOD_ONLY)
       dt_selection_select_single(darktable.selection, thumb->imgid);
-    else if((event->state & (GDK_MOD1_MASK)) == GDK_MOD1_MASK)
+    else if(dt_modifier_is(event->state, GDK_MOD1_MASK))
       dt_selection_select_single(darktable.selection, thumb->imgid);
-    else if((event->state & (GDK_CONTROL_MASK)) == GDK_CONTROL_MASK)
+    else if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
       dt_selection_toggle(darktable.selection, thumb->imgid);
-    else if((event->state & (GDK_SHIFT_MASK)) == GDK_SHIFT_MASK)
+    else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
       dt_selection_select_range(darktable.selection, thumb->imgid);
   }
   return FALSE;
@@ -882,6 +880,7 @@ static gboolean _event_grouping_release(GtkWidget *widget, GdkEventButton *event
 
   if(event->button == 1 && !thumb->moved)
   {
+    //TODO: will succeed if either or *both* of Shift and Control are pressed.  Do we want this?
     if(event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK)) // just add the whole group to the selection. TODO:
                                                            // make this also work for collapsed groups.
     {

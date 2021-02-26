@@ -898,7 +898,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 
   if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
-    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && (e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
       const int old = dt_view_lighttable_get_zoom(darktable.view_manager);
       int new = old;
@@ -1001,7 +1001,7 @@ static gboolean _event_button_press(GtkWidget *widget, GdkEventButton *event, gp
   }
   else if(id > 0 && event->button == 1 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
           && event->type == GDK_BUTTON_PRESS && strcmp(view->module_name, "map")
-          && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0)
+          && (event->state & KEY_STATE_MASK) == 0)
   {
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
   }
@@ -1073,7 +1073,7 @@ static gboolean _event_button_release(GtkWidget *widget, GdkEventButton *event, 
     const int id = dt_control_get_mouse_over_id();
     if(id > 0 && event->button == 1 && table->mode == DT_THUMBTABLE_MODE_FILMSTRIP
             && event->type == GDK_BUTTON_RELEASE && !strcmp(view->module_name, "map")
-            && (event->state & (GDK_SHIFT_MASK | GDK_CONTROL_MASK | GDK_MOD1_MASK)) == 0)
+            && (event->state & KEY_STATE_MASK) == 0)
     {
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_VIEWMANAGER_THUMBTABLE_ACTIVATE, id);
       return TRUE;
