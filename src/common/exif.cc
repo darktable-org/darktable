@@ -4242,7 +4242,9 @@ void dt_exif_init()
   // preface the exiv2 messages with "[exiv2] "
   Exiv2::LogMsg::setHandler(&dt_exif_log_handler);
 
+#if EXIV2_TEST_VERSION(0,27,4)
   Exiv2::enableBMFF();
+#endif
 
   Exiv2::XmpParser::initialize();
   // this has to stay with the old url (namespace already propagated outside dt)
