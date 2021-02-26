@@ -886,15 +886,13 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     if(darktable.view_manager->active_images)
     {
       // collumn 5
-      GSList *ll = darktable.view_manager->active_images;
-      while(ll)
+      for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
       {
         const int id = GPOINTER_TO_INT(ll->data);
         _images_to_act_on_insert_in_list(&l, id, only_visible);
         // be absolutely sure we have the id in the list (in darkroom,
         // the active image can be out of collection)
         if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
-        ll = g_slist_next(ll);
       }
     }
     else
@@ -1709,8 +1707,8 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
     bm->list_store = gtk_list_store_new(2, G_TYPE_STRING, G_TYPE_STRING);
     blocs = g_list_prepend(blocs, bm);
 
-    GSList *lm = cv->mouse_actions(cv);
-    while(lm)
+    GSList *actions = cv->mouse_actions(cv);
+    for(GSList *lm = actions; lm; lm = g_slist_next(lm))
     {
       dt_mouse_action_t *ma = (dt_mouse_action_t *)lm->data;
       if(ma)
@@ -1721,9 +1719,8 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
         gtk_list_store_set(bm->list_store, &iter, 0, atxt, 1, ma->name, -1);
         g_free(atxt);
       }
-      lm = g_slist_next(lm);
     }
-    g_slist_free_full(lm, free);
+    g_slist_free(actions); // we've already freed the action records, but still need to free the list itself
   }
 
   // now we create and insert the widget to display all accels by categories
