@@ -15,6 +15,11 @@
     You should have received a copy of the GNU Lesser General Public License
     along with darktable.  If not, see <http://www.gnu.org/licenses/>.
 */
+#undef OPTIONAL
+#undef REQUIRED
+#undef DEFAULT
+
+#undef FULL_API_H
 
 #ifdef INCLUDE_API_FROM_MODULE_LOAD
   #define OPTIONAL(return_type, function_name, ...) \

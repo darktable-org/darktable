@@ -70,10 +70,6 @@ OPTIONAL(void, connect_key_accels, struct dt_view_t *self);
 // list of mouse actions
 OPTIONAL(GSList *, mouse_actions, const struct dt_view_t *self);
 
-#undef OPTIONAL
-#undef REQUIRED
-#undef DEFAULT
-
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop
@@ -82,7 +78,6 @@ OPTIONAL(GSList *, mouse_actions, const struct dt_view_t *self);
 }
 #endif
 
-#undef FULL_API_H
 #endif // FULL_API_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

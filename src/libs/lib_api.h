@@ -91,10 +91,6 @@ OPTIONAL(void, set_preferences, void *menu, struct dt_lib_module_t *self);
 OPTIONAL(void, init_key_accels, struct dt_lib_module_t *self);
 OPTIONAL(void, connect_key_accels, struct dt_lib_module_t *self);
 
-#undef OPTIONAL
-#undef REQUIRED
-#undef DEFAULT
-
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop
@@ -103,7 +99,6 @@ OPTIONAL(void, connect_key_accels, struct dt_lib_module_t *self);
 }
 #endif
 
-#undef FULL_API_H
 #endif // FULL_API_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

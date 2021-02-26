@@ -88,10 +88,6 @@ OPTIONAL(int, flags, struct dt_imageio_module_data_t *data);
 
 OPTIONAL(int, read_image, struct dt_imageio_module_data_t *data, uint8_t *out);
 
-#undef OPTIONAL
-#undef REQUIRED
-#undef DEFAULT
-
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop
@@ -100,7 +96,6 @@ OPTIONAL(int, read_image, struct dt_imageio_module_data_t *data, uint8_t *out);
 }
 #endif
 
-#undef FULL_API_H
 #endif // FULL_API_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

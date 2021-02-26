@@ -226,10 +226,6 @@ DEFAULT(dt_introspection_field_t *, get_introspection_linear, void);
 DEFAULT(void *, get_p, const void *param, const char *name);
 DEFAULT(dt_introspection_field_t *, get_f, const char *name);
 
-#undef OPTIONAL
-#undef REQUIRED
-#undef DEFAULT
-
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop
@@ -238,7 +234,6 @@ DEFAULT(dt_introspection_field_t *, get_f, const char *name);
 }
 #endif
 
-#undef FULL_API_H
 #endif // FULL_API_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

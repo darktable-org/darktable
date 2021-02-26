@@ -86,10 +86,6 @@ OPTIONAL(void, export_dispatched, struct dt_imageio_module_storage_t *self);
 
 OPTIONAL(char *, ask_user_confirmation, struct dt_imageio_module_storage_t *self);
 
-#undef OPTIONAL
-#undef REQUIRED
-#undef DEFAULT
-
 #ifdef FULL_API_H
 
 #pragma GCC visibility pop
@@ -98,7 +94,6 @@ OPTIONAL(char *, ask_user_confirmation, struct dt_imageio_module_storage_t *self
 }
 #endif
 
-#undef FULL_API_H
 #endif // FULL_API_H
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
