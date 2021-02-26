@@ -102,7 +102,7 @@
 /* GTK Buttons and tabs */
 @define-color button_border @grey_30;
 @define-color button_bg @grey_25;
-@define-color button_fg @grey_65;
+@define-color button_fg @fg_color;
 @define-color button_checked_bg @grey_45;
 @define-color button_checked_fg @grey_85;
 @define-color button_hover_bg @grey_55;
@@ -592,14 +592,20 @@ overshoot.right
 #module-instance-button,
 #module-collapse-button,
 #module-always-enabled-button,
-#module-always-disabled-button
+#module-always-disabled-button,
+#basics-link
 {
-  /* background-color: transparent; this doesn't work */
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
-  border: 0;
+  border: none;
   margin: 0 1px;
+}
+
+#basics-box-labels #module-enable-button,
+#basics-link
+{
+  margin: 0 0.6em;
 }
 
 #module-header #button-canvas
@@ -1133,8 +1139,8 @@ notebook tabs,
 
 #blending-tabs #dt-button
 {
-	font-size: 0.8em;
-	margin: 0;
+  font-size: 0.8em;
+  margin: 0;
 }
 
 #blending-tabs #dt-button,
@@ -1148,7 +1154,7 @@ notebook tabs,
 #modules-tabs button,
 #blending-tabs button
 {
-	margin: 0;
+  margin: 0;
   border-radius: 0;
   border: 0;
 }
@@ -1532,80 +1538,6 @@ margin: 0 2px;
   padding: 0.45em;
 }
 
-#basics-box
-{
-  padding-bottom: 0.75em;
-  padding-top: 0.5em;
-}
-
-#basics-box #module-enable-button,
-#basics-box-labels #module-enable-button,
-#basics-link
-{
-  min-height: 1.15em;
-  min-width: 1.15em;
-  margin: 0 0.5em;
-  border: none;
-  padding: 0.2em 0.3em 0.3em 0.2em;
-}
-
-#basics-header-box #basics-link
-{
-  color: shade(@button_fg, 1.1);
-  margin-bottom: 0;
-}
-
-#basics-box-labels #basics-widget,
-#basics-box-labels #section_label
-{
-  padding-top: 2px;
-  margin-bottom: 0.25em;
-}
-
-#basics-box #basics-widget
-{
-  margin-bottom: 0.5em;
-}
-
-#basics-box-labels #section_label
-{
-  margin-top: 0.25em;
-  padding: 0.25em 0;
-  border: none;
-}
-
-#basics-module-hbox
-{
-  margin: 0 0.75em;
-}
-
-#basics-header-box
-{
-  border-top: 0.7px solid @darkroom_bg_color;
-  margin: 0.15em 0;
-}
-
-#basics-box-labels #basics-header-box:first-child
-{
-  border-top: none;
-}
-
-#basics-header-box-first
-{
-  border: none;
-}
-
-#basics-iop_name
-{
-  padding-left: 0.25em;
-}
-
-#basics-widget #bauhaus-combobox + #dt-button,
-#basics-widget #bauhaus-slider + #dt-button
-{
-  margin-left: 0.5em;
-}
-
 #modulegroups-popup-item,
 #modulegroups-popup-item2,
 #modulegroups-popup-item-all
@@ -1628,6 +1560,30 @@ margin: 0 2px;
   padding: 0.4em 0 0.2em 0;
   font-weight: bold;
   color: @plugin_label_color;
+}
+
+#basics-box-labels #basics-widget,
+#basics-box-labels #section_label
+{
+  padding-top: 0.25em;
+  margin-bottom: 0.05em;
+  border: none;
+}
+
+#basics-module-hbox
+{
+  margin: 0 0.75em;
+}
+
+#basics-header-box
+{
+  border-top: 0.7px solid @darkroom_bg_color;
+  margin: 0.05em 0;
+}
+
+#basics-box-labels #basics-header-box:first-child
+{
+  border-top: none;
 }
 
 /*---------------------------------------------------------------
