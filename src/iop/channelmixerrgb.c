@@ -1333,7 +1333,7 @@ static const extraction_result_t _extract_patches(const float *const restrict in
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] /= (float)num_elem;
 
     // Convert to XYZ
-    float XYZ[4];
+    float DT_ALIGNED_PIXEL XYZ[4];
     dot_product(patches + k * 4, RGB_to_XYZ, XYZ);
     for(size_t c = 0; c < 3; c++) patches[k * 4 + c] = XYZ[c];
   }
