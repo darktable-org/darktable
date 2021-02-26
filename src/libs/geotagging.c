@@ -1436,7 +1436,7 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
     if(w == d->dt.widget[i]) break;
 
   int increment = event->direction == GDK_SCROLL_DOWN ? -1 : 1;
-  if(event->state & GDK_SHIFT_MASK)
+  if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
     increment *= 10;
   value += increment;
   value = MAX(MIN(value, max[i]), min[i]);

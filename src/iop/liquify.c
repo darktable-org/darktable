@@ -3080,7 +3080,7 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       dt_conf_set_float(CONF_STRENGTH, r);
       return 1;
     }
-    else if(state & GDK_CONTROL_MASK)
+    else if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       //  change the strength direction
       float phi = cargf(strength_v);
@@ -3096,7 +3096,7 @@ int scrolled(struct dt_iop_module_t *module, double x, double y, int up, uint32_
       dt_conf_set_float(CONF_ANGLE, phi);
       return 1;
     }
-    else if(state & GDK_SHIFT_MASK)
+    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       //  change the strength
       const float phi = cargf(strength_v);
@@ -3198,7 +3198,7 @@ int button_pressed(struct dt_iop_module_t *module,
 
   if(gtk_toggle_button_get_active(g->btn_node_tool))
   {
-    if(which == 1 && (g->last_mouse_mods == GDK_CONTROL_MASK) &&
+    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_CONTROL_MASK) &&
         (g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT))
     {
       // cycle node type: smooth -> cusp etc.
@@ -3207,7 +3207,7 @@ int button_pressed(struct dt_iop_module_t *module,
       handled = 1;
       goto done;
     }
-    if(which == 1 && (g->last_mouse_mods == GDK_CONTROL_MASK) &&
+    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_CONTROL_MASK) &&
         (g->last_hit.layer == DT_LIQUIFY_LAYER_STRENGTHPOINT))
     {
       // cycle warp type: linear -> radial etc.
@@ -3380,7 +3380,7 @@ int button_released(struct dt_iop_module_t *module,
 
   if(gtk_toggle_button_get_active(g->btn_node_tool))
   {
-    if(which == 1 && g->last_mouse_mods == 0 && !dragged)
+    if(which == 1 && dt_modifier_is(g->last_mouse_mods, 0) && !dragged)
     {
       // select/unselect start/endpoint and clear previous selections
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
@@ -3399,7 +3399,7 @@ int button_released(struct dt_iop_module_t *module,
         goto done;
       }
     }
-    if(which == 1 && g->last_mouse_mods == GDK_SHIFT_MASK && !dragged)
+    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_SHIFT_MASK) && !dragged)
     {
       // select/unselect start/endpoint and keep previous selections
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_CENTERPOINT)
@@ -3410,7 +3410,7 @@ int button_released(struct dt_iop_module_t *module,
         goto done;
       }
     }
-    if(which == 1 && (g->last_mouse_mods == GDK_CONTROL_MASK) && !dragged)
+    if(which == 1 && dt_modifier_is(g->last_mouse_mods, GDK_CONTROL_MASK) && !dragged)
     {
       // add node
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_PATH)
@@ -3469,7 +3469,7 @@ int button_released(struct dt_iop_module_t *module,
       }
     }
     if(which == 1
-        && (g->last_mouse_mods == (GDK_MOD1_MASK | GDK_CONTROL_MASK))
+        && dt_modifier_is(g->last_mouse_mods, GDK_MOD1_MASK | GDK_CONTROL_MASK)
         && !dragged)
     {
       if(g->last_hit.layer == DT_LIQUIFY_LAYER_PATH)
@@ -3541,8 +3541,7 @@ static gboolean btn_make_radio_callback(GtkToggleButton *btn, GdkEventButton *ev
     return TRUE;
   }
 
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  g->creation_continuous = event != NULL && (event->state & modifiers) == GDK_CONTROL_MASK;
+  g->creation_continuous = event != NULL && dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
   dt_control_hinter_message(darktable.control, "");
 

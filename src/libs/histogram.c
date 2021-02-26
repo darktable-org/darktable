@@ -640,7 +640,7 @@ static gboolean _drawable_button_press_callback(GtkWidget *widget, GdkEventButto
 
 static gboolean _drawable_scroll_callback(GtkWidget *widget, GdkEventScroll *event, gpointer user_data)
 {
-  if(event->state & GDK_CONTROL_MASK)
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     // bubble to adjusting the overall widget size
     return FALSE;
@@ -876,7 +876,7 @@ static gboolean _lib_histogram_scroll_callback(GtkWidget *widget, GdkEventScroll
 {
   int delta_y;
   if(dt_gui_get_scroll_unit_deltas(event, NULL, &delta_y) &&
-     event->state & GDK_CONTROL_MASK && !darktable.gui->reset)
+     dt_modifier_is(event->state, GDK_CONTROL_MASK) && !darktable.gui->reset)
   {
     /* set size of navigation draw area */
     const float histheight = clamp_range_f(dt_conf_get_int("plugins/darkroom/histogram/height") * 1.0f + 10 * delta_y, 100.0f, 200.0f);

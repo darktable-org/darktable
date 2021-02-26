@@ -597,9 +597,8 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
      || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
      || ((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
-         && (event->type == GDK_BUTTON_PRESS
-             && event->button == 1
-             && (event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK))))
+          && (event->type == GDK_BUTTON_PRESS && event->button == 1 && 
+              (dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK)))))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
     GtkTreePath *path = NULL;
@@ -608,8 +607,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     if(gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(treeview), (gint)event->x, (gint)event->y, &path, NULL, NULL,
                                      NULL))
     {
-      if(d->singleclick
-         && (event->state & GDK_SHIFT_MASK)
+      if(d->singleclick && dt_modifier_is(event->state, GDK_SHIFT_MASK)
          && gtk_tree_selection_count_selected_rows(selection) > 0
          && (d->view_rule == DT_COLLECTION_PROP_DAY
              || is_time_property(d->view_rule)
@@ -641,7 +639,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
     if(((d->view_rule == DT_COLLECTION_PROP_FOLDERS)
         || (d->view_rule == DT_COLLECTION_PROP_FILMROLL))
        && (event->type == GDK_BUTTON_PRESS && event->button == 3)
-       && !(event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK))
+       && !(dt_modifier_is(event->state, GDK_SHIFT_MASK) || dt_modifier_is(event->state, GDK_CONTROL_MASK)))
     {
       row_activated_with_event(GTK_TREE_VIEW(treeview), path, NULL, event, d);
       view_popup_menu(treeview, event, d);
@@ -657,8 +655,9 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
         || is_time_property(d->view_rule)
         || d->view_rule == DT_COLLECTION_PROP_FOLDERS
         || d->view_rule == DT_COLLECTION_PROP_TAG
-        || d->view_rule == DT_COLLECTION_PROP_GEOTAGGING)
-       && !(event->state & GDK_SHIFT_MASK)
+        || d->view_rule == DT_COLLECTION_PROP_GEOTAGGING
+       )
+       && !dt_modifier_is(event->state, GDK_SHIFT_MASK)
       )
       return FALSE; /* we allow propagation (expand/collapse row) */
     else
@@ -2219,7 +2218,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
 
   if(text && strlen(text) > 0)
   {
-    if(event->state & GDK_SHIFT_MASK && event->state & GDK_CONTROL_MASK)
+    if(dt_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       if(item == DT_COLLECTION_PROP_FILMROLL)
       {
@@ -2267,7 +2266,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       if(gtk_tree_model_iter_has_child(model, &iter))
       {
         /* if a tag has children, ctrl-clicking on a parent node should display all images under this hierarchy. */
-        if(event->state & GDK_CONTROL_MASK)
+        if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
         {
           gchar *n_text = g_strconcat(text, "|%", NULL);
           g_free(text);
@@ -2275,7 +2274,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
         }
         /* if a tag has children, shift-clicking on a parent node should display all images in and under this
          * hierarchy. */
-        else if(event->state & GDK_SHIFT_MASK)
+        else if(dt_modifier_is(event->state, GDK_SHIFT_MASK))
         {
           gchar *n_text = g_strconcat(text, "*", NULL);
           g_free(text);
