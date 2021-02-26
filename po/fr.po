@@ -2,8 +2,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: darktable 3.6\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-02-25 21:15+0100\n"
-"PO-Revision-Date: 2021-02-25 21:17+0100\n"
+"POT-Creation-Date: 2021-02-26 07:50+0100\n"
+"PO-Revision-Date: 2021-02-26 07:54+0100\n"
 "Last-Translator: Pascal Obry <pascal@obry.net>\n"
 "Language-Team: \n"
 "Language: fr_FR\n"
@@ -3553,7 +3553,7 @@ msgstr "luminance TSL"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:381
 msgid "HSV value / RGB max"
-msgstr "luminance TSV / max RVB"
+msgstr "valeur TSV / max RVB"
 
 #: ../build/lib/darktable/plugins/introspection_toneequal.c:382
 msgid "RGB sum"
@@ -5502,8 +5502,8 @@ msgstr "luminosité"
 
 #: ../src/develop/blend_gui.c:63
 msgctxt "blendmode"
-msgid "chroma"
-msgstr "chroma"
+msgid "chromaticity"
+msgstr "chromaticité"
 
 #: ../src/develop/blend_gui.c:64
 msgctxt "blendmode"
@@ -5547,13 +5547,13 @@ msgstr "Lab canal-b"
 
 #: ../src/develop/blend_gui.c:72
 msgctxt "blendmode"
-msgid "HSV lightness"
-msgstr "luminance TSL"
+msgid "HSV value"
+msgstr "valeur TSV"
 
 #: ../src/develop/blend_gui.c:73
 msgctxt "blendmode"
 msgid "HSV color"
-msgstr "couleur TSL"
+msgstr "couleur TSV"
 
 #: ../src/develop/blend_gui.c:74
 msgctxt "blendmode"
@@ -13002,7 +13002,7 @@ msgid ""
 "this will be slower but will yield more neutral highlights.\n"
 "it also helps with difficult cases of magenta highlights."
 msgstr ""
-"exécute une passe supplémentaire de reconstruction de la couleur.\n"
+"exécute une passe supplémentaire de reconstruction de la chromaticité.\n"
 "plus d'itérations implique plus de propagation de couleur depuis les "
 "voisins.\n"
 "c'est plus lent mais donnera des hautes lumières plus neutres.\n"
@@ -20539,65 +20539,73 @@ msgstr "nouvelle session initiée « %s »"
 msgid "no camera with tethering support available for use..."
 msgstr "aucun boîtier disponible pour la capture..."
 
-#: ../src/views/view.c:1437
+#: ../src/views/view.c:1476
 msgid "Left click"
 msgstr "clic gauche"
 
-#: ../src/views/view.c:1440
+#: ../src/views/view.c:1479
 msgid "Right click"
 msgstr "clic-droit"
 
-#: ../src/views/view.c:1443
+#: ../src/views/view.c:1482
 msgid "Middle click"
 msgstr "clic-milieu"
 
-#: ../src/views/view.c:1446
+#: ../src/views/view.c:1485
 msgid "Scroll"
 msgstr "molette"
 
-#: ../src/views/view.c:1449
+#: ../src/views/view.c:1488
 msgid "Left double-click"
 msgstr "double-clic gauche"
 
-#: ../src/views/view.c:1452
+#: ../src/views/view.c:1491
 msgid "Right double-click"
 msgstr "double-clic droit"
 
-#: ../src/views/view.c:1455
+#: ../src/views/view.c:1494
 msgid "Drag and drop"
 msgstr "déplacer & déposer"
 
-#: ../src/views/view.c:1458
+#: ../src/views/view.c:1497
 msgid "Left click+Drag"
 msgstr "clic-gauche + déplacer"
 
-#: ../src/views/view.c:1461
+#: ../src/views/view.c:1500
 msgid "Right click+Drag"
 msgstr "clic-droit + déplacer"
 
-#: ../src/views/view.c:1482
+#: ../src/views/view.c:1521
 msgid "darktable - accels window"
 msgstr "darktable - fenêtre des raccourcis"
 
-#: ../src/views/view.c:1538
+#: ../src/views/view.c:1577
 msgid "switch to a classic window which will stay open after key release."
 msgstr "créer un fenêtre flottante persistante"
 
-#: ../src/views/view.c:1654
+#: ../src/views/view.c:1693
 msgid "+Scroll"
 msgstr "+molette"
 
-#: ../src/views/view.c:1669
+#: ../src/views/view.c:1708
 msgid "mouse actions"
 msgstr "actions souris"
 
-#: ../src/views/view.c:1707
+#: ../src/views/view.c:1746
 msgid "Accel"
 msgstr "raccourci"
 
-#: ../src/views/view.c:1709
+#: ../src/views/view.c:1748
 msgid "Action"
 msgstr "action"
+
+#~ msgctxt "blendmode"
+#~ msgid "chroma"
+#~ msgstr "chroma"
+
+#~ msgctxt "blendmode"
+#~ msgid "HSV lightness"
+#~ msgstr "luminance TSL"
 
 #~ msgid "copy parts..."
 #~ msgstr "copier en partie..."
@@ -24552,9 +24560,6 @@ msgstr "action"
 
 #~ msgid " chroma "
 #~ msgstr "saturation"
-
-#~ msgid " value "
-#~ msgstr "valeur"
 
 #~ msgid ""
 #~ "enter the path where to create the website gallery:\n"
