@@ -2292,6 +2292,40 @@ gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *ev
   return TRUE;
 }
 
+void add_remove_mask_indicator(GtkWidget *header, gboolean add)
+{
+  GList *children = gtk_container_get_children(GTK_CONTAINER(header));
+  GList *button;
+  gboolean found = FALSE;
+  gboolean show = add && dt_conf_get_bool("darkroom/ui/show_mask_indicator");
+  for(button = g_list_last(children);
+      button && GTK_IS_BUTTON(button->data);
+      button = g_list_previous(button))
+  {
+    if (strcmp(gtk_widget_get_name(button->data), "module-mask-indicator") == 0)
+    {
+      found = TRUE;
+      break;
+    }
+  }
+
+  if(found)
+  {
+    if(!show) gtk_widget_destroy(button->data);
+  }
+  else if(show)
+    {
+      GtkWidget *mi = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask,
+                                             CPF_STYLE_FLAT | CPF_BG_TRANSPARENT | CPF_IGNORE_FG_STATE, NULL);
+      gtk_widget_set_tooltip_text(mi, _("this module has a mask"));
+      gtk_widget_set_name(mi, "module-mask-indicator");
+      gtk_widget_set_sensitive(mi, FALSE);
+      gtk_box_pack_end(GTK_BOX(header), mi, FALSE, FALSE, 0);
+    }
+
+  dt_iop_show_hide_header_buttons(header, NULL, FALSE, FALSE);
+}
+
 void dt_iop_gui_set_expander(dt_iop_module_t *module)
 {
   char tooltip[512];
