@@ -988,7 +988,7 @@ static void dt_iop_gui_multiinstance_callback(GtkButton *button, GdkEventButton 
 static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
-  if(!darktable.gui->reset && (e->state & KEY_STATE_MASK) == GDK_CONTROL_MASK)
+  if(!darktable.gui->reset && dt_modifier_is(e->state, GDK_CONTROL_MASK))
   {
     dt_iop_request_focus(darktable.develop->gui_module == module ? NULL : module);
     return TRUE;
@@ -1832,7 +1832,7 @@ static void dt_iop_gui_reset_callback(GtkButton *button, GdkEventButton *event, 
 {
   //Ctrl is used to apply any auto-presets to the current module
   //If Ctrl was not pressed, or no auto-presets were applied, reset the module parameters
-  if(((event->state & KEY_STATE_MASK) != GDK_CONTROL_MASK) || !dt_gui_presets_autoapply_for_module(module))
+  if(!dt_modifier_is(event->state, GDK_CONTROL_MASK) || !dt_gui_presets_autoapply_for_module(module))
   {
     // if a drawn mask is set, remove it from the list
     if(module->blend_params->mask_id > 0)
@@ -2080,13 +2080,13 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
 
   if(e->button == 1)
   {
-    if((e->state & KEY_STATE_MASK) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+    if(dt_modifier_is(e->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       GtkBox *container = dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER);
       g_object_set_data(G_OBJECT(container), "source_data", user_data);
       return FALSE;
     }
-    else if((e->state & KEY_STATE_MASK) == GDK_CONTROL_MASK)
+    else if(dt_modifier_is(e->state, GDK_CONTROL_MASK))
     {
       _iop_gui_rename_module(module);
       return TRUE;
@@ -2097,7 +2097,7 @@ static gboolean _iop_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
       if(dt_conf_get_bool("darkroom/ui/scroll_to_module"))
         darktable.gui->scroll_to[1] = module->expander;
 
-      const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != ((e->state & KEY_STATE_MASK) != GDK_SHIFT_MASK);
+      const gboolean collapse_others = !dt_conf_get_bool("darkroom/ui/single_module") != (!dt_modifier_is(e->state, GDK_SHIFT_MASK));
       dt_iop_gui_set_expanded(module, !module->expanded, collapse_others);
 
       // rebuild the accelerators
