@@ -3598,7 +3598,7 @@ void scrolled(dt_view_t *self, double x, double y, int up, int state)
   zoom = DT_ZOOM_FREE;
   closeup = 0;
 
-  const gboolean constrained = !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK);
+  const gboolean constrained = !dt_modifier_is(state, GDK_CONTROL_MASK);
   if(up)
   {
     if(fitscale <= 1.0f && (scale == 1.0f || scale == 2.0f) && constrained) return; // for large image size
@@ -3779,16 +3779,13 @@ int key_pressed(dt_view_t *self, guint key, guint state)
     int procw, proch;
     dt_dev_get_processed_size(dev, &procw, &proch);
 
-    GdkModifierType modifiers;
-    modifiers = gtk_accelerator_get_default_mod_mask();
-
     // For each cursor press, move one screen by default
     float step_changex = dev->width / (procw * scale);
     float step_changey = dev->height / (proch * scale);
     float factor = 0.2f;
 
-    if((state & modifiers) == GDK_MOD1_MASK) factor = 0.02f;
-    if((state & modifiers) == GDK_CONTROL_MASK) factor = 1.0f;
+    if(dt_modifier_is(state, GDK_MOD1_MASK)) factor = 0.02f;
+    if(dt_modifier_is(state, GDK_CONTROL_MASK)) factor = 1.0f;
 
     float old_zoom_x, old_zoom_y;
 
@@ -4242,7 +4239,7 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
   closeup = 0;
   if(up)
   {
-    if((scale == 1.0f || scale == 2.0f) && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)) return;
+    if((scale == 1.0f || scale == 2.0f) && !dt_modifier_is(state, GDK_CONTROL_MASK)) return;
     if(scale >= 16.0f)
       return;
     else if(scale >= 8.0f)
@@ -4258,7 +4255,7 @@ static void second_window_scrolled(GtkWidget *widget, dt_develop_t *dev, double 
   }
   else
   {
-    if(scale == fitscale && !((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
+    if(scale == fitscale && !dt_modifier_is(state, GDK_CONTROL_MASK))
       return;
     else if(scale < 0.5 * fitscale)
       return;
