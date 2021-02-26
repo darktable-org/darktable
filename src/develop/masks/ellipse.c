@@ -532,7 +532,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
           dt_conf_set_float("plugins/darkroom/masks/ellipse/border", ellipse->border);
         dt_toast_log(_("feather size: %3.2f%%"), ellipse->border*100.0f);
       }
-      else if(gui->edit_mode == DT_MASKS_EDIT_FULL && ((state & KEY_STATE_MASK) == 0))
+      else if(gui->edit_mode == DT_MASKS_EDIT_FULL && dt_modifier_is(state, 0))
       {
         const float oldradius = ellipse->radius[0];
 
@@ -562,7 +562,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         }
         dt_toast_log(_("size: %3.2f%%"), fmaxf(ellipse->radius[0], ellipse->radius[1])*100);
       }
-      else if ((state & KEY_STATE_MASK) != 0)
+      else if (!dt_modifier_is(state, 0))
       {
         // user is holding down a modifier key, but we didn't handle that particular combination
         // say we've processed the scroll event so that the image is not zoomed instead
