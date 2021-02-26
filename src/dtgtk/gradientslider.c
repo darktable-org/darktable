@@ -51,6 +51,7 @@ static gboolean _gradient_slider_key_press_event(GtkWidget *widget, GdkEventKey 
 enum
 {
   VALUE_CHANGED,
+  VALUE_RESET,
   LAST_SIGNAL
 };
 
@@ -301,6 +302,7 @@ static gboolean _gradient_slider_button_press(GtkWidget *widget, GdkEventButton 
     for(int k = 0; k < gslider->positions; k++) gslider->position[k] = gslider->resetvalue[k];
     gtk_widget_queue_draw(widget);
     g_signal_emit_by_name(G_OBJECT(widget), "value-changed");
+    g_signal_emit_by_name(G_OBJECT(widget), "value-reset");
   }
   else if((event->button == 1 || event->button == 3) && event->type == GDK_BUTTON_PRESS)
   {
@@ -471,6 +473,8 @@ static void _gradient_slider_class_init(GtkDarktableGradientSliderClass *klass)
 
   _signals[VALUE_CHANGED] = g_signal_new("value-changed", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0,
                                          NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
+  _signals[VALUE_RESET] = g_signal_new("value-reset", G_TYPE_FROM_CLASS(klass), G_SIGNAL_RUN_LAST, 0,
+                                       NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 }
 
 static void _gradient_slider_init(GtkDarktableGradientSlider *gslider)

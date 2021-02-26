@@ -714,6 +714,28 @@ static void _blendop_blendif_sliders_callback(GtkDarktableGradientSlider *slider
   dt_dev_add_history_item(darktable.develop, data->module, TRUE);
 }
 
+static void _blendop_blendif_sliders_reset_callback(GtkDarktableGradientSlider *slider,
+                                                    dt_iop_gui_blend_data_t *data)
+{
+  if(darktable.gui->reset) return;
+
+  dt_develop_blend_params_t *bp = data->module->blend_params;
+
+  const dt_iop_gui_blendif_channel_t *channel = &data->channel[data->tab];
+
+  const int in_out = (slider == data->filter[1].slider) ? 1 : 0;
+  dt_develop_blendif_channels_t ch = channel->param_channels[in_out];
+
+  // invert the parametric mask if needed
+  if(bp->mask_combine & DEVELOP_COMBINE_INCL)
+    bp->blendif |= (1 << (16 + ch));
+  else
+    bp->blendif &= ~(1 << (16 + ch));
+
+  dt_dev_add_history_item(darktable.develop, data->module, TRUE);
+  _blendop_blendif_update_tab(data->module, data->tab);
+}
+
 static void _blendop_blendif_polarity_callback(GtkToggleButton *togglebutton, dt_iop_gui_blend_data_t *data)
 {
   if(darktable.gui->reset) return;
@@ -2137,6 +2159,7 @@ void dt_iop_gui_init_blendif(GtkBox *blendw, dt_iop_module_t *module)
       gtk_widget_set_tooltip_text(GTK_WIDGET(sl->head), _(slider_tooltip[in_out]));
 
       g_signal_connect(G_OBJECT(sl->slider), "value-changed", G_CALLBACK(_blendop_blendif_sliders_callback), bd);
+      g_signal_connect(G_OBJECT(sl->slider), "value-reset", G_CALLBACK(_blendop_blendif_sliders_reset_callback), bd);
       g_signal_connect(G_OBJECT(sl->slider), "leave-notify-event", G_CALLBACK(_blendop_blendif_leave), module);
       g_signal_connect(G_OBJECT(sl->slider), "enter-notify-event", G_CALLBACK(_blendop_blendif_enter), module);
       g_signal_connect(G_OBJECT(sl->slider), "key-press-event", G_CALLBACK(_blendop_blendif_key_press), module);
