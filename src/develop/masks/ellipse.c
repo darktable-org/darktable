@@ -389,7 +389,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       radius_b = dt_conf_get_float("plugins/darkroom/masks/ellipse/radius_b");
     }
 
-    if((state & KEY_STATE_MASK) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+    if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
     {
       float rotation;
 
@@ -411,7 +411,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
 
       dt_toast_log(_("rotation: %3.f°"), rotation);
     }
-    else if((state & KEY_STATE_MASK) == GDK_SHIFT_MASK)
+    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       float masks_border = 0.0f;
       int flags = 0;
@@ -486,7 +486,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if((state & KEY_STATE_MASK) == GDK_CONTROL_MASK)
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(form, parentid, up);
@@ -494,7 +494,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     else
     {
       dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
-      if((state & KEY_STATE_MASK) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK)
+      if(dt_modifier_is(state, GDK_SHIFT_MASK | GDK_CONTROL_MASK)
          && gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
         // we try to change the rotation
@@ -514,7 +514,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
         dt_toast_log(_("rotation: %3.f°"), ellipse->rotation);
       }
       // resize don't care where the mouse is inside a shape
-      if((state & KEY_STATE_MASK) == GDK_SHIFT_MASK)
+      if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
         const float reference = (ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL ? 1.0f/fmin(ellipse->radius[0], ellipse->radius[1]) : 1.0f);
         if(up && ellipse->border > 0.001f * reference)
@@ -596,7 +596,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
     return 1;
   }
   else if(gui->point_selected >= 1 && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL
-          && !((state & KEY_STATE_MASK) == GDK_CONTROL_MASK))
+          && !dt_modifier_is(state, GDK_CONTROL_MASK))
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
@@ -606,12 +606,12 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
     return 1;
   }
   else if(gui->form_selected && !gui->creation && gui->edit_mode == DT_MASKS_EDIT_FULL
-          && !((state & KEY_STATE_MASK) == GDK_SHIFT_MASK))
+          && !dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
     // we start the form dragging or rotating
-    if((state & KEY_STATE_MASK) == GDK_CONTROL_MASK)
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
       gui->form_rotating = TRUE;
     else
       gui->form_dragging = TRUE;
@@ -619,7 +619,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
     gui->dy = gpt->points[1] - gui->posy;
     return 1;
   }
-  else if(gui->form_selected && !gui->creation && ((state & KEY_STATE_MASK) == GDK_SHIFT_MASK))
+  else if(gui->form_selected && !gui->creation && dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
     if(!gpt) return 0;
@@ -638,8 +638,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
     return 1;
   }
   else if(gui->creation && which == 1
-          && (((state & KEY_STATE_MASK) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-              || ((state & KEY_STATE_MASK) == GDK_SHIFT_MASK)))
+          && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);

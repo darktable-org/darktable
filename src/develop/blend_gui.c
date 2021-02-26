@@ -1104,12 +1104,11 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
 
     module->request_mask_display &= ~(DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL | DT_DEV_PIXELPIPE_DISPLAY_ANY);
 
-    GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-    if((event->state & modifiers) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
+    if(dt_gdk_modifier_is(event->state, GDK_CONTROL_MASK | GDK_SHIFT_MASK))
       module->request_mask_display |= (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
-    else if((event->state & modifiers) == GDK_SHIFT_MASK)
+    else if(dt_gdk_modifier_is(event->state, GDK_SHIFT_MASK))
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
-    else if((event->state & modifiers) == GDK_CONTROL_MASK)
+    else if(dt_gdk_modifier_is(event->state, GDK_CONTROL_MASK))
       module->request_mask_display |= DT_DEV_PIXELPIPE_DISPLAY_MASK;
     else
       module->request_mask_display |= (has_mask_display ? 0 : DT_DEV_PIXELPIPE_DISPLAY_MASK);
@@ -1327,9 +1326,9 @@ static int _blendop_masks_add_shape(GtkWidget *widget, dt_iop_module_t *self, gb
 
 static int _blendop_masks_add_shape_callback(GtkWidget *widget, GdkEventButton *event, dt_iop_module_t *self)
 {
-  if(event->button ==1)
+  if(event->button == 1)
   {
-    return _blendop_masks_add_shape(widget, self, (event->state & KEY_STATE_MASK) == GDK_CONTROL_MASK);
+    return _blendop_masks_add_shape(widget, self, dt_modifier_is(event->state, GDK_CONTROL_MASK));
   }
   return FALSE;
 }
@@ -1349,7 +1348,7 @@ static int _blendop_masks_show_and_edit(GtkWidget *widget, GdkEventButton *event
     dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, self->blend_params->mask_id);
     if(grp && (grp->type & DT_MASKS_GROUP) && grp->points)
     {
-      const int control_button_pressed = (event->state & KEY_STATE_MASK) == GDK_CONTROL_MASK;
+      const gboolean control_button_pressed = dt_modifier_is(event->state, GDK_CONTROL_MASK);
 
       switch(bd->masks_shown)
       {
@@ -1802,16 +1801,15 @@ static gboolean _blendop_blendif_enter(GtkWidget *widget, GdkEventCrossing *even
   dt_dev_pixelpipe_display_mask_t mode = 0;
 
   // depending on shift modifiers we activate channel and/or mask display
-  GdkModifierType modifiers = gtk_accelerator_get_default_mod_mask();
-  if((event->state & modifiers) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK))
+  if(dt_gdk_modifier_is(event->state, GDK_SHIFT_MASK | GDK_CONTROL_MASK))
   {
     mode = (DT_DEV_PIXELPIPE_DISPLAY_MASK | DT_DEV_PIXELPIPE_DISPLAY_CHANNEL);
   }
-  else if((event->state & modifiers) == GDK_SHIFT_MASK)
+  else if(dt_gdk_modifier_is(event->state, GDK_SHIFT_MASK))
   {
     mode = DT_DEV_PIXELPIPE_DISPLAY_CHANNEL;
   }
-  else if((event->state & modifiers) == GDK_CONTROL_MASK)
+  else if(dt_gdk_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     mode = DT_DEV_PIXELPIPE_DISPLAY_MASK;
   }

@@ -1035,7 +1035,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
 {
   if(gui->creation)
   {
-    if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+    if(dt_modifier_is(state, GDK_SHIFT_MASK))
     {
       const float amount = up ? 0.97f : 1.03f;
       float masks_hardness;
@@ -1095,7 +1095,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
       gui->scrollx = pzx;
       gui->scrolly = pzy;
     }
-    if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
     {
       // we try to change the opacity
       dt_masks_form_change_opacity(form, parentid, up);
@@ -1103,7 +1103,7 @@ static int _brush_events_mouse_scrolled(struct dt_iop_module_t *module, float pz
     else
     {
       // resize don't care where the mouse is inside a shape
-      if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+      if(dt_modifier_is(state, GDK_SHIFT_MASK))
       {
         const float amount = up ? 0.97f : 1.03f;
         // do not exceed upper limit of 1.0 and lower limit of 0.004
@@ -1196,8 +1196,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
   const float masks_density = 1.0f;
 
   if(gui->creation && which == 1
-     && (((state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)) == (GDK_CONTROL_MASK | GDK_SHIFT_MASK))
-         || ((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)))
+     && (dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_SHIFT_MASK)))
   {
     // set some absolute or relative position for the source of the clone mask
     if(form->type & DT_MASKS_CLONE) dt_masks_set_source_pos_initial_state(gui, state, pzx, pzy);
@@ -1273,7 +1272,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     else if(gui->point_selected >= 0)
     {
       // if ctrl is pressed, we change the type of point
-      if(gui->point_edited == gui->point_selected && ((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
+      if(gui->point_edited == gui->point_selected && dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         dt_masks_point_brush_t *point
             = (dt_masks_point_brush_t *)g_list_nth_data(form->points, gui->point_edited);
@@ -1324,7 +1323,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     {
       const guint nb = g_list_length(form->points);
       gui->point_edited = -1;
-      if((state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
+      if(dt_modifier_is(state, GDK_CONTROL_MASK))
       {
         // we add a new point to the brush
         dt_masks_point_brush_t *bzpt = (dt_masks_point_brush_t *)(malloc(sizeof(dt_masks_point_brush_t)));
@@ -1507,6 +1506,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
   else
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
 
+  //TODO: allows Shift, Ctrl, or Shift+Ctrl; is this what we want here?
   if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
   {
     // user just set the source position, so just return
