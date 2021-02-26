@@ -1129,10 +1129,10 @@ guint dt_gui_translated_key_state(GdkEventKey *event)
     //find any modifiers consumed to produce keyval
     guint consumed;
     gdk_keymap_translate_keyboard_state(gdk_keymap_get_for_display(gdk_display_get_default()), event->hardware_keycode, event->state, event->group, NULL, NULL, NULL, &consumed);
-    return event->state & ~consumed & KEY_STATE_MASK;
+    return event->state & ~consumed & gtk_accelerator_get_default_mod_mask();
   }
   else
-    return event->state & KEY_STATE_MASK;
+    return event->state & gtk_accelerator_get_default_mod_mask();
 }
 
 static gboolean key_pressed_override(GtkWidget *w, GdkEventKey *event, gpointer user_data)
