@@ -3169,7 +3169,7 @@ static gboolean _scroll_wrap_scroll(GtkScrolledWindow *sw, GdkEventScroll *event
 
   const gint increment = _get_container_row_heigth(w);
 
-  if(event->state & GDK_CONTROL_MASK)
+  if(dt_modifier_is(event->state, GDK_CONTROL_MASK))
   {
     int delta_y=0;
 

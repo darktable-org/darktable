@@ -3864,7 +3864,7 @@ int button_pressed(struct dt_iop_module_t *self, double x, double y, double pres
 
   // if shift button is pressed go into bounding mode (selecting or deselecting
   // in a rectangle area)
-  if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  if(dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     g->lastx = pzx;
     g->lasty = pzy;
@@ -3944,7 +3944,7 @@ int button_released(struct dt_iop_module_t *self, double x, double y, int which,
 
   // finalize the isbounding mode
   // if user has released the shift button in-between -> do nothing
-  if(g->isbounding != ASHIFT_BOUNDING_OFF && (state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
+  if(g->isbounding != ASHIFT_BOUNDING_OFF && dt_modifier_is(state, GDK_SHIFT_MASK))
   {
     int handled = 0;
 
