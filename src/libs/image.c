@@ -189,7 +189,7 @@ static void _update(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   dt_lib_image_t *d = (dt_lib_image_t *)self->data;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, FALSE, FALSE);
 
   const int act_on_any = imgs != NULL;              // list length > 0 ?
   const int act_on_one = g_list_is_singleton(imgs); // list length == 1 ?
@@ -315,7 +315,7 @@ static void _execute_metadata(dt_lib_module_t *self, const int action)
   const gboolean geotag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/geotags");
   const gboolean dttag_flag = dt_conf_get_bool("plugins/lighttable/copy_metadata/tags");
   const int imageid = d->imageid;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
   if(imgs)
   {
     // for all the above actions, we don't use the grpu_on tag, as grouped images have already been added to image
@@ -695,7 +695,7 @@ void connect_key_accels(dt_lib_module_t *self)
 }
 
 #ifdef USE_LUA
-typedef struct 
+typedef struct
 {
   const char* key;
   dt_lib_module_t * self;
@@ -749,7 +749,7 @@ static int lua_register_action(lua_State *L)
 
   GtkWidget* button = gtk_button_new_with_label(key);
   const char * tooltip = lua_tostring(L, 3);
-  if(tooltip)  
+  if(tooltip)
   {
     gtk_widget_set_tooltip_text(button, tooltip);
   }
@@ -879,7 +879,7 @@ void init(struct dt_lib_module_t *self)
   lua_setfield(L, -2, "signal_handlers");
   lua_pop(L, 2);
 }
- 
+
 #endif
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
