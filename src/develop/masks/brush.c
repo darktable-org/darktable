@@ -365,13 +365,22 @@ static void _brush_points_recurs_border_gaps(float *cmax, float *bmin, float *bm
   float incrr = (r2 - r1) / l;
   float rr = r1 + incrr;
   float aa = a1 + incra;
-  for(int i = 1; i < l; i++)
+  // allocate entries in the dynbufs
+  float *dpoints_ptr = dt_masks_dynbuf_reserve_n(dpoints, 2*(l-1));
+  float *dborder_ptr = dt_masks_dynbuf_reserve_n(dborder, 2*(l-1));
+  // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
+  //  successive angular positions for dborder
+  if (dpoints_ptr && dborder_ptr)
   {
-    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
-    dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
-    dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
-    rr += incrr;
-    aa += incra;
+    for(int i = 1; i < l; i++)
+    {
+      *dpoints_ptr++ = cmax[0];
+      *dpoints_ptr++ = cmax[1];
+      *dborder_ptr++ = cmax[0] + rr * cosf(aa);
+      *dborder_ptr++ = cmax[1] + rr * sinf(aa);
+      rr += incrr;
+      aa += incra;
+    }
   }
 }
 
@@ -404,13 +413,22 @@ static void _brush_points_recurs_border_small_gaps(float *cmax, float *bmin, flo
   float incrr = (r2 - r1) / l;
   float rr = r1 + incrr;
   float aa = a1 + incra;
-  for(int i = 1; i < l; i++)
+  // allocate entries in the dynbufs
+  float *dpoints_ptr = dt_masks_dynbuf_reserve_n(dpoints, 2*(l-1));
+  float *dborder_ptr = dt_masks_dynbuf_reserve_n(dborder, 2*(l-1));
+  // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
+  //  successive angular positions for dborder
+  if (dpoints_ptr && dborder_ptr)
   {
-    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
-    dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
-    dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
-    rr += incrr;
-    aa += incra;
+    for(int i = 1; i < l; i++)
+    {
+      *dpoints_ptr++ = cmax[0];
+      *dpoints_ptr++ = cmax[1];
+      *dborder_ptr++ = cmax[0] + rr * cosf(aa);
+      *dborder_ptr++ = cmax[1] + rr * sinf(aa);
+      rr += incrr;
+      aa += incra;
+    }
   }
 }
 
@@ -433,12 +451,21 @@ static void _brush_points_stamp(float *cmax, float *bmin, dt_masks_dynbuf_t *dpo
   // and now we add the points
   float incra = 2.0f * M_PI / l;
   float aa = a1 + incra;
-  for(int i = 0; i < l; i++)
+  // allocate entries in the dynbufs
+  float *dpoints_ptr = dt_masks_dynbuf_reserve_n(dpoints, 2*(l-1));
+  float *dborder_ptr = dt_masks_dynbuf_reserve_n(dborder, 2*(l-1));
+  // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
+  //  successive angular positions for dborder
+  if (dpoints_ptr && dborder_ptr)
   {
-    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
-    dt_masks_dynbuf_add(dborder, cmax[0] + rad * cosf(aa));
-    dt_masks_dynbuf_add(dborder, cmax[1] + rad * sinf(aa));
-    aa += incra;
+    for(int i = 0; i < l; i++)
+    {
+      *dpoints_ptr++ = cmax[0];
+      *dpoints_ptr++ = cmax[1];
+      *dborder_ptr++ = cmax[0] + rad * cosf(aa);
+      *dborder_ptr++ = cmax[1] + rad * sinf(aa);
+      aa += incra;
+    }
   }
 }
 
@@ -476,7 +503,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
   {
     rpoints[0] = points_max[0];
     rpoints[1] = points_max[1];
-    dt_masks_dynbuf_add_n(dpoints, rpoints, 2);
+    dt_masks_dynbuf_add_2(dpoints, rpoints[0], rpoints[1]);
 
     if(withborder)
     {
@@ -499,7 +526,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
 
       rborder[0] = border_max[0];
       rborder[1] = border_max[1];
-      dt_masks_dynbuf_add_n(dborder, rborder, 2);
+      dt_masks_dynbuf_add_2(dborder, rborder[0], rborder[1]);
     }
 
     if(withpayload)
@@ -508,7 +535,7 @@ static void _brush_points_recurs(float *p1, float *p2, double tmin, double tmax,
       {
         rpayload[0] = p1[5] + tmax * (p2[5] - p1[5]);
         rpayload[1] = p1[6] + tmax * (p2[6] - p1[6]);
-        dt_masks_dynbuf_add_n(dpayload, rpayload, 2);
+        dt_masks_dynbuf_add_2(dpayload, rpayload[0], rpayload[1]);
       }
     }
 
@@ -594,13 +621,17 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
 
   for(GList *form_points = form->points; form_points; form_points = g_list_next(form_points))
   {
-    dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)form_points->data;
-    dt_masks_dynbuf_add(dpoints, pt->ctrl1[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl1[1] * ht - dy);
-    dt_masks_dynbuf_add(dpoints, pt->corner[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->corner[1] * ht - dy);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl2[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl2[1] * ht - dy);
+    const dt_masks_point_brush_t *const pt = (dt_masks_point_brush_t *)form_points->data;
+    float *const buf = dt_masks_dynbuf_reserve_n(dpoints, 6);
+    if (buf)
+    {
+      buf[0] = pt->ctrl1[0] * wd - dx;
+      buf[1] = pt->ctrl1[1] * ht - dy;
+      buf[2] = pt->corner[0] * wd - dx;
+      buf[3] = pt->corner[1] * ht - dy;
+      buf[4] = pt->ctrl2[0] * wd - dx;
+      buf[5] = pt->ctrl2[1] * ht - dy;
+    }
   }
 
   const guint nb = g_list_length(form->points);
@@ -608,29 +639,13 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
   // for the border, we store value too
   if(dborder)
   {
-    for(int k = 0; k < nb; k++)
-    {
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-    }
+    dt_masks_dynbuf_add_zeros(dborder, 6 * nb);  // we need six zeros for each border point
   }
 
   // for the payload, we reserve an equivalent number of cells to keep it in sync
   if(dpayload)
   {
-    for(int k = 0; k < nb; k++)
-    {
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-      dt_masks_dynbuf_add(dpayload, 0.0f);
-    }
+    dt_masks_dynbuf_add_zeros(dpayload, 6 * nb); // we need six zeros for each border point
   }
 
   int cw = 1;
@@ -713,7 +728,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
         {
           while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
           {
-            dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
+            dt_masks_dynbuf_add_2(dpayload, p1[5], p1[6]);
           }
         }
       }
@@ -734,7 +749,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
+          dt_masks_dynbuf_add_2(dpayload, p1[5], p1[6]);
         }
       }
     }
@@ -754,7 +769,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
       {
         while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
         {
-          dt_masks_dynbuf_add_n(dpayload, p1 + 5, 2);
+          dt_masks_dynbuf_add_2(dpayload, p1[5], p1[6]);
         }
       }
 
@@ -771,11 +786,11 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
 
     _brush_points_recurs(p1, p2, 0.0, 1.0, cmin, cmax, bmin, bmax, rc, rb, rp, dpoints, dborder, dpayload);
 
-    dt_masks_dynbuf_add_n(dpoints, rc, 2);
+    dt_masks_dynbuf_add_2(dpoints, rc[0], rc[1]);
 
     if(dpayload)
     {
-      dt_masks_dynbuf_add_n(dpayload, rp, 2);
+      dt_masks_dynbuf_add_2(dpayload, rp[0], rp[1]);
     }
 
     if(dborder)
@@ -790,7 +805,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
         rb[0] = dt_masks_dynbuf_get(dborder, -2);
         rb[1] = dt_masks_dynbuf_get(dborder, -1);
       }
-      dt_masks_dynbuf_add_n(dborder, rb, 2);
+      dt_masks_dynbuf_add_2(dborder, rb[0], rb[1]);
     }
 
     // we first want to be sure that there are no gaps in border
@@ -815,7 +830,7 @@ static int _brush_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const
     {
       while(dt_masks_dynbuf_position(dpayload) < dt_masks_dynbuf_position(dpoints))
       {
-        dt_masks_dynbuf_add_n(dpayload, rp, 2);
+        dt_masks_dynbuf_add_2(dpayload, rp[0], rp[1]);
       }
     }
   }
@@ -1200,12 +1215,9 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       if(!gui->guipoints) return 1;
       if(!gui->guipoints_payload) gui->guipoints_payload = dt_masks_dynbuf_init(400000, "brush guipoints_payload");
       if(!gui->guipoints_payload) return 1;
-      dt_masks_dynbuf_add(gui->guipoints, pzx * wd);
-      dt_masks_dynbuf_add(gui->guipoints, pzy * ht);
-      dt_masks_dynbuf_add(gui->guipoints_payload, masks_border);
-      dt_masks_dynbuf_add(gui->guipoints_payload, masks_hardness);
-      dt_masks_dynbuf_add(gui->guipoints_payload, masks_density);
-      dt_masks_dynbuf_add(gui->guipoints_payload, pressure);
+      dt_masks_dynbuf_add_2(gui->guipoints, pzx * wd, pzy * ht);
+      dt_masks_dynbuf_add_2(gui->guipoints_payload, masks_border, masks_hardness);
+      dt_masks_dynbuf_add_2(gui->guipoints_payload, masks_density, pressure);
 
       gui->guipoints_count = 1;
 
@@ -1517,16 +1529,13 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
         // add a helper node very close to the single spot
         const float x = dt_masks_dynbuf_get(gui->guipoints, -2) + 0.01f;
         const float y = dt_masks_dynbuf_get(gui->guipoints, -1) - 0.01f;
-        dt_masks_dynbuf_add(gui->guipoints, x);
-        dt_masks_dynbuf_add(gui->guipoints, y);
+        dt_masks_dynbuf_add_2(gui->guipoints, x, y);
         const float border = dt_masks_dynbuf_get(gui->guipoints_payload, -4);
         const float hardness = dt_masks_dynbuf_get(gui->guipoints_payload, -3);
         const float density = dt_masks_dynbuf_get(gui->guipoints_payload, -2);
         const float pressure = dt_masks_dynbuf_get(gui->guipoints_payload, -1);
-        dt_masks_dynbuf_add(gui->guipoints_payload, border);
-        dt_masks_dynbuf_add(gui->guipoints_payload, hardness);
-        dt_masks_dynbuf_add(gui->guipoints_payload, density);
-        dt_masks_dynbuf_add(gui->guipoints_payload, pressure);
+        dt_masks_dynbuf_add_2(gui->guipoints_payload, border, hardness);
+        dt_masks_dynbuf_add_2(gui->guipoints_payload, density, pressure);
         gui->guipoints_count++;
       }
 
@@ -1862,15 +1871,13 @@ static int _brush_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   {
     if(gui->guipoints)
     {
-      dt_masks_dynbuf_add(gui->guipoints, pzx * darktable.develop->preview_pipe->backbuf_width);
-      dt_masks_dynbuf_add(gui->guipoints, pzy * darktable.develop->preview_pipe->backbuf_height);
+      dt_masks_dynbuf_add_2(gui->guipoints, pzx * darktable.develop->preview_pipe->backbuf_width,
+                            pzy * darktable.develop->preview_pipe->backbuf_height);
       const float border = dt_masks_dynbuf_get(gui->guipoints_payload, -4);
       const float hardness = dt_masks_dynbuf_get(gui->guipoints_payload, -3);
       const float density = dt_masks_dynbuf_get(gui->guipoints_payload, -2);
-      dt_masks_dynbuf_add(gui->guipoints_payload, border);
-      dt_masks_dynbuf_add(gui->guipoints_payload, hardness);
-      dt_masks_dynbuf_add(gui->guipoints_payload, density);
-      dt_masks_dynbuf_add(gui->guipoints_payload, pressure);
+      dt_masks_dynbuf_add_2(gui->guipoints_payload, border, hardness);
+      dt_masks_dynbuf_add_2(gui->guipoints_payload, density, pressure);
       gui->guipoints_count++;
     }
     dt_control_queue_redraw_center();

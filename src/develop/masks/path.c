@@ -186,8 +186,7 @@ static gboolean _path_is_clockwise(dt_masks_form_t *form)
 static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t *points)
 {
   dt_masks_dynbuf_reset(points);
-  dt_masks_dynbuf_add(points, x);
-  dt_masks_dynbuf_add(points, y);
+  dt_masks_dynbuf_add_2(points, x, y);
 
   // now we want to be sure everything is continuous
   if(x - lastx > 1)
@@ -200,20 +199,17 @@ static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t
       {
         for(int jj = lasty2 + 1; jj < yyy; jj++)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
       else if(lasty2 - yyy < -1)
       {
         for(int jj = lasty2 - 1; jj > yyy; jj--)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
-      dt_masks_dynbuf_add(points, j);
-      dt_masks_dynbuf_add(points, yyy);
+      dt_masks_dynbuf_add_2(points, j, yyy);
     }
   }
   else if(x - lastx < -1)
@@ -226,20 +222,17 @@ static int _path_fill_gaps(int lastx, int lasty, int x, int y, dt_masks_dynbuf_t
       {
         for(int jj = lasty2 + 1; jj < yyy; jj++)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
       else if(lasty2 - yyy < -1)
       {
         for(int jj = lasty2 - 1; jj > yyy; jj--)
         {
-          dt_masks_dynbuf_add(points, j);
-          dt_masks_dynbuf_add(points, jj);
+          dt_masks_dynbuf_add_2(points, j, jj);
         }
       }
-      dt_masks_dynbuf_add(points, j);
-      dt_masks_dynbuf_add(points, yyy);
+      dt_masks_dynbuf_add_2(points, j, yyy);
     }
   }
   return 1;
@@ -282,13 +275,25 @@ static void _path_points_recurs_border_gaps(float *cmax, float *bmin, float *bmi
   const float incrr = (r2 - r1) / l;
   float rr = r1 + incrr;
   float aa = a1 + incra;
-  for(int i = 1; i < l; i++)
+  // allocate entries in the dynbufs
+  float *dpoints_ptr = dt_masks_dynbuf_reserve_n(dpoints, 2*(l-1));
+  float *dborder_ptr = dborder ? dt_masks_dynbuf_reserve_n(dborder, 2*(l-1)) : NULL;
+  // and fill them in: the same center pos for each point in dpoints, and the corresponding border point at
+  //  successive angular positions for dborder
+  if (dpoints_ptr)
   {
-    dt_masks_dynbuf_add_n(dpoints, cmax, 2);
-    if(dborder) dt_masks_dynbuf_add(dborder, cmax[0] + rr * cosf(aa));
-    if(dborder) dt_masks_dynbuf_add(dborder, cmax[1] + rr * sinf(aa));
-    rr += incrr;
-    aa += incra;
+    for(int i = 1; i < l; i++)
+    {
+      *dpoints_ptr++ = cmax[0];
+      *dpoints_ptr++ = cmax[1];
+      if (dborder_ptr)
+      {
+        *dborder_ptr++ = cmax[0] + rr * cosf(aa);
+        *dborder_ptr++ = cmax[1] + rr * sinf(aa);
+      }
+      rr += incrr;
+      aa += incra;
+    }
   }
 }
 
@@ -321,13 +326,13 @@ static void _path_points_recurs(float *p1, float *p2, double tmin, double tmax, 
                  && (int)border_min[1] - (int)border_max[1] < 1
                  && (int)border_min[1] - (int)border_max[1] > -1))))
   {
-    dt_masks_dynbuf_add_n(dpoints, path_max, 2);
+    dt_masks_dynbuf_add_2(dpoints, path_max[0], path_max[1]);
     rpath[0] = path_max[0];
     rpath[1] = path_max[1];
 
     if(withborder)
     {
-      dt_masks_dynbuf_add_n(dborder, border_max, 2);
+      dt_masks_dynbuf_add_2(dborder, border_max[0], border_max[1]);
       rborder[0] = border_max[0];
       rborder[1] = border_max[1];
     }
@@ -472,16 +477,14 @@ static int _path_find_self_intersection(dt_masks_dynbuf_t *inter, int nb_corners
               else
               {
                 // we find a new self-intersection portion
-                dt_masks_dynbuf_add(inter, v[k]);
-                dt_masks_dynbuf_add(inter, i);
+                dt_masks_dynbuf_add_2(inter, v[k], i);
                 inter_count++;
               }
             }
             else
             {
               // we find a new self-intersection portion
-              dt_masks_dynbuf_add(inter, v[k]);
-              dt_masks_dynbuf_add(inter, i);
+              dt_masks_dynbuf_add_2(inter, v[k], i);
               inter_count++;
             }
           }
@@ -557,26 +560,22 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
   }
   for(const GList *l = form->points; l; l = g_list_next(l))
   {
-    dt_masks_point_path_t *pt = (dt_masks_point_path_t *)l->data;
-    dt_masks_dynbuf_add(dpoints, pt->ctrl1[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl1[1] * ht - dy);
-    dt_masks_dynbuf_add(dpoints, pt->corner[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->corner[1] * ht - dy);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl2[0] * wd - dx);
-    dt_masks_dynbuf_add(dpoints, pt->ctrl2[1] * ht - dy);
+    const dt_masks_point_path_t *const pt = (dt_masks_point_path_t *)l->data;
+    float *const buf = dt_masks_dynbuf_reserve_n(dpoints, 6);
+    if (buf)
+    {
+      buf[0] = pt->ctrl1[0] * wd - dx;
+      buf[1] = pt->ctrl1[1] * ht - dy;
+      buf[2] = pt->corner[0] * wd - dx;
+      buf[3] = pt->corner[1] * ht - dy;
+      buf[4] = pt->ctrl2[0] * wd - dx;
+      buf[5] = pt->ctrl2[1] * ht - dy;
+    }
   }
   // for the border, we store value too
   if(dborder)
   {
-    for(int k = 0; k < nb; k++)
-    {
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-      dt_masks_dynbuf_add(dborder, 0.0f);
-    }
+    dt_masks_dynbuf_add_zeros(dborder, 6 * nb);  // need six zeros for each border point
   }
 
   float *border_init = dt_alloc_align_float((size_t)6 * nb);
@@ -630,7 +629,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
       bmin[1] = dt_masks_dynbuf_get(dborder, -1);
     }
 
-    dt_masks_dynbuf_add_n(dpoints, rc, 2);
+    dt_masks_dynbuf_add_2(dpoints, rc[0], rc[1]);
 
     border_init[k * 6 + 4] = dborder ? -dt_masks_dynbuf_position(dborder) : 0;
 
@@ -646,7 +645,7 @@ static int _path_get_pts_border(dt_develop_t *dev, dt_masks_form_t *form, const 
         rb[0] = dt_masks_dynbuf_get(dborder, -2);
         rb[1] = dt_masks_dynbuf_get(dborder, -1);
       }
-      dt_masks_dynbuf_add_n(dborder, rb, 2);
+      dt_masks_dynbuf_add_2(dborder, rb[0], rb[1]);
 
       (dt_masks_dynbuf_buffer(dborder))[k * 6] = border_init[k * 6] = (dt_masks_dynbuf_buffer(dborder))[pb];
       (dt_masks_dynbuf_buffer(dborder))[k * 6 + 1] = border_init[k * 6 + 1] = (dt_masks_dynbuf_buffer(dborder))[pb + 1];

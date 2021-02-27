@@ -435,6 +435,28 @@ void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t 
                                  dt_masks_form_gui_t *gui);
 
 /** code for dynamic handling of intermediate buffers */
+static inline gboolean _dt_masks_dynbuf_growto(dt_masks_dynbuf_t *a, size_t size)
+{
+  const size_t newsize = dt_round_size_sse(sizeof(float) * size) / sizeof(float);
+  float *newbuf = dt_alloc_align_float(newsize);
+  if (!newbuf)
+  {
+    // not much we can do here except emit an error message
+    fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %zu!\n", a->tag, size);
+    return FALSE;
+  }
+  if (a->buffer)
+  {
+    memcpy(newbuf, a->buffer, a->size * sizeof(float));
+    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
+             (unsigned long)a->size, newbuf, a->buffer);
+    dt_free_align(a->buffer);
+  }
+  a->size = newsize;
+  a->buffer = newbuf;
+  return TRUE;
+}
+
 static inline
 dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
 {
@@ -445,11 +467,9 @@ dt_masks_dynbuf_t *dt_masks_dynbuf_init(size_t size, const char *tag)
   {
     g_strlcpy(a->tag, tag, sizeof(a->tag)); //only for debugging purposes
     a->pos = 0;
-    const size_t bufsize = dt_round_size_sse(sizeof(float) * size);
-    a->size = bufsize / sizeof(float);
-    a->buffer = dt_alloc_align_float(a->size);
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer);
+    if(_dt_masks_dynbuf_growto(a, size))
+      dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] with initial size %lu (is %p)\n", a->tag,
+               (unsigned long)a->size, a->buffer);
     if(a->buffer == NULL)
     {
       free(a);
@@ -464,57 +484,68 @@ void dt_masks_dynbuf_add(dt_masks_dynbuf_t *a, float value)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);
-  if(a->pos == a->size)
+  if(__builtin_expect(a->pos == a->size, 0))
   {
-    if(a->size == 0) return;
-    float *oldbuffer = a->buffer;
-    size_t oldsize = a->size;
-    a->size *= 2;
-    a->buffer = dt_alloc_align_float(a->size);
-    if(a->buffer == NULL)
-    {
-      // not much we can do here except of emitting an error message
-      fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
-              (unsigned long)a->size);
-      a->size = oldsize;
-      a->buffer = oldbuffer;
+    if (a->size == 0 || !_dt_masks_dynbuf_growto(a, 2 * a->size))
       return;
-    }
-    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer, oldbuffer);
-    dt_free_align(oldbuffer);
   }
   a->buffer[a->pos++] = value;
 }
 
 static inline
-void dt_masks_dynbuf_add_n(dt_masks_dynbuf_t *a, float* values, const int n)
+void dt_masks_dynbuf_add_2(dt_masks_dynbuf_t *a, float value1, float value2)
 {
   assert(a != NULL);
   assert(a->pos <= a->size);
-  if(a->pos + n >= a->size)
+  if(__builtin_expect(a->pos + 2 >= a->size, 0))
+  {
+    if (a->size == 0 || !_dt_masks_dynbuf_growto(a, 2 * (a->size+1)))
+      return;
+  }
+  a->buffer[a->pos++] = value1;
+  a->buffer[a->pos++] = value2;
+}
+
+// Return a pointer to N floats past the current end of the dynbuf's contents, marking them as already in use.
+// The caller should then fill in the reserved elements using the returned pointer.
+static inline
+float *dt_masks_dynbuf_reserve_n(dt_masks_dynbuf_t *a, const int n)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(__builtin_expect(a->pos + n >= a->size, 0))
+  {
+    if(a->size == 0) return NULL;
+    size_t newsize = a->size;
+    while(a->pos + n >= newsize) newsize *= 2;
+    if (!_dt_masks_dynbuf_growto(a, newsize))
+    {
+      return NULL;
+    }
+  }
+  // get the current end of the (possibly reallocated) buffer, then mark the next N items as in-use
+  float *reserved = a->buffer + a->pos;
+  a->pos += n;
+  return reserved;
+}
+
+static inline
+void dt_masks_dynbuf_add_zeros(dt_masks_dynbuf_t *a, const int n)
+{
+  assert(a != NULL);
+  assert(a->pos <= a->size);
+  if(__builtin_expect(a->pos + n >= a->size, 0))
   {
     if(a->size == 0) return;
-    float *oldbuffer = a->buffer;
-    size_t oldsize = a->size;
-    while(a->pos + n >= a->size) a->size *= 2;
-    a->buffer = (float *)dt_alloc_align(64, a->size * sizeof(float));
-    if(a->buffer == NULL)
+    size_t newsize = a->size;
+    while(a->pos + n >= newsize) newsize *= 2;
+    if (!_dt_masks_dynbuf_growto(a, newsize))
     {
-      // not much we can do here except of emitting an error message
-      fprintf(stderr, "critical: out of memory for dynbuf '%s' with size request %lu!\n", a->tag,
-              (unsigned long)a->size);
-      a->size = oldsize;
-      a->buffer = oldbuffer;
       return;
     }
-    memcpy(a->buffer, oldbuffer, oldsize * sizeof(float));
-    dt_print(DT_DEBUG_MASKS, "[masks dynbuf '%s'] grows to size %lu (is %p, was %p)\n", a->tag,
-             (unsigned long)a->size, a->buffer, oldbuffer);
-    dt_free_align(oldbuffer);
   }
-  memcpy(a->buffer + a->pos, values, n * sizeof(float));
+  // now that we've ensured a sufficiently large buffer add N zeros to the end of the existing data
+  memset(a->buffer + a->pos, 0, n * sizeof(float));
   a->pos += n;
 }
 
