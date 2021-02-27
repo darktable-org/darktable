@@ -69,7 +69,7 @@ static void _update(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_copy_history_t *d = (dt_lib_copy_history_t *)self->data;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
   const int act_on_any = imgs != NULL;
   const int act_on_one = g_list_is_singleton(imgs);
   const int act_on_mult = act_on_any && !act_on_one;
@@ -98,7 +98,7 @@ static void write_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 
 static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 {
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
   if(!imgs)
     return;
   const int act_on_any = imgs != NULL;  // list length > 0?
@@ -196,7 +196,7 @@ static void load_button_clicked(GtkWidget *widget, dt_lib_module_t *self)
 static void compress_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   const GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
   if(!imgs) return;  // do nothing if no images to be acted on
 
   const int missing = dt_history_compress_on_list(imgs);
@@ -249,7 +249,7 @@ static void discard_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   gint res = GTK_RESPONSE_YES;
 
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
 
   if(dt_conf_get_bool("ask_before_discard"))
   {
@@ -292,7 +292,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
   dt_conf_set_int("plugins/lighttable/copy_history/pastemode", mode);
 
   /* copy history from previously copied image and past onto selection */
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
 
   if(dt_history_paste_on_list(imgs, TRUE))
   {
@@ -304,7 +304,7 @@ static void paste_button_clicked(GtkWidget *widget, gpointer user_data)
 static void paste_parts_button_clicked(GtkWidget *widget, gpointer user_data)
 {
   /* copy history from previously copied image and past onto selection */
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, TRUE, FALSE);
 
   // at the time the dialog is started, some signals are sent and this in turn call
   // back dt_view_get_images_to_act_on() which free list and create a new one. So we

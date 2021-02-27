@@ -449,6 +449,56 @@ void dt_selection_select_list(struct dt_selection_t *selection, GList *list)
   dt_collection_hint_message(darktable.collection);
 }
 
+GList *dt_selection_get_list(struct dt_selection_t *selection, const gboolean only_visible, const gboolean ordering)
+{
+  GList *l = NULL;
+  if(only_visible)
+  {
+    // we don't want to get image hidden because of grouping
+    sqlite3_stmt *stmt;
+    gchar *qq = dt_util_dstrcat(NULL, "SELECT m.imgid"
+                                      " FROM memory.collected_images as m"
+                                      " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)");
+    if(ordering) qq = dt_util_dstrcat(qq, " ORDER BY m.rowid DESC");
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qq, -1, &stmt, NULL);
+    g_free(qq);
+    while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+    }
+    if(stmt) sqlite3_finalize(stmt);
+  }
+  else
+  {
+    // we need to get hidden grouped images too, and the
+    // selection already contains them, but not in right order
+    sqlite3_stmt *stmt;
+    gchar *qq = NULL;
+    if(ordering)
+    {
+      qq = dt_util_dstrcat(NULL,
+                           "SELECT DISTINCT ng.id"
+                           " FROM (%s) AS ng"
+                           " WHERE ng.id IN (SELECT s.imgid FROM main.selected_images as s)",
+                           dt_collection_get_query_no_group(dt_selection_get_collection(selection)));
+    }
+    else
+    {
+      qq = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images");
+    }
+
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), qq, -1, &stmt, NULL);
+    g_free(qq);
+    while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+    {
+      l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
+    }
+    if(ordering) l = g_list_reverse(l);
+    if(stmt) sqlite3_finalize(stmt);
+  }
+  return l;
+}
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
 // vim: shiftwidth=2 expandtab tabstop=2 cindent
