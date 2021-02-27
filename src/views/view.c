@@ -757,7 +757,8 @@ static void _images_to_act_on_insert_in_list(GList **list, const int imgid, gboo
 }
 
 // get the list of images to act on during global changes (libs, accels)
-const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gboolean force)
+const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gboolean force,
+                                          const gboolean ordering)
 {
   /** Here's how it works
    *
@@ -771,12 +772,15 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
    *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
    *
    *  if only_visible is FALSE, then it will add also not visible images because of grouping
+   *  force define if we try to use cache or not
+   *  if ordering is TRUE, we return the list in the gui order. Otherwise the order is undefined (but quicker)
    **/
 
   const int mouseover = dt_control_get_mouse_over_id();
 
   // if possible, we return the cached list
   if(!force && darktable.view_manager->act_on.ok && darktable.view_manager->act_on.image_over == mouseover
+     && darktable.view_manager->act_on.ordering == ordering
      && darktable.view_manager->act_on.inside_table == dt_ui_thumbtable(darktable.gui->ui)->mouse_inside
      && g_slist_length(darktable.view_manager->act_on.active_imgs)
             == g_slist_length(darktable.view_manager->active_images))
@@ -825,45 +829,14 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
 
         // first, we try to return cached list if we wher already
         // inside sel and the selection has not changed
-        if(!force
-           && darktable.view_manager->act_on.ok
-           && darktable.view_manager->act_on.image_over_inside_sel
-           && darktable.view_manager->act_on.inside_table)
+        if(!force && darktable.view_manager->act_on.ok && darktable.view_manager->act_on.image_over_inside_sel
+           && darktable.view_manager->act_on.inside_table && darktable.view_manager->act_on.ordering == ordering)
         {
           return darktable.view_manager->act_on.images;
         }
 
-        if(only_visible)
-        {
-          // we don't want to get image hidden because of grouping
-          DT_DEBUG_SQLITE3_PREPARE_V2
-            (dt_database_get(darktable.db),
-             "SELECT DISTINCT m.imgid"
-             " FROM memory.collected_images as m"
-             " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)"
-             " ORDER BY m.rowid DESC",
-             -1, &stmt, NULL);
-        }
-        else
-        {
-          // we need to get hidden grouped images too, and the
-          // selection already contains them :)
-          DT_DEBUG_SQLITE3_PREPARE_V2
-            (dt_database_get(darktable.db),
-             "SELECT DISTINCT imgid"
-             " FROM main.selected_images"
-             " ORDER BY rowid DESC", -1, &stmt, NULL);
-        }
-
-        while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-        {
-          // we don't use _images_to_act_on_insert_in_list for
-          // performance reason and because the query already take
-          // care of eventual duplicates
-          l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
-        }
-        // put the list in right order as we have prepend for performance reasons
-        if(stmt) sqlite3_finalize(stmt);
+        // we return the list of the selection
+        l = dt_selection_get_list(darktable.selection, only_visible, ordering);
       }
       else
       {
@@ -898,26 +871,14 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
     else
     {
       // collumn 4
-      sqlite3_stmt *stmt;
-      DT_DEBUG_SQLITE3_PREPARE_V2
-        (dt_database_get(darktable.db),
-         "SELECT DISTINCT m.imgid"
-         " FROM memory.collected_images as m"
-         " WHERE m.imgid IN (SELECT s.imgid FROM main.selected_images as s)"
-         " ORDER BY m.rowid DESC", -1, &stmt, NULL);
-      while(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
-      {
-        // we don't use _images_to_act_on_insert_in_list for
-        // performance reason and because the query already take care
-        // of eventual duplicates
-        l = g_list_prepend(l, GINT_TO_POINTER(sqlite3_column_int(stmt, 0)));
-      }
-      if(stmt) sqlite3_finalize(stmt);
+      // we return the list of the selection
+      l = dt_selection_get_list(darktable.selection, only_visible, ordering);
     }
   }
 
   // let's register the new list as cached
   darktable.view_manager->act_on.image_over_inside_sel = inside_sel;
+  darktable.view_manager->act_on.ordering = ordering;
   darktable.view_manager->act_on.image_over = mouseover;
   g_list_free(darktable.view_manager->act_on.images);
   darktable.view_manager->act_on.images = l;
