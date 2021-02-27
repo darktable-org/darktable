@@ -139,17 +139,13 @@ static void _update(dt_lib_module_t *self)
 
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
-  char *images = NULL;
+  gchar *images = dt_view_get_images_to_act_on_query(TRUE);
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
-  while(imgs)
-  {
-    images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
-    imgs_count++;
-    imgs = g_list_next((GList *)imgs);
-  }
+
+  imgs_count = g_list_length((GList *)imgs);
+
   if(images)
   {
-    images[strlen(images) - 1] = '\0';
     sqlite3_stmt *stmt;
     char *query = NULL;
     query = dt_util_dstrcat(query,

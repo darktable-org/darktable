@@ -890,6 +890,103 @@ const GList *dt_view_get_images_to_act_on(const gboolean only_visible, const gbo
   return darktable.view_manager->act_on.images;
 }
 
+// get the query to retrieve images to act on. this is useful to speedup actions if they already use sqlite queries
+gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
+{
+  /** Here's how it works
+   *
+   *             mouse over| x | x | x |   |   |
+   *     mouse inside table| x | x |   |   |   |
+   * mouse inside selection| x |   |   |   |   |
+   *          active images| ? | ? | x |   | x |
+   *                       |   |   |   |   |   |
+   *                       | S | O | O | S | A |
+   *  S = selection ; O = mouseover ; A = active images
+   *  the mouse can be outside thumbtable in case of filmstrip + mouse in center widget
+   *
+   *  if only_visible is FALSE, then it will add also not visible images because of grouping
+   *  due to dt_selection_get_list_query limitation, order is always considered as undefined
+   **/
+
+  const int mouseover = dt_control_get_mouse_over_id();
+
+  GList *l = NULL;
+  gboolean inside_sel = FALSE;
+  if(mouseover > 0)
+  {
+    // collumn 1,2,3
+    if(dt_ui_thumbtable(darktable.gui->ui)->mouse_inside)
+    {
+      // collumn 1,2
+      sqlite3_stmt *stmt;
+      gchar *query = dt_util_dstrcat(NULL, "SELECT imgid FROM main.selected_images WHERE imgid =%d", mouseover);
+      DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+      if(stmt != NULL && sqlite3_step(stmt) == SQLITE_ROW)
+      {
+        inside_sel = TRUE;
+        sqlite3_finalize(stmt);
+      }
+      g_free(query);
+
+      if(inside_sel)
+      {
+        // collumn 1
+        return dt_selection_get_list_query(darktable.selection, only_visible, FALSE);
+      }
+      else
+      {
+        // collumn 2
+        _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+      }
+    }
+    else
+    {
+      // collumn 3
+      _images_to_act_on_insert_in_list(&l, mouseover, only_visible);
+      // be absolutely sure we have the id in the list (in darkroom,
+      // the active image can be out of collection)
+      if(!only_visible) _images_to_act_on_insert_in_list(&l, mouseover, TRUE);
+    }
+  }
+  else
+  {
+    // collumn 4,5
+    if(darktable.view_manager->active_images)
+    {
+      // collumn 5
+      for(GSList *ll = darktable.view_manager->active_images; ll; ll = g_slist_next(ll))
+      {
+        const int id = GPOINTER_TO_INT(ll->data);
+        _images_to_act_on_insert_in_list(&l, id, only_visible);
+        // be absolutely sure we have the id in the list (in darkroom,
+        // the active image can be out of collection)
+        if(!only_visible) _images_to_act_on_insert_in_list(&l, id, TRUE);
+      }
+    }
+    else
+    {
+      // collumn 4
+      return dt_selection_get_list_query(darktable.selection, only_visible, FALSE);
+    }
+  }
+
+  // if we don't return the selection, we return the list of imgid separeted by comma
+  // in the form it can be used inside queries
+  gchar *images = NULL;
+  while(l)
+  {
+    images = dt_util_dstrcat(images, "%d,", GPOINTER_TO_INT(l->data));
+    l = g_list_next(l);
+  }
+  if(images)
+  {
+    images[strlen(images) - 1] = '\0';
+  }
+  else
+    images = dt_util_dstrcat(NULL, " ");
+  return images;
+}
+
 // get the main image to act on during global changes (libs, accels)
 int dt_view_get_image_to_act_on()
 {
