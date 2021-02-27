@@ -1268,7 +1268,7 @@ static void _view_map_changed_callback_delayed(gpointer user_data)
       dt_show_times(&start, "[map] dbscan calculation");
 
       // set the groups
-      const GList *sel_imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
+      const GList *sel_imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
       int group = -1;
       for(i = 0; i< img_count; i++)
       {
