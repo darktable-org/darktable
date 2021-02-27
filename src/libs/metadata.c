@@ -46,7 +46,6 @@ typedef enum dt_metadata_pref_cols_t
 
 typedef struct dt_lib_metadata_t
 {
-  int imgsel;
   GtkTextView *textview[DT_METADATA_NUMBER];
   gulong lost_focus_handler[DT_METADATA_NUMBER];
   GtkWidget *swindow[DT_METADATA_NUMBER];
@@ -128,7 +127,6 @@ static void _update(dt_lib_module_t *self)
   dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
 
-  d->imgsel = dt_control_get_mouse_over_id();
   const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
 
   // first we want to make sure the list of images to act on has changed
@@ -151,6 +149,7 @@ static void _update(dt_lib_module_t *self)
     }
     if(!changed) return;
   }
+  g_list_free(d->last_act_on);
   d->last_act_on = g_list_copy((GList *)imgs);
 
   GList *metadata[DT_METADATA_NUMBER];
@@ -708,7 +707,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
-  d->imgsel = -1;
   self->timeout_handle = 0;
 
   GtkGrid *grid = (GtkGrid *)gtk_grid_new();
