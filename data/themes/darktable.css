@@ -1,6 +1,6 @@
 /*
     This file is part of darktable,
-    copyright (c) 2019 Aurélien Pierre.
+    copyright (c) 2021 Nicolas Auffray.
 
     darktable is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -270,8 +270,6 @@ button,
   color: @button_fg;
   font-weight: normal;
   font-family: sans-serif;
-  min-height: 1em;
-  min-width: 1em;
   padding: 0.14em;
 }
 
@@ -294,7 +292,20 @@ button,
 entry,
 textview
 {
-  border-radius: 0.2em;
+  border-radius: 0.21em;
+}
+
+button,
+#add-color-button,
+combobox,
+combobox button,
+combobox *,
+#iop-plugin-ui-main #control-button,
+#lib-plugin-ui-main #control-button,
+#header-toolbar #control-button
+{
+  min-height: 1em;
+  min-width: 1em;
 }
 
 /* Default text fields and text boxes */
@@ -476,8 +487,6 @@ overshoot.right
 #lib-plugin-ui-main #control-button,
 #header-toolbar #control-button
 {
-  min-height: 1em;
-  min-width: 1em;
   padding: 0.14em;
 }
 
@@ -626,6 +635,11 @@ overshoot.right
 }
 
 /* Special modules: image infos, navigation and search ones */
+#image-info /* in darkroom footerbar */
+{
+  font-size: 1.05em;
+}
+
 #navigation-module
 {
   background-color: @graph_bg;
@@ -748,27 +762,20 @@ dialog checkbutton check:focus
 /* Set title headerbar and main buttons */
 dialog button
 {
-  padding: 0.14em;
-  margin: 0.07em;
+  padding: 0.07em 0.35em;
+  margin: 0.035em 0.07em;
 }
 
 dialog headerbar
 {
   background-color: @border_color;
-  margin: 0;
   padding: 0.2em 0.6em;
-}
-
-dialog headerbar button
-{
-  padding: 0.07em 0.35em;
 }
 
 /* Set specific content */
 dialog scrolledwindow
 {
   padding: 0 0.07em 0 0.56em;
-  margin: 0;
 }
 
 #left #lib-plugin-ui #import_metadata entry,
@@ -776,7 +783,6 @@ dialog scrolledwindow
 #right #lib-plugin-ui #gpx_list checkbutton check
 {
   margin: 0.07em;
-  padding: 0;
 }
 
 #import_metadata grid label
@@ -790,32 +796,19 @@ dialog scrolledwindow
 }
 
 /* Set import from camera or card dialog window */
-dialog .dialog-vbox notebook stack /* set top margin ; between tabs and text below */
-{
-  margin-top: 0.28em;
-}
-
 dialog .dialog-vbox notebook stack box box > label  /* set code project name on first tab */
 {
-  font-size: 0.90em;
+  font-size: 0.95em;
   font-weight: bold;
-  padding-top: 0.35em;
-}
-
-dialog .dialog-vbox notebook stack box box checkbutton,  /* fix margins on last line on second tab */
-dialog .dialog-vbox notebook stack box box entry
-{
-  margin: 0.14em 0;
+  padding: 0.35em 0;
 }
 
 dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on last line on second tab */
 {
   padding: 0.14em 0.42em 0.14em 0;
-  font-size: 1em;                 /*reset to default font size and weight to avoid apply settings set few lines above */
-  font-weight: normal;
 }
 
-/* about window: set different background for credits view */
+/* About window: set different background for credits view */
 #about_dialog scrolledwindow
 {
   background: @bg_color;
@@ -824,12 +817,6 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
 #about_dialog grid *
 {
   padding: 0.14em;
-}
-
-/* preferences module dialog window */
-.dialog-action-box
-{
-  margin-top: 0.35em;
 }
 
 /*--------------------------------------------------------
@@ -854,9 +841,9 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
   min-height: 1em;
 }
 
-/*----------------------------------------
-  - Context menu & tooltips & comboboxes -
-  ----------------------------------------*/
+/*---------------------------------------
+  - Context menu, tooltips & comboboxes -
+  ---------------------------------------*/
 
 /*** Basically everything that pops out/over on UI ***/
 combobox,
@@ -865,8 +852,6 @@ combobox button
   background-color: transparent;
   border-radius: 0.14em;
   color: @bauhaus_fg;
-  min-height: 1em;
-  min-width: 1em;
 }
 
 combobox button
@@ -878,12 +863,6 @@ combobox button
 combobox entry
 {
   margin: 0 0.5em;
-}
-
-combobox *
-{
-  min-height: 1em;
-  min-width: 1em;
 }
 
 context-menu,
@@ -907,8 +886,8 @@ dialog combobox window,
 
 menuitem > arrow
 {
-  border: 0;
   margin-right: 0.14em;
+  border: 0;
 }
 
 popover
@@ -954,13 +933,12 @@ menuitem check
   margin-right: 0.35em;
 }
 
-/* Header and footer labels */
+/* Header and footer labels, especially for combobox */
 #header-toolbar label,
 #footer-toolbar label
 {
   margin: 0 0.5em;
 }
-
 menu separator,
 popover separator
 {
@@ -978,11 +956,7 @@ notebook tabs,
 #blending-tabs
 {
   color: @button_fg;
-  font-weight: normal;
   font-family: sans-serif;
-  border: 0;
-  padding: 0;
-  margin: 0;
 }
 
 #modules-tabs,
@@ -1029,9 +1003,9 @@ notebook tabs,
 #modules-tabs button,
 #blending-tabs button
 {
-  margin: 0;
   border-radius: 0;
   border: 0;
+  margin: 0;
 }
 
 /* Set notebook tabs */
@@ -1045,7 +1019,6 @@ notebook tab
 notebook tab label /* disabled tabs */
 {
   color: shade(@button_checked_fg, 0.75);
-  font-weight: normal;
 }
 
 notebook header /* add space between notebook tabs and options below */
@@ -1066,7 +1039,6 @@ dialog scrollbar slider
 {
   background-color: @scroll_bar_inactive;
   border: 0.14em solid transparent;
-  margin: 0;
   min-width: 0.42em;
   min-height: 0.42em;
 }
@@ -1086,18 +1058,18 @@ scale entry
 
 scale contents trough highlight
 {
+  background-color: @button_bg;
   min-height: 0;
   min-width: 0;
-  background-color: @button_bg;
 }
 
 scale contents trough slider
 {
+  background-color: @scroll_bar_inactive;
   border: 0.035em solid @border_color;
   font-size: 1em;
   min-height: 0.5em;
   min-width: 0.5em;
-  background-color: @scroll_bar_inactive;
 }
 
 scrollbar,
