@@ -3135,7 +3135,7 @@ int button_pressed(struct dt_iop_module_t *module,
   dt_iop_gui_enter_critical_section(module);
 
   g->last_mouse_pos = pt;
-  g->last_mouse_mods = state & gtk_accelerator_get_default_mod_mask();
+  g->last_mouse_mods = state;
   if(which == 1)
     g->last_button1_pressed_pos = pt;
 
