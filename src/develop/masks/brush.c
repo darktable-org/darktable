@@ -1506,8 +1506,8 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
   else
     masks_border = MIN(dt_conf_get_float("plugins/darkroom/masks/brush/border"), BORDER_MAX);
 
-  //TODO: allows Shift, Ctrl, or Shift+Ctrl; is this what we want here?
-  if(gui->creation && which == 1 && (state & (GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
+  if(gui->creation && which == 1 &&
+     (dt_modifier_is(state, GDK_SHIFT_MASK) || dt_modifier_is(state, GDK_CONTROL_MASK | GDK_SHIFT_MASK)))
   {
     // user just set the source position, so just return
     return 1;
