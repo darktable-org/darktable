@@ -524,7 +524,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
-        if(which == GDK_CONTROL_MASK)
+        if(dt_modifier_is(which, GDK_CONTROL_MASK))
         {
           dt_bauhaus_slider_set(g->scale, new_scale);
         }
@@ -554,7 +554,7 @@ int mouse_moved(struct dt_iop_module_t *self, double x, double y, double pressur
       //        I guess we have to split the computation.
       if(ratio <= 1.0)
       {
-        if(which == GDK_CONTROL_MASK)
+        if(dt_modifier_is(which, GDK_CONTROL_MASK))
         {
           const float new_scale = 100.0 * new_vignette_h / max;
           dt_bauhaus_slider_set(g->scale, new_scale);
