@@ -253,13 +253,11 @@ box *
   color: @disabled_fg_color;
 }
 
-/* Sets outer borders that could be hide or shown in darktable with 'b' shortcut.
-  remember, in gui/gtk.c, outer borders (active areas used to collapse panels)
-  are defined to 5 px × DPI. We cheat by setting inner borders/spacing here to 5 px as well. */
+/* Sets outer borders that could be hide or shown in darktable with 'b' shortcut */
 #outer-border
 {
   background-color: @border_color;
-  min-width: 20px;
+  min-width: 1.4em;
 }
 
 /* Default gtk buttons */
@@ -267,7 +265,7 @@ button,
 #add-color-button
 {
   padding: 0.14em;
-  border: 1px solid @button_border;
+  border: 0.07em solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
   font-weight: normal;
@@ -280,7 +278,7 @@ button,
 button:disabled,
 #add-color-button:disabled
 {
-  border: 1px solid shade(@button_border, 0.95);
+  border: 0.07em solid shade(@button_border, 0.95);
 }
 
 /* Default extra margin for icons optical alignment */
@@ -305,7 +303,7 @@ textview
 {
   color: @field_fg;
   background-color: @field_bg;
-  border: 0.5px solid @border_color;
+  border: 0.035em solid @border_color;
   margin: 0.14em 0;
   font-family: sans;
 }
@@ -320,7 +318,7 @@ checkbutton check
 {
   background-color: @bauhaus_bg;
   color: @bauhaus_fg;
-  border: 1px solid @border_color;
+  border: 0.07em solid @border_color;
 }
 
 checkbutton check:checked
@@ -341,7 +339,7 @@ checkbutton check:checked
 /* Separator */
 separator
 {
-  border-left: 1px solid transparent;
+  border-left: 0.07em solid transparent;
 }
 
 /* Allow to resize dialog windows */ 
@@ -467,8 +465,8 @@ overshoot.right
 #picker-white,
 #basics-widget #dt-button
 {
-  min-height: 1.3em;
-  min-width: 1.3em;
+  min-height: 1.2em;
+  min-width: 1.2em;
   border: 0;
 }
 
@@ -492,17 +490,6 @@ overshoot.right
 #iop-plugin-ui-main widget + notebook
 {
   margin-top: 0.5em;
-}
-
-/* Adjust add and remove buttons in picker module */
-.picker-module button
-{
-  padding: 0;
-}
-
-.picker-module label
-{
-  padding-right: 0.2em;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -546,7 +533,7 @@ overshoot.right
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
-  margin: 0 1px;
+  margin: 0 0.07em;
   border: 0;
 }
 
@@ -605,7 +592,7 @@ overshoot.right
   margin: 0 0 0.56em 0;
   padding: 0 0 0.35em 0;
   color: @section_label;
-  border-bottom: 0.5px solid  @section_label;
+  border-bottom: 0.035em solid  @section_label;
   font-family: sans-serif;
   font-weight: 500;
 }
@@ -885,7 +872,7 @@ combobox button
 combobox button
 {
   padding: 0.07em;
-  border: 1px solid transparent;
+  border: 0.07em solid transparent;
 }
 
 combobox entry
@@ -912,7 +899,7 @@ dialog combobox window,
   opacity: 1;  /* this is needed for tooltip on/off feature with Shift+t shortcut */
   background-color: @tooltip_bg_color;
   border-radius: 0.14em;
-  border: 1px solid @button_border;
+  border: 0.07em solid @button_border;
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em 0;
@@ -936,7 +923,7 @@ menu menuitem
 
 tooltip
 {
-  border: 1px solid shade(@tooltip_bg_color, 1.5);
+  border: 0.07em solid shade(@tooltip_bg_color, 1.5);
   border-radius: 0;
 }
 
@@ -961,7 +948,7 @@ tooltip button
 menuitem check
 {
   border-radius: 0.14em;
-  border: 1px solid shade(@tooltip_bg_color, 4);
+  border: 0.07em solid shade(@tooltip_bg_color, 4);
   min-width: 0.7em;
   min-height: 0.7em;
   margin-right: 0.35em;
@@ -1051,7 +1038,7 @@ notebook tabs,
 notebook tab
 {
   border-bottom: 0.14em solid transparent;
-  padding: 3px;
+  padding: 0.21em;
   font-weight: normal;
 }
 
@@ -1106,7 +1093,7 @@ scale contents trough highlight
 
 scale contents trough slider
 {
-  border: 0.5px solid @border_color;
+  border: 0.035em solid @border_color;
   font-size: 1em;
   min-height: 0.5em;
   min-width: 0.5em;
@@ -1183,7 +1170,7 @@ dialog scrollbar
 /* Edit CSS view on preferences dialog window */
 #usercss_box
 {
-  border: 1px inset @border_color;
+  border: 0.07em inset @border_color;
   background-color: @bg_color;
   margin: 0.7em 1.75em 1.4em 1.75em;
   padding: 0.7em;
@@ -1351,7 +1338,7 @@ margin: 0 0.14em;
 }
 #modulegroups-groups-box
 {
-  border-top: 1px solid @plugin_label_color;
+  border-top: 0.07em solid @plugin_label_color;
 }
 
 #modulegroups-reset
@@ -1368,7 +1355,7 @@ margin: 0 0.14em;
 
 #modulegroups-preset-name entry
 {
-  min-width: 300px;
+  min-width: 21em;
 }
 
 #modulegroups-ro
@@ -1471,7 +1458,7 @@ margin: 0 0.14em;
 
 #basics-header-box
 {
-  border-top: 0.7px solid @darkroom_bg_color;
+  border-top: 0.049em solid @darkroom_bg_color;
   margin: 0.15em 0;
 }
 
@@ -1535,24 +1522,24 @@ filechooser .sidebar,
 
 #preferences_box .sidebar row
 {
-  padding: 5px;
+  padding: 0.35em;
 }
 
 /* Set lines states */
 filechooser .sidebar-icon,
 filechooser .sidebar-label
 {
-  padding: 4px 6px 4px 10px;
+  padding: 0.28em 0.42em 0.28em 0.7em;
 }
 
 filechooser .sidebar-button
 {
-  margin-right: 4px;
+  margin-right: 0.28em;
 }
 
 filechooser row
 {
-  margin-top: -4px; /* be sure to not have empty space on top of row for hover and selected effects */
+  margin-top: -0.28em; /* be sure to not have empty space on top of row for hover and selected effects */
 }
 
 filechooser .sidebar row:selected,
@@ -1594,7 +1581,7 @@ filechooser row:hover,
 
 #preferences_box .sidebar label
 {
-  padding: 0.14em 12px;
+  padding: 0.14em 0.84em;
 }
 
 #preferences_box separator  /* reset border size to avoid having space between row in sidebar */
@@ -1624,7 +1611,7 @@ treeview header widget button,
   border: 0;
   border-radius: 0;
   padding: 0;
-  margin: 0 0.5px 0 0;
+  margin: 0 0.035em 0 0;
 }
 
 treeview header label,
@@ -1634,7 +1621,7 @@ treeview header label,
 .accels_window_list header button label
 {
   font-weight: bold;
-  padding: 0.14em 6px;
+  padding: 0.14em 0.42em;
   margin: 0;
 }
 
@@ -1655,7 +1642,7 @@ padding: 0.14em;
 
 #dt-map-location
 {
-border-bottom: 1px solid @button_border;
+border-bottom: 0.07em solid @button_border;
 }
 
 #dt-map-location:hover
@@ -1686,7 +1673,7 @@ border-bottom: 1px solid @button_border;
 
 #background_job_eventbox label
 {
-  margin: 1px 4px;
+  margin: 0.07em 0.28em;
 }
 
 #background_job_eventbox #dt-button
@@ -1703,13 +1690,13 @@ progressbar *
 progressbar progress
 {
   background-color: @darkroom_bg_color;
-  border-radius: 4px;
+  border-radius: 0.28em;
 }
 
 /* Be sure to have minimum width allowed for infos on images infos module if reducing panel width */
 #brightbg
 {
-  min-width: 80px;
+  min-width: 5.6em;
   padding-left: 0.14em;
 }
 
@@ -1718,7 +1705,7 @@ progressbar progress
 #iop-plugin-ui checkbutton check,
 checkbutton check
 {
-  margin: 5px 8px 5px 0;
+  margin: 0.35em 0.56em 0.35em 0;
 }
 
 /* Set selected cell */
@@ -1730,7 +1717,7 @@ cell:selected
 /* Be sure to align correctly widget for parametric blending options in modules */
 #blending-box #section_label
 {
-  margin: 0 0 8px 0;
+  margin: 0 0 0.56em 0;
 }
 
 /* Set below spacing between history items in darkroom */
@@ -1740,8 +1727,8 @@ cell:selected
 #left #history-button-always-enabled,
 #left #history-button-default-enabled
 {
-  padding: 1px 0.14em 0.14em 0.14em;
-  margin: 0 1px 1px 1px;
+  padding: 0.07em 0.14em 0.14em 0.14em;
+  margin: 0 0.07em 0.07em 0.07em;
 }
 
 /* then the switches */
@@ -1755,7 +1742,7 @@ cell:selected
   min-width: 1.2em;
   min-height: 1.2em;
   padding: 0.15em;
-  margin: 1px 0.14em 0.14em 0.14em; /* align switches with create style icon */
+  margin: 0.07em 0.14em 0.14em 0.14em; /* align switches with create style icon */
   border: 0;
 }
 
@@ -1785,15 +1772,15 @@ cell:selected
   font-size: 1em;
   font-weight: bold;
   background-color: rgba(75,75,75,0.6);
-  padding: 8px 20px;
-  border-radius: 8px;
+  padding: 0.56em 1.4em;
+  border-radius: 0.56em;
 }
 
  /* then set infos shown on top of the image on darkroom, like for example opacity in drawn masks */
 #toast-msg
 {
-  padding: 0.14em 14px 4px 14px;
-  border-radius: 0 0 8px 8px;
+  padding: 0.14em 1em 0.28em 1em;
+  border-radius: 0 0 0.56em 0.56em;
 }
 
 /* Set some specific fonts */
@@ -1812,20 +1799,27 @@ cell:selected
   - Set color pickers -
   ---------------------*/
 
+/** Module in darkroom left panel **/
 /* the main color picker button */
 #color-picker-button
 {
   min-height: 2em;
   min-width: 1.7em;
+  padding: 0.07em;
   border: 0;
 }
 
-/* Module in darkroom left panel */
 #color-picker-area
 {
   min-height: 7em;
   min-width: 7em;
 }
+
+.picker-module button
+{
+  padding: 0;
+}
+
 .picker-module combobox,
 .picker-module combobox button
 {
@@ -1837,6 +1831,7 @@ cell:selected
 #live-sample
 {
   padding: 0;
+  margin: 0 0.21em 0.21em 0;
   min-height: 1em;
   min-width: 3em;
 }
@@ -2183,7 +2178,7 @@ scale contents trough slider:hover
 
 .iop_drag_icon
 {
-  border: 1px solid @plugin_bg_color;
+  border: 0.07em solid @plugin_bg_color;
   background-color: @bg_color;
 }
 
@@ -2264,7 +2259,7 @@ Details :
 #thumb_back
 {
   background-color: @thumbnail_bg_color;
-  border: 1px solid @lighttable_bg_color;
+  border: 0.07em solid @lighttable_bg_color;
 }
 
 #thumb_main:selected #thumb_back
@@ -2297,14 +2292,14 @@ Details :
 
 .dt_thumbtable_reorder #thumb_main:hover #thumb_back
 {
-  border-left : 4px solid rgb(255, 187, 0);
+  border-left : 0.28em solid rgb(255, 187, 0);
 }
 
 /* Last active images animation */
 @keyframes lastactive
 {
   0% {border-color: @lighttable_bg_color; border-width : 0.14em;}
-  50% {border-color: @thumbnail_bg50_color; border-width : 4px;}
+  50% {border-color: @thumbnail_bg50_color; border-width : 0.28em;}
   100% {border-color: @lighttable_bg_color; border-width : 0.14em;}
 }
 
@@ -2323,9 +2318,9 @@ Details :
 #overlays_label  /* set title of the popover menu */
 {
   font-weight: bold;
-  padding: 4px 0;
-  margin: 0 5px 5px 5px;
-  border-bottom: 1px inset @button_border;
+  padding: 0.28em 0;
+  margin: 0 0.35em 0.35em 0.35em;
+  border-bottom: 0.07em inset @button_border;
 }
 
 radiobutton radio,
@@ -2341,13 +2336,13 @@ radiobutton radio
 
 spinbutton>button
 {
-  margin: 0.14em 1px;
+  margin: 0.14em 0.07em;
 }
 
 #show-tooltip
 {
-  margin: 4px 0 0 4px;
-  border-top: 1px dashed @button_border;
+  margin: 0.28em 0 0 0.28em;
+  border-top: 0.07em dashed @button_border;
 }
 
   /*** for following settings line, remember which popover mode name and related line on popover menu
@@ -2367,25 +2362,25 @@ spinbutton>button
 
 #thumb_image
 {
-  border: none;
-  margin: 25px; /* not real pixels, but per thousand of the thumb size */
+  border: 0;
+  margin: 1.75em; /* not real pixels, but per thousand of the thumb size */
 }
 
 .dt_thumbnails_2 #thumb_image, /* update consistently margins if big thumbnails (less images per row) are shown */
 .dt_thumbnails_2#thumb_image
 {
-  margin: 20px;
+  margin: 1.4em;
 }
 
 #thumb_ext /* adjust margin to better align to group, audio... icons and match to near all thumbnails sizes */
 {
-  margin-top: -1px;
+  margin-top: -0.07em;
 }
 
 /* Set top margin on active image in filmstrip */
 #thumb_main:active #thumb_back
 {
-  border-top: 1.5px solid @border_color;
+  border-top: 0.105em solid @border_color;
 }
 /* Set top cursor on active image in filmstrip */
 #thumb_cursor
@@ -2403,7 +2398,7 @@ spinbutton>button
 
 #thumb_bottom
 {
-  border : 1px solid transparent; /* to not overlay thumb borders */
+  border : 0.07em solid transparent; /* to not overlay thumb borders */
 }
 
 /* Set outside margins in thumbnails about bottom infos area */
@@ -2567,8 +2562,8 @@ spinbutton>button
 /* Set local copy mark */
 #thumb_localcopy
 {
-  border-top : 1px solid @lighttable_bg_color;
-  border-right : 1px solid @lighttable_bg_color;
+  border-top : 0.07em solid @lighttable_bg_color;
+  border-right : 0.07em solid @lighttable_bg_color;
 }
 
 .dt_group_right #thumb_localcopy
@@ -2630,14 +2625,14 @@ spinbutton>button
 
 .dt_overlays_always#preview #thumb_bottom > *
 {
-  padding-top: 3px;
+  padding-top: 0.21em;
 }
 
 /* Padding of overlays block hover on thumbnail overlay mode */
 .dt_overlays_hover_block #thumb_image:hover #thumb_bottom_label
 {
-  padding-left: 4px;
-  padding-right: 4px;
+  padding-left: 0.28em;
+  padding-right: 0.28em;
 }
 
 /*-----------------------------
@@ -2655,13 +2650,13 @@ spinbutton>button
 .dt_preview #thumb_main:active #thumb_back
 {
   background-color: transparent;
-  border: none;
+  border: 0;
 }
 
 /* Set image borders */
 .dt_preview #thumb_image, .dt_preview_thumb_image#thumb_image
 {
-  margin : 10px;
+  margin : 0.7em;
 }
 .dt_culling #thumb_main:selected #thumb_image,
 .dt_preview #thumb_main:selected #thumb_image
@@ -2681,8 +2676,8 @@ spinbutton>button
 .dt_overlays_always#preview #thumb_bottom,
 .dt_overlays_always_extended#preview #thumb_bottom
 {
-  border-radius: 3px;
-  border-top: 1px solid @lighttable_bg_color;
+  border-radius: 0.21em;
+  border-top: 0.07em solid @lighttable_bg_color;
   background-image: linear-gradient(rgba(171, 171, 171, 0.2) 0%, rgba(171, 171, 171, 0.1) 5%, rgba(171, 171, 171, 0) 100%);
 }
 
@@ -2699,14 +2694,14 @@ spinbutton>button
 {
   color: transparent;
   background-color: transparent;
-  border-radius: 4px;
-  padding: 1px 6px;
+  border-radius: 0.28em;
+  padding: 0.07em 0.42em;
 }
 
 /* Set where overlays block infos start on the image */
 .dt_overlays_hover_block #thumb_bottom
 {
-  margin-top: 30px;  /* not real pixels, but per thousand of the image size */
+  margin-top: 2.1em;  /* not real pixels, but per thousand of the image size */
   margin-left: 0;  /* not real pixels, but per thousand of the image size */
 }
 
@@ -2734,7 +2729,8 @@ spinbutton>button
   margin: 0 0.4em;
 }
 
-.active-menu-item * /* needed for some Pango issues not rendering synthetic bold for all OS */
+/* Set active menu items: needed for some Pango issues not rendering synthetic bold for all OS */
+.active-menu-item *
 {
     font-weight: bold;
 }
