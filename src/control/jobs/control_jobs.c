@@ -32,6 +32,7 @@
 #include "common/tags.h"
 #include "common/undo.h"
 #include "common/grouping.h"
+#include "common/import_session.h"
 #include "control/conf.h"
 #include "develop/imageop_math.h"
 
@@ -75,6 +76,11 @@ typedef struct dt_control_export_t
   dt_iop_color_intent_t icc_intent;
   gchar *metadata_export;
 } dt_control_export_t;
+
+typedef struct dt_control_import_t
+{
+  struct dt_import_session_t *session;
+} dt_control_import_t;
 
 typedef struct dt_control_image_enumerator_t
 {
@@ -2052,6 +2058,140 @@ void dt_control_write_sidecar_files()
                      dt_control_generic_images_job_create(&dt_control_write_sidecar_files_job_run,
                                                           N_("write sidecar files"), 0, NULL, PROGRESS_NONE,
                                                           FALSE));
+}
+
+static gboolean _control_import_image(const char *filename,
+                                      struct dt_import_session_t *session)
+{
+  char *data = NULL;
+  gsize size = 0;
+  time_t exif_time;
+  gboolean res = TRUE;
+  if(!g_file_get_contents(filename, &data, &size, NULL))
+  {
+    dt_print(DT_DEBUG_CONTROL, "[import_from] failed to read file `%s`\n", filename);
+    return FALSE;
+  }
+  char *basename = g_path_get_basename(filename);
+  const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
+
+  if(have_exif_time)
+    dt_import_session_set_exif_time(session, exif_time);
+  const char *output_path = dt_import_session_path(session, FALSE);
+  const gboolean use_filename = dt_conf_get_bool("session/use_filename");
+  dt_import_session_set_filename(session, basename);
+  const char *fname = dt_import_session_filename(session, use_filename);
+
+  char *output = g_build_filename(output_path, fname, NULL);
+
+  if(!g_file_set_contents(output, data, size, NULL))
+  {
+    dt_print(DT_DEBUG_CONTROL, "[import_from] failed to write file %s\n", output);
+    res = FALSE;
+  }
+  else
+  {
+    const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
+    if((imgid & 3) == 3)
+    {
+      dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+      dt_control_queue_redraw_center();
+    }
+  }
+  g_free(output);
+  g_free(basename);
+  return res;
+}
+
+static int32_t _control_import_job_run(dt_job_t *job)
+{
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)dt_control_job_get_params(job);
+  dt_control_import_t *data = params->data;
+  uint32_t cntr = 0;
+  GList *t = params->index;
+  char message[512] = { 0 };
+
+  const guint total = g_list_length(t);
+  snprintf(message, sizeof(message), ngettext("importing %d image", "importing %d images", total), total);
+  dt_control_job_set_progress_message(job, message);
+
+//  dt_ctl_switch_mode_to("lighttable");
+
+  double fraction = 0.0f;
+  for(GList *img = t; img; img = g_list_next(img))
+  {
+    if(_control_import_image((char *)img->data, data->session))
+      cntr++;
+
+    fraction += 1.0 / total;
+    snprintf(message, sizeof(message), ngettext("importing %d/%d image", "importing %d/%d images", cntr), cntr, total);
+    dt_control_job_set_progress_message(job, message);
+    dt_control_job_set_progress(job, fraction);
+    g_usleep(50);
+  }
+
+  dt_control_queue_redraw_center();
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
+  printf("film id %d\n",dt_import_session_film_id(data->session));
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
+                          dt_import_session_film_id(data->session));
+  return 0;
+}
+
+static void _control_import_job_cleanup(void *p)
+{
+  dt_control_image_enumerator_t *params = (dt_control_image_enumerator_t *)p;
+  dt_control_import_t *data = params->data;
+  if(data->session)
+    dt_import_session_destroy(data->session);
+  free(data);
+  for(GList *img = params->index; img; img = g_list_next(img))
+    g_free(img->data);
+  dt_control_image_enumerator_cleanup(params);
+}
+
+static void *_control_import_alloc()
+{
+  dt_control_image_enumerator_t *params = dt_control_image_enumerator_alloc();
+  if(!params) return NULL;
+
+  params->data = g_malloc0(sizeof(dt_control_import_t));
+  if(!params->data)
+  {
+    _control_import_job_cleanup(params);
+    return NULL;
+  }
+  return params;
+}
+
+static dt_job_t *_control_import_job_create(GList *imgs)
+{
+  dt_job_t *job = dt_control_job_create(&_control_import_job_run, "import");
+  if(!job) return NULL;
+  dt_control_image_enumerator_t *params = _control_import_alloc();
+  if(!params)
+  {
+    dt_control_job_dispose(job);
+    return NULL;
+  }
+  dt_control_job_add_progress(job, _("import"), FALSE);
+  dt_control_job_set_params(job, params, _control_import_job_cleanup);
+
+  params->index = imgs;
+
+  dt_control_import_t *data = params->data;
+  data->session = dt_import_session_new();
+  char *jobcode = dt_conf_get_string("ui_last/import_jobcode");
+  dt_import_session_set_name(data->session, jobcode);
+  g_free(jobcode);
+
+  return job;
+}
+
+void dt_control_import(GList *imgs)
+{
+  dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
+                     _control_import_job_create(imgs));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
