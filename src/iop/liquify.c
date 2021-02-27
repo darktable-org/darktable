@@ -1101,8 +1101,15 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
                                                     GList *interpolated,
                                                     gboolean inverted)
 {
-  // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
+  if (mapsize == 0)
+  {
+    // there are no pixels for which we need distortion info, so return right away
+    // caller will see the NULL and bypass any further processing of the points it wants to distort
+    return NULL;
+  }
+
+  // allocate distortion map big enough to contain all paths
   float complex *map = dt_alloc_align(64, sizeof(float complex) * mapsize);
   memset(map, 0, sizeof(float complex) * mapsize);
 
