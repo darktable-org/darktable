@@ -4112,8 +4112,8 @@ static int fit_v_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -4164,8 +4164,8 @@ static int fit_h_button_clicked(GtkWidget *widget, GdkEventButton *event, gpoint
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -4216,8 +4216,8 @@ static int fit_both_button_clicked(GtkWidget *widget, GdkEventButton *event, gpo
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_fitaxis_t fitaxis = ASHIFT_FIT_NONE;
 
@@ -4270,8 +4270,8 @@ static int structure_button_clicked(GtkWidget *widget, GdkEventButton *event, gp
     dt_iop_ashift_params_t *p = (dt_iop_ashift_params_t *)self->params;
     dt_iop_ashift_gui_data_t *g = (dt_iop_ashift_gui_data_t *)self->gui_data;
 
-    const int control = (event->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK;
-    const int shift = (event->state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK;
+    const int control = dt_modifiers_include(event->state, GDK_CONTROL_MASK);
+    const int shift = dt_modifiers_include(event->state, GDK_SHIFT_MASK);
 
     dt_iop_ashift_enhance_t enhance;
 

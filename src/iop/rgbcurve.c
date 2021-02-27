@@ -515,9 +515,9 @@ void color_picker_apply(dt_iop_module_t *self, GtkWidget *picker, dt_dev_pixelpi
 
     const GdkModifierType state = dt_key_modifier_state();
     int picker_set_upper_lower; // flat=0, lower=-1, upper=1
-    if(state == GDK_CONTROL_MASK)
+    if(dt_modifier_is(state, GDK_CONTROL_MASK))
       picker_set_upper_lower = 1;
-    else if(state == GDK_SHIFT_MASK)
+    else if(dt_modifier_is(state, GDK_SHIFT_MASK))
       picker_set_upper_lower = -1;
     else
       picker_set_upper_lower = 0;
