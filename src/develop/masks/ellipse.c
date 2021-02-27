@@ -1731,7 +1731,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
 {
   double start1 = 0.0;
   double start2 = start1;
-  if(darktable.unmuted & DT_DEBUG_PERF) start1 = dt_get_wtime();
+  if(darktable.unmuted & DT_DEBUG_PERF) start2 = start1 = dt_get_wtime();
 
   // we get the ellipse parameters
   dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
