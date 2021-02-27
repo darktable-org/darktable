@@ -56,6 +56,7 @@ typedef struct dt_lib_metadata_t
   gboolean editing;
   GtkWidget *apply_button;
   gboolean init_layout;
+  GList *last_act_on;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -126,7 +127,31 @@ static void _update(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
+
   d->imgsel = dt_control_get_mouse_over_id();
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
+
+  // first we want to make sure the list of images to act on has changed
+  // this is not the case if mouse hover change but still stay in selection for ex.
+  if(!imgs && !d->last_act_on) return;
+  if(imgs && d->last_act_on)
+  {
+    gboolean changed = FALSE;
+    GList *l = d->last_act_on;
+    GList *ll = (GList *)imgs;
+    while(l && ll)
+    {
+      if(GPOINTER_TO_INT(l->data) != GPOINTER_TO_INT(ll->data))
+      {
+        changed = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+      ll = g_list_next(ll);
+    }
+    if(!changed) return;
+  }
+  d->last_act_on = g_list_copy((GList *)imgs);
 
   GList *metadata[DT_METADATA_NUMBER];
   uint32_t metadata_count[DT_METADATA_NUMBER];
@@ -140,8 +165,6 @@ static void _update(dt_lib_module_t *self)
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
   gchar *images = dt_view_get_images_to_act_on_query(TRUE);
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
-
   imgs_count = g_list_length((GList *)imgs);
 
   if(images)
