@@ -140,7 +140,7 @@ static void _update(dt_lib_module_t *self)
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
   char *images = NULL;
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE);
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
   while(imgs)
   {
     images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
@@ -218,7 +218,7 @@ static void _write_metadata(dt_lib_module_t *self)
       _append_kv(&key_value, dt_metadata_get_key(keyid), metadata[i]);
   }
 
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
   dt_metadata_set_list(imgs, key_value, TRUE);
 
   for(unsigned int i = 0; i < DT_METADATA_NUMBER; i++)
@@ -334,7 +334,7 @@ void gui_reset(dt_lib_module_t *self)
 {
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
   d->editing = FALSE;
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
   dt_metadata_clear(imgs, TRUE);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
   dt_image_synch_xmps(imgs);
@@ -937,7 +937,7 @@ int set_params(dt_lib_module_t *self, const void *params, int size)
     if(metadata[i][0] != '\0') _append_kv(&key_value, dt_metadata_get_key(i), metadata[i]);
   }
 
-  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE);
+  const GList *imgs = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
   dt_metadata_set_list(imgs, key_value, TRUE);
 
   g_list_free(key_value);
