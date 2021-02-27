@@ -179,12 +179,12 @@
   color: @fg_color;
   font-size: 1em;
   font-family: sans-serif;
-  text-shadow:none;
   box-shadow:none;
-  padding: 0;
-  margin: 0;
-  border: 0;
   outline-style:none;
+  text-shadow:none;
+  border: 0;
+  margin: 0;
+  padding: 0;
   min-width: 0;
   min-height: 0;
 }
@@ -286,7 +286,7 @@ button:disabled,
 /* Default extra margin for icons optical alignment */
 #button-canvas
 {
-  margin: 5px; /* not real pixels, this is used as a percent extra space */
+  margin: 0.35em; /* not real pixels, this is used as a percent extra space */
 }
 
 /* Set same settings on all those items */
@@ -334,21 +334,20 @@ checkbutton check:checked
 #control-button:checked
 {
   background-color: transparent;
+  margin-left: 0.14em;
   border: 0;
 }
 
 /* Separator */
 separator
 {
-  color: @border_color;
-  border-left: 1px solid;
-  border-color: transparent;
-  background-color: transparent;
+  border-left: 1px solid transparent;
 }
 
-separator:hover
+/* Allow to resize dialog windows */ 
+decoration
 {
-  color: @button_border;
+  margin: 0.07em;
 }
 
 /* Avoid having too much empty space at top/bottom of sidepanels when scrolled */
@@ -363,8 +362,8 @@ overshoot.bottom,
 overshoot.left,
 overshoot.right
 {
-  background: transparent;
-  border:none;
+  background-color: transparent;
+  border: 0;
 }
 
 /*------------------------
@@ -381,21 +380,12 @@ overshoot.right
   color: @section_label;
 }
 
-#view_dropdown menu
-{
-  padding: 0.14em 0;
-}
-
+#view_dropdown menu,
 #view_dropdown button,
+#view_dropdown menuitem,
 #view_label
 {
-  margin: 0.2em 0;
   padding: 0.2em 0.4em;
-}
-
-#view_dropdown menuitem
-{
-  padding: 0.1em 0.3em;
 }
 
 /*------------------------------
@@ -421,28 +411,22 @@ overshoot.right
   border: 0;
 }
 
-#header-toolbar #button-canvas,
-#footer-toolbar #button-canvas
-{
-  margin: 12px; /* not real pixels, this is used as a percent extra space */
-}
-
-#footer-toolbar #lib-label-colors #button-canvas
-{
-  margin: 16px; /* not real pixels, this is used as a percent extra space */
-}
-
-#dt-icon
-{
-  border-radius: 0.14em;
-}
-
 /* Rating stars on left footer toolbar on lighttable view */
 #lib-rating-stars
 {
-  min-height: 1em;
+  min-height: 1.1em;
   min-width: 9em;
   margin-right: 1em;
+}
+
+/* Set default button spacing  in toolbars and modules */
+#header-toolbar #button-canvas,
+#footer-toolbar #button-canvas,
+#control-button #button-canvas,
+#module-header #button-canvas,
+#modules-tabs #button-canvas
+{
+  margin: 1em; /* not real pixels, this is used as a percent extra space */
 }
 
 /*---------------------------
@@ -477,6 +461,10 @@ overshoot.right
 #blending-box #dt-toggle-button,
 #blending-box #show_mask_button,
 #blending-box #keep-active,
+#non-flat,
+#picker-black,
+#picker-grey,
+#picker-white,
 #basics-widget #dt-button
 {
   min-height: 1.3em;
@@ -484,16 +472,7 @@ overshoot.right
   border: 0;
 }
 
-/* exception: non-flat buttons */
-#iop-plugin-ui-main #non-flat,
-#lib-plugin-ui-main #non-flat
-{
-  min-height: 1.3em;
-  min-width: 1.3em;
-  padding: 1px;
-}
-
-/* Size of control-buttons an duplicate module ones */
+/* Size of control-buttons in duplicate module one */
   /* control-buttons are: filter in collect images, filter in header toolbar and arrow in filmic */
 #iop-plugin-ui-main #control-button,
 #lib-plugin-ui-main #control-button,
@@ -501,12 +480,7 @@ overshoot.right
 {
   min-height: 1em;
   min-width: 1em;
-  padding: 0.15em;
-}
-
-#control-button #button-canvas
-{
-  margin: 12px; /* not real pixels, this is used as a percent extra space */
+  padding: 0.14em;
 }
 
 #lib-plugin-ui-main viewport
@@ -528,7 +502,7 @@ overshoot.right
 
 .picker-module label
 {
-  padding-right: 3px;
+  padding-right: 0.2em;
 }
 
 /* Set history (darkroom) and recent collections (lighttable) modules, that make use of a
@@ -547,7 +521,7 @@ overshoot.right
 
 #history-number
 {
-  padding-right: 4px;
+  padding-right: 0.28em;
   font-family: monospace;
 }
 
@@ -572,13 +546,8 @@ overshoot.right
   min-height: 1.15em;
   min-width: 1.15em;
   padding: 0.06em;
-  border: 0;
   margin: 0 1px;
-}
-
-#module-header #button-canvas
-{
-  margin: 12px; /* not real pixels, this is used as a percent extra space */
+  border: 0;
 }
 
 /* Gradient sliders */
@@ -586,42 +555,26 @@ overshoot.right
 .dt_gslider_multivalue
 {
   min-height: 1.7em;
-  margin: 0;
-  border: 0;
   padding: 0.25em 0.6em;
 }
 
 /* Entries options in lighttable */
-#left #lib-plugin-ui entry /* this will avoid having too much height on entry items in filter collections modules */
-{
-  margin: 8px 0;
-}
-
-#left #lib-plugin-ui .duplicate-ui entry
-{
-  margin-left: 0.5em;
-}
-
-#left .duplicate-ui .text-button
-{
-  margin-top: 4px;
-}
-
 #left #lib-plugin-ui #lib-collect-entry
 {
   margin-top: 0;
-  margin-bottom: 4px;
+  margin-bottom: 0.28em;
 }
 
-#right #lib-plugin-ui entry /* this will adjust entry height on right panel */
+/* Set duplicate module space in darkroom */
+#left .duplicate-ui .text-button
 {
-  padding: 1px;
+  margin-top: 0.28em;
 }
 
 /* Set modules name header */
 #module-header
 {
-  padding: 0.5em 0.5em 0.5em 0.5em;
+  padding: 0.5em;
 }
 
 #module-header entry
@@ -635,8 +588,6 @@ overshoot.right
 {
   background-color: @bg_color;
   color: @plugin_label_color;
-  border: 0;
-  margin: 0;
   padding: 0 0.14em 0.14em 0.45em;
   font-weight: normal;
   font-family: sans-serif;
@@ -651,53 +602,43 @@ overshoot.right
 /* Labels of controls sections in modules */
 #section_label
 {
-  margin: 0 0 8px 0;
-  padding: 0 0 5px 0;
+  margin: 0 0 0.56em 0;
+  padding: 0 0 0.35em 0;
   color: @section_label;
   border-bottom: 0.5px solid  @section_label;
-  font-weight: 500;
   font-family: sans-serif;
+  font-weight: 500;
 }
 
 #iop-plugin-ui #section_label,
-#lib-plugin-ui #section_label
+#lib-plugin-ui #section_label,
+#lib-plugin-ui .section-expander,
+#iop-plugin-ui .section-expander
 {
-  margin: 8px 0 6px 0;
+  margin: 0.56em 0 0.42em 0;
 }
 
 #iop-plugin-ui #section_label.section_label_top,
 #lib-plugin-ui #section_label.section_label_top
 {
-  margin: 0.14em 0 6px 0;
+  margin: 0.14em 0 0.42em 0;
 }
 
 /* Control sections that can be expanded/collapsed need to be handled differently */
-
 #iop-plugin-ui .section-expander #section_label,
 #lib-plugin-ui .section-expander #section_label
 {
   margin: 0;
 }
 
-#lib-plugin-ui .section-expander,
-#iop-plugin-ui .section-expander
-{
-  padding: 8px 0 6px 0;
-}
-
 #lib-plugin-ui .section-expander #control-button,
-#iop-plugin-ui .section-expander #control-button {
-  padding: 0;
+#iop-plugin-ui .section-expander #control-button
+{
   margin: 0;
+  padding: 0;
 }
 
 /* Special modules: image infos, navigation and search ones */
-#image-info
-{
-  font-size: 1.1em;
-  padding: 0.25em;
-}
-
 #navigation-module
 {
   background-color: @graph_bg;
@@ -713,9 +654,10 @@ overshoot.right
   margin-right: 0.5em;
 }
 
-/*------------------
+/*-------------------
   - Scope/Histogram -
-  ------------------*/
+  -------------------*/
+
 #main-histogram buttonbox
 {
   margin-top: 0.5em;   /* spacing between histogram buttons and top of scope */
@@ -764,6 +706,7 @@ overshoot.right
 {
   background-color: alpha(@graph_green, 0.66);
 }
+
 #blue-channel-button:checked
 {
   background-color: alpha(@graph_blue, 0.66);
@@ -774,7 +717,6 @@ overshoot.right
 {
   border-color: alpha(@button_checked_fg, 0.33);    /* just set a really tight border to better check quickly active state*/
 }
-
 
 #main-histogram #dt-button:disabled,
 #main-histogram .toggle:disabled
@@ -793,24 +735,19 @@ dialog
   color: @plugin_fg_color;
 }
 
-dialog decoration  /* allow to resize dialog windows */
-{
-  margin: 1px;
-}
-
 dialog .dialog-vbox
 {
-  margin: 6px;
+  margin: 0.42em;
 }
 
 dialog filechooser
 {
-  margin-left: -6px; /* remove left margin only on dialog filechooser box */
+  margin-left: -0.42em; /* remove left margin only on dialog filechooser box */
 }
 
 dialog .dialog-vbox scrolledwindow
 {
-  margin: 4px 0;
+  margin: 0.28em 0;
   padding: 0;
 }
 
@@ -825,7 +762,7 @@ dialog checkbutton check:focus
 dialog button
 {
   padding: 0.14em;
-  margin: 1px;
+  margin: 0.07em;
 }
 
 dialog headerbar
@@ -837,25 +774,21 @@ dialog headerbar
 
 dialog headerbar button
 {
-  padding: 1px 5px;
+  padding: 0.07em 0.35em;
 }
 
 /* Set specific content */
 dialog scrolledwindow
 {
-  padding: 0 1px 0 8px;
+  padding: 0 0.07em 0 0.56em;
   margin: 0;
 }
 
-#left #lib-plugin-ui #import_metadata entry
+#left #lib-plugin-ui #import_metadata entry,
+#left #lib-plugin-ui #import_metadata checkbutton check,
+#right #lib-plugin-ui #gpx_list checkbutton check
 {
-  margin: 1px 1px;
-  padding: 0;
-}
-
-#left #lib-plugin-ui #import_metadata checkbutton check
-{
-  margin: 1px;
+  margin: 0.07em;
   padding: 0;
 }
 
@@ -869,23 +802,17 @@ dialog scrolledwindow
   font-style: italic;
 }
 
-#right #lib-plugin-ui #gpx_list checkbutton check
-{
-  margin: 1px;
-  padding: 0;
-}
-
 /* Set import from camera or card dialog window */
 dialog .dialog-vbox notebook stack /* set top margin ; between tabs and text below */
 {
-  margin-top: 4px;
+  margin-top: 0.28em;
 }
 
 dialog .dialog-vbox notebook stack box box > label  /* set code project name on first tab */
 {
   font-size: 0.90em;
   font-weight: bold;
-  padding-top: 5px;
+  padding-top: 0.35em;
 }
 
 dialog .dialog-vbox notebook stack box box checkbutton,  /* fix margins on last line on second tab */
@@ -896,7 +823,7 @@ dialog .dialog-vbox notebook stack box box entry
 
 dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on last line on second tab */
 {
-  padding: 0.14em 6px 0.14em 0;
+  padding: 0.14em 0.42em 0.14em 0;
   font-size: 1em;                 /*reset to default font size and weight to avoid apply settings set few lines above */
   font-weight: normal;
 }
@@ -915,7 +842,7 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
 /* preferences module dialog window */
 .dialog-action-box
 {
-  margin-top: 5px;
+  margin-top: 0.35em;
 }
 
 /*--------------------------------------------------------
@@ -935,30 +862,29 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
 #bauhaus-combobox,
 #bauhaus-slider
 {
-  min-height: 1em;
-  background-color: transparent;
   color: @bauhaus_fg;
+  background-color: transparent;
+  min-height: 1em;
 }
 
 /*----------------------------------------
   - Context menu & tooltips & comboboxes -
   ----------------------------------------*/
-/*** Basically everything that pops out/over on UI ***/
 
+/*** Basically everything that pops out/over on UI ***/
 combobox,
 combobox button
 {
   background-color: transparent;
   border-radius: 0.14em;
   color: @bauhaus_fg;
-  outline-style: none;
   min-height: 1em;
   min-width: 1em;
 }
 
 combobox button
 {
-  padding: 1px;
+  padding: 0.07em;
   border: 1px solid transparent;
 }
 
@@ -987,7 +913,6 @@ dialog combobox window,
   background-color: @tooltip_bg_color;
   border-radius: 0.14em;
   border: 1px solid @button_border;
-  outline-style: none;
   min-height: 0.4em;
   min-width: 0.4em;
   padding: 0.2em 0;
@@ -1022,7 +947,7 @@ tooltip label
 
 combobox label
 {
-  margin: 0 5px 0 0;
+  margin: 0 0.35em 0 0;
 }
 
 /* Menus options */
@@ -1037,9 +962,9 @@ menuitem check
 {
   border-radius: 0.14em;
   border: 1px solid shade(@tooltip_bg_color, 4);
-  min-width: 10px;
-  min-height: 10px;
-  margin-right: 5px;
+  min-width: 0.7em;
+  min-height: 0.7em;
+  margin-right: 0.35em;
 }
 
 /* Header and footer labels */
@@ -1053,7 +978,7 @@ menu separator,
 popover separator
 {
   margin: 0.6em 2em;
-  padding-bottom: 1px;
+  padding-bottom: 0.07em;
   background-color: @selected_bg_color;
 }
 
@@ -1083,11 +1008,6 @@ notebook tabs,
 {
   min-height: 2em;
   padding: 0.1em;
-}
-
-#modules-tabs #button-canvas
-{
-  margin: 12px; /* not real pixels, this is used as a percent extra space */
 }
 
 #blending-tabs #dt-toggle-button
@@ -1143,12 +1063,13 @@ notebook tab label /* disabled tabs */
 
 notebook header /* add space between notebook tabs and options below */
 {
-  margin-bottom: 6px;
+  margin-bottom: 0.42em;
 }
 
 /*--------------------------
   - GTK sliders and scales -
   --------------------------*/
+
 /*** WARNING : sliders IN modules are bauhaus (from a custom lib in darktable), not standard GTK sliders (see below) ***/
 
 #lib-plugin-ui scrollbar slider,
@@ -1159,8 +1080,8 @@ dialog scrollbar slider
   background-color: @scroll_bar_inactive;
   border: 0.14em solid transparent;
   margin: 0;
-  min-width: 6px;
-  min-height: 6px;
+  min-width: 0.42em;
+  min-height: 0.42em;
 }
 
 scale contents trough
@@ -1201,10 +1122,10 @@ dialog scrollbar
 {
   border-color: @scroll_bar_bg;
   background: @scroll_bar_bg;
-  border-radius: 5px;
-  min-height: 6px;
-  min-width: 6px;
-  margin: 1px;
+  border-radius: 0.35em;
+  min-height: 0.42em;
+  min-width: 0.42em;
+  margin: 0.07em;
 }
 
 /*--------------------------
@@ -1216,15 +1137,15 @@ dialog scrollbar
    background-color: transparent;
    font-weight: bold;
    font-size: 1.1em;
-   padding: 10px 0;
+   padding: 0.7em 0;
 }
 
 .accels_window_list label
 {
    font-weight: bold;
    font-size: 0.9em;
-   padding-top: 1px;
-   padding-right: 10px;
+   padding-top: 0.07em;
+   padding-right: 0.7em;
 }
 
 .accels_window_box treeview
@@ -1247,21 +1168,16 @@ dialog scrollbar
   margin: 0; /* reset default dialog margin to all items. And needed to have an hover and selected effect on all width of categories in sidebar */
 }
 
-#preferences_notebook decoration  /* allow to resize preferences dialog window */
-{
-  margin: 1px;
-}
-
 /* Set preferences margins in main part */
 #preferences_box box grid,
 #preferences_box scrolledwindow
 {
-  padding: 10px 15px 5px 15px;
+  padding: 0.7em 1.05em 0.35em 1.05em;
 }
 
 #preferences_box stack viewport
 {
-  padding-right: 5px;
+  padding-right: 0.35em;
 }
 
 /* Edit CSS view on preferences dialog window */
@@ -1269,8 +1185,8 @@ dialog scrollbar
 {
   border: 1px inset @border_color;
   background-color: @bg_color;
-  margin: 10px 25px 20px 25px;
-  padding: 10px;
+  margin: 0.7em 1.75em 1.4em 1.75em;
+  padding: 0.7em;
 }
 
 #usercss_box scrolledwindow
@@ -1304,7 +1220,7 @@ dialog scrollbar
 /* Just add spacing between label settings and setting beside */
 #preferences_notebook stack widget label
 {
-  margin-right: 25px;
+  margin-right: 1.75em;
 }
 
 /* This will avoid having too much height on entry items in dialog windows; label and button are needed as they are related */
@@ -1313,20 +1229,20 @@ dialog scrollbar
 #preferences_notebook stack textview
 {
   padding: 0.14em;
-  margin: 1px 0;
+  margin: 0.07em 0;
 }
 
 #preference_non_default
 {
   font-weight: bolder;
-  margin: 1px;
+  margin: 0.07em;
   min-width: 1em;
 }
 
 #preferences_notebook combobox,
 #preferences_notebook spinbutton
 {
-   min-width: 180px;
+   min-width: 12.6em;
 }
 
 #preferences_notebook combobox menuitem
@@ -1336,7 +1252,7 @@ dialog scrollbar
 
 #preferences_notebook button
 {
-  margin-left: 1px;
+  margin-left: 0.07em;
   padding: 0 0.14em;
 }
 
@@ -1344,12 +1260,12 @@ dialog scrollbar
 #preferences_box #shortcut_controls,
 #preferences_box #preset_controls
 {
-  margin: 5px 15px 15px 15px;
+  margin: 0.35em 1.05em 1.05em 1.05em;
 }
 
 #preferences_box #shortcut_controls
 {
-  margin-left: 5px;
+  margin-left: 0.35em;
 }
 
 #preferences_box #shortcut_controls button,
@@ -1385,9 +1301,9 @@ margin: 0 0.14em;
   background-color: @bg_color;
   color: @plugin_label_color;
   border-left: 0.14em solid @bg_color;
-  padding: 7px 17px;
+  padding: 0.49em 1.19em;
   font-size: 1.1em;
-  min-width: 150px;
+  min-width: 10.5em;
 }
 
 #modulegroups-iop-header,
@@ -1930,21 +1846,18 @@ cell:selected
 #picker-black
 {
   color: @grey_00;
-  min-height: 1.3em;
   border: 0;
 }
 
 #picker-grey
 {
   color: @grey_50;
-  min-height: 1.3em;
   border: 0;
 }
 
 #picker-white
 {
   color: @grey_100;
-  min-height: 1.3em;
   border: 0;
 }
 
