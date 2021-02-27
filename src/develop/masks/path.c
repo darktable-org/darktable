@@ -854,7 +854,8 @@ static int _path_get_points_border(dt_develop_t *dev, dt_masks_form_t *form, flo
 
 static void _path_get_sizes(struct dt_iop_module_t *module, dt_masks_form_t *form, dt_masks_form_gui_t *gui, int index, float *masks_size, float *feather_size)
 {
-  dt_masks_form_gui_points_t *gpt = (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
+  const dt_masks_form_gui_points_t *gpt =
+    (dt_masks_form_gui_points_t *)g_list_nth_data(gui->points, index);
   if(!gpt) return;
 
   const int nb = g_list_length(form->points);
@@ -884,10 +885,15 @@ static void _path_get_sizes(struct dt_iop_module_t *module, dt_masks_form_t *for
       const float fx = gpt->border[i * 2];
       const float fy = gpt->border[i * 2 + 1];
 
-      fp1[0] = fminf(fp1[0], fx);
-      fp2[0] = fmaxf(fp2[0], fx);
-      fp1[1] = fminf(fp1[1], fy);
-      fp2[1] = fmaxf(fp2[1], fy);
+      // ??? looks like when x border is nan then y is a point index
+      // see draw border in _path_events_post_expose.
+      if(!isnan(fx))
+      {
+        fp1[0] = fminf(fp1[0], fx);
+        fp2[0] = fmaxf(fp2[0], fx);
+        fp1[1] = fminf(fp1[1], fy);
+        fp2[1] = fmaxf(fp2[1], fy);
+      }
     }
   }
 
