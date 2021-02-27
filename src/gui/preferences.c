@@ -2307,7 +2307,7 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key)
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
   gtk_widget_set_halign(w_label, GTK_ALIGN_START);
   GtkWidget *labelev = gtk_event_box_new();
-  gtk_widget_set_hexpand(labelev, TRUE);
+//  gtk_widget_set_hexpand(labelev, TRUE);
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
   GtkWidget *w = gtk_check_button_new();
@@ -2359,7 +2359,7 @@ GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key)
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
   gtk_widget_set_halign(w_label, GTK_ALIGN_START);
   GtkWidget *labelev = gtk_event_box_new();
-  gtk_widget_set_hexpand(labelev, TRUE);
+//  gtk_widget_set_hexpand(labelev, TRUE);
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
   gint min = MAX(G_MININT, dt_confgen_get_int(key, DT_MIN));
@@ -2448,7 +2448,7 @@ GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key)
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
   gtk_widget_set_halign(w_label, GTK_ALIGN_START);
   GtkWidget *labelev = gtk_event_box_new();
-  gtk_widget_set_hexpand(labelev, TRUE);
+//  gtk_widget_set_hexpand(labelev, TRUE);
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
 
@@ -2536,7 +2536,7 @@ GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key)
   gtk_widget_set_tooltip_text(w_label, _(dt_confgen_get_tooltip(key)));
   gtk_widget_set_halign(w_label, GTK_ALIGN_START);
   GtkWidget *labelev = gtk_event_box_new();
-  gtk_widget_set_hexpand(labelev, TRUE);
+//  gtk_widget_set_hexpand(labelev, TRUE);
   gtk_widget_add_events(labelev, GDK_BUTTON_PRESS_MASK);
   gtk_container_add(GTK_CONTAINER(labelev), w_label);
 

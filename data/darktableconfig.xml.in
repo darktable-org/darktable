@@ -737,7 +737,7 @@
   <dtconfig ui="yes">
     <name>ui_last/import_jobcode</name>
     <type>string</type>
-    <default/>
+    <default>no_name</default>
     <shortdescription>import job</shortdescription>
     <longdescription>name of the import job</longdescription>
   </dtconfig>

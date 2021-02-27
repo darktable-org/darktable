@@ -101,6 +101,7 @@ typedef struct dt_lib_import_t
     GtkTreeViewColumn *sel_thumb;
     GtkTreeIter iter;
     int event;
+    guint nb;
   } from;
 
 #ifdef USE_LUA
@@ -752,8 +753,8 @@ static void _all_thumb_toggled(GtkTreeViewColumn *column, dt_lib_module_t *self)
   }
 }
 
-static void _import_from_set_file_list(const gchar *folder, const int root_lgth,
-                                       const gboolean recursive, GtkListStore *store)
+static guint _import_from_set_file_list(const gchar *folder, const int root_lgth,
+                                        const gboolean recursive, GtkListStore *store)
 {
   GError *error = NULL;
   GFile *gfolder = g_file_parse_name(folder);
@@ -765,6 +766,7 @@ static void _import_from_set_file_list(const gchar *folder, const int root_lgth,
                                   G_FILE_QUERY_INFO_NONE, NULL, &error);
 
   GFileInfo *info = NULL;
+  guint nb = 0;
   while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
   {
     const char *filename = g_file_info_get_name(info);
@@ -776,7 +778,7 @@ static void _import_from_set_file_list(const gchar *folder, const int root_lgth,
 
     if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
     {
-      _import_from_set_file_list(fullname, root_lgth, recursive, store);
+      nb += _import_from_set_file_list(fullname, root_lgth, recursive, store);
     }
     // supported image format to import
     else if(filetype != G_FILE_TYPE_DIRECTORY && dt_supported_image(filename))
@@ -785,6 +787,7 @@ static void _import_from_set_file_list(const gchar *folder, const int root_lgth,
       gtk_list_store_append(store, &iter);
       gtk_list_store_set(store, &iter, DT_IMPORT_FILENAME, &fullname[root_lgth + 1],
                                        DT_IMPORT_DATETIME, dt_txt, -1);
+      nb++;
     }
 
     g_free(dt_txt);
@@ -794,43 +797,77 @@ static void _import_from_set_file_list(const gchar *folder, const int root_lgth,
   }
   g_file_enumerator_close(dir_files, NULL, NULL);
   g_object_unref(dir_files);
+  return nb;
+}
+static void _update_dialog_title(GtkWidget *dialog, const guint nb_sel, const guint nb)
+{
+  char title[256] = { 0 };
+  snprintf(title, sizeof(title), ngettext("import %d/%d image", "import %d/%d images", nb_sel), nb_sel, nb);
+  gtk_window_set_title(GTK_WINDOW(dialog), title);
+}
+
+static void _import_from_selection_changed(GtkTreeSelection *selection, dt_lib_module_t* self)
+{
+  dt_lib_import_t *d = (dt_lib_import_t *)self->data;
+  guint nb_sel = gtk_tree_selection_count_selected_rows(selection);
+  _update_dialog_title(d->from.dialog, nb_sel, d->from.nb);
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(d->from.dialog),
+                                    GTK_RESPONSE_ACCEPT, nb_sel ? TRUE : FALSE);
+}
+
+static void _usefn_toggled(GtkWidget *widget, GtkWidget *grid)
+{
+  // activate widgets as needed
+  const gboolean usefn = gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget));
+  for(int j = 0; j < 2 ; j++)
+  {
+    GtkWidget *w = gtk_grid_get_child_at(GTK_GRID(grid), j, 4);
+    if(GTK_IS_WIDGET(w))
+      gtk_widget_set_sensitive(w, !usefn);
+  }
 }
 
 static void _import_from_dialog_new(dt_lib_module_t* self)
 {
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
-  d->from.dialog = gtk_dialog_new_with_buttons(_("import images session"), NULL, GTK_DIALOG_MODAL,
-                                               _("cancel"), GTK_RESPONSE_NONE, _("import"),
+  d->from.dialog = gtk_dialog_new_with_buttons("", NULL, GTK_DIALOG_MODAL,
+                                               _("done"), GTK_RESPONSE_NONE, _("import"),
                                                GTK_RESPONSE_ACCEPT, NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(d->from.dialog);
 #endif
-  gtk_window_set_default_size(GTK_WINDOW(d->from.dialog), 100, 600);
+  gtk_window_set_default_size(GTK_WINDOW(d->from.dialog), 300, 600);
   gtk_window_set_transient_for(GTK_WINDOW(d->from.dialog), GTK_WINDOW(win));
   GtkWidget *content = gtk_dialog_get_content_area(GTK_DIALOG(d->from.dialog));
 
   // jobcode
   GtkGrid *grid = GTK_GRID(gtk_grid_new());
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(5));
+
   dt_gui_preferences_string(grid, "ui_last/import_jobcode");
+  dt_gui_preferences_string(grid, "session/base_directory_pattern");
+  dt_gui_preferences_string(grid, "session/sub_directory_pattern");
+  GtkWidget *usefn = dt_gui_preferences_bool(grid, "session/use_filename");
+  dt_gui_preferences_string(grid, "session/filename_pattern");
+  _usefn_toggled(usefn, GTK_WIDGET(grid));
+  g_signal_connect(usefn, "toggled", G_CALLBACK(_usefn_toggled), grid);
   gtk_box_pack_start(GTK_BOX(content), GTK_WIDGET(grid), FALSE, FALSE, 0);
 
-  GtkWidget *hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
   GtkWidget *label = dt_ui_label_new(_("folder"));
-  gtk_box_pack_start(GTK_BOX(hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
+  gtk_grid_attach(grid, label, 0, 5, 1, 1);
   label = dt_ui_label_new(d->from.folder);
-//  gtk_label_set_xalign (GTK_LABEL(label), 1.0f);
-  gtk_widget_set_halign(label, GTK_ALIGN_END);
-  gtk_box_pack_end(GTK_BOX(hbox), GTK_WIDGET(label), TRUE, TRUE, 0);
-  gtk_box_pack_start(GTK_BOX(content), GTK_WIDGET(hbox), FALSE, FALSE, 0);
+  gtk_grid_attach(grid, label, 1, 5, 1, 1);
 
   // List - setup store
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
                                      G_TYPE_STRING, G_TYPE_STRING);
   // fulfill the store
   gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
-  _import_from_set_file_list(d->from.folder, strlen(d->from.folder), recursive, d->from.store);
+  d->from.nb =_import_from_set_file_list(d->from.folder, strlen(d->from.folder),
+                                         recursive, d->from.store);
+
+  _update_dialog_title(d->from.dialog, 0, d->from.nb);
 
   // Create the treview with list model data store
   d->from.w = gtk_scrolled_window_new(NULL, NULL);
@@ -849,7 +886,8 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
   gtk_widget_show(button);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(button), FALSE);
   gtk_tree_view_column_set_widget(column, button);
-  gtk_tree_view_column_set_alignment(column, 0.5);
+//  FIXME the toggle button is not centered
+//  gtk_tree_view_column_set_alignment(column, 0.5);
   g_signal_connect(column, "clicked", G_CALLBACK(_all_thumb_toggled), self);
   gtk_tree_view_column_set_clickable(column, TRUE);
 
@@ -863,18 +901,23 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
                                                     DT_IMPORT_FILENAME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_expand(column, TRUE);
+//  gtk_tree_view_column_set_resizable(column, GTK_TREE_VIEW_COLUMN_AUTOSIZE);
+//  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_MIDDLE, NULL);
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("date/time"), renderer, "text",
                                                     DT_IMPORT_DATETIME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
+//  g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
   gtk_tree_view_column_set_expand(column, TRUE);
 
   GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+  g_signal_connect(G_OBJECT(selection), "changed", G_CALLBACK(_import_from_selection_changed), self);
 
   gtk_tree_view_set_model(d->from.treeview, GTK_TREE_MODEL(d->from.store));
   gtk_tree_view_set_headers_visible(d->from.treeview, TRUE);
+//  gtk_widget_set_hexpand(GTK_WIDGET(d->from.treeview), TRUE);
 
   gtk_box_pack_start(GTK_BOX(content), GTK_WIDGET(d->from.w), TRUE, TRUE, 0);
 }
@@ -883,10 +926,28 @@ static void _import_from_dialog_run(dt_lib_module_t* self)
 {
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   gtk_widget_show_all(d->from.dialog);
-  gint result = gtk_dialog_run(GTK_DIALOG(d->from.dialog));
-  if(result == GTK_RESPONSE_ACCEPT)
+  while(gtk_dialog_run(GTK_DIALOG(d->from.dialog)) == GTK_RESPONSE_ACCEPT)
   {
-
+    GList *imgs = NULL;
+    GtkTreeModel *model = GTK_TREE_MODEL(d->from.store);
+    GtkTreeSelection *selection = gtk_tree_view_get_selection(d->from.treeview);
+    GList *paths = gtk_tree_selection_get_selected_rows(selection, &model);
+    for(GList *path = paths; path; path = g_list_next(path))
+    {
+      GtkTreeIter iter;
+      gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)path->data);
+      char *filename;
+      gtk_tree_model_get(model, &iter, DT_IMPORT_FILENAME, &filename, -1);
+      char *fullname = g_build_filename(d->from.folder, filename, NULL);
+      imgs = g_list_prepend(imgs, fullname);
+      g_free(filename);
+    }
+    g_list_free_full(paths, (GDestroyNotify)gtk_tree_path_free);
+    if(imgs)
+    {
+      imgs = g_list_reverse(imgs);
+      dt_control_import(imgs);
+    }
   }
   // Destroy and quit
   gtk_widget_destroy(d->from.dialog);
@@ -905,7 +966,7 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   GtkWidget *win = dt_ui_main_window(darktable.gui->ui);
   GtkWidget *filechooser = gtk_file_chooser_dialog_new(
-      _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_cancel"),
+      _("open folder"), GTK_WINDOW(win), GTK_FILE_CHOOSER_ACTION_SELECT_FOLDER, _("_done"),
       GTK_RESPONSE_CANCEL, _("_open"), GTK_RESPONSE_ACCEPT, (char *)NULL);
 #ifdef GDK_WINDOWING_QUARTZ
   dt_osx_disallow_fullscreen(filechooser);
@@ -924,13 +985,17 @@ static void _lib_import_from_callback(GtkWidget *widget, dt_lib_module_t* self)
     GSList *list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
     d->from.folder = (char *)list->data;
     g_slist_free(list);
-    dt_conf_set_string("ui_last/import_last_directory", d->from.folder);
+//    dt_conf_set_string("ui_last/import_last_directory", d->from.folder);
+
+    gchar *folder = gtk_file_chooser_get_current_folder(GTK_FILE_CHOOSER(filechooser));
+    dt_conf_set_string("ui_last/import_last_directory", folder);
 
     _import_from_dialog_new(self);
     _import_from_dialog_run(self);
     _import_from_dialog_free(self);
 
-    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), d->from.folder);
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(filechooser), folder);
+    g_free(folder);
     gtk_widget_show(filechooser);
   }
 
