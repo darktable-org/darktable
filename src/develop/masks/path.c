@@ -2222,24 +2222,24 @@ static void _path_bounding_box_raw(const float *const points, const float *borde
     const float yy = border[i * 2 + 1];
     if(isnan(xx))
     {
-      if(isnan(yy)) break; // that means we have to skip the end of the border path
+     if(isnan(yy)) break; // that means we have to skip the end of the border path
       i = yy - 1;
       continue;
     }
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
+    xmin = MIN(xx, xmin);
+    xmax = MAX(xx, xmax);
+    ymin = MIN(yy, ymin);
+    ymax = MAX(yy, ymax);
   }
   for(int i = nb_corner * 3; i < num_points; i++)
   {
     // we look at the path too
     const float xx = points[i * 2];
     const float yy = points[i * 2 + 1];
-    xmin = fminf(xx, xmin);
-    xmax = fmaxf(xx, xmax);
-    ymin = fminf(yy, ymin);
-    ymax = fmaxf(yy, ymax);
+    xmin = MIN(xx, xmin);
+    xmax = MAX(xx, xmax);
+    ymin = MIN(yy, ymin);
+    ymax = MAX(yy, ymax);
   }
 
   *x_min = xmin;
@@ -2297,10 +2297,10 @@ static int _path_get_area(const dt_iop_module_t *const module, const dt_dev_pixe
 }
 
 /** we write a falloff segment */
-static void _path_falloff(float *const restrict buffer, int *p0, int *p1, int posx, int posy, int bw)
+/*static*/ void _path_falloff(float *const restrict buffer, int *p0, int *p1, int posx, int posy, int bw)
 {
   // segment length
-  int l = sqrt((p1[0] - p0[0]) * (p1[0] - p0[0]) + (p1[1] - p0[1]) * (p1[1] - p0[1])) + 1;
+  int l = sqrtf(sqf(p1[0] - p0[0]) + sqf(p1[1] - p0[1])) + 1;
 
   const float lx = p1[0] - p0[0];
   const float ly = p1[1] - p0[1];
@@ -2479,6 +2479,11 @@ static int _path_get_mask(const dt_iop_module_t *const module, const dt_dev_pixe
     start2 = dt_get_wtime();
   }
 
+#ifdef _OPENMP
+#pragma omp parallel for \
+  dt_omp_firstprivate(hb, wb, bufptr) \
+  schedule(static)
+#endif
   for(int yy = 0; yy < hb; yy++)
   {
     int state = 0;
@@ -2755,9 +2760,6 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
     start = start2 = dt_get_wtime();
   }
 
-  // empty the output buffer
-  dt_iop_image_fill(buffer, 0.0f, width, height, 1);
-
   const guint nb_corner = g_list_length(form->points);
 
   // we shift and scale down path and border
@@ -2857,6 +2859,16 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
     start2 = dt_get_wtime();
   }
 
+  // empty the output buffer
+  dt_iop_image_fill(buffer, 0.0f, width, height, 1);
+
+  if(darktable.unmuted & DT_DEBUG_PERF)
+  {
+    dt_print(DT_DEBUG_MASKS, "[masks %s] path_fill clear mask took %0.04f sec\n", form->name,
+             dt_get_wtime() - start2);
+    start2 = dt_get_wtime();
+  }
+
   // deal with path if it does not lie outside of roi
   if(path_in_roi)
   {
@@ -2950,7 +2962,7 @@ static int _path_get_mask_roi(const dt_iop_module_t *const module, const dt_dev_
 #if !defined(__SUNOS__) && !defined(__NetBSD__)
 #pragma omp parallel for default(none) \
   dt_omp_firstprivate(xxmin, xxmax, yymin, yymax, width) \
-  shared(buffer)
+  shared(buffer) schedule(static) num_threads(MIN(8,darktable.num_openmp_threads))
 #else
 #pragma omp parallel for shared(buffer)
 #endif
