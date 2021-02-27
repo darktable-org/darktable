@@ -78,7 +78,7 @@ static int hovered_cb(lua_State *L)
 static int act_on_cb(lua_State *L)
 {
   lua_newtable(L);
-  const GList *image = dt_view_get_images_to_act_on(FALSE, TRUE, FALSE);
+  const GList *image = dt_view_get_images_to_act_on(FALSE, TRUE, TRUE);
   while(image)
   {
     luaA_push(L, dt_lua_image_t, &image->data);
