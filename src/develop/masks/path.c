@@ -1670,7 +1670,7 @@ static int _path_events_mouse_moved(struct dt_iop_module_t *module, float pzx, f
   else if(gui->seg_dragging >= 0)
   {
     // we get point0 new values
-    const GList *const pt = g_list_nth_data(form->points, gui->seg_dragging);
+    const GList *const pt = g_list_nth(form->points, gui->seg_dragging);
     const GList *const pt2 = g_list_next_wraparound(pt, form->points);
     dt_masks_point_path_t *point = (dt_masks_point_path_t *)pt->data;
     dt_masks_point_path_t *point2 = (dt_masks_point_path_t *)pt2->data;
