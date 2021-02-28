@@ -49,7 +49,7 @@ _HowTo: https://github.com/darktable-org/darktable/wiki#finding-bug-causes and h
 
 
 **Platform**
-_Please fill as much as possible inccluding "unknown" and remove those lines, which are clearly not applicable_
+_Please fill as much as possible including "unknown" and remove those lines, which are clearly not applicable_
 
 * darktable version : e.g. 3.5.0+250~gee17c5dcc
 * OS                : e.g. Linux - kernel 5.10.2 / Win10 (Patchlevel) / OSx
@@ -71,6 +71,6 @@ _Please fill as much as possible and remove those lines, which are clearly not a
 
  - Can you reproduce with another Darktable version(s)? **yes with version x-y-z / no**
  - Can you reproduce with a RAW or Jpeg or both? **RAW-file-format/Jpeg/both**
- - Are the steps above reproduce with a fresh edit (i.e. after discarding history)? **yes/no**
- - If the issue is with the output image, attach an XMP if (you'll have to change the extension to `.txt`)
+ - Are the steps above reproducible with a fresh edit (i.e. after discarding history)? **yes/no**
+ - If the issue is with the output image, attach an XMP file if (you'll have to change the extension to `.txt`)
  - Is the issue still present using an empty/new config-dir (e.g. start darktable with --configdir "/tmp")? **yes/no**
