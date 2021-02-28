@@ -7,16 +7,16 @@ assignees: ''
 ---
 
 **Introduction**
-_This section is provided for information, please delete, if understood_
+_This section is provided for information only. Please delete if no longer required._
 
 Before raising a bug/issue please check that it has not already been reported 
-by searching the existing https://github.com/darktable-org/darktable/issues on GitHub.
+by searching https://github.com/darktable-org/darktable/issues.
 
 Please be aware that most developers work on this project in their free time.
 The more information you can provide in the initial report the quicker we can help.
-Therefore please help to be as accurate and concise as possible!
+Therefore please help by being as accurate and concise as possible!
 
-For further information, please see the https://github.com/darktable-org/darktable/wiki#reporting-bugs.
+For further information, please see https://github.com/darktable-org/darktable/wiki#reporting-bugs.
 ---------------------------------------------------------------
 
 
@@ -24,7 +24,7 @@ For further information, please see the https://github.com/darktable-org/darktab
 
 
 **To Reproduce**
-_Please amend or remove, what is/isn't applicable_
+_Please provide detailed steps to reproduce the behaviour, for example:_
 1. Go to '...'
 2. Click on '...'
 3. Scroll down to '...'
@@ -34,13 +34,13 @@ _Please amend or remove, what is/isn't applicable_
 
 
 **Screenshots**
-_Please remove, if not applicable (e.g. no screenshots)_
+_(if applicable)_
 
 **Screencast**
-_Please remove, if not applicable (e.g. no screencast)_
+_(if applicable)_
 
 **Which commit intruduced the error**
-_If possible, please try using `git bisect`. Please remove, if you do not know, what bisect is, or if you do, but not applicable_
+_If possible, please try using `git bisect` to determine which commit introduced the issue and place the result here._
 
 _A bisect is much appreciated and can significantly simplify the developer's job._
 _HowTo: https://github.com/darktable-org/darktable/wiki#finding-bug-causes and https://www.youtube.com/watch?v=D7JJnLFOn4A_
@@ -49,7 +49,7 @@ _HowTo: https://github.com/darktable-org/darktable/wiki#finding-bug-causes and h
 
 
 **Platform**
-_Please fill as much as possible including "unknown" and remove those lines, which are clearly not applicable_
+_Please fill as much information as possible in the list given below. Please state "unknown" where you do not know the answer and remove any sections that are not applicable _
 
 * darktable version : e.g. 3.5.0+250~gee17c5dcc
 * OS                : e.g. Linux - kernel 5.10.2 / Win10 (Patchlevel) / OSx
@@ -67,7 +67,7 @@ _Please fill as much as possible including "unknown" and remove those lines, whi
 * CMAKE_BUILD_TYPE  : 
 
 **Additional context**
-_Please fill as much as possible and remove those lines, which are clearly not applicable__
+_Please provide any additional information you think may be useful, for example:_
 
  - Can you reproduce with another Darktable version(s)? **yes with version x-y-z / no**
  - Can you reproduce with a RAW or Jpeg or both? **RAW-file-format/Jpeg/both**
