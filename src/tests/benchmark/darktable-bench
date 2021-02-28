@@ -38,6 +38,7 @@ def locate_program(program):
    args: program = the name of the program to locate
    returns: full pathname of program
    '''
+   global VERBOSE
    if '/' in program or '\\' in program:
       # is this a relative or absolute path?
       if program[0] == '/' or program[0] == '\\':
@@ -79,6 +80,7 @@ def locate_image(image):
    args: image = the name of the image file to locate
    returns: full pathname of image
    '''
+   global VERBOSE
    if '/' in image or '\\' in image:
       # is this a relative or absolute path?
       if image[0] == '/' or image[0] == '\\':
@@ -106,11 +108,19 @@ def locate_image(image):
             return integ+image
          if VERBOSE:
             print(f'  did not find {image} in {integ}')
-      # fourth: script is not in source dir, but current dir is top of source tree
+      # fourth: we are in integration-test dir and script is in source dir, so look in integration tests
+      if 'integration/../benchmark' in loc:
+         integ, _, __ = loc.partition('/../benchmark')
+         integ += '/images/'
+         if os.path.exists(integ+image):
+            return integ+image
+         if VERBOSE:
+            print(f'  did not find {image} in {integ}')
+      # fifth: script is not in source dir, but current dir is top of source tree
       img = os.getcwd() + '/src/tests/integration/images/mire1.cr2'
       if os.path.exists(img):
          return img
-      # fifth: we are in a sibling of the darktable source tree
+      # sixth: we are in a sibling of the darktable source tree
       candidate = os.getcwd() + '/../darktable/src/tests/integration/images/mire1.cr2'
       if os.path.exists(candidate):
          return candidate
@@ -124,6 +134,7 @@ def locate_xmp(xmp,version):
    args: image = the name of the sidecar file to locate
    returns: full pathname of sidecar
    '''
+   global VERBOSE
    if xmp.endswith('.xmp'):
       xmp = xmp[:-4]
    if version:
@@ -182,6 +193,8 @@ def parse_commandline():
       parser.print_usage()
       parser.exit()
    args, remargs = parser.parse_known_args()
+   global VERBOSE
+   VERBOSE = True if args.verbose else False
    args.program = locate_program(args.program)
    args.image = locate_image(args.image)
    _, _, args.image_base = args.image.rpartition('/')
@@ -189,8 +202,6 @@ def parse_commandline():
       args.image_base = args.image
    args.xmp0 = args.xmp
    args.xmp = locate_xmp(args.xmp,args.version)
-   global VERBOSE
-   VERBOSE = True if args.verbose else False
    if remargs:
       parser.print_usage()
       parser.exit()
@@ -253,6 +264,8 @@ def run_benchmark(program,image,xmp,args):
 def warm_up_caches(program,image,xmp,args):
    xmp = locate_xmp(xmp,'null')
    if xmp:
+      if VERBOSE:
+         print(f'     {xmp}')
       print('Preparing...',end='',flush=True)
       run_benchmark(program,image,xmp,args)
       print('done')
