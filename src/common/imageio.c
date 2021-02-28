@@ -712,13 +712,10 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
 
     dt_ioppr_update_for_style_items(&dev, style_items, format_params->style_append);
 
-    GList *st_items = g_list_first(style_items);
-    while(st_items)
+    for(GList *st_items = style_items; st_items; st_items = g_list_next(st_items))
     {
       dt_style_item_t *st_item = (dt_style_item_t *)st_items->data;
       dt_styles_apply_style_item(&dev, st_item, &modules_used, format_params->style_append);
-
-      st_items = g_list_next(st_items);
     }
 
     g_list_free(modules_used);
@@ -751,9 +748,8 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
   }
   else if(icc_type == DT_COLORSPACE_NONE)
   {
-    GList *modules = dev.iop;
     dt_iop_module_t *colorout = NULL;
-    while(modules)
+    for(GList *modules = dev.iop; modules; modules = g_list_next(modules))
     {
       colorout = (dt_iop_module_t *)modules->data;
       if(colorout->get_p && strcmp(colorout->op, "colorout") == 0)
@@ -762,7 +758,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
         sRGB = (!type || *type == DT_COLORSPACE_SRGB);
         break; // colorout can't have > 1 instance
       }
-      modules = g_list_next(modules);
     }
   }
   else
