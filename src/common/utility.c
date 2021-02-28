@@ -136,10 +136,10 @@ gchar *dt_util_glist_to_str(const gchar *separator, GList *items)
   if(items != NULL)
   {
     int i = 0;
-    do
+    for(; items; items = g_list_next(items))
     {
       strings[i++] = items->data;
-    } while((items = g_list_next(items)) != NULL);
+    }
   }
 
   // join them into a single string

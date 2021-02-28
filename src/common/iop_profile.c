@@ -688,8 +688,7 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
 {
   dt_iop_order_iccprofile_info_t *profile_info = NULL;
 
-  GList *profiles = g_list_first(dev->allprofile_info);
-  while(profiles)
+  for(GList *profiles = g_list_first(dev->allprofile_info); profiles; profiles = g_list_next(profiles))
   {
     dt_iop_order_iccprofile_info_t *prof = (dt_iop_order_iccprofile_info_t *)(profiles->data);
     if(prof->type == profile_type && strcmp(prof->filename, profile_filename) == 0)
@@ -697,7 +696,6 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
       profile_info = prof;
       break;
     }
-    profiles = g_list_next(profiles);
   }
 
   return profile_info;
@@ -735,8 +733,7 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
   // first check if the module is between colorin and colorout
   gboolean in_between = FALSE;
 
-  GList *modules = g_list_first(iop_list);
-  while(modules)
+  for(GList *modules = iop_list; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
@@ -756,8 +753,6 @@ dt_iop_order_iccprofile_info_t *dt_ioppr_get_iop_work_profile_info(struct dt_iop
       in_between = TRUE;
       break;
     }
-
-    modules = g_list_next(modules);
   }
 
   if(in_between)
@@ -918,8 +913,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   }
   if(colorin_so && colorin_so->get_p)
   {
-    modules = g_list_first(dev->iop);
-    while(modules)
+    for(modules = g_list_first(dev->iop); modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       if(!strcmp(module->op, "colorin"))
@@ -927,7 +921,6 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
         colorin = module;
         break;
       }
-      modules = g_list_next(modules);
     }
   }
   if(colorin)
