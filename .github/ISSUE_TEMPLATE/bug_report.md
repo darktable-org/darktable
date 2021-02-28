@@ -69,7 +69,7 @@ _Please fill as much information as possible in the list given below. Please sta
 **Additional context**
 _Please provide any additional information you think may be useful, for example:_
 
- - Can you reproduce with another Darktable version(s)? **yes with version x-y-z / no**
+ - Can you reproduce with another darktable version(s)? **yes with version x-y-z / no**
  - Can you reproduce with a RAW or Jpeg or both? **RAW-file-format/Jpeg/both**
  - Are the steps above reproducible with a fresh edit (i.e. after discarding history)? **yes/no**
  - If the issue is with the output image, attach an XMP file if (you'll have to change the extension to `.txt`)
