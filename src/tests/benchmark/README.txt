@@ -9,9 +9,10 @@ Performance numbers will only be directly comparable when using the
 same version of darktable, the same image, and the same sidecar file.
 Unless you override the image or sidecar, they will remain the same.
 Comparisons between different darktable versions will also reflect
-performance changes between the versions (for example, darktable 3.2.1
-rates ~410 on a 32-core Threadripper, while darktable 3.4 rates ~645
-on the same hardware).
+performance changes between the versions (for example, on the same
+32-core AMD Threadripper using the v3.4 sidecar file, darktable v3.2.1
+rates ~410, darktable v3.4.0 rates ~645, and a development version
+v3.5.0 rated ~700).
 
 Note that on a slow machine, it could easily take three to five
 minutes to run the benchmark.
