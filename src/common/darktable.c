@@ -1651,15 +1651,12 @@ void dt_configure_performance()
 
 int dt_capabilities_check(char *capability)
 {
-  GList *capabilities = darktable.capabilities;
-
-  while(capabilities)
+  for(GList *capabilities = darktable.capabilities; capabilities; capabilities = g_list_next(capabilities))
   {
     if(!strcmp(capabilities->data, capability))
     {
       return TRUE;
     }
-    capabilities = g_list_next(capabilities);
   }
   return FALSE;
 }
