@@ -217,7 +217,7 @@ static void dual_demosaic(dt_dev_pixelpipe_iop_t *piece, float *const restrict r
   dt_free_align(vng_image);
 }
 
-
+#ifdef HAVE_OPENCL
 gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_mem luminance, cl_mem blend, cl_mem high_image, cl_mem low_image, cl_mem out, const int width, const int height, const int showmask)
 {
   const int devid = piece->pipe->devid;
@@ -316,4 +316,6 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
 
   return TRUE;
 }
+#endif
+
 
