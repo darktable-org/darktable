@@ -30,7 +30,7 @@ if [ $# -ne 1 ]; then
   exit 1
 fi
 
-BASE_FOLDER=$(ReadLink "$1")
+BASE_FOLDER=$($ReadLink "$1")
 
 if [ ! -d "${BASE_FOLDER}"  ]; then
   echo "error accessing directory '$BASE_FOLDER'"
