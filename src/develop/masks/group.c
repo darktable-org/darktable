@@ -122,7 +122,6 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   }
 
   // now we check if we are near a form
-  GList *fpts = g_list_first(form->points);
   int pos = 0;
   gui->form_selected = gui->border_selected = FALSE;
   gui->source_selected = gui->source_dragging = FALSE;
@@ -132,7 +131,7 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
   gui->seg_selected = -1;
   gui->point_border_selected = -1;
   gui->group_edited = gui->group_selected = -1;
-  while(fpts)
+  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
@@ -150,7 +149,6 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
       if(sel->functions)
         return sel->functions->mouse_moved(module, pzx, pzy, pressure, which, sel, fpt->parentid, gui, pos);
     }
-    fpts = g_list_next(fpts);
     pos++;
   }
   dt_control_queue_redraw_center();
@@ -160,16 +158,14 @@ static int _group_events_mouse_moved(struct dt_iop_module_t *module, float pzx, 
 void dt_group_events_post_expose(cairo_t *cr, float zoom_scale, dt_masks_form_t *form,
                                  dt_masks_form_gui_t *gui)
 {
-  GList *fpts = g_list_first(form->points);
   int pos = 0;
-  while(fpts)
+  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(darktable.develop, fpt->formid);
     if (!sel) return;
     if(sel->functions)
       sel->functions->post_expose(cr, zoom_scale, gui, pos, g_list_length(sel->points));
-    fpts = g_list_next(fpts);
     pos++;
   }
 }
@@ -229,10 +225,9 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
   float *op = malloc(sizeof(float) * nb);
 
   // and we get all masks
-  GList *fpts = g_list_first(form->points);
   int pos = 0;
   int nb_ok = 0;
-  while(fpts)
+  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(module->dev, fpt->formid);
@@ -250,7 +245,6 @@ static int _group_get_mask(const dt_iop_module_t *const module, const dt_dev_pix
       states[pos] = fpt->state;
       if(ok[pos]) nb_ok++;
     }
-    fpts = g_list_next(fpts);
     pos++;
   }
   if(nb_ok == 0) goto error;
@@ -574,9 +568,7 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
   memset(buffer, 0, sizeof(float) * npixels);
 
   // and we get all masks
-  GList *fpts = g_list_first(form->points);
-
-  while(fpts)
+  for(GList *fpts = form->points; fpts; fpts = g_list_next(fpts))
   {
     dt_masks_point_group_t *fpt = (dt_masks_point_group_t *)fpts->data;
     dt_masks_form_t *sel = dt_masks_get_from_id(module->dev, fpt->formid);
@@ -632,7 +624,6 @@ static int _group_get_mask_roi(const dt_iop_module_t *const restrict module,
         nb_ok++;
       }
     }
-    fpts = g_list_next(fpts);
   }
   // and we free the intermediate buffer
   dt_free_align(bufs);

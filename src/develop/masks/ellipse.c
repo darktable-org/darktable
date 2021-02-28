@@ -716,8 +716,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
       dt_masks_form_t *grp = darktable.develop->form_visible;
       if(!grp || !(grp->type & DT_MASKS_GROUP)) return 1;
       int pos3 = 0, pos2 = -1;
-      GList *fs = g_list_first(grp->points);
-      while(fs)
+      for(GList *fs = grp->points; fs; fs = g_list_next(fs))
       {
         dt_masks_point_group_t *pt = (dt_masks_point_group_t *)fs->data;
         if(pt->formid == form->formid)
@@ -726,7 +725,6 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
           break;
         }
         pos3++;
-        fs = g_list_next(fs);
       }
       if(pos2 < 0) return 1;
       dt_masks_form_gui_t *gui2 = darktable.develop->form_gui;
@@ -781,8 +779,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     else
     {
       dt_masks_clear_form_gui(darktable.develop);
-      GList *forms = g_list_first(darktable.develop->form_visible->points);
-      while(forms)
+      for(GList *forms = darktable.develop->form_visible->points; forms; forms = g_list_next(forms))
       {
         dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
         if(gpt->formid == form->formid)
@@ -792,7 +789,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
           free(gpt);
           break;
         }
-        forms = g_list_next(forms);
       }
       gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
