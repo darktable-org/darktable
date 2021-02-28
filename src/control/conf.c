@@ -475,14 +475,11 @@ void dt_conf_cleanup(dt_conf_t *cf)
     GList *keys = g_hash_table_get_keys(cf->table);
     GList *sorted = g_list_sort(keys, (GCompareFunc)g_strcmp0);
 
-    GList *iter = sorted;
-
-    while(iter)
+    for(GList *iter = sorted; iter; iter = g_list_next(iter))
     {
       const gchar *key = (const gchar *)iter->data;
       const gchar *val = (const gchar *)g_hash_table_lookup(cf->table, key);
       dt_conf_print(key, val, f);
-      iter = g_list_next(iter);
     }
 
     g_list_free(sorted);
