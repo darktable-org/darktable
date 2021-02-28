@@ -49,8 +49,7 @@ void dt_cache_init(
 void dt_cache_cleanup(dt_cache_t *cache)
 {
   g_hash_table_destroy(cache->hashtable);
-  GList *l = cache->lru;
-  while(l)
+  for(GList *l = cache->lru; l; l = g_list_next(l))
   {
     dt_cache_entry_t *entry = (dt_cache_entry_t *)l->data;
 
@@ -66,7 +65,6 @@ void dt_cache_cleanup(dt_cache_t *cache)
 
     dt_pthread_rwlock_destroy(&entry->lock);
     g_slice_free1(sizeof(*entry), entry);
-    l = g_list_next(l);
   }
   g_list_free(cache->lru);
   dt_pthread_mutex_destroy(&cache->lock);
