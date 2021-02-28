@@ -88,7 +88,7 @@
 @define-color plugin_label_color @grey_65;
 
 /* Modules controls (sliders and comboboxes) */
-@define-color bauhaus_bg @grey_15;
+@define-color bauhaus_bg @bg_color;
 @define-color bauhaus_fg @fg_color;
 @define-color bauhaus_border shade(@plugin_bg_color, 0.5);
 @define-color bauhaus_indicator_border @grey_20;
@@ -316,6 +316,7 @@ textview
   background-color: @field_bg;
   border: 0.035em solid @border_color;
   margin: 0.14em 0;
+  padding: 0.07em;
   font-family: sans;
 }
 
@@ -772,6 +773,11 @@ dialog headerbar
   padding: 0.2em 0.6em;
 }
 
+dialog headerbar entry
+{
+  margin: 0.56em;
+}
+
 /* Set specific content */
 dialog scrolledwindow
 {
@@ -1118,9 +1124,9 @@ dialog scrollbar
   min-height : 1.8em;
 }
 
-/*---------------------------------------------------------------
-  - Preferences dialog window options (and filechooser sidebar) -
-  ---------------------------------------------------------------*/
+/*-------------------------------------
+  - Preferences dialog window options -
+  -------------------------------------*/
 
 #preferences_notebook *
 {
@@ -1150,7 +1156,6 @@ dialog scrollbar
 
 #usercss_box scrolledwindow
 {
-  margin: 0;
   padding: 0;
 }
 
@@ -1166,14 +1171,9 @@ dialog scrollbar
   font-weight: bold;
 }
 
-#preferences_notebook scrolledwindow #pref_section  /* top margin in sub-category title in main content */
+#preferences_notebook scrolledwindow #pref_section :not(:first-child) /* top margin in sub-category title in main content */
 {
   margin-top: 1.1em;
-}
-
-#preferences_notebook scrolledwindow #pref_section:first-child  /* reset top margin in first sub-category title in main content */
-{
-  margin-top: 0;
 }
 
 /* Just add spacing between label settings and setting beside */
@@ -1231,6 +1231,85 @@ dialog scrollbar
 #preferences_box #preset_controls button
 {
 margin: 0 0.14em;
+}
+
+/*---------------------------------------------------------------
+  - Set sidebars settings on preferences window and filechooser -
+  ---------------------------------------------------------------*/
+
+/* Set default sidebars settings */
+filechooser .sidebar,
+#preferences_box .sidebar scrolledwindow
+{
+  padding: 0; /* needed to have an hover and selected effect on all width of categories in sidebar */
+  font-size: 1.1em;
+  background-color: @bg_color;
+}
+
+#preferences_box .sidebar row
+{
+  padding: 0.35em;
+}
+
+/* Set lines states */
+filechooser .sidebar-icon,
+filechooser .sidebar-label
+{
+  padding: 0.42em;
+}
+
+filechooser .sidebar-button /* set icons displayed in the right of the sidebar, like eject buttons */
+{
+  margin-right: 0.28em;
+  background-color: transparent;
+  border: 0;
+}
+
+filechooser row
+{
+  margin-top: -0.28em; /* be sure to not have empty space on top of row for hover and selected effects */
+}
+
+filechooser .sidebar row:selected,
+filechooser .sidebar row:selected:hover .sidebar-label,
+#preferences_box .sidebar row:selected,
+#preferences_box .sidebar row:selected:hover label,
+#modulegroups-preset-activated
+{
+  color: @fg_color;
+  background-color: @plugin_bg_color;
+}
+
+#preferences_box .sidebar row,
+#preferences_box .sidebar row:selected
+{
+  border-left: 0.14em solid @bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
+}
+
+filechooser row:selected .sidebar-icon,  /* set icon instead of border for filechooser dialog window */
+filechooser row:hover .sidebar-icon
+{
+  color: @button_hover_fg;
+  background-color: @field_hover_bg;
+}
+
+#preferences_box .sidebar row:selected,
+#modulegroups-preset-activated
+{
+  border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
+}
+
+filechooser row:hover,
+#preferences_box .sidebar :hover,  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
+#modulegroups-preset:hover
+{
+  border-left-color: @button_hover_bg;
+  background-color: @button_hover_bg;
+}
+
+#preferences_box .sidebar label
+{
+  padding: 0.14em 0.84em;
 }
 
 /*--------------------------------
@@ -1477,88 +1556,6 @@ margin: 0 0.14em;
   padding: 0.4em 0 0.2em 0;
   font-weight: bold;
   color: @plugin_label_color;
-}
-
-/*---------------------------------------------------------------
-  - Set sidebars settings on preferences window and filechooser -
-  ---------------------------------------------------------------*/
-
-/* Set default sidebars settings */
-filechooser .sidebar,
-#preferences_box .sidebar scrolledwindow
-{
-  padding: 0; /* needed to have an hover and selected effect on all width of categories in sidebar */
-  font-size: 1.1em;
-  background-color: @bg_color;
-}
-
-#preferences_box .sidebar row
-{
-  padding: 0.35em;
-}
-
-/* Set lines states */
-filechooser .sidebar-icon,
-filechooser .sidebar-label
-{
-  padding: 0.28em 0.42em 0.28em 0.7em;
-}
-
-filechooser .sidebar-button
-{
-  margin-right: 0.28em;
-}
-
-filechooser row
-{
-  margin-top: -0.28em; /* be sure to not have empty space on top of row for hover and selected effects */
-}
-
-filechooser .sidebar row:selected,
-filechooser .sidebar row:selected:hover .sidebar-label,
-#preferences_box .sidebar row:selected,
-#preferences_box .sidebar row:selected:hover label,
-#modulegroups-preset-activated
-{
-  color: @fg_color;
-  background-color: @plugin_bg_color;
-}
-
-#preferences_box .sidebar row,
-#preferences_box .sidebar row:selected
-{
-  border-left: 0.14em solid @bg_color; /* be sure border is set but not visible if category on sidebar not selected but keep same size and type for selected category ; color needs to be same as sidebar scrolledwindow background-color few lines above */
-}
-
-filechooser row:selected .sidebar-icon,  /* set icon instead of border for filechooser dialog window */
-filechooser row:hover .sidebar-icon
-{
-  color: @button_hover_fg;
-  background-color: @field_hover_bg;
-}
-
-#preferences_box .sidebar row:selected,
-#modulegroups-preset-activated
-{
-  border-left-color: @field_hover_bg;   /* make the border left visible with choosed color if category on sidebar is selected */
-}
-
-filechooser row:hover,
-#preferences_box .sidebar :hover,  /* be sure border is set but same color as background-color hover effect and for same reason as just above */
-#modulegroups-preset:hover
-{
-  border-left-color: @button_hover_bg;
-  background-color: @button_hover_bg;
-}
-
-#preferences_box .sidebar label
-{
-  padding: 0.14em 0.84em;
-}
-
-#preferences_box separator  /* reset border size to avoid having space between row in sidebar */
-{
-  border: 0;
 }
 
 /*--------------------------------
