@@ -2060,7 +2060,7 @@ void dt_control_write_sidecar_files()
                                                           FALSE));
 }
 
-static gboolean _control_import_image(const char *filename,
+static int _control_import_image_copy(const char *filename,
                                       struct dt_import_session_t *session)
 {
   char *data = NULL;
@@ -2070,7 +2070,7 @@ static gboolean _control_import_image(const char *filename,
   if(!g_file_get_contents(filename, &data, &size, NULL))
   {
     dt_print(DT_DEBUG_CONTROL, "[import_from] failed to read file `%s`\n", filename);
-    return FALSE;
+    return -1;
   }
   char *basename = g_path_get_basename(filename);
   const gboolean have_exif_time = dt_exif_get_datetime_taken((uint8_t *)data, size, &exif_time);
@@ -2092,7 +2092,8 @@ static gboolean _control_import_image(const char *filename,
   else
   {
     const int32_t imgid = dt_image_import(dt_import_session_film_id(session), output, FALSE, FALSE);
-    if((imgid & 3) == 3)
+    if(!imgid) dt_control_log(_("error loading file `%s'"), output);
+    else if((imgid & 3) == 3)
     {
       dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
       dt_control_queue_redraw_center();
@@ -2100,7 +2101,23 @@ static gboolean _control_import_image(const char *filename,
   }
   g_free(output);
   g_free(basename);
-  return res;
+  return res ? dt_import_session_film_id(session) : -1;
+}
+
+static int _control_import_image_insitu(const char *filename)
+{
+  char *dirname = g_path_get_dirname(filename);
+  dt_film_t film;
+  const int filmid = dt_film_new(&film, dirname);
+  const int32_t imgid = dt_image_import(filmid, filename, FALSE, FALSE);
+  if(!imgid) dt_control_log(_("error loading file `%s'"), filename);
+  else if((imgid & 3) == 3)
+  {
+    dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_NEW_QUERY, NULL);
+    dt_control_queue_redraw_center();
+  }
+  g_free(dirname);
+  return filmid;
 }
 
 static int32_t _control_import_job_run(dt_job_t *job)
@@ -2115,26 +2132,26 @@ static int32_t _control_import_job_run(dt_job_t *job)
   snprintf(message, sizeof(message), ngettext("importing %d image", "importing %d images", total), total);
   dt_control_job_set_progress_message(job, message);
 
-//  dt_ctl_switch_mode_to("lighttable");
-
   double fraction = 0.0f;
+  int filmid = -1;
   for(GList *img = t; img; img = g_list_next(img))
   {
-    if(_control_import_image((char *)img->data, data->session))
+    if(data->session)
+      filmid = _control_import_image_copy((char *)img->data, data->session);
+    else
+      filmid = _control_import_image_insitu((char *)img->data);
+    if(filmid != -1)
       cntr++;
-
     fraction += 1.0 / total;
     snprintf(message, sizeof(message), ngettext("importing %d/%d image", "importing %d/%d images", cntr), cntr, total);
     dt_control_job_set_progress_message(job, message);
     dt_control_job_set_progress(job, fraction);
-    g_usleep(50);
+    g_usleep(100);
   }
 
   dt_control_queue_redraw_center();
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
-  printf("film id %d\n",dt_import_session_film_id(data->session));
-  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED,
-                          dt_import_session_film_id(data->session));
+  DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, filmid);
   return 0;
 }
 
@@ -2180,10 +2197,16 @@ static dt_job_t *_control_import_job_create(GList *imgs)
   params->index = imgs;
 
   dt_control_import_t *data = params->data;
-  data->session = dt_import_session_new();
-  char *jobcode = dt_conf_get_string("ui_last/import_jobcode");
-  dt_import_session_set_name(data->session, jobcode);
-  g_free(jobcode);
+  const gboolean insitu = dt_conf_get_bool("ui_last/in_situ");
+  if(insitu)
+    data->session = NULL;
+  else
+  {
+    data->session = dt_import_session_new();
+    char *jobcode = dt_conf_get_string("ui_last/import_jobcode");
+    dt_import_session_set_name(data->session, jobcode);
+    g_free(jobcode);
+  }
 
   return job;
 }
