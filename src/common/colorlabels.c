@@ -132,7 +132,7 @@ typedef enum dt_colorlabels_actions_t
 
 static void _colorlabels_execute(const GList *imgs, const int labels, GList **undo, const gboolean undo_on, const int action)
 {
-  for(GList *images = (GList *)imgs; images; images = g_list_next(images))
+  for(const GList *images = imgs; images; images = g_list_next((GList *)images))
   {
     const int image_id = GPOINTER_TO_INT(images->data);
     const uint8_t before = dt_colorlabels_get_labels(image_id);
