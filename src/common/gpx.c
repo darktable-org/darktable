@@ -154,7 +154,7 @@ gboolean dt_gpx_get_location(struct dt_gpx_t *gpx, GTimeVal *timestamp, dt_image
   /* verify that we got at least 2 trackpoints */
   if(g_list_shorter_than(gpx->trkpts,2)) return FALSE;
 
-  for(GList *item = g_list_first(gpx->trkpts); item; item = g_list_next(item))
+  for(GList *item = gpx->trkpts; item; item = g_list_next(item))
   {
     dt_gpx_track_point_t *tp = (dt_gpx_track_point_t *)item->data;
 

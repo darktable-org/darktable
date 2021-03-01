@@ -115,7 +115,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
     }
     else if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
     {
-      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
       if(up)
         gradient->compression = fmaxf(gradient->compression, 0.001f) * 0.8f;
       else
@@ -129,7 +129,7 @@ static int _gradient_events_mouse_scrolled(struct dt_iop_module_t *module, float
     }
     else if(gui->edit_mode == DT_MASKS_EDIT_FULL)
     {
-      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+      dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
       if(up)
         gradient->curvature = fminf(gradient->curvature + 0.05f, 2.0f);
       else
@@ -154,7 +154,7 @@ static int _gradient_events_button_pressed(struct dt_iop_module_t *module, float
   if(which == 1 && type == GDK_2BUTTON_PRESS)
   {
     // double-click resets curvature
-    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
 
     gradient->curvature = 0.0f;
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -240,7 +240,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
   if(gui->form_dragging && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the gradient
-    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
 
     // we end the form dragging
     gui->form_dragging = FALSE;
@@ -267,7 +267,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
   else if(gui->form_rotating && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the gradient
-    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
 
     // we end the form rotating
     gui->form_rotating = FALSE;
@@ -303,7 +303,7 @@ static int _gradient_events_button_released(struct dt_iop_module_t *module, floa
   else if(gui->gradient_toggling)
   {
     // we get the gradient
-    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+    dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
 
     // we end the gradient toggling
     gui->gradient_toggling = FALSE;
@@ -1122,7 +1122,7 @@ static int _gradient_get_mask(const dt_iop_module_t *const module, const dt_dev_
   }
 
   // we get the gradient values
-  dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)(g_list_first(form->points)->data);
+  dt_masks_point_gradient_t *gradient = (dt_masks_point_gradient_t *)((form->points)->data);
 
   // we create a buffer of grid points for later interpolation. mainly in order to reduce memory footprint
   const int w = *width;
@@ -1494,7 +1494,7 @@ static void _gradient_set_hint_message(const dt_masks_form_gui_t *const gui, con
 static void _gradient_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
+  for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_gradient_t *pt = (dt_masks_point_gradient_t *)pts->data;
     dt_masks_point_gradient_t *npt = (dt_masks_point_gradient_t *)malloc(sizeof(dt_masks_point_gradient_t));

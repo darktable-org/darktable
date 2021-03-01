@@ -205,7 +205,7 @@ int dt_history_load_and_apply_on_list(gchar *filename, const GList *list)
 static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_iop_module_t *module)
 {
   dt_dev_history_item_t *hist_mod = NULL;
-  for(GList *history = g_list_first(dev->history); history; history = g_list_next(history))
+  for(GList *history = dev->history; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
@@ -222,7 +222,7 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_io
 static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_module_t *module)
 {
   dt_dev_history_item_t *hist_mod = NULL;
-  for(GList *history = g_list_first(dev->history); history; history = g_list_next(history))
+  for(GList *history = dev->history; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
@@ -240,7 +240,7 @@ static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_mo
 static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list, dt_iop_module_t *module)
 {
   dt_iop_module_t *mod_ret = NULL;
-  for(GList *modules = g_list_first(modules_list); modules; modules = g_list_next(modules))
+  for(GList *modules = modules_list; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
@@ -304,7 +304,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   {
     // we haven't found a module to replace
     // check if there's a module with the same (operation, multi_name) on dev->iop
-    for(GList *modules_dest = g_list_first(dev_dest->iop); modules_dest; modules_dest = g_list_next(modules_dest))
+    for(GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
@@ -380,7 +380,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   {
     dt_iop_module_t *module_duplicate = NULL;
     // check if there's a module with the same iop_order
-    for( GList *modules_dest = g_list_first(dev_dest->iop); modules_dest; modules_dest = g_list_next(modules_dest))
+    for( GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(modules_dest->data);
 
@@ -536,7 +536,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   {
     if (DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
     // we will copy all modules
-    for(GList *modules_src = g_list_first(dev_src->iop); modules_src; modules_src = g_list_next(modules_src))
+    for(GList *modules_src = dev_src->iop; modules_src; modules_src = g_list_next(modules_src))
     {
       dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
 
@@ -1138,7 +1138,7 @@ int dt_history_compress_on_list(const GList *imgs)
   int uncompressed=0;
 
   // Get the list of selected images
-  for(GList *l = g_list_first((GList *)imgs); l; l = g_list_next(l))
+  for(const GList *l = imgs; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     dt_lock_image(imgid);
@@ -1242,7 +1242,7 @@ GList *dt_history_duplicate(GList *hist)
 {
   GList *result = NULL;
 
-  for(GList *h = g_list_first(hist); h; h = g_list_next(h))
+  for(GList *h = hist; h; h = g_list_next(h))
   {
     const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
 
