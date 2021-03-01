@@ -741,6 +741,13 @@
     <shortdescription>import job</shortdescription>
     <longdescription>name of the import job</longdescription>
   </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/in_situ</name>
+    <type>bool</type>
+    <default>TRUE</default>
+    <shortdescription>import images as they are</shortdescription>
+    <longdescription>import images where and as they are</longdescription>
+  </dtconfig>
   <dtconfig>
     <name>plugins/capture/mode</name>
     <type>int</type>
