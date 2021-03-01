@@ -232,7 +232,7 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_luminance_mask, 1, sizeof(cl_mem), &high_image);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_luminance_mask, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_luminance_mask, 3, sizeof(int), &height);
-    int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_luminance_mask, sizes);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_luminance_mask, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }  
 
@@ -243,7 +243,7 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 2, sizeof(int), &width);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 3, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_calc_blend, 4, sizeof(float), &contrastf);
-    int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_calc_blend, sizes);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_calc_blend, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }
 
@@ -297,7 +297,7 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_fast_blur, 14, sizeof(int), &c11);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_fast_blur, 15, sizeof(int), &c10);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_fast_blur, 16, sizeof(int), &c00);
-    int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_fast_blur, sizes);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_fast_blur, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }
 
@@ -310,7 +310,7 @@ gboolean dual_demosaic_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_blend_both, 4, sizeof(int), &height);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_blend_both, 5, sizeof(cl_mem), &luminance);
     dt_opencl_set_kernel_arg(devid, gd->kernel_dual_blend_both, 6, sizeof(int), &showmask);
-    int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_blend_both, sizes);
+    const int err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_dual_blend_both, sizes);
     if(err != CL_SUCCESS) return FALSE;
   }
 

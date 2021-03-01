@@ -5154,7 +5154,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   if(scaled)
   {
     // scale aux buffer to output buffer
-    int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
+    const int err = dt_iop_clip_and_zoom_roi_cl(devid, dev_out, dev_aux, roi_out, roi_in);
     if(err != CL_SUCCESS)
     {
       retval = FALSE;
