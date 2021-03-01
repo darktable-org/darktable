@@ -1071,15 +1071,16 @@ static void apply_global_distortion_map(struct dt_iop_module_t *module,
 
 // calculate the map extent.
 
-static void _get_map_extent(const dt_iop_roi_t *roi_out,
-                             GList *interpolated,
-                             cairo_rectangle_int_t *map_extent)
+static GSList *_get_map_extent(const dt_iop_roi_t *roi_out,
+                               const GList *interpolated,
+                               cairo_rectangle_int_t *map_extent)
 {
   const cairo_rectangle_int_t roi_out_rect = { roi_out->x, roi_out->y, roi_out->width, roi_out->height };
   cairo_region_t *roi_out_region = cairo_region_create_rectangle(&roi_out_rect);
   cairo_region_t *map_region = cairo_region_create();
+  GSList *in_roi = NULL;
 
-  for(GList *i = interpolated; i != NULL; i = i->next)
+  for(const GList *i = interpolated; i != NULL; i = i->next)
   {
     const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
     cairo_rectangle_int_t r;
@@ -1088,6 +1089,7 @@ static void _get_map_extent(const dt_iop_roi_t *roi_out,
     if(cairo_region_contains_rectangle(roi_out_region, &r) != CAIRO_REGION_OVERLAP_OUT)
     {
       cairo_region_union_rectangle(map_region, &r);
+      in_roi = g_slist_prepend(in_roi, i->data);
     }
   }
 
@@ -1095,19 +1097,28 @@ static void _get_map_extent(const dt_iop_roi_t *roi_out,
   cairo_region_get_extents(map_region, map_extent);
   cairo_region_destroy(map_region);
   cairo_region_destroy(roi_out_region);
+
+  return g_slist_reverse(in_roi);
 }
 
 static float complex *create_global_distortion_map(const cairo_rectangle_int_t *map_extent,
-                                                    GList *interpolated,
-                                                    gboolean inverted)
+                                                   const GSList *interpolated,
+                                                   gboolean inverted)
 {
-  // allocate distortion map big enough to contain all paths
   const int mapsize = map_extent->width * map_extent->height;
+  if (mapsize == 0)
+  {
+    // there are no pixels for which we need distortion info, so return right away
+    // caller will see the NULL and bypass any further processing of the points it wants to distort
+    return NULL;
+  }
+
+  // allocate distortion map big enough to contain all paths
   float complex *map = dt_alloc_align(64, sizeof(float complex) * mapsize);
   memset(map, 0, sizeof(float complex) * mapsize);
 
   // build map
-  for(GList *i = interpolated; i != NULL; i = i->next)
+  for(const GSList *i = interpolated; i != NULL; i = i->next)
   {
     const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
     float complex *stamp = NULL;
@@ -1174,7 +1185,6 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
 
     map = imap;
   }
-
   return map;
 }
 
@@ -1191,11 +1201,11 @@ static float complex *build_global_distortion_map(struct dt_iop_module_t *module
   distort_paths_raw_to_piece(module, piece->pipe, roi_in->scale, &copy_params, FALSE);
 
   GList *interpolated = interpolate_paths(&copy_params);
+  GSList *interpolated_in_roi = _get_map_extent(roi_out, interpolated, map_extent);
 
-  _get_map_extent(roi_out, interpolated, map_extent);
+  float complex *map = create_global_distortion_map(map_extent, interpolated_in_roi, FALSE);
 
-  float complex *map = create_global_distortion_map(map_extent, interpolated, FALSE);
-
+  g_slist_free(interpolated_in_roi);
   g_list_free_full(interpolated, free);
   return map;
 }
@@ -1249,7 +1259,9 @@ void modify_roi_in(struct dt_iop_module_t *module,
   // get extent of all paths
   GList *interpolated = interpolate_paths(&copy_params);
   cairo_rectangle_int_t extent;
-  _get_map_extent(roi_out, interpolated, &extent);
+  GSList *interpolated_in_roi = _get_map_extent(roi_out, interpolated, &extent);
+  g_slist_free(interpolated_in_roi);
+  g_list_free_full(interpolated, free);
 
   // (eventually) extend roi_in
   cairo_region_union_rectangle(roi_in_region, &extent);
@@ -1265,7 +1277,6 @@ void modify_roi_in(struct dt_iop_module_t *module,
 
   // cleanup
   cairo_region_destroy(roi_in_region);
-  g_list_free_full(interpolated, free);
 }
 
 static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, float *points, size_t points_count, gboolean inverted)
@@ -1304,9 +1315,10 @@ static int _distort_xtransform(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *pi
     // the warps that are in (possibly partly) in this same region.
 
     dt_iop_roi_t roi_in = { .x = extent.x, .y = extent.y, .width = extent.width, .height = extent.height };
-    _get_map_extent(&roi_in, interpolated, &extent);
+    GSList *interpolated_in_roi = _get_map_extent(&roi_in, interpolated, &extent);
 
-    float complex *map = create_global_distortion_map(&extent, interpolated, inverted);
+    float complex *map = create_global_distortion_map(&extent, interpolated_in_roi, inverted);
+    g_slist_free(interpolated_in_roi);
     g_list_free_full(interpolated, free);
 
     if(map == NULL) return 0;
