@@ -809,6 +809,8 @@ int dt_masks_legacy_params(dt_develop_t *dev, void *params, const int old_versio
   return res;
 }
 
+static int form_id = 0;
+
 dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 {
   dt_masks_form_t *form = (dt_masks_form_t *)calloc(1, sizeof(dt_masks_form_t));
@@ -816,7 +818,7 @@ dt_masks_form_t *dt_masks_create(dt_masks_type_t type)
 
   form->type = type;
   form->version = dt_masks_version();
-  form->formid = time(NULL);
+  form->formid = time(NULL) + form_id++;
 
   if (type & DT_MASKS_CIRCLE)
     form->functions = &dt_masks_functions_circle;
