@@ -91,8 +91,7 @@ void gui_init(dt_lib_module_t *self)
 
   // iterate over darktable.control->progress_system.list and add everything that is already there and update
   // its gui_data!
-  GList *iter = darktable.control->progress_system.list;
-  while(iter)
+  for(const GList *iter = darktable.control->progress_system.list; iter; iter = g_list_next(iter))
   {
     dt_progress_t *progress = (dt_progress_t *)iter->data;
     void *gui_data = dt_control_progress_get_gui_data(progress);
@@ -102,7 +101,6 @@ void gui_init(dt_lib_module_t *self)
     dt_control_progress_set_gui_data(progress, gui_data);
     if(dt_control_progress_cancellable(progress)) _lib_backgroundjobs_cancellable(self, gui_data, progress);
     _lib_backgroundjobs_updated(self, gui_data, dt_control_progress_get_progress(progress));
-    iter = g_list_next(iter);
   }
 
   dt_pthread_mutex_unlock(&darktable.control->progress_system.mutex);
