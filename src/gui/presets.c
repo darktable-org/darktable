@@ -976,9 +976,8 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
 
   gchar *config = dt_conf_get_string("plugins/darkroom/quick_preset_list");
 
-  GList *m2 = g_list_copy(darktable.iop);
-  GList *modules = g_list_sort(m2, menuitem_manage_quick_presets_sort);
-  while(modules)
+  GList *m2 = g_list_sort(g_list_copy(darktable.iop), menuitem_manage_quick_presets_sort);
+  for(const GList *modules = m2; modules; modules = g_list_next(modules))
   {
     dt_iop_module_so_t *iop = (dt_iop_module_so_t *)modules->data;
 
@@ -1017,8 +1016,6 @@ static void menuitem_manage_quick_presets(GtkMenuItem *menuitem, gpointer data)
       // we don't show modules with no presets
       if(nb == 0) gtk_tree_store_remove(treestore, &toplevel);
     }
-
-    modules = g_list_next(modules);
   }
   g_free(config);
   g_list_free(m2);

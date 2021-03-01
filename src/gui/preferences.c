@@ -1387,8 +1387,7 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
 
     // let's search for conflicts
     dt_accel_t *accel_conflict = NULL;
-    GList *l = darktable.control->accelerator_list;
-    while (l)
+    for(const GList *l = darktable.control->accelerator_list; l; l = g_list_next(l))
     {
       dt_accel_t *a = (dt_accel_t *)l->data;
       GtkAccelKey key;
@@ -1403,7 +1402,6 @@ static gboolean tree_key_press(GtkWidget *widget, GdkEventKey *event, gpointer d
           break;
         }
       }
-      l = g_list_next(l);
     }
 
     if(!accel_conflict)
@@ -1674,13 +1672,11 @@ static void restore_defaults(GtkButton *button, gpointer data)
     gtk_accel_map_load(path);
 
     // Now deleting any iop show shortcuts
-    GList *ops = darktable.iop;
-    while(ops)
+    for(const GList *ops = darktable.iop; ops; ops = g_list_next(ops))
     {
       dt_iop_module_so_t *op = (dt_iop_module_so_t *)ops->data;
       snprintf(accelpath, sizeof(accelpath), "<Darktable>/darkroom/modules/%s/show", op->op);
       gtk_accel_map_change_entry(accelpath, 0, 0, TRUE);
-      ops = g_list_next(ops);
     }
 
     // Then delete any changes to the user's keyboardrc so it gets reset
