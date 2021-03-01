@@ -47,7 +47,7 @@
 
 // whenever _create_*_schema() gets changed you HAVE to bump this version and add an update path to
 // _upgrade_*_schema_step()!
-#define CURRENT_DATABASE_VERSION_LIBRARY 33
+#define CURRENT_DATABASE_VERSION_LIBRARY 34
 #define CURRENT_DATABASE_VERSION_DATA     8
 
 typedef struct dt_database_t
@@ -1964,6 +1964,18 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
     sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
     new_version = 33;
   }
+  else if(version == 33)
+  {
+    sqlite3_exec(db->handle, "BEGIN TRANSACTION", NULL, NULL, NULL);
+
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
+             "[init] can't create images_datetime_taken\n");
+    TRY_EXEC("CREATE INDEX IF NOT EXISTS main.metadata_index_key ON meta_data (key)",
+             "[init] can't create metadata_index_key\n");
+
+    sqlite3_exec(db->handle, "COMMIT", NULL, NULL, NULL);
+    new_version = 34;
+  }
   else
     new_version = version; // should be the fallback so that calling code sees that we are in an infinite loop
 
@@ -2304,6 +2316,12 @@ static void _create_library_schema(dt_database_t *db)
                "basic_hash BLOB, auto_hash BLOB, current_hash BLOB, mipmap_hash BLOB, "
                "FOREIGN KEY(imgid) REFERENCES images(id) ON UPDATE CASCADE ON DELETE CASCADE)",
                NULL, NULL, NULL);
+
+  // v34
+  sqlite3_exec(db->handle, "CREATE INDEX main.images_datetime_taken_nc ON images (datetime_taken COLLATE NOCASE)",
+               NULL, NULL, NULL);
+  sqlite3_exec(db->handle, "CREATE INDEX main.metadata_index_key ON meta_data (key)", NULL, NULL, NULL);
+
 }
 
 /* create the current database schema and set the version in db_info accordingly */
