@@ -46,7 +46,6 @@ typedef enum dt_metadata_pref_cols_t
 
 typedef struct dt_lib_metadata_t
 {
-  int imgsel;
   GtkTextView *textview[DT_METADATA_NUMBER];
   gulong lost_focus_handler[DT_METADATA_NUMBER];
   GtkWidget *swindow[DT_METADATA_NUMBER];
@@ -56,6 +55,7 @@ typedef struct dt_lib_metadata_t
   gboolean editing;
   GtkWidget *apply_button;
   gboolean init_layout;
+  GList *last_act_on;
 } dt_lib_metadata_t;
 
 const char *name(dt_lib_module_t *self)
@@ -126,7 +126,31 @@ static void _update(dt_lib_module_t *self)
 {
   dt_lib_cancel_postponed_update(self);
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)self->data;
-  d->imgsel = dt_control_get_mouse_over_id();
+
+  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
+
+  // first we want to make sure the list of images to act on has changed
+  // this is not the case if mouse hover change but still stay in selection for ex.
+  if(!imgs && !d->last_act_on) return;
+  if(imgs && d->last_act_on)
+  {
+    gboolean changed = FALSE;
+    GList *l = d->last_act_on;
+    GList *ll = (GList *)imgs;
+    while(l && ll)
+    {
+      if(GPOINTER_TO_INT(l->data) != GPOINTER_TO_INT(ll->data))
+      {
+        changed = TRUE;
+        break;
+      }
+      l = g_list_next(l);
+      ll = g_list_next(ll);
+    }
+    if(!changed) return;
+  }
+  g_list_free(d->last_act_on);
+  d->last_act_on = g_list_copy((GList *)imgs);
 
   GList *metadata[DT_METADATA_NUMBER];
   uint32_t metadata_count[DT_METADATA_NUMBER];
@@ -139,17 +163,11 @@ static void _update(dt_lib_module_t *self)
 
   // using dt_metadata_get() is not possible here. we want to do all this in a single pass, everything else
   // takes ages.
-  char *images = NULL;
-  const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
-  while(imgs)
-  {
-    images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
-    imgs_count++;
-    imgs = g_list_next((GList *)imgs);
-  }
+  gchar *images = dt_view_get_images_to_act_on_query(TRUE);
+  imgs_count = g_list_length((GList *)imgs);
+
   if(images)
   {
-    images[strlen(images) - 1] = '\0';
     sqlite3_stmt *stmt;
     char *query = NULL;
     query = dt_util_dstrcat(query,
@@ -689,7 +707,6 @@ void gui_init(dt_lib_module_t *self)
   dt_lib_metadata_t *d = (dt_lib_metadata_t *)calloc(1, sizeof(dt_lib_metadata_t));
   self->data = (void *)d;
 
-  d->imgsel = -1;
   self->timeout_handle = 0;
 
   GtkGrid *grid = (GtkGrid *)gtk_grid_new();
