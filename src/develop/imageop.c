@@ -1421,7 +1421,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
   // this seems like a reasonable place to check for and update legacy
   // presets.
 
-  int32_t module_version = module_so->version();
+  const int32_t module_version = module_so->version();
 
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2(
@@ -1434,11 +1434,11 @@ static void init_presets(dt_iop_module_so_t *module_so)
   {
     const char *name = (char *)sqlite3_column_text(stmt, 0);
     int32_t old_params_version = sqlite3_column_int(stmt, 1);
-    void *old_params = (void *)sqlite3_column_blob(stmt, 2);
-    int32_t old_params_size = sqlite3_column_bytes(stmt, 2);
-    int32_t old_blend_params_version = sqlite3_column_int(stmt, 3);
-    void *old_blend_params = (void *)sqlite3_column_blob(stmt, 4);
-    int32_t old_blend_params_size = sqlite3_column_bytes(stmt, 4);
+    const void *old_params = (void *)sqlite3_column_blob(stmt, 2);
+    const int32_t old_params_size = sqlite3_column_bytes(stmt, 2);
+    const int32_t old_blend_params_version = sqlite3_column_int(stmt, 3);
+    const void *old_blend_params = (void *)sqlite3_column_blob(stmt, 4);
+    const int32_t old_blend_params_size = sqlite3_column_bytes(stmt, 4);
 
     if(old_params_version == 0)
     {
@@ -1507,7 +1507,7 @@ static void init_presets(dt_iop_module_so_t *module_so)
       if(module->reload_defaults) module->reload_defaults(module); // why not call dt_iop_reload_defaults? (if needed at all)
 */
 
-      int32_t new_params_size = module->params_size;
+      const int32_t new_params_size = module->params_size;
       void *new_params = calloc(1, new_params_size);
 
       // convert the old params to new
