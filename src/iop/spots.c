@@ -146,9 +146,8 @@ static void _resynch_params(struct dt_iop_module_t *self)
   dt_masks_form_t *grp = dt_masks_get_from_id(darktable.develop, bp->mask_id);
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
-    GList *forms = g_list_first(grp->points);
     int i = 0;
-    while((i < 64) && forms)
+    for(GList *forms = grp->points; (i < 64) && forms; forms = g_list_next(forms))
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       nid[i] = grpt->formid;
@@ -161,7 +160,6 @@ static void _resynch_params(struct dt_iop_module_t *self)
         }
       }
       i++;
-      forms = g_list_next(forms);
     }
   }
 
@@ -215,7 +213,7 @@ static int _shape_is_being_added(dt_iop_module_t *self, const int shape_type)
   {
     if(self->dev->form_visible->type & DT_MASKS_GROUP)
     {
-      GList *forms = g_list_first(self->dev->form_visible->points);
+      GList *forms = self->dev->form_visible->points;
       if(forms)
       {
         dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
@@ -392,8 +390,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
   dt_masks_form_t *grp = dt_masks_get_from_id_ext(piece->pipe->forms, bp->mask_id);
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
-    GList *forms = g_list_first(grp->points);
-    while(forms)
+    for(const GList *forms = grp->points; forms; forms = g_list_next(forms))
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       // we get the spot
@@ -403,7 +400,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
         // if the form is outside the roi, we just skip it
         if(!masks_form_is_in_roi(self, piece, form, roi_in, roi_out))
         {
-          forms = g_list_next(forms);
           continue;
         }
 
@@ -412,7 +408,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
 
         if(!dt_masks_get_source_area(self, piece, form, &fw, &fh, &fl, &ft))
         {
-          forms = g_list_next(forms);
           continue;
         }
         fw *= roi_in->scale, fh *= roi_in->scale, fl *= roi_in->scale, ft *= roi_in->scale;
@@ -423,7 +418,6 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
         roir = fmaxf(fl + fw, roir);
         roib = fmaxf(ft + fh, roib);
       }
-      forms = g_list_next(forms);
     }
   }
 
@@ -516,24 +510,19 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
   int pos = 0;
   if(grp && (grp->type & DT_MASKS_GROUP))
   {
-    GList *forms = g_list_first(grp->points);
-    while((pos < 64) && forms)
+    for(const GList *forms = grp->points; (pos < 64) && forms; pos++, forms = g_list_next(forms))
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
       // we get the spot
       dt_masks_form_t *form = dt_masks_get_from_id_ext(piece->pipe->forms, grpt->formid);
       if(!form)
       {
-        forms = g_list_next(forms);
-        pos++;
         continue;
       }
 
       // if the form is outside the roi, we just skip it
       if(!masks_form_is_in_roi(self, piece, form, roi_in, roi_out))
       {
-        forms = g_list_next(forms);
-        pos++;
         continue;
       }
 
@@ -547,8 +536,6 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
 
         if(!dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2))
         {
-          forms = g_list_next(forms);
-          pos++;
           continue;
         }
 
@@ -618,10 +605,7 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         // now we search the delta with the source
         if(!masks_get_delta(self, piece, roi_in, form, &dx, &dy))
         {
-          forms = g_list_next(forms);
-          pos++;
           dt_free_align(mask);
-
           continue;
         }
 
@@ -653,8 +637,6 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         }
         dt_free_align(mask);
       }
-      pos++;
-      forms = g_list_next(forms);
     }
   }
 }
