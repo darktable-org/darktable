@@ -125,7 +125,8 @@ typedef struct dt_mouse_action_t
 struct dt_view_t;
 typedef struct dt_view_t
 {
-  // !!! MUST BE KEPT IN SYNC WITH src/views/view_api.h !!!
+#define INCLUDE_API_FROM_MODULE_H
+#include "views/view_api.h"
 
   char module_name[64];
   // dlopened module
@@ -137,39 +138,6 @@ typedef struct dt_view_t
   // scroll bar control
   float vscroll_size, vscroll_lower, vscroll_viewport_size, vscroll_pos;
   float hscroll_size, hscroll_lower, hscroll_viewport_size, hscroll_pos;
-  const char *(*name)(const struct dt_view_t *self); // get translatable name
-  uint32_t (*view)(const struct dt_view_t *self); // get the view type
-  uint32_t (*flags)();                            // get the view flags
-  void (*init)(struct dt_view_t *self);           // init *data
-  void (*gui_init)(struct dt_view_t *self);       // create gtk elements, called after libs are created
-  void (*cleanup)(struct dt_view_t *self);        // cleanup *data
-  void (*expose)(struct dt_view_t *self, cairo_t *cr, int32_t width, int32_t height, int32_t pointerx,
-                 int32_t pointery);         // expose the module (gtk callback)
-  int (*try_enter)(struct dt_view_t *self); // test if enter can succeed.
-  void (*enter)(struct dt_view_t *self); // mode entered, this module got focus. return non-null on failure.
-  void (*leave)(struct dt_view_t *self); // mode left (is called after the new try_enter has succeeded).
-  void (*reset)(struct dt_view_t *self); // reset default appearance
-
-  // event callbacks:
-  void (*mouse_enter)(struct dt_view_t *self);
-  void (*mouse_leave)(struct dt_view_t *self);
-  void (*mouse_moved)(struct dt_view_t *self, double x, double y, double pressure, int which);
-
-  int (*button_released)(struct dt_view_t *self, double x, double y, int which, uint32_t state);
-  int (*button_pressed)(struct dt_view_t *self, double x, double y, double pressure, int which, int type,
-                        uint32_t state);
-  int (*key_pressed)(struct dt_view_t *self, guint key, guint state);
-  int (*key_released)(struct dt_view_t *self, guint key, guint state);
-  void (*configure)(struct dt_view_t *self, int width, int height);
-  void (*scrolled)(struct dt_view_t *self, double x, double y, int up, int state); // mouse scrolled in view
-  void (*scrollbar_changed)(struct dt_view_t *self, double x, double y); // scrollbar changed in view
-
-  // keyboard accel callbacks
-  void (*init_key_accels)(struct dt_view_t *self);
-  void (*connect_key_accels)(struct dt_view_t *self);
-
-  // list of mouse actions
-  GSList *(*mouse_actions)(const struct dt_view_t *self);
 
   GSList *accel_closures;
   GtkWidget *dynamic_accel_current;
