@@ -3508,7 +3508,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     }
 
     {
-      // Step 5.1: Populate the red and blue channels at blue and red CFA positions
+      // Step 4.3: Populate the red and blue channels at blue and red CFA positions
       size_t sizes[3] = { ROUNDUPWD(width / 2), ROUNDUPHT(height), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_step_5_1, 0, sizeof(cl_mem), &PQ_dir);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_step_5_1, 1, sizeof(cl_mem), &rgb0);
@@ -3554,7 +3554,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       const int myborder = 7;
       // manage borders
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &dev_in);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &cfa);
       dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_aux);
       dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(int), (void *)&width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(int), (void *)&height);
