@@ -597,7 +597,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
      || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
      || ((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
-          && (event->type == GDK_BUTTON_PRESS && event->button == 1 && 
+          && (event->type == GDK_BUTTON_PRESS && event->button == 1 &&
               (event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK))))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
@@ -1294,9 +1294,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 "                ELSE \'%s\' || ta.tagname"
                                 "                END"
                                 "      END AS name,"
-                                " ta.id AS tag_id, COUNT(*) AS count"
+                                " ta.tagid AS tag_id, COUNT(*) AS count"
                                 " FROM main.images AS mi"
-                                " LEFT JOIN (SELECT imgid, t.id, SUBSTR(t.name, %d) AS tagname"
+                                " LEFT JOIN (SELECT imgid, t.id AS tagid, SUBSTR(t.name, %d) AS tagname"
                                 "   FROM main.tagged_images AS ti"
                                 "   JOIN data.tags AS t"
                                 "   ON ti.tagid = t.id"
