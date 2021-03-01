@@ -597,8 +597,8 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
      || (!d->singleclick && event->type == GDK_2BUTTON_PRESS && event->button == 1)
      || (d->singleclick && event->type == GDK_BUTTON_PRESS && event->button == 1)
      || ((d->view_rule == DT_COLLECTION_PROP_FOLDERS || d->view_rule == DT_COLLECTION_PROP_FILMROLL)
-          && (event->type == GDK_BUTTON_PRESS && event->button == 1 &&
-              (event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK))))
+          && (event->type == GDK_BUTTON_PRESS && event->button == 1
+              && (event->state & GDK_SHIFT_MASK || event->state & GDK_CONTROL_MASK))))
   {
     GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
     GtkTreePath *path = NULL;
@@ -1281,8 +1281,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                        "FROM main.images AS mi "
                                        "WHERE mi.id NOT IN"
                                        "  (SELECT DISTINCT imgid FROM main.tagged_images AS ti"
-                                       "   JOIN data.tags AS t ON t.id = ti.tagid"
-                                       "   AND SUBSTR(name, 1, 10) <> 'darktable|')",
+                                       "   JOIN data.tags AS t"
+                                       "     ON t.id = ti.tagid"
+                                       "        AND SUBSTR(name, 1, 10) <> 'darktable|')",
                                 _("not tagged"));
       }
       break;
@@ -1299,9 +1300,9 @@ static void tree_view(dt_lib_collect_rule_t *dr)
                                 " LEFT JOIN (SELECT imgid, t.id AS tagid, SUBSTR(t.name, %d) AS tagname"
                                 "   FROM main.tagged_images AS ti"
                                 "   JOIN data.tags AS t"
-                                "   ON ti.tagid = t.id"
+                                "     ON ti.tagid = t.id"
                                 "   JOIN data.locations AS l"
-                                "   ON l.tagid = t.id"
+                                "     ON l.tagid = t.id"
                                 "   ) AS ta ON ta.imgid = mi.id"
                                 " WHERE %s"
                                 " GROUP BY name, tag_id",
