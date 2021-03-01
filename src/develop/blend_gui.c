@@ -2250,11 +2250,6 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
                                                   G_CALLBACK(_blendop_masks_add_shape_callback),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_gradient, abox);
 
-    bd->masks_type[4] = DT_MASKS_BRUSH;
-    bd->masks_shapes[4] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add brush"), N_("add multiple brush strokes"),
-                                                  G_CALLBACK(_blendop_masks_add_shape_callback),
-                                                  FALSE, 0, 0, dtgtk_cairo_paint_masks_brush, abox);
-
     bd->masks_type[1] = DT_MASKS_PATH;
     bd->masks_shapes[1] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add path"), N_("add multiple paths"),
                                                   G_CALLBACK(_blendop_masks_add_shape_callback),
@@ -2269,6 +2264,11 @@ void dt_iop_gui_init_masks(GtkBox *blendw, dt_iop_module_t *module)
     bd->masks_shapes[3] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add circle"), N_("add multiple circles"),
                                                   G_CALLBACK(_blendop_masks_add_shape_callback),
                                                   FALSE, 0, 0, dtgtk_cairo_paint_masks_circle, abox);
+
+    bd->masks_type[4] = DT_MASKS_BRUSH;
+    bd->masks_shapes[4] = dt_iop_togglebutton_new(module, "blend`shapes", N_("add brush"), N_("add multiple brush strokes"),
+                                                  G_CALLBACK(_blendop_masks_add_shape_callback),
+                                                  FALSE, 0, 0, dtgtk_cairo_paint_masks_brush, abox);
 
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(hbox), TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(bd->masks_box), GTK_WIDGET(abox), TRUE, TRUE, 0);
