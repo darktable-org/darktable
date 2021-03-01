@@ -95,7 +95,7 @@ if [ ${dryrun} -eq 0 ]; then
 fi
 
 # get absolute canonical path to library. needed for cache dir
-library=$(ReadLink "${library}")
+library=$($ReadLink "${library}")
 
 if [ ! -f "${library}" ]; then
   echo "error: library db '${library}' doesn't exist"
