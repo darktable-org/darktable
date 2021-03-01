@@ -129,19 +129,16 @@ static void _gui_hist_item_toggled(GtkCellRendererToggle *cell, gchar *path_str,
 
 static gboolean _gui_is_set(GList *selops, unsigned int num)
 {
-  GList *l = selops;
-
   /* nothing to filter */
-  if(!l) return TRUE;
+  if(!selops) return TRUE;
 
-  while(l)
+  for(GList *l = selops; l; l = g_list_next(l))
   {
     if(l->data)
     {
       unsigned int lnum = GPOINTER_TO_UINT(l->data);
       if(lnum == num) return TRUE;
     }
-    l = g_list_next(l);
   }
   return FALSE;
 }
@@ -248,9 +245,9 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
       g_free(label);
     }
 
-    do
+    for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
     {
-      const dt_history_item_t *item = (dt_history_item_t *)items->data;
+      const dt_history_item_t *item = (dt_history_item_t *)items_iter->data;
       const int flags = get_module_flags(item->op);
 
       if(!(flags & IOP_FLAGS_HIDDEN))
@@ -264,7 +261,7 @@ int dt_gui_hist_dialog_new(dt_history_copy_item_t *d, int imgid, gboolean iscopy
                            DT_HIST_ITEMS_COL_NUM, (gint)item->num,
                            -1);
       }
-    } while((items = g_list_next(items)));
+    }
     g_list_free_full(items, dt_history_item_free);
   }
   else
