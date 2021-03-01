@@ -1709,8 +1709,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   {
     d = n = 0;
 
-    GList *iter = g->aspect_list;
-    while(iter != NULL)
+    for(const GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
     {
       const dt_iop_clipping_aspect_t *aspect = iter->data;
       if(g_strcmp0(aspect->name, text) == 0)
@@ -1719,7 +1718,6 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
         n = aspect->n;
         break;
       }
-      iter = g_list_next(iter);
     }
   }
 
@@ -1742,8 +1740,7 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
   // Search if current aspect ratio matches something known
   int act = -1, i = 0;
 
-  GList *iter = g->aspect_list;
-  while(iter != NULL)
+  for(const GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
     const dt_iop_clipping_aspect_t *aspect = iter->data;
     if((aspect->d == d) && (aspect->n == n))
@@ -1752,7 +1749,6 @@ static void aspect_presets_changed(GtkWidget *combo, dt_iop_module_t *self)
       break;
     }
     i++;
-    iter = g_list_next(iter);
   }
 
   // Update combobox label
@@ -1926,8 +1922,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   int act = -1;
   int i = 0;
-  GList *iter = g->aspect_list;
-  while(iter != NULL)
+  for(const GList *iter = g->aspect_list; iter; iter = g_list_next(iter))
   {
     const dt_iop_clipping_aspect_t *aspect = iter->data;
     if((aspect->d == d) && (aspect->n == n))
@@ -1936,7 +1931,6 @@ void gui_update(struct dt_iop_module_t *self)
       break;
     }
     i++;
-    iter = g_list_next(iter);
   }
 
   // keystone :
