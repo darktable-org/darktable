@@ -1935,7 +1935,7 @@ int dt_masks_group_get_hash_buffer_length(dt_masks_form_t *form)
       }
     }
     else if(form->functions)
-    {      
+    {
       pos += form->functions->point_struct_size;
     }
 
