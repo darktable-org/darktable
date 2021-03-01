@@ -585,17 +585,16 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   const int gheight = cheight - 2 * y1;
 
   // First build the cairo gradient and then fill the gradient
-  GList *current = NULL;
   cairo_pattern_t *gradient = NULL;
-  if((current = g_list_first(gslider->colors)) != NULL)
+  if(gslider->colors)
   {
     gradient = cairo_pattern_create_linear(0, 0, cwidth, 0);
-    do
+    for(GList *current = gslider->colors; current; current = g_list_next(current))
     {
       _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
       cairo_pattern_add_color_stop_rgba(gradient, stop->position, stop->color.red, stop->color.green,
                                        stop->color.blue, stop->color.alpha);
-    } while((current = g_list_next(current)) != NULL);
+    }
   }
 
   if(gradient != NULL) // Do we got a gradient, lets draw it
@@ -904,7 +903,6 @@ void dtgtk_gradient_slider_multivalue_set_scale_callback(GtkDarktableGradientSli
   float (*old_callback)(GtkWidget*, float, int) = gslider->scale_callback;
   float (*new_callback)(GtkWidget*, float, int) = (callback == NULL ? _default_linear_scale_callback : callback);
   GtkWidget *self = (GtkWidget *)gslider;
-  GList *current = NULL;
 
   if(old_callback == new_callback) return;
 
@@ -919,13 +917,10 @@ void dtgtk_gradient_slider_multivalue_set_scale_callback(GtkDarktableGradientSli
     gslider->picker[k] = new_callback(self, old_callback(self, gslider->picker[k], GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
   }
 
-  if((current = g_list_first(gslider->colors)) != NULL)
+  for(GList *current = gslider->colors; current; current = g_list_next(current))
   {
-    do
-    {
-      _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
-      stop->position = new_callback(self, old_callback(self, stop->position, GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
-    } while((current = g_list_next(current)) != NULL);
+    _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
+    stop->position = new_callback(self, old_callback(self, stop->position, GRADIENT_SLIDER_GET), GRADIENT_SLIDER_SET);
   }
 
   gslider->scale_callback = new_callback;
