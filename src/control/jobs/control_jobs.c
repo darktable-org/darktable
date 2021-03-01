@@ -1025,13 +1025,11 @@ static int32_t dt_control_delete_images_job_run(dt_job_t *job)
 
       GList *files = dt_image_find_duplicates(filename);
 
-      GList *file_iter = g_list_first(files);
-      while(file_iter != NULL)
+      for(GList *file_iter = files; file_iter; file_iter = g_list_next(file_iter))
       {
         delete_status = delete_file_from_disk(file_iter->data, &delete_on_trash_error);
         if (delete_status != _DT_DELETE_STATUS_OK_TO_REMOVE)
           break;
-        file_iter = g_list_next(file_iter);
       }
 
       g_list_free_full(files, g_free);

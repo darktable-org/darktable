@@ -265,15 +265,16 @@ void dt_masks_gui_form_test_create(dt_masks_form_t *form, dt_masks_form_gui_t *g
 static void _check_id(dt_masks_form_t *form)
 {
   int nid = 100;
-  for(GList *forms = darktable.develop->forms; forms; forms = g_list_next(forms))
+  for(GList *forms = darktable.develop->forms; forms; )
   {
     dt_masks_form_t *ff = (dt_masks_form_t *)forms->data;
     if(ff->formid == form->formid)
     {
       form->formid = nid++;
-      forms = g_list_first(darktable.develop->forms);
-      continue;
+      forms = darktable.develop->forms; // jump back to start of list
     }
+    else
+      forms = g_list_next(forms); // advance to next form
   }
 }
 
@@ -484,7 +485,7 @@ static int dt_masks_legacy_params_v1_to_v2(dt_develop_t *dev, void *params)
     piece.buf_in.width = 1;
     piece.buf_in.height = 1;
 
-    GList *p = g_list_first(m->points);
+    GList *p = m->points;
 
     if(!p) return 1;
 
@@ -604,7 +605,7 @@ static int dt_masks_legacy_params_v2_to_v3(dt_develop_t *dev, void *params)
   }
   else
   {
-    GList *p = g_list_first(m->points);
+    GList *p = m->points;
 
     if(!p) return 1;
 
@@ -673,7 +674,7 @@ static int dt_masks_legacy_params_v3_to_v4(dt_develop_t *dev, void *params)
 
   dt_masks_form_t *m = (dt_masks_form_t *)params;
 
-  GList *p = g_list_first(m->points);
+  GList *p = m->points;
 
   if(!p) return 1;
 
@@ -699,7 +700,7 @@ static int dt_masks_legacy_params_v4_to_v5(dt_develop_t *dev, void *params)
 
   dt_masks_form_t *m = (dt_masks_form_t *)params;
 
-  GList *p = g_list_first(m->points);
+  GList *p = m->points;
 
   if(!p) return 1;
 
@@ -724,7 +725,7 @@ static int dt_masks_legacy_params_v5_to_v6(dt_develop_t *dev, void *params)
 
   dt_masks_form_t *m = (dt_masks_form_t *)params;
 
-  GList *p = g_list_first(m->points);
+  GList *p = m->points;
 
   if(!p) return 1;
 
@@ -1684,7 +1685,7 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
         if(iopgrp && (iopgrp->type & DT_MASKS_GROUP))
         {
           int ok = 0;
-          GList *forms = g_list_first(iopgrp->points);
+          GList *forms = iopgrp->points;
           while(forms)
           {
             dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)forms->data;
@@ -1693,10 +1694,10 @@ void dt_masks_form_remove(struct dt_iop_module_t *module, dt_masks_form_t *grp, 
               ok = 1;
               iopgrp->points = g_list_remove(iopgrp->points, grpt);
               free(grpt);
-              forms = g_list_first(iopgrp->points);
+              forms = iopgrp->points; // jump back to start of list
               continue;
             }
-            forms = g_list_next(forms);
+            forms = g_list_next(forms); // advance to next form
           }
           if(ok)
           {
@@ -1901,7 +1902,7 @@ char *dt_masks_group_get_hash_buffer(dt_masks_form_t *form, char *str)
   memcpy(str + pos, &form->source, sizeof(float) * 2);
   pos += 2 * sizeof(float);
 
-  for(GList *forms = g_list_first(form->points); forms; forms = g_list_next(forms))
+  for(const GList *forms = form->points; forms; forms = g_list_next(forms))
   {
     if(form->type & DT_MASKS_GROUP)
     {
@@ -1991,7 +1992,7 @@ static int _masks_cleanup_unused(GList **_forms, GList *history_list, const int 
   }
 
   // and we delete all unused forms
-  GList *shapes = g_list_first(forms);
+  GList *shapes = forms;
   while(shapes)
   {
     dt_masks_form_t *f = (dt_masks_form_t *)shapes->data;
@@ -2006,7 +2007,7 @@ static int _masks_cleanup_unused(GList **_forms, GList *history_list, const int 
       if(used[i] == 0) break;
     }
 
-    shapes = g_list_next(shapes);
+    shapes = g_list_next(shapes); // need to get 'next' now, because we may be removing the current node
 
     if(u == 0)
     {
@@ -2059,7 +2060,7 @@ void dt_masks_cleanup_unused(dt_develop_t *dev)
   GList *forms = NULL;
   dt_iop_module_t *module = NULL;
   int num = 0;
-  for(GList *history = g_list_first(dev->history); history && num < dev->history_end; history = g_list_next(history))
+  for(const GList *history = dev->history; history && num < dev->history_end; history = g_list_next(history))
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
 

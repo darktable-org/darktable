@@ -816,7 +816,7 @@ GList *dt_tag_get_hierarchical(gint imgid)
   for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
     dt_tag_t *t = (dt_tag_t *)tag_iter->data;
-    tags = g_list_prepend(tags, t->tag);
+    tags = g_list_prepend(tags, g_strdup(t->tag));
   }
 
   dt_tag_free_result(&taglist);
@@ -1403,8 +1403,9 @@ void dt_tag_add_synonym(gint tagid, gchar *synonym)
   g_free(synonyms);
 }
 
-static void _free_result_item(dt_tag_t *t, gpointer unused)
+static void _free_result_item(gpointer data)
 {
+  dt_tag_t *t = (dt_tag_t*)data;
   g_free(t->tag);
   g_free(t->synonym);
   g_free(t);
@@ -1414,7 +1415,7 @@ void dt_tag_free_result(GList **result)
 {
   if(result && *result)
   {
-    g_list_free_full(*result, (GDestroyNotify)_free_result_item);
+    g_list_free_full(*result, _free_result_item);
   }
 }
 

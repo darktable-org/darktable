@@ -131,7 +131,6 @@ gchar *dt_util_glist_to_str(const gchar *separator, GList *items)
   gchar *result = NULL;
 
   // add the entries to an char* array
-  items = g_list_first(items);
   gchar **strings = g_malloc0_n(count + 1, sizeof(gchar *));
   if(items != NULL)
   {

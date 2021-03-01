@@ -1090,7 +1090,7 @@ static void _thumbs_prefetch(dt_culling_t *table)
   g_free(query);
 
   // prefetch previous image
-  dt_thumbnail_t *prev = (dt_thumbnail_t *)g_list_first(table->list)->data;
+  dt_thumbnail_t *prev = (dt_thumbnail_t *)(table->list)->data;
   if(table->navigate_inside_selection)
   {
     query
@@ -1264,13 +1264,13 @@ static gboolean _thumbs_recreate_list_at(dt_culling_t *table, const int offset)
           int nh = 40;
           if(table->list)
           {
-            dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(table->list)->data;
+            dt_thumbnail_t *th_model = (dt_thumbnail_t *)(table->list)->data;
             nw = th_model->width;
             nh = th_model->height;
           }
           else if(newlist)
           {
-            dt_thumbnail_t *th_model = (dt_thumbnail_t *)g_list_first(newlist)->data;
+            dt_thumbnail_t *th_model = (dt_thumbnail_t *)newlist->data;
             nw = th_model->width;
             nh = th_model->height;
           }
@@ -1395,18 +1395,16 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   for(GList *l = table->list; l; l = g_list_next(l))
   {
     dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
-    GList *slot_iter = g_list_first(slots);
+    GList *slot_iter = slots;
     for(; slot_iter; slot_iter = slot_iter->next)
     {
       GList *slot = (GList *)slot_iter->data;
       // Calculate current total height of slot
       int slot_h = distance;
-      GList *slot_cw_iter = slot;
-      while(slot_cw_iter != NULL)
+      for(GList *slot_cw_iter = slot; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
       {
         dt_thumbnail_t *slot_cw = (dt_thumbnail_t *)slot_cw_iter->data;
         slot_h = slot_h + slot_cw->height + distance;
-        slot_cw_iter = slot_cw_iter->next;
       }
       // Add window to slot if the slot height after adding the window
       // doesn't exceed max window height
@@ -1417,7 +1415,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
       }
     }
     // Otherwise, create a new slot with only this window
-    if(!slot_iter) slots = g_list_prepend(slots, g_list_append(NULL, thumb));
+    if(!slot_iter) slots = g_list_prepend(slots, g_list_prepend(NULL, thumb));
   }
   slots = g_list_reverse(slots);  // list was built in reverse order, so un-reverse it
 
@@ -1458,7 +1456,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
         row_y += row_h;
         row_h = 0;
         rows = g_list_append(rows, 0);
-        rows = rows->next;
+        rows = rows->next;              // keep rows pointing at last element to avoid quadratic runtime
       }
       g_list_free(slot);
     }
@@ -1466,10 +1464,12 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
     slots = NULL;
   }
 
+  rows = g_list_first(rows); // rows points at the last element of the constructed list, so move it back to the start
+
   total_width -= distance;
   total_height -= distance;
 
-  for(GList *iter = g_list_first(rows); iter != NULL; iter = iter->next)
+  for(const GList *iter = rows; iter != NULL; iter = iter->next)
   {
     GList *row = (GList *)iter->data;
     int row_w = 0, xoff;

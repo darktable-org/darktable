@@ -799,7 +799,7 @@ int dt_dev_write_history_item(const int imgid, dt_dev_history_item_t *h, int32_t
   sqlite3_finalize(stmt);
 
   // write masks (if any)
-  for(GList *forms = g_list_first(h->forms); forms; forms = g_list_next(forms))
+  for(GList *forms = h->forms; forms; forms = g_list_next(forms))
   {
     dt_masks_form_t *form = (dt_masks_form_t *)forms->data;
     if (form)
@@ -1012,7 +1012,7 @@ void dt_dev_add_masks_history_item_ext(dt_develop_t *dev, dt_iop_module_t *_modu
   // no module means that is called from the mask manager, so find the iop
   if(module == NULL)
   {
-    for(GList *modules = g_list_first(dev->iop); modules; modules = g_list_next(modules))
+    for(GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
       if(strcmp(mod->op, "mask_manager") == 0)
@@ -1235,8 +1235,8 @@ void dt_dev_pop_history_items(dt_develop_t *dev, int32_t cnt)
   int dev_iop_changed = (g_list_length(dev_iop) != g_list_length(dev->iop));
   if(!dev_iop_changed)
   {
-    modules = g_list_first(dev->iop);
-    GList *modules_old = g_list_first(dev_iop);
+    modules = dev->iop;
+    GList *modules_old = dev_iop;
     while(modules && modules_old)
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
@@ -2411,14 +2411,13 @@ dt_iop_module_t *dt_dev_module_duplicate(dt_develop_t *dev, dt_iop_module_t *bas
 
 void dt_dev_invalidate_history_module(GList *list, dt_iop_module_t *module)
 {
-  while (list)
+  for(; list; list = g_list_next(list))
   {
     dt_dev_history_item_t *hitem = (dt_dev_history_item_t *)list->data;
     if (hitem->module == module)
     {
       hitem->module = NULL;
     }
-    list = list->next;
   }
 }
 
@@ -2432,7 +2431,7 @@ void dt_dev_module_remove(dt_develop_t *dev, dt_iop_module_t *module)
   {
     dt_dev_undo_start_record(dev);
 
-    GList *elem = g_list_first(dev->history);
+    GList *elem = dev->history;
     while(elem != NULL)
     {
       GList *next = g_list_next(elem);
@@ -2556,8 +2555,8 @@ int dt_dev_distort_backtransform(dt_develop_t *dev, float *points, size_t points
 int dt_dev_distort_transform_locked(dt_develop_t *dev, dt_dev_pixelpipe_t *pipe, const double iop_order,
                                     const int transf_direction, float *points, size_t points_count)
 {
-  GList *modules = g_list_first(pipe->iop);
-  GList *pieces = g_list_first(pipe->nodes);
+  GList *modules = pipe->iop;
+  GList *pieces = pipe->nodes;
   while(modules)
   {
     if(!pieces)

@@ -1701,7 +1701,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
     gui->form_dragging = FALSE;
 
     // we get point0 new values
-    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_first(form->points)->data;
+    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)(form->points)->data;
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
@@ -2860,7 +2860,7 @@ static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui, const 
 static void _brush_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
+  for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)pts->data;
     dt_masks_point_brush_t *npt = (dt_masks_point_brush_t *)malloc(sizeof(dt_masks_point_brush_t));

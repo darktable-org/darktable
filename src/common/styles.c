@@ -608,7 +608,7 @@ void dt_styles_apply_to_list(const char *name, const GList *list, gboolean dupli
   const gboolean is_overwrite = mode == (DT_STYLE_HISTORY_OVERWRITE);
   dt_undo_lt_history_t *hist = NULL;
 
-  for(GList *l = g_list_first((GList *)list); l; l = g_list_next(l))
+  for(const GList *l = list; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     if(is_overwrite)
@@ -669,7 +669,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
 
   /* for each selected image apply style */
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  for(GList *l = g_list_first((GList *)list); l; l = g_list_next(l))
+  for(const GList *l = list; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     if(mode == DT_STYLE_HISTORY_OVERWRITE)
@@ -692,7 +692,7 @@ void dt_styles_create_from_list(const GList *list)
 {
   gboolean selected = FALSE;
   /* for each image create style */
-  for(GList *l = g_list_first((GList *)list); l; l = g_list_next(l))
+  for(const GList *l = list; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     dt_gui_styles_dialog_new(imgid);
@@ -1345,7 +1345,7 @@ static void dt_styles_style_text_handler(GMarkupParseContext *context, const gch
   }
   else if(style->in_plugin)
   {
-    StylePluginData *plug = g_list_first(style->plugins)->data;
+    StylePluginData *plug = style->plugins->data;
     if(g_ascii_strcasecmp(elt, "operation") == 0)
     {
       g_string_append_len(plug->operation, text, text_len);

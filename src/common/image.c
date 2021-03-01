@@ -774,7 +774,7 @@ dt_image_orientation_t dt_image_get_orientation(const int32_t imgid)
   static dt_iop_module_so_t *flip = NULL;
   if(flip == NULL)
   {
-    for(GList *modules = g_list_first(darktable.iop); modules; modules = g_list_next(modules))
+    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
       if(!strcmp(module->op, "flip"))

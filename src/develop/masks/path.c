@@ -1462,7 +1462,7 @@ static int _path_events_button_released(struct dt_iop_module_t *module, float pz
     gui->form_dragging = FALSE;
 
     // we get point0 new values
-    dt_masks_point_path_t *point = (dt_masks_point_path_t *)g_list_first(form->points)->data;
+    dt_masks_point_path_t *point = (dt_masks_point_path_t *)(form->points)->data;
     const float wd = darktable.develop->preview_pipe->backbuf_width;
     const float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
@@ -3020,7 +3020,7 @@ static void _path_set_hint_message(const dt_masks_form_gui_t *const gui, const d
 static void _path_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
+  for(const GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_path_t *pt = (dt_masks_point_path_t *)pts->data;
     dt_masks_point_path_t *npt = (dt_masks_point_path_t *)malloc(sizeof(dt_masks_point_path_t));

@@ -615,7 +615,7 @@ static void dt_camctl_camera_destroy(dt_camera_t *cam)
   gp_camera_unref(cam->gpcam);
   gp_widget_unref(cam->configuration);
 
-  for(GList *it = g_list_first(cam->open_gpfiles); it != NULL; it = g_list_delete_link(it, it))
+  for(GList *it = cam->open_gpfiles; it != NULL; it = g_list_delete_link(it, it))
   {
     gp_file_free((CameraFile *)it->data);
   }
@@ -646,12 +646,12 @@ void dt_camctl_destroy(dt_camctl_t *camctl)
 {
   if(!camctl) return;
   // Go thru all c->cameras and release them..
-  for(GList *it = g_list_first(camctl->cameras); it != NULL; it = g_list_delete_link(it, it))
+  for(GList *it = camctl->cameras; it != NULL; it = g_list_delete_link(it, it))
   {
     dt_camctl_camera_destroy((dt_camera_t *)it->data);
   }
   // Go thru all c->locked_cameras and free them
-  for(GList *itl = g_list_first(camctl->locked_cameras); itl != NULL; itl = g_list_delete_link(itl, itl))
+  for(GList *itl = camctl->locked_cameras; itl != NULL; itl = g_list_delete_link(itl, itl))
   {
     dt_camctl_locked_camera_destroy((dt_camera_locked_t *)itl->data);
   }
@@ -1009,7 +1009,7 @@ void dt_camctl_import(const dt_camctl_t *c, const dt_camera_t *cam, GList *image
   _camctl_lock(c, cam);
   const gboolean sdcard = !strncmp(c->active_camera->port, "disk:", 5);
 
-  for(GList *ifile = g_list_first(images); ifile; ifile = g_list_next(ifile))
+  for(GList *ifile = images; ifile; ifile = g_list_next(ifile))
   {
     // Split file into folder and filename
     char *eos;
