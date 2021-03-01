@@ -455,7 +455,7 @@ static int masks_point_calc_delta(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t 
   masks_point_denormalize(piece, roi, target, 1, points);
   masks_point_denormalize(piece, roi, source, 1, points + 2);
 
-  int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2);
+  const int res = dt_dev_distort_transform_plus(self->dev, piece->pipe, self->iop_order, DT_DEV_TRANSFORM_DIR_BACK_INCL, points, 2);
   if(!res) return res;
 
   *dx = points[0] - points[2];
@@ -611,8 +611,10 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
         float *mask = NULL;
         int posx, posy, width, height;
         dt_masks_get_mask(self, piece, form, &mask, &width, &height, &posx, &posy);
-        int fts = posy * roi_in->scale, fhs = height * roi_in->scale, fls = posx * roi_in->scale,
-            fws = width * roi_in->scale;
+        const int fts = posy * roi_in->scale;
+        const int fhs = height * roi_in->scale;
+        const int fls = posx * roi_in->scale;
+        const int fws = width * roi_in->scale;
         int dx = 0, dy = 0;
 
         // now we search the delta with the source
@@ -641,8 +643,8 @@ void _process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const
               // we test if the source point is inside roi_in
               if(xx - dx < roi_in->x || xx - dx >= roi_in->x + roi_in->width) continue;
 
-              float f = mask[((int)((yy - fts) / roi_in->scale)) * width
-                             + (int)((xx - fls) / roi_in->scale)] * grpt->opacity;
+              const float f = mask[((int)((yy - fts) / roi_in->scale)) * width
+                                  + (int)((xx - fls) / roi_in->scale)] * grpt->opacity;
 
               for(int c = 0; c < ch; c++)
                 out[ch * ((size_t)roi_out->width * (yy - roi_out->y) + xx - roi_out->x) + c]
