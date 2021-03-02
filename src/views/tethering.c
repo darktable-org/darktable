@@ -423,14 +423,11 @@ void expose(dt_view_t *self, cairo_t *cri, int32_t width, int32_t height, int32_
   cairo_restore(cri);
 
   // post expose to modules
-  GList *modules = darktable.lib->plugins;
-
-  while(modules)
+  for(const GList *modules = darktable.lib->plugins; modules; modules = g_list_next(modules))
   {
     dt_lib_module_t *module = (dt_lib_module_t *)(modules->data);
     if(module->gui_post_expose && dt_lib_is_visible_in_view(module, self))
       module->gui_post_expose(module, cri, width, height, pointerx, pointery);
-    modules = g_list_next(modules);
   }
 }
 
