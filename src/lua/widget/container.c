@@ -34,15 +34,14 @@ static int container_reset(lua_State* L)
   lua_container container;
   luaA_to(L,lua_container,&container,1);
   lua_getuservalue(L,1);
-  GList*children = gtk_container_get_children(GTK_CONTAINER(container->widget));
-  GList*curelt = children;
-  while(curelt) {
+  GList *children = gtk_container_get_children(GTK_CONTAINER(container->widget));
+  for(const GList *curelt = children; curelt; curelt = g_list_next(curelt))
+  {      
     lua_pushcfunction(L,dt_lua_widget_trigger_callback);
     GtkWidget* cur_widget = curelt->data;
     luaA_push(L,lua_widget,&cur_widget);
     lua_pushstring(L,"reset");
     lua_call(L,2,0);
-    curelt = g_list_next(curelt);
   }
   lua_pop(L,1);
   g_list_free(children);
@@ -73,11 +72,10 @@ static void on_child_removed(GtkContainer *container,GtkWidget *child,lua_contai
 static void container_cleanup(lua_State* L,lua_widget widget)
 {
   GList * children = gtk_container_get_children(GTK_CONTAINER(widget->widget));
-  GList * cur_child = children;
   g_signal_handlers_disconnect_by_func(widget->widget, G_CALLBACK(on_child_removed), widget);
-  while(cur_child) {
+  for(const GList *cur_child = children; cur_child; cur_child = g_list_next(cur_child))
+  {
     gtk_container_remove(GTK_CONTAINER(widget->widget),GTK_WIDGET(cur_child->data));
-    cur_child = g_list_next(cur_child);
   }
   g_list_free(children);
 }

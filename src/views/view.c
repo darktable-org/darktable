@@ -921,10 +921,9 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
   // if we don't return the selection, we return the list of imgid separeted by comma
   // in the form it can be used inside queries
   gchar *images = NULL;
-  while(l)
+  for(; l; l = g_list_next(l))
   {
     images = dt_util_dstrcat(images, "%d,", GPOINTER_TO_INT(l->data));
-    l = g_list_next(l);
   }
   if(images)
   {
@@ -1472,7 +1471,9 @@ GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t ty
 
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
-  gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods));
+  gchar *accel_label = gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods);
+  gchar *atxt = dt_util_dstrcat(NULL, "%s", accel_label);
+  g_free(accel_label);
   if(strcmp(atxt, "")) atxt = dt_util_dstrcat(atxt, "+");
   switch(ma->action)
   {
@@ -1531,13 +1532,15 @@ static void _accels_window_sticky(GtkWidget *widget, GdkEventButton *event, dt_v
   gtk_window_set_default_size(win, alloc.width * 0.7, alloc.height * 0.7);
   g_signal_connect(win, "destroy", G_CALLBACK(_accels_window_destroy), vm);
 
-  GtkWidget *sw
-      = (GtkWidget *)g_list_first(gtk_container_get_children(GTK_CONTAINER(vm->accels_window.window)))->data;
+  GList *children = gtk_container_get_children(GTK_CONTAINER(vm->accels_window.window));
+  GtkWidget *sw = (GtkWidget *)children->data;
   g_object_ref(sw);
 
   gtk_container_remove(GTK_CONTAINER(vm->accels_window.window), sw);
   gtk_container_add(GTK_CONTAINER(win), sw);
   g_object_unref(sw);
+  g_list_free(children);
+
   gtk_widget_destroy(vm->accels_window.window);
   vm->accels_window.window = GTK_WIDGET(win);
   gtk_widget_show_all(vm->accels_window.window);
@@ -1622,12 +1625,12 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
 
   // drop all existing tables
   GList *lw = gtk_container_get_children(GTK_CONTAINER(vm->accels_window.flow_box));
-  while(lw)
+  for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
   {
-    GtkWidget *w = (GtkWidget *)lw->data;
+    GtkWidget *w = (GtkWidget *)lw_iter->data;
     gtk_widget_destroy(w);
-    lw = g_list_next(lw);
   }
+  g_list_free(lw);
 
   // get the list of valid accel for this view
   const dt_view_t *cv = dt_view_manager_get_current_view(vm);
@@ -1644,8 +1647,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   // go through all accels to populate categories with valid ones
   GList *blocs = NULL;
   GList *bl = NULL;
-  GList *l = darktable.control->accelerator_list;
-  while(l)
+  for(const GList *l = darktable.control->accelerator_list; l; l = g_list_next(l))
   {
     dt_accel_t *da = (dt_accel_t *)l->data;
     if(da && (da->views & v) == v)
@@ -1658,9 +1660,8 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
         if(elems[0] && elems[1] && elems[2])
         {
           // do we already have a category ?
-          bl = blocs;
           _bloc_t *b = NULL;
-          while(bl)
+          for(bl = blocs; bl; bl = g_list_next(bl))
           {
             _bloc_t *bb = (_bloc_t *)bl->data;
             if(strcmp(elems[1], bb->base) == 0)
@@ -1668,7 +1669,6 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
               b = bb;
               break;
             }
-            bl = g_list_next(bl);
           }
           // if not found, we create it
           if(!b)
@@ -1692,7 +1692,9 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
           else
             txt = da->translated_path + strlen(elems[0]) + strlen(elems[1]) + 2;
           // for dynamic accel, we need to add the "+scroll"
-          gchar *atxt = dt_util_dstrcat(NULL, "%s", gtk_accelerator_get_label(ak.accel_key, ak.accel_mods));
+          gchar *accel_label = gtk_accelerator_get_label(ak.accel_key, ak.accel_mods);
+          gchar *atxt = dt_util_dstrcat(NULL, "%s", accel_label);
+          g_free(accel_label);
           if(g_str_has_prefix(da->path, "<Darktable>/image operations/") && g_str_has_suffix(da->path, "/dynamic"))
             atxt = dt_util_dstrcat(atxt, _("+Scroll"));
           gtk_list_store_set(b->list_store, &iter, 0, atxt, 1, txt, -1);
@@ -1701,7 +1703,6 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
         }
       }
     }
-    l = g_list_next(l);
   }
 
   // we add the mouse actions too
@@ -1730,8 +1731,7 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
   }
 
   // now we create and insert the widget to display all accels by categories
-  bl = blocs;
-  while(bl)
+  for(bl = blocs; bl; bl = g_list_next(bl))
   {
     const _bloc_t *bb = (_bloc_t *)bl->data;
     GtkWidget *box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 0);
@@ -1756,8 +1756,6 @@ void dt_view_accels_refresh(dt_view_manager_t *vm)
     gtk_flow_box_insert(GTK_FLOW_BOX(vm->accels_window.flow_box), box, -1);
     g_free(bb->base);
     g_free(bb->title);
-
-    bl = g_list_next(bl);
   }
   g_list_free_full(blocs, free);
 

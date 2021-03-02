@@ -170,13 +170,11 @@ static int initialize_store_wrapper(struct dt_imageio_module_storage_t *self, dt
   luaA_push_type(L, self->parameter_lua_type, data);
   luaA_push_type(L, (*format)->parameter_lua_type, *fdata);
 
-  GList *imgids = *images;
   lua_newtable(L);
-  while(imgids)
+  for(const GList *imgids = *images; imgids; imgids = g_list_next(imgids))
   {
     luaA_push(L, dt_lua_image_t, &(imgids->data));
     luaL_ref(L, -2);
-    imgids = g_list_next(imgids);
   }
   lua_pushboolean(L, high_quality);
 
@@ -455,12 +453,9 @@ static int register_storage(lua_State *L)
   luaA_struct_type(darktable.lua_state.state, type_id);
   dt_lua_register_storage_type(darktable.lua_state.state, storage, type_id);
 
-
-
-  GList *it = darktable.imageio->plugins_format;
   if(!lua_isnoneornil(L, 5))
   {
-    while(it)
+    for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
       lua_pushvalue(L, 5);
       dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
@@ -477,17 +472,15 @@ static int register_storage(lua_State *L)
       {
         data->supported_formats = g_list_prepend(data->supported_formats, format);
       }
-      it = g_list_next(it);
     }
   }
   else
   {
     // all formats are supported
-    while(it)
+    for(GList *it = darktable.imageio->plugins_format; it; it = g_list_next(it))
     {
       dt_imageio_module_format_t *format = (dt_imageio_module_format_t *)it->data;
       data->supported_formats = g_list_prepend(data->supported_formats, format);
-      it = g_list_next(it);
     }
   }
 
