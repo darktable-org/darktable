@@ -594,7 +594,7 @@ static void _tree_union(GtkButton *button, dt_lib_module_t *self)
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
   int change = 0;
-  GList *items = g_list_first(gtk_tree_selection_get_selected_rows(selection, NULL));
+  GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   for(const GList *items_iter = items; items_iter; items_iter = g_list_next(items_iter))
   {
     GtkTreePath *item = (GtkTreePath *)items_iter->data;
@@ -789,7 +789,7 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
   // we get the selected node
   GtkTreeModel *model = gtk_tree_view_get_model(GTK_TREE_VIEW(lm->treeview));
   GtkTreeSelection *selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(lm->treeview));
-  GList *items = g_list_first(gtk_tree_selection_get_selected_rows(selection, NULL));
+  GList *items = gtk_tree_selection_get_selected_rows(selection, NULL);
   if(!items) return;
   GtkTreePath *item = (GtkTreePath *)items->data;
   GtkTreeIter iter;
@@ -803,10 +803,13 @@ static void _tree_duplicate_shape(GtkButton *button, dt_lib_module_t *self)
     g_value_unset(&gv3);
 
     int nid = dt_masks_form_duplicate(darktable.develop, id);
-    if(nid <= 0) return;
-    dt_dev_masks_selection_change(darktable.develop, nid, TRUE);
-    //_lib_masks_recreate_list(self);
+    if(nid > 0)
+    {
+      dt_dev_masks_selection_change(darktable.develop, nid, TRUE);
+      //_lib_masks_recreate_list(self);
+    }
   }
+  g_list_free_full(items, (GDestroyNotify)gtk_tree_path_free);
 }
 
 static void _tree_cell_editing_started(GtkCellRenderer *cell, GtkCellEditable *editable, const gchar *path,
@@ -981,8 +984,10 @@ static int _tree_button_pressed(GtkWidget *treeview, GdkEventButton *event, dt_l
     int depth = 0;
     if(nb > 0)
     {
-      it0 = (GtkTreePath *)gtk_tree_selection_get_selected_rows(selection, NULL)->data;
+      GList *selected = gtk_tree_selection_get_selected_rows(selection, NULL);
+      it0 = (GtkTreePath *)selected->data;
       depth = gtk_tree_path_get_depth(it0);
+      g_list_free_full(selected, (GDestroyNotify)gtk_tree_path_free);
     }
     if(depth > 1) from_group = 1;
 
