@@ -70,6 +70,7 @@ typedef enum dt_import_cols_t
 {
   DT_IMPORT_SEL_THUMB = 0,      // active / deactive thumbnails
   DT_IMPORT_THUMB,              // thumbnail
+  DT_IMPORT_UI_FILENAME,        // displayed filename
   DT_IMPORT_FILENAME,           // filename
   DT_IMPORT_UI_DATETIME,        // displayed datetime
   DT_IMPORT_DATETIME,           // file datetime
@@ -651,6 +652,7 @@ static guint _import_from_set_file_list(const gchar *folder, const int root_lgth
   GFile *gfolder = g_file_parse_name(folder);
 
   GFileEnumerator *dir_files = g_file_enumerate_children(gfolder,
+                                  G_FILE_ATTRIBUTE_STANDARD_NAME ","
                                   G_FILE_ATTRIBUTE_STANDARD_DISPLAY_NAME ","
                                   G_FILE_ATTRIBUTE_TIME_MODIFIED ","
                                   G_FILE_ATTRIBUTE_STANDARD_TYPE,
@@ -660,6 +662,7 @@ static guint _import_from_set_file_list(const gchar *folder, const int root_lgth
   guint nb = n;
   while((info = g_file_enumerator_next_file(dir_files, NULL, &error)))
   {
+    const char *uifilename = g_file_info_get_display_name(info);
     const char *filename = g_file_info_get_name(info);
     if(!filename)
       continue;
@@ -667,6 +670,7 @@ static guint _import_from_set_file_list(const gchar *folder, const int root_lgth
     GDateTime *dt_datetime = g_date_time_new_from_unix_local(datetime);
     gchar *dt_txt = g_date_time_format(dt_datetime, "%x %X");
     const GFileType filetype = g_file_info_get_file_type(info);
+    gchar *uifullname = g_build_filename(folder, uifilename, NULL);
     gchar *fullname = g_build_filename(folder, filename, NULL);
 
     if(recursive && filetype == G_FILE_TYPE_DIRECTORY)
@@ -678,7 +682,8 @@ static guint _import_from_set_file_list(const gchar *folder, const int root_lgth
     {
       GtkTreeIter iter;
       gtk_list_store_append(store, &iter);
-      gtk_list_store_set(store, &iter, DT_IMPORT_FILENAME, &fullname[root_lgth + 1],
+      gtk_list_store_set(store, &iter, DT_IMPORT_UI_FILENAME, &uifullname[root_lgth + 1],
+                                       DT_IMPORT_FILENAME, &fullname[root_lgth + 1],
                                        DT_IMPORT_UI_DATETIME, dt_txt,
                                        DT_IMPORT_DATETIME, datetime, -1);
       nb++;
@@ -686,6 +691,7 @@ static guint _import_from_set_file_list(const gchar *folder, const int root_lgth
 
     g_free(dt_txt);
     g_free(fullname);
+    g_free(uifullname);
     g_date_time_unref(dt_datetime);
     g_object_unref(info);
   }
@@ -777,7 +783,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 
   // List - setup store
   d->from.store = gtk_list_store_new(DT_IMPORT_NUM_COLS, G_TYPE_BOOLEAN, GDK_TYPE_PIXBUF,
-                                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64);
+                                     G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_UINT64);
   // fulfill the store
   gboolean recursive = dt_conf_get_bool("ui_last/import_recursive");
   d->from.nb = _import_from_set_file_list(d->from.folder, strlen(d->from.folder),
@@ -813,7 +819,7 @@ static void _import_from_dialog_new(dt_lib_module_t* self)
 
   renderer = gtk_cell_renderer_text_new();
   column = gtk_tree_view_column_new_with_attributes(_("file"), renderer, "text",
-                                                    DT_IMPORT_FILENAME, NULL);
+                                                    DT_IMPORT_UI_FILENAME, NULL);
   gtk_tree_view_append_column(d->from.treeview, column);
   gtk_tree_view_column_set_expand(column, TRUE);
   gtk_tree_view_column_set_resizable(column, TRUE);
