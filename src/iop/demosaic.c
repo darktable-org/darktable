@@ -171,6 +171,7 @@ typedef struct dt_iop_demosaic_global_data_t
   int kernel_rcd_step_4_2;
   int kernel_rcd_step_5_1;
   int kernel_rcd_step_5_2;
+  int kernel_rcd_border;
   int kernel_dual_luminance_mask;
   int kernel_dual_calc_blend;
   int kernel_dual_blend_both;
@@ -3534,18 +3535,18 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_rcd_step_5_2, sizes);
       if(err != CL_SUCCESS) goto error;    
     }
+    const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
 
     {
       // write output
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-      const float scaler = fmaxf(piece->pipe->dsc.processed_maximum[0], fmaxf(piece->pipe->dsc.processed_maximum[1], piece->pipe->dsc.processed_maximum[2]));
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 0, sizeof(cl_mem), &dev_aux);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 1, sizeof(cl_mem), &rgb0);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 2, sizeof(cl_mem), &rgb1);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 3, sizeof(cl_mem), &rgb2);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 4, sizeof(int), &width);
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 5, sizeof(int), &height);
-       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 6, sizeof(float), &scaler);    
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_write_output, 6, sizeof(float), &scaler);    
       err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_rcd_write_output, sizes);
       if(err != CL_SUCCESS) goto error;
     }
@@ -3554,13 +3555,14 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
       const int myborder = 7;
       // manage borders
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
-      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 0, sizeof(cl_mem), &cfa);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 1, sizeof(cl_mem), &dev_aux);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 2, sizeof(int), (void *)&width);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 3, sizeof(int), (void *)&height);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 4, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
-      dt_opencl_set_kernel_arg(devid, gd->kernel_border_interpolate, 5, sizeof(int), (void *)&myborder);
-      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_border_interpolate, sizes);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 0, sizeof(cl_mem), &cfa);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 1, sizeof(cl_mem), &dev_aux);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 2, sizeof(int), (void *)&width);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 3, sizeof(int), (void *)&height);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 4, sizeof(uint32_t), (void *)&piece->pipe->dsc.filters);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 5, sizeof(int), (void *)&myborder);
+      dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 6, sizeof(float), &scaler);
+      err = dt_opencl_enqueue_kernel_2d(devid, gd->kernel_rcd_border, sizes);
       if(err != CL_SUCCESS) goto error;
     }
 
@@ -5355,6 +5357,7 @@ void init_global(dt_iop_module_so_t *module)
   gd->kernel_rcd_step_4_2 = dt_opencl_create_kernel(rcd, "rcd_step_4_2");
   gd->kernel_rcd_step_5_1 = dt_opencl_create_kernel(rcd, "rcd_step_5_1");
   gd->kernel_rcd_step_5_2 = dt_opencl_create_kernel(rcd, "rcd_step_5_2");
+  gd->kernel_rcd_border = dt_opencl_create_kernel(rcd, "rcd_border");
   gd->kernel_dual_luminance_mask = dt_opencl_create_kernel(rcd, "dual_luminance_mask");
   gd->kernel_dual_calc_blend = dt_opencl_create_kernel(rcd, "dual_calc_blend");
   gd->kernel_dual_blend_both  = dt_opencl_create_kernel(rcd, "dual_blend_both");  
@@ -5410,6 +5413,7 @@ void cleanup_global(dt_iop_module_so_t *module)
   dt_opencl_free_kernel(gd->kernel_rcd_step_4_2);
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_1);
   dt_opencl_free_kernel(gd->kernel_rcd_step_5_2);
+  dt_opencl_free_kernel(gd->kernel_rcd_border);
   dt_opencl_free_kernel(gd->kernel_dual_luminance_mask);
   dt_opencl_free_kernel(gd->kernel_dual_calc_blend);
   dt_opencl_free_kernel(gd->kernel_dual_blend_both);  
