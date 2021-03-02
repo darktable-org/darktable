@@ -367,3 +367,44 @@ __kernel void dual_fast_blur(global float *src, global float *out, const int w, 
   }
 }
 
+kernel void rcd_border(global float *cfa, write_only image2d_t out, const int width, const int height, const unsigned int filters, const int border, const float scale)
+{
+  const int x = get_global_id(0);
+  const int y = get_global_id(1);
+
+  if(x >= width || y >= height) return;
+
+  int avgwindow = 1;
+
+  if(x>=border && x<width-border && y>=border && y<height-border) return;
+
+  float4 o;
+  const float4 scaler = scale;
+  float sum[4] = { 0.0f };
+  int count[4] = { 0 };
+
+  for (int j=y-avgwindow; j<=y+avgwindow; j++) for (int i=x-avgwindow; i<=x+avgwindow; i++)
+  {
+    if (j>=0 && i>=0 && j<height && i<width)
+    {
+      int f = FC(j,i,filters);
+      sum[f] += cfa[mad24(j, width, i)];
+      count[f]++;
+    }
+  }
+
+  float i = cfa[mad24(y, width, x)];
+  o.x = count[0] > 0 ? sum[0]/count[0] : i;
+  o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
+  o.z = count[2] > 0 ? sum[2]/count[2] : i;
+
+  int f = FC(y,x,filters);
+
+  if     (f == 0) o.x = i;
+  else if(f == 1) o.y = i;
+  else if(f == 2) o.z = i;
+  else            o.y = i;
+
+  write_imagef (out, (int2)(x, y), o * scaler);
+}
+
