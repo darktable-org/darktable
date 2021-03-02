@@ -126,8 +126,37 @@ int legacy_params(dt_iop_module_t *self, const void *const old_params, const int
 
       // and add it to the module params
       n->clone_id[i] = form->formid;
-      n->clone_algo[i] = 1;
+      n->clone_algo[i] = 2;
     }
+
+    // look for spot history num, if not found then it will be added
+    // at the end of the list.
+    int last_spot_num = 0;
+    int count = 0;
+    for(GList *l = self->dev->history; l; l = g_list_next(l))
+    {
+      dt_dev_history_item_t *item = (dt_dev_history_item_t *)l->data;
+      count++;
+      if(!strcmp(item->op_name, "spots")) last_spot_num = item->num;
+    }
+
+    if(last_spot_num == 0) last_spot_num = count;
+
+    // record all forms for this module & history num
+    // also record the group in the blend params.
+
+    dt_develop_blend_params_t *bp = self->blend_params;
+
+    for(GList *l = self->dev->forms; l; l = g_list_next(l))
+    {
+      dt_masks_form_t *form = (dt_masks_form_t *)l->data;
+      if(form && (form->type & DT_MASKS_GROUP))
+      {
+        bp->mask_id = form->formid;
+      }
+      dt_masks_write_masks_history_item(self->dev->image_storage.id, last_spot_num, form);
+    }
+
     return 0;
   }
   return 1;
