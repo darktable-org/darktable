@@ -527,7 +527,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       // on-off widgets
       item->widget = GTK_WIDGET(item->module->off);
       item->sensitive = gtk_widget_get_sensitive(item->widget);
-      item->tooltip = g_strdup(gtk_widget_get_tooltip_text(item->widget));
+      item->tooltip = gtk_widget_get_tooltip_text(item->widget); // no need to copy, returns a newly-alloced string
 
       // create new basic widget
       item->box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
@@ -566,8 +566,10 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
       {
         GList *children = gtk_container_get_children(GTK_CONTAINER(item->module->header));
         GtkWidget *orig_label = (GtkWidget *)g_list_nth_data(children, IOP_MODULE_LABEL);
-        gtk_widget_set_tooltip_text(lb, gtk_widget_get_tooltip_text(orig_label));
-        gtk_widget_set_tooltip_text(btn, gtk_widget_get_tooltip_text(orig_label));
+        gchar *tooltip = gtk_widget_get_tooltip_text(orig_label);
+        gtk_widget_set_tooltip_text(lb, tooltip);
+        gtk_widget_set_tooltip_text(btn, tooltip);
+        g_free(tooltip);
         g_list_free(children);
       }
 
@@ -621,7 +623,7 @@ static void _basics_add_widget(dt_lib_module_t *self, dt_lib_modulegroups_basic_
 
     // save old values
     item->sensitive = gtk_widget_get_sensitive(item->widget);
-    item->tooltip = g_strdup(gtk_widget_get_tooltip_text(item->widget));
+    item->tooltip = gtk_widget_get_tooltip_text(item->widget);
     item->label = g_strdup(bw->label);
     item->visible = gtk_widget_get_visible(item->widget);
 
