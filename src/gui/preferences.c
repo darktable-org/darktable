@@ -2300,7 +2300,7 @@ void dt_gui_preferences_bool_update(GtkWidget *widget)
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(widget), val);
 }
 
-GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key)
+GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const gboolean swap)
 {
   GtkWidget *w_label = gtk_label_new(_(dt_confgen_get_label(key)));
   gtk_label_set_ellipsize(GTK_LABEL(w_label), PANGO_ELLIPSIZE_END);
@@ -2313,8 +2313,8 @@ GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key)
   gtk_widget_set_name(w, key);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(w), dt_conf_get_bool(key));
   const int line = _get_grid_nb_lines(grid);
-  gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
-  gtk_grid_attach(GTK_GRID(grid), w, 1, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), labelev, swap ? 1 : 0, line, 1, 1);
+  gtk_grid_attach(GTK_GRID(grid), w, swap ? 0 : 1, line, 1, 1);
   g_signal_connect(G_OBJECT(w), "toggled", G_CALLBACK(_gui_preferences_bool_callback), (gpointer)key);
   g_signal_connect(G_OBJECT(labelev), "button-press-event", G_CALLBACK(_gui_preferences_bool_reset), (gpointer)w);
   return w;

@@ -2149,6 +2149,7 @@ static int32_t _control_import_job_run(dt_job_t *job)
     g_usleep(100);
   }
 
+  dt_control_log(ngettext("imported %d image", "imported %d images", cntr), cntr);
   dt_control_queue_redraw_center();
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_FILMROLLS_IMPORTED, filmid);
@@ -2181,7 +2182,7 @@ static void *_control_import_alloc()
   return params;
 }
 
-static dt_job_t *_control_import_job_create(GList *imgs)
+static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override)
 {
   dt_job_t *job = dt_control_job_create(&_control_import_job_run, "import");
   if(!job) return NULL;
@@ -2205,16 +2206,17 @@ static dt_job_t *_control_import_job_create(GList *imgs)
     data->session = dt_import_session_new();
     char *jobcode = dt_conf_get_string("ui_last/import_jobcode");
     dt_import_session_set_name(data->session, jobcode);
+    if(datetime_override) dt_import_session_set_time(data->session, datetime_override);
     g_free(jobcode);
   }
 
   return job;
 }
 
-void dt_control_import(GList *imgs)
+void dt_control_import(GList *imgs, const time_t datetime_override)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     _control_import_job_create(imgs));
+                     _control_import_job_create(imgs, datetime_override));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
