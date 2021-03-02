@@ -650,13 +650,6 @@
     <shortdescription/>
     <longdescription/>
   </dtconfig>
-  <dtconfig>
-    <name>ui_last/expander_import</name>
-    <type>bool</type>
-    <default>false</default>
-    <shortdescription/>
-    <longdescription/>
-  </dtconfig>
   <dtconfig ui="yes">
     <name>ui_last/import_ignore_jpegs</name>
     <type>bool</type>
@@ -742,11 +735,18 @@
     <longdescription>name of the import job</longdescription>
   </dtconfig>
   <dtconfig ui="yes">
-    <name>ui_last/in_situ</name>
+    <name>ui_last/import_datetime_override</name>
+    <type>string</type>
+    <default/>
+    <shortdescription>override today's date</shortdescription>
+    <longdescription>enter a valid date/time (YYYY-MM-DD[Thh:mm:ss] format) if you want to override the current date/time used when expanding variables:\n$(YEAR), $(MONTH), $(DAY), $(HOUR), $(MINUTE), $(SECONDS).\nlet the field empty otherwise</longdescription>
+  </dtconfig>
+  <dtconfig ui="yes">
+    <name>ui_last/import_keep_open</name>
     <type>bool</type>
-    <default>TRUE</default>
-    <shortdescription>import images as they are</shortdescription>
-    <longdescription>import images where and as they are</longdescription>
+    <default>false</default>
+    <shortdescription>keep this window open</shortdescription>
+    <longdescription>keep this window open to run several imports</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/capture/mode</name>
