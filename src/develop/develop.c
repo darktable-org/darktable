@@ -1951,7 +1951,6 @@ void dt_dev_read_history_ext(dt_develop_t *dev, const int imgid, gboolean no_ima
         {
           // quick and dirty hack to handle spot removal legacy_params
           memcpy(hist->blend_params, hist->module->blend_params, sizeof(dt_develop_blend_params_t));
-          dt_iop_commit_blend_params(hist->module, hist->module->default_blendop_params);
         }
         legacy_params = TRUE;
       }
