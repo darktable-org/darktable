@@ -1831,13 +1831,10 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->map.select_button), "clicked", G_CALLBACK(_select_images), self);
   gtk_grid_attach(grid, d->map.select_button, 1, line, 1, 1);
 
-  _setup_selected_images_list(self);
-  char *nb = dt_util_dstrcat(NULL, "0/%d", d->nb_imgs);
-  d->map.nb_imgs_label = dt_ui_label_new(nb);
+  d->map.nb_imgs_label = dt_ui_label_new("0/0");
   gtk_widget_set_halign(d->map.nb_imgs_label, GTK_ALIGN_END);
   gtk_widget_set_tooltip_text(GTK_WIDGET(d->map.nb_imgs_label),
                               _("number of matching images versus selected images"));
-  g_free(nb);
   gtk_grid_attach(grid, d->map.nb_imgs_label, 2, line++, 1, 1);
 
   d->map.apply_gpx_button = dt_ui_button_new(_("apply geo-location"),
