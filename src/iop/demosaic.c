@@ -3552,7 +3552,7 @@ static int process_rcd_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *
     }
 
     {
-      const int myborder = 7;
+      const int myborder = 6;
       // manage borders
       size_t sizes[3] = { ROUNDUPWD(width), ROUNDUPHT(height), 1 };
       dt_opencl_set_kernel_arg(devid, gd->kernel_rcd_border, 0, sizeof(cl_mem), &cfa);
