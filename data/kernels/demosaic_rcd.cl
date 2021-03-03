@@ -63,7 +63,7 @@ __kernel void rcd_write_output (__write_only image2d_t out, global float *rgb0, 
   if(col >= w || row >= height) return;
   const int idx = mad24(row, w, col);
 
-  write_imagef (out, (int2)(col, row), (float4)(scale * rgb0[idx], scale * rgb1[idx], scale * rgb2[idx], 0.0f));
+  write_imagef(out, (int2)(col, row), (float4)(scale * rgb0[idx], scale * rgb1[idx], scale * rgb2[idx], 0.0f));
 }
 
 // Step 1.1: Calculate a squared vertical and horizontal high pass filter on color differences
@@ -83,9 +83,9 @@ __kernel void rcd_step_1_1 (global float *cfa, global float *v_diff, global floa
 // Step 1.2: Calculate vertical and horizontal local discrimination
 __kernel void rcd_step_1_2 (global float *VH_dir, global float *v_diff, global float *h_diff, const int w, const int height)
 {
-  const int col = 4 + get_global_id(0);
-  const int row = 4 + get_global_id(1);
-  if((row > height - 5) || (col > w - 5)) return;
+  const int col = 2 + get_global_id(0);
+  const int row = 2 + get_global_id(1);
+  if((row > height - 3) || (col > w - 3)) return;
   const int idx = mad24(row, w, col);
   const float eps = 1e-10f;
 
@@ -165,9 +165,9 @@ __kernel void rcd_step_4_1(global float *cfa, global float *p_diff, global float
 // Step 4.1: Calculate P/Q diagonals local discrimination strength
 __kernel void rcd_step_4_2(global float *PQ_dir, global float *p_diff, global float *q_diff, const int w, const int height, const unsigned int filters)
 {
-  const int row = 4 + get_global_id(1);
-  const int col = 4 + (FC(row, 0, filters) & 1) + 2 *get_global_id(0);
-  if((col > w - 4) || (row > height - 4)) return;
+  const int row = 2 + get_global_id(1);
+  const int col = 2 + (FC(row, 0, filters) & 1) + 2 *get_global_id(0);
+  if((col > w - 3) || (row > height - 3)) return;
   const int idx = mad24(row, w, col);
   const int idx2 = idx / 2;
   const int idx3 = (idx - w - 1) / 2;
@@ -373,38 +373,34 @@ kernel void rcd_border(global float *cfa, write_only image2d_t out, const int wi
   const int y = get_global_id(1);
 
   if(x >= width || y >= height) return;
+  if(x >= border && x < width - border && y >= border && y < height - border) return;
 
-  int avgwindow = 1;
+  float o[3]   = { 0.0f, 0.0f, 0.0f };
+  float sum[3] = { 0.0f, 0.0f, 0.0f };
+  float cnt[3] = { 0.0f, 0.0f, 0.0f };
 
-  if(x>=border && x<width-border && y>=border && y<height-border) return;
-
-  float4 o;
-  const float4 scaler = scale;
-  float sum[4] = { 0.0f };
-  int count[4] = { 0 };
-
-  for (int j=y-avgwindow; j<=y+avgwindow; j++) for (int i=x-avgwindow; i<=x+avgwindow; i++)
+  for(int j = y - 1; j < y + 2; j++)
   {
-    if (j>=0 && i>=0 && j<height && i<width)
+    for(int i = x - 1; i < x + 2; i++)
     {
-      int f = FC(j,i,filters);
-      sum[f] += cfa[mad24(j, width, i)];
-      count[f]++;
+      if (j > -1 && i > -1 && j < height && i < width)
+      {
+        const int c = FC(j, i, filters);
+        sum[c] += cfa[mad24(j, width, i)];
+        cnt[c] += 1.0f;
+      }
     }
   }
 
-  float i = cfa[mad24(y, width, x)];
-  o.x = count[0] > 0 ? sum[0]/count[0] : i;
-  o.y = count[1]+count[3] > 0 ? (sum[1]+sum[3])/(count[1]+count[3]) : i;
-  o.z = count[2] > 0 ? sum[2]/count[2] : i;
-
-  int f = FC(y,x,filters);
-
-  if     (f == 0) o.x = i;
-  else if(f == 1) o.y = i;
-  else if(f == 2) o.z = i;
-  else            o.y = i;
-
-  write_imagef (out, (int2)(x, y), o * scaler);
+  const float cfai = cfa[mad24(y, width, x)];
+  const int f = FC(y, x, filters);
+  for(int c = 0; c < 3; c++)
+  {
+    if(c != f && cnt[c] != 0.0f)
+      o[c] = sum[c] / cnt[c];
+    else
+      o[c] = cfai;
+  }
+  write_imagef(out, (int2)(x, y), (float4)(scale * o[0], scale * o[1], scale * o[2], 0.0f));
 }
 
