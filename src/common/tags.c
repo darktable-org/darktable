@@ -39,16 +39,14 @@ static void dt_set_darktable_tags();
 
 static gchar *_get_tb_removed_tag_string_values(GList *before, GList *after)
 {
-  GList *b = before;
   GList *a = after;
   gchar *tag_list = NULL;
-  while(b)
+  for(GList *b = before; b; b = g_list_next(b))
   {
     if(!g_list_find(a, b->data))
     {
       tag_list = dt_util_dstrcat(tag_list, "%d,", GPOINTER_TO_INT(b->data));
     }
-    b = g_list_next(b);
   }
   if(tag_list) tag_list[strlen(tag_list) - 1] = '\0';
   return tag_list;
@@ -57,9 +55,8 @@ static gchar *_get_tb_removed_tag_string_values(GList *before, GList *after)
 static gchar *_get_tb_added_tag_string_values(const int img, GList *before, GList *after)
 {
   GList *b = before;
-  GList *a = after;
   gchar *tag_list = NULL;
-  while(a)
+  for(GList *a = after; a; a = g_list_next(a))
   {
     if(!g_list_find(b, a->data))
     {
@@ -71,7 +68,6 @@ static gchar *_get_tb_added_tag_string_values(const int img, GList *before, GLis
                                  GPOINTER_TO_INT(img),
                                  GPOINTER_TO_INT(a->data));
     }
-    a = g_list_next(a);
   }
   if(tag_list) tag_list[strlen(tag_list) - 1] = '\0';
   return tag_list;
@@ -121,9 +117,7 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
 {
   if(type == DT_UNDO_TAGS)
   {
-    GList *list = (GList *)data;
-
-    while(list)
+    for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
       dt_undo_tags_t *undotags = (dt_undo_tags_t *)list->data;
 
@@ -131,7 +125,6 @@ static void _pop_undo(gpointer user_data, dt_undo_type_t type, dt_undo_data_t da
       GList *after = (action == DT_ACTION_UNDO) ? undotags->before : undotags->after;
       _pop_undo_execute(undotags->imgid, before, after);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undotags->imgid));
-      list = g_list_next(list);
     }
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
@@ -341,28 +334,24 @@ gboolean dt_tag_exists(const char *name, guint *tagid)
 
 static gboolean _tag_add_tags_to_list(GList **list, const GList *tags)
 {
-  const GList *t = tags;
   gboolean res = FALSE;
-  while(t)
+  for(const GList *t = tags; t; t = g_list_next(t))
   {
     if(!g_list_find(*list, t->data))
     {
       *list = g_list_prepend(*list, t->data);
       res = TRUE;
     }
-    t = g_list_next(t);
   }
   return res;
 }
 
 static gboolean _tag_remove_tags_from_list(GList **list, const GList *tags)
 {
-  const GList *t = tags;
   const int nb_ini = g_list_length(*list);
-  while(t)
+  for(const GList *t = tags; t; t = g_list_next(t))
   {
     *list = g_list_remove(*list, t->data);
-    t = g_list_next(t);
   }
   return (g_list_length(*list) != nb_ini);
 }
@@ -387,9 +376,8 @@ static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type);
 static gboolean _tag_execute(const GList *tags, const GList *imgs, GList **undo, const gboolean undo_on,
                              const gint action)
 {
-  const GList *images = imgs;
   gboolean res = FALSE;
-  while(images)
+  for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const int image_id = GPOINTER_TO_INT(images->data);
     dt_undo_tags_t *undotags = (dt_undo_tags_t *)malloc(sizeof(dt_undo_tags_t));
@@ -426,7 +414,6 @@ static gboolean _tag_execute(const GList *tags, const GList *imgs, GList **undo,
       *undo = g_list_append(*undo, undotags);
     else
       _undo_tags_free(undotags);
-    images = g_list_next(images);
   }
   return res;
 }
@@ -621,12 +608,10 @@ static char *_images_to_act_on_string(const gint imgid, uint32_t *nb)
   }
   else
   {
-    const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE);
-    while(imgs)
+    for(const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE); imgs; imgs = g_list_next((GList *)imgs))
     {
       images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
       nb_selected++;
-      imgs = g_list_next((GList *)imgs);
     }
     if(images) images[strlen(images) - 1] = '\0';
   }
@@ -828,16 +813,15 @@ GList *dt_tag_get_hierarchical(gint imgid)
 
   if(count < 1) return NULL;
 
-  while(taglist)
+  for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)taglist->data;
-    tags = g_list_prepend(tags, t->tag);
-    taglist = g_list_next(taglist);
+    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
+    tags = g_list_prepend(tags, g_strdup(t->tag));
   }
 
   dt_tag_free_result(&taglist);
 
-  tags = g_list_reverse(tags);
+  tags = g_list_reverse(tags);	// list was built in reverse order, so un-reverse it
   return tags;
 }
 
@@ -971,14 +955,13 @@ GList *dt_tag_get_hierarchical_export(gint imgid, int32_t flags)
   if(count < 1) return NULL;
   const gboolean export_private_tags = flags & DT_META_PRIVATE_TAG;
 
-  while(taglist)
+  for(GList *tag_iter = taglist; tag_iter; tag_iter = g_list_next(tag_iter))
   {
-    dt_tag_t *t = (dt_tag_t *)taglist->data;
+    dt_tag_t *t = (dt_tag_t *)tag_iter->data;
     if (export_private_tags || !(t->flags & DT_TF_PRIVATE))
     {
       tags = g_list_prepend(tags, t->tag);
     }
-    taglist = g_list_next(taglist);
   }
 
   dt_tag_free_result(&taglist);
@@ -1027,11 +1010,9 @@ GList *dt_tag_get_images_from_list(const GList *img, const gint tagid)
 {
   GList *result = NULL;
   char *images = NULL;
-  GList *imgs = (GList *)img;
-  while(imgs)
+  for(GList *imgs = (GList *)img; imgs; imgs = g_list_next(imgs))
   {
     images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
-    imgs = g_list_next(imgs);
   }
   if(images)
   {
@@ -1422,8 +1403,9 @@ void dt_tag_add_synonym(gint tagid, gchar *synonym)
   g_free(synonyms);
 }
 
-static void _free_result_item(dt_tag_t *t, gpointer unused)
+static void _free_result_item(gpointer data)
 {
+  dt_tag_t *t = (dt_tag_t*)data;
   g_free(t->tag);
   g_free(t->synonym);
   g_free(t);
@@ -1433,7 +1415,7 @@ void dt_tag_free_result(GList **result)
 {
   if(result && *result)
   {
-    g_list_free_full(*result, (GDestroyNotify)_free_result_item);
+    g_list_free_full(*result, _free_result_item);
   }
 }
 

@@ -127,7 +127,7 @@ static int _circle_events_mouse_scrolled(struct dt_iop_module_t *module, float p
     }
     else
     {
-      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+      dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
       // resize don't care where the mouse is inside a shape
       if((state & GDK_SHIFT_MASK) == GDK_SHIFT_MASK)
       {
@@ -282,8 +282,7 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
       dt_masks_form_t *grp = darktable.develop->form_visible;
       if(!grp || !(grp->type & DT_MASKS_GROUP)) return 1;
       int pos3 = 0, pos2 = -1;
-      GList *fs = g_list_first(grp->points);
-      while(fs)
+      for(GList *fs = grp->points; fs; fs = g_list_next(fs))
       {
         dt_masks_point_group_t *pt = (dt_masks_point_group_t *)fs->data;
         if(pt->formid == form->formid)
@@ -292,7 +291,6 @@ static int _circle_events_button_pressed(struct dt_iop_module_t *module, float p
           break;
         }
         pos3++;
-        fs = g_list_next(fs);
       }
       if(pos2 < 0) return 1;
       dt_masks_form_gui_t *gui2 = darktable.develop->form_gui;
@@ -347,8 +345,7 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
     else
     {
       dt_masks_clear_form_gui(darktable.develop);
-      GList *forms = g_list_first(darktable.develop->form_visible->points);
-      while(forms)
+      for(GList *forms = darktable.develop->form_visible->points; forms; forms = g_list_next(forms))
       {
         dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
         if(gpt->formid == form->formid)
@@ -358,7 +355,6 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
           free(gpt);
           break;
         }
-        forms = g_list_next(forms);
       }
       gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
@@ -370,7 +366,7 @@ static int _circle_events_button_released(struct dt_iop_module_t *module, float 
   if(gui->form_dragging)
   {
     // we get the circle
-    dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+    dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
 
     // we end the form dragging
     gui->form_dragging = FALSE;
@@ -804,7 +800,7 @@ static int _circle_get_points(dt_develop_t *dev, float x, float y, float radius,
 static int _circle_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *form, float **points,
                                      int *points_count, float **border, int *border_count, int source)
 {
-  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
   float x = 0.0f, y = 0.0f;
   if(source)
     x = form->source[0], y = form->source[1];
@@ -827,7 +823,7 @@ static int _circle_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_iop
                                    dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
   // we get the circle values
-  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
   // compute the points we need to transform (center and circumference of circle)
@@ -856,7 +852,7 @@ static int _circle_get_area(const dt_iop_module_t *const restrict module,
                             int *width, int *height, int *posx, int *posy)
 {
   // we get the circle values
-  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
   float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
 
   // compute the points we need to transform (center and circumference of circle)
@@ -897,7 +893,7 @@ static int _circle_get_mask(const dt_iop_module_t *const restrict module,
   }
 
   // we get the circle values
-  dt_masks_point_circle_t *const restrict circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  dt_masks_point_circle_t *const restrict circle = (dt_masks_point_circle_t *)((form->points)->data);
 
   // we create a buffer of points with all points in the area
   const int w = *width, h = *height;
@@ -1001,7 +997,7 @@ static int _circle_get_mask_roi(const dt_iop_module_t *const restrict module,
   if(darktable.unmuted & DT_DEBUG_PERF) start2 = start1 = dt_get_wtime();
 
   // we get the circle parameters
-  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)(g_list_first(form->points)->data);
+  dt_masks_point_circle_t *circle = (dt_masks_point_circle_t *)((form->points)->data);
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
   const float centerx = circle->center[0] * wi;
   const float centery = circle->center[1] * hi;
@@ -1289,7 +1285,7 @@ static void _circle_set_hint_message(const dt_masks_form_gui_t *const gui, const
 static void _circle_duplicate_points(dt_develop_t *dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
+  for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_circle_t *pt = (dt_masks_point_circle_t *)pts->data;
     dt_masks_point_circle_t *npt = (dt_masks_point_circle_t *)malloc(sizeof(dt_masks_point_circle_t));

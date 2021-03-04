@@ -304,9 +304,7 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
 {
   if(type == DT_UNDO_METADATA)
   {
-    GList *list = (GList *)data;
-
-    while(list)
+    for(GList *list = (GList *)data; list; list = g_list_next(list))
     {
       dt_undo_metadata_t *undometadata = (dt_undo_metadata_t *)list->data;
 
@@ -314,7 +312,6 @@ static void _pop_undo(gpointer user_data, const dt_undo_type_t type, dt_undo_dat
       GList *after = (action == DT_ACTION_UNDO) ? undometadata->before : undometadata->after;
       _pop_undo_execute(undometadata->imgid, before, after);
       *imgs = g_list_prepend(*imgs, GINT_TO_POINTER(undometadata->imgid));
-      list = g_list_next(list);
     }
 
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_MOUSE_OVER_IMAGE_CHANGE);
@@ -514,8 +511,7 @@ static void _metadata_add_metadata_to_list(GList **list, const GList *metadata)
 static void _metadata_remove_metadata_from_list(GList **list, const GList *metadata)
 {
   // caution: metadata is a simple list here
-  const GList *m = metadata;
-  while(m)
+  for(const GList *m = metadata; m; m = g_list_next(m))
   {
     GList *same_key = _list_find_custom(*list, m->data);
     if(same_key)
@@ -529,7 +525,6 @@ static void _metadata_remove_metadata_from_list(GList **list, const GList *metad
       g_free(same2->data);
       g_list_free(same2);
     }
-    m = g_list_next(m);
   }
 }
 
@@ -543,8 +538,7 @@ typedef enum dt_tag_actions_t
 static void _metadata_execute(const GList *imgs, const GList *metadata, GList **undo,
                               const gboolean undo_on, const gint action)
 {
-  const GList *images = imgs;
-  while(images)
+  for(const GList *images = imgs; images; images = g_list_next(images))
   {
     const int image_id = GPOINTER_TO_INT(images->data);
 
@@ -575,7 +569,6 @@ static void _metadata_execute(const GList *imgs, const GList *metadata, GList **
       *undo = g_list_append(*undo, undometadata);
     else
       _undo_metadata_free(undometadata);
-    images = g_list_next(images);
   }
 }
 

@@ -192,12 +192,10 @@ int dt_history_load_and_apply_on_list(gchar *filename, const GList *list)
 {
   int res = 0;
   dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  GList *l = (GList *)list;
-  while(l)
+  for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     if(dt_history_load_and_apply(imgid, filename, 1)) res = 1;
-    l = g_list_next(l);
   }
   dt_undo_end_group(darktable.undo);
   return res;
@@ -207,8 +205,7 @@ int dt_history_load_and_apply_on_list(gchar *filename, const GList *list)
 static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_iop_module_t *module)
 {
   dt_dev_history_item_t *hist_mod = NULL;
-  GList *history = g_list_first(dev->history);
-  while(history)
+  for(GList *history = dev->history; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
@@ -217,7 +214,6 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_io
       hist_mod = hist;
       break;
     }
-    history = g_list_next(history);
   }
   return hist_mod;
 }
@@ -226,8 +222,7 @@ static dt_dev_history_item_t *_search_history_by_module(dt_develop_t *dev, dt_io
 static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_module_t *module)
 {
   dt_dev_history_item_t *hist_mod = NULL;
-  GList *history = g_list_first(dev->history);
-  while(history)
+  for(GList *history = dev->history; history; history = g_list_next(history))
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)(history->data);
 
@@ -236,7 +231,6 @@ static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_mo
       hist_mod = hist;
       break;
     }
-    history = g_list_next(history);
   }
   return hist_mod;
 }
@@ -246,8 +240,7 @@ static dt_dev_history_item_t *_search_history_by_op(dt_develop_t *dev, dt_iop_mo
 static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list, dt_iop_module_t *module)
 {
   dt_iop_module_t *mod_ret = NULL;
-  GList *modules = g_list_first(modules_list);
-  while(modules)
+  for(GList *modules = modules_list; modules; modules = g_list_next(modules))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)(modules->data);
 
@@ -256,7 +249,6 @@ static dt_iop_module_t *_search_list_iop_by_module(GList *modules_list, dt_iop_m
       mod_ret = mod;
       break;
     }
-    modules = g_list_next(modules);
   }
   return mod_ret;
 }
@@ -280,12 +272,10 @@ static void _fill_used_forms(GList *forms_list, int formid, int *used, int nb)
   dt_masks_form_t *form = dt_masks_get_from_id_ext(forms_list, formid);
   if(form && (form->type & DT_MASKS_GROUP))
   {
-    GList *grpts = g_list_first(form->points);
-    while(grpts)
+    for(GList *grpts = form->points; grpts; grpts = g_list_next(grpts))
     {
       dt_masks_point_group_t *grpt = (dt_masks_point_group_t *)grpts->data;
       _fill_used_forms(forms_list, grpt->formid, used, nb);
-      grpts = g_list_next(grpts);
     }
   }
 }
@@ -314,8 +304,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   {
     // we haven't found a module to replace
     // check if there's a module with the same (operation, multi_name) on dev->iop
-    GList *modules_dest = g_list_first(dev_dest->iop);
-    while(modules_dest)
+    for(GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod_dest = (dt_iop_module_t *)modules_dest->data;
 
@@ -330,7 +319,6 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
           break;
         }
       }
-      modules_dest = g_list_next(modules_dest);
     }
   }
 
@@ -392,8 +380,7 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
   {
     dt_iop_module_t *module_duplicate = NULL;
     // check if there's a module with the same iop_order
-    GList *modules_dest = g_list_first(dev_dest->iop);
-    while(modules_dest)
+    for( GList *modules_dest = dev_dest->iop; modules_dest; modules_dest = g_list_next(modules_dest))
     {
       dt_iop_module_t *mod = (dt_iop_module_t *)(modules_dest->data);
 
@@ -406,8 +393,6 @@ int dt_history_merge_module_into_history(dt_develop_t *dev_dest, dt_develop_t *d
       {
         module_duplicate = mod;
       }
-
-      modules_dest = g_list_next(modules_dest);
     }
 
     // do some checking...
@@ -551,8 +536,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   {
     if (DT_IOP_ORDER_INFO) fprintf(stderr," all modules");
     // we will copy all modules
-    GList *modules_src = g_list_first(dev_src->iop);
-    while(modules_src)
+    for(GList *modules_src = dev_src->iop; modules_src; modules_src = g_list_next(modules_src))
     {
       dt_iop_module_t *mod_src = (dt_iop_module_t *)(modules_src->data);
 
@@ -566,8 +550,6 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
       {
         mod_list = g_list_prepend(mod_list, mod_src);
       }
-
-      modules_src = g_list_next(modules_src);
     }
   }
   if (DT_IOP_ORDER_INFO) fprintf(stderr,"\nvvvvv\n");
@@ -577,12 +559,10 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   // update iop-order list to have entries for the new modules
   dt_ioppr_update_for_modules(dev_dest, mod_list, FALSE);
 
-  GList *l = mod_list;
-  while(l)
+  for(GList *l = mod_list; l; l = g_list_next(l))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)l->data;
     dt_history_merge_module_into_history(dev_dest, dev_src, mod, &modules_used, FALSE);
-    l = g_list_next(l);
   }
 
   // update iop-order list to have entries for the new modules
@@ -637,8 +617,7 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
 
     if(!copy_full)
     {
-      GList *modules = darktable.iop;
-      while(modules)
+      for(GList *modules = darktable.iop; modules; modules = g_list_next(modules))
       {
         dt_iop_module_so_t *module = (dt_iop_module_so_t *)modules->data;
 
@@ -649,8 +628,6 @@ static int _history_copy_and_paste_on_image_overwrite(const int32_t imgid, const
 
           skip_modules = dt_util_dstrcat(skip_modules, "'%s'", module->op);
         }
-
-        modules = g_list_next(modules);
       }
     }
 
@@ -1161,8 +1138,7 @@ int dt_history_compress_on_list(const GList *imgs)
   int uncompressed=0;
 
   // Get the list of selected images
-  GList *l = g_list_first((GList *)imgs);
-  while(l)
+  for(const GList *l = imgs; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     dt_lock_image(imgid);
@@ -1241,7 +1217,6 @@ int dt_history_compress_on_list(const GList *imgs)
 
     dt_unlock_image(imgid);
     dt_history_hash_write_from_history(imgid, DT_HISTORY_HASH_CURRENT);
-    l = g_list_next(l);
   }
 
   return uncompressed;
@@ -1267,8 +1242,7 @@ GList *dt_history_duplicate(GList *hist)
 {
   GList *result = NULL;
 
-  GList *h = g_list_first(hist);
-  while(h)
+  for(GList *h = hist; h; h = g_list_next(h))
   {
     const dt_dev_history_item_t *old = (dt_dev_history_item_t *)(h->data);
 
@@ -1307,8 +1281,6 @@ GList *dt_history_duplicate(GList *hist)
     if(old->forms) new->forms = dt_masks_dup_forms_deep(old->forms, NULL);
 
     result = g_list_prepend(result, new);
-
-    h = g_list_next(h);
   }
   return g_list_reverse(result);  // list was built in reverse order, so un-reverse it
 }
@@ -1673,8 +1645,7 @@ gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
   if(mode == 0) merge = TRUE;
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
-  GList *l = (GList *)list;
-  while(l)
+  for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int dest = GPOINTER_TO_INT(l->data);
     dt_history_copy_and_paste_on_image(darktable.view_manager->copy_paste.copied_imageid,
@@ -1682,7 +1653,6 @@ gboolean dt_history_paste_on_list(const GList *list, gboolean undo)
                                        darktable.view_manager->copy_paste.selops,
                                        darktable.view_manager->copy_paste.copy_iop_order,
                                        darktable.view_manager->copy_paste.full_copy);
-    l = g_list_next(l);
   }
   if(undo) dt_undo_end_group(darktable.undo);
   return TRUE;
@@ -1736,8 +1706,7 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
 
   if(undo) dt_undo_start_group(darktable.undo, DT_UNDO_LT_HISTORY);
 
-  GList *l = (GList *)list;
-  while(l)
+  for(GList *l = (GList *)list; l; l = g_list_next(l))
   {
     const int imgid = GPOINTER_TO_INT(l->data);
     dt_undo_lt_history_t *hist = dt_history_snapshot_item_init();
@@ -1755,8 +1724,6 @@ gboolean dt_history_delete_on_list(const GList *list, gboolean undo)
        recalculated when the mimpap will be recreated */
     if(darktable.collection->params.sort == DT_COLLECTION_SORT_ASPECT_RATIO)
       dt_image_set_aspect_ratio(imgid, FALSE);
-
-    l = g_list_next(l);
   }
 
   DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);

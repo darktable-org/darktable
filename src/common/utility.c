@@ -131,15 +131,14 @@ gchar *dt_util_glist_to_str(const gchar *separator, GList *items)
   gchar *result = NULL;
 
   // add the entries to an char* array
-  items = g_list_first(items);
   gchar **strings = g_malloc0_n(count + 1, sizeof(gchar *));
   if(items != NULL)
   {
     int i = 0;
-    do
+    for(; items; items = g_list_next(items))
     {
       strings[i++] = items->data;
-    } while((items = g_list_next(items)) != NULL);
+    }
   }
 
   // join them into a single string

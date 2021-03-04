@@ -810,19 +810,17 @@ static cmsHPROFILE dt_colorspaces_create_linear_infrared_profile(void)
 const dt_colorspaces_color_profile_t *dt_colorspaces_get_work_profile(const int imgid)
 {
   // find the colorin module -- the pointer stays valid until darktable shuts down
-  static dt_iop_module_so_t *colorin = NULL;
+  static const dt_iop_module_so_t *colorin = NULL;
   if(colorin == NULL)
   {
-    GList *modules = g_list_first(darktable.iop);
-    while(modules)
+    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
       if(!strcmp(module->op, "colorin"))
       {
         colorin = module;
         break;
       }
-      modules = g_list_next(modules);
     }
   }
 
@@ -862,19 +860,17 @@ const dt_colorspaces_color_profile_t *dt_colorspaces_get_output_profile(const in
                                                                         const char *over_filename)
 {
   // find the colorout module -- the pointer stays valid until darktable shuts down
-  static dt_iop_module_so_t *colorout = NULL;
+  static const dt_iop_module_so_t *colorout = NULL;
   if(colorout == NULL)
   {
-    GList *modules = g_list_first(darktable.iop);
-    while(modules)
+    for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
     {
-      dt_iop_module_so_t *module = (dt_iop_module_so_t *)(modules->data);
+      const dt_iop_module_so_t *module = (const dt_iop_module_so_t *)(modules->data);
       if(!strcmp(module->op, "colorout"))
       {
         colorout = module;
         break;
       }
-      modules = g_list_next(modules);
     }
   }
 

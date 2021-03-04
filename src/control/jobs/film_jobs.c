@@ -179,13 +179,11 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
   dt_lua_lock();
   lua_State *L = darktable.lua_state.state;
   {
-    GList *elt = images;
     lua_newtable(L);
-    while(elt)
+    for(GList *elt = images; elt; elt = g_list_next(elt))
     {
       lua_pushstring(L, elt->data);
       luaL_ref(L, -2);
-      elt = g_list_next(elt);
     }
   }
   lua_pushvalue(L, -1);
@@ -230,10 +228,9 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
 
   /* loop thru the images and import to current film roll */
   dt_film_t *cfr = film;
-  GList *image = g_list_first(images);
   int pending = 0;
   double last_update = dt_get_wtime();
-  do
+  for(GList *image = images; image; image = g_list_next(image))
   {
     gchar *cdn = g_path_get_dirname((const gchar *)image->data);
 
@@ -282,7 +279,7 @@ static void dt_film_import1(dt_job_t *job, dt_film_t *film)
       pending = 0;
       last_update = curr_time;
     }
-  } while((image = g_list_next(image)) != NULL);
+  }
 
   g_list_free_full(images, g_free);
   all_imgs = g_list_reverse(all_imgs);
