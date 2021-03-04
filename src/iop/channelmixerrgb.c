@@ -1736,6 +1736,8 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece,
                                          ivoid, ovoid, roi_in, roi_out))
     return; // image has been copied through to output and module's trouble flag has been updated
 
+  declare_cat_on_pipe(self, FALSE);
+
   // dt_iop_have_required_input_format() has reset the trouble message.
   // we must set it again in case of any trouble.
   _check_for_wb_issue_and_set_trouble_message(self);
