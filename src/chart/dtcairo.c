@@ -91,8 +91,7 @@ void draw_boundingbox(cairo_t *cr, point_t *bb)
 
 void draw_f_boxes(cairo_t *cr, const float *homography, chart_t *chart)
 {
-  GList *iter = chart->f_list;
-  while(iter)
+  for(GList *iter = chart->f_list; iter; iter = g_list_next(iter))
   {
     f_line_t *f = iter->data;
     for(int i = 0; i < 4; i++)
@@ -100,7 +99,6 @@ void draw_f_boxes(cairo_t *cr, const float *homography, chart_t *chart)
       point_t p = apply_homography(f->p[i], homography);
       draw_cross(cr, p);
     }
-    iter = g_list_next(iter);
   }
 }
 

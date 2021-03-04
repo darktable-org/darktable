@@ -344,7 +344,7 @@ static int _ellipse_get_points(dt_develop_t *dev, float xx, float yy, float radi
 static int _ellipse_get_points_border(dt_develop_t *dev, struct dt_masks_form_t *form, float **points,
                                       int *points_count, float **border, int *border_count, int source)
 {
-  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
   float x = 0.0f, y = 0.0f, a = 0.0f, b = 0.0f;
   if(source)
     x = form->source[0], y = form->source[1];
@@ -493,7 +493,7 @@ static int _ellipse_events_mouse_scrolled(struct dt_iop_module_t *module, float 
     }
     else
     {
-      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+      dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
       if((state & KEY_STATE_MASK) == (GDK_SHIFT_MASK | GDK_CONTROL_MASK)
          && gui->edit_mode == DT_MASKS_EDIT_FULL)
       {
@@ -716,8 +716,7 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
       dt_masks_form_t *grp = darktable.develop->form_visible;
       if(!grp || !(grp->type & DT_MASKS_GROUP)) return 1;
       int pos3 = 0, pos2 = -1;
-      GList *fs = g_list_first(grp->points);
-      while(fs)
+      for(GList *fs = grp->points; fs; fs = g_list_next(fs))
       {
         dt_masks_point_group_t *pt = (dt_masks_point_group_t *)fs->data;
         if(pt->formid == form->formid)
@@ -726,7 +725,6 @@ static int _ellipse_events_button_pressed(struct dt_iop_module_t *module, float 
           break;
         }
         pos3++;
-        fs = g_list_next(fs);
       }
       if(pos2 < 0) return 1;
       dt_masks_form_gui_t *gui2 = darktable.develop->form_gui;
@@ -781,8 +779,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
     else
     {
       dt_masks_clear_form_gui(darktable.develop);
-      GList *forms = g_list_first(darktable.develop->form_visible->points);
-      while(forms)
+      for(GList *forms = darktable.develop->form_visible->points; forms; forms = g_list_next(forms))
       {
         dt_masks_point_group_t *gpt = (dt_masks_point_group_t *)forms->data;
         if(gpt->formid == form->formid)
@@ -792,7 +789,6 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
           free(gpt);
           break;
         }
-        forms = g_list_next(forms);
       }
       gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
@@ -804,7 +800,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
   if(gui->form_dragging)
   {
     // we get the ellipse
-    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
 
     // we end the form dragging
     gui->form_dragging = FALSE;
@@ -838,7 +834,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
   else if(gui->border_toggling)
   {
     // we get the ellipse
-    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
 
     // we end the border toggling
     gui->border_toggling = FALSE;
@@ -886,7 +882,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
   else if(gui->form_rotating && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the ellipse
-    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
 
     // we end the form rotating
     gui->form_rotating = FALSE;
@@ -931,7 +927,7 @@ static int _ellipse_events_button_released(struct dt_iop_module_t *module, float
   else if(gui->point_dragging >= 1 && gui->edit_mode == DT_MASKS_EDIT_FULL)
   {
     // we get the ellipse
-    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+    dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
 
     const int k = gui->point_dragging;
 
@@ -1526,7 +1522,7 @@ static int _ellipse_get_source_area(dt_iop_module_t *module, dt_dev_pixelpipe_io
                                     dt_masks_form_t *form, int *width, int *height, int *posx, int *posy)
 {
   // we get the ellipse values
-  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
   const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
   const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
   const float total[2] = { (prop ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wd, ht),
@@ -1557,7 +1553,7 @@ static int _ellipse_get_area(const dt_iop_module_t *const module, const dt_dev_p
                              int *width, int *height, int *posx, int *posy)
 {
   // we get the ellipse values
-  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
   const float wd = piece->pipe->iwidth, ht = piece->pipe->iheight;
   const int prop = ellipse->flags & DT_MASKS_ELLIPSE_PROPORTIONAL;
   const float total[2] = { (prop ? ellipse->radius[0] * (1.0f + ellipse->border) : ellipse->radius[0] + ellipse->border) * MIN(wd, ht),
@@ -1600,7 +1596,7 @@ static int _ellipse_get_mask(const dt_iop_module_t *const module, const dt_dev_p
   }
 
   // we get the ellipse values
-  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
 
   // we create a buffer of points with all points in the area
   int w = *width, h = *height;
@@ -1734,7 +1730,7 @@ static int _ellipse_get_mask_roi(const dt_iop_module_t *const module, const dt_d
   if(darktable.unmuted & DT_DEBUG_PERF) start2 = start1 = dt_get_wtime();
 
   // we get the ellipse parameters
-  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)(g_list_first(form->points)->data);
+  dt_masks_point_ellipse_t *ellipse = (dt_masks_point_ellipse_t *)((form->points)->data);
   const int wi = piece->pipe->iwidth, hi = piece->pipe->iheight;
   const float center[2] = { ellipse->center[0] * wi, ellipse->center[1] * hi };
   const float radius[2] = { ellipse->radius[0] * MIN(wi, hi), ellipse->radius[1] * MIN(wi, hi) };
@@ -2008,7 +2004,7 @@ static void _ellipse_set_form_name(struct dt_masks_form_t *const form, const siz
 static void _ellipse_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for (GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
+  for (GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_ellipse_t *pt = (dt_masks_point_ellipse_t *)pts->data;
     dt_masks_point_ellipse_t *npt = (dt_masks_point_ellipse_t *)malloc(sizeof(dt_masks_point_ellipse_t));

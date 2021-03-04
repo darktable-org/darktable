@@ -2819,13 +2819,12 @@ void dt_bauhaus_vimkey_exec(const char *input)
 // give autocomplete suggestions
 GList *dt_bauhaus_vimkey_complete(const char *input)
 {
-  GList *cmp = darktable.bauhaus->key_mod;
   char *point = strstr(input, ".");
-  if(point) cmp = darktable.bauhaus->key_val;
   const int prefix = strlen(input);
+  GList *cmp = point ? darktable.bauhaus->key_val : darktable.bauhaus->key_mod;
   GList *res = NULL;
   int after = 0;
-  while(cmp)
+  for( ; cmp ; cmp = g_list_next(cmp))
   {
     char *path = (char *)cmp->data;
     if(strncasecmp(path, input, prefix))
@@ -2839,7 +2838,6 @@ GList *dt_bauhaus_vimkey_complete(const char *input)
       res = g_list_insert_sorted(res, path, (GCompareFunc)strcmp);
       after = 1;
     }
-    cmp = g_list_next(cmp);
   }
   return res;
 }
