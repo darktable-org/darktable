@@ -456,17 +456,13 @@ void dt_view_manager_expose(dt_view_manager_t *vm, cairo_t *cr, int32_t width, i
 
     cairo_restore(cr);
     /* expose plugins */
-    GList *plugins = g_list_last(darktable.lib->plugins);
-    while(plugins)
+    for(const GList *plugins = g_list_last(darktable.lib->plugins); plugins; plugins = g_list_previous(plugins))
     {
       dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
       /* does this module belong to current view ?*/
       if(plugin->gui_post_expose && dt_lib_is_visible_in_view(plugin, vm->current_view))
         plugin->gui_post_expose(plugin, cr, vm->current_view->width, vm->current_view->height, px, py);
-
-      /* get next plugin */
-      plugins = g_list_previous(plugins);
     }
   }
 }
@@ -484,17 +480,13 @@ void dt_view_manager_mouse_leave(dt_view_manager_t *vm)
 
   /* lets check if any plugins want to handle mouse move */
   gboolean handled = FALSE;
-  GList *plugins = g_list_last(darktable.lib->plugins);
-  while(plugins)
+  for(const GList *plugins = g_list_last(darktable.lib->plugins); plugins; plugins = g_list_previous(plugins))
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
     if(plugin->mouse_leave && dt_lib_is_visible_in_view(plugin, v))
       if(plugin->mouse_leave(plugin)) handled = TRUE;
-
-    /* get next plugin */
-    plugins = g_list_previous(plugins);
   }
 
   /* if not handled by any plugin let pass to view handler*/
@@ -514,17 +506,13 @@ void dt_view_manager_mouse_moved(dt_view_manager_t *vm, double x, double y, doub
 
   /* lets check if any plugins want to handle mouse move */
   gboolean handled = FALSE;
-  GList *plugins = g_list_last(darktable.lib->plugins);
-  while(plugins)
+  for(const GList *plugins = g_list_last(darktable.lib->plugins); plugins; plugins = g_list_previous(plugins))
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
     if(plugin->mouse_moved && dt_lib_is_visible_in_view(plugin, v))
       if(plugin->mouse_moved(plugin, x, y, pressure, which)) handled = TRUE;
-
-    /* get next plugin */
-    plugins = g_list_previous(plugins);
   }
 
   /* if not handled by any plugin let pass to view handler*/
@@ -538,17 +526,13 @@ int dt_view_manager_button_released(dt_view_manager_t *vm, double x, double y, i
 
   /* lets check if any plugins want to handle button press */
   gboolean handled = FALSE;
-  GList *plugins = g_list_last(darktable.lib->plugins);
-  while(plugins)
+  for(const GList *plugins = g_list_last(darktable.lib->plugins); plugins; plugins = g_list_previous(plugins))
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
     if(plugin->button_released && dt_lib_is_visible_in_view(plugin, v))
       if(plugin->button_released(plugin, x, y, which, state)) handled = TRUE;
-
-    /* get next plugin */
-    plugins = g_list_previous(plugins);
   }
 
   if(handled) return 1;
@@ -567,17 +551,15 @@ int dt_view_manager_button_pressed(dt_view_manager_t *vm, double x, double y, do
 
   /* lets check if any plugins want to handle button press */
   gboolean handled = FALSE;
-  GList *plugins = g_list_last(darktable.lib->plugins);
-  while(plugins && !handled)
+  for(const GList *plugins = g_list_last(darktable.lib->plugins);
+      plugins && !handled;
+      plugins = g_list_previous(plugins))
   {
     dt_lib_module_t *plugin = (dt_lib_module_t *)(plugins->data);
 
     /* does this module belong to current view ?*/
     if(plugin->button_pressed && dt_lib_is_visible_in_view(plugin, v))
       if(plugin->button_pressed(plugin, x, y, pressure, which, type, state)) handled = TRUE;
-
-    /* get next plugin */
-    plugins = g_list_previous(plugins);
   }
 
   if(handled) return 1;
