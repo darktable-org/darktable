@@ -763,8 +763,7 @@ static void _basics_show(dt_lib_module_t *self)
 
   int pos = 0;
   dt_lib_modulegroups_basic_item_position_t item_pos = FIRST_MODULE;
-  GList *modules = g_list_last(darktable.develop->iop);
-  while(modules)
+  for(GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -791,8 +790,7 @@ static void _basics_show(dt_lib_module_t *self)
 
       // and we add all other widgets
       gchar *pre = dt_util_dstrcat(NULL, "<Darktable>/image operations/%s/", module->op);
-      GList *la = g_list_last(darktable.control->accelerator_list);
-      while(la)
+      for(const GList *la = g_list_last(darktable.control->accelerator_list); la; la = g_list_previous(la))
       {
         dt_accel_t *accel = (dt_accel_t *)la->data;
         if(accel && accel->closure && accel->closure->data && g_str_has_prefix(accel->path, pre)
@@ -822,11 +820,9 @@ static void _basics_show(dt_lib_module_t *self)
             }
           }
         }
-        la = g_list_previous(la);
       }
       g_free(pre);
     }
-    modules = g_list_previous(modules);
   }
 
   gtk_widget_show(d->vbox_basic);

@@ -2698,8 +2698,7 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
       can_moved = dt_ioppr_check_can_move_before_iop(darktable.develop->iop, module_src, module_dest);
   }
 
-  GList *modules = g_list_last(darktable.develop->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2709,8 +2708,6 @@ static gboolean _on_drag_motion(GtkWidget *widget, GdkDragContext *dc, gint x, g
       gtk_style_context_remove_class(context, "iop_drop_after");
       gtk_style_context_remove_class(context, "iop_drop_before");
     }
-
-    modules = g_list_previous(modules);
   }
 
   if(can_moved)
@@ -2775,8 +2772,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       fprintf(stderr, "[_on_drag_data_received] can't find destination module\n");
   }
 
-  GList *modules = g_list_last(darktable.develop->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2786,8 +2782,6 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
       gtk_style_context_remove_class(context, "iop_drop_after");
       gtk_style_context_remove_class(context, "iop_drop_before");
     }
-
-    modules = g_list_previous(modules);
   }
 
   gtk_drag_finish(dc, TRUE, FALSE, time);
@@ -2830,8 +2824,7 @@ static void _on_drag_data_received(GtkWidget *widget, GdkDragContext *dc, gint x
 
 static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gpointer user_data)
 {
-  GList *modules = g_list_last(darktable.develop->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(darktable.develop->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2841,8 +2834,6 @@ static void _on_drag_leave(GtkWidget *widget, GdkDragContext *dc, guint time, gp
       gtk_style_context_remove_class(context, "iop_drop_after");
       gtk_style_context_remove_class(context, "iop_drop_before");
     }
-
-    modules = g_list_previous(modules);
   }
 
   GtkWidget *w = g_object_get_data(G_OBJECT(widget), "highlighted");
