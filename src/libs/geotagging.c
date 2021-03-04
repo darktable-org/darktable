@@ -1450,25 +1450,26 @@ static gboolean _datetime_scroll_over(GtkWidget *w, GdkEventScroll *event, dt_li
 
 static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_lib_module_t *self)
 {
-  GtkBox *box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+  GtkWidget *flow = gtk_flow_box_new();
+  gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(flow), 2);
+  gtk_flow_box_set_column_spacing(GTK_FLOW_BOX(flow), 3);
+
+  GtkBox *box = NULL;
   for(int i = 0; i < 6; i++)
   {
+    if(!box) box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+
     if(i == 0 && type == 2)
     {
       dt->sign = gtk_label_new("");
       gtk_box_pack_start(box, dt->sign, FALSE, FALSE, 0);
     }
-    if(((i < 2) && (type == 0 || type == 1)) || (i >= 2))
+    if(i >= 2 || type != 2)
     {
       dt->widget[i] = gtk_entry_new();
       gtk_entry_set_width_chars(GTK_ENTRY(dt->widget[i]), i == 0 ? 4 : 2);
       gtk_entry_set_alignment(GTK_ENTRY(dt->widget[i]), 0.5);
       gtk_box_pack_start(box, dt->widget[i], FALSE, FALSE, 0);
-      if(i < 5)
-      {
-        GtkWidget *label = gtk_label_new(i == 2 ? " " : ":");
-        gtk_box_pack_start(box, label, FALSE, FALSE, 0);
-      }
       if(type == 0)
       {
         dt_gui_key_accel_block_on_focus_connect(dt->widget[i]);
@@ -1479,10 +1480,22 @@ static GtkWidget *_gui_init_datetime(dt_lib_datetime_t *dt, const int type, dt_l
         gtk_widget_set_sensitive(dt->widget[i], FALSE);
       }
     }
+
+    if(i == 2 || i == 5)
+    {
+      gtk_widget_set_halign(GTK_WIDGET(box), GTK_ALIGN_END);
+      gtk_widget_set_hexpand(GTK_WIDGET(box), TRUE);
+      gtk_container_add(GTK_CONTAINER(flow), GTK_WIDGET(box));
+      box = NULL;
+    }
+    else if(i > 2 || type != 2)
+    {
+      GtkWidget *label = gtk_label_new(i < 2 ? "-" : ":");
+      gtk_box_pack_start(box, label, FALSE, FALSE, 0);
+    }
   }
-  gtk_widget_set_halign(GTK_WIDGET(box), GTK_ALIGN_END);
-  gtk_widget_set_hexpand(GTK_WIDGET(box), TRUE);
-  return GTK_WIDGET(box);
+
+  return flow;
 }
 
 static gboolean _datetime_key_pressed(GtkWidget *entry, GdkEventKey *event, dt_lib_module_t *self)
@@ -1659,7 +1672,6 @@ void gui_init(dt_lib_module_t *self)
   int line = 0;
 
   GtkWidget *label = dt_ui_label_new(_("date/time"));
-  gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(grid, label, 0, line, 2, 1);
   gtk_widget_set_tooltip_text(label, _("enter the new date/time (yyyy:mm:dd hh:mm:ss)"
                                        "\nkey in the new numbers or scroll over the cell"));
@@ -1674,7 +1686,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, box, 2, line++, 2, 1);
 
   label = dt_ui_label_new(_("date/time offset"));
-  gtk_widget_set_hexpand(label, TRUE);
   gtk_grid_attach(grid, label, 0, line, 2, 1);
   gtk_widget_set_tooltip_text(label, _("offset or difference ([-]dd hh:mm:ss)"));
 
@@ -1685,18 +1696,14 @@ void gui_init(dt_lib_module_t *self)
   g_signal_connect(G_OBJECT(d->lock_offset), "clicked", G_CALLBACK(_toggle_lock_button_callback), (gpointer)self);
 
   box = _gui_init_datetime(&d->of, 2, self);
-  gtk_widget_set_halign(box, GTK_ALIGN_END);
-  gtk_widget_set_hexpand(box, TRUE);
   gtk_grid_attach(grid, box, 3, line++, 1, 1);
 
   // apply
   d->apply_offset = dt_ui_button_new(_("apply offset"), _("apply offset to selected images"), NULL);
-  gtk_widget_set_hexpand(d->apply_offset, TRUE);
   gtk_grid_attach(grid, d->apply_offset , 0, line, 2, 1);
   g_signal_connect(G_OBJECT(d->apply_offset), "clicked", G_CALLBACK(_apply_offset_callback), self);
 
   d->apply_datetime = dt_ui_button_new(_("apply date/time"), _("apply the same date/time to selected images"), NULL);
-  gtk_widget_set_hexpand(d->apply_datetime, FALSE);
   gtk_grid_attach(grid, d->apply_datetime , 2, line++, 2, 1);
   g_signal_connect(G_OBJECT(d->apply_datetime), "clicked", G_CALLBACK(_apply_datetime_callback), self);
 
@@ -1706,6 +1713,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_grid_attach(grid, label , 0, line, 2, 1);
 
   d->timezone = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(d->timezone), 0);
   gtk_grid_attach(grid, d->timezone, 2, line++, 2, 1);
 
   GtkCellRenderer *renderer;
