@@ -573,18 +573,15 @@ void gui_init(dt_imageio_module_format_t *self)
   gtk_grid_set_row_spacing(grid, DT_PIXEL_APPLY_DPI(5));
   gtk_grid_set_column_spacing(grid, DT_PIXEL_APPLY_DPI(8));
 
-  GtkWidget *widget;
   int line = 0;
 
   // title
 
-  widget = gtk_label_new(_("title"));
-  gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("title")), 0, ++line, 1, 1);
 
   d->title = GTK_ENTRY(gtk_entry_new());
   gtk_entry_set_placeholder_text(d->title, "untitled");
+  gtk_entry_set_width_chars(d->title, 5);
   gtk_widget_set_hexpand(GTK_WIDGET(d->title), TRUE);
   gtk_grid_attach(grid, GTK_WIDGET(d->title), 1, line, 1, 1);
   dt_gui_key_accel_block_on_focus_connect(GTK_WIDGET(d->title));
@@ -626,12 +623,10 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // border
 
-  widget = gtk_label_new(_("border"));
-  gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("border")), 0, ++line, 1, 1);
 
   d->border = GTK_ENTRY(gtk_entry_new());
+  gtk_entry_set_width_chars(d->border, 5);
   gtk_entry_set_max_length(d->border, sizeof(((dt_imageio_pdf_params_t *)NULL)->border) - 1);
   gtk_entry_set_placeholder_text(d->border, "0 mm");
   gtk_grid_attach(grid, GTK_WIDGET(d->border), 1, line, 1, 1);
@@ -648,10 +643,7 @@ void gui_init(dt_imageio_module_format_t *self)
 
   // dpi
 
-  widget = gtk_label_new(_("dpi"));
-  gtk_widget_set_halign(widget, GTK_ALIGN_START);
-  g_object_set(G_OBJECT(widget), "xalign", 0.0, (gchar *)0);
-  gtk_grid_attach(grid, widget, 0, ++line, 1, 1);
+  gtk_grid_attach(grid, dt_ui_label_new(_("dpi")), 0, ++line, 1, 1);
 
   d->dpi = GTK_SPIN_BUTTON(gtk_spin_button_new_with_range(1, 5000, 1));
   gtk_grid_attach(grid, GTK_WIDGET(d->dpi), 1, line, 1, 1);
