@@ -910,8 +910,7 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
     // find the finalscale module
     dt_dev_pixelpipe_iop_t *finalscale = NULL;
     {
-      GList *nodes = g_list_last(pipe.nodes);
-      while(nodes)
+      for(const GList *nodes = g_list_last(pipe.nodes); nodes; nodes = g_list_previous(nodes))
       {
         dt_dev_pixelpipe_iop_t *node = (dt_dev_pixelpipe_iop_t *)(nodes->data);
         if(!strcmp(node->module->op, "finalscale"))
@@ -919,7 +918,6 @@ int dt_imageio_export_with_flags(const int32_t imgid, const char *filename,
           finalscale = node;
           break;
         }
-        nodes = g_list_previous(nodes);
       }
     }
 

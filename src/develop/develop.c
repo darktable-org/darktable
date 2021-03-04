@@ -645,12 +645,10 @@ restart:
 
 static inline void _dt_dev_load_pipeline_defaults(dt_develop_t *dev)
 {
-  GList *modules = g_list_last(dev->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
     dt_iop_reload_defaults(module);
-    modules = g_list_previous(modules);
   }
 }
 
@@ -2639,15 +2637,13 @@ int dt_dev_distort_backtransform_plus(dt_develop_t *dev, dt_dev_pixelpipe_t *pip
 dt_dev_pixelpipe_iop_t *dt_dev_distort_get_iop_pipe(dt_develop_t *dev, struct dt_dev_pixelpipe_t *pipe,
                                                     struct dt_iop_module_t *module)
 {
-  GList *pieces = g_list_last(pipe->nodes);
-  while(pieces)
+  for(const GList *pieces = g_list_last(pipe->nodes); pieces; pieces = g_list_previous(pieces))
   {
     dt_dev_pixelpipe_iop_t *piece = (dt_dev_pixelpipe_iop_t *)(pieces->data);
     if(piece->module == module)
     {
       return piece;
     }
-    pieces = g_list_previous(pieces);
   }
   return NULL;
 }
@@ -2851,8 +2847,7 @@ int dt_dev_sync_pixelpipe_hash_distort(dt_develop_t *dev, struct dt_dev_pixelpip
 void dt_dev_reorder_gui_module_list(dt_develop_t *dev)
 {
   int pos_module = 0;
-  GList *modules = g_list_last(dev->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -2862,8 +2857,6 @@ void dt_dev_reorder_gui_module_list(dt_develop_t *dev)
       gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
                             pos_module++);
     }
-
-    modules = g_list_previous(modules);
   }
 }
 
