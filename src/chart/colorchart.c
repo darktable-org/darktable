@@ -388,8 +388,7 @@ chart_t *parse_cht(const char *filename)
 #define SCALE_X(x) x = (x - x_min) / result->bb_w
 #define SCALE_Y(y) y = (y - y_min) / result->bb_h
 
-      GList *iter = result->f_list;
-      while(iter)
+      for(GList *iter = result->f_list; iter; iter = g_list_next(iter))
       {
         f_line_t *f = iter->data;
         for(int i = 0; i < 4; i++)
@@ -397,7 +396,6 @@ chart_t *parse_cht(const char *filename)
           SCALE_X(f->p[i].x);
           SCALE_Y(f->p[i].y);
         }
-        iter = g_list_next(iter);
       }
 
       GHashTableIter table_iter;

@@ -157,8 +157,7 @@ void dt_grouping_add_grouped_images(GList **images)
 {
   if(!*images) return;
   GList *gimgs = NULL;
-  GList *imgs = *images;
-  while(imgs)
+  for(GList *imgs = *images; imgs; imgs = g_list_next(imgs))
   {
     const dt_image_t *image = dt_image_cache_get(darktable.image_cache, GPOINTER_TO_INT(imgs->data), 'r');
     if(image)
@@ -181,11 +180,10 @@ void dt_grouping_add_grouped_images(GList **images)
         sqlite3_finalize(stmt);
       }
     }
-    imgs = g_list_next(imgs);
   }
 
   if(gimgs)
-    imgs = g_list_concat(*images, g_list_reverse(gimgs));
+    *images = g_list_concat(*images, g_list_reverse(gimgs));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh

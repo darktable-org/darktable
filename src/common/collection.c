@@ -1593,8 +1593,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       query = dt_util_dstrcat(query, "((1=0)");
       GList *lists = NULL;
       dt_collection_get_makermodels(text, NULL, &lists);
-      GList *element = lists;
-      while (element)
+      for(GList *element = lists; element; element = g_list_next(element))
       {
         GList *tuple = element->data;
         char *mk = sqlite3_mprintf("%q", tuple->data);
@@ -1605,7 +1604,6 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         g_free(tuple->data);
         g_free(tuple->next->data);
         g_list_free(tuple);
-        element = element->next;
       }
       g_list_free(lists);
       query = dt_util_dstrcat(query, ")");
@@ -2009,16 +2007,14 @@ void dt_collection_update_query(const dt_collection_t *collection, dt_collection
 
       // 1. create a string with all the imgids of the list to be used inside IN sql query
       gchar *txt = NULL;
-      GList *l = g_list_first(list);
       int i = 0;
-      while(l)
+      for(GList *l = list; l; l = g_list_next(l))
       {
         const int id = GPOINTER_TO_INT(l->data);
         if(i == 0)
           txt = dt_util_dstrcat(txt, "%d", id);
         else
           txt = dt_util_dstrcat(txt, ",%d", id);
-        l = g_list_next(l);
         i++;
       }
       // 2. search the first imgid not in the list but AFTER the list (or in a gap inside the list)

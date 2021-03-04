@@ -1404,8 +1404,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
       {
         const int emode = gui->edit_mode;
         dt_masks_clear_form_gui(darktable.develop);
-        GList *forms = g_list_first(darktable.develop->form_visible->points);
-        while(forms)
+        for(GList *forms = darktable.develop->form_visible->points; forms; forms = g_list_next(forms))
         {
           dt_masks_point_group_t *guipt = (dt_masks_point_group_t *)forms->data;
           if(guipt->formid == form->formid)
@@ -1415,7 +1414,6 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
             free(guipt);
             break;
           }
-          forms = g_list_next(forms);
         }
         gui->edit_mode = emode;
       }
@@ -1472,8 +1470,7 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
     else
     {
       dt_masks_clear_form_gui(darktable.develop);
-      GList *forms = g_list_first(darktable.develop->form_visible->points);
-      while(forms)
+      for(GList *forms = darktable.develop->form_visible->points; forms; forms = g_list_next(forms))
       {
         dt_masks_point_group_t *guipt = (dt_masks_point_group_t *)forms->data;
         if(guipt->formid == form->formid)
@@ -1483,7 +1480,6 @@ static int _brush_events_button_pressed(struct dt_iop_module_t *module, float pz
           free(guipt);
           break;
         }
-        forms = g_list_next(forms);
       }
       gui->edit_mode = DT_MASKS_EDIT_FULL;
     }
@@ -1660,8 +1656,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
         dt_masks_form_t *grp = darktable.develop->form_visible;
         if(!grp || !(grp->type & DT_MASKS_GROUP)) return 1;
         int pos3 = 0, pos2 = -1;
-        GList *fs = g_list_first(grp->points);
-        while(fs)
+        for(GList *fs = grp->points; fs; fs = g_list_next(fs))
         {
           dt_masks_point_group_t *pt = (dt_masks_point_group_t *)fs->data;
           if(pt->formid == form->formid)
@@ -1670,7 +1665,6 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
             break;
           }
           pos3++;
-          fs = g_list_next(fs);
         }
         if(pos2 < 0) return 1;
         dt_masks_form_gui_t *gui2 = darktable.develop->form_gui;
@@ -1707,7 +1701,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
     gui->form_dragging = FALSE;
 
     // we get point0 new values
-    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)g_list_first(form->points)->data;
+    dt_masks_point_brush_t *point = (dt_masks_point_brush_t *)(form->points)->data;
     float wd = darktable.develop->preview_pipe->backbuf_width;
     float ht = darktable.develop->preview_pipe->backbuf_height;
     float pts[2] = { pzx * wd + gui->dx, pzy * ht + gui->dy };
@@ -1716,8 +1710,7 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
     float dy = pts[1] / darktable.develop->preview_pipe->iheight - point->corner[1];
 
     // we move all points
-    GList *points = g_list_first(form->points);
-    while(points)
+    for(GList *points = form->points; points; points = g_list_next(points))
     {
       point = (dt_masks_point_brush_t *)points->data;
       point->corner[0] += dx;
@@ -1726,7 +1719,6 @@ static int _brush_events_button_released(struct dt_iop_module_t *module, float p
       point->ctrl1[1] += dy;
       point->ctrl2[0] += dx;
       point->ctrl2[1] += dy;
-      points = g_list_next(points);
     }
 
     dt_dev_add_masks_history_item(darktable.develop, module, TRUE);
@@ -2868,7 +2860,7 @@ static void _brush_set_hint_message(const dt_masks_form_gui_t *const gui, const 
 static void _brush_duplicate_points(dt_develop_t *const dev, dt_masks_form_t *const base, dt_masks_form_t *const dest)
 {
   (void)dev; // unused arg, keep compiler from complaining
-  for(GList *pts = g_list_first(base->points); pts; pts = g_list_next(pts))
+  for(GList *pts = base->points; pts; pts = g_list_next(pts))
   {
     dt_masks_point_brush_t *pt = (dt_masks_point_brush_t *)pts->data;
     dt_masks_point_brush_t *npt = (dt_masks_point_brush_t *)malloc(sizeof(dt_masks_point_brush_t));

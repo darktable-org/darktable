@@ -262,7 +262,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "VERSION_NAME"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.version_name", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -385,20 +384,17 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   {
     escape = FALSE;
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
-    res = g_list_first(res);
-    if(res != NULL)
+    gboolean color_dot = has_prefix(variable, "LABELS_COLORICONS");
+    const char *colored_dots[] = { "🔴", "🟡", "🟢", "🔵", "🟣" };
+    for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
     {
-      gboolean color_dot = has_prefix(variable, "LABELS_COLORICONS");
-      const char *colored_dots[] = { "🔴", "🟡", "🟢", "🔵", "🟣" };
-      do
-      {
-        const char *dot = color_dot ? colored_dots[GPOINTER_TO_INT(res->data)] : "⬤";
-        const GdkRGBA c = darktable.bauhaus->colorlabels[GPOINTER_TO_INT(res->data)];
-        result = dt_util_dstrcat(result,
-                                 "<span foreground='#%02x%02x%02x'>%s </span>",
-                                 (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255),
-                                 dot);
-      } while((res = g_list_next(res)) != NULL);
+      const int dot_index = GPOINTER_TO_INT(res_iter->data);
+      const char *dot = color_dot ? colored_dots[dot_index] : "⬤";
+      const GdkRGBA c = darktable.bauhaus->colorlabels[dot_index];
+      result = dt_util_dstrcat(result,
+                               "<span foreground='#%02x%02x%02x'>%s </span>",
+                               (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255),
+                               dot);
     }
     g_list_free(res);
   }
@@ -407,14 +403,13 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       GList *labels = NULL;
-      do
+      for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
       {
-        labels = g_list_prepend(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res->data)))));
-      } while((res = g_list_next(res)) != NULL);
+        labels = g_list_prepend(labels, (char *)(_(dt_colorlabels_to_string(GPOINTER_TO_INT(res_iter->data)))));
+      }
       labels = g_list_reverse(labels);  // list was built in reverse order, so un-reverse it
       result = dt_util_glist_to_str(",", labels);
       g_list_free(labels);
@@ -424,7 +419,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "TITLE"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.title", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -434,7 +428,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "DESCRIPTION"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.description", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -444,7 +437,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "CREATOR"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.creator", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -454,7 +446,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "PUBLISHER"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.publisher", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);
@@ -464,7 +455,6 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   else if(has_prefix(variable, "RIGHTS"))
   {
     GList *res = dt_metadata_get(params->imgid, "Xmp.dc.rights", NULL);
-    res = g_list_first(res);
     if(res != NULL)
     {
       result = g_strdup((char *)res->data);

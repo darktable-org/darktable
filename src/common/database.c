@@ -1075,8 +1075,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
     // fill temp table with all operations up to this release
     // it will be used to create the pipe and update the iop_order on history
-    GList *priorities = g_list_first(prior_v1);
-    while(priorities)
+    for(GList *priorities = prior_v1; priorities; priorities = g_list_next(priorities))
     {
       dt_iop_order_entry_t *prior = (dt_iop_order_entry_t *)priorities->data;
 
@@ -1088,8 +1087,6 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
       sqlite3_bind_text(stmt, 2, prior->operation, -1, SQLITE_TRANSIENT);
       TRY_STEP(stmt, SQLITE_DONE, "[init] can't insert default value in iop_order_tmp\n");
       sqlite3_finalize(stmt);
-
-      priorities = g_list_next(priorities);
     }
     g_list_free_full(prior_v1, free);
 
@@ -1240,7 +1237,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
           // first remove all item_list iop from the iop_order_list
 
-          GList *e = g_list_first(item_list);
+          GList *e = item_list;
           GList *n = NULL;
           dt_iop_order_entry_t *n_entry = NULL;
 
@@ -1248,7 +1245,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           {
             dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
 
-            GList *s = g_list_first(iop_order_list);
+            GList *s = iop_order_list;
             while(s && strcmp(((dt_iop_order_entry_t *)s->data)->operation, e_entry->operation))
             {
               s = g_list_next(s);
@@ -1271,12 +1268,10 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
 
           // then add all item_list into iop_order_list
 
-          e = g_list_first(item_list);
-          while(e)
+          for(e = item_list; e; e = g_list_next(e))
           {
             dt_iop_order_entry_t *e_entry = (dt_iop_order_entry_t *)e->data;
-            iop_order_list = g_list_append(iop_order_list, e_entry);
-            e = g_list_next(e);
+            iop_order_list = g_list_prepend(iop_order_list, e_entry);
           }
 
           // and finally reorder the full list based on the iop-order
@@ -1288,7 +1283,7 @@ static int _upgrade_library_schema_step(dt_database_t *db, int version)
           // check if we have some multi-instances
 
           gboolean has_multiple_instances = FALSE;
-          GList *l = g_list_first(iop_order_list);
+          GList *l = iop_order_list;
 
           while(l)
           {
@@ -2020,8 +2015,7 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
 
     // fill temp table with all operations up to this release
     // it will be used to create the pipe and update the iop_order on history
-    GList *priorities = g_list_first(prior_v1);
-    while(priorities)
+    for(GList *priorities = prior_v1; priorities; priorities = g_list_next(priorities))
     {
       dt_iop_order_entry_t *prior = (dt_iop_order_entry_t *)priorities->data;
 
@@ -2033,8 +2027,6 @@ static int _upgrade_data_schema_step(dt_database_t *db, int version)
       sqlite3_bind_text(stmt, 2, prior->operation, -1, SQLITE_TRANSIENT);
       TRY_STEP(stmt, SQLITE_DONE, "[init] can't insert default value in iop_order_tmp\n");
       sqlite3_finalize(stmt);
-
-      priorities = g_list_next(priorities);
     }
     g_list_free_full(prior_v1, free);
 

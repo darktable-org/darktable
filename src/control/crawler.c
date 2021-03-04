@@ -349,8 +349,7 @@ void dt_control_crawler_show_image_list(GList *images)
 
   gui->model = GTK_TREE_MODEL(store);
 
-  GList *list_iter = g_list_first(images);
-  while(list_iter)
+  for(GList *list_iter = images; list_iter; list_iter = g_list_next(list_iter))
   {
     GtkTreeIter iter;
     dt_control_crawler_result_t *item = list_iter->data;
@@ -370,7 +369,6 @@ void dt_control_crawler_show_image_list(GList *images)
                        -1);
     g_free(item->image_path);
     g_free(item->xmp_path);
-    list_iter = g_list_next(list_iter);
   }
   g_list_free_full(images, g_free);
 

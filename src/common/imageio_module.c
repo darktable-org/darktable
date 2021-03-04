@@ -312,28 +312,24 @@ dt_imageio_module_storage_t *dt_imageio_get_storage()
 
 dt_imageio_module_format_t *dt_imageio_get_format_by_name(const char *name)
 {
-  dt_imageio_t *iio = darktable.imageio;
-  GList *it = iio->plugins_format;
   if(!name) return NULL;
-  while(it)
+  dt_imageio_t *iio = darktable.imageio;
+  for(GList *it = iio->plugins_format; it; it = g_list_next(it))
   {
     dt_imageio_module_format_t *module = (dt_imageio_module_format_t *)it->data;
     if(!strcmp(module->plugin_name, name)) return module;
-    it = g_list_next(it);
   }
   return NULL;
 }
 
 dt_imageio_module_storage_t *dt_imageio_get_storage_by_name(const char *name)
 {
-  dt_imageio_t *iio = darktable.imageio;
-  GList *it = iio->plugins_storage;
   if(!name) return NULL;
-  while(it)
+  dt_imageio_t *iio = darktable.imageio;
+  for(GList *it = iio->plugins_storage; it; it = g_list_next(it))
   {
     dt_imageio_module_storage_t *module = (dt_imageio_module_storage_t *)it->data;
     if(!strcmp(module->plugin_name, name)) return module;
-    it = g_list_next(it);
   }
   return NULL;
 }
