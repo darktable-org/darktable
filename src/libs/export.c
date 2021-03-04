@@ -52,11 +52,9 @@ DT_MODULE(7)
 typedef struct dt_lib_export_t
 {
   GtkWidget *dimensions_type, *print_dpi, *print_height, *print_width;
-  GtkWidget *print_size;
   GtkWidget *unit_label;
   GtkWidget *width, *height;
-  GtkWidget *scale, *size_in_px;
-  GtkBox *hbox1, *hbox_scale;
+  GtkWidget *px_size, *print_size, *scale, *size_in_px;
   GtkWidget *storage, *format;
   int format_lut[128];
   uint32_t max_allowed_width , max_allowed_height;
@@ -854,14 +852,14 @@ static void _dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
   {
     if(d_type != DT_DIMENSIONS_PIXELS)
     {
-      gtk_widget_hide(GTK_WIDGET(d->hbox1));
+      gtk_widget_hide(GTK_WIDGET(d->px_size));
       gtk_widget_show(GTK_WIDGET(d->print_size));
       gtk_widget_hide(GTK_WIDGET(d->scale));
       _resync_print_dimensions(d);
     }
     else
     {
-      gtk_widget_show(GTK_WIDGET(d->hbox1));
+      gtk_widget_show(GTK_WIDGET(d->px_size));
       gtk_widget_hide(GTK_WIDGET(d->print_size));
       gtk_widget_hide(GTK_WIDGET(d->scale));
     }
@@ -871,7 +869,7 @@ static void _dimensions_type_changed(GtkWidget *widget, dt_lib_export_t *d)
   else
   {
     gtk_widget_show(GTK_WIDGET(d->scale));
-    gtk_widget_hide(GTK_WIDGET(d->hbox1));
+    gtk_widget_hide(GTK_WIDGET(d->px_size));
     gtk_widget_hide(GTK_WIDGET(d->print_size));
     dt_conf_set_string(CONFIG_PREFIX "resizing", "scaling");
   }
@@ -1234,7 +1232,7 @@ void gui_init(dt_lib_module_t *self)
 
   d->print_size = gtk_flow_box_new();
   gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(d->print_size), 5);
-
+  gtk_flow_box_set_column_spacing (GTK_FLOW_BOX(d->print_size), 3);
   gtk_container_add(GTK_CONTAINER(d->print_size), d->print_width);
   gtk_container_add(GTK_CONTAINER(d->print_size), gtk_label_new(_("x")));
   gtk_container_add(GTK_CONTAINER(d->print_size), d->print_height);
@@ -1246,13 +1244,18 @@ void gui_init(dt_lib_module_t *self)
   gtk_box_pack_start(dpi_box, gtk_label_new(_("dpi")), FALSE, FALSE, 0);
   gtk_container_add(GTK_CONTAINER(d->print_size), GTK_WIDGET(dpi_box));
 
-  d->hbox1 = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3));
-  gtk_box_pack_start(d->hbox1, d->width, TRUE, TRUE, 0);
-  gtk_box_pack_start(d->hbox1, gtk_label_new(_("x")), FALSE, FALSE, 0);
-  gtk_box_pack_start(d->hbox1, d->height, TRUE, TRUE, 0);
-  gtk_box_pack_start(d->hbox1, gtk_label_new(_("px")), FALSE, FALSE, 0);
+  d->px_size = gtk_flow_box_new();
+  gtk_flow_box_set_max_children_per_line(GTK_FLOW_BOX(d->px_size), 3);
+  gtk_flow_box_set_column_spacing (GTK_FLOW_BOX(d->px_size), 3);
+  gtk_container_add(GTK_CONTAINER(d->px_size), d->width);
+  gtk_container_add(GTK_CONTAINER(d->px_size), gtk_label_new(_("x")));
+  GtkBox *px_box = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 3));
+  gtk_box_pack_start(px_box, d->height, TRUE, TRUE, 0);
+  gtk_box_pack_start(px_box, gtk_label_new(_("px")), FALSE, FALSE, 0);
+  gtk_container_add(GTK_CONTAINER(d->px_size), GTK_WIDGET(px_box));
 
   d->scale = gtk_entry_new();
+  gtk_entry_set_width_chars(GTK_ENTRY(d->scale), 5);
   gtk_entry_set_text (GTK_ENTRY(d->scale), dt_conf_get_string(CONFIG_PREFIX "resizing_factor"));
   gtk_widget_set_tooltip_text(d->scale, _("it can be an integer, decimal number or simple fraction.\n"
                                           "zero or empty values are equal to 1.\n"
@@ -1269,7 +1272,7 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_halign(GTK_WIDGET(d->size_in_px), GTK_ALIGN_END);
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->dimensions_type), FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->hbox1), FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->px_size), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->print_size), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->scale), FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->size_in_px), FALSE, FALSE, 0);
@@ -1434,14 +1437,14 @@ void gui_init(dt_lib_module_t *self)
   {
     // scaling
     gtk_widget_show(GTK_WIDGET(d->scale));
-    gtk_widget_hide(GTK_WIDGET(d->hbox1));
+    gtk_widget_hide(GTK_WIDGET(d->px_size));
     gtk_widget_hide(GTK_WIDGET(d->print_size));
   }
   else
   {
     // max size
     gtk_widget_hide(GTK_WIDGET(d->scale));
-    gtk_widget_show(GTK_WIDGET(d->hbox1));
+    gtk_widget_show(GTK_WIDGET(d->px_size));
     gtk_widget_show(GTK_WIDGET(d->print_size));
   }
 
