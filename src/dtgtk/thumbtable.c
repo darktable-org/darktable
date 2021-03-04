@@ -495,7 +495,7 @@ static int _thumbs_load_needed(dt_thumbtable_t *table)
   int changed = 0;
 
   // we rememeber image margins for new thumbs (this limit flickering)
-  dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   const int old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
   const int old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
 
@@ -605,7 +605,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       if(posy == 0) return FALSE;
 
       // we stop when first rowid image is fully shown
-      dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+      dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
       if(first->rowid == 1 && posy > 0 && first->y >= 0)
       {
         // for some reasons, in filemanager, first image can not be at x=0
@@ -648,7 +648,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       if(posx == 0) return FALSE;
 
       // we stop when first rowid image is fully shown
-      dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+      dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
       if(first->rowid == 1 && posx > 0 && first->x >= (table->view_width / 2) - table->thumb_size) return FALSE;
 
       // we stop when last image is fully shown (that means empty space at the bottom)
@@ -703,7 +703,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
   {
-    dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+    dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
     table->offset = first->rowid;
     table->offset_imgid = first->imgid;
   }
@@ -794,7 +794,7 @@ static void _zoomable_zoom(dt_thumbtable_t *table, int oldzoom, int newzoom)
   if(changed > 0) _pos_compute_area(table);
 
   // we update all the values
-  dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
@@ -1895,7 +1895,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
     int old_margin_top = 0;
     if(table->list)
     {
-      dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+      dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
       old_margin_start = gtk_widget_get_margin_start(first->w_image_box);
       old_margin_top = gtk_widget_get_margin_top(first->w_image_box);
       // if margins > thumb size, then margins are irrelevant (thumb size as just changed), better set them to 0
@@ -2442,7 +2442,7 @@ static gboolean _filemanager_ensure_rowid_visibility(dt_thumbtable_t *table, int
   if(rowid < 1) rowid = 1;
   if(!table->list) return FALSE;
   // get first and last fully visible thumbnails
-  dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
   dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
 
@@ -2545,7 +2545,7 @@ static gboolean _filemanager_check_rowid_visibility(dt_thumbtable_t *table, cons
   if(rowid < 1) return FALSE;
   if(!table->list) return FALSE;
   // get first and last fully visible thumbnails
-  dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   const int pos = MIN(g_list_length(table->list) - 1, table->thumbs_per_row * (table->rows - 1) - 1);
   dt_thumbnail_t *last = (dt_thumbnail_t *)g_list_nth_data(table->list, pos);
 
@@ -2720,7 +2720,7 @@ static gboolean _zoomable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t 
   if(thumb && select) dt_selection_select_range(darktable.selection, thumb->imgid);
 
   // and we record new positions values
-  dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   table->offset = first->rowid;
   table->offset_imgid = first->imgid;
   dt_conf_set_int("plugins/lighttable/recentcollect/pos0", table->offset);
@@ -2745,7 +2745,7 @@ gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table)
 {
   if(table->mode != DT_THUMBTABLE_MODE_FILEMANAGER && table->mode != DT_THUMBTABLE_MODE_ZOOM) return FALSE;
 
-  dt_thumbnail_t *first = (dt_thumbnail_t *)(table->list)->data;
+  dt_thumbnail_t *first = (dt_thumbnail_t *)table->list->data;
   const int offset = table->thumbs_per_row - ((first->rowid - 1) % table->thumbs_per_row);
   if(offset == 0) return FALSE;
 

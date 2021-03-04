@@ -158,6 +158,11 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
   dt_ctl_switch_mode_to("tethering");
 }
 
+static void _destroy_child(GtkWidget *widget, gpointer data)
+{
+  (void)data;  // avoid unreferenced-parameter warning
+  gtk_widget_destroy(widget);
+}
 
 /** update the device list */
 void _lib_import_ui_devices_update(dt_lib_module_t *self)
@@ -165,6 +170,10 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   /* cleanup of widgets in devices container*/
+#if 1  //TODO: this code needs careful testing before removing the old code in the 'else' branch
+  gtk_container_foreach(GTK_CONTAINER(d->devices), _destroy_child, NULL);
+  gtk_container_foreach(GTK_CONTAINER(d->locked_devices), _destroy_child, NULL);
+#else // old code below
   GList *item = gtk_container_get_children(GTK_CONTAINER(d->devices));
   for(const GList *iter = item; iter; iter = g_list_next(iter))
   {
@@ -178,6 +187,7 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
     gtk_container_remove(GTK_CONTAINER(d->locked_devices), GTK_WIDGET(iter->data));
   }
   g_list_free(item);
+#endif
 
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   dt_pthread_mutex_lock(&camctl->lock);
@@ -275,6 +285,20 @@ typedef struct _control_status_params_t
   dt_lib_module_t *self;
 } _control_status_params_t;
 
+static void _disable_toggle(GtkWidget *widget, gpointer data)
+{
+  (void)data; // avoid unreferenced-parameter warning
+  if(!(GTK_IS_TOGGLE_BUTTON(widget)
+       && gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)) == TRUE))
+    gtk_widget_set_sensitive(widget, FALSE);
+}
+
+static void _set_sensitive(GtkWidget *widget, gpointer data)
+{
+  gboolean state = GPOINTER_TO_INT(data);
+  gtk_widget_set_sensitive(widget, state);
+}
+
 static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_data)
 {
   _control_status_params_t *params = (_control_status_params_t *)user_data;
@@ -287,6 +311,9 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
     case CAMERA_CONTROL_BUSY:
     {
       /* set all devices as inaccessible */
+#if 1 // new code to be tested
+      gtk_container_foreach(GTK_CONTAINER(d->devices), _disable_toggle, NULL);
+#else // old code below
       GList *list = gtk_container_get_children(GTK_CONTAINER(d->devices));
       for(const GList *child = list; child; child = g_list_next(child))
       {
@@ -295,18 +322,23 @@ static gboolean _camctl_camera_control_status_callback_gui_thread(gpointer user_
           gtk_widget_set_sensitive(GTK_WIDGET(child->data), FALSE);
       }
       g_list_free(list);
+#endif
     }
     break;
 
     case CAMERA_CONTROL_AVAILABLE:
     {
       /* set all devices as accessible */
+#if 1 // new code to be tested
+      gtk_container_foreach(GTK_CONTAINER(d->devices), _set_sensitive, GINT_TO_POINTER(TRUE));
+#else // old code below
       GList *list = gtk_container_get_children(GTK_CONTAINER(d->devices));
       for(const GList *child = list; child; child = g_list_next(child))
       {
         gtk_widget_set_sensitive(GTK_WIDGET(child->data), TRUE);
       }
       g_list_free(list);
+#endif
     }
     break;
   }
