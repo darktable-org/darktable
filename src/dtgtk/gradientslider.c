@@ -585,28 +585,26 @@ static gboolean _gradient_slider_draw(GtkWidget *widget, cairo_t *cr)
   const int gheight = cheight - 2 * y1;
 
   // First build the cairo gradient and then fill the gradient
-  cairo_pattern_t *gradient = NULL;
   if(gslider->colors)
   {
-    gradient = cairo_pattern_create_linear(0, 0, cwidth, 0);
+    cairo_pattern_t *gradient = cairo_pattern_create_linear(0, 0, cwidth, 0);
     for(GList *current = gslider->colors; current; current = g_list_next(current))
     {
       _gradient_slider_stop_t *stop = (_gradient_slider_stop_t *)current->data;
       cairo_pattern_add_color_stop_rgba(gradient, stop->position, stop->color.red, stop->color.green,
                                        stop->color.blue, stop->color.alpha);
     }
-  }
-
-  if(gradient != NULL) // Do we got a gradient, lets draw it
-  {
-    cairo_set_line_width(cr, 0.1);
-    cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
-    cairo_translate(cr, 0, starty);
-    cairo_set_source(cr, gradient);
-    cairo_rectangle(cr, startx, y1, cwidth, gheight);
-    cairo_fill(cr);
-    cairo_stroke(cr);
-    cairo_pattern_destroy(gradient);
+    if(gradient != NULL) // Do we got a gradient, lets draw it
+    {
+      cairo_set_line_width(cr, 0.1);
+      cairo_set_line_cap(cr, CAIRO_LINE_CAP_ROUND);
+      cairo_translate(cr, 0, starty);
+      cairo_set_source(cr, gradient);
+      cairo_rectangle(cr, startx, y1, cwidth, gheight);
+      cairo_fill(cr);
+      cairo_stroke(cr);
+      cairo_pattern_destroy(gradient);
+    }
   }
 
   // Lets draw position arrows
