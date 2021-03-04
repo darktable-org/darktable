@@ -649,7 +649,7 @@ void init_presets(dt_iop_module_so_t *self)
     p.y[DT_DENOISE_PROFILE_Y0][b] = 0.0f;
   }
   dt_gui_presets_add_generic(_("wavelets: chroma only"), self->op, self->version(), &p,
-                             sizeof(p), 1, DEVELOP_BLEND_CS_RGB_DISPLAY);
+                             sizeof(p), 1, DEVELOP_BLEND_CS_RGB_SCENE);
 }
 
 const char *name()
