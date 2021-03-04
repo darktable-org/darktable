@@ -453,7 +453,7 @@ static int _gradient_events_mouse_moved(struct dt_iop_module_t *module, float pz
     const int closeup = dt_control_get_dev_closeup();
     const float zoom_scale = dt_dev_get_zoom_scale(darktable.develop, zoom, 1<<closeup, 1);
     const float pr_d = darktable.develop->preview_downsampling;
-    const float as = DT_PIXEL_APPLY_DPI(5) / (pr_d * zoom_scale);  // transformed to backbuf dimensions
+    const float as = DT_PIXEL_APPLY_DPI(20) / (pr_d * zoom_scale);  // transformed to backbuf dimensions
     const float x = pzx * darktable.develop->preview_pipe->backbuf_width;
     const float y = pzy * darktable.develop->preview_pipe->backbuf_height;
     int in, inb, near, ins;
