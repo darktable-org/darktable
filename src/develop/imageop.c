@@ -590,8 +590,7 @@ dt_iop_module_t *dt_iop_gui_get_previous_visible_module(dt_iop_module_t *module)
 dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module)
 {
   dt_iop_module_t *next = NULL;
-  GList *modules = g_list_last(module->dev->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(module->dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)modules->data;
     if(mod == module)
@@ -607,7 +606,6 @@ dt_iop_module_t *dt_iop_gui_get_next_visible_module(dt_iop_module_t *module)
         next = mod;
       }
     }
-    modules = g_list_previous(modules);
   }
   return next;
 }
@@ -2885,12 +2883,10 @@ void dt_iop_connect_accels_multi(dt_iop_module_so_t *module)
 
 void dt_iop_connect_accels_all()
 {
-  GList *iop_mods = g_list_last(darktable.develop->iop);
-  while(iop_mods)
+  for(const GList *iop_mods = g_list_last(darktable.develop->iop); iop_mods; iop_mods = g_list_previous(iop_mods))
   {
     dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
     dt_iop_connect_accels_multi(mod->so);
-    iop_mods = g_list_previous(iop_mods);
   }
 }
 
@@ -2916,18 +2912,14 @@ dt_iop_module_t *dt_iop_get_module_by_instance_name(GList *modules, const char *
 int dt_iop_count_instances(dt_iop_module_so_t *module)
 {
   int inst_count = 0;
-  GList *iop_mods = NULL;                 //All modules in iop
-  dt_iop_module_t *mod = NULL;            //Used while iterating module lists
 
-  iop_mods = g_list_last(darktable.develop->iop);
-  while(iop_mods)
+  for(const GList *iop_mods = g_list_last(darktable.develop->iop); iop_mods; iop_mods = g_list_previous(iop_mods))
   {
-    mod = (dt_iop_module_t *)iop_mods->data;
+    dt_iop_module_t *mod = (dt_iop_module_t *)iop_mods->data;
     if(mod->so == module && mod->iop_order != INT_MAX)
     {
       inst_count++;
     }
-    iop_mods = g_list_previous(iop_mods);
   }
   return inst_count;
 }
