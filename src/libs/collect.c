@@ -630,6 +630,7 @@ static gboolean view_onButtonPressed(GtkWidget *treeview, GdkEventButton *event,
           gtk_tree_selection_select_range(selection, path, path2);
         else
           gtk_tree_selection_select_range(selection, path2, path);
+        g_list_free_full(sels, (GDestroyNotify)gtk_tree_path_free);
       }
       else
       {
@@ -2202,7 +2203,11 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
   if(gtk_tree_selection_count_selected_rows(selection) < 1) return;
   GList *sels = gtk_tree_selection_get_selected_rows(selection, &model);
   GtkTreePath *path1 = (GtkTreePath *)sels->data;
-  if(!gtk_tree_model_get_iter(model, &iter, path1)) return;
+  if(!gtk_tree_model_get_iter(model, &iter, path1))
+  {
+    g_list_free_full(sels, (GDestroyNotify)gtk_tree_path_free);
+    return;
+  }
 
   gchar *text;
   gboolean order_request = FALSE;
@@ -2307,6 +2312,7 @@ static void row_activated_with_event(GtkTreeView *view, GtkTreePath *path, GtkTr
       }
     }
   }
+  g_list_free_full(sels, (GDestroyNotify)gtk_tree_path_free);
 
   g_signal_handlers_block_matched(d->rule[active].text, G_SIGNAL_MATCH_FUNC, 0, 0, NULL, entry_changed, NULL);
   gtk_entry_set_text(GTK_ENTRY(d->rule[active].text), text);
