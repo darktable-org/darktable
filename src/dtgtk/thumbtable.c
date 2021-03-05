@@ -1713,7 +1713,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   return table;
 }
 
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const int x, const int y)
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const double x, const double y)
 {
   if(g_list_length(table->list) == 0 || table->code_scrolling || !table->scrollbars) return;
 
@@ -1732,13 +1732,18 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const int x, const 
     }
     else
     {
-      new_offset = first_offset + (y - 1) * table->thumbs_per_row;
+      new_offset = first_offset + ((int)y - 1) * table->thumbs_per_row;
     }
 
     if(new_offset != table->offset)
     {
       table->offset = new_offset;
+      const float thumbs_area_offset_y = ((y - floor(y)) * (float)table->thumb_size);
       dt_thumbtable_full_redraw(table, TRUE);
+      // To enable smooth scrolling move the thumbnails
+      // by the floating point amount of the scrollbar
+      // so if the scrollbar is in 13.28 position move the thumbs by 0.28 * thumb_size
+      _move(table, 0, -thumbs_area_offset_y, FALSE);
     }
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
@@ -1751,7 +1756,7 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const int x, const 
     const int abs_posx = table->view_width - table->thumb_size * 0.5 - table->thumbs_area.x;
 
     // and we move
-    _move(table, abs_posx - x, abs_posy - y, FALSE);
+    _move(table, abs_posx - (int)x, abs_posy - (int)y, FALSE);
   }
 }
 
