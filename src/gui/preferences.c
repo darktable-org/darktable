@@ -1150,10 +1150,12 @@ gboolean accel_search_children(dt_gui_accel_search_t *search_data, GtkTreeIter *
     {
       gtk_tree_view_expand_to_path(tv, childpath);
       gtk_tree_view_set_cursor(tv, childpath, gtk_tree_view_get_column(tv, A_TRANS_COLUMN), FALSE);
+      gtk_tree_path_free(childpath);
       search_data->last_found_count++;
       return TRUE;
     }
   }
+  gtk_tree_path_free(childpath);
 
   if(gtk_tree_model_iter_has_child(tvmodel, parent))
   {
