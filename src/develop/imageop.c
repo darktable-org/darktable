@@ -1432,9 +1432,13 @@ static void init_key_accels(dt_iop_module_so_t *module)
   DT_DEBUG_SQLITE3_BIND_TEXT(stmt, 1, module->op, -1, SQLITE_TRANSIENT);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
+#ifndef SHORTCUTS_TRANSITION
     char path[1024];
     snprintf(path, sizeof(path), "%s`%s", N_("preset"), (const char *)sqlite3_column_text(stmt, 0));
     dt_accel_register_iop(module, FALSE, path, 0, 0);
+#endif // ifndef SHORTCUTS_TRANSITION
+
+    dt_action_define_preset(&module->actions, (const char *)sqlite3_column_text(stmt, 0));
   }
   sqlite3_finalize(stmt);
 }
@@ -1889,10 +1893,24 @@ static void popup_callback(GtkButton *button, dt_iop_module_t *module)
   dt_gui_presets_popup_menu_show_for_module(module);
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
-  g_signal_connect(G_OBJECT(darktable.gui->presets_popup_menu), "deactivate", G_CALLBACK(_header_menu_deactivate_callback), module->header);
-
 #if GTK_CHECK_VERSION(3, 22, 0)
-  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu, GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST, NULL);
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    g_signal_connect(G_OBJECT(darktable.gui->presets_popup_menu), "deactivate", G_CALLBACK(_header_menu_deactivate_callback), module->header);
+
+    gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu, GTK_WIDGET(button), GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST, event);
+  }
+  else
+  {
+    event = gdk_event_new(GDK_BUTTON_PRESS);
+    event->button.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+    event->button.window = gtk_widget_get_window(GTK_WIDGET(button));
+    g_object_ref(event->button.window);
+
+    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, event);
+  }
+  gdk_event_free(event);
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_position, button, 0,
                  gtk_get_current_event_time());
