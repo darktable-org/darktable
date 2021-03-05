@@ -998,6 +998,7 @@ static void _apply_preferences(const char *pref, dt_lib_module_t *self)
       break;  // must be the last setting
     }
   }
+  g_list_free_full(prefs, g_free);
 
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
   dt_gui_preferences_bool_update(d->recursive);

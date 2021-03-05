@@ -899,7 +899,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
       }
     }
 
-    g_list_free(list);
+    g_list_free_full(list, g_free);
 
   }
   else

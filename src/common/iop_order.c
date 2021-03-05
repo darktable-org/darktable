@@ -2105,7 +2105,7 @@ GList *dt_ioppr_deserialize_text_iop_order_list(const char *buf)
   }
   iop_order_list = g_list_reverse(iop_order_list);  // list was built in reverse order, so un-reverse it
 
-  g_list_free(list);
+  g_list_free_full(list, g_free);
 
   _ioppr_reset_iop_order(iop_order_list);
 

@@ -1458,44 +1458,41 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   {
     case DT_COLLECTION_PROP_FILMROLL: // film roll
       if(!(escaped_text && *escaped_text))
-        query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
+        query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s%%'))",
                                 escaped_text);
       else
-        query = dt_util_dstrcat(query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
+        query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
                                 escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOLDERS: // folders
-    {
-      if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
       {
-        escaped_text[escaped_length-1] = '\0';
-        query = dt_util_dstrcat(
-            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
-                  G_DIR_SEPARATOR_S "%%'))",
-            escaped_text, escaped_text);
+        if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '*'))
+        {
+          escaped_text[escaped_length-1] = '\0';
+          query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s' OR folder LIKE '%s"
+                                  G_DIR_SEPARATOR_S "%%'))",
+                                  escaped_text, escaped_text);
+        }
+        else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
+        {
+          escaped_text[escaped_length-2] = '\0';
+          query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
+                                  G_DIR_SEPARATOR_S "%%'))",
+                                  escaped_text);
+        }
+        else
+        {
+          query = g_strdup_printf("(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
+                                  escaped_text);
+        }
       }
-      else if ((escaped_length > 0) && (escaped_text[escaped_length-1] == '%'))
-      {
-        escaped_text[escaped_length-2] = '\0';
-        query = dt_util_dstrcat(
-            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s"
-                  G_DIR_SEPARATOR_S "%%'))",
-            escaped_text);
-      }
-      else
-      {
-        query = dt_util_dstrcat(
-            query, "(film_id IN (SELECT id FROM main.film_rolls WHERE folder LIKE '%s'))",
-            escaped_text);
-      }
-    }
-    break;
+      break;
 
     case DT_COLLECTION_PROP_COLORLABEL: // colorlabel
     {
       if(!(escaped_text && *escaped_text) || strcmp(escaped_text, "%") == 0)
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.color_labels WHERE color IS NOT NULL))");
+        query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color IS NOT NULL))");
       else
       {
         int color = 0;
@@ -1509,7 +1506,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           color = 3;
         else if(strcmp(escaped_text, _("purple")) == 0)
           color = 4;
-        query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
+        query = g_strdup_printf("(id IN (SELECT imgid FROM main.color_labels WHERE color=%d))", color);
       }
     }
     break;
@@ -1542,11 +1539,11 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         const gboolean all_tagged = strcmp(escaped_text, _("tagged*")) == 0;
         char *escaped_text2 = g_strstr_len(escaped_text, -1, "|");
         if(not_tagged || all_tagged)
-          query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images "
-                                         "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
+          query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images "
+                                  "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))) ",
                                   all_tagged ? "" : "not");
         else
-          query = dt_util_dstrcat(query, "(id IN (SELECT id AS imgid FROM main.images "
+          query = g_strdup_printf("(id IN (SELECT id AS imgid FROM main.images "
                                          "WHERE (longitude IS NOT NULL AND latitude IS NOT NULL))"
                                          "AND id %s IN (SELECT imgid FROM main.tagged_images AS ti"
                                          "  JOIN data.tags AS t"
@@ -1559,8 +1556,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       break;
 
     case DT_COLLECTION_PROP_LOCAL_COPY: // local copy
-      query = dt_util_dstrcat(query, "(id %s IN (SELECT id AS imgid FROM main.images WHERE "
-                                     "(flags & %d))) ",
+      query = g_strdup_printf("(id %s IN (SELECT id AS imgid FROM main.images WHERE (flags & %d))) ",
                               (strcmp(escaped_text, _("not copied locally")) == 0) ? "not" : "",
                               DT_IMAGE_LOCAL_COPY);
       break;
@@ -1573,14 +1569,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((aspect_ratio >= %s) AND (aspect_ratio <= %s))", number1, number2);
+          query = g_strdup_printf("((aspect_ratio >= %s) AND (aspect_ratio <= %s))", number1, number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(aspect_ratio %s %s)", operator, number1);
+        query = g_strdup_printf("(aspect_ratio %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(aspect_ratio = %s)", number1);
+        query = g_strdup_printf("(aspect_ratio = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(aspect_ratio LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(aspect_ratio LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1590,17 +1586,15 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_CAMERA: // camera
       // Start query with a false statement to avoid special casing the first condition
-      query = dt_util_dstrcat(query, "((1=0)");
+      query = g_strdup_printf("((1=0)");
       GList *lists = NULL;
       dt_collection_get_makermodels(text, NULL, &lists);
       for(GList *element = lists; element; element = g_list_next(element))
       {
         GList *tuple = element->data;
-        char *mk = sqlite3_mprintf("%q", tuple->data);
-        char *md = sqlite3_mprintf("%q", tuple->next->data);
-        query = dt_util_dstrcat(query, " OR (maker = '%s' AND model = '%s')", mk, md);
-        sqlite3_free(mk);
-        sqlite3_free(md);
+        char *clause = sqlite3_mprintf(" OR (maker = '%q' AND model = '%q')", tuple->data, tuple->next->data);
+        query = dt_util_dstrcat(query, "%s", clause);
+        sqlite3_free(clause);
         g_free(tuple->data);
         g_free(tuple->next->data);
         g_list_free(tuple);
@@ -1627,7 +1621,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
           escaped_text[escaped_length-1] = '\0';
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
                                          "JOIN data.tags AS b ON a.tagid = b.id "
                                          "WHERE name LIKE '%s' OR name LIKE '%s|%%'))",
                                   escaped_text, escaped_text);
@@ -1635,7 +1629,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         else
         {
           // default
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                        "data.tags AS b ON a.tagid = b.id WHERE name LIKE '%s'))",
                                   escaped_text);
         }
@@ -1647,7 +1641,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           // shift-click adds an asterix * to include items in and under this hierarchy
           // without using a wildcard % which also would include similar named items
           escaped_text[escaped_length-1] = '\0';
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
                                          "JOIN data.tags AS b ON a.tagid = b.id "
                                          "WHERE name = '%s'"
                                          "  OR SUBSTR(name, 1, LENGTH('%s') + 1) = '%s|'))",
@@ -1657,7 +1651,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           // ends with % or |%
           escaped_text[escaped_length-1] = '\0';
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a "
                                          "JOIN data.tags AS b ON a.tagid = b.id "
                                          "WHERE SUBSTR(name, 1, LENGTH('%s')) = '%s'))",
                                   escaped_text, escaped_text);
@@ -1665,7 +1659,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         else
         {
           // default
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.tagged_images AS a JOIN "
                                        "data.tags AS b ON a.tagid = b.id WHERE name = '%s'))",
                                   escaped_text);
         }
@@ -1674,7 +1668,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
     break;
 
     case DT_COLLECTION_PROP_LENS: // lens
-      query = dt_util_dstrcat(query, "(lens LIKE '%%%s%%')", escaped_text);
+      query = g_strdup_printf("(lens LIKE '%%%s%%')", escaped_text);
       break;
 
     case DT_COLLECTION_PROP_FOCAL_LENGTH: // focal length
@@ -1685,14 +1679,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((focal_length >= %s) AND (focal_length <= %s))", number1, number2);
+          query = g_strdup_printf("((focal_length >= %s) AND (focal_length <= %s))", number1, number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(focal_length %s %s)", operator, number1);
+        query = g_strdup_printf("(focal_length %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(focal_length = %s)", number1);
+        query = g_strdup_printf("(focal_length = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(focal_length LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(focal_length LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1708,14 +1702,14 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((iso >= %s) AND (iso <= %s))", number1, number2);
+          query = g_strdup_printf("((iso >= %s) AND (iso <= %s))", number1, number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(iso %s %s)", operator, number1);
+        query = g_strdup_printf("(iso %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(iso = %s)", number1);
+        query = g_strdup_printf("(iso = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(iso LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(iso LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1731,15 +1725,15 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((ROUND(aperture,1) >= %s) AND (ROUND(aperture,1) <= %s))", number1,
+          query = g_strdup_printf("((ROUND(aperture,1) >= %s) AND (ROUND(aperture,1) <= %s))", number1,
                                   number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(ROUND(aperture,1) %s %s)", operator, number1);
+        query = g_strdup_printf("(ROUND(aperture,1) %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(ROUND(aperture,1) = %s)", number1);
+        query = g_strdup_printf("(ROUND(aperture,1) = %s)", number1);
       else
-        query = dt_util_dstrcat(query, "(ROUND(aperture,1) LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(ROUND(aperture,1) LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1755,18 +1749,17 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(operator && strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((exposure >= %s  - 1.0/100000) AND (exposure <= %s  + 1.0/100000))", number1,
+          query = g_strdup_printf("((exposure >= %s  - 1.0/100000) AND (exposure <= %s  + 1.0/100000))", number1,
                                   number2);
       }
       else if(operator && number1)
-        query = dt_util_dstrcat(query, "(exposure %s %s)", operator, number1);
+        query = g_strdup_printf("(exposure %s %s)", operator, number1);
       else if(number1)
-        query = dt_util_dstrcat(query,
-                                "(CASE WHEN exposure < 0.4 THEN ((exposure >= %s - 1.0/100000) AND  (exposure <= %s + 1.0/100000)) "
+        query = g_strdup_printf("(CASE WHEN exposure < 0.4 THEN ((exposure >= %s - 1.0/100000) AND  (exposure <= %s + 1.0/100000)) "
                                 "ELSE (ROUND(exposure,2) >= %s - 1.0/100000) AND (ROUND(exposure,2) <= %s + 1.0/100000) END)",
                                 number1, number1, number1, number1);
       else
-        query = dt_util_dstrcat(query, "(exposure LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(exposure LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1776,20 +1769,23 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
 
     case DT_COLLECTION_PROP_FILENAME: // filename
     {
-      GList *list, *l;
-      list = dt_util_str_to_glist(",", escaped_text);
+      GList *list = dt_util_str_to_glist(",", escaped_text);
 
-      for (l = list; l != NULL; l = l->next)
-        l->data = dt_util_dstrcat(query, "(filename LIKE '%%%s%%')", (char *)l->data);
+      for (GList *l = list; l; l = g_list_next(l))
+      {
+        char *name = (char*)l->data;	// remember the original content of this list node
+        l->data = g_strdup_printf("(filename LIKE '%%%s%%')", name);
+        g_free(name);			// free the original filename
+      }
 
       query = dt_util_dstrcat(NULL, "(%s)", dt_util_glist_to_str(" OR ", list));
-      g_list_free(list);
+      g_list_free_full(list, g_free);	// free the SQL clauses as well as the list
 
       break;
     }
 
     case DT_COLLECTION_PROP_DAY:
-    // query = dt_util_dstrcat(query, "(datetime_taken like '%%%s%%')", escaped_text);
+    // query = dt_util_dstrcat(NULL, "(datetime_taken like '%%%s%%')", escaped_text);
     // break;
 
     case DT_COLLECTION_PROP_TIME:
@@ -1800,17 +1796,17 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
       if(strcmp(operator, "[]") == 0)
       {
         if(number1 && number2)
-          query = dt_util_dstrcat(query, "((datetime_taken >= '%s' COLLATE NOCASE) AND (datetime_taken <= '%s' COLLATE NOCASE))", number1,
+          query = g_strdup_printf("((datetime_taken >= '%s' COLLATE NOCASE) AND (datetime_taken <= '%s' COLLATE NOCASE))", number1,
                                   number2);
       }
       else if((strcmp(operator, "=") == 0 || strcmp(operator, "") == 0) && number1)
-        query = dt_util_dstrcat(query, "(datetime_taken LIKE '%s')", number1);
+        query = g_strdup_printf("(datetime_taken LIKE '%s')", number1);
       else if(strcmp(operator, "<>") == 0 && number1)
-        query = dt_util_dstrcat(query, "(datetime_taken NOT LIKE '%s')", number1);
+        query = g_strdup_printf("(datetime_taken NOT LIKE '%s')", number1);
       else if(number1)
-        query = dt_util_dstrcat(query, "(datetime_taken %s '%s')", operator, number1);
+        query = g_strdup_printf("(datetime_taken %s '%s')", operator, number1);
       else
-        query = dt_util_dstrcat(query, "(datetime_taken LIKE '%%%s%%')", escaped_text);
+        query = g_strdup_printf("(datetime_taken LIKE '%%%s%%')", escaped_text);
 
       g_free(operator);
       g_free(number1);
@@ -1879,10 +1875,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
           if(strcmp(escaped_text, _(dt_iop_order_string(i))) == 0) break;
         }
         if(i < DT_IOP_ORDER_LAST)
-          query = dt_util_dstrcat(query, "(id IN (SELECT imgid FROM main.module_order "
-                                         "WHERE version = %d))", i);
+          query = g_strdup_printf("(id IN (SELECT imgid FROM main.module_order WHERE version = %d))", i);
         else
-          query = dt_util_dstrcat(query, "(id NOT IN (SELECT imgid FROM main.module_order))");
+          query = g_strdup_printf("(id NOT IN (SELECT imgid FROM main.module_order))");
       }
       break;
 
@@ -1893,10 +1888,10 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         {
           const int keyid = dt_metadata_get_keyid_by_display_order(property - DT_COLLECTION_PROP_METADATA);
           if(strcmp(escaped_text, _("not defined")) != 0)
-            query = dt_util_dstrcat(query, "(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
+            query = g_strdup_printf("(id IN (SELECT id FROM main.meta_data WHERE key = %d AND value "
                                            "LIKE '%%%s%%'))", keyid, escaped_text);
           else
-            query = dt_util_dstrcat(query, "(id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
+            query = g_strdup_printf("(id NOT IN (SELECT id FROM main.meta_data WHERE key = %d))",
                                            keyid);
         }
       }
@@ -1905,7 +1900,7 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
   sqlite3_free(escaped_text);
 
   if(!query) // We've screwed up and not done a query string, send a placeholder
-    query = dt_util_dstrcat(query, "(1=1)");
+    query = g_strdup_printf("(1=1)");
 
   return query;
 }
