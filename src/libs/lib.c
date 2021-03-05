@@ -185,7 +185,12 @@ static void edit_preset_response(GtkDialog *dialog, gint response_id, dt_lib_pre
 
 
     // commit all the user input fields
+#ifndef SHORTCUTS_TRANSITION
     dt_accel_rename_preset_lib(g->module, g->original_name, name);
+#endif // ifndef SHORTCUTS_TRANSITION
+
+    dt_action_rename_preset(&g->module->actions, g->original_name, name);
+
     DT_DEBUG_SQLITE3_PREPARE_V2
       (dt_database_get(darktable.db),
        "INSERT INTO data.presets (name, description, operation, op_version, op_params,"
@@ -351,10 +356,16 @@ static void menuitem_new_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *min
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
+
+#ifndef SHORTCUTS_TRANSITION
   char path[1024];
   snprintf(path, sizeof(path), "%s/%s", _("preset"), _("new preset"));
   dt_accel_register_lib(minfo->module, path, 0, 0);
   dt_accel_connect_preset_lib(minfo->module, _("new preset"));
+#endif // ifndef SHORTCUTS_TRANSITION
+
+  dt_action_define_preset(&minfo->module->actions, "new preset");
+
   // then show edit dialog
   edit_preset(_("new preset"), minfo);
 }
@@ -393,9 +404,14 @@ static void menuitem_delete_preset(GtkMenuItem *menuitem, dt_lib_module_info_t *
 
   if(res == GTK_RESPONSE_YES)
   {
+#ifndef SHORTCUTS_TRANSITION
     char tmp_path[1024];
     snprintf(tmp_path, sizeof(tmp_path), "%s/%s", _("preset"), name);
     dt_accel_deregister_lib(minfo->module, tmp_path);
+#endif // ifndef SHORTCUTS_TRANSITION
+
+    dt_action_rename_preset(&minfo->module->actions, name, NULL);
+
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
         "DELETE FROM data.presets"
@@ -971,13 +987,24 @@ static void popup_callback(GtkButton *button, dt_lib_module_t *module)
   gtk_widget_show_all(GTK_WIDGET(darktable.gui->presets_popup_menu));
 
 #if GTK_CHECK_VERSION(3, 22, 0)
-  GdkGravity widget_gravity, menu_gravity;
-  widget_gravity = GDK_GRAVITY_SOUTH_EAST;
-  menu_gravity = GDK_GRAVITY_NORTH_EAST;
   GtkWidget *w = module->presets_button;
   if(module->expander) w = dtgtk_expander_get_header(DTGTK_EXPANDER(module->expander));
 
-  gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu, w, widget_gravity, menu_gravity, NULL);
+  GdkEvent *event = gtk_get_current_event();
+  if(event)
+  {
+    gtk_menu_popup_at_widget(darktable.gui->presets_popup_menu, w, GDK_GRAVITY_SOUTH_EAST, GDK_GRAVITY_NORTH_EAST, event);
+  }
+  else
+  {
+    event = gdk_event_new(GDK_BUTTON_PRESS);
+    event->button.device = gdk_seat_get_pointer(gdk_display_get_default_seat(gdk_display_get_default()));
+    event->button.window = gtk_widget_get_window(GTK_WIDGET(button));
+    g_object_ref(event->button.window);
+
+    gtk_menu_popup_at_pointer(darktable.gui->presets_popup_menu, event);
+  }
+  gdk_event_free(event);
 #else
   gtk_menu_popup(darktable.gui->presets_popup_menu, NULL, NULL, _preset_popup_posistion, button, 0,
                  gtk_get_current_event_time());
@@ -1372,10 +1399,14 @@ void dt_lib_connect_common_accels(dt_lib_module_t *module)
     DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, module->version());
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
+#ifndef SHORTCUTS_TRANSITION
       char path[1024];
       snprintf(path, sizeof(path), "%s/%s", _("preset"), (char *)sqlite3_column_text(stmt, 0));
       dt_accel_register_lib(module, path, 0, 0);
       dt_accel_connect_preset_lib(module, (char *)sqlite3_column_text(stmt, 0));
+#endif // #ifndef SHORTCUTS_TRANSITION
+
+      dt_action_define_preset(&module->actions, (char *)sqlite3_column_text(stmt, 0));
     }
     sqlite3_finalize(stmt);
   }

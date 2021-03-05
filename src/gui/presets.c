@@ -181,9 +181,14 @@ static void _menuitem_delete_preset(GtkMenuItem *menuitem, dt_iop_module_t *modu
 
   if(res == GTK_RESPONSE_YES)
   {
+#ifndef SHORTCUTS_TRANSITION
     char tmp_path[1024];
     snprintf(tmp_path, sizeof(tmp_path), "%s`%s", N_("preset"), name);
     dt_accel_deregister_iop(module, tmp_path);
+#endif // #ifndef SHORTCUTS_TRANSITION
+
+    dt_action_rename_preset(&module->so->actions, name, NULL);
+
     DT_DEBUG_SQLITE3_PREPARE_V2(
         dt_database_get(darktable.db),
         "DELETE FROM data.presets WHERE name=?1 AND operation=?2 AND op_version=?3 AND writeprotect=0", -1, &stmt,
@@ -315,6 +320,11 @@ static void _edit_preset_response(GtkDialog *dialog, gint response_id, dt_gui_pr
                               " (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10, ?11, ?12, ?13, ?14, ?15, ?16, 0, 0, ?17,"
                               "  ?18, ?19, ?20, ?21, ?22, 0, '')");
     }
+
+    // rename accelerators
+    dt_accel_rename_preset_iop(g->iop, g->original_name, name);
+
+    dt_action_rename_preset(&g->iop->so->actions, g->original_name, name);
 
     // commit all the user input fields
     DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
@@ -862,16 +872,21 @@ static void _menuitem_new_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
   sqlite3_step(stmt);
   sqlite3_finalize(stmt);
   // create a shortcut for the new entry
+#ifndef SHORTCUTS_TRANSITION
   char path[1024];
   snprintf(path, sizeof(path), "%s`%s", N_("preset"), _("new preset"));
   dt_accel_register_iop(module->so, FALSE, path, 0, 0);
   dt_accel_connect_preset_iop(module, _("new preset"));
   dt_accel_connect_instance_iop(module);
+#endif // ifndef SHORTCUTS_TRANSITION
+
+  dt_action_define_preset(&module->so->actions, "new preset");
+
   // then show edit dialog
   _edit_preset(_("new preset"), module);
 }
 
-static void _apply_preset(const gchar *name, dt_iop_module_t *module)
+void dt_gui_presets_apply_preset(const gchar* name, dt_iop_module_t *module)
 {
   sqlite3_stmt *stmt;
   DT_DEBUG_SQLITE3_PREPARE_V2
@@ -931,7 +946,7 @@ static void _apply_preset(const gchar *name, dt_iop_module_t *module)
 static void _menuitem_pick_preset(GtkMenuItem *menuitem, dt_iop_module_t *module)
 {
   gchar *name = g_object_get_data(G_OBJECT(menuitem), "dt-preset-name");
-  _apply_preset(name, module);
+  dt_gui_presets_apply_preset(name, module);
 }
 
 gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
@@ -997,7 +1012,7 @@ gboolean dt_gui_presets_autoapply_for_module(dt_iop_module_t *module)
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
     const char *name = (const char *)sqlite3_column_text(stmt, 0);
-    _apply_preset(name, module);
+    dt_gui_presets_apply_preset(name, module);
     applied = TRUE;
   }
   sqlite3_finalize(stmt);

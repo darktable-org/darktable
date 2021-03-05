@@ -32,7 +32,8 @@ typedef enum dt_action_type_t
   // ==== all above split off chains
   DT_ACTION_TYPE_COMMAND,
   DT_ACTION_TYPE_WIDGET,
-  DT_ACTION_TYPE_CLOSURE
+  DT_ACTION_TYPE_CLOSURE,
+  DT_ACTION_TYPE_PRESET
 } dt_action_type_t;
 
 typedef struct dt_action_t

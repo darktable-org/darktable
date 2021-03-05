@@ -42,6 +42,10 @@ dt_action_t *dt_action_locate(dt_action_t *owner, gchar **path);
 
 void dt_action_define_iop(dt_iop_module_t *self, const gchar *path, gboolean local, guint accel_key, GdkModifierType mods, GtkWidget *widget);
 
+void dt_action_define_preset(dt_action_t *action, const gchar *name);
+// delete if new_name == NULL
+void dt_action_rename_preset(dt_action_t *action, const gchar *old_name, const gchar *new_name);
+
 typedef uint8_t dt_input_device_t;
 
 typedef struct dt_input_driver_definition_t
