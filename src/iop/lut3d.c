@@ -1240,6 +1240,7 @@ static gboolean select_lutname_in_list(dt_iop_lut3d_gui_data_t *g, const char *c
        gtk_tree_selection_select_iter(selection, &iter);
        GtkTreePath *path = gtk_tree_model_get_path (model, &iter);
        gtk_tree_view_scroll_to_cell((GtkTreeView *)g->lutname, path, NULL, TRUE, 0.2, 0);
+       gtk_tree_path_free(path);
        g_free(name);
        return TRUE;
      }

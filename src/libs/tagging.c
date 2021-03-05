@@ -302,6 +302,7 @@ static void _show_tag_on_view(GtkTreeView *view, const char *tagname)
         GtkTreePath *path = gtk_tree_model_get_path(model, &iter);
         gtk_tree_view_expand_to_path(view, path);
         gtk_tree_view_scroll_to_cell(view, path, NULL, TRUE, 0.5, 0.5);
+        gtk_tree_path_free(path);
         GtkTreeSelection *selection = gtk_tree_view_get_selection(view);
         gtk_tree_selection_select_iter(selection, &iter);
       }
