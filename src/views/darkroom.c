@@ -1962,7 +1962,8 @@ static void _preference_changed_button_hide(gpointer instance, dt_develop_t *dev
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     if(module->header)
-      add_remove_mask_indicator(module->header, module->blend_params->mask_mode != DEVELOP_MASK_DISABLED);
+      add_remove_mask_indicator(module, (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED) &&
+                                (module->blend_params->mask_mode != DEVELOP_MASK_ENABLED));
   }
 }
 
@@ -3121,6 +3122,9 @@ void leave(dt_view_t *self)
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(dev->iop->data);
     if(!dt_iop_is_hidden(module)) dt_iop_gui_cleanup_module(module);
+
+    // force refresh if module has mask visualized
+    if (module->request_mask_display || module->suppress_mask) dt_iop_refresh_center(module);
 
     dt_accel_cleanup_closures_iop(module);
     module->accel_closures = NULL;
