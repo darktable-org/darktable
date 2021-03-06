@@ -402,7 +402,7 @@ static inline int _blendif_print_digits_default(float value)
   int digits;
   if(value < 0.0001f) digits = 0;
   else if(value < 0.01f) digits = 2;
-  else if(value < 0.1f) digits = 1;
+  else if(value < 0.999f) digits = 1;
   else digits = 0;
 
   return digits;
