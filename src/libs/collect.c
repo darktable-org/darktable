@@ -93,6 +93,7 @@ typedef enum dt_lib_collect_cols_t
   DT_LIB_COLLECT_COL_VISIBLE,
   DT_LIB_COLLECT_COL_UNREACHABLE,
   DT_LIB_COLLECT_COL_COUNT,
+  DT_LIB_COLLECT_COL_INDEX,
   DT_LIB_COLLECT_NUM_COLS
 } dt_lib_collect_cols_t;
 
@@ -1148,14 +1149,6 @@ static gint sort_folder_tag(gconstpointer a, gconstpointer b)
   return g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
 }
 
-static gint neg_sort_folder_tag(gconstpointer a, gconstpointer b)
-{
-  const name_key_tuple_t *tuple_a = (const name_key_tuple_t *)a;
-  const name_key_tuple_t *tuple_b = (const name_key_tuple_t *)b;
-
-  return -g_strcmp0(tuple_a->collate_key, tuple_b->collate_key);
-}
-
 // create a key such that  _("not tagged") & "darktable|" are coming first,
 // and the rest is ordered such that sub tags are coming directly behind their parent
 static char *tag_collate_key(char *tag)
@@ -1222,8 +1215,6 @@ static void tree_view(dt_lib_collect_rule_t *dr)
       format_separator = "%s:";
       break;
   }
-
-  const gint sort_descend = dt_conf_get_bool("plugins/collect/descending");
 
   set_properties(dr);
 
@@ -1360,6 +1351,7 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     // we need to sort the names ourselves and not let sqlite handle this
     // because it knows nothing about path separators.
     GList *sorted_names = NULL;
+    guint index = 0;
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
       const char* sqlite_name = (const char *)sqlite3_column_text(stmt, 0);
@@ -1387,12 +1379,8 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     }
     sqlite3_finalize(stmt);
     g_free(query);
-    sorted_names = g_list_sort(sorted_names,
-                               (sort_descend && (property == DT_COLLECTION_PROP_FOLDERS
-                                                 || property == DT_COLLECTION_PROP_DAY
-                                                 || is_time_property(property)))
-                               ? neg_sort_folder_tag
-                               : sort_folder_tag);
+    // this order should not be altered. the right feeding of the tree relies on it.
+    sorted_names = g_list_sort(sorted_names, sort_folder_tag);
 
     gboolean no_uncategorized = (property == DT_COLLECTION_PROP_TAG) ?
                                 dt_conf_get_bool("plugins/lighttable/tagging/no_uncategorized")
@@ -1421,15 +1409,17 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             gtk_tree_store_insert(GTK_TREE_STORE(model), &uncategorized, NULL, 0);
             gtk_tree_store_set(GTK_TREE_STORE(model), &uncategorized, DT_LIB_COLLECT_COL_TEXT,
                                _(UNCATEGORIZED_TAG), DT_LIB_COLLECT_COL_PATH, "", DT_LIB_COLLECT_COL_VISIBLE,
-                               TRUE, -1);
+                               TRUE, DT_LIB_COLLECT_COL_INDEX, index, -1);
+            index++;
           }
 
           /* adding an uncategorized tag */
           gtk_tree_store_insert(GTK_TREE_STORE(model), &temp, &uncategorized, -1);
           gtk_tree_store_set(GTK_TREE_STORE(model), &temp, DT_LIB_COLLECT_COL_TEXT, name,
                              DT_LIB_COLLECT_COL_PATH, name, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
-                             DT_LIB_COLLECT_COL_COUNT, count, -1);
+                             DT_LIB_COLLECT_COL_COUNT, count, DT_LIB_COLLECT_COL_INDEX, index, -1);
           uncategorized_found = TRUE;
+          index++;
         }
         g_free(next_name);
       }
@@ -1491,11 +1481,11 @@ static void tree_view(dt_lib_collect_rule_t *dr)
             gtk_tree_store_insert(GTK_TREE_STORE(model), &iter, common_length > 0 ? &parent : NULL, -1);
             gtk_tree_store_set(GTK_TREE_STORE(model), &iter, DT_LIB_COLLECT_COL_TEXT, *token,
                                DT_LIB_COLLECT_COL_PATH, pth2, DT_LIB_COLLECT_COL_VISIBLE, TRUE,
-                               DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count), -1);
-
+                               DT_LIB_COLLECT_COL_COUNT, (*(token + 1)?0:count),
+                               DT_LIB_COLLECT_COL_INDEX, index, -1);
+            index++;
             // also add the item count to parents
-            if((property == DT_COLLECTION_PROP_FOLDERS
-                || property == DT_COLLECTION_PROP_DAY
+            if((property == DT_COLLECTION_PROP_DAY
                 ||  is_time_property(property))
                && !*(token + 1))
             {
@@ -1542,6 +1532,15 @@ static void tree_view(dt_lib_collect_rule_t *dr)
     else
     {
       gtk_tree_selection_set_mode(selection, GTK_SELECTION_SINGLE);
+    }
+
+    if(property == DT_COLLECTION_PROP_FOLDERS
+       || property == DT_COLLECTION_PROP_DAY
+       || is_time_property(property))
+    {
+      const gboolean sort_descend = dt_conf_get_bool("plugins/collect/descending");
+      gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(model),
+                                           DT_LIB_COLLECT_COL_INDEX, sort_descend);
     }
 
     gtk_tree_view_set_model(GTK_TREE_VIEW(d->view), d->treefilter);
@@ -2787,6 +2786,14 @@ void set_preferences(void *menu, dt_lib_module_t *self)
   gtk_menu_shell_append(GTK_MENU_SHELL(menu), mi);
 }
 
+static gint _sort_model_func(GtkTreeModel *model, GtkTreeIter *a, GtkTreeIter *b, dt_lib_module_t *self)
+{
+  gint ia, ib;
+  gtk_tree_model_get(model, a, DT_LIB_COLLECT_COL_INDEX, &ia, -1);
+  gtk_tree_model_get(model, b, DT_LIB_COLLECT_COL_INDEX, &ib, -1);
+  return ib - ia;
+}
+
 void gui_init(dt_lib_module_t *self)
 {
   dt_lib_collect_t *d = (dt_lib_collect_t *)calloc(1, sizeof(dt_lib_collect_t));
@@ -2864,13 +2871,15 @@ void gui_init(dt_lib_module_t *self)
 
   GtkTreeModel *listmodel
       = GTK_TREE_MODEL(gtk_list_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT));
+                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
+  gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(listmodel), DT_LIB_COLLECT_COL_INDEX,
+                  (GtkTreeIterCompareFunc)_sort_model_func, self, NULL);
   d->listfilter = gtk_tree_model_filter_new(listmodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->listfilter), DT_LIB_COLLECT_COL_VISIBLE);
 
   GtkTreeModel *treemodel
       = GTK_TREE_MODEL(gtk_tree_store_new(DT_LIB_COLLECT_NUM_COLS, G_TYPE_STRING, G_TYPE_UINT, G_TYPE_STRING,
-                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT));
+                                          G_TYPE_STRING, G_TYPE_BOOLEAN, G_TYPE_BOOLEAN, G_TYPE_UINT, G_TYPE_UINT));
   d->treefilter = gtk_tree_model_filter_new(treemodel, NULL);
   gtk_tree_model_filter_set_visible_column(GTK_TREE_MODEL_FILTER(d->treefilter), DT_LIB_COLLECT_COL_VISIBLE);
   g_object_unref(treemodel);
