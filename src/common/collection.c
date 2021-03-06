@@ -1248,7 +1248,6 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
 {
   GRegex *regex;
   GMatchInfo *match_info;
-  int match_count;
 
   *number1 = *number2 = *operator= NULL;
 
@@ -1256,7 +1255,7 @@ void dt_collection_split_operator_datetime(const gchar *input, char **number1, c
   // 2 elements : date-time1 and  date-time2
   regex = g_regex_new("^\\s*\\[\\s*(\\d{4}[:\\d\\s]*)\\s*;\\s*(\\d{4}[:\\d\\s]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
-  match_count = g_match_info_get_match_count(match_info);
+  int match_count = g_match_info_get_match_count(match_info);
 
   if(match_count == 3)
   {
@@ -1307,14 +1306,13 @@ void dt_collection_split_operator_exposure(const gchar *input, char **number1, c
 {
   GRegex *regex;
   GMatchInfo *match_info;
-  int match_count;
 
   *number1 = *number2 = *operator= NULL;
 
   // we test the range expression first
   regex = g_regex_new("^\\s*\\[\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*;\\s*(1/)?([0-9]+\\.?[0-9]*)(\")?\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
-  match_count = g_match_info_get_match_count(match_info);
+  int match_count = g_match_info_get_match_count(match_info);
 
   if(match_count == 6 || match_count == 7)
   {
@@ -1390,8 +1388,8 @@ void dt_collection_get_makermodels(const gchar *filter, GList **sanitized, GList
                               -1, &stmt, NULL);
   while(sqlite3_step(stmt) == SQLITE_ROW)
   {
-    char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
-    char *exif_model = (char *)sqlite3_column_text(stmt, 1);
+    const char *exif_maker = (char *)sqlite3_column_text(stmt, 0);
+    const char *exif_model = (char *)sqlite3_column_text(stmt, 1);
 
     gchar *makermodel =  dt_collection_get_makermodel(exif_maker, exif_model);
 
@@ -1940,7 +1938,6 @@ int dt_collection_serialize(char *buf, int bufsize)
 void dt_collection_deserialize(char *buf)
 {
   int num_rules = 0;
-  int mode = 0, item = 0;
   sscanf(buf, "%d", &num_rules);
   if(num_rules == 0)
   {
@@ -1951,13 +1948,14 @@ void dt_collection_deserialize(char *buf)
   }
   else
   {
+    int mode = 0, item = 0;
     dt_conf_set_int("plugins/lighttable/collect/num_rules", num_rules);
     while(buf[0] != '\0' && buf[0] != ':') buf++;
     if(buf[0] == ':') buf++;
     char str[400], confname[200];
     for(int k = 0; k < num_rules; k++)
     {
-      int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
+      const int n = sscanf(buf, "%d:%d:%399[^$]", &mode, &item, str);
       if(n == 3)
       {
         snprintf(confname, sizeof(confname), "plugins/lighttable/collect/mode%1d", k);
@@ -2154,8 +2152,8 @@ void dt_collection_hint_message(const dt_collection_t *collection)
   /* collection hinting */
   gchar *message;
 
-  int c = dt_collection_get_count_no_group(collection);
-  int cs = dt_collection_get_selected_count(collection);
+  const int c = dt_collection_get_count_no_group(collection);
+  const int cs = dt_collection_get_selected_count(collection);
   g_list_free(selected_imgids);
 
   if(cs == 1)
@@ -2197,7 +2195,7 @@ static int dt_collection_image_offset_with_collection(const dt_collection_t *col
 
     while(sqlite3_step(stmt) == SQLITE_ROW)
     {
-      int id = sqlite3_column_int(stmt, 0);
+      const int id = sqlite3_column_int(stmt, 0);
       if(imgid == id)
       {
         found = TRUE;
@@ -2221,7 +2219,7 @@ int dt_collection_image_offset(int imgid)
 static void _dt_collection_recount_callback_1(gpointer instance, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  int old_count = collection->count;
+  const int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection, FALSE);
   collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
@@ -2238,7 +2236,7 @@ static void _dt_collection_recount_callback_2(gpointer instance, uint8_t id, gpo
 static void _dt_collection_filmroll_imported_callback(gpointer instance, uint8_t id, gpointer user_data)
 {
   dt_collection_t *collection = (dt_collection_t *)user_data;
-  int old_count = collection->count;
+  const int old_count = collection->count;
   collection->count = _dt_collection_compute_count(collection, FALSE);
   collection->count_no_group = _dt_collection_compute_count(collection, TRUE);
   if(!collection->clone)
