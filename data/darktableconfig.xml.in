@@ -1935,6 +1935,13 @@
     <shortdescription>reduce resolution of preview image</shortdescription>
     <longdescription>decrease to speed up preview rendering, may hinder accurate masking</longdescription>
   </dtconfig>
+  <dtconfig prefs="darkroom" section="general">
+    <name>darkroom/ui/loading_screen</name>
+    <type>bool</type>
+    <default>true</default>
+    <shortdescription>show loading screen between images</shortdescription>
+    <longdescription>show grey loading screen when navigating between images in the darkroom\ndisable to just show a toast message</longdescription>
+  </dtconfig>
   <dtconfig prefs="processing">
     <name>plugins/lighttable/export/pixel_interpolator</name>
     <type>
