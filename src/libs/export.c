@@ -1509,7 +1509,6 @@ void gui_init(dt_lib_module_t *self)
   gtk_widget_set_sensitive(GTK_WIDGET(d->style_mode), dt_bauhaus_combobox_get(d->style)==0?FALSE:TRUE);
 
   // export metadata presets
-  g_free(d->metadata_export);
   d->metadata_export = dt_lib_export_metadata_get_conf();
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_SELECTION_CHANGED,
