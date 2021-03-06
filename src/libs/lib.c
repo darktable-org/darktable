@@ -501,8 +501,7 @@ gboolean dt_lib_presets_apply(const gchar *preset, gchar *module_name, int modul
     int writeprotect = sqlite3_column_int(stmt, 1);
     if(blob)
     {
-      GList *it = darktable.lib->plugins;
-      while(it)
+      for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
         dt_lib_module_t *module = (dt_lib_module_t *)it->data;
         if(!strncmp(module->plugin_name, module_name, 128))
@@ -513,7 +512,6 @@ gboolean dt_lib_presets_apply(const gchar *preset, gchar *module_name, int modul
           res = module->set_params(module, blob, length);
           break;
         }
-        it = g_list_next(it);
       }
     }
 
@@ -1059,10 +1057,9 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
     /* handle shiftclick on expander, hide all except this */
     if(!dt_conf_get_bool("lighttable/ui/single_module") != !(e->state & GDK_SHIFT_MASK))
     {
-      GList *it = g_list_first(darktable.lib->plugins);
       const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
       gboolean all_other_closed = TRUE;
-      while(it)
+      for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
       {
         dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
@@ -1071,8 +1068,6 @@ static gboolean _lib_plugin_header_button_press(GtkWidget *w, GdkEventButton *e,
           all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
           dt_lib_gui_set_expanded(m, FALSE);
         }
-
-        it = g_list_next(it);
       }
       if(all_other_closed)
         dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
@@ -1122,10 +1117,9 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
 
   if(dt_conf_get_bool("lighttable/ui/single_module"))
   {
-    GList *it = g_list_first(darktable.lib->plugins);
     const dt_view_t *v = dt_view_manager_get_current_view(darktable.view_manager);
     gboolean all_other_closed = TRUE;
-    while(it)
+    for(const GList *it = darktable.lib->plugins; it; it = g_list_next(it))
     {
       dt_lib_module_t *m = (dt_lib_module_t *)it->data;
 
@@ -1134,8 +1128,6 @@ static gboolean show_module_callback(GtkAccelGroup *accel_group, GObject *accele
         all_other_closed = all_other_closed && !dtgtk_expander_get_expanded(DTGTK_EXPANDER(m->expander));
         dt_lib_gui_set_expanded(m, FALSE);
       }
-
-      it = g_list_next(it);
     }
     if(all_other_closed)
       dt_lib_gui_set_expanded(module, !dtgtk_expander_get_expanded(DTGTK_EXPANDER(module->expander)));
@@ -1386,14 +1378,10 @@ gchar *dt_lib_get_localized_name(const gchar *plugin_name)
   if(module_names == NULL)
   {
     module_names = g_hash_table_new(g_str_hash, g_str_equal);
-    GList *lib = g_list_first(darktable.lib->plugins);
-    if(lib != NULL)
+    for(const GList *lib = darktable.lib->plugins; lib; lib = g_list_next(lib))
     {
-      do
-      {
-        dt_lib_module_t *module = (dt_lib_module_t *)lib->data;
-        g_hash_table_insert(module_names, module->plugin_name, g_strdup(module->name(module)));
-      } while((lib = g_list_next(lib)) != NULL);
+      dt_lib_module_t *module = (dt_lib_module_t *)lib->data;
+      g_hash_table_insert(module_names, module->plugin_name, g_strdup(module->name(module)));
     }
   }
 

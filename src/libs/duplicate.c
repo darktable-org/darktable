@@ -117,8 +117,7 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
   if(imgid == darktable.develop->image_storage.id)
   {
     // we find the duplicate image to show now
-    GList *l = d->thumbs;
-    while(l)
+    for(GList *l = d->thumbs; l; l = g_list_next(l))
     {
       dt_thumbnail_t *thumb = (dt_thumbnail_t *)l->data;
       if(thumb->imgid == imgid)
@@ -132,7 +131,6 @@ static void _lib_duplicate_delete(GtkButton *button, dt_lib_module_t *self)
           break;
         }
       }
-      l = g_list_next(l);
     }
   }
 

@@ -351,16 +351,14 @@ int write_image(dt_imageio_module_data_t *data, const char *filename, const void
     gboolean show_bb = d->params.mode == MODE_DEBUG;
 
     // add a page for every image
-    GList *iter = d->images;
     int i = 0;
-    while(iter)
+    for(const GList *iter = d->images; iter; iter = g_list_next(iter))
     {
       dt_pdf_image_t *page = (dt_pdf_image_t *)iter->data;
       page->outline_mode = outline_mode;
       page->show_bb = show_bb;
       page->rotate_to_fit = d->params.rotate;
       pages[i] = dt_pdf_add_page(d->pdf, &page, 1);
-      iter = g_list_next(iter);
       i++;
     }
 
@@ -451,17 +449,15 @@ static void _set_paper_size(dt_imageio_module_format_t *self, const char *text)
 
   g_signal_handlers_block_by_func(d->size, size_toggle_callback, self);
 
-  const GList *entries = dt_bauhaus_combobox_get_entries(d->size);
   int pos = 0;
-
-  while(entries)
+  const GList *entries;
+  for(entries = dt_bauhaus_combobox_get_entries(d->size); entries; entries = g_list_next(entries))
   {
     const dt_bauhaus_combobox_entry_t *entry = (dt_bauhaus_combobox_entry_t *)entries->data;
     if((pos < dt_pdf_paper_sizes_n && !strcasecmp(text, dt_pdf_paper_sizes[pos].name))
         || !strcasecmp(text, entry->label))
       break;
     pos++;
-    entries = g_list_next(entries);
   }
 
   if(entries)
