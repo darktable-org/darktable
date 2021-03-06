@@ -1713,7 +1713,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   return table;
 }
 
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const double x, const double y)
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const float x, const float y)
 {
   if(g_list_length(table->list) == 0 || table->code_scrolling || !table->scrollbars) return;
 
