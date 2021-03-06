@@ -1439,8 +1439,6 @@ void gui_init(dt_lib_module_t *self)
   g_free(setting);
   dt_bauhaus_combobox_set(d->dimensions_type, dt_conf_get_int(CONFIG_PREFIX "dimensions_type"));
 
-  _print_size_update_display(d);
-
   const gboolean is_scaling = dt_conf_is_equal(CONFIG_PREFIX "resizing", "scaling");
   if (is_scaling)
   {
@@ -1456,6 +1454,8 @@ void gui_init(dt_lib_module_t *self)
     gtk_widget_show(GTK_WIDGET(d->px_size));
     gtk_widget_show(GTK_WIDGET(d->print_size));
   }
+
+  _print_size_update_display(d);
 
   // Set storage
   setting = dt_conf_get_string(CONFIG_PREFIX "storage_name");
