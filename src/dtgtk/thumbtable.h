@@ -132,7 +132,7 @@ gboolean dt_thumbtable_key_move(dt_thumbtable_t *table, dt_thumbtable_move_t mov
 gboolean dt_thumbtable_reset_first_offset(dt_thumbtable_t *table);
 
 // scrollbar change
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, int x, int y);
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y);
 
 // init all accels
 void dt_thumbtable_init_accels(dt_thumbtable_t *table);
