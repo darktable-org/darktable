@@ -2803,6 +2803,7 @@ void gui_init(dt_lib_module_t *self)
   GtkBox *box = NULL;
   GtkWidget *w = NULL;
 
+  gboolean has_iop_name_rule = FALSE;
   for(int i = 0; i < MAX_RULES; i++)
   {
     d->rule[i].num = i;
@@ -2818,6 +2819,7 @@ void gui_init(dt_lib_module_t *self)
     dt_bauhaus_combobox_set_selected_text_align(d->rule[i].combo, DT_BAUHAUS_COMBOBOX_ALIGN_LEFT);
     _populate_collect_combo(d->rule[i].combo);
     dt_bauhaus_combobox_mute_scrolling(d->rule[i].combo);
+    if(_combo_get_active_collection(d->rule[i].combo) == DT_COLLECTION_PROP_MODULE) has_iop_name_rule = TRUE;
 
     g_signal_connect(G_OBJECT(d->rule[i].combo), "value-changed", G_CALLBACK(combo_changed), d->rule + i);
     gtk_box_pack_start(box, d->rule[i].combo, TRUE, TRUE, 0);
@@ -2889,7 +2891,7 @@ void gui_init(dt_lib_module_t *self)
   }
 
   // force redraw collection images because of late update of the table memory.darktable_iop_names
-  dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
+  if(has_iop_name_rule) dt_collection_update_query(darktable.collection, DT_COLLECTION_CHANGE_RELOAD, NULL);
 
   DT_DEBUG_CONTROL_SIGNAL_CONNECT(darktable.signals, DT_SIGNAL_COLLECTION_CHANGED, G_CALLBACK(collection_updated),
                             self);
