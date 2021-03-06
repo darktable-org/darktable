@@ -1,109 +1,127 @@
-To build darktable for Windows operating system you have two basic option:
-A) Native compile using MSYS
+To build darktable for Windows operating system you have two basic option:  
+A) Native compile using MSYS  
 B) Cross compile on Linux
 
-A) Native compile using MSYS2:  How to make a darktable windows installer (64 bit only):
-    Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
-    Update the base MSYS2 system until no further updates are available using:
-	$ pacman -Syu
+## A) Native compile using MSYS2:  
+How to make a darktable windows installer (64 bit only):
 
-    From MSYS2 terminal, install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
-	$ pacman -S base-devel
-	$ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
-	$ pacman -S git
+* Install MSYS2 (instructions and prerequisites can be found on official website: https://msys2.github.io/).
+   
+* Update the base MSYS2 system until no further updates are available using: `$ pacman -Syu`
 
-    Install required libraries and dependencies:
-	$ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+* From MSYS2 terminal, install x64 developer tools and x86_64 toolchain and git from the MSYS2 prompt:
+    ```
+    $ pacman -S base-devel
+    $ pacman -S mingw-w64-x86_64-{toolchain,cmake,nsis}
+    $ pacman -S git
+    ```
+* Install required libraries and dependencies:
+    ```
+    $ pacman -S mingw-w64-x86_64-{exiv2,lcms2,lensfun,dbus-glib,openexr,sqlite3,libxslt,libsoup,libavif,libwebp,libsecret,lua,graphicsmagick,openjpeg2,gtk3,pugixml,libexif,osm-gps-map,libgphoto2,flickcurl,drmingw,gettext,python3,iso-codes,python3-jsonschema,python3-setuptools}
+    ```
 
-    Install optional libraries and dependencies:
-  $ pacman -S mingw-w64-x86_64-gmic
+* Install optional libraries and dependencies:
+    ```
+    $ pacman -S mingw-w64-x86_64-gmic
+    ```
+    *Note: GMIC. Waiting for GMIC 9.3 you may need to rename libopencv_core4xx and libopencv_videoio4xx to libopencv_core440 and libopencv_videoio440 in the bin folder of darktable to get lut3d available.*
 
-    Note: GMIC. Waiting for GMIC 9.3 you may need to rename libopencv_core4xx and libopencv_videoio4xx
-  to libopencv_core440 and libopencv_videoio440 in the bin folder of darktable to get lut3d available.
+* For gphoto2:
+    * You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available. 
+    * make sure they aren't pointing into your normal windows installation in case you already have darktable installed. You can check them with:
+        ```
+        $ echo $CAMLIBS
+        $ echo $IOLIBS
+        ```
+    * If you have to set them manually you can do so by setting the variables in your .bash_profile. Example:
+        ```bash
+        export CAMLIBS="/mingw64/lib/libgphoto2/2.5.23/"
+        export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.0/"
+        ```
 
-    For gphoto2:
-    You need to restart the MINGW64 or MSYS terminal to have CAMLIBS and IOLIBS environment variables properly set for LIBGPHOTO are available. Also make sure they aren't pointing into your normal windows installation in case you already have darktable installed. You can check them with:
-	$ echo $CAMLIBS
-	$ echo $IOLIBS
-    If you have to set them manually you can do so by setting the variables in your .bash_profile. Example:
-	export CAMLIBS="/mingw64/lib/libgphoto2/2.5.23/"
-	export IOLIBS="/mingw64/lib/libgphoto2_port/0.12.0/"
-
- 	From MINGW64 terminal, update your lensfun database:
-	$ lensfun-update-data
+* From MINGW64 terminal, update your lensfun database:
+    `lensfun-update-data`  
 
     Also use this program to install USB driver on Windows for your camera:
     http://zadig.akeo.ie/
     When you run it, replace current Windows camera driver with WinUSB driver
 
-   
-    Modify your bash_profile file in your HOME directory and add the following lines:
+* Modify your bash_profile file in your HOME directory and add the    following lines:
+    ```bash
     # Added as per http://wiki.gimp.org/wiki/Hacking:Building/Windows
     export PREFIX="/mingw64"
     export LD_LIBRARY_PATH="$PREFIX/lib:$LD_LIBRARY_PATH"
     export PATH="$PREFIX/bin:$PATH"
+    ```
 
-   By default cmake will only use one core during the build process.  To speed things up you might wish to add a line like:
+* By default cmake will only use one core during the build process.  To speed things up you might wish to add a line like:
+    ```bash
    	export CMAKE_BUILD_PARALLEL_LEVEL="6"
+    ```
    to your .bash_profile file. This would use 6 cores.
    
-    Execute the following command to actviate profile changes
-	$ . .bash_profile
+* Execute the following command to actviate profile changes `$ . .bash_profile`
 
-    From MINGW64 terminal, clone darktable git repository (in this example into ~/darktable):
-        $ cd ~
-        $ git clone git://github.com/darktable-org/darktable.git
-        $ cd darktable
-        $ git submodule init
-        $ git submodule update
+* From MINGW64 terminal, clone darktable git repository (in this example into ~/darktable):
+    ```
+    $ cd ~
+    $ git clone git://github.com/darktable-org/darktable.git
+    $ cd darktable
+    $ git submodule init
+    $ git submodule update
+    ```
 
-    Finally build and install darktable:
-        $ mkdir build
-        $ cd build
-        $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
-        $ cmake --build .
-        $ cmake --build . --target install
+* Finally build and install darktable:
+    ```
+    $ mkdir build
+    $ cd build
+    $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
+    $ cmake --build .
+    $ cmake --build . --target install
+    ```
+    After this darktable will be installed in `/opt/darktable `directory and can be started by typing `/opt/darktable/bin/darktable.exe` in MSYS2 MINGW64 terminal.  
 
-    After this darktable will be installed in /opt/darktable directory and can be started by typing /opt/darktable/bin/darktable.exe in MSYS2 MINGW64 terminal.
-    NOTE: If you are using the Lua scripts, build the installer and install darktable.  The Lua scripts check the operating system and see windows and expect a
-          windows shell when executing system commands. Running darktable from the MSYS2 MINGW64 terminal gives a bash shell and therefore the commands will not 
-          work.
+    *NOTE: If you are using the Lua scripts, build the installer and install darktable.  
+    The Lua scripts check the operating system and see windows and expect a windows shell when executing system commands.  
+    Running darktable from the MSYS2 MINGW64 terminal gives a bash shell and therefore the commands will not work.*
 
-    For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use:
-        $ cmake --build . --target package
-	NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:
-		$ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
-		
-It is now possible to build darktable on Windows using Ninja rather than Make.  This offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems).  To use Ninja you need to install it from an MSYS terminal with:
+* For building the installer image, which will  create darktable-<VERSION>.exe installer in current build directory, use: `$ cmake --build . --target package`  
 
-$ pacman -S mingw-w64-x86_64-ninja
+    *NOTE: The package created will be optimized for the machine on which it has been built, but it could not run on other PCs with different hardware or different Windows version. If you want to create a "generic" package, change the first cmake command line as follows:*
+    ```
+    $ cmake -G "MSYS Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable -DBINARY_PACKAGE_BUILD=ON ../.
+    ```
+It is now possible to build darktable on Windows using Ninja rather than Make.  This offers advantages of reduced build times for incremental builds (builds on Windows are significantly slower than with linux based systems).  To use Ninja you need to install it from an MSYS terminal with:  
+
+`$ pacman -S mingw-w64-x86_64-ninja`
 
 Be careful as there is also a version of Ninja for MSYS and this will not work here.  Now return to a MINGW64 terminal and use this sequence
-	$ mkdir build
-        $ cd build
-        $ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
-        $ cmake --build .
-	
+```
+$ mkdir build
+$ cd build
+$ cmake -G "Ninja" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/darktable ../.
+$ cmake --build .
+```
 If you are in a hurry you can now run darktable by executing the darktable.exe found in the build/bin folder, install in /opt/darktable as described earlier, or create an install image.  If you like experimenting you could also install clang and use that instead of gcc/g++ as the toolchain.
 
 
-B) Cross compile on Linux
+## B) Cross compile on Linux
 
-Note:  These instructions have not been updated for some time and are likely to need revision.
-    In order to build darktable for Windows there is a chance to cross compile it
-    on Linux. The result is currently not particularly usable, but still, if you
-    are curious you could give it a try.
+*NOTE:  These instructions have not been updated for some time and are likely to need revision.*
 
-    The tests have been done cross compiling on openSUSE. Since it's using a
-    virtualized installation only used for this stuff you can safely do everything
-    as root. It's also enough to install a server setup without X.
+In order to build darktable for Windows there is a chance to cross compile it
+on Linux. The result is currently not particularly usable, but still, if you
+are curious you could give it a try.
 
-    - Grab the openSUSE install ISO from http://software.opensuse.org/122/en
-    (I used the 64 Bit version).
-    - Install in Virtualbox.
-    - Prepare the system:
+The tests have been done cross compiling on openSUSE. Since it's using a
+virtualized installation only used for this stuff you can safely do everything
+as root. It's also enough to install a server setup without X.
 
-    ------------------ snip ------------------
+- Grab the openSUSE install ISO from http://software.opensuse.org/122/en
+(I used the 64 Bit version).
+- Install in Virtualbox.
+- Prepare the system:
+    ```sh
     #!/bin/sh
 
     # add the cross compiling repositoryies
@@ -131,19 +149,13 @@ Note:  These instructions have not been updated for some time and are likely to 
     # the jpeg headers installed by openSUSE contain some definitions that hurt us so we have to patch these.
     # this is super ugly and needs to be redone whenever the library is updated.
     sed -e 's:^#define PACKAGE:// #define PACKAGE:g' -i /usr/x86_64-w64-mingw32/sys-root/mingw/include/jconfig.h
+    ```
 
-    ------------------ snap ------------------
+- Put the sources somewhere, probably by grabbing them from git: `git clone https://github.com/darktable-org/darktable.git`
+- cd into the freshly cloned source tree and edit `cmake/toolchain_mingw64.cmake` if needed, it should be ok if using the virtualized openSUSE environment as described here.
+- Build darktable using this script (save it as `build-win.sh`). Make sure to edit it to suit your environment, too, if needed. Again, if following these directions it should be working out of the box. Run the script from the root directory of the git clone (i.e., put it next to `build.sh`):
 
-    - Put the sources somewhere, probably by grabbing them from git:
-        git clone https://github.com/darktable-org/darktable.git
-    - cd into the freshly cloned source tree and edit cmake/toolchain_mingw64.cmake if needed,
-    it should be ok if using the virtualized openSUSE environment as described here.
-    - Build darktable using this script (save it as build-win.sh). Make sure to edit it
-    to suit your environment, too, if needed. Again, if following these directions it
-    should be working out of the box. Run the script from the root directory of
-    the git clone (i.e., put it next to build.sh):
-
-    ------------------ snip ------------------
+    ```sh
     #!/bin/sh
 
     # Change this to reflect your setup
@@ -213,38 +225,20 @@ Note:  These instructions have not been updated for some time and are likely to 
     echo "darktable finished building, to actually install darktable you need to type:"
     echo "# cd ${BUILD_DIR}; sudo make install"
     fi
+    ```
 
-    ------------------ snap ------------------
+- Last but not least: `cd build-win; make install`
+- Now you have a Windows version of darktable in `/opt/darktable-win/`, which should be suited for 64 bit Windows installations. Before you can run it do `cp /usr/x86_64-w64-mingw32/sys-root/mingw/bin/*.dll /opt/darktable-win/bin/`
+- Done. Copy `/opt/darktable-win/` to a Windows box, go to the bin folder and double click `darktable.exe`.
 
-    - Last but not least:
-    cd build-win; make install
-    - Now you have a Windows version of darktable in /opt/darktable-win/, which
-    should be suited for 64 bit Windows installations. Before you can run it do
-        cp /usr/x86_64-w64-mingw32/sys-root/mingw/bin/*.dll /opt/darktable-win/bin/
-    - Done. Copy /opt/darktable-win/ to a Windows box, go to the bin folder and
-    double click darktable.exe.
+### KNOWN ISSUES:
 
-    KNOWN ISSUES:
+- The current working directory has to be the bin folder when running the `.exe`. Double clicking in Explorer does that for you.
+- GTK engine is not copied over/found currently, probably just a matter of putting the right DLLs into the correct places and/or setting some environment variables. We also want "wimp" in gtkrc instead of clearlooks. You can find it in `/usr/x86_64-w64-mingw32/sys-root/mingw/lib/gtk-2.0/2.10.0/engines/`
+- A stupid error message about missing dbus symbols in a DLL. This is fixed in libglib already but the version used by us doesn't have it. Using newer openSUSE releases might fix this but I couldn't find lensfun and libexiv2 for them. Some day we might add our own build service to OBS so that will go away eventually.
+- Moving darktable's main window freezes the application. No idea what's going on there. Since I have seen some Windows installations moving the window on startup and subsequently freezing automatically it might be impossible to run darktable for you.
+- Building with openCL isn't completely done yet (links used for caching). This might change soonish, no idea if it would work in the end though.
+- Importing directories didn't work in my tests (freezes), single images imported fine though, I could edit them and export them.
+- Lua support doesn't compile right now since it uses select() on a file which is not supported on Windows.
 
-    - The current working directory has to be the bin folder when running the .exe.
-    Double clicking in Explorer does that for you.
-    - GTK engine is not copied over/found currently, probably just a matter of putting
-    the right DLLs into the correct places and/or setting some environment variables.
-    We also want "wimp" in gtkrc instead of clearlooks. You can find it in
-    /usr/x86_64-w64-mingw32/sys-root/mingw/lib/gtk-2.0/2.10.0/engines/
-    - A stupid error message about missing dbus symbols in a DLL. This is fixed in libglib
-    already but the version used by us doesn't have it. Using newer openSUSE releases
-    might fix this but I couldn't find lensfun and libexiv2 for them. Some day we might
-    add our own build service to OBS so that will go away eventually.
-    - Moving darktable's main window freezes the application. No idea what's going on
-    there. Since I have seen some Windows installations moving the window on startup
-    and subsequently freezing automatically it might be impossible to run darktable
-    for you.
-    - Building with openCL isn't completely done yet (links used for caching). This
-    might change soonish, no idea if it would work in the end though.
-    - Importing directories didn't work in my tests (freezes), single images imported
-    fine though, I could edit them and export them.
-    - Lua support doesn't compile right now since it uses select() on a file which is not
-    supported on Windows.
-
-    Have fun with this, report back your findings.
+Have fun with this, report back your findings.
