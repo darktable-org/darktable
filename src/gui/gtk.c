@@ -1052,7 +1052,7 @@ static gboolean osx_quit_callback(GtkosxApplication *OSXapp, gpointer user_data)
 {
   GList *windows, *window;
   windows = gtk_window_list_toplevels();
-  for(window = g_list_first(windows); window != NULL; window = g_list_next(window))
+  for(window = windows; window != NULL; window = g_list_next(window))
     if(gtk_window_get_modal(GTK_WINDOW(window->data)) && gtk_widget_get_visible(GTK_WIDGET(window->data)))
       break;
   if(window == NULL) dt_control_quit();
@@ -2661,12 +2661,10 @@ static void _ui_toast_redraw_callback(gpointer instance, GtkWidget *widget)
 void dt_ellipsize_combo(GtkComboBox *cbox)
 {
   GList *renderers = gtk_cell_layout_get_cells(GTK_CELL_LAYOUT(cbox));
-  GList *it = renderers;
-  while(it)
+  for(const GList *it = renderers; it; it = g_list_next(it))
   {
     GtkCellRendererText *tr = GTK_CELL_RENDERER_TEXT(it->data);
     g_object_set(G_OBJECT(tr), "ellipsize", PANGO_ELLIPSIZE_MIDDLE, (gchar *)0);
-    it = g_list_next(it);
   }
   g_list_free(renderers);
 }

@@ -219,13 +219,10 @@ static _piwigo_account_t *_piwigo_get_account(dt_storage_piwigo_gui_data_t *ui, 
 {
   if(!server) return NULL;
 
-  GList *a = ui->accounts;
-
-  while(a)
+  for(const GList *a = ui->accounts; a; a = g_list_next(a))
   {
     _piwigo_account_t *account = (_piwigo_account_t *)a->data;;
     if(account->server && !strcmp(server, account->server)) return account;
-    a = g_list_next(a);
   }
 
   return NULL;
@@ -313,15 +310,12 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
 
     form = curl_mime_init(ctx->curl_ctx);
 
-    GList *a = args;
-
-    while (a)
+    for(const GList *a = args; a; a = g_list_next(a))
     {
       _curl_args_t *ca = (_curl_args_t *)a->data;
       field = curl_mime_addpart(form);
       curl_mime_name(field, ca->name);
       curl_mime_data(field, ca->value, CURL_ZERO_TERMINATED);
-      a = g_list_next(a);
     }
 
     field = curl_mime_addpart(form);
@@ -334,17 +328,13 @@ static int _piwigo_api_post_internal(_piwigo_api_context_t *ctx, GList *args, ch
   {
     GString *gargs = g_string_new("");
 
-    GList *a = args;
-
-    while (a)
+    for(const GList *a = args; a; a = g_list_next(a))
     {
       _curl_args_t *ca = (_curl_args_t *)a->data;
       if(a!=args) g_string_append(gargs, "&");
       g_string_append(gargs, ca->name);
       g_string_append(gargs, "=");
       g_string_append(gargs, ca->value);
-
-      a = g_list_next(a);
     }
 
     curl_easy_setopt(ctx->curl_ctx, CURLOPT_COPYPOSTFIELDS, gargs->str);
@@ -749,15 +739,13 @@ void gui_init(dt_imageio_module_storage_t *self)
   // account
   ui->account_list = dt_bauhaus_combobox_new(NULL);
   dt_bauhaus_widget_set_label(ui->account_list, NULL, N_("accounts"));
-  GList *a = ui->accounts;
   int account_index = -1, index=0;
-  while(a)
+  for(const GList *a = ui->accounts; a; a = g_list_next(a))
   {
     _piwigo_account_t *account = (_piwigo_account_t *)a->data;
     dt_bauhaus_combobox_add(ui->account_list, account->server);
     if(!strcmp(account->server, server)) account_index = index;
     index++;
-    a = g_list_next(a);
   }
   gtk_widget_set_hexpand(ui->account_list, TRUE);
   g_signal_connect(G_OBJECT(ui->account_list), "value-changed", G_CALLBACK(_piwigo_account_changed), (gpointer)ui);
@@ -1041,8 +1029,7 @@ static uint64_t _piwigo_album_id(const gchar *name, GList *albums)
 {
   uint64_t id = 0;
 
-  GList *a = albums;
-  while(a)
+  for(const GList *a = albums; a; a = g_list_next(a))
   {
     _piwigo_album_t *album = (_piwigo_album_t *)a->data;
     if(!strcmp(name, album->label))
@@ -1050,7 +1037,6 @@ static uint64_t _piwigo_album_id(const gchar *name, GList *albums)
       id = album->id;
       break;
     }
-    a = g_list_next(a);
   }
 
   return id;

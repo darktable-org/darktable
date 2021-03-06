@@ -472,20 +472,19 @@ static void _camera_import_dialog_run(_camera_import_dialog_t *data)
       data->params->result = NULL;
       GtkTreeModel *model = GTK_TREE_MODEL(data->store);
       GList *sp = gtk_tree_selection_get_selected_rows(selection, &model);
-      if(sp)
+      for(GList *sp_iter = sp; sp_iter; sp_iter = g_list_next(sp_iter))
       {
-        do
-        {
-          GValue value = {
-            0,
-          };
-          gtk_tree_model_get_iter(GTK_TREE_MODEL(data->store), &iter, (GtkTreePath *)sp->data);
-          gtk_tree_model_get_value(GTK_TREE_MODEL(data->store), &iter, 1, &value);
-          if(G_VALUE_HOLDS_STRING(&value))
-            data->params->result = g_list_append(data->params->result, g_strdup(g_value_get_string(&value)));
-          g_value_unset(&value);
-        } while((sp = g_list_next(sp)));
+        GValue value = {
+          0,
+        };
+        gtk_tree_model_get_iter(GTK_TREE_MODEL(data->store), &iter, (GtkTreePath *)sp->data);
+        gtk_tree_model_get_value(GTK_TREE_MODEL(data->store), &iter, 1, &value);
+        if(G_VALUE_HOLDS_STRING(&value))
+          data->params->result = g_list_prepend(data->params->result, g_strdup(g_value_get_string(&value)));
+        g_value_unset(&value);
       }
+      g_list_free_full(sp, (GDestroyNotify)gtk_tree_path_free); //TODO: check that above loop hasn't freed anything
+      data->params->result = g_list_reverse(data->params->result); // list built reversed, so un-reverse it
 
       /* get jobcode from import dialog */
       data->params->jobcode = data->import.jobname->value;

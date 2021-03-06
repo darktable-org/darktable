@@ -321,13 +321,12 @@ static void _lib_location_search_finish(gpointer user_data)
   if(!lib->places) return;
 
   /* for each location found populate the result list */
-  GList *item = lib->places;
-  do
+  for(const GList *item = lib->places; item; item = g_list_next(item))
   {
     _lib_location_result_t *place = (_lib_location_result_t *)item->data;
     gtk_box_pack_start(GTK_BOX(lib->result), _lib_location_place_widget_new(lib, place), TRUE, TRUE, 0);
     gtk_widget_show(lib->result);
-  } while((item = g_list_next(item)) != NULL);
+  }
 
   /* if we only got one search result back lets
      set center location and zoom based on place type  */

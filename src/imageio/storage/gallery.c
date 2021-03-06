@@ -467,12 +467,10 @@ void finalize_store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t 
           title, title);
 
   size_t count = 0;
-  GList *tmp = d->l;
-  while(tmp)
+  for(GList *tmp = d->l; tmp; tmp = g_list_next(tmp))
   {
     pair_t *p = (pair_t *)tmp->data;
     fprintf(f, "%s", p->line);
-    tmp = g_list_next(tmp);
     count++;
   }
 
