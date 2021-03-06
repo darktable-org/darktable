@@ -349,6 +349,7 @@ static gchar *_string_substitute(gchar *string, const gchar *search, const gchar
   gchar *_replace = _string_escape(replace);
   gchar *result = dt_util_str_replace(string, search, _replace);
   g_free(_replace);
+  g_free(string);  // dt_util_str_replace always returns a new string, and we don't need the original after this func
   return result;
 }
 
@@ -357,7 +358,6 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
 {
   gsize length;
 
-  gchar *svgdoc = NULL;
   gchar configdir[PATH_MAX] = { 0 };
   gchar datadir[PATH_MAX] = { 0 };
   gchar *filename;
@@ -375,7 +375,6 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   else
     return NULL;
 
-  gchar *svgdata = NULL;
   char datetime[200];
 
   // EXIF datetime
@@ -392,23 +391,14 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
   time_t t = time(NULL);
   (void)localtime_r(&t, &tt_cur);
 
+  gchar *svgdata = NULL;
   if(g_file_get_contents(filename, &svgdata, &length, NULL))
   {
     // File is loaded lets substitute strings if found...
 
     // Darktable internal
-    svgdoc = _string_substitute(svgdata, "$(DARKTABLE.NAME)", PACKAGE_NAME);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", darktable_package_version);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DARKTABLE.NAME)", PACKAGE_NAME);
+    svgdata = _string_substitute(svgdata, "$(DARKTABLE.VERSION)", darktable_package_version);
 
     // Simple text from watermark module
     gchar buffer[1024];
@@ -417,12 +407,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     if(data->text[0])
     {
       g_strlcpy(buffer, data->text, sizeof(buffer));
-      svgdoc = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
-      if(svgdoc != svgdata)
-      {
-        g_free(svgdata);
-        svgdata = svgdoc;
-      }
+      svgdata = _string_substitute(svgdata, "$(WATERMARK_TEXT)", buffer);
     }
     // apply font style substitutions
     PangoFontDescription *font = pango_font_description_from_string(data->font);
@@ -430,12 +415,7 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     const int font_weight = (int)pango_font_description_get_weight(font);
 
     g_strlcpy(buffer, pango_font_description_get_family(font), sizeof(buffer));
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_FONT_FAMILY)", buffer);
 
     switch(font_style)
     {
@@ -449,350 +429,135 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
         g_strlcpy(buffer, "normal", sizeof(buffer));
         break;
     }
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_STYLE)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_FONT_STYLE)", buffer);
 
     g_snprintf(buffer, sizeof(buffer), "%d", font_weight);
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_FONT_WEIGHT)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_FONT_WEIGHT)", buffer);
 
     pango_font_description_free(font);
 
     // watermark color
     GdkRGBA c = { data->color[0], data->color[1], data->color[2], 1.0f };
     g_strlcpy(buffer, gdk_rgba_to_string(&c), sizeof(buffer));
-    svgdoc = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(WATERMARK_COLOR)", buffer);
 
     // Current image ID
     g_snprintf(buffer, sizeof(buffer), "%d", image->id);
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.ID)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.ID)", buffer);
 
     // Current image
     dt_image_print_exif(image, buffer, sizeof(buffer));
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.EXIF)", buffer);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.EXIF)", buffer);
 
     // Image exif
     // EXIF date
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE)", image->exif_datetime_taken);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE)", image->exif_datetime_taken);
     // $(EXIF.DATE.SECOND) -- 00..60
     strftime(datetime, sizeof(datetime), "%S", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.SECOND)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SECOND)", datetime);
     // $(EXIF.DATE.MINUTE) -- 00..59
     strftime(datetime, sizeof(datetime), "%M", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.MINUTE)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MINUTE)", datetime);
     // $(EXIF.DATE.HOUR) -- 00..23
     strftime(datetime, sizeof(datetime), "%H", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.HOUR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR)", datetime);
     // $(EXIF.DATE.HOUR_AMPM) -- 01..12
     strftime(datetime, sizeof(datetime), "%I %p", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.HOUR_AMPM)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.HOUR_AMPM)", datetime);
     // $(EXIF.DATE.DAY) -- 01..31
     strftime(datetime, sizeof(datetime), "%d", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.DAY)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.DAY)", datetime);
     // $(EXIF.DATE.MONTH) -- 01..12
     strftime(datetime, sizeof(datetime), "%m", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.MONTH)", datetime);
     // $(EXIF.DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
     strftime(datetime, sizeof(datetime), "%b", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_MONTH)", datetime);
     // $(EXIF.DATE.LONG_MONTH) -- January, February, .., December, localized
     strftime(datetime, sizeof(datetime), "%B", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.LONG_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_MONTH)", datetime);
     // $(EXIF.DATE.SHORT_YEAR) -- 12
     strftime(datetime, sizeof(datetime), "%y", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.SHORT_YEAR)", datetime);
     // $(EXIF.DATE.LONG_YEAR) -- 2012
     strftime(datetime, sizeof(datetime), "%Y", &tt_exif);
-    svgdoc = _string_substitute(svgdata, "$(EXIF.DATE.LONG_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(EXIF.DATE.LONG_YEAR)", datetime);
 
     // Current date
     // $(DATE) -- YYYY:
     dt_gettime_t(datetime, sizeof(datetime), t);
-    svgdoc = _string_substitute(svgdata, "$(DATE)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE)", datetime);
     // $(DATE.SECOND) -- 00..60
     strftime(datetime, sizeof(datetime), "%S", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.SECOND)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.SECOND)", datetime);
     // $(DATE.MINUTE) -- 00..59
     strftime(datetime, sizeof(datetime), "%M", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.MINUTE)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.MINUTE)", datetime);
     // $(DATE.HOUR) -- 00..23
     strftime(datetime, sizeof(datetime), "%H", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.HOUR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.HOUR)", datetime);
     // $(DATE.HOUR_AMPM) -- 01..12
     strftime(datetime, sizeof(datetime), "%I %p", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.HOUR_AMPM)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.HOUR_AMPM)", datetime);
     // $(DATE.DAY) -- 01..31
     strftime(datetime, sizeof(datetime), "%d", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.DAY)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.DAY)", datetime);
     // $(DATE.MONTH) -- 01..12
     strftime(datetime, sizeof(datetime), "%m", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.MONTH)", datetime);
     // $(DATE.SHORT_MONTH) -- Jan, Feb, .., Dec, localized
     strftime(datetime, sizeof(datetime), "%b", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.SHORT_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_MONTH)", datetime);
     // $(DATE.LONG_MONTH) -- January, February, .., December, localized
     strftime(datetime, sizeof(datetime), "%B", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.LONG_MONTH)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.LONG_MONTH)", datetime);
     // $(DATE.SHORT_YEAR) -- 12
     strftime(datetime, sizeof(datetime), "%y", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.SHORT_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.SHORT_YEAR)", datetime);
     // $(DATE.LONG_YEAR) -- 2012
     strftime(datetime, sizeof(datetime), "%Y", &tt_cur);
-    svgdoc = _string_substitute(svgdata, "$(DATE.LONG_YEAR)", datetime);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-
-    svgdoc = _string_substitute(svgdata, "$(EXIF.MAKER)", image->camera_maker);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(EXIF.MODEL)", image->camera_model);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(EXIF.LENS)", image->exif_lens);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(DATE.LONG_YEAR)", datetime);
+    svgdata = _string_substitute(svgdata, "$(EXIF.MAKER)", image->camera_maker);
+    svgdata = _string_substitute(svgdata, "$(EXIF.MODEL)", image->camera_model);
+    svgdata = _string_substitute(svgdata, "$(EXIF.LENS)", image->exif_lens);
+    svgdata = _string_substitute(svgdata, "$(IMAGE.FILENAME)", image->filename);
 
     gchar *basename = g_path_get_basename(image->filename);
     if(g_strrstr(basename, ".")) *(g_strrstr(basename, ".")) = '\0';
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.BASENAME)", basename);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.BASENAME)", basename);
     g_free(basename);
 
     // TODO: auto generate that code?
     GList *res;
     res = dt_metadata_get(image->id, "Xmp.dc.creator", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.creator)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.creator)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.publisher", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.publisher)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.publisher)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.title", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.title)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.title)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.description", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.description)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.description)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_metadata_get(image->id, "Xmp.dc.rights", NULL);
-    svgdoc = _string_substitute(svgdata, "$(Xmp.dc.rights)", (res ? res->data : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.dc.rights)", (res ? res->data : ""));
+    g_list_free_full(res, &g_free);
 
     res = dt_tag_get_list(image->id);
     gchar *keywords = dt_util_glist_to_str(", ", res);
-    svgdoc = _string_substitute(svgdata, "$(IMAGE.TAGS)", (keywords ? keywords : ""));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(IMAGE.TAGS)", (keywords ? keywords : ""));
     g_free(keywords);
-    if(res)
-    {
-      g_list_free_full(res, &g_free);
-    }
+    g_list_free_full(res, &g_free);
 
     const int stars = image->flags & 0x7;
     const char *const rating_str[] = { "☆☆☆☆☆", "★☆☆☆☆", "★★☆☆☆", "★★★☆☆", "★★★★☆", "★★★★★", "❌", "" };
-    svgdoc = _string_substitute(svgdata, "$(Xmp.xmp.Rating)", rating_str[stars]);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(Xmp.xmp.Rating)", rating_str[stars]);
 
     // geolocation
     gchar *latitude = NULL, *longitude = NULL, *elevation = NULL;
@@ -816,30 +581,10 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     if(longitude) parts[i++] = longitude;
     if(elevation) parts[i++] = elevation;
     gchar *location = g_strjoinv(", ", parts);
-    svgdoc = _string_substitute(svgdata, "$(GPS.LATITUDE)", (latitude ? latitude : "-"));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(GPS.LONGITUDE)", (longitude ? longitude : "-"));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(GPS.ELEVATION)", (elevation ? elevation : "-"));
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
-    svgdoc = _string_substitute(svgdata, "$(GPS.LOCATION)", location);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    svgdata = _string_substitute(svgdata, "$(GPS.LATITUDE)", (latitude ? latitude : "-"));
+    svgdata = _string_substitute(svgdata, "$(GPS.LONGITUDE)", (longitude ? longitude : "-"));
+    svgdata = _string_substitute(svgdata, "$(GPS.ELEVATION)", (elevation ? elevation : "-"));
+    svgdata = _string_substitute(svgdata, "$(GPS.LOCATION)", location);
     g_free(latitude);
     g_free(longitude);
     g_free(elevation);
@@ -854,14 +599,11 @@ static gchar *_watermark_get_svgdoc(dt_iop_module_t *self, dt_iop_watermark_data
     params->sequence = 0;
     params->imgid = image->id;
     dt_variables_set_tags_flags(params, flags);
-    svgdoc = dt_variables_expand(params, svgdata, FALSE);
-    if(svgdoc != svgdata)
-    {
-      g_free(svgdata);
-      svgdata = svgdoc;
-    }
+    gchar *svgdoc = dt_variables_expand(params, svgdata, FALSE);  // returns a new string
+    g_free(svgdata);  // free the old one
+    svgdata = svgdoc; // and make the expanded string our result
   }
-  return svgdoc;
+  return svgdata;
 }
 
 void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *const ivoid,
