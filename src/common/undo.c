@@ -251,7 +251,7 @@ static void _undo_do_undo_redo(dt_undo_t *self, uint32_t filter, dt_undo_action_
   {
     imgs = g_list_sort(imgs, _images_list_cmp);
     // remove duplicates
-    for(GList *img = imgs; img != NULL; img = img->next)
+    for(const GList *img = imgs; img; img = g_list_next(img))
       while(img->next && img->data == img->next->data)
         imgs = g_list_delete_link(imgs, img->next);
     // udpate xmp for updated images
@@ -274,21 +274,19 @@ void dt_undo_do_undo(dt_undo_t *self, uint32_t filter)
 
 static void _undo_clear_list(GList **list, uint32_t filter)
 {
-  GList *l = *list;
-
   // check for first item that is matching the given pattern
 
-  while(l)
+  GList *next;
+  for(GList *l = *list; l; l = next)
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
-    GList *next = l->next;
+    next = g_list_next(l); // get next node now, because we may delete the current one
     if(item->type & filter)
     {
       //  remove this element
       *list = g_list_remove(*list, item);
       _free_undo_data((void *)item);
     }
-    l = next;
   };
 
   dt_print(DT_DEBUG_UNDO, "[undo] clear list for %d (length %d)\n",
@@ -312,7 +310,7 @@ static void _undo_iterate(GList *list, uint32_t filter, gpointer user_data,
                           void (*apply)(gpointer user_data, dt_undo_type_t type, dt_undo_data_t item))
 {
   // check for first item that is matching the given pattern
-  for(GList *l = list; l; l = l->next)
+  for(GList *l = list; l; l = g_list_next(l))
   {
     dt_undo_item_t *item = (dt_undo_item_t *)l->data;
     if(!item->is_group && (item->type & filter))

@@ -675,7 +675,7 @@ void dt_multiple_styles_apply_to_list(GList *styles, const GList *list, gboolean
     if(mode == DT_STYLE_HISTORY_OVERWRITE)
       dt_history_delete_on_image_ext(imgid, FALSE);
 
-    for (GList *style = styles; style != NULL; style = style->next)
+    for (GList *style = styles; style; style = g_list_next(style))
     {
       dt_styles_apply_to_image((char*)style->data, duplicate, imgid);
     }

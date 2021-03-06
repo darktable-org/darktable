@@ -1423,20 +1423,20 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   {
     int row_y = 0, x = 0, row_h = 0;
     int max_row_w = sum_w / per_col;
-    for(GList *slot_iter = slots; slot_iter != NULL; slot_iter = slot_iter->next)
+    for(GList *slot_iter = slots; slot_iter; slot_iter = g_list_next(slot_iter))
     {
       GList *slot = (GList *)slot_iter->data;
 
       // Max width of windows in the slot
       int slot_max_w = 0;
-      for(GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      for(GList *slot_cw_iter = slot; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
       {
         dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
         slot_max_w = MAX(slot_max_w, cw->width);
       }
 
       int y = row_y;
-      for(GList *slot_cw_iter = slot; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+      for(GList *slot_cw_iter = slot; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
       {
         dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
         cw->x = x + (slot_max_w - cw->width) / 2;
@@ -1469,13 +1469,13 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
   total_width -= distance;
   total_height -= distance;
 
-  for(const GList *iter = rows; iter != NULL; iter = iter->next)
+  for(const GList *iter = rows; iter; iter = g_list_next(iter))
   {
     GList *row = (GList *)iter->data;
     int row_w = 0, xoff;
     int max_rh = 0;
 
-    for(GList *slot_cw_iter = row; slot_cw_iter != NULL; slot_cw_iter = slot_cw_iter->next)
+    for(GList *slot_cw_iter = row; slot_cw_iter; slot_cw_iter = g_list_next(slot_cw_iter))
     {
       dt_thumbnail_t *cw = (dt_thumbnail_t *)slot_cw_iter->data;
       row_w = MAX(row_w, cw->x + cw->width);
@@ -1484,7 +1484,7 @@ static gboolean _thumbs_compute_positions(dt_culling_t *table)
 
     xoff = (total_width - row_w) / 2;
 
-    for(GList *cw_iter = row; cw_iter != NULL; cw_iter = cw_iter->next)
+    for(GList *cw_iter = row; cw_iter; cw_iter = g_list_next(cw_iter))
     {
       dt_thumbnail_t *cw = (dt_thumbnail_t *)cw_iter->data;
       cw->x += xoff;
