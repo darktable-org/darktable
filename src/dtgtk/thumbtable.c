@@ -1829,7 +1829,7 @@ dt_thumbtable_t *dt_thumbtable_new()
   return table;
 }
 
-void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const int x, const int y)
+void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, float x, float y)
 {
   if(!table->list || table->code_scrolling || !table->scrollbars) return;
 
@@ -1855,6 +1855,11 @@ void dt_thumbtable_scrollbar_changed(dt_thumbtable_t *table, const int x, const 
     {
       table->offset = new_offset;
       dt_thumbtable_full_redraw(table, TRUE);
+      // To enable smooth scrolling move the thumbnails
+      // by the floating point amount of the scrollbar
+      // so if the scrollbar is in 13.28 position move the thumbs by 0.28 * thumb_size
+      const float thumbs_area_offset_y = ((y - floor(y)) * (float)table->thumb_size);
+      _move(table, 0, -thumbs_area_offset_y, FALSE);
     }
   }
   else if(table->mode == DT_THUMBTABLE_MODE_ZOOM)
