@@ -1134,14 +1134,13 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 {
   GRegex *regex;
   GMatchInfo *match_info;
-  int match_count;
 
   *number1 = *number2 = *operator= NULL;
 
   // we test the range expression first
   regex = g_regex_new("^\\s*\\[\\s*([0-9]+\\.?[0-9]*)\\s*;\\s*([0-9]+\\.?[0-9]*)\\s*\\]\\s*$", 0, 0, NULL);
   g_regex_match_full(regex, input, -1, 0, 0, &match_info, NULL);
-  match_count = g_match_info_get_match_count(match_info);
+  int match_count = g_match_info_get_match_count(match_info);
 
   if(match_count == 3)
   {
@@ -1179,7 +1178,7 @@ void dt_collection_split_operator_number(const gchar *input, char **number1, cha
 
 static char *_dt_collection_compute_datetime(const char *operator, const char *input)
 {
-  int len = strlen(input);
+  const int len = strlen(input);
   if(len < 4) return NULL;
 
   struct tm tm1 = { 0 };
@@ -1451,7 +1450,7 @@ gchar *dt_collection_get_makermodel(const char *exif_maker, const char *exif_mod
 static gchar *get_query_string(const dt_collection_properties_t property, const gchar *text)
 {
   char *escaped_text = sqlite3_mprintf("%q", text);
-  unsigned int escaped_length = strlen(escaped_text);
+  const unsigned int escaped_length = strlen(escaped_text);
   gchar *query = NULL;
 
   switch(property)
