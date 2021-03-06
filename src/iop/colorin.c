@@ -476,7 +476,7 @@ static void profile_changed(GtkWidget *widget, gpointer user_data)
     prof = darktable.color_profiles->profiles;
     pos -= g->n_image_profiles;
   }
-  while(prof)
+  for(; prof; prof = g_list_next(prof))
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->in_pos == pos)
@@ -488,7 +488,6 @@ static void profile_changed(GtkWidget *widget, gpointer user_data)
       DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_CONTROL_PROFILE_USER_CHANGED, DT_COLORSPACES_PROFILE_TYPE_INPUT);
       return;
     }
-    prof = g_list_next(prof);
   }
   // should really never happen.
   fprintf(stderr, "[colorin] color profile %s seems to have disappeared!\n", dt_colorspaces_get_name(p->type, p->filename));
@@ -506,8 +505,7 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
   char filename_work[DT_IOP_COLOR_ICC_LEN];
 
   int pos = dt_bauhaus_combobox_get(widget);
-  GList *prof = darktable.color_profiles->profiles;
-  while(prof)
+  for(const GList *prof = darktable.color_profiles->profiles; prof; prof = g_list_next(prof))
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->work_pos == pos)
@@ -516,7 +514,6 @@ static void workicc_changed(GtkWidget *widget, gpointer user_data)
       g_strlcpy(filename_work, pp->filename, sizeof(filename_work));
       break;
     }
-    prof = g_list_next(prof);
   }
 
   if(type_work != DT_COLORSPACE_NONE)
@@ -1813,8 +1810,7 @@ void gui_update(struct dt_iop_module_t *self)
 
   // working profile
   int idx = -1;
-  GList *prof = darktable.color_profiles->profiles;
-  while(prof)
+  for(const GList *prof = darktable.color_profiles->profiles; prof; prof = g_list_next(prof))
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->work_pos > -1
@@ -1824,7 +1820,6 @@ void gui_update(struct dt_iop_module_t *self)
       idx = pp->work_pos;
       break;
     }
-    prof = g_list_next(prof);
   }
 
   if(idx < 0)
@@ -1835,8 +1830,7 @@ void gui_update(struct dt_iop_module_t *self)
   }
   dt_bauhaus_combobox_set(g->work_combobox, idx);
 
-  prof = g->image_profiles;
-  while(prof)
+  for(const GList *prof = g->image_profiles; prof; prof = g_list_next(prof))
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->type == p->type
@@ -1845,11 +1839,9 @@ void gui_update(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos);
       return;
     }
-    prof = g_list_next(prof);
   }
 
-  prof = darktable.color_profiles->profiles;
-  while(prof)
+  for(const GList *prof = darktable.color_profiles->profiles; prof; prof = g_list_next(prof))
   {
     dt_colorspaces_color_profile_t *pp = (dt_colorspaces_color_profile_t *)prof->data;
     if(pp->in_pos > -1
@@ -1859,7 +1851,6 @@ void gui_update(struct dt_iop_module_t *self)
       dt_bauhaus_combobox_set(g->profile_combobox, pp->in_pos + g->n_image_profiles);
       return;
     }
-    prof = g_list_next(prof);
   }
   dt_bauhaus_combobox_set(g->profile_combobox, 0);
 
@@ -2083,7 +2074,6 @@ static void update_profile_list(dt_iop_module_t *self)
   }
 
   g->n_image_profiles = pos + 1;
-  g->image_profiles = g_list_first(g->image_profiles);
 
   // update the gui
   dt_bauhaus_combobox_clear(g->profile_combobox);
