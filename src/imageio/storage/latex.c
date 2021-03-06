@@ -311,7 +311,6 @@ int store(dt_imageio_module_storage_t *self, dt_imageio_module_data_t *sdata, co
     if(res_subj)
     {
       // don't show the internal tags (darktable|...)
-      res_subj = g_list_first(res_subj);
       GList *iter = res_subj;
       while(iter)
       {

@@ -2037,8 +2037,7 @@ void dt_masks_cleanup_unused_from_list(GList *history_list)
   // so we are going to remove for each hist->forms from the top
   int num = g_list_length(history_list);
   int history_end = num;
-  GList *history = g_list_last(history_list);
-  while(history)
+  for(const GList *history = g_list_last(history_list); history; history = g_list_previous(history))
   {
     dt_dev_history_item_t *hist = (dt_dev_history_item_t *)history->data;
     if(hist->forms && strcmp(hist->op_name, "mask_manager") == 0)
@@ -2047,7 +2046,6 @@ void dt_masks_cleanup_unused_from_list(GList *history_list)
       history_end = num - 1;
     }
     num--;
-    history = g_list_previous(history);
   }
 }
 

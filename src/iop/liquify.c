@@ -1080,7 +1080,7 @@ static GSList *_get_map_extent(const dt_iop_roi_t *roi_out,
   cairo_region_t *map_region = cairo_region_create();
   GSList *in_roi = NULL;
 
-  for(const GList *i = interpolated; i != NULL; i = i->next)
+  for(const GList *i = interpolated; i; i = g_list_next(i))
   {
     const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
     cairo_rectangle_int_t r;
@@ -1118,7 +1118,7 @@ static float complex *create_global_distortion_map(const cairo_rectangle_int_t *
   memset(map, 0, sizeof(float complex) * mapsize);
 
   // build map
-  for(const GSList *i = interpolated; i != NULL; i = i->next)
+  for(const GSList *i = interpolated; i; i = g_slist_next(i))
   {
     const dt_liquify_warp_t *warp = ((dt_liquify_warp_t *) i->data);
     float complex *stamp = NULL;
@@ -1862,7 +1862,7 @@ static void _draw_paths(dt_iop_module_t *module,
     ? NULL
     : interpolate_paths(p);
 
-  for(GList *l = layers; l != NULL; l = l->next)
+  for(const GList *l = layers; l; l = g_list_next(l))
   {
     const dt_liquify_layer_enum_t layer = (dt_liquify_layer_enum_t) GPOINTER_TO_INT(l->data);
     dt_liquify_rgba_t fg_color = dt_liquify_layers[layer].fg;
@@ -1906,7 +1906,7 @@ static void _draw_paths(dt_iop_module_t *module,
 
       if(layer == DT_LIQUIFY_LAYER_RADIUS)
       {
-        for(GList *i = interpolated; i != NULL; i = i->next)
+        for(const GList *i = interpolated; i; i = g_list_next(i))
         {
           const dt_liquify_warp_t *pwarp = ((dt_liquify_warp_t *) i->data);
           draw_circle(cr, pwarp->point, 2.0f * cabsf(pwarp->radius - pwarp->point));
@@ -1917,7 +1917,7 @@ static void _draw_paths(dt_iop_module_t *module,
       }
       else if(layer == DT_LIQUIFY_LAYER_HARDNESS1)
       {
-        for(GList *i = interpolated; i != NULL; i = i->next)
+        for(const GList *i = interpolated; i; i = g_list_next(i))
         {
           const dt_liquify_warp_t *pwarp = ((dt_liquify_warp_t *) i->data);
           draw_circle(cr, pwarp->point, 2.0f * cabsf(pwarp->radius - pwarp->point) * pwarp->control1);
@@ -1927,7 +1927,7 @@ static void _draw_paths(dt_iop_module_t *module,
       }
       else if(layer == DT_LIQUIFY_LAYER_HARDNESS2)
       {
-        for(GList *i = interpolated; i != NULL; i = i->next)
+        for(const GList *i = interpolated; i; i = g_list_next(i))
         {
           const dt_liquify_warp_t *pwarp = ((dt_liquify_warp_t *) i->data);
           draw_circle(cr, pwarp->point, 2.0f * cabsf(pwarp->radius - pwarp->point) * pwarp->control2);
@@ -1938,7 +1938,7 @@ static void _draw_paths(dt_iop_module_t *module,
       else if(layer == DT_LIQUIFY_LAYER_WARPS)
       {
         VERYTHINLINE; FG_COLOR;
-        for(GList *i = interpolated; i != NULL; i = i->next)
+        for(const GList *i = interpolated; i; i = g_list_next(i))
         {
           const dt_liquify_warp_t *pwarp = ((dt_liquify_warp_t *) i->data);
           cairo_move_to(cr, crealf(pwarp->point), cimagf(pwarp->point));
@@ -1946,7 +1946,7 @@ static void _draw_paths(dt_iop_module_t *module,
         }
         cairo_stroke(cr);
 
-        for(GList *i = interpolated; i != NULL; i = i->next)
+        for(const GList *i = interpolated; i; i = g_list_next(i))
         {
           const dt_liquify_warp_t *pwarp = ((dt_liquify_warp_t *) i->data);
           const float rot = get_rot(pwarp->type);
@@ -2243,7 +2243,7 @@ static dt_liquify_hit_t _hit_paths(dt_iop_module_t *module,
 
   float distance = FLT_MAX;
 
-  for(GList *l = layers; l != NULL; l = l->next)
+  for(const GList *l = layers; l; l = g_list_next(l))
   {
     const dt_liquify_layer_enum_t layer = (dt_liquify_layer_enum_t) GPOINTER_TO_INT(l->data);
 

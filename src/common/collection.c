@@ -2359,8 +2359,8 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
                                 -1, &stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
-        selected_images_iter != NULL;
-        selected_images_iter = selected_images_iter->next)
+         selected_images_iter != NULL;
+         selected_images_iter = g_list_next(selected_images_iter))
     {
       const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);
 
@@ -2415,8 +2415,8 @@ void dt_collection_move_before(const int32_t image_id, GList * selected_images)
                                 -1, &update_stmt, NULL);
 
     for (const GList * selected_images_iter = selected_images;
-        selected_images_iter != NULL;
-        selected_images_iter = selected_images_iter->next)
+         selected_images_iter != NULL;
+         selected_images_iter = g_list_next(selected_images_iter))
     {
       max_position++;
       const int moved_image_id = GPOINTER_TO_INT(selected_images_iter->data);

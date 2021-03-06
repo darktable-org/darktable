@@ -887,7 +887,7 @@ static gboolean list_match_string(GtkTreeModel *model, GtkTreePath *path, GtkTre
   {
     GList *list = dt_util_str_to_glist(",", needle);
 
-    for (GList *l = list; l != NULL; l = l->next)
+    for (const GList *l = list; l; l = g_list_next(l))
     {
       if(g_str_has_prefix((char *)l->data, "%"))
       {

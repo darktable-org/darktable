@@ -688,7 +688,7 @@ dt_ioppr_get_profile_info_from_list(struct dt_develop_t *dev,
 {
   dt_iop_order_iccprofile_info_t *profile_info = NULL;
 
-  for(GList *profiles = g_list_first(dev->allprofile_info); profiles; profiles = g_list_next(profiles))
+  for(GList *profiles = dev->allprofile_info; profiles; profiles = g_list_next(profiles))
   {
     dt_iop_order_iccprofile_info_t *prof = (dt_iop_order_iccprofile_info_t *)(profiles->data);
     if(prof->type == profile_type && strcmp(prof->filename, profile_filename) == 0)
@@ -900,8 +900,7 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
   // use introspection to get the params values
   dt_iop_module_so_t *colorin_so = NULL;
   dt_iop_module_t *colorin = NULL;
-  GList *modules = g_list_first(darktable.iop);
-  while(modules)
+  for(const GList *modules = darktable.iop; modules; modules = g_list_next(modules))
   {
     dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
     if(!strcmp(module_so->op, "colorin"))
@@ -909,11 +908,10 @@ void dt_ioppr_get_work_profile_type(struct dt_develop_t *dev,
       colorin_so = module_so;
       break;
     }
-    modules = g_list_next(modules);
   }
   if(colorin_so && colorin_so->get_p)
   {
-    for(modules = g_list_first(dev->iop); modules; modules = g_list_next(modules))
+    for(const GList *modules = dev->iop; modules; modules = g_list_next(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       if(!strcmp(module->op, "colorin"))
@@ -949,8 +947,7 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
   // use introspection to get the params values
   dt_iop_module_so_t *colorout_so = NULL;
   dt_iop_module_t *colorout = NULL;
-  GList *modules = g_list_last(darktable.iop);
-  while(modules)
+  for(const GList *modules = g_list_last(darktable.iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_so_t *module_so = (dt_iop_module_so_t *)(modules->data);
     if(!strcmp(module_so->op, "colorout"))
@@ -958,12 +955,10 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
       colorout_so = module_so;
       break;
     }
-    modules = g_list_previous(modules);
   }
   if(colorout_so && colorout_so->get_p)
   {
-    modules = g_list_last(dev->iop);
-    while(modules)
+    for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
     {
       dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
       if(!strcmp(module->op, "colorout"))
@@ -971,7 +966,6 @@ void dt_ioppr_get_export_profile_type(struct dt_develop_t *dev,
         colorout = module;
         break;
       }
-      modules = g_list_previous(modules);
     }
   }
   if(colorout)
