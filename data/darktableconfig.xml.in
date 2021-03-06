@@ -2779,8 +2779,8 @@
     <name>darkroom/ui/show_mask_indicator</name>
     <type>bool</type>
     <default>true</default>
-    <shortdescription>show mask indicator in modules header</shortdescription>
-    <longdescription>if enabled, an icon will be shown in the module headers to indicate the modules that have a mask</longdescription>
+    <shortdescription>show mask indicator in module headers</shortdescription>
+    <longdescription>if enabled, an icon will be shown in the header of any processing modules that have a mask applied</longdescription>
   </dtconfig>
 
   @DARKTABLECONFIG_IOP_ENTRIES@
