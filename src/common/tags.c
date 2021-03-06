@@ -19,8 +19,9 @@
 #include "common/collection.h"
 #include "common/darktable.h"
 #include "common/debug.h"
-#include "common/undo.h"
 #include "common/grouping.h"
+#include "common/selection.h"
+#include "common/undo.h"
 #include "control/conf.h"
 #include "control/control.h"
 #include <glib.h>
@@ -597,35 +598,31 @@ static void dt_set_darktable_tags()
   }
 }
 
-static char *_images_to_act_on_string(const gint imgid, uint32_t *nb)
-{
-  uint32_t nb_selected = 0;
-  char *images = NULL;
-  if(imgid > 0)
-  {
-    images = dt_util_dstrcat(images, "%d",imgid);
-    nb_selected = 1;
-  }
-  else
-  {
-    for(const GList *imgs = dt_view_get_images_to_act_on(TRUE, FALSE, FALSE); imgs; imgs = g_list_next((GList *)imgs))
-    {
-      images = dt_util_dstrcat(images, "%d,",GPOINTER_TO_INT(imgs->data));
-      nb_selected++;
-    }
-    if(images) images[strlen(images) - 1] = '\0';
-  }
-  if(nb)
-    *nb = nb_selected;
-  return images;
-}
-
 uint32_t dt_tag_get_attached(const gint imgid, GList **result, const gboolean ignore_dt_tags)
 {
   sqlite3_stmt *stmt;
   dt_set_darktable_tags();
   uint32_t nb_selected = 0;
-  char *images = _images_to_act_on_string(imgid, &nb_selected);
+  char *images = NULL;
+  if(imgid > 0)
+  {
+    images = dt_util_dstrcat(NULL, "%d", imgid);
+    nb_selected = 1;
+  }
+  else
+  {
+    // we get the query used to retrieve the list of select images
+    images = dt_selection_get_list_query(darktable.selection, FALSE, FALSE);
+    // and we retrieve the number of image in the selection
+    gchar *query = dt_util_dstrcat(NULL,
+                                   "SELECT COUNT(*)"
+                                   " FROM (%s)",
+                                   images);
+    DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), query, -1, &stmt, NULL);
+    if(sqlite3_step(stmt) == SQLITE_ROW) nb_selected = sqlite3_column_int(stmt, 0);
+    sqlite3_finalize(stmt);
+    g_free(query);
+  }
   uint32_t count = 0;
   if(images)
   {
@@ -828,7 +825,14 @@ GList *dt_tag_get_hierarchical(gint imgid)
 static GList *_tag_get_tags(const gint imgid, const dt_tag_type_t type)
 {
   GList *tags = NULL;
-  char *images = _images_to_act_on_string(imgid, NULL);
+  char *images = NULL;
+  if(imgid > 0)
+    images = dt_util_dstrcat(NULL, "%d", imgid);
+  else
+  {
+    // we get the query used to retrieve the list of select images
+    images = dt_selection_get_list_query(darktable.selection, FALSE, FALSE);
+  }
 
   sqlite3_stmt *stmt;
   dt_set_darktable_tags();
