@@ -384,7 +384,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   {
     escape = FALSE;
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
-    gboolean color_dot = has_prefix(variable, "LABELS_COLORICONS");
+    gboolean color_dot = strncmp((*variable)-10, "COLORICONS", 10) == 0; // variable now points at end of name!
     const char *colored_dots[] = { "🔴", "🟡", "🟢", "🔵", "🟣" };
     for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
     {
@@ -398,7 +398,7 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
     }
     g_list_free(res);
   }
-  else if(has_prefix(variable, "LABELS") || has_prefix(variable, "LABELS_ICONS") || has_prefix(variable, "LABELS_COLORICONS"))
+  else if(has_prefix(variable, "LABELS"))
   {
     // TODO: currently we concatenate all the color labels with a ',' as a separator. Maybe it's better to
     // only use the first/last label?
