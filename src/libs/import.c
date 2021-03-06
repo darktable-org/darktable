@@ -158,10 +158,10 @@ static void _lib_import_tethered_callback(GtkToggleButton *button, gpointer data
   dt_ctl_switch_mode_to("tethering");
 }
 
-static void _destroy_child(GtkWidget *widget, gpointer data)
+static void _remove_child(GtkWidget *widget, gpointer data)
 {
-  (void)data;  // avoid unreferenced-parameter warning
-  gtk_widget_destroy(widget);
+  GtkContainer *cont = (GtkContainer *)data;
+  gtk_container_remove(cont, widget);
 }
 
 /** update the device list */
@@ -170,24 +170,11 @@ void _lib_import_ui_devices_update(dt_lib_module_t *self)
   dt_lib_import_t *d = (dt_lib_import_t *)self->data;
 
   /* cleanup of widgets in devices container*/
-#if 1  //TODO: this code needs careful testing before removing the old code in the 'else' branch
-  gtk_container_foreach(GTK_CONTAINER(d->devices), _destroy_child, NULL);
-  gtk_container_foreach(GTK_CONTAINER(d->locked_devices), _destroy_child, NULL);
-#else // old code below
-  GList *item = gtk_container_get_children(GTK_CONTAINER(d->devices));
-  for(const GList *iter = item; iter; iter = g_list_next(iter))
-  {
-    gtk_container_remove(GTK_CONTAINER(d->devices), GTK_WIDGET(iter->data));
-  }
-  g_list_free(item);
+  GtkContainer *cont = GTK_CONTAINER(d->devices);
+  gtk_container_foreach(cont, _remove_child, cont);
 
-  item = gtk_container_get_children(GTK_CONTAINER(d->locked_devices));
-  for(const GList *iter = item; iter; iter = g_list_next(iter))
-  {
-    gtk_container_remove(GTK_CONTAINER(d->locked_devices), GTK_WIDGET(iter->data));
-  }
-  g_list_free(item);
-#endif
+  cont = GTK_CONTAINER(d->locked_devices);
+  gtk_container_foreach(cont, _remove_child, cont);
 
   dt_camctl_t *camctl = (dt_camctl_t *)darktable.camctl;
   dt_pthread_mutex_lock(&camctl->lock);
