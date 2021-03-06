@@ -1775,7 +1775,9 @@ static gchar *get_query_string(const dt_collection_properties_t property, const 
         g_free(name);			// free the original filename
       }
 
-      query = dt_util_dstrcat(NULL, "(%s)", dt_util_glist_to_str(" OR ", list));
+      char *subquery = dt_util_glist_to_str(" OR ", list);
+      query = g_strdup_printf("(%s)", subquery);
+      g_free(subquery);
       g_list_free_full(list, g_free);	// free the SQL clauses as well as the list
 
       break;
