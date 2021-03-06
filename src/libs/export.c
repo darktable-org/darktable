@@ -1053,10 +1053,10 @@ static void _update_formats_combobox(dt_lib_export_t *d)
   gtk_widget_set_sensitive(d->format, !empty);
 }
 
-static void _destroy_child(GtkWidget *widget, gpointer data)
+static void _remove_child(GtkWidget *widget, gpointer data)
 {
-  (void)data;  // avoid unreferenced-parameter warning
-  gtk_widget_destroy(widget);
+  GtkContainer *cont = (GtkContainer *)data;
+  gtk_container_remove(cont, widget);
 }
 
 static void _on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
@@ -1066,7 +1066,8 @@ static void _on_storage_list_changed(gpointer instance, dt_lib_module_t *self)
   dt_bauhaus_combobox_clear(d->storage);
 
 #if 1  //TODO: this code needs careful testing before removing the old code in the 'else' branch
-  gtk_container_foreach(GTK_CONTAINER(d->storage_extra_container), _destroy_child, NULL);
+  GtkContainer *cont = GTK_CONTAINER(d->storage_extra_container);
+  gtk_container_foreach(cont, _remove_child, cont);
 #else //old code below
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->storage_extra_container));
   for(GList *iter = children; iter; iter = g_list_next(iter))
