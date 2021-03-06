@@ -282,7 +282,7 @@ button:disabled,
 /* Default extra margin for icons optical alignment */
 #button-canvas
 {
-  margin: 0.35em; /* not real pixels, this is used as a percent extra space */
+  margin: 0.35em; /* this em value is converted to pixels by Gtk and then used as a percent extra space */
 }
 
 /* Set same settings on all those items */
@@ -436,7 +436,7 @@ overshoot.right
 #module-header #button-canvas,
 #modules-tabs #button-canvas
 {
-  margin: 1em; /* not real pixels, this is used as a percent extra space */
+  margin: 1em; /* this em value is converted to pixels by Gtk and then used as a percent extra space */
 }
 
 /*---------------------------
@@ -455,10 +455,14 @@ overshoot.right
 }
 
 #iop-plugin-ui-main,
-#lib-plugin-ui-main,
+#lib-plugin-ui-main
+{
+  padding: 0.35em 0.56em;
+}
+
 #blending-box
 {
-  padding: 0.66em;
+  padding: 0 0.56em;
 }
 
 /* icon buttons in modules main body */
@@ -599,8 +603,7 @@ overshoot.right
 /* Labels of controls sections in modules */
 #section_label
 {
-  margin: 0 0 0.56em 0;
-  padding: 0 0 0.35em 0;
+  padding: 0.28em;
   color: @section_label;
   border-bottom: 0.035em solid  @section_label;
   font-family: sans-serif;
@@ -612,20 +615,13 @@ overshoot.right
 #lib-plugin-ui .section-expander,
 #iop-plugin-ui .section-expander
 {
-  margin: 0.56em 0 0.42em 0;
+  margin: 0.35em 0;
 }
 
 #iop-plugin-ui #section_label.section_label_top,
 #lib-plugin-ui #section_label.section_label_top
 {
-  margin: 0.14em 0 0.42em 0;
-}
-
-/* Control sections that can be expanded/collapsed need to be handled differently */
-#iop-plugin-ui .section-expander #section_label,
-#lib-plugin-ui .section-expander #section_label
-{
-  margin: 0;
+  margin-top: 0.14em;
 }
 
 #lib-plugin-ui .section-expander #control-button,
@@ -845,6 +841,11 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
   color: @bauhaus_fg;
   background-color: transparent;
   min-height: 1em;
+}
+
+#blending-box #dt-toggle-button
+{
+  margin-top: 0;
 }
 
 /*---------------------------------------
@@ -1313,7 +1314,7 @@ filechooser row:hover,
 }
 
 /*--------------------------------
-  - module layouts manager dialog -
+  - Module layouts manager dialog -
   --------------------------------*/
 
 #modulegroups_manager box
@@ -1460,80 +1461,6 @@ filechooser row:hover,
   padding: 0.45em;
 }
 
-#basics-box
-{
-  padding-bottom: 0.75em;
-  padding-top: 0.5em;
-}
-
-#basics-box #module-enable-button,
-#basics-box-labels #module-enable-button,
-#basics-link
-{
-  min-height: 1.15em;
-  min-width: 1.15em;
-  margin: 0 0.5em;
-  border: none;
-  padding: 0.2em 0.3em 0.3em 0.2em;
-}
-
-#basics-header-box #basics-link
-{
-  color: shade(@button_fg, 1.1);
-  margin-bottom: 0;
-}
-
-#basics-box-labels #basics-widget,
-#basics-box-labels #section_label
-{
-  padding-top: 0.14em;
-  margin-bottom: 0.25em;
-}
-
-#basics-box #basics-widget
-{
-  margin-bottom: 0.5em;
-}
-
-#basics-box-labels #section_label
-{
-  margin-top: 0.25em;
-  padding: 0.25em 0;
-  border: none;
-}
-
-#basics-module-hbox
-{
-  margin: 0 0.75em;
-}
-
-#basics-header-box
-{
-  border-top: 0.049em solid @darkroom_bg_color;
-  margin: 0.15em 0;
-}
-
-#basics-box-labels #basics-header-box:first-child
-{
-  border-top: none;
-}
-
-#basics-header-box-first
-{
-  border: none;
-}
-
-#basics-iop_name
-{
-  padding-left: 0.25em;
-}
-
-#basics-widget #bauhaus-combobox + #dt-button,
-#basics-widget #bauhaus-slider + #dt-button
-{
-  margin-left: 0.5em;
-}
-
 #modulegroups-popup-item,
 #modulegroups-popup-item2,
 #modulegroups-popup-item-all
@@ -1556,6 +1483,64 @@ filechooser row:hover,
   padding: 0.4em 0 0.2em 0;
   font-weight: bold;
   color: @plugin_label_color;
+}
+
+/*--------------------
+  - Quick access tab -
+  --------------------*/
+#basics-box
+{
+  padding-bottom: 0.75em;
+  padding-top: 0.5em;
+}
+
+#basics-box #module-enable-button,
+#basics-box-labels #module-enable-button,
+#basics-link
+{
+  margin: 0 0.5em;
+  padding: 0.2em 0.3em 0.3em 0.2em;
+}
+
+#basics-header-box #basics-link
+{
+  color: shade(@button_fg, 1.1);
+  margin-bottom: 0;
+}
+
+#basics-box #basics-widget
+{
+  margin-bottom: 0.5em;
+}
+
+#basics-module-hbox
+{
+  margin: 0 0.75em;
+}
+
+#basics-header-box
+{
+  border-top: 0.049em solid @darkroom_bg_color;
+  margin-top: 0.14em;
+}
+
+#basics-box-labels #basics-header-box:first-child,
+#basics-box-labels #section_label,
+#basics-header-box-first,
+#basics-link
+{
+  border: none;
+}
+
+#basics-iop_name
+{
+  padding-left: 0.25em;
+}
+
+#basics-widget #bauhaus-combobox + #dt-button,
+#basics-widget #bauhaus-slider + #dt-button
+{
+  margin-left: 0.5em;
 }
 
 /*--------------------------------
@@ -1681,12 +1666,6 @@ checkbutton check
 cell:selected
 {
   background-color: shade(@selected_bg_color, 1.2);
-}
-
-/* Be sure to align correctly widget for parametric blending options in modules */
-#blending-box #section_label
-{
-  margin: 0 0 0.56em 0;
 }
 
 /* Set below spacing between history items in darkroom */
@@ -2332,7 +2311,7 @@ spinbutton>button
 #thumb_image
 {
   border: 0;
-  margin: 1.75em; /* not real pixels, but per thousand of the thumb size */
+  margin: 1.75em; /* this em value is converted to pixels by Gtk and then used as a per thousand of the thumb size */
 }
 
 .dt_thumbnails_2 #thumb_image, /* update consistently margins if big thumbnails (less images per row) are shown */
@@ -2670,8 +2649,8 @@ spinbutton>button
 /* Set where overlays block infos start on the image */
 .dt_overlays_hover_block #thumb_bottom
 {
-  margin-top: 2.1em;  /* not real pixels, but per thousand of the image size */
-  margin-left: 0;  /* not real pixels, but per thousand of the image size */
+  margin-top: 2.1em;  /* this em value is converted to pixels by Gtk and then used as a per thousand of the image size */
+  margin-left: 0;  /* this em value is converted to pixels by Gtk and then used as a per thousand of the image size */
 }
 
 /* Set background color of overlays block infos */
