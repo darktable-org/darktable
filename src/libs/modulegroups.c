@@ -3242,7 +3242,7 @@ static void _manage_editor_load(const char *preset, dt_lib_module_t *self)
   dtgtk_container_destroy_children(GTK_CONTAINER(d->preset_box));
 
   // we update all the preset lines
-  lw = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
+  GList *lw = gtk_container_get_children(GTK_CONTAINER(d->presets_list));
   for(const GList *lw_iter = lw; lw_iter; lw_iter = g_list_next(lw_iter))
   {
     GtkWidget *w = (GtkWidget *)lw_iter->data;
