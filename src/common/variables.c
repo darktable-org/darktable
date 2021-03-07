@@ -384,17 +384,13 @@ static char *get_base_value(dt_variables_params_t *params, char **variable)
   {
     escape = FALSE;
     GList *res = dt_metadata_get(params->imgid, "Xmp.darktable.colorlabels", NULL);
-    gboolean color_dot = strncmp((*variable)-10, "COLORICONS", 10) == 0; // variable now points at end of name!
-    const char *colored_dots[] = { "🔴", "🟡", "🟢", "🔵", "🟣" };
     for(GList *res_iter = res; res_iter; res_iter = g_list_next(res_iter))
     {
       const int dot_index = GPOINTER_TO_INT(res_iter->data);
-      const char *dot = color_dot ? colored_dots[dot_index] : "⬤";
       const GdkRGBA c = darktable.bauhaus->colorlabels[dot_index];
       result = dt_util_dstrcat(result,
-                               "<span foreground='#%02x%02x%02x'>%s </span>",
-                               (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255),
-                               dot);
+                               "<span foreground='#%02x%02x%02x'>⬤ </span>",
+                               (guint)(c.red*255), (guint)(c.green*255), (guint)(c.blue*255));
     }
     g_list_free(res);
   }
