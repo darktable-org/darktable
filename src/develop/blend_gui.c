@@ -554,11 +554,6 @@ static void _blendop_masks_mode_callback(const unsigned int mask_mode, dt_iop_gu
   }
   else
   {
-    data->module->request_mask_display = DT_DEV_PIXELPIPE_DISPLAY_NONE;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->showmask), FALSE);
-    data->module->suppress_mask = 0;
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(data->suppress), FALSE);
-
     gtk_widget_hide(GTK_WIDGET(data->bottom_box));
   }
 
