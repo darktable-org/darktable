@@ -1006,14 +1006,12 @@ static uint32_t _dt_collection_compute_count(const dt_collection_t *collection, 
   else
     count_query = dt_util_dstrcat(count_query, "SELECT COUNT(DISTINCT mi.id) %s", fq);
 
-  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
-  if((collection->params.query_flags & COLLECTION_QUERY_USE_LIMIT)
-     && !(collection->params.query_flags & COLLECTION_QUERY_USE_ONLY_WHERE_EXT))
-  {
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 1, 0);
-    DT_DEBUG_SQLITE3_BIND_INT(stmt, 2, -1);
-  }
+  // strip ORDER BY ... LIMIT
+  gchar* order_pos = g_strrstr(count_query, " ORDER BY ");
+  if(order_pos)
+    order_pos[0] = '\0';
 
+  DT_DEBUG_SQLITE3_PREPARE_V2(dt_database_get(darktable.db), count_query, -1, &stmt, NULL);
   if(sqlite3_step(stmt) == SQLITE_ROW) count = sqlite3_column_int(stmt, 0);
   sqlite3_finalize(stmt);
   g_free(count_query);
