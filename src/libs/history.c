@@ -24,6 +24,7 @@
 #include "control/control.h"
 #include "develop/develop.h"
 #include "develop/masks.h"
+#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/styles.h"
@@ -1017,7 +1018,7 @@ static void _lib_history_change_callback(gpointer instance, gpointer user_data)
   dt_lib_history_t *d = (dt_lib_history_t *)self->data;
 
   /* first destroy all buttons in list */
-  gtk_container_foreach(GTK_CONTAINER(d->history_box), (GtkCallback)gtk_widget_destroy, 0);
+  dtgtk_container_destroy_children(GTK_CONTAINER(d->history_box));
 
   /* add default which always should be */
   int num = -1;
@@ -1177,10 +1178,9 @@ static void _lib_history_button_clicked_callback(GtkWidget *widget, gpointer use
   GList *children = gtk_container_get_children(GTK_CONTAINER(d->history_box));
   for(GList *l = children; l != NULL; l = g_list_next(l))
   {
-    GList *hbox = gtk_container_get_children(GTK_CONTAINER(l->data));
-    GtkToggleButton *b = GTK_TOGGLE_BUTTON(g_list_nth_data(hbox, HIST_WIDGET_MODULE));
-    if(b != GTK_TOGGLE_BUTTON(widget)) g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
-    g_list_free(hbox);
+    GtkToggleButton *b = GTK_TOGGLE_BUTTON(dtgtk_container_nth_child(GTK_CONTAINER(l->data), HIST_WIDGET_MODULE));
+    if(b != GTK_TOGGLE_BUTTON(widget))
+      g_object_set(G_OBJECT(b), "active", FALSE, (gchar *)0);
   }
   g_list_free(children);
 

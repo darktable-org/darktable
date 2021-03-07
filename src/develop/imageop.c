@@ -40,6 +40,7 @@
 #include "dtgtk/expander.h"
 #include "dtgtk/gradientslider.h"
 #include "dtgtk/icon.h"
+#include "dtgtk/utility.h"
 #include "gui/accelerators.h"
 #include "gui/gtk.h"
 #include "gui/presets.h"
@@ -1101,12 +1102,8 @@ static void _iop_gui_update_header(dt_iop_module_t *module)
 {
   if (!module->header)                  /* some modules such as overexposed don't actually have a header */
     return;
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
-
   /* get the enable button and button */
-  GtkWidget *lab = g_list_nth_data(childs, IOP_MODULE_LABEL);
-
-  g_list_free(childs);
+  GtkWidget *lab = dtgtk_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
 
   // set panel name to display correct multi-instance
   _iop_panel_label(lab, module);
@@ -1175,9 +1172,7 @@ void dt_iop_set_module_trouble_message(dt_iop_module_t *const module,
 static void _iop_gui_update_label(dt_iop_module_t *module)
 {
   if(!module->header) return;
-  GList *childs = gtk_container_get_children(GTK_CONTAINER(module->header));
-  GtkWidget *lab = g_list_nth_data(childs, IOP_MODULE_LABEL);
-  g_list_free(childs);
+  GtkWidget *lab = dtgtk_container_nth_child(GTK_CONTAINER(module->header), IOP_MODULE_LABEL);
   _iop_panel_label(lab, module);
 }
 
@@ -2333,6 +2328,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
       gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
       dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
     }
+  g_list_free(children);
 
   if(module->mask_indicator)
   {
