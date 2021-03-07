@@ -38,7 +38,7 @@ int dtgtk_container_num_children(GtkContainer *container)
 
 GtkWidget *dtgtk_container_first_child(GtkContainer *container)
 {
-  g_return_if_fail(GTK_IS_CONTAINER(container));
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), NULL);
   GList *children = gtk_container_get_children(container);
   GtkWidget *child = children ? (GtkWidget*)children->data : NULL;
   g_list_free(children);
@@ -47,7 +47,7 @@ GtkWidget *dtgtk_container_first_child(GtkContainer *container)
 
 GtkWidget *dtgtk_container_nth_child(GtkContainer *container, int which)
 {
-  g_return_if_fail(GTK_IS_CONTAINER(container));
+  g_return_val_if_fail(GTK_IS_CONTAINER(container), NULL);
   GList *children = gtk_container_get_children(container);
   GtkWidget *child = (GtkWidget*)g_list_nth_data(children, which);
   g_list_free(children);
