@@ -438,6 +438,22 @@ overshoot.right
   margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
+/* Set color labels on left footer toolbar on lighttable view */
+#footer-toolbar #lib-label-colors #button-canvas
+{
+  margin: 16px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
+}
+
+#footer-toolbar #lib-label-colors #dt-button
+{
+  opacity: 0.6;
+}
+
+#footer-toolbar #lib-label-colors #dt-button:hover
+{
+  opacity: 1;
+}
+
 /*---------------------------
   - Side panels and modules -
   ---------------------------*/
@@ -461,7 +477,7 @@ overshoot.right
 
 #blending-box
 {
-  padding: 0 0.56em;
+  padding: 0.14em 0.56em;
 }
 
 /* icon buttons in modules main body */
@@ -602,7 +618,7 @@ overshoot.right
 /* Labels of controls sections in modules */
 #section_label
 {
-  padding: 0.28em;
+  padding: 0;
   color: @section_label;
   border-bottom: 0.035em solid  @section_label;
   font-family: sans-serif;
@@ -855,15 +871,18 @@ dialog .dialog-vbox notebook stack box box checkbutton label  /* fix a margin on
 combobox,
 combobox button
 {
-  background-color: transparent;
+  background-image:radial-gradient(@plugin_bg_color, shade(@plugin_bg_color, 0.9));
   border-radius: 0.14em;
   color: @bauhaus_fg;
 }
 
-combobox button
+combobox button,
+#iop-plugin-ui combobox button,
+#lib-plugin-ui combobox button
 {
-  padding: 0.07em;
-  border: 0.07em solid transparent;
+  border: 0.01em solid transparent;
+  padding: 0;
+  margin: 0;
 }
 
 combobox entry
@@ -1274,7 +1293,8 @@ filechooser .sidebar row:selected,
 filechooser .sidebar row:selected:hover .sidebar-label,
 #preferences_box .sidebar row:selected,
 #preferences_box .sidebar row:selected:hover label,
-#modulegroups-preset-activated
+#modulegroups-preset-activated,
+#modulegroups_editor
 {
   color: @fg_color;
   background-color: @plugin_bg_color;
@@ -1323,8 +1343,6 @@ filechooser row:hover,
 
 #modulegroups_editor
 {
-  color: @fg_color;
-  background-color: @plugin_bg_color;
   padding: 0.5em 0.6em;
 }
 
@@ -1836,6 +1854,7 @@ combobox window *:selected,
 messagedialog .default  /* this show that a button in confirmation action pop-up has the focus (no by default) */
 {
   background-color: @button_checked_bg;
+  background-image: none;
   color: @button_checked_fg;
 }
 
@@ -1878,6 +1897,7 @@ radiobutton:hover label,
 #view_dropdown:hover
 {
   background-color: @button_hover_bg;
+  background-image: none;
 }
 
  /* and same for color as other needs only color setting */
