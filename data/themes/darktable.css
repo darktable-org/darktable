@@ -264,13 +264,12 @@ box *
 button,
 #add-color-button
 {
-  padding: 0.14em;
+  padding: 2px; /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
   border: 0.07em solid @button_border;
   background-color: @button_bg;
   color: @button_fg;
   font-weight: normal;
-  font-family: sans-serif;
-  padding: 0.14em;
+  font-family: sans-serif; 
 }
 
 button:disabled,
@@ -282,7 +281,7 @@ button:disabled,
 /* Default extra margin for icons optical alignment */
 #button-canvas
 {
-  margin: 0.35em; /* this em value is converted to pixels by Gtk and then used as a percent extra space */
+  margin: 5px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
 /* Set same settings on all those items */
@@ -436,7 +435,7 @@ overshoot.right
 #module-header #button-canvas,
 #modules-tabs #button-canvas
 {
-  margin: 1em; /* this em value is converted to pixels by Gtk and then used as a percent extra space */
+  margin: 12px; /* not real pixels. This is used as a percent extra space and couldn't be scalable */
 }
 
 /*---------------------------
@@ -530,7 +529,7 @@ overshoot.right
 #iop-plugin-ui button,
 #lib-plugin-ui button
 {
-  margin: 0.14em;
+  margin: 2px;  /* this need to be kept as pixels for constant sizing and correct display with all font sizes */
 }
 
 /* Buttons in modules header, near the module name */
@@ -2311,7 +2310,7 @@ spinbutton>button
 #thumb_image
 {
   border: 0;
-  margin: 1.75em; /* this em value is converted to pixels by Gtk and then used as a per thousand of the thumb size */
+  margin: 25px; /* not real pixels. This is used as a per thousand of the thumb size and couldn't be scalable */
 }
 
 .dt_thumbnails_2 #thumb_image, /* update consistently margins if big thumbnails (less images per row) are shown */
@@ -2649,8 +2648,8 @@ spinbutton>button
 /* Set where overlays block infos start on the image */
 .dt_overlays_hover_block #thumb_bottom
 {
-  margin-top: 2.1em;  /* this em value is converted to pixels by Gtk and then used as a per thousand of the image size */
-  margin-left: 0;  /* this em value is converted to pixels by Gtk and then used as a per thousand of the image size */
+  margin-top: 30px;  /* not real pixels. This is used as a per thousand of the image size and couldn't be scalable */
+  margin-left: 0;  /* not real pixels. This is used as a per thousand of the image size and couldn't be scalable */
 }
 
 /* Set background color of overlays block infos */
