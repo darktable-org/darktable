@@ -22,13 +22,11 @@
 
 void dt_lua_push_glist_type(lua_State *L, GList *list, luaA_Type elt_type)
 {
-  GList *elt = list;
   lua_newtable(L);
-  while(elt)
+  for(const GList *elt = list; elt; elt = g_list_next(elt))
   {
     luaA_push_type(L, elt_type, elt->data);
     luaL_ref(L, -2);
-    elt = g_list_next(elt);
   }
 }
 

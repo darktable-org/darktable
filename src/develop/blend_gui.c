@@ -1573,8 +1573,7 @@ static gboolean _blendif_change_blend_colorspace(dt_iop_module_t *module, dt_dev
     dt_develop_blend_init_blendif_parameters(module->blend_params, cst);
 
     // look for last history item for this module with the selected blending mode to copy parametric mask settings
-    GList *history = g_list_last(darktable.develop->history);
-    while(history)
+    for(const GList *history = g_list_last(darktable.develop->history); history; history = g_list_previous(history))
     {
       const dt_dev_history_item_t *data = (dt_dev_history_item_t *)(history->data);
       if(data->module == module && data->blend_params->blend_cst == cst)
@@ -1589,7 +1588,6 @@ static gboolean _blendif_change_blend_colorspace(dt_iop_module_t *module, dt_dev
         memcpy(np->blendif_boost_factors, hp->blendif_boost_factors, sizeof(hp->blendif_boost_factors));
         break;
       }
-      history = g_list_previous(history);
     }
 
     dt_iop_gui_blend_data_t *bd = module->blend_data;
