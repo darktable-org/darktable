@@ -59,8 +59,8 @@ static gboolean _button_draw(GtkWidget *widget, cairo_t *cr)
   /* get button total allocation */
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width;
-  int height = allocation.height;
+  const int width = allocation.width;
+  const int height = allocation.height;
 
   /* get the css geometry properties of the button */
   GtkBorder margin, border, padding;

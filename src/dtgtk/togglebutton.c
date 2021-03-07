@@ -83,8 +83,8 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
   /* get button total allocation */
   GtkAllocation allocation;
   gtk_widget_get_allocation(widget, &allocation);
-  int width = allocation.width;
-  int height = allocation.height;
+  const int width = allocation.width;
+  const int height = allocation.height;
 
   /* get the css geometry properties of the button */
   GtkBorder margin, border, padding;
@@ -145,7 +145,7 @@ static gboolean _togglebutton_draw(GtkWidget *widget, cairo_t *cr)
     void *icon_data = DTGTK_TOGGLEBUTTON(widget)->icon_data;
 
     if(cwidth > 0 && cheight > 0)
-        DTGTK_TOGGLEBUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
+      DTGTK_TOGGLEBUTTON(widget)->icon(cr, startx, starty, cwidth, cheight, flags, icon_data);
   }
 
   return FALSE;
