@@ -149,9 +149,9 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
   GList *result = dt_styles_get_list(gtk_entry_get_text(d->entry));
   if(result)
   {
-    do
+    for(const GList *res_iter = result; res_iter; res_iter = g_list_next(res_iter))
     {
-      dt_style_t *style = (dt_style_t *)result->data;
+      dt_style_t *style = (dt_style_t *)res_iter->data;
 
       gchar *items_string = (gchar *)dt_styles_get_item_list_as_string(style->name);
       gchar *tooltip = NULL;
@@ -193,7 +193,7 @@ static void _gui_styles_update_view(dt_lib_styles_t *d)
 
       g_free(items_string);
       g_free(tooltip);
-    } while((result = g_list_next(result)) != NULL);
+    }
     g_list_free_full(result, dt_style_free);
   }
 

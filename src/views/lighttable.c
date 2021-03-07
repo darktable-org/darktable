@@ -1211,8 +1211,7 @@ end:
 
 static void _profile_update_display_cmb(GtkWidget *cmb_display_profile)
 {
-  GList *l = darktable.color_profiles->profiles;
-  while(l)
+  for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
     if(prof->display_pos > -1)
@@ -1228,14 +1227,12 @@ static void _profile_update_display_cmb(GtkWidget *cmb_display_profile)
         }
       }
     }
-    l = g_list_next(l);
   }
 }
 
 static void _profile_update_display2_cmb(GtkWidget *cmb_display_profile)
 {
-  GList *l = darktable.color_profiles->profiles;
-  while(l)
+  for(const GList *l = darktable.color_profiles->profiles; l; l = g_list_next(l))
   {
     dt_colorspaces_color_profile_t *prof = (dt_colorspaces_color_profile_t *)l->data;
     if(prof->display2_pos > -1)
@@ -1251,7 +1248,6 @@ static void _profile_update_display2_cmb(GtkWidget *cmb_display_profile)
         }
       }
     }
-    l = g_list_next(l);
   }
 }
 

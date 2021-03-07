@@ -511,8 +511,7 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
   {
     if (DT_IOP_ORDER_INFO) fprintf(stderr," selected ops");
     // copy only selected history entries
-    GList *l = g_list_last(ops);
-    while(l)
+    for(const GList *l = g_list_last(ops); l; l = g_list_previous(l))
     {
       const unsigned int num = GPOINTER_TO_UINT(l->data);
 
@@ -528,8 +527,6 @@ static int _history_copy_and_paste_on_image_merge(int32_t imgid, int32_t dest_im
           mod_list = g_list_prepend(mod_list, hist->module);
         }
       }
-
-      l = g_list_previous(l);
     }
   }
   else

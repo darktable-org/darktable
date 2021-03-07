@@ -510,11 +510,10 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   if(ps->paper_list) g_list_free_full(ps->paper_list, free);
 
   ps->paper_list = dt_get_papers (&ps->prt.printer);
-  GList *papers = ps->paper_list;
   int np = 0;
   gboolean ispaperset = FALSE;
 
-  while (papers)
+  for(const GList *papers = ps->paper_list; papers; papers = g_list_next (papers))
   {
     const dt_paper_info_t *p = (dt_paper_info_t *)papers->data;
     dt_bauhaus_combobox_add(ps->papers, p->common_name);
@@ -526,7 +525,6 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
     }
 
     np++;
-    papers = g_list_next (papers);
   }
 
   //  paper not found in this printer
@@ -552,12 +550,11 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
   if(ps->media_list) g_list_free_full(ps->media_list, free);
 
   ps->media_list = dt_get_media_type (&ps->prt.printer);
-  GList *media = ps->media_list;
   gboolean ismediaset = FALSE;
 
   np = 0;
 
-  while (media)
+  for(const GList *media = ps->media_list; media; media = g_list_next (media))
   {
     const dt_medium_info_t *m = (dt_medium_info_t *)media->data;
     dt_bauhaus_combobox_add(ps->media, m->common_name);
@@ -569,7 +566,6 @@ static void _set_printer(const dt_lib_module_t *self, const char *printer_name)
     }
 
     np++;
-    media = g_list_next (media);
   }
 
   //  media not found in this printer
@@ -913,8 +909,7 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const int pos = dt_bauhaus_combobox_get(widget);
-  GList *prof = ps->profiles;
-  while(prof)
+  for(const GList *prof = ps->profiles; prof; prof = g_list_next(prof))
   {
     dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
     if(pp->pos == pos)
@@ -926,7 +921,6 @@ _profile_changed(GtkWidget *widget, dt_lib_module_t *self)
       ps->v_iccprofile = g_strdup(pp->filename);
       return;
     }
-    prof = g_list_next(prof);
   }
   dt_conf_set_int("plugins/print/print/icctype", DT_COLORSPACE_NONE);
   dt_conf_set_string("plugins/print/print/iccprofile", "");
@@ -940,8 +934,7 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
 {
   dt_lib_print_settings_t *ps = (dt_lib_print_settings_t *)self->data;
   const int pos = dt_bauhaus_combobox_get(widget);
-  GList *prof = ps->profiles;
-  while(prof)
+  for(const GList *prof = ps->profiles; prof; prof = g_list_next(prof))
   {
     dt_lib_export_profile_t *pp = (dt_lib_export_profile_t *)prof->data;
     if(pp->ppos == pos)
@@ -956,7 +949,6 @@ _printer_profile_changed(GtkWidget *widget, dt_lib_module_t *self)
       gtk_widget_set_sensitive(GTK_WIDGET(ps->black_point_compensation), TRUE);
       return;
     }
-    prof = g_list_next(prof);
   }
   dt_conf_set_int("plugins/print/printer/icctype", DT_COLORSPACE_NONE);
   dt_conf_set_string("plugins/print/printer/iccprofile", "");
@@ -1189,7 +1181,6 @@ gui_init (dt_lib_module_t *self)
   dt_bauhaus_widget_set_label(d->pprofile, NULL, N_("profile"));
 
   int combo_idx, n;
-  GList *l = d->profiles;
 
   gtk_box_pack_start(GTK_BOX(self->widget), GTK_WIDGET(d->pprofile), TRUE, TRUE, 0);
   int printer_profile_type = dt_conf_get_int("plugins/print/printer/icctype");
@@ -1198,7 +1189,7 @@ gui_init (dt_lib_module_t *self)
   n = 0;
 
   dt_bauhaus_combobox_add(d->pprofile, _("color management in printer driver"));
-  while(l)
+  for(const GList *l = d->profiles; l; l = g_list_next(l))
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
     // do not add built-in profiles, these are in no way for printing
@@ -1215,7 +1206,6 @@ gui_init (dt_lib_module_t *self)
         combo_idx = n;
       }
     }
-    l = g_list_next(l);
   }
 
   g_free (printer_profile);
@@ -1416,8 +1406,7 @@ gui_init (dt_lib_module_t *self)
   combo_idx = -1;
   n = 0;
 
-  l = d->profiles;
-  while(l)
+  for(const GList *l = d->profiles; l; l = g_list_next(l))
   {
     dt_lib_export_profile_t *prof = (dt_lib_export_profile_t *)l->data;
     dt_bauhaus_combobox_add(d->profile, prof->name);
@@ -1429,7 +1418,6 @@ gui_init (dt_lib_module_t *self)
       d->v_iccprofile = g_strdup(iccprofile);
       combo_idx = n;
     }
-    l = g_list_next(l);
   }
 
   if (combo_idx == -1)
@@ -1478,9 +1466,9 @@ gui_init (dt_lib_module_t *self)
   gchar *current_style = dt_conf_get_string("plugins/print/print/style");
   combo_idx = -1; n=0;
 
-  while (styles)
+  for(const GList *st_iter = styles; st_iter; st_iter = g_list_next(st_iter))
   {
-    dt_style_t *style=(dt_style_t *)styles->data;
+    dt_style_t *style=(dt_style_t *)st_iter->data;
     dt_bauhaus_combobox_add(d->style, style->name);
     n++;
     if (g_strcmp0(style->name,current_style)==0)
@@ -1489,7 +1477,6 @@ gui_init (dt_lib_module_t *self)
       d->v_style = g_strdup(current_style);
       combo_idx=n;
     }
-    styles=g_list_next(styles);
   }
   g_free(current_style);
   g_list_free_full(styles, dt_style_free);
