@@ -164,15 +164,11 @@ static int tag_delete(lua_State *L)
   if(dt_tag_remove(tagid, TRUE))
     DT_DEBUG_CONTROL_SIGNAL_RAISE(darktable.signals, DT_SIGNAL_TAG_CHANGED);
 
-  GList *list_iter;
-  if((list_iter = g_list_first(tagged_images)) != NULL)
+  for(const GList *list_iter = tagged_images; list_iter; list_iter = g_list_next(list_iter))
   {
-    do
-    {
-      dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
-    } while((list_iter = g_list_next(list_iter)) != NULL);
+    dt_image_synch_xmp(GPOINTER_TO_INT(list_iter->data));
   }
-  g_list_free(g_list_first(tagged_images));
+  g_list_free(tagged_images);
 
   return 0;
 }
