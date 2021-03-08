@@ -2182,7 +2182,8 @@ static void *_control_import_alloc()
   return params;
 }
 
-static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override)
+static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_override,
+                                            const gboolean inplace)
 {
   dt_job_t *job = dt_control_job_create(&_control_import_job_run, "import");
   if(!job) return NULL;
@@ -2198,8 +2199,7 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
   params->index = imgs;
 
   dt_control_import_t *data = params->data;
-  const gboolean insitu = dt_conf_get_bool("ui_last/in_situ");
-  if(insitu)
+  if(inplace)
     data->session = NULL;
   else
   {
@@ -2213,10 +2213,10 @@ static dt_job_t *_control_import_job_create(GList *imgs, const time_t datetime_o
   return job;
 }
 
-void dt_control_import(GList *imgs, const time_t datetime_override)
+void dt_control_import(GList *imgs, const time_t datetime_override, const gboolean inplace)
 {
   dt_control_add_job(darktable.control, DT_JOB_QUEUE_USER_FG,
-                     _control_import_job_create(imgs, datetime_override));
+                     _control_import_job_create(imgs, datetime_override, inplace));
 }
 
 // modelines: These editor modelines have been set for all relevant files by tools/update_modelines.sh
