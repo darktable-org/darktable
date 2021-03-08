@@ -807,19 +807,19 @@ static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
   switch(over)
   {
     case DT_THUMBNAIL_OVERLAYS_NONE:
-      return dt_util_dstrcat(NULL, "dt_overlays_none");
+      return g_strdup("dt_overlays_none");
     case DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover_extended");
+      return g_strdup("dt_overlays_hover_extended");
     case DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL:
-      return dt_util_dstrcat(NULL, "dt_overlays_always");
+      return g_strdup("dt_overlays_always");
     case DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED:
-      return dt_util_dstrcat(NULL, "dt_overlays_always_extended");
+      return g_strdup("dt_overlays_always_extended");
     case DT_THUMBNAIL_OVERLAYS_MIXED:
-      return dt_util_dstrcat(NULL, "dt_overlays_mixed");
+      return g_strdup("dt_overlays_mixed");
     case DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover_block");
+      return g_strdup("dt_overlays_hover_block");
     default:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover");
+      return g_strdup("dt_overlays_hover");
   }
 }
 
@@ -843,7 +843,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
     gtk_style_context_add_class(context, "dt_culling");
 
   // overlays
-  gchar *otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", table->mode);
+  gchar *otxt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
   table->overlays = dt_conf_get_int(otxt);
   g_free(otxt);
 
@@ -851,7 +851,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
   gtk_style_context_add_class(context, cl0);
   free(cl0);
 
-  otxt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+  otxt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
   table->overlays_block_timeout = 2;
   if(!dt_conf_key_exists(otxt))
     table->overlays_block_timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
@@ -859,7 +859,7 @@ dt_culling_t *dt_culling_new(dt_culling_mode_t mode)
     table->overlays_block_timeout = dt_conf_get_int(otxt);
   g_free(otxt);
 
-  otxt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/culling/%d", table->mode);
+  otxt = g_strdup_printf("plugins/lighttable/tooltips/culling/%d", table->mode);
   table->show_tooltips = dt_conf_get_bool(otxt);
   g_free(otxt);
 
@@ -993,8 +993,7 @@ void dt_culling_init(dt_culling_t *table, int offset)
 
   // is first_id inside selection ?
   gboolean inside = FALSE;
-  query = dt_util_dstrcat(NULL,
-                          "SELECT col.imgid "
+  query = g_strdup_printf("SELECT col.imgid "
                           "FROM memory.collected_images AS col, main.selected_images AS sel "
                           "WHERE col.imgid=sel.imgid AND col.imgid=%d",
                           first_id);
@@ -1720,7 +1719,7 @@ void dt_culling_zoom_fit(dt_culling_t *table)
 void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t over)
 {
   if(!table) return;
-  gchar *txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling/%d", table->mode);
+  gchar *txt = g_strdup_printf("plugins/lighttable/overlays/culling/%d", table->mode);
   dt_conf_set_int(txt, over);
   g_free(txt);
   gchar *cl0 = _thumbs_get_overlays_class(table->overlays);
@@ -1730,7 +1729,7 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
   gtk_style_context_remove_class(context, cl0);
   gtk_style_context_add_class(context, cl1);
 
-  txt = dt_util_dstrcat(NULL, "plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
+  txt = g_strdup_printf("plugins/lighttable/overlays/culling_block_timeout/%d", table->mode);
   int timeout = 2;
   if(!dt_conf_key_exists(txt))
     timeout = dt_conf_get_int("plugins/lighttable/overlay_timeout");
@@ -1738,7 +1737,7 @@ void dt_culling_set_overlays_mode(dt_culling_t *table, dt_thumbnail_overlay_t ov
     timeout = dt_conf_get_int(txt);
   g_free(txt);
 
-  txt = dt_util_dstrcat(NULL, "plugins/lighttable/tooltips/culling/%d", table->mode);
+  txt = g_strdup_printf("plugins/lighttable/tooltips/culling/%d", table->mode);
   table->show_tooltips = dt_conf_get_bool(txt);
   g_free(txt);
 
