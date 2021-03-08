@@ -672,8 +672,8 @@ gboolean restart_required = FALSE;
     tmp = max * (double)factor; max = tmp;
     widget = gtk_spin_button_new_with_range(min, max, 1);
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-    gtk_widget_set_hexpand(widget, FALSE);
+    gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(widget, TRUE);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     </xsl:text>
@@ -692,8 +692,8 @@ gboolean restart_required = FALSE;
     <xsl:text>    min *= factor; max *= factor;
     widget = gtk_spin_button_new_with_range(min, max, 1);
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-    gtk_widget_set_hexpand(widget, FALSE);
+    gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(widget, TRUE);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 0);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_int64("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     </xsl:text>
@@ -714,8 +714,8 @@ gboolean restart_required = FALSE;
     <xsl:text>    min *= factor; max *= factor;
     widget = gtk_spin_button_new_with_range(min, max, 0.001f);
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
-    gtk_widget_set_hexpand(widget, FALSE);
+    gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(widget, TRUE);
     gtk_spin_button_set_digits(GTK_SPIN_BUTTON(widget), 5);
     gtk_spin_button_set_value(GTK_SPIN_BUTTON(widget), dt_conf_get_float("</xsl:text><xsl:value-of select="name"/><xsl:text>") * factor);
     </xsl:text>
@@ -767,7 +767,7 @@ gboolean restart_required = FALSE;
     g_free(str);
 
     widget = gtk_combo_box_new_with_model(GTK_TREE_MODEL(store));
-    gtk_widget_set_hexpand(widget, FALSE);
+    gtk_widget_set_hexpand(widget, TRUE);
     g_object_unref(store);
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
     gtk_cell_renderer_set_padding(renderer, 0, 0);
@@ -775,7 +775,7 @@ gboolean restart_required = FALSE;
     gtk_cell_layout_set_attributes(GTK_CELL_LAYOUT(widget), renderer, "text", 1, NULL);
     gtk_combo_box_set_active(GTK_COMBO_BOX(widget), pos);
     box = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-    gtk_box_pack_start(GTK_BOX(box), widget, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(box), widget, TRUE, TRUE, 0);
     </xsl:text>
     <xsl:text> g_signal_connect(G_OBJECT(widget), "changed", G_CALLBACK(preferences_changed_callback_</xsl:text><xsl:value-of select="generate-id(.)"/><xsl:text>), labdef);</xsl:text>
     <xsl:text>
