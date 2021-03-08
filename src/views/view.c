@@ -1508,10 +1508,7 @@ GSList *dt_mouse_action_create_format(GSList *actions, dt_mouse_action_type_t ty
 
 static gchar *_mouse_action_get_string(dt_mouse_action_t *ma)
 {
-  gchar *accel_label = gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods);
-  gchar *atxt = dt_util_dstrcat(NULL, "%s", accel_label);
-  g_free(accel_label);
-
+  gchar *atxt = gtk_accelerator_get_label(ma->key.accel_key, ma->key.accel_mods);
   if(strcmp(atxt, ""))
     atxt = dt_util_dstrcat(atxt, "+");
 

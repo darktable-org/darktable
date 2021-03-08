@@ -322,9 +322,9 @@ static void _basics_init_item(dt_lib_modulegroups_basic_item_t *item)
     {
       DtBauhausWidget *bw = DT_BAUHAUS_WIDGET(item->widget);
       if(g_strv_length(elems) > 2)
-        item->widget_name = dt_util_dstrcat(NULL, "%s - %s", _(elems[1]), bw->label);
+        item->widget_name = g_strdup_printf("%s - %s", _(elems[1]), bw->label);
       else if(g_strv_length(elems) > 1)
-        item->widget_name = dt_util_dstrcat(NULL, "%s", bw->label);
+        item->widget_name = g_strdup_printf("%s", bw->label);
       else
       {
         item->widget_name = g_strdup(_("on-off"));
