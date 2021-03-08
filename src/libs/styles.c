@@ -227,7 +227,7 @@ GList* _get_selected_style_names(GList* selected_styles, GtkTreeModel *model)
 {
   GtkTreeIter iter;
   GList *style_names = NULL;
-  for (GList *style = selected_styles; style != NULL; style = style->next)
+  for (const GList *style = selected_styles; style; style = g_list_next(style))
   {
     GValue value = {0,};
     gtk_tree_model_get_iter(model, &iter, (GtkTreePath *)style->data);
@@ -280,7 +280,7 @@ static void edit_clicked(GtkWidget *w, gpointer user_data)
   GtkTreeModel *model= gtk_tree_view_get_model(d->tree);
 
   GList *styles = gtk_tree_selection_get_selected_rows(selection, &model);
-  for (GList *style = styles; style != NULL; style = style->next)
+  for (const GList *style = styles; style; style = g_list_next(style))
   {
     char *name = NULL;
     GValue value = {0,};
@@ -346,7 +346,7 @@ static void delete_clicked(GtkWidget *w, gpointer user_data)
   if(can_delete)
   {
     DT_DEBUG_SQLITE3_EXEC(dt_database_get(darktable.db), "BEGIN TRANSACTION", NULL, NULL, NULL);
-    for (GList *style = style_names; style != NULL; style = style->next)
+    for (const GList *style = style_names; style; style = g_list_next(style))
     {
       dt_styles_delete_by_name_adv((char*)style->data, single_raise);
     }
@@ -399,7 +399,7 @@ static void export_clicked(GtkWidget *w, gpointer user_data)
   {
     char *filedir = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(filechooser));
 
-    for (GList *style = style_names; style != NULL; style = style->next)
+    for (const GList *style = style_names; style; style = g_list_next(style))
     {
       char stylename[520];
 
@@ -557,17 +557,14 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
   {
     GSList *filenames = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(filechooser));
 
-    for(GSList *filename = filenames; filename != NULL; filename = filename->next)
+    for(const GSList *filename = filenames; filename; filename = g_slist_next(filename))
     {
       /* extract name from xml file */
       gchar *bname = "";
-      xmlDoc *document;
-      xmlNode *root, *node;
-      document = xmlReadFile((char*)filename->data, NULL, 0);
-      root = xmlDocGetRootElement(document);
-      node = root->children->children;
+      xmlDoc *document = xmlReadFile((char*)filename->data, NULL, 0);
+      xmlNode *root = xmlDocGetRootElement(document);
 
-      while(node)
+      for(xmlNode *node = root->children->children; node; node = node->next)
       {
         if(node->type == XML_ELEMENT_NODE)
         {
@@ -579,7 +576,6 @@ static void import_clicked(GtkWidget *w, gpointer user_data)
             break;
           }
         }
-        node = node->next;
       }
 
       // check if style exists
@@ -936,7 +932,7 @@ void gui_reset(dt_lib_module_t *self)
 
   if(can_delete)
   {
-    for (GList *result = all_styles; result != NULL; result = result->next)
+    for (const GList *result = all_styles; result; result = g_list_next(result))
     {
       dt_style_t *style = (dt_style_t *)result->data;
       dt_styles_delete_by_name_adv((char*)style->name, FALSE);
