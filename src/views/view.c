@@ -935,10 +935,11 @@ gchar *dt_view_get_images_to_act_on_query(const gboolean only_visible)
   }
   if(images)
   {
+    // remove trailing comma
     images[strlen(images) - 1] = '\0';
   }
   else
-    images = dt_util_dstrcat(NULL, " ");
+    images = g_strdup(" ");
   return images;
 }
 
