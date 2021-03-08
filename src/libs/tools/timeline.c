@@ -385,8 +385,7 @@ static dt_lib_timeline_time_t _time_get_from_pos(int pos, dt_lib_timeline_t *str
   dt_lib_timeline_time_t tt = _time_init();
 
   int x = 0;
-  GList *bl = strip->blocks;
-  while(bl)
+  for(const GList *bl = strip->blocks; bl; bl = g_list_next(bl))
   {
     dt_lib_timeline_block_t *blo = bl->data;
     if(pos < x + blo->width)
@@ -439,7 +438,6 @@ static dt_lib_timeline_time_t _time_get_from_pos(int pos, dt_lib_timeline_t *str
       return tt;
     }
     x += blo->width + 2;
-    bl = bl->next;
   }
 
   return tt;
@@ -455,13 +453,12 @@ static dt_lib_timeline_time_t _time_compute_offset_for_zoom(int pos, dt_lib_time
   // we search the number of the bloc under pos
   int bloc_nb = 0;
   int x = 0;
-  GList *bl = strip->blocks;
-  while(bl)
+  GList *bl;
+  for(bl = strip->blocks; bl; bl = g_list_next(bl))
   {
     dt_lib_timeline_block_t *blo = bl->data;
     if(pos < x + blo->width) break;
     x += blo->width + 2;
-    bl = bl->next;
     bloc_nb++;
   }
   if(!bl)
@@ -1005,9 +1002,8 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
     cairo_paint(cr);
 
     // draw content depending of zoom level
-    GList *bl = strip->blocks;
     int posx = 0;
-    while(bl)
+    for(const GList *bl = strip->blocks; bl; bl = g_list_next(bl))
     {
       dt_lib_timeline_block_t *blo = bl->data;
 
@@ -1038,7 +1034,6 @@ static gboolean _lib_timeline_draw_callback(GtkWidget *widget, cairo_t *wcr, gpo
         cairo_fill(cr);
       }
 
-      bl = bl->next;
       posx += wb + 2;
       if(posx >= allocation.width) break;
     }

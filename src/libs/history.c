@@ -259,7 +259,7 @@ static GtkWidget *_lib_history_create_button(dt_lib_module_t *self, int num, con
 
 static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int multi_priority)
 {
-  while (hist)
+  for(; hist; hist = g_list_next(hist))
   {
     dt_dev_history_item_t *hit = (dt_dev_history_item_t *)hist->data;
 
@@ -267,7 +267,6 @@ static void _reset_module_instance(GList *hist, dt_iop_module_t *module, int mul
     {
       hit->module = module;
     }
-    hist = hist->next;
   }
 }
 
@@ -441,8 +440,7 @@ static int _check_deleted_instances(dt_develop_t *dev, GList **_iop_list, GList 
 static void _reorder_gui_module_list(dt_develop_t *dev)
 {
   int pos_module = 0;
-  GList *modules = g_list_last(dev->iop);
-  while(modules)
+  for(const GList *modules = g_list_last(dev->iop); modules; modules = g_list_previous(modules))
   {
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
@@ -452,8 +450,6 @@ static void _reorder_gui_module_list(dt_develop_t *dev)
       gtk_box_reorder_child(dt_ui_get_container(darktable.gui->ui, DT_UI_CONTAINER_PANEL_RIGHT_CENTER), expander,
                             pos_module++);
     }
-
-    modules = g_list_previous(modules);
   }
 }
 
