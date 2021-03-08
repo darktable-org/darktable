@@ -1271,7 +1271,7 @@ GtkWidget *dt_thumbnail_create_widget(dt_thumbnail_t *thumb, float zoom_ratio)
     if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
        || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
     {
-      gchar *lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
+      gchar *lb = g_strdup(thumb->info_line);
       thumb->w_bottom = gtk_label_new(NULL);
       gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), lb);
       g_free(lb);
@@ -1972,7 +1972,7 @@ void dt_thumbnail_reload_infos(dt_thumbnail_t *thumb)
   gchar *lb = NULL;
   if(thumb->over == DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED
      || thumb->over == DT_THUMBNAIL_OVERLAYS_MIXED || thumb->over == DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK)
-    lb = dt_util_dstrcat(NULL, "%s", thumb->info_line);
+    lb = g_strdup(thumb->info_line);
 
   // we set the text
   gtk_label_set_markup(GTK_LABEL(thumb->w_bottom), lb);
