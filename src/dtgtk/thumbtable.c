@@ -57,19 +57,19 @@ static gchar *_thumbs_get_overlays_class(dt_thumbnail_overlay_t over)
   switch(over)
   {
     case DT_THUMBNAIL_OVERLAYS_NONE:
-      return dt_util_dstrcat(NULL, "dt_overlays_none");
+      return g_strdup("dt_overlays_none");
     case DT_THUMBNAIL_OVERLAYS_HOVER_EXTENDED:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover_extended");
+      return g_strdup("dt_overlays_hover_extended");
     case DT_THUMBNAIL_OVERLAYS_ALWAYS_NORMAL:
-      return dt_util_dstrcat(NULL, "dt_overlays_always");
+      return g_strdup("dt_overlays_always");
     case DT_THUMBNAIL_OVERLAYS_ALWAYS_EXTENDED:
-      return dt_util_dstrcat(NULL, "dt_overlays_always_extended");
+      return g_strdup("dt_overlays_always_extended");
     case DT_THUMBNAIL_OVERLAYS_MIXED:
-      return dt_util_dstrcat(NULL, "dt_overlays_mixed");
+      return g_strdup("dt_overlays_mixed");
     case DT_THUMBNAIL_OVERLAYS_HOVER_BLOCK:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover_block");
+      return g_strdup("dt_overlays_hover_block");
     default:
-      return dt_util_dstrcat(NULL, "dt_overlays_hover");
+      return g_strdup("dt_overlays_hover");
   }
 }
 
@@ -99,8 +99,8 @@ static void _thumbs_update_overlays_mode(dt_thumbtable_t *table)
   int ns = _thumbs_get_prefs_size(table);
 
   // we change the class that indicate the thumb size
-  gchar *c0 = dt_util_dstrcat(NULL, "dt_thumbnails_%d", table->prefs_size);
-  gchar *c1 = dt_util_dstrcat(NULL, "dt_thumbnails_%d", ns);
+  gchar *c0 = g_strdup_printf("dt_thumbnails_%d", table->prefs_size);
+  gchar *c1 = g_strdup_printf("dt_thumbnails_%d", ns);
   GtkStyleContext *context = gtk_widget_get_style_context(table->widget);
   gtk_style_context_remove_class(context, c0);
   gtk_style_context_add_class(context, c1);
