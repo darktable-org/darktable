@@ -260,7 +260,8 @@ typedef struct dt_iop_module_t
   GtkDarktableToggleButton *off;
   /** this is the module header, contains label and buttons */
   GtkWidget *header;
-
+  /** this is the module mask indicator, inside header */
+  GtkWidget *mask_indicator;
   /** expander containing the widget and flag to store expanded state */
   GtkWidget *expander;
   gboolean expanded;
@@ -456,7 +457,7 @@ void dt_iop_cancel_history_update(dt_iop_module_t *module);
 gboolean dt_iop_show_hide_header_buttons(GtkWidget *header, GdkEventCrossing *event, gboolean show_buttons, gboolean always_hide);
 
 /** add/remove mask indicator to iop module header */
-void add_remove_mask_indicator(GtkWidget *header, gboolean add);
+void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add);
 
 /** Set the trouble message for the module.  If non-empty, also flag the module as being in trouble; if empty
  ** or NULL, clear the trouble flag.  If 'toast_message' is non-NULL/non-empty, pop up a toast with that
