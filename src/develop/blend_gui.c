@@ -1132,7 +1132,8 @@ static void _blendop_blendif_showmask_clicked(GtkWidget *button, GdkEventButton 
     // (re)set the header mask indicator too
     ++darktable.gui->reset;
     if(module->mask_indicator)
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator),!is_active);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator),
+                                     module->request_mask_display != DT_DEV_PIXELPIPE_DISPLAY_NONE);
     --darktable.gui->reset;
 
     dt_iop_request_focus(module);

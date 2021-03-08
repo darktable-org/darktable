@@ -2322,7 +2322,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
     {
       GtkWidget *mi = dtgtk_togglebutton_new(dtgtk_cairo_paint_showmask, CPF_STYLE_FLAT | CPF_BG_TRANSPARENT, NULL);
       module->mask_indicator = mi;
-      gtk_widget_set_tooltip_text(mi, _("this module has a mask"));
+      gtk_widget_set_tooltip_text(mi, _("this module has a mask, click to display"));
       gtk_widget_set_name(mi, "module-mask-indicator");
       g_signal_connect(G_OBJECT(mi), "toggled", G_CALLBACK(_display_mask_indicator_callback), module);
       gtk_box_pack_end(GTK_BOX(module->header), mi, FALSE, FALSE, 0);
