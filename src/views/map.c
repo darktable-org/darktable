@@ -1638,7 +1638,7 @@ static gboolean _view_map_motion_notify_callback(GtkWidget *widget, GdkEventMoti
       }
     }
 
-    int group_count = g_list_length(lib->selected_images);
+    const int group_count = g_list_length(lib->selected_images);
 
     lib->start_drag = FALSE;
     GtkTargetList *targets = gtk_target_list_new(target_list_all, n_targets_all);
