@@ -1192,13 +1192,10 @@ static gboolean _blendop_masks_modes_toggle(GtkToggleButton *button, dt_iop_modu
   }
   // (un)set the mask indicator, but not for uniform blend
   if(mask_mode == DEVELOP_MASK_ENABLED) add_remove_mask_indicator(module, FALSE);
-  else if(was_toggled)
-  {
-    add_remove_mask_indicator(module, TRUE);
-    if(data->showmask)
+  else add_remove_mask_indicator(module, was_toggled);
+  if(was_toggled && data->showmask)
       gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(module->mask_indicator),
                                    gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(data->showmask)));
-  }
 
   return TRUE;
 }
