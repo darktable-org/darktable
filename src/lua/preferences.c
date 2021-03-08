@@ -157,7 +157,7 @@ static int get_keys(lua_State *L)
 
   keys = g_list_sort(keys, (GCompareFunc) strcmp);
   lua_newtable(L);
-  for(GList* key = keys; key != NULL; key = key->next)
+  for(const GList* key = keys; key; key = g_list_next(key))
   {
     lua_pushstring(L, key->data);
     luaL_ref(L, -2);
@@ -837,8 +837,7 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
   gtk_container_add(GTK_CONTAINER(viewport), grid);
   gtk_stack_add_titled(GTK_STACK(stack), scroll, _("lua options"), _("lua options"));
 
-  pref_element *cur_elt = pref_list;
-  while(cur_elt)
+  for(pref_element *cur_elt = pref_list; cur_elt; cur_elt = cur_elt->next)
   {
     char pref_name[1024];
     get_pref_name(pref_name, sizeof(pref_name), cur_elt->script, cur_elt->name);
@@ -853,7 +852,6 @@ GtkGrid* init_tab_lua(GtkWidget *dialog, GtkWidget *stack)
     gtk_widget_set_tooltip_text(cur_elt->widget, cur_elt->tooltip);
     gtk_grid_attach(GTK_GRID(grid), labelev, 0, line, 1, 1);
     gtk_grid_attach(GTK_GRID(grid), cur_elt->widget, 1, line, 1, 1);
-    cur_elt = cur_elt->next;
     line++;
   }
   return GTK_GRID(grid);
