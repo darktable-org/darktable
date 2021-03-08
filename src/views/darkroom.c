@@ -1962,7 +1962,8 @@ static void _preference_changed_button_hide(gpointer instance, dt_develop_t *dev
     dt_iop_module_t *module = (dt_iop_module_t *)(modules->data);
 
     if(module->header)
-      add_remove_mask_indicator(module->header, module->blend_params->mask_mode != DEVELOP_MASK_DISABLED);
+      add_remove_mask_indicator(module, (module->blend_params->mask_mode != DEVELOP_MASK_DISABLED) &&
+                                (module->blend_params->mask_mode != DEVELOP_MASK_ENABLED));
   }
 }
 
