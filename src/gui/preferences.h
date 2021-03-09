@@ -22,10 +22,14 @@
 void dt_gui_preferences_show();
 
 // return the widget for a given preference key
-GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const gboolean swap);
-GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key);
-GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key);
-GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key);
+GtkWidget *dt_gui_preferences_bool(GtkGrid *grid, const char *key, const guint col,
+                                   const guint line, const gboolean swap);
+GtkWidget *dt_gui_preferences_int(GtkGrid *grid, const char *key, const guint col,
+                                  const guint line);
+GtkWidget *dt_gui_preferences_enum(GtkGrid *grid, const char *key, const guint col,
+                                   const guint line);
+GtkWidget *dt_gui_preferences_string(GtkGrid *grid, const char *key, const guint col,
+                                     const guint line);
 
 // update widget with current preference
 void dt_gui_preferences_bool_update(GtkWidget *widget);
