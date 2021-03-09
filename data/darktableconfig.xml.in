@@ -1960,7 +1960,7 @@
     </type>
     <default>lanczos3</default>
     <shortdescription>pixel interpolator</shortdescription>
-    <longdescription>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
+    <longdescription>pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/dimensions_type</name>
