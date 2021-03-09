@@ -697,7 +697,15 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
   // we update the offset
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
   {
-    table->offset = MAX(1, table->offset - (posy / table->thumb_size) * table->thumbs_per_row);
+    int amount = 0;
+    table->accumulator += (float)posy / (float)table->thumb_size;
+    amount = trunc(table->accumulator);
+    if (amount != 0)
+    {
+        table->accumulator -= amount;
+        table->offset = MAX(1, table->offset - amount * table->thumbs_per_row);
+    }
+
     table->offset_imgid = _thumb_get_imgid(table->offset);
   }
   else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
@@ -882,8 +890,30 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
-  int delta;
+ 
+   // Handle continuous scrolling separately
+  if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && e->direction == GDK_SCROLL_SMOOTH
+    && !((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
+  {
+    gdouble delta;
+    if (dt_gui_get_scroll_deltas(e, NULL, &delta))
+    {
+      // Scale delta to represent scroll size in pixels.
+      // On macOS reverses scaling in dt_gui_get_scroll_deltas
+      delta = delta * 100;
+      if(delta < 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+        _move(table, 0, -delta, TRUE);
+      if(delta >= 0 && table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
+        _move(table, 0, -delta, TRUE);
 
+      // ensure the hovered image is the right one
+      dt_thumbnail_t *th = _thumb_get_under_mouse(table);
+      if(th) dt_control_set_mouse_over_id(th->imgid);
+    }
+    return TRUE;
+  }
+
+  int delta;
   if(dt_gui_get_scroll_unit_delta(e, &delta))
   {
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && (e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK)
@@ -892,7 +922,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
       int new = old;
       if(delta > 0)
         new = MIN(DT_LIGHTTABLE_MAX_ZOOM, new + 1);
-      else
+      else if (delta < 0)
         new = MAX(1, new - 1);
 
       if(old != new) _filemanager_zoom(table, old, new);
@@ -1891,6 +1921,7 @@ void dt_thumbtable_full_redraw(dt_thumbtable_t *table, gboolean force)
       const int offset_row = (table->offset-1) / table->thumbs_per_row;
       offset = offset_row * table->thumbs_per_row + 1;
       table->offset = offset;
+      table->accumulator = 0;
     }
     else if(table->mode == DT_THUMBTABLE_MODE_FILMSTRIP)
     {
