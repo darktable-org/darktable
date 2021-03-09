@@ -578,7 +578,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
   }
   else
   {
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
     float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
@@ -950,7 +950,7 @@ void process(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const 
   }
   else
   {
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     const float rx = piece->buf_in.width * roi_in->scale;
     const float ry = piece->buf_in.height * roi_in->scale;
     float k_space[4] = { d->k_space[0] * rx, d->k_space[1] * ry, d->k_space[2] * rx, d->k_space[3] * ry };
@@ -1035,7 +1035,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
   {
     int crkernel = -1;
 
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
     switch(interpolation->id)
     {
@@ -1381,7 +1381,7 @@ static float _ratio_get_aspect(dt_iop_module_t *self, GtkWidget *combo)
     }
     else
     {
-      const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+      const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
       const float whratio = ((float)(iwd - 2 * interpolation->width) * (fabsf(p->cw) - p->cx))
                             / ((float)(iht - 2 * interpolation->width) * (fabsf(p->ch) - p->cy));
       const float ri = (float)iwd / (float)iht;
