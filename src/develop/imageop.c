@@ -997,6 +997,7 @@ static gboolean dt_iop_gui_off_button_press(GtkWidget *w, GdkEventButton *e, gpo
 static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user_data)
 {
   dt_iop_module_t *module = (dt_iop_module_t *)user_data;
+  gboolean raster = module->blend_params->mask_mode & DEVELOP_MASK_RASTER;
 
   if(!darktable.gui->reset)
   {
@@ -1026,6 +1027,9 @@ static void dt_iop_gui_off_callback(GtkToggleButton *togglebutton, gpointer user
         dt_iop_gui_set_expanded(module, FALSE, FALSE);
 
     }
+    // set mask indicator sensitive according to module activation and raster mask
+    if(module->mask_indicator)
+      gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
   }
 
   char tooltip[512];
@@ -2291,10 +2295,8 @@ static void _display_mask_indicator_callback(GtkToggleButton *bt, dt_iop_module_
   module->request_mask_display |= (is_active ? DT_DEV_PIXELPIPE_DISPLAY_MASK : 0);
 
   // set the module show mask button too
-  ++darktable.gui->reset;
   if(bd->showmask)
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(bd->showmask), is_active);
-  --darktable.gui->reset;
 
   dt_iop_request_focus(module);
   dt_iop_refresh_center(module);
@@ -2314,7 +2316,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
         dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
       }
     else
-        gtk_widget_set_sensitive(module->mask_indicator, !(raster));
+        gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
   }
   else if(show)
     {
@@ -2323,7 +2325,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
       gtk_widget_set_name(module->mask_indicator, "module-mask-indicator");
       g_signal_connect(G_OBJECT(module->mask_indicator), "toggled",
                        G_CALLBACK(_display_mask_indicator_callback), module);
-      gtk_widget_set_sensitive(module->mask_indicator, !(raster));
+      gtk_widget_set_sensitive(module->mask_indicator, !raster && module->enabled);
       gtk_box_pack_end(GTK_BOX(module->header), module->mask_indicator, FALSE, FALSE, 0);
       dt_iop_show_hide_header_buttons(module->header, NULL, FALSE, FALSE);
     }
@@ -2333,7 +2335,7 @@ void add_remove_mask_indicator(dt_iop_module_t *module, gboolean add)
     if(raster)
       gtk_widget_set_tooltip_text(module->mask_indicator, _("this module has a raster mask"));
     else
-      gtk_widget_set_tooltip_text(module->mask_indicator, _("this module has a mask\nclick to display"));
+      gtk_widget_set_tooltip_text(module->mask_indicator, _("this module has a mask, click to display\nmodule must be activated first"));
   }
 }
 
