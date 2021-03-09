@@ -1994,6 +1994,12 @@ void dt_collection_deserialize(char *buf)
 void dt_collection_update_query(const dt_collection_t *collection, dt_collection_change_t query_change, GList *list)
 {
   int next = -1;
+  if(!collection->clone && query_change == DT_COLLECTION_CHANGE_NEW_QUERY && darktable.gui)
+  {
+    // if the query has changed, we reset the expanded group
+    darktable.gui->expanded_group_id = -1;
+  }
+
   if(!collection->clone)
   {
     if(list)
