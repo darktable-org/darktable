@@ -601,6 +601,10 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
     // we check bounds to allow or not the move
     if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER)
     {
+      // prevent scrolling more than view_height so that thumbs cannot disappear
+      if (posy > table->view_height) posy = table->view_height;
+      else if (posy < -table->view_height) posy = -table->view_height;
+      
       posx = 0; // to be sure, we don't want horizontal move
       if(posy == 0) return FALSE;
 
