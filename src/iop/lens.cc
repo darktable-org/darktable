@@ -394,7 +394,7 @@ void process(dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, const void *c
 
   dt_pthread_mutex_unlock(&darktable.plugin_threadsafe);
 
-  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(d->inverse)
   {
@@ -619,7 +619,7 @@ int process_cl(struct dt_iop_module_t *self, dt_dev_pixelpipe_iop_t *piece, cl_m
 
   int modflags;
   int ldkernel = -1;
-  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   if(!d->lens || !d->lens->Maker || d->crop <= 0.0f)
   {
@@ -951,7 +951,7 @@ void distort_mask(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *p
     return;
   }
 
-  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation *const interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   // acquire temp memory for distorted pixel coords
   const size_t bufsize = (size_t)roi_out->width * 2 * 3;
@@ -1083,7 +1083,7 @@ void modify_roi_in(struct dt_iop_module_t *self, struct dt_dev_pixelpipe_iop_t *
     if(!isfinite(ym) || !(0 <= ym && ym < orig_h)) ym = 0;
     if(!isfinite(yM) || !(1 <= yM && yM < orig_h)) yM = orig_h;
 
-    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    const struct dt_interpolation *interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
     roi_in->x = fmaxf(0.0f, xm - interpolation->width);
     roi_in->y = fmaxf(0.0f, ym - interpolation->width);
     roi_in->width = fminf(orig_w - roi_in->x, xM - roi_in->x + interpolation->width);

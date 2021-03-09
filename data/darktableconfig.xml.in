@@ -1936,6 +1936,19 @@
     <longdescription>decrease to speed up preview rendering, may hinder accurate masking</longdescription>
   </dtconfig>
   <dtconfig prefs="processing">
+    <name>plugins/lighttable/export/pixel_interpolator_warp</name>
+    <type>
+      <enum>
+        <option>bilinear</option>
+        <option>bicubic</option>
+        <option>lanczos2</option>
+      </enum>
+    </type>
+    <default>bicubic</default>
+    <shortdescription>warp pixel interpolator</shortdescription>
+    <longdescription>pixel interpolator used in modules for rotation, lens correction, liquify, clipping and final scaling (bilinear, bicubic, lanczos2).</longdescription>
+  </dtconfig>
+  <dtconfig prefs="processing">
     <name>plugins/lighttable/export/pixel_interpolator</name>
     <type>
       <enum>
@@ -1947,7 +1960,7 @@
     </type>
     <default>lanczos3</default>
     <shortdescription>pixel interpolator</shortdescription>
-    <longdescription>pixel interpolator used in rotation and lens correction (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
+    <longdescription>pixel interpolator used for scaling (bilinear, bicubic, lanczos2, lanczos3).</longdescription>
   </dtconfig>
   <dtconfig>
     <name>plugins/lighttable/export/dimensions_type</name>

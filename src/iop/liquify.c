@@ -1019,7 +1019,7 @@ static void apply_global_distortion_map(struct dt_iop_module_t *module,
   const int ch = piece->colors;
   const int ch_width = ch * roi_in->width;
   const struct dt_interpolation * const interpolation =
-    dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+    dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
 
   #ifdef _OPENMP
   #pragma omp parallel for schedule (static) default (shared)
@@ -1500,7 +1500,7 @@ static cl_int_t apply_global_distortion_map_cl(struct dt_iop_module_t *module,
   dt_iop_liquify_global_data_t *gd = (dt_iop_liquify_global_data_t *) module->global_data;
   const int devid = piece->pipe->devid;
 
-  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF);
+  const struct dt_interpolation* interpolation = dt_interpolation_new(DT_INTERPOLATION_USERPREF_WARP);
   dt_liquify_kernel_descriptor_t kdesc = { .size = 0, .resolution = 100 };
   float *k = NULL;
 

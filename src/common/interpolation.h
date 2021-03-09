@@ -35,7 +35,9 @@ enum dt_interpolation_type
   DT_INTERPOLATION_LANCZOS3,                          /**< Lanczos interpolation (with 3 lobes) */
   DT_INTERPOLATION_LAST,                              /**< Helper for easy iteration on interpolators */
   DT_INTERPOLATION_DEFAULT = DT_INTERPOLATION_BILINEAR,
-  DT_INTERPOLATION_USERPREF /**< can be specified so that user setting is chosen */
+  DT_INTERPOLATION_DEFAULT_WARP = DT_INTERPOLATION_BICUBIC,
+  DT_INTERPOLATION_USERPREF,  /**< can be specified so that user setting is chosen */
+  DT_INTERPOLATION_USERPREF_WARP  /**< can be specified so that user setting is chosen */
 };
 
 /** Interpolation function */
