@@ -604,7 +604,7 @@ static gboolean _move(dt_thumbtable_t *table, const int x, const int y, gboolean
       // prevent scrolling more than view_height so that thumbs cannot disappear
       if (posy > table->view_height) posy = table->view_height;
       else if (posy < -table->view_height) posy = -table->view_height;
-      
+
       posx = 0; // to be sure, we don't want horizontal move
       if(posy == 0) return FALSE;
 
@@ -890,7 +890,7 @@ static gboolean _event_scroll(GtkWidget *widget, GdkEvent *event, gpointer user_
 {
   GdkEventScroll *e = (GdkEventScroll *)event;
   dt_thumbtable_t *table = (dt_thumbtable_t *)user_data;
- 
+
    // Handle continuous scrolling separately
   if(table->mode == DT_THUMBTABLE_MODE_FILEMANAGER && e->direction == GDK_SCROLL_SMOOTH
     && !((e->state & GDK_CONTROL_MASK) == GDK_CONTROL_MASK))
